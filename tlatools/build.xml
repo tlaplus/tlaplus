@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="TLA+ Tools" default="default">
+
+	<!-- load property file -->
+	<loadproperties srcfile="project.properties" />
+	
+	<!-- setup classpath -->
+	<path id="project.classpath">
+
+	</path>
+	
+	<!-- timestamp -->
+	<tstamp>
+	    <format property="TODAY" pattern="yyyy-MM-dd" locale="en,US"/>
+    </tstamp>
+
+	<target name="info" description="Prints information">
+		<echo message="Apache Ant Version is       : ${ant.version}" />
+		<echo message="Java Version running Ant is : ${ant.java.version}" />
+	</target>
+
+	<target name="default" depends="info" description="Default">
+		<antcall target="compile" inheritall="true" inheritrefs="true" />
+		<antcall target="dist" inheritall="true" inheritrefs="true" />
+	</target>
+
+	<target name="clean" description="Cleans the compilation output directory">
+		<delete includeemptydirs="true" failonerror="false">
+			<fileset dir="${class.dir}" includes="*/**" />
+		</delete>
+	</target>
+
+	<target name="compile" depends="clean" description="Compile">
+		<!-- compile -->
+		<javac srcdir="${src.dir}" destdir="${class.dir}" debug="true" verbose="false" source="1.4" target="1.4">
+			<!-- compilerarg value="-Xlint:deprecation"/-->
+			<classpath refid="project.classpath" />
+		</javac>
+
+		<!-- copy the resource files -->
+		<copy todir="${class.dir}">
+			<fileset dir="${src.dir}">
+				<include name="**/*.*" />
+				<exclude name="**/*.java" />
+			</fileset>
+		</copy>
+	</target>
+
+	<target name="dist" description="Build a distribution">
+		<!-- create a JAR file for the users -->
+		<jar destfile="${dist.file}">
+			<fileset dir="${class.dir}" includes="**/*" />
+			<manifest>
+				<attribute name="Built-By" value="${user.name}" />
+				<attribute name="Implementation-Title" value="TLA+ Tools" />
+				<attribute name="Implementation-Version" value="${version} ${TODAY}" />
+				<attribute name="Implementation-Vendor" value="Microsoft Corp." />
+			</manifest>
+		</jar>
+	</target>
+
+</project>
