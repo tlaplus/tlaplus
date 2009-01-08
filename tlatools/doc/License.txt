@@ -1,0 +1,109 @@
+
+1)  Where the following copyright notice appears:
+
+Copyright (c) 2003 Compaq Corporation.  All rights reserved.  
+
+Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.  or
+
+Copyright (c) 2003 Microsoft Corporation. All rights reserved.
+
+that code is licensed as follows:   
+
+This Microsoft Research end user license agreement ("MSR-EULA") is a
+legal agreement between you and Microsoft Corporation
+("Microsoft" or "we") for the software identified above,
+which includes source code, and any associated materials and "online"
+or electronic documentation (together, the "Software").
+
+By installing, copying, or otherwise using the Software, found at
+http://research.microsoft.com/downloads, you agree to be bound by the
+terms of this MSR-EULA. If you do not agree, do not install, copy or
+use the Software. The Software is protected by copyright and other
+intellectual property laws and is licensed, not sold.
+
+Upon your agreement to the terms below, you may do anything you want
+with the Software source code for research, teaching purposes, or
+internal use, free of charge, provided that you agree to the
+following:
+
+(a) To leave in place all copyright notices and licensing information
+that you might find in the Software.
+
+(b) That you will not use the Software in a live operating environment
+where it may be relied upon to perform in the same manner as a
+commercially released product, or with data that has not been
+sufficiently backed up.
+
+(c) That any feedback about the Software provided by you to us is
+voluntarily given, and Microsoft shall be free to use the feedback as
+it sees fit without obligation or restriction of any kind, even if the
+feedback is designated by you as confidential.
+
+(d) To make freely available to others the source code or data of any
+modifications or additions you make to the Software, and any related
+documentation, solely and exclusively under the same terms as this
+License.
+
+(e) That Microsoft is granted back, without limitations, the rights to
+reproduce, install, use, modify, distribute and transfer your
+modifications to the Software source code or data.
+
+(f) NO WARRANTIES WHATSOEVER: That the Software comes "AS IS",
+with all faults and with no warranties, conditions or
+representations. The implied warranties of merchantability and fitness
+for a particular purpose, and any warranty against interference with
+your enjoyment of the Software or against infringement, do not apply
+to the Software.  The entire risk as to satisfactory quality,
+performance, accuracy, and effort concerning the Software is assumed
+by you.  There is no warranty that this Software will fulfill any of
+your particular purposes or needs.
+
+(g) That we have no duty of reasonable care or lack of negligence, and
+we are not obligated to (and will not) provide technical support for
+the Software.
+
+(h) That we will not be liable for any damages, including those known
+as direct, indirect, special, consequential, or incidental damages
+related to the Software, this MSR-EULA, or under any legal theory
+(such as negligence), to the maximum extent that overriding applicable
+law permits.
+
+(i) That if you sue or threaten to sue anyone over patents that you
+think may apply to the Software, or if you breach this MSR-EULA in any
+way, your license to the Software ends automatically.
+
+(j) That this MSR-EULA shall be construed and controlled by the laws
+of the State of Washington, USA, without regard to conflicts of law.
+
+
+2) Where the following copyright notice appears: Copyright (c) 2003
+Compaq Corporation.  All rights reserved.
+
+that code is licensed as follows:
+Compaq Computer Corporation, a Delaware corporation with offices at
+20555 SH 249, Houston, TX, (COMPAQ) and you the CUSTOMER agree as
+follows:
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL COMPAQ BE LIABLE FOR ANY CLAIM,
+DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
+THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+Except as contained in this notice, the name of COMPAQ shall not be
+used in advertising or otherwise to promote the sale, use or other
+dealings in this Software without prior written authorization from
+COMPAQ.
