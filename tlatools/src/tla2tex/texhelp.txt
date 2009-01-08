@@ -1,0 +1,25 @@
+Usage : java tlatex.TeX [options] [inputFile]
+
+The inputFile is required except when the -help or -info option is
+specified.  If inputFile does not contain an extension, the extension
+"tex" is assumed.
+
+Options:
+
+   -help 
+     Types this message.
+
+   -info
+     Types complete instructions for using TLATeX.
+
+   -latexCommand cmd
+     The command used to run LaTeX.  The default is "latex".
+
+   -out file
+     The root name of the output files.  Default is the root name of 
+     inputFile.
+
+   -alignOut file
+     The root name of the LaTeX input file and output files used
+     to compute alignment. Default is "tlatex".
+

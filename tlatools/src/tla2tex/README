@@ -1,0 +1,96 @@
+FILES
+-----
+These are the source files for the TLATeX program.  The main program
+is in TLA.java.  In addition to the .java and .class files, there are:
+
+tlatex.sty : A style file used by the LaTeX output.
+
+help.txt : A file with the help message.
+
+info.txt : A file with a reasonably complete description of TLATeX.
+
+words.all : 
+  A list of common English words.  It was obtained by taking the
+  lower-case words from a Linux list, and adding the following,
+  which were inexplicably missing.
+
+   a  may  I  TLA  miscellany
+
+old : a directory of old versions.
+
+POSSIBLE ENHANCEMENTS
+---------------------
+1. When formatting an individual comment, TLATeX keeps track of
+   which identifiers appear in the comment as TLA tokens.  It
+   turns ambiguous instances of those identifiers into TLA tokens
+   only for identifiers that are not words.  Possibly do it
+   even if they are words--or perhaps have a sublist of common
+   words and do it only for uncommon words.
+
+2. Introduce a mechanism for turning operators into TeX macros--for
+   example, so Integral(a+b, c, d) gets typeset as 
+
+      \int^{a+b}_{c} d
+
+   This is nontrivial because it requires finding the arguments,
+   which in turn requires counting parentheses and looking for commas
+   and right-parens.  A simpler possibility is just replacing
+   certain identifiers by symbols--e.g., alpha -> \alpha.
+
+   The specification of such replacements would be in the prolog or
+   epilog, so we'd have to introduce some notation for identifying
+   pro/epilog lines as TLATeX commands.  (This notation should generalize
+   to arbitrary tools.)
+
+
+
+BUGS 
+----
+Here are the known bugs in TLATeX:
+
+1. If a ' in a comment is immediately followed by a character, as in
+
+       `token'.
+
+   then TLATeX inserts a spurious space before the ".".  Search
+   for "LEFT_SQUOTE:" in TokenizeComment.java to see how to fix this.  
+   But... a similar problem occurs with `^ ... ^' text, since the `^ 
+   and ^' effectively act as spaces for determining whether to add space
+   between adjacent tokens.  
+
+   The same problem also occurs with a `~ ... ~' term, but in that case, 
+   there may be no solution because the entire term has to be disappeared.
+
+   Some uniform approach to handling this is called for.  It seems like
+   the best approach is to try to increase the size of an immediately 
+   following token by a ` or `^, and of an immediately  preceding token 
+   by the ' or ^'.  This requires adding an explicit width field to
+   a CToken object, or something equivalent.
+
+2. The record component foo.WF_foo will be printed as
+
+      foo.WF
+            foo
+
+   Fixing this unlikely problem requires fixing the lexing algorithm
+   in TokenizeSpec.java.
+
+----------
+  
+
+Revision History
+^^^^^^^^^^^^^^^^
+Version 0.95 of 11 November 2001 
+ - Modified FindAlignments to do InfixArg alignment only if the
+   symbol to the left is an infix operator.
+ - Modified LaTeXOutput.InnerWriteLaTeXFile to end a multiline
+   comment with a comment line that is below-aligned with a 
+   non-comment line.  (Previously, that case had been considered
+   an error.)
+ - Fixed the problem of TLATeX hanging if latex or dvips produced
+   a lot of output by:
+    * Adding classes ExecuteCommand and GobbleOutput
+    * Modifying TLA.MakePSFile and LaTeXOutput.RunLatex to call 
+      ExecuteCommand.
+
+Last modified on Sun Nov 11 11:29:50 PT 2001 by lamport

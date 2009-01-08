@@ -1,0 +1,184 @@
+              tlatex.TeX Version 0.95 of 10 November 2001
+
+CONTENTS
+--------
+  INTRODUCTION
+  COMMENT SHADING
+  HOW tlatex.TeX TYPESETS TLA+ FORMULAS
+  HOW tlatex.TeX TYPESETS COMMENTS
+  OUTPUT FILES
+  TROUBLESHOOTING
+
+
+INTRODUCTION 
+------------ 
+
+tlatex.TeX is a version of the TLATeX Java program for use in putting
+TLA+ formulas into LaTeX documents.  It was written by Leslie Lamport,
+based on ideas by Dmitri Samborski.
+
+tlatex.TeX takes as input a LaTeX source file.  It interprets any
+`tla' environment to be TLA+ "code".  It modifies the LaTeX source
+file by writing, after each `tla' environment, a `tlatex' environment
+containing LaTeX commands for typesetting the contents of the `tla'
+environment--first deleting any `tlatex' environment that follows the
+`tla' environment.  (It renames the old version of the input file to
+have the extension "old".)
+
+The LaTeX source file must contain a
+
+   \usepackage{tlatex}
+
+command, and the tlatex.sty file must be placed in a directory in
+which LaTeX looks for package files.
+
+If you're writing a LaTeX document, you probably have already
+installed TeX and LaTeX on your system.  Use the -latexCommand option
+if you run LaTeX on your system by typing something other than
+"latex".
+
+You will probably run TLATeX by typing 
+
+   java tlatex.TLA [options] fileName
+
+where [options] is an optional list of options, and fileName is the
+name of the input file.  (If fileName does not contain an extension,
+then the input file is fileName.tex.)  Running TLATeX with the -help
+option produces a list of all options.  Running it with the -info
+option produces what you are now reading.  (The fileName can be
+omitted when using the -help or -info option.)
+
+The running time of tlatex.TeX is roughly proportional to the number
+of separate `tla' environments.  You can speed things up by not
+having tlatex.TeX reprocess `tla' environments that haven't changed
+since the last time it was run.  To do this, just change those
+`tla' environments to `notla' environments.
+
+The only other thing you probably need to know about using tlatex.TeX
+is how to shade comments, which is explained in the next section.
+
+
+COMMENT SHADING
+---------------
+To shade comments, add the following commands to the preamble
+of the LaTeX source file (that is, before the \begin{document}
+command):
+
+   \usepackage{color}
+   \definecolor{boxshade}{gray}{<shade-value>}
+   \setboolean{shading}{true}
+
+where <shade-value> is a number between 0 and 1, smaller numbers producing
+darker shading.  The value .85 seems to work pretty well.
+
+
+HOW tlatex.TeX TYPESETS A tla ENVIRONMENT
+-----------------------------------------
+The `tlatex' environment produced by tlatex.TeX from a `tla'
+environment should do what would want it to.  It preserves most of the
+meaningful alignments in the TLA+ "code".  For example, it will
+typeset
+\begin{tla}
+  Action == /\ x'   = x - y
+            /\ yy'  = 123
+            /\ zzz' = zzz
+\end{tla}
+so that the "/\" and "=" symbols are aligned.  Extra spaces in the
+input will be reflected in the output.  However, TLATeX treats 0 and 1
+space between symbols the same, so "x+y" and "x + y" produce the same
+output, but "x  +  y" produces extra space around the "+".
+
+The `tla' environment can appear anywhere in the LaTeX file at which a
+complete paragraph could appear.  The \begin{tla} and \end{tla}
+commands must each appear on a line by itself.
+
+tlatex.TeX does not check that the TLA+ "code" is syntactically
+correct TLA+.  However, it will report an error if it encounters an
+illegal lexeme, such as ";".
+
+
+HOW tlatex.TeX TYPESETS COMMENTS
+--------------------------------
+tlatex.TeX distinguishes between one-line and multi-line comments.  A
+one-line comment is any comment that is not a multi-line comment.
+Multi-line comments can be typed in any of the following three ways:
+
+  (*************************)
+  (* This is the text of a *)
+  (* multi-line comment.   *)
+  (*************************)
+
+  \********************
+  \* This is the text 
+  \* of the comment.  
+  \********************
+
+  (* This is the text
+     of the comment.   *)
+
+In the first two ways, the "(*" or "\*" characters on the left must
+all be aligned, and the last line of "*" characters is optional.  In
+the first way, nothing may appear to the right of the
+comment--otherwise, the input is considered to be a sequence of
+separate one-line comments.  
+
+tlatex.TeX typesets a single-line comment in LR-mode, just as if it
+were the argument of an \hbox command.  It typesets a multi-line
+comment in paragraph mode, as if it were inside a `minipage'
+environment.  Any special formatting of a comment that you want must
+be produced by LaTeX commands within the coment.  For example, instead
+of typing
+
+  \* foo > bar+2 need not always hold.
+
+you would probably type
+
+  \* $foo > bar+2$ need \emph{not} always hold.
+
+Note: the tlatex package changes the way LaTeX formats text in math
+mode so that multi-letter identifiers look better.  FOr example,
+$different$ comes out looking like \emph{different}.  If you're
+writing a document that contains TLA+ formulas, this is probably what
+you want.  But it means that some more traditional math formulas may
+not come out looking as good as usual.
+
+
+OUTPUT FILES
+------------
+tlatex.TeX writes several files.  The names of these are normally
+determined from the name of the input file.  However, options allow
+you to specify the name of each of these files.  In the following
+description, the root of a file name is the name with any extension or
+path specifier removed; for example, the root of c:\foo\bar.tla is
+bar.  All file names are interpreted relative to the directory in
+which tlatex.TeX is run.
+
+-out fileName
+   If f is the root of fileName, then f.tex is the name of the 
+   ouput produced by tlatex.TeX.
+
+-alignOut fileName
+   This specifies the root name of the LaTeX alignment file written by
+   TLATeX, which is described in the section below on Trouble-Shooting.
+   If f is the root of fileName, then the alignment file is named
+   f.tex, and running LaTeX on it produces the files f.dvi, f.log, and
+   f.aux.  Only the f.log file is of interest.  The default value of
+   -alignOut is the "tlatex". 
+
+
+TROUBLE-SHOOTING
+----------------
+The error messages should be self-explanatory.  tlatex.TeX reads the
+log file produced by LaTeX the last time it processed the input file.
+It uses this information to determine the value of LaTeX's \linewidth
+parameter for each of the `tla' environments.  (That value depends on
+the context in which the `tla' environment occurs.)  It issues a
+warning if the number of `tla' environments in the file has changed
+since LaTeX was run on the file, so the \linewidth information is not
+current.  The output produced by tlatex.TeX usually doesn't depend on
+the \linewidth values, so the results will be fine even if the wrong
+values were used.  To be safe, you should run LaTeX on the input
+file before running tlatex.TeX.
+
+
+

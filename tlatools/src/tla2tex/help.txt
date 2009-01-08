@@ -1,0 +1,77 @@
+Usage : java tlatex.TLA [options] [inputFile]
+
+The inputFile is required except when the -help or -info option is
+specified.  If inputFile does not contain an extension, the extension
+"tla" is assumed.
+
+Options:
+
+   -help 
+     Types this message.
+
+   -info
+     Types complete instructions for using TLATeX.
+
+   -number
+     Produces line numbers in the left margin.
+
+   -shade
+     Causes comments to be shaded in Postscript file.
+
+   -grayLevel num
+     Determines darkness of comment shading, where 
+     0 = black, 1 = white.  Default is .85.
+
+   -ps
+   -nops
+     Create or do not create Postscript output.  Default
+     is -ps if the -shade option specified, otherwise -nops.
+
+   -psCommand cmd
+     The command run to produce the Postscript file output.  
+     Default is "dvips".
+
+   -latexCommand cmd
+     The command used to run LaTeX.  The default is "latex".
+
+   -out file
+     The root name of the main LaTeX input file and its output 
+     files.  Default is the root name of inputFile.
+
+   -alignOut file
+     The root name of the LaTeX input file and output files used
+     to compute alignment. Default is the -out file.
+
+   -tlaOut file
+     If specified, TLATeX writes a copy of inputFile, with 
+     "`^ ... ^'" regions removed, to the specified file.  (The 
+     extension "tla" is added if no extension is specified.)
+
+   -noProlog
+     Causes TLATeX to ignore all text before beginning of module.
+
+   -noEpilog
+     Causes TLATeX to ignore all text after end of module.
+
+   -style file
+     Causes TLATeX to use the specified LaTeX package instead of 
+     adding its own style commands to the LaTeX files it produces.
+
+   -tlaComment
+     When determining if an ambiguous word in a comment is a symbol,
+     with this option, TLATeX errs on the side of making it a symbol 
+     TLATeX usually does better without this option.
+
+   -ptSize num
+     Specifies the point size of the font.  May be 10, 11, or 12.
+     Default is 10.
+
+   -textwidth  num
+   -textheight num
+     Specifies the \textwidth and \textheight values, in points, for 
+     the LaTeX output.  (A point is 1/72 of an inch--about 1/3 mm.)
+
+   -hoffset  num
+   -voffset  num
+     Specifies TeX's \hoffset and \voffset values, in points, for 
+     the LaTeX output.  (Used to center output on the page.)

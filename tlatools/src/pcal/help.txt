@@ -1,0 +1,73 @@
+This is the +cal translator, which translates a +cal algorithm into
+a TLA+ specification.  The translator is called by typing
+
+   java pcal.trans [options] input-file
+
+where input-file is a TLA+ file (the extension .tla need not be typed)
+containing the algorithm.  See the +cal manual for an explanation of
+what the TLA+ file must contain.  The possible options are
+
+  -help  : Types this file instead of running the translator.
+
+  -wf : Conjoin to formula Spec weak fairness of each process's
+        next-state action
+
+  -sf : Conjoin to formula Spec strong fairness of each process's
+        next-state action
+
+  -wfNext : Conjoin to formula Spec weak fairness of the entire
+            next-state action
+
+  -nof : Conjoin no fairness formula to Spec.  This is the default,
+         except when the -termination option is chosen.
+
+  -termination : Add to the .cfg file the command
+                    PROPERTY Termination
+                 With this option, the default fairness option
+                 becomes -wf.
+
+  -nocfg : Suppress writing of the .cfg file.
+
+  -label : Tells the translator to add missing labels.  This is
+           the default only for a uniprocess algorithm in which
+           the user has typed no labels.
+
+  -reportLabels : True if the translator should print the names
+                  and locations of all labels it adds.  Like
+                  -label, it tells the translator to add missing
+                  labels.
+
+  -labelRoot name : If the translator adds missing labels, it
+                    names them name1, name2, etc.  The default value
+                    is "Lbl_".
+
+
+  -unixEOL : Forces the use of Unix end-of-line convention, regardless
+             of the system's default.  Without this, when run on
+             Windows, the files it writes seem to have a "^M" at the
+             end of every line when viewed with Emacs.
+
+  -spec name : Uses TLC and the TLA+ specification name.tla to do
+               the translation.  It copies the files name.tla and
+               name.cfg from the directory containing the translator's
+               Java source files to the current directory; it writes in
+               the current director the file AST.tla that defines
+               `fairness' to equal the fairness option and `ast' to
+               equal the the AST data structure representing the
+               algorithm; and it runs TLC on name.tla to produce the
+               translation.
+
+  -myspec name : Like -spec, except it finds the files names.tla
+                 and names.cfg in the current directory, instead
+                 of writing them there.
+
+  -spec2   name
+  -myspec2 name : Like -spec and -myspec, except they use TLC2
+                  instead of TLC (aka TLC1).
+
+  -writeAST : Writes the AST file as in the -spec option, but does
+              not perform the translation.
+
+  -debug : This is useful only for maintainers of the program
+           and has no effect on normal execution.
+
