@@ -3,20 +3,28 @@
 
 	<!-- load property file -->
 	<loadproperties srcfile="project.properties" />
-	
+
+	<!-- linking with system properties -->
+	<property environment="env" />
+
 	<!-- setup classpath -->
 	<path id="project.classpath">
 
 	</path>
-	
+
 	<!-- timestamp -->
 	<tstamp>
-	    <format property="TODAY" pattern="yyyy-MM-dd" locale="en,US"/>
-    </tstamp>
+		<format property="TODAY" pattern="yyyy-MM-dd" locale="en,US" />
+	</tstamp>
+
+
+
 
 	<target name="info" description="Prints information">
-		<echo message="Apache Ant Version is       : ${ant.version}" />
-		<echo message="Java Version running Ant is : ${ant.java.version}" />
+		<echo message="ANT_HOME     : ${env.ANT_HOME}" />
+		<echo message="Ant Version  : ${ant.version}" />
+		<echo message="Java Version : ${ant.java.version}" />
+		<echo message="JavaCC_HOME  : ${env.JAVACC_HOME}" />
 	</target>
 
 	<target name="default" depends="info" description="Default">
@@ -57,6 +65,14 @@
 				<attribute name="Implementation-Vendor" value="Microsoft Corp." />
 			</manifest>
 		</jar>
+	</target>
+
+	
+	<target name="javacc" description="Generates JavaCC based Parser">
+		<mkdir dir="${src-gen}"/>
+		<!-- generates the parser -->
+		<javacc target="javacc/tla+.jj" outputdirectory="${srcgen.dir}" javacchome="${env.JAVACC_HOME}" />
+		<javacc target="javacc/config.jj" outputdirectory="${srcgen.dir}" javacchome="${env.JAVACC_HOME}" />
 	</target>
 
 </project>
