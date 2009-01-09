@@ -5,8 +5,6 @@
 
 package tlc2.value;
 
-import java.math.*;
-import tlc2.util.*;
 
 public abstract class UserObj {
 

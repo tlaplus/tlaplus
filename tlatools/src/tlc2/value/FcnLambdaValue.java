@@ -5,15 +5,19 @@
 
 package tlc2.value;
 
-import java.io.*;
-import tla2sany.semantic.SemanticNode;
-import tla2sany.semantic.OpDeclNode;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+
 import tla2sany.semantic.FormalParamNode;
+import tla2sany.semantic.SemanticNode;
 import tla2sany.semantic.SymbolNode;
+import tlc2.tool.EvalControl;
+import tlc2.tool.EvalException;
+import tlc2.tool.TLCState;
+import tlc2.tool.Tool;
+import tlc2.util.Context;
 import util.Assert;
-import util.UniqueString;
-import tlc2.util.*;
-import tlc2.tool.*;
 
 public class FcnLambdaValue extends Value implements Applicable {
   public FcnParams params;       // the function formals

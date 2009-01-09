@@ -29,8 +29,8 @@
 
 package tla2sany.semantic;
 
-import java.util.Enumeration;
 import java.util.Hashtable;
+
 import util.UniqueString;
 
 interface OpDefOrLabelNode {

@@ -5,10 +5,8 @@
 
 package tlc2.tool;
 
-import java.rmi.Remote;
 import java.io.IOException;
-import tlc2.util.BitVector;
-import tlc2.util.LongVec;
+import java.rmi.Remote;
 
 public interface FPIntSetRMI extends Remote {
 

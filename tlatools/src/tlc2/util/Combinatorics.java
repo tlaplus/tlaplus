@@ -2,8 +2,10 @@
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
 package tlc2.util;
 
-import java.math.*;
-import java.util.*;
+import java.math.BigInteger;
+import java.util.Date;
+import java.util.Random;
+
 import util.Assert;
 
 public class Combinatorics {

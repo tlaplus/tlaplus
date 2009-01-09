@@ -2,11 +2,8 @@
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
 package tla2sany.semantic;
 
-import java.util.Hashtable;
-import java.util.HashSet;
-import util.UniqueString;
 import tla2sany.st.TreeNode;
-import tla2sany.explorer.ExploreNode;
+import util.UniqueString;
 
 /** 
  * Abstract class extended by classes that represent the meaning of an

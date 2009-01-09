@@ -5,7 +5,6 @@
 
 package tlc2.tool;
 
-import java.io.*;
 
 public class WorkerException extends Exception {
   public TLCState state1;

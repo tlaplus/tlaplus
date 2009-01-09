@@ -15,10 +15,8 @@ package tlc2.util;
     Written by Allan Heydon and Marc Majork
 */
 
-import java.io.Serializable;
-import java.io.RandomAccessFile;
 import java.io.IOException;
-import util.Assert;
+import java.io.Serializable;
 
 public class BitVector implements Serializable {
 

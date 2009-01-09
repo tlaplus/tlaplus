@@ -3,19 +3,26 @@
 // Copyright (c) 2003 Compaq Corporation.  All rights reserved.
 package tla2sany.drivers;
 
-import java.util.Date;
 import java.io.PrintStream;
-import java.io.File;
-import tla2sany.explorer.*;
-import tla2sany.st.TreeNode;
-import tla2sany.st.Location;
-import tla2sany.semantic.*;
-import util.UniqueString;
-import util.Assert;
-import tla2sany.configuration.*;
-import tla2sany.modanalyzer.*;
+
+import tla2sany.configuration.Configuration;
+import tla2sany.explorer.Explorer;
+import tla2sany.explorer.ExplorerQuitException;
+import tla2sany.modanalyzer.ParseUnit;
+import tla2sany.modanalyzer.SpecObj;
 import tla2sany.parser.ParseException;
+import tla2sany.semantic.AbortException;
+import tla2sany.semantic.BuiltInLevel;
+import tla2sany.semantic.Context;
+import tla2sany.semantic.Errors;
+import tla2sany.semantic.ExternalModuleTable;
+import tla2sany.semantic.Generator;
+import tla2sany.semantic.ModuleNode;
+import tla2sany.semantic.SemanticNode;
+import tla2sany.st.Location;
+import tla2sany.st.TreeNode;
 import util.ToolIO;
+import util.UniqueString;
 
 /** 
  * This is the main entry point for the TLA+ front end that performa parsing, semantic analysis, 

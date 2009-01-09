@@ -5,8 +5,8 @@
 
 package tlc2.tool.liveness;
 
-import tlc2.util.*;
-import tlc2.tool.*;
+import tlc2.tool.TLCState;
+import tlc2.tool.Tool;
 
 class LNBool extends LiveExprNode {
   public static final LNBool TRUE = new LNBool(true);

@@ -4,8 +4,9 @@
 package tlc2.tool;
 
 import java.io.Serializable;
+
 import tla2sany.semantic.SemanticNode;
-import tlc2.util.*;
+import tlc2.util.Context;
 
 public final class Action implements ToolGlobals, Serializable {
   /* A TLA+ action.   */

@@ -5,20 +5,20 @@
 
 package tlc2.tool;
 
-import java.io.*;
-import java.text.*;
-import java.util.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintWriter;
+
 import tla2sany.drivers.SANY;
 import tla2sany.modanalyzer.SpecObj;
-import tla2sany.semantic.OpDefNode;
 import tla2sany.semantic.ExternalModuleTable;
 import tla2sany.semantic.ModuleNode;
-import util.Assert;
-import util.UniqueString;
-import util.FP64;
-import tlc2.util.*;
-import tlc2.value.*;
+import tla2sany.semantic.OpDefNode;
 import tlc2.TLCGlobals;
+import util.Assert;
+import util.FP64;
+import util.UniqueString;
 
 public class CheckImplFile extends CheckImpl {
   /**

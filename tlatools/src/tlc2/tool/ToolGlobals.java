@@ -5,10 +5,10 @@
 
 package tlc2.tool;
 
-import util.UniqueString;
 import tla2sany.semantic.ASTConstants;
 import tla2sany.semantic.OpDefNode;
 import tlc2.value.Value;
+import util.UniqueString;
 
 public interface ToolGlobals extends ASTConstants {
   /**

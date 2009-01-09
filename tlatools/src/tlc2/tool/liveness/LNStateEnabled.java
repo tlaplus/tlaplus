@@ -5,10 +5,12 @@
 
 package tlc2.tool.liveness;
 
-import tlc2.util.*;
-import tlc2.value.*;
-import tlc2.tool.*;
 import tla2sany.semantic.ExprNode;
+import tlc2.tool.ActionItemList;
+import tlc2.tool.TLCState;
+import tlc2.tool.TLCStateFun;
+import tlc2.tool.Tool;
+import tlc2.util.Context;
 
 class LNStateEnabled extends LNState {
   protected ExprNode pred;

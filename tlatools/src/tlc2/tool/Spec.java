@@ -5,38 +5,53 @@
 
 package tlc2.tool;
 
-import java.io.*;
-import java.util.Hashtable;
-import java.util.HashSet;
+import java.io.Serializable;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.Iterator;
-import java.lang.reflect.*;
+
 import tla2sany.drivers.SANY;
 import tla2sany.modanalyzer.SpecObj;
-import tla2sany.semantic.SemanticNode;
-import tla2sany.semantic.ExprOrOpArgNode;
-import tla2sany.semantic.OpArgNode;
+import tla2sany.semantic.AssumeNode;
+import tla2sany.semantic.DecimalNode;
 import tla2sany.semantic.ExprNode;
+import tla2sany.semantic.ExprOrOpArgNode;
+import tla2sany.semantic.ExternalModuleTable;
+import tla2sany.semantic.FormalParamNode;
+import tla2sany.semantic.LabelNode;
+import tla2sany.semantic.LetInNode;
+import tla2sany.semantic.LevelNode;
+import tla2sany.semantic.ModuleNode;
+import tla2sany.semantic.NumeralNode;
+import tla2sany.semantic.OpApplNode;
+import tla2sany.semantic.OpArgNode;
 import tla2sany.semantic.OpDeclNode;
 import tla2sany.semantic.OpDefNode;
-import tla2sany.semantic.OpApplNode;
-import tla2sany.semantic.LetInNode;
-import tla2sany.semantic.SubstInNode;
-import tla2sany.semantic.Subst;
-import tla2sany.semantic.AssumeNode;
-import tla2sany.semantic.ModuleNode;
-import tla2sany.semantic.LabelNode;
-import tla2sany.semantic.NumeralNode;
-import tla2sany.semantic.DecimalNode;
+import tla2sany.semantic.SemanticNode;
 import tla2sany.semantic.StringNode;
-import tla2sany.semantic.FormalParamNode;
+import tla2sany.semantic.Subst;
+import tla2sany.semantic.SubstInNode;
 import tla2sany.semantic.SymbolNode;
-import tla2sany.semantic.LevelNode;
-import tla2sany.semantic.ExternalModuleTable;
-import util.*;
-import tlc2.util.*;
-import tlc2.value.*;
 import tlc2.TLCGlobals;
+import tlc2.util.Context;
+import tlc2.util.List;
+import tlc2.util.ObjLongTable;
+import tlc2.util.Vect;
+import tlc2.value.BoolValue;
+import tlc2.value.IntValue;
+import tlc2.value.LazyValue;
+import tlc2.value.MethodValue;
+import tlc2.value.ModelValue;
+import tlc2.value.OpRcdValue;
+import tlc2.value.SetEnumValue;
+import tlc2.value.StringValue;
+import tlc2.value.Value;
+import tlc2.value.ValueConstants;
+import util.Assert;
+import util.UniqueString;
 
 public class Spec implements ValueConstants, ToolGlobals, Serializable {
 

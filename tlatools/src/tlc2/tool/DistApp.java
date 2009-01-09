@@ -5,7 +5,7 @@
 
 package tlc2.tool;
 
-import java.io.*;
+import java.io.Serializable;
 
 public abstract class DistApp implements TraceApp, Serializable {
 

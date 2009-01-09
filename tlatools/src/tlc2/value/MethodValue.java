@@ -5,9 +5,11 @@
 
 package tlc2.value;
 
-import java.lang.reflect.*;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
+import tlc2.tool.EvalException;
 import util.Assert;
-import tlc2.tool.EvalException;	
 
 public class MethodValue extends OpValue implements Applicable {
   public Method md;

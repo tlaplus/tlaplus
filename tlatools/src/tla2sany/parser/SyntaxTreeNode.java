@@ -18,15 +18,12 @@
  
 package tla2sany.parser;
 
-import java.lang.*;
-
 import tla2sany.semantic.ASTConstants;
-import tla2sany.st.TreeNode;
 import tla2sany.st.Location;
 import tla2sany.st.SyntaxTreeConstants;
-import tla2sany.utilities.Assert;
-import util.UniqueString;
+import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
+import util.UniqueString;
 
 // The SyntaxTreeNode is the node of the syntax tree. It holds key 
 // information from the tokens (string, position). Heirs are held in two 

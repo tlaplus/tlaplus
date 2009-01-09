@@ -4,7 +4,12 @@
 //      modified on Mon Dec  4 16:20:19 PST 2000 by yuanyu
 package tlc2.util;
 
-import java.io.*;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 
 public class LongVec implements Cloneable, Serializable {
   private long[] elementData;

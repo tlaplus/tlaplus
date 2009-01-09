@@ -8,9 +8,9 @@ package tla2sany.semantic;
 ***************************************************************************/
 
 
-import tla2sany.parser.*;
-import tla2sany.drivers.*;
-import tla2sany.modanalyzer.*;
+import tla2sany.modanalyzer.NamedInputStream;
+import tla2sany.modanalyzer.StringToNamedInputStream;
+import tla2sany.parser.ParseException;
 import tla2sany.st.TreeNode;
 
 public class FrontEnd implements ASTConstants {

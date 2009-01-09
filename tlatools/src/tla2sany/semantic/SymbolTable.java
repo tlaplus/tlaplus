@@ -2,12 +2,9 @@
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
 package tla2sany.semantic;
 
-import java.util.Hashtable;
-import java.util.Enumeration;
-import tla2sany.utilities.Vector;
 import tla2sany.utilities.Stack;
+import tla2sany.utilities.Vector;
 import util.UniqueString;
-import util.Assert;
 
 // The Symbol Table builds the stack of context tables.  The stack
 // model for symbol resolution is straightforward, but not

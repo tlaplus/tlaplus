@@ -2,15 +2,16 @@
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
 package tlc2.tool;
 
-import java.io.IOException;
-import java.io.File;
 import java.io.EOFException;
-import java.rmi.RemoteException;
+import java.io.File;
+import java.io.IOException;
 import java.net.InetAddress;
+import java.rmi.RemoteException;
+
+import tlc2.util.FileUtil;
 import util.Assert;
 import util.BufferedDataInputStream;
 import util.BufferedDataOutputStream;
-import tlc2.util.FileUtil;
 
 /**
  * <code>MemFPSet2</code> is a subclass of {@link MemFPSet} that

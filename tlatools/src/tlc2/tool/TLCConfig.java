@@ -5,10 +5,15 @@
 
 package tlc2.tool;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.Reader;
 import java.util.Hashtable;
+
+import tlc2.util.Vect;
 import util.Assert;
-import tlc2.util.*;
 
 public class TLCConfig {
 

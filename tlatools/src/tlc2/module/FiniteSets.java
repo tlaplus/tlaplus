@@ -5,9 +5,16 @@
 
 package tlc2.module;
 
-import tlc2.value.*;
-import tlc2.tool.*;
-import tlc2.util.*;
+import tlc2.tool.EvalException;
+import tlc2.value.BoolValue;
+import tlc2.value.Enumerable;
+import tlc2.value.IntValue;
+import tlc2.value.SetEnumValue;
+import tlc2.value.TupleValue;
+import tlc2.value.Value;
+import tlc2.value.ValueConstants;
+import tlc2.value.ValueEnumeration;
+import tlc2.value.ValueVec;
 
 public class FiniteSets implements ValueConstants {
 

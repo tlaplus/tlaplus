@@ -5,15 +5,16 @@
 
 package tlc2.tool;
 
-import java.io.*;
-import java.text.*;
-import java.util.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.PrintWriter;
+
 import tla2sany.semantic.SemanticNode;
-import util.Assert;
 import tlc2.TLCGlobals;
-import tlc2.util.*;
 import tlc2.tool.liveness.LiveCheck1;
 import tlc2.tool.liveness.LiveException;
+import tlc2.util.ObjLongTable;
+import tlc2.util.RandomGenerator;
 
 public class Simulator {
   /* Constructors  */

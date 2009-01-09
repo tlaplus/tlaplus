@@ -25,9 +25,6 @@
 
 package pcal;
 import java.util.Vector;
-import pcal.PcalSymTab;
-import pcal.TLAToken;
-import pcal.AST;
 
 public class PcalTranslate {
 

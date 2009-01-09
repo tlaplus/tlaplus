@@ -7,7 +7,7 @@
 * CharReader class.)                                                       *
 ***************************************************************************/
 package tla2tex;
-import java.util.Vector ;
+import java.util.Vector;
 
 public class VectorCharReader extends CharReader
   { private Vector vec ;

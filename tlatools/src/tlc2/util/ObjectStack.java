@@ -5,10 +5,7 @@
 
 package tlc2.util;
 
-import java.io.*;
-import java.util.*;
-import util.Assert;
-import tlc2.TLCGlobals;
+import java.io.IOException;
 
 public abstract class ObjectStack {
   /* A stack of objects. */

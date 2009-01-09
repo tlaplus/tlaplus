@@ -5,12 +5,20 @@
 
 package tlc2.tool;
 
-import java.io.*;
-import java.util.*;
-import java.rmi.RemoteException;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.net.InetAddress;
+import java.rmi.RemoteException;
+
+import tlc2.util.FileUtil;
+import tlc2.util.SetOfLong;
 import util.Assert;
-import tlc2.util.*;
 
 public final class MemFPSet1 extends FPSet {
   private String metadir;

@@ -5,11 +5,12 @@
 
 package tlc2.tool;
 
-import java.io.*;
-import java.text.*;
-import util.Assert;
+import java.io.File;
+import java.io.IOException;
+
 import tlc2.value.ValueInputStream;
 import tlc2.value.ValueOutputStream;
+import util.Assert;
 
 public class DiskStateQueue extends StateQueue {
   private final static int BufSize = 8192;  // 4096;

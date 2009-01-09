@@ -327,13 +327,8 @@
 *   [OTHER] +                --> EPILOG                                    *
 ***************************************************************************/
 package tla2tex;
-import tla2tex.Token ;
-import tla2tex.CommentToken ;
-import tla2tex.BuiltInSymbols ;
-import tla2tex.CharReader ;
-import tla2tex.Debug ;
-import java.util.Vector ;
-import java.util.Hashtable ;
+import java.util.Hashtable;
+import java.util.Vector;
 
 public class TokenizeSpec
   { private static Hashtable identHashTable  = new Hashtable(1000);

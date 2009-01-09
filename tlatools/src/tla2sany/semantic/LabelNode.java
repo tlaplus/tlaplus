@@ -37,16 +37,17 @@
 ***************************************************************************/
 package tla2sany.semantic;
 
-import java.util.Hashtable;
-import java.util.HashSet;
 import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Hashtable;
+
 import tla2sany.explorer.ExploreNode;
+import tla2sany.parser.SyntaxTreeNode;
 import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
 import tla2sany.utilities.Vector;
-import tla2sany.parser.SyntaxTreeNode;
-import util.UniqueString;
 import util.Assert;
+import util.UniqueString;
 
 
 public class LabelNode extends ExprNode 

@@ -5,12 +5,13 @@ package tlc2.tool;
 import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
-import java.rmi.RemoteException;
 import java.net.InetAddress;
+import java.rmi.RemoteException;
+
+import tlc2.util.FileUtil;
 import util.Assert;
 import util.BufferedDataInputStream;
 import util.BufferedDataOutputStream;
-import tlc2.util.FileUtil;
 
 /**
  * A <code>MemFPSet</code> is a subclass of <code>FPSet</code> and a

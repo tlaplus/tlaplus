@@ -5,14 +5,10 @@
 package tlc2.tool;
 
 import java.io.IOException;
-import java.io.File;
-import java.net.*;
-import java.rmi.*;
-import java.rmi.server.*;
-import java.rmi.registry.*;
+import java.rmi.RemoteException;
+
+import tlc2.util.BufferedRandomAccessFile;
 import util.Assert;
-import tlc2.TLCGlobals;
-import tlc2.util.*;
 
 /**
  * An <code>MultiFPSet</code> is a set of 64-bit fingerprints.

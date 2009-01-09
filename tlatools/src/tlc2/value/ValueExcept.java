@@ -5,9 +5,7 @@
 
 package tlc2.value;
 
-import tla2sany.semantic.OpDeclNode;
 import tla2sany.semantic.FormalParamNode;
-import util.Assert;
 
 public class ValueExcept {
   public Value[] path;

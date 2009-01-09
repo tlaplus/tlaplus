@@ -1,8 +1,9 @@
 // Copyright (c) 2007 Microsoft Corporation.  All rights reserved.
 package tla2sany.semantic;
 
-import tla2sany.st.TreeNode;
 import java.util.Hashtable;
+
+import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
 
 /***************************************************************************

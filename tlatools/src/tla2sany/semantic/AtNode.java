@@ -3,9 +3,8 @@
 package tla2sany.semantic;
 
 import java.util.Hashtable;
-import java.util.HashSet;
+
 import tla2sany.utilities.Strings;
-import tla2sany.st.TreeNode;
 
 public class AtNode extends ExprNode {
 

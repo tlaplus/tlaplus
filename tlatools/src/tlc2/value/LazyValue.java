@@ -5,10 +5,13 @@
 
 package tlc2.value;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+
 import tla2sany.semantic.SemanticNode;
+import tlc2.util.Context;
 import util.Assert;
-import tlc2.util.*;
 
 public class LazyValue extends Value {
   /**

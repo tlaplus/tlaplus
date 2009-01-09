@@ -6,9 +6,10 @@
 package tlc2.value;
 
 import java.util.Enumeration;
+
+import tlc2.util.Vect;
 import util.Assert;
 import util.Set;
-import tlc2.util.*;
 
 public final class MVPerm {
   private ModelValue[] elems;

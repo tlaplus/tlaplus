@@ -16,25 +16,20 @@
 package tla2sany.semantic;
 
 import java.util.Enumeration;
-import java.util.Hashtable;
 import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.Iterator;
-import tla2sany.parser.SyntaxTreeNode;
-import tla2sany.st.TreeNode;
+
 import tla2sany.parser.Operators;
+import tla2sany.parser.SyntaxTreeNode;
+import tla2sany.parser.TLAplusParserConstants;
 import tla2sany.st.SyntaxTreeConstants;
 import tla2sany.st.TreeNode;
-import tla2sany.utilities.Vector;
 import tla2sany.utilities.Stack;
-import util.UniqueString;
-import util.Assert;
 import tla2sany.utilities.Strings;
-import tla2sany.parser.TLAplusParserConstants;
-  /*************************************************************************
-  * Added by LL on 21 Mar 2007 to be able to refer to token kinds.  I      *
-  * don't understand why this was never necessary before, but I needed it  *
-  * to determine the kind of a NewSymbNode from its SyntaxTreeNode.        *
-  *************************************************************************/
+import tla2sany.utilities.Vector;
+import util.Assert;
+import util.UniqueString;
 
 // This class generates a semantic graph from a parse tree. It also uses
 // the list of modules to access contexts to instantiate or extend.

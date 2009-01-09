@@ -5,7 +5,6 @@
 
 package tlc2.value;
 
-import tla2sany.semantic.NumeralNode;
 import util.Assert;
 import util.FP64;
 

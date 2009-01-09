@@ -5,15 +5,16 @@
 
 package tlc2.tool;
 
-import java.io.*;
+import java.io.IOException;
+
 import tla2sany.semantic.SemanticNode;
 import tla2sany.semantic.SymbolNode;
-import util.Assert;
-import util.UniqueString;
 import tlc2.util.Context;
 import tlc2.value.Value;
 import tlc2.value.ValueInputStream;
 import tlc2.value.ValueOutputStream;
+import util.Assert;
+import util.UniqueString;
 
 /**
  * This class represents a TLA+ state, which simply is an assignment

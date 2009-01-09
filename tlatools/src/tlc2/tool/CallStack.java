@@ -5,8 +5,6 @@ package tlc2.tool;
 
 import tla2sany.semantic.SemanticNode;
 import tla2sany.st.Location;
-import tlc2.value.*;
-import tlc2.util.*;
 
 public class CallStack {
   /* A trace of function calls.  */

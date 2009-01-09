@@ -2,7 +2,9 @@
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
 package tlc2.util;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 public interface ExternalSortable extends Comparable {
   public BigInt read(InputStream in) throws IOException;

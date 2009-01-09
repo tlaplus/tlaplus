@@ -22,7 +22,6 @@
 * IMPLEMENTED BY FileCharReader.                                           *
 ***************************************************************************/
 package tla2tex;
-import tla2tex.Debug ;
 
 public abstract class CharReader 
   /*************************************************************************

@@ -7,7 +7,6 @@ import java.io.FileOutputStream;
 import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.ObjectOutputStream;
 
 /** A <code>BufferedDataOutputStream</code> is an optimized
     combination of a <code>java.io.BufferedOutputStream</code>

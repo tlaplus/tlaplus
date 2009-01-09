@@ -6,7 +6,6 @@
 package tlc2.tool.liveness;
 
 import java.io.PrintStream;
-import tlc2.util.*;
 
 public class OrderOfSolution {
   /**

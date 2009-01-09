@@ -8,9 +8,8 @@
 
 package tla2sany.modanalyzer;
 
-import tla2sany.st.TreeNode;
-import java.util.Hashtable;
 import java.util.Enumeration;
+import java.util.Hashtable;
 
 /**
  * An instance of this class is the ModuleContext for a module, i.e. the mapping between

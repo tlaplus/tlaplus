@@ -5,8 +5,6 @@
 
 package tlc2.util;
 
-import java.io.*;
-import java.util.*;
 
 public class List {
   public class ConsCell {

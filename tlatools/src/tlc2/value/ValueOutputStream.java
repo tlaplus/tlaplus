@@ -2,14 +2,16 @@
 
 package tlc2.value;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Arrays;
-import java.util.zip.*;
-import util.Assert;
-import util.FP64;
-import util.BufferedDataOutputStream;
+import java.util.zip.GZIPOutputStream;
+
 import tlc2.TLCGlobals;
-import tlc2.util.*;
+import util.Assert;
+import util.BufferedDataOutputStream;
 
 public final class ValueOutputStream implements ValueConstants {
 

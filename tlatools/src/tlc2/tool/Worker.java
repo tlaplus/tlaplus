@@ -5,12 +5,9 @@
 
 package tlc2.tool;
 
-import java.io.*;
-import java.rmi.*;
-import java.net.*;
-import util.Assert;
-import tlc2.util.*;
-import tlc2.value.*;
+import tlc2.util.IdThread;
+import tlc2.util.ObjLongTable;
+import tlc2.value.Value;
 
 public class Worker extends IdThread {
   /**

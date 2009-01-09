@@ -2,8 +2,10 @@
 // Last modified on Wed Jul 11 00:00:55 PDT 2001 by yuanyu
 package util;
 
-import java.io.*;
-import java.util.*;
+import java.io.EOFException;
+import java.io.File;
+import java.io.IOException;
+import java.io.Serializable;
 
 public final class InternTable implements Serializable {
   private int count;

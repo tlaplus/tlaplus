@@ -5,12 +5,9 @@
 
 package tlc2.tool;
 
-import java.io.*;
-import tla2sany.semantic.SemanticNode;
-import tla2sany.semantic.ExprNode;
-import tla2sany.semantic.OpDefNode;
+import java.io.Serializable;
+
 import util.UniqueString;
-import tlc2.util.*;
 
 public class Defns implements ToolGlobals, Serializable {
   /**

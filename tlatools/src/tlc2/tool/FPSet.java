@@ -5,14 +5,17 @@
 
 package tlc2.tool;
 
-import java.io.IOException;
 import java.io.File;
-import java.net.*;
-import java.rmi.*;
-import java.rmi.server.*;
-import java.rmi.registry.*;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+import java.rmi.server.UnicastRemoteObject;
+
 import tlc2.TLCGlobals;
-import tlc2.util.*;
+import tlc2.util.BitVector;
+import tlc2.util.LongVec;
 
 /**
  * An <code>FPSet</code> is a set of 64-bit fingerprints.

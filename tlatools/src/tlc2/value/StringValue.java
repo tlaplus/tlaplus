@@ -5,9 +5,9 @@
 
 package tlc2.value;
 
-import util.UniqueString;
 import util.Assert;
 import util.FP64;
+import util.UniqueString;
 
 public class StringValue extends Value {
   public UniqueString val; 

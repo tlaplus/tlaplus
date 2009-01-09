@@ -2,13 +2,13 @@
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
 package tla2sany.semantic;
 
-import java.util.Hashtable;
 import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.Iterator;
-import util.Assert;
-import util.UniqueString;
-import tla2sany.utilities.Strings;
+
 import tla2sany.st.TreeNode;
+import tla2sany.utilities.Strings;
+import util.UniqueString;
 
 public class InstanceNode extends LevelNode {
 

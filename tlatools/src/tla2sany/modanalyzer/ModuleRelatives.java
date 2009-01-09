@@ -3,7 +3,6 @@
 package tla2sany.modanalyzer;
 
 import tla2sany.utilities.Vector;
-import tla2sany.st.TreeNode;
 
 /**
  * This class contains fields representing the names of modules that are all related by EXTENDing or INSTANCEing

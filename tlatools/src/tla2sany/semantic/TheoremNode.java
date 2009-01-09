@@ -14,11 +14,10 @@
 package tla2sany.semantic;
 
 import java.util.Hashtable;
-import java.util.HashSet;
-import util.Assert;
+
+import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
 import util.UniqueString;
-import tla2sany.st.TreeNode;
 
 /**
  * This class represents a theorem

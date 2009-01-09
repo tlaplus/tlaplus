@@ -5,9 +5,10 @@
 
 package tlc2.value;
 
-import java.io.*;
-import util.Assert;
+import java.io.Serializable;
+
 import tlc2.TLCGlobals;
+import util.Assert;
 
 public class ValueVec implements Cloneable, Serializable {
   private Value[] elementData;

@@ -23,8 +23,7 @@
 * error message.                                                           *
 ***************************************************************************/
 package tla2tex ;
-import java.io.* ;
-import tla2tex.Debug ;
+import java.io.InputStream;
 
 public class GobbleOutput extends Thread 
  { boolean stdOrError ;  

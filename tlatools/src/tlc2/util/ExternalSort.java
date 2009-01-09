@@ -2,10 +2,18 @@
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
 package tlc2.util;
 
-import java.io.*;
-import java.util.*;
-import java.util.zip.*;
-import java.math.*;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.math.BigInteger;
+import java.util.Date;
+import java.util.Random;
+
 import util.Assert;
 
 public class ExternalSort {

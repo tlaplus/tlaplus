@@ -5,10 +5,8 @@
 
 package tlc2.value;
 
-import java.io.IOException;
-import util.Assert;
-import tlc2.util.*;
 import tlc2.TLCGlobals;
+import util.Assert;
 
 public class SetOfFcnsValue extends Value implements Enumerable {
   public Value domain;        /* Function domain  */

@@ -4,7 +4,6 @@ package tla2sany.modanalyzer;
 
 import tla2sany.st.TreeNode;
 import tla2sany.utilities.Vector;
-import util.ToolIO;
 
 /**
  * An instance of this class is a "pointer" to a module used during

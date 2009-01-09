@@ -5,13 +5,13 @@
 
 package tlc2.tool;
 
-import java.io.*;
-import util.UniqueString;
-import util.FP64;
-import tla2sany.semantic.SemanticNode;
-import tlc2.util.*;
-import tlc2.value.*;
+import java.io.File;
+import java.io.IOException;
+
 import tlc2.TLCGlobals;
+import tlc2.value.Value;
+import util.FP64;
+import util.UniqueString;
 
 public class TLCApp extends DistApp {
 

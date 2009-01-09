@@ -5,9 +5,7 @@
 
 package tlc2.tool.liveness;
 
-import java.util.*;
-import tlc2.util.*;
-import tlc2.tool.*;
+import tlc2.util.Vect;
 
 public class TBGraph extends Vect {
   /**

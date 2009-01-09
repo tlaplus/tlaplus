@@ -6,10 +6,11 @@
 package tlc2.tool;
 
 import tla2sany.semantic.SymbolNode;
+import tlc2.util.Context;
+import tlc2.value.TupleValue;
+import tlc2.value.Value;
+import tlc2.value.ValueEnumeration;
 import util.Assert;
-import util.UniqueString;
-import tlc2.value.*;
-import tlc2.util.*;
 
 public final class ContextEnumerator {
   private Context con;

@@ -5,10 +5,10 @@
 package tla2sany.semantic;
 
 import java.util.Hashtable;
-import tla2sany.parser.SyntaxTreeNode;
-import tla2sany.st.TreeNode;
-import tla2sany.st.Location;
+
 import tla2sany.explorer.ExploreNode;
+import tla2sany.st.Location;
+import tla2sany.st.TreeNode;
 
 /**
  * SemanticNode is the (abstract) superclass of all nodes in the

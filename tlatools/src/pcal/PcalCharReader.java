@@ -30,7 +30,7 @@ ABSTRACT CLASS PcalCharReader
 * Lines and columns are numbered starting from 0.                          *
 ***************************************************************************/
 package pcal;
-import java.util.Vector ;
+import java.util.Vector;
 
 class PcalCharReader 
   { /***********************************************************************

@@ -2,9 +2,8 @@
 // MakeAssign(pc, MakeExpr(Singleton2(StringToken("foo"))))
 
 package pcal ;
-import java.util.Vector ;
-import java.io.File ;
-import pcal.TLAToken ;
+import java.io.File;
+import java.util.Vector;
 
 class Test
   { public static Vector Singleton(Object obj) 

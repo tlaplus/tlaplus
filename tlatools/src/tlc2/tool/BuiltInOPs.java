@@ -5,7 +5,6 @@
 package tlc2.tool;
 
 import util.UniqueString;
-import tla2sany.semantic.OpApplNode;
 
 public class BuiltInOPs implements ToolGlobals {
 

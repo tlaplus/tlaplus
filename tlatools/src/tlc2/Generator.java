@@ -5,9 +5,8 @@
 
 package tlc2;
 
-import java.io.*;
-import tlc2.tool.*;
-import tlc2.util.*;
+import tlc2.tool.Simulator;
+import tlc2.util.RandomGenerator;
 
 public class Generator {
   /*

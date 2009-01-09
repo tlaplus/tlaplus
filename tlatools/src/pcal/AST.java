@@ -62,7 +62,7 @@
 * it in the Java Reference Manual.                                         *
 ***************************************************************************/
 package pcal;
-import java.util.Vector ;
+import java.util.Vector;
 
 public class AST
   { public static AST.Uniprocess   UniprocessObj   ;

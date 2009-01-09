@@ -5,9 +5,16 @@
 
 package tlc2.module;
 
-import tlc2.value.*;
-import tlc2.tool.*;
-import tlc2.util.*;
+import tlc2.tool.EvalException;
+import tlc2.tool.TLARegistry;
+import tlc2.value.BoolValue;
+import tlc2.value.IntValue;
+import tlc2.value.IntervalValue;
+import tlc2.value.ModelValue;
+import tlc2.value.UserObj;
+import tlc2.value.UserValue;
+import tlc2.value.Value;
+import tlc2.value.ValueConstants;
 
 public class Naturals extends UserObj implements ValueConstants {
 

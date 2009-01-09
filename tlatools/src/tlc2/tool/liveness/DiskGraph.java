@@ -4,10 +4,17 @@
 
 package tlc2.tool.liveness;
 
-import java.io.*;
-import util.BufferedDataOutputStream;
-import tlc2.util.*;
-import tlc2.tool.*;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+
+import tlc2.util.BitVector;
+import tlc2.util.BufferedRandomAccessFile;
+import tlc2.util.LongVec;
+import tlc2.util.MemIntQueue;
 
 public class DiskGraph {
   /**

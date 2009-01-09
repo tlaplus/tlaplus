@@ -6,9 +6,9 @@
 package tlc2.util;
 
 import java.util.Hashtable;
-import util.Assert;
+
+import tlc2.tool.ToolGlobals;
 import util.UniqueString;
-import tlc2.tool.*;
 
 public class SimpUtil implements ToolGlobals {
 

@@ -3,8 +3,8 @@
 
 package util;
 
-import java.io.*;
-import java.rmi.*;
+import java.rmi.Remote;
+import java.rmi.RemoteException;
 
 public interface InternRMI extends Remote {
   public UniqueString intern(String str) throws RemoteException;

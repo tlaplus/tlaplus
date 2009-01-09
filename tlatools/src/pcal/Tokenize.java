@@ -398,13 +398,11 @@
 *   [OTHER] +                --> EPILOG                                    *
 ***************************************************************************/
 package pcal;
-import tla2tex.Token ;   
-import pcal.PcalBuiltInSymbols ;
-import tla2tex.Symbol ;
-import pcal.PcalCharReader ;
-import pcal.PcalDebug;
-import java.util.Vector ;
-import tla2tex.Misc ;
+import java.util.Vector;
+
+import tla2tex.Misc;
+import tla2tex.Symbol;
+import tla2tex.Token;
 
 public class Tokenize
   { private static final int MODULE = 1 ;

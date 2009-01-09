@@ -14,11 +14,7 @@
 
 package pcal;
 
-import pcal.AST;
 import java.util.Vector;
-import pcal.PcalSymTab;
-import pcal.TLAExpr;
-import pcal.TLAToken;
 
 public class PcalTLAGen {
 

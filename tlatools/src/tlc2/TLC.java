@@ -5,15 +5,17 @@
 
 package tlc2;
 
-import java.io.*;
-import java.util.Random;
-import util.Assert;
-import util.UniqueString;
-import util.FP64;
-import tlc2.util.RandomGenerator;
+import java.io.File;
+
+import tlc2.tool.DFIDModelChecker;
+import tlc2.tool.ModelChecker;
+import tlc2.tool.Simulator;
 import tlc2.util.FileUtil;
-import tlc2.tool.*;
+import tlc2.util.RandomGenerator;
 import tlc2.value.Value;
+import util.Assert;
+import util.FP64;
+import util.UniqueString;
 
 public class TLC {
   /*

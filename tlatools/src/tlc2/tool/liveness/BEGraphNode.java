@@ -5,9 +5,8 @@
 
 package tlc2.tool.liveness;
 
-import util.Assert;
 import tlc2.util.BitVector;
-import tlc2.tool.*;
+import util.Assert;
 
 public class BEGraphNode {
   /**

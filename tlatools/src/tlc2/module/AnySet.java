@@ -5,8 +5,10 @@
 
 package tlc2.module;
 
-import tlc2.value.*;
-import tlc2.tool.*;
+import tlc2.tool.EvalException;
+import tlc2.value.UserObj;
+import tlc2.value.UserValue;
+import tlc2.value.Value;
 
 public class AnySet extends UserObj {
 

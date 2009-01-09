@@ -9,6 +9,7 @@
 package tla2sany.semantic;
 
 import java.util.HashMap;
+
 import util.Assert;
 
 public class BuiltInLevel implements LevelConstants {

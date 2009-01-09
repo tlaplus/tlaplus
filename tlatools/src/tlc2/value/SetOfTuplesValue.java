@@ -5,10 +5,8 @@
 
 package tlc2.value;
 
-import java.io.IOException;
-import util.Assert;
 import tlc2.TLCGlobals;
-import tlc2.util.*;
+import util.Assert;
 
 public class SetOfTuplesValue extends Value implements Enumerable {
   public Value[] sets;

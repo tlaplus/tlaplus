@@ -5,22 +5,29 @@
 
 package tlc2.tool.liveness;
 
-import tla2sany.semantic.ExprNode;
-import tla2sany.semantic.OpApplNode;
-import tla2sany.semantic.LetInNode;
-import tla2sany.semantic.SubstInNode;
-import tla2sany.semantic.OpDefNode;
 import tla2sany.semantic.ASTConstants;
-import tla2sany.semantic.FormalParamNode;
+import tla2sany.semantic.ExprNode;
 import tla2sany.semantic.ExprOrOpArgNode;
-import tla2sany.semantic.SymbolNode;
+import tla2sany.semantic.FormalParamNode;
+import tla2sany.semantic.LetInNode;
+import tla2sany.semantic.OpApplNode;
+import tla2sany.semantic.OpDefNode;
 import tla2sany.semantic.Subst;
-import util.Assert;
-import util.UniqueString;
+import tla2sany.semantic.SubstInNode;
+import tla2sany.semantic.SymbolNode;
+import tlc2.tool.Action;
+import tlc2.tool.BuiltInOPs;
+import tlc2.tool.ContextEnumerator;
+import tlc2.tool.EvalControl;
+import tlc2.tool.TLCState;
+import tlc2.tool.Tool;
+import tlc2.tool.ToolGlobals;
 import tlc2.util.Context;
 import tlc2.util.Vect;
-import tlc2.value.*;
-import tlc2.tool.*;
+import tlc2.value.BoolValue;
+import tlc2.value.FcnLambdaValue;
+import tlc2.value.Value;
+import util.Assert;
 
 public class Liveness implements ToolGlobals, ASTConstants {
 

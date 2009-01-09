@@ -30,8 +30,8 @@
 * See the Symbol class for more information.                               *
 ***************************************************************************/
 package tla2tex;
-import tla2tex.Symbol.*;
-import java.util.* ;
+import java.util.Enumeration;
+import java.util.Hashtable;
 
 public final class BuiltInSymbols
   { 

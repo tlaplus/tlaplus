@@ -5,9 +5,8 @@
 
 package tlc2.tool;
 
-import java.io.*;
-import java.util.*;
-import util.Assert;
+import java.io.IOException;
+
 import tlc2.TLCGlobals;
 
 public abstract class StateQueue {

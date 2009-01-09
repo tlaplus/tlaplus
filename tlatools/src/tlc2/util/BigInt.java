@@ -2,9 +2,12 @@
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
 package tlc2.util;
 
-import java.math.*;
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.math.BigInteger;
 import java.util.Random;
+
 import util.FP64;
 
 public class BigInt extends BigInteger implements Cloneable, ExternalSortable {

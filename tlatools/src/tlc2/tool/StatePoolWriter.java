@@ -5,10 +5,13 @@
 
 package tlc2.tool;
 
-import java.io.*;
-import util.Assert;
-import tlc2.util.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+
 import tlc2.value.ValueOutputStream;
+import util.Assert;
 
 public class StatePoolWriter extends Thread {
 

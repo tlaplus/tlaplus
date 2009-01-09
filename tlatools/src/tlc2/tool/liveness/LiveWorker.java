@@ -5,9 +5,15 @@
 package tlc2.tool.liveness;
 
 import java.io.IOException;
-import util.Assert;
-import tlc2.util.*;
-import tlc2.tool.*;
+
+import tlc2.tool.EvalException;
+import tlc2.tool.TLCState;
+import tlc2.tool.TLCStateInfo;
+import tlc2.tool.TLCTrace;
+import tlc2.util.IdThread;
+import tlc2.util.LongVec;
+import tlc2.util.MemIntQueue;
+import tlc2.util.MemIntStack;
 
 public class LiveWorker extends IdThread {
 

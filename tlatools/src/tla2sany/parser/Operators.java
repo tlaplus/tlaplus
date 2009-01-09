@@ -6,14 +6,9 @@
 
 package tla2sany.parser;
 
-import java.util.Hashtable;
 import java.util.Enumeration;
-// import tla2sany.error.*;
-/***************************************************************************
-* Unused import eliminated by LL on 2 Mar 2007                             *
-***************************************************************************/
+import java.util.Hashtable;
 
-import tla2sany.utilities.Vector;
 import util.UniqueString;
 
 public class Operators {

@@ -5,12 +5,12 @@
 
 package tlc2.tool;
 
-import java.io.*;
-import java.util.*;
-import java.rmi.*;
-import java.net.*;
-import tlc2.util.*;
+import java.rmi.RemoteException;
+
 import tlc2.TLCGlobals;
+import tlc2.util.BitVector;
+import tlc2.util.IdThread;
+import tlc2.util.LongVec;
 
 public class TLCServerThread extends IdThread {
   /**

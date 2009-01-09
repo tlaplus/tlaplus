@@ -4,8 +4,7 @@
 package tlc2.tool;
 
 import tla2sany.semantic.SemanticNode;
-import tlc2.value.*;
-import tlc2.util.*;
+import tlc2.util.Context;
 
 public class ActionItemList {
   /**

@@ -5,13 +5,7 @@
 package tlc2.tool;
 
 import java.io.IOException;
-import java.io.File;
-import java.net.*;
-import java.rmi.*;
-import java.rmi.server.*;
-import java.rmi.registry.*;
-import tlc2.TLCGlobals;
-import tlc2.util.*;
+import java.rmi.RemoteException;
 
 /**
  * An <code>MultiFPInt</code> is a set of 64-bit fingerprints.

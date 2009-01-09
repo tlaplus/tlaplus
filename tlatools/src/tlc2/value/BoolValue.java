@@ -5,10 +5,8 @@
 
 package tlc2.value;
 
-import java.io.IOException;
 import util.Assert;
 import util.FP64;
-import tlc2.util.*;
 
 public class BoolValue extends Value {
   public boolean val;   // the boolean

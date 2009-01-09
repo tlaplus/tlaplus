@@ -2,12 +2,12 @@
 // Last modified on Wed Oct 17 15:23:57 PDT 2001 by yuanyu
 package util;
 
-import java.io.File;
 import java.io.EOFException;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FilterInputStream;
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 /** A <code>BufferedDataInputStream</code> is an optimized
     combination of a <code>java.io.BufferedInputStream</code>

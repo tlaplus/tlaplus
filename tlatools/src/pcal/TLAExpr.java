@@ -103,10 +103,7 @@
 * IN EXPRESSIONS" to find them.                                            *
 ***************************************************************************/
 package pcal;
-import java.util.Vector ;
-import pcal.TLAToken;
-import pcal.PcalDebug;
-import pcal.IntPair; 
+import java.util.Vector;
 
 public class TLAExpr
   { public Vector tokens       = new Vector();

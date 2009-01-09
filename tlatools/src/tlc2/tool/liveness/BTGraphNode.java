@@ -5,8 +5,6 @@
 
 package tlc2.tool.liveness;
 
-import tlc2.util.*;
-import tlc2.tool.*;
 
 public class BTGraphNode extends BEGraphNode {
   /**

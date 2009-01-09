@@ -8,12 +8,6 @@
 * "~'", "`.", and ".'" by spaces.                                          *
 ***************************************************************************/
 package tla2tex ;
-import java.io.* ;
-import tla2tex.Debug ;
-import tla2tex.Position ;
-import tla2tex.Token ;
-import tla2tex.CommentToken ;
-import tla2tex.OutputFileWriter ;
 
 public class WriteTLAFile
  { public static void Write(Token[][] spec , String fileName)

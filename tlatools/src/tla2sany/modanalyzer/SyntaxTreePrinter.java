@@ -2,10 +2,10 @@
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
 package tla2sany.modanalyzer;
 
-import tla2sany.st.TreeNode;
+import tla2sany.parser.SyntaxTreeNode;
 import tla2sany.st.Location;
 import tla2sany.st.ParseTree;
-import tla2sany.parser.SyntaxTreeNode;
+import tla2sany.st.TreeNode;
 
 public class SyntaxTreePrinter {
 

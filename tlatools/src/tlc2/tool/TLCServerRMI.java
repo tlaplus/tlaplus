@@ -5,8 +5,9 @@
 
 package tlc2.tool;
 
-import java.io.*;
-import java.rmi.*;
+import java.io.IOException;
+import java.rmi.Remote;
+import java.rmi.RemoteException;
 
 public interface TLCServerRMI extends Remote {
   public void registerWorker(TLCWorkerRMI worker, String hostname)

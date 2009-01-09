@@ -3,7 +3,6 @@
 //      modified on Wed Jul 25 11:56:59 PDT 2001 by yuanyu
 
 package util;
-import util.ToolIO;
 
 public class Assert extends RuntimeException {
 

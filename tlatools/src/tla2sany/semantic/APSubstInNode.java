@@ -17,15 +17,14 @@
 
 package tla2sany.semantic;
 
-import java.util.Hashtable;
 import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.Iterator;
-import tla2sany.utilities.Strings;
-import util.UniqueString;
-import tla2sany.utilities.Vector;
-import tla2sany.parser.SyntaxTreeNode;
+
 import tla2sany.st.TreeNode;
-import tla2sany.st.Location;
+import tla2sany.utilities.Strings;
+import tla2sany.utilities.Vector;
+import util.UniqueString;
 
 public class APSubstInNode extends LevelNode {
   /**

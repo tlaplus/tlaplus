@@ -3,13 +3,12 @@
 package tla2sany.semantic;
 
 import java.util.Hashtable;
-import java.util.HashSet;
 import java.util.Iterator;
-import tla2sany.utilities.Vector;
-import tla2sany.utilities.Strings;
-import tla2sany.semantic.Errors;
+
 import tla2sany.explorer.ExploreNode;
 import tla2sany.st.TreeNode;
+import tla2sany.utilities.Strings;
+import tla2sany.utilities.Vector;
 
 public class LetInNode extends ExprNode
 implements ExploreNode, LevelConstants {

@@ -2,10 +2,11 @@
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
 package tla2sany.semantic;
 
-import java.util.Hashtable;
 import java.util.HashSet;
-import tla2sany.utilities.Strings;
+import java.util.Hashtable;
+
 import tla2sany.st.TreeNode;
+import tla2sany.utilities.Strings;
 
 /**
  * This class represents an assumption about the constants in a module. 

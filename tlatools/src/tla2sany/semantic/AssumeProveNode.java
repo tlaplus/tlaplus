@@ -4,11 +4,10 @@
 
 package tla2sany.semantic;
 
-import util.UniqueString;
+import java.util.Hashtable;
+
 import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
-import java.util.Hashtable;
-import java.util.HashSet;
 
 /***************************************************************************
 * An assume prove node represents something like                           *

@@ -5,9 +5,7 @@
 
 package tlc2.value;
 
-import java.io.IOException;
 import util.Assert;
-import tlc2.util.*;
 
 public class SetCupValue extends Value implements Enumerable {
   public Value set1;

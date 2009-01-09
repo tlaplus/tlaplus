@@ -3,12 +3,11 @@ package tla2sany.parser;
 
 import tla2sany.st.ParseTree;
 import tla2sany.st.TreeNode;
-
-import tla2sany.utilities.Vector;
-import tla2sany.utilities.Stack;
 import tla2sany.utilities.Assert;
-import util.UniqueString;
+import tla2sany.utilities.Stack;
+import tla2sany.utilities.Vector;
 import util.ToolIO;
+import util.UniqueString;
 
 public class TLAplusParser implements tla2sany.st.SyntaxTreeConstants, ParseTree, TLAplusParserConstants {
 

@@ -5,17 +5,19 @@
 
 package tlc2.tool;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.net.InetAddress;
-import java.rmi.*;
-import java.rmi.registry.*;
-import java.rmi.server.*;
-import util.Assert;
-import util.UniqueString;
+import java.rmi.NotBoundException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+import java.rmi.server.UnicastRemoteObject;
+
+import tlc2.TLCGlobals;
+import tlc2.util.FileUtil;
 import util.FP64;
 import util.InternRMI;
-import tlc2.TLCGlobals;
-import tlc2.util.*;
+import util.UniqueString;
 
 public class TLCServer extends UnicastRemoteObject
 implements TLCServerRMI, InternRMI {

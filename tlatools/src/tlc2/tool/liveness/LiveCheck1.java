@@ -6,9 +6,19 @@
 package tlc2.tool.liveness;
 
 import java.io.IOException;
+
+import tlc2.tool.Action;
+import tlc2.tool.EvalException;
+import tlc2.tool.StateVec;
+import tlc2.tool.TLCState;
+import tlc2.tool.TLCStateInfo;
+import tlc2.tool.TLCTrace;
+import tlc2.tool.Tool;
+import tlc2.util.LongObjTable;
+import tlc2.util.MemObjectStack;
+import tlc2.util.ObjectStack;
+import tlc2.util.Vect;
 import util.FP64;
-import tlc2.util.*;
-import tlc2.tool.*;
 
 public class LiveCheck1 {
   /**

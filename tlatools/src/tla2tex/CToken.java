@@ -28,8 +28,7 @@
 *   toString() : for debuggin                                              *
 ***************************************************************************/
 package tla2tex;
-import tla2tex.Misc;
-import java.util.Vector ;
+import java.util.Vector;
 
 public class CToken
   /*************************************************************************

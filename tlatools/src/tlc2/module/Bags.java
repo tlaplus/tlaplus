@@ -5,10 +5,18 @@
 
 package tlc2.module;
 
-import util.Assert;
+import tlc2.tool.EvalControl;
+import tlc2.tool.EvalException;
+import tlc2.tool.TLARegistry;
 import tlc2.util.Vect;
-import tlc2.value.*;
-import tlc2.tool.*;
+import tlc2.value.Applicable;
+import tlc2.value.BoolValue;
+import tlc2.value.FcnRcdValue;
+import tlc2.value.IntValue;
+import tlc2.value.SetEnumValue;
+import tlc2.value.Value;
+import tlc2.value.ValueConstants;
+import tlc2.value.ValueVec;
 
 public class Bags implements ValueConstants {
   

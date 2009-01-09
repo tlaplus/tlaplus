@@ -3,8 +3,9 @@
 
 package tlc2.tool;
 
-import tlc2.util.*;
-import java.io.*;
+import java.io.IOException;
+
+import tlc2.util.BufferedRandomAccessFile;
 
 public class CheckFP {
   /*

@@ -3,8 +3,8 @@
 
 package util;
 
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * A 64-bit fingerprint is stored in an instance of the type

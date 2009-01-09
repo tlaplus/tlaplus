@@ -12,16 +12,15 @@
 
 package tla2sany.semantic;
 
-import java.util.Hashtable;
 import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.Iterator;
-import util.UniqueString;
-import util.Assert;
+
+import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
 import tla2sany.utilities.Vector;
-import tla2sany.explorer.ExploreNode;
-import tla2sany.st.Location;
-import tla2sany.st.TreeNode;
+import util.Assert;
+import util.UniqueString;
 
 public class ModuleNode extends SymbolNode {
 

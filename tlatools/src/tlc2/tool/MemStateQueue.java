@@ -5,10 +5,9 @@
 
 package tlc2.tool;
 
-import java.io.*;
-import java.text.*;
-import util.Assert;
-import tlc2.util.*;
+import java.io.File;
+import java.io.IOException;
+
 import tlc2.value.ValueInputStream;
 import tlc2.value.ValueOutputStream;
 

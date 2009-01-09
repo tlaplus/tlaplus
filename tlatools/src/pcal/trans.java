@@ -145,19 +145,15 @@
 * allow the parser to catch the error at the "if".                         *
 ***************************************************************************/
 package pcal ;
-import java.io.* ;
-import java.util.Vector ;
-import java.lang.System ;
-import java.io.BufferedReader ;
-import pcal.AST ;
-import pcal.PcalParams ;
-import pcal.PcalDebug ;
-import pcal.ParseAlgorithm ;
-import pcal.PcalResourceFileReader ;
-
-import pcal.TLAExpr ;  // FOR DEBUGGING
-import pcal.IntPair ;  // FOR DEBUGGING
-import pcal.NotYetImplemented ;  
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.Vector;
   /*************************************************************************
   * Contains dummy definitions of methods that are yet to be implemented.  *
   *                                                                        *

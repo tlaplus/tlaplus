@@ -5,10 +5,9 @@
 
 package tlc2.value;
 
-import java.io.IOException;
+import tlc2.TLCGlobals;
 import util.Assert;
 import util.UniqueString;
-import tlc2.TLCGlobals;
 
 public class SetOfRcdsValue extends Value implements Enumerable {
   public UniqueString[] names;      // The names of the fields.

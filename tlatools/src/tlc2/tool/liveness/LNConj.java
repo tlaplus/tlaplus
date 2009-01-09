@@ -5,9 +5,9 @@
 
 package tlc2.tool.liveness;
 
-import tlc2.util.*;
-import tlc2.tool.*;
-import tla2sany.semantic.*;
+import tlc2.tool.TLCState;
+import tlc2.tool.Tool;
+import tlc2.util.Vect;
 
 class LNConj extends LiveExprNode {
   protected Vect conjs;   // The conjuncts

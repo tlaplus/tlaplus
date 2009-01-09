@@ -5,10 +5,9 @@
 
 package tlc2.value;
 
-import java.io.IOException;
-import java.util.*;
+import java.util.BitSet;
+
 import util.Assert;
-import tlc2.util.*;
 
 public class SubsetValue extends Value implements Enumerable {
   public Value set;           // SUBSET set

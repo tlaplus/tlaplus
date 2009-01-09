@@ -105,12 +105,8 @@
 ***************************************************************************/
 package pcal;
 
-import pcal.PcalCharReader ;
-import pcal.Tokenize ;
-import pcal.AST ;
-import pcal.PcalDebug ;
-import java.util.Vector ;
-import java.util.Hashtable ;
+import java.util.Hashtable;
+import java.util.Vector;
 
 public class ParseAlgorithm
  { private static PcalCharReader charReader;

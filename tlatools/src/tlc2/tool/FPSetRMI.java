@@ -5,8 +5,9 @@
 
 package tlc2.tool;
 
-import java.rmi.Remote;
 import java.io.IOException;
+import java.rmi.Remote;
+
 import tlc2.util.BitVector;
 import tlc2.util.LongVec;
 

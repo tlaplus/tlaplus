@@ -5,11 +5,12 @@
 
 package tlc2.value;
 
-import tla2sany.semantic.OpDefNode;
 import tla2sany.semantic.FormalParamNode;
+import tla2sany.semantic.OpDefNode;
+import tlc2.tool.TLCState;
+import tlc2.tool.Tool;
+import tlc2.util.Context;
 import util.Assert;
-import tlc2.util.*;
-import tlc2.tool.*;
 
 public class OpLambdaValue extends OpValue implements Applicable {
   public OpDefNode opDef;       // the operator definition.

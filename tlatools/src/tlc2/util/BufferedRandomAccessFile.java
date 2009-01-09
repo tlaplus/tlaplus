@@ -16,7 +16,6 @@ package tlc2.util;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
-import util.Assert;
 
 public final class BufferedRandomAccessFile extends java.io.RandomAccessFile {
     static final int LogBuffSz = 13; // 8K buffer

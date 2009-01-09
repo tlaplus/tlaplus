@@ -6,11 +6,16 @@
 
 package tlc2.tool;
 
-import java.io.*;
-import java.util.*;
-import java.math.*;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+
 import tlc2.TLCGlobals;
-import tlc2.util.*;
+import tlc2.util.BufferedRandomAccessFile;
+import tlc2.util.LongVec;
 
 public class TLCTrace {
 

@@ -13,9 +13,10 @@
 ***************************************************************************/
 package pcal ; 
 
-import pcal.PcalDebug;
-import java.io.*;
-import java.util.Vector ;
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.Vector;
 
 public class PcalResourceFileReader
   { public PcalResourceFileReader(String fileName)

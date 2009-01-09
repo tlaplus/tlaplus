@@ -23,8 +23,6 @@
 *                original input.                                           *
 ***************************************************************************/
 package tla2tex;
-import tla2tex.Debug;
-import tla2tex.Misc;
 
 public class CommentToken extends Token
   { public int rsubtype ;

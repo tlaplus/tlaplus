@@ -2,13 +2,13 @@
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
 package tla2sany.semantic;
 
-import java.util.Hashtable;
 import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.Iterator;
-import tla2sany.utilities.Strings;
+
 import tla2sany.explorer.ExploreNode;
-import tla2sany.parser.SyntaxTreeNode;
 import tla2sany.st.TreeNode;
+import tla2sany.utilities.Strings;
 
 public class Subst implements LevelConstants, ASTConstants, ExploreNode {
 

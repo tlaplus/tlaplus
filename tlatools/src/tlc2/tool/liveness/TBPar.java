@@ -5,8 +5,8 @@
 
 package tlc2.tool.liveness;
 
-import util.Assert;
 import tlc2.util.Vect;
+import util.Assert;
 
 public class TBPar extends Vect {
 

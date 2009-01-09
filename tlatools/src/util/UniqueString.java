@@ -2,9 +2,8 @@
 // Last modified on Wed Oct 17 15:25:39 PDT 2001 by yuanyu
 package util;
 
-import java.io.*;
-import java.util.*;
-import tla2sany.semantic.OpDeclNode;
+import java.io.IOException;
+import java.io.Serializable;
 
 public final class UniqueString implements Serializable {
 

@@ -64,11 +64,8 @@
 *   the "IN" is typeset as a TLA built-in symbol.                          *
 ***************************************************************************/
 package tla2tex;
-import tla2tex.Parameters ;
-import java.util.Vector ;
-import java.util.Hashtable ;
-import tla2tex.Symbol ;
-import tla2tex.Misc ;
+import java.util.Hashtable;
+import java.util.Vector;
 
 public final class FormatComments
 { public static void WriteComment(OutputFileWriter writer, 

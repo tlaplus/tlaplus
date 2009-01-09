@@ -3,8 +3,8 @@
 package tla2sany.semantic;
 
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Iterator;
+import java.util.Map;
 
 class SetOfLevelConstraints extends HashMap implements LevelConstants {
   // Implements a map mapping parameters to levels. An entry <p,x> in

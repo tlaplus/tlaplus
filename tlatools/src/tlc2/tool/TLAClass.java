@@ -5,7 +5,6 @@
 
 package tlc2.tool;
 
-import java.io.*;
 import util.Assert;
 
 public class TLAClass {

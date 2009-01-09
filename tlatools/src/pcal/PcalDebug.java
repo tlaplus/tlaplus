@@ -6,8 +6,7 @@
 * reporting elapsed time.                                                  *
 ***************************************************************************/
 package pcal;
-import java.util.Vector ;
-import pcal.AST ;
+import java.util.Vector;
 
 public class PcalDebug
   { public static void ReportError(String msg)

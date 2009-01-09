@@ -5,8 +5,12 @@
 
 package tlc2.module;
 
-import tlc2.value.*;
-import tlc2.tool.*;
+import tlc2.tool.EvalException;
+import tlc2.value.ModelValue;
+import tlc2.value.StringValue;
+import tlc2.value.UserObj;
+import tlc2.value.UserValue;
+import tlc2.value.Value;
 
 public class Strings extends UserObj {
 

@@ -156,9 +156,6 @@
 * and the "def".  Otherwise, there would be too many chance alignments.    *
 ***************************************************************************/
 package tla2tex;
-import tla2tex.Token;
-import tla2tex.TokenizeSpec;
-import tla2tex.Debug;
 
 public class FindAlignments
 { public static void FindAlignments(Token[][] spec)

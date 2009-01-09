@@ -21,15 +21,12 @@ package tla2sany.modanalyzer;
 // ParseUnit keeps track of whether or not a syntactic unit needs to be 
 // reparsed.  This can be tested with isLoaded(), and done with parseFile().
 
-import tla2sany.st.ParseError;
+import tla2sany.semantic.AbortException;
+import tla2sany.semantic.Errors;
+import tla2sany.st.Location;
 import tla2sany.st.ParseTree;
 import tla2sany.st.TreeNode;
-import tla2sany.st.Location;
-import tla2sany.semantic.Errors;
 import tla2sany.utilities.Vector;
-import tla2sany.semantic.AbortException;
-import java.util.Hashtable;
-import java.util.Enumeration;
 import util.ToolIO;
 
 /**

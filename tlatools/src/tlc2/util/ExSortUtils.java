@@ -7,9 +7,10 @@
  */
 package tlc2.util;
 
-import java.util.*;
-import java.math.*;
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Vector;
 
 public class ExSortUtils {
 

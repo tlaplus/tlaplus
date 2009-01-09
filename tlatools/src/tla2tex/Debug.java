@@ -8,9 +8,8 @@
 * reporting elapsed time.                                                  *
 ***************************************************************************/
 package tla2tex;
-import java.util.Vector ;
 import java.util.Date;
-import tla2tex.Misc;
+import java.util.Vector;
 
 public class Debug
   { public static void ReportError(String msg)

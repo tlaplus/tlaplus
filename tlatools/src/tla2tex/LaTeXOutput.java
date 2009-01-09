@@ -35,17 +35,12 @@
 * correct this.                                                            *
 ***************************************************************************/
 package tla2tex;
-import tla2tex.Parameters ;
-import tla2tex.OutputFileWriter ;
-import tla2tex.TokenizeSpec ;
-import tla2tex.Token ;
-import tla2tex.CommentToken ;
-import tla2tex.BuiltInSymbols ;
-import tla2tex.Misc ;
-import tla2tex.PosAndCol ;
-import tla2tex.Position ;
-import java.io.* ;
-import java.util.Vector ;
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.Vector;
 
 
 public final class LaTeXOutput

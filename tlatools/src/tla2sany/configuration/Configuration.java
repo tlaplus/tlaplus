@@ -16,20 +16,18 @@
 package tla2sany.configuration;
 
 import java.io.File;
+
 import tla2sany.parser.Operator;
 import tla2sany.parser.Operators;
 import tla2sany.parser.SyntaxTreeNode;
-
-import util.UniqueString;
-
-import tla2sany.st.Location;
-
-import tla2sany.semantic.OpDefNode;
-import tla2sany.semantic.FormalParamNode;
+import tla2sany.semantic.AbortException;
 import tla2sany.semantic.Context;
 import tla2sany.semantic.Errors;
-import tla2sany.semantic.AbortException;
+import tla2sany.semantic.FormalParamNode;
+import tla2sany.semantic.OpDefNode;
+import tla2sany.st.Location;
 import util.ToolIO;
+import util.UniqueString;
 
 public final class Configuration implements ConfigConstants {
 

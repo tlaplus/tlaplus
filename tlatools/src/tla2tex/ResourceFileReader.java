@@ -15,8 +15,9 @@
 ***************************************************************************/
 package tla2tex;
 
-import tla2tex.Debug;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 
 public class ResourceFileReader
   { public ResourceFileReader(String fileName)

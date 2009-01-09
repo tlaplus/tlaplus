@@ -5,8 +5,10 @@
 
 package tlc2.tool.liveness;
 
-import tlc2.util.*;
-import tlc2.tool.*;
+import tlc2.tool.EvalException;
+import tlc2.util.MemObjectQueue;
+import tlc2.util.MemObjectStack;
+import tlc2.util.Vect;
 
 public class BEGraph {
   /**

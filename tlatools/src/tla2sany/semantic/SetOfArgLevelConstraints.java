@@ -3,8 +3,8 @@
 package tla2sany.semantic;
 
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Iterator;
+import java.util.Map;
 
 class SetOfArgLevelConstraints extends HashMap implements LevelConstants {
   // Implements a map mapping arg-level parameters (ParamAndPosition)

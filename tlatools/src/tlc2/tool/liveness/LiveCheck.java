@@ -5,10 +5,13 @@
 package tlc2.tool.liveness;
 
 import java.io.IOException;
-import util.Assert;
+
 import tlc2.TLCGlobals;
-import tlc2.util.*;
-import tlc2.tool.*;
+import tlc2.tool.Action;
+import tlc2.tool.StateVec;
+import tlc2.tool.TLCState;
+import tlc2.tool.Tool;
+import tlc2.util.LongVec;
 
 public class LiveCheck {
 

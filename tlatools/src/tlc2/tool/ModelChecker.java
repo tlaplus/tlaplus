@@ -5,18 +5,25 @@
 
 package tlc2.tool;
 
-import java.io.*;
-import java.text.*;
-import java.util.*;
-import tla2sany.semantic.SemanticNode;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import tla2sany.semantic.ExprNode;
+import tla2sany.semantic.SemanticNode;
+import tlc2.TLCGlobals;
+import tlc2.tool.liveness.LiveCheck;
+import tlc2.util.FileUtil;
+import tlc2.util.LongVec;
+import tlc2.util.ObjLongTable;
+import tlc2.value.Value;
 import util.Assert;
 import util.UniqueString;
-import tlc2.util.*;
-import tlc2.value.*;
-import tlc2.tool.liveness.LiveCheck;
-import tlc2.tool.liveness.LiveException;
-import tlc2.TLCGlobals;
 
 public class ModelChecker {
   /* A TLA+ Model checker */

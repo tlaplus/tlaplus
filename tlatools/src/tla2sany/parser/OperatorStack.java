@@ -2,7 +2,6 @@
 package tla2sany.parser;
 
 import tla2sany.utilities.Vector;
-import tla2sany.utilities.Stack;
 import util.UniqueString;
 
 /***************************************************************************

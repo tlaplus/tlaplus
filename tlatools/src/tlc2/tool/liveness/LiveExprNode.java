@@ -5,11 +5,10 @@
 
 package tlc2.tool.liveness;
 
-import tla2sany.semantic.*;
-import util.Assert;
+import tlc2.tool.TLCState;
+import tlc2.tool.Tool;
 import tlc2.util.Vect;
-import tlc2.value.*;
-import tlc2.tool.*;
+import util.Assert;
 
 /**
  * LNConj - a conjunction. (contains list of conjuncts)

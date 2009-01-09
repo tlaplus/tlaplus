@@ -236,12 +236,7 @@
 
 
 package tla2tex;
-import tla2tex.CToken ;
-import tla2tex.BuiltInSymbols ;
-import tla2tex.Debug ;
-import tla2tex.TokenizeSpec ;
-import java.util.Vector ;
-import java.util.Hashtable ;
+import java.util.Vector;
 
 public class TokenizeComment
   { private static Vector vspec = new Vector(50, 50) ;

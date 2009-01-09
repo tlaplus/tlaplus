@@ -2,12 +2,11 @@
 
 package tlc2.tool;
 
-import java.io.*;
-import java.rmi.*;
-import java.net.*;
-import util.Assert;
-import tlc2.util.*;
 import tlc2.TLCGlobals;
+import tlc2.util.IdThread;
+import tlc2.util.LongVec;
+import tlc2.util.ObjLongTable;
+import tlc2.util.RandomGenerator;
 
 public class DFIDWorker extends IdThread {
   /**

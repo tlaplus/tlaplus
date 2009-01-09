@@ -2,9 +2,9 @@
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
 package tla2sany.semantic;
 
-import java.util.Hashtable;
-import java.util.HashSet;
 import java.math.BigDecimal;
+import java.util.Hashtable;
+
 import tla2sany.st.TreeNode;
 
 /**

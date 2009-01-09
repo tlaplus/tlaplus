@@ -5,15 +5,16 @@
 
 package tlc2.tool;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.Serializable;
+
+import tla2sany.semantic.OpDeclNode;
 import tla2sany.semantic.SemanticNode;
 import tla2sany.semantic.SymbolNode;
-import tla2sany.semantic.OpDeclNode;
-import util.UniqueString;
-import tlc2.util.*;
 import tlc2.value.Value;
 import tlc2.value.ValueInputStream;
 import tlc2.value.ValueOutputStream;
+import util.UniqueString;
 
 public abstract class TLCState implements Cloneable, Serializable {
   public long uid = -1;   // Must be set to a non-negative number

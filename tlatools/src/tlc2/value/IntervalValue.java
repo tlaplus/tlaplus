@@ -5,9 +5,8 @@
 
 package tlc2.value;
 
-import java.io.IOException;
-import util.FP64;
 import util.Assert;
+import util.FP64;
 
 public class IntervalValue extends Value
 implements Enumerable, Reducible {

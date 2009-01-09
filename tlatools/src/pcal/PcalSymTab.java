@@ -63,7 +63,6 @@
 
 package pcal;
 
-import pcal.AST;
 import java.util.Vector;
 
 public class PcalSymTab {

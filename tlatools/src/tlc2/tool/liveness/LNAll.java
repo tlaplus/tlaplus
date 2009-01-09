@@ -5,8 +5,9 @@
 
 package tlc2.tool.liveness;
 
+import tlc2.tool.TLCState;
+import tlc2.tool.Tool;
 import util.Assert;
-import tlc2.tool.*;
 
 class LNAll extends LiveExprNode {
   protected LiveExprNode body;

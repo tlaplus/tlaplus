@@ -32,9 +32,11 @@
 * See the Symbol class for more information.                               *
 ***************************************************************************/
 package pcal;
-import tla2tex.Symbol;
+import java.util.Enumeration;
+import java.util.Hashtable;
+
 import tla2tex.Misc;
-import java.util.* ;
+import tla2tex.Symbol;
 
 public final class PcalBuiltInSymbols
   { 

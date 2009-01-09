@@ -5,8 +5,9 @@
 
 package tlc2.util;
 
-import java.io.*;
+import java.io.PrintWriter;
 import java.util.Hashtable;
+
 import util.Assert;
 
 public abstract class Sx {

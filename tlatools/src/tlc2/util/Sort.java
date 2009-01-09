@@ -2,11 +2,10 @@
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
 package tlc2.util;
 
-import java.io.*;
-import java.lang.reflect.*;
-import java.util.*;
-import java.util.zip.*;
-import java.math.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.math.BigInteger;
+
 import util.Assert;
 
 /**

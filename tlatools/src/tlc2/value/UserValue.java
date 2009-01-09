@@ -6,7 +6,6 @@
 package tlc2.value;
 
 import util.Assert;
-import tlc2.util.*;
 
 public class UserValue extends Value {
   public UserObj userObj;

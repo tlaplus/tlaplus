@@ -4,9 +4,10 @@
 
 package tla2sany.modanalyzer;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.net.URL;
-import java.lang.String;
+
 import util.ToolIO;
 
 /**

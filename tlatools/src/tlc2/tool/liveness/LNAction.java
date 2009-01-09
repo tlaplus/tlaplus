@@ -6,10 +6,13 @@
 package tlc2.tool.liveness;
 
 import tla2sany.semantic.ExprNode;
-import util.Assert;
+import tlc2.tool.EvalControl;
+import tlc2.tool.TLCState;
+import tlc2.tool.Tool;
 import tlc2.util.Context;
-import tlc2.value.*;
-import tlc2.tool.*;
+import tlc2.value.BoolValue;
+import tlc2.value.Value;
+import util.Assert;
 
 public class LNAction extends LiveExprNode {
   protected ExprNode body;

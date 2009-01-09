@@ -4,8 +4,10 @@
 //      modified on Sun Jul 29 23:32:03 PDT 2001 by yuanyu
 package tlc2.util;
 
-import java.util.*;
 import java.io.Serializable;
+import java.util.Enumeration;
+import java.util.NoSuchElementException;
+import java.util.Vector;
 
 public class Vect implements Cloneable, Serializable {
   private Object[] elementData;

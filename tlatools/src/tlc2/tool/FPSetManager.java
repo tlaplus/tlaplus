@@ -7,10 +7,14 @@ package tlc2.tool;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.rmi.*;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
-import tlc2.util.*;
+import java.rmi.Naming;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
+
+import tlc2.util.BitVector;
+import tlc2.util.LongVec;
 
 public class FPSetManager implements Serializable {
 

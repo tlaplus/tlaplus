@@ -1,12 +1,6 @@
 package pcal;
 
-import java.util.Vector ;
-import java.io.*;
-import pcal.AST ;
-import pcal.PcalSymTab ;
-import pcal.PcalTLAGen ;
-import pcal.PcalTranslate ;
-import pcal.Changed ;
+import java.util.Vector;
 
 public class NotYetImplemented {
 

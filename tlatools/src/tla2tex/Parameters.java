@@ -7,7 +7,6 @@
 * TLATeX.  Some of them are set by program options.                        *
 ***************************************************************************/
 package tla2tex;
-import tla2tex.Misc;
 
 public final class Parameters
 { 

@@ -3,10 +3,8 @@
 
 package tlc2.tool;
 
-import java.io.*;
-import java.text.*;
-import java.util.*;
-import tla2sany.semantic.SemanticNode;
+import java.io.IOException;
+
 import tlc2.TLCGlobals;
 
 public abstract class CheckImpl extends ModelChecker {

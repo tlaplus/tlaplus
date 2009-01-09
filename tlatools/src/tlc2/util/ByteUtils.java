@@ -7,9 +7,15 @@
  */
 package tlc2.util;
 
-import java.util.*;
-import java.math.*;
-import java.io.*;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Random;
+import java.util.Vector;
+
 import util.Assert;
 
 public class ByteUtils {

@@ -6,9 +6,9 @@
 package tla2sany.semantic;
 
 import java.util.Hashtable;
-import java.util.HashSet;
-import util.UniqueString;
+
 import tla2sany.st.TreeNode;
+import util.UniqueString;
 
 /**
  * An OpDeclNode can have one of the following kinds:

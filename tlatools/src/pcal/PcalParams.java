@@ -5,8 +5,7 @@
 * pcal.trans.  Some of them are set by program options.                    *
 ***************************************************************************/
 package pcal ;
-import java.util.Vector ;
-import pcal.TLAExpr ;
+import java.util.Vector;
 
 public final class PcalParams
  { 

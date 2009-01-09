@@ -11,8 +11,6 @@
 * GobbleOutput threads to get rid of any output produced by the command.   *
 ***************************************************************************/
 package tla2tex ;
-import java.io.* ;
-import tla2tex.GobbleOutput;
 
 public class ExecuteCommand
 { public static void ExecuteCommand(String cmd)

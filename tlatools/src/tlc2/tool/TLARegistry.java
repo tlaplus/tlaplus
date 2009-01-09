@@ -5,7 +5,8 @@
 
 package tlc2.tool;
 
-import java.util.*;
+import java.util.Enumeration;
+import java.util.Hashtable;
 
 public class TLARegistry {
 

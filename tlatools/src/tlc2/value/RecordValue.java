@@ -5,11 +5,10 @@
 
 package tlc2.value;
 
-import util.Assert;
-import util.UniqueString;
-import util.FP64;
 import tlc2.TLCGlobals;
-import tlc2.util.*;
+import util.Assert;
+import util.FP64;
+import util.UniqueString;
 
 public class RecordValue extends Value implements Applicable {
   public UniqueString[] names;   // the field names

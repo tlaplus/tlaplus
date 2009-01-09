@@ -5,7 +5,6 @@
 
 package tlc2.pprint;
 
-import util.Assert;
 
 public class PrettyPrint {
 

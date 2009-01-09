@@ -7,8 +7,11 @@
 * java.io.BufferedReader class.  (See the CharReader class.)               *
 ***************************************************************************/
 package tla2tex;
-import java.io.* ;
-import tla2tex.Debug;
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStreamReader;
 
 public class FileCharReader extends CharReader
   { private BufferedReader bufferedReader ;

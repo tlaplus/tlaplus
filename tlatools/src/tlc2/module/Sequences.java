@@ -5,10 +5,24 @@
 
 package tlc2.module;
 
+import tlc2.tool.EvalControl;
+import tlc2.tool.EvalException;
+import tlc2.tool.TLARegistry;
+import tlc2.value.Applicable;
+import tlc2.value.BoolValue;
+import tlc2.value.IntValue;
+import tlc2.value.ModelValue;
+import tlc2.value.OpLambdaValue;
+import tlc2.value.OpRcdValue;
+import tlc2.value.StringValue;
+import tlc2.value.TupleValue;
+import tlc2.value.UserObj;
+import tlc2.value.UserValue;
+import tlc2.value.Value;
+import tlc2.value.ValueConstants;
+import tlc2.value.ValueVec;
 import util.Assert;
 import util.UniqueString;
-import tlc2.value.*;
-import tlc2.tool.*;
 
 public class Sequences extends UserObj implements ValueConstants {
   private Value range;

@@ -5,10 +5,8 @@
 
 package tlc2.value;
 
-import tla2sany.semantic.OpDeclNode;
 import tla2sany.semantic.FormalParamNode;
 import util.Assert;
-import tlc2.util.*;
 
 public class FcnParams {
   public FormalParamNode[][] formals;  // array of formal params

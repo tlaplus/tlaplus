@@ -5,7 +5,6 @@
 
 package tlc2.tool.liveness;
 
-import tlc2.util.*;
 
 public class PossibleErrorModel {
   int[] EAAction;    // <>[]act's

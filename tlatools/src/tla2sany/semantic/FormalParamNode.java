@@ -3,11 +3,9 @@
 package tla2sany.semantic;
 
 import java.util.Hashtable;
-import java.util.HashSet;
-import util.UniqueString;
-import tla2sany.utilities.Strings;
-import tla2sany.explorer.ExploreNode;
+
 import tla2sany.st.TreeNode;
+import util.UniqueString;
 
 /**
  * A FormalParamNode represents a formal parameter in a user            

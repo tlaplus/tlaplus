@@ -5,19 +5,20 @@
 
 package tlc2.tool;
 
-import java.io.*;
-import java.util.*;
-import java.lang.reflect.*;
-import java.rmi.*;
-import java.rmi.registry.*;
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.Constructor;
 import java.net.InetAddress;
-import java.rmi.server.*;
-import util.Assert;
-import util.UniqueString;
+import java.rmi.Naming;
+import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
+
+import tlc2.TLCGlobals;
+import tlc2.util.BitVector;
+import tlc2.util.LongVec;
 import util.FP64;
 import util.InternRMI;
-import tlc2.util.*;
-import tlc2.TLCGlobals;
+import util.UniqueString;
 
 public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 

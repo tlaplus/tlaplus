@@ -20,14 +20,9 @@
 package tla2sany.semantic;
 
 import java.util.Hashtable;
-import java.util.HashSet;
-// import java.util.Iterator;
-import util.UniqueString;
-import tla2sany.utilities.Strings;
+
 import tla2sany.st.TreeNode;
-// import tla2sany.st.Location;
-// import tla2sany.parser.SyntaxTreeNode;
-// import tla2sany.explorer.ExploreNode;
+import tla2sany.utilities.Strings;
 
 
 public class NewSymbNode extends LevelNode {

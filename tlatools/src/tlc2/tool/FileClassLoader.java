@@ -5,9 +5,9 @@
 
 package tlc2.tool;
 
-import java.io.*;
-import java.util.*;
-import util.Assert;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 
 public class FileClassLoader extends ClassLoader {
   /* Load a class from a file. */

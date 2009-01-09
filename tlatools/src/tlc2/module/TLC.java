@@ -5,11 +5,27 @@
 
 package tlc2.module;
 
-import java.io.*;
-import util.Assert;
+import tlc2.tool.EvalControl;
+import tlc2.tool.EvalException;
+import tlc2.tool.TLARegistry;
+import tlc2.tool.Worker;
 import tlc2.util.RandomGenerator;
-import tlc2.value.*;
-import tlc2.tool.*;
+import tlc2.value.Applicable;
+import tlc2.value.BoolValue;
+import tlc2.value.FcnRcdValue;
+import tlc2.value.IntValue;
+import tlc2.value.IntervalValue;
+import tlc2.value.RecordValue;
+import tlc2.value.SetEnumValue;
+import tlc2.value.SetOfFcnsValue;
+import tlc2.value.SetOfRcdsValue;
+import tlc2.value.SetOfTuplesValue;
+import tlc2.value.StringValue;
+import tlc2.value.TupleValue;
+import tlc2.value.Value;
+import tlc2.value.ValueConstants;
+import tlc2.value.ValueVec;
+import util.Assert;
 
 public class TLC implements ValueConstants {
 

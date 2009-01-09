@@ -6,10 +6,10 @@
 package tlc2.value;
 
 import java.util.Arrays;
+
+import tlc2.tool.EvalControl;
 import util.Assert;
 import util.FP64;
-import tlc2.util.*;
-import tlc2.tool.EvalControl;
 
 public class FcnRcdValue extends Value implements Applicable {
   public Value[] domain;

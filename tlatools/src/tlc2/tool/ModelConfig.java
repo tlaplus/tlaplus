@@ -5,12 +5,26 @@
 
 package tlc2.tool;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.Serializable;
 import java.util.Hashtable;
-import tla2sany.parser.*;
+
+import tla2sany.parser.SimpleCharStream;
+import tla2sany.parser.TLAplusParserConstants;
+import tla2sany.parser.TLAplusParserTokenManager;
+import tla2sany.parser.Token;
+import tla2sany.parser.TokenMgrError;
+import tlc2.util.Vect;
+import tlc2.value.IntValue;
+import tlc2.value.ModelValue;
+import tlc2.value.SetEnumValue;
+import tlc2.value.StringValue;
+import tlc2.value.Value;
+import tlc2.value.ValueConstants;
+import tlc2.value.ValueVec;
 import util.Assert;
-import tlc2.value.*;
-import tlc2.util.*;
 
 public class ModelConfig implements ValueConstants, Serializable {
   /* Get information from user's model configuration file.  */

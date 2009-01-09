@@ -5,8 +5,9 @@
 
 package tlc2.util;
 
-import java.io.*;
-import util.Assert;
+import java.io.File;
+import java.io.IOException;
+
 import util.BufferedDataInputStream;
 import util.BufferedDataOutputStream;
 

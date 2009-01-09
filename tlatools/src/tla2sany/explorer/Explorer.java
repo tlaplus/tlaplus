@@ -7,13 +7,20 @@
 
 package tla2sany.explorer;
 
-import java.io.*;
+import java.io.EOFException;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.StringTokenizer;
-import java.util.Enumeration;
-import tla2sany.semantic.*;
-import tla2sany.explorer.ExploreNode;
+
+import tla2sany.semantic.ExternalModuleTable;
+import tla2sany.semantic.FormalParamNode;
+import tla2sany.semantic.Generator;
+import tla2sany.semantic.OpDefOrDeclNode;
+import tla2sany.semantic.SemanticNode;
+import tla2sany.semantic.SymbolNode;
 import tla2sany.utilities.Vector;
 import util.UniqueString;
 

@@ -32,8 +32,7 @@
 * Every token of type COMMENT should belong to the subclass CommentToken.  *
 ***************************************************************************/
 package tla2tex;
-import tla2tex.Position;
-import java.util.Vector ;
+import java.util.Vector;
 
 public class Token
   /*************************************************************************

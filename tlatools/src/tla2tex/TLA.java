@@ -103,18 +103,6 @@
 *    or pdf file.                                                          *
 ***************************************************************************/
 package tla2tex ;
-import java.io.* ;
-import tla2tex.Parameters ;
-import tla2tex.Token ;
-import tla2tex.FileCharReader ;
-import tla2tex.TokenizeSpec ;
-import tla2tex.FormatComments ;
-import tla2tex.BuiltInSymbols ;
-import tla2tex.LaTeXOutput ;
-import tla2tex.OutputFileWriter ;
-import tla2tex.WriteTLAFile ;
-import tla2tex.ExecuteCommand ;
-import java.util.Vector ;
 
 class TLA 
  { 

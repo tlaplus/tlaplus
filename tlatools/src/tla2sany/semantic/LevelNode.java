@@ -3,6 +3,7 @@
 package tla2sany.semantic;
 import java.util.HashSet;
 import java.util.Iterator;
+
 import tla2sany.st.TreeNode;
 import util.Assert;
 

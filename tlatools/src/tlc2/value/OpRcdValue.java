@@ -5,9 +5,8 @@
 
 package tlc2.value;
 
-import java.util.*;
+import tlc2.util.Vect;
 import util.Assert;
-import tlc2.util.*;
 
 public class OpRcdValue extends OpValue implements Applicable {
   public Vect domain;

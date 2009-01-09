@@ -5,11 +5,8 @@
 
 package tlc2.value;
 
-import java.io.IOException;
-import java.util.*;
 import util.Assert;
 import util.FP64;
-import tlc2.util.*;
 
 public class SetEnumValue extends Value
 implements Enumerable, Reducible {

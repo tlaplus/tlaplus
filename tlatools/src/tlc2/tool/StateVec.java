@@ -5,13 +5,11 @@
 
 package tlc2.tool;
 
-import java.io.*;
-import java.util.*;
 import tla2sany.semantic.SemanticNode;
-import util.UniqueString;
-import util.Assert;
-import tlc2.value.*;
 import tlc2.TLCGlobals;
+import tlc2.value.Value;
+import util.Assert;
+import util.UniqueString;
 
 /*
  * This class represents a TLA+ state vector.
