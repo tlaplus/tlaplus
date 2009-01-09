@@ -1,0 +1,102 @@
+Introduction
+===============================================================================
+ This document describes the environment setup for development of TLA+ Tools. 
+ It consists of the following sections:
+ - Used versions
+ - Environment setup 
+ - Eclipse-based build process
+ - Build process without Eclipse
+
+
+Used Versions
+===============================================================================
+  Java 1.6.0_11 (in 1.4 mode)
+  SlikSVN 1.5.5
+  Eclipse 3.4.1 (Ganymede)
+  Apache Ant 1.7.1
+  JavaCC 4.0
+
+Environment setup
+===============================================================================
+  1 JDK 
+    Download JDK (not JRE) from http://java.sun.com/
+    Install JDK to directory of your choice (e.G. c:/environment/java)
+    (Optional: add c:/environment/java/bin to your path)
+
+  2 SVN
+    Download SVN (http://www.sliksvn.com/en/download)
+    Install SVN to directory of your choice (e.G. c:/environment/svn)
+    (Optional: add c:/environment/svn/bin to your path)
+
+  3 Eclipse  
+    Download Eclipse from http://www.eclipse.org/
+    Unzip it to a directory of your choice (e.G. c:/environment/eclipse)
+    Install Subclipse (SVN Support for Eclipse)
+      Go to "Help" > "Software Updates..."
+      Select "Available Software"
+      Hit "Add site..."
+      Enter "http://subclipse.tigris.org/update_1.4.x"
+      Select the added site
+      Activate the latest version of Subclipse and JavaHL Adapter (Native)
+      Hit install
+      Follow instructions
+      Restart Eclipse 
+   
+  4 Apache Ant
+     Download Apache ANT (http://ant.apache.org/)
+     Unzip to directory of your choice (e.G. c:/environment/ant)
+     In Eclipse open "Window > Preferences"
+     Select "Ant" > "Runtime"
+     Hit "Ant Home..."
+     Point to the directory of Ant installation (c:/environment/ant)
+     (Optional: add c:/environment/ant/bin to your path)
+     
+  5 JavaCC
+     Download JavaCC (https://javacc.dev.java.net/)
+     Unzip it in a directory of your choice (e.G. c:/environment/javacc)
+     Setup the environment variable called JAVACC_HOME pointing to this directory
+     
+
+Eclipse-based build process
+===============================================================================     
+  1 SVN
+    To initialize:
+      Switch to "SVN Repository Exploring" perspective
+      Right-click in "SVN Repositories" View
+      Select "New" repository
+      Add Repository URL (svn://svc-lamport-2/tla)
+    To check-out:
+      Browse in SVN repository to "trunk/tlatools"
+      Right-click on the "trunk/tlatools" node
+      Select "Checkout..."
+      Hit Finish
+    To commit, synchronize, revert, ... : select the actions from the pop-up
+    menu accessed by the right-click on the corresponding node in "Project 
+    Explorer" or "Navigator"
+    
+    
+  2 Ant
+    To initialize:
+      Open "Ant" View
+      Add the build file "tlatools/build.xml"
+    To build default:
+      Double-click on the TLA+ Tools in Ant View
+      (or select the default target in expanded view and hit the green 
+      play-button)
+    
+
+Eclipse-based build process
+===============================================================================     
+  1 SVN
+    ...
+    
+    
+    
+  2 Ant
+    To build:
+      Change to project directory (tlatools)
+      Run "ant target-name" from the command name
+        "ant" - executes the run with default target and is equivalent to 
+        "ant default"     
+      Result: at the end of the build the BUILD SUCCESSFULL should appear 
+
