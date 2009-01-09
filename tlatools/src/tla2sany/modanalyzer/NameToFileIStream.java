@@ -35,7 +35,6 @@ public class NameToFileIStream implements StringToNamedInputStream {
 
   private String sourceFileName;
   private String sourceModuleName;
-  private File   sourceFile;
 
 
   // Find the absolute path in the file system to the directory 
