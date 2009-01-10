@@ -45,7 +45,6 @@ public class SpecObj
     // in the specification, including all inner modules and all top-level
     // external modules.
 
-    
     private StringToNamedInputStream ntfis = null;
     /***********************************************************************
     * the object used to translate module names to file names              
@@ -59,7 +58,7 @@ public class SpecObj
     * for a tool to do file lookup using the actual NameToFileIStream      
     * object that the parser uses.                                         
     *
-    * SZ 01.09.09 Since there is no references to this public field, it is
+    * SZA: Since there is no references to this public field, it is
     * changed to private again.
     ***********************************************************************/
 
@@ -98,12 +97,13 @@ public class SpecObj
     /**
      * Default constructor of the SpecObj with a given primary filename and the default 
      * NameToFileIStream for its resolution 
+     * @pfn primary filename of the specification
      */
     public SpecObj(String pfn)
     {
         this(pfn, new NameToFileIStream());
     }
-    
+
     /**
      * Constructs a SpecObj for the given filename using a specified filename resolver
      * @param pfn primary filename of the specification
