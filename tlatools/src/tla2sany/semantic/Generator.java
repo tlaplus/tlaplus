@@ -6208,7 +6208,9 @@ errors.addAbort(stn.getLocation(), "Uses generateNumerable_Step") ;
     * Complete the ThmOrOpDefNode, if there is one.                        *
     ***********************************************************************/
     if (stepNum != null) { 
-      tadn.construct(true, body, cm, symbolTable, null) ;
+      // SZA: the next line commented, to prevent a NullPointerException
+      // The method is not executed anyways.
+      // tadn.construct(true, body, cm, symbolTable, null) ;
      } ;
 
 
