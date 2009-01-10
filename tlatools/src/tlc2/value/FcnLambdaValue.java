@@ -238,9 +238,12 @@ public class FcnLambdaValue extends Value implements Applicable {
 	if (isTuples[0]) {
 	  FormalParamNode[] ids = formals[0];
 	  TupleValue argVal = TupleValue.convert(arg);
+	  /*
+	   * SZA: Changed from argVal.toString() to arg.toString() to prevent a NullPointerException
+	   */
 	  if (argVal == null) {
 	    Assert.fail("In applying the function\n" + Value.ppr(this.toString()) +
-			",\nthe first argument is:\n" + Value.ppr(argVal.toString()) +
+			",\nthe first argument is:\n" + Value.ppr(arg.toString()) +
 			"\nwhich does not match its formal parameter.\n");
 	  }
 	  if (argVal.size() != ids.length) return null;
