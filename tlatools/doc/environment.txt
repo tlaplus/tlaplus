@@ -100,3 +100,9 @@ Eclipse-based build process
         "ant default"     
       Result: at the end of the build the BUILD SUCCESSFULL should appear 
 
+Administration tasks
+================================================================================
+  1 SVN
+    Repository Backup:
+      svnadmin hotcopy c:/svn/repositories/tla c:/svn/backup/tla
+
