@@ -1,0 +1,59 @@
+TLC Version 1.57 of Jul 31, 2001
+Model-checking
+Finished computing initial states: 4 distinct states generated.
+Progress(4): 772 states generated, 160 distinct states found, 79 states left on queue.
+Progress(5): 886 states generated, 163 distinct states found, 79 states left on queue.
+Progress(5): 1000 states generated, 163 distinct states found, 76 states left on queue.
+Progress(5): 1090 states generated, 165 distinct states found, 76 states left on queue.
+Progress(5): 1207 states generated, 167 distinct states found, 76 states left on queue.
+Progress(5): 1318 states generated, 167 distinct states found, 73 states left on queue.
+-- Checkpointing of run states/01-08-03-18-14-01 completed.
+Progress(5): 1458 states generated, 170 distinct states found, 72 states left on queue.
+Progress(5): 1571 states generated, 173 distinct states found, 72 states left on queue.
+Progress(5): 1689 states generated, 173 distinct states found, 69 states left on queue.
+Progress(5): 1803 states generated, 173 distinct states found, 66 states left on queue.
+Progress(5): 1920 states generated, 173 distinct states found, 63 states left on queue.
+Progress(5): 2016 states generated, 173 distinct states found, 61 states left on queue.
+-- Checkpointing of run states/01-08-03-18-14-01 completed.
+Progress(5): 2178 states generated, 178 distinct states found, 61 states left on queue.
+Progress(5): 2295 states generated, 178 distinct states found, 58 states left on queue.
+Progress(5): 2410 states generated, 181 distinct states found, 58 states left on queue.
+Progress(5): 2524 states generated, 184 distinct states found, 58 states left on queue.
+Progress(5): 2631 states generated, 184 distinct states found, 55 states left on queue.
+Progress(5): 2737 states generated, 184 distinct states found, 52 states left on queue.
+-- Checkpointing of run states/01-08-03-18-14-01 completed.
+Progress(5): 2919 states generated, 184 distinct states found, 48 states left on queue.
+Progress(5): 3034 states generated, 189 distinct states found, 50 states left on queue.
+Progress(5): 3151 states generated, 189 distinct states found, 47 states left on queue.
+Progress(5): 3266 states generated, 192 distinct states found, 47 states left on queue.
+Progress(5): 3380 states generated, 195 distinct states found, 47 states left on queue.
+Progress(5): 3495 states generated, 195 distinct states found, 44 states left on queue.
+-- Checkpointing of run states/01-08-03-18-14-01 completed.
+Progress(5): 3619 states generated, 195 distinct states found, 40 states left on queue.
+Progress(5): 3733 states generated, 195 distinct states found, 37 states left on queue.
+Progress(5): 3844 states generated, 195 distinct states found, 34 states left on queue.
+Progress(5): 3959 states generated, 195 distinct states found, 33 states left on queue.
+Progress(5): 4033 states generated, 195 distinct states found, 31 states left on queue.
+Progress(5): 4115 states generated, 195 distinct states found, 30 states left on queue.
+-- Checkpointing of run states/01-08-03-18-14-01 completed.
+Progress(5): 4238 states generated, 195 distinct states found, 28 states left on queue.
+Progress(5): 4343 states generated, 195 distinct states found, 27 states left on queue.
+Progress(5): 4443 states generated, 195 distinct states found, 25 states left on queue.
+Progress(5): 4544 states generated, 195 distinct states found, 24 states left on queue.
+Progress(5): 4644 states generated, 195 distinct states found, 22 states left on queue.
+Progress(5): 4737 states generated, 195 distinct states found, 21 states left on queue.
+-- Checkpointing of run states/01-08-03-18-14-01 completed.
+Progress(5): 4882 states generated, 195 distinct states found, 18 states left on queue.
+Progress(5): 4950 states generated, 195 distinct states found, 18 states left on queue.
+Progress(5): 5053 states generated, 195 distinct states found, 16 states left on queue.
+Progress(5): 5172 states generated, 195 distinct states found, 15 states left on queue.
+Progress(5): 5266 states generated, 195 distinct states found, 13 states left on queue.
+Progress(5): 5390 states generated, 195 distinct states found, 11 states left on queue.
+-- Checkpointing of run states/01-08-03-18-14-01 completed.
+Progress(5): 5554 states generated, 195 distinct states found, 9 states left on queue.
+Progress(5): 5625 states generated, 195 distinct states found, 8 states left on queue.
+Progress(5): 5700 states generated, 195 distinct states found, 7 states left on queue.
+Progress(5): 5803 states generated, 195 distinct states found, 5 states left on queue.
+Progress(5): 5927 states generated, 195 distinct states found, 3 states left on queue.
+Progress(5): 6032 states generated, 195 distinct states found, 2 states left on queue.
+14716.946u 9.314s 17:05:41.71 23.9%	0+627k 29+52io 0pf+0w

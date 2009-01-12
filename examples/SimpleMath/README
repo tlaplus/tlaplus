@@ -1,0 +1,59 @@
+This folder accompanies the chapter "A Little Simple Math".
+It contains the following files: 
+
+SimpleMath.tla 
+   A TLA+ module that uses the TLC model checker to verify some simple
+   formulas.  It explains how you can modify the file to let TLC check
+   your own formulas.
+
+SimpleMath.cfg
+   A TLC configuration file needed to run TLC on the SimpleMath module.
+
+
+Exercises:
+
+Where possible, check your answers to these exercises by modifying
+SimpleMath.tla and using TLC.
+
+Note: These exercises use ASCII versions of symbols; Table 8 shows the
+translation to their more familiar typeset versions.
+
+1. Determine which of the following formulas are tautologies.
+
+   (F => G) /\ (G => F) <=> (F <=> G)
+   
+   (~F /\ ~G) <=> (~F) \/ (~G)
+   
+   F => (F => G)
+   
+   (F => G) <=> (~G => ~F)
+
+   (F => (G => H)) => ((F => G) => H) 
+
+   (F <=> (G <=> H)) => ((F <=> G) <=> H) 
+   
+   (\A x : F /\ G) <=> (\A x : F)  /\ (\A x : G) 
+
+   (\E x : F /\ G) <=> (\E x : F)  /\ (\E x : G) 
+   
+   (\A x : F \/ G) <=> (\A x : F)  \/ (\A x : G) 
+
+   (\E x : F \/ G) <=> (\E x : F)  \/ (\E x : G) 
+   
+
+2. Which of the following formulas are valid for all sets S, T, and U?
+
+   (S \subseteq T) <=> (S \cup T = T)
+
+   (S \subseteq T) <=> \A x \in S : x \in T
+   
+   (S = T) <=> (S \subseteq T) /\ (T \subseteq S)
+
+   (S \subseteq T) <=> (S \ T = {})
+
+   (S \ T) \cup (T \ S) = (S \cup T) \ (S \cap T)
+
+   (S \ (T \cap U)) = (S \ T) \cup (S \ U)
+
+------
+Last modified on Fri Jul 27 10:18:44 PDT 2001 by lamport

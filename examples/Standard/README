@@ -1,0 +1,17 @@
+This folder contains material to accompany the chapter "The Standard
+Modules".  It has the following files:
+
+Bags.tla        
+FiniteSets.tla
+Integers.tla    
+Naturals.tla    
+Peano.tla       
+ProtoReals.tla
+Reals.tla
+Sequences.tla
+   The files described in the book.  
+
+
+------
+Last modified on Sun Aug 12 16:58:05 PDT 2001 by lamport
+

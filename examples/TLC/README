@@ -1,0 +1,35 @@
+This folder contains material to accompany the chapter "The TLC Model
+Checker".  It has the following files:
+
+AlternatingBit.tla    
+ABCorrectness.tla     
+ABCorrectness.cfg     
+ConfigFileGrammar.tla
+MCAlternatingBit.tla
+MCAlternatingBit.cfg  
+   The files described in the book.  
+
+
+BNFGrammars.tla
+   A copy of the module from folder AdvancedExamples
+TLC.tla
+   A copy of the standard module.
+
+
+Exercises:
+
+1. (a) Use TLC to print all Pythagorean triples <<i,j,k>> with 
+   i^2 + j^2 = k^2 for natural numbers i,j,k \leq N. 
+   Start with N=20.   (Don't be clever and use the formula for 
+   generating Pythagorean triples; have TLC to it in a straightforward 
+   fashion.)  
+
+   (b) Next, get TLC to print only essentially Pythagorean triples--that
+   is, Pythagorean triples <<i, j, k>> such that i \leq j and i,j, and k 
+   have no common factor.  Try it with N = 50, 100, ...  .  Why does TLC 
+   take longer to generate each example as N increases?
+
+
+------
+Last modified on Wed Aug  8 11:52:08 PDT 2001 by lamport
+

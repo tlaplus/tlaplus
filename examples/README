@@ -1,0 +1,43 @@
+This is a directory of material to accompany the book "Specifying
+Concurrent Systems" by Leslie Lamport.  It contains the following
+subdirectories:
+
+SimpleMath
+   Material to accompany the chapter "A Little Simple Math".
+
+HourClock
+   Material to accompany the chapter "Specifying a Simple Clock".
+
+AsynchronousInterface
+   Material to accompany the chapter "An Asynchronous Interface".
+
+FIFO
+   Material to accompany the chapter "A FIFO".
+
+CachingMemory
+   Material to accompany the chapter "A Caching Memory".
+
+MoreMath
+   Material to accompany the chapter "Some More Math".
+
+Liveness
+   Material to accompany the chapter "Liveness and Fairness"
+
+RealTime
+   Preliminary version of material to accompany the chapter "Real
+   Time".
+
+Composing
+   Material to accompany the chapter "Composing Specifications".
+
+AdvancedExamples
+   Material to accompany the chapter "Advanced Examples".
+
+TLC
+   Material to accompany the chapter "The TLC Model Checker"
+
+Syntax
+   Material to accompany the chapter "The Syntax of TLA+"
+
+Standard
+   Material to accompany the chapter "The Standard Modules"

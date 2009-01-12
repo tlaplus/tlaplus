@@ -1,0 +1,9 @@
+The files in this directory represent the development of a resource
+allocator in TLA+.
+
+The development is described in some detail in a technical note that
+appears as file "allocator.pdf".
+
+Contact: Stephan.Merz@loria.fr
+Version of August 17, 2004.
+

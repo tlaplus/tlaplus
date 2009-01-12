@@ -1,0 +1,63 @@
+This directory contains supporting material for the chapter "An
+Asynchronous Interface".  It contains the following files:
+
+
+AsynchInterface.tla  
+AsynchInterface.cfg  
+   The ASCII version of the AsynchInterface module and a configuration
+   file for checking it with TLC.
+
+
+Channel.tla
+Channel.cfg
+   The ASCII version of the Channel module and a configuration file
+   for checking it with TLC.
+
+PrintValues.tla
+PrintValues.cfg
+   A module that shows how to use TLC to print the values of TLA+
+   expressions, and its configuration file.
+
+
+Exercise: 
+1. Find the following values, and use TLC to check your answers by
+   suitably modifying the file PrintValues.tla.
+
+
+    [field1 |-> 1, field2 |-> "abc"].field2
+
+    [ [field1 |-> 1, field2 |-> "abc"] EXCEPT !.field2 = 27 ].field1
+
+    [ [field1 |-> 1, field2 |-> "abc"] EXCEPT !.field2 = 27 ].field2
+
+    [ [field1 |-> 1, field2 |-> "abc"] EXCEPT !.field1 = @ + 7].field1
+
+    [ [field1 |-> 1, field2 |-> "abc"] EXCEPT !.field1 = @ + 7].field2
+
+    [ [ [field1 |-> 1, field2 |-> "abc"] EXCEPT !.field1 = 9,
+                                                !.field2 = "bcd" ] 
+      EXCEPT !.field1 = 2 * @ ].field1
+
+    [ [ [field1 |-> 1, field2 |-> "abc"] EXCEPT !.field1 = 9,
+                                                !.field2 = "bcd" ] 
+      EXCEPT !.field1 = 2 * @ ].field2
+
+    [a : {"a"}, b : {"b"}, c : {"c"}]
+
+    [sign : {"+", "-"}, val : 1..3]
+
+    [entry : {0, 2, 4}]
+
+2. Write a module HourClockChannel by modifying the Channel
+   module so it sends a sequence of hour-clock values over channel
+   chan.  That is, it sends a sequence of consecutive hour values,
+   starting from any value in 1..12.  For example, it might send
+   the sequence of values  
+
+      9, 10, 11, 12, 1, 2, ... , 11, 12, 1 , ...
+
+
+
+------
+Last modified on Fri Jul 27 10:16:53 PDT 2001 by lamport
+

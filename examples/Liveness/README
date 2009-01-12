@@ -1,0 +1,104 @@
+This folder accompanies the chapter "Liveness and Fairness".  It
+contains the following files:
+
+HourClock.tla
+   A copy of the file from the HourClock folder.
+
+LiveHourClock.tla
+LiveHourClock.cfg
+   A module containing the hour clock specification enhanced with
+   a liveness condition, some properties that it satisfies, and
+   a TLC configuration file for testing it.
+
+MemoryInterface.tla
+InternalMemory.tla              
+Memory.tla
+WriteThroughCache.tla
+WriteThroughCacheInstanced.tla
+   Copies of files from the CachingMemory folder.
+
+LiveInternalMemory.tla
+   A module that defines the specification LISpec to be specification
+   ISpec of module InternalMemory enhanced with a liveness condition.
+   It also defines a liveness property satisfied by LISpec.
+
+  
+MCLiveInternalMemory.tla
+MCLiveInternalMemory.cfg
+   A module and TLC configuration file for testing the specification
+   LiveInternalMemory.
+
+  
+Exercises:
+
+1. Run TLC to check the LiveHourClock and LiveInternalMemory specifications,
+   using the files above.  Use TLC to find a counterexample to show
+   that the specification LISpec of LiveInternalMemory does not satisfy the 
+   following property
+
+       \A p \in Proc : (ctl[p] = "rdy") ~> (ctl[p] = "req") 
+
+2. Determine which of the following formulas are temporal
+   tautologies.  For each one that isn't, give a counterexample.
+
+   (a) <>[]<>F <=> []<>F
+   
+   (b) []<>[]F <=> []<>F
+   
+   (c) ~[](F \/ G) => <>~F /\ <>~G
+   
+   (d) []([]F => G) => ([]F => []G)
+   
+   (e) [](F => []G) => ([]F => []G)
+   
+   (f) [][A /\ B]_v <=> [][A]_v /\ [][B]_v
+   
+   (g) []<><<A /\ B>>_v <=> []<><<A>>_v  /\ []<><<B>>_v 
+
+   (h) [][A => B]_v <=> [][<<A>>_v => B]_v 
+
+   (i) WF_v(A) /\ WF_v(B) => WF_v(A \/ B)
+
+   (j) SF_v(A) /\ SF_v(B) => SF_v(A \/ B)
+
+   (k) ENABLED (A /\ B) => (ENABLED A) /\ (ENABLED B)
+
+
+3. Check the correctness of rules 1-4 in the subsection title
+   "Refinement Mappings and Fairness", and explain in detail how those
+   rules are used to compute ENABLED (Do(p) \/ Rsp(p)) to get the
+   expressions given there.
+
+4. Use MCLiveWriteThroughCache to test the correctness of the liveness
+   conditions on the write-through cache.  Use TLC to obtain a 
+   counter-example if the SF conditions are replaced by WF.
+   Also check the weaker liveness condition involving the QCond
+   predicate, given in the section titled "The Write-Through Cache".
+
+5. The proof rule that by proving A_1, ... , A_n we can deduce
+   B is often written
+
+         A_1
+         ...
+         A_n
+         ---
+          B
+
+    Determine which of the following proof rules are correct.
+
+    (a)            A => B
+         -------------------------
+         (ENABLED A) => (ENABLED B)    
+
+
+    (b)        A => B
+         -------------------------
+         WF_v(A) => WF_v(B) 
+
+
+    (c)        A => B
+         -------------------------
+         SF_v(A) => SF_v(B) 
+         
+
+Last modified on Tue Jul 31 17:15:45 PDT 2001 by lamport

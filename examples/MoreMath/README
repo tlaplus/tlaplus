@@ -1,0 +1,71 @@
+This folder accompanies the chapter "Some More Math".  
+
+There are no files in this folder other than this one.
+
+
+Exercise:
+
+1. Find the following values, and use TLC to check your answers. 
+   (See the file PrintValues.tla in the folder AsynchronousMemory.)
+ 
+   {i \in 1..10 : \E j \in 1..10 : i = j^2}
+
+   {i \in 1..10 : \E j \in 1..10 : j = i^2}
+
+   {i^2 : i \in 1..10}
+
+   {i^2 + j : i, j \in 1..3}
+
+   {<<i^2, j^2>> : i \in 1..2, j \in 2..3}
+
+   UNION { {i^2}   : i \in 1..10}
+
+   UNION { {{i^2}} : i \in 1..10}
+
+   UNION SUBSET S   (for any S)
+
+   SUBSET DOMAIN [a |-> 1, b |-> 2]
+
+   SUBSET [a : {1}, b : {2}]
+
+   CHOOSE n \in 1..100 : n^2 = 49
+
+
+
+2. Define an operator Apply so that, if s is a non-empty sequence 
+   <<s_1, s_2, ... , s_n>> and ** is any operator that takes
+   two arguments, then Apply(s, **) equals
+
+      (...(s_1 ** s_2) ** ... ** s_n)
+
+   Check your definition with TLC.
+
+   Note: with Version 1 of TLC, you won't be able to use an infix
+   operator in the second argument of Apply, either in the
+   definition or in a use.  So, if you want TLC to evaluate
+   Apply(<<1, 2, 3>>, +), you'll have to give it something like
+
+       LET Plus(a, b) == a + b
+       IN  Apply(<<1, 2, 3>>, Plus)
+
+
+3. In each of the following: 
+        (i) if possible, define a function f with the required 
+            property and try to check your definition with TLC
+       (ii) if it isn't possible, explain why not.
+   
+   (a) If r is a record with an `abc' and a `def' field, then
+       f[r] is the record obtained from r by setting its `abc'
+       field to 0.
+
+   (b) If R is any set of real numbers bounded from above, 
+       then f[R] is the least upper bound of R.
+
+   (c) For any natural number n :
+
+         f[n] = IF n = 0 THEN 1
+                         ELSE n * f[n+1]
+
+
+------
+Last modified on Fri Jul 27 10:18:25 PDT 2001 by lamport

@@ -1,0 +1,18 @@
+This folder contains material to accompany the chapter "Composing
+Specifications".  It has the following files:
+
+CompositeFIFO.tla
+JointActionMemory.tla
+BinaryHourClock.tla
+ChannelRefinement.tla
+   The specifications from the book.
+
+HourClock.tla
+   A copy of the file from the folder HourClock.
+Channel.tla
+   A copy of the file from the folder AsynchronousInterface.
+
+InternalMemory.tla
+MemoryInterface.tla
+   Copies of the files from folder CachingMemory
+

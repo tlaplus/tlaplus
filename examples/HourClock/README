@@ -1,0 +1,41 @@
+This directory contains supporting material for the chapter
+"Specifying a Simple Clock".  It contains the following files:
+
+HourClock.tla
+  The ASCII version of the HourClock module.
+
+HourClock.cfg
+   A TLC configuration file for checking the HourClock specification.
+
+HourClock2.tla
+HourClock2.cfg
+  A module that defines the alternative specification HC2 of the
+  hour clock, and a configuration file for checking it with
+  TLC.
+
+
+Exercises:
+
+1. Run TLC on the HourClock specification.
+
+
+2. Add an error into the specification by modifying HCini to be
+
+     HCini  ==  hr \in (1 .. 11)
+     
+   and find the error with TLC.
+
+
+3. (a) Run TLC on the HourClock2 specification to test that specifications
+       HC and HC2 are equivalent.  (Hint: The given configuration file
+       checks that HC2 implies HC.  Two formulas are equivalent iff
+       each implies the other.)  
+
+   (b) Modify the definition of HC2 by changing the definition of HCnxt2
+       to
+          HCnxt2  ==  hr' = (hr % 11) + 1    
+
+       Use TLC to show that HC2 is then no longer equivalent to HC.
+
+------
+Last modified on Fri Jul 27 10:18:00 PDT 2001 by lamport

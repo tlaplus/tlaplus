@@ -1,0 +1,31 @@
+This folder accompanies the chapter "Real Time".  It
+contains the following files:
+
+HourClock.tla            
+   A copy of the file from the HourClock folder.
+
+InternalMemory.tla       
+Memory.tla               
+MemoryInterface.tla      
+WriteThroughCache.tla
+   Copies of the files from the CachingMemory folder.
+
+RealTime.tla
+RealTimeHourClock.tla
+RTMemory.tla             
+   The modules given in the chapter.
+
+MCRealTime.tla           
+MCRealTimeHourClock.cfg  
+MCRealTimeHourClock.tla
+   Modules for testing the RealTime and RealTimeHourClock with TLC.
+   (Random junk right now.)
+
+
+  
+Exercises:
+
+1. Check that the assumption of module RTWriteThroughCache relating
+   Delta, Epsilon, and Rho implies that the real-time write-through
+   cache algorithm responds to each request within Rho seconds.
+   What is the weakest relation you can find that works?

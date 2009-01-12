@@ -1,0 +1,47 @@
+CONSTANTS
+  (*************************************************************************)
+  (* We tell TLC what values to use for the constant parameters Reg, Adr,  *)
+  (* Val, Proc, and InitMem of the spec.                                   *)
+  (*************************************************************************)
+  Reg = {r1}
+  Adr = {a1}
+  Val = {v1, v2}
+  Proc = {p1}
+  InitMem <- MCInitMem 
+
+  (*************************************************************************)
+  (* We tell TLC to use model values in place of the constants InitWr and  *)
+  (* Done, whose definitions it can't handle.                              *)
+  (*************************************************************************)
+  InitWr  = InitWr
+  Done    = Done
+  MaxQLen = 1
+  Nat <- MCNat
+
+SPECIFICATION Spec
+
+CONSTRAINT Constraint
+
+INVARIANT DataInvariant
+\*  DataInvariant1
+\*  DataInvariant2
+\*  DataInvariant3
+\*  DataInvariant4
+\*  DataInvariant5
+\*  Serializable
+
+
+
+
+
+
+  (*************************************************************************)
+  (* We set the value of MaxQLen, used by the constraint.                  *)
+  (*************************************************************************)
+
+
+
+  (*************************************************************************)
+  (* We tell TLC to substitute MCNat for Nat.                              *)
+  (*************************************************************************)
+

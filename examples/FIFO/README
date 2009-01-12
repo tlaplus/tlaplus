@@ -1,0 +1,74 @@
+This folder accompanies the chapter "A FIFO".  It contains the
+following files:
+
+FIFO.tla
+InnerFIFO.tla
+   The specifications described in the book.
+
+InnerFIFOInstanced.tla    
+   Module InnerFIFOInstanced, which is a version of InnerFIFO with the
+   INSTANCE statements removed for checking with TLC Version 1.
+
+MCInnerFIFO.tla
+MCInnerFIFO.cfg
+   A module and configuration file for checking module
+   InnerFIFOInstanced (and hence module InnerFIFO) with TLC.
+
+Channel.tla
+   A copy of the file from the AsynchronousInterface folder.
+
+
+Exercises:
+
+1. (a) Write a specification of an hour-clock that sends the time to
+   the environment over a channel chan.  The specification should make
+   use of the definitions from the Channel and HourClock modules by
+   incorporating them with an EXTENDS statement.  Write two versions
+   of the specification.
+
+      Version 1: The clock can tick at any time.
+
+      Version 2: The clock cannot tick between sending a value on chan 
+                 and the receipt of that value by the environment.
+
+   Include type invariants and use TLC to check them.
+
+   (b) Use TLC to check that the Version 1 specification implements
+   the Channel specification with Data replaced by 1..12.  That is,
+   every behavior allowed by your specification satisfies the specification
+   Spec of module Channel, with Data replaced by the set 1..12.
+   Use TLC to check that Version 2 implements the specification
+   HourClockChannel that you wrote in Exercise 1 of folder
+   AsynchronousInterface.
+
+   (c) Write specifications that hides the clock in the specifications
+   of part (a).  Explain informally why the resulting specification
+   is equivalent to:
+
+      - The Channel specification with Data replaced by 1..12, for 
+        Version 1.
+
+      - The HourClockChannel specification, for Version 2.
+
+
+2. Write a specification of a resettable hour-clock that
+   communicates with a user over a channel chan.  The user can send the
+   clock an hour value.  When the clock receives the value v, it resets
+   hr to v.  The clock can also advance hr as usual.  The specification
+   should make use of the definitions from the Channel and HourClock
+   modules by incorporating them with an EXTENDS statement.  Write two
+   versions of the specification.
+
+      Version 1: The clock can tick at any time.
+
+      Version 2: The clock cannot tick if the user has sent a
+                 value that the clock has not yet received.
+
+
+3. Write a specification that consists of the specification HC of
+   module HourClock with the variable hr hidden.  Explain the meaning
+   of this specification.
+
+------
+Last modified on Sat Aug  4 14:47:06 PDT 2001 by lamport
+

@@ -1,0 +1,89 @@
+This folder accompanies the chapter "A Caching Memory".  It contains the
+following files:
+
+MemoryInterface.tla
+InternalMemory.tla              
+Memory.tla
+WriteThroughCache.tla
+   The specifications from the book.
+
+MCInternalMemory.cfg            
+MCInternalMemory.tla            
+   Files for checking the InternalMemory specification with TLC.
+
+WriteThroughCacheInstanced.tla
+   A version of the WriteThroughCache module with the INSTANCE
+   removed, for use with TLC.
+
+MCWriteThroughCache.cfg         
+MCWriteThroughCache.tla
+   Files for checking the algorithm described by WriteThroughCache
+   with TLC. Includes a check that it implements the InternalMemory
+   specification under the refinement mapping described in the section
+   "Proving Implementation".
+
+Exercises:
+
+1. Find the following values, and use TLC to check your answers. 
+   (See the file PrintValues.tla in the folder AsynchronousMemory.)
+
+   [i \in Nat |-> i^2][42]
+
+   LET f == [i \in Nat |-> i^2] 
+   IN  [f EXCEPT ![42] = 24][42]
+
+   LET f == [i \in Nat |-> i^2] 
+   IN  [f EXCEPT ![42] = @ - 24, ![24] = 42][42]
+   
+   LET f[i \in Nat] == IF i = 0 THEN 0 ELSE f[i-1] + i
+   IN  f[42]
+
+   [i \in {"a", "bc", "d"} |-> IF i = "a" THEN 17
+                                          ELSE 42].a
+   
+   [i \in {"a", "bc", "d"} |-> IF i = "a" THEN 17
+                                          ELSE 42].bc
+   
+   [a |-> 17, bc |-> 42, d |-> 42]["a"]
+
+   [a |-> 17, bc |-> 42, d |-> 42]["bc"]
+
+   DOMAIN [a |-> 17, bc |-> 42, d |-> 42]
+
+   LET f(a) == [i \in Nat |-> a^i]
+       g    == [j \in Nat |-> f(j)]
+   IN  g[2][3]
+
+   LET f(a) == [i \in Nat |-> a^i]
+       g    == [j \in Nat |-> f(j)]
+   IN  g[2][3]
+
+   [i \in Nat, j \in 1..10 |-> i*j][3,4]
+
+2. Define an operator AF such that, if r is a record, then:
+   if r has a "count" field, then AF(r) is r with the count
+   field incremented by 1, otherwise AF(r) is obtained from
+   r by adding a "count" field with value 0.
+
+3. Define an operator Reverse, so if s is any sequence, then
+   Reverse(s) is sequence s in reverse order.  (Hint: you
+   don't have to use recursion.)   Test it with
+   TLC.  (Don't forget to check that it works on the empty
+   sequence, << >> .)  
+
+4. Define a function Sum whose domain is Seq(Nat) such
+   that Sum(s) is the sum of the elements of s.  (Let
+   Sum(<< >>) equal 0.)
+
+5. Introduce an error into the write-through cache algorithm by
+   replacing `vmem' by `wmem' in the definition of MemQRd, and use TLC to
+   find a trace that demonstrates why it's an error.  (Hint: how large
+   does QLen have to be to reveal the error?)
+
+6. Specify a version of the write-through cache algorithm in which
+   there is a FIFO queue rdQ on the data path from the memory to the
+   bus through which values read from memory pass before entering the
+   cache.  Use TLC to check your specification.
+
+
+Last modified on Fri Jul 27 10:15:33 PDT 2001 by lamport

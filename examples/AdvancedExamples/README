@@ -1,0 +1,27 @@
+This folder contains material to accompany the chapter "Advanced
+Examples".  It has the following files:
+
+BNFGrammars.tla
+DifferentialEquations.tla
+Graphs.tla
+InnerSerial.tla
+RegisterInterface.tla
+SerialMemory.tla
+   The modules from the book.
+
+MCInnerSerial.tla
+MCInnerSerial.cfg
+   Files to run TLC on the InnerSerial specification.
+
+MCInnerSequential.tla
+MCInnerSequential.cfg
+   Files to run TLC on the InnerSequential specification.
+
+
+
+Exercises:
+1. With the definitions from the Graphs module, under what conditions 
+   is <<p>> an element of Path(G)?
+
+------
+Last modified on Tue Aug  7 10:16:29 PDT 2001 by lamport
