@@ -36,7 +36,12 @@ public class ExternalSort {
   private static boolean mergeStreams(InputStream in0, InputStream in1,
 				      OutputStream out, ExternalSortable ex) 
   throws IOException {
-    ExternalSortable a0, a1;
+   // 9 Jan 2009:
+   // Changed ExternalSortable to BigInt because of change in Java 1.6.
+   // (BigInteger was changed to implement Comparable.)
+   // This should be ok because BigInt was the only implementation of
+   // ExternalSortable
+    BigInt a0, a1;  // Changed ExternalSortable to BigInt
     int in0Size;
     int in1Size;
     int in0Pos = 0;
@@ -65,11 +70,12 @@ public class ExternalSort {
 		 "in0size and in1size should both be greater than 0");
 
     ByteUtils.writeInt(out, in0Size+in1Size);
-    a0 = ex; a1 = ex; // To avoid a compiler error re. initialization.
-    
+    a0 = (BigInt) ex; 
+    a1 = (BigInt) ex; // To avoid a compiler error re. initialization.
     // in0Pos keeps track of how many elements from in0 have been written
     // I only read at the beginning of the loop, so I can never read more
     // than I have (# of elements read <= # of elements written + 1)
+    // Changed ExternalSortable to BigInt on 9 Jan 2009
     while (in0Pos<in0Size && in1Pos<in1Size) {
       switch (lastWrote) {
       case -1:
@@ -124,7 +130,7 @@ public class ExternalSort {
   private static void initialSort(InputStream in, OutputStream out0, 
 				 OutputStream out1, ExternalSortable ex) 
   throws IOException {
-    ExternalSortable A [] = new ExternalSortable[SORTSIZE];
+    BigInt A [] = new BigInt[SORTSIZE]; // Changed ExternalSortable to BigInt on 9 Jan 2009	
     int i,j;
     OutputStream out = out0;
     boolean done = false;
