@@ -32,6 +32,13 @@
 		<antcall target="dist" inheritall="true" inheritrefs="true" />
 	</target>
 
+	<target name="default-release" depends="info" description="Produces a release">
+		<antcall target="compile" inheritall="true" inheritrefs="true" />
+		<antcall target="dist-mixed" inheritall="true" inheritrefs="true" />
+	</target>
+
+	
+	
 	<target name="clean" description="Cleans the compilation output directory">
 		<delete includeemptydirs="true" failonerror="false">
 			<fileset dir="${class.dir}" includes="*/**" />
@@ -67,6 +74,25 @@
 		</jar>
 	</target>
 
+
+	<target name="dist-mixed" description="Build a distribution">
+		<!-- create a JAR file for the users and developers-->
+		<zip destfile="${dist-mixed.file}">
+			<zipfileset dir="${src.dir}" includes="**/*" prefix="tla" />
+			<zipfileset dir="${class.dir}" includes="**/*" prefix="tla" />
+			<zipfileset dir="${doc.dir}" prefix="tla">
+				<include name="README"/>
+				<include name="License.txt"/>
+			</zipfileset>
+			<zipfileset dir="${examples.dir}" includes="**/*" prefix="tla/examples">
+				<include name="**/*"/>
+				<exclude name=".project"/>
+			</zipfileset>
+			
+		</zip>
+	</target>
+
+	
 	
 	<target name="javacc" description="Generates JavaCC based Parser">
 		<mkdir dir="${src-gen}"/>
