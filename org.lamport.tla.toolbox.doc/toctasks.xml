@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?NLS TYPE="org.eclipse.help.toc"?>
+
+<toc label="Tasks" link_to="toc.xml#tasks">
+ <topic href="html/tasks/create_spec.html" label="Create new specification">
+ </topic>
+ <topic href="html/tasks/open_spec.html" label="Open existing specification">
+ </topic>
+ <topic href="html/tasks/close_spec.html" label="Close specification">
+ </topic> 
+ <topic href="html/tasks/delete_spec.html" label="Delete existing specification"> 
+ </topic>
+</toc>
