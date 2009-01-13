@@ -442,4 +442,10 @@
 <!--
   Marker resolution
 -->
+   <extension
+         point="org.eclipse.ui.ide.markerResolution">
+         <markerResolutionGenerator
+         	class="org.lamport.tla.toolbox.util.TLAMarkerResolutionGenerator"
+         	markerType="toolbox.markers.TLAParserProblemMarker" />
+   </extension>
 </plugin>
