@@ -16,6 +16,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IPerspectiveDescriptor;
+import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -27,12 +28,13 @@ import org.lamport.tla.toolbox.Activator;
 
 /**
  * A Helper for handling the RCP Objects like windows, editors and views
- * 
+ * @version $Id$
  * @author zambrovski
  */
 public class UIHelper
 {
 
+    
     /**
      * Closes all windows with a perspective
      * 
@@ -63,6 +65,7 @@ public class UIHelper
      * @param input
      *            IAdaptable, or null if no input
      * @return IWorkbenchWindow instance
+     * 
      */
     public static IWorkbenchWindow openPerspectiveInNewWindow(String perspectiveId, IAdaptable input)
     {
@@ -80,6 +83,29 @@ public class UIHelper
         return window;
     }
 
+    /**
+     * Opens a view
+     * @param viewId
+     * @return the reference to the view
+     */
+    public static IViewPart openView(String viewId)
+    {
+        IViewPart view = null;
+        try
+        {
+            view = getActivePage().showView(viewId);
+        } catch (PartInitException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return view;
+    }
+    
+    /**
+     * Returns the perspective to its initial layout
+     * @param perspectiveId
+     */
     public static void revertPerspecive(String perspectiveId)
     {
         IWorkbench workbench = Activator.getDefault().getWorkbench();
@@ -241,6 +267,14 @@ public class UIHelper
     private static Shell getShell()
     {
         return getActiveWindow().getShell();
+    }
+
+    public static IWorkbenchWindow getRootWindow()
+    {
+        IWorkbenchWindow[] workbenchWindows = Activator.getDefault().getWorkbench().getWorkbenchWindows();
+        
+        
+        return null;
     }
 
 }
