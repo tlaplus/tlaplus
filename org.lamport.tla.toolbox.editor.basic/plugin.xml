@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>
+   <extension
+         point="org.eclipse.ui.editors">
+      <editor
+            id="org.lamport.tla.toolbox.editor.basic.TLAEditor"
+            name="TLA+ Basic Editor"
+            extensions="tla"
+            icon="icons/tla_obj.gif"
+            contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
+            class="org.lamport.tla.toolbox.editor.basic.TLAEditor">
+      </editor>
+   </extension>
+</plugin>
