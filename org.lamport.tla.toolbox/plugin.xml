@@ -1,0 +1,445 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>
+   <extension-point id="org.lamport.toolbox.tool" name="Tool" schema="schema/org.lamport.toolbox.tool.exsd"/>
+<!--                                   -->
+<!-- Perspectives                      -->
+<!--                                   -->
+   <extension
+         point="org.eclipse.ui.perspectives">
+      <perspective
+            name="SpecLoaded Perspective"
+            class="org.lamport.tla.toolbox.ui.perspective.SpecLoadedPerspective"
+            id="org.lamport.tla.toolbox.ui.perspective.specLoaded">
+      </perspective>
+      <perspective
+            class="org.lamport.tla.toolbox.ui.perspective.InitialPerspective"
+            id="org.lamport.tla.toolbox.ui.perspective.initial"
+            name="Initial Perspective">
+      </perspective>
+      <perspective
+            class="org.lamport.tla.toolbox.ui.perspective.ProblemsPerspective"
+            id="org.lamport.tla.toolbox.ui.perspective.problems"
+            name="Problems Perspective">
+      </perspective>
+   </extension>
+   
+<!--                                   -->
+<!-- Views to be displayed to the user -->
+<!--                                   -->
+   <extension
+         point="org.eclipse.ui.views">
+      <view
+            name="Welcome View"
+            allowMultiple="false"
+            icon="icons/full/eview16/console_view2.gif"
+            class="org.lamport.tla.toolbox.ui.view.WelcomeView"
+            id="toolbox.view.WelcomeView">
+      </view>
+      <view
+            allowMultiple="false"
+            class="org.lamport.tla.toolbox.ui.view.SpecLoadedView"
+            icon="icons/full/eview16/console_view2.gif"
+            id="toolbox.view.SpecLoadedView"
+            name="Specification Loaded">
+      </view>
+      <view
+            name="Problem View"
+            allowMultiple="false"
+            icon="icons/full/eview16/console_view2.gif"
+            class="org.lamport.tla.toolbox.ui.view.ProblemView"
+            id="toolbox.view.ProblemView">
+      </view>
+   </extension>
+      
+<!--                                   -->
+<!-- Wizards : New Spec                -->
+<!--                                   -->
+   <extension
+         point="org.eclipse.ui.newWizards">
+      <category
+            name="TLA+"
+            id="toolbox.wizard"/>
+      <wizard
+            class="org.lamport.tla.toolbox.ui.wizard.NewSpecWizard"
+            category="toolbox.wizard"
+            project="true"
+            name="TLA+ Specification"
+            id="toolbox.wizard.NewSpecWizard">
+         <description/>
+      </wizard>
+   </extension>
+   
+<!--                                   -->
+<!-- Commands                          -->
+<!--                                   -->
+   <extension
+         point="org.eclipse.ui.commands">
+      <category
+            description="Speicification Commands"
+            id="toolbox.command.category.spec"
+            name="Spec">
+      </category>
+      <command
+            categoryId="toolbox.command.category.spec"
+            description="Create a new specification"
+            id="toolbox.command.newSpec"
+            name="New Specification">
+      </command>
+      <command
+            categoryId="toolbox.command.category.spec"
+            description="Open the specification"
+            id="toolbox.command.openSpec"
+            name="Open Specification">
+         <commandParameter
+               id="toolbox.command.openSpec.param"
+               name="specName"
+               optional="false">
+         </commandParameter>
+      </command>
+      <command
+            categoryId="toolbox.command.category.spec"
+            description="Close the specification"
+            id="toolbox.command.close"
+            name="Close Specification">
+      </command>
+      <category
+            description="Module Commands"
+            id="toolbox.command.category.module"
+            name="Module">
+      </category>
+      <command
+            categoryId="toolbox.command.category.module"
+            description="Re-Open a module"
+            id="toolbox.command.reopen"
+            name="Re-Open Module">
+      </command>
+      <command
+            categoryId="toolbox.command.category.module"
+            description="Parse specification root module"
+            id="toolbox.command.parse"
+            name="Parse Root Module">
+      </command>
+   </extension>
+      
+<!--                                   -->
+<!-- Menus                             -->
+<!--                                   -->   
+   <extension
+         point="org.eclipse.ui.menus">
+      <!-- file menu spec part -->
+      <menuContribution
+            locationURI="menu:toolbox.file.menu?after=toolbox.file.spec.separator">
+         <command
+               commandId="toolbox.command.newSpec"
+               id="toolbox.menu.spec.new"
+               label="New Spec..."
+               mnemonic="N">
+            <visibleWhen
+                  checkEnabled="true">
+               <with
+                     variable="activeWorkbenchWindow.activePerspective">
+                  <equals
+                        value="org.lamport.tla.toolbox.ui.perspective.initial">
+                  </equals>
+               </with>
+            </visibleWhen>
+         </command>
+         <menu
+               id="toolbox.menu.spec.open"
+               label="Open Spec"
+               mnemonic="O">
+            <visibleWhen
+                  checkEnabled="true">
+               <with
+                     variable="activeWorkbenchWindow.activePerspective">
+                  <equals
+                        value="org.lamport.tla.toolbox.ui.perspective.initial">
+                  </equals>
+               </with>
+            </visibleWhen>
+            <dynamic
+                  class="org.lamport.tla.toolbox.ui.contribution.SpecListContributionItem"
+                  id="toolbox.menu.spec.open.dynamic">
+            </dynamic>
+         </menu>
+         <command
+               commandId="toolbox.command.close"
+               id="toolbox.file.close"
+               label="Close Spec"
+               mnemonic="C"
+               style="push"
+               tooltip="Close current specification">
+            <visibleWhen
+                  checkEnabled="true">
+               <with
+                     variable="activeWorkbenchWindow.activePerspective">
+                  <equals
+                        value="org.lamport.tla.toolbox.ui.perspective.specLoaded">
+                  </equals>
+               </with>
+            </visibleWhen>
+         </command>
+         
+      </menuContribution>
+      <menuContribution
+            locationURI="menu:toolbox.file.menu?after=toolbox.file.module.separator">
+         <command
+               commandId="org.eclipse.ui.file.save"
+               id="toolbox.file.save"
+               label="Save"
+               mnemonic="S"
+               style="push">
+            <visibleWhen
+                  checkEnabled="true">
+               <with
+                     variable="activeWorkbenchWindow.activePerspective">
+                  <equals
+                        value="org.lamport.tla.toolbox.ui.perspective.specLoaded">
+                  </equals>
+               </with>
+            </visibleWhen>
+         </command>
+         <command
+               commandId="org.eclipse.ui.file.saveAs"
+               id="toolbox.file.saveAs"
+               label="Save As..."
+               mnemonic="A"
+               style="push">
+            <visibleWhen
+                  checkEnabled="true">
+               <with
+                     variable="activeWorkbenchWindow.activePerspective">
+                  <equals
+                        value="org.lamport.tla.toolbox.ui.perspective.specLoaded">
+                  </equals>
+               </with>
+            </visibleWhen>
+         </command>
+         <command
+               commandId="toolbox.command.reopen"
+               id="toolbox.file.reopen"
+               label="Re-Open (read only)"
+               mnemonic="O"
+               style="push">
+            <visibleWhen
+                  checkEnabled="true">
+               <with
+                     variable="activeWorkbenchWindow.activePerspective">
+                  <equals
+                        value="org.lamport.tla.toolbox.ui.perspective.specLoaded">
+                  </equals>
+               </with>
+            </visibleWhen>
+         </command>
+      </menuContribution>
+      <menuContribution
+            locationURI="menu:toolbox.file.menu?after=additions">
+         <command
+               commandId="org.eclipse.ui.window.preferences"
+               id="toolbox.file.preferences"
+               style="push">
+         </command>
+         <command
+               commandId="org.eclipse.ui.views.showView"
+               label="--&gt; TO REMOVE -- Show View"
+               style="push">
+         </command>
+      </menuContribution>
+      <!-- file menu module part -->
+      
+      <!-- edit menu -->
+      <menuContribution
+            locationURI="menu:org.eclipse.ui.main.menu?after=toolbox.file.menu">
+         <menu
+               label="Edit"
+               mnemonic="E">
+            <visibleWhen
+                  checkEnabled="true">
+               <with
+                     variable="activeWorkbenchWindow.activePerspective">
+                  <equals
+                        value="org.lamport.tla.toolbox.ui.perspective.specLoaded">
+                  </equals>
+               </with>
+            </visibleWhen>
+            <command
+                  commandId="org.eclipse.ui.edit.undo">
+            </command>
+            <command
+                  commandId="org.eclipse.ui.edit.redo">
+            </command>
+            <separator
+                  name="toolbox.edit.separator1"
+                  visible="true">
+            </separator>
+            <command
+                  commandId="org.eclipse.ui.edit.cut">
+            </command>
+            <command
+                  commandId="org.eclipse.ui.edit.copy"
+                  >
+            </command>
+            <command
+                  commandId="org.eclipse.ui.edit.paste">
+            </command>
+            <separator
+                  name="toolbox.edit.separator2"
+                  visible="true">
+            </separator>
+            <command
+                  commandId="org.eclipse.ui.edit.delete">
+            </command>
+            <command
+                  commandId="org.eclipse.ui.edit.selectAll"
+                  >
+            </command>
+            <separator
+                  name="toolbox.edit.separator3"
+                  visible="true">
+            </separator>
+            <command
+                  commandId="org.eclipse.ui.edit.findReplace">
+            </command>
+         </menu>
+      </menuContribution>
+
+      <menuContribution
+            locationURI="menu:toolbox.tools.menu?before=toolbox.tools.separator">
+         <command
+               commandId="toolbox.command.parse"
+               id="toolbox.menu.run.parseRoot"
+               label="Parse"
+               mnemonic="P">
+            <visibleWhen
+                  checkEnabled="true">
+               <with
+                     variable="activeWorkbenchWindow.activePerspective">
+                  <equals
+                        value="org.lamport.tla.toolbox.ui.perspective.specLoaded">
+                  </equals>
+               </with>
+            </visibleWhen>
+         </command>
+      </menuContribution>
+
+      <menuContribution
+            locationURI="toolbar:org.eclipse.ui.trim.status">
+         <toolbar
+               id="toolbox.toolbar.status">
+         <control
+               class="org.lamport.tla.toolbox.ui.contribution.ParseStatusContribution"
+               id="toolbox.parse.status.control">
+                        <visibleWhen
+               checkEnabled="true">
+            <with
+                  variable="activeWorkbenchWindow.activePerspective">
+               <equals
+                     value="org.lamport.tla.toolbox.ui.perspective.specLoaded">
+               </equals>
+            </with>
+         </visibleWhen>
+               
+         </control>
+         </toolbar>
+      </menuContribution>
+   </extension>
+   
+<!--              -->
+<!-- Handler      -->
+<!--              -->
+   <extension
+         point="org.eclipse.ui.handlers">
+      <handler
+            class="org.lamport.tla.toolbox.ui.handler.NewSpecHandler"
+            commandId="toolbox.command.newSpec">
+      </handler>>
+      <handler
+            class="org.lamport.tla.toolbox.ui.handler.NewSpecHandler"
+            commandId="toolbox.command.reopen">
+      </handler>
+      <handler
+            class="org.lamport.tla.toolbox.ui.handler.ParseHandler"
+            commandId="toolbox.command.parse">
+      </handler>
+      <handler
+            class="org.lamport.tla.toolbox.ui.handler.CloseSpecHandler"
+            commandId="toolbox.command.close">
+      </handler>
+      <handler
+            class="org.lamport.tla.toolbox.ui.handler.OpenSpecHandler"
+            commandId="toolbox.command.openSpec">
+      </handler>
+
+   </extension>
+   
+   <!-- Adapters -->
+   <extension
+         point="org.eclipse.core.runtime.adapters">
+      <factory
+            adaptableType="org.lamport.tla.toolbox.spec.Spec"
+            class="org.lamport.tla.toolbox.util.AdapterFactory">
+         <adapter
+               type="org.eclipse.ui.model.IWorkbenchAdapter">
+         </adapter>
+      </factory>
+      <factory
+            adaptableType="org.lamport.tla.toolbox.spec.parser.problem.ProblemContainer"
+            class="org.lamport.tla.toolbox.util.AdapterFactory">
+         <adapter
+               type="org.eclipse.ui.model.IWorkbenchAdapter">
+         </adapter>
+      </factory>
+      <factory
+            adaptableType="org.lamport.tla.toolbox.spec.parser.problem.Problem"
+            class="org.lamport.tla.toolbox.util.AdapterFactory">
+         <adapter
+               type="org.eclipse.ui.model.IWorkbenchAdapter">
+         </adapter>
+      </factory>
+   </extension>
+
+<!--
+  Nature defintion
+-->
+   <extension
+         id="toolbox.natures.TLANature"
+         name="TLA+ Nature"
+         point="org.eclipse.core.resources.natures">
+      <runtime>
+         <run
+               class="org.lamport.tla.toolbox.spec.nature.TLANature">
+         </run>
+      </runtime>
+   </extension>
+
+<!--
+ Problem marker definition 
+-->
+   <extension
+         id="toolbox.markers.TLAParserProblemMarker"
+         name="TLA Parse Problem"
+         point="org.eclipse.core.resources.markers">
+      <super
+            type="org.eclipse.core.resources.problemmarker">
+      </super>
+      <attribute
+            name="toolbox.location.modulename">
+      </attribute>
+      <attribute
+            name="toolbox.location.beginline">
+      </attribute>
+      <attribute
+            name="toolbox.location.endline">
+      </attribute>
+      <attribute
+            name="toolbox.location.begincolumn">
+      </attribute>
+      <attribute
+            name="toolbox.location.endcolumn">
+      </attribute>
+   </extension>
+<!--
+  Marker resolution
+-->
+</plugin>
