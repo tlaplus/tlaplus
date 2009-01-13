@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>
+
+<!--              -->
+<!-- Application  -->
+<!--              -->
+   <extension
+         id="org.lamport.tla.toolbox.application"
+         point="org.eclipse.core.runtime.applications">
+      <application>
+         <run
+               class="org.lamport.tla.toolbox.Application">
+         </run>
+      </application>
+   </extension>
+<!--              -->
+<!-- Product      -->
+<!--              -->
+   <extension
+         id="product"
+         point="org.eclipse.core.runtime.products">
+      <product
+            application="org.lamport.tla.toolbox.application"
+            name="TLA+ Toolbox">
+         <property
+               name="windowImages"
+               value="icons/full/etool16/tla_launch_check_wiz.gif">
+         </property>
+         <property
+               name="aboutText"
+               value="TLA+ Toolbox provides a user interface for TLA+ Tools. To report a bug or make a suggestion, please contact Leslie Lamport at http://www.lamport.org/">
+         </property>
+         <property
+               name="aboutImage"
+               value="icons/full/product_lg.gif">
+         </property>
+         <property
+               name="appName"
+               value="TLA+ Toolbox">
+         </property>
+         <property
+               name="startupProgressRect"
+               value="5,275,445,15">
+         </property>
+         <property
+               name="preferenceCustomization"
+               value="plugin_customization.ini">
+         </property>
+      </product>
+   </extension>
+</plugin>
