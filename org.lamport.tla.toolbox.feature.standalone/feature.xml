@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+      id="org.lamport.tla.toolbox.feature.standalone"
+      label="TLA+ Toolbox Standalone Feature"
+      version="1.0.0"
+      provider-name="Simon Zambrovski, Leslie Lamport"
+      plugin="org.lamport.tla.toolbox.product.standalone"
+      os="linux,macosx,win32"
+      ws="carbon,gtk,win32,wpf"
+      arch="ppc,x86,x86_64">
+
+   <description>
+      This feature defines is a top feature included in the stand-alone product definition. It refers to other feauter required in runtime and uses as an assembly point for the stand-alone TLA+ Toolbox.
+   </description>
+
+   <includes
+         id="org.eclipse.rcp"
+         version="0.0.0"
+         os="linux,macosx,win32"
+         ws="carbon,win32,wpf"
+         arch="sparc,x86,x86_64"/>
+
+   <includes
+         id="org.eclipse.help"
+         version="0.0.0"
+         os=""/>
+
+   <includes
+         id="org.lamport.tla.toolbox.feature.base"
+         version="0.0.0"
+         os=""
+         ws=""
+         arch=""/>
+
+   <includes
+         id="org.lamport.tla.toolbox.feature.editor"
+         version="0.0.0"/>
+
+   <includes
+         id="org.lamport.tla.toolbox.feature.help"
+         version="0.0.0"/>
+
+   <includes
+         id="org.lamport.tla.toolbox.feature.tlc"
+         version="0.0.0"/>
+
+   <plugin
+         id="org.lamport.tla.toolbox.product.standalone"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+</feature>
