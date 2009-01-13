@@ -5,7 +5,7 @@ import org.eclipse.ui.IPerspectiveFactory;
 import org.lamport.tla.toolbox.ui.view.ProblemView;
 
 /**
- * The "perspective" that is used to show the problem view in a spearate window
+ * The "perspective" that is used to show the problem view in a separate window
  * 
  * @author zambrovski
  */
@@ -19,7 +19,6 @@ public class ProblemsPerspective implements IPerspectiveFactory
         layout.setEditorAreaVisible(false);
         String editorArea = layout.getEditorArea();
         layout.addStandaloneView(ProblemView.ID, false, IPageLayout.LEFT, 0.5f, editorArea);
-        layout.addStandaloneView("org.eclipse.ui.views.ProblemView", false, IPageLayout.BOTTOM, 0.75f, ProblemView.ID);
         layout.getViewLayout(ProblemView.ID).setCloseable(false);
     }
 }
