@@ -27,10 +27,11 @@ import util.UniqueString;
  * This parser launcher starts SANY and uses SANY's console output to find errors
  * 
  * @author zambrovski
+ * @version $Id$
  */
 public class StreamInterpretingParserLauncher implements IParserLauncher
 {
-    private Errors parseErrors    = null;
+    private Errors parseErrors = null;
     private Errors semanticErrors = null;
 
     /*
@@ -39,22 +40,22 @@ public class StreamInterpretingParserLauncher implements IParserLauncher
      */
     public int parseSpecification(Spec specification)
     {
-        
+
         ToolIO.setUserDir(ResourceHelper.getParentDir(specification.getRootFilename()));
 
         // call the parsing
         int status = parseMainModule(true, specification.getRootFilename());
         // System.out.println("Parsing Status: " + status);
-        
+
         // set the status back into the spec
         specification.setStatus(status);
 
         // reset problems from previous run
         specification.getParseProblems().reset();
-        
+
         // store errors inside the specification
         processParsingErrors(specification);
-        
+
         return status;
     }
 
@@ -217,26 +218,26 @@ public class StreamInterpretingParserLauncher implements IParserLauncher
     {
 
         switch (spec.getStatus()) {
-            /* ------------------ SYNTAX ERRORS --------------------- */
-            case IParseConstants.SYNTAX_ERROR: {
+        /* ------------------ SYNTAX ERRORS --------------------- */
+        case IParseConstants.SYNTAX_ERROR: {
 
-                /**
-                 * First try to get the information from parser's printed output.<br>
-                 * Here's what I've found out about messages when there's a parsing error. The message with the error
-                 * looks like one of the following: <br>
-                 * - "Lexical error at line n, column n." + message<br>
-                 * <br>
-                 * - "***Parse Error***"\n + Message + "at line n, column n" <br>
-                 * + Message<br>
-                 * <br>
-                 * - "Parse Error\n\n Precedence conflict between<br>
-                 * ops /\ in block line n, col m to line m, col<br>
-                 * of module Foo and \/ " + message<br>
-                 * <br>
-                 * The preceding message is<br>
-                 * <br>
-                 * "Parsing module Naturals in file<br>
-                 * C:\\users\lamport ...\Naturals.tla"<br>
+            /**
+             * First try to get the information from parser's printed output.<br>
+             * Here's what I've found out about messages when there's a parsing error. The message with the error
+             * looks like one of the following: <br>
+             * - "Lexical error at line n, column n." + message<br>
+             * <br>
+             * - "***Parse Error***"\n + Message + "at line n, column n" <br>
+             * + Message<br>
+             * <br>
+             * - "Parse Error\n\n Precedence conflict between<br>
+             * ops /\ in block line n, col m to line m, col<br>
+             * of module Foo and \/ " + message<br>
+             * <br>
+             * The preceding message is<br>
+             * <br>
+             * "Parsing module Naturals in file<br>
+             * C:\\users\lamport ...\Naturals.tla"<br>
                  * <br>
                  * which is produced by a call to ToolIO.out.println in<br>
                  * ParseUnit.parseFile<br>
@@ -266,133 +267,133 @@ public class StreamInterpretingParserLauncher implements IParserLauncher
                  * - "Could not parse module Foo from file FooBar"<br>
                  * I have no idea when that is produced.
                  */
-                String[] output = ToolIO.getAllMessages();
-                int nextMsg = 0;
+            String[] output = ToolIO.getAllMessages();
+            int nextMsg = 0;
 
-                Problem holder = new Problem(Problem.ERROR);
-                // Set module name and leave nextMsg the index of the error message.
-                while ((nextMsg < output.length) && (output[nextMsg].indexOf("Parsing module") != -1))
+            Problem holder = new Problem(Problem.ERROR);
+            // Set module name and leave nextMsg the index of the error message.
+            while ((nextMsg < output.length) && (output[nextMsg].indexOf("Parsing module") != -1))
+            {
+                nextMsg++;
+            }
+            if ((nextMsg != 0) && (nextMsg != output.length))
+            {
+                String str = output[nextMsg - 1];
+                int pmi = str.indexOf("Parsing module") + 15;
+                holder.location.moduleName = str.substring(pmi, str.indexOf(" ", pmi + 1));
+            } // if
+            else
+            {
+                // TODO
+                throw new RuntimeException("Console parsing BUG");
+                // GUI.ReportBug(null,
+                // "Bug Spec.ProcessParsingErrorMessages:1869.  "
+                // + "Can't find module name") ;
+            } // else
+
+            // Get any line numbers and get the message.
+            String errMsg = output[nextMsg];
+            if ((errMsg.indexOf("Lexical error") != -1) || (errMsg.indexOf("***Parse Error***") != -1))
+            {
+                // This is a meaningful error message and should have at least
+                // one line, column number.
+                int[] val = findLineAndColumn(0, errMsg);
+                holder.location.beginLine = val[0];
+                holder.location.beginColumn = val[1];
+                val = findLineAndColumn(val[2], errMsg);
+
+                // Set err.endLine, err.endColumn if position val[0], val[1] is
+                // after err.beginLine, err.beginColumn.
+                if ((val[0] > holder.location.beginLine)
+                        || ((val[0] == holder.location.beginLine) && (val[1] >= holder.location.beginColumn)))
                 {
-                    nextMsg++;
+                    holder.location.endLine = val[0];
+                    holder.location.endColumn = val[1];
                 }
-                if ((nextMsg != 0) && (nextMsg != output.length))
+                holder.message = errMsg;
+            } // if
+            else
+            {
+                // This is not a meaningful error message; get the message from
+                // the abort in parseErrors
+                if (parseErrors != null)
                 {
-                    String str = output[nextMsg - 1];
-                    int pmi = str.indexOf("Parsing module") + 15;
-                    holder.location.moduleName = str.substring(pmi, str.indexOf(" ", pmi + 1));
-                } // if
-                else
+                    String[] aborts = parseErrors.getAborts();
+                    if (aborts.length > 0)
+                    {
+                        holder.message = aborts[0];
+                    }
+                }
+                // Unless this is the one abort in which err.moduleName can be
+                // computed from the error messages, reset it to "".
+                if (holder.message.indexOf("does not match the name") == -1)
                 {
-                    // TODO
-                    // GUI.ReportBug(null,
-                    // "Bug Spec.ProcessParsingErrorMessages:1869.  "
-                    // + "Can't find module name") ;
-                } // else
+                    holder.location.moduleName = "";
+                }
+            } // else
 
-                // Get any line numbers and get the message.
-                String errMsg = output[nextMsg];
-                if ((errMsg.indexOf("Lexical error") != -1) || (errMsg.indexOf("***Parse Error***") != -1))
+            // add the error to the spec
+            spec.getParseProblems().addProblem(holder);
+
+            break;
+        }
+            /* ------------------ SEMANTIC ERRORS AND WARNINGS --------------------- */
+        case IParseConstants.SEMANTIC_ERROR:
+        case IParseConstants.SEMANTIC_WARNING: {
+            // There were semantic errors or warnings; set semanticGUIErrors.
+            if (semanticErrors == null)
+            {
+                // TODO
+                // GUI.ReportBug(window,
+                // "Bug Spec.ProcessParsingErrorMsgs.1418:\n" +
+                // "Semantic error detected but no error message found.");
+            }
+
+            String[][] errors = { semanticErrors.getAborts(), semanticErrors.getErrors(), semanticErrors.getWarnings() };
+            int[] holderType = { Problem.ABORT, Problem.ERROR, Problem.WARNING };
+
+            for (int j = 0; j < 3; j++)
+            {
+                for (int i = 0; i < errors[j].length; i++)
                 {
-                    // This is a meaningful error message and should have at least
-                    // one line, column number.
-                    int[] val = findLineAndColumn(0, errMsg);
+                    // assumes that the holderType array holds the types corresponding to the way errors[][]
+                    // constructed
+                    Problem holder = new Problem(holderType[j]);
+                    // store the message text
+                    holder.message = errors[j][i];
+
+                    // Get pair of line, column numbers
+                    int[] val = findLineAndColumn(0, holder.message);
                     holder.location.beginLine = val[0];
                     holder.location.beginColumn = val[1];
-                    val = findLineAndColumn(val[2], errMsg);
-
-                    // Set err.endLine, err.endColumn if position val[0], val[1] is
-                    // after err.beginLine, err.beginColumn.
+                    val = findLineAndColumn(val[2], holder.message);
                     if ((val[0] > holder.location.beginLine)
                             || ((val[0] == holder.location.beginLine) && (val[1] >= holder.location.beginColumn)))
                     {
                         holder.location.endLine = val[0];
                         holder.location.endColumn = val[1];
                     }
-                    holder.message = errMsg;
-                } // if
-                else
-                {
-                    // This is not a meaningful error message; get the message from
-                    // the abort in parseErrors
-                    if (parseErrors != null)
+
+                    // Get module name. We use the fact that errors and warnings are always generated with the
+                    // module
+                    // indicated by " module Name\n". *
+                    int beginModuleIdx = holder.message.indexOf(" module ");
+                    if (beginModuleIdx != -1)
                     {
-                        String[] aborts = parseErrors.getAborts();
-                        if (aborts.length > 0)
+                        beginModuleIdx = beginModuleIdx + " module ".length();
+                        int endModuleIdx = holder.message.indexOf("\n", beginModuleIdx);
+                        if (endModuleIdx != -1)
                         {
-                            holder.message = aborts[0];
+                            holder.location.moduleName = holder.message.substring(beginModuleIdx, endModuleIdx);
                         }
                     }
-                    // Unless this is the one abort in which err.moduleName can be
-                    // computed from the error messages, reset it to "".
-                    if (holder.message.indexOf("does not match the name") == -1)
-                    {
-                        holder.location.moduleName = "";
-                    }
-                } // else
-
-                // add the error to the spec
-                spec.getParseProblems().addProblem(holder);
-
-                break;
-            }
-                /* ------------------ SEMANTIC ERRORS AND WARNINGS --------------------- */
-            case IParseConstants.SEMANTIC_ERROR:
-            case IParseConstants.SEMANTIC_WARNING: {
-                // There were semantic errors or warnings; set semanticGUIErrors.
-                if (semanticErrors == null)
-                {
-                    // TODO
-                    // GUI.ReportBug(window,
-                    // "Bug Spec.ProcessParsingErrorMsgs.1418:\n" +
-                    // "Semantic error detected but no error message found.");
+                    // add error to the spec
+                    spec.getParseProblems().addProblem(holder);
                 }
+            }// for i, for j
 
-                String[][] errors = { semanticErrors.getAborts(), semanticErrors.getErrors(),
-                        semanticErrors.getWarnings() };
-                int[] holderType = { Problem.ABORT, Problem.ERROR, Problem.WARNING };
-
-                for (int j = 0; j < 3; j++)
-                {
-                    for (int i = 0; i < errors[j].length; i++)
-                    {
-                        // assumes that the holderType array holds the types corresponding to the way errors[][]
-                        // constructed
-                        Problem holder = new Problem(holderType[j]);
-                        // store the message text
-                        holder.message = errors[j][i];
-
-                        // Get pair of line, column numbers
-                        int[] val = findLineAndColumn(0, holder.message);
-                        holder.location.beginLine = val[0];
-                        holder.location.beginColumn = val[1];
-                        val = findLineAndColumn(val[2], holder.message);
-                        if ((val[0] > holder.location.beginLine)
-                                || ((val[0] == holder.location.beginLine) && (val[1] >= holder.location.beginColumn)))
-                        {
-                            holder.location.endLine = val[0];
-                            holder.location.endColumn = val[1];
-                        }
-
-                        // Get module name. We use the fact that errors and warnings are always generated with the
-                        // module
-                        // indicated by " module Name\n". *
-                        int beginModuleIdx = holder.message.indexOf(" module ");
-                        if (beginModuleIdx != -1)
-                        {
-                            beginModuleIdx = beginModuleIdx + 8;
-                            int endModuleIdx = holder.message.indexOf("\n", beginModuleIdx);
-                            if (endModuleIdx != -1)
-                            {
-                                holder.location.moduleName = holder.message.substring(beginModuleIdx, endModuleIdx);
-                            }
-                        }
-                        // add error to the spec
-                        spec.getParseProblems().addProblem(holder);
-                    }
-                }// for i, for j
-
-                break;
-            }
+            break;
+        }
 
         }
 
