@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.IAdapterFactory;
+import org.eclipse.swt.SWT;
 import org.eclipse.ui.model.IWorkbenchAdapter;
 import org.eclipse.ui.model.WorkbenchAdapter;
 import org.lamport.tla.toolbox.spec.Spec;
@@ -11,7 +12,11 @@ import org.lamport.tla.toolbox.spec.parser.IParseConstants;
 import org.lamport.tla.toolbox.spec.parser.problem.Problem;
 import org.lamport.tla.toolbox.spec.parser.problem.ProblemContainer;
 
-
+/**
+ * A toolkit with adapter methods
+ * @author Simon Zambrovski
+ * @version $Id$
+ */
 public class AdapterFactory implements IAdapterFactory
 {
     // list of supported targets
@@ -148,6 +153,9 @@ public class AdapterFactory implements IAdapterFactory
                     return " error ";
                 case IParseConstants.UNPARSED:
                     return " unparsed ";
+                case IParseConstants.MODIFIED:
+                    return " changed ";
+                    
                 default:
                     return " unknown ";
             }
@@ -155,6 +163,36 @@ public class AdapterFactory implements IAdapterFactory
             return " unknown ";
         }
     }
+    
+    /**
+     * Converts parse status to a color for display in the status contribution item
+     * @param spec specification holding the parse status
+     * @return SWT color constant
+     */
+    public static int getStatusAsSWTColor(Spec spec)
+    {
+        if (spec != null)
+        {
+            switch (spec.getStatus()) {
+                case IParseConstants.PARSED:
+                    return SWT.COLOR_DARK_GREEN;
+                case IParseConstants.COULD_NOT_FIND_MODULE:
+                case IParseConstants.SEMANTIC_ERROR:
+                case IParseConstants.SYNTAX_ERROR:
+                case IParseConstants.UNKNOWN_ERROR:
+                    return SWT.COLOR_YELLOW;
+                case IParseConstants.UNPARSED:
+                    return SWT.COLOR_DARK_RED;
+                case IParseConstants.MODIFIED:
+                    return SWT.COLOR_DARK_GRAY;
+                case IParseConstants.UNKNOWN:
+                default:
+                    return SWT.COLOR_GRAY;
+            }
+        } else {
+            return SWT.COLOR_GRAY;
+        }
+    } 
 
     /**
      * Decides, if a parse status is a problem
