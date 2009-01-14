@@ -212,7 +212,7 @@ class PcalCharReader
         if (next == '\t')
           { return "\t" ;} ;
         backspace() ;
-// System.out.println("Peek returns at line = " + line + ", col = " + column);
+// System.out.println("Peek returns `" +  currentLine.substring(column) + "' at line = " + line + ", col = " + column);
         return currentLine.substring(column) + "\n" ;
       }
       

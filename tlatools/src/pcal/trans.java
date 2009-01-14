@@ -166,8 +166,8 @@ class trans
     { /*********************************************************************
       * Get and print version number.                                      *
       *********************************************************************/
-      String lastModified = 
-         "last modified on Sat 19 April 2008 at 13:47:29 PST by lamport";
+      String lastModified =  
+         "last modified on Wed 14 January 2009 at 14:52:58 PST by lamport";
         /*******************************************************************
         * This string is inserted by an Emacs macro when a new version is  *
         * saved.                                                           *

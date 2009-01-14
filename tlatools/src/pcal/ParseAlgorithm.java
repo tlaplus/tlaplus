@@ -2894,7 +2894,19 @@ public class ParseAlgorithm
            * Move charReader to beginning of next non-space token and get  *
            * line and column numbers.                                      *
            ****************************************************************/
-           charReader.peek() ;
+
+           /****************************************************************
+           * Change made 14 January 2009 by LL. Changed call of            *
+           * charReader.peek() to this call plus test for end of file to   *
+           * correct bug_08_12_12.                                         *
+           ****************************************************************/
+           if (charReader.peek().equals("\t") ) { 
+             PcalDebug.ReportError(
+                 "Premature end of file, perhaps because of " + 
+                 "unclosed comment, near\n" + 
+                 "    line " + (curTokLine[LATsize]+1) +
+                 ", column " + (curTokCol[LATsize]+1)); 
+             };
            curTokCol[LATsize]  = charReader.getColumnNumber();
            curTokLine[LATsize] = charReader.getLineNumber();
            LAT[LATsize] = Tokenize.GetAlgorithmToken(charReader);
