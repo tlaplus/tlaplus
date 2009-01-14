@@ -37,7 +37,7 @@ public class OpenSpecHandler extends AbstractHandler implements IHandler
             return null;
         }
 
-        Spec spec = Activator.getSpecManager().getSpecByName(specName);
+        final Spec spec = Activator.getSpecManager().getSpecByName(specName);
         if (spec == null)
         {
             return null;
@@ -73,6 +73,7 @@ public class OpenSpecHandler extends AbstractHandler implements IHandler
                 {
                     if (IWorkbenchPartConstants.PROP_DIRTY == propId)
                     {
+                        spec.setStatus(IParseConstants.MODIFIED);
                         Activator.getParserRegistry().parseResultChanged(IParseConstants.MODIFIED);
                     }
                 }
