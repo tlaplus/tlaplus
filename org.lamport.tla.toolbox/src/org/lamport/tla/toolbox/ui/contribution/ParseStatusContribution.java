@@ -7,13 +7,14 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.menus.WorkbenchWindowControlContribution;
 import org.lamport.tla.toolbox.Activator;
+import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.spec.parser.IParseConstants;
 import org.lamport.tla.toolbox.spec.parser.IParseResultListner;
 import org.lamport.tla.toolbox.util.AdapterFactory;
 
 /**
  * A widget placed to the status line that shows the parse status of the root module 
- *
+ * @version $Id$
  * @author zambrovski
  */
 public class ParseStatusContribution extends WorkbenchWindowControlContribution implements IParseResultListner
@@ -61,29 +62,9 @@ public class ParseStatusContribution extends WorkbenchWindowControlContribution 
     {
         if (statusLabel != null && !statusLabel.isDisposed())
         {
-            statusLabel.setText(AdapterFactory.getStatusAsString(Activator.getSpecManager().getSpecLoaded()));
-
-            switch (parseStatus) 
-            {
-                case IParseConstants.PARSED:
-                    statusLabel.setBackground(statusLabel.getDisplay().getSystemColor(SWT.COLOR_GREEN));
-                    break;
-                case IParseConstants.COULD_NOT_FIND_MODULE:
-                case IParseConstants.SEMANTIC_ERROR:
-                case IParseConstants.SYNTAX_ERROR:
-                case IParseConstants.UNKNOWN_ERROR:
-                    statusLabel.setBackground(statusLabel.getDisplay().getSystemColor(SWT.COLOR_YELLOW));
-                    break;
-                case IParseConstants.UNPARSED:
-                    statusLabel.setBackground(statusLabel.getDisplay().getSystemColor(SWT.COLOR_RED));
-                    break;
-                case IParseConstants.UNKNOWN:
-                    statusLabel.setBackground(statusLabel.getDisplay().getSystemColor(SWT.COLOR_GRAY));
-                    break;
-                default:  
-                    break;
-            }
-            
+            Spec spec = Activator.getSpecManager().getSpecLoaded();
+            statusLabel.setText(AdapterFactory.getStatusAsString(spec));
+            statusLabel.setBackground(statusLabel.getDisplay().getSystemColor(AdapterFactory.getStatusAsSWTColor(spec)));
             statusLabel.redraw();
         }
     }
