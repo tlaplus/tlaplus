@@ -1,6 +1,7 @@
 package org.lamport.tla.toolbox;
 
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.application.ActionBarAdvisor;
 import org.eclipse.ui.application.IActionBarConfigurer;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
@@ -8,7 +9,7 @@ import org.eclipse.ui.application.WorkbenchWindowAdvisor;
 
 /**
  * Configuration of the main window
- *
+ * @version $Id$
  * @author zambrovski
  */
 public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor
@@ -56,7 +57,19 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor
             spec.setOpenedModules(UIHelper.getOpenedResources());
         }
         */
-        return super.preWindowShellClose();
+
+
+        IWorkbench workbench = getWindowConfigurer().getWorkbenchConfigurer().getWorkbench();
+        /*
+         * if more than one window is opened and currently the root window is being closed, we should exit from the application
+         */
+        if (workbench.getWorkbenchWindowCount() > 1 && WindowUtils.isRootWindow(workbench.getActiveWorkbenchWindow()))  
+        {
+            // System.out.println("A root shell is about to be closed");
+            return workbench.close();
+        } else {
+            return super.preWindowShellClose();
+        }
     }
 
     
