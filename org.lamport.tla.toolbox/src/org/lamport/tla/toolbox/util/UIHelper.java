@@ -12,8 +12,10 @@ import org.eclipse.core.commands.ParameterizedCommand;
 import org.eclipse.core.commands.common.NotDefinedException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IPerspectiveDescriptor;
 import org.eclipse.ui.IViewPart;
@@ -57,6 +59,24 @@ public class UIHelper
         }
     }
 
+    /**
+     * Opens the perspective in a new window on the right of the original window 
+     * @param perspectiveId
+     * @param input
+     * @param width - width of new window
+     * @return
+     */
+    public static IWorkbenchWindow openPerspectiveInWindowRight(String perspectiveId, IAdaptable input, int width)
+    {
+        IWorkbench workbench = Activator.getDefault().getWorkbench();
+        Rectangle bounds = workbench.getActiveWorkbenchWindow().getShell().getBounds();
+        
+        
+        IWorkbenchWindow window = openPerspectiveInNewWindow(perspectiveId, input);
+        window.getShell().setBounds(bounds.x + bounds.width, bounds.y, width, bounds.height);
+
+        return window;
+    }
     /**
      * Opens the new window containing the new perspective
      * 
@@ -140,17 +160,21 @@ public class UIHelper
      * 
      * @param editorId
      * @param input
+     * @return the created or reopened IEditorPart
      */
-    public static void openEditor(String editorId, IEditorInput input)
+    public static IEditorPart openEditor(String editorId, IEditorInput input)
     {
         IWorkbenchWindow window = Activator.getDefault().getWorkbench().getActiveWorkbenchWindow();
+        IEditorPart editorPart = null;
         try
         {
-            window.getActivePage().openEditor(input, editorId);
+            editorPart = window.getActivePage().openEditor(input, editorId);
         } catch (PartInitException e)
         {
             e.printStackTrace();
         }
+        
+        return editorPart;
     }
 
     /**
@@ -267,14 +291,6 @@ public class UIHelper
     private static Shell getShell()
     {
         return getActiveWindow().getShell();
-    }
-
-    public static IWorkbenchWindow getRootWindow()
-    {
-        IWorkbenchWindow[] workbenchWindows = Activator.getDefault().getWorkbench().getWorkbenchWindows();
-        
-        
-        return null;
     }
 
 }
