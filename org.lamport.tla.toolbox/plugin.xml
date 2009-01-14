@@ -50,6 +50,14 @@
             class="org.lamport.tla.toolbox.ui.view.ProblemView"
             id="toolbox.view.ProblemView">
       </view>
+      <view
+            allowMultiple="false"
+            class="org.lamport.tla.toolbox.ui.view.ProblemMarkerView"
+            icon="icons/full/eview16/console_view2.gif"
+            id="toolbox.view.ProblemMarkerView"
+            name="Problem Marker View"
+            restorable="true">
+      </view>
    </extension>
       
 <!--                                   -->
@@ -239,6 +247,17 @@
                commandId="org.eclipse.ui.window.preferences"
                id="toolbox.file.preferences"
                style="push">
+            <visibleWhen
+                  checkEnabled="true">
+               <with
+                     variable="activeWorkbenchWindow.activePerspective">
+                  <not>
+                     <equals
+                           value="org.lamport.tla.toolbox.ui.perspective.problems">
+                     </equals>
+                  </not>
+               </with>
+            </visibleWhen>
          </command>
          <command
                commandId="org.eclipse.ui.views.showView"
@@ -447,5 +466,35 @@
          <markerResolutionGenerator
          	class="org.lamport.tla.toolbox.util.TLAMarkerResolutionGenerator"
          	markerType="toolbox.markers.TLAParserProblemMarker" />
+   </extension>
+   
+<!--
+  Marker Image Provider
+-->   
+   <extension
+         point="org.eclipse.ui.ide.markerImageProviders">
+		<imageprovider
+        icon="icons/full/obj16/error_tsk.gif"
+        id="toolbox.declarativeMarkerProvider"
+        markertype="toolbox.markers.TLAParserProblemMarker">
+		</imageprovider>
+   </extension>
+<!-- 
+	Marker Content Generator
+-->
+   <extension
+         point="org.eclipse.ui.ide.markerSupport">
+      <markerContentGenerator
+            id="toolbox.markers.contentGenerator"
+            name="TLA+ Marker Generator">
+		<markerTypeReference id="toolbox.markers.TLAParserProblemMarker" />
+		<markerFieldReference id="org.eclipse.ui.ide.resourceField"/>
+        <markerFieldReference id="org.eclipse.ui.ide.descriptionField"/>
+		<markerFieldReference id="org.eclipse.ui.ide.locationField"/>
+		<markerFieldReference id="org.eclipse.ui.ide.priorityField"/>
+        <!-- markerFieldReference id="org.eclipse.ui.ide.markerType"/ -->
+   		<!-- markerFieldReference id="org.eclipse.ui.ide.priorityField"/ -->
+		<!-- markerFieldReference id="org.eclipse.ui.ide.descriptionField"/ -->		          
+      </markerContentGenerator>
    </extension>
 </plugin>
