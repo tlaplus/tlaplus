@@ -8,6 +8,7 @@ import org.eclipse.core.runtime.Platform;
  * A holder for information around the problem message
  * 
  * @author zambrovski
+ * @version $Id$
  */
 public class Problem implements IAdaptable
 {
@@ -17,8 +18,8 @@ public class Problem implements IAdaptable
     public final static int WARNING = 64;
     public final static int ALL = ABORT + ERROR + WARNING;
 
-    public Location         location;
-    public String           message;
+    public Location         location = null;
+    public String           message = null;
     public int              type;
 
     /**
@@ -63,7 +64,7 @@ public class Problem implements IAdaptable
 
         if (location == null)
         {
-            this.location = Location.nilLocation;
+            this.location = Location.nilLocation();
         }
     }
 
@@ -74,8 +75,8 @@ public class Problem implements IAdaptable
      */
     public String getFormattedLocation()
     {
-        return "from line " + location.beginLine + " column " + location.beginColumn + " to line " + location.endLine
-                + " column " + location.endColumn;
+        return "from line " + location.beginLine + ", column " + location.beginColumn + " to line " + location.endLine
+                + ", column " + location.endColumn + " of module " + location.moduleName;
     }
 
     
@@ -99,7 +100,9 @@ public class Problem implements IAdaptable
      */
     public static class Location
     {
-        public static Location nilLocation = new Location("-- unknown --", new int[] { -1, -1, -1, -1 });
+        public static Location nilLocation(){
+            return new Location("-- unknown --", new int[] { -1, -1, -1, -1 });
+        }
 
         public int             beginLine;
         public int             beginColumn;
@@ -143,6 +146,47 @@ public class Problem implements IAdaptable
             this.endLine = coordinates[2];
             this.endColumn = coordinates[3];
         }
+
+        public int hashCode()
+        {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + beginColumn;
+            result = prime * result + beginLine;
+            result = prime * result + endColumn;
+            result = prime * result + endLine;
+            result = prime * result + ((moduleName == null) ? 0 : moduleName.hashCode());
+            return result;
+        }
+
+        public boolean equals(Object obj)
+        {
+            if (this == obj)
+                return true;
+            if (obj == null)
+                return false;
+            if (getClass() != obj.getClass())
+                return false;
+            Location other = (Location) obj;
+            if (beginColumn != other.beginColumn)
+                return false;
+            if (beginLine != other.beginLine)
+                return false;
+            if (endColumn != other.endColumn)
+                return false;
+            if (endLine != other.endLine)
+                return false;
+            if (moduleName == null)
+            {
+                if (other.moduleName != null)
+                    return false;
+            } else if (!moduleName.equals(other.moduleName))
+                return false;
+            return true;
+        }
+
+        
+        
 
     }
 }
