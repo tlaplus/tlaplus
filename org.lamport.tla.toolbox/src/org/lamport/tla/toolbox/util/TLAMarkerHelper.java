@@ -29,13 +29,14 @@ public class TLAMarkerHelper
     public static void installProblemMarkers(IResource resource, Problem problem)
     {
 
-        IMarker marker;
+        IMarker marker = null;
         try
         {
             marker = resource.createMarker(TOOLBOX_MARKERS_PROBLEM_MARKER_ID);
             // Once we have a marker object, we can set its attributes
             marker.setAttribute(IMarker.SEVERITY, AdapterFactory.getMarkerSeverityFromProblem(problem));
             marker.setAttribute(IMarker.MESSAGE, problem.message);
+            marker.setAttribute(IMarker.LOCATION, problem.getFormattedLocation());
             marker.setAttribute(IMarker.LINE_NUMBER, problem.location.beginLine);
             if (problem.location.beginLine == problem.location.endLine) 
             {
