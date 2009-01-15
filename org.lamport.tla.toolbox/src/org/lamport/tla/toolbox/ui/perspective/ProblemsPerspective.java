@@ -12,6 +12,7 @@ import org.lamport.tla.toolbox.ui.view.ProblemView;
 public class ProblemsPerspective implements IPerspectiveFactory
 {
 
+    public static int WIDTH = 400;
     public static final String ID = "org.lamport.tla.toolbox.ui.perspective.problems";
 
     public void createInitialLayout(IPageLayout layout)
