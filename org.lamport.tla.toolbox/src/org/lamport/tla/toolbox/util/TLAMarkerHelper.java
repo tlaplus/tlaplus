@@ -12,7 +12,8 @@ import org.lamport.tla.toolbox.spec.parser.problem.Problem;
 
 /**
  * Takes care of problem display
- * @author zambrovski
+ * @author Simon Zambrovski
+ * @version $Id$
  */
 public class TLAMarkerHelper
 {
