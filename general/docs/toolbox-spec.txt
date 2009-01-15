@@ -1,5 +1,17 @@
 Version: $Id$
 
+MISCELLANEOUS THINGS TO DO
+--------------------------
+When calling the parser or some other program, display what's being
+called and provide a method for canceling it.  (This is useful even
+for fast-running programs such as the parser, in case the program
+hangs.)
+
+Make the file browser menu list things in alphabetical order by
+file/folder name.
+
+Make the toolbox window start at the same size as it was the last time
+it was closed.
 
 INITIAL PERSPECTIVE
 ------------------
@@ -125,6 +137,32 @@ window to 1.)
 The first frame created, which holds the root module, is called the
 ROOT FRAME.  The window containing the root frame is the ROOT WINDOW.
 
+------------------------------------------------------------------------
+Some thoughts of LL on 15 Jan 08:
+
+Spec state:
+  Parse Status: parsed / error / warning /unknown
+     Set to parsed/error/warning by parsing root file:
+     Changes parsed -> unknown when a file in LastKnownSpecFiles
+       is modified.
+
+  LastKnownSpecFiles: 
+     Set to the set of all non-standard files that are part of
+     the spec when the root file is successfully parsed.
+
+
+File state:
+  Modification:         Modified / Unmodified
+  Status of Last Parse: successful / error / warning
+  ImportedFiles:        A set of files / ?
+    Set to the set of all imported files by a successful parse
+      of this file.
+    Set to ? when this file or any file in ImportedFiles is modified.
+  IsSpecFile:           yes / no / ?
+     Set to yes/no by successful parse of root file.
+     Set yes/no -> ? when any file is modified that has this file
+       in its ImportedFiles 
+------------------------------------------------------------------------
 
 OPERATIONS
 
