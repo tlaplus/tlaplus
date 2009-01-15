@@ -7,7 +7,8 @@ import org.lamport.tla.toolbox.ui.view.ProblemView;
 /**
  * The "perspective" that is used to show the problem view in a separate window
  * 
- * @author zambrovski
+ * @author Simon Zambrovski
+ * @version $Id$
  */
 public class ProblemsPerspective implements IPerspectiveFactory
 {
