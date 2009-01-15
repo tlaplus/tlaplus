@@ -7,9 +7,17 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.lamport.tla.toolbox.util.pref.IPreferenceConstants;
 import org.lamport.tla.toolbox.util.pref.PreferenceStoreHelper;
 
+/**
+ * Preferences for TLA+ Parser
+ * @author Simon Zambrovski
+ * @version $Id$
+ */
 public class ParserPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage
 {
 
+    /**
+     * Constructor
+     */
     public ParserPreferencePage()
     {
         super(GRID);
