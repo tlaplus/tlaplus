@@ -1,9 +1,16 @@
 package org.lamport.tla.toolbox.spec.nature;
 
+import org.eclipse.core.resources.ICommand;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IProjectNature;
 import org.eclipse.core.runtime.CoreException;
 
+/**
+ * TLA Nature
+ * @author Simon Zambrovski
+ * @version $Id$
+ */
 public class TLANature implements IProjectNature
 {
     
@@ -11,16 +18,51 @@ public class TLANature implements IProjectNature
     public static final String ID = "toolbox.natures.TLANature";
 
 
+    /**
+     * add TLA nature
+     */
     public void configure() throws CoreException
     {
+        IProjectDescription desc = project.getDescription();
+        ICommand[] commands = desc.getBuildSpec();
+
+        for (int i = 0; i < commands.length; ++i) {
+            if (commands[i].getBuilderName().equals(TLAParsingBuilder.BUILDER_ID)) {
+                return;
+            }
+        }
+
+        ICommand[] newCommands = new ICommand[commands.length + 1];
+        System.arraycopy(commands, 0, newCommands, 0, commands.length);
+        ICommand command = desc.newCommand();
+        command.setBuilderName(TLAParsingBuilder.BUILDER_ID);
+        newCommands[newCommands.length - 1] = command;
+        desc.setBuildSpec(newCommands);
+        project.setDescription(desc, null);
         System.out.print("Nature added");
     }
 
+    /**
+     * remove TLA nature
+     */
     public void deconfigure() throws CoreException
     {
+        
+        IProjectDescription description = getProject().getDescription();
+        ICommand[] commands = description.getBuildSpec();
+        for (int i = 0; i < commands.length; ++i) {
+            if (commands[i].getBuilderName().equals(TLAParsingBuilder.BUILDER_ID)) {
+                ICommand[] newCommands = new ICommand[commands.length - 1];
+                System.arraycopy(commands, 0, newCommands, 0, i);
+                System.arraycopy(commands, i + 1, newCommands, i,
+                        commands.length - i - 1);
+                description.setBuildSpec(newCommands);
+                return;
+            }
+        }
         System.out.print("Nature removed");
     }
-
+   
     public IProject getProject()
     {
         return this.project;
