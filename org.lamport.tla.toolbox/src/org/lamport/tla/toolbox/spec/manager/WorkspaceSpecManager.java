@@ -18,13 +18,13 @@ import org.lamport.tla.toolbox.spec.parser.IParseConstants;
 
 /**
  * Specification manager based on the Workspace
- * 
- * @author zambrovski
+ * @version $Id$
+ * @author Simon Zambrovski
  */
 public class WorkspaceSpecManager extends AbstractSpecManager implements IResourceChangeListener
 {
-    private Hashtable storage    = new Hashtable(47);
-    private Spec      loadedSpec = null;
+    private Hashtable storage = new Hashtable(47);
+    private Spec loadedSpec = null;
 
     /**
      * Constructor
@@ -39,10 +39,17 @@ public class WorkspaceSpecManager extends AbstractSpecManager implements IResour
             Spec spec = null;
             for (int i = 0; i < projects.length; i++)
             {
-                if (projects[i].isOpen() && projects[i].hasNature(TLANature.ID))
+                if (projects[i].isOpen())
                 {
-                    spec = new Spec(projects[i]);
-                    addSpec(spec);
+                    if (projects[i].hasNature(TLANature.ID))
+                    {
+                        spec = new Spec(projects[i]);
+                        addSpec(spec);
+                    }
+                } else
+                {
+                    // DELETE closed projects
+                    projects[i].delete(true, null);
                 }
             }
         } catch (CoreException e)
@@ -133,11 +140,7 @@ public class WorkspaceSpecManager extends AbstractSpecManager implements IResour
         {
             // touch the spec
             this.loadedSpec.setLastModified();
-            Activator.getParserRegistry().parseResultChanged(this.loadedSpec.getStatus());
-        } else {
-            // no spec - still inform the listeners
-            Activator.getParserRegistry().parseResultChanged(IParseConstants.UNKNOWN);
-        }
+        } 
 
     }
 
