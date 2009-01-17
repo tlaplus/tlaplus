@@ -19,8 +19,6 @@ public interface IParseConstants
     public static final int UNKNOWN_ERROR         = -4;
     /** COULD_NOT_FIND_MODULE = the root module was not found. */
     public static final int COULD_NOT_FIND_MODULE = -5;
-    /** MODIFIED = the module has been parsed but has been modified after the last parse */ 
-    public static final int MODIFIED              = -98;
     /** UNPARSED = the root module was not parsed */
     public static final int UNPARSED              = -99;
     /** UNKNOW status - the spec is not loaded  */
