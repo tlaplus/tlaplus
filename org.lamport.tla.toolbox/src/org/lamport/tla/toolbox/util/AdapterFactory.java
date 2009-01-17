@@ -153,9 +153,6 @@ public class AdapterFactory implements IAdapterFactory
                     return " error ";
                 case IParseConstants.UNPARSED:
                     return " unparsed ";
-                case IParseConstants.MODIFIED:
-                    return " changed ";
-                    
                 default:
                     return " unknown ";
             }
@@ -183,8 +180,6 @@ public class AdapterFactory implements IAdapterFactory
                     return SWT.COLOR_YELLOW;
                 case IParseConstants.UNPARSED:
                     return SWT.COLOR_DARK_RED;
-                case IParseConstants.MODIFIED:
-                    return SWT.COLOR_DARK_GRAY;
                 case IParseConstants.UNKNOWN:
                 default:
                     return SWT.COLOR_GRAY;
