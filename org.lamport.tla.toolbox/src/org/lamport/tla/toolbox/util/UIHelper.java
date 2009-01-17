@@ -13,20 +13,28 @@ import org.eclipse.core.commands.common.NotDefinedException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
+import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IPerspectiveDescriptor;
 import org.eclipse.ui.IViewPart;
+import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.WorkbenchException;
 import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.handlers.IHandlerService;
 import org.lamport.tla.toolbox.Activator;
+import org.lamport.tla.toolbox.ui.contribution.ParseStatusContributionItem;
 
 /**
  * A Helper for handling the RCP Objects like windows, editors and views
@@ -36,7 +44,6 @@ import org.lamport.tla.toolbox.Activator;
 public class UIHelper
 {
 
-    
     /**
      * Closes all windows with a perspective
      * 
@@ -70,13 +77,13 @@ public class UIHelper
     {
         IWorkbench workbench = Activator.getDefault().getWorkbench();
         Rectangle bounds = workbench.getActiveWorkbenchWindow().getShell().getBounds();
-        
-        
+
         IWorkbenchWindow window = openPerspectiveInNewWindow(perspectiveId, input);
         window.getShell().setBounds(bounds.x + bounds.width, bounds.y, width, bounds.height);
 
         return window;
     }
+
     /**
      * Opens the new window containing the new perspective
      * 
@@ -121,7 +128,7 @@ public class UIHelper
         }
         return view;
     }
-    
+
     /**
      * Returns the perspective to its initial layout
      * @param perspectiveId
@@ -173,7 +180,7 @@ public class UIHelper
         {
             e.printStackTrace();
         }
-        
+
         return editorPart;
     }
 
@@ -184,7 +191,7 @@ public class UIHelper
      */
     public static IWorkbenchWindow getActiveWindow()
     {
-        return Activator.getDefault().getWorkbench().getActiveWorkbenchWindow();
+        return PlatformUI.getWorkbench().getActiveWorkbenchWindow();
     }
 
     /**
@@ -194,7 +201,12 @@ public class UIHelper
      */
     public static IWorkbenchPage getActivePage()
     {
-        return getActiveWindow().getActivePage();
+        IWorkbenchWindow window = getActiveWindow();
+        if (window == null)
+        {
+            return null;
+        }
+        return window.getActivePage();
     }
 
     /**
@@ -269,18 +281,18 @@ public class UIHelper
                 }
             }
         }
-        
-        if (dirtyEditors.size() > 0 ) 
+
+        if (dirtyEditors.size() > 0)
         {
             boolean saveFiles = MessageDialog.openQuestion(getShell(), title, message);
-            if (saveFiles) 
+            if (saveFiles)
             {
                 // TODO provide a way to select what to save and what to drop
                 // TODO provide a way to cancel
                 return dirtyEditors;
-            } 
+            }
         }
-        
+
         return new LinkedList();
     }
 
@@ -291,6 +303,68 @@ public class UIHelper
     private static Shell getShell()
     {
         return getActiveWindow().getShell();
+    }
+
+    /**
+     * Returns a status bar contribution 
+     * @return
+     */
+    public static ParseStatusContributionItem installStatusBarContributionItem()
+    {
+        IActionBars bars = null;
+        IWorkbenchPage page = UIHelper.getActivePage();
+        if (page != null)
+        {
+            IWorkbenchPart part = page.getActivePart();
+            if (part != null)
+            {
+                IWorkbenchPartSite site = part.getSite();
+                if (site != null && site instanceof IViewSite)
+                {
+                    bars = ((IViewSite) site).getActionBars();
+                } else if (site != null && site instanceof IEditorSite)
+                {
+                    bars = ((IEditorSite) site).getActionBars();
+                }
+            }
+        }
+
+        if (bars != null)
+        {
+            ParseStatusContributionItem p = new ParseStatusContributionItem();
+            bars.getStatusLineManager().add(p);
+            bars.updateActionBars();
+            return p;
+        }
+        return null;
+    }
+
+    /**
+     * Runs a task in synchronous UI thread 
+     * @param task
+     */
+    public static void runUISync(Runnable task)
+    {
+        Display display = Display.getCurrent();
+        if (display == null)
+        {
+            display = Display.getDefault();
+        }
+        display.syncExec(task);
+    }
+
+    /**
+     * Runs a task in asynchronous UI thread 
+     * @param task
+     */
+    public static void runUIAsync(Runnable task)
+    {
+        Display display = Display.getCurrent();
+        if (display == null)
+        {
+            display = Display.getDefault();
+        }
+        display.asyncExec(task);
     }
 
 }
