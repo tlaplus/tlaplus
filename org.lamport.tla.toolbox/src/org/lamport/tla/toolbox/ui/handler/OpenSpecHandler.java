@@ -11,12 +11,11 @@ import org.eclipse.ui.IWorkbenchPartConstants;
 import org.eclipse.ui.part.FileEditorInput;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.spec.Spec;
-import org.lamport.tla.toolbox.spec.parser.IParseConstants;
 import org.lamport.tla.toolbox.ui.perspective.InitialPerspective;
 import org.lamport.tla.toolbox.ui.perspective.SpecLoadedPerspective;
-import org.lamport.tla.toolbox.util.PreferenceStoreHelper;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
+import org.lamport.tla.toolbox.util.pref.PreferenceStoreHelper;
 
 /**
  * Handles the open-spec command
@@ -65,16 +64,19 @@ public class OpenSpecHandler extends AbstractHandler implements IHandler
             }
         } else
         {
+            System.out.println("No editor information found. If the spec is reopened this is a BUG.");
             // open the editor
             part = UIHelper.openEditor(TLA_EDITOR, new FileEditorInput(spec.getRootFile()));
+            
+            
+            
             part.addPropertyListener(new IPropertyListener() {
 
                 public void propertyChanged(Object source, int propId)
                 {
                     if (IWorkbenchPartConstants.PROP_DIRTY == propId)
                     {
-                        spec.setStatus(IParseConstants.MODIFIED);
-                        Activator.getParserRegistry().parseResultChanged(IParseConstants.MODIFIED);
+                        // here the listeners to editor changes go into 
                     }
                 }
             });
