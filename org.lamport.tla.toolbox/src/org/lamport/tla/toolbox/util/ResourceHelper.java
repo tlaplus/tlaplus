@@ -2,6 +2,7 @@ package org.lamport.tla.toolbox.util;
 
 import java.io.File;
 
+import org.eclipse.core.resources.ICommand;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
@@ -12,6 +13,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.lamport.tla.toolbox.spec.nature.TLANature;
+import org.lamport.tla.toolbox.spec.nature.TLAParsingBuilder;
 
 /**
  * @author zambrovski
@@ -68,8 +70,14 @@ public class ResourceHelper
                     description.setLocation(path);
                 }
                 
+                
                 // set TLA+ feature 
                 description.setNatureIds(new String[]{TLANature.ID});
+
+                // set Parsing Builder
+                ICommand command = description.newCommand();
+                command.setBuilderName(TLAParsingBuilder.BUILDER_ID);
+                description.setBuildSpec(new ICommand[]{command});
                 
                 // create the project
                 // TODO add progress monitor
