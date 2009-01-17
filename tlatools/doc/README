@@ -13,7 +13,7 @@ The following TLA+ tools are available in this distribtion:
 
  4) Beta test versions of 1-3 for the TLA+2 language
 
- 5) The +CAL translator
+ 5) The PlusCal translator
 
 For instruction to install and run the tools, please go to
 
