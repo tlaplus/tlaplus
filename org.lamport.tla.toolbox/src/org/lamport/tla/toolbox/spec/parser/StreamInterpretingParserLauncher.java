@@ -44,7 +44,7 @@ public class StreamInterpretingParserLauncher implements IParserLauncher
         ToolIO.setUserDir(ResourceHelper.getParentDir(specification.getRootFilename()));
 
         // call the parsing
-        int status = parseMainModule(true, specification.getRootFilename());
+        int status = this.parseMainModule(true, specification.getRootFilename());
         // System.out.println("Parsing Status: " + status);
 
         // set the status back into the spec
@@ -54,7 +54,7 @@ public class StreamInterpretingParserLauncher implements IParserLauncher
         specification.getParseProblems().reset();
 
         // store errors inside the specification
-        processParsingErrors(specification);
+        this.processParsingErrors(specification);
 
         return status;
     }
