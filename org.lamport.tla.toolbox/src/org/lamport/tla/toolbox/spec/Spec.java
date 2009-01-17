@@ -12,8 +12,8 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Platform;
 import org.lamport.tla.toolbox.spec.parser.IParseConstants;
 import org.lamport.tla.toolbox.spec.parser.problem.ProblemContainer;
-import org.lamport.tla.toolbox.util.PreferenceStoreHelper;
 import org.lamport.tla.toolbox.util.ResourceHelper;
+import org.lamport.tla.toolbox.util.pref.PreferenceStoreHelper;
 
 /**
  * Represents a specification handle in the toolbox
