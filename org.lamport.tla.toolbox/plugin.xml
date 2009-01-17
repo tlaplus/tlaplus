@@ -341,7 +341,7 @@
             </visibleWhen>
          </command>
       </menuContribution>
-
+<!--
       <menuContribution
             locationURI="toolbar:org.eclipse.ui.trim.status">
          <toolbar
@@ -362,6 +362,7 @@
          </control>
          </toolbar>
       </menuContribution>
+-->
    </extension>
    
 <!--              -->
@@ -417,7 +418,20 @@
          </adapter>
       </factory>
    </extension>
-
+<!--
+	Parser Builder
+-->
+   <extension
+   		 id="toolbox.builder.TLAParserBuilder"
+   		 name="TLA+ Syntax Parser"
+         point="org.eclipse.core.resources.builders">
+      <builder
+            hasNature="true">
+         <run
+               class="org.lamport.tla.toolbox.spec.nature.TLAParsingBuilder">
+         </run>
+      </builder>
+   </extension>
 <!--
   Nature defintion
 -->
@@ -430,6 +444,9 @@
                class="org.lamport.tla.toolbox.spec.nature.TLANature">
          </run>
       </runtime>
+      <builder
+            id="toolbox.builder.TLAParserBuilder">
+      </builder>
    </extension>
 
 <!--
@@ -496,5 +513,33 @@
    		<!-- markerFieldReference id="org.eclipse.ui.ide.priorityField"/ -->
 		<!-- markerFieldReference id="org.eclipse.ui.ide.descriptionField"/ -->		          
       </markerContentGenerator>
+   </extension>
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            class="org.lamport.tla.toolbox.ui.preference.GeneralPreferencePage"
+            id="toolbox.ui.preferences.GeneralPreferencePage"
+            name="TLA+ Preferences">
+      </page>
+      <page
+            class="org.lamport.tla.toolbox.ui.preference.ParserPreferencePage"
+            id="toolbox.ui.preferences.ParserPreferencePage"
+            name="Parser Preferences"
+            category="toolbox.ui.preferences.GeneralPreferencePage">
+            <keywordReference id="toolbox.keywords.Parser"/>
+      </page>
+      
+   </extension>
+   <extension
+         point="org.eclipse.core.runtime.preferences">
+      <initializer
+            class="org.lamport.tla.toolbox.util.pref.PreferenceInitializer">
+      </initializer>
+   </extension>
+   <extension
+     point="org.eclipse.ui.keywords">
+    <keyword
+            label="TLA+ Syntax Analyser"
+            id="toolbox.keywords.Parser"/>
    </extension>
 </plugin>
