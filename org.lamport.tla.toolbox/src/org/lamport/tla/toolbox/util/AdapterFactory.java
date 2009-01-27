@@ -251,6 +251,27 @@ public class AdapterFactory implements IAdapterFactory
                 return IMarker.SEVERITY_INFO;
         }
     }
+
+    /**
+     * Retrieves the text representation of the TLA+ parse problem
+     * @param problem
+     * @return
+     */
+    public static String getProblemTypeAsText(Problem problem)
+    {
+        switch (problem.type) 
+        {
+            case Problem.ERROR:
+                return "Error";
+            case Problem.ABORT:
+                return "Abort";
+            case Problem.WARNING:
+                return "Warning";
+            default:
+                return "Info";
+        }
+
+    }
     
     
 
