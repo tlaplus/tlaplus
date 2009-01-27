@@ -24,16 +24,16 @@ public class Spec implements IAdaptable
 {
 
     /* project handle */
-    private IProject            project;
+    private IProject project;
 
     /* root module handle */
-    private IFile               rootFile;
+    private IFile rootFile;
 
     /* status of the specification */
-    private int                 status                         = IParseConstants.UNPARSED;
+    private int status = IParseConstants.UNPARSED;
 
     /* Problem container */
-    private ProblemContainer    parseProblems;
+    private ProblemContainer parseProblems;
 
     /**
      * Creates a Spec handle for existing project. Use the factory method
@@ -92,7 +92,8 @@ public class Spec implements IAdaptable
      */
     public void setLastModified()
     {
-        try {
+        try
+        {
             project.touch(null);
         } catch (CoreException e)
         {
@@ -184,13 +185,12 @@ public class Spec implements IAdaptable
         return manager.getAdapter(this, adapter);
     }
 
-    
     /**
      * @return the openedModules
      */
     public String[] getOpenedModules()
     {
-        
+
         return PreferenceStoreHelper.getOpenedEditors(project);
     }
 
@@ -211,13 +211,27 @@ public class Spec implements IAdaptable
      */
     public IResource getModule(String moduleName)
     {
-        if (moduleName == null) 
+        if (moduleName == null)
         {
             return null;
         }
-        
-        
+
         return ResourceHelper.getLinkedFile(getProject(), ResourceHelper.getModule(moduleName));
+    }
+
+    /**
+     * Tries to find a module with a given name, but never create new links
+     * @param moduleName
+     * @return
+     */
+    public IResource findModule(String moduleName)
+    {
+        if (moduleName == null)
+        {
+            return null;
+        }
+        // only try to find a module, never create one
+        return ResourceHelper.getLinkedFile(getProject(), ResourceHelper.getModule(moduleName), false);
     }
 
 }
