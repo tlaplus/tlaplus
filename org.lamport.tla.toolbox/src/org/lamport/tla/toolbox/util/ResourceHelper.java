@@ -104,8 +104,9 @@ public class ResourceHelper
      * 
      * @param name
      * @param project
+     * @param createNew, a boolean flag indicating if the file should be created if it does not exist
      */
-    public static IFile getLinkedFile(IProject project, String name)
+    public static IFile getLinkedFile(IProject project, String name, boolean createNew)
     {
         if (name == null || project == null)
         {
@@ -113,7 +114,7 @@ public class ResourceHelper
         }
         IPath location = new Path(name);
         IFile file = project.getFile(location.lastSegment());
-        if (!file.isLinked())
+        if (createNew && !file.isLinked())
         {
             try
             {
@@ -128,6 +129,17 @@ public class ResourceHelper
             }
         }
         return file;
+    }
+    
+    /**
+     * Retrieves a a resource from the project, creates a link, if the file is not present 
+     * 
+     * @param name resource name
+     * @param project name of the project, containing that contain (or should contain) the resource
+     */
+    public static IFile getLinkedFile(IProject project, String name)
+    {
+        return getLinkedFile(project, name, true);
     }
 
     /**
