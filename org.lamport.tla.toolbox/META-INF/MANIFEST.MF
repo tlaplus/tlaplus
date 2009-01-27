@@ -10,7 +10,9 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.core.resources,
  org.eclipse.ui.views,
  org.eclipse.ui.forms,
- org.eclipse.ui.ide
+ org.eclipse.ui.ide,
+ org.eclipse.ui.editors;bundle-version="3.4.0",
+ org.eclipse.jface.text;bundle-version="3.4.1"
 Bundle-RequiredExecutionEnvironment: J2SE-1.4
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: tla2tools.jar,
