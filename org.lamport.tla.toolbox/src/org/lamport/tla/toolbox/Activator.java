@@ -102,8 +102,8 @@ public class Activator extends AbstractUIPlugin
             }
 
         }, IResourceChangeEvent.POST_BUILD);
-
     }
+
 
     /*
      * (non-Javadoc)
@@ -112,10 +112,11 @@ public class Activator extends AbstractUIPlugin
     public void stop(BundleContext context) throws Exception
     {
         // unregister the listeners
-
+        specManager.terminate();
         specManager = null;
         plugin = null;
 
+        
         super.stop(context);
     }
 
