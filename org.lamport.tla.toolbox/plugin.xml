@@ -190,57 +190,8 @@
          </command>
          
       </menuContribution>
-      <menuContribution
-            locationURI="menu:toolbox.file.menu?after=toolbox.file.module.separator">
-         <command
-               commandId="org.eclipse.ui.file.save"
-               id="toolbox.file.save"
-               label="Save"
-               mnemonic="S"
-               style="push">
-            <visibleWhen
-                  checkEnabled="true">
-               <with
-                     variable="activeWorkbenchWindow.activePerspective">
-                  <equals
-                        value="org.lamport.tla.toolbox.ui.perspective.specLoaded">
-                  </equals>
-               </with>
-            </visibleWhen>
-         </command>
-         <command
-               commandId="org.eclipse.ui.file.saveAs"
-               id="toolbox.file.saveAs"
-               label="Save As..."
-               mnemonic="A"
-               style="push">
-            <visibleWhen
-                  checkEnabled="true">
-               <with
-                     variable="activeWorkbenchWindow.activePerspective">
-                  <equals
-                        value="org.lamport.tla.toolbox.ui.perspective.specLoaded">
-                  </equals>
-               </with>
-            </visibleWhen>
-         </command>
-         <command
-               commandId="toolbox.command.reopen"
-               id="toolbox.file.reopen"
-               label="Re-Open (read only)"
-               mnemonic="O"
-               style="push">
-            <visibleWhen
-                  checkEnabled="true">
-               <with
-                     variable="activeWorkbenchWindow.activePerspective">
-                  <equals
-                        value="org.lamport.tla.toolbox.ui.perspective.specLoaded">
-                  </equals>
-               </with>
-            </visibleWhen>
-         </command>
-      </menuContribution>
+
+
       <menuContribution
             locationURI="menu:toolbox.file.menu?after=additions">
          <command
@@ -398,20 +349,6 @@
          point="org.eclipse.core.runtime.adapters">
       <factory
             adaptableType="org.lamport.tla.toolbox.spec.Spec"
-            class="org.lamport.tla.toolbox.util.AdapterFactory">
-         <adapter
-               type="org.eclipse.ui.model.IWorkbenchAdapter">
-         </adapter>
-      </factory>
-      <factory
-            adaptableType="org.lamport.tla.toolbox.spec.parser.problem.ProblemContainer"
-            class="org.lamport.tla.toolbox.util.AdapterFactory">
-         <adapter
-               type="org.eclipse.ui.model.IWorkbenchAdapter">
-         </adapter>
-      </factory>
-      <factory
-            adaptableType="org.lamport.tla.toolbox.spec.parser.problem.Problem"
             class="org.lamport.tla.toolbox.util.AdapterFactory">
          <adapter
                type="org.eclipse.ui.model.IWorkbenchAdapter">
