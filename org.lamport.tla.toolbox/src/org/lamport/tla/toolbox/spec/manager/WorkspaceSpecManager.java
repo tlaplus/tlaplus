@@ -11,10 +11,10 @@ import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
-import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.spec.nature.TLANature;
-import org.lamport.tla.toolbox.spec.parser.IParseConstants;
+import org.lamport.tla.toolbox.util.pref.IPreferenceConstants;
+import org.lamport.tla.toolbox.util.pref.PreferenceStoreHelper;
 
 /**
  * Specification manager based on the Workspace
@@ -31,7 +31,12 @@ public class WorkspaceSpecManager extends AbstractSpecManager implements IResour
      */
     public WorkspaceSpecManager()
     {
+
         IWorkspace ws = ResourcesPlugin.getWorkspace();
+
+        String specLoadedName = PreferenceStoreHelper.getInstancePreferenceStore().getString(
+                IPreferenceConstants.I_SPEC_LOADED);
+
         IProject[] projects = ws.getRoot().getProjects();
         try
         {
@@ -45,6 +50,12 @@ public class WorkspaceSpecManager extends AbstractSpecManager implements IResour
                     {
                         spec = new Spec(projects[i]);
                         addSpec(spec);
+
+                        // load the spec if found
+                        if (spec.getName().equals(specLoadedName))
+                        {
+                            this.setSpecLoaded(spec);
+                        }
                     }
                 } else
                 {
@@ -57,8 +68,8 @@ public class WorkspaceSpecManager extends AbstractSpecManager implements IResour
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
+        
         ws.addResourceChangeListener(this);
-
     }
 
     /**
@@ -68,6 +79,15 @@ public class WorkspaceSpecManager extends AbstractSpecManager implements IResour
     {
         IWorkspace ws = ResourcesPlugin.getWorkspace();
         ws.removeResourceChangeListener(this);
+        if (this.loadedSpec != null && PreferenceStoreHelper.getInstancePreferenceStore().getBoolean(
+                IPreferenceConstants.I_RESTORE_LAST_SPEC))
+        {
+            PreferenceStoreHelper.getInstancePreferenceStore().setValue(IPreferenceConstants.I_SPEC_LOADED,
+                    this.loadedSpec.getName());
+        } else
+        {
+            PreferenceStoreHelper.getInstancePreferenceStore().setValue(IPreferenceConstants.I_SPEC_LOADED, "");
+        }
 
     }
 
@@ -140,7 +160,7 @@ public class WorkspaceSpecManager extends AbstractSpecManager implements IResour
         {
             // touch the spec
             this.loadedSpec.setLastModified();
-        } 
+        }
 
     }
 
