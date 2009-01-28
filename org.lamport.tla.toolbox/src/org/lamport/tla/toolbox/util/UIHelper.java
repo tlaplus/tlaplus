@@ -33,6 +33,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.WorkbenchException;
 import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.handlers.IHandlerService;
+import org.eclipse.ui.internal.WorkbenchWindow;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.ui.contribution.ParseStatusContributionItem;
 
@@ -59,7 +60,8 @@ public class UIHelper
         // closing the perspective opened in a window
         for (int i = 0; i < windows.length; i++)
         {
-            if (perspectiveId.equals(windows[i].getActivePage().getPerspective().getId()))
+            IWorkbenchPage page = windows[i].getActivePage();
+            if (page != null && page.getPerspective() != null && perspectiveId.equals(page.getPerspective().getId()))
             {
                 windows[i].close();
             }
@@ -100,8 +102,11 @@ public class UIHelper
         IWorkbenchWindow window = null;
         try
         {
-            IWorkbenchPage page = workbench.showPerspective(perspectiveId, workbench.openWorkbenchWindow(input));
-            window = page.getWorkbenchWindow();
+            // IWorkbenchPage page = workbench.showPerspective(perspectiveId, workbench.openWorkbenchWindow(input));
+            // window = page.getWorkbenchWindow();
+            
+            // avoids flicking, from implementation above
+            window = workbench.openWorkbenchWindow(perspectiveId, input);
         } catch (WorkbenchException e)
         {
             // TODO Auto-generated catch block
@@ -171,7 +176,7 @@ public class UIHelper
      */
     public static IEditorPart openEditor(String editorId, IEditorInput input)
     {
-        IWorkbenchWindow window = Activator.getDefault().getWorkbench().getActiveWorkbenchWindow();
+        IWorkbenchWindow window = getRootApplicationWindow();
         IEditorPart editorPart = null;
         try
         {
@@ -182,6 +187,26 @@ public class UIHelper
         }
 
         return editorPart;
+    }
+
+    /**
+     * Retrieves the primary root application window
+     * @return the window is considered to be a root window
+     */
+    public static IWorkbenchWindow getRootApplicationWindow()
+    {
+        IWorkbenchWindow[] windows = Activator.getDefault().getWorkbench().getWorkbenchWindows();
+        for (int i = 0; i < windows.length; i++)
+        {
+            // HACK: note this could change in future
+            // we should return the smallest id, not the 1
+            if (windows[i] instanceof WorkbenchWindow && ((WorkbenchWindow) windows[i]).getNumber() == 1)
+            {
+                return windows[i];
+            }
+
+        }
+        return null;
     }
 
     /**
