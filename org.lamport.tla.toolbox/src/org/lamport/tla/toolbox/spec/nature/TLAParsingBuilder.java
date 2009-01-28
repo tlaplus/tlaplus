@@ -7,6 +7,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceVisitor;
 import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.lamport.tla.toolbox.Activator;
@@ -14,9 +15,6 @@ import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.spec.parser.IParserLauncher;
 import org.lamport.tla.toolbox.spec.parser.StreamInterpretingParserLauncher;
 import org.lamport.tla.toolbox.util.AdapterFactory;
-import org.lamport.tla.toolbox.util.TLAMarkerHelper;
-import org.lamport.tla.toolbox.util.pref.IPreferenceConstants;
-import org.lamport.tla.toolbox.util.pref.PreferenceStoreHelper;
 
 /**
  * The parsing builder
@@ -33,7 +31,7 @@ public class TLAParsingBuilder extends IncrementalProjectBuilder
     {
         System.out.println("Clean has been invoked");
         Spec spec = Activator.getSpecManager().getSpecLoaded();
-        // TLAMarkerHelper.deleteMarkers(spec, monitor);
+        spec.cleanProblemMarkers(monitor);
     }
 
     /**
@@ -42,8 +40,7 @@ public class TLAParsingBuilder extends IncrementalProjectBuilder
     protected IProject[] build(int kind, Map args, IProgressMonitor monitor) throws CoreException
     {
 
-        if (PreferenceStoreHelper.getInstancePreferenceStore().getBoolean(
-                IPreferenceConstants.P_PARSER_RUN_ON_MODIFICATION))
+        if (ResourcesPlugin.getWorkspace().isAutoBuilding())
         {
             System.out.println("Running a Build (on): " + kind);
         } else
@@ -101,18 +98,20 @@ public class TLAParsingBuilder extends IncrementalProjectBuilder
                 // and search a spec by name
 
                 final Spec spec = Activator.getSpecManager().getSpecLoaded();
-                IWorkspaceRunnable run = new IWorkspaceRunnable(){
+                if (spec != null)
+                {
+                    IWorkspaceRunnable run = new IWorkspaceRunnable(){
 
-                    public void run(IProgressMonitor monitor) throws CoreException
-                    {
-                        TLAMarkerHelper.deleteMarkers(spec, monitor);
-                        launcher.parseSpecification(spec);
-                        TLAMarkerHelper.setupProblemInformation(spec, monitor);
-                        System.out.println("Resulting status is: " + AdapterFactory.getStatusAsString(spec));
-                    }
-                };
-                resource.getWorkspace().run(run, monitor);
-
+                        public void run(IProgressMonitor monitor) throws CoreException
+                        {
+                            
+                            spec.cleanProblemMarkers(monitor);
+                            launcher.parseSpecification(spec, monitor);
+                            System.out.println("Resulting status is: " + AdapterFactory.getStatusAsString(spec));
+                        }
+                    };
+                    resource.getWorkspace().run(run, monitor);
+                }
             }
 
             // invoke only on the IProject, never on the single module files
