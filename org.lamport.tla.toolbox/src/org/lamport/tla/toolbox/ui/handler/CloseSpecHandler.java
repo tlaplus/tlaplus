@@ -22,11 +22,12 @@ public class CloseSpecHandler extends AbstractHandler implements IHandler
         Spec currentSpec =  Activator.getSpecManager().getSpecLoaded();
         
         String[] openedResources = UIHelper.getOpenedResources();
-        
-        currentSpec.setOpenedModules(openedResources);
+        if (currentSpec != null) 
+        {
+            currentSpec.setOpenedModules(openedResources);
+        }
         UIHelper.getActivePage().closeAllEditors(true);
         UIHelper.switchPerspective(InitialPerspective.ID);
-        
         Activator.getSpecManager().setSpecLoaded(null);
         return null;
     }
