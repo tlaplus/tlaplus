@@ -1,8 +1,6 @@
 package org.lamport.tla.toolbox.ui.view;
 
-import java.util.Iterator;
-import java.util.List;
-
+import org.eclipse.core.resources.IMarker;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.custom.StyledText;
@@ -15,9 +13,10 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.ui.part.ViewPart;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.spec.Spec;
-import org.lamport.tla.toolbox.spec.parser.problem.Problem;
-import org.lamport.tla.toolbox.spec.parser.problem.ProblemContainer;
+import org.lamport.tla.toolbox.ui.perspective.ProblemsPerspective;
 import org.lamport.tla.toolbox.util.AdapterFactory;
+import org.lamport.tla.toolbox.util.TLAMarkerHelper;
+import org.lamport.tla.toolbox.util.UIHelper;
 
 /**
  * Shows parse problems
@@ -43,31 +42,41 @@ public class ProblemView extends ViewPart
         bar = new ExpandBar(parent, SWT.V_SCROLL | SWT.BORDER);
         bar.setSpacing(8);
 
+        fillData(Activator.getSpecManager().getSpecLoaded());
 
-        
-        ProblemContainer container = getProblemContainer();
-        if (container != null)
+    }
+
+    /**
+     * Fill data
+     * @param specLoaded
+     */
+    private void fillData(Spec specLoaded)
+    {
+        if (specLoaded == null)
         {
-            List problems = container.getProblems(Problem.ALL);
-            Iterator pIterator = problems.iterator();
+            UIHelper.runUIAsync(new Runnable() {
 
-            for (; pIterator.hasNext();)
+                public void run()
+                {
+                    UIHelper.closeWindow(ProblemsPerspective.ID);
+
+                }
+            });
+            return;
+        } else
+        {
+            IMarker[] markers = specLoaded.getProblemMarkers(null);
+
+            for (int j = 0; j < markers.length; j++)
             {
-                final Problem problem = (Problem) pIterator.next();
+                final IMarker problem = markers[j];
 
                 // listener
                 Listener listener = new Listener() {
-
+                    // goto marker on click
                     public void handleEvent(Event event)
                     {
-                        System.out.println("Down on " + problem.location.moduleName);
-/*
-                        IEditorPart part = UIHelper.openEditor(OpenSpecHandler.TLA_EDITOR, new FileEditorInput((IFile) Activator.getSpecManager().getSpecLoaded().findModule(problem.location.moduleName)));
-                        if (part instanceof IGotoMarker) 
-                        {
-                            // ((IGotoMarker)part).gotoMarker(null);
-                        }
-*/                        
+                        TLAMarkerHelper.gotoMarker(problem);
                     }
                 };
 
@@ -76,7 +85,7 @@ public class ProblemView extends ViewPart
                 problemItem.setLayout(new RowLayout(SWT.VERTICAL));
                 problemItem.addListener(SWT.MouseDown, listener);
 
-                String[] lines = problem.message.split("\n");
+                String[] lines = problem.getAttribute(IMarker.MESSAGE, "").split("\n");
                 for (int i = 0; i < lines.length; i++)
                 {
                     StyledText styledText = new StyledText(problemItem, SWT.INHERIT_DEFAULT);
@@ -94,28 +103,25 @@ public class ProblemView extends ViewPart
                         range.length = lines[i].length();
                         styledText.setStyleRange(range);
                     }
-
-                    /*
-                    Label label = new Label(problemItem, SWT.INHERIT_DEFAULT);
-                    label.setText(lines[i]);
-                    */
                 }
 
                 ExpandItem item = new ExpandItem(bar, SWT.NONE, 0);
                 item.setExpanded(true);
-                item.setText(AdapterFactory.getProblemTypeAsText(problem));
+                item.setText(AdapterFactory.getSeverityAsText(problem.getAttribute(IMarker.SEVERITY,
+                        IMarker.SEVERITY_ERROR)));
                 item.setHeight(problemItem.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
                 item.setControl(problemItem);
                 item.addListener(SWT.MouseDown, listener);
             }
-        } // else no errors to display
+        }
+
     }
 
-    private boolean isErrorLine(String line, Problem problem)
+    private boolean isErrorLine(String line, IMarker marker)
     {
-        return line.indexOf("module " + problem.location.moduleName) != -1;
+        return line.indexOf("module "
+                + marker.getAttribute(TLAMarkerHelper.LOCATION_MODULENAME, TLAMarkerHelper.LOCATION_MODULENAME)) != -1;
     }
-
 
     /*
      * (non-Javadoc)
@@ -124,27 +130,5 @@ public class ProblemView extends ViewPart
     public void setFocus()
     {
         bar.setFocus();
-    }
-
-    /**
-     * Retrieves the source of the problems to display
-     * 
-     * @return
-     */
-    private ProblemContainer getProblemContainer()
-    {
-        Spec spec = Activator.getSpecManager().getSpecLoaded();
-        if (spec == null)
-        {
-            return null;
-        } else
-        {
-            
-            
-            return spec.getParseProblems();
-            
-            
-        }
-
     }
 }
