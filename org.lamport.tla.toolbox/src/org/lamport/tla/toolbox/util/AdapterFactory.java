@@ -1,7 +1,5 @@
 package org.lamport.tla.toolbox.util;
 
-import java.util.List;
-
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.IAdapterFactory;
 import org.eclipse.swt.SWT;
@@ -9,8 +7,6 @@ import org.eclipse.ui.model.IWorkbenchAdapter;
 import org.eclipse.ui.model.WorkbenchAdapter;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.spec.parser.IParseConstants;
-import org.lamport.tla.toolbox.spec.parser.problem.Problem;
-import org.lamport.tla.toolbox.spec.parser.problem.ProblemContainer;
 
 /**
  * A toolkit with adapter methods
@@ -42,75 +38,24 @@ public class AdapterFactory implements IAdapterFactory
             if (adaptableObject instanceof Spec)
             {
                 return new SpecWorkbenchAdapter();
-            } else if (adaptableObject instanceof ProblemContainer)
-            {
-                return new ProblemContainerAdapter();
-            } else if (adaptableObject instanceof Problem)
-            {
-                return new ProblemAdapter();
-            }
+            } 
         }
         return null;
     }
-
-    /**
-     * Adapts the parse problem for workbench<br>
-     * Using this adapter the spec can be represented in workbench containers
-     *
-     * @author zambrovski
-     */
-    class ProblemAdapter extends WorkbenchAdapter
-    {
-
-        /*
-         * (non-Javadoc)
-         * @see org.eclipse.ui.model.WorkbenchAdapter#getLabel(java.lang.Object)
-         */
-        public String getLabel(Object object)
-        {
-            Problem problem = (Problem) object;
-            return problem.message;
-        }
-    }
     
     /**
-     * Adapts the parse problem container for workbench<br>
-     * Using this adapter the spec can be represented in workbench containers
-     * @author zambrovski
+     * Retrieves formated problem location
+     * @param moduleName
+     * @param coordinates
+     * @return
      */
-    class ProblemContainerAdapter extends WorkbenchAdapter
+    public static String getFormattedLocation(int[] coordinates, String moduleName)
     {
-
-        /*
-         * (non-Javadoc)
-         * @see org.eclipse.ui.model.IWorkbenchAdapter#getChildren(java.lang.Object)
-         */
-        public Object[] getChildren(Object o)
-        {
-            ProblemContainer container = (ProblemContainer) o;
-            List problems = container.getProblems(Problem.ABORT | Problem.ERROR | Problem.WARNING);
-            return problems.toArray(new Problem[problems.size()]);
-        }
-
-        /*
-         * (non-Javadoc)
-         * @see org.eclipse.ui.model.IWorkbenchAdapter#getLabel(java.lang.Object)
-         */
-        public String getLabel(Object o)
-        {
-            ProblemContainer container = (ProblemContainer) o;
-            if (container.isEmpty())
-            {
-                return "No Problems";
-            } else
-            {
-                return "Problems (" + container.getNumberOfProblems(Problem.ABORT) + " Aborts/"
-                        + container.getNumberOfProblems(Problem.ERROR) + " Errors/"
-                        + container.getNumberOfProblems(Problem.WARNING) + " Warnings)";
-            }
-        }
-
+        return "from line " + coordinates[0] + ", column " + coordinates[1] + " to line " + coordinates[2]
+                + ", column " + coordinates[3] + " of module " + moduleName;
     }
+
+
 
     /**
      * Adapts the spec object to the workbench<br>
@@ -230,43 +175,21 @@ public class AdapterFactory implements IAdapterFactory
         }
     }
 
-    
-    
-    /**
-     * Translates Problem Severity to Eclipse Marker severity
-     * @param problem a problem containing the error severity
-     * @return one of the {@link IMarker} constants
-     */
-    public static int getMarkerSeverityFromProblem(Problem problem)
-    {
-        switch (problem.type) 
-        {
-            case Problem.ERROR:
-                return IMarker.SEVERITY_ERROR;
-            case Problem.ABORT:
-                return IMarker.SEVERITY_ERROR;
-            case Problem.WARNING:
-                return IMarker.SEVERITY_WARNING;
-            default:
-                return IMarker.SEVERITY_INFO;
-        }
-    }
 
     /**
      * Retrieves the text representation of the TLA+ parse problem
      * @param problem
      * @return
      */
-    public static String getProblemTypeAsText(Problem problem)
+    public static String getSeverityAsText(int severity)
     {
-        switch (problem.type) 
+        switch (severity) 
         {
-            case Problem.ERROR:
+            case IMarker.SEVERITY_ERROR:
                 return "Error";
-            case Problem.ABORT:
-                return "Abort";
-            case Problem.WARNING:
+            case IMarker.SEVERITY_WARNING:
                 return "Warning";
+            case IMarker.SEVERITY_INFO:
             default:
                 return "Info";
         }
