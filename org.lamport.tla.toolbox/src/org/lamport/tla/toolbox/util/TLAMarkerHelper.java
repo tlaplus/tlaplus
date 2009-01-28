@@ -1,8 +1,5 @@
 package org.lamport.tla.toolbox.util;
 
-import java.util.Iterator;
-import java.util.List;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
@@ -13,11 +10,11 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.editors.text.FileDocumentProvider;
+import org.eclipse.ui.ide.IGotoMarker;
 import org.eclipse.ui.part.FileEditorInput;
-import org.lamport.tla.toolbox.Activator;
-import org.lamport.tla.toolbox.spec.Spec;
-import org.lamport.tla.toolbox.spec.parser.problem.Problem;
+import org.lamport.tla.toolbox.ui.handler.OpenSpecHandler;
 
 /**
  * Takes care of problem display
@@ -27,68 +24,96 @@ import org.lamport.tla.toolbox.spec.parser.problem.Problem;
 public class TLAMarkerHelper
 {
     /**
-     * 
+     * End column of the error as reported by SANY
+     */
+    public static final String LOCATION_ENDCOLUMN = "toolbox.location.endcolumn";
+    /**
+     * End line of the error as reported by SANY
+     */
+    public static final String LOCATION_ENDLINE = "toolbox.location.endline";
+    /**
+     * Begin column of the error as reported by SANY
+     */
+    public static final String LOCATION_BEGINCOLUMN = "toolbox.location.begincolumn";
+    /**
+     * Begin line of the error as reported by SANY
+     */
+    public static final String LOCATION_BEGINLINE = "toolbox.location.beginline";
+    /**
+     * Module name (different from the generally use filename)
+     */
+    public static final String LOCATION_MODULENAME = "toolbox.location.modulename";
+    /**
+     * The marker ID for displaying TLA+ Parser Errors
      */
     public static final String TOOLBOX_MARKERS_PROBLEM_MARKER_ID = "toolbox.markers.TLAParserProblemMarker";
 
     /**
-     * Installs a problem marker on a resource
-     * @param resource a resource, to put the problem marker on
-     * @param problem a problem holder
-     * @param monitor 
+     * Installs a problem marker on a given resource
+     * 
+     * @param module
+     * @param severityError
+     * @param coordinates
+     * @param message
+     * @param monitor
      */
-    public static void installProblemMarkers(final IResource resource, final Problem problem,
-            final IProgressMonitor monitor)
+    public static void installProblemMarker(final IResource resource, final int severityError, final int[] coordinates,
+            final String message, IProgressMonitor monitor)
     {
         IWorkspaceRunnable runnable = new IWorkspaceRunnable() {
 
             public void run(IProgressMonitor monitor) throws CoreException
             {
                 IMarker marker = null;
+                String moduleName = ResourceHelper.getModuleNameChecked(resource.getName(), false);
+
                 marker = resource.createMarker(TOOLBOX_MARKERS_PROBLEM_MARKER_ID);
                 // Once we have a marker object, we can set its attributes
-                marker.setAttribute(IMarker.SEVERITY, AdapterFactory.getMarkerSeverityFromProblem(problem));
-                marker.setAttribute(IMarker.MESSAGE, problem.message);
-                marker.setAttribute(IMarker.LOCATION, problem.getFormattedLocation());
+                marker.setAttribute(IMarker.SEVERITY, severityError);
+                marker.setAttribute(IMarker.MESSAGE, message);
+                marker.setAttribute(IMarker.LOCATION, AdapterFactory.getFormattedLocation(coordinates, moduleName));
 
-                marker.setAttribute("toolbox.location.modulename", problem.location.moduleName);
-                marker.setAttribute("toolbox.location.beginline", problem.location.beginLine);
-                marker.setAttribute("toolbox.location.endline", problem.location.endLine);
-                marker.setAttribute("toolbox.location.begincolumn", problem.location.beginColumn);
-                marker.setAttribute("toolbox.location.endcolumn", problem.location.endColumn);
+                marker.setAttribute(LOCATION_MODULENAME, moduleName);
+                marker.setAttribute(LOCATION_BEGINLINE, coordinates[0]);
+                marker.setAttribute(LOCATION_BEGINCOLUMN, coordinates[1]);
+                marker.setAttribute(LOCATION_ENDLINE, coordinates[2]);
+                marker.setAttribute(LOCATION_ENDCOLUMN, coordinates[3]);
 
-                if (problem.location.beginLine == problem.location.endLine || problem.location.endLine == -1)
+                // important! either use line numbers (for creation of a single line marker) 
+                // or char_start/char_end (to create exact markers, even multi-line)
+                if (coordinates[0] == coordinates[3] || coordinates[3] == -1)
                 {
-                    marker.setAttribute(IMarker.LINE_NUMBER, problem.location.beginLine);
-                }
-
-                // retrieve the resource
-                IResource problemResource = Activator.getSpecManager().getSpecLoaded().findModule(
-                        problem.location.moduleName);
-                IDocument document = null;
-                
-                // since we know that the editor uses file based editor representation
-                FileEditorInput fileEditorInput = new FileEditorInput((IFile) problemResource);
-                FileDocumentProvider fileDocumentProvider = new FileDocumentProvider();
-                fileDocumentProvider.connect(fileEditorInput);
-                document = fileDocumentProvider.getDocument(fileEditorInput);
-                if (document != null)
+                    marker.setAttribute(IMarker.LINE_NUMBER, coordinates[0]);
+                } else
                 {
-                    try
+                    // retrieve the resource
+                    IDocument document = null;
+
+                    // since we know that the editor uses file based editor representation
+                    FileEditorInput fileEditorInput = new FileEditorInput((IFile) resource);
+                    FileDocumentProvider fileDocumentProvider = new FileDocumentProvider();
+                    fileDocumentProvider.connect(fileEditorInput);
+                    document = fileDocumentProvider.getDocument(fileEditorInput);
+                    if (document != null)
                     {
-                        // find the line in the document
-                        IRegion lineRegion = document.getLineInformation(problem.location.beginLine - 1);
+                        try
+                        {
+                            // find the line in the document
+                            IRegion lineRegion = document.getLineInformation(coordinates[0] - 1);
 
-                        // get the text representation of the line
-                        String textLine = document.get(lineRegion.getOffset(), lineRegion.getLength());
+                            // get the text representation of the line
+                            String textLine = document.get(lineRegion.getOffset(), lineRegion.getLength());
 
-                        marker.setAttribute(IMarker.CHAR_START, lineRegion.getOffset() + getRealOffset(textLine, problem.location.beginColumn - 1));
-                        marker.setAttribute(IMarker.CHAR_END, lineRegion.getOffset() + getRealOffset(textLine, problem.location.endColumn));
+                            marker.setAttribute(IMarker.CHAR_START, lineRegion.getOffset()
+                                    + getRealOffset(textLine, coordinates[1] - 1));
+                            marker.setAttribute(IMarker.CHAR_END, lineRegion.getOffset()
+                                    + getRealOffset(textLine, coordinates[3]));
 
-                    } catch (BadLocationException e)
-                    {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
+                        } catch (BadLocationException e)
+                        {
+                            // TODO Auto-generated catch block
+                            e.printStackTrace();
+                        }
                     }
                 }
             }
@@ -101,6 +126,7 @@ public class TLAMarkerHelper
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
+
     }
 
     /**
@@ -116,7 +142,7 @@ public class TLAMarkerHelper
             {
                 IMarker[] problems = null;
                 int depth = IResource.DEPTH_INFINITE;
-                problems = resource.findMarkers(IMarker.PROBLEM, true, depth);
+                problems = resource.findMarkers(TLAMarkerHelper.TOOLBOX_MARKERS_PROBLEM_MARKER_ID, true, depth);
                 for (int i = 0; i < problems.length; i++)
                 {
                     problems[i].delete();
@@ -132,73 +158,44 @@ public class TLAMarkerHelper
             e.printStackTrace();
         }
     }
-
+    
     /**
-     * Updates problem information for spec currently loaded by the spec manger
+     * Retrieves problem markers associated with given resource
+     * @param resource
+     * @param monitor
+     * @return
      */
-    public static void updateProblemInformation()
+    public static IMarker[] getProblemMarkers(final IResource resource, final IProgressMonitor monitor)
     {
-        deleteMarkers(Activator.getSpecManager().getSpecLoaded(), null);
-        setupProblemInformation(Activator.getSpecManager().getSpecLoaded(), null);
+        IMarker[] problems = null;
+        try
+        {
+            problems = resource.findMarkers(TLAMarkerHelper.TOOLBOX_MARKERS_PROBLEM_MARKER_ID, true, IResource.DEPTH_INFINITE);
+        } catch (CoreException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            problems = new IMarker[0];
+        }
+        return problems;
     }
 
     /**
-     * Updates problem information for given spec
-     * @param spec - the spec, to update information on 
-     */
-    public static void setupProblemInformation(final Spec spec, IProgressMonitor monitor)
-    {
-        if (spec != null)
-        {
-
-            // install new problem marker
-            List problems = spec.getParseProblems().getProblems(Problem.ALL);
-            Iterator pIterator = problems.iterator();
-            // iterate over problems if any
-            for (; pIterator.hasNext();)
-            {
-                Problem problem = (Problem) pIterator.next();
-                String moduleName = problem.location.moduleName;
-
-                if (moduleName != null && spec.getModule(moduleName) != null)
-                {
-                    // install problems on corresponding module
-                    installProblemMarkers(spec.getModule(moduleName), problem, monitor);
-                } else
-                {
-                    // or on spec itself
-                    installProblemMarkers(spec.getProject(), problem, monitor);
-                }
-            }
-        }
-    }
-
-    public static void deleteMarkers(Spec spec, IProgressMonitor monitor)
-    {
-        if (spec != null)
-        {
-            // delete the problems from current spec, if any
-            TLAMarkerHelper.removeProblemMarkers(spec.getProject(), monitor);
-        }
-    }
-
-    /**
-     * 
+     * Calculates the offset in a particular line
      * @param line
      * @param offset
      * @return
      */
     public static int getRealOffset(String line, int offset)
     {
-        // TODO handle this different, read from the editor settings
-        if (line.indexOf("\t") == -1)
-        {
-            return Math.min(offset, line.length());
-        } else
+        if (line.indexOf("\t") != -1)
         {
             /*
-             * TODO this is ugly.. the users should not use tabs
-             * 
+             TODO this is ugly.. the users should not use tabs
+             
+              
+             
+            // TODO handle this different, read from the editor settings
             int TAB_WIDTH = 8;
             int realOffset = offset;
             int modificator = 0;
@@ -215,9 +212,29 @@ public class TLAMarkerHelper
             }
             return realOffset;
             */
-            return Math.min(offset, line.length());
         }
 
+        return Math.min(offset, line.length());
+
+    }
+
+    /**
+     * Opens the TLA+ Editor and goes to the marker
+     * @param problem
+     */
+    public static void gotoMarker(IMarker problem)
+    {
+        IEditorPart part = UIHelper.openEditor(OpenSpecHandler.TLA_EDITOR, new FileEditorInput(
+                (IFile) problem.getResource()));
+        IGotoMarker gotoMarker = null;
+        if (part instanceof IGotoMarker) {
+            gotoMarker = (IGotoMarker) part;
+        } else {
+            gotoMarker = (IGotoMarker) part.getAdapter(IGotoMarker.class);
+        }
+        if (gotoMarker != null) {
+            gotoMarker.gotoMarker(problem);
+        }
     }
 
 }
