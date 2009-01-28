@@ -50,7 +50,7 @@ public class PreferenceStoreHelper
     }
 
     /**
-     * Store the information about opened editors
+     * Store the information about opened editors in project preferences
      * @param project
      * @param openedModules
      */
@@ -69,7 +69,7 @@ public class PreferenceStoreHelper
     }
 
     /**
-     * Retrieves the information about the opened editors
+     * Retrieves the information about the opened editors from project preferences
      * @param project
      * @return
      */
@@ -160,5 +160,5 @@ public class PreferenceStoreHelper
         IPreferenceStore store = Activator.getDefault().getPreferenceStore();
         return store;
     }
-
+    
 }
