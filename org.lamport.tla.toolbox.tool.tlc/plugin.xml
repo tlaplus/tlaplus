@@ -42,6 +42,17 @@
                   commandId="org.lamport.tla.toolbox.tool.tlc.commands.launch"
                   mnemonic="C"
                   id="toolbox.tool.tlc.launch">
+               <visibleWhen
+                     checkEnabled="true">
+                  <with
+                        variable="activeWorkbenchWindow.activePerspective">
+                     <not>
+                        <equals
+                              value="org.lamport.tla.toolbox.ui.perspective.problems">
+                        </equals>
+                     </not>
+                  </with>
+               </visibleWhen>
             </command>
          </menu>
       </menuContribution>
@@ -51,6 +62,17 @@
                commandId="org.lamport.tla.toolbox.tool.tlc.commands.launch"
                id="toolbox.tool.tlc.launch"
                mnemonic="C">
+            <visibleWhen
+                  checkEnabled="true">
+               <with
+                     variable="activeWorkbenchWindow.activePerspective">
+                  <not>
+                     <equals
+                           value="org.lamport.tla.toolbox.ui.perspective.problems">
+                     </equals>
+                  </not>
+               </with>
+            </visibleWhen>
          </command>
       </menuContribution>
    </extension>
