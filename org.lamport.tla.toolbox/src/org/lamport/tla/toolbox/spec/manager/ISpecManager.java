@@ -73,4 +73,9 @@ public interface ISpecManager
      */
     public Spec getSpecByRootModule(String rootModulePath);
 
+    /**
+     * Termination of the specManager
+     */
+    public void terminate();
+
 }
