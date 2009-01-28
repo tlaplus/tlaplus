@@ -3,16 +3,18 @@ package org.lamport.tla.toolbox.spec;
 import java.util.Date;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IAdapterManager;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Platform;
 import org.lamport.tla.toolbox.spec.parser.IParseConstants;
-import org.lamport.tla.toolbox.spec.parser.problem.ProblemContainer;
 import org.lamport.tla.toolbox.util.ResourceHelper;
+import org.lamport.tla.toolbox.util.TLAMarkerHelper;
 import org.lamport.tla.toolbox.util.pref.PreferenceStoreHelper;
 
 /**
@@ -33,7 +35,6 @@ public class Spec implements IAdaptable
     private int status = IParseConstants.UNPARSED;
 
     /* Problem container */
-    private ProblemContainer parseProblems;
 
     /**
      * Creates a Spec handle for existing project. Use the factory method
@@ -45,8 +46,7 @@ public class Spec implements IAdaptable
     public Spec(IProject project)
     {
         this.project = project;
-        this.parseProblems = new ProblemContainer();
-        initProjectPropoerties();
+        initProjectProperties();
     }
 
     /**
@@ -70,7 +70,7 @@ public class Spec implements IAdaptable
     /**
      * initializes the root module from the project properties
      */
-    public void initProjectPropoerties()
+    public void initProjectProperties()
     {
         this.rootFile = PreferenceStoreHelper.readProjectRootFile(project);
     }
@@ -163,15 +163,6 @@ public class Spec implements IAdaptable
         this.status = status;
     }
 
-    /**
-     * Retrieves the problem container
-     * 
-     * @return the parseProblems
-     */
-    public ProblemContainer getParseProblems()
-    {
-        return parseProblems;
-    }
 
     /*
      * (non-Javadoc)
@@ -232,6 +223,25 @@ public class Spec implements IAdaptable
         }
         // only try to find a module, never create one
         return ResourceHelper.getLinkedFile(getProject(), ResourceHelper.getModule(moduleName), false);
+    }
+
+    /**
+     * Deletes all problem markers of all files associated with a current specification
+     * @param monitor
+     */
+    public void cleanProblemMarkers(IProgressMonitor monitor)
+    {
+        // delete the problems from current spec, if any
+        TLAMarkerHelper.removeProblemMarkers(getProject(), monitor);
+    }
+
+    /**
+     * Retrieves the problem markers on this spec
+     * @return
+     */
+    public IMarker[] getProblemMarkers(IProgressMonitor monitor)
+    {
+        return TLAMarkerHelper.getProblemMarkers(getProject(), monitor);
     }
 
 }
