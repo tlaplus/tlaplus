@@ -7,7 +7,6 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.editors.text.FileDocumentProvider;
 import org.eclipse.ui.editors.text.TextEditor;
 import org.eclipse.ui.part.FileEditorInput;
-import org.eclipse.ui.texteditor.IElementStateListener;
 
 /**
  * Basic editor without any additional features
@@ -23,8 +22,9 @@ public class TLAEditor extends TextEditor
     {
         super();
         setDocumentProvider(new FileDocumentProvider());
-        getDocumentProvider().addElementStateListener(new IElementStateListener() {
-
+        /*
+        getDocumentProvider().addElementStateListener(
+                new IElementStateListener() {
             public void elementContentAboutToBeReplaced(Object element)
             {
                 System.out.println("elementContentAboutToBeReplaced" + element);
@@ -50,7 +50,7 @@ public class TLAEditor extends TextEditor
                 System.out.println("elementMoved" + originalElement);
             }
         });
-
+    */
     }
 
     /*
