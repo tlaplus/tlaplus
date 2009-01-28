@@ -3,7 +3,7 @@ package org.lamport.tla.toolbox.ui.view;
 import org.eclipse.ui.views.markers.MarkerSupportView;
 
 /**
- * Represents the problems
+ * This is a standard Eclipse-based problem view, that is able to represent TLA+ Problem markers 
  * @author Simon Zambrovski
  * @version $Id$
  */
