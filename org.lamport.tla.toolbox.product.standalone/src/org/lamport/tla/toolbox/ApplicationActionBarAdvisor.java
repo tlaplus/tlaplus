@@ -21,7 +21,9 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
     private IWorkbenchAction aboutAction;
     private IWorkbenchAction helpSearchAction;
     private IWorkbenchAction quitAction;
-
+    private IWorkbenchAction saveAction;
+    // private IWorkbenchAction saveAsAction;
+    
     /**
 	 * @param configurer
 	 */
@@ -45,7 +47,13 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         
         quitAction = ActionFactory.QUIT.create(window);
         register(quitAction);
+        
+        saveAction = ActionFactory.SAVE.create(window);
+        register(saveAction);
 
+        // saveAsAction = ActionFactory.SAVE_AS.create(window);
+        // register(saveAsAction);
+        
     }
 
     /* (non-Javadoc)
@@ -58,6 +66,9 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         fileMenu.add(new Separator("toolbox.file.spec.separator"));
         // place holder for module actions        
         fileMenu.add(new Separator("toolbox.file.module.separator"));
+        fileMenu.add(saveAction);
+
+        //fileMenu.add(saveAsAction);
         
         // place holder for other actions
         fileMenu.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
