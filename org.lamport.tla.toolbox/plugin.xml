@@ -128,6 +128,17 @@
             id="toolbox.command.parse"
             name="Parse Root Module">
       </command>
+      <category
+            description="UI Commands"
+            id="toolbox.command.category.ui"
+            name="UI">
+      </category>
+      <command
+            categoryId="toolbox.command.category.ui"
+            description="Toggles Problem View"
+            id="toolbox.command.toggle-problem-view"
+            name="Toggle Problem View">
+      </command>
    </extension>
       
 <!--                                   -->
@@ -341,6 +352,10 @@
             class="org.lamport.tla.toolbox.ui.handler.OpenSpecHandler"
             commandId="toolbox.command.openSpec">
       </handler>
+      <handler
+            class="org.lamport.tla.toolbox.ui.handler.ToggleProblemViewHandler"
+            commandId="toolbox.command.toggle-problem-view">
+      </handler>
 
    </extension>
    
@@ -478,5 +493,23 @@
     <keyword
             label="TLA+ Syntax Analyser"
             id="toolbox.keywords.Parser"/>
+   </extension>
+   <extension
+         point="org.eclipse.ui.bindings">
+      <key
+            commandId="toolbox.command.toggle-problem-view"
+            contextId="toolbox.contexts.cleaneditor"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="CTRL+S">
+      </key>
+   </extension>
+   <extension
+         point="org.eclipse.ui.contexts">
+      <context
+            description="Clean Editor"
+            id="toolbox.contexts.cleaneditor"
+            name="Clean Editor"
+            parentId="org.eclipse.ui.contexts.window">
+      </context>
    </extension>
 </plugin>
