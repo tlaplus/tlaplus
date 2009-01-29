@@ -1,0 +1,28 @@
+CHANGES
+====================
+This file provides the revision history of TLA+ Toolbox project. It contain Revision information stated one after 
+the other with latest on the top, each of which has the following format:   
+
+{yyyy-mm-dd} "{logical-version-tag}" ["{Revision description}"]
+-------------------------------
+DESCRIPTION: {General description of the release
+ which is usually a short multi-line text.}
+- {CATEGORY}: "{Description of the change}" 
+- {CATEGORY}: "{Description of the change}"
+...
+
+{CATEGORY} is one of the BUGFIX, CHANGE, FEATURE 
+
+
+
+
+2009-01-28 "0.0.1" 
+---------------------------------------------------
+
+- BUGFIX: The parse status "Could not find module" is handled correctly. The Marker is attached to the Spec itself. 
+- BUGFIX: The parse status widget is shown from the beginning on and is permanently visible
+- CHANGE: Status "semantic warning" has been added to the resolution of the parse status. It is marked by the warning 
+written on the yellow background. The warning is a problem status and causes the problem window to pop-up.
+- CHANGE: The defaults for preferences "spacesForTabs" and "lineNumberRuler" has been changed
+- FEATURE: In a non-dirty editor CTRL + S toggles the "Problem View"  
+
