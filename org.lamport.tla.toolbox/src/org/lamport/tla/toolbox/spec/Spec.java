@@ -164,8 +164,7 @@ public class Spec implements IAdaptable
     }
 
 
-    /*
-     * (non-Javadoc)
+    /**
      * @see org.eclipse.core.runtime.IAdaptable#getAdapter(java.lang.Class)
      */
     public Object getAdapter(Class adapter)
@@ -177,30 +176,14 @@ public class Spec implements IAdaptable
     }
 
     /**
-     * @return the openedModules
-     */
-    public String[] getOpenedModules()
-    {
-
-        return PreferenceStoreHelper.getOpenedEditors(project);
-    }
-
-    /**
-     * @param openedModules the openedModules to set
-     */
-    public void setOpenedModules(String[] openedModules)
-    {
-        PreferenceStoreHelper.storeOpenedEditors(project, openedModules);
-    }
-
-    /**
-     * Retrieves the module with a given name belonging to the spec, or null, 
+     * Retrieves the module with a given name belonging to the spec or null, 
      * if the module can not be found (currently only root module is supported)
+     * <Note>This method tries to create a link to the module.
      *  
      * @param moduleName name of the module to retrieve
      * @return a valid IResouce or null
      */
-    public IResource getModule(String moduleName)
+    public IFile createModule(String moduleName)
     {
         if (moduleName == null)
         {
@@ -215,7 +198,7 @@ public class Spec implements IAdaptable
      * @param moduleName
      * @return
      */
-    public IResource findModule(String moduleName)
+    public IFile findModule(String moduleName)
     {
         if (moduleName == null)
         {
