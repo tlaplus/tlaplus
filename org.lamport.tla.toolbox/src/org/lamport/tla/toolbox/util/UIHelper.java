@@ -11,6 +11,7 @@ import org.eclipse.core.commands.NotHandledException;
 import org.eclipse.core.commands.ParameterizedCommand;
 import org.eclipse.core.commands.common.NotDefinedException;
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Display;
@@ -83,7 +84,31 @@ public class UIHelper
         IWorkbenchWindow window = openPerspectiveInNewWindow(perspectiveId, input);
         window.getShell().setBounds(bounds.x + bounds.width, bounds.y, width, bounds.height);
 
+        activateRoorEditorOrView();
         return window;
+    }
+
+    /**
+     * Tries to activates an editor or a view in the root window
+     */
+    private static void activateRoorEditorOrView()
+    {
+        // activate the editor in the root window
+        IWorkbenchPage page = getRootApplicationWindow().getActivePage();
+        if (page != null)
+        {
+            IWorkbenchPart activepart = page.getActiveEditor();
+            if (activepart != null)
+            {
+                activepart.setFocus();
+            } else {
+                activepart = page.getActivePart();
+                if (activepart != null) 
+                {
+                    activepart.setFocus();
+                }
+            }
+        }
     }
 
     /**
@@ -102,9 +127,6 @@ public class UIHelper
         IWorkbenchWindow window = null;
         try
         {
-            // IWorkbenchPage page = workbench.showPerspective(perspectiveId, workbench.openWorkbenchWindow(input));
-            // window = page.getWorkbenchWindow();
-            
             // avoids flicking, from implementation above
             window = workbench.openWorkbenchWindow(perspectiveId, input);
         } catch (WorkbenchException e)
@@ -331,13 +353,16 @@ public class UIHelper
     }
 
     /**
-     * Returns a status bar contribution 
-     * @return
+     * Returns a status bar contribution.
+     * This method will install the item, if it not already installed, and return the first item it finds in the status bar
+     * 
+     * @return ParseStatusContributionItem
      */
-    public static ParseStatusContributionItem installStatusBarContributionItem()
+    public static synchronized ParseStatusContributionItem getStatusBarContributionItem()
     {
         IActionBars bars = null;
-        IWorkbenchPage page = UIHelper.getActivePage();
+        IWorkbenchWindow window = getRootApplicationWindow();
+        IWorkbenchPage page = window.getActivePage();
         if (page != null)
         {
             IWorkbenchPart part = page.getActivePart();
@@ -356,10 +381,20 @@ public class UIHelper
 
         if (bars != null)
         {
-            ParseStatusContributionItem p = new ParseStatusContributionItem();
-            bars.getStatusLineManager().add(p);
+            IContributionItem[] items = bars.getStatusLineManager().getItems();
+            for (int i = 0; i < items.length; i++)
+            {
+                if (items[i] instanceof ParseStatusContributionItem)
+                {
+                    return (ParseStatusContributionItem) items[i];
+                }
+            }
+
+            ParseStatusContributionItem parseStatusContributionItem = new ParseStatusContributionItem();
+            bars.getStatusLineManager().add(parseStatusContributionItem);
             bars.updateActionBars();
-            return p;
+
+            return parseStatusContributionItem;
         }
         return null;
     }
@@ -390,6 +425,32 @@ public class UIHelper
             display = Display.getDefault();
         }
         display.asyncExec(task);
+    }
+
+    /**
+     * Determines if given perspective is shown
+     * @param id
+     * @return true if the perspective with current id is shown, false otherwise
+     */
+    public static boolean isPerspectiveShown(String perspectiveId)
+    {
+        if (perspectiveId == null || perspectiveId.equals(""))
+        {
+            return false;
+        }
+        IWorkbenchWindow[] workbenchWindows = PlatformUI.getWorkbench().getWorkbenchWindows();
+        for (int i = 0; i < workbenchWindows.length; i++)
+        {
+            IPerspectiveDescriptor[] openPerspectives = workbenchWindows[i].getActivePage().getOpenPerspectives();
+            for (int j = 0; j < openPerspectives.length; j++)
+            {
+                if (perspectiveId.equals(openPerspectives[j].getId()))
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
 }
