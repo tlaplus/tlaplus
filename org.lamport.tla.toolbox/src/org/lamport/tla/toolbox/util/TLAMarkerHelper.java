@@ -14,6 +14,7 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.editors.text.FileDocumentProvider;
 import org.eclipse.ui.ide.IGotoMarker;
 import org.eclipse.ui.part.FileEditorInput;
+import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.ui.handler.OpenSpecHandler;
 
 /**
@@ -49,25 +50,41 @@ public class TLAMarkerHelper
     public static final String TOOLBOX_MARKERS_PROBLEM_MARKER_ID = "toolbox.markers.TLAParserProblemMarker";
 
     /**
-     * Installs a problem marker on a given resource
-     * 
-     * @param module
-     * @param severityError
-     * @param coordinates
-     * @param message
-     * @param monitor
+     * Installs a problem marker on a module
      */
-    public static void installProblemMarker(final IResource resource, final int severityError, final int[] coordinates,
+    public static void installProblemMarkerOnModule(IFile module, final int severityError, final int[] coordinates,
             final String message, IProgressMonitor monitor)
+    {
+        String moduleName = ResourceHelper.getModuleNameChecked(module.getName(), false);
+        installProblemMarker(module, moduleName, severityError, coordinates, message, monitor);
+    }
+
+    /**
+     * Installs a problem marker on a specification 
+     */
+    public static void installProblemMarkerOnSpec(Spec specification, final int severityError, final int[] coordinates,
+            final String message, IProgressMonitor monitor)
+    {
+        String moduleName = specification.getName();
+        installProblemMarker(specification.getProject(), moduleName, severityError, coordinates, message, monitor);
+    }
+    
+    
+    
+    /**
+     * Installs a problem marker on a given resource
+     */
+    public static void installProblemMarker(final IResource resource, final String moduleName, final int severityError,
+            final int[] coordinates, final String message, IProgressMonitor monitor)
     {
         IWorkspaceRunnable runnable = new IWorkspaceRunnable() {
 
             public void run(IProgressMonitor monitor) throws CoreException
             {
-                IMarker marker = null;
-                String moduleName = ResourceHelper.getModuleNameChecked(resource.getName(), false);
-
-                marker = resource.createMarker(TOOLBOX_MARKERS_PROBLEM_MARKER_ID);
+                System.out.println("Installing a marker on " + resource.getName() + " with error on module " + moduleName);
+                
+                
+                IMarker marker = resource.createMarker(TOOLBOX_MARKERS_PROBLEM_MARKER_ID);
                 // Once we have a marker object, we can set its attributes
                 marker.setAttribute(IMarker.SEVERITY, severityError);
                 marker.setAttribute(IMarker.MESSAGE, message);
@@ -79,7 +96,7 @@ public class TLAMarkerHelper
                 marker.setAttribute(LOCATION_ENDLINE, coordinates[2]);
                 marker.setAttribute(LOCATION_ENDCOLUMN, coordinates[3]);
 
-                // important! either use line numbers (for creation of a single line marker) 
+                // important! either use line numbers (for creation of a single line marker)
                 // or char_start/char_end (to create exact markers, even multi-line)
                 if (coordinates[0] == coordinates[3] || coordinates[3] == -1)
                 {
@@ -158,7 +175,7 @@ public class TLAMarkerHelper
             e.printStackTrace();
         }
     }
-    
+
     /**
      * Retrieves problem markers associated with given resource
      * @param resource
@@ -170,7 +187,8 @@ public class TLAMarkerHelper
         IMarker[] problems = null;
         try
         {
-            problems = resource.findMarkers(TLAMarkerHelper.TOOLBOX_MARKERS_PROBLEM_MARKER_ID, true, IResource.DEPTH_INFINITE);
+            problems = resource.findMarkers(TLAMarkerHelper.TOOLBOX_MARKERS_PROBLEM_MARKER_ID, true,
+                    IResource.DEPTH_INFINITE);
         } catch (CoreException e)
         {
             // TODO Auto-generated catch block
@@ -224,15 +242,18 @@ public class TLAMarkerHelper
      */
     public static void gotoMarker(IMarker problem)
     {
-        IEditorPart part = UIHelper.openEditor(OpenSpecHandler.TLA_EDITOR, new FileEditorInput(
-                (IFile) problem.getResource()));
+        IEditorPart part = UIHelper.openEditor(OpenSpecHandler.TLA_EDITOR, new FileEditorInput((IFile) problem
+                .getResource()));
         IGotoMarker gotoMarker = null;
-        if (part instanceof IGotoMarker) {
+        if (part instanceof IGotoMarker)
+        {
             gotoMarker = (IGotoMarker) part;
-        } else {
+        } else
+        {
             gotoMarker = (IGotoMarker) part.getAdapter(IGotoMarker.class);
         }
-        if (gotoMarker != null) {
+        if (gotoMarker != null)
+        {
             gotoMarker.gotoMarker(problem);
         }
     }
