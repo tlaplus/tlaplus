@@ -5,8 +5,8 @@ import java.io.PrintStream;
 import java.util.Enumeration;
 import java.util.Vector;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.lamport.tla.toolbox.spec.Module;
 import org.lamport.tla.toolbox.spec.Spec;
@@ -284,7 +284,7 @@ public class StreamInterpretingParserLauncher implements IParserLauncher
             {
                 // find out the module name
                 int parsingModuleIndex = output[nextMsg - 1].indexOf("Parsing module") + 15;
-                IResource module = spec.findModule(output[nextMsg - 1].substring(parsingModuleIndex,
+                IFile module = spec.findModule(output[nextMsg - 1].substring(parsingModuleIndex,
                         output[nextMsg - 1].indexOf(" ", parsingModuleIndex + 1)));
 
                 // coordinates of the error
@@ -315,6 +315,8 @@ public class StreamInterpretingParserLauncher implements IParserLauncher
 
                     // coordinates of the error
                     coordinates = new int[] { beginLine, beginColumn, endLine, endColumn };
+                    
+                    TLAMarkerHelper.installProblemMarkerOnModule(module, IMarker.SEVERITY_ERROR, coordinates, message, monitor);
                 } // if
                 else
                 {
@@ -334,23 +336,21 @@ public class StreamInterpretingParserLauncher implements IParserLauncher
                     // computed from the error messages, reset it to "".
                     if (message != null && message.indexOf("does not match the name") == -1)
                     {
-                        module = spec.getProject();
-
                         coordinates = new int[] { -1, -1, -1, -1 };
                     } else
                     {
                         throw new RuntimeException("This should not happen");
                     }
+                    
+                    if (module == null)
+                    {
+                        TLAMarkerHelper.installProblemMarkerOnSpec(spec, IMarker.SEVERITY_ERROR, coordinates, message, monitor);
+                    } else {
+                        TLAMarkerHelper.installProblemMarkerOnModule(module, IMarker.SEVERITY_ERROR, coordinates, message, monitor);
+                    }
+
 
                 } // else
-
-                if (module == null)
-                {
-                    module = spec.getProject();
-                }
-
-                // create marker
-                TLAMarkerHelper.installProblemMarker(module, IMarker.SEVERITY_ERROR, coordinates, message, monitor);
 
             } // if
             else
@@ -384,10 +384,15 @@ public class StreamInterpretingParserLauncher implements IParserLauncher
                         + "Semantic error detected but no error message found.");
             }
             break;
+        case IParseConstants.COULD_NOT_FIND_MODULE:
+            
+            TLAMarkerHelper.installProblemMarkerOnSpec(spec, IMarker.SEVERITY_ERROR, new int[]{-1, -1, -1, -1}, "Could not find module" , monitor);
+            break;
         case IParseConstants.PARSED:
             break;
         default:
-            throw new RuntimeException("No default expected");
+            
+            throw new RuntimeException("No default expected. Still spec.getStatus() returned a value of " + spec.getStatus());
         }
         cleanUp();
     } // ProcessParsingErrorMsgs
@@ -402,7 +407,7 @@ public class StreamInterpretingParserLauncher implements IParserLauncher
     private void encodeSematicErrorFromString(Spec spec, String errorText, int severityError, IProgressMonitor monitor)
     {
 
-        IResource module = null;
+        IFile module = null;
 
         // Get pair of line, column numbers
         int[] val = findLineAndColumn(0, errorText);
@@ -432,11 +437,13 @@ public class StreamInterpretingParserLauncher implements IParserLauncher
         }
 
         int[] coordinates = new int[] { beginLine, beginColumn, endLine, endColumn };
+
         if (module == null)
         {
-            module = spec.getProject();
+            TLAMarkerHelper.installProblemMarkerOnSpec(spec, severityError, coordinates, errorText, monitor);
+        } else {
+            TLAMarkerHelper.installProblemMarkerOnModule(module, severityError, coordinates, errorText, monitor);
         }
-        TLAMarkerHelper.installProblemMarker(module, severityError, coordinates, errorText, monitor);
     }
     
     /**
