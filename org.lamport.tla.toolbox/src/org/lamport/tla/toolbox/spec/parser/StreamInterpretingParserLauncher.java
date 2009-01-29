@@ -384,6 +384,8 @@ public class StreamInterpretingParserLauncher implements IParserLauncher
                         + "Semantic error detected but no error message found.");
             }
             break;
+        case IParseConstants.PARSED:
+            break;
         default:
             throw new RuntimeException("No default expected");
         }
