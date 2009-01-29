@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.4"?>
 
-<product name="TLA+ Toolbox" id="org.lamport.tla.toolbox.product.standalone.product" application="org.lamport.tla.toolbox.application" version="1.0.0" useFeatures="true">
+<product name="TLA+ Toolbox" id="org.lamport.tla.toolbox.product.standalone.product" application="org.lamport.tla.toolbox.application" version="0.0.1" useFeatures="true">
 
    <aboutInfo>
       <image path="icons/full/product_lg.gif"/>
@@ -22,7 +22,7 @@
    <splash
       location="org.lamport.tla.toolbox.product.standalone"
       startupProgressRect="5,275,445,15" />
-   <launcher>
+   <launcher name="toolbox">
       <solaris/>
       <win useIco="false">
          <bmp/>
