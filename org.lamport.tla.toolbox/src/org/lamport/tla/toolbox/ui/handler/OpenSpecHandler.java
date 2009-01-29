@@ -4,7 +4,6 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IHandler;
-import org.eclipse.core.resources.IFile;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IPropertyListener;
 import org.eclipse.ui.IWorkbenchPartConstants;
@@ -13,9 +12,7 @@ import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.ui.perspective.InitialPerspective;
 import org.lamport.tla.toolbox.ui.perspective.SpecLoadedPerspective;
-import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
-import org.lamport.tla.toolbox.util.pref.PreferenceStoreHelper;
 
 /**
  * Handles the open-spec command
@@ -39,6 +36,7 @@ public class OpenSpecHandler extends AbstractHandler implements IHandler
         final Spec spec = Activator.getSpecManager().getSpecByName(specName);
         if (spec == null)
         {
+            // TODO return some error
             return null;
         }
 
@@ -47,42 +45,21 @@ public class OpenSpecHandler extends AbstractHandler implements IHandler
         // close the initial perspective
         UIHelper.closeWindow(InitialPerspective.ID);
 
-        String[] editors = PreferenceStoreHelper.getOpenedEditors(spec.getProject());
-        IEditorPart part = null;
-        if (editors.length != 0)
-        {
+        // open the editor
+        IEditorPart part = UIHelper.openEditor(TLA_EDITOR, new FileEditorInput(spec.getRootFile()));
+        part.addPropertyListener(new IPropertyListener() {
 
-            for (int i = 0; i < editors.length; i++)
+            public void propertyChanged(Object source, int propId)
             {
-                // IEditorInput input = new FileEditorInput(this.spec.getRootFile());
-
-                IFile file = ResourceHelper.getLinkedFile(spec.getProject(), editors[i]);
-
-                // open the editor
-                part = UIHelper.openEditor(TLA_EDITOR, new FileEditorInput(file));
-
-            }
-        } else
-        {
-            System.out.println("No editor information found. If the spec is reopened this is a BUG.");
-            // open the editor
-            part = UIHelper.openEditor(TLA_EDITOR, new FileEditorInput(spec.getRootFile()));
-            
-            
-            
-            part.addPropertyListener(new IPropertyListener() {
-
-                public void propertyChanged(Object source, int propId)
+                if (IWorkbenchPartConstants.PROP_DIRTY == propId)
                 {
-                    if (IWorkbenchPartConstants.PROP_DIRTY == propId)
-                    {
-                        // here the listeners to editor changes go into 
-                    }
-                }
-            });
-        }
+                    // here the listeners to editor changes go into
+                    
+                } 
+            }
+        });
 
-        // store information about opened spec in the spec manager
+        // store information about opened spec in the specmanager
         Activator.getSpecManager().setSpecLoaded(spec);
 
         return null;
