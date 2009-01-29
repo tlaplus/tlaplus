@@ -4,9 +4,12 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.contexts.IContextActivation;
+import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.editors.text.FileDocumentProvider;
 import org.eclipse.ui.editors.text.TextEditor;
 import org.eclipse.ui.part.FileEditorInput;
+import org.eclipse.ui.texteditor.IElementStateListener;
 
 /**
  * Basic editor without any additional features
@@ -15,6 +18,8 @@ import org.eclipse.ui.part.FileEditorInput;
  */
 public class TLAEditor extends TextEditor
 {
+    private IContextService contextService = null;
+    private IContextActivation contextActivation = null;
     /**
      * Constructor
      */
@@ -22,35 +27,44 @@ public class TLAEditor extends TextEditor
     {
         super();
         setDocumentProvider(new FileDocumentProvider());
-        /*
-        getDocumentProvider().addElementStateListener(
-                new IElementStateListener() {
+        
+        getDocumentProvider().addElementStateListener(new IElementStateListener() {
+            
+             
+            
             public void elementContentAboutToBeReplaced(Object element)
             {
-                System.out.println("elementContentAboutToBeReplaced" + element);
+                // System.out.println("elementContentAboutToBeReplaced" + element);
             }
 
             public void elementContentReplaced(Object element)
             {
-                System.out.println("elementContentReplaced" + element);
+                // System.out.println("elementContentReplaced" + element);
             }
 
             public void elementDeleted(Object element)
             {
-                System.out.println("elementDeleted" + element);
+                // System.out.println("elementDeleted" + element);
             }
 
             public void elementDirtyStateChanged(Object element, boolean isDirty)
             {
-                System.out.println("elementDirtyStateChanged" + element);
+                // System.out.println("elementDirtyStateChanged " + element);
+                if (isDirty)
+                {
+                    contextService.deactivateContext(contextActivation);
+                } else
+                {
+                    contextActivation = contextService.activateContext("toolbox.contexts.cleaneditor");
+                }
             }
 
             public void elementMoved(Object originalElement, Object movedElement)
             {
-                System.out.println("elementMoved" + originalElement);
+                // System.out.println("elementMoved" + originalElement);
             }
         });
-    */
+
     }
 
     /*
@@ -66,6 +80,9 @@ public class TLAEditor extends TextEditor
             IPath path = finput.getPath();
             setContentDescription(path.toString());
         }
+        // grab context service and activate the context ol edito load
+        this.contextService = (IContextService) getSite().getService(IContextService.class);
+        this.contextActivation = contextService.activateContext("toolbox.contexts.cleaneditor");
     }
 
 }
