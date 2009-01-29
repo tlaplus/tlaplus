@@ -50,6 +50,16 @@ public class Activator extends AbstractUIPlugin
         IWorkspace workspace = ResourcesPlugin.getWorkspace();
 
         // install the parse status widget
+        UIHelper.runUIAsync(new Runnable() {
+
+            public void run()
+            {
+                parseStatusWidget = UIHelper.getStatusBarContributionItem();
+                parseStatusWidget.updateStatus();
+            }
+        });
+        
+        
         // update widget on resource modifications
         workspace.addResourceChangeListener(new IResourceChangeListener() {
 
@@ -59,10 +69,7 @@ public class Activator extends AbstractUIPlugin
 
                     public void run()
                     {
-                        if (parseStatusWidget == null)
-                        {
-                            parseStatusWidget = UIHelper.installStatusBarContributionItem();
-                        }
+                        parseStatusWidget = UIHelper.getStatusBarContributionItem();
                         parseStatusWidget.updateStatus();
                     }
                 });
@@ -137,7 +144,7 @@ public class Activator extends AbstractUIPlugin
     {
         if (specManager == null)
         {
-            specManager = new WorkspaceSpecManager(); // DummySpecManager();
+            specManager = new WorkspaceSpecManager(); 
         }
         return specManager;
     }
