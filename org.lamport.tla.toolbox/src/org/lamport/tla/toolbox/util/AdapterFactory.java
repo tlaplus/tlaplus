@@ -92,6 +92,8 @@ public class AdapterFactory implements IAdapterFactory
                     return " module not found ";
                 case IParseConstants.PARSED:
                     return " parsed ";
+                case IParseConstants.SEMANTIC_WARNING:
+                    return " warning ";
                 case IParseConstants.SEMANTIC_ERROR:
                 case IParseConstants.SYNTAX_ERROR:
                 case IParseConstants.UNKNOWN_ERROR:
@@ -99,10 +101,10 @@ public class AdapterFactory implements IAdapterFactory
                 case IParseConstants.UNPARSED:
                     return " unparsed ";
                 default:
-                    return " unknown ";
+                    return " unknown " + spec.getStatus();
             }
         } else {
-            return " unknown ";
+            return " no spec " ;
         }
     }
     
@@ -119,6 +121,7 @@ public class AdapterFactory implements IAdapterFactory
                 case IParseConstants.PARSED:
                     return SWT.COLOR_DARK_GREEN;
                 case IParseConstants.COULD_NOT_FIND_MODULE:
+                case IParseConstants.SEMANTIC_WARNING:
                 case IParseConstants.SEMANTIC_ERROR:
                 case IParseConstants.SYNTAX_ERROR:
                 case IParseConstants.UNKNOWN_ERROR:
@@ -145,6 +148,7 @@ public class AdapterFactory implements IAdapterFactory
         switch (parseStatus) {
             // error cases
             case IParseConstants.COULD_NOT_FIND_MODULE:
+            case IParseConstants.SEMANTIC_WARNING:
             case IParseConstants.SEMANTIC_ERROR:
             case IParseConstants.SYNTAX_ERROR:
             case IParseConstants.UNKNOWN_ERROR:
