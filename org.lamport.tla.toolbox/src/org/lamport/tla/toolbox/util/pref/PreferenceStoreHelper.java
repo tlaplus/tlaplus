@@ -54,7 +54,7 @@ public class PreferenceStoreHelper
      * @param project
      * @param openedModules
      */
-    public static void storeOpenedEditors(IProject project, String[] openedModules)
+    private static void storeOpenedEditors(IProject project, String[] openedModules)
     {
         IEclipsePreferences projectPrefs = getProjectPreferences(project);
         Preferences opened = projectPrefs.node(IPreferenceConstants.P_PROJECT_OPENED_MODULES);
@@ -73,7 +73,7 @@ public class PreferenceStoreHelper
      * @param project
      * @return
      */
-    public static String[] getOpenedEditors(IProject project) 
+    private static String[] getOpenedEditors(IProject project) 
     {
         IEclipsePreferences projectPrefs = getProjectPreferences(project);
         Preferences opened = projectPrefs.node(IPreferenceConstants.P_PROJECT_OPENED_MODULES);
