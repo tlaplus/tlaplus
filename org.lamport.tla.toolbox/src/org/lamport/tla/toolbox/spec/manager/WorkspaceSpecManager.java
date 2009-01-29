@@ -68,7 +68,7 @@ public class WorkspaceSpecManager extends AbstractSpecManager implements IResour
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        
+
         ws.addResourceChangeListener(this);
     }
 
@@ -79,8 +79,9 @@ public class WorkspaceSpecManager extends AbstractSpecManager implements IResour
     {
         IWorkspace ws = ResourcesPlugin.getWorkspace();
         ws.removeResourceChangeListener(this);
-        if (this.loadedSpec != null && PreferenceStoreHelper.getInstancePreferenceStore().getBoolean(
-                IPreferenceConstants.I_RESTORE_LAST_SPEC))
+        if (this.loadedSpec != null
+                && PreferenceStoreHelper.getInstancePreferenceStore().getBoolean(
+                        IPreferenceConstants.I_RESTORE_LAST_SPEC))
         {
             PreferenceStoreHelper.getInstancePreferenceStore().setValue(IPreferenceConstants.I_SPEC_LOADED,
                     this.loadedSpec.getName());
