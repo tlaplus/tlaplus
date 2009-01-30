@@ -22,9 +22,10 @@ import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 
 /**
- * A wizard page for specification of the specification name and the location of the root file
+ * A wizard page input of the specification name and the location of the root file
  * 
- * @author zambrovski
+ * @author Simon Zambrovski
+ * @version $Id$
  */
 public class NewSpecWizardPage extends WizardPage
 {
@@ -106,9 +107,6 @@ public class NewSpecWizardPage extends WizardPage
 
         // disable the next/finish button
         setPageComplete(false);
-
-        
-        
         
         // the created parent is the control we see
         setControl(container);
@@ -209,7 +207,7 @@ public class NewSpecWizardPage extends WizardPage
 
                 Spec existingSpec = Activator.getSpecManager().getSpecByName(moduleName);
                 if (existingSpec != null) {
-                    moduleName = getSpecName(moduleName, true);
+                    moduleName = ResourceHelper.constructSpecName(moduleName, true);
                 }
                 specNameText.setText(moduleName);
             }
@@ -285,28 +283,5 @@ public class NewSpecWizardPage extends WizardPage
         return this.fileText.getText();
     }
 
-    /**
-     * 
-     * @param propose
-     * @param firstRun
-     * @return
-     */
-    public String getSpecName(String propose, boolean firstRun)
-    {
-        Spec existingSpec = Activator.getSpecManager().getSpecByName(propose);
-        if (existingSpec != null)
-        {
-            if (firstRun) 
-            {
-                return getSpecName(propose.concat("_1"), false);
-            } else {
-                String oldNumber = propose.substring(propose.lastIndexOf("_"));
-                int number = Integer.parseInt(oldNumber) + 1;
-                propose = propose.substring(0, propose.lastIndexOf("_"));
-                return getSpecName(propose + number, false );
-            }
-        }
 
-        return propose;
-    }
 }
