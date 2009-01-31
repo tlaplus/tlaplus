@@ -91,13 +91,13 @@
       <command
             categoryId="toolbox.command.category.spec"
             description="Create a new specification"
-            id="toolbox.command.newSpec"
+            id="toolbox.command.spec.new"
             name="New Specification">
       </command>
       <command
             categoryId="toolbox.command.category.spec"
             description="Open the specification"
-            id="toolbox.command.openSpec"
+            id="toolbox.command.spec.open"
             name="Open Specification">
          <commandParameter
                id="toolbox.command.openSpec.param"
@@ -108,7 +108,7 @@
       <command
             categoryId="toolbox.command.category.spec"
             description="Close the specification"
-            id="toolbox.command.close"
+            id="toolbox.command.spec.close"
             name="Close Specification">
       </command>
       <category
@@ -118,14 +118,25 @@
       </category>
       <command
             categoryId="toolbox.command.category.module"
-            description="Re-Open a module"
-            id="toolbox.command.reopen"
-            name="Re-Open Module">
+            description="Add a new or existing TLA+ module"
+            id="toolbox.command.module.add"
+            name="Add Module">
+      </command>
+      <command
+            categoryId="toolbox.command.category.module"
+            description="Open a TLA+ Module"
+            id="toolbox.command.module.open"
+            name="Open a TLA+ module">
+         <commandParameter
+               id="toolbox.command.module.open.param"
+               name="moduleName"
+               optional="false">
+         </commandParameter>
       </command>
       <command
             categoryId="toolbox.command.category.module"
             description="Parse specification root module"
-            id="toolbox.command.parse"
+            id="toolbox.command.module.parse.root"
             name="Parse Root Module">
       </command>
       <category
@@ -150,7 +161,7 @@
       <menuContribution
             locationURI="menu:toolbox.file.menu?after=toolbox.file.spec.separator">
          <command
-               commandId="toolbox.command.newSpec"
+               commandId="toolbox.command.spec.new"
                id="toolbox.menu.spec.new"
                label="New Spec..."
                mnemonic="N">
@@ -183,7 +194,7 @@
             </dynamic>
          </menu>
          <command
-               commandId="toolbox.command.close"
+               commandId="toolbox.command.spec.close"
                id="toolbox.file.close"
                label="Close Spec"
                mnemonic="C"
@@ -200,6 +211,28 @@
             </visibleWhen>
          </command>
          
+      </menuContribution>
+      <menuContribution
+            locationURI="menu:toolbox.file.menu?after=toolbox.file.module.separator">
+         <menu
+               id="toolbox.menu.module.open"
+               label="Open Module"
+               mnemonic="M"
+               tooltip="Open a TLA+ Module">
+            <visibleWhen
+                  checkEnabled="true">
+               <with
+                     variable="activeWorkbenchWindow.activePerspective">
+                  <equals
+                        value="org.lamport.tla.toolbox.ui.perspective.specLoaded">
+                  </equals>
+               </with>
+            </visibleWhen>
+            <dynamic
+                  class="org.lamport.tla.toolbox.ui.contribution.ModuleListContributionItem"
+                  id="toolbox.menu.module.open.dynamic">
+            </dynamic>
+         </menu>
       </menuContribution>
 
 
@@ -220,11 +253,6 @@
                   </not>
                </with>
             </visibleWhen>
-         </command>
-         <command
-               commandId="org.eclipse.ui.views.showView"
-               label="--&gt; TO REMOVE -- Show View"
-               style="push">
          </command>
       </menuContribution>
       <!-- file menu module part -->
@@ -288,7 +316,7 @@
       <menuContribution
             locationURI="menu:toolbox.tools.menu?before=toolbox.tools.separator">
          <command
-               commandId="toolbox.command.parse"
+               commandId="toolbox.command.module.parse.root"
                id="toolbox.menu.run.parseRoot"
                label="Parse"
                mnemonic="P">
@@ -334,27 +362,31 @@
          point="org.eclipse.ui.handlers">
       <handler
             class="org.lamport.tla.toolbox.ui.handler.NewSpecHandler"
-            commandId="toolbox.command.newSpec">
+            commandId="toolbox.command.spec.new">
       </handler>>
       <handler
-            class="org.lamport.tla.toolbox.ui.handler.NewSpecHandler"
-            commandId="toolbox.command.reopen">
-      </handler>
-      <handler
             class="org.lamport.tla.toolbox.ui.handler.ParseHandler"
-            commandId="toolbox.command.parse">
+            commandId="toolbox.command.module.parse.root">
       </handler>
       <handler
             class="org.lamport.tla.toolbox.ui.handler.CloseSpecHandler"
-            commandId="toolbox.command.close">
+            commandId="toolbox.command.spec.close">
       </handler>
       <handler
             class="org.lamport.tla.toolbox.ui.handler.OpenSpecHandler"
-            commandId="toolbox.command.openSpec">
+            commandId="toolbox.command.spec.open">
       </handler>
       <handler
             class="org.lamport.tla.toolbox.ui.handler.ToggleProblemViewHandler"
             commandId="toolbox.command.toggle-problem-view">
+      </handler>
+      <handler
+            class="org.lamport.tla.toolbox.ui.handler.OpenModuleHandler"
+            commandId="toolbox.command.module.open">
+      </handler>
+      <handler
+            class="org.lamport.tla.toolbox.ui.handler.AddModuleHandler"
+            commandId="toolbox.command.module.add">
       </handler>
 
    </extension>
