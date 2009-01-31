@@ -50,7 +50,7 @@ public class Module
     public String getModuleName()
     {
         String filename = file.getName();
-        if (filename.indexOf(".tla") != -1)
+        if (filename.toLowerCase().indexOf(".tla") != -1)
         {
             filename = filename.substring(0, filename.indexOf(".tla"));
         }
