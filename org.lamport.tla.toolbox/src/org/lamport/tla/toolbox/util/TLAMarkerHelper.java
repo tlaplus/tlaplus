@@ -56,6 +56,8 @@ public class TLAMarkerHelper
             final String message, IProgressMonitor monitor)
     {
         String moduleName = ResourceHelper.getModuleNameChecked(module.getName(), false);
+        
+        
         installProblemMarker(module, moduleName, severityError, coordinates, message, monitor);
     }
 
