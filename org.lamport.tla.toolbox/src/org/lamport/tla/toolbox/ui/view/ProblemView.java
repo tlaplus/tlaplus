@@ -1,5 +1,10 @@
 package org.lamport.tla.toolbox.ui.view;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyleRange;
@@ -17,6 +22,7 @@ import org.lamport.tla.toolbox.ui.perspective.ProblemsPerspective;
 import org.lamport.tla.toolbox.util.AdapterFactory;
 import org.lamport.tla.toolbox.util.TLAMarkerHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
+import org.lamport.tla.toolbox.util.compare.MarkerComparator;
 
 /**
  * Shows parse problems
@@ -65,11 +71,18 @@ public class ProblemView extends ViewPart
             return;
         } else
         {
+            
+            // retrieve the markers associated with the loaded spec
             IMarker[] markers = specLoaded.getProblemMarkers(null);
-
+            
+            // sort the markers
+            List markersList = new ArrayList(Arrays.asList(markers));
+            Collections.sort(markersList, new MarkerComparator());
+            
+            
             for (int j = 0; j < markers.length; j++)
             {
-                final IMarker problem = markers[j];
+                final IMarker problem = (IMarker) markersList.get(j);
 
                 // listener
                 Listener listener = new Listener() {
