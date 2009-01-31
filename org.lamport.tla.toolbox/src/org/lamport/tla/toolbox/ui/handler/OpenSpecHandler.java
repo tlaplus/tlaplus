@@ -21,9 +21,10 @@ import org.lamport.tla.toolbox.util.UIHelper;
  */
 public class OpenSpecHandler extends AbstractHandler implements IHandler
 {
+    // TODO move in some other place!!!!!
     public static final String TLA_EDITOR = "org.lamport.tla.toolbox.editor.basic.TLAEditor";
-    public static final String COMMAND_ID = "toolbox.command.openSpec";
-    public static final String PARAM_SPEC = "toolbox.command.openSpec.param";
+    public static final String COMMAND_ID = "toolbox.command.spec.open";
+    public static final String PARAM_SPEC = "toolbox.command.spec.open.param";
 
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
