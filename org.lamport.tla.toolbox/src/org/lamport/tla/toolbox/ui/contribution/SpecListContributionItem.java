@@ -19,8 +19,7 @@ import org.lamport.tla.toolbox.util.UIHelper;
  */
 public class SpecListContributionItem extends CompoundContributionItem
 {
-    /*
-     * (non-Javadoc)
+    /**
      * @see org.eclipse.ui.actions.CompoundContributionItem#getContributionItems()
      */
     protected IContributionItem[] getContributionItems()
@@ -38,7 +37,7 @@ public class SpecListContributionItem extends CompoundContributionItem
 
             // create the contribution item
             CommandContributionItemParameter param = new CommandContributionItemParameter(UIHelper.getActiveWindow(),
-                    "toolbox.command.open." + specs[i].getName(), OpenSpecHandler.COMMAND_ID, parameters, null, null, null,
+                    "toolbox.command.spec.open." + specs[i].getName(), OpenSpecHandler.COMMAND_ID, parameters, null, null, null,
                     specs[i].getName(), null, "Opens " + specs[i].getName(), CommandContributionItem.STYLE_PUSH, null,
                     true);
             
