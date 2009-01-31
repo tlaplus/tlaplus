@@ -34,8 +34,6 @@ public class Spec implements IAdaptable
     /* status of the specification */
     private int status = IParseConstants.UNPARSED;
 
-    /* Problem container */
-
     /**
      * Creates a Spec handle for existing project. Use the factory method
      * {@link Spec#createNewSpec(String, String, Date)} if the project reference is not available
@@ -129,7 +127,6 @@ public class Spec implements IAdaptable
     {
         IPath location = rootFile.getLocation();
         return location.toOSString();
-
     }
 
     /**
@@ -141,7 +138,7 @@ public class Spec implements IAdaptable
     {
         return this.rootFile;
     }
-
+    
     /**
      * Retrieves parsing status
      * 
@@ -163,7 +160,6 @@ public class Spec implements IAdaptable
         this.status = status;
     }
 
-
     /**
      * @see org.eclipse.core.runtime.IAdaptable#getAdapter(java.lang.Class)
      */
@@ -175,37 +171,22 @@ public class Spec implements IAdaptable
         return manager.getAdapter(this, adapter);
     }
 
-    /**
-     * Retrieves the module with a given name belonging to the spec or null, 
-     * if the module can not be found (currently only root module is supported)
-     * <Note>This method tries to create a link to the module.
-     *  
-     * @param moduleName name of the module to retrieve
-     * @return a valid IResouce or null
-     */
-    public IFile createModule(String moduleName)
-    {
-        if (moduleName == null)
-        {
-            return null;
-        }
-
-        return ResourceHelper.getLinkedFile(getProject(), ResourceHelper.getModule(moduleName));
-    }
 
     /**
+     * 
      * Tries to find a module with a given name, but never create new links
      * @param moduleName
      * @return
+     * @deprecated use {@link ResourceHelper#getLinkedFile(IProject, String, boolean)}
      */
-    public IFile findModule(String moduleName)
+    public IFile findModuleFile(String moduleName)
     {
         if (moduleName == null)
         {
             return null;
         }
         // only try to find a module, never create one
-        return ResourceHelper.getLinkedFile(getProject(), ResourceHelper.getModule(moduleName), false);
+        return ResourceHelper.getLinkedFile(getProject(), ResourceHelper.getModuleFileName(moduleName), false);
     }
 
     /**
@@ -225,6 +206,34 @@ public class Spec implements IAdaptable
     public IMarker[] getProblemMarkers(IProgressMonitor monitor)
     {
         return TLAMarkerHelper.getProblemMarkers(getProject(), monitor);
+    }
+
+    /**
+     * Retrieves the list of modules in the spec, or an empty list if no modules
+     * @return
+     */
+    public IResource[] getModules()
+    {
+        IResource[] modules = null;
+        try
+        {
+            modules = getProject().members(IResource.NONE);
+        } catch (CoreException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            modules = new IResource[0];
+        }
+        return modules;
+    }
+
+    /**
+     * Retrieves the module file filter
+     * @return module file filter of this spec
+     */
+    public ModulesNotInSpecFilter getModuleFileFilter()
+    {
+        return new ModulesNotInSpecFilter(this);
     }
 
 }
