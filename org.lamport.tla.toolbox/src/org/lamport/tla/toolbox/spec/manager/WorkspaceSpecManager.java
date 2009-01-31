@@ -44,7 +44,8 @@ public class WorkspaceSpecManager extends AbstractSpecManager implements IResour
             Spec spec = null;
             for (int i = 0; i < projects.length; i++)
             {
-                if (projects[i].isOpen())
+                // changed from projects[i].isOpen()
+                if (projects[i].isAccessible())
                 {
                     if (projects[i].hasNature(TLANature.ID))
                     {
