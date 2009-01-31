@@ -21,8 +21,13 @@ DESCRIPTION: {General description of the release
 
 - BUGFIX: The parse status "Could not find module" is handled correctly. The Marker is attached to the Spec itself. 
 - BUGFIX: The parse status widget is shown from the beginning on and is permanently visible
+- BUGFIX: System.err redirected prior starting of the SANY
 - CHANGE: Status "semantic warning" has been added to the resolution of the parse status. It is marked by the warning 
 written on the yellow background. The warning is a problem status and causes the problem window to pop-up.
 - CHANGE: The defaults for preferences "spacesForTabs" and "lineNumberRuler" has been changed
 - FEATURE: In a non-dirty editor CTRL + S toggles the "Problem View"  
-
+- FEATURE: On errors reported from SANY located in modules, which are not yet part of the Spec-Project (linked-in) the resources 
+will become part of the project
+- FEATURE: "Open module" menu, based on SANY run
+- FEATURE: Sorts the error messages in the "Problem View" by severity desc, resource name desc, line number asc.
+- FEATURE: Add module to the spec with OS-based dialog
