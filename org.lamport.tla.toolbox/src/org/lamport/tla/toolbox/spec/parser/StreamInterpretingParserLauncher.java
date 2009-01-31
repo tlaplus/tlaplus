@@ -29,7 +29,8 @@ import util.UniqueString;
 /**
  * This parser launcher starts SANY and uses SANY's console output to find errors
  * 
- * @author Simon Zambrovski
+ * 
+ * @author Leslie Lamport, Simon Zambrovski
  * @version $Id$
  */
 public class StreamInterpretingParserLauncher implements IParserLauncher
@@ -46,10 +47,9 @@ public class StreamInterpretingParserLauncher implements IParserLauncher
 
         ToolIO.setUserDir(ResourceHelper.getParentDir(specification.getRootFilename()));
 
-        
         // reset problems from previous run
         specification.cleanProblemMarkers(monitor);
-        
+
         // call the parsing
         int status = this.parseMainModule(true, specification);
         // System.out.println("Parsing Status: " + status);
@@ -78,23 +78,24 @@ public class StreamInterpretingParserLauncher implements IParserLauncher
     private int parseMainModule(boolean doSemanticAnalysis, Spec spec)
     {
         String rootFilename = spec.getRootFilename();
-        
+
         // clean the results of previos parsing
         this.cleanUp();
 
         // one of the Spec constants
         int specStatus = 0;
 
-        // The parsing methods take a PrintStream on which they print out some (but hardly all) error messages.
-        // They're called with this one.
-        PrintStream outputStr = ToolIO.err;
-
-        // Initialize the module variables
+       // Initialize the module variables
         SpecObj moduleSpec = new SpecObj(ResourceHelper.getModuleName(rootFilename), new RCPNameToFileIStream(null));
 
         // Reset the tool output messages. *
         ToolIO.reset();
         ToolIO.setMode(ToolIO.TOOL);
+
+        
+        // The parsing methods take a PrintStream on which they print out some (but hardly all) error messages.
+        // They're called with this one.
+        PrintStream outputStr = ToolIO.err;
 
         try
         {
@@ -173,6 +174,7 @@ public class StreamInterpretingParserLauncher implements IParserLauncher
 
             // create module holder
             Module module = new Module(absoluteFileName);
+            ResourceHelper.getLinkedFile(spec.getProject(), module.getAbsolutePath(), true);
 
             // semantic module only available if no semantic errors found
             if (specStatus > IParseConstants.SEMANTIC_ERROR)
@@ -218,59 +220,60 @@ public class StreamInterpretingParserLauncher implements IParserLauncher
      * @param spec
      *            specification handle
      */
+    /**
+     * First try to get the information from parser's printed output.<br>
+     * Here's what I've found out about messages when there's a parsing error. The message with the error
+     * looks like one of the following: <br>
+     * - "Lexical error at line n, column n." + message<br>
+     * <br>
+     * - "***Parse Error***"\n + Message + "at line n, column n" <br>
+     * + Message<br>
+     * <br>
+     * - "Parse Error\n\n Precedence conflict between<br>
+     * ops /\ in block line n, col m to line m, col<br>
+     * of module Foo and \/ " + message<br>
+     * <br>
+     * The preceding message is<br>
+     * <br>
+     * "Parsing module Naturals in file<br>
+     * C:\\users\lamport ...\Naturals.tla"<br>
+         * <br>
+         * which is produced by a call to ToolIO.out.println in<br>
+         * ParseUnit.parseFile<br>
+         * <br>
+         * When such a message is produced, the parseErrors just contains<br>
+         * a single abort that is useless. However, the preceding kind of<br>
+         * error message isn't produced for the following kinds of errors:<br>
+         * <br>
+         * 1. A module's file can't be read.<br>
+         * 2. There's a circular EXTENDS/INSTANCES dependency.<br>
+         * 3. The module name is different from the file name.<br>
+         * <br>
+         * The abort is "Unknown location\n\n" + message, where message<br>
+         * is:<br>
+         * <br>
+         * 1. "Cannot find source file for module Foo"<br>
+         * 2. "Circular dependency among .tla files; dependency cycle..."<br>
+         * 3. "File name 'Foo' does not match the name 'Foobar"" of the<br>
+         * top level module it contains."<br>
+         * In the first two errors, the last "Parsing module" message does not contain the name of the module
+         * with the error, and there seems to be no way to figure out in what module the error is.<br>
+         * The first type of message also includes the following rare variants.<br>
+         * <br>
+         * - "Error: Failed to open output file Foo\n ..." which occurs if there's an IOException.<br>
+         * - "Error: source file 'Foo' has apparently been deleted." which occurs I have no idea when<br>
+         * There's also<br>
+         * - "Could not parse module Foo from file FooBar"<br>
+         * I have no idea when that is produced.
+         */
     private void processParsingErrors(Spec spec, IProgressMonitor monitor)
     {
 
         switch (spec.getStatus()) {
         /* ------------------ SYNTAX ERRORS --------------------- */
+
         case IParseConstants.SYNTAX_ERROR:
 
-            /*
-             * First try to get the information from parser's printed output.<br>
-             * Here's what I've found out about messages when there's a parsing error. The message with the error
-             * looks like one of the following: <br>
-             * - "Lexical error at line n, column n." + message<br>
-             * <br>
-             * - "***Parse Error***"\n + Message + "at line n, column n" <br>
-             * + Message<br>
-             * <br>
-             * - "Parse Error\n\n Precedence conflict between<br>
-             * ops /\ in block line n, col m to line m, col<br>
-             * of module Foo and \/ " + message<br>
-             * <br>
-             * The preceding message is<br>
-             * <br>
-             * "Parsing module Naturals in file<br>
-             * C:\\users\lamport ...\Naturals.tla"<br>
-             * <br>
-             * which is produced by a call to ToolIO.out.println in<br>
-             * ParseUnit.parseFile<br>
-             * <br>
-             * When such a message is produced, the parseErrors just contains<br>
-             * a single abort that is useless. However, the preceding kind of<br>
-             * error message isn't produced for the following kinds of errors:<br>
-             * <br>
-             * 1. A module's file can't be read.<br>
-             * 2. There's a circular EXTENDS/INSTANCES dependency.<br>
-             * 3. The module name is different from the file name.<br>
-             * <br>
-             * The abort is "Unknown location\n\n" + message, where message<br>
-             * is:<br>
-             * <br>
-             * 1. "Cannot find source file for module Foo"<br>
-             * 2. "Circular dependency among .tla files; dependency cycle..."<br>
-             * 3. "File name 'Foo' does not match the name 'Foobar"" of the<br>
-             * top level module it contains."<br>
-             * In the first two errors, the last "Parsing module" message does not contain the name of the module
-             * with the error, and there seems to be no way to figure out in what module the error is.<br>
-             * The first type of message also includes the following rare variants.<br>
-             * <br>
-             * - "Error: Failed to open output file Foo\n ..." which occurs if there's an IOException.<br>
-             * - "Error: source file 'Foo' has apparently been deleted." which occurs I have no idea when<br>
-             * There's also<br>
-             * - "Could not parse module Foo from file FooBar"<br>
-             * I have no idea when that is produced.
-             */
             String[] output = ToolIO.getAllMessages();
             int nextMsg = 0;
 
@@ -284,7 +287,7 @@ public class StreamInterpretingParserLauncher implements IParserLauncher
             {
                 // find out the module name
                 int parsingModuleIndex = output[nextMsg - 1].indexOf("Parsing module") + 15;
-                IFile module = spec.findModule(output[nextMsg - 1].substring(parsingModuleIndex,
+                IFile module = spec.findModuleFile(output[nextMsg - 1].substring(parsingModuleIndex,
                         output[nextMsg - 1].indexOf(" ", parsingModuleIndex + 1)));
 
                 // coordinates of the error
@@ -315,8 +318,9 @@ public class StreamInterpretingParserLauncher implements IParserLauncher
 
                     // coordinates of the error
                     coordinates = new int[] { beginLine, beginColumn, endLine, endColumn };
-                    
-                    TLAMarkerHelper.installProblemMarkerOnModule(module, IMarker.SEVERITY_ERROR, coordinates, message, monitor);
+
+                    TLAMarkerHelper.installProblemMarkerOnModule(module, IMarker.SEVERITY_ERROR, coordinates, message,
+                            monitor);
                 } // if
                 else
                 {
@@ -341,14 +345,16 @@ public class StreamInterpretingParserLauncher implements IParserLauncher
                     {
                         throw new RuntimeException("This should not happen");
                     }
-                    
+
                     if (module == null)
                     {
-                        TLAMarkerHelper.installProblemMarkerOnSpec(spec, IMarker.SEVERITY_ERROR, coordinates, message, monitor);
-                    } else {
-                        TLAMarkerHelper.installProblemMarkerOnModule(module, IMarker.SEVERITY_ERROR, coordinates, message, monitor);
+                        TLAMarkerHelper.installProblemMarkerOnSpec(spec, IMarker.SEVERITY_ERROR, coordinates, message,
+                                monitor);
+                    } else
+                    {
+                        TLAMarkerHelper.installProblemMarkerOnModule(module, IMarker.SEVERITY_ERROR, coordinates,
+                                message, monitor);
                     }
-
 
                 } // else
 
@@ -385,14 +391,16 @@ public class StreamInterpretingParserLauncher implements IParserLauncher
             }
             break;
         case IParseConstants.COULD_NOT_FIND_MODULE:
-            
-            TLAMarkerHelper.installProblemMarkerOnSpec(spec, IMarker.SEVERITY_ERROR, new int[]{-1, -1, -1, -1}, "Could not find module" , monitor);
+
+            TLAMarkerHelper.installProblemMarkerOnSpec(spec, IMarker.SEVERITY_ERROR, new int[] { -1, -1, -1, -1 },
+                    "Could not find module", monitor);
             break;
         case IParseConstants.PARSED:
             break;
         default:
-            
-            throw new RuntimeException("No default expected. Still spec.getStatus() returned a value of " + spec.getStatus());
+
+            throw new RuntimeException("No default expected. Still spec.getStatus() returned a value of "
+                    + spec.getStatus());
         }
         cleanUp();
     } // ProcessParsingErrorMsgs
@@ -432,7 +440,7 @@ public class StreamInterpretingParserLauncher implements IParserLauncher
             int endModuleIdx = errorText.indexOf("\n", beginModuleIdx);
             if (endModuleIdx != -1)
             {
-                module = spec.findModule(errorText.substring(beginModuleIdx, endModuleIdx));
+                module = spec.findModuleFile(errorText.substring(beginModuleIdx, endModuleIdx));
             }
         }
 
@@ -441,11 +449,12 @@ public class StreamInterpretingParserLauncher implements IParserLauncher
         if (module == null)
         {
             TLAMarkerHelper.installProblemMarkerOnSpec(spec, severityError, coordinates, errorText, monitor);
-        } else {
+        } else
+        {
             TLAMarkerHelper.installProblemMarkerOnModule(module, severityError, coordinates, errorText, monitor);
         }
     }
-    
+
     /**
      * Preforms a clean-up of error variables
      */
