@@ -12,6 +12,8 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
+import org.lamport.tla.toolbox.Activator;
+import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.spec.nature.TLANature;
 import org.lamport.tla.toolbox.spec.nature.TLAParsingBuilder;
 
@@ -39,50 +41,48 @@ public class ResourceHelper
      */
     public static IProject getProject(String name, String rootFilename)
     {
-        if (name == null) 
+        if (name == null)
         {
             return null;
         }
-        
+
         IWorkspace ws = ResourcesPlugin.getWorkspace();
         IProject project = ws.getRoot().getProject(name);
 
-        
         // create a project
         if (!project.exists())
         {
             try
             {
-                if (rootFilename == null) 
+                if (rootFilename == null)
                 {
                     return null;
-                } 
-                
+                }
+
                 // create a new description for the given name
                 IProjectDescription description = ws.newProjectDescription(name);
-                
+
                 // set project location
-                if (getParentDir(rootFilename) != null) 
+                if (getParentDir(rootFilename) != null)
                 {
                     // parent directory could be determined
                     IPath path = new Path(getParentDir(rootFilename)).removeTrailingSeparator();
                     path = path.append(name.concat(".toolbox")).addTrailingSeparator();
                     description.setLocation(path);
                 }
-                
-                
-                // set TLA+ feature 
-                description.setNatureIds(new String[]{TLANature.ID});
+
+                // set TLA+ feature
+                description.setNatureIds(new String[] { TLANature.ID });
 
                 // set Parsing Builder
                 ICommand command = description.newCommand();
                 command.setBuilderName(TLAParsingBuilder.BUILDER_ID);
-                description.setBuildSpec(new ICommand[]{command});
-                
+                description.setBuildSpec(new ICommand[] { command });
+
                 // create the project
                 // TODO add progress monitor
                 project.create(description, null);
-                
+
                 // open the project
                 // TODO add progress monitor
                 project.open(null);
@@ -102,7 +102,7 @@ public class ResourceHelper
      * Retrieves a a resource from the project, creates a link, if the file is not present 
      * TODO improve this, if the name is wrong
      * 
-     * @param name
+     * @param name full filename of the resource
      * @param project
      * @param createNew, a boolean flag indicating if the file should be created if it does not exist
      */
@@ -130,12 +130,10 @@ public class ResourceHelper
         }
         return file;
     }
-    
+
     /**
      * Retrieves a a resource from the project, creates a link, if the file is not present 
-     * 
-     * @param name resource name
-     * @param project name of the project, containing that contain (or should contain) the resource
+     * convenience method for getLinkedFile(project, name, true)  
      */
     public static IFile getLinkedFile(IProject project, String name)
     {
@@ -183,12 +181,13 @@ public class ResourceHelper
     public static String getModuleNameChecked(String moduleFilename, boolean checkExistence)
     {
         File f = new File(moduleFilename);
-        String modulename = f.getName().substring(0, f.getName().lastIndexOf("."));
+        IPath path = new Path(f.getName()).removeFileExtension();
+        //String modulename = f.getName().substring(0, f.getName().lastIndexOf("."));
         if (checkExistence)
         {
-            return (f.exists()) ? modulename : null;
+            return (f.exists()) ? path.toOSString() : null;
         }
-        return modulename;
+        return path.toOSString();
     }
 
     /**
@@ -198,13 +197,66 @@ public class ResourceHelper
      *            name of the module
      * @return resource name
      */
-    public static String getModule(String moduleName)
+    public static String getModuleFileName(String moduleName)
     {
         if (moduleName == null || moduleName.equals(""))
         {
             return null;
-        } else {
+        } else
+        {
             return moduleName.concat(".tla");
         }
     }
+
+    /**
+     * Determines if the given member is a TLA+ module
+     * @param resource
+     * @return
+     */
+    public static boolean isModule(IResource resource)
+    {
+        return (resource != null && "tla".equals(resource.getFileExtension()));
+
+    }
+
+    /**
+     * Constructs a specification name from the proposition string
+     * @param proposition a string with spec name 
+     * @param firstRun a flag for the first run
+     * @return the name of a spec that is not already used.
+     */
+    public static String constructSpecName(String proposition, boolean firstRun)
+    {
+        Spec existingSpec = Activator.getSpecManager().getSpecByName(proposition);
+        if (existingSpec != null)
+        {
+            if (firstRun)
+            {
+                return constructSpecName(proposition.concat("_1"), false);
+            } else
+            {
+                String oldNumber = proposition.substring(proposition.lastIndexOf("_"));
+                int number = Integer.parseInt(oldNumber) + 1;
+                proposition = proposition.substring(0, proposition.lastIndexOf("_"));
+                return constructSpecName(proposition + number, false);
+            }
+        }
+
+        return proposition;
+    }
+
+    /**
+     * Creates a simple content for a new TLA+ module
+     * TODO move somewhere else 
+     * @param moduleFileName, name of the file 
+     * @return the stream with content
+     */
+    public static byte[] getModuleDefaultContent(String moduleFilename)
+    {
+        StringBuffer buffer = new StringBuffer();
+        buffer.append("---- MODULE ").append(ResourceHelper.getModuleNameChecked(moduleFilename, false)).append(" ----\n").append(
+                "\n\n").append("====\n");
+        return buffer.toString().getBytes();
+    }
+
 }
