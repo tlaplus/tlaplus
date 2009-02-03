@@ -6,8 +6,10 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IHandler;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.IPropertyListener;
 import org.eclipse.ui.IWorkbenchPartConstants;
+import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.part.FileEditorInput;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.util.ResourceHelper;
@@ -52,7 +54,56 @@ public class OpenModuleHandler extends AbstractHandler implements IHandler
                 } 
             }
         });
+        
+        
+        
+        IPartListener2 listener = new IPartListener2()
+        {
 
+            public void partActivated(IWorkbenchPartReference partRef)
+            {
+                
+            }
+
+            public void partBroughtToTop(IWorkbenchPartReference partRef)
+            {
+                
+            }
+
+            public void partClosed(IWorkbenchPartReference partRef)
+            {
+               System.out.println("Editor closed"); 
+                
+            }
+
+            public void partDeactivated(IWorkbenchPartReference partRef)
+            {
+                
+            }
+
+            public void partHidden(IWorkbenchPartReference partRef)
+            {
+                
+            }
+
+            public void partInputChanged(IWorkbenchPartReference partRef)
+            {
+                
+            }
+
+            public void partOpened(IWorkbenchPartReference partRef)
+            {
+                
+            }
+
+            public void partVisible(IWorkbenchPartReference partRef)
+            {
+                
+            }
+            
+        };
+        part.getSite().getPage().addPartListener(listener);
+        
         return null;
     }
 
