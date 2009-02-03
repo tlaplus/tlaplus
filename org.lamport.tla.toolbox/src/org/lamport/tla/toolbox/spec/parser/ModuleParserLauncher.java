@@ -7,6 +7,8 @@ import java.util.Vector;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.lamport.tla.toolbox.spec.Module;
 import org.lamport.tla.toolbox.spec.Spec;
@@ -33,7 +35,7 @@ import util.UniqueString;
  * @author Leslie Lamport, Simon Zambrovski
  * @version $Id$
  */
-public class StreamInterpretingParserLauncher implements IParserLauncher
+public class ModuleParserLauncher
 {
     private Errors parseErrors = null;
     private Errors semanticErrors = null;
@@ -42,23 +44,22 @@ public class StreamInterpretingParserLauncher implements IParserLauncher
      * (non-Javadoc)
      * @see org.lamport.tla.toolbox.spec.parser.IParserLauncher#parseSpecification(toolbox.spec.Spec)
      */
-    public int parseSpecification(Spec specification, IProgressMonitor monitor)
+    public int parseModule(IResource parseResource, IProgressMonitor monitor)
     {
 
-        ToolIO.setUserDir(ResourceHelper.getParentDir(specification.getRootFilename()));
+        IProject project = parseResource.getProject();
+        
+        // setup the directory of the root file
+        ToolIO.setUserDir(ResourceHelper.getParentDir(parseResource.getLocation().toOSString()));
 
         // reset problems from previous run
-        specification.cleanProblemMarkers(monitor);
+        TLAMarkerHelper.removeProblemMarkers(project, monitor);
 
         // call the parsing
-        int status = this.parseMainModule(true, specification);
-        // System.out.println("Parsing Status: " + status);
+        int status = this.parseMainModule(parseResource, true);
 
-        // set the status back into the spec
-        specification.setStatus(status);
-
-        // store errors inside the specification
-        this.processParsingErrors(specification, monitor);
+        // store errors inside the specification project
+        this.processParsingErrors(project, status, monitor);
 
         return status;
     }
@@ -71,13 +72,14 @@ public class StreamInterpretingParserLauncher implements IParserLauncher
      * 
      * @param doSemanticAnalysis
      *            if true, the semantical phase will be started
-     * @param rootFilename
-     *            filename of the root module
+     * @param parseResource
+     *            filename of the module to parse
      * @return status of parsing, one of the {@link IParseConstants} constants
      */
-    private int parseMainModule(boolean doSemanticAnalysis, Spec spec)
+    private int parseMainModule(IResource parseResource, boolean doSemanticAnalysis)
     {
-        String rootFilename = spec.getRootFilename();
+        String rootFilename = parseResource.getLocation().toOSString(); 
+        
 
         // clean the results of previos parsing
         this.cleanUp();
@@ -174,7 +176,8 @@ public class StreamInterpretingParserLauncher implements IParserLauncher
 
             // create module holder
             Module module = new Module(absoluteFileName);
-            ResourceHelper.getLinkedFile(spec.getProject(), module.getAbsolutePath(), true);
+            
+            ResourceHelper.getLinkedFile(parseResource.getProject(), module.getAbsolutePath(), true);
 
             // semantic module only available if no semantic errors found
             if (specStatus > IParseConstants.SEMANTIC_ERROR)
@@ -266,10 +269,10 @@ public class StreamInterpretingParserLauncher implements IParserLauncher
          * - "Could not parse module Foo from file FooBar"<br>
          * I have no idea when that is produced.
          */
-    private void processParsingErrors(Spec spec, IProgressMonitor monitor)
+    private void processParsingErrors(IProject project, int parseStatus, IProgressMonitor monitor)
     {
 
-        switch (spec.getStatus()) {
+        switch (parseStatus) {
         /* ------------------ SYNTAX ERRORS --------------------- */
 
         case IParseConstants.SYNTAX_ERROR:
@@ -287,8 +290,9 @@ public class StreamInterpretingParserLauncher implements IParserLauncher
             {
                 // find out the module name
                 int parsingModuleIndex = output[nextMsg - 1].indexOf("Parsing module") + 15;
-                IFile module = spec.findModuleFile(output[nextMsg - 1].substring(parsingModuleIndex,
-                        output[nextMsg - 1].indexOf(" ", parsingModuleIndex + 1)));
+                String nameToFind = output[nextMsg - 1].substring(parsingModuleIndex,
+                        output[nextMsg - 1].indexOf(" ", parsingModuleIndex + 1));
+                IFile module = ResourceHelper.getLinkedFile(project, ResourceHelper.getModuleFileName(nameToFind), false);
 
                 // coordinates of the error
                 int[] coordinates = null;
@@ -319,7 +323,7 @@ public class StreamInterpretingParserLauncher implements IParserLauncher
                     // coordinates of the error
                     coordinates = new int[] { beginLine, beginColumn, endLine, endColumn };
 
-                    TLAMarkerHelper.installProblemMarkerOnModule(module, IMarker.SEVERITY_ERROR, coordinates, message,
+                    TLAMarkerHelper.installProblemMarker(module, module.getName(), IMarker.SEVERITY_ERROR, coordinates, message,
                             monitor);
                 } // if
                 else
@@ -348,11 +352,10 @@ public class StreamInterpretingParserLauncher implements IParserLauncher
 
                     if (module == null)
                     {
-                        TLAMarkerHelper.installProblemMarkerOnSpec(spec, IMarker.SEVERITY_ERROR, coordinates, message,
-                                monitor);
+                        TLAMarkerHelper.installProblemMarker(project, project.getName(), IMarker.SEVERITY_ERROR, coordinates, message, monitor);
                     } else
                     {
-                        TLAMarkerHelper.installProblemMarkerOnModule(module, IMarker.SEVERITY_ERROR, coordinates,
+                        TLAMarkerHelper.installProblemMarker(module, module.getName(), IMarker.SEVERITY_ERROR, coordinates,
                                 message, monitor);
                     }
 
@@ -380,7 +383,7 @@ public class StreamInterpretingParserLauncher implements IParserLauncher
                 {
                     for (int i = 0; i < errors[j].length; i++)
                     {
-                        encodeSematicErrorFromString(spec, errors[j][i], holderType[j], monitor);
+                        encodeSematicErrorFromString(project, errors[j][i], holderType[j], monitor);
                     }
                 }// for i, for j
 
@@ -392,7 +395,7 @@ public class StreamInterpretingParserLauncher implements IParserLauncher
             break;
         case IParseConstants.COULD_NOT_FIND_MODULE:
 
-            TLAMarkerHelper.installProblemMarkerOnSpec(spec, IMarker.SEVERITY_ERROR, new int[] { -1, -1, -1, -1 },
+            TLAMarkerHelper.installProblemMarker(project, project.getName(), IMarker.SEVERITY_ERROR, new int[] { -1, -1, -1, -1 },
                     "Could not find module", monitor);
             break;
         case IParseConstants.PARSED:
@@ -400,7 +403,7 @@ public class StreamInterpretingParserLauncher implements IParserLauncher
         default:
 
             throw new RuntimeException("No default expected. Still spec.getStatus() returned a value of "
-                    + spec.getStatus());
+                    + parseStatus);
         }
         cleanUp();
     } // ProcessParsingErrorMsgs
@@ -408,23 +411,23 @@ public class StreamInterpretingParserLauncher implements IParserLauncher
     /**
      * Encode semantic error and create the marker on the corresponding resource 
      * @param spec
-     * @param errorText
+     * @param message
      * @param severityError
      * @param monitor
      */
-    private void encodeSematicErrorFromString(Spec spec, String errorText, int severityError, IProgressMonitor monitor)
+    private void encodeSematicErrorFromString(IProject project, String message, int severityError, IProgressMonitor monitor)
     {
 
         IFile module = null;
 
         // Get pair of line, column numbers
-        int[] val = findLineAndColumn(0, errorText);
+        int[] val = findLineAndColumn(0, message);
         int beginLine = val[0];
         int beginColumn = val[1];
         int endLine = 0;
         int endColumn = 0;
 
-        val = findLineAndColumn(val[2], errorText);
+        val = findLineAndColumn(val[2], message);
         if ((val[0] > beginLine) || ((val[0] == beginLine) && (val[1] >= beginColumn)))
         {
             endLine = val[0];
@@ -433,14 +436,14 @@ public class StreamInterpretingParserLauncher implements IParserLauncher
 
         // Get module name. We use the fact that errors and warnings are always generated with the
         // module, indicated by " module Name\n". *
-        int beginModuleIdx = errorText.indexOf(" module ");
+        int beginModuleIdx = message.indexOf(" module ");
         if (beginModuleIdx != -1)
         {
             beginModuleIdx = beginModuleIdx + " module ".length();
-            int endModuleIdx = errorText.indexOf("\n", beginModuleIdx);
+            int endModuleIdx = message.indexOf("\n", beginModuleIdx);
             if (endModuleIdx != -1)
             {
-                module = spec.findModuleFile(errorText.substring(beginModuleIdx, endModuleIdx));
+                module = ResourceHelper.getLinkedFile(project, ResourceHelper.getModuleFileName(message.substring(beginModuleIdx, endModuleIdx)), false);
             }
         }
 
@@ -448,10 +451,11 @@ public class StreamInterpretingParserLauncher implements IParserLauncher
 
         if (module == null)
         {
-            TLAMarkerHelper.installProblemMarkerOnSpec(spec, severityError, coordinates, errorText, monitor);
+            TLAMarkerHelper.installProblemMarker(project, project.getName(), severityError, coordinates, message, monitor);
+            
         } else
         {
-            TLAMarkerHelper.installProblemMarkerOnModule(module, severityError, coordinates, errorText, monitor);
+            TLAMarkerHelper.installProblemMarker(module, module.getName(), severityError, coordinates, message, monitor);
         }
     }
 
