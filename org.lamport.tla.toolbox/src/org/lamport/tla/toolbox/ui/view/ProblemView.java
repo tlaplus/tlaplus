@@ -73,7 +73,7 @@ public class ProblemView extends ViewPart
         {
             
             // retrieve the markers associated with the loaded spec
-            IMarker[] markers = specLoaded.getProblemMarkers(null);
+            IMarker[] markers = TLAMarkerHelper.getProblemMarkers(specLoaded.getProject(), null); ;
             
             // sort the markers
             List markersList = new ArrayList(Arrays.asList(markers));
