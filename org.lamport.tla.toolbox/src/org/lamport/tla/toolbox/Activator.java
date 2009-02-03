@@ -3,6 +3,7 @@ package org.lamport.tla.toolbox;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IWorkspace;
+import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.lamport.tla.toolbox.spec.Spec;
@@ -11,6 +12,7 @@ import org.lamport.tla.toolbox.spec.manager.WorkspaceSpecManager;
 import org.lamport.tla.toolbox.ui.contribution.ParseStatusContributionItem;
 import org.lamport.tla.toolbox.ui.perspective.ProblemsPerspective;
 import org.lamport.tla.toolbox.util.AdapterFactory;
+import org.lamport.tla.toolbox.util.TLAMarkerHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 import org.lamport.tla.toolbox.util.pref.IPreferenceConstants;
 import org.lamport.tla.toolbox.util.pref.PreferenceStoreHelper;
@@ -82,7 +84,7 @@ public class Activator extends AbstractUIPlugin
             /* (non-Javadoc)
              * @see org.eclipse.core.resources.IResourceChangeListener#resourceChanged(org.eclipse.core.resources.IResourceChangeEvent)
              */
-            public void resourceChanged(IResourceChangeEvent event)
+            public void resourceChanged(final IResourceChangeEvent event)
             {
 
                 UIHelper.runUIAsync(new Runnable() {
@@ -96,7 +98,10 @@ public class Activator extends AbstractUIPlugin
                             Spec spec = Activator.getSpecManager().getSpecLoaded();
                             UIHelper.closeWindow(ProblemsPerspective.ID);
                             // there were problems -> open the problem view
-                            if (AdapterFactory.isProblemStatus(spec.getStatus()))
+                            
+                            // Instead of explicit status check, look on the problem markers  
+                            // if (AdapterFactory.isProblemStatus(spec.getStatus()))
+                            if (TLAMarkerHelper.getProblemMarkers(spec.getProject(), null).length > 0)
                             {
                                 UIHelper.openPerspectiveInWindowRight(ProblemsPerspective.ID, null,
                                         ProblemsPerspective.WIDTH);
