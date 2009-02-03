@@ -14,11 +14,10 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.editors.text.FileDocumentProvider;
 import org.eclipse.ui.ide.IGotoMarker;
 import org.eclipse.ui.part.FileEditorInput;
-import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.ui.handler.OpenSpecHandler;
 
 /**
- * Takes care of problem display
+ * Marker helpers
  * @author Simon Zambrovski
  * @version $Id$
  */
@@ -49,30 +48,6 @@ public class TLAMarkerHelper
      */
     public static final String TOOLBOX_MARKERS_PROBLEM_MARKER_ID = "toolbox.markers.TLAParserProblemMarker";
 
-    /**
-     * Installs a problem marker on a module
-     */
-    public static void installProblemMarkerOnModule(IFile module, final int severityError, final int[] coordinates,
-            final String message, IProgressMonitor monitor)
-    {
-        String moduleName = ResourceHelper.getModuleNameChecked(module.getName(), false);
-        
-        
-        installProblemMarker(module, moduleName, severityError, coordinates, message, monitor);
-    }
-
-    /**
-     * Installs a problem marker on a specification 
-     */
-    public static void installProblemMarkerOnSpec(Spec specification, final int severityError, final int[] coordinates,
-            final String message, IProgressMonitor monitor)
-    {
-        String moduleName = specification.getName();
-        installProblemMarker(specification.getProject(), moduleName, severityError, coordinates, message, monitor);
-    }
-    
-    
-    
     /**
      * Installs a problem marker on a given resource
      */
