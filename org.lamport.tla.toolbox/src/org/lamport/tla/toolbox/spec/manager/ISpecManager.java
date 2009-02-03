@@ -78,4 +78,12 @@ public interface ISpecManager
      */
     public void terminate();
 
+    /**
+     * Creates a spec name derived from the module name
+     * @param moduleName
+     * @param firstRunFlag
+     * @return the name of the spec derived from a module
+     */
+    public String constructSpecName(String moduleName, boolean firstRunFlag);
+
 }

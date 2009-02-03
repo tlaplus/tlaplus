@@ -44,8 +44,8 @@ public class WorkspaceSpecManager extends AbstractSpecManager implements IResour
             Spec spec = null;
             for (int i = 0; i < projects.length; i++)
             {
-                // changed from projects[i].isOpen()
-                if (projects[i].isAccessible())
+                // changed from projects[i].isAccessible()
+                if (projects[i].isOpen())
                 {
                     if (projects[i].hasNature(TLANature.ID))
                     {
@@ -184,6 +184,33 @@ public class WorkspaceSpecManager extends AbstractSpecManager implements IResour
             storage.remove(resource.getName());
         }
 
+    }
+    
+    
+    /**
+     * Constructs a specification name from the proposition string
+     * @param proposition a string with spec name 
+     * @param firstRun a flag for the first run
+     * @return the name of a spec that is not already used.
+     */
+    public String constructSpecName(String proposition, boolean firstRun)
+    {
+        Spec existingSpec = getSpecByName(proposition);
+        if (existingSpec != null)
+        {
+            if (firstRun)
+            {
+                return constructSpecName(proposition.concat("_1"), false);
+            } else
+            {
+                String oldNumber = proposition.substring(proposition.lastIndexOf("_"));
+                int number = Integer.parseInt(oldNumber) + 1;
+                proposition = proposition.substring(0, proposition.lastIndexOf("_"));
+                return constructSpecName(proposition + number, false);
+            }
+        }
+
+        return proposition;
     }
 
 }
