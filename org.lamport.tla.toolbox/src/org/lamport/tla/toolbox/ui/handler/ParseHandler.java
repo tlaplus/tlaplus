@@ -25,7 +25,6 @@ import org.lamport.tla.toolbox.util.UIHelper;
 public class ParseHandler extends AbstractHandler implements IHandler
 {
     //TODO provide the monitor
-
     private IProgressMonitor monitor = null;
     
     /**
@@ -47,7 +46,6 @@ public class ParseHandler extends AbstractHandler implements IHandler
         {
             try
             {
-                
                 // this only cleans up
                 spec.getProject().build(IncrementalProjectBuilder.CLEAN_BUILD, monitor);
                 // this starts the build process
