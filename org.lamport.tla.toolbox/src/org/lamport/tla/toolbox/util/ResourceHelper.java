@@ -12,13 +12,13 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
-import org.lamport.tla.toolbox.Activator;
-import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.spec.nature.TLANature;
 import org.lamport.tla.toolbox.spec.nature.TLAParsingBuilder;
 
 /**
- * @author zambrovski
+ * A toolbox with resource related methods
+ * @author Simon Zambrovski
+ * @version $Id$
  */
 public class ResourceHelper
 {
@@ -217,32 +217,6 @@ public class ResourceHelper
     {
         return (resource != null && "tla".equals(resource.getFileExtension()));
 
-    }
-
-    /**
-     * Constructs a specification name from the proposition string
-     * @param proposition a string with spec name 
-     * @param firstRun a flag for the first run
-     * @return the name of a spec that is not already used.
-     */
-    public static String constructSpecName(String proposition, boolean firstRun)
-    {
-        Spec existingSpec = Activator.getSpecManager().getSpecByName(proposition);
-        if (existingSpec != null)
-        {
-            if (firstRun)
-            {
-                return constructSpecName(proposition.concat("_1"), false);
-            } else
-            {
-                String oldNumber = proposition.substring(proposition.lastIndexOf("_"));
-                int number = Integer.parseInt(oldNumber) + 1;
-                proposition = proposition.substring(0, proposition.lastIndexOf("_"));
-                return constructSpecName(proposition + number, false);
-            }
-        }
-
-        return proposition;
     }
 
     /**
