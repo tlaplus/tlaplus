@@ -29,5 +29,6 @@ written on the yellow background. The warning is a problem status and causes the
 - FEATURE: On errors reported from SANY located in modules, which are not yet part of the Spec-Project (linked-in) the resources 
 will become part of the project
 - FEATURE: "Open module" menu, based on SANY run
+- FEATURE: "Open module" menu displays the module names sorted alphabetically ignoring case
 - FEATURE: Sorts the error messages in the "Problem View" by severity desc, resource name desc, line number asc.
 - FEATURE: Add module to the spec with OS-based dialog
