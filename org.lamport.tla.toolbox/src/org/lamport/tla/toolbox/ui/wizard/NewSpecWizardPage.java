@@ -207,7 +207,7 @@ public class NewSpecWizardPage extends WizardPage
 
                 Spec existingSpec = Activator.getSpecManager().getSpecByName(moduleName);
                 if (existingSpec != null) {
-                    moduleName = ResourceHelper.constructSpecName(moduleName, true);
+                    moduleName = Activator.getSpecManager().constructSpecName(moduleName, true);
                 }
                 specNameText.setText(moduleName);
             }
