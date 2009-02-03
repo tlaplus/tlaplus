@@ -55,67 +55,91 @@ public class AddModuleHandler extends AbstractHandler implements IHandler
         final String moduleFileName = openFileDialog.open();
         if (moduleFileName != null)
         {
-            
-            
-            // TODO check the folder we are in
-            
-            // TODO check if it a TLA file
-            
-            
-            
             IFile module = ResourceHelper.getLinkedFile(spec.getProject(), moduleFileName, false);
-            if (module.isLinked())
+
+            // check if it a TLA file
+            if (!ResourceHelper.isModule(module))
             {
+                // selected non-TLA file
                 // module exists and is already registered in the spec
-                MessageDialog.openInformation(window.getShell(), "TLA+ Module is part of the spec",
-                        "The provided module " + module.getName()
-                                + " has already been added to the specification previously.");
+                MessageDialog.openInformation(window.getShell(), "The selected file is not a TLA+ file",
+                        "The provided file " + module.getName()
+                                + " is not a TLA+ file.\n Please select a file with .tla extension.");
+                return null;
+
             } else
             {
-                if (!module.exists())
+                if (module.isLinked())
                 {
-                    // the provided file does mnot exist
-                    boolean createNew = MessageDialog.openQuestion(window.getShell(), "TLA+ Module is not found",
+                    // module exists and is already registered in the spec
+                    MessageDialog.openInformation(window.getShell(), "TLA+ Module is part of the spec",
                             "The provided module " + module.getName()
-                                    + " does not exist. Should the new file be created?");
-                    if (createNew) 
+                                    + " has already been added to the specification previously.");
+                } else
+                {
+                    IPath modulePath = new Path(moduleFileName);
+                    // check the folder we are in
+                    if (!modulePath.removeLastSegments(1)
+                            .equals(spec.getRootFile().getLocation().removeLastSegments(1)))
                     {
-                        // the module point to a virtual path /WS_ROOT/SPEC_NAME/module_name.tla
-                        // assuming the fact that the root file is located in directory /ROOT_DIR/SPEC_NAME.tla
-                        // and the Spec's project name is /ROOT_DIR/SPEC_NAME.project
-                        // the file should be created in /ROOT_DIR/module_name.tla and linked to the virtual path.
-
-                        IWorkspaceRunnable moduleCreateOperation = new TLAModuleCreationOperation(new Path(moduleFileName));
-                        
-                        try
-                        {
-                            ResourcesPlugin.getWorkspace().run(moduleCreateOperation, null);
-                        } catch (CoreException e)
-                        {
-                            e.printStackTrace();
-                            // exception, no chance to recover
-                            return null;
-                        }
-                    } else {
+                        // the selected resource is not in the same directory as the root file
+                        MessageDialog
+                                .openInformation(
+                                        window.getShell(),
+                                        "Wrong TLA+ Module is part of the spec",
+                                        "The provided module "
+                                                + module.getName()
+                                                + " is not located in the same directory as the root file. \nPlease select the module in "
+                                                + spec.getRootFile().getFullPath().removeLastSegments(1).toOSString());
                         return null;
                     }
+
+                    // !module.exists()
+                    if (!modulePath.toFile().exists())
+                    {
+                        // the provided file does not exist
+                        boolean createNew = MessageDialog.openQuestion(window.getShell(), "TLA+ Module is not found",
+                                "The provided module " + module.getName()
+                                        + " does not exist. Should the new file be created?");
+                        if (createNew)
+                        {
+                            // the module point to a virtual path /WS_ROOT/SPEC_NAME/module_name.tla
+                            // assuming the fact that the root file is located in directory /ROOT_DIR/SPEC_NAME.tla
+                            // and the Spec's project name is /ROOT_DIR/SPEC_NAME.project
+                            // the file should be created in /ROOT_DIR/module_name.tla and linked to the virtual path.
+
+                            IWorkspaceRunnable moduleCreateOperation = new TLAModuleCreationOperation(modulePath);
+
+                            try
+                            {
+                                ResourcesPlugin.getWorkspace().run(moduleCreateOperation, null);
+                            } catch (CoreException e)
+                            {
+                                e.printStackTrace();
+                                // exception, no chance to recover
+                                return null;
+                            }
+                        } else
+                        {
+                            return null;
+                        }
+                    }
+                    // adding the file to the spec
+                    module = ResourceHelper.getLinkedFile(spec.getProject(), moduleFileName, true);
                 }
-                // adding the file to the spec
-                module = ResourceHelper.getLinkedFile(spec.getProject(), moduleFileName, true);
+
+                // create parameters for the handler
+                HashMap parameters = new HashMap();
+                parameters.put(OpenModuleHandler.PARAM_MODULE, ResourceHelper.getModuleNameChecked(module.getName(),
+                        false));
+
+                // runs the command
+                UIHelper.runCommand(OpenModuleHandler.COMMAND_ID, parameters);
             }
-
-            // create parameters for the handler
-            HashMap parameters = new HashMap();
-            parameters
-                    .put(OpenModuleHandler.PARAM_MODULE, ResourceHelper.getModuleNameChecked(module.getName(), false));
-
-            // runs the command
-            UIHelper.runCommand(OpenModuleHandler.COMMAND_ID, parameters);
         }
 
         return null;
     }
-    
 
     /**
      * Operation for creation of the new TLA+ module with default content
@@ -133,12 +157,13 @@ public class AddModuleHandler extends AbstractHandler implements IHandler
         public TLAModuleCreationOperation(IPath module)
         {
             this.modulePath = module;
-            
+
         }
+
         public void run(IProgressMonitor monitor)
         {
             String moduleFileName = modulePath.lastSegment();
-            
+
             byte[] content = ResourceHelper.getModuleDefaultContent(moduleFileName);
             try
             {
@@ -146,12 +171,13 @@ public class AddModuleHandler extends AbstractHandler implements IHandler
                 File file = new File(modulePath.toOSString());
                 if (file.createNewFile())
                 {
-                    //successfully created
+                    // successfully created
                     FileOutputStream fos = new FileOutputStream(file);
                     fos.write(content);
                     fos.flush();
                     fos.close();
-                } else {
+                } else
+                {
                     throw new RuntimeException("Error creating a file");
                 }
             } catch (IOException e)
@@ -159,8 +185,8 @@ public class AddModuleHandler extends AbstractHandler implements IHandler
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
-            
+
         }
-        
+
     }
 }
