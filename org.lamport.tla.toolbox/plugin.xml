@@ -100,7 +100,7 @@
             id="toolbox.command.spec.open"
             name="Open Specification">
          <commandParameter
-               id="toolbox.command.openSpec.param"
+               id="toolbox.command.spec.open.param"
                name="specName"
                optional="false">
          </commandParameter>
