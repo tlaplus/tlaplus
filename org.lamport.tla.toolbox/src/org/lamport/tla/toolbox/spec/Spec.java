@@ -1,20 +1,22 @@
 package org.lamport.tla.toolbox.spec;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IAdapterManager;
 import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Platform;
 import org.lamport.tla.toolbox.spec.parser.IParseConstants;
 import org.lamport.tla.toolbox.util.ResourceHelper;
-import org.lamport.tla.toolbox.util.TLAMarkerHelper;
+import org.lamport.tla.toolbox.util.compare.ResourceNameComparator;
 import org.lamport.tla.toolbox.util.pref.PreferenceStoreHelper;
 
 /**
@@ -120,8 +122,8 @@ public class Spec implements IAdaptable
 
     /**
      * Retrieves the path to the file containing the root module
-     * 
-     * @return
+     * This is a convenience method for {@link getRootFile()#getLocation()#toOSString()}
+     * @return the OS representation of the root file
      */
     public String getRootFilename()
     {
@@ -171,45 +173,10 @@ public class Spec implements IAdaptable
         return manager.getAdapter(this, adapter);
     }
 
-
-    /**
-     * 
-     * Tries to find a module with a given name, but never create new links
-     * @param moduleName
-     * @return
-     * @deprecated use {@link ResourceHelper#getLinkedFile(IProject, String, boolean)}
-     */
-    public IFile findModuleFile(String moduleName)
-    {
-        if (moduleName == null)
-        {
-            return null;
-        }
-        // only try to find a module, never create one
-        return ResourceHelper.getLinkedFile(getProject(), ResourceHelper.getModuleFileName(moduleName), false);
-    }
-
-    /**
-     * Deletes all problem markers of all files associated with a current specification
-     * @param monitor
-     */
-    public void cleanProblemMarkers(IProgressMonitor monitor)
-    {
-        // delete the problems from current spec, if any
-        TLAMarkerHelper.removeProblemMarkers(getProject(), monitor);
-    }
-
-    /**
-     * Retrieves the problem markers on this spec
-     * @return
-     */
-    public IMarker[] getProblemMarkers(IProgressMonitor monitor)
-    {
-        return TLAMarkerHelper.getProblemMarkers(getProject(), monitor);
-    }
-
     /**
      * Retrieves the list of modules in the spec, or an empty list if no modules
+     * The list is sorted on the resource name
+     * 
      * @return
      */
     public IResource[] getModules()
@@ -218,6 +185,11 @@ public class Spec implements IAdaptable
         try
         {
             modules = getProject().members(IResource.NONE);
+            // sort the markers
+            List moduleList = new ArrayList(Arrays.asList(modules));
+            Collections.sort(moduleList, new ResourceNameComparator());
+            return (IResource[]) moduleList.toArray(new IResource[moduleList.size()]);
+
         } catch (CoreException e)
         {
             // TODO Auto-generated catch block
@@ -226,14 +198,4 @@ public class Spec implements IAdaptable
         }
         return modules;
     }
-
-    /**
-     * Retrieves the module file filter
-     * @return module file filter of this spec
-     */
-    public ModulesNotInSpecFilter getModuleFileFilter()
-    {
-        return new ModulesNotInSpecFilter(this);
-    }
-
 }
