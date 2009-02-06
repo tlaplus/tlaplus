@@ -153,9 +153,9 @@ public class NewSpecWizardPage extends WizardPage
                 return;
             } else if (!new File(rootfilePath).exists())
             {
-                // TODO probably allow this?
+                // allow this
                 reportWarning("Root file name does not exist. A new file will be created.");
-                return;
+                // return;
             } else if (new File(rootfilePath).isDirectory())
             {
                 reportError("Root file should be a TLA file and not a directory");
