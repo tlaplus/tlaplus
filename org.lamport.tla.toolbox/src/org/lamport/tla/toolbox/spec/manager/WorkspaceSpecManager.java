@@ -23,9 +23,9 @@ import org.lamport.tla.toolbox.util.pref.PreferenceStoreHelper;
  */
 public class WorkspaceSpecManager extends AbstractSpecManager implements IResourceChangeListener
 {
-    private Hashtable storage = new Hashtable(47);
+    private Hashtable specStorage = new Hashtable(47);
     private Spec loadedSpec = null;
-
+    
     /**
      * Constructor
      */
@@ -99,7 +99,7 @@ public class WorkspaceSpecManager extends AbstractSpecManager implements IResour
      */
     public void addSpec(Spec spec)
     {
-        storage.put(spec.getName(), spec);
+        specStorage.put(spec.getName(), spec);
     }
 
     /*
@@ -117,7 +117,7 @@ public class WorkspaceSpecManager extends AbstractSpecManager implements IResour
      */
     public Spec[] getRecentlyOpened()
     {
-        Collection specs = storage.values();
+        Collection specs = specStorage.values();
         return (Spec[]) specs.toArray(new Spec[specs.size()]);
     }
 
@@ -127,7 +127,7 @@ public class WorkspaceSpecManager extends AbstractSpecManager implements IResour
      */
     public Spec getSpecByName(String specName)
     {
-        return (Spec) storage.get(specName);
+        return (Spec) specStorage.get(specName);
     }
 
     /*
@@ -138,7 +138,7 @@ public class WorkspaceSpecManager extends AbstractSpecManager implements IResour
     {
         if (rootModulePath != null)
         {
-            Iterator specI = storage.values().iterator();
+            Iterator specI = specStorage.values().iterator();
             if (specI.hasNext())
             {
                 Spec spec = (Spec) specI.next();
@@ -181,7 +181,7 @@ public class WorkspaceSpecManager extends AbstractSpecManager implements IResour
         if (resource != null && IResource.PROJECT == resource.getType()
                 && IResourceChangeEvent.PRE_DELETE == event.getType())
         {
-            storage.remove(resource.getName());
+            specStorage.remove(resource.getName());
         }
 
     }
