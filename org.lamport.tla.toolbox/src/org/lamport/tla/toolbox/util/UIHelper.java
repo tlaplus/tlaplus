@@ -452,5 +452,4 @@ public class UIHelper
         }
         return false;
     }
-
 }
