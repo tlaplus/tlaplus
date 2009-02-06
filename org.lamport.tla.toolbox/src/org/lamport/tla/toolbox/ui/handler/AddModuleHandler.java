@@ -1,8 +1,5 @@
 package org.lamport.tla.toolbox.ui.handler;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.HashMap;
 
 import org.eclipse.core.commands.AbstractHandler;
@@ -14,7 +11,6 @@ import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
@@ -108,7 +104,7 @@ public class AddModuleHandler extends AbstractHandler implements IHandler
                             // and the Spec's project name is /ROOT_DIR/SPEC_NAME.project
                             // the file should be created in /ROOT_DIR/module_name.tla and linked to the virtual path.
 
-                            IWorkspaceRunnable moduleCreateOperation = new TLAModuleCreationOperation(modulePath);
+                            IWorkspaceRunnable moduleCreateOperation = ResourceHelper.createTLAModuleCreationOperation(modulePath);
 
                             try
                             {
@@ -141,52 +137,4 @@ public class AddModuleHandler extends AbstractHandler implements IHandler
         return null;
     }
 
-    /**
-     * Operation for creation of the new TLA+ module with default content
-     * @author Simon Zambrovski
-     * @version $Id$
-     */
-    class TLAModuleCreationOperation implements IWorkspaceRunnable
-    {
-        private IPath modulePath;
-
-        /**
-         * constructs the creation operation
-         * @param module REAL module path to be created
-         */
-        public TLAModuleCreationOperation(IPath module)
-        {
-            this.modulePath = module;
-
-        }
-
-        public void run(IProgressMonitor monitor)
-        {
-            String moduleFileName = modulePath.lastSegment();
-
-            byte[] content = ResourceHelper.getModuleDefaultContent(moduleFileName);
-            try
-            {
-                // create file
-                File file = new File(modulePath.toOSString());
-                if (file.createNewFile())
-                {
-                    // successfully created
-                    FileOutputStream fos = new FileOutputStream(file);
-                    fos.write(content);
-                    fos.flush();
-                    fos.close();
-                } else
-                {
-                    throw new RuntimeException("Error creating a file");
-                }
-            } catch (IOException e)
-            {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-
-        }
-
-    }
 }
