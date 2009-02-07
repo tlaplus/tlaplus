@@ -1,10 +1,14 @@
 package org.lamport.tla.toolbox.util;
 
+import java.util.List;
+import java.util.Vector;
+
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.IAdapterFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.ui.model.IWorkbenchAdapter;
 import org.eclipse.ui.model.WorkbenchAdapter;
+import org.lamport.tla.toolbox.spec.Module;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.spec.parser.IParseConstants;
 
@@ -38,11 +42,11 @@ public class AdapterFactory implements IAdapterFactory
             if (adaptableObject instanceof Spec)
             {
                 return new SpecWorkbenchAdapter();
-            } 
+            }
         }
         return null;
     }
-    
+
     /**
      * Retrieves formated problem location
      * @param moduleName
@@ -54,8 +58,6 @@ public class AdapterFactory implements IAdapterFactory
         return "from line " + coordinates[0] + ", column " + coordinates[1] + " to line " + coordinates[2]
                 + ", column " + coordinates[3] + " of module " + moduleName;
     }
-
-
 
     /**
      * Adapts the spec object to the workbench<br>
@@ -77,7 +79,7 @@ public class AdapterFactory implements IAdapterFactory
         }
 
     }
-    
+
     /**
      * Converts a parse status to a human-readable string
      * @param spec specification holding the parse status
@@ -88,26 +90,27 @@ public class AdapterFactory implements IAdapterFactory
         if (spec != null)
         {
             switch (spec.getStatus()) {
-                case IParseConstants.COULD_NOT_FIND_MODULE:
-                    return " module not found ";
-                case IParseConstants.PARSED:
-                    return " parsed ";
-                case IParseConstants.SEMANTIC_WARNING:
-                    return " warning ";
-                case IParseConstants.SEMANTIC_ERROR:
-                case IParseConstants.SYNTAX_ERROR:
-                case IParseConstants.UNKNOWN_ERROR:
-                    return " error ";
-                case IParseConstants.UNPARSED:
-                    return " unparsed ";
-                default:
-                    return " unknown " + spec.getStatus();
+            case IParseConstants.COULD_NOT_FIND_MODULE:
+                return " module not found ";
+            case IParseConstants.PARSED:
+                return " parsed ";
+            case IParseConstants.SEMANTIC_WARNING:
+                return " warning ";
+            case IParseConstants.SEMANTIC_ERROR:
+            case IParseConstants.SYNTAX_ERROR:
+            case IParseConstants.UNKNOWN_ERROR:
+                return " error ";
+            case IParseConstants.UNPARSED:
+                return " unparsed ";
+            default:
+                return " unknown " + spec.getStatus();
             }
-        } else {
-            return " no spec " ;
+        } else
+        {
+            return " no spec ";
         }
     }
-    
+
     /**
      * Converts parse status to a color for display in the status contribution item
      * @param spec specification holding the parse status
@@ -118,24 +121,25 @@ public class AdapterFactory implements IAdapterFactory
         if (spec != null)
         {
             switch (spec.getStatus()) {
-                case IParseConstants.PARSED:
-                    return SWT.COLOR_DARK_GREEN;
-                case IParseConstants.COULD_NOT_FIND_MODULE:
-                case IParseConstants.SEMANTIC_WARNING:
-                case IParseConstants.SEMANTIC_ERROR:
-                case IParseConstants.SYNTAX_ERROR:
-                case IParseConstants.UNKNOWN_ERROR:
-                    return SWT.COLOR_YELLOW;
-                case IParseConstants.UNPARSED:
-                    return SWT.COLOR_DARK_RED;
-                case IParseConstants.UNKNOWN:
-                default:
-                    return SWT.COLOR_GRAY;
+            case IParseConstants.PARSED:
+                return SWT.COLOR_DARK_GREEN;
+            case IParseConstants.COULD_NOT_FIND_MODULE:
+            case IParseConstants.SEMANTIC_WARNING:
+            case IParseConstants.SEMANTIC_ERROR:
+            case IParseConstants.SYNTAX_ERROR:
+            case IParseConstants.UNKNOWN_ERROR:
+                return SWT.COLOR_YELLOW;
+            case IParseConstants.UNPARSED:
+                return SWT.COLOR_DARK_RED;
+            case IParseConstants.UNKNOWN:
+            default:
+                return SWT.COLOR_GRAY;
             }
-        } else {
+        } else
+        {
             return SWT.COLOR_GRAY;
         }
-    } 
+    }
 
     /**
      * Decides, if a parse status is a problem
@@ -146,24 +150,24 @@ public class AdapterFactory implements IAdapterFactory
     public static boolean isProblemStatus(int parseStatus)
     {
         switch (parseStatus) {
-            // error cases
-            case IParseConstants.COULD_NOT_FIND_MODULE:
-            case IParseConstants.SEMANTIC_WARNING:
-            case IParseConstants.SEMANTIC_ERROR:
-            case IParseConstants.SYNTAX_ERROR:
-            case IParseConstants.UNKNOWN_ERROR:
-                return true;
-                // non-error cases
-            case IParseConstants.UNPARSED:
-            case IParseConstants.PARSED:
-            case IParseConstants.UNKNOWN:
-                return false;
-            default:
-                return false;
+        // error cases
+        case IParseConstants.COULD_NOT_FIND_MODULE:
+        case IParseConstants.SEMANTIC_WARNING:
+        case IParseConstants.SEMANTIC_ERROR:
+        case IParseConstants.SYNTAX_ERROR:
+        case IParseConstants.UNKNOWN_ERROR:
+            return true;
+            // non-error cases
+        case IParseConstants.UNPARSED:
+        case IParseConstants.PARSED:
+        case IParseConstants.UNKNOWN:
+            return false;
+        default:
+            return false;
         }
-        
+
     }
-    
+
     /**
      * Checks if the spec holding the parse status has problems
      * @param spec specification holding the parse status
@@ -174,11 +178,11 @@ public class AdapterFactory implements IAdapterFactory
         if (spec != null)
         {
             return isProblemStatus(spec.getStatus());
-        } else {
+        } else
+        {
             return false;
         }
     }
-
 
     /**
      * Retrieves the text representation of the TLA+ parse problem
@@ -187,20 +191,38 @@ public class AdapterFactory implements IAdapterFactory
      */
     public static String getSeverityAsText(int severity)
     {
-        switch (severity) 
-        {
-            case IMarker.SEVERITY_ERROR:
-                return "Error";
-            case IMarker.SEVERITY_WARNING:
-                return "Warning";
-            case IMarker.SEVERITY_INFO:
-            default:
-                return "Info";
+        switch (severity) {
+        case IMarker.SEVERITY_ERROR:
+            return "Error";
+        case IMarker.SEVERITY_WARNING:
+            return "Warning";
+        case IMarker.SEVERITY_INFO:
+        default:
+            return "Info";
         }
 
     }
-    
-    
 
-    
+    /**
+     * Adapts a list of modules including all dependent modules and the resource itself to the form, accepted by the dependency storage
+     * @param name
+     * @param userModules
+     * @return
+     * TODO improve the storage
+     */
+    public static List adaptModules(String name, Vector userModules)
+    {
+        Vector dependents = new Vector(userModules.size() - 1);
+        for (int i = 0; i < userModules.size(); i++)
+        {
+            Module module = (Module)userModules.get(i);
+            if (!module.getFile().getName().equals(name)) 
+            {
+                dependents.add(module.getFile().getName());
+            }
+        }
+
+        return dependents;
+    }
+
 }
