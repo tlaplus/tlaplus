@@ -363,7 +363,7 @@
       <handler
             class="org.lamport.tla.toolbox.ui.handler.NewSpecHandler"
             commandId="toolbox.command.spec.new">
-      </handler>>
+      </handler>
       <handler
             class="org.lamport.tla.toolbox.ui.handler.ParseHandler"
             commandId="toolbox.command.module.parse.root">
