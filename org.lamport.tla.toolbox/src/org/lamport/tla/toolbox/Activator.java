@@ -8,6 +8,7 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.spec.manager.ISpecManager;
 import org.lamport.tla.toolbox.spec.manager.WorkspaceSpecManager;
+import org.lamport.tla.toolbox.spec.parser.ParserDependencyStorage;
 import org.lamport.tla.toolbox.ui.contribution.ParseStatusContributionItem;
 import org.lamport.tla.toolbox.ui.perspective.ProblemsPerspective;
 import org.lamport.tla.toolbox.util.TLAMarkerHelper;
@@ -28,6 +29,7 @@ public class Activator extends AbstractUIPlugin
     // The shared instance
     private static Activator plugin;
     private static ISpecManager specManager;
+    private static ParserDependencyStorage parserDependencyStorage;
     private ParseStatusContributionItem parseStatusWidget = null;
 
     /**
@@ -37,10 +39,6 @@ public class Activator extends AbstractUIPlugin
     {
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.ui.plugin.AbstractUIPlugin#start(org.osgi.framework.BundleContext)
-     */
     public void start(BundleContext context) throws Exception
     {
         super.start(context);
@@ -115,10 +113,6 @@ public class Activator extends AbstractUIPlugin
     }
 
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.ui.plugin.AbstractUIPlugin#stop(org.osgi.framework.BundleContext)
-     */
     public void stop(BundleContext context) throws Exception
     {
         // unregister the listeners
@@ -150,6 +144,18 @@ public class Activator extends AbstractUIPlugin
             specManager = new WorkspaceSpecManager(); 
         }
         return specManager;
+    }
+    
+    /**
+     * Retrieves a working instance of parser dependency storage
+     */
+    public static synchronized ParserDependencyStorage getModuleDependencyStorage()
+    {
+        if (parserDependencyStorage == null) 
+        {
+            parserDependencyStorage = new ParserDependencyStorage();
+        }
+        return parserDependencyStorage;
     }
 
 }
