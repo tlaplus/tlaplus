@@ -32,3 +32,5 @@ will become part of the project
 - FEATURE: "Open module" menu displays the module names sorted alphabetically ignoring case
 - FEATURE: Sorts the error messages in the "Problem View" by severity desc, resource name desc, line number asc.
 - FEATURE: Add module to the spec with OS-based dialog
+- FEATURE: "Create new spec" allows to pick an non-existent root file, which will be created.
+- FEATURE: On changes in a file the dependency list is considered before rebuild 
