@@ -8,12 +8,12 @@ import tla2sany.semantic.ModuleNode;
 
 /**
  * Representation of a module
- * 
- * @author zambrovski
+ * @author Simon Zambrovski
+ * @version $Id$
  */
 public class Module
 {
-    private File       file;
+    private File file;
     private ModuleNode node;
 
     public Module(String absoluteFilename)
@@ -42,10 +42,8 @@ public class Module
     }
 
     /**
-     * Retrieves the module name <br>
-     * TODO: use FSUtils
-     * 
-     * @return the name of the moduel
+     * Retrieves the module name
+     * @return the name of the module
      */
     public String getModuleName()
     {
