@@ -52,8 +52,8 @@ public class Spec implements IAdaptable
     /**
      * Factory method Creates a new specification, the underlying IProject link the root file
      * 
-     * @param name
-     * @param rootFilename
+     * @param name the name of the specification
+     * @param rootFilename the path to the root file name
      * @param modified
      */
     public static Spec createNewSpec(String name, String rootFilename)
@@ -181,6 +181,7 @@ public class Spec implements IAdaptable
      */
     public IResource[] getModules()
     {
+        // TODO relate this list to the list of modules, which result after parse
         IResource[] modules = null;
         try
         {
