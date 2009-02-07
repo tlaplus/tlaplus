@@ -10,9 +10,11 @@ import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.spec.Module;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.ui.handler.ParseHandler;
+import org.lamport.tla.toolbox.util.AdapterFactory;
 import org.lamport.tla.toolbox.util.RCPNameToFileIStream;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.TLAMarkerHelper;
@@ -48,7 +50,7 @@ public class ModuleParserLauncher
     {
 
         IProject project = parseResource.getProject();
-        
+
         // setup the directory of the root file
         ToolIO.setUserDir(ResourceHelper.getParentDir(parseResource.getLocation().toOSString()));
 
@@ -57,6 +59,12 @@ public class ModuleParserLauncher
 
         // call the parsing
         int status = this.parseMainModule(parseResource, true);
+        
+        if (AdapterFactory.isProblemStatus(status))
+        {
+            Activator.getModuleDependencyStorage().parseFailed(parseResource.getName());
+        }
+        
 
         // store errors inside the specification project
         this.processParsingErrors(project, status, monitor);
@@ -78,8 +86,7 @@ public class ModuleParserLauncher
      */
     private int parseMainModule(IResource parseResource, boolean doSemanticAnalysis)
     {
-        String rootFilename = parseResource.getLocation().toOSString(); 
-        
+        String rootFilename = parseResource.getLocation().toOSString();
 
         // clean the results of previos parsing
         this.cleanUp();
@@ -87,14 +94,13 @@ public class ModuleParserLauncher
         // one of the Spec constants
         int specStatus = 0;
 
-       // Initialize the module variables
+        // Initialize the module variables
         SpecObj moduleSpec = new SpecObj(ResourceHelper.getModuleName(rootFilename), new RCPNameToFileIStream(null));
 
         // Reset the tool output messages. *
         ToolIO.reset();
         ToolIO.setMode(ToolIO.TOOL);
 
-        
         // The parsing methods take a PrintStream on which they print out some (but hardly all) error messages.
         // They're called with this one.
         PrintStream outputStr = ToolIO.err;
@@ -112,6 +118,7 @@ public class ModuleParserLauncher
             // set spec status
             specStatus = IParseConstants.UNKNOWN_ERROR;
             return specStatus;
+            
         } catch (ParseException e)
         {
             // I believe that this exception is thrown iff there is a parsing error.
@@ -151,6 +158,7 @@ public class ModuleParserLauncher
         Vector standardModules = new Vector();
         boolean rootModuleFound = false;
 
+        
         // iterate over parse units
         Enumeration enumerate = moduleSpec.parseUnitContext.keys();
         while (enumerate.hasMoreElements())
@@ -176,8 +184,11 @@ public class ModuleParserLauncher
 
             // create module holder
             Module module = new Module(absoluteFileName);
-            
-            ResourceHelper.getLinkedFile(parseResource.getProject(), module.getAbsolutePath(), true);
+
+
+            if (!module.isStandardModule())
+            {
+            }
 
             // semantic module only available if no semantic errors found
             if (specStatus > IParseConstants.SEMANTIC_ERROR)
@@ -196,20 +207,30 @@ public class ModuleParserLauncher
                 rootModuleFound = true;
             }
 
+
             if (module.isStandardModule())
             {
                 standardModules.addElement(module);
             } else
             {
+                // if the module is not a standard module
                 userModules.addElement(module);
-            }
 
+                // create a link to the module, so we could open it
+                ResourceHelper.getLinkedFile(parseResource.getProject(), module.getAbsolutePath(), true);
+            }
+            
         } // while
 
         if (!rootModuleFound)
         {
             specStatus = IParseConstants.COULD_NOT_FIND_MODULE;
         }
+        
+        // at this point the user modules are known
+        // store the dependencies
+        Activator.getModuleDependencyStorage().put(parseResource.getName(), AdapterFactory.adaptModules(parseResource.getName(), userModules));
+        
 
         return specStatus;
     }
@@ -290,9 +311,10 @@ public class ModuleParserLauncher
             {
                 // find out the module name
                 int parsingModuleIndex = output[nextMsg - 1].indexOf("Parsing module") + 15;
-                String nameToFind = output[nextMsg - 1].substring(parsingModuleIndex,
-                        output[nextMsg - 1].indexOf(" ", parsingModuleIndex + 1));
-                IFile module = ResourceHelper.getLinkedFile(project, ResourceHelper.getModuleFileName(nameToFind), false);
+                String nameToFind = output[nextMsg - 1].substring(parsingModuleIndex, output[nextMsg - 1].indexOf(" ",
+                        parsingModuleIndex + 1));
+                IFile module = ResourceHelper.getLinkedFile(project, ResourceHelper.getModuleFileName(nameToFind),
+                        false);
 
                 // coordinates of the error
                 int[] coordinates = null;
@@ -323,8 +345,8 @@ public class ModuleParserLauncher
                     // coordinates of the error
                     coordinates = new int[] { beginLine, beginColumn, endLine, endColumn };
 
-                    TLAMarkerHelper.installProblemMarker(module, module.getName(), IMarker.SEVERITY_ERROR, coordinates, message,
-                            monitor);
+                    TLAMarkerHelper.installProblemMarker(module, module.getName(), IMarker.SEVERITY_ERROR, coordinates,
+                            message, monitor);
                 } // if
                 else
                 {
@@ -352,11 +374,12 @@ public class ModuleParserLauncher
 
                     if (module == null)
                     {
-                        TLAMarkerHelper.installProblemMarker(project, project.getName(), IMarker.SEVERITY_ERROR, coordinates, message, monitor);
+                        TLAMarkerHelper.installProblemMarker(project, project.getName(), IMarker.SEVERITY_ERROR,
+                                coordinates, message, monitor);
                     } else
                     {
-                        TLAMarkerHelper.installProblemMarker(module, module.getName(), IMarker.SEVERITY_ERROR, coordinates,
-                                message, monitor);
+                        TLAMarkerHelper.installProblemMarker(module, module.getName(), IMarker.SEVERITY_ERROR,
+                                coordinates, message, monitor);
                     }
 
                 } // else
@@ -395,15 +418,14 @@ public class ModuleParserLauncher
             break;
         case IParseConstants.COULD_NOT_FIND_MODULE:
 
-            TLAMarkerHelper.installProblemMarker(project, project.getName(), IMarker.SEVERITY_ERROR, new int[] { -1, -1, -1, -1 },
-                    "Could not find module", monitor);
+            TLAMarkerHelper.installProblemMarker(project, project.getName(), IMarker.SEVERITY_ERROR, new int[] { -1,
+                    -1, -1, -1 }, "Could not find module", monitor);
             break;
         case IParseConstants.PARSED:
             break;
         default:
 
-            throw new RuntimeException("No default expected. Still spec.getStatus() returned a value of "
-                    + parseStatus);
+            throw new RuntimeException("No default expected. Still spec.getStatus() returned a value of " + parseStatus);
         }
         cleanUp();
     } // ProcessParsingErrorMsgs
@@ -415,7 +437,8 @@ public class ModuleParserLauncher
      * @param severityError
      * @param monitor
      */
-    private void encodeSematicErrorFromString(IProject project, String message, int severityError, IProgressMonitor monitor)
+    private void encodeSematicErrorFromString(IProject project, String message, int severityError,
+            IProgressMonitor monitor)
     {
 
         IFile module = null;
@@ -443,7 +466,8 @@ public class ModuleParserLauncher
             int endModuleIdx = message.indexOf("\n", beginModuleIdx);
             if (endModuleIdx != -1)
             {
-                module = ResourceHelper.getLinkedFile(project, ResourceHelper.getModuleFileName(message.substring(beginModuleIdx, endModuleIdx)), false);
+                module = ResourceHelper.getLinkedFile(project, ResourceHelper.getModuleFileName(message.substring(
+                        beginModuleIdx, endModuleIdx)), false);
             }
         }
 
@@ -451,11 +475,13 @@ public class ModuleParserLauncher
 
         if (module == null)
         {
-            TLAMarkerHelper.installProblemMarker(project, project.getName(), severityError, coordinates, message, monitor);
-            
+            TLAMarkerHelper.installProblemMarker(project, project.getName(), severityError, coordinates, message,
+                    monitor);
+
         } else
         {
-            TLAMarkerHelper.installProblemMarker(module, module.getName(), severityError, coordinates, message, monitor);
+            TLAMarkerHelper
+                    .installProblemMarker(module, module.getName(), severityError, coordinates, message, monitor);
         }
     }
 
