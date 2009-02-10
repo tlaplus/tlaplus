@@ -37,7 +37,8 @@ public class NewSpecHandler extends AbstractHandler implements IHandler
         Shell parentShell = window.getShell();
         // Create the wizard dialog
         WizardDialog dialog = new WizardDialog(parentShell, wizard);
-
+        dialog.setHelpAvailable(true);
+        
         // Open the wizard dialog
         if (Window.OK == dialog.open())
         {
