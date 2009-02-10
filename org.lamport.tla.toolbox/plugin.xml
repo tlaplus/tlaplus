@@ -30,34 +30,42 @@
    <extension
          point="org.eclipse.ui.views">
       <view
-            name="Welcome View"
             allowMultiple="false"
-            icon="icons/full/eview16/console_view2.gif"
+            category="org.lamport.tla.toolbox.category"
             class="org.lamport.tla.toolbox.ui.view.WelcomeView"
-            id="toolbox.view.WelcomeView">
+            icon="icons/full/eview16/console_view2.gif"
+            id="toolbox.view.WelcomeView"
+            name="Welcome">
       </view>
       <view
             allowMultiple="false"
+            category="org.lamport.tla.toolbox.category"
             class="org.lamport.tla.toolbox.ui.view.SpecLoadedView"
             icon="icons/full/eview16/console_view2.gif"
             id="toolbox.view.SpecLoadedView"
             name="Specification Loaded">
       </view>
       <view
-            name="Problem View"
             allowMultiple="false"
-            icon="icons/full/eview16/console_view2.gif"
+            category="org.lamport.tla.toolbox.category"
             class="org.lamport.tla.toolbox.ui.view.ProblemView"
-            id="toolbox.view.ProblemView">
+            icon="icons/full/eview16/console_view2.gif"
+            id="toolbox.view.ProblemView"
+            name="Problems">
       </view>
       <view
             allowMultiple="false"
+            category="org.lamport.tla.toolbox.category"
             class="org.lamport.tla.toolbox.ui.view.ProblemMarkerView"
             icon="icons/full/eview16/console_view2.gif"
             id="toolbox.view.ProblemMarkerView"
-            name="Problem Marker View"
+            name="Problem Markers"
             restorable="true">
       </view>
+      <category
+            id="org.lamport.tla.toolbox.category"
+            name="TLA+ Toolbox">
+      </category>
    </extension>
       
 <!--                                   -->
@@ -150,6 +158,16 @@
             id="toolbox.command.toggle-problem-view"
             name="Toggle Problem View">
       </command>
+      <keyBinding
+            commandId="org.eclipse.ui.file.exit"
+            keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            keySequence="M1+Q">
+      </keyBinding>
+      <keyBinding
+            commandId="org.eclipse.ui.help.dynamicHelp"
+            keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            keySequence="F1">
+      </keyBinding>
    </extension>
       
 <!--                                   -->
@@ -544,4 +562,11 @@
             parentId="org.eclipse.ui.contexts.window">
       </context>
    </extension>
+   <extension
+         point="org.eclipse.help.contexts">
+      <contexts
+            file="helpContexts.xml"
+            plugin="org.lamport.tla.toolbox">
+      </contexts>
+   </extension>   
 </plugin>
