@@ -27,7 +27,7 @@ public class TLAEditor extends TextEditor
     {
         super();
         setDocumentProvider(new FileDocumentProvider());
-        
+        setHelpContextId("org.lamport.tla.toolbox.editor.basic.main_editor_window");
         getDocumentProvider().addElementStateListener(new IElementStateListener() {
             
              
