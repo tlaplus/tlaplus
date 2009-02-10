@@ -18,13 +18,8 @@ DESCRIPTION: {General description of the release
 
 2009-01-28 "0.0.1" 
 ---------------------------------------------------
-
-- BUGFIX: The parse status "Could not find module" is handled correctly. The Marker is attached to the Spec itself. 
-- BUGFIX: The parse status widget is shown from the beginning on and is permanently visible
-- BUGFIX: System.err redirected prior starting of the SANY
-- CHANGE: Status "semantic warning" has been added to the resolution of the parse status. It is marked by the warning 
-written on the yellow background. The warning is a problem status and causes the problem window to pop-up.
-- CHANGE: The defaults for preferences "spacesForTabs" and "lineNumberRuler" has been changed
+- FEATURE: Help button now only opens the content help
+- FEATURE: Context help activated (hitting F1 everywhere)
 - FEATURE: In a non-dirty editor CTRL + S toggles the "Problem View"  
 - FEATURE: On errors reported from SANY located in modules, which are not yet part of the Spec-Project (linked-in) the resources 
 will become part of the project
@@ -34,3 +29,10 @@ will become part of the project
 - FEATURE: Add module to the spec with OS-based dialog
 - FEATURE: "Create new spec" allows to pick an non-existent root file, which will be created.
 - FEATURE: On changes in a file the dependency list is considered before rebuild 
+- CHANGE: Status "semantic warning" has been added to the resolution of the parse status. It is marked by the warning 
+written on the yellow background. The warning is a problem status and causes the problem window to pop-up.
+- CHANGE: The defaults for preferences "spacesForTabs" and "lineNumberRuler" has been changed
+
+- BUGFIX: The parse status "Could not find module" is handled correctly. The Marker is attached to the Spec itself. 
+- BUGFIX: The parse status widget is shown from the beginning on and is permanently visible
+- BUGFIX: System.err redirected prior starting of the SANY
