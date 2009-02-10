@@ -2,8 +2,11 @@ package org.lamport.tla.toolbox.ui.preference;
 
 import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
+import org.lamport.tla.toolbox.util.UIHelper;
 import org.lamport.tla.toolbox.util.pref.IPreferenceConstants;
 import org.lamport.tla.toolbox.util.pref.PreferenceStoreHelper;
 
@@ -24,6 +27,14 @@ public class ParserPreferencePage extends FieldEditorPreferencePage implements I
         setPreferenceStore(PreferenceStoreHelper.getInstancePreferenceStore());
         setDescription("TLA+ Parser preferences");
 
+
+    }
+
+    protected Control createContents(Composite parent)
+    {
+        Control pageControl = super.createContents(parent);
+        UIHelper.setHelp(pageControl, "ParserPreferencePage");
+        return pageControl;
     }
 
     /**
