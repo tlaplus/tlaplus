@@ -12,4 +12,11 @@
             class="org.lamport.tla.toolbox.editor.basic.TLAEditor">
       </editor>
    </extension>
+   <extension
+         point="org.eclipse.help.contexts">
+      <contexts
+            file="helpContexts.xml"
+            plugin="org.lamport.tla.toolbox.editor.basic">
+      </contexts>
+   </extension>
 </plugin>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<contexts>
+	<context id="main_editor_window">
+		<description>This is a the basic editor. It is used to edit the TLA+ module files.</description>
+		<topic label="Understanding Problems" href="../org.lamport.tla.toolbox.doc/html/reference/maintopic.html" />
+	</context>
+</contexts>
