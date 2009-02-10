@@ -14,6 +14,7 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IActionBars;
@@ -451,5 +452,17 @@ public class UIHelper
             }
         }
         return false;
+    }
+
+    /**
+     * Registers a control to the context
+     * @param control control to register 
+     * @param localContext the context id relative to plug-in ID 
+     * <br>
+     * Note: there should be a corresponding context ID defined in the contexts.xml defining the context for current ID. 
+     */
+    public static void setHelp(Control control, String localContext)
+    {
+        PlatformUI.getWorkbench().getHelpSystem().setHelp(control, Activator.PLUGIN_ID + "." + localContext); 
     }
 }
