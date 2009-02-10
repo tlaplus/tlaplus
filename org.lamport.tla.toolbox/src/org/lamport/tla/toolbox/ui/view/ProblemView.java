@@ -47,7 +47,7 @@ public class ProblemView extends ViewPart
 
         bar = new ExpandBar(parent, SWT.V_SCROLL | SWT.BORDER);
         bar.setSpacing(8);
-
+        UIHelper.setHelp(bar, "ProblemView");
         fillData(Activator.getSpecManager().getSpecLoaded());
 
     }

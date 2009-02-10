@@ -6,7 +6,13 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.part.ViewPart;
+import org.lamport.tla.toolbox.util.UIHelper;
 
+/**
+ * Th welcome view
+ * @author Simon Zambrovski
+ * @version $Id$
+ */
 public class WelcomeView extends ViewPart
 {
 
@@ -14,7 +20,6 @@ public class WelcomeView extends ViewPart
 
     public void createPartControl(Composite parent)
     {
-
         Composite top = new Composite(parent, SWT.NONE);
         GridLayout layout = new GridLayout();
         layout.marginHeight = 0;
@@ -23,6 +28,7 @@ public class WelcomeView extends ViewPart
         // message contents
         Text text = new Text(top, SWT.MULTI | SWT.WRAP);
         text.setLayoutData(new GridData(GridData.FILL_BOTH));
+        UIHelper.setHelp(top, "WelcomeView");
         showInfo(text);
     }
 
