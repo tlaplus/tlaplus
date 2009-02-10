@@ -20,6 +20,7 @@ import org.eclipse.swt.widgets.Text;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.util.ResourceHelper;
+import org.lamport.tla.toolbox.util.UIHelper;
 
 /**
  * A wizard page input of the specification name and the location of the root file
@@ -101,15 +102,20 @@ public class NewSpecWizardPage extends WizardPage
                 dialogChanged();
             }
         });
+
         // just to align
         Label dummy = new Label(container, SWT.NULL);
         dummy.isVisible();
 
         // disable the next/finish button
         setPageComplete(false);
+
+        UIHelper.setHelp(container, "NewSpecWizard" );
         
         // the created parent is the control we see
         setControl(container);
+        
+
     }
 
     /**
