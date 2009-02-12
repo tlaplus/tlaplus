@@ -20,16 +20,20 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
     private IWorkbenchAction helpContentsAction;
     private IWorkbenchAction aboutAction;
     private IWorkbenchAction helpSearchAction;
+    private IWorkbenchAction dynamicHelpAction;
+
     private IWorkbenchAction quitAction;
     private IWorkbenchAction saveAction;
+
     // private IWorkbenchAction saveAsAction;
-    
+
     /**
-	 * @param configurer
-	 */
-	public ApplicationActionBarAdvisor(IActionBarConfigurer configurer) {
-		super(configurer);
-	}
+     * @param configurer
+     */
+    public ApplicationActionBarAdvisor(IActionBarConfigurer configurer)
+    {
+        super(configurer);
+    }
 
     /* (non-Javadoc)
      * @see org.eclipse.ui.application.ActionBarAdvisor#makeActions(org.eclipse.ui.IWorkbenchWindow)
@@ -38,22 +42,25 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
     {
         helpContentsAction = ActionFactory.HELP_CONTENTS.create(window);
         register(helpContentsAction);
-        
+
         helpSearchAction = ActionFactory.HELP_SEARCH.create(window);
         register(helpSearchAction);
-        
+
+        dynamicHelpAction = ActionFactory.DYNAMIC_HELP.create(window);
+        register(dynamicHelpAction);
+
         aboutAction = ActionFactory.ABOUT.create(window);
         register(aboutAction);
-        
+
         quitAction = ActionFactory.QUIT.create(window);
         register(quitAction);
-        
+
         saveAction = ActionFactory.SAVE.create(window);
         register(saveAction);
 
         // saveAsAction = ActionFactory.SAVE_AS.create(window);
         // register(saveAsAction);
-        
+
     }
 
     /* (non-Javadoc)
@@ -64,22 +71,22 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         MenuManager fileMenu = new MenuManager("&File", "toolbox.file.menu");
         // place holder for spec actions
         fileMenu.add(new Separator("toolbox.file.spec.separator"));
-        // place holder for module actions        
+        // place holder for module actions
         fileMenu.add(new Separator("toolbox.file.module.separator"));
         fileMenu.add(saveAction);
 
-        //fileMenu.add(saveAsAction);
-        
+        // fileMenu.add(saveAsAction);
+
         // place holder for other actions
         fileMenu.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
         fileMenu.add(new Separator());
         fileMenu.add(quitAction);
-        
+
         MenuManager toolsMenu = new MenuManager("&Tools", "toolbox.tools.menu");
         toolsMenu.add(new Separator("toolbox.tools.separator"));
         toolsMenu.add(new Separator("toolbox.toolmenus.separator"));
-        
-        
+
+        /*
         MenuManager helpMenu = new MenuManager("&Help", IWorkbenchActionConstants.M_HELP);
 
         // Help Contents
@@ -90,16 +97,13 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         helpMenu.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
         // About action
         helpMenu.add(aboutAction);
-        
+        */
 
         menuBar.add(fileMenu);
         menuBar.add(toolsMenu);
         menuBar.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
-        menuBar.add(helpMenu);
+        // menuBar.add(dynamicHelpAction);
+        // menuBar.add(helpMenu);
     }
 
-    
-    
-	
-	
 }
