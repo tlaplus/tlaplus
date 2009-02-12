@@ -5,7 +5,6 @@ import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
-import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.spec.manager.ISpecManager;
 import org.lamport.tla.toolbox.spec.manager.WorkspaceSpecManager;
 import org.lamport.tla.toolbox.spec.parser.ParserDependencyStorage;
@@ -56,8 +55,7 @@ public class Activator extends AbstractUIPlugin
                 parseStatusWidget.updateStatus();
             }
         });
-        
-        
+
         // update widget on resource modifications
         workspace.addResourceChangeListener(new IResourceChangeListener() {
 
@@ -82,36 +80,53 @@ public class Activator extends AbstractUIPlugin
              */
             public void resourceChanged(final IResourceChangeEvent event)
             {
-
-                UIHelper.runUIAsync(new Runnable() {
-                    public void run()
-                    {
-                        // look up the preference for raising windows on errors
-                        boolean showErrors = PreferenceStoreHelper.getInstancePreferenceStore().getBoolean(
-                                IPreferenceConstants.P_PARSER_POPUP_ERRORS);
-                        if (showErrors)
+                if (UIHelper.isPerspectiveShown(ProblemsPerspective.ID))
+                {
+                    // the error view is shown
+                    UIHelper.runUIAsync(new Runnable() {
+                        public void run()
                         {
-                            Spec spec = Activator.getSpecManager().getSpecLoaded();
+
                             UIHelper.closeWindow(ProblemsPerspective.ID);
                             // there were problems -> open the problem view
-                            
-                            // Instead of explicit status check, look on the problem markers  
+
+                            // Instead of explicit status check, look on the problem markers
                             // if (AdapterFactory.isProblemStatus(spec.getStatus()))
-                            if (TLAMarkerHelper.getProblemMarkers(spec.getProject(), null).length > 0)
+                            if (TLAMarkerHelper.currentSpecHasProblems())
                             {
-                                UIHelper.openPerspectiveInWindowRight(ProblemsPerspective.ID, null,
-                                        ProblemsPerspective.WIDTH);
+                                UIHelper.openPerspectiveInWindowRight(ProblemsPerspective.ID, null, ProblemsPerspective.WIDTH);
                             }
                         }
+                    });
+                } else {
+                    // the perspective is not shown
+                    // look up the preference for raising windows on errors
+                    final boolean showErrors = PreferenceStoreHelper.getInstancePreferenceStore().getBoolean(
+                            IPreferenceConstants.P_PARSER_POPUP_ERRORS);
+                    if (showErrors)
+                    {
+                        UIHelper.runUIAsync(new Runnable() {
+                            public void run()
+                            {
+                                
+                                UIHelper.closeWindow(ProblemsPerspective.ID);
 
+                                // there were problems -> open the problem view
+
+                                // Instead of explicit status check, look on the problem markers
+                                // if (AdapterFactory.isProblemStatus(spec.getStatus()))
+                                if (TLAMarkerHelper.currentSpecHasProblems())
+                                {
+                                    UIHelper.openPerspectiveInWindowRight(ProblemsPerspective.ID, null,
+                                            ProblemsPerspective.WIDTH);
+                                }
+                            }
+                        });
                     }
-                });
-
+                }
             }
-
         }, IResourceChangeEvent.POST_BUILD);
     }
-
 
     public void stop(BundleContext context) throws Exception
     {
@@ -120,7 +135,6 @@ public class Activator extends AbstractUIPlugin
         specManager = null;
         plugin = null;
 
-        
         super.stop(context);
     }
 
@@ -141,21 +155,20 @@ public class Activator extends AbstractUIPlugin
     {
         if (specManager == null)
         {
-            specManager = new WorkspaceSpecManager(); 
+            specManager = new WorkspaceSpecManager();
         }
         return specManager;
     }
-    
+
     /**
      * Retrieves a working instance of parser dependency storage
      */
     public static synchronized ParserDependencyStorage getModuleDependencyStorage()
     {
-        if (parserDependencyStorage == null) 
+        if (parserDependencyStorage == null)
         {
             parserDependencyStorage = new ParserDependencyStorage();
         }
         return parserDependencyStorage;
     }
-
 }
