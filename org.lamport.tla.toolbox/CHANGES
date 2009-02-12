@@ -14,13 +14,18 @@ DESCRIPTION: {General description of the release
 {CATEGORY} is one of the BUGFIX, CHANGE, FEATURE 
 
 
-
-
 2009-01-28 "0.0.1" 
 ---------------------------------------------------
+- TODO(SZ): icons
+- TODO(SZ): splash branding
+- TODO(LL): help content
+- TODO(SZ): intro-page
 
-- FEATURE: The Parse Specification (root module) can be triggered by Ctrl + R shortcut
-- FEATURE: The list of modules in "Open Module" sub-menu marks the root module with specific icon
+- FEATURE: Preferences on auto-build added (module, spec, files)
+- BUGFIX: On switched off auto-build and shown "Problems View", the view is not repainted on save of a modified file 
+- FEATURE: In the editors tabs, root modules are marked with a special symbol
+- FEATURE: In the list of modules in "Open Module" sub-menu marks the root module with specific icon
+- FEATURE: The Parse Specification (root module) can be triggered by CTRL + R shortcut
 - CHANGE: Problem View toggling is looking on the problems, not on the spec status (this avoid empty problem view window to be shown ever) 
 - BUGFIX: If the Problem View is shown and the build happens it reopens with the new errors (if any errors)
 - FEATURE: Help button now only opens the content help
@@ -37,7 +42,6 @@ will become part of the project
 - CHANGE: Status "semantic warning" has been added to the resolution of the parse status. It is marked by the warning 
 written on the yellow background. The warning is a problem status and causes the problem window to pop-up.
 - CHANGE: The defaults for preferences "spacesForTabs" and "lineNumberRuler" has been changed
-
 - BUGFIX: The parse status "Could not find module" is handled correctly. The Marker is attached to the Spec itself. 
 - BUGFIX: The parse status widget is shown from the beginning on and is permanently visible
 - BUGFIX: System.err redirected prior starting of the SANY
