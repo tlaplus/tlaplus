@@ -13,7 +13,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.spec.Module;
 import org.lamport.tla.toolbox.spec.Spec;
-import org.lamport.tla.toolbox.ui.handler.ParseHandler;
+import org.lamport.tla.toolbox.ui.handler.ParseSpecHandler;
 import org.lamport.tla.toolbox.util.AdapterFactory;
 import org.lamport.tla.toolbox.util.RCPNameToFileIStream;
 import org.lamport.tla.toolbox.util.ResourceHelper;
@@ -74,8 +74,8 @@ public class ModuleParserLauncher
 
     /**
      * Calls SANY, that parses the root module. <br>
-     * <b>Note:</b> This method fills the error objects {@link ParseHandler#parseErrors} and
-     * {@link ParseHandler#semanticErrors}. Call {@link ParseHandler#processParsingErrors(Spec)} to store this
+     * <b>Note:</b> This method fills the error objects {@link ParseSpecHandler#parseErrors} and
+     * {@link ParseSpecHandler#semanticErrors}. Call {@link ParseSpecHandler#processParsingErrors(Spec)} to store this
      * information in the specification handle
      * 
      * @param doSemanticAnalysis
