@@ -58,7 +58,8 @@ public class ParseStatusContributionItem extends ContributionItem
     {
         Spec spec = Activator.getSpecManager().getSpecLoaded();
         statusLabel.setText(AdapterFactory.getStatusAsString(spec));
-        statusLabel.setBackground(statusLabel.getDisplay().getSystemColor(AdapterFactory.getStatusAsSWTColor(spec)));
+        statusLabel.setBackground(statusLabel.getDisplay().getSystemColor(AdapterFactory.getStatusAsSWTBGColor(spec)));
+        statusLabel.setForeground(statusLabel.getDisplay().getSystemColor(AdapterFactory.getStatusAsSWTFGColor(spec)));
         statusLabel.redraw();
     }
 }
