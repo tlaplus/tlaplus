@@ -65,7 +65,6 @@ public class ProblemView extends ViewPart
                 public void run()
                 {
                     UIHelper.closeWindow(ProblemsPerspective.ID);
-
                 }
             });
             return;
