@@ -4,10 +4,8 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IHandler;
-import org.lamport.tla.toolbox.Activator;
-import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.ui.perspective.ProblemsPerspective;
-import org.lamport.tla.toolbox.util.AdapterFactory;
+import org.lamport.tla.toolbox.util.TLAMarkerHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 /**
@@ -20,6 +18,9 @@ public class ToggleProblemViewHandler extends AbstractHandler implements IHandle
 
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
+        /**
+         * toggle means if it shown hide it if it is hidden, show it
+         */
         UIHelper.runUIAsync(new Runnable() {
             public void run()
             {
@@ -29,9 +30,9 @@ public class ToggleProblemViewHandler extends AbstractHandler implements IHandle
                     // the problem view is shown
                     UIHelper.closeWindow(ProblemsPerspective.ID);
                 } else {
-                    // the problem view is hidden
-                    Spec spec = Activator.getSpecManager().getSpecLoaded();
-                    if (AdapterFactory.isProblemStatus(spec.getStatus()))
+                    // the problem view is hidden, show it if problems are in place
+                    // if (AdapterFactory.isProblemStatus(spec.getStatus()))
+                    if (TLAMarkerHelper.currentSpecHasProblems())
                     {
                         UIHelper.openPerspectiveInWindowRight(ProblemsPerspective.ID, null,
                                 ProblemsPerspective.WIDTH);
