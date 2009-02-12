@@ -14,6 +14,8 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.editors.text.FileDocumentProvider;
 import org.eclipse.ui.ide.IGotoMarker;
 import org.eclipse.ui.part.FileEditorInput;
+import org.lamport.tla.toolbox.Activator;
+import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.ui.handler.OpenSpecHandler;
 
 /**
@@ -233,6 +235,20 @@ public class TLAMarkerHelper
         {
             gotoMarker.gotoMarker(problem);
         }
+    }
+
+    /**
+     * Convenience method that determines if the current spec has problems
+     * @return true, if current spec project contain problem markers
+     */
+    public static boolean currentSpecHasProblems()
+    {
+        Spec spec = Activator.getSpecManager().getSpecLoaded();
+        if (spec == null) 
+        {
+            return false;
+        }
+        return (TLAMarkerHelper.getProblemMarkers(spec.getProject(), null).length > 0 );
     }
 
 }
