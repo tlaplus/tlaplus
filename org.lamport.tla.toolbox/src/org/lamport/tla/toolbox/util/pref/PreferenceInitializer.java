@@ -22,8 +22,10 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer
 
         // instance based properties
         store.setDefault(IPreferenceConstants.I_RESTORE_LAST_SPEC, true);
+        
         store.setDefault(IPreferenceConstants.I_PARSE_MODULE_ON_MODIFY, true);
-        store.setDefault(IPreferenceConstants.I_PARSE_SPEC_ON_MODIFY, false);
+        store.setDefault(IPreferenceConstants.I_PARSE_FILES_ON_MODIFY, true);
+        store.setDefault(IPreferenceConstants.I_PARSE_SPEC_ON_MODIFY, true);
     }
 
 }
