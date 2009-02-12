@@ -82,6 +82,31 @@ public class AdapterFactory implements IAdapterFactory
 
     /**
      * Converts a parse status to a human-readable string
+     * @param status the integer representing the parse status
+     * @return human readable string
+     */
+    public static String getStatusAsString(int status)
+    {
+        switch (status) {
+        case IParseConstants.COULD_NOT_FIND_MODULE:
+            return " module not found ";
+        case IParseConstants.PARSED:
+            return " parsed ";
+        case IParseConstants.SEMANTIC_WARNING:
+            return " warning ";
+        case IParseConstants.SEMANTIC_ERROR:
+        case IParseConstants.SYNTAX_ERROR:
+        case IParseConstants.UNKNOWN_ERROR:
+            return " error ";
+        case IParseConstants.UNPARSED:
+            return " unparsed ";
+        default:
+            return " unknown " + status;
+        }
+    }
+
+    /**
+     * Converts a parse status of the spec to a human-readable string
      * @param spec specification holding the parse status
      * @return human readable string
      */
@@ -89,22 +114,7 @@ public class AdapterFactory implements IAdapterFactory
     {
         if (spec != null)
         {
-            switch (spec.getStatus()) {
-            case IParseConstants.COULD_NOT_FIND_MODULE:
-                return " module not found ";
-            case IParseConstants.PARSED:
-                return " parsed ";
-            case IParseConstants.SEMANTIC_WARNING:
-                return " warning ";
-            case IParseConstants.SEMANTIC_ERROR:
-            case IParseConstants.SYNTAX_ERROR:
-            case IParseConstants.UNKNOWN_ERROR:
-                return " error ";
-            case IParseConstants.UNPARSED:
-                return " unparsed ";
-            default:
-                return " unknown " + spec.getStatus();
-            }
+            return getStatusAsString(spec.getStatus());
         } else
         {
             return " no spec ";
@@ -112,11 +122,11 @@ public class AdapterFactory implements IAdapterFactory
     }
 
     /**
-     * Converts parse status to a color for display in the status contribution item
+     * Converts parse status to a background color for display in the status contribution item
      * @param spec specification holding the parse status
      * @return SWT color constant
      */
-    public static int getStatusAsSWTColor(Spec spec)
+    public static int getStatusAsSWTBGColor(Spec spec)
     {
         if (spec != null)
         {
@@ -138,6 +148,36 @@ public class AdapterFactory implements IAdapterFactory
         } else
         {
             return SWT.COLOR_GRAY;
+        }
+    }
+
+    /**
+     * Converts parse status to a foreground color for display in the status contribution item
+     * @param spec specification holding the parse status
+     * @return SWT color constant
+     */
+    public static int getStatusAsSWTFGColor(Spec spec)
+    {
+        if (spec != null)
+        {
+            switch (spec.getStatus()) {
+            case IParseConstants.PARSED:
+                return SWT.COLOR_BLACK;
+            case IParseConstants.COULD_NOT_FIND_MODULE:
+            case IParseConstants.SEMANTIC_WARNING:
+            case IParseConstants.SEMANTIC_ERROR:
+            case IParseConstants.SYNTAX_ERROR:
+            case IParseConstants.UNKNOWN_ERROR:
+                return SWT.COLOR_BLACK;
+            case IParseConstants.UNPARSED:
+                return SWT.COLOR_WHITE;
+            case IParseConstants.UNKNOWN:
+            default:
+                return SWT.COLOR_BLACK;
+            }
+        } else
+        {
+            return SWT.COLOR_BLACK;
         }
     }
 
@@ -215,8 +255,8 @@ public class AdapterFactory implements IAdapterFactory
         Vector dependents = new Vector(userModules.size() - 1);
         for (int i = 0; i < userModules.size(); i++)
         {
-            Module module = (Module)userModules.get(i);
-            if (!module.getFile().getName().equals(name)) 
+            Module module = (Module) userModules.get(i);
+            if (!module.getFile().getName().equals(name))
             {
                 dependents.add(module.getFile().getName());
             }
