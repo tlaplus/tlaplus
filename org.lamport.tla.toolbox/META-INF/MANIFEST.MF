@@ -18,7 +18,8 @@ Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: tla2tools.jar,
  .,
  StandardModules/
-Export-Package: org.lamport.tla.toolbox.tool,
+Export-Package: org.lamport.tla.toolbox.editor;uses:="org.eclipse.core.resources,org.eclipse.ui.part",
+ org.lamport.tla.toolbox.tool,
  org.lamport.tla.toolbox.util,
  org.lamport.tla.toolbox.util.pref
 
