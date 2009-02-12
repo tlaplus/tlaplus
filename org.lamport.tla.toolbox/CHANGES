@@ -18,6 +18,11 @@ DESCRIPTION: {General description of the release
 
 2009-01-28 "0.0.1" 
 ---------------------------------------------------
+
+- FEATURE: The Parse Specification (root module) can be triggered by Ctrl + R shortcut
+- FEATURE: The list of modules in "Open Module" sub-menu marks the root module with specific icon
+- CHANGE: Problem View toggling is looking on the problems, not on the spec status (this avoid empty problem view window to be shown ever) 
+- BUGFIX: If the Problem View is shown and the build happens it reopens with the new errors (if any errors)
 - FEATURE: Help button now only opens the content help
 - FEATURE: Context help activated (hitting F1 everywhere)
 - FEATURE: In a non-dirty editor CTRL + S toggles the "Problem View"  

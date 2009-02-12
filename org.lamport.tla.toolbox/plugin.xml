@@ -147,6 +147,12 @@
             id="toolbox.command.module.parse.root"
             name="Parse Root Module">
       </command>
+      <command
+            categoryId="toolbox.command.category.module"
+            description="Parse module in the active editor"
+            id="toolbox.command.module.parse.active"
+            name="Parse Module">
+      </command>
       <category
             description="UI Commands"
             id="toolbox.command.category.ui"
@@ -158,15 +164,26 @@
             id="toolbox.command.toggle-problem-view"
             name="Toggle Problem View">
       </command>
+      <command
+            categoryId="toolbox.command.category.ui"
+            description="Calls the Help window"
+            id="toolbox.command.help"
+            name="Help">
+      </command>
       <keyBinding
             commandId="org.eclipse.ui.file.exit"
             keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration"
             keySequence="M1+Q">
       </keyBinding>
       <keyBinding
-            commandId="org.eclipse.ui.help.dynamicHelp"
+            commandId="toolbox.command.help11"
             keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration"
             keySequence="F1">
+      </keyBinding>
+      <keyBinding
+            commandId="toolbox.command.module.parse.root"
+            keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            keySequence="M1+R">
       </keyBinding>
    </extension>
       
@@ -336,7 +353,7 @@
          <command
                commandId="toolbox.command.module.parse.root"
                id="toolbox.menu.run.parseRoot"
-               label="Parse"
+               label="Parse Spec"
                mnemonic="P">
             <visibleWhen
                   checkEnabled="true">
@@ -347,6 +364,33 @@
                   </equals>
                </with>
             </visibleWhen>
+         </command>
+         <command
+               commandId="toolbox.command.module.parse.active"
+               id="toolbox.menu.run.parseRoot"
+               label="Parse Module"
+               mnemonic="M">
+            <visibleWhen
+                  checkEnabled="true">
+               <with
+                     variable="activeWorkbenchWindow.activePerspective">
+                  <equals
+                        value="org.lamport.tla.toolbox.ui.perspective.specLoaded">
+                  </equals>
+               </with>
+            </visibleWhen>
+         </command>
+      </menuContribution>
+      <menuContribution
+            locationURI="menu:org.eclipse.ui.main.menu?after=additions">
+         <command
+               commandId="toolbox.command.help"
+               id="toolbox.menu.help"
+               label="Help"
+               mnemonic="H"
+               mode="FORCE_TEXT"
+               style="push"
+               tooltip="Opens the help">
          </command>
       </menuContribution>
 <!--
@@ -383,7 +427,7 @@
             commandId="toolbox.command.spec.new">
       </handler>
       <handler
-            class="org.lamport.tla.toolbox.ui.handler.ParseHandler"
+            class="org.lamport.tla.toolbox.ui.handler.ParseSpecHandler"
             commandId="toolbox.command.module.parse.root">
       </handler>
       <handler
@@ -403,8 +447,16 @@
             commandId="toolbox.command.module.open">
       </handler>
       <handler
+            class="org.lamport.tla.toolbox.ui.handler.ParseModuleHandler"
+            commandId="toolbox.command.module.parse.active">
+      </handler>
+      <handler
             class="org.lamport.tla.toolbox.ui.handler.AddModuleHandler"
             commandId="toolbox.command.module.add">
+      </handler>
+      <handler
+            class="org.lamport.tla.toolbox.ui.handler.HelpHandler"
+            commandId="toolbox.command.help">
       </handler>
 
    </extension>
