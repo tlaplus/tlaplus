@@ -13,6 +13,7 @@ import org.eclipse.core.commands.common.NotDefinedException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
@@ -464,5 +465,14 @@ public class UIHelper
     public static void setHelp(Control control, String localContext)
     {
         PlatformUI.getWorkbench().getHelpSystem().setHelp(control, Activator.PLUGIN_ID + "." + localContext); 
+    }
+
+    /**
+     * Convenience method
+     * @see {@link Activator#imageDescriptorFromPlugin(String, String)}
+     */
+    public static ImageDescriptor imageDescriptor(String imageFilePath)
+    {
+        return Activator.imageDescriptorFromPlugin(Activator.PLUGIN_ID, imageFilePath);
     }
 }
