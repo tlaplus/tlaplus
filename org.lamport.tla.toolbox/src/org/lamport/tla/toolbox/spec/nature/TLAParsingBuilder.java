@@ -8,16 +8,11 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IResourceDeltaVisitor;
-import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.spec.Spec;
-import org.lamport.tla.toolbox.spec.parser.ModuleParserLauncher;
-import org.lamport.tla.toolbox.spec.parser.SpecificationParserLauncher;
-import org.lamport.tla.toolbox.util.AdapterFactory;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.TLAMarkerHelper;
 
@@ -30,8 +25,6 @@ public class TLAParsingBuilder extends IncrementalProjectBuilder
 {
     public static final String BUILDER_ID = "toolbox.builder.TLAParserBuilder";
 
-    private final ModuleParserLauncher moduleParser = new ModuleParserLauncher();
-    private final SpecificationParserLauncher launcher = new SpecificationParserLauncher(moduleParser);
 
     protected void clean(IProgressMonitor monitor) throws CoreException
     {
@@ -64,7 +57,7 @@ public class TLAParsingBuilder extends IncrementalProjectBuilder
             // explicit full build
             // on workspace start
             // or after clean
-            rebuildSpec(monitor);
+            ParserHelper.rebuildSpec(monitor);
         } else
         {
             // an incremental build
@@ -73,7 +66,7 @@ public class TLAParsingBuilder extends IncrementalProjectBuilder
             if (delta == null)
             {
                 // no increment found, run a full build
-                rebuildSpec(monitor);
+                ParserHelper.rebuildSpec(monitor);
                 // runFullBuild(monitor);
             } else
             {
@@ -83,7 +76,7 @@ public class TLAParsingBuilder extends IncrementalProjectBuilder
                  * 
                  * Run a visitor on it in order to find out the changed files
                  */
-                ChangedModulesGatheringDeltaVisitor moduleFinder = new ChangedModulesGatheringDeltaVisitor(monitor);
+                ChangedModulesGatheringDeltaVisitor moduleFinder = new ChangedModulesGatheringDeltaVisitor();
                 delta.accept(moduleFinder);
 
                 IResource rootFile = null;
@@ -127,7 +120,7 @@ public class TLAParsingBuilder extends IncrementalProjectBuilder
         {
             // this will rebuild the spec starting from root, and change the spec status
             // still, we want to continue and keep the dependency information about other files
-            rebuildSpec(monitor);
+            ParserHelper.rebuildSpec(monitor);
         } else
         {
             // retrieve a resource
@@ -137,64 +130,11 @@ public class TLAParsingBuilder extends IncrementalProjectBuilder
                 throw new IllegalStateException("Resource not found during build");
             }
             // run the module build
-            rebuildModule(moduleFile, monitor);
+            ParserHelper.rebuildModule(moduleFile, monitor);
         }
     }
 
-    /**
-     * @param changedModule
-     * @param monitor
-     */
-    private void rebuildModule(final IResource resource, IProgressMonitor monitor)
-    {
-        System.out.println("Module build invoked on " + resource.getName() + " ...");
-        IWorkspaceRunnable run = new IWorkspaceRunnable() {
-
-            public void run(IProgressMonitor monitor) throws CoreException
-            {
-
-                TLAMarkerHelper.removeProblemMarkers(resource, monitor);
-                int status = moduleParser.parseModule(resource, monitor);
-            }
-        };
-        try
-        {
-            resource.getWorkspace().run(run, monitor);
-        } catch (CoreException e)
-        {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        System.out.println("... build invocation finished.");
-    }
-
-    private void rebuildSpec(IProgressMonitor monitor)
-    {
-        // TODO improve this...
-        // better: lookup in the project property for the spec name
-        // and search a spec by name
-
-        final Spec spec = Activator.getSpecManager().getSpecLoaded();
-        System.out.println("Spec build invoked on " + spec.getName() + " ...");
-        IWorkspaceRunnable run = new IWorkspaceRunnable() {
-
-            public void run(IProgressMonitor monitor) throws CoreException
-            {
-
-                TLAMarkerHelper.removeProblemMarkers(spec.getProject(), monitor);
-                launcher.parseSpecification(spec, monitor);
-                System.out.println("Resulting status is: " + AdapterFactory.getStatusAsString(spec));
-            }
-        };
-        try
-        {
-            ResourcesPlugin.getWorkspace().run(run, monitor);
-        } catch (CoreException e)
-        {
-            e.printStackTrace();
-        }
-        System.out.println("... build invocation finished.");
-    }
+    
 
     /**
      * Visitor to find out what files changed
@@ -203,12 +143,10 @@ public class TLAParsingBuilder extends IncrementalProjectBuilder
      */
     public class ChangedModulesGatheringDeltaVisitor implements IResourceDeltaVisitor
     {
-        private final IProgressMonitor monitor;
         Vector modules = new Vector();
 
-        public ChangedModulesGatheringDeltaVisitor(IProgressMonitor monitor)
+        public ChangedModulesGatheringDeltaVisitor()
         {
-            this.monitor = monitor;
         }
         /**
          * @see org.eclipse.core.resources.IResourceDeltaVisitor#visit(org.eclipse.core.resources.IResourceDelta)
