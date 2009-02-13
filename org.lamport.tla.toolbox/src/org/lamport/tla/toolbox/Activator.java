@@ -1,5 +1,6 @@
 package org.lamport.tla.toolbox;
 
+import org.eclipse.core.resources.IMarkerDelta;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IWorkspace;
@@ -75,11 +76,27 @@ public class Activator extends AbstractUIPlugin
         // react with window pop-up, if set up in the preferences
         workspace.addResourceChangeListener(new IResourceChangeListener() {
 
+            private boolean hasMarkerDelta(IResourceChangeEvent event)
+            {
+                IMarkerDelta[] deltas = event.findMarkerDeltas(TLAMarkerHelper.TOOLBOX_MARKERS_PROBLEM_MARKER_ID, true);
+                if (deltas.length > 0)
+                {
+                    return true;
+                }
+                return false;
+            }
+
             /* (non-Javadoc)
              * @see org.eclipse.core.resources.IResourceChangeListener#resourceChanged(org.eclipse.core.resources.IResourceChangeEvent)
              */
             public void resourceChanged(final IResourceChangeEvent event)
             {
+                // no marker update
+                if (!hasMarkerDelta(event)) 
+                {
+                    return;
+                }
+                
                 if (UIHelper.isPerspectiveShown(ProblemsPerspective.ID))
                 {
                     // the error view is shown
@@ -94,11 +111,13 @@ public class Activator extends AbstractUIPlugin
                             // if (AdapterFactory.isProblemStatus(spec.getStatus()))
                             if (TLAMarkerHelper.currentSpecHasProblems())
                             {
-                                UIHelper.openPerspectiveInWindowRight(ProblemsPerspective.ID, null, ProblemsPerspective.WIDTH);
+                                UIHelper.openPerspectiveInWindowRight(ProblemsPerspective.ID, null,
+                                        ProblemsPerspective.WIDTH);
                             }
                         }
                     });
-                } else {
+                } else
+                {
                     // the perspective is not shown
                     // look up the preference for raising windows on errors
                     final boolean showErrors = PreferenceStoreHelper.getInstancePreferenceStore().getBoolean(
@@ -108,7 +127,7 @@ public class Activator extends AbstractUIPlugin
                         UIHelper.runUIAsync(new Runnable() {
                             public void run()
                             {
-                                
+
                                 UIHelper.closeWindow(ProblemsPerspective.ID);
 
                                 // there were problems -> open the problem view
