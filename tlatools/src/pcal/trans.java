@@ -168,7 +168,13 @@ class trans
   private static final int STATUS_EXIT_WITHOUT_ERROR = 0;
   private static final int STATUS_EXIT_WITH_ERRORS = -1;
 
-public static int main(String[] args) 
+  public static void main(String[] args)
+  {
+      runMe(args);
+  }
+  
+  
+public static int runMe(String[] args) 
     { /*********************************************************************
       * Get and print version number.                                      *
       *********************************************************************/
