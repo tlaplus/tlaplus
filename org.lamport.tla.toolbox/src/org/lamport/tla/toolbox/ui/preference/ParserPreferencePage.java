@@ -20,6 +20,9 @@ import org.lamport.tla.toolbox.util.pref.PreferenceStoreHelper;
  */
 public class ParserPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage
 {
+    private BooleanFieldEditor reparseRootFileEditor = null;
+    private BooleanFieldEditor reparseAllDependantFilesEditor = null;
+    
     /**
      * Constructor
      */
@@ -50,9 +53,16 @@ public class ParserPreferencePage extends FieldEditorPreferencePage implements I
 
         addField(new BooleanFieldEditor(IPreferenceConstants.I_PARSE_MODULE_ON_MODIFY,
                 "&Automatic re-parse module", getFieldEditorParent()));
+
+        reparseAllDependantFilesEditor = new BooleanFieldEditor(IPreferenceConstants.I_PARSE_FILES_ON_MODIFY,
+                "&Automatic re-parse all module dependent files (experimental)", getFieldEditorParent());
+
+        reparseRootFileEditor = new BooleanFieldEditor(IPreferenceConstants.I_PARSE_SPEC_ON_MODIFY,
+                "&Automatic re-parse specification if depends on module", getFieldEditorParent());
         
-        addField(new BooleanFieldEditor(IPreferenceConstants.I_PARSE_SPEC_ON_MODIFY,
-                "&Automatic re-parse specification", getFieldEditorParent()));
+        addField(reparseAllDependantFilesEditor);
+        
+        addField(reparseRootFileEditor);
     }
 
     public void init(IWorkbench workbench)
