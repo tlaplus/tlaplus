@@ -1014,14 +1014,26 @@ public static int runMe(String[] args)
        * Set PcalParams.TLAInputFile to the last argument, removing a      *
        * "tla" extension if it has one.                                    *
        ********************************************************************/
-       int dotIndex = args[maxArg].indexOf(".") ;
-       if (dotIndex == -1)
-         { PcalParams.TLAInputFile = args[maxArg]; }
-       else  if (args[maxArg].substring(dotIndex).equals(".tla"))
-         { PcalParams.TLAInputFile = args[maxArg].substring(0, dotIndex); }
-       else {  return CommandLineError("Input file has extension other than tla"); 
+       File file = new File(args[maxArg]);
+       if (file.exists()) 
+       {
+           if (file.getName().lastIndexOf(".") == -1)
+           {
+               // no extension
+               PcalParams.TLAInputFile = file.getPath(); 
+           } else {
+               // extension present
+               if (file.getName().toLowerCase().endsWith(".tla")) 
+               {
+                   // cut the extension
+                   PcalParams.TLAInputFile = file.getPath().substring(0, file.getPath().lastIndexOf("."));
+               } else {
+                   return CommandLineError("Input file has extension other than tla");
+               }
+           }
+       } else {
+           return CommandLineError("Error reading input file");
        }
-
        return STATUS_OK;
      }   
 
