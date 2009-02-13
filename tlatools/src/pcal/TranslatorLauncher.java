@@ -1,7 +1,5 @@
 package pcal;
 
-import java.io.PrintStream;
-
 import util.ToolIO;
 
 /**
@@ -19,8 +17,23 @@ public class TranslatorLauncher
     {
         ToolIO.reset();
         ToolIO.setMode(ToolIO.TOOL);
-        PrintStream outputStr = ToolIO.err;
-        int status = trans.runMe(args);
+        
+        int status = -1;
+        
+        try {
+            status = trans.runMe(args);
+            
+        } catch (PCalUnrecoverableErrorRuntimeException e) 
+        {
+            e.printStackTrace();
+        }
+
+        String[] messages = ToolIO.getAllMessages();
+        for (int i = 0; i < messages.length; i++)
+        {
+            System.out.println(messages[i]);
+        }
+        
         return status;
     }
 }

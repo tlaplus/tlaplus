@@ -5,6 +5,8 @@ package pcal ;
 import java.io.File;
 import java.util.Vector;
 
+import util.ToolIO;
+
 class Test
   { public static Vector Singleton(Object obj) 
       /*********************************************************************
@@ -112,17 +114,17 @@ class Test
 ***************************************************************************/
    public static void main(String[] args) 
      { File f = new File("no-file.cfg") ;
-       System.out.println("no-file.canRead() = " + f.canRead()) ;
-       System.out.println("no-file.canWrite() = " + f.canWrite()) ;
-       System.out.println("no-file.exists() = " + f.exists()) ;
+       ToolIO.out.println("no-file.canRead() = " + f.canRead()) ;
+       ToolIO.out.println("no-file.canWrite() = " + f.canWrite()) ;
+       ToolIO.out.println("no-file.exists() = " + f.exists()) ;
        f = new File("read-only.cfg") ;
-       System.out.println("read-only.canRead() = " + f.canRead()) ;
-       System.out.println("read-only.canWrite() = " + f.canWrite()) ;
-       System.out.println("read-only.exists() = " + f.exists()) ;
+       ToolIO.out.println("read-only.canRead() = " + f.canRead()) ;
+       ToolIO.out.println("read-only.canWrite() = " + f.canWrite()) ;
+       ToolIO.out.println("read-only.exists() = " + f.exists()) ;
        f = new File("Bakery.cfg") ;
-       System.out.println("Bakery.canRead() = " + f.canRead()) ;
-       System.out.println("Bakery.canWrite() = " + f.canWrite()) ;
-       System.out.println("Bakery.exists() = " + f.exists()) ;
+       ToolIO.out.println("Bakery.canRead() = " + f.canRead()) ;
+       ToolIO.out.println("Bakery.canWrite() = " + f.canWrite()) ;
+       ToolIO.out.println("Bakery.exists() = " + f.exists()) ;
        
      }
 

@@ -2,6 +2,8 @@ package pcal;
 
 import java.util.Vector;
 
+import util.ToolIO;
+
 public class NotYetImplemented {
 
     private static PcalSymTab st = null;
@@ -14,7 +16,7 @@ public class NotYetImplemented {
         st = new PcalSymTab(ast);
         st.Disambiguate();
         if (st.disambiguateReport.size() > 0)
-            System.out.println("Warning: symbols were renamed.");
+            ToolIO.out.println("Warning: symbols were renamed.");
         if (st.errorReport.length() > 0)
             PcalDebug.ReportError(st.errorReport);
         PcalFixIDs.Fix(ast, st);
