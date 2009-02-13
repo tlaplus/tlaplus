@@ -1,5 +1,9 @@
 package pcal;
 
+import java.io.PrintStream;
+
+import util.ToolIO;
+
 /**
  * Launcher for the PCal Translator
  * @author Simon Zambrovski
@@ -11,11 +15,12 @@ public class TranslatorLauncher
      * delegates the call to the {@link trans#main()}
      * @param args
      */
-    public static int main(String[] args)
+    public static int runPcalTranslation(String[] args)
     {
-        
-        
-        
-        return trans.main(args);
+        ToolIO.reset();
+        ToolIO.setMode(ToolIO.TOOL);
+        PrintStream outputStr = ToolIO.err;
+        int status = trans.main(args);
+        return status;
     }
 }
