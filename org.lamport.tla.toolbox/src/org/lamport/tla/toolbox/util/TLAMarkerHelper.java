@@ -13,8 +13,8 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.editors.text.FileDocumentProvider;
 import org.eclipse.ui.ide.IGotoMarker;
-import org.eclipse.ui.part.FileEditorInput;
 import org.lamport.tla.toolbox.Activator;
+import org.lamport.tla.toolbox.editor.ModuleEditorInput;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.ui.handler.OpenSpecHandler;
 
@@ -60,9 +60,9 @@ public class TLAMarkerHelper
 
             public void run(IProgressMonitor monitor) throws CoreException
             {
-                System.out.println("Installing a marker on " + resource.getName() + " with error on module " + moduleName);
-                
-                
+                System.out.println("Installing a marker on " + resource.getName() + " with error on module "
+                        + moduleName);
+
                 IMarker marker = resource.createMarker(TOOLBOX_MARKERS_PROBLEM_MARKER_ID);
                 // Once we have a marker object, we can set its attributes
                 marker.setAttribute(IMarker.SEVERITY, severityError);
@@ -86,7 +86,7 @@ public class TLAMarkerHelper
                     IDocument document = null;
 
                     // since we know that the editor uses file based editor representation
-                    FileEditorInput fileEditorInput = new FileEditorInput((IFile) resource);
+                    ModuleEditorInput fileEditorInput = new ModuleEditorInput((IFile) resource, ResourceHelper.isRoot((IFile) resource));
                     FileDocumentProvider fileDocumentProvider = new FileDocumentProvider();
                     fileDocumentProvider.connect(fileEditorInput);
                     document = fileDocumentProvider.getDocument(fileEditorInput);
@@ -221,8 +221,8 @@ public class TLAMarkerHelper
      */
     public static void gotoMarker(IMarker problem)
     {
-        IEditorPart part = UIHelper.openEditor(OpenSpecHandler.TLA_EDITOR, new FileEditorInput((IFile) problem
-                .getResource()));
+        IFile module = (IFile) problem.getResource();
+        IEditorPart part = UIHelper.openEditor(OpenSpecHandler.TLA_EDITOR, new ModuleEditorInput(module, ResourceHelper.isRoot(module)));
         IGotoMarker gotoMarker = null;
         if (part instanceof IGotoMarker)
         {
@@ -244,11 +244,11 @@ public class TLAMarkerHelper
     public static boolean currentSpecHasProblems()
     {
         Spec spec = Activator.getSpecManager().getSpecLoaded();
-        if (spec == null) 
+        if (spec == null)
         {
             return false;
         }
-        return (TLAMarkerHelper.getProblemMarkers(spec.getProject(), null).length > 0 );
+        return (TLAMarkerHelper.getProblemMarkers(spec.getProject(), null).length > 0);
     }
 
 }

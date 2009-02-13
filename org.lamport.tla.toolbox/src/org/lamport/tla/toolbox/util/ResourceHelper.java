@@ -16,6 +16,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
+import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.spec.nature.TLANature;
 import org.lamport.tla.toolbox.spec.nature.TLAParsingBuilder;
 
@@ -296,5 +297,17 @@ public class ResourceHelper
 
         }
 
+    }
+
+
+    /**
+     * Checks, whether the module is the root file of loaded spec
+     * @param module the 
+     * @return
+     */
+    public static boolean isRoot(IFile module)
+    {
+        // TODO NullPointer etc...
+        return Activator.getSpecManager().getSpecLoaded().getRootFile().equals(module);
     }    
 }
