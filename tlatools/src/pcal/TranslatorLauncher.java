@@ -20,7 +20,7 @@ public class TranslatorLauncher
         ToolIO.reset();
         ToolIO.setMode(ToolIO.TOOL);
         PrintStream outputStr = ToolIO.err;
-        int status = trans.main(args);
+        int status = trans.runMe(args);
         return status;
     }
 }
