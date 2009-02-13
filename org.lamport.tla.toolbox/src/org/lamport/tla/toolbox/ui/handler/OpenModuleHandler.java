@@ -10,8 +10,9 @@ import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.IPropertyListener;
 import org.eclipse.ui.IWorkbenchPartConstants;
 import org.eclipse.ui.IWorkbenchPartReference;
-import org.eclipse.ui.part.FileEditorInput;
 import org.lamport.tla.toolbox.Activator;
+import org.lamport.tla.toolbox.editor.ModuleEditorInput;
+import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
@@ -32,8 +33,8 @@ public class OpenModuleHandler extends AbstractHandler implements IHandler
         {
             throw new RuntimeException("Module was null" );
         }
-
-        final IFile module = ResourceHelper.getLinkedFile(Activator.getSpecManager().getSpecLoaded().getProject(), ResourceHelper.getModuleFileName(moduleName));
+        Spec spec = Activator.getSpecManager().getSpecLoaded();
+        final IFile module = ResourceHelper.getLinkedFile(spec.getProject(), ResourceHelper.getModuleFileName(moduleName));
         if (module == null)
         {
             // TODO return some error
@@ -42,7 +43,7 @@ public class OpenModuleHandler extends AbstractHandler implements IHandler
         }
 
         // open the editor
-        IEditorPart part = UIHelper.openEditor(OpenSpecHandler.TLA_EDITOR, new FileEditorInput(module));
+        IEditorPart part = UIHelper.openEditor(OpenSpecHandler.TLA_EDITOR, new ModuleEditorInput(module, ResourceHelper.isRoot(module)));
         part.addPropertyListener(new IPropertyListener() {
 
             public void propertyChanged(Object source, int propId)
