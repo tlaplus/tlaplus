@@ -154,6 +154,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Vector;
+
+import util.ToolIO;
   /*************************************************************************
   * Contains dummy definitions of methods that are yet to be implemented.  *
   *                                                                        *
@@ -162,7 +164,11 @@ import java.util.Vector;
   
 class trans
  { 
-  public static void main(String[] args) 
+  private static final int STATUS_OK = 1;
+  private static final int STATUS_EXIT_WITHOUT_ERROR = 0;
+  private static final int STATUS_EXIT_WITH_ERRORS = -1;
+
+public static int main(String[] args) 
     { /*********************************************************************
       * Get and print version number.                                      *
       *********************************************************************/
@@ -174,12 +180,23 @@ class trans
         *******************************************************************/
       String modDate = 
           lastModified.substring(21, lastModified.indexOf(" at"));
-      System.out.println("pcal.trans Version 1.3 of " + modDate) ;
+      ToolIO.out.println("pcal.trans Version 1.3 of " + modDate) ;
 
       /*********************************************************************
-      * Get and process arguments.                                         *
+      * Get and process arguments.                                         
       *********************************************************************/
-      GetArguments(args);     
+      int status = GetArguments(args); 
+      if (status != STATUS_OK) 
+      {
+          if (ToolIO.getMode() == ToolIO.SYSTEM) 
+          {
+              // return exit status in system mode
+              System.exit(status);
+          } else {
+              // just exit the main function in tool mode
+              return status;
+          }
+      }     
 
       if (PcalParams.FairnessOption.equals("-nof"))
         { PcalParams.FairnessOption = "";
@@ -230,7 +247,6 @@ class trans
       * untabInputVec, because we will then detect if the begin and end    *
       * translation lines contain part of the algorithm within them.       *
       **********************************************************************/
-      int phase = 1 ;
       int translationLine = FindTokenPair(untabInputVec,
                                            0,
                                            PcalParams.BeginXlation1,
@@ -310,14 +326,22 @@ class trans
       * Set ast to the AST node representing the entire algorithm.         *
       *********************************************************************/
       AST ast = ParseAlgorithm.GetAlgorithm(reader) ;
-      System.out.println("Parsing completed.") ; 
+      ToolIO.out.println("Parsing completed.") ; 
 
       /*********************************************************************
       * For -writeAST option, just write the file AST.tla and halt.        *
       *********************************************************************/
       if (PcalParams.WriteASTFlag)
         { WriteAST(ast) ;
-          System.exit(0); } ;
+        if (ToolIO.getMode() == ToolIO.SYSTEM) 
+        {
+            // return exit status in system mode
+            System.exit(STATUS_EXIT_WITHOUT_ERROR);
+        } else {
+            // just exit the main function in tool mode
+            return STATUS_EXIT_WITHOUT_ERROR;
+        }
+        } ;
 
       /*********************************************************************
       * Rename algorithm variables to eliminate name conflicts--for        *
@@ -353,7 +377,7 @@ class trans
       else 
         { translation = NotYetImplemented.Translate(ast) ; } ;
 
-      System.out.println("Translation completed.") ;
+        ToolIO.out.println("Translation completed.") ;
 
       /*********************************************************************
       * Rename the old file by changing its extension from "tla" to "old". *
@@ -388,7 +412,7 @@ class trans
       *********************************************************************/
       WriteStringVectorToFile(inputVec, PcalParams.TLAInputFile + ".tla") ;
       
-      System.out.println("New file " + PcalParams.TLAInputFile + ".tla"
+      ToolIO.out.println("New file " + PcalParams.TLAInputFile + ".tla"
                           + " written.") ;
 
       /*********************************************************************
@@ -406,7 +430,7 @@ class trans
               * cfg file is read-only.                                     *
               *************************************************************/
               writeCfg = false ;
-              System.out.println("File " + PcalParams.TLAInputFile + 
+              ToolIO.out.println("File " + PcalParams.TLAInputFile + 
                        ".cfg is read only, new version not written." ) ;
             }
         }     
@@ -481,7 +505,7 @@ class trans
              i = i + 1 ;
            } ;
          if (hasSpec)
-           { System.out.println("File " + PcalParams.TLAInputFile 
+           { ToolIO.out.println("File " + PcalParams.TLAInputFile 
                        + ".cfg already contains SPECIFICATION statement," 
                        + "\n   so new one not written." ) ;
            } 
@@ -489,9 +513,11 @@ class trans
            { cfg.add(0, "SPECIFICATION Spec") ; } ;
          WriteStringVectorToFile(cfg,
                                  PcalParams.TLAInputFile + ".cfg");
-         System.out.println("New file " + PcalParams.TLAInputFile + ".cfg"
+         ToolIO.out.println("New file " + PcalParams.TLAInputFile + ".cfg"
                              + " written.") ;
         } ;
+        
+        return STATUS_EXIT_WITHOUT_ERROR;
     } // END main
 
 
@@ -507,7 +533,7 @@ class trans
       astFile.addElement(ast.toString()) ;
       astFile.addElement( "==========================") ;
       WriteStringVectorToFile(astFile, "AST.tla") ;
-      System.out.println("Wrote file AST.tla.") ;
+      ToolIO.out.println("Wrote file AST.tla.") ;
       return ;
     }
 /************************* THE TLC TRANSLATION *****************************/
@@ -560,7 +586,7 @@ class trans
                     PcalParams.SpecFile + ".cfg") ;  
           WriteStringVectorToFile(parseFile, PcalParams.SpecFile + ".cfg") ;
    
-          System.out.println(
+          ToolIO.out.println(
                "Wrote files " + PcalParams.SpecFile + ".tla and "
                + PcalParams.SpecFile + ".cfg.") ;
         } ;
@@ -569,9 +595,9 @@ class trans
       *********************************************************************/
       String javaInvocation ;
       if (PcalParams.SpecOption || PcalParams.MyspecOption)
-           { System.out.println("Running TLC.") ;
+           { ToolIO.out.println("Running TLC.") ;
              javaInvocation = "java -Xss1m tlc.TLC " ;}
-      else { System.out.println("Running TLC2.") ;
+      else { ToolIO.out.println("Running TLC2.") ;
              javaInvocation = "java -Xss1m tlc2.TLC " ;} ;
       String tlcOut = "      " ;
       Runtime rt = Runtime.getRuntime() ;
@@ -604,7 +630,7 @@ class trans
            ) ;
         } ;
       tlcOut = tlcOut.substring(2, tlcOut.lastIndexOf(">>")) + "  ";
-      System.out.println("Read TLC output.") ;
+      ToolIO.out.println("Read TLC output.") ;
 
       /*********************************************************************
       * Set transl to the string obtained by converting tlcOut, which is   *
@@ -736,7 +762,15 @@ class trans
 
 /********************* PROCESSING THE COMMAND LINE ***********************/
 
-   private static void GetArguments(String[] args)
+   /**
+    * Processes the command line arguments
+    * @return status of processing. 
+    *  the status 1 indicates that no errors has been detected.
+    *  the status 0 indicates that no errors has been found but translation
+    *   should not be started (e.G -help call)
+    *  the status -1 indicates errors 
+    */
+   private static int GetArguments(String[] args)
      /**********************************************************************
      * Get the command-line arguments and set the appropriate parameters.  *
      * The following command line arguments are handled.                   *
@@ -813,7 +847,7 @@ class trans
          * The number of the final argument, which is the input file name. *
          ******************************************************************/
        if (maxArg < 0)
-        { CommandLineError("No arguments specified");
+        { return CommandLineError("No arguments specified");
         } ;
 
        if (   (args[maxArg].length() != 0)
@@ -825,7 +859,7 @@ class trans
          * "-help", since she either wants or needs help.                  *
          ******************************************************************/
          { OutputHelpMessage() ;
-           System.exit(0);
+           return STATUS_EXIT_WITHOUT_ERROR;
          } ;
 
        while (nextArg < maxArg)
@@ -836,48 +870,63 @@ class trans
         { String option = args[nextArg] ;
           if (option.equals("-help"))
             { OutputHelpMessage() ;
-              System.exit(0);
+              return STATUS_EXIT_WITHOUT_ERROR;
             }
           else if (option.equals("-writeAST"))
             { PcalParams.WriteASTFlag  = true ; 
-              CheckForConflictingSpecOptions();
+              if (CheckForConflictingSpecOptions()) 
+              {
+                  return STATUS_EXIT_WITH_ERRORS;
+              };
             }
           else if (option.equals("-spec"))
             { PcalParams.SpecOption = true ; 
-              CheckForConflictingSpecOptions();
+            if (CheckForConflictingSpecOptions()) 
+            {
+                return STATUS_EXIT_WITH_ERRORS;
+            };
               nextArg = nextArg + 1 ;
               if (nextArg == maxArg)
-                { CommandLineError( 
+                { return CommandLineError( 
                      "Specification name must follow `-spec' option") ;
                  };
                  PcalParams.SpecFile = args[nextArg] ;
             }
           else if (option.equals("-myspec"))
             { PcalParams.MyspecOption = true ; 
-              CheckForConflictingSpecOptions();
+            if (CheckForConflictingSpecOptions()) 
+            {
+                return STATUS_EXIT_WITH_ERRORS;
+            };
               nextArg = nextArg + 1 ;
               if (nextArg == maxArg)
-                { CommandLineError( 
+                { return CommandLineError( 
                      "Specification name must follow `-myspec' option") ;
                  };
                  PcalParams.SpecFile = args[nextArg] ;
             }
           else if (option.equals("-spec2"))
             { PcalParams.Spec2Option = true ; 
-              CheckForConflictingSpecOptions();
+            if (CheckForConflictingSpecOptions()) 
+            {
+                return STATUS_EXIT_WITH_ERRORS;
+            };
               nextArg = nextArg + 1 ;
               if (nextArg == maxArg)
-                { CommandLineError( 
+                { return CommandLineError( 
                      "Specification name must follow `-spec' option") ;
                  };
                  PcalParams.SpecFile = args[nextArg] ;
             }
           else if (option.equals("-myspec2"))
             { PcalParams.Myspec2Option = true ; 
-              CheckForConflictingSpecOptions();
+            if (CheckForConflictingSpecOptions()) 
+            {
+                return STATUS_EXIT_WITH_ERRORS;
+            };
               nextArg = nextArg + 1 ;
               if (nextArg == maxArg)
-                { CommandLineError( 
+                { return CommandLineError( 
                      "Specification name must follow `-myspec' option") ;
                  };
                  PcalParams.SpecFile = args[nextArg] ;
@@ -886,7 +935,7 @@ class trans
             { PcalParams.Debug = true ; 
             }
           else if (option.equals("-unixEOL"))
-            { java.lang.System.setProperty("line.separator", "\n") ;
+            { System.setProperty("line.separator", "\n") ;
             }
           else if (option.equals("-termination"))
             { PcalParams.CheckTermination = true ; 
@@ -896,7 +945,7 @@ class trans
             }
           else if (option.equals("-wf"))
             { if (!PcalParams.FairnessOption.equals(""))
-                { CommandLineError(
+                { return CommandLineError(
                      "Can only have one of -wf, -sf, -wfNext, " + 
                      "and -nof options");
                 } ;
@@ -904,7 +953,7 @@ class trans
             }
           else if (option.equals("-sf"))
             { if (!PcalParams.FairnessOption.equals(""))
-                { CommandLineError(
+                { return CommandLineError(
                      "Can only have one of -wf, -sf, -wfNext, " + 
                      "and -nof options");
                 } ;
@@ -912,7 +961,7 @@ class trans
             }
           else if (option.equals("-wfNext"))
             { if (!PcalParams.FairnessOption.equals(""))
-                { CommandLineError(
+                { return CommandLineError(
                      "Can only have one of -wf, -sf, -wfNext, " + 
                      "and -nof options");
                 } ;
@@ -920,7 +969,7 @@ class trans
             }
           else if (option.equals("-nof"))
             { if (!PcalParams.FairnessOption.equals(""))
-                { CommandLineError(
+                { return CommandLineError(
                      "Can only have one of -wf, -sf, -wfNext, " + 
                      "and -nof options");
                 } ;
@@ -936,13 +985,13 @@ class trans
           else if (option.equals("-labelRoot"))
             { nextArg = nextArg + 1 ;
               if (nextArg == maxArg)
-                { CommandLineError( 
+                { return CommandLineError( 
                      "Label root must follow `-labelRoot' option") ;
                  };
                  PcalParams.LabelRoot = args[nextArg] ;
             }
           else 
-            { CommandLineError("Unknown option: " + option);
+            { return CommandLineError("Unknown option: " + option);
             } ;
           nextArg = nextArg + 1;
         }                      // END while (nextArg < maxArg)
@@ -952,7 +1001,7 @@ class trans
          * The last option took an argument that was the last              *
          * command-line argument.                                          *
          ******************************************************************/
-         { CommandLineError("No input file specified") ;
+         { return CommandLineError("No input file specified") ;
          } ;
 
        /********************************************************************
@@ -964,8 +1013,10 @@ class trans
          { PcalParams.TLAInputFile = args[maxArg]; }
        else  if (args[maxArg].substring(dotIndex).equals(".tla"))
          { PcalParams.TLAInputFile = args[maxArg].substring(0, dotIndex); }
-       else {  CommandLineError("Input file has extension other than tla"); }
+       else {  return CommandLineError("Input file has extension other than tla"); 
+       }
 
+       return STATUS_OK;
      }   
 
     private static void OutputHelpMessage()
@@ -973,12 +1024,16 @@ class trans
                 PcalResourceFileReader.ResourceFileToStringVector("help.txt") ;
         int i = 0 ;
         while (i < helpVec.size())
-          { System.out.println((String) helpVec.elementAt(i)) ;
+          { ToolIO.out.println((String) helpVec.elementAt(i)) ;
             i = i + 1 ;
           }
       }
 
-    private static void CheckForConflictingSpecOptions() {
+    /**
+     * Returns if the options are conflicting
+     * @return true if the provided options are conflicting, false otherwise
+     */
+    private static boolean CheckForConflictingSpecOptions() {
        if ( (PcalParams.SpecOption    ? 1 : 0) + 
             (PcalParams.MyspecOption  ? 1 : 0) +
             (PcalParams.Spec2Option   ? 1 : 0) + 
@@ -987,17 +1042,20 @@ class trans
            > 1 ) 
           { CommandLineError( 
              "\nCan have at most one of the options " +
-             "-spec, -myspec, -spec2, -myspec2, writeAST");  } ;
+             "-spec, -myspec, -spec2, -myspec2, writeAST");  
+              return true;
+          };
+          return false;
       }
 
-    private static void CommandLineError(String msg)
+    private static int CommandLineError(String msg)
       /*********************************************************************
       * Announce a command line error with the string indicating the       *
       * explanation and halt.                                              *
       *********************************************************************/
-      { System.out.println("Command-line error: " + msg + ".");
-        System.out.println("Use -help option for more information.");
-        System.exit(-1);
+      { ToolIO.out.println("Command-line error: " + msg + ".");
+      ToolIO.out.println("Use -help option for more information.");
+        return STATUS_EXIT_WITH_ERRORS;
       }
 
     private static int FindTokenPair(Vector vec, 
