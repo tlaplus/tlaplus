@@ -1,6 +1,7 @@
 package org.lamport.tla.toolbox.editor.basic;
 
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
@@ -8,8 +9,8 @@ import org.eclipse.ui.contexts.IContextActivation;
 import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.editors.text.FileDocumentProvider;
 import org.eclipse.ui.editors.text.TextEditor;
-import org.eclipse.ui.part.FileEditorInput;
-import org.eclipse.ui.texteditor.IElementStateListener;
+import org.lamport.tla.toolbox.editor.ModuleEditorInput;
+import org.lamport.tla.toolbox.editor.basic.util.ElementStateAdapter;
 
 /**
  * Basic editor without any additional features
@@ -20,6 +21,9 @@ public class TLAEditor extends TextEditor
 {
     private IContextService contextService = null;
     private IContextActivation contextActivation = null;
+
+    private Image rootImage = Activator.imageDescriptorFromPlugin(Activator.PLUGIN_ID, "/icons/root_file.gif").createImage();
+    
     /**
      * Constructor
      */
@@ -28,25 +32,8 @@ public class TLAEditor extends TextEditor
         super();
         setDocumentProvider(new FileDocumentProvider());
         setHelpContextId("org.lamport.tla.toolbox.editor.basic.main_editor_window");
-        getDocumentProvider().addElementStateListener(new IElementStateListener() {
-            
-             
-            
-            public void elementContentAboutToBeReplaced(Object element)
-            {
-                // System.out.println("elementContentAboutToBeReplaced" + element);
-            }
 
-            public void elementContentReplaced(Object element)
-            {
-                // System.out.println("elementContentReplaced" + element);
-            }
-
-            public void elementDeleted(Object element)
-            {
-                // System.out.println("elementDeleted" + element);
-            }
-
+        getDocumentProvider().addElementStateListener(new ElementStateAdapter() {
             public void elementDirtyStateChanged(Object element, boolean isDirty)
             {
                 // System.out.println("elementDirtyStateChanged " + element);
@@ -58,13 +45,7 @@ public class TLAEditor extends TextEditor
                     contextActivation = contextService.activateContext("toolbox.contexts.cleaneditor");
                 }
             }
-
-            public void elementMoved(Object originalElement, Object movedElement)
-            {
-                // System.out.println("elementMoved" + originalElement);
-            }
         });
-
     }
 
     /*
@@ -74,15 +55,30 @@ public class TLAEditor extends TextEditor
     public void init(IEditorSite site, IEditorInput input) throws PartInitException
     {
         super.init(site, input);
-        FileEditorInput finput = (FileEditorInput) input;
-        if (input != null)
+        if (input instanceof ModuleEditorInput)
         {
-            IPath path = finput.getPath();
-            setContentDescription(path.toString());
+            ModuleEditorInput finput = (ModuleEditorInput) input;
+            if (input != null)
+            {
+                IPath path = finput.getPath();
+                setContentDescription(path.toString());
+
+                if (finput.isRoot())
+                {
+                    setTitleImage(rootImage);
+                }
+            }
         }
-        // grab context service and activate the context ol edito load
+        // grab context service and activate the context on editor load
         this.contextService = (IContextService) getSite().getService(IContextService.class);
         this.contextActivation = contextService.activateContext("toolbox.contexts.cleaneditor");
+    }
+
+    
+    public void dispose()
+    {
+        super.dispose();
+        rootImage.dispose();
     }
 
 }
