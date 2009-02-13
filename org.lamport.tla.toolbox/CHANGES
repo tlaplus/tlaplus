@@ -16,6 +16,7 @@ DESCRIPTION: {General description of the release
 
 2009-01-28 "0.0.1" 
 ---------------------------------------------------
+- TODO(SZ): fix problem with parse status indicator not disappearing in welcom perspective
 - TODO(SZ): icons
 - TODO(SZ): splash branding
 - TODO(LL): help content
