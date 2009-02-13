@@ -27,7 +27,6 @@ public class TLAParsingBuilder extends IncrementalProjectBuilder
 {
     public static final String BUILDER_ID = "toolbox.builder.TLAParserBuilder";
 
-
     protected void clean(IProgressMonitor monitor) throws CoreException
     {
         System.out.println("Clean has been invoked");
@@ -49,7 +48,7 @@ public class TLAParsingBuilder extends IncrementalProjectBuilder
             // skip the build calls on wrong projects (which are in WS, but not a current spec)
             return null;
         }
-        
+
         System.out.println("----\n");
         // TODO !!! look how the monitors should be treated !!!
         // and then invoke monitor.begin
@@ -63,7 +62,7 @@ public class TLAParsingBuilder extends IncrementalProjectBuilder
         } else
         {
             // an incremental build
-            // triggered manually or by resource modification 
+            // triggered manually or by resource modification
             IResourceDelta delta = getDelta(getProject());
             if (delta == null)
             {
@@ -94,7 +93,6 @@ public class TLAParsingBuilder extends IncrementalProjectBuilder
                 boolean buildFiles = PreferenceStoreHelper.getInstancePreferenceStore().getBoolean(
                         IPreferenceConstants.I_PARSE_FILES_ON_MODIFY);
 
-                
                 for (int i = 0; i < moduleFinder.modules.size(); i++)
                 {
                     String changedModule = (String) moduleFinder.modules.get(i);
@@ -103,37 +101,38 @@ public class TLAParsingBuilder extends IncrementalProjectBuilder
                     // if the file is a Root file it will call buildSpec
                     // otherwise buildModule is invoked
                     build(changedModule, rootFile, monitor);
-                    
+
                     // get the modules to rebuild
                     List modulesToRebuild = Activator.getModuleDependencyStorage().getListOfModules(changedModule);
-                    
-                    if (buildFiles) 
+
+                    // iterate over modules and rebuild them
+                    for (int j = 0; j < modulesToRebuild.size(); j++)
                     {
-                        // iterate over modules and rebuild them
-                        for (int j = 0; j < modulesToRebuild.size(); j++)
+                        String moduleToBuild = (String) modulesToRebuild.get(j);
+
+                        // root module found
+                        if (buildSpecOnly && rootFile != null && rootFile.getName().equals(moduleToBuild))
                         {
-                            String moduleToBuild = (String) modulesToRebuild.get(j);
-                            
-                            if (buildSpecOnly) 
-                            {
-                                // root module found
-                                if (rootFile != null && rootFile.getName().equals(moduleToBuild)) 
-                                {
-                                    build(moduleToBuild, rootFile, monitor);
-                                }
-                                // for this build the root module is already found
-                                // do not need to look for it again
-                                buildSpecOnly = false;
-                                continue;
-                            }
-                            
-                            if (buildFiles) 
-                            {
-                                // call build on dependent resources
-                                // if the file is a Root file it will call buildSpec
-                                // otherwise buildModule is invoked
-                                build(moduleToBuild, rootFile, monitor);
-                            }
+                            build(moduleToBuild, rootFile, monitor);
+                            // for this build the root module is already found
+                            // do not need to look for it again
+                            buildSpecOnly = false;
+                            continue;
+
+                        } else
+                        {
+                            System.out.println("There is a root file, but the setting AUTO_BUILD_SPEC is off.");
+                        }
+
+                        if (buildFiles)
+                        {
+                            // call build on dependent resources
+                            // if the file is a Root file it will call buildSpec
+                            // otherwise buildModule is invoked
+                            build(moduleToBuild, rootFile, monitor);
+                        } else
+                        {
+                            System.out.println("There are dependent files, but the setting AUTO_BUILD_FILES is off.");
                         }
                     }
                 }
@@ -144,7 +143,7 @@ public class TLAParsingBuilder extends IncrementalProjectBuilder
         // since every project is one spec and we do not want to touch other specs always return NULL!
         return null;
     }
-    
+
     private void build(String moduleFileName, IResource rootFile, IProgressMonitor monitor)
     {
         // if the changed file is a root file - run the spec build
@@ -166,8 +165,6 @@ public class TLAParsingBuilder extends IncrementalProjectBuilder
         }
     }
 
-    
-
     /**
      * Visitor to find out what files changed
      * @author Simon Zambrovski
@@ -180,6 +177,7 @@ public class TLAParsingBuilder extends IncrementalProjectBuilder
         public ChangedModulesGatheringDeltaVisitor()
         {
         }
+
         /**
          * @see org.eclipse.core.resources.IResourceDeltaVisitor#visit(org.eclipse.core.resources.IResourceDelta)
          */
