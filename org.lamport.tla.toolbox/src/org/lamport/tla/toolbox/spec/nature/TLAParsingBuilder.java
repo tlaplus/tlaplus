@@ -15,6 +15,8 @@ import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.TLAMarkerHelper;
+import org.lamport.tla.toolbox.util.pref.IPreferenceConstants;
+import org.lamport.tla.toolbox.util.pref.PreferenceStoreHelper;
 
 /**
  * The parsing builder
@@ -86,6 +88,13 @@ public class TLAParsingBuilder extends IncrementalProjectBuilder
                     rootFile = spec.getRootFile();
                 }
 
+                boolean buildSpecOnly = PreferenceStoreHelper.getInstancePreferenceStore().getBoolean(
+                        IPreferenceConstants.I_PARSE_SPEC_ON_MODIFY);
+
+                boolean buildFiles = PreferenceStoreHelper.getInstancePreferenceStore().getBoolean(
+                        IPreferenceConstants.I_PARSE_FILES_ON_MODIFY);
+
+                
                 for (int i = 0; i < moduleFinder.modules.size(); i++)
                 {
                     String changedModule = (String) moduleFinder.modules.get(i);
@@ -95,14 +104,37 @@ public class TLAParsingBuilder extends IncrementalProjectBuilder
                     // otherwise buildModule is invoked
                     build(changedModule, rootFile, monitor);
                     
+                    // get the modules to rebuild
                     List modulesToRebuild = Activator.getModuleDependencyStorage().getListOfModules(changedModule);
-                    // iterate over modules and rebuild them
-                    for (int j = 0; j < modulesToRebuild.size(); j++)
+                    
+                    if (buildFiles) 
                     {
-                        // call build on dependent resources
-                        // if the file is a Root file it will call buildSpec
-                        // otherwise buildModule is invoked
-                        build((String) modulesToRebuild.get(j), rootFile, monitor);
+                        // iterate over modules and rebuild them
+                        for (int j = 0; j < modulesToRebuild.size(); j++)
+                        {
+                            String moduleToBuild = (String) modulesToRebuild.get(j);
+                            
+                            if (buildSpecOnly) 
+                            {
+                                // root module found
+                                if (rootFile != null && rootFile.getName().equals(moduleToBuild)) 
+                                {
+                                    build(moduleToBuild, rootFile, monitor);
+                                }
+                                // for this build the root module is already found
+                                // do not need to look for it again
+                                buildSpecOnly = false;
+                                continue;
+                            }
+                            
+                            if (buildFiles) 
+                            {
+                                // call build on dependent resources
+                                // if the file is a Root file it will call buildSpec
+                                // otherwise buildModule is invoked
+                                build(moduleToBuild, rootFile, monitor);
+                            }
+                        }
                     }
                 }
             }
