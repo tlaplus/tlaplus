@@ -1,4 +1,4 @@
-package org.lamport.tla.toolbox.spec.editor;
+package org.lamport.tla.toolbox.editor;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.ui.part.FileEditorInput;
@@ -15,7 +15,7 @@ public class ModuleEditorInput extends FileEditorInput
     /**
      * Constructor 
      * @param file
-     * @deprecated: setup the the root module flag
+     * @deprecated setup the the root module flag
      */
     public ModuleEditorInput(IFile file)
     {
@@ -23,9 +23,9 @@ public class ModuleEditorInput extends FileEditorInput
     }
 
     /**
-     * 
-     * @param file
-     * @param b
+     * Constructor
+     * @param file the file containing the module
+     * @param isRoot flag is the module is a root module
      */
     public ModuleEditorInput(IFile file, boolean isRoot)
     {
