@@ -108,6 +108,8 @@ package pcal;
 import java.util.Hashtable;
 import java.util.Vector;
 
+import util.ToolIO;
+
 public class ParseAlgorithm
  { private static PcalCharReader charReader;
      /**********************************************************************
@@ -296,7 +298,7 @@ public class ParseAlgorithm
              { if (! PcalParams.LabelFlag) { AddedMessagesError() ; } ;
                if (PcalParams.ReportLabelsFlag) { ReportLabels() ; } 
                else
-                { System.out.println("Labels added.") ; } ;
+                { ToolIO.out.println("Labels added.") ; } ;
               } ;
            return multiproc ;
          }
@@ -345,7 +347,7 @@ public class ParseAlgorithm
                         { AddedMessagesError() ; } ;
                if (PcalParams.ReportLabelsFlag) { ReportLabels() ; } 
                else
-                { System.out.println("Labels added.") ; } ;
+                { ToolIO.out.println("Labels added.") ; } ;
               } ;
            return uniproc ;
          }
@@ -367,12 +369,12 @@ public class ParseAlgorithm
 
    public static void ReportLabels() 
      { if (addedLabels.size() > 1)
-         {System.out.println("The following labels were added:") ;}
+         {ToolIO.out.println("The following labels were added:") ;}
        else          
-         {System.out.println("The following label was added:") ;} ;
+         {ToolIO.out.println("The following label was added:") ;} ;
        int i = 0 ;
        while (i < addedLabels.size() )
-        { System.out.println("  " 
+        { ToolIO.out.println("  " 
               + ((String) addedLabels.elementAt(i)) 
               + " at "
               + ((String) addedLabelsLocs.elementAt(i)));
@@ -2913,7 +2915,7 @@ public class ParseAlgorithm
            LATsize = LATsize + 1 ;
          } ;
        return LAT[tokNum - 1] ;
-     }     
+     }          
 
    public static String PeekPastAlgToken(int tokNum)
      /**********************************************************************
