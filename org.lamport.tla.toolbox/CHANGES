@@ -13,15 +13,17 @@ DESCRIPTION: {General description of the release
 
 {CATEGORY} is one of the BUGFIX, CHANGE, FEATURE 
 
-
-2009-01-28 "0.0.1" 
+2009-xx-xx "0.0.2" 
 ---------------------------------------------------
-- TODO(SZ): fix problem with parse status indicator not disappearing in welcom perspective
+- TODO(SZ): fix problem with parse status indicator not disappearing in welcome perspective
 - TODO(SZ): icons
 - TODO(SZ): splash branding
 - TODO(LL): help content
 - TODO(SZ): intro-page
+- BUG(SZ): is able to open a non-tla file as root file!
 
+
+- FEATURE: PCal translation added
 - FEATURE: Preferences on auto-build added (module, spec, files)
 - BUGFIX: On switched off auto-build and shown "Problems View", the view is not repainted on save of a modified file 
 - FEATURE: In the editors tabs, root modules are marked with a special symbol
@@ -46,3 +48,6 @@ written on the yellow background. The warning is a problem status and causes the
 - BUGFIX: The parse status "Could not find module" is handled correctly. The Marker is attached to the Spec itself. 
 - BUGFIX: The parse status widget is shown from the beginning on and is permanently visible
 - BUGFIX: System.err redirected prior starting of the SANY
+
+2009-01-28 "0.0.1" 
+---------------------------------------------------
