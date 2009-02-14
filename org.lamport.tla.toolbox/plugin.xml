@@ -153,6 +153,12 @@
             id="toolbox.command.module.parse.active"
             name="Parse Module">
       </command>
+      <command
+            categoryId="toolbox.command.category.module"
+            description="Runs PCal Translator on the module"
+            id="toolbox.command.module.translate"
+            name="Translate module">
+      </command>
       <category
             description="UI Commands"
             id="toolbox.command.category.ui"
@@ -380,6 +386,21 @@
                </with>
             </visibleWhen>
          </command>
+         <command
+               commandId="toolbox.command.module.translate"
+               id="toolbox.menu.run.translate"
+               label="Translate module"
+               mnemonic="T">
+            <visibleWhen
+                  checkEnabled="true">
+               <with
+                     variable="activeWorkbenchWindow.activePerspective">
+                  <equals
+                        value="org.lamport.tla.toolbox.ui.perspective.specLoaded">
+                  </equals>
+               </with>
+            </visibleWhen>
+         </command>
       </menuContribution>
       <menuContribution
             locationURI="menu:org.eclipse.ui.main.menu?after=additions">
@@ -445,6 +466,10 @@
       <handler
             class="org.lamport.tla.toolbox.ui.handler.OpenModuleHandler"
             commandId="toolbox.command.module.open">
+      </handler>
+      <handler
+            class="org.lamport.tla.toolbox.ui.handler.TranslateModuleHandler"
+            commandId="toolbox.command.module.translate">
       </handler>
       <handler
             class="org.lamport.tla.toolbox.ui.handler.ParseModuleHandler"
