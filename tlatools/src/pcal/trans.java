@@ -1,4 +1,29 @@
+package pcal ;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.Vector;
+
+import pcal.exception.FileToStringVectorException;
+import pcal.exception.ParseAlgorithmException;
+import pcal.exception.PcalResourceFileReaderException;
+import pcal.exception.RemoveNameConflictsException;
+import pcal.exception.StringVectorToFileException;
+import pcal.exception.TLCTranslationException;
+import pcal.exception.UnrecoverableException;
+import util.ToolIO;
+  /*************************************************************************
+  * Contains dummy definitions of methods that are yet to be implemented.  *
+  *                                                                        *
+  *************************************************************************/
+
 /***************************************************************************
+* <pre>
 * CLASS trans                                                              *
 *                                                                          *
 * -----------------------------------------------------------------        *
@@ -143,32 +168,8 @@
 * the parser takes everything up to the "then" to be the right-hand side   *
 * of the "x :=" assignment.  Making "if" illegal in an expression would    *
 * allow the parser to catch the error at the "if".                         *
-***************************************************************************/
-package pcal ;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.Vector;
-
-import pcal.exception.FileToStringVectorException;
-import pcal.exception.ParseAlgorithmException;
-import pcal.exception.PcalResourceFileReaderException;
-import pcal.exception.RemoveNameConflictsException;
-import pcal.exception.StringVectorToFileException;
-import pcal.exception.TLCTranslationException;
-import pcal.exception.UnrecoverableException;
-import util.ToolIO;
-  /*************************************************************************
-  * Contains dummy definitions of methods that are yet to be implemented.  *
-  *                                                                        *
-  *************************************************************************/
-
-  
+* </pre>
+***************************************************************************/  
 class trans
  { 
   private static final int STATUS_OK = 1;
@@ -381,9 +382,11 @@ public static int runMe(String[] args)
       * some operator defined elsewhere in the TLA+ module.  So it's not   *
       * worth going overboard in this checking.                            *
       *********************************************************************/
-      try
+      
+        NotYetImplemented notYetImplemented = new NotYetImplemented(ast);
+        try
     {
-        NotYetImplemented.RemoveNameConflicts(ast) ;
+        notYetImplemented.removeNameConflicts() ;
     } catch (RemoveNameConflictsException e1)
     {
         PcalDebug.reportError(e1);
@@ -416,7 +419,7 @@ public static int runMe(String[] args)
       else 
         { try
         {
-            translation = NotYetImplemented.Translate(ast) ;
+            translation = notYetImplemented.translate();
         } catch (RemoveNameConflictsException e)
         {
             PcalDebug.reportError(e);
@@ -586,7 +589,7 @@ public static int runMe(String[] args)
                              + " written.") ;
         } ;
         
-        return STATUS_EXIT_WITHOUT_ERROR;
+        return exitWithStatus(STATUS_EXIT_WITHOUT_ERROR);
     } // END main
 
 
