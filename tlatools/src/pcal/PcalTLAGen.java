@@ -21,21 +21,21 @@ import pcal.exception.TLAExprException;
 
 public class PcalTLAGen {
 
-    // Variables that control formatting
-    public static boolean boxUnderCASE = true;   /* else [] at end of line  */
-    public static int wrapColumn = 78;    /* if over this, then try to wrap */
-    public static int ssWrapColumn  = 45; /* when to start wrapping subscr  */
+    // Constants that control formatting
+    public final static boolean boxUnderCASE = true;   /* else [] at end of line  */
+    public final static int wrapColumn = 78;    /* if over this, then try to wrap */
+    public final static int ssWrapColumn  = 45; /* when to start wrapping subscr  */
 
     // Private class variables
-    private static Vector tlacode = new Vector();               /* of lines */
-    private static String self = null;               /* for current process */
-    private static Vector vars = new Vector();      /* list of disamb. vars */
-    private static Vector pcV = new Vector();  /* list of proc vars, params */
-    private static Vector psV = new Vector();   /* list of process set vars */
-    private static PcalSymTab st = null;                    /* symbol table */
-    private static boolean mp = false;   /* true if multiprocess, else unip */
-    private static Vector nextStep = new Vector();       /* unparam actions */
-    private static Vector nextStepSelf = new Vector();     /* param actions */
+    private Vector tlacode = new Vector();               /* of lines */
+    private String self = null;               /* for current process */
+    private Vector vars = new Vector();      /* list of disamb. vars */
+    private Vector pcV = new Vector();  /* list of proc vars, params */
+    private Vector psV = new Vector();   /* list of process set vars */
+    private PcalSymTab st = null;                    /* symbol table */
+    private boolean mp = false;   /* true if multiprocess, else unip */
+    private Vector nextStep = new Vector();       /* unparam actions */
+    private Vector nextStepSelf = new Vector();     /* param actions */
 
     /****************************************************************/
     /* Returns whether the string is present in a vector of string. */
@@ -49,14 +49,14 @@ public class PcalTLAGen {
     /******************************************************/
     /* True if var is in the list of procedure variables. */
     /******************************************************/
-    private static boolean IsProcedureVar(String var) {
+    private boolean IsProcedureVar(String var) {
         return InVector(var, pcV);
     }
 
     /****************************************************/
     /* True if var is in the list of process variables. */
     /****************************************************/
-    private static boolean IsProcessSetVar(String var) {
+    private boolean IsProcessSetVar(String var) {
         return InVector(var, psV);
     }
 
@@ -89,7 +89,7 @@ public class PcalTLAGen {
     /* The public method: generate TLA+ as a vector of string. */
     /**
      **********************************************************/
-    public static Vector Gen(AST ast, PcalSymTab symtab) throws PcalTLAGenException {
+    public Vector Gen(AST ast, PcalSymTab symtab) throws PcalTLAGenException {
         st = symtab;
         GenSym(ast, "");
         return tlacode;
@@ -98,8 +98,8 @@ public class PcalTLAGen {
     /*****************************************************************/
     /* Top level routines. Context is "", "procedure", or "process". */
     /**
-     * @throws PcalTLAGenException ***************************************************************/
-    private static void GenSym (AST ast, String context) throws PcalTLAGenException {
+     ****************************************************************/
+    private void GenSym (AST ast, String context) throws PcalTLAGenException {
         if (ast.getClass().equals(AST.UniprocessObj.getClass()))
             GenUniprocess((AST.Uniprocess) ast, context);
         else if (ast.getClass().equals(AST.MultiprocessObj.getClass()))
@@ -112,7 +112,7 @@ public class PcalTLAGen {
             GenLabeledStmt((AST.LabeledStmt) ast, context);
     }
 
-    private static void GenUniprocess (AST.Uniprocess ast, String context) throws PcalTLAGenException {
+    private void GenUniprocess (AST.Uniprocess ast, String context) throws PcalTLAGenException {
         mp = false;
         GenVarsAndDefs(ast.decls, ast.prcds, null, ast.defs);
         GenInit(ast.decls, ast.prcds, null);
@@ -129,7 +129,7 @@ public class PcalTLAGen {
         GenTermination();
     }
         
-    private static void GenMultiprocess (AST.Multiprocess ast, String context) throws PcalTLAGenException {
+    private void GenMultiprocess (AST.Multiprocess ast, String context) throws PcalTLAGenException {
         mp = true;
         GenVarsAndDefs(ast.decls, ast.prcds, ast.procs, ast.defs);
         GenProcSet();
@@ -143,7 +143,7 @@ public class PcalTLAGen {
         GenTermination();
     }
 
-    private static void GenProcedure (AST.Procedure ast, String context) throws PcalTLAGenException {
+    private void GenProcedure (AST.Procedure ast, String context) throws PcalTLAGenException {
         /* ns accumulates the disjunt of the steps of the procedure */
         StringBuffer ns = new StringBuffer();
         Vector nsV = new Vector();
@@ -190,7 +190,7 @@ public class PcalTLAGen {
         tlacode.addElement("");
     }
         
-    private static void GenProcess(AST.Process ast, String context) throws PcalTLAGenException {
+    private void GenProcess(AST.Process ast, String context) throws PcalTLAGenException {
         /* ns accumulates the disjunt of the steps of the process */
         StringBuffer ns = new StringBuffer();
         Vector nsV = new Vector();
@@ -249,8 +249,8 @@ public class PcalTLAGen {
     /*****************************************************/
     /* Generates an action with name equal to the label. */
     /**
-     * @throws PcalTLAGenException ***************************************************/
-    private static void GenLabeledStmt(AST.LabeledStmt ast, String context) throws PcalTLAGenException {
+     ****************************************************/
+    private void GenLabeledStmt(AST.LabeledStmt ast, String context) throws PcalTLAGenException {
         StringBuffer sb = new StringBuffer(ast.label);
         /* c is used to determine which vars are in UNCHANGED. */
         Changed c = new Changed(vars);
@@ -320,8 +320,8 @@ public class PcalTLAGen {
     /*                                                               */
     /* And what on earth are `c' and `context'? LL                   */
     /**
-     * @throws PcalTLAGenException ***************************************************************/
-    private static void GenStmt(AST ast,
+     ****************************************************************/
+    private void GenStmt(AST ast,
                                 Changed c,
                                 String context,
                                 String prefix,
@@ -352,8 +352,8 @@ public class PcalTLAGen {
     /* separate Changed cThis, and use c to determine which vars in  */
     /* the right hand side are primed.                               */
     /**
-     * @throws PcalTLAGenException ***************************************************************/
-    private static void GenAssign(AST.Assign ast,
+     * ***************************************************************/
+    private void GenAssign(AST.Assign ast,
                                   Changed c,
                                   String context,
                                   String prefix,
@@ -569,8 +569,8 @@ public class PcalTLAGen {
     /* for the Else branch is generated. So, we fix the        */
     /* line in the Then branch after the Else branch is done.  */
     /**
-     * @throws PcalTLAGenException *********************************************************/
-    private static void GenIf(AST.If ast,
+     **********************************************************/
+    private void GenIf(AST.If ast,
                               Changed c,
                               String context,
                               String prefix,
@@ -695,9 +695,9 @@ public class PcalTLAGen {
     * Generate TLA+ for the `either' statement.  This performs the same    *
     * sort of hackery as for the `if' statement, necessitated by the       *
     * design flaw commented on above.                                      
-     * @throws PcalTLAGenException *
+     **
     ***********************************************************************/
-    private static void GenEither(AST.Either ast,
+    private void GenEither(AST.Either ast,
                               Changed c,
                               String context,
                               String prefix,
@@ -777,7 +777,7 @@ public class PcalTLAGen {
      c.Merge(allC) ;
      }
 
-    private static void GenWith(AST.With ast,
+    private void GenWith(AST.With ast,
                                 Changed c,
                                 String context,
                                 String prefix,
@@ -836,7 +836,7 @@ public class PcalTLAGen {
         //      tlacode.addElement(NSpaces(col) + ")");
     }
 
-    private static void GenWhen(AST.When ast,
+    private void GenWhen(AST.When ast,
                                 Changed c,
                                 String context,
                                 String prefix,
@@ -855,7 +855,7 @@ public class PcalTLAGen {
         tlacode.addElement(sb.toString());
     }
 
-    private static void GenPrintS(AST.PrintS ast,
+    private void GenPrintS(AST.PrintS ast,
                                   Changed c,
                                   String context,
                                   String prefix,
@@ -880,8 +880,8 @@ public class PcalTLAGen {
     /********************************************************/
     /* Assert(ast.expr, "Failure of assertion at... ")      */
     /**
-     * @throws PcalTLAGenException ******************************************************/
-    private static void GenAssert(AST.Assert ast,
+     *******************************************************/
+    private void GenAssert(AST.Assert ast,
                                   Changed c,
                                   String context,
                                   String prefix,
@@ -918,7 +918,7 @@ public class PcalTLAGen {
     /* I generate a TRUE conjunct, which is useless, but so */
     /* is a skip statement.                                 */
     /********************************************************/
-    private static void GenSkip(AST.Skip ast,
+    private void GenSkip(AST.Skip ast,
                                 Changed c,
                                 String context,
                                 String prefix,
@@ -934,7 +934,7 @@ public class PcalTLAGen {
     * Method renamed from GenVars and given the defs argument by LL on     *
     * 25 Jan 2006 to handle the `define' statement.                        *
     ***********************************************************************/
-    private static void GenVarsAndDefs (Vector globals,
+    private void GenVarsAndDefs (Vector globals,
                                         Vector procs,
                                         Vector processes,
                                         TLAExpr defs) {
@@ -1069,7 +1069,7 @@ public class PcalTLAGen {
     *                                                                      *
     * Method added by LL on 25 Jan 2006.                                   *
     ***********************************************************************/
-    public static void GenVarDecl(Vector varVec) {
+    public void GenVarDecl(Vector varVec) {
         StringBuffer res = new StringBuffer() ;
         StringBuffer curLine = new StringBuffer("VARIABLES ") ; 
             // for measuring length
@@ -1096,7 +1096,7 @@ public class PcalTLAGen {
     /**************************************/
     /* Generate the ProcSet == statement. */
     /**************************************/
-    public static void GenProcSet() {
+    public void GenProcSet() {
         StringBuffer ps = new StringBuffer();
         if (st.processes == null || st.processes.size() == 0) return;
         ps.append("ProcSet == ");
@@ -1124,8 +1124,8 @@ public class PcalTLAGen {
     /***********************************/
     /* Generate the Init == statement. */
     /**
-     * @throws TLAExprException *********************************/
-    private static void GenInit (Vector globals,
+     **********************************/
+    private void GenInit (Vector globals,
                                  Vector procs,
                                  Vector processes) throws PcalTLAGenException {
         int col = "Init == ".length();
@@ -1456,7 +1456,7 @@ public class PcalTLAGen {
     /************************************/
     /* Generate the Next == definition. */
     /************************************/
-    private static void GenNext() {
+    private void GenNext() {
         Vector nextS = new Vector();
         StringBuffer sb = new StringBuffer();
         int max, col;
@@ -1585,7 +1585,7 @@ public class PcalTLAGen {
     /****************************************/
     /* Generate the Spec == ... definition. */
     /****************************************/
-    private static void GenSpec () {
+    private void GenSpec () {
         StringBuffer sb =
             new StringBuffer("Spec == Init /\\ [][Next]_vars");
         // Generate the reqeusted fairness conjuncts
@@ -1679,7 +1679,7 @@ public class PcalTLAGen {
     /************************************/
     /* Generate the Termination ==      */
     /************************************/
-    private static void GenTermination () {
+    private void GenTermination () {
         StringBuffer sb = new StringBuffer();
         sb.append("Termination == <>(");
         if (mp)
@@ -1699,8 +1699,8 @@ public class PcalTLAGen {
     /* Then, aded primes to variables that have been changed  */
     /* according to c.                                        */
     /**
-     * @throws TLAExprException ********************************************************/
-    private static TLAExpr AddSubscriptsToExpr(TLAExpr exprn,
+     *********************************************************/
+    private TLAExpr AddSubscriptsToExpr(TLAExpr exprn,
                                                TLAExpr sub,
                                                Changed c) throws PcalTLAGenException {
 
@@ -1801,7 +1801,7 @@ public class PcalTLAGen {
 // LL comment: This makes no sense to me, since why should one use
 // a null subscript for a variable in the context of a process?
 // What the ... is going on here?
-    private static String Self(String context) {
+    private String Self(String context) {
         String s = null;
         if (mp) {
             if (context.equals("procedure")) s = "self";
