@@ -182,7 +182,7 @@ class trans
   }
   
   
-public static int runMe(String[] args) 
+  public static int runMe(String[] args) 
     { /*********************************************************************
       * Get and print version number.                                      *
       *********************************************************************/
@@ -194,7 +194,10 @@ public static int runMe(String[] args)
         *******************************************************************/
       String modDate = 
           lastModified.substring(21, lastModified.indexOf(" at"));
-      ToolIO.out.println("pcal.trans Version 1.3 of " + modDate) ;
+      if (ToolIO.getMode() == ToolIO.SYSTEM) 
+      { 
+          ToolIO.out.println("pcal.trans Version 1.3 of " + modDate) ;
+      }
 
       /*********************************************************************
       * Get and process arguments.                                         
