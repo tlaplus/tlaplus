@@ -20,9 +20,9 @@ DESCRIPTION: {General description of the release
 - TODO(SZ): splash branding
 - TODO(LL): help content
 - TODO(SZ): intro-page
-- BUG(SZ): is able to open a non-tla file as root file!
 
 
+- BUGFIX: The bug in the check that the root file is a TLA file. 
 - FEATURE: PCal translation added
 - FEATURE: Preferences on auto-build added (module, spec, files)
 - BUGFIX: On switched off auto-build and shown "Problems View", the view is not repainted on save of a modified file 
