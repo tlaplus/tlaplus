@@ -53,7 +53,7 @@
             id="toolbox.view.ProblemView"
             name="Problems">
       </view>
-      <view
+      <!-- view
             allowMultiple="false"
             category="org.lamport.tla.toolbox.category"
             class="org.lamport.tla.toolbox.ui.view.ProblemMarkerView"
@@ -61,7 +61,7 @@
             id="toolbox.view.ProblemMarkerView"
             name="Problem Markers"
             restorable="true">
-      </view>
+      </view -->
       <category
             id="org.lamport.tla.toolbox.category"
             name="TLA+ Toolbox">
@@ -89,6 +89,22 @@
 <!--                                   -->
 <!-- Commands                          -->
 <!--                                   -->
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            class="org.lamport.tla.toolbox.ui.preference.GeneralPreferencePage"
+            id="toolbox.ui.preferences.GeneralPreferencePage"
+            name="TLA+ Preferences">
+      </page>
+      <page
+            class="org.lamport.tla.toolbox.ui.preference.ParserPreferencePage"
+            id="toolbox.ui.preferences.ParserPreferencePage"
+            name="Parser Preferences"
+            category="toolbox.ui.preferences.GeneralPreferencePage">
+            <keywordReference id="toolbox.keywords.Parser"/>
+      </page>
+      
+   </extension>
    <extension
          point="org.eclipse.ui.commands">
       <category
@@ -176,21 +192,40 @@
             id="toolbox.command.help"
             name="Help">
       </command>
-      <keyBinding
+   </extension>
+   <extension
+         point="org.eclipse.ui.bindings">
+      <key
             commandId="org.eclipse.ui.file.exit"
-            keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            keySequence="M1+Q">
-      </keyBinding>
-      <keyBinding
-            commandId="toolbox.command.help11"
-            keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            keySequence="F1">
-      </keyBinding>
-      <keyBinding
+            contextId="org.eclipse.ui.contexts.window"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+Q">
+      </key>
+      <!-- key
+            commandId="toolbox.command.help"
+            contextId="org.eclipse.ui.contexts.window"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="F1">
+      </key -->
+      <key
             commandId="toolbox.command.module.parse.root"
-            keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            keySequence="M1+R">
-      </keyBinding>
+            contextId="org.eclipse.ui.contexts.window"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+R">
+      </key>
+      <key
+            commandId="toolbox.command.module.translate"
+            contextId="toolbox.contexts.cleaneditor"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+T">
+      </key>
+      <key
+            commandId="toolbox.command.module.parse.root"
+            contextId="org.eclipse.ui.contexts.window"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+R">
+      </key>
+
    </extension>
       
 <!--                                   -->
@@ -488,6 +523,28 @@
    
    <!-- Adapters -->
    <extension
+     point="org.eclipse.ui.keywords">
+    <keyword
+            label="TLA+ Syntax Analyser"
+            id="toolbox.keywords.Parser"/>
+   </extension>
+   <extension
+         point="org.eclipse.ui.contexts">
+      <context
+            description="Clean Editor"
+            id="toolbox.contexts.cleaneditor"
+            name="Clean Editor"
+            parentId="org.eclipse.ui.contexts.window">
+      </context>
+   </extension>
+   <extension
+         point="org.eclipse.help.contexts">
+      <contexts
+            file="helpContexts.xml"
+            plugin="org.lamport.tla.toolbox">
+      </contexts>
+   </extension>
+   <extension
          point="org.eclipse.core.runtime.adapters">
       <factory
             adaptableType="org.lamport.tla.toolbox.spec.Spec"
@@ -558,6 +615,12 @@
   Marker resolution
 -->
    <extension
+         point="org.eclipse.core.runtime.preferences">
+      <initializer
+            class="org.lamport.tla.toolbox.util.pref.PreferenceInitializer">
+      </initializer>
+   </extension>
+   <extension
          point="org.eclipse.ui.ide.markerResolution">
          <markerResolutionGenerator
          	class="org.lamport.tla.toolbox.util.TLAMarkerResolutionGenerator"
@@ -592,58 +655,5 @@
    		<!-- markerFieldReference id="org.eclipse.ui.ide.priorityField"/ -->
 		<!-- markerFieldReference id="org.eclipse.ui.ide.descriptionField"/ -->		          
       </markerContentGenerator>
-   </extension>
-   <extension
-         point="org.eclipse.ui.preferencePages">
-      <page
-            class="org.lamport.tla.toolbox.ui.preference.GeneralPreferencePage"
-            id="toolbox.ui.preferences.GeneralPreferencePage"
-            name="TLA+ Preferences">
-      </page>
-      <page
-            class="org.lamport.tla.toolbox.ui.preference.ParserPreferencePage"
-            id="toolbox.ui.preferences.ParserPreferencePage"
-            name="Parser Preferences"
-            category="toolbox.ui.preferences.GeneralPreferencePage">
-            <keywordReference id="toolbox.keywords.Parser"/>
-      </page>
-      
-   </extension>
-   <extension
-         point="org.eclipse.core.runtime.preferences">
-      <initializer
-            class="org.lamport.tla.toolbox.util.pref.PreferenceInitializer">
-      </initializer>
-   </extension>
-   <extension
-     point="org.eclipse.ui.keywords">
-    <keyword
-            label="TLA+ Syntax Analyser"
-            id="toolbox.keywords.Parser"/>
-   </extension>
-   <extension
-         point="org.eclipse.ui.bindings">
-      <key
-            commandId="toolbox.command.toggle-problem-view"
-            contextId="toolbox.contexts.cleaneditor"
-            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            sequence="CTRL+S">
-      </key>
-   </extension>
-   <extension
-         point="org.eclipse.ui.contexts">
-      <context
-            description="Clean Editor"
-            id="toolbox.contexts.cleaneditor"
-            name="Clean Editor"
-            parentId="org.eclipse.ui.contexts.window">
-      </context>
-   </extension>
-   <extension
-         point="org.eclipse.help.contexts">
-      <contexts
-            file="helpContexts.xml"
-            plugin="org.lamport.tla.toolbox">
-      </contexts>
    </extension>   
 </plugin>
