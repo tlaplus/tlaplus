@@ -278,6 +278,9 @@ public class PcalTranslate {
         return MakeAssign("pc", MakeExpr(Singleton2(StringToken(next))));
     }
 
+    /**
+     * @deprecated method not used
+     */
     private static AST.If IfForLabelIf (TLAExpr test,
                                         Vector unlabThen,
                                         String nextThen,
@@ -298,7 +301,7 @@ public class PcalTranslate {
 
     /*************************************************************************
      * Explode                                                               
-     * @throws PcalTranslateException *
+     **
      *************************************************************************/
 
     public static AST Explode (AST ast, PcalSymTab symtab) throws PcalTranslateException {
@@ -863,7 +866,7 @@ public class PcalTranslate {
     *                                                                      *
     * Modified by LL on 2 Feb 2006 to add line and column numbers to the   *
     * newly created statements for error reporting.                        
-     * @throws PcalTranslateException *
+     **
     ***********************************************************************/
     private static Vector ExplodeCall(AST.Call ast, String next) throws PcalTranslateException {
         Vector result = new Vector();
@@ -991,7 +994,7 @@ public class PcalTranslate {
     /***********************************************************************
     * Modified by LL on 2 Feb 2006 to add line and column numbers to the   *
     * newly created statements for error reporting.                        
-     * @throws PcalTranslateException *
+     **
     ***********************************************************************/
     private static Vector ExplodeReturn(AST.Return ast, String next) throws PcalTranslateException {
         Vector result = new Vector();
@@ -1120,7 +1123,7 @@ public class PcalTranslate {
     *                                                                      *
     * Modified by LL on 2 Feb 2006 to add line and column numbers to the   *
     * newly created statements for error reporting.                        
-     * @throws PcalTranslateException *
+     **
     ***********************************************************************/
     private static Vector ExplodeCallReturn(AST.CallReturn ast, String next) throws PcalTranslateException {
         Vector result = new Vector();
