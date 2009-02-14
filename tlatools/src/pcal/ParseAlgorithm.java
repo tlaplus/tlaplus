@@ -115,13 +115,14 @@ import pcal.exception.UnrecoverableException;
 import util.ToolIO;
 
 public class ParseAlgorithm
- { private static PcalCharReader charReader;
+{ 
+    private static PcalCharReader charReader;
      /**********************************************************************
      * The charReader argument to the Parse method is put here so other    *
      * methods can access it.  This makes the class totally thread unsafe. *
      **********************************************************************/
 
-   public static String currentProcedure = null;
+   public static String currentProcedure;
      /**********************************************************************
      * This is set by GetProcedure to the procedure's name before the      *
      * procedure body is parsed, and is reset to null aftewards.  Hence,   *
@@ -130,7 +131,7 @@ public class ParseAlgorithm
      * body.)                                                              *
      **********************************************************************/
 
-   public static boolean hasDefaultInitialization = false;
+   public static boolean hasDefaultInitialization;
      /**********************************************************************
      * Set true if any variable has a default initialization.              *
      * (Added by LL on 22 Aug 2007.)                                       *
@@ -146,14 +147,14 @@ public class ParseAlgorithm
 * vector of AST.NonTerm objects.                                           *
 ***************************************************************************/
 
-   public static boolean hasLabel = false ;
+   public static boolean hasLabel;
      /**********************************************************************
      * This variable is set to true by GetStmtSeq whenever a label is      *
      * found.  It is used in deciding whether or not to add labels to a    *
      * uniprocess algorithm.                                               *
      **********************************************************************/
 
-   public static Hashtable allLabels = new Hashtable() ;
+   public static Hashtable allLabels;
      /**********************************************************************
      * Set by GetStmtSeq to a table of String objects containing all the   *
      * algorithm's (user-typed) labels.  The strings are the keys, the     *
@@ -162,7 +163,7 @@ public class ParseAlgorithm
      * algorithm.                                                          *
      **********************************************************************/
 
-   public static int nextLabelNum = 1 ;
+   public static int nextLabelNum ;
      /**********************************************************************
      * The number to be appended to PcalParams.LabelRoot to form the next  *
      * label to be added.                                                  *
@@ -177,47 +178,61 @@ public class ParseAlgorithm
    * the i-th added label and the location of the statement to which it    *
    * was added.                                                            *
    ************************************************************************/
-   public static Vector addedLabels     = new Vector() ;
-   public static Vector addedLabelsLocs = new Vector() ;
+   public static Vector addedLabels;
+   public static Vector addedLabelsLocs;
 
+   /**********************************************************************
+    * Is set to the sequence of procedures.  It's easier making this a    *
+    * global variable than passing it as a parameter.                     *
+    **********************************************************************/
+   public static Vector procedures;
+
+   /**********************************************************************
+    * One of these booleans will be set true when we discover which       *
+    * syntax is being used.                                               
+    **********************************************************************/
+   public static boolean pSyntax;
+   public static boolean cSyntax;
+
+   /**********************************************************************
+    * This performs the initialization needed by the various Get...       *
+    * methods, including setting charReader.  It is called only by        *
+    * GetAlgorithm.  It's been made into a separate method for debugging, *
+    * so the various Get methods can be tested without calling            *
+    * GetAlgorithm.                                                       *
+    **********************************************************************/
    public static void Init(PcalCharReader charR) 
-     /**********************************************************************
-     * This performs the initialization needed by the various Get...       *
-     * methods, including setting charReader.  It is called only by        *
-     * GetAlgorithm.  It's been made into a separate method for debugging, *
-     * so the various Get methods can be tested without calling            *
-     * GetAlgorithm.                                                       *
-     **********************************************************************/
-     { charReader = charR ; 
-         /******************************************************************
-         * Initialize charReader.                                          *
-         ******************************************************************/
-      PcalBuiltInSymbols.Initialize();
-        /*******************************************************************
-        * Initializes the hash tables of class PcalBuiltInSymbols, which   *
-        * is required before methods in the Tokenize class can be called.  *
-        *******************************************************************/
-      AST.ASTInit();
-        /*******************************************************************
-        * Performs the initialization method of the AST to create default  *
-        * objects for each subclass.                                       *
-        *******************************************************************/
-     }
+   { 
+    // initialization moved 
+    addedLabels = new Vector(); 
+    addedLabelsLocs = new Vector();
+    nextLabelNum = 1;
+    charReader = charR;
+    allLabels = new Hashtable();       
+    hasLabel = false;
+    hasDefaultInitialization = false;
+    currentProcedure = null;
+    procedures = new Vector();
+    
+    pSyntax = false;
+    cSyntax = false; 
+    
+   /******************************************************************
+   * Initialize charReader.                                          *
+   ******************************************************************/
+    PcalBuiltInSymbols.Initialize();
+  /*******************************************************************
+  * Initializes the hash tables of class PcalBuiltInSymbols, which   *
+  * is required before methods in the Tokenize class can be called.  *
+      *******************************************************************/
+    AST.ASTInit();
+      /*******************************************************************
+      * Performs the initialization method of the AST to create default  *
+      * objects for each subclass.                                       *
+      *******************************************************************/
+   }
 
-   public static Vector procedures = new Vector() ;
-     /**********************************************************************
-     * Is set to the sequence of procedures.  It's easier making this a    *
-     * global variable than passing it as a parameter.                     *
-     **********************************************************************/
-
-   public static boolean pSyntax = false ;
-   public static boolean cSyntax = false ;
-     /**********************************************************************
-     * One of these booleans will be set true when we discover which       *
-     * syntax is being used.                                               
-     * @throws ParseAlgorithmException *
-     **********************************************************************/
-     
+   
    public static AST GetAlgorithm(PcalCharReader charR) throws ParseAlgorithmException
      /**********************************************************************
      * Assumes that the char reader charR is just past the string          *
@@ -3012,7 +3027,6 @@ public class ParseAlgorithm
 * should be outside the algorithm.                                         *
 *                                                                          *
 * Bug fixed by LL on 28 Feb 2006                                           
- * @throws ParseAlgorithmException *
 ***************************************************************************/
    public static void Uncomment(Vector inp,
                                 int begLine,
@@ -3125,8 +3139,5 @@ public class ParseAlgorithm
          }
        return;
      }
-
-
-
  }
 
