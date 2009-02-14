@@ -26,6 +26,8 @@
 package pcal;
 import java.util.Vector;
 
+import pcal.exception.PcalTranslateException;
+
 public class PcalTranslate {
 
     private static PcalSymTab st = null;  /* Set by invocation of Explode */
@@ -36,8 +38,7 @@ public class PcalTranslate {
      *************************************************************************/
 
     public static Vector DiscardLastElement(Vector v) {
-        Object oOld;
-        if (v.size() > 0) oOld = v.remove(v.size() - 1);
+        if (v.size() > 0) v.remove(v.size() - 1);
         return v;
     }
 
@@ -296,10 +297,11 @@ public class PcalTranslate {
     }
 
     /*************************************************************************
-     * Explode                                                               *
+     * Explode                                                               
+     * @throws PcalTranslateException *
      *************************************************************************/
 
-    public static AST Explode (AST ast, PcalSymTab symtab) {
+    public static AST Explode (AST ast, PcalSymTab symtab) throws PcalTranslateException {
         /*********************************************************************
         * Expand while, labeled if, and nexted labeled with a sequence of    *
         * of flat labeled statements. Control flow is added via assignments  *
@@ -316,7 +318,7 @@ public class PcalTranslate {
         }
     }
 
-    private static AST.Uniprocess ExplodeUniprocess (AST.Uniprocess ast) {
+    private static AST.Uniprocess ExplodeUniprocess (AST.Uniprocess ast) throws PcalTranslateException {
         /*********************************************************************
         * Generate new AST.Uniprocess that has exploded labeled statements.  *
         *********************************************************************/
@@ -358,7 +360,7 @@ public class PcalTranslate {
         return newast;
     }
         
-    private static AST.Multiprocess ExplodeMultiprocess (AST.Multiprocess ast) {
+    private static AST.Multiprocess ExplodeMultiprocess (AST.Multiprocess ast) throws PcalTranslateException {
         /*********************************************************************
         * Generate new AST.Multiprocess with exploded labeled statements.    *
         *********************************************************************/
@@ -385,7 +387,7 @@ public class PcalTranslate {
         return newast;
     }
 
-    private static AST ExplodeProcedure (AST.Procedure ast) {
+    private static AST ExplodeProcedure (AST.Procedure ast) throws PcalTranslateException {
         /*********************************************************************
         * Generate new AST.Procedure with exploded labeled statements.       *
         *********************************************************************/
@@ -414,7 +416,7 @@ public class PcalTranslate {
         return newast;
     }
         
-    private static AST ExplodeProcess(AST.Process ast) {
+    private static AST ExplodeProcess(AST.Process ast) throws PcalTranslateException {
         /*********************************************************************
         * Generate new AST.Process with exploded labeled statements.         *
         *********************************************************************/
@@ -448,7 +450,7 @@ public class PcalTranslate {
         return newast;
     }
 
-    private static Vector CopyAndExplodeLastStmt(Vector stmts, String next) {
+    private static Vector CopyAndExplodeLastStmt(Vector stmts, String next) throws PcalTranslateException {
         /**************************************************************
         * The arguments are:                                               *
         *                                                                  *
@@ -598,7 +600,7 @@ public class PcalTranslate {
 
 
     private static Vector 
-          CopyAndExplodeLastStmtWithGoto(Vector stmts, String next) {
+          CopyAndExplodeLastStmtWithGoto(Vector stmts, String next) throws PcalTranslateException {
       /*********************************************************************
       * Like CopyAndExplodeLastStmt, but it always adds a goto and         *
       * returns only a pair consisting of the first two elements of the    *
@@ -612,7 +614,7 @@ public class PcalTranslate {
 
 
     private static Vector ExplodeLabeledStmt (AST.LabeledStmt ast,
-                                              String next) {
+                                              String next) throws PcalTranslateException {
          /******************************************************************
          * label SL -->                                                    *
          * label when pc = "label" ;                                       *
@@ -650,7 +652,7 @@ public class PcalTranslate {
     }
 
     private static Vector ExplodeLabeledStmtSeq (Vector seq,
-                                                 String next) {
+                                                 String next) throws PcalTranslateException {
      /**********************************************************************
      * seq is a sequence of LabeledStmts, and `next' is the label that     *
      * follows them.  Returns the sequence of LabeledStmts obtained by     *
@@ -672,7 +674,7 @@ public class PcalTranslate {
      }
 
     private static Vector ExplodeWhile(AST.LabeledStmt ast,
-                                       String next) {
+                                       String next) throws PcalTranslateException {
         /*******************************************************************
         * label test unlabDo labDo next -->                                *
         * label when pc = "label" ;                                        *
@@ -743,7 +745,7 @@ public class PcalTranslate {
         return result;
     }
 
-    private static Vector ExplodeLabelIf(AST.LabelIf ast, String next) {
+    private static Vector ExplodeLabelIf(AST.LabelIf ast, String next) throws PcalTranslateException {
         /***************************************************************
          *       test unlabThen labThen unlabElse labElse next -->     *
          *       if test then                                          *
@@ -818,7 +820,7 @@ public class PcalTranslate {
     }
 
     private static Vector ExplodeLabelEither(AST.LabelEither ast, 
-                                             String next) {
+                                             String next) throws PcalTranslateException {
         /*******************************************************************
         * Analogous to ExplodeLabelIf, except it hasa sequence of clauses  *
         * rather than just the then and else clauses.                      *
@@ -860,16 +862,17 @@ public class PcalTranslate {
     * parameters.                                                          *
     *                                                                      *
     * Modified by LL on 2 Feb 2006 to add line and column numbers to the   *
-    * newly created statements for error reporting.                        *
+    * newly created statements for error reporting.                        
+     * @throws PcalTranslateException *
     ***********************************************************************/
-    private static Vector ExplodeCall(AST.Call ast, String next) {
+    private static Vector ExplodeCall(AST.Call ast, String next) throws PcalTranslateException {
         Vector result = new Vector();
         int to = st.FindProc(ast.to);
         /*******************************************************************
         * Error check added by LL on 30 Jan 2006 to fix bug_05_12_10.      *
         *******************************************************************/
         if (to == st.procs.size())
-          { PcalDebug.ReportErrorAt("Call of non-existent procedure " + ast.to,
+          { throw new PcalTranslateException("Call of non-existent procedure " + ast.to,
                                     ast);  } ;
         PcalSymTab.ProcedureEntry pe =
             (PcalSymTab.ProcedureEntry) st.procs.elementAt(to);
@@ -939,7 +942,7 @@ public class PcalTranslate {
         * Assert changed to ReportErrorAt by LL on 30 Jan 2006.            *
         *******************************************************************/
         if (pe.params.size() != ast.args.size())
-             PcalDebug.ReportErrorAt(
+            throw new PcalTranslateException(
                   "Procedure " + ast.to +
                        " called with wrong number of arguments",
                   ast) ;
@@ -987,9 +990,10 @@ public class PcalTranslate {
 
     /***********************************************************************
     * Modified by LL on 2 Feb 2006 to add line and column numbers to the   *
-    * newly created statements for error reporting.                        *
+    * newly created statements for error reporting.                        
+     * @throws PcalTranslateException *
     ***********************************************************************/
-    private static Vector ExplodeReturn(AST.Return ast, String next) {
+    private static Vector ExplodeReturn(AST.Return ast, String next) throws PcalTranslateException {
         Vector result = new Vector();
         /*******************************************************************
         * The following test for a return not in a procedure was added by  *
@@ -998,7 +1002,7 @@ public class PcalTranslate {
         * ParseAlgorithm.GetReturn.                                        *
         *******************************************************************/
         if (ast.from == null)
-          { PcalDebug.ReportErrorAt("`return' statement not in procedure", 
+          { throw new PcalTranslateException("`return' statement not in procedure", 
                                      ast) ;
           } ;
         int from = st.FindProc(ast.from);
@@ -1115,9 +1119,10 @@ public class PcalTranslate {
     * parameters.                                                          *
     *                                                                      *
     * Modified by LL on 2 Feb 2006 to add line and column numbers to the   *
-    * newly created statements for error reporting.                        *
+    * newly created statements for error reporting.                        
+     * @throws PcalTranslateException *
     ***********************************************************************/
-    private static Vector ExplodeCallReturn(AST.CallReturn ast, String next) {
+    private static Vector ExplodeCallReturn(AST.CallReturn ast, String next) throws PcalTranslateException {
         Vector result = new Vector();
         /*******************************************************************
         * The following test for a return not in a procedure was added by  *
@@ -1126,7 +1131,7 @@ public class PcalTranslate {
         * ParseAlgorithm.GetReturn.                                        *
         *******************************************************************/
         if (ast.from == null)
-          { PcalDebug.ReportError(
+          { throw new PcalTranslateException(
               "`return' statement following `call' at " +
                ast.location() + " not in a procedure");
           } ;
@@ -1139,7 +1144,7 @@ public class PcalTranslate {
         * to where it belongs.                                             *
         *******************************************************************/
         if (to == st.procs.size())
-          { PcalDebug.ReportErrorAt("Call of non-existent procedure " + ast.to,
+          { throw new PcalTranslateException("Call of non-existent procedure " + ast.to,
                                     ast);  } ;
         PcalSymTab.ProcedureEntry peTo =
             (PcalSymTab.ProcedureEntry) st.procs.elementAt(to);
@@ -1250,7 +1255,7 @@ public class PcalTranslate {
         * Assert changed to ReportErrorAt by LL on 30 Jan 2006.            *
         *******************************************************************/
         if (peTo.params.size() != ast.args.size())
-             PcalDebug.ReportErrorAt(
+            throw new PcalTranslateException(
                   "Procedure " + ast.to +
                        " called with wrong number of arguments",
                   ast) ;

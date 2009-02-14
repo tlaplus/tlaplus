@@ -1,6 +1,9 @@
 package pcal;
 
 import java.util.Vector;
+
+import pcal.exception.UnrecoverableException;
+import pcal.exception.UnrecoverablePositionedException;
 import util.ToolIO;
 
 /***************************************************************************
@@ -8,11 +11,55 @@ import util.ToolIO;
 * methods for printing debugging output, and methods for measuring and     
 * reporting elapsed time.                                                  
 * @author Leslie Lamport
-* @version Id
+* @version $Id$
 ***************************************************************************/
 public class PcalDebug
 {
-    public static void ReportError(String msg)
+
+    /**
+     * Printer for the exceptions
+     * @param exception containing the message to print
+     */
+    public static void reportError(UnrecoverableException e)
+    {
+        if (e instanceof UnrecoverablePositionedException)
+        {
+            reportError(e.getMessage(), ((UnrecoverablePositionedException) e).getPosition());
+        } else
+        {
+            reportError(e.getMessage());
+        }
+    };
+
+    /**
+     * Report error message 
+     * @param message message to report
+     */
+    public static void reportError(String message)
+    {
+        ToolIO.out.println(new StringBuffer("\nUnrecoverable error:\n -- ").append(message).append(".\n").toString());
+    }
+
+    /**
+     * Reports an error
+     * @param message message to report
+     * @param ast the AST-object localizing the error
+     */
+    public static void reportError(String message, AST ast)
+    {
+        if (ast == null || ast.line == 0)
+        {
+            reportError(message);
+        } else {
+            reportError(message + "\n    at " + ast.location());
+        }
+    }
+
+    /**
+     * @deprecated do not use anymore, use reportError instead
+     * @param msg
+     */
+    private static void ReportError(String msg)
     /*********************************************************************
     * This method is called to report an error and abort.                *
     *********************************************************************/
@@ -25,7 +72,10 @@ public class PcalDebug
         throw new PCalUnrecoverableErrorRuntimeException("Report error has been called");
     };
 
-    public static void ReportErrorAt(String msg, AST ast)
+    /**
+     * @deprecated do not use anymore, use reportError instead
+     */
+    private static void ReportErrorAt(String msg, AST ast)
     /*********************************************************************
     * This method is called to report an error in the object ast and     *
     * abort.                                                             *
@@ -252,7 +302,7 @@ public class PcalDebug
     *********************************************************************/
     {
         ToolIO.out.println(pair(i, j));
-    };
+    }
 
 }
 /* last modified on Sat  4 Mar 2006 at 10:15:03 PST by lamport */

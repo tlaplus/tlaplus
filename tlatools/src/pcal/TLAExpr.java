@@ -105,6 +105,9 @@
 package pcal;
 import java.util.Vector;
 
+import pcal.exception.TLAExprException;
+import pcal.exception.UnrecoverableException;
+
 public class TLAExpr
   { public Vector tokens       = new Vector();
     public TLAToken[] anchorTokens = null;
@@ -277,7 +280,7 @@ public class TLAExpr
           }; //END while i      
       } //END normalize
 
-    public void renormalize()
+    public void renormalize() throws TLAExprException
       /*********************************************************************
       * Used to renormalize the expression so anchorTokCol[i] equals the   *
       * actual column of the anchorTokens[i].  It should be called every   *
@@ -295,7 +298,7 @@ public class TLAExpr
                 int k = anchorTokens[i].column - anchorTokCol[i] ;
                 anchorTokCol[i] = anchorTokens[i].column ;
                 if (k < 0)
-                  { PcalDebug.ReportError(
+                  { throw new TLAExprException(
                      "TLAExpr.renormalize() found anchor has moved to left.");
                   } ;
                 int j = 0 ;
@@ -378,8 +381,10 @@ public class TLAExpr
         return result + " >>" ;
       }
 
-   public void appendExpr(Vector expr, int spaces)
-     { PcalDebug.ReportError("appendExpr not yet implemented");
+   public void appendExpr(Vector expr, int spaces) throws UnrecoverableException
+     { 
+       // DEADCODE
+       throw new UnrecoverableException("appendExpr not yet implemented");
      }
 
 
@@ -418,7 +423,7 @@ public class TLAExpr
         return result ;
       }
 
-    public void prepend(TLAExpr expr, int spaces)
+    public void prepend(TLAExpr expr, int spaces) throws TLAExprException 
       /*********************************************************************
       * Prepends the expression expr to the front of the current           *
       * expression, leaving `spaces' number of spaces between the last     *
@@ -486,7 +491,7 @@ public class TLAExpr
         return ;
       }
         
-    public void insertNewToken(String str, IntPair coord)
+    public void insertNewToken(String str, IntPair coord) throws TLAExprException
       /*********************************************************************
       * Inserts a new token into expr right after the token with Java      *
       * coordinates coord.  The token has string str and some type other   *
@@ -524,7 +529,7 @@ public class TLAExpr
 
     public static Vector SeqSubstituteForAll(Vector expVec, // of TLAExpr
                                              Vector exprs,  // of TLAExpr
-                                             Vector strs)   // of String
+                                             Vector strs) throws TLAExprException   // of String
       /*********************************************************************
       * Produces a vector of new expressions obtained by cloning each      *
       * expression in expVec and then applying substituteForAll(expres,    *
@@ -543,13 +548,13 @@ public class TLAExpr
 
    public void substituteForAll( Vector exprs , // of TLAExpr
                                   Vector strs    // of String
-                                )
+                                ) throws TLAExprException
       { substituteForAll(exprs, strs, true); }
 
     public void substituteForAll( Vector exprs , // of TLAExpr
                                   Vector strs ,  // of String
                                   boolean parenthesize
-                                )
+                                ) throws TLAExprException
       /*********************************************************************
       * Substitute each of the expressions in exprs for the corresponding  *
       * string in strs.  (The vectors must have the same lengths.)         *
@@ -567,7 +572,7 @@ public class TLAExpr
         return;
       }      
 
-     public void substituteFor(TLAExpr expr, String id, boolean parenthesize)
+     public void substituteFor(TLAExpr expr, String id, boolean parenthesize) throws TLAExprException
       /*********************************************************************
       * Substitutes expression expr for all tokens in the current          *
       * expression representing the identifier id -- that is, instances    *
@@ -586,7 +591,7 @@ public class TLAExpr
       }
 
 
-      public IntPair substituteAt(TLAExpr expr, IntPair coord, boolean par) 
+      public IntPair substituteAt(TLAExpr expr, IntPair coord, boolean par) throws TLAExprException 
       /*********************************************************************
       * Replaces the token tok with coordinates coord in the current       *
       * expression with the expression expr (adding parentheses when       *

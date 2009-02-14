@@ -2,27 +2,44 @@ package pcal;
 
 import java.util.Vector;
 
+import pcal.exception.PcalFixIDException;
+import pcal.exception.PcalSymTabException;
+import pcal.exception.PcalTLAGenException;
+import pcal.exception.PcalTranslateException;
+import pcal.exception.RemoveNameConflictsException;
 import util.ToolIO;
 
 public class NotYetImplemented {
 
     private static PcalSymTab st = null;
 
-    public static void RemoveNameConflicts(AST ast) {
+    public static void RemoveNameConflicts(AST ast) throws RemoveNameConflictsException {
         /********************************************************************
          * Called by trans.java.  Should go in a new .java file.            *
          ********************************************************************/
 
-        st = new PcalSymTab(ast);
+        try
+        {
+            st = new PcalSymTab(ast);
+        } catch (PcalSymTabException e)
+        {
+            throw new RemoveNameConflictsException(e.getMessage());
+        }
         st.Disambiguate();
         if (st.disambiguateReport.size() > 0)
             ToolIO.out.println("Warning: symbols were renamed.");
         if (st.errorReport.length() > 0)
-            PcalDebug.ReportError(st.errorReport);
-        PcalFixIDs.Fix(ast, st);
+            throw new RemoveNameConflictsException(st.errorReport);
+        try
+        {
+            PcalFixIDs.Fix(ast, st);
+        } catch (PcalFixIDException e)
+        {
+            throw new RemoveNameConflictsException(e.getMessage());
+        }
     } 
 
-    public static Vector Translate(AST ast) {
+    public static Vector Translate(AST ast) throws RemoveNameConflictsException {
         /********************************************************************
          * The main translation method.  Should go in a new .java file.     *
          * Note that this requires RemoveNameConflicts to be called first   *
@@ -35,14 +52,32 @@ public class NotYetImplemented {
             result.addElement(st.disambiguateReport.elementAt(i));
         // System.out.println("Before: " + ast.toString());
         // System.out.println("After renaming: " + ast.toString());
-        xast = PcalTranslate.Explode(ast, st);
+        try
+        {
+            xast = PcalTranslate.Explode(ast, st);
+        } catch (PcalTranslateException e)
+        {
+            throw new RemoveNameConflictsException(e);
+        }
         // System.out.println("After exploding: " + xast.toString());
-        result.addAll(PcalTLAGen.Gen(xast,  st));
+        try
+        {
+            result.addAll(PcalTLAGen.Gen(xast,  st));
+        } catch (PcalTLAGenException e)
+        {
+            throw new RemoveNameConflictsException(e);
+        }
         /*******************************************************************
         * Following test added by LL on 31 Aug 2007.                       *
         *******************************************************************/
-        if (ParseAlgorithm.hasDefaultInitialization) 
-          { st.CheckForDefaultInitValue() ; } ;
+        try
+        {
+            if (ParseAlgorithm.hasDefaultInitialization) 
+              { st.CheckForDefaultInitValue() ; }
+        } catch (PcalSymTabException e)
+        {
+            throw new RemoveNameConflictsException(e.getMessage());
+        } ;
         return result ;
     }
 

@@ -400,6 +400,8 @@
 package pcal;
 import java.util.Vector;
 
+import pcal.exception.TokenizerException;
+
 import tla2tex.Misc;
 import tla2tex.Symbol;
 import tla2tex.Token;
@@ -415,7 +417,6 @@ public class Tokenize
       * Upon return, this equals the token following the expression.       *
       *********************************************************************/
 
-    private static String nullString = "" ;
       /*********************************************************************
       * The hash tables above are used only to remember the keys; there    *
       * is no value attached to them.  However, the Hashtable class        *
@@ -605,10 +606,11 @@ public class Tokenize
       * identifier.  This is needed to prevent a +cal reservered word      *
       * like "end" from screwing up the parsing when it is used as a       *
       * record-field name.  It is initialized in InnerTokenize and         *
-      * set/reset by TokenOut.                                             *
+      * set/reset by TokenOut.                                             
+     * @throws TokenizerException *
       *********************************************************************/
       
-    private static void TokenOut(int type)
+    private static void TokenOut(int type) throws TokenizerException
       /*********************************************************************
       * If parseExpression is true, then add the token to linev and reset  *
       * token to the empty string unless it is the token following the     *
@@ -815,24 +817,24 @@ public class Tokenize
         col = 0 ;
       }
 
-    private static void TokenizingError(String msg) 
-      { PcalDebug.ReportError(
+    private static void TokenizingError(String msg) throws TokenizerException 
+      { throw new TokenizerException(
            msg + " `" + token + "' found at\n" + 
           "    line " + (reader.getLineNumber() + 1) + ", column " + 
                (col + 1));
       }
 
 
-    public static TLAExpr TokenizeExpr(PcalCharReader charReader)
+    public static TLAExpr TokenizeExpr(PcalCharReader charReader) throws TokenizerException
       { TLAExpr exp = InnerTokenize(charReader, true) ;
         return exp ; }
 
-    public static String GetAlgorithmToken(PcalCharReader charReader)
+    public static String GetAlgorithmToken(PcalCharReader charReader) throws TokenizerException
       { TLAExpr exp = InnerTokenize(charReader, false) ;
         return Delimiter ; }
 
     public static TLAExpr InnerTokenize(PcalCharReader charReader, 
-                                    boolean isExpr) 
+                                    boolean isExpr) throws TokenizerException 
       /*********************************************************************
       * Tokenize the input from the CharReader.  If isExpr is true, then   *
       * an expression from the input is tokenized and Delimiter is set to  *
@@ -936,7 +938,7 @@ public class Tokenize
                     }
                   else if (nextChar == '\t')
                     { if (mode == MODULE) 
-                        { PcalDebug.ReportError(
+                        { throw new TokenizerException(
                             "Input ended before end of module");
                         } ;
                       state = DONE ;
@@ -1163,7 +1165,7 @@ public class Tokenize
                         { state = EPILOG ;
                         }
                       else 
-                        { PcalDebug.ReportError(
+                        { throw new TokenizerException(
                            "Extra end-of-module lexeme on line "
                            + (reader.getLineNumber() + 1));
                         }
@@ -1283,7 +1285,7 @@ public class Tokenize
                       state = OR_COMMENT;
                     }
                   else if (nextChar == '\t')
-                    { PcalDebug.ReportError(
+                    { throw new TokenizerException(
                          "Input ended in the middle of a comment");
                     }
                   else
@@ -1340,7 +1342,7 @@ public class Tokenize
                       state = OR_COMMENT;
                     }
                   else if (nextChar == '\t')
-                    { PcalDebug.ReportError(
+                    { throw new TokenizerException(
                          "Input ended in the middle of a multi-line comment");
                     }
                   else
@@ -1397,7 +1399,7 @@ public class Tokenize
                       // state = PROLOG ;
                     }
                   else if (nextChar == '\t')
-                    { PcalDebug.ReportError(
+                    { throw new TokenizerException(
                          "Input ended before beginning of module");
                     }
                   else

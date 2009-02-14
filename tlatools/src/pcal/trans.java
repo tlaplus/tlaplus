@@ -155,6 +155,13 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Vector;
 
+import pcal.exception.FileToStringVectorException;
+import pcal.exception.ParseAlgorithmException;
+import pcal.exception.PcalResourceFileReaderException;
+import pcal.exception.RemoveNameConflictsException;
+import pcal.exception.StringVectorToFileException;
+import pcal.exception.TLCTranslationException;
+import pcal.exception.UnrecoverableException;
 import util.ToolIO;
   /*************************************************************************
   * Contains dummy definitions of methods that are yet to be implemented.  *
@@ -194,14 +201,7 @@ public static int runMe(String[] args)
       int status = GetArguments(args); 
       if (status != STATUS_OK) 
       {
-          if (ToolIO.getMode() == ToolIO.SYSTEM) 
-          {
-              // return exit status in system mode
-              System.exit(status);
-          } else {
-              // just exit the main function in tool mode
-              return status;
-          }
+          return exitWithStatus(status);
       }     
 
       if (PcalParams.FairnessOption.equals("-nof"))
@@ -221,7 +221,15 @@ public static int runMe(String[] args)
       * contents, where inputVec[i] is the string containing the contents  *
       * of line i+1 of the input file.                                     *
       *********************************************************************/
-      Vector inputVec = FileToStringVector(PcalParams.TLAInputFile + ".tla");
+    Vector inputVec = null;
+    try
+    {
+        inputVec = fileToStringVector(PcalParams.TLAInputFile + ".tla");
+    } catch (FileToStringVectorException e)
+    {
+        PcalDebug.reportError(e);
+        return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
+    }
 
       /*********************************************************************
       * Set untabInputVec to be the vector of strings obtained from        *
@@ -258,9 +266,10 @@ public static int runMe(String[] args)
                                            PcalParams.BeginXlation1,
                                            PcalParams.BeginXlation2) ;
       if (translationLine == -1) 
-        { PcalDebug.ReportError(
+        { PcalDebug.reportError(
             "No line containing `" + PcalParams.BeginXlation1 + " "
-              + PcalParams.BeginXlation2 ) ;      
+              + PcalParams.BeginXlation2 );
+          return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
         } ;
  
       int endTranslationLine = FindTokenPair(untabInputVec,
@@ -268,9 +277,10 @@ public static int runMe(String[] args)
                                              PcalParams.EndXlation1,
                                              PcalParams.EndXlation2) ;
       if (endTranslationLine == -1) 
-        { PcalDebug.ReportError(
+        { PcalDebug.reportError(
             "No line containing `" + PcalParams.EndXlation1 + " "
-              + PcalParams.EndXlation2 ) ;      
+              + PcalParams.EndXlation2 ) ;
+            return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
         } ;
  
        endTranslationLine = endTranslationLine - 1;
@@ -305,8 +315,9 @@ public static int runMe(String[] args)
         } ;
        
       if (! foundBegin)
-        { PcalDebug.ReportError("Beginning of algorithm string " + 
+        { PcalDebug.reportError("Beginning of algorithm string " + 
                                 PcalParams.BeginAlg + " not found.") ;
+            return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
         } ;
 
       /*********************************************************************
@@ -317,7 +328,14 @@ public static int runMe(String[] args)
       * replacing (* *) comments by spaces to keep the algorithm tokens    *
       * in the same positions for error reporting.                         *
       *********************************************************************/
-      ParseAlgorithm.Uncomment(untabInputVec, algLine, algCol) ;
+      try
+    {
+        ParseAlgorithm.Uncomment(untabInputVec, algLine, algCol) ;
+    } catch (ParseAlgorithmException e)
+    {
+        PcalDebug.reportError(e);
+        return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
+    }
 
       /*********************************************************************
       * Set reader to a PcalCharReader for the input file (with tabs and   *
@@ -331,7 +349,14 @@ public static int runMe(String[] args)
       /*********************************************************************
       * Set ast to the AST node representing the entire algorithm.         *
       *********************************************************************/
-      AST ast = ParseAlgorithm.GetAlgorithm(reader) ;
+      AST ast = null;
+      try {
+          ast = ParseAlgorithm.GetAlgorithm(reader) ;
+      } catch (ParseAlgorithmException e)
+      {
+          PcalDebug.reportError(e);
+          return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
+      }
       ToolIO.out.println("Parsing completed.") ; 
 
       /*********************************************************************
@@ -339,14 +364,7 @@ public static int runMe(String[] args)
       *********************************************************************/
       if (PcalParams.WriteASTFlag)
         { WriteAST(ast) ;
-        if (ToolIO.getMode() == ToolIO.SYSTEM) 
-        {
-            // return exit status in system mode
-            System.exit(STATUS_EXIT_WITHOUT_ERROR);
-        } else {
-            // just exit the main function in tool mode
-            return STATUS_EXIT_WITHOUT_ERROR;
-        }
+            return exitWithStatus(STATUS_EXIT_WITHOUT_ERROR);
         } ;
 
       /*********************************************************************
@@ -363,7 +381,15 @@ public static int runMe(String[] args)
       * some operator defined elsewhere in the TLA+ module.  So it's not   *
       * worth going overboard in this checking.                            *
       *********************************************************************/
-      NotYetImplemented.RemoveNameConflicts(ast) ;
+      try
+    {
+        NotYetImplemented.RemoveNameConflicts(ast) ;
+    } catch (RemoveNameConflictsException e1)
+    {
+        PcalDebug.reportError(e1);
+        return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
+
+    }
 
       /*********************************************************************
       * Set the vector `translation' to the translation of the algorithm   *
@@ -379,9 +405,23 @@ public static int runMe(String[] args)
           || PcalParams.Myspec2Option ;
 
       if (tlcTranslation)
-        { translation = TLCTranslate(ast) ; }
+        { try
+        {
+            translation = TLCTranslate(ast) ;
+        } catch (TLCTranslationException e)
+        {
+            PcalDebug.reportError(e);
+            return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
+        } }
       else 
-        { translation = NotYetImplemented.Translate(ast) ; } ;
+        { try
+        {
+            translation = NotYetImplemented.Translate(ast) ;
+        } catch (RemoveNameConflictsException e)
+        {
+            PcalDebug.reportError(e);
+            return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
+        } } ;
 
         ToolIO.out.println("Translation completed.") ;
 
@@ -397,10 +437,11 @@ public static int runMe(String[] args)
             file.renameTo(new File (PcalParams.TLAInputFile + ".old")) ;
           }
        catch (Exception e)
-          { PcalDebug.ReportError("Could not rename input file " + 
+          { PcalDebug.reportError("Could not rename input file " + 
                                   PcalParams.TLAInputFile + ".tla" + 
                                   " to " + 
-                                  PcalParams.TLAInputFile + ".old") ; 
+                                  PcalParams.TLAInputFile + ".old") ;
+          return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
           } ;
 
       /*********************************************************************
@@ -416,7 +457,14 @@ public static int runMe(String[] args)
       /*********************************************************************
       * Write the output file.                                             *
       *********************************************************************/
-      WriteStringVectorToFile(inputVec, PcalParams.TLAInputFile + ".tla") ;
+      try
+    {
+        WriteStringVectorToFile(inputVec, PcalParams.TLAInputFile + ".tla") ;
+    } catch (StringVectorToFileException e)
+    {
+        PcalDebug.reportError(e);
+        return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
+    }
       
       ToolIO.out.println("New file " + PcalParams.TLAInputFile + ".tla"
                           + " written.") ;
@@ -429,7 +477,15 @@ public static int runMe(String[] args)
       boolean writeCfg = ! PcalParams.Nocfg;
       if (writeCfg && cfgFile.exists())
         { if (cfgFile.canRead())
-            { cfg = FileToStringVector(PcalParams.TLAInputFile + ".cfg") ;
+            { 
+                try
+                {
+                    cfg = fileToStringVector(PcalParams.TLAInputFile + ".cfg") ;
+                } catch (FileToStringVectorException e)
+                {
+                    PcalDebug.reportError(e);
+                    return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
+                }
             } 
           else 
             { /*************************************************************
@@ -517,8 +573,15 @@ public static int runMe(String[] args)
            } 
          else
            { cfg.add(0, "SPECIFICATION Spec") ; } ;
-         WriteStringVectorToFile(cfg,
-                                 PcalParams.TLAInputFile + ".cfg");
+         try
+        {
+            WriteStringVectorToFile(cfg,
+                                     PcalParams.TLAInputFile + ".cfg");
+        } catch (StringVectorToFileException e)
+        {
+            PcalDebug.reportError(e);
+            return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
+        }
          ToolIO.out.println("New file " + PcalParams.TLAInputFile + ".cfg"
                              + " written.") ;
         } ;
@@ -527,8 +590,25 @@ public static int runMe(String[] args)
     } // END main
 
 
+/**
+ * If run in the system mode, exits the program, in tool mode returns the status
+ * @param status
+ */
+private static int exitWithStatus(int status)
+{
+    if (ToolIO.getMode() == ToolIO.SYSTEM) 
+    {
+        // return exit status in system mode
+        System.exit(status);
+    }
+    
+    // just exit the function in tool mode
+    return status;
+}
+
+
 /********************** Writing the AST ************************************/
-  private static void WriteAST(AST ast) 
+  private static boolean WriteAST(AST ast) 
     { Vector astFile = new Vector() ;
       astFile.addElement("------ MODULE AST -------" ) ;
       astFile.addElement( "EXTENDS TLC") ;
@@ -538,13 +618,20 @@ public static int runMe(String[] args)
       astFile.addElement( "ast == ") ;
       astFile.addElement(ast.toString()) ;
       astFile.addElement( "==========================") ;
-      WriteStringVectorToFile(astFile, "AST.tla") ;
+      try
+    {
+        WriteStringVectorToFile(astFile, "AST.tla") ;
+    } catch (StringVectorToFileException e)
+    {
+        PcalDebug.reportError(e);
+        return false;
+    }
       ToolIO.out.println("Wrote file AST.tla.") ;
-      return ;
+      return true;
     }
 /************************* THE TLC TRANSLATION *****************************/
 
-  private static Vector TLCTranslate(AST ast)
+  private static Vector TLCTranslate(AST ast) throws TLCTranslationException
     /***********************************************************************
     * The result is a translation of the algorithm represented by ast      *
     * obtained by using TLC to execute the definition of Translation(ast)  *
@@ -582,19 +669,28 @@ public static int runMe(String[] args)
       * directory.                                                         *
       *********************************************************************/
       if (PcalParams.SpecOption || PcalParams.Spec2Option)
-        { Vector parseFile = 
-            PcalResourceFileReader.ResourceFileToStringVector(
-                   PcalParams.SpecFile + ".tla") ;  
-          WriteStringVectorToFile(parseFile, PcalParams.SpecFile + ".tla") ;
+        { 
+          try
+        {
+              Vector parseFile = 
+                  PcalResourceFileReader.ResourceFileToStringVector(
+                         PcalParams.SpecFile + ".tla") ;  
+              
+            WriteStringVectorToFile(parseFile, PcalParams.SpecFile + ".tla") ;
+            parseFile = 
+                PcalResourceFileReader.ResourceFileToStringVector(
+                       PcalParams.SpecFile + ".cfg") ;  
+             WriteStringVectorToFile(parseFile, PcalParams.SpecFile + ".cfg") ;
+      
+             ToolIO.out.println(
+                  "Wrote files " + PcalParams.SpecFile + ".tla and "
+                  + PcalParams.SpecFile + ".cfg.") ;
+            
+        } catch (UnrecoverableException e)
+        {
+            throw new TLCTranslationException(e.getMessage());
+        }
 
-          parseFile = 
-             PcalResourceFileReader.ResourceFileToStringVector(
-                    PcalParams.SpecFile + ".cfg") ;  
-          WriteStringVectorToFile(parseFile, PcalParams.SpecFile + ".cfg") ;
-   
-          ToolIO.out.println(
-               "Wrote files " + PcalParams.SpecFile + ".tla and "
-               + PcalParams.SpecFile + ".cfg.") ;
         } ;
       /*********************************************************************
       * Run TLC on the specification file and set tlcOut to TLC's output.  *
@@ -619,7 +715,8 @@ public static int runMe(String[] args)
           bufferedReader.close();
         }             
       catch (Exception e)
-        { PcalDebug.ReportError("Error reading output of TLC") ;
+        { 
+          throw new TLCTranslationException("Error reading output of TLC");
         }  ;
 
       /*********************************************************************
@@ -629,11 +726,10 @@ public static int runMe(String[] args)
       * Translation(ast) with the outermost "<<" and ">>" removed.         *
       *********************************************************************/
       if (tlcOut.indexOf("@Error@") != -1)
-        { PcalDebug.ReportError(
-           "TLC's translation of the parsed algorithm failed with\n  Error: " 
-             + tlcOut.substring(tlcOut.indexOf("@Error@") + 7,
-                                tlcOut.indexOf("@EndError@"))
-           ) ;
+        { 
+          throw new TLCTranslationException("TLC's translation of the parsed algorithm failed with\n  Error: " 
+                  + tlcOut.substring(tlcOut.indexOf("@Error@") + 7,
+                          tlcOut.indexOf("@EndError@")));
         } ;
       tlcOut = tlcOut.substring(2, tlcOut.lastIndexOf(">>")) + "  ";
       ToolIO.out.println("Read TLC output.") ;
@@ -655,7 +751,9 @@ public static int runMe(String[] args)
                 * This is a quoted string.                             *
                 *******************************************************/
                 { if (tlcOut.charAt(i+2) != '"')   
-                    { PcalDebug.ReportError("I'm confused") ; } ;
+                    { throw new TLCTranslationException("I'm confused") ; 
+                      
+                    } ;
                   i = i + 3 ;
                while(tlcOut.charAt(i) != '"')
                     { i = i+1;} 
@@ -690,7 +788,7 @@ public static int runMe(String[] args)
             } 
           else 
             { if (tlcOut.charAt(i) != ' ')
-                { PcalDebug.ReportError( "Expected space but found `" + 
+                { throw new TLCTranslationException( "Expected space but found `" + 
                              tlcOut.charAt(i) + "'") ; } ;
               transl = transl + tlcOut.substring(i,i+1) ;
               i = i+1;
@@ -708,7 +806,7 @@ public static int runMe(String[] args)
 /***************** METHODS FOR READING AND WRITING FILES *****************/
 
   private static void WriteStringVectorToFile(Vector inputVec, 
-                                              String fileName)
+                                              String fileName) throws StringVectorToFileException
     /***********************************************************************
     * Writes the Vector of strings inputVec to file named fileName, with   *
     * each element of inputVec written on a new line.                      *
@@ -724,13 +822,13 @@ public static int runMe(String[] args)
             fileW.close() ;
           }
      catch (Exception e)
-       { PcalDebug.ReportError("Could not write file " + fileName) ; 
+       { throw new StringVectorToFileException("Could not write file " + fileName) ; 
        } ;
 
     } 
 
 
-  private static Vector FileToStringVector(String fileName)
+  private static Vector fileToStringVector(String fileName) throws FileToStringVectorException
     /***********************************************************************
     * Reads file fileName into a StringVector, a vector in which each      *
     * element is a line of the file.                                       *
@@ -751,8 +849,8 @@ public static int runMe(String[] args)
               { /*********************************************************
                 * Error while reading input file.                        *
                 *********************************************************/
-                PcalDebug.ReportError("Error reading file " + 
-                                             fileName + ".") ;
+                throw new FileToStringVectorException("Error reading file " + 
+                        fileName + ".");
                } 
           }
             
@@ -760,7 +858,7 @@ public static int runMe(String[] args)
         { /**************************************************************
           * Input file could not be found.                              *
           **************************************************************/
-          PcalDebug.ReportError("Input file " + fileName + " not found.");
+          throw new FileToStringVectorException("Input file " + fileName + " not found.");
          } ;
       return inputVec ; 
      }
@@ -864,8 +962,13 @@ public static int runMe(String[] args)
          * but it could be a mistake.  But let's just assume she typed     *
          * "-help", since she either wants or needs help.                  *
          ******************************************************************/
-         { OutputHelpMessage() ;
-           return STATUS_EXIT_WITHOUT_ERROR;
+         { if (OutputHelpMessage()) 
+         {
+             return STATUS_EXIT_WITHOUT_ERROR;
+             
+         } else {
+             return STATUS_EXIT_WITH_ERRORS;
+         }
          } ;
 
        while (nextArg < maxArg)
@@ -875,8 +978,11 @@ public static int runMe(String[] args)
         *******************************************************************/
         { String option = args[nextArg] ;
           if (option.equals("-help"))
-            { OutputHelpMessage() ;
-              return STATUS_EXIT_WITHOUT_ERROR;
+            { if (OutputHelpMessage()) {
+              return STATUS_EXIT_WITHOUT_ERROR;}
+            else {
+              return STATUS_EXIT_WITH_ERRORS;
+            }
             }
           else if (option.equals("-writeAST"))
             { PcalParams.WriteASTFlag  = true ; 
@@ -1036,15 +1142,28 @@ public static int runMe(String[] args)
        }
        return STATUS_OK;
      }   
-
-    private static void OutputHelpMessage()
-      { Vector helpVec = 
-                PcalResourceFileReader.ResourceFileToStringVector("help.txt") ;
+   
+   /**
+    * Prints out the help message
+    * @return status if it has been successfully printed
+    */
+    private static boolean OutputHelpMessage()  
+      { Vector helpVec = null;
+        try
+        {
+            helpVec = PcalResourceFileReader.ResourceFileToStringVector("help.txt");
+        } catch (PcalResourceFileReaderException e)
+        {
+            PcalDebug.reportError(e);
+            return false;
+        }
         int i = 0 ;
         while (i < helpVec.size())
           { ToolIO.out.println((String) helpVec.elementAt(i)) ;
             i = i + 1 ;
           }
+        
+        return true;
       }
 
     /**

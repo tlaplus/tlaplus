@@ -65,6 +65,8 @@ package pcal;
 
 import java.util.Vector;
 
+import pcal.exception.PcalSymTabException;
+
 public class PcalSymTab {
     public Vector symtab;             // Vector of SymTabEntry
     public Vector procs;              // Vector of ProcedureEntry
@@ -160,7 +162,7 @@ public class PcalSymTab {
         }
     } /* End of ProcessEntry */
 
-    public PcalSymTab (AST ast) {
+    public PcalSymTab (AST ast) throws PcalSymTabException {
 
         symtab = new Vector();
         iPC = null;
@@ -173,7 +175,7 @@ public class PcalSymTab {
 
         InsertSym(GLOBAL, "pc", "", "", 0, 0);
         ExtractSym(ast, "");
-        if (errorReport.length() > 0) PcalDebug.ReportError(errorReport);
+        if (errorReport.length() > 0) throw new PcalSymTabException(errorReport);
     }
 
     /***************************************************
@@ -499,11 +501,11 @@ public class PcalSymTab {
     }
 
     private void ExtractProcedure (AST.Procedure ast, String context) {
-        boolean b;
+        
         if (! InsertProc(ast))
             errorReport = errorReport + "\nProcedure " + ast.name +
                 " redefined at col " + ast.col + " line " + ast.line;
-        b = InsertSym(PROCEDURE,
+        boolean b = InsertSym(PROCEDURE,
                       ast.name,
                       context,
                       "procedure",
@@ -666,7 +668,7 @@ public class PcalSymTab {
    * Reports an error if "defaultInitValue" appears in the symbol table.   *
    * Added by LL on 31 Aug 2007.                                           *
    ************************************************************************/
-   public void CheckForDefaultInitValue() {
+   public void CheckForDefaultInitValue() throws PcalSymTabException {
      String errors = "" ;
      for (int i = 0 ; i < symtab.size() ; i++) 
        { SymTabEntry se = (SymTabEntry) symtab.elementAt(i);
@@ -678,7 +680,7 @@ public class PcalSymTab {
            } ;
        } ;
      if (! errors.equals(""))
-       { PcalDebug.ReportError(errors) ; } ;
+       { throw new PcalSymTabException(errors) ; } ;
      return ;
     }
 

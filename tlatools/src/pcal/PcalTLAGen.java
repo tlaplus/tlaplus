@@ -16,6 +16,9 @@ package pcal;
 
 import java.util.Vector;
 
+import pcal.exception.PcalTLAGenException;
+import pcal.exception.TLAExprException;
+
 public class PcalTLAGen {
 
     // Variables that control formatting
@@ -84,8 +87,9 @@ public class PcalTLAGen {
 
     /***********************************************************/
     /* The public method: generate TLA+ as a vector of string. */
-    /***********************************************************/
-    public static Vector Gen(AST ast, PcalSymTab symtab) {
+    /**
+     **********************************************************/
+    public static Vector Gen(AST ast, PcalSymTab symtab) throws PcalTLAGenException {
         st = symtab;
         GenSym(ast, "");
         return tlacode;
@@ -93,8 +97,9 @@ public class PcalTLAGen {
 
     /*****************************************************************/
     /* Top level routines. Context is "", "procedure", or "process". */
-    /*****************************************************************/
-    private static void GenSym (AST ast, String context) {
+    /**
+     * @throws PcalTLAGenException ***************************************************************/
+    private static void GenSym (AST ast, String context) throws PcalTLAGenException {
         if (ast.getClass().equals(AST.UniprocessObj.getClass()))
             GenUniprocess((AST.Uniprocess) ast, context);
         else if (ast.getClass().equals(AST.MultiprocessObj.getClass()))
@@ -107,7 +112,7 @@ public class PcalTLAGen {
             GenLabeledStmt((AST.LabeledStmt) ast, context);
     }
 
-    private static void GenUniprocess (AST.Uniprocess ast, String context) {
+    private static void GenUniprocess (AST.Uniprocess ast, String context) throws PcalTLAGenException {
         mp = false;
         GenVarsAndDefs(ast.decls, ast.prcds, null, ast.defs);
         GenInit(ast.decls, ast.prcds, null);
@@ -124,7 +129,7 @@ public class PcalTLAGen {
         GenTermination();
     }
         
-    private static void GenMultiprocess (AST.Multiprocess ast, String context) {
+    private static void GenMultiprocess (AST.Multiprocess ast, String context) throws PcalTLAGenException {
         mp = true;
         GenVarsAndDefs(ast.decls, ast.prcds, ast.procs, ast.defs);
         GenProcSet();
@@ -138,7 +143,7 @@ public class PcalTLAGen {
         GenTermination();
     }
 
-    private static void GenProcedure (AST.Procedure ast, String context) {
+    private static void GenProcedure (AST.Procedure ast, String context) throws PcalTLAGenException {
         /* ns accumulates the disjunt of the steps of the procedure */
         StringBuffer ns = new StringBuffer();
         Vector nsV = new Vector();
@@ -185,7 +190,7 @@ public class PcalTLAGen {
         tlacode.addElement("");
     }
         
-    private static void GenProcess(AST.Process ast, String context) {
+    private static void GenProcess(AST.Process ast, String context) throws PcalTLAGenException {
         /* ns accumulates the disjunt of the steps of the process */
         StringBuffer ns = new StringBuffer();
         Vector nsV = new Vector();
@@ -243,8 +248,9 @@ public class PcalTLAGen {
 
     /*****************************************************/
     /* Generates an action with name equal to the label. */
-    /*****************************************************/
-    private static void GenLabeledStmt(AST.LabeledStmt ast, String context) {
+    /**
+     * @throws PcalTLAGenException ***************************************************/
+    private static void GenLabeledStmt(AST.LabeledStmt ast, String context) throws PcalTLAGenException {
         StringBuffer sb = new StringBuffer(ast.label);
         /* c is used to determine which vars are in UNCHANGED. */
         Changed c = new Changed(vars);
@@ -313,12 +319,13 @@ public class PcalTLAGen {
     /* of prefix).                                                   */
     /*                                                               */
     /* And what on earth are `c' and `context'? LL                   */
-    /*****************************************************************/
+    /**
+     * @throws PcalTLAGenException ***************************************************************/
     private static void GenStmt(AST ast,
                                 Changed c,
                                 String context,
                                 String prefix,
-                                int col) {
+                                int col) throws PcalTLAGenException {
         if (ast.getClass().equals(AST.AssignObj.getClass()))
             GenAssign((AST.Assign) ast, c, context, prefix, col);
         else if (ast.getClass().equals(AST.IfObj.getClass()))
@@ -344,12 +351,13 @@ public class PcalTLAGen {
     /* executed "at the same time", we accumulate the changes in a   */
     /* separate Changed cThis, and use c to determine which vars in  */
     /* the right hand side are primed.                               */
-    /*****************************************************************/
+    /**
+     * @throws PcalTLAGenException ***************************************************************/
     private static void GenAssign(AST.Assign ast,
                                   Changed c,
                                   String context,
                                   String prefix,
-                                  int col) {
+                                  int col) throws PcalTLAGenException {
         Changed cThis = new Changed(c);
         StringBuffer sb = new StringBuffer();
         Vector vlines = new Vector();
@@ -375,16 +383,18 @@ public class PcalTLAGen {
                 * AST.location to properly report the location of an       *
                 * error in a line created by expanding a macro.            *
                 ***********************************************************/
-                PcalDebug.ReportErrorAt("Multiple assignment to " +
+                throw new PcalTLAGenException("Multiple assignment to " +
                                         sF.lhs.var, 
                                         ast /* sF */ ) ;
             numAssigns  = numAssigns + 1;
             Vector lines = new Vector();  // For collecting generated lines
+
             if (iFirst == iLast) {
                 AST.SingleAssign sass = sF;
+                
                 TLAExpr sub = AddSubscriptsToExpr(sass.lhs.sub,
-                                                  SubExpr(Self(context)),
-                                                  c);
+                                                      SubExpr(Self(context)),
+                                                      c);
                 TLAExpr rhs = AddSubscriptsToExpr(sass.rhs,
                                                   SubExpr(Self(context)),
                                                   c);
@@ -527,6 +537,7 @@ public class PcalTLAGen {
                     iFirst = iFirst + 1;
                 }
             }
+            
             vlines.addElement(lines);
             i = iLast + 1;
         }
@@ -557,19 +568,21 @@ public class PcalTLAGen {
     /* know the UNCHANGED for the Then branch until the code   */
     /* for the Else branch is generated. So, we fix the        */
     /* line in the Then branch after the Else branch is done.  */
-    /***********************************************************/
+    /**
+     * @throws PcalTLAGenException *********************************************************/
     private static void GenIf(AST.If ast,
                               Changed c,
                               String context,
                               String prefix,
-                              int col) {
+                              int col) throws PcalTLAGenException {
         Changed cThen = new Changed(c);
         Changed cElse = new Changed(c);
         int lineUncThen;
         StringBuffer sb = new StringBuffer(prefix);
-        TLAExpr test = AddSubscriptsToExpr(ast.test,
-                                           SubExpr(Self(context)),
-                                           c);
+        TLAExpr test = null;
+            test = AddSubscriptsToExpr(ast.test,
+                                               SubExpr(Self(context)),
+                                               c);
         Vector sv = test.toStringVector();
         sb.append("IF ");
         int here = sb.length(); 
@@ -681,13 +694,14 @@ public class PcalTLAGen {
     *                                                                      *
     * Generate TLA+ for the `either' statement.  This performs the same    *
     * sort of hackery as for the `if' statement, necessitated by the       *
-    * design flaw commented on above.                                      *
+    * design flaw commented on above.                                      
+     * @throws PcalTLAGenException *
     ***********************************************************************/
     private static void GenEither(AST.Either ast,
                               Changed c,
                               String context,
                               String prefix,
-                              int col) {
+                              int col) throws PcalTLAGenException {
       Changed allC = new Changed(c) ;
         /*******************************************************************
         * Accumulates the variable changes of all the clauses.             *
@@ -767,7 +781,7 @@ public class PcalTLAGen {
                                 Changed c,
                                 String context,
                                 String prefix,
-                                int col) {
+                                int col) throws PcalTLAGenException {
         StringBuffer sb = new StringBuffer(prefix);
         TLAExpr exp = AddSubscriptsToExpr(ast.exp,
                                           SubExpr(Self(context)),
@@ -826,7 +840,7 @@ public class PcalTLAGen {
                                 Changed c,
                                 String context,
                                 String prefix,
-                                int col) {
+                                int col) throws PcalTLAGenException {
         StringBuffer sb = new StringBuffer(prefix);
         TLAExpr exp = AddSubscriptsToExpr(ast.exp,
                                           SubExpr(Self(context)),
@@ -845,7 +859,7 @@ public class PcalTLAGen {
                                   Changed c,
                                   String context,
                                   String prefix,
-                                  int col) {
+                                  int col) throws PcalTLAGenException {
         StringBuffer sb = new StringBuffer(prefix);
         TLAExpr exp = AddSubscriptsToExpr(ast.exp,
                                           SubExpr(Self(context)),
@@ -865,12 +879,13 @@ public class PcalTLAGen {
 
     /********************************************************/
     /* Assert(ast.expr, "Failure of assertion at... ")      */
-    /********************************************************/
+    /**
+     * @throws PcalTLAGenException ******************************************************/
     private static void GenAssert(AST.Assert ast,
                                   Changed c,
                                   String context,
                                   String prefix,
-                                  int col) {
+                                  int col) throws PcalTLAGenException {
         StringBuffer sb = new StringBuffer(prefix);
         StringBuffer sc = new StringBuffer();
         TLAExpr exp = AddSubscriptsToExpr(ast.exp,
@@ -1108,10 +1123,11 @@ public class PcalTLAGen {
 
     /***********************************/
     /* Generate the Init == statement. */
-    /***********************************/
+    /**
+     * @throws TLAExprException *********************************/
     private static void GenInit (Vector globals,
                                  Vector procs,
-                                 Vector processes) {
+                                 Vector processes) throws PcalTLAGenException {
         int col = "Init == ".length();
         StringBuffer is = new StringBuffer();
         is.append("Init == ");
@@ -1303,16 +1319,24 @@ public class PcalTLAGen {
                             expr.addToken(new TLAToken("\\in ", 13, 
                                            TLAToken.BUILTIN));
                             expr.normalize() ;
-                            subexpr.prepend(expr, 1) ;
-                            expr = new TLAExpr() ;
-                            expr.addLine() ;
-                            expr.addToken(new TLAToken(":", 0, 
-                                             TLAToken.BUILTIN));
-                            expr.addToken(new TLAToken("TRUE", 2, 
-                                             TLAToken.BUILTIN));
-                            expr.addToken(new TLAToken("]", 6, 
-                                             TLAToken.BUILTIN));
-                            expr.prepend(subexpr, 1) ;
+                            
+                            try
+                            {
+                                subexpr.prepend(expr, 1) ;
+                                expr = new TLAExpr() ;
+                                expr.addLine() ;
+                                expr.addToken(new TLAToken(":", 0, 
+                                                 TLAToken.BUILTIN));
+                                expr.addToken(new TLAToken("TRUE", 2, 
+                                                 TLAToken.BUILTIN));
+                                expr.addToken(new TLAToken("]", 6, 
+                                                 TLAToken.BUILTIN));
+                                expr.prepend(subexpr, 1) ;
+                            } catch (TLAExprException e)
+                            {
+                                throw new PcalTLAGenException(e.getMessage());
+                            }
+
                             sve = AddSubscriptsToExpr(
                                                 decl.val,
                                                 expr,
@@ -1332,19 +1356,24 @@ public class PcalTLAGen {
                           } ;
                         expr.normalize() ;
                         TLAExpr expr2 = proc.id.cloneAndNormalize() ;
-                        expr2.prepend(expr,0) ;
-                        expr = new TLAExpr();
-                        expr.addLine() ;
-                        if ( decl.isEq) 
-                          { expr.addToken(new TLAToken("|->", 0, 
-                                                       TLAToken.BUILTIN));
-                          }                        
-                        else 
-                          { expr.addToken(new TLAToken("->", 0, 
-                                                       TLAToken.BUILTIN));
-                          } ;                        
-                        expr.prepend(expr2,1) ;                        
-                        sve.prepend(expr, 1) ;
+                        try {
+                            expr2.prepend(expr,0) ;
+                            expr = new TLAExpr();
+                            expr.addLine() ;
+                            if ( decl.isEq) 
+                              { expr.addToken(new TLAToken("|->", 0, 
+                                                           TLAToken.BUILTIN));
+                              }                        
+                            else 
+                              { expr.addToken(new TLAToken("->", 0, 
+                                                           TLAToken.BUILTIN));
+                              } ;                        
+                            expr.prepend(expr2,1) ;                        
+                            sve.prepend(expr, 1) ;
+                        } catch (TLAExprException e)
+                        {
+                            throw new PcalTLAGenException(e.getMessage());
+                        }
                       } ;
                     sv = sve.toStringVector() ; 
                     if (proc.isEq) { sv = Parenthesize(sv) ; } ;
@@ -1669,10 +1698,11 @@ public class PcalTLAGen {
     /* parameters, and variables defined in process sets.     */
     /* Then, aded primes to variables that have been changed  */
     /* according to c.                                        */
-    /**********************************************************/
+    /**
+     * @throws TLAExprException ********************************************************/
     private static TLAExpr AddSubscriptsToExpr(TLAExpr exprn,
                                                TLAExpr sub,
-                                               Changed c) {
+                                               Changed c) throws PcalTLAGenException {
 
         Vector exprVec = new Vector();    // the substituting exprs
         Vector stringVec = new Vector();  // the substituted ids
@@ -1708,7 +1738,13 @@ public class PcalTLAGen {
                     if (subr) {
                         TLAExpr subexp = sub.cloneAndNormalize();
                         exp.normalize();
-                        subexp.prepend(exp, 0);
+                        try
+                        {
+                            subexp.prepend(exp, 0);
+                        } catch (TLAExprException e)
+                        {
+                            throw new PcalTLAGenException(e.getMessage());
+                        }
                         exp = subexp;
                     }
                  /**********************************************************
@@ -1723,7 +1759,12 @@ public class PcalTLAGen {
             }
         }
         if (exprVec.size() > 0)
+            try {
             expr.substituteForAll(exprVec, stringVec, false);
+            } catch (TLAExprException e)
+            {
+                throw new PcalTLAGenException(e.getMessage());
+            }
         return expr;
     }
 
