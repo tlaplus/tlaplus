@@ -15,6 +15,8 @@ import util.ToolIO;
 ***************************************************************************/
 public class PcalDebug
 {
+    public static final String UNRECOVERABLE_ERROR = "\nUnrecoverable error:\n -- ";
+    public static final String ERROR_POSTFIX = ".\n";
 
     /**
      * Printer for the exceptions
@@ -37,7 +39,7 @@ public class PcalDebug
      */
     public static void reportError(String message)
     {
-        ToolIO.out.println(new StringBuffer("\nUnrecoverable error:\n -- ").append(message).append(".\n").toString());
+        ToolIO.out.println(new StringBuffer(UNRECOVERABLE_ERROR).append(message).append(ERROR_POSTFIX).toString());
     }
 
     /**
@@ -54,39 +56,6 @@ public class PcalDebug
             reportError(message + "\n    at " + ast.location());
         }
     }
-
-    /**
-     * @deprecated do not use anymore, use reportError instead
-     * @param msg
-     */
-    private static void ReportError(String msg)
-    /*********************************************************************
-    * This method is called to report an error and abort.                *
-    *********************************************************************/
-    {
-        ToolIO.out.println("");
-        ToolIO.out.println("Unrecoverable error:");
-        ToolIO.out.println("");
-        ToolIO.out.println(" -- " + msg + ".");
-        ToolIO.out.println("");
-        throw new PCalUnrecoverableErrorRuntimeException("Report error has been called");
-    };
-
-    /**
-     * @deprecated do not use anymore, use reportError instead
-     */
-    private static void ReportErrorAt(String msg, AST ast)
-    /*********************************************************************
-    * This method is called to report an error in the object ast and     *
-    * abort.                                                             *
-    *                                                                    *
-    * Corrected 4 Mar 2006 by LL to use AST.location.                    *
-    *********************************************************************/
-    {
-        if (ast.line == 0)
-            ReportError(msg);
-        ReportError(msg + "\n    at " + ast.location());
-    };
 
     public static void Assert(boolean val)
     /*********************************************************************
