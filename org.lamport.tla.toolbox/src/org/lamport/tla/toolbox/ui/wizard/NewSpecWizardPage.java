@@ -149,19 +149,15 @@ public class NewSpecWizardPage extends WizardPage
     protected synchronized void dialogChanged()
     {
 
+        String rootfilePath = null;
         // we should not validate, if nothing has been typed in
         if (fileTextDirty)
         {
-            String rootfilePath = getRootFilename();
+            rootfilePath = getRootFilename();
             if ("".equals(rootfilePath)) // Text.getText() never return null
             {
                 reportError("Root file name should be provided");
                 return;
-            } else if (!new File(rootfilePath).exists())
-            {
-                // allow this
-                reportWarning("Root file name does not exist. A new file will be created.");
-                // return;
             } else if (new File(rootfilePath).isDirectory())
             {
                 reportError("Root file should be a TLA file and not a directory");
@@ -225,6 +221,12 @@ public class NewSpecWizardPage extends WizardPage
         // erase the previous messages
         this.setMessage(null);
 
+        if (rootfilePath != null && !new File(rootfilePath).exists())
+        {
+            // allow this
+            reportWarning("Root file name does not exist. A new file will be created.");
+        } 
+        
         // we should not enable the next/finish if both fields are virgin
         if (!fileTextDirty || !specNameDirty)
         {
@@ -256,7 +258,7 @@ public class NewSpecWizardPage extends WizardPage
      */
     private void reportWarning(String message)
     {
-        this.setPageComplete(false);
+        this.setPageComplete(true);
         this.setMessage(message, DialogPage.WARNING);
     }
 
