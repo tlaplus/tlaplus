@@ -30,6 +30,8 @@
 	<target name="default" depends="info" description="Default">
 		<antcall target="compile" inheritall="true" inheritrefs="true" />
 		<antcall target="dist" inheritall="true" inheritrefs="true" />
+		
+		<copy file="${dist.file}" todir="../org.lamport.tla.toolbox/" overwrite="true" />
 	</target>
 
 	<target name="default-release" depends="info" description="Produces a release">
