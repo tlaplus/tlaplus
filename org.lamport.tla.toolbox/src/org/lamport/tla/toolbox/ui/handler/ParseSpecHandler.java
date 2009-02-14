@@ -15,8 +15,6 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.util.UIHelper;
-import org.lamport.tla.toolbox.util.pref.IPreferenceConstants;
-import org.lamport.tla.toolbox.util.pref.PreferenceStoreHelper;
 
 /**
  * Triggers parsing of specification's root file
