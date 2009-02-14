@@ -9,15 +9,31 @@ import pcal.exception.PcalTranslateException;
 import pcal.exception.RemoveNameConflictsException;
 import util.ToolIO;
 
-public class NotYetImplemented {
+/**
+ * 
+ * @author Leslie Lamport, Keith Marzullo
+ * @version $Id$
+ */
+public class NotYetImplemented
+{
 
-    private static PcalSymTab st = null;
+    private PcalSymTab st = null;
+    private AST ast = null;
 
-    public static void RemoveNameConflicts(AST ast) throws RemoveNameConflictsException {
-        /********************************************************************
-         * Called by trans.java.  Should go in a new .java file.            *
-         ********************************************************************/
+    /**
+     * Constructs a working copy 
+     * @param ast
+     */
+    public NotYetImplemented(AST ast)
+    {
+        this.ast = ast;
+    }
 
+    /********************************************************************
+     * Called by trans.java.  Should go in a new .java file.            *
+     ********************************************************************/
+    public void removeNameConflicts() throws RemoveNameConflictsException
+    {
         try
         {
             st = new PcalSymTab(ast);
@@ -25,6 +41,7 @@ public class NotYetImplemented {
         {
             throw new RemoveNameConflictsException(e.getMessage());
         }
+
         st.Disambiguate();
         if (st.disambiguateReport.size() > 0)
             ToolIO.out.println("Warning: symbols were renamed.");
@@ -37,15 +54,16 @@ public class NotYetImplemented {
         {
             throw new RemoveNameConflictsException(e.getMessage());
         }
-    } 
+    }
 
-    public static Vector Translate(AST ast) throws RemoveNameConflictsException {
-        /********************************************************************
-         * The main translation method.  Should go in a new .java file.     *
-         * Note that this requires RemoveNameConflicts to be called first   *
-         * because of the grotty use of the class variable st.              *
-         ********************************************************************/
-        Vector result = new Vector() ;
+    /********************************************************************
+     * The main translation method.  Should go in a new .java file.     *
+     * Note that this requires RemoveNameConflicts to be called first   *
+     * because of the grotty use of the class variable st.              *
+     ********************************************************************/
+    public Vector translate() throws RemoveNameConflictsException
+    {
+        Vector result = new Vector();
         AST xast = null;
 
         for (int i = 0; i < st.disambiguateReport.size(); i++)
@@ -62,7 +80,8 @@ public class NotYetImplemented {
         // System.out.println("After exploding: " + xast.toString());
         try
         {
-            result.addAll(PcalTLAGen.Gen(xast,  st));
+            PcalTLAGen tlaGenerator = new PcalTLAGen();
+            result.addAll(tlaGenerator.generate(xast, st));
         } catch (PcalTLAGenException e)
         {
             throw new RemoveNameConflictsException(e);
@@ -72,13 +91,14 @@ public class NotYetImplemented {
         *******************************************************************/
         try
         {
-            if (ParseAlgorithm.hasDefaultInitialization) 
-              { st.CheckForDefaultInitValue() ; }
+            if (ParseAlgorithm.hasDefaultInitialization)
+            {
+                st.CheckForDefaultInitValue();
+            }
         } catch (PcalSymTabException e)
         {
             throw new RemoveNameConflictsException(e.getMessage());
-        } ;
-        return result ;
+        }
+        return result;
     }
-
-} 
+}
