@@ -21,7 +21,8 @@ DESCRIPTION: {General description of the release
 - TODO(LL): help content
 - TODO(SZ): intro-page
 
-
+- FEATURE: simpple error report of Pcal errors
+- FEATURE: Pcal translation starts with CTRL + T
 - BUGFIX: The bug in the check that the root file is a TLA file. 
 - FEATURE: PCal translation added
 - FEATURE: Preferences on auto-build added (module, spec, files)
