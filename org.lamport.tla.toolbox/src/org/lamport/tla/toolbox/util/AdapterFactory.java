@@ -252,7 +252,7 @@ public class AdapterFactory implements IAdapterFactory
      */
     public static List adaptModules(String name, Vector userModules)
     {
-        Vector dependents = new Vector(userModules.size() - 1);
+        Vector dependents = new Vector(userModules.size());
         for (int i = 0; i < userModules.size(); i++)
         {
             Module module = (Module) userModules.get(i);
