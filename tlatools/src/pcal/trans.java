@@ -187,7 +187,7 @@ class trans
       * Get and print version number.                                      *
       *********************************************************************/
       String lastModified =  
-         "last modified on Wed 14 January 2009 at 14:52:58 PST by lamport";
+         "last modified on Wed 15 February 2009 at 14:52:58 PST by lamport";
         /*******************************************************************
         * This string is inserted by an Emacs macro when a new version is  *
         * saved.                                                           *
@@ -1126,10 +1126,21 @@ private static int exitWithStatus(int status)
        * Set PcalParams.TLAInputFile to the last argument, removing a      *
        * "tla" extension if it has one.                                    *
        ********************************************************************/
-       File file = new File(args[maxArg]);
+       int dotIndex = args[maxArg].lastIndexOf(".") ;
+       if (dotIndex == -1)
+           { PcalParams.TLAInputFile = args[maxArg]; }
+       else  if (args[maxArg].substring(dotIndex).equals(".tla"))
+           { PcalParams.TLAInputFile = args[maxArg].substring(0, dotIndex); }
+       else {  CommandLineError("Input file has extension other than tla"); }
+
+       File file = new File(PcalParams.TLAInputFile + ".tla") ;
+//       File file = new File(args[maxArg]);
        if (file.exists()) 
        {
-           if (file.getName().lastIndexOf(".") == -1)
+/***************************
+// 15 Feb 2008: LL fixed bug introduced by SZ's change that
+// didn't allow omission of ".tla" from file name.
+    	   if (file.getName().lastIndexOf(".") == -1)
            {
                // no extension
                PcalParams.TLAInputFile = file.getPath(); 
@@ -1143,6 +1154,7 @@ private static int exitWithStatus(int status)
                    return CommandLineError("Input file has extension other than tla");
                }
            }
+******************************/
        } else {
            return CommandLineError("Error reading input file");
        }
