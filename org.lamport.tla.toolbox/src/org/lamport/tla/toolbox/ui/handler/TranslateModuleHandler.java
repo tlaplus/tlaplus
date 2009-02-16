@@ -15,7 +15,7 @@ import org.eclipse.ui.IFileEditorInput;
 import org.lamport.tla.toolbox.util.TLAMarkerHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
-import pcal.TranslatorLauncher;
+import pcal.Translator;
 
 /**
  * Triggers the PCal translation of the module
@@ -24,7 +24,7 @@ import pcal.TranslatorLauncher;
  */
 public class TranslateModuleHandler extends AbstractHandler implements IHandler
 {
-    TranslatorLauncher launcher = new TranslatorLauncher();
+    Translator translator = new Translator();
 
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
@@ -42,9 +42,9 @@ public class TranslateModuleHandler extends AbstractHandler implements IHandler
             IResource fileToBuild = ((IFileEditorInput) editorInput).getFile();
             System.out.println(fileToBuild.getLocation().toOSString());
 
-            launcher.runTranslation(new String[] { fileToBuild.getLocation().toOSString() });
+            translator.runTranslation(new String[] { fileToBuild.getLocation().toOSString() });
 
-            List errors = launcher.getErrorMessages();
+            List errors = translator.getErrorMessages();
 
             for (int i = 0; i < errors.size(); i++)
             {
