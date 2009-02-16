@@ -171,19 +171,31 @@ import util.ToolIO;
 * </pre>
 ***************************************************************************/  
 class trans
- { 
-  private static final int STATUS_OK = 1;
-  private static final int STATUS_EXIT_WITHOUT_ERROR = 0;
-  private static final int STATUS_EXIT_WITH_ERRORS = -1;
+{ 
+    /** Status indicating no errors and successful process */
+    private static final int STATUS_OK = 1;
+    /** Status of no errors, but abort of the translation */
+    private static final int STATUS_EXIT_WITHOUT_ERROR = 0;
+    /** Status of present errors and abort of the translation */
+    private static final int STATUS_EXIT_WITH_ERRORS = -1;
 
-  public static void main(String[] args)
-  {
-      runMe(args);
-  }
+   /**
+    * Main function called from the command line
+    * @param args, command line arguments
+    */
+    public static void main(String[] args)
+    {
+        runMe(args);
+    }
   
-  
-  public static int runMe(String[] args) 
-    { /*********************************************************************
+    /**
+     * The main translator method
+     * @return one of {@link trans#STATUS_OK}, {@link trans#STATUS_EXIT_WITH_ERRORS}, {@link trans#STATUS_EXIT_WITH_ERRORS}
+     * indicating the status
+     */
+    public static int runMe(String[] args) 
+    { 
+      /*********************************************************************
       * Get and print version number.                                      *
       *********************************************************************/
       String lastModified =  
@@ -202,23 +214,11 @@ class trans
       /*********************************************************************
       * Get and process arguments.                                         
       *********************************************************************/
-      int status = GetArguments(args); 
+      int status = parseAndProcessArguments(args); 
       if (status != STATUS_OK) 
       {
           return exitWithStatus(status);
       }     
-
-      if (PcalParams.FairnessOption.equals("-nof"))
-        { PcalParams.FairnessOption = "";
-        }
-      else 
-        { if (    PcalParams.CheckTermination
-               && PcalParams.FairnessOption.equals("")
-             )
-            { PcalParams.FairnessOption = "wf" ;
-            }
-        }
-
 
       /*********************************************************************
       * Read the input file, and set the Vector inputVec equal to its      *
@@ -252,7 +252,7 @@ class trans
       * the output file that are not produced by the translator are        *
       * copied from inputVec, so any tabs the user wants are kept.         *
       *********************************************************************/
-      Vector untabInputVec = RemoveTabs(inputVec) ;     
+      Vector untabInputVec = removeTabs(inputVec) ;     
 
       /*********************************************************************
       * Delete the previous version of the translation (if it exists) from *
@@ -265,7 +265,7 @@ class trans
       * untabInputVec, because we will then detect if the begin and end    *
       * translation lines contain part of the algorithm within them.       *
       **********************************************************************/
-      int translationLine = FindTokenPair(untabInputVec,
+      int translationLine = findTokenPair(untabInputVec,
                                            0,
                                            PcalParams.BeginXlation1,
                                            PcalParams.BeginXlation2) ;
@@ -274,9 +274,9 @@ class trans
             "No line containing `" + PcalParams.BeginXlation1 + " "
               + PcalParams.BeginXlation2 );
           return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
-        } ;
+        } 
  
-      int endTranslationLine = FindTokenPair(untabInputVec,
+      int endTranslationLine = findTokenPair(untabInputVec,
                                              translationLine + 1,
                                              PcalParams.EndXlation1,
                                              PcalParams.EndXlation2) ;
@@ -285,7 +285,7 @@ class trans
             "No line containing `" + PcalParams.EndXlation1 + " "
               + PcalParams.EndXlation2 ) ;
             return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
-        } ;
+        } 
  
        endTranslationLine = endTranslationLine - 1;
        while (translationLine < endTranslationLine)
@@ -293,7 +293,7 @@ class trans
            inputVec.remove(endTranslationLine) ;
            untabInputVec.remove(endTranslationLine) ;
            endTranslationLine = endTranslationLine - 1;
-         } ;
+         } 
 
       /*********************************************************************
       * Set algLine, algCol to the line and column of the first instance   *
@@ -334,7 +334,7 @@ class trans
       *********************************************************************/
       try
     {
-        ParseAlgorithm.Uncomment(untabInputVec, algLine, algCol) ;
+        ParseAlgorithm.uncomment(untabInputVec, algLine, algCol) ;
     } catch (ParseAlgorithmException e)
     {
         PcalDebug.reportError(e);
@@ -355,7 +355,7 @@ class trans
       *********************************************************************/
       AST ast = null;
       try {
-          ast = ParseAlgorithm.GetAlgorithm(reader) ;
+          ast = ParseAlgorithm.getAlgorithm(reader) ;
       } catch (ParseAlgorithmException e)
       {
           PcalDebug.reportError(e);
@@ -386,16 +386,16 @@ class trans
       * worth going overboard in this checking.                            *
       *********************************************************************/
       
+        // SZ February.15 2009: made non-static to make PCal stateless for tool runs
         NotYetImplemented notYetImplemented = new NotYetImplemented(ast);
         try
-    {
-        notYetImplemented.removeNameConflicts() ;
-    } catch (RemoveNameConflictsException e1)
-    {
-        PcalDebug.reportError(e1);
-        return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
-
-    }
+        {
+          notYetImplemented.removeNameConflicts() ;
+        } catch (RemoveNameConflictsException e1)
+        {
+          PcalDebug.reportError(e1);
+          return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
+        }
 
       /*********************************************************************
       * Set the vector `translation' to the translation of the algorithm   *
@@ -596,21 +596,21 @@ class trans
     } // END main
 
 
-/**
- * If run in the system mode, exits the program, in tool mode returns the status
- * @param status
- */
-private static int exitWithStatus(int status)
-{
-    if (ToolIO.getMode() == ToolIO.SYSTEM) 
+    /**
+     * If run in the system mode, exits the program, in tool mode returns the status
+     * @param status
+     */
+    private static int exitWithStatus(int status)
     {
-        // return exit status in system mode
-        System.exit(status);
+        if (ToolIO.getMode() == ToolIO.SYSTEM) 
+        {
+            // return exit status in system mode
+            System.exit(status);
+        }
+        
+        // just exit the function in tool mode
+        return status;
     }
-    
-    // just exit the function in tool mode
-    return status;
-}
 
 
 /********************** Writing the AST ************************************/
@@ -872,16 +872,26 @@ private static int exitWithStatus(int status)
 
 /********************* PROCESSING THE COMMAND LINE ***********************/
 
-   /**
-    * Processes the command line arguments
-    * @return status of processing. 
-    *  the status 1 indicates that no errors has been detected.
-    *  the status 0 indicates that no errors has been found but translation
-    *   should not be started (e.G -help call)
-    *  the status -1 indicates errors 
-    */
-   private static int GetArguments(String[] args)
-     /**********************************************************************
+    /**
+     * Processes the command line arguments
+     * 
+     * This method changes values of public static variables of the {@link PcalParams} 
+     * 
+     * SZ: This will cause problems, due to the fact that the PCalParams are static.
+     * Any initialization should overwrite the previous, which is currently NOT the case
+     * Should be re-factored to non-static access to the properties
+     * 
+     * @return status of processing. 
+     *  the status {@link trans#STATUS_OK} indicates that no errors has been detected.
+     *  the status {@link trans#STATUS_EXIT_WITHOUT_ERROR} indicates that no errors has been found but translation
+     *   should not be started (e.G -help call)
+     *  the status {@link trans#STATUS_EXIT_WITH_ERRORS} indicates errors 
+     */
+    private static int parseAndProcessArguments(String[] args)
+    {
+
+    /** *******************************************************************
+     *<pre>
      * Get the command-line arguments and set the appropriate parameters.  *
      * The following command line arguments are handled.                   *
      *                                                                     *
@@ -947,8 +957,9 @@ private static int exitWithStatus(int status)
      *   -labelRoot name : If the translator adds missing labels, it       *
      *                     names them name1, name2, etc.  Default value    *
      *                     is "Lbl_".                                      *
-     **********************************************************************/
-     { int nextArg = 0 ;
+     *</pre>
+     ********************************************************************* */
+       int nextArg = 0 ;
          /******************************************************************
          * The number of the argument being processed.                     *
          ******************************************************************/
@@ -958,7 +969,7 @@ private static int exitWithStatus(int status)
          ******************************************************************/
        if (maxArg < 0)
         { return CommandLineError("No arguments specified");
-        } ;
+        } 
 
        if (   (args[maxArg].length() != 0)
            && (args[maxArg].charAt(0) == '-'))
@@ -975,7 +986,7 @@ private static int exitWithStatus(int status)
          } else {
              return STATUS_EXIT_WITH_ERRORS;
          }
-         } ;
+         }
 
        while (nextArg < maxArg)
         /*******************************************************************
@@ -995,19 +1006,19 @@ private static int exitWithStatus(int status)
               if (CheckForConflictingSpecOptions()) 
               {
                   return STATUS_EXIT_WITH_ERRORS;
-              };
+              }
             }
           else if (option.equals("-spec"))
             { PcalParams.SpecOption = true ; 
             if (CheckForConflictingSpecOptions()) 
             {
                 return STATUS_EXIT_WITH_ERRORS;
-            };
+            }
               nextArg = nextArg + 1 ;
               if (nextArg == maxArg)
                 { return CommandLineError( 
                      "Specification name must follow `-spec' option") ;
-                 };
+                 }
                  PcalParams.SpecFile = args[nextArg] ;
             }
           else if (option.equals("-myspec"))
@@ -1015,12 +1026,12 @@ private static int exitWithStatus(int status)
             if (CheckForConflictingSpecOptions()) 
             {
                 return STATUS_EXIT_WITH_ERRORS;
-            };
+            }
               nextArg = nextArg + 1 ;
               if (nextArg == maxArg)
                 { return CommandLineError( 
                      "Specification name must follow `-myspec' option") ;
-                 };
+                 }
                  PcalParams.SpecFile = args[nextArg] ;
             }
           else if (option.equals("-spec2"))
@@ -1033,7 +1044,7 @@ private static int exitWithStatus(int status)
               if (nextArg == maxArg)
                 { return CommandLineError( 
                      "Specification name must follow `-spec' option") ;
-                 };
+                 }
                  PcalParams.SpecFile = args[nextArg] ;
             }
           else if (option.equals("-myspec2"))
@@ -1046,7 +1057,7 @@ private static int exitWithStatus(int status)
               if (nextArg == maxArg)
                 { return CommandLineError( 
                      "Specification name must follow `-myspec' option") ;
-                 };
+                 }
                  PcalParams.SpecFile = args[nextArg] ;
             }
           else if (option.equals("-debug"))
@@ -1066,7 +1077,7 @@ private static int exitWithStatus(int status)
                 { return CommandLineError(
                      "Can only have one of -wf, -sf, -wfNext, " + 
                      "and -nof options");
-                } ;
+                } 
               PcalParams.FairnessOption = "wf" ; 
             }
           else if (option.equals("-sf"))
@@ -1074,7 +1085,7 @@ private static int exitWithStatus(int status)
                 { return CommandLineError(
                      "Can only have one of -wf, -sf, -wfNext, " + 
                      "and -nof options");
-                } ;
+                } 
               PcalParams.FairnessOption = "sf" ; 
             }
           else if (option.equals("-wfNext"))
@@ -1082,7 +1093,7 @@ private static int exitWithStatus(int status)
                 { return CommandLineError(
                      "Can only have one of -wf, -sf, -wfNext, " + 
                      "and -nof options");
-                } ;
+                } 
               PcalParams.FairnessOption = "wfNext" ; 
             }
           else if (option.equals("-nof"))
@@ -1090,7 +1101,7 @@ private static int exitWithStatus(int status)
                 { return CommandLineError(
                      "Can only have one of -wf, -sf, -wfNext, " + 
                      "and -nof options");
-                } ;
+                } 
               PcalParams.FairnessOption = "nof" ; 
             }
           else if (option.equals("-label"))
@@ -1101,12 +1112,12 @@ private static int exitWithStatus(int status)
               PcalParams.LabelFlag = true ; 
             }
           else if (option.equals("-labelRoot"))
-            { nextArg = nextArg + 1 ;
+            { nextArg = nextArg + 1;
               if (nextArg == maxArg)
                 { return CommandLineError( 
                      "Label root must follow `-labelRoot' option") ;
-                 };
-                 PcalParams.LabelRoot = args[nextArg] ;
+                 }
+                 PcalParams.LabelRoot = args[nextArg];
             }
           else 
             { return CommandLineError("Unknown option: " + option);
@@ -1119,45 +1130,69 @@ private static int exitWithStatus(int status)
          * The last option took an argument that was the last              *
          * command-line argument.                                          *
          ******************************************************************/
-         { return CommandLineError("No input file specified") ;
-         } ;
+         { 
+           return CommandLineError("No input file specified") ;
+         } 
 
        /********************************************************************
        * Set PcalParams.TLAInputFile to the last argument, removing a      *
        * "tla" extension if it has one.                                    *
        ********************************************************************/
-       int dotIndex = args[maxArg].lastIndexOf(".") ;
-       if (dotIndex == -1)
-           { PcalParams.TLAInputFile = args[maxArg]; }
-       else  if (args[maxArg].substring(dotIndex).equals(".tla"))
-           { PcalParams.TLAInputFile = args[maxArg].substring(0, dotIndex); }
-       else {  CommandLineError("Input file has extension other than tla"); }
 
-       File file = new File(PcalParams.TLAInputFile + ".tla") ;
-//       File file = new File(args[maxArg]);
-       if (file.exists()) 
-       {
-/***************************
-// 15 Feb 2008: LL fixed bug introduced by SZ's change that
-// didn't allow omission of ".tla" from file name.
-    	   if (file.getName().lastIndexOf(".") == -1)
-           {
-               // no extension
-               PcalParams.TLAInputFile = file.getPath(); 
-           } else {
-               // extension present
-               if (file.getName().toLowerCase().endsWith(".tla")) 
-               {
-                   // cut the extension
-                   PcalParams.TLAInputFile = file.getPath().substring(0, file.getPath().lastIndexOf("."));
-               } else {
-                   return CommandLineError("Input file has extension other than tla");
-               }
-           }
-******************************/
-       } else {
-           return CommandLineError("Error reading input file");
+         /*
+       int dotIndex = args[maxArg].lastIndexOf(".") ;
+       if (dotIndex == -1) 
+       { 
+           PcalParams.TLAInputFile = args[maxArg]; 
+       } 
+       else if (args[maxArg].substring(dotIndex).equals(".tla"))
+       { 
+           PcalParams.TLAInputFile = args[maxArg].substring(0, dotIndex); 
        }
+       else 
+       {  
+           return CommandLineError("Input file has extension other than tla"); 
+       }
+       */
+
+         // SZ 02.16.2009: check for correct file extension (ignoring case)
+         // and file existence. also handles dots in the pathname
+       File file = new File(args[maxArg]);
+       if (file.getName().lastIndexOf(".") == -1)
+       {
+           // no extension
+           PcalParams.TLAInputFile = file.getPath(); 
+       } else {
+           // extension present
+           if (file.getName().toLowerCase().endsWith(".tla")) 
+           {
+               // cut the extension
+               PcalParams.TLAInputFile = file.getPath().substring(0, file.getPath().lastIndexOf("."));
+           } else {
+               return CommandLineError("Input file has extension other than tla");
+           }
+       }
+       file = new File(PcalParams.TLAInputFile + ".tla");
+       if (!file.exists()) 
+       {
+           return CommandLineError("Input file " + file.getPath() + " not found");
+       }
+       
+       
+       // SZ 02.16.2009: since this is a modification of the parameters, moved
+       // to the parameter handling method
+       if (PcalParams.FairnessOption.equals("-nof"))
+       { 
+           PcalParams.FairnessOption = "";
+       }
+       else 
+       { 
+           if (PcalParams.CheckTermination && PcalParams.FairnessOption.equals(""))
+           { 
+               PcalParams.FairnessOption = "wf" ;
+           }
+       }
+       
        return STATUS_OK;
      }   
    
@@ -1182,7 +1217,7 @@ private static int exitWithStatus(int status)
           }
         
         return true;
-      }
+    }
 
     /**
      * Returns if the options are conflicting
@@ -1213,7 +1248,7 @@ private static int exitWithStatus(int status)
         return STATUS_EXIT_WITH_ERRORS;
       }
 
-    private static int FindTokenPair(Vector vec, 
+    private static int findTokenPair(Vector vec, 
                                      int lineNum, 
                                      String tok1, 
                                      String tok2)
@@ -1242,7 +1277,7 @@ private static int exitWithStatus(int status)
 
 /**************************  RemoveTabs  *********************************/
 
-    public static Vector RemoveTabs(Vector vec) {
+    public static Vector removeTabs(Vector vec) {
         /********************************************************************
         * Returns a string vector obtained from the string vector vec by   *
         * replacing any evil tabs with the appropriate number of spaces,   *
