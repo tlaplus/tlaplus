@@ -102,7 +102,6 @@
 		<mkdir dir="${src-gen}"/>
 		<!-- generates the parser -->
 		<javacc target="javacc/tla+.jj" outputdirectory="${srcgen.dir}" javacchome="${env.JAVACC_HOME}" />
-		<javacc target="javacc/config.jj" outputdirectory="${srcgen.dir}" javacchome="${env.JAVACC_HOME}" />
 	</target>
 
 </project>
