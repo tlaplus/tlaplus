@@ -233,7 +233,7 @@ public class ParseAlgorithm
    }
 
    
-   public static AST GetAlgorithm(PcalCharReader charR) throws ParseAlgorithmException
+   public static AST getAlgorithm(PcalCharReader charR) throws ParseAlgorithmException
      /**********************************************************************
      * Assumes that the char reader charR is just past the string          *
      * PcalParams.BeginAlg that marks the beginning of the algorithm.        *
@@ -3028,7 +3028,7 @@ public class ParseAlgorithm
 *                                                                          *
 * Bug fixed by LL on 28 Feb 2006                                           
 ***************************************************************************/
-   public static void Uncomment(Vector inp,
+   public static void uncomment(Vector inp,
                                 int begLine,
                                 int begCol) throws ParseAlgorithmException
 
