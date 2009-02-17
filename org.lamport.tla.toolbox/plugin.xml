@@ -86,9 +86,6 @@
       </wizard>
    </extension>
    
-<!--                                   -->
-<!-- Commands                          -->
-<!--                                   -->
    <extension
          point="org.eclipse.ui.preferencePages">
       <page
@@ -105,8 +102,23 @@
       </page>
       
    </extension>
+   
+   <extension
+         point="org.eclipse.ui.propertyPages">
+      <page
+            name="Specification Properties"
+            nameFilter="*.toolbox"
+            class="org.lamport.tla.toolbox.ui.property.SpecPropertyPage"
+            id="toolbox.ui.property.SpecPropertyPage">
+      </page>
+   </extension>
+   
+<!--                                   -->
+<!-- Commands                          -->
+<!--                                   -->
    <extension
          point="org.eclipse.ui.commands">
+      <!-- spec commands -->
       <category
             description="Speicification Commands"
             id="toolbox.command.category.spec"
@@ -131,10 +143,30 @@
       </command>
       <command
             categoryId="toolbox.command.category.spec"
+            description="Specification Properties"
+            id="toolbox.command.spec.props"
+            name="Specification Properties">
+         <commandParameter
+               id="toolbox.command.spec.props.param"
+               name="specName"
+               optional="false">
+         </commandParameter>
+      </command>
+      <command
+            categoryId="toolbox.command.category.spec"
             description="Close the specification"
             id="toolbox.command.spec.close"
             name="Close Specification">
       </command>
+      <command
+            categoryId="toolbox.command.category.spec"
+            description="Parse specification root module"
+            id="toolbox.command.module.parse.root"
+            name="Parse Root Module">
+      </command>
+
+      
+      <!-- module commands -->
       <category
             description="Module Commands"
             id="toolbox.command.category.module"
@@ -159,22 +191,17 @@
       </command>
       <command
             categoryId="toolbox.command.category.module"
-            description="Parse specification root module"
-            id="toolbox.command.module.parse.root"
-            name="Parse Root Module">
-      </command>
-      <command
-            categoryId="toolbox.command.category.module"
             description="Parse module in the active editor"
             id="toolbox.command.module.parse.active"
             name="Parse Module">
       </command>
       <command
             categoryId="toolbox.command.category.module"
-            description="Runs PCal Translator on the module"
-            id="toolbox.command.module.translate"
+            description="Translates PCal in the active editor"
+            id="toolbox.command.module.translate.active"
             name="Translate module">
       </command>
+      
       <category
             description="UI Commands"
             id="toolbox.command.category.ui"
@@ -211,21 +238,20 @@
             commandId="toolbox.command.module.parse.root"
             contextId="org.eclipse.ui.contexts.window"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            sequence="M1+R">
+            sequence="M1+M3+R">
       </key>
       <key
-            commandId="toolbox.command.module.translate"
-            contextId="toolbox.contexts.cleaneditor"
-            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            sequence="M1+T">
-      </key>
-      <key
-            commandId="toolbox.command.module.parse.root"
+            commandId="toolbox.command.module.parse.active"
             contextId="org.eclipse.ui.contexts.window"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="M1+R">
       </key>
-
+      <key
+            commandId="toolbox.command.module.translate.active"
+            contextId="toolbox.contexts.cleaneditor"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+T">
+      </key>
    </extension>
       
 <!--                                   -->
@@ -269,9 +295,25 @@
                   id="toolbox.menu.spec.open.dynamic">
             </dynamic>
          </menu>
+         
+         <command
+               commandId="toolbox.command.module.parse.root"
+               id="toolbox.menu.spec.parse"
+               label="Parse Spec"
+               mnemonic="P">
+            <visibleWhen
+                  checkEnabled="true">
+               <with
+                     variable="activeWorkbenchWindow.activePerspective">
+                  <equals
+                        value="org.lamport.tla.toolbox.ui.perspective.specLoaded">
+                  </equals>
+               </with>
+            </visibleWhen>
+         </command>
          <command
                commandId="toolbox.command.spec.close"
-               id="toolbox.file.close"
+               id="toolbox.menu.spec.close"
                label="Close Spec"
                mnemonic="C"
                style="push"
@@ -286,8 +328,26 @@
                </with>
             </visibleWhen>
          </command>
-         
+         <command
+         	
+               commandId="toolbox.command.spec.props"
+               id="toolbox.menu.spec.props"
+               label="Spec Properties"
+               mnemonic="I"
+               style="push"
+               tooltip="Shows properties of current specification">
+            <visibleWhen
+                  checkEnabled="true">
+               <with
+                     variable="activeWorkbenchWindow.activePerspective">
+                  <equals
+                        value="org.lamport.tla.toolbox.ui.perspective.specLoaded">
+                  </equals>
+               </with>
+            </visibleWhen>
+         </command>
       </menuContribution>
+      
       <menuContribution
             locationURI="menu:toolbox.file.menu?after=toolbox.file.module.separator">
          <menu
@@ -309,6 +369,37 @@
                   id="toolbox.menu.module.open.dynamic">
             </dynamic>
          </menu>
+         <command
+               commandId="toolbox.command.module.parse.active"
+               id="toolbox.menu.module.parse"
+               label="Parse Module"
+               mnemonic="M">
+            <visibleWhen
+                  checkEnabled="true">
+               <with
+                     variable="activeWorkbenchWindow.activePerspective">
+                  <equals
+                        value="org.lamport.tla.toolbox.ui.perspective.specLoaded">
+                  </equals>
+               </with>
+            </visibleWhen>
+         </command>
+         <command
+               commandId="toolbox.command.module.translate.active"
+               id="toolbox.menu.run.translate"
+               label="Translate Module"
+               mnemonic="T">
+            <visibleWhen
+                  checkEnabled="true">
+               <with
+                     variable="activeWorkbenchWindow.activePerspective">
+                  <equals
+                        value="org.lamport.tla.toolbox.ui.perspective.specLoaded">
+                  </equals>
+               </with>
+            </visibleWhen>
+         </command>
+         
       </menuContribution>
 
 
@@ -331,7 +422,6 @@
             </visibleWhen>
          </command>
       </menuContribution>
-      <!-- file menu module part -->
       
       <!-- edit menu -->
       <menuContribution
@@ -390,54 +480,6 @@
       </menuContribution>
 
       <menuContribution
-            locationURI="menu:toolbox.tools.menu?before=toolbox.tools.separator">
-         <command
-               commandId="toolbox.command.module.parse.root"
-               id="toolbox.menu.run.parseRoot"
-               label="Parse Spec"
-               mnemonic="P">
-            <visibleWhen
-                  checkEnabled="true">
-               <with
-                     variable="activeWorkbenchWindow.activePerspective">
-                  <equals
-                        value="org.lamport.tla.toolbox.ui.perspective.specLoaded">
-                  </equals>
-               </with>
-            </visibleWhen>
-         </command>
-         <command
-               commandId="toolbox.command.module.parse.active"
-               id="toolbox.menu.run.parseRoot"
-               label="Parse Module"
-               mnemonic="M">
-            <visibleWhen
-                  checkEnabled="true">
-               <with
-                     variable="activeWorkbenchWindow.activePerspective">
-                  <equals
-                        value="org.lamport.tla.toolbox.ui.perspective.specLoaded">
-                  </equals>
-               </with>
-            </visibleWhen>
-         </command>
-         <command
-               commandId="toolbox.command.module.translate"
-               id="toolbox.menu.run.translate"
-               label="Translate module"
-               mnemonic="T">
-            <visibleWhen
-                  checkEnabled="true">
-               <with
-                     variable="activeWorkbenchWindow.activePerspective">
-                  <equals
-                        value="org.lamport.tla.toolbox.ui.perspective.specLoaded">
-                  </equals>
-               </with>
-            </visibleWhen>
-         </command>
-      </menuContribution>
-      <menuContribution
             locationURI="menu:org.eclipse.ui.main.menu?after=additions">
          <command
                commandId="toolbox.command.help"
@@ -449,28 +491,6 @@
                tooltip="Opens the help">
          </command>
       </menuContribution>
-<!--
-      <menuContribution
-            locationURI="toolbar:org.eclipse.ui.trim.status">
-         <toolbar
-               id="toolbox.toolbar.status">
-         <control
-               class="org.lamport.tla.toolbox.ui.contribution.ParseStatusContribution"
-               id="toolbox.parse.status.control">
-                        <visibleWhen
-               checkEnabled="true">
-            <with
-                  variable="activeWorkbenchWindow.activePerspective">
-               <equals
-                     value="org.lamport.tla.toolbox.ui.perspective.specLoaded">
-               </equals>
-            </with>
-         </visibleWhen>
-               
-         </control>
-         </toolbar>
-      </menuContribution>
--->
    </extension>
    
 <!--              -->
@@ -495,6 +515,10 @@
             commandId="toolbox.command.spec.open">
       </handler>
       <handler
+            class="org.lamport.tla.toolbox.ui.handler.SpecPropertiesHandler"
+            commandId="toolbox.command.spec.props">
+      </handler>
+      <handler
             class="org.lamport.tla.toolbox.ui.handler.ToggleProblemViewHandler"
             commandId="toolbox.command.toggle-problem-view">
       </handler>
@@ -504,7 +528,7 @@
       </handler>
       <handler
             class="org.lamport.tla.toolbox.ui.handler.TranslateModuleHandler"
-            commandId="toolbox.command.module.translate">
+            commandId="toolbox.command.module.translate.active">
       </handler>
       <handler
             class="org.lamport.tla.toolbox.ui.handler.ParseModuleHandler"

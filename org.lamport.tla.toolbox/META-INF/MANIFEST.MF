@@ -20,6 +20,23 @@ Bundle-ClassPath: tla2tools.jar,
  StandardModules/
 Export-Package: org.lamport.tla.toolbox.editor;uses:="org.eclipse.core.resources,org.eclipse.ui.part",
  org.lamport.tla.toolbox.tool,
- org.lamport.tla.toolbox.util,
- org.lamport.tla.toolbox.util.pref
+ org.lamport.tla.toolbox.util;
+  uses:="org.eclipse.core.runtime,
+   org.eclipse.jface.resource,
+   org.eclipse.ui,
+   org.eclipse.ui.model,
+   org.eclipse.ui.views.markers,
+   org.lamport.tla.toolbox.ui.contribution,
+   org.lamport.tla.toolbox.spec,
+   org.eclipse.core.resources,
+   org.eclipse.swt.graphics,
+   tla2sany.modanalyzer,
+   org.eclipse.swt.widgets",
+ org.lamport.tla.toolbox.util.pref;
+  uses:="org.eclipse.jface.preference,
+   org.osgi.service.prefs,
+   org.eclipse.core.resources,
+   org.eclipse.core.runtime.preferences",
+ pcal;uses:="pcal.exception",
+ util
 
