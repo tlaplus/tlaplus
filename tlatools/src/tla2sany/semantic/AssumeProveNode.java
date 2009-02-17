@@ -1,6 +1,6 @@
 // Copyright (c) 2003 Compaq Corporation.  All rights reserved.
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
-// Last modified on Mon 26 Nov 2007 at 17:33:19 PST by lamport
+// Last modified on Mon 16 February 2009 at  9:40:00 PST by lamport
 
 package tla2sany.semantic;
 
@@ -26,6 +26,14 @@ import tla2sany.utilities.Strings;
 * for the NEW symbols declared in the ASSUME clauses.  See comments        *
 * in LevelNode.java.                                                       *
 ****************************************************************************/
+
+/***************************************************************************
+* 16 February 2009: LL added suffices field.                               *
+*   This field is set to true iff the AssumeProveNode object is generated  *
+*   by a step of the form.                                                 *
+*                                                                          *
+*     SUFFICES ASSUME A PROVE P                                            *
+***************************************************************************/
 
 /***************************************************************************
 * YET ANOTHER KLUDGE: references to subexpressions of ASSUME/PROVEs.       *
@@ -104,7 +112,15 @@ public class AssumeProveNode extends LevelNode {
   *************************************************************************/
   protected boolean[] inScopeOfDecl ;
   protected boolean   inProof = true ;
-  
+
+  /*************************************************************************
+  * suffices added 16 Feb 2009.                                            *
+  *************************************************************************/
+  private boolean suffices = false ;
+  public  boolean isSuffices()  {return this.suffices ;}; 
+          void    setSuffices() {this.suffices = true;}; 
+
+
   private ThmOrAssumpDefNode goal = null ;
     /***********************************************************************
     * This is the named theorem or proof-step node whose body the          *
@@ -320,7 +336,8 @@ public class AssumeProveNode extends LevelNode {
                                       // corresponding syntax tree node.
              + "\n  Assumes: " + assumeStr
              + "\n  Prove: " + Strings.indent(4, prove.toString(depth-1))
-             + "\n  Goal: "  + goalStr ;
+             + "\n  Goal: "  + goalStr 
+             + ((suffices) ? "\n  SUFFICES" : "") ;
   }
   /*************************************************************************
   * End fields and methods implementing the ExplorerNode interface:        *

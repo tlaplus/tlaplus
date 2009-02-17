@@ -57,10 +57,21 @@ public class NonLeafProofNode extends ProofNode {
     *       OpApplNode with operator $Nop and argument (a reference to)    *
     *       the right-hand-side expression of the previous step.           *
     *                                                                      *
-    *     - A "SUFFICES S" step is represented the same as the             *
+    *     - Before 16 Feb 2009:                                            *
+    *       A "SUFFICES S" step is represented the same as the             *
     *       assertion S (which may be an expression or ASSUME/PROVE)       *
     *       except that the TheoremNode's isSuffices() method returns      *
     *       true.                                                          *
+    *                                                                      *
+    *       As of 16 Feb 2009:                                             *
+    *       A "SUFFICES S" step is represented as a TheoremNode whose      *
+    *       getTheorem() method returns the following:                     *
+    *         + If S is an ASSUME/PROVE, then as an AssumeProveNode        *
+    *           with suffices field true.                                  *
+    *         + If S is an ExprNode, then as an OpApplNode whose           *
+    *           getOperator() method returns an OpDefNode of kind          *
+    *           BuiltInKind representing a dummy built-in operator         *
+    *           named $Suffices.                                           *
     *                                                                      *
     *    - A QED, PICK, HAVE, TAKE, CASE, or WITNESS step is               *
     *       represented by a TheoremNode whose getTheorem() method         *

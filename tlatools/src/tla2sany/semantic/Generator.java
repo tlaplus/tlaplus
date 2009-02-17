@@ -1,7 +1,7 @@
 // Copyright (c) 2003 Compaq Corporation.  All rights reserved.
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
 //
-// last modified on Sat 28 June 2008 at 20:44:17 PST by lamport
+// last modified on Mon 16 February 2009 at 18:23:00 PST by lamport
 
 //
 //  4/9/2006 Added a check in RecordConstructor for duplicate fields
@@ -665,6 +665,14 @@ public class Generator implements ASTConstants, SyntaxTreeConstants,
     boolean firstFindingOpName = true;
     SymbolNode subExprOf = null;
 
+    boolean inAPsuffices = false ;
+      /*********************************************************************
+      * Added 16 Feb 2009.  An AssumeProveNode with suffices field true    *
+      * represents SUFFICE ASSUME / PROVE, and the SUFFICES is treated as  *
+      * if it were a 1-argument operator.  This flag is set true when the  *
+      * node is first encountered.                                         *
+      *********************************************************************/
+
     while (idx < sel.args.length) {
       /*********************************************************************
       * Check the one part of the algorithm's assert that should not       *
@@ -1284,37 +1292,61 @@ public class Generator implements ASTConstants, SyntaxTreeConstants,
          else if (curNode.getKind() == AssumeProveKind) { 
            AssumeProveNode curAPNode = (AssumeProveNode) curNode;
 
-           int temp = ArgNum(sel.ops[idx], 
-                             1 + curAPNode.getAssumes().length);
-           if (temp == -1) {
-             reportSelectorError(sel, idx) ;
-             return nullOAN ; 
-            } ;
-
-           if (illegalAPPosRef(curAPNode, temp)){
-             errors.addError(sel.opsSTN[idx].getLocation(),
-                  "Accessing ASSUME/PROVE clause within the scope of " +
-                 "a declaration\n from outside that declaration's scope.");
-             return nullOAN ; 
-             } ;
-           if (temp <= curAPNode.getAssumes().length) {
-             curNode = curAPNode.getAssumes()[temp-1] ;                 
-             if (isNullSelection(curNode, sel, idx)) { return nullOAN; } ;
-             if (   (curNode.getKind() == NewSymbKind)
-                 && (idx != sel.args.length-1)) {
-               /************************************************************
-               * Extra conjunct added to if test to allow selection of a   *
-               * NEW clause as a fact.                                     *
-               ************************************************************/
-               errors.addError(
-                  sel.opsSTN[idx].getLocation(),
-                  "Selected a subexpression of a NEW clause of an ASSUME.");
+           /****************************************************************
+           * 16 Feb 2009: Case of curAPNode.suffices true added.           *
+           ****************************************************************/
+           if (   (curAPNode.isSuffices()) 
+               && (! inAPsuffices) )   {
+             /**************************************************************
+             * In this case, the selector must be 1, and the curNode is    *
+             * left equal to the AssumeProve, but with inAPsuffices set    *
+             * to true.                                                    *
+             **************************************************************/
+             if (ArgNum(sel.ops[idx], 1) != 1) {
+               errors.addError(sel.opsSTN[idx].getLocation(),
+                    "Accessing non-existent subexpression of " +
+                     "a SUFFICES");
                return nullOAN ; 
-              }
-            }
+              };
+             inAPsuffices = true ;             
+             } // if (curAPNode.isSuffices())
            else {
-             curNode = curAPNode.getProve() ;
-           };
+             inAPsuffices = false;
+               /************************************************************
+               * Added 16 Feb 2009 by LL.                                  *
+               ************************************************************/
+             int temp = ArgNum(sel.ops[idx], 
+                               1 + curAPNode.getAssumes().length);
+             if (temp == -1) {
+               reportSelectorError(sel, idx) ;
+               return nullOAN ; 
+              } ;
+  
+             if (illegalAPPosRef(curAPNode, temp)){
+               errors.addError(sel.opsSTN[idx].getLocation(),
+                    "Accessing ASSUME/PROVE clause within the scope of " +
+                   "a declaration\n from outside that declaration's scope.");
+               return nullOAN ; 
+               } ;
+             if (temp <= curAPNode.getAssumes().length) {
+               curNode = curAPNode.getAssumes()[temp-1] ;                 
+               if (isNullSelection(curNode, sel, idx)) { return nullOAN; } ;
+               if (   (curNode.getKind() == NewSymbKind)
+                   && (idx != sel.args.length-1)) {
+                 /************************************************************
+                 * Extra conjunct added to if test to allow selection of a   *
+                 * NEW clause as a fact.                                     *
+                 ************************************************************/
+                 errors.addError(
+                    sel.opsSTN[idx].getLocation(),
+                    "Selected a subexpression of a NEW clause of an ASSUME.");
+                 return nullOAN ; 
+                }
+              }
+             else {
+               curNode = curAPNode.getProve() ;
+             };
+           } // else if (curAPNode.isSuffices())
           } // else if (curNode.getKind() == AssumeProveKind) 
 
          else if (curNode.getKind() == OpArgKind) { 
@@ -1686,7 +1718,11 @@ public class Generator implements ASTConstants, SyntaxTreeConstants,
       else if (opName == OP_have)    { exprType = "HAVE" ;}
       else if (opName == OP_take)    { exprType = "TAKE" ;}
       else if (opName == OP_pick)    { exprType = "PICK" ;}
-      else if (opName == OP_witness) { exprType = "WITNESS" ;};
+      else if (opName == OP_witness) { exprType = "WITNESS" ;}
+      else if (opName == OP_suffices) { exprType = "SUFFICES" ;};
+        /*******************************************************************
+        * OP_suffices added by LL 16 Feb 2009.                             *
+        *******************************************************************/
       if (exprType != null) {
          errors.addError(
             sel.selSTN.getLocation(),
@@ -5079,21 +5115,43 @@ OpDefNode node = (OpDefNode) vec.elementAt(i);
          // (all but the SubstInNode). Hence, changes by a tool to an Original 
          // OpDefNode will likely be reflected in all instances of it.
          if ( odn.getOriginallyDefinedInModuleNode().isParameterFree() ) {  
-           newOdn = odn;
-/***************************************************************************
-* This seems to be a bug.  Because new OpDefNode is not being called, the  *
-* node is not being put into the symbol table.  We need either to create   *
-* a new copy of the node, without adding any substin nodes, or else just   *
-* do a sybbolTalbe.add(odn)--however, we have to be careful doing that     *
-* because odn could have been imported through another route and may       *
-* already be in the symbol table.                                          *
-***************************************************************************/
-           /*
-             new OpDefNode( odn.getName(), UserDefinedOpKind, odn.getParams(),
-                            localness, substInTemplate, 
+
+           /****************************************************************
+           * Originally, newOdn was set the way it now is if localness =   *
+           * true.  Here's the problem with it.  Suppose the instantiated  *
+           * module EXTENDS the Naturals module.  Then this will add new   *
+           * OpDefNodes for all the symbols defined in Naturals.  If the   *
+           * current module EXTENDS Naturals, this will lead to multiple   *
+           * definitions.  So, for nonlocal definitions, we just           *
+           * set newOdn to odn.                                            *
+           *                                                               *
+           * However, now the problem is: suppose the current modules      *
+           * does not EXTEND the Naturals module.  Then the operators      *
+           * defined in Naturals, which should be defined in the current   *
+           * module, are not.  So, we add them to symbolTable.  This does  *
+           * not lead to a multiple definition error because apparently    *
+           * it's the addSymbol method that is smart enough to detect if   *
+           * we adding a definition that comes from the same source as     *
+           * the original one.                                             *
+           *                                                               *
+           * This fix was made by LL on 16 Feb 2009.                       *
+           ****************************************************************/
+           if (localness) {
+             newOdn = new OpDefNode( odn.getName(), UserDefinedOpKind, odn.getParams(),
+                            localness, odn.getBody(), 
                             odn.getOriginallyDefinedInModuleNode(), 
                             symbolTable, treeNode, true, odn.getSource() );   
-           */
+             /***************************************************************
+             * The following statement was added by LL on 16 Feb 2009, by  *
+             * analogy with the corresponding code about 45 lines below.  I *
+             * have no idea if it was originally omitted for a good reason. *
+             ***************************************************************/
+             newOdn.setLabels(odn.getLabelsHT()) ;   
+            }
+           else {
+             newOdn = odn;
+             symbolTable.addSymbol(odn.getName(), odn);
+           }
          }
          else {        
            // Create the "wrapping" SubstInNode as a clone of "subst" above, 
@@ -5106,7 +5164,9 @@ OpDefNode node = (OpDefNode) vec.elementAt(i);
                                   odn.getParams(),  localness, 
                                   substInTemplate, cm, symbolTable, treeNode, 
                                   true, odn.getSource());   
-           newOdn.setLabels(odn.getLabelsHT()) ;
+                newOdn.setLabels(odn.getLabelsHT()) ;    
+
+
          }
        }
        else { 
@@ -5117,12 +5177,23 @@ OpDefNode node = (OpDefNode) vec.elementAt(i);
          // telling whether they are "the same" or different definitions
 
          // Create an OpDefNode whose body is the same as the instancer's.
-         newOdn = 
-           new OpDefNode(odn.getName(), UserDefinedOpKind, odn.getParams(),  
+
+         if (localness) {
+           /****************************************************************
+           * See the comments about the similar change made to the         *
+           * setting of newOdn in the `then' clause, just above.           *
+           * This entire change was made by LL on 16 Feb 2009.             *
+           ****************************************************************/
+           newOdn = new OpDefNode(odn.getName(), UserDefinedOpKind, odn.getParams(),  
                          localness, odn.getBody(), 
                          odn.getOriginallyDefinedInModuleNode(), 
-                         symbolTable, treeNode, true, odn.getSource());
-         newOdn.setLabels(odn.getLabelsHT()) ;
+                         symbolTable, treeNode, true, odn.getSource()); 
+                   newOdn.setLabels(odn.getLabelsHT()) ;   
+          }
+         else {
+           newOdn = odn;
+           symbolTable.addSymbol(odn.getName(), odn);
+          }
        }
        cm.appendDef(newOdn);
        setOpDefNodeRecursionFields(newOdn, cm) ;
@@ -5618,6 +5689,11 @@ OpDefNode node = (OpDefNode) vec.elementAt(i);
                  * AssumeProve node.                                       *
                  **********************************************************/
                body = generateAssumeProve(bodyHeirs[bodyNext], cm);
+
+               if (isSuffices) { ((AssumeProveNode) body).setSuffices(); };
+                 /**********************************************************
+                 * Added 16 Feb 2009 by LL.                                *
+                 **********************************************************/
                currentGoal = null ;
                if (pushPopAssumeContext) {
                  assumeContext = symbolTable.getContext() ;
@@ -5625,83 +5701,92 @@ OpDefNode node = (OpDefNode) vec.elementAt(i);
                 } ;
                prevIsInfix = false ;
                }
-             else {
+             else {  
                /************************************************************
                * This is an ordinary expression.                           *
                ************************************************************/
                TreeNode curExpr = bodyHeirs[bodyNext] ;
 
                /************************************************************
-               * If the current expression is an infix expression, set     *
-               * curLHS to its current LHS, otherwise set it to null.      *
+               * Special handling of SUFFICES added by LL 16 Feb 2009.     *
                ************************************************************/
-               SyntaxTreeNode curLHS  = null ;
-               if (curExpr.getKind() == N_InfixExpr) {
-                 curLHS = (SyntaxTreeNode) curExpr.heirs()[0] ;
-                } ;
-               /************************************************************
-               * If prevIsInfix is true and curLHS is an "@", then         *
-               * process it, using as the right-hand side a new $Nop node  *
-               * with prevRHS as its argument.                             *
-               ************************************************************/
-               if (   prevIsInfix
-                   && (curLHS != null)
-                   && (((SyntaxTreeNode) 
-                           curLHS.heirs()[0]).heirs().length == 0) 
-                   && (curLHS.heirs()[1].getKind() == IDENTIFIER)
-                   && (curLHS.heirs()[1].getUS() == AtUS)) {
-
-                 /**********************************************************
-                 * The following code obtained by a simple modification    *
-                 * of the N_InfixExpr case of generateExpression.          *
-                 **********************************************************/
-                 TreeNode[] children = curExpr.heirs() ;
-                 GenID genID = generateGenID(children[1], cm);
-                 ExprNode[]sns = new ExprNode[2];
-                 SymbolNode opn = 
-                    symbolTable.resolveSymbol(
-                      Operators.resolveSynonym(genID.getCompoundIDUS()));
-                 if ( opn == null ) {
-                    errors.addError(curExpr.getLocation(),
-                        "Couldn't resolve infix operator symbol `" + 
-                        genID.getCompoundIDUS() + "'." );
-                    return null;
+               if (isSuffices) {  
+                 args = new ExprNode[1] ;
+                 args[0] = generateExpression(curExpr, cm) ;
+                 body = new OpApplNode(OP_suffices, args, stepBodySTN, cm) ;
+                } // if (isSuffices) 
+               else {  
+                 /************************************************************
+                 * If the current expression is an infix expression, set     *
+                 * curLHS to its current LHS, otherwise set it to null.      *
+                 ************************************************************/
+                 SyntaxTreeNode curLHS  = null ;
+                 if (curExpr.getKind() == N_InfixExpr) {
+                   curLHS = (SyntaxTreeNode) curExpr.heirs()[0] ;
                   } ;
-                 sns[1] = generateExpression( children[2], cm );
-                 /**********************************************************
-                 * Set sns[1] to a new $Nop OpApplNode whose argument is   *
-                 * prevRHS.                                                *
-                 **********************************************************/
-                 ExprNode[] nopArgs = new ExprNode[1] ;
-                 nopArgs[0] = prevRHS ;
-                 sns[0] = new OpApplNode(OP_nop, nopArgs,  curLHS, cm) ;
-                 body = new OpApplNode(opn, sns, curExpr, cm);
-                }  // if ( prevIsInfix ...)
-               else { // this is not an @-step
-                 body = generateExpression(curExpr, cm) ;
-                } ;
-               
-               /************************************************************
-               * If this is an infix ioperator, set prevIsInfix true and   *
-               * prevRHS equal to its right-hand argument, else set        *
-               * prevIsInfix false.                                        *
-               ************************************************************/
-               prevIsInfix = false ;
-               if  (   (curLHS != null)
-                    /*******************************************************
-                    * The following conjuncts should be true unless there  *
-                    * was an error in the expression.                      *
-                    *******************************************************/
-                    && (body != null)    
-                    && (body.getKind() == OpApplKind)
-                    && ( ((OpApplNode) body).getArgs().length > 1)) {
-                 prevIsInfix = true ;
-                 prevRHS = (ExprNode) ((OpApplNode) body).getArgs()[1] ;
+                 /************************************************************
+                 * If prevIsInfix is true and curLHS is an "@", then         *
+                 * process it, using as the right-hand side a new $Nop node  *
+                 * with prevRHS as its argument.                             *
+                 ************************************************************/
+                 if (   prevIsInfix
+                     && (curLHS != null)
+                     && (((SyntaxTreeNode) 
+                             curLHS.heirs()[0]).heirs().length == 0) 
+                     && (curLHS.heirs()[1].getKind() == IDENTIFIER)
+                     && (curLHS.heirs()[1].getUS() == AtUS)) {
+  
+                   /**********************************************************
+                   * The following code obtained by a simple modification    *
+                   * of the N_InfixExpr case of generateExpression.          *
+                   **********************************************************/
+                   TreeNode[] children = curExpr.heirs() ;
+                   GenID genID = generateGenID(children[1], cm);
+                   ExprNode[]sns = new ExprNode[2];
+                   SymbolNode opn = 
+                      symbolTable.resolveSymbol(
+                        Operators.resolveSynonym(genID.getCompoundIDUS()));
+                   if ( opn == null ) {
+                      errors.addError(curExpr.getLocation(),
+                          "Couldn't resolve infix operator symbol `" + 
+                          genID.getCompoundIDUS() + "'." );
+                      return null;
+                    } ;
+                   sns[1] = generateExpression( children[2], cm );
+                   /**********************************************************
+                   * Set sns[1] to a new $Nop OpApplNode whose argument is   *
+                   * prevRHS.                                                *
+                   **********************************************************/
+                   ExprNode[] nopArgs = new ExprNode[1] ;
+                   nopArgs[0] = prevRHS ;
+                   sns[0] = new OpApplNode(OP_nop, nopArgs,  curLHS, cm) ;
+                   body = new OpApplNode(opn, sns, curExpr, cm);
+                  }  // if ( prevIsInfix ...)
+                 else { // this is not an @-step
+                   body = generateExpression(curExpr, cm) ;
+                  } ;
+                 
+                 /************************************************************
+                 * If this is an infix ioperator, set prevIsInfix true and   *
+                 * prevRHS equal to its right-hand argument, else set        *
+                 * prevIsInfix false.                                        *
+                 ************************************************************/
+                 prevIsInfix = false ;
+                 if  (   (curLHS != null)
+                      /*******************************************************
+                      * The following conjuncts should be true unless there  *
+                      * was an error in the expression.                      *
+                      *******************************************************/
+                      && (body != null)    
+                      && (body.getKind() == OpApplKind)
+                      && ( ((OpApplNode) body).getArgs().length > 1)) {
+                   prevIsInfix = true ;
+                   prevRHS = (ExprNode) ((OpApplNode) body).getArgs()[1] ;
+                  }
                 }
-
               }; // else This is an ordinary expression.
              break ;
-
+ 
            case N_HaveStep :
            case N_CaseStep :
              if (stepBodySTN.getKind() == N_HaveStep) {op = OP_have ;}
@@ -6269,6 +6354,12 @@ errors.addAbort(stn.getLocation(), "Uses generateNumerable_Step") ;
       UseOrHideNode uh = generateUseOrHide(stn, cm) ;
       facts = uh.facts;
       defs  = uh.defs;
+      /*********************************************************************
+      * The following check added by LL on 16 Feb 2009.                    *
+      *********************************************************************/
+      if (facts.length + defs.length == 0) { 
+          errors.addError(stn.getLocation(), "Empty BY");
+         };
      } 
     else{
       facts = new LevelNode[0];

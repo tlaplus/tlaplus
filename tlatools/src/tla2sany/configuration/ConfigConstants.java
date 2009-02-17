@@ -6,7 +6,7 @@
 ***************************************************************************/
 // Copyright (c) 2003 Compaq Corporation.  All rights reserved.
 
-// Last modified on Fri  3 Aug 2007 at 13:45:30 PST by lamport
+// Last modified on Mon 16 February 2009 at 10:03:01 PST by lamport
 
 package tla2sany.configuration;
 
@@ -283,7 +283,13 @@ interface ConfigConstants {
     "builtin $Have                    $$_null   1\n"   +
     "builtin $Take                    $$_null   1\n"   +
     "builtin $Pick                    $$_null   1\n"   +
-    "builtin $Witness                 $$_null   -1\n"   
+    "builtin $Witness                 $$_null   -1\n"  +
+
+    /***********************************************************************
+    * $Suffices added by LL 16 Feb 2009.                                   *
+    ***********************************************************************/
+    "builtin $Suffices                $$_null   1\n"   
+
   ;
 }
 

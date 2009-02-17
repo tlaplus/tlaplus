@@ -1,7 +1,7 @@
 // Copyright (c) 2003 Compaq Corporation.  All rights reserved.
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
 
-// Last modified on Thu 16 Aug 2007 at 17:11:59 PST by lamport
+// Last modified on Mon 16 February 2009 at 10:05:22 PST by lamport
 /***************************************************************************
 * 2 Mar 2007: enum <- Enum                                                 *
 ***************************************************************************/
@@ -133,6 +133,11 @@ public class BuiltInLevel implements LevelConstants {
     LevelData.put("$Take",                data(1,     0,       make(3),      make(1)));
     LevelData.put("$Pick",                data(1,     0,       make(3),      make(1)));
     LevelData.put("$Witness",             data(-1,    0,       make(2),       make(1)));
+
+    /***********************************************************************
+    * $Suffices added by LL 16 Feb 2009.                                   *
+    ***********************************************************************/
+    LevelData.put("$Suffices",            data(1,     0,       make(3),      make(1)));
   }   
 
   /**

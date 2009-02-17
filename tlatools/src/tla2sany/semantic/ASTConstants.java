@@ -1,7 +1,7 @@
 // Copyright (c) 2003 Compaq Corporation.  All rights reserved.
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
 
-// last modified on Fri 17 Aug 2007 at 10:25:56 PST by lamport 
+// last modified on Mon 16 February 2009 at  9:57:46 PST by lamport 
 
 package tla2sany.semantic;
 
@@ -158,4 +158,9 @@ public interface ASTConstants {
   public static UniqueString OP_pick    = UniqueString.uniqueStringOf("$Pick");
   public static UniqueString OP_witness = 
     UniqueString.uniqueStringOf("$Witness");
+
+  /*************************************************************************
+  * OP_suffices added by LL 16 Feb 2009.                                   *
+  *************************************************************************/
+  public static UniqueString OP_suffices  = UniqueString.uniqueStringOf("$Suffices");
 }
