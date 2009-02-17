@@ -56,6 +56,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         register(quitAction);
 
         saveAction = ActionFactory.SAVE.create(window);
+        saveAction.setText("Save Module");
         register(saveAction);
 
         // saveAsAction = ActionFactory.SAVE_AS.create(window);
@@ -73,6 +74,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         fileMenu.add(new Separator("toolbox.file.spec.separator"));
         // place holder for module actions
         fileMenu.add(new Separator("toolbox.file.module.separator"));
+        
         fileMenu.add(saveAction);
 
         // fileMenu.add(saveAsAction);
