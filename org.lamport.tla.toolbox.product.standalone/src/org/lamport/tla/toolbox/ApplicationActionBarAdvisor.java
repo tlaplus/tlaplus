@@ -58,7 +58,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         saveAction = ActionFactory.SAVE.create(window);
         saveAction.setText("Save Module");
         register(saveAction);
-
+        
         // saveAsAction = ActionFactory.SAVE_AS.create(window);
         // register(saveAsAction);
 
