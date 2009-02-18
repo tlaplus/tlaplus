@@ -42,9 +42,11 @@ import org.eclipse.ui.WorkbenchException;
 import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.internal.WorkbenchWindow;
+import org.eclipse.ui.intro.IIntroPart;
 import org.eclipse.ui.part.FileEditorInput;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.ui.contribution.ParseStatusContributionItem;
+import org.lamport.tla.toolbox.ui.perspective.InitialPerspective;
 import org.lamport.tla.toolbox.ui.property.GenericSelectionProvider;
 
 /**
@@ -63,8 +65,13 @@ public class UIHelper
      */
     public static void closeWindow(String perspectiveId)
     {
-
         IWorkbench workbench = Activator.getDefault().getWorkbench();
+        // hide intro
+        if (InitialPerspective.ID.equals(perspectiveId)) 
+        {
+            workbench.getIntroManager().closeIntro(workbench.getIntroManager().getIntro());
+        }
+        
         IWorkbenchWindow[] windows = workbench.getWorkbenchWindows();
 
         // closing the perspective opened in a window
@@ -139,6 +146,13 @@ public class UIHelper
         {
             // avoids flicking, from implementation above
             window = workbench.openWorkbenchWindow(perspectiveId, input);
+
+            // show intro
+            if (InitialPerspective.ID.equals(perspectiveId) && workbench.getIntroManager().hasIntro()) 
+            {
+                IIntroPart intro = workbench.getIntroManager().showIntro(window, false);
+            }
+
         } catch (WorkbenchException e)
         {
             // TODO Auto-generated catch block
@@ -189,7 +203,15 @@ public class UIHelper
         IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
         try
         {
-            return workbench.showPerspective(perspectiveId, window);
+            IWorkbenchPage page = workbench.showPerspective(perspectiveId, window);
+
+            // show intro
+            if (InitialPerspective.ID.equals(perspectiveId) && workbench.getIntroManager().hasIntro()) 
+            {
+                workbench.getIntroManager().showIntro(window, false);
+            }
+
+            return page;
         } catch (WorkbenchException e)
         {
             // TODO Auto-generated catch block
