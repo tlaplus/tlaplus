@@ -29,7 +29,7 @@
          </property>
          <property
                name="aboutText"
-               value="TLA+ Toolbox provides a user interface for TLA+ Tools. To report a bug or make a suggestion, please contact Leslie Lamport at http://www.lamport.org/">
+               value="TLA+ Toolbox provides a user interface for TLA+ Tools. &#x0A;Version 0.2 of 25 October 2008&#x0A;Don&apos;t forget to click on help.  You can learn about features that you never knew about or have forgotten.&#x0A;To report a bug or make a suggestion, please contact Leslie Lamport at http://www.lamport.org/">
          </property>
          <property
                name="aboutImage"
