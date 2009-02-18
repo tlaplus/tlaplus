@@ -17,6 +17,7 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.lamport.tla.toolbox.Activator;
+import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.spec.nature.PCalDetectingBuilder;
 import org.lamport.tla.toolbox.spec.nature.TLANature;
 import org.lamport.tla.toolbox.spec.nature.TLAParsingBuilder;
@@ -315,7 +316,11 @@ public class ResourceHelper
      */
     public static boolean isRoot(IFile module)
     {
-        // TODO NullPointer etc...
-        return Activator.getSpecManager().getSpecLoaded().getRootFile().equals(module);
+        Spec spec = Activator.getSpecManager().getSpecLoaded();
+        if (spec == null) 
+        {
+            return false;
+        }
+        return spec.getRootFile().equals(module);
     }    
 }
