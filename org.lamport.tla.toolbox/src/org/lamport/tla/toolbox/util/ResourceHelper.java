@@ -17,6 +17,7 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.lamport.tla.toolbox.Activator;
+import org.lamport.tla.toolbox.spec.nature.PCalDetectingBuilder;
 import org.lamport.tla.toolbox.spec.nature.TLANature;
 import org.lamport.tla.toolbox.spec.nature.TLAParsingBuilder;
 
@@ -79,10 +80,17 @@ public class ResourceHelper
                 // set TLA+ feature
                 description.setNatureIds(new String[] { TLANature.ID });
 
-                // set Parsing Builder
+                // set TLA+ Parsing Builder
                 ICommand command = description.newCommand();
                 command.setBuilderName(TLAParsingBuilder.BUILDER_ID);
-                description.setBuildSpec(new ICommand[] { command });
+                // set PCal detecting builder 
+                ICommand command2 = description.newCommand();
+                command2.setBuilderName(PCalDetectingBuilder.BUILDER_ID);
+                
+                // setup the builders
+                description.setBuildSpec(new ICommand[] { command, command2 });
+                
+                
 
                 // create the project
                 // TODO add progress monitor

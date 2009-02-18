@@ -10,10 +10,15 @@ import org.eclipse.core.commands.NotEnabledException;
 import org.eclipse.core.commands.NotHandledException;
 import org.eclipse.core.commands.ParameterizedCommand;
 import org.eclipse.core.commands.common.NotDefinedException;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.ISelectionProvider;
+import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.jface.window.IShellProvider;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
@@ -37,8 +42,10 @@ import org.eclipse.ui.WorkbenchException;
 import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.internal.WorkbenchWindow;
+import org.eclipse.ui.part.FileEditorInput;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.ui.contribution.ParseStatusContributionItem;
+import org.lamport.tla.toolbox.ui.property.GenericSelectionProvider;
 
 /**
  * A Helper for handling the RCP Objects like windows, editors and views
@@ -103,9 +110,10 @@ public class UIHelper
             if (activepart != null)
             {
                 activepart.setFocus();
-            } else {
+            } else
+            {
                 activepart = page.getActivePart();
-                if (activepart != null) 
+                if (activepart != null)
                 {
                     activepart.setFocus();
                 }
@@ -464,7 +472,7 @@ public class UIHelper
      */
     public static void setHelp(Control control, String localContext)
     {
-        PlatformUI.getWorkbench().getHelpSystem().setHelp(control, Activator.PLUGIN_ID + "." + localContext); 
+        PlatformUI.getWorkbench().getHelpSystem().setHelp(control, Activator.PLUGIN_ID + "." + localContext);
     }
 
     /**
@@ -474,5 +482,48 @@ public class UIHelper
     public static ImageDescriptor imageDescriptor(String imageFilePath)
     {
         return Activator.imageDescriptorFromPlugin(Activator.PLUGIN_ID, imageFilePath);
+    }
+
+    /**
+     * Retrieves a shell provider of currently active shell
+     * @return
+     */
+    public static IShellProvider getShellProvider()
+    {
+        return new IShellProvider() {
+
+            public Shell getShell()
+            {
+                return UIHelper.getShell();
+            }
+        };
+    }
+    
+    /**
+     * Retrieves the selection provider for files in the active editor 
+     * @return
+     */
+    public static ISelectionProvider getActiveEditorFileSelectionProvider()
+    {
+        return new GenericSelectionProvider()
+        {
+
+            public ISelection getSelection()
+            {
+                IEditorInput input = getActivePage().getActiveEditor().getEditorInput();
+                if (input instanceof FileEditorInput)
+                {
+                    IFile resource = ((FileEditorInput) input).getFile();
+                    return new StructuredSelection(resource);
+                }
+                return null;
+            }
+
+            public void setSelection(ISelection selection)
+            {
+                throw new UnsupportedOperationException("This selection provider is read-only");
+            }
+           
+        };
     }
 }
