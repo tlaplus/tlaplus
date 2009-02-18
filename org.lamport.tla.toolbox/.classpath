@@ -5,6 +5,7 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" output="test-bin" path="test"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/3"/>
-	<classpathentry kind="lib" path="tla2tools.jar" sourcepath="/tlatools"/>
+	<classpathentry exported="true" kind="lib" path="tla2tools.jar" sourcepath="/tlatools"/>
+	<classpathentry exported="true" kind="lib" path="StandardModules" sourcepath="StandardModules"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
