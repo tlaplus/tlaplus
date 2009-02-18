@@ -1,10 +1,15 @@
-head	1.1;
+head	1.2;
 access;
 symbols;
 locks
-	lamport:1.1; strict;
+	lamport:1.2; strict;
 comment	@# @;
 
+
+1.2
+date	2009.02.17.20.16.51;	author lamport;	state Exp;
+branches;
+next	1.1;
 
 1.1
 date	2009.02.16.18.10.24;	author lamport;	state Exp;
@@ -17,7 +22,7 @@ desc
 @
 
 
-1.1
+1.2
 log
 @#
 @
@@ -89,7 +94,8 @@ public class NonLeafProofNode extends ProofNode {
     *                                                                      *
     *       As of 16 Feb 2009:                                             *
     *       A "SUFFICES S" step is represented as a TheoremNode whose      *
-    *       getTheorem() method returns the following:                     *
+    *       isSuffices() method returns true and whose getTheorem()        *
+    *       method returns the following:                            *
     *         + If S is an ASSUME/PROVE, then as an AssumeProveNode        *
     *           with suffices field true.                                  *
     *         + If S is an ExprNode, then as an OpApplNode whose           *
@@ -217,4 +223,15 @@ public class NonLeafProofNode extends ProofNode {
    }
 
 }
+@
+
+
+1.1
+log
+@#
+@
+text
+@d68 2
+a69 1
+    *       getTheorem() method returns the following:                     *
 @

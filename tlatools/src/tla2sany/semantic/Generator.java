@@ -1,7 +1,7 @@
 // Copyright (c) 2003 Compaq Corporation.  All rights reserved.
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
 //
-// last modified on Mon 16 February 2009 at 18:23:00 PST by lamport
+// last modified on Tue 17 February 2009 at 11:49:18 PST by lamport
 
 //
 //  4/9/2006 Added a check in RecordConstructor for duplicate fields
@@ -1466,9 +1466,16 @@ public class Generator implements ASTConstants, SyntaxTreeConstants,
 
     /***********************************************************************
     * +cal: if curNode.kind = AssumeProveKind ... end if                   *
+    *                                                                      *
+    * Modified 17 Feb 2009 by LL to allow ASSUME/PROVE to be used as a     *
+    * fact.  This seems to have been a bug in the original.                *
+    *                                                                      *
+    * Not corrected in the PlusCal code because that code doesn't talk     *
+    * about the isFact case.                                               *
     ***********************************************************************/
     if (curNode.getKind() == AssumeProveKind) {
-             errors.addError(
+      if (isFact) { return (AssumeProveNode) curNode ; };
+      errors.addError(
                sel.selSTN.getLocation(),
                "Selected ASSUME/PROVE instead of expression.") ;
              return nullOAN ; 

@@ -65,7 +65,8 @@ public class NonLeafProofNode extends ProofNode {
     *                                                                      *
     *       As of 16 Feb 2009:                                             *
     *       A "SUFFICES S" step is represented as a TheoremNode whose      *
-    *       getTheorem() method returns the following:                     *
+    *       isSuffices() method returns true and whose getTheorem()        *
+    *       method returns the following:                                  *
     *         + If S is an ASSUME/PROVE, then as an AssumeProveNode        *
     *           with suffices field true.                                  *
     *         + If S is an ExprNode, then as an OpApplNode whose           *

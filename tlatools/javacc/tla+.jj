@@ -1,4 +1,4 @@
-// last modified on Mon 15 September 2008 at  7:46:37 PST by lamport
+// last modified on Tue 17 February 2009 at 16:51:33 PST by lamport
 
 
 
@@ -2346,7 +2346,11 @@ AssumeProve () : {
 expecting = "Expression, Declaration, or AssumeProve"; }
 
   (  LOOKAHEAD ({(getToken(1).kind == ASSUME)
-                   || (getToken(3).kind == ASSUME)})
+                   || ((getToken(2).kind == COLONCOLON) && 
+                       (getToken(3).kind == ASSUME)  )})
+                      /*****************************************************
+                      * Check for COLONCOLON added by LL 17 Feb 2009.      *
+                      *****************************************************/
      tn = AssumeProve() 
    | tn = NewSymb() 
    | tn = Expression() { }
@@ -2354,8 +2358,12 @@ expecting = "Expression, Declaration, or AssumeProve"; }
 expecting = "PROVE or `,'"; }
   ( t = <COMMA> { addHeir( new SyntaxTreeNode(mn, t) );
 expecting = "Expression, Declaration, or AssumeProve"; }
-    (  LOOKAHEAD({(getToken(1).kind == ASSUME)
-                   || (getToken(3).kind == ASSUME)})
+    (  LOOKAHEAD({    (getToken(1).kind == ASSUME)
+                   || ((getToken(2).kind == COLONCOLON) && 
+                       (getToken(3).kind == ASSUME)  )})
+                      /*****************************************************
+                      * Check for COLONCOLON added by LL 17 Feb 2009.      *
+                      *****************************************************/
        tn = AssumeProve() 
      | tn = NewSymb() 
      | tn = Expression() 

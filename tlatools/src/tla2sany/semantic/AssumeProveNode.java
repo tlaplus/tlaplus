@@ -1,6 +1,6 @@
 // Copyright (c) 2003 Compaq Corporation.  All rights reserved.
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
-// Last modified on Mon 16 February 2009 at  9:40:00 PST by lamport
+// Last modified on Tue 17 February 2009 at 17:05:06 PST by lamport
 
 package tla2sany.semantic;
 
@@ -114,11 +114,12 @@ public class AssumeProveNode extends LevelNode {
   protected boolean   inProof = true ;
 
   /*************************************************************************
-  * suffices added 16 Feb 2009.                                            *
+  * suffices field added 16 Feb 2009.                                      *
+  * This field is used only in Generator.selectorToNode.                   *
   *************************************************************************/
-  private boolean suffices = false ;
-  public  boolean isSuffices()  {return this.suffices ;}; 
-          void    setSuffices() {this.suffices = true;}; 
+  protected boolean suffices = false ;
+  protected boolean isSuffices()  {return this.suffices ;}; 
+            void    setSuffices() {this.suffices = true;}; 
 
 
   private ThmOrAssumpDefNode goal = null ;
@@ -126,6 +127,10 @@ public class AssumeProveNode extends LevelNode {
     * This is the named theorem or proof-step node whose body the          *
     * ASSUME/PROVE is.  Otherwise, it equals null.  In particular, it      *
     * equals null for an inner ASSUME/PROVE                                *
+    *                                                                      *
+    * This comment seems to be wrong.  Even on an inner ASSUME/PROVE, the  *
+    * goal field seems to point to the ThmOrAssumpDefNode of the outer     *
+    * ASSUME/PROVE. (LL 17 Feb 2009)                                       *
     ***********************************************************************/
     
   /*************************************************************************

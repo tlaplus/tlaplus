@@ -1,6 +1,6 @@
 // Copyright (c) 2007 Microsoft Corporation.  All rights reserved.
 
-// last modified on Fri 30 Nov 2007 at 15:58:03 PST by lamport
+// last modified on Tue 17 February 2009 at 14:53:21 PST by lamport
 /***************************************************************************
 * The ThmOrAssumpDefNode constructor is invoked in                         *
 * semantic/Generator.java to construct the nodes corresponding to the      *
@@ -355,7 +355,8 @@ public class ThmOrAssumpDefNode extends SymbolNode
         ret += Strings.indent(2, 
                              "\nisTheorem(): " + theorem +
                              "\nBody:" + 
-                              Strings.indent(2, this.body.toString(depth-1)));
+                              Strings.indent(2, this.body.toString(depth-1)) +
+                             "\nsuffices: " + this.isSuffices());
       } // if
     /***********************************************************************
     * The following is the same for all classes that implement the         *

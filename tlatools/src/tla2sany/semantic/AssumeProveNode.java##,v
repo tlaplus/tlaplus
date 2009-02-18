@@ -1,10 +1,30 @@
-head	1.7;
+head	1.11;
 access;
 symbols;
 locks
-	lamport:1.7; strict;
+	lamport:1.11; strict;
 comment	@# @;
 
+
+1.11
+date	2009.02.18.01.05.06;	author lamport;	state Exp;
+branches;
+next	1.10;
+
+1.10
+date	2009.02.17.23.34.34;	author lamport;	state Exp;
+branches;
+next	1.9;
+
+1.9
+date	2009.02.17.23.32.50;	author lamport;	state Exp;
+branches;
+next	1.8;
+
+1.8
+date	2009.02.17.23.18.09;	author lamport;	state Exp;
+branches;
+next	1.7;
 
 1.7
 date	2009.02.16.17.40.00;	author lamport;	state Exp;
@@ -47,14 +67,14 @@ desc
 @
 
 
-1.7
+1.11
 log
 @#
 @
 text
 @// Copyright (c) 2003 Compaq Corporation.  All rights reserved.
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
-// Last modified on Mon 16 February 2009 at  9:40:00 PST by lamport
+// Last modified on Tue 17 February 2009 at 17:05:06 PST by lamport
 
 package tla2sany.semantic;
 
@@ -168,11 +188,12 @@ public class AssumeProveNode extends LevelNode {
   protected boolean   inProof = true ;
 
   /*************************************************************************
-  * suffices added 16 Feb 2009.                                            *
+  * suffices field added 16 Feb 2009.                                      *
+  * This field is used only in Generator.selectorToNode.                   *
   *************************************************************************/
-  private boolean suffices = false ;
-  public  boolean isSuffices()  {return this.suffices ;}; 
-          void    setSuffices() {this.suffices = true;}; 
+  protected boolean suffices = false ;
+  protected boolean isSuffices()  {return this.suffices ;}; 
+            void    setSuffices() {this.suffices = true;}; 
 
 
   private ThmOrAssumpDefNode goal = null ;
@@ -180,6 +201,10 @@ public class AssumeProveNode extends LevelNode {
     * This is the named theorem or proof-step node whose body the          *
     * ASSUME/PROVE is.  Otherwise, it equals null.  In particular, it      *
     * equals null for an inner ASSUME/PROVE                                *
+    *                                                                      *
+    * This comment seems to be wrong.  Even on an inner ASSUME/PROVE, the  *
+    * goal field seems to point to the ThmOrAssumpDefNode of the outer     *
+    * ASSUME/PROVE. (LL 17 Feb 2009)                                       *
     ***********************************************************************/
     
   /*************************************************************************
@@ -400,6 +425,76 @@ public class AssumeProveNode extends LevelNode {
 
   
 
+@
+
+
+1.10
+log
+@#
+@
+text
+@d3 1
+a3 1
+// Last modified on Tue 17 February 2009 at 15:34:34 PST by lamport
+d14 1
+a14 1
+*                                                             *
+d130 4
+@
+
+
+1.9
+log
+@#
+@
+text
+@d3 1
+a3 1
+// Last modified on Tue 17 February 2009 at 15:32:50 PST by lamport
+d14 1
+a14 1
+*                                                             *
+d117 2
+a118 3
+suffices field added 16 Feb 2009.
+
+This is used only in 
+@
+
+
+1.8
+log
+@#
+@
+text
+@d3 1
+a3 1
+// Last modified on Tue 17 February 2009 at 15:18:09 PST by lamport
+d14 1
+a14 1
+*                                                             *
+d117 3
+a119 1
+  * suffices added 16 Feb 2009.                                            *
+@
+
+
+1.7
+log
+@#
+@
+text
+@d3 1
+a3 1
+// Last modified on Mon 16 February 2009 at  9:40:00 PST by lamport
+d14 1
+a14 1
+*                                                             *
+d119 3
+a121 3
+  private boolean suffices = false ;
+  public  boolean isSuffices()  {return this.suffices ;}; 
+          void    setSuffices() {this.suffices = true;}; 
 @
 
 

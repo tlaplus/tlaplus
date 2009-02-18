@@ -1,10 +1,15 @@
-head	1.1;
+head	1.2;
 access;
 symbols;
 locks
-	lamport:1.1; strict;
+	lamport:1.2; strict;
 comment	@# @;
 
+
+1.2
+date	2009.02.17.23.19.01;	author lamport;	state Exp;
+branches;
+next	1.1;
 
 1.1
 date	2009.02.16.20.23.26;	author lamport;	state Exp;
@@ -17,7 +22,7 @@ desc
 @
 
 
-1.1
+1.2
 log
 @#
 @
@@ -65,7 +70,7 @@ public class SANY {
     * The following string is inserted by an Emacs macro when a new        *
     * version is saved.                                                    *
     ***********************************************************************/
-    "last modified on Mon 16 February 2009 at 12:23:26 PST by lamport";
+    "last modified on Tue 17 February 2009 at 15:19:01 PST by lamport";
 
   private static String modDate = 
                 lastModified.substring(21, lastModified.indexOf(" at"));
@@ -76,8 +81,7 @@ public class SANY {
   public static String version = 
     "Version .91 created " + modDate ; 
 
-  private static boolean doParsing          = true;  
-    // true <=> parsing should be done
+  private static boolean doParsing  one
     //          currently there is no way to turn this off
 
   private static boolean doSemanticAnalysis = true;  
@@ -453,4 +457,15 @@ fe.printStackTrace();
   }
 
 }
+@
+
+
+1.1
+log
+@#
+@
+text
+@d44 1
+a44 1
+    "last modified on Mon 16 February 2009 at 12:23:26 PST by lamport";
 @
