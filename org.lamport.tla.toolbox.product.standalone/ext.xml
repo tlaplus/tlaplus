@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<introContent>
+  <extensionContent content="intro/extContent.xhtml" path="root/anchor1" />
+  <page id="concept3" content="intro/concept3.xhtml"/>
+</introContent>

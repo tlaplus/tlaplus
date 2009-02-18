@@ -6,7 +6,10 @@
    <aboutInfo>
       <image path="icons/full/product_lg.gif"/>
       <text>
-         TLA+ Toolbox provides a user interface for TLA+ Tools. To report a bug or make a suggestion, please contact Leslie Lamport at http://www.lamport.org/
+         TLA+ Toolbox provides a user interface for TLA+ Tools. 
+Version 0.2 of 25 October 2008
+Don&apos;t forget to click on help.  You can learn about features that you never knew about or have forgotten.
+To report a bug or make a suggestion, please contact Leslie Lamport at http://www.lamport.org/
       </text>
    </aboutInfo>
 
@@ -29,6 +32,7 @@
       </win>
    </launcher>
 
+   <intro introId="org.lamport.tla.toolbox.product.standalone.intro"/>
 
    <vm>
    </vm>

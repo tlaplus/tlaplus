@@ -49,6 +49,46 @@
          </property>
       </product>
    </extension>
+   
+   <!--       -->
+   <!-- Intro -->
+   <!--       -->
+   <extension
+         point="org.eclipse.ui.intro">
+      <intro
+            class="org.eclipse.ui.intro.config.CustomizableIntroPart"
+            id="org.lamport.tla.toolbox.product.standalone.intro">
+      </intro>
+      <introProductBinding
+            introId="org.lamport.tla.toolbox.product.standalone.intro"
+            productId="org.lamport.tla.toolbox.product.standalone.product">
+      </introProductBinding>
+   </extension>
+   <extension
+         point="org.eclipse.ui.intro.config">
+      <config
+            introId="org.lamport.tla.toolbox.product.standalone.intro"
+            content="introContent.xml"
+            id="org.lamport.tla.toolbox.product.standalone.intro.configId">
+         <presentation
+               home-page-id="root">
+            <implementation
+                  kind="html"
+                  os="win32,linux,macosx">
+            </implementation>
+         </presentation>
+      </config>
+   </extension>
+   <extension
+         point="org.eclipse.ui.intro.configExtension">
+      <configExtension
+            content="ext.xml"
+            configId="org.lamport.tla.toolbox.product.standalone.intro.configId">
+      </configExtension>
+   </extension>
+   
+   
+   <!-- Navogator -->
    <!--
    <extension
          point="org.eclipse.ui.navigator.viewer">
