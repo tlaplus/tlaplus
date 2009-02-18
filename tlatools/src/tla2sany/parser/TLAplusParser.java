@@ -801,7 +801,7 @@ private int levelOfProofStepLexeme(Token tok){
   String im = tok.image ;
   if (im.substring(1,2).equals("*")) {return -1;} ;
   if (im.substring(1,2).equals("+")) {return -2;} ;
-  return new Integer(im.substring(1, im.indexOf('>'))) ;
+  return new Integer(im.substring(1, im.indexOf('>'))).intValue() ;
  }
 
 /***************************************************************************
