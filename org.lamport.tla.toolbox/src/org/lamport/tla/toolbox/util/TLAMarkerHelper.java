@@ -13,8 +13,8 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.editors.text.FileDocumentProvider;
 import org.eclipse.ui.ide.IGotoMarker;
+import org.eclipse.ui.part.FileEditorInput;
 import org.lamport.tla.toolbox.Activator;
-import org.lamport.tla.toolbox.editor.ModuleEditorInput;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.ui.handler.OpenSpecHandler;
 
@@ -86,7 +86,7 @@ public class TLAMarkerHelper
                     IDocument document = null;
 
                     // since we know that the editor uses file based editor representation
-                    ModuleEditorInput fileEditorInput = new ModuleEditorInput((IFile) resource, ResourceHelper.isRoot((IFile) resource));
+                    FileEditorInput fileEditorInput = new FileEditorInput((IFile) resource);
                     FileDocumentProvider fileDocumentProvider = new FileDocumentProvider();
                     fileDocumentProvider.connect(fileEditorInput);
                     document = fileDocumentProvider.getDocument(fileEditorInput);
@@ -222,7 +222,7 @@ public class TLAMarkerHelper
     public static void gotoMarker(IMarker problem)
     {
         IFile module = (IFile) problem.getResource();
-        IEditorPart part = UIHelper.openEditor(OpenSpecHandler.TLA_EDITOR, new ModuleEditorInput(module, ResourceHelper.isRoot(module)));
+        IEditorPart part = UIHelper.openEditor(OpenSpecHandler.TLA_EDITOR, new FileEditorInput(module));
         IGotoMarker gotoMarker = null;
         if (part instanceof IGotoMarker)
         {
