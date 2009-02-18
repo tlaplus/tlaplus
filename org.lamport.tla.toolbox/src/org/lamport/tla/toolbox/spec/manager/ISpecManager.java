@@ -25,24 +25,6 @@ public interface ISpecManager
     public void addSpec(Spec spec);
 
     /**
-     * Adds a SpecManagerListener to the SpecManager The SpecManager is notifying the listener if specs are added or
-     * removed
-     * 
-     * @param listener
-     *            a listener to add
-     */
-    public void addSpecManagerListener(SpecManagerListener listener);
-
-    /**
-     * Removes a SpecManagerListener to the SpecManager The SpecManager is notifying the listener if specs are added or
-     * removed
-     * 
-     * @param listener
-     *            a listener to remove
-     */
-    public void removeSpecManagerListener(SpecManagerListener listener);
-
-    /**
      * Sets a spec that is loaded
      * 
      * @param loadedSpec

@@ -11,8 +11,12 @@ import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.spec.nature.TLANature;
+import org.lamport.tla.toolbox.ui.property.GenericSelectionProvider;
 import org.lamport.tla.toolbox.util.pref.IPreferenceConstants;
 import org.lamport.tla.toolbox.util.pref.PreferenceStoreHelper;
 
@@ -21,7 +25,7 @@ import org.lamport.tla.toolbox.util.pref.PreferenceStoreHelper;
  * @version $Id$
  * @author Simon Zambrovski
  */
-public class WorkspaceSpecManager extends AbstractSpecManager implements IResourceChangeListener
+public class WorkspaceSpecManager extends GenericSelectionProvider implements ISpecManager, IResourceChangeListener
 {
     private Hashtable specStorage = new Hashtable(47);
     private Spec loadedSpec = null;
@@ -213,4 +217,51 @@ public class WorkspaceSpecManager extends AbstractSpecManager implements IResour
         return proposition;
     }
 
+    /**
+     * Retrieves loaded spec encapsulated in to a selection object  
+     */
+    public ISelection getSelection()
+    {
+        if (this.loadedSpec != null) 
+        {
+            return new StructuredSelection(this.loadedSpec);
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Sets the spec loaded 
+     */
+    public void setSelection(ISelection selection)
+    {
+        if (selection == null) 
+        {
+            setSpecLoaded(null);
+            return;
+        } 
+        if (selection instanceof IStructuredSelection) 
+        {
+            IStructuredSelection sSelection = (IStructuredSelection) selection;
+            if (sSelection.toArray() instanceof Spec[])
+            {
+                Spec[] specs = (Spec[]) sSelection.toArray(); 
+                if (specs.length == 0) 
+                {
+                    setSpecLoaded(null);   
+                } else if (specs.length == 1){
+                    setSpecLoaded(specs[0]); 
+                } else {
+                    throw new IllegalArgumentException("Only one specification can be selected");
+                }
+            } else {
+                throw new IllegalArgumentException("Workspace specification manager only accepts specification objects to be selected");
+            }
+        } else {
+            throw new IllegalArgumentException("Workspace specification manager only accepts specification object in a StructuredSelection");
+        }
+    }
+
+    
+    
 }
