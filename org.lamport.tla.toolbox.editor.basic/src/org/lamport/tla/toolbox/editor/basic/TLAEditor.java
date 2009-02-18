@@ -9,8 +9,9 @@ import org.eclipse.ui.contexts.IContextActivation;
 import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.editors.text.FileDocumentProvider;
 import org.eclipse.ui.editors.text.TextEditor;
-import org.lamport.tla.toolbox.editor.ModuleEditorInput;
+import org.eclipse.ui.part.FileEditorInput;
 import org.lamport.tla.toolbox.editor.basic.util.ElementStateAdapter;
+import org.lamport.tla.toolbox.util.ResourceHelper;
 
 /**
  * Basic editor without any additional features
@@ -55,15 +56,15 @@ public class TLAEditor extends TextEditor
     public void init(IEditorSite site, IEditorInput input) throws PartInitException
     {
         super.init(site, input);
-        if (input instanceof ModuleEditorInput)
+        if (input instanceof FileEditorInput)
         {
-            ModuleEditorInput finput = (ModuleEditorInput) input;
-            if (input != null)
+            FileEditorInput finput = (FileEditorInput) input;
+            if (finput != null)
             {
                 IPath path = finput.getPath();
                 setContentDescription(path.toString());
 
-                if (finput.isRoot())
+                if (ResourceHelper.isRoot(finput.getFile()))
                 {
                     setTitleImage(rootImage);
                 }
