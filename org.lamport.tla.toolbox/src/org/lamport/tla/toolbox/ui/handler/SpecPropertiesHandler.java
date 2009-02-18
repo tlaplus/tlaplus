@@ -4,7 +4,9 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IHandler;
-import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.action.IAction;
+import org.eclipse.ui.dialogs.PropertyDialogAction;
+import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 /**
@@ -19,10 +21,9 @@ public class SpecPropertiesHandler extends AbstractHandler implements IHandler
      */
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
-     
-        System.out.println("Spec Props");
-        
-        ISelection selection = UIHelper.getActivePage().getSelection();
+
+        IAction action = new PropertyDialogAction(UIHelper.getShellProvider(), Activator.getSpecManager());
+        action.run();
         
         return null;
     }
