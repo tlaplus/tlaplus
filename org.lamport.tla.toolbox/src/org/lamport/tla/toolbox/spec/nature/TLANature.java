@@ -26,17 +26,48 @@ public class TLANature implements IProjectNature
         IProjectDescription desc = project.getDescription();
         ICommand[] commands = desc.getBuildSpec();
 
+        boolean tlaBuilderFound = false;
+        boolean pcalBuilderFound = false;
+        int numberOfBuildersToInstall = 2;
+        
+        
         for (int i = 0; i < commands.length; ++i) {
-            if (commands[i].getBuilderName().equals(TLAParsingBuilder.BUILDER_ID)) {
+            String builderName = commands[i].getBuilderName();
+            if (builderName.equals(TLAParsingBuilder.BUILDER_ID)) 
+            {
+                tlaBuilderFound = true;
+                numberOfBuildersToInstall--;
+            } else if (builderName.equals(PCalDetectingBuilder.BUILDER_ID))
+            {
+               pcalBuilderFound = true;
+               numberOfBuildersToInstall--;
+            }
+            
+            if (tlaBuilderFound && pcalBuilderFound) 
+            {
                 return;
             }
         }
 
-        ICommand[] newCommands = new ICommand[commands.length + 1];
+        ICommand[] newCommands = new ICommand[commands.length + numberOfBuildersToInstall];
         System.arraycopy(commands, 0, newCommands, 0, commands.length);
-        ICommand command = desc.newCommand();
-        command.setBuilderName(TLAParsingBuilder.BUILDER_ID);
-        newCommands[newCommands.length - 1] = command;
+        
+        int position = commands.length;
+        
+        if (!tlaBuilderFound) 
+        {
+            ICommand command = desc.newCommand();
+            command.setBuilderName(TLAParsingBuilder.BUILDER_ID);
+            newCommands[position] = command;
+            position++;
+        }
+        if (!pcalBuilderFound) 
+        {
+            ICommand command = desc.newCommand();
+            command.setBuilderName(PCalDetectingBuilder.BUILDER_ID);
+            newCommands[position] = command;
+        }
+        
         desc.setBuildSpec(newCommands);
         project.setDescription(desc, null);
         System.out.print("Nature added");
@@ -51,14 +82,14 @@ public class TLANature implements IProjectNature
         IProjectDescription description = getProject().getDescription();
         ICommand[] commands = description.getBuildSpec();
         for (int i = 0; i < commands.length; ++i) {
-            if (commands[i].getBuilderName().equals(TLAParsingBuilder.BUILDER_ID)) {
+            String builderName = commands[i].getBuilderName();
+            if (builderName.equals(TLAParsingBuilder.BUILDER_ID) || builderName.equals(PCalDetectingBuilder.BUILDER_ID)) {
                 ICommand[] newCommands = new ICommand[commands.length - 1];
                 System.arraycopy(commands, 0, newCommands, 0, i);
                 System.arraycopy(commands, i + 1, newCommands, i,
                         commands.length - i - 1);
                 description.setBuildSpec(newCommands);
-                return;
-            }
+            } 
         }
         System.out.print("Nature removed");
     }
