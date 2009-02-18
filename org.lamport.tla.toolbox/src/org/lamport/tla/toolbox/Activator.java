@@ -6,7 +6,6 @@ import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
-import org.lamport.tla.toolbox.spec.manager.ISpecManager;
 import org.lamport.tla.toolbox.spec.manager.WorkspaceSpecManager;
 import org.lamport.tla.toolbox.spec.parser.ParserDependencyStorage;
 import org.lamport.tla.toolbox.ui.contribution.ParseStatusContributionItem;
@@ -28,7 +27,7 @@ public class Activator extends AbstractUIPlugin
 
     // The shared instance
     private static Activator plugin;
-    private static ISpecManager specManager;
+    private static WorkspaceSpecManager specManager;
     private static ParserDependencyStorage parserDependencyStorage;
     private ParseStatusContributionItem parseStatusWidget = null;
 
@@ -170,7 +169,7 @@ public class Activator extends AbstractUIPlugin
     /**
      * Retrieves a working spec manager instance
      */
-    public static synchronized ISpecManager getSpecManager()
+    public static synchronized WorkspaceSpecManager getSpecManager()
     {
         if (specManager == null)
         {
