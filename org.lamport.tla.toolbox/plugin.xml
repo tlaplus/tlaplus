@@ -106,10 +106,24 @@
    <extension
          point="org.eclipse.ui.propertyPages">
       <page
-            name="Specification Properties"
-            nameFilter="*.toolbox"
             class="org.lamport.tla.toolbox.ui.property.SpecPropertyPage"
-            id="toolbox.ui.property.SpecPropertyPage">
+            id="toolbox.ui.property.SpecPropertyPage"
+            name="Specification Properties">
+         <enabledWhen>
+            <instanceof
+                  value="org.lamport.tla.toolbox.spec.Spec">
+            </instanceof>
+         </enabledWhen>
+      </page>
+      <page
+            class="org.lamport.tla.toolbox.ui.property.ModulePropertyPage"
+            id="toolbox.ui.property.ModulePropertyPage"
+            name="Module Properties">
+         <enabledWhen>
+            <instanceof
+                  value="org.eclipse.core.resources.IFile">
+            </instanceof>
+         </enabledWhen>
       </page>
    </extension>
    
@@ -146,11 +160,6 @@
             description="Specification Properties"
             id="toolbox.command.spec.props"
             name="Specification Properties">
-         <commandParameter
-               id="toolbox.command.spec.props.param"
-               name="specName"
-               optional="false">
-         </commandParameter>
       </command>
       <command
             categoryId="toolbox.command.category.spec"
@@ -201,6 +210,12 @@
             id="toolbox.command.module.translate.active"
             name="Translate module">
       </command>
+      <command
+            categoryId="toolbox.command.category.module"
+            description="Modules Properties"
+            id="toolbox.command.module.props"
+            name="Modules Properties">
+      </command>
       
       <category
             description="UI Commands"
@@ -226,7 +241,7 @@
             commandId="org.eclipse.ui.file.exit"
             contextId="org.eclipse.ui.contexts.window"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            sequence="M1+Q">
+            sequence="M3+X">
       </key>
       <!-- key
             commandId="toolbox.command.help"
@@ -353,7 +368,7 @@
          <menu
                id="toolbox.menu.module.open"
                label="Open Module"
-               mnemonic="M"
+               mnemonic="o"
                tooltip="Open a TLA+ Module">
             <visibleWhen
                   checkEnabled="true">
@@ -373,7 +388,7 @@
                commandId="toolbox.command.module.parse.active"
                id="toolbox.menu.module.parse"
                label="Parse Module"
-               mnemonic="M">
+               mnemonic="p">
             <visibleWhen
                   checkEnabled="true">
                <with
@@ -388,7 +403,24 @@
                commandId="toolbox.command.module.translate.active"
                id="toolbox.menu.run.translate"
                label="Translate Module"
-               mnemonic="T">
+               mnemonic="t">
+            <visibleWhen
+                  checkEnabled="true">
+               <with
+                     variable="activeWorkbenchWindow.activePerspective">
+                  <equals
+                        value="org.lamport.tla.toolbox.ui.perspective.specLoaded">
+                  </equals>
+               </with>
+            </visibleWhen>
+         </command>
+         <command
+               commandId="toolbox.command.module.props"
+               id="toolbox.menu.module.props"
+               label="Module Properties"
+               mnemonic="i"
+               style="push"
+               tooltip="Shows properties of current module">
             <visibleWhen
                   checkEnabled="true">
                <with
@@ -542,6 +574,10 @@
             class="org.lamport.tla.toolbox.ui.handler.HelpHandler"
             commandId="toolbox.command.help">
       </handler>
+      <handler
+            class="org.lamport.tla.toolbox.ui.handler.ModulePropertiesHandler"
+            commandId="toolbox.command.module.props">
+      </handler>
 
    </extension>
    
@@ -578,9 +614,9 @@
          </adapter>
       </factory>
    </extension>
-<!--
-	Parser Builder
--->
+<!-- ================================================================================= -->
+<!-- Builders                                                                          -->
+<!-- ================================================================================= -->
    <extension
    		 id="toolbox.builder.TLAParserBuilder"
    		 name="TLA+ Syntax Parser"
@@ -592,9 +628,21 @@
          </run>
       </builder>
    </extension>
-<!--
-  Nature defintion
--->
+   <extension
+         id="toolbox.builder.PCalAlgorithmSearchingBuilder"
+         name="PCal Algorthim Definition Detecting Builder"
+         point="org.eclipse.core.resources.builders">
+      <builder
+            hasNature="true">
+         <run
+               class="org.lamport.tla.toolbox.spec.nature.PCalDetectingBuilder">
+         </run>
+      </builder>
+   </extension>
+   
+<!-- ================================================================================= -->
+<!-- Natures                                                                           -->
+<!-- ================================================================================= -->
    <extension
          id="toolbox.natures.TLANature"
          name="TLA+ Nature"
@@ -606,6 +654,9 @@
       </runtime>
       <builder
             id="toolbox.builder.TLAParserBuilder">
+      </builder>
+      <builder
+            id="toolbox.builder.PCalAlgorithmSearchingBuilder">
       </builder>
    </extension>
 
