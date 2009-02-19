@@ -23,7 +23,7 @@ public class TLAEditor extends TextEditor
     private IContextService contextService = null;
     private IContextActivation contextActivation = null;
 
-    private Image rootImage = Activator.imageDescriptorFromPlugin(Activator.PLUGIN_ID, "/icons/root_file.gif").createImage();
+    private Image rootImage = TLAEditorActivator.imageDescriptorFromPlugin(TLAEditorActivator.PLUGIN_ID, "/icons/root_file.gif").createImage();
     
     /**
      * Constructor
