@@ -7,9 +7,8 @@ import org.eclipse.ui.application.IWorkbenchConfigurer;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.application.WorkbenchAdvisor;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
+import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.util.UIHelper;
-import org.lamport.tla.toolbox.util.pref.IPreferenceConstants;
-import org.lamport.tla.toolbox.util.pref.PreferenceStoreHelper;
 
 /**
  * This workbench advisor creates the window advisor, and specifies
@@ -75,8 +74,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
 
     public boolean preShutdown()
     {
-        if (!PreferenceStoreHelper.getInstancePreferenceStore().getBoolean(
-                IPreferenceConstants.I_RESTORE_LAST_SPEC))
+        if (! ToolboxHandle.getInstanceStore().getBoolean(ToolboxHandle.I_RESTORE_LAST_SPEC))
         {
             UIHelper.getActivePage().closeAllEditors(true);
             UIHelper.switchPerspective(getInitialWindowPerspectiveId());
