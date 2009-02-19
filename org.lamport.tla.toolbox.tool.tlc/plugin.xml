@@ -79,7 +79,7 @@
    <extension
          point="org.lamport.toolbox.tool">
       <tool
-            classname="org.lamport.tla.toolbox.tool.tlc.Activator"
+            classname="org.lamport.tla.toolbox.tool.tlc.TLCActivator"
             name="TLC">
       </tool>
    </extension>

@@ -9,18 +9,18 @@ import org.osgi.framework.BundleContext;
 /**
  * The activator class controls the plug-in life cycle
  */
-public class Activator extends AbstractUIPlugin implements IToolboxContribution {
+public class TLCActivator extends AbstractUIPlugin implements IToolboxContribution {
 
 	// The plug-in ID
 	public static final String PLUGIN_ID = "org.lamport.tla.toolbox.tool.tlc";
 
 	// The shared instance
-	private static Activator plugin;
+	private static TLCActivator plugin;
 	
 	/**
 	 * The constructor
 	 */
-	public Activator() {
+	public TLCActivator() {
 	}
 
 	/*
@@ -46,7 +46,7 @@ public class Activator extends AbstractUIPlugin implements IToolboxContribution 
 	 *
 	 * @return the shared instance
 	 */
-	public static Activator getDefault() {
+	public static TLCActivator getDefault() {
 		return plugin;
 	}
 
