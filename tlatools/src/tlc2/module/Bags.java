@@ -79,7 +79,7 @@ public class Bags implements ValueConstants {
     FcnRcdValue fcn = FcnRcdValue.convert(b);
     Value[] domain = fcn.domain;
     Value[] values = fcn.values;
-    Value val;
+    // Value val; // SZ: variable never read locally
     for (int i = 0; i < domain.length; i++) {
       if (e.equals(domain[i])) {
 	if (values[i] instanceof IntValue) {
@@ -97,7 +97,7 @@ public class Bags implements ValueConstants {
     FcnRcdValue fcn = FcnRcdValue.convert(b);
     Value[] domain = fcn.domain;
     Value[] values = fcn.values;
-    Value val;
+    // Value val; // SZ: variable never read locally
     for (int i = 0; i < domain.length; i++) {
       if (e.equals(domain[i])) {
 	if (values[i] instanceof IntValue) {
