@@ -403,7 +403,7 @@ public class SANY {
       // semantically analyze, and level check the spec started in
       // file Filename leaving the result (normally) in Specification
       // spec.
-      SpecObj spec = new SpecObj(args[i]);
+      SpecObj spec = new SpecObj(args[i], null);
       try {
         frontEndMain(spec, args[i], ToolIO.out);
       }
