@@ -27,6 +27,7 @@ import tla2sany.st.Location;
 import tla2sany.st.ParseTree;
 import tla2sany.st.TreeNode;
 import tla2sany.utilities.Vector;
+import util.NamedInputStream;
 import util.ToolIO;
 
 /**
