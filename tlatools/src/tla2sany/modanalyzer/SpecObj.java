@@ -11,6 +11,9 @@ import tla2sany.semantic.Errors;
 import tla2sany.semantic.ExternalModuleTable;
 import tla2sany.st.TreeNode;
 import tla2sany.utilities.Vector;
+import util.NameToFileIStream;
+import util.NamedInputStream;
+import util.StringToNamedInputStream;
 import util.ToolIO;
 
 /**
