@@ -101,16 +101,20 @@ public class SpecObj
      */
     public SpecObj(String pfn)
     {
-        this(pfn, new NameToFileIStream());
+        this(pfn, null);
     }
 
     /**
      * Constructs a SpecObj for the given filename using a specified filename resolver
      * @param pfn primary filename of the specification
-     * @param ntfis 
+     * @param ntfis string to named input stream resolver, if <code>null</code>, the {@link NameToFileIStream} is used
      */
     public SpecObj(String pfn, StringToNamedInputStream ntfis)
     {
+        if (ntfis == null) 
+        {
+            ntfis = new NameToFileIStream(); 
+        }
         this.primaryFileName = pfn;
         this.ntfis = ntfis;
     }
