@@ -97,7 +97,9 @@ public class SpecObj
     /**
      * Default constructor of the SpecObj with a given primary filename and the default 
      * NameToFileIStream for its resolution 
-     * @pfn primary filename of the specification
+     * @param pfn primary filename of the specification
+     * @deprecated please use the {@link SpecObj#SpecObj(String, StringToNamedInputStream)} 
+     * with <code>null</code> as a second argument
      */
     public SpecObj(String pfn)
     {
@@ -107,7 +109,8 @@ public class SpecObj
     /**
      * Constructs a SpecObj for the given filename using a specified filename resolver
      * @param pfn primary filename of the specification
-     * @param ntfis string to named input stream resolver, if <code>null</code>, the {@link NameToFileIStream} is used
+     * @param ntfis string to named input stream resolver, if <code>null</code>, 
+     * the {@link NameToFileIStream} is used
      */
     public SpecObj(String pfn, StringToNamedInputStream ntfis)
     {
