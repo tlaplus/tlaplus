@@ -8,10 +8,10 @@ package tla2sany.semantic;
 ***************************************************************************/
 
 
-import tla2sany.modanalyzer.NamedInputStream;
-import tla2sany.modanalyzer.StringToNamedInputStream;
 import tla2sany.parser.ParseException;
 import tla2sany.st.TreeNode;
+import util.NamedInputStream;
+import util.StringToNamedInputStream;
 
 public class FrontEnd implements ASTConstants {
   /**
