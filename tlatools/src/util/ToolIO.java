@@ -25,12 +25,11 @@ import java.io.PrintStream;
 *   SYSTEM : ToolIO.out and ToolIO.err will be equal to System.out         *
 *            and System.err.  This is the default value.                   *
 *                                                                          *
-*   TOOL   : Output produced by calling ToolIO.out.println, etc.,         *
+*   TOOL   : Output produced by calling ToolIO.out.println, etc.,          *
 *             buffered and delivered on calls to the class's methods.      *
 ***************************************************************************/
-
-public class ToolIO {
-
+public class ToolIO 
+{
 /***************************************************************************
 * MODE HANDLING                                                            *
 *                                                                          *
@@ -66,33 +65,52 @@ public class ToolIO {
   public static String getUserDir(){ return userDir; };
   public static void   setUserDir(String dir){ userDir = dir; };
 
-  public static int getMode() { return mode ; } ;
-  public static boolean setMode(int m) {
-    /***********************************************************************
-    * Set the mode and returns true if the mode argument is legal,         *
-    * otherwise does nothing and returns false.                            *
-    ***********************************************************************/
-    if (m == SYSTEM) { mode = m ;
-                       out  = System.out ;
-                       err  = System.err ;
-                       return true ;
-                      } 
-    else if (m == TOOL) { mode = m ;
-                          out  = new ToolPrintStream() ;
-                          err  = new ToolPrintStream() ;
-                       return true ;
-                        } ;
-    return false ;
-   } // setMode
+  /**
+   * Returns the mode of the ToolIO
+   * @return one of {@link ToolIO#SYSTEM},{@link ToolIO#TOOL} 
+   */
+  public static int getMode()
+  { 
+      return mode;
+  }
 
-  public static synchronized void reset() {
+  /***********************************************************************
+   * Set the mode and returns true if the mode argument is legal,         
+   * otherwise does nothing and returns false.
+   * @param m - the mode, use {@link ToolIO#SYSTEM},{@link ToolIO#TOOL}
+   ***********************************************************************/
+  public static boolean setMode(int m) 
+  {
+    if (m == SYSTEM) 
+    { 
+        mode = m ;
+        out  = System.out ;
+        err  = System.err ;
+        return true ;
+    } 
+    else if (m == TOOL) 
+    { 
+        mode = m ;
+        out  = new ToolPrintStream() ;
+        err  = new ToolPrintStream() ;
+        return true ;
+    }
+    return false ;
+  } // setMode
+
+  /**
+   * Resets the ToolIO and deletes the messages 
+   * the mode and user directory are not changed 
+   */
+  public static synchronized void reset() 
+  {
     /***********************************************************************
     * Throws away all messages obtained so far.                            *
     ***********************************************************************/
     messages    = new String[InitialMaxLength] ;
     length      = 0 ;
     nextMessage = "" ;
-   } // Reset
+  } // Reset
 
   public static PrintStream out = System.out ;
   public static PrintStream err = System.err ;
@@ -113,86 +131,155 @@ public class ToolIO {
     * not followed by an invocation of println().                          *
     ***********************************************************************/
 
-  public static synchronized String[] getAllMessages() {
-// System.out.println("getAllMessages called with length = " + length) ;
-// for (int i = 0 ; i < messages.length; i++) {
-//  System.out.println("GetAllMessages: "+ i + ":") ;
-//  System.out.println(messages[i]) ;
-// };
+  /**
+   * Retrieves the messages send to the err and out streams
+   */
+  public static synchronized String[] getAllMessages() 
+  {
 
-     int retLen = length ;
-     if (!nextMessage.equals("")) {retLen++;} ;
-     String[] ret = new String[retLen] ;
-     System.arraycopy(messages, 0, ret, 0, retLen) ;
-     if (!nextMessage.equals("")) {ret[length] = nextMessage ;} ;
-     return ret ;
-   } // getAllMessages
+      // System.out.println("getAllMessages called with length = " + length) ;
+      // for (int i = 0 ; i < messages.length; i++) {
+      //  System.out.println("GetAllMessages: "+ i + ":") ;
+      //  System.out.println(messages[i]) ;
+      // };
 
-  public static synchronized void printAllMessages() {
-    /***********************************************************************
-    * For debugging use.                                                   *
-    ***********************************************************************/
-    System.out.println("---- Begin all messages") ;
-    String[] msgs = getAllMessages() ;
-    for (int i = 0 ; i < msgs.length; i++) {
-      System.out.println("Msg " + i + ":") ;
-      System.out.println(msgs[i]) ; 
+      int retLen = length;
+      if (!nextMessage.equals("")) 
+      {
+          retLen++;
       }
-    System.out.println("---- End all messages") ;
-   }
+      String[] ret = new String[retLen];
+      System.arraycopy(messages, 0, ret, 0, retLen);
+      if (!nextMessage.equals("")) 
+      {
+          ret[length] = nextMessage;
+      } 
+      return ret ;
+  } // getAllMessages
+
+  /**
+   * Prints all messages to system out
+   */
+  public static synchronized void printAllMessages() 
+  {
+      /***********************************************************************
+       * For debugging use.                                                   *
+       ***********************************************************************/
+      System.out.println("---- Begin all messages") ;
+      String[] msgs = getAllMessages() ;
+      for (int i = 0 ; i < msgs.length; i++) 
+      {
+          System.out.println("Msg " + i + ":") ;
+          System.out.println(msgs[i]) ; 
+      }
+      System.out.println("---- End all messages") ;
+  }
  } // class ToolIO
 
-class ToolPrintStream extends PrintStream {
+class ToolPrintStream extends PrintStream 
+{
+    /**
+     * Constructor
+     */
+    public ToolPrintStream () 
+    { 
+        super(new PipedOutputStream()); 
+        ToolIO.out = this;
+        ToolIO.err = this;
+    } 
+    
+    /**
+     * Prints a string in to the ToolIO buffer in a separate line
+     * @param str String to be printed
+     */
+    public void println(String str) 
+    {
+        // SZ February 20 2009:
+        // This is equivalent to
+        // synchronized (this.getClass())
+        // but is better to understand
+        // that the actual synchronization is 
+        // performed on the static class object
+        synchronized (ToolPrintStream.class) 
+        {
+            // System.out.println("Println called with string:") ;
+            // System.out.println(str) ;
+            String thisMessage = ToolIO.nextMessage + str ;
+            ToolIO.nextMessage = "" ;
+            /*****************************************************************
+             * Enlarge the array if necessary.                                *
+             *****************************************************************/
+            if (ToolIO.messages.length == ToolIO.length) 
+            {
+                String[] newMessages = new String[2*ToolIO.messages.length];
+                System.arraycopy(ToolIO.messages, 0, newMessages, 
+                        0, ToolIO.messages.length);
+                ToolIO.messages = newMessages;
+            }
+            ToolIO.messages[ToolIO.length] = thisMessage;
+            ToolIO.length++;
 
-  public ToolPrintStream () { super(new PipedOutputStream()) ; 
-                         ToolIO.out = this ;
-                         ToolIO.err = this ;
-                        } 
-     
-    public void println(String str) {
-      synchronized (this.getClass()) {
-// System.out.println("Println called with string:") ;
-// System.out.println(str) ;
-          String thisMessage = ToolIO.nextMessage + str ;
-          ToolIO.nextMessage = "" ;
-          /*****************************************************************
-          * Enlarge the array if necessary.                                *
-          *****************************************************************/
-          if (ToolIO.messages.length == ToolIO.length) {
-            String[] newMessages = new String[2*ToolIO.messages.length] ;
-            System.arraycopy(ToolIO.messages, 0, newMessages, 
-                             0, ToolIO.messages.length) ;
-            ToolIO.messages = newMessages ;
-           } ;
-          ToolIO.messages[ToolIO.length] = thisMessage ;
-          ToolIO.length++ ;
+            // SZ February 20 2009:
+            // This is a bug: Class.forName("ToolOutput").notifyAll();
+            // throws an exception on every invocation
+            // and has an empty catch this is a performance killer
+            // 
+            // The class has been renamed and the synchronization
+            // is executed on another object. 
+            // In order to avoid this kind of bugs in future
+            // just changed to another way of doing this
+            //try { Class.forName("ToolOutput").notifyAll(); }
+            //catch (Exception e) {
+            //    /*******************************************************************
+            //     * I have no idea why this exception could be thrown, or what to do *
+            //     * with it if it is.                                                *
+            //     *******************************************************************/
+            // } ; // catch
+            
+            /* **********************************************************************
+             * Notify anyone who's waiting for a message.                           *
+             * **********************************************************************/
+            ToolPrintStream.class.notifyAll();
+        } // synchronized
+    } // println
 
-      /***********************************************************************
-      * Notify anyone who's waiting for a message.                           *
-      ***********************************************************************/
-      try { Class.forName("ToolOutput").notifyAll(); }
-      catch (Exception e) {
-        /*******************************************************************
-        * I have no idea why this exception could be thrown, or what to do *
-        * with it if it is.                                                *
-        *******************************************************************/
-        } ; // catch
-       }; // synchronized
-     } // println
-
-    public synchronized void print(String str) {
-      synchronized (this.getClass()) {
-        ToolIO.nextMessage = ToolIO.nextMessage + "str" ;
-      /***********************************************************************
-      * Notify anyone who's waiting for a message.                           *
-      ***********************************************************************/
-        try { Class.forName("ToolOutput").notifyAll(); }
-        catch (Exception e) {
-           /******************************************************************
-           * I have no idea why this exception could be thrown, or what to   *
-           * do with it if it is.                                            *
-           ******************************************************************/
-          } ;
-       } // synchronized
-     } // print
-   } // class ToolPrintStream
+    /**
+     * Prints a string to the ToolIO message buffer.
+     *
+     * @param str The <code>String</code> to be printed
+     */
+    public synchronized void print(String str) 
+    {
+        // SZ February 20 2009:
+        // This is equivalent to the next line, but 
+        // it is better visible, that 
+        // the synchronization is executed on the static class
+        // instance itself
+        // synchronized (this.getClass()) {
+        synchronized (ToolPrintStream.class) 
+        {
+            // SZ February 20 2009: 
+            // printing bug fixed instead of printing the string str 
+            // the string "str" has been printed
+            ToolIO.nextMessage += str;
+            // SZ February 20 2009:
+            // This is a bug: Class.forName("ToolOutput").notifyAll();
+            // since the class has been renamed
+            // this method throws an exception on every invocation
+            // and has an empty catch this is a performance killer
+            //
+            // try { Class.forName("ToolOutput").notifyAll(); }
+            // catch (Exception e) {
+            //   /******************************************************************
+            //   * I have no idea why this exception could be thrown, or what to   *
+            //   * do with it if it is.                                            *
+            //   ******************************************************************/
+            //  } ;
+            
+            /* *********************************************************************
+             * Notify anyone who's waiting for a message.                          *
+             * *********************************************************************/
+            ToolPrintStream.class.notifyAll();
+        } // synchronized
+    } // print
+} // class ToolPrintStream
