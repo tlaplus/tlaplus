@@ -14,6 +14,7 @@ import tlc2.util.IdThread;
 import tlc2.util.LongVec;
 import tlc2.util.MemIntQueue;
 import tlc2.util.MemIntStack;
+import util.ToolIO;
 
 public class LiveWorker extends IdThread {
 
@@ -283,7 +284,7 @@ public class LiveWorker extends IdThread {
     // This component must contain a counter-example because all three
     // conditions are satisfied. So, print a counter-example!
     if (setErrFound()) {
-      System.err.println("Error: Temporal properties were violated.\n" +
+      ToolIO.err.println("Error: Temporal properties were violated.\n" +
 			 "The following behaviour constitutes a counter-example:\n");
       this.printErrorTrace(state, tidx, com);
     }
@@ -567,15 +568,15 @@ public class LiveWorker extends IdThread {
     }
 
     if (fp == cycleFP) {
-      System.err.println("STATE " + (++stateNum) + ": Stuttering");
+      ToolIO.err.println("STATE " + (++stateNum) + ": Stuttering");
     }
     else {
       sinfo = LiveCheck.myTool.getState(cycleFP, sinfo.state);
       if (sinfo == null) {
         throw new EvalException("Failed to recover the next state from its fingerprint.");
       }
-      System.err.println("STATE " + (++stateNum) + ": " + sinfo.info);
-      System.err.println("Back to state " + cyclePos + ".\n");
+      ToolIO.err.println("STATE " + (++stateNum) + ": " + sinfo.info);
+      ToolIO.err.println("Back to state " + cyclePos + ".\n");
     }
   }
 
@@ -600,7 +601,7 @@ public class LiveWorker extends IdThread {
       }
     }
     catch (Exception e) {
-      System.err.println("Error: " + e.getMessage());
+      ToolIO.err.println("Error: " + e.getMessage());
       // Assert.printStack(e);
       return;
     }

@@ -28,6 +28,7 @@ import tlc2.value.BoolValue;
 import tlc2.value.FcnLambdaValue;
 import tlc2.value.Value;
 import util.Assert;
+import util.ToolIO;
 
 public class Liveness implements ToolGlobals, ASTConstants {
 
@@ -219,8 +220,9 @@ public class Liveness implements ToolGlobals, ASTConstants {
 	  if (fval instanceof FcnLambdaValue) {
 	    FcnLambdaValue fcn = (FcnLambdaValue)fval;
 	    if (fcn.fcnRcd == null) {
+	     // SZ Feb 20, 2009: variable never read locally
 	      Context con1 = tool.getFcnContext(fcn, args, con, TLCState.Empty,
-						TLCState.Empty, EvalControl.Clear);
+						TLCState.Empty, EvalControl.Clear); 
 	      return astToLive(tool, (ExprNode)fcn.body, con);
 	    }
 	  }
@@ -640,9 +642,9 @@ public class Liveness implements ToolGlobals, ASTConstants {
 	oss[i].checkAction[j] = (LiveExprNode)actionBin.elementAt(j);
       }
     }
-    System.out.println("Implied-temporal checking--satisfiability problem has " +
+    ToolIO.out.println("Implied-temporal checking--satisfiability problem has " +
 		       oss.length + " branches.");
-    System.out.flush();
+    ToolIO.out.flush();
 
     return oss;
   }
@@ -715,10 +717,10 @@ public class Liveness implements ToolGlobals, ASTConstants {
 
   public static void printTBGraph(TBGraph tableau) {
     if (tableau == null) {
-      System.out.println("No tableau.");
+        ToolIO.out.println("No tableau.");
     }
     else {
-      System.out.println(tableau.toString());
+        ToolIO.out.println(tableau.toString());
     }
   }
 

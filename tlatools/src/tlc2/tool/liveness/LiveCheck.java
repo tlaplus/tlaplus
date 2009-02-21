@@ -12,6 +12,7 @@ import tlc2.tool.StateVec;
 import tlc2.tool.TLCState;
 import tlc2.tool.Tool;
 import tlc2.util.LongVec;
+import util.ToolIO;
 
 public class LiveCheck {
 
@@ -21,9 +22,10 @@ public class LiveCheck {
   protected static OrderOfSolution[] solutions;
   protected static DiskGraph[] dgraphs;
 
-  private static OrderOfSolution currentOOS;
-  private static DiskGraph currentDG;
-  private static PossibleErrorModel currentPEM;
+  // SZ: fields not read localy
+  // private static OrderOfSolution currentOOS;
+  // private static DiskGraph currentDG;
+  // private static PossibleErrorModel currentPEM;
 
   public static void init(Tool tool, Action[] acts, String mdir)
   throws IOException {
@@ -310,7 +312,7 @@ public class LiveCheck {
 
   public static void recover() throws IOException {
     for (int i = 0; i < dgraphs.length; i++) {
-      System.err.println("AAAAAA");      
+      ToolIO.err.println("AAAAAA");      
       dgraphs[i].recover();
     }
   }

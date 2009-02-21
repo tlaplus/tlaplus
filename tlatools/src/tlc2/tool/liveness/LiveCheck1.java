@@ -19,6 +19,7 @@ import tlc2.util.MemObjectStack;
 import tlc2.util.ObjectStack;
 import tlc2.util.Vect;
 import util.FP64;
+import util.ToolIO;
 
 public class LiveCheck1 {
   /**
@@ -513,7 +514,7 @@ public class LiveCheck1 {
       OrderOfSolution oos = solutions[soln];
 
       // Liveness.printTBGraph(oos.tableau);
-      // System.err.println(bgraphs[soln].toString());
+      // ToolIO.err.println(bgraphs[soln].toString());
 
       // We now compute the SCCs of the graph. If we find any SCC
       // that is fulfilling and satisfies any of PEM's, then that
@@ -542,7 +543,7 @@ public class LiveCheck1 {
       Vect initNodes = constructBEGraph(os);
 
       // Liveness.printTBGraph(os.tableau);
-      // System.err.println(os.behavior.toString());
+      // ToolIO.err.println(os.behavior.toString());
 
       // We now compute the SCCs of the graph. If we find any SCC
       // that is fulfilling and satisfies any of PEM's, then that
@@ -724,8 +725,8 @@ public class LiveCheck1 {
 	lastState = sinfo.state;	
       }
     }
-    System.err.print("STATE " + (++stateNum) + ": ");
-    System.err.println("Back to state " + cyclePos + ".\n");
+    ToolIO.err.print("STATE " + (++stateNum) + ": ");
+    ToolIO.err.println("Back to state " + cyclePos + ".\n");
   }
   
   /**
@@ -797,12 +798,12 @@ public class LiveCheck1 {
     // This component must contain a counter-example because all three
     // conditions are satisfied. So, print a counter-example!
     try {
-      System.err.println("Error: Temporal properties were violated. The following" +
+      ToolIO.err.println("Error: Temporal properties were violated. The following" +
 			 " behaviour constitutes a counter-example:\n");
       printErrorTrace(node);
     }
     catch (IOException e) {
-      System.err.println("Error: " + e.getMessage());
+      ToolIO.err.println("Error: " + e.getMessage());
     }
     throw new LiveException("LiveCheck: Found error trace.");
   }
