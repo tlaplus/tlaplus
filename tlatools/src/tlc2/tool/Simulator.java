@@ -9,30 +9,39 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.PrintWriter;
 
+import tla2sany.modanalyzer.SpecObj;
 import tla2sany.semantic.SemanticNode;
 import tlc2.TLCGlobals;
 import tlc2.tool.liveness.LiveCheck1;
 import tlc2.tool.liveness.LiveException;
 import tlc2.util.ObjLongTable;
 import tlc2.util.RandomGenerator;
+import util.StringToNamedInputStream;
+import util.ToolIO;
 
 public class Simulator {
-  /* Constructors  */
-  public Simulator(String specFile, String configFile, String traceFile,
+
+    /* Constructors  */
+    /**
+     * SZ Feb 20, 2009: added the possibility to pass the SpecObject, this is compatibility constructor
+     * @deprecated use {@link Simulator#Simulator(String, String, String, boolean, int, long, RandomGenerator, long, boolean, StringToNamedInputStream, SpecObj)} instead
+     * and pass the <code>null</code> as SpecObj
+     */
+    public Simulator(String specFile, String configFile, String traceFile, boolean deadlock, int traceDepth,
+            long traceNum, RandomGenerator rng, long seed, boolean preprocess, StringToNamedInputStream resolver)
+    {
+        this(specFile, configFile, traceFile, deadlock, traceDepth, traceNum, rng, seed, preprocess, resolver, null);
+    }
+    
+    // SZ Feb 20, 2009: added the possibility to pass the SpecObject    
+    public Simulator(String specFile, String configFile, String traceFile,
 		   boolean deadlock, int traceDepth, long traceNum,
-		   RandomGenerator rng, long seed) {
-    this(specFile, configFile, traceFile, deadlock, traceDepth,
-	 traceNum, rng, seed, true);
-  }
-  
-  public Simulator(String specFile, String configFile, String traceFile,
-		   boolean deadlock, int traceDepth, long traceNum,
-		   RandomGenerator rng, long seed, boolean preprocess) {
+		   RandomGenerator rng, long seed, boolean preprocess, StringToNamedInputStream resolver, SpecObj specObj) {
     int lastSep = specFile.lastIndexOf(File.separatorChar);
     String specDir = (lastSep == -1) ? "" : specFile.substring(0, lastSep+1);
     specFile = specFile.substring(lastSep+1);
-    this.tool = new Tool(specDir, specFile, configFile);
-    this.tool.init(preprocess);   // parse and process the spec
+    this.tool = new Tool(specDir, specFile, configFile, resolver);
+    this.tool.init(preprocess, specObj);   // parse and process the spec
 
     this.checkDeadlock = deadlock;
     this.checkLiveness = !this.tool.livenessIsTrue();
@@ -42,12 +51,12 @@ public class Simulator {
     this.numOfGenStates = 0;
     if (traceDepth != -1) {
       this.stateTrace = new TLCState[traceDepth];
-      this.actionTrace = new Action[traceDepth];
+//      this.actionTrace = new Action[traceDepth];  // SZ: never read locally
       this.traceDepth = traceDepth;
     }
     else {
       this.stateTrace = new TLCState[0];
-      this.actionTrace = new Action[0];      
+//      this.actionTrace = new Action[0];           // SZ: never read locally      
       this.traceDepth = Long.MAX_VALUE;
     }
     this.traceFile = traceFile;
@@ -62,22 +71,16 @@ public class Simulator {
     }
   }
 
-  public Simulator(String specFile, String configFile, boolean deadlock,
-		   int traceDepth, RandomGenerator rng, long seed) {
-    this(specFile, configFile, null, deadlock, traceDepth,
-	 Long.MAX_VALUE, rng, seed);
-  }
-
   /* Fields */
   private Tool tool;
-  private Action[] actions;          // the subactions
+  private Action[] actions;          // the sub actions
   private Action[] invariants;       // the invariants to be checked
   private Action[] impliedActions;   // the implied-actions to be checked  
   private boolean checkDeadlock;     // check deadlock?
   private boolean checkLiveness;     // check liveness?
   private long numOfGenStates;
   private TLCState[] stateTrace;
-  private Action[] actionTrace;
+  // private Action[] actionTrace;  // SZ: never read locally
   private String traceFile;
   private long traceDepth;
   private long traceNum;
@@ -104,33 +107,33 @@ public class Simulator {
 	  for (int j = 0; j < this.invariants.length; j++) {
 	    if (!this.tool.isValid(this.invariants[j], curState)) {
 	      // We get here because of invariant violation:
-	      System.err.println("Error: Invariant " + this.tool.getInvNames()[j] +
+	      ToolIO.err.println("Error: Invariant " + this.tool.getInvNames()[j] +
 				 " is violated by the initial state:");
-	      System.err.println(curState.toString());
+	      ToolIO.err.println(curState.toString());
 	      return;
 	    }
 	  }
 	}
 	else {
-	  System.err.println("Error: The state is not completely specified by " +
+	  ToolIO.err.println("Error: The state is not completely specified by " +
 			     "the initial state predicate:");	  
-	  System.err.println(curState.toString());
+	  ToolIO.err.println(curState.toString());
 	  return;
 	}
       }
     }
     catch (Exception e) {
       // Assert.printStack(e);
-      System.err.println(e.getMessage());
+      ToolIO.err.println(e.getMessage());
       if (curState != null) {
-	System.err.println("While working on the initial state:");
-	System.err.println(curState.toString());
+	ToolIO.err.println("While working on the initial state:");
+	ToolIO.err.println(curState.toString());
       }
       this.printSummary();
       return;
     }
     if (this.numOfGenStates == 0) {
-      System.err.println("Error: There is no state satisfying the initial state predicate.");
+      ToolIO.err.println("Error: There is no state satisfying the initial state predicate.");
       return;
     }
     theInitStates.deepNormalize();
@@ -263,13 +266,13 @@ public class Simulator {
    * (unless we're at maximum depth, in which case don't!)
    */
   public final void printBehavior(TLCState state, int traceIdx, String msg) {
-    System.err.println(msg);
+    ToolIO.err.println(msg);
     if (this.traceDepth == Long.MAX_VALUE) {
-      System.err.println("\nThe error state is: ");
-      System.err.println(state.toString());
+      ToolIO.err.println("\nThe error state is: ");
+      ToolIO.err.println(state.toString());
     }
     else {
-      System.err.println("\nThe behavior up to this point is:");
+      ToolIO.err.println("\nThe behavior up to this point is:");
       TLCState lastState = null;
       for (int idx = 0; idx < traceIdx; idx++) {
 	TLCTrace.printState(this.stateTrace[idx], lastState, idx+1);
@@ -313,13 +316,13 @@ public class Simulator {
     
   public final void printSummary() {
     this.reportCoverage();
-    System.out.println("The number of states generated: " + this.numOfGenStates);
-    System.out.println("Simulation using seed " + seed + " and aril " + this.aril);
+    ToolIO.out.println("The number of states generated: " + this.numOfGenStates);
+    ToolIO.out.println("Simulation using seed " + seed + " and aril " + this.aril);
   }
 
   public final void reportCoverage() {
     if (TLCGlobals.coverageInterval >= 0) {
-      System.out.println("The coverage stats:");
+      ToolIO.out.println("The coverage stats:");
       ObjLongTable counts = this.tool.getPrimedLocs();
       ObjLongTable.Enumerator keys = this.astCounts.keys();
       Object key;
@@ -330,7 +333,7 @@ public class Simulator {
       Object[] skeys = counts.sortStringKeys();
       for (int i = 0; i < skeys.length; i++) {
 	long val = counts.get(skeys[i]);
-	System.out.println("  " + skeys[i] + ": " + val);
+	ToolIO.out.println("  " + skeys[i] + ": " + val);
       }
     }
   }
@@ -343,7 +346,7 @@ public class Simulator {
 	  synchronized(this) {
 	    this.wait(TLCGlobals.progressInterval);
 	  }
-	  System.out.println("Progress: " + numOfGenStates + " states checked.");
+	  ToolIO.out.println("Progress: " + numOfGenStates + " states checked.");
 	  if (count > 1) {
 	    count--;
 	  }
@@ -354,7 +357,7 @@ public class Simulator {
 	}
       }
       catch (Exception e) {
-	System.err.println("Error: Progress report thread died.");
+	ToolIO.err.println("Error: Progress report thread died.");
       }
     }
   }
