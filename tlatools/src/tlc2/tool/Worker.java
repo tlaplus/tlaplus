@@ -8,8 +8,9 @@ package tlc2.tool;
 import tlc2.util.IdThread;
 import tlc2.util.ObjLongTable;
 import tlc2.value.Value;
+import util.ToolIO;
 
-public class Worker extends IdThread {
+public class Worker extends IdThread implements IWorker {
   /**
    * Multi-threading helps only when running on multiprocessors. TLC
    * can pretty much eat up all the cycles of a processor running
@@ -21,10 +22,11 @@ public class Worker extends IdThread {
   private ObjLongTable astCounts;
   private Value[] localValues;
 
-  public Worker(int id, ModelChecker tlc) {
+  // SZ Feb 20, 2009: changed due to super type introduction 
+  public Worker(int id, AbstractChecker tlc) {
     super(id);
-    this.tlc = tlc;
-    this.squeue = tlc.theStateQueue;
+    this.tlc = (ModelChecker) tlc;
+    this.squeue = this.tlc.theStateQueue;
     this.astCounts = new ObjLongTable(10);
     this.localValues = new Value[4];
   }
@@ -73,7 +75,7 @@ public class Worker extends IdThread {
       // Assert.printStack(e);
       synchronized(this.tlc) {
 	if (this.tlc.setErrState(curState, null, true)) {
-          System.err.println("Error: " + e.getMessage());
+          ToolIO.err.println("Error: " + e.getMessage());
 	}
 	this.squeue.finishAll();
 	this.tlc.notify();
