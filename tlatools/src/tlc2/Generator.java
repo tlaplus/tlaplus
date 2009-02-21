@@ -7,6 +7,7 @@ package tlc2;
 
 import tlc2.tool.Simulator;
 import tlc2.util.RandomGenerator;
+import util.ToolIO;
 
 public class Generator {
   /*
@@ -29,7 +30,7 @@ public class Generator {
    *                  Defaults to 0 if not specified
    */
   public static void main(String[] args) {
-    System.out.println("TLC trace generator, " + TLCGlobals.versionOfTLC);
+    ToolIO.out.println("TLC trace generator, " + TLCGlobals.versionOfTLC);
 
     String mainFile = null;
     String traceFile = null;
@@ -165,22 +166,22 @@ public class Generator {
       else {
 	rng.setSeed(seed, aril);
       }
-      System.out.println("Generating random traces with seed " + seed + ".");
+      ToolIO.out.println("Generating random traces with seed " + seed + ".");
       Simulator simulator = new Simulator(mainFile, configFile, traceFile,
 					  deadlock, traceDepth, traceNum,
-					  rng, seed);
+					  rng, seed, true, null);
       simulator.simulate();
     }
     catch (Exception e) {
       // Assert.printStack(e);
-      System.out.println("Error: " + e.getMessage());
+        ToolIO.out.println("Error: " + e.getMessage());
     }
-    System.exit(0);
+    //System.exit(0); //SZ: no-op removed
   }
 
   private static void printErrorMsg(String msg) {
-    System.err.println(msg);
-    System.err.println("Usage: java tlc2.Simulator [-option] inputfile");
+      ToolIO.err.println(msg);
+      ToolIO.err.println("Usage: java tlc2.Simulator [-option] inputfile");
   }
 
 }
