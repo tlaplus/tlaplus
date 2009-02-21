@@ -97,7 +97,7 @@ public class ModuleParserLauncher
         // Initialize the module variables
         SpecObj moduleSpec = new SpecObj(ResourceHelper.getModuleName(rootFilename), new RCPNameToFileIStream(null));
 
-        // Reset the tool output messages. *
+        // Reset the tool output messages.
         ToolIO.reset();
         ToolIO.setMode(ToolIO.TOOL);
 

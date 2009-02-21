@@ -10,8 +10,8 @@ import java.util.Vector;
 import org.eclipse.core.runtime.FileLocator;
 import org.lamport.tla.toolbox.Activator;
 
-import tla2sany.modanalyzer.NamedInputStream;
-import tla2sany.modanalyzer.StringToNamedInputStream;
+import util.NamedInputStream;
+import util.StringToNamedInputStream;
 import util.ToolIO;
 
 /**
@@ -57,7 +57,7 @@ public class RCPNameToFileIStream implements StringToNamedInputStream
     {
         try
         {
-            Enumeration installedInternalModules = Activator.getDefault().getBundle().findEntries("/",
+            Enumeration installedInternalModules = Activator.getDefault().getBundle().findEntries(File.separator,
                     STANDARD_MODULES, true);
             Vector paths = new Vector();
             while (installedInternalModules.hasMoreElements())
@@ -84,18 +84,38 @@ public class RCPNameToFileIStream implements StringToNamedInputStream
      * 
      * @see tla2sany.modanalyzer.StringToNamedInputStream#toIStream(java.lang.String)
      */
-    public NamedInputStream toIStream(String name)
+    public NamedInputStream toIStream(String name) 
+    {
+        return toIStream(name, true);
+    }
+    
+    /**
+     * Tries to find a specific file
+     * @param name
+     * @param isModule
+     * @return
+     */
+    public NamedInputStream toIStream(String name, boolean isModule)
     {
 
-        if (name.endsWith(".tla"))
+        if (isModule && name.endsWith(".tla"))
         {
+            // user/Foo.tla => user/Foo
             name = name.substring(0, name.length() - 4);
         }
 
-        String sourceFileName = name + ".tla"; // could be Foo.tla or user/Foo.tla
+        String sourceFileName;
+        if (isModule) 
+        {
+            // user/Foo => user/Foo.tla            
+            sourceFileName = name + ".tla"; // could be Foo.tla or user/Foo.tla
+        } else {
+            // user/Foo.cfg => user/Foo.cfg            
+            sourceFileName = name;
+        }
+        
         String sourceModuleName = name.substring(name.lastIndexOf(File.separator) + 1); // Foo.tla
         File sourceFile = locate(sourceFileName);
-
         if (sourceFile != null && sourceFile.exists())
         {
             try
