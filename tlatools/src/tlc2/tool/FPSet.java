@@ -16,6 +16,7 @@ import java.rmi.server.UnicastRemoteObject;
 import tlc2.TLCGlobals;
 import tlc2.util.BitVector;
 import tlc2.util.LongVec;
+import util.ToolIO;
 
 /**
  * An <code>FPSet</code> is a set of 64-bit fingerprints.
@@ -97,7 +98,7 @@ public abstract class FPSet extends UnicastRemoteObject implements FPSetRMI {
   }
 
   public static void main(String args[]) {
-    System.out.println("TLC FP Server " + TLCGlobals.versionOfTLC);
+    ToolIO.out.println("TLC FP Server " + TLCGlobals.versionOfTLC);
 
     String metadir = null;
     String fromChkpt = null;
@@ -123,7 +124,7 @@ public abstract class FPSet extends UnicastRemoteObject implements FPSetRMI {
       if (!filedir.exists()) {
 	boolean created = filedir.mkdirs();
 	if (!created) {
-	  System.err.println("Error: fingerprint server could not make a directory" +
+	  ToolIO.err.println("Error: fingerprint server could not make a directory" +
 			     " for the disk files it needs to write.\n");
 	  System.exit(0);
 	}
@@ -137,24 +138,24 @@ public abstract class FPSet extends UnicastRemoteObject implements FPSetRMI {
       }
       Registry rg = LocateRegistry.createRegistry(Port);
       rg.rebind("FPSetServer", fpSet);
-      System.out.println("Fingerprint set server at " + hostname + " is ready.");
+      ToolIO.out.println("Fingerprint set server at " + hostname + " is ready.");
 
       synchronized(fpSet) {
 	while (true) {
-	  System.out.println("Progress: The number of fingerprints stored at " +
+	    ToolIO.out.println("Progress: The number of fingerprints stored at " +
 			     hostname + " is " + fpSet.size() + ".");
 	  fpSet.wait(300000);	  
 	}
       }
     }
     catch (Exception e) {
-      System.err.println(hostname + ": Error: " + e.getMessage());
+      ToolIO.err.println(hostname + ": Error: " + e.getMessage());
     }
   }
 
   private static void printErrorMsg(String msg) {
-    System.err.println(msg);
-    System.err.println("Usage: java tlc2.tool.FPSet [-option] metadir");
+    ToolIO.err.println(msg);
+    ToolIO.err.println("Usage: java tlc2.tool.FPSet [-option] metadir");
   }
 
 }
