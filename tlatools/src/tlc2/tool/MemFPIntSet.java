@@ -12,6 +12,7 @@ import tlc2.util.FileUtil;
 import util.Assert;
 import util.BufferedDataInputStream;
 import util.BufferedDataOutputStream;
+import util.ToolIO;
 
 /**
  * A <code>MemFPIntSet</code> is a subclass of <code>FPIntSet</code>
@@ -255,7 +256,7 @@ public class MemFPIntSet extends FPIntSet {
       FileUtil.deleteDir(file, true);
     }
     String hostname = InetAddress.getLocalHost().getHostName();    
-    System.out.println(hostname + ", work completed. Thank you!");
+    ToolIO.out.println(hostname + ", work completed. Thank you!");
     System.exit(0);    
   }
 
