@@ -11,6 +11,7 @@ import tlc2.TLCGlobals;
 import tlc2.util.BitVector;
 import tlc2.util.IdThread;
 import tlc2.util.LongVec;
+import util.ToolIO;
 
 public class TLCServerThread extends IdThread {
   /**
@@ -65,13 +66,13 @@ public class TLCServerThread extends IdThread {
 	  }
 	  catch (RemoteException e) {
 	    if (!this.tlcServer.reassignWorker(this)) {
-	      System.err.println("Error: No TLC worker is available. Exit.");
+	      ToolIO.err.println("Error: No TLC worker is available. Exit.");
 	      System.exit(0);	      
 	    }
 	  }
 	  catch (NullPointerException e) {
 	    if (!this.tlcServer.reassignWorker(this)) {
-	      System.err.println("Error: No TLC worker is available. Exit.");
+	      ToolIO.err.println("Error: No TLC worker is available. Exit.");
 	      System.exit(0);
 	    }
 	  }
@@ -97,10 +98,10 @@ public class TLCServerThread extends IdThread {
 	state2 = ((WorkerException)e).state2;
       }
       if (this.tlcServer.setErrState(state1, true)) {
-	System.err.println(e.getMessage());
+	ToolIO.err.println(e.getMessage());
 	if (state1 != null) {
 	  try {
-	    System.err.println("\nThe behavior up to this point is:");
+	    ToolIO.err.println("\nThe behavior up to this point is:");
 	    this.tlcServer.trace.printTrace(state1.uid, state1, state2);
 	  }
 	  catch (Exception e1) { System.err.println(e1.getMessage()); }
