@@ -19,6 +19,7 @@ import java.rmi.RemoteException;
 import tlc2.util.FileUtil;
 import tlc2.util.SetOfLong;
 import util.Assert;
+import util.ToolIO;
 
 public final class MemFPSet1 extends FPSet {
   private String metadir;
@@ -61,7 +62,7 @@ public final class MemFPSet1 extends FPSet {
       FileUtil.deleteDir(file, true);
     }
     String hostname = InetAddress.getLocalHost().getHostName();    
-    System.out.println(hostname + ", work completed. Thank you!");
+    ToolIO.out.println(hostname + ", work completed. Thank you!");
     System.exit(0);    
   }
 

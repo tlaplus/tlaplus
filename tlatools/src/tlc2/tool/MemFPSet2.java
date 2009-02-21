@@ -12,6 +12,7 @@ import tlc2.util.FileUtil;
 import util.Assert;
 import util.BufferedDataInputStream;
 import util.BufferedDataOutputStream;
+import util.ToolIO;
 
 /**
  * <code>MemFPSet2</code> is a subclass of {@link MemFPSet} that
@@ -133,7 +134,7 @@ public final class MemFPSet2 extends FPSet {
       FileUtil.deleteDir(file, true);
     }
     String hostname = InetAddress.getLocalHost().getHostName();    
-    System.out.println(hostname + ", work completed. Thank you!");
+    ToolIO.out.println(hostname + ", work completed. Thank you!");
     System.exit(0);    
   }
 
