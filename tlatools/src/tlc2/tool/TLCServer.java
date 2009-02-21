@@ -17,6 +17,7 @@ import tlc2.TLCGlobals;
 import tlc2.util.FileUtil;
 import util.FP64;
 import util.InternRMI;
+import util.ToolIO;
 import util.UniqueString;
 
 public class TLCServer extends UnicastRemoteObject
@@ -109,7 +110,7 @@ implements TLCServerRMI, InternRMI {
     if (TLCGlobals.fpServers == null) this.fpSet.addThread();
     this.threads[tidx].start();
 
-    System.out.println("Registration for worker at " + hostname + " completed.") ;
+    ToolIO.out.println("Registration for worker at " + hostname + " completed.") ;
   }
 
   /**
@@ -158,7 +159,7 @@ implements TLCServerRMI, InternRMI {
   public void checkpoint() throws IOException, InterruptedException {
     if (this.stateQueue.suspendAll()) {
       // Checkpoint:
-      System.out.print("-- Checkpointing of run " + this.metadir + " compl");      
+      ToolIO.out.print("-- Checkpointing of run " + this.metadir + " compl");      
 
       // start checkpointing:
       this.stateQueue.beginChkpt();
@@ -178,7 +179,7 @@ implements TLCServerRMI, InternRMI {
       if (this.fpSet != null) {
 	this.fpSet.commitChkpt();
       }
-      System.out.println("eted.");
+      ToolIO.out.println("eted.");
     }
   }
 
@@ -254,9 +255,9 @@ implements TLCServerRMI, InternRMI {
   public static void modelCheck(TLCServer server) throws Exception {
     boolean recovered = false;
     if (server.work.canRecover()) {
-      System.out.println("-- Starting recovery from checkpoint " + server.metadir);
+      ToolIO.out.println("-- Starting recovery from checkpoint " + server.metadir);
       server.recover();
-      System.out.println("-- Recovery completed. " + server.recoveryStats());
+      ToolIO.out.println("-- Recovery completed. " + server.recoveryStats());
       recovered = true;
     }
     if (!recovered) {
@@ -267,10 +268,10 @@ implements TLCServerRMI, InternRMI {
       catch (Throwable e) {
 	// Assert.printStack(e);
 	server.done = true;      
-	System.err.println(e.getMessage());
+	ToolIO.err.println(e.getMessage());
 	if (server.errState != null) {
-	  System.err.println("While working on the initial state:");
-	  System.err.println(server.errState);
+	  ToolIO.err.println("While working on the initial state:");
+	  ToolIO.err.println(server.errState);
 	}
 	// We redo the work on the error state, recording the call stack.
 	server.work.setCallStack();
@@ -278,7 +279,7 @@ implements TLCServerRMI, InternRMI {
 	  server.doInit();
 	}
 	catch (Throwable e1) {
-	  System.err.println("The error occurred when TLC was evaluating the nested" +
+	  ToolIO.err.println("The error occurred when TLC was evaluating the nested" +
 			     "\nexpressions at the following positions:");
 	  server.work.printCallStack();
 	}
@@ -293,7 +294,7 @@ implements TLCServerRMI, InternRMI {
     String hostname = InetAddress.getLocalHost().getHostName();
     Registry rg = LocateRegistry.createRegistry(Port);
     rg.rebind("TLCServer", server);
-    System.out.println("TLC server at " + hostname + " is ready.");
+    ToolIO.out.println("TLC server at " + hostname + " is ready.");
 
     // Wait for completion, but print out progress report and checkpoint
     // periodically.
@@ -307,7 +308,7 @@ implements TLCServerRMI, InternRMI {
       }
       synchronized(server) {
 	if (!server.done) {
-	  System.out.println("Progress(" + server.trace.getLevel() +"): " + server.stats());
+	  ToolIO.out.println("Progress(" + server.trace.getLevel() +"): " + server.stats());
 	  server.wait(300000);
 	}
 	if (server.done) break;
@@ -327,7 +328,7 @@ implements TLCServerRMI, InternRMI {
     boolean success = (server.errState == null);
     if (success) {
       // We get here because the checking has succeeded.
-      System.out.println("Model checking completed. No error has been found.");
+      ToolIO.out.println("Model checking completed. No error has been found.");
     }
     else if (server.keepCallStack) {
       // We redo the work on the error state, recording the call stack.
@@ -336,18 +337,18 @@ implements TLCServerRMI, InternRMI {
 	// server.doNext();
       }
       catch (Exception e) {
-	System.err.println("The error occurred when TLC was evaluating the nested" +
+	ToolIO.err.println("The error occurred when TLC was evaluating the nested" +
 			   "\nexpressions at the following positions:");
 	server.work.printCallStack();
       }
     }
-    System.out.println(server.stats());
+    ToolIO.out.println(server.stats());
     server.close(success);
     System.exit(0);
   }
 
   public static void main(String argv[]) {
-    System.out.println("TLC Server " + TLCGlobals.versionOfTLC);
+    ToolIO.out.println("TLC Server " + TLCGlobals.versionOfTLC);
     TLCServer server = null;
     try {
       TLCGlobals.fpServers = TLCConfig.getStringArray("fp_servers");
@@ -359,20 +360,20 @@ implements TLCServerRMI, InternRMI {
       System.gc();
       // Assert.printStack(e);
       if (e instanceof StackOverflowError) {
-        System.err.println("Error: This was a Java StackOverflowError. It was probably\n" +
+        ToolIO.err.println("Error: This was a Java StackOverflowError. It was probably\n" +
                            "the result of an incorrect recursive function definition\n" +
                            "that caused TLC to enter an infinite loop when trying to\n" +
                            "compute the function or its application to an element in\n" +
                            "its putative domain.");
       }
       else if (e instanceof OutOfMemoryError) {
-	System.err.println("Error: Java ran out of memory.  Running Java with a larger memory\n" +
+	ToolIO.err.println("Error: Java ran out of memory.  Running Java with a larger memory\n" +
 			   "allocation pool (heap) may fix this.  But it won't help if some\n" +
 			   "state has an enormous number of successor states, or if TLC must\n" +
 			   "compute the value of a huge set.");
       }
       else {
-	System.err.println("Error: " + e.getMessage());
+	ToolIO.err.println("Error: " + e.getMessage());
       }
       if (server != null) {
 	try { server.close(false); } catch (Exception e1) { /*SKIP*/ }
