@@ -12,6 +12,7 @@ import java.io.ObjectOutputStream;
 
 import tlc2.value.ValueInputStream;
 import util.Assert;
+import util.ToolIO;
 
 public class StatePoolReader extends Thread {
 
@@ -178,7 +179,7 @@ public class StatePoolReader extends Thread {
     }
     catch (Exception e) {
       // Assert.printStack(e);
-      System.err.println("Error: when reading the disk (StatePoolReader.run):\n" +
+      ToolIO.err.println("Error: when reading the disk (StatePoolReader.run):\n" +
 			 e.getMessage());
       System.exit(1);
     }

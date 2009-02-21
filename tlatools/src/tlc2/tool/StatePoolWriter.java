@@ -12,6 +12,7 @@ import java.io.ObjectOutputStream;
 
 import tlc2.value.ValueOutputStream;
 import util.Assert;
+import util.ToolIO;
 
 public class StatePoolWriter extends Thread {
 
@@ -118,7 +119,7 @@ public class StatePoolWriter extends Thread {
     }
     catch (Exception e) {
       // Assert.printStack(e);
-      System.err.println("Error: when writing the disk (StatePoolWriter.run):\n" +
+      ToolIO.err.println("Error: when writing the disk (StatePoolWriter.run):\n" +
 			 e.getMessage());
       System.exit(1);
     }
