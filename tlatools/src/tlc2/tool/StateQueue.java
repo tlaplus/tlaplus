@@ -8,6 +8,7 @@ package tlc2.tool;
 import java.io.IOException;
 
 import tlc2.TLCGlobals;
+import util.ToolIO;
 
 public abstract class StateQueue {
   /**
@@ -105,7 +106,7 @@ public abstract class StateQueue {
 	this.wait();
       }
       catch (Exception e) {
-	System.err.println(e.getMessage());
+	ToolIO.err.println(e.getMessage());
 	System.exit(1);
       }
       this.numWaiting--;
@@ -132,7 +133,7 @@ public abstract class StateQueue {
 	  this.mu.wait();
 	}
 	catch (Exception e) {
-	  System.err.println(e.getMessage());
+	  ToolIO.err.println(e.getMessage());
 	  System.exit(1);
 	}
       }
