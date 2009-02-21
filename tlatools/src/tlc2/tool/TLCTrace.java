@@ -16,6 +16,7 @@ import java.io.IOException;
 import tlc2.TLCGlobals;
 import tlc2.util.BufferedRandomAccessFile;
 import tlc2.util.LongVec;
+import util.ToolIO;
 
 public class TLCTrace {
 
@@ -56,36 +57,36 @@ public class TLCTrace {
   }
 
   public static void printState(TLCStateInfo s, int num) {
-    System.err.println("STATE " + num + ": " + s.info);
-    System.err.println(s.state);
+    ToolIO.err.println("STATE " + num + ": " + s.info);
+    ToolIO.err.println(s.state);
   }
 
   public static void printState(TLCStateInfo s, TLCState lastState, int num) {
-    System.err.println("STATE " + num + ": " + s.info);
+    ToolIO.err.println("STATE " + num + ": " + s.info);
     
     /* Added by rjoshi. */
     if (lastState != null && TLCGlobals.printDiffsOnly) {
-      System.err.println(s.state.toString(lastState));
+      ToolIO.err.println(s.state.toString(lastState));
     }
     else {
-      System.err.println(s.state);
+      ToolIO.err.println(s.state);
     }
   }
 
   public static void printState(TLCState s, int num) {
-    System.err.println("STATE " + num + ":");
-    System.err.println(s);
+    ToolIO.err.println("STATE " + num + ":");
+    ToolIO.err.println(s);
   }
 
   public static void printState(TLCState s, TLCState lastState, int num) {
-    System.err.println("STATE " + num + ":");
+    ToolIO.err.println("STATE " + num + ":");
 
     /* Added by rjoshi. */
     if (lastState != null && TLCGlobals.printDiffsOnly) {
-      System.err.println(s.toString(lastState));
+      ToolIO.err.println(s.toString(lastState));
     }
     else {
-      System.err.println(s);
+      ToolIO.err.println(s);
     }
   }
   
@@ -129,7 +130,7 @@ public class TLCTrace {
       long fp = fps.elementAt(len-1);
       TLCStateInfo sinfo = this.tool.getState(fp);
       if (sinfo == null) {
-	System.err.println("Error: Failed to recover the initial state from" +
+	ToolIO.err.println("Error: Failed to recover the initial state from" +
 			   " its fingerprint. This is probably a TLC bug(1).");
 	System.exit(1);
       }
@@ -138,7 +139,7 @@ public class TLCTrace {
 	fp = fps.elementAt(i);
 	sinfo = this.tool.getState(fp, sinfo.state);
 	if (sinfo == null) {
-	  System.err.println("Error: Failed to recover the state from its" +
+	  ToolIO.err.println("Error: Failed to recover the state from its" +
 			     " fingerprint. This is probably a TLC bug(2).");
 	  System.exit(1);
 	}
@@ -169,7 +170,7 @@ public class TLCTrace {
     if (prefix.length == 0) {
       sinfo = this.tool.getState(s1.fingerPrint());
       if (sinfo == null) {
-	System.err.println("Error: Failed to recover the initial state from" +
+	ToolIO.err.println("Error: Failed to recover the initial state from" +
 			   " its fingerprint. This is probably a TLC bug(3).");
 	System.exit(1);
       }
@@ -178,9 +179,9 @@ public class TLCTrace {
       TLCState s0 = prefix[prefix.length-1].state;
       sinfo = this.tool.getState(s1.fingerPrint(), s0);
       if (sinfo == null) {
-	System.err.println("Error: Failed to find the action that generated the" +
+	ToolIO.err.println("Error: Failed to find the action that generated the" +
 			   " following state. This is probably a TLC bug(4).");
-	System.err.println(s1);      
+	ToolIO.err.println(s1);      
 	System.exit(1);
       }
     }
@@ -192,9 +193,9 @@ public class TLCTrace {
     if (s2 != null) {
       sinfo = this.tool.getState(s2, s1);
       if (sinfo == null) {
-	System.err.println("Error: Failed to find the action to the following" +
+	ToolIO.err.println("Error: Failed to find the action to the following" +
 			   " states. This is probably a TLC bug(5).");
-	System.err.println(s2);      
+	ToolIO.err.println(s2);      
 	System.exit(1);
       }
       printState(sinfo, null, ++idx);
