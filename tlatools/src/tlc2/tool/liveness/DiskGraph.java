@@ -15,6 +15,7 @@ import tlc2.util.BitVector;
 import tlc2.util.BufferedRandomAccessFile;
 import tlc2.util.LongVec;
 import tlc2.util.MemIntQueue;
+import util.ToolIO;
 
 public class DiskGraph {
   /**
@@ -205,7 +206,7 @@ public class DiskGraph {
     else {
       while (this.nodePtrRAF.getFilePointer() < ptr) {
 	long fp = this.nodePtrRAF.readLong();
-	int tidx = this.nodePtrRAF.readInt();
+	int tidx = this.nodePtrRAF.readInt(); // SZ Feb 20, 2009: variable never read locally
 	long loc = this.nodePtrRAF.readLongNat();
 	this.nodePtrTbl.put(fp, loc);
       }
@@ -267,7 +268,7 @@ public class DiskGraph {
     int numOfInits = this.initNodes.size();
     for (int i = 0; i < numOfInits; i += 2) {
       long state0 = this.initNodes.elementAt(i);
-      int tidx0 = (int)this.initNodes.elementAt(i+1);
+      int tidx0 = (int)this.initNodes.elementAt(i+1); // SZ Feb 20, 2009: variable never read locally
       if (state0 == state) {
 	LongVec res = new LongVec(1);
 	res.addElement(state0);
@@ -425,7 +426,7 @@ public class DiskGraph {
       this.nodePtrRAF.seek(nodePtrPtr);
     }
     catch (IOException e) {
-      System.err.println("DiskGraph.toString(): " + e);
+      ToolIO.err.println("DiskGraph.toString(): " + e);
       System.exit(1);
     }
     return sb.toString();
