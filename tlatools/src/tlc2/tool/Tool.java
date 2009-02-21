@@ -5,6 +5,7 @@
 
 package tlc2.tool;
 
+import tla2sany.modanalyzer.SpecObj;
 import tla2sany.semantic.ExprNode;
 import tla2sany.semantic.ExprOrOpArgNode;
 import tla2sany.semantic.FormalParamNode;
@@ -54,52 +55,77 @@ import tlc2.value.ValueEnumeration;
 import tlc2.value.ValueExcept;
 import tlc2.value.ValueVec;
 import util.Assert;
+import util.StringToNamedInputStream;
+import util.ToolIO;
 import util.UniqueString;
 
-public class Tool extends Spec implements ValueConstants, ToolGlobals, TraceApp {
-  /**
-   * This class provides useful methods for tools like model checker
-   * and simulator.
-   */
+/**
+ * This class provides useful methods for tools like model checker
+ * and simulator.
+ * 
+ * It's instance servers as a spec handle
+ */
+public class Tool 
+    extends Spec 
+    implements ValueConstants, ToolGlobals, TraceApp 
+{
   protected Action[] actions;     // the list of TLA actions.
   private CallStack callStack;    // the call stack.
 
-  public Tool(String specDir, String specFile, String configFile) {
-    super(specDir, specFile, configFile);
-    this.actions = null;
-    this.callStack = null;
+  /**
+   * Creates a new tool handle 
+   * @param specDir
+   * @param specFile
+   * @param configFile
+   */
+  public Tool(String specDir, String specFile, String configFile, StringToNamedInputStream stream) 
+  {
+      super(specDir, specFile, configFile, stream);
+      this.actions = null;
+      this.callStack = null;
   }
 
-  /* Initialization. Any Tool object must call it before doing anything. */
-  public final void init(boolean preprocess) {
-    // Parse and process this spec. It takes care of all overrides.
-    this.processSpec();
+  /**
+   * Initialization. Any Tool object must call it before doing anything.
+   * @param spec - <code>null</code> or a filled spec object from previous SANY run
+   */
+  public final void init(boolean preprocess, SpecObj spec) 
+  {
+      
+      // Parse and process this spec. 
+      // It takes care of all overrides.
+      // SZ Feb 20, 2009: added spec reference,
+      // if not null it is just used instead of reparsing
+      super.processSpec(spec);
 
-    // Initialize state.
-    if (TLCGlobals.coverageInterval >= 0) {
-      TLCStateMutSource.init(this);
-    }
-    else {
-      TLCStateMut.init(this);
-    }
+      // Initialize state.
+      if (TLCGlobals.coverageInterval >= 0) {
+          TLCStateMutSource.init(this);
+      }
+      else {
+          TLCStateMut.init(this);
+      }
 
-    // Pre-evaluate all the definitions in the spec that are constants.
-    if (preprocess) {
-      this.processConstantDefns();
-    }
+      // Pre-evaluate all the definitions in the spec that are constants.
+      if (preprocess) {
+          this.processConstantDefns();
+      }
 
-    // Finally, process the config file.
-    this.processConfig();
+      // Finally, process the config file.
+      this.processConfig();
   }
 
-  public final void setCallStack() { this.callStack = new CallStack(); }
+  public final void setCallStack() 
+  { 
+      this.callStack = new CallStack(); 
+  }
 
   public final void printCallStack() {
     if (this.callStack.size() > 0) {
-      System.err.println(this.callStack);
+      ToolIO.err.println(this.callStack);
     }
     else {
-      System.err.println("    The error call stack is empty.\n");
+      ToolIO.err.println("    The error call stack is empty.\n");
     }
   }
    
@@ -1388,7 +1414,7 @@ public class Tool extends Spec implements ValueConstants, ToolGlobals, TraceApp 
       {
         int alen = args.length;
         Value result = this.eval(args[0], c, s0, s1, control);
-        ValueExcept[] expts = new ValueExcept[alen-1];
+        // SZ: variable not used ValueExcept[] expts = new ValueExcept[alen-1];
         for (int i = 1; i < alen; i++) {
           OpApplNode pairNode = (OpApplNode)args[i];
           ExprOrOpArgNode[] pairArgs = pairNode.getArgs();
