@@ -469,7 +469,7 @@ public class TLC
                 }
                 ToolIO.out.println("Running Random Simulation with seed " + seed + ".");
                 Simulator simulator = new Simulator(mainFile, configFile, null, deadlock, traceDepth, 
-                        Long.MAX_VALUE, rng, seed, true, resolver);
+                        Long.MAX_VALUE, rng, seed, true, resolver, specObj);
                 simulator.simulate();
             } else
             {
