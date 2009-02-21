@@ -7,8 +7,9 @@ import tlc2.util.IdThread;
 import tlc2.util.LongVec;
 import tlc2.util.ObjLongTable;
 import tlc2.util.RandomGenerator;
+import util.ToolIO;
 
-public class DFIDWorker extends IdThread {
+public class DFIDWorker extends IdThread implements IWorker {
   /**
    * Multi-threading helps only when running on multiprocessors. TLC
    * can pretty much eat up all the cycles of a processor running
@@ -31,9 +32,10 @@ public class DFIDWorker extends IdThread {
   private int stopCode;
   private boolean moreLevel;
 
-  public DFIDWorker(int id, int toLevel, DFIDModelChecker tlc) {
+  // SZ Feb 20, 2009: changes due to the introduced super type
+  public DFIDWorker(int id, int toLevel, AbstractChecker tlc) {
     super(id);
-    this.tlc = tlc;
+    this.tlc = (DFIDModelChecker) tlc;
     this.rng = new RandomGenerator();
     this.rng.setSeed(this.rng.nextLong());
     this.stateStack = new TLCState[TLCGlobals.DFIDMax];
@@ -44,12 +46,12 @@ public class DFIDWorker extends IdThread {
       this.succStateStack[i] = new StateVec(1);
       this.succFPStack[i] = new LongVec(1);
     }
-    this.theFPSet = tlc.theFPSet;
-    this.initLen = tlc.theInitStates.length;
+    this.theFPSet = this.tlc.theFPSet;
+    this.initLen = this.tlc.theInitStates.length;
     this.theInitStates = new TLCState[this.initLen];
     this.theInitFPs = new long[this.initLen];
-    System.arraycopy(tlc.theInitStates, 0, this.theInitStates, 0, this.initLen);
-    System.arraycopy(tlc.theInitFPs, 0, this.theInitFPs, 0, this.initLen);
+    System.arraycopy(this.tlc.theInitStates, 0, this.theInitStates, 0, this.initLen);
+    System.arraycopy(this.tlc.theInitFPs, 0, this.theInitFPs, 0, this.initLen);
     this.astCounts = new ObjLongTable(10);    
     this.toLevel = toLevel;
     this.curLevel = 0;
@@ -191,7 +193,7 @@ public class DFIDWorker extends IdThread {
       this.tlc.setStop(2);
       synchronized(this.tlc) {
 	if (this.tlc.setErrState(curState, null, true)) {
-          System.err.println("Error: " + e.getMessage());
+          ToolIO.err.println("Error: " + e.getMessage());
 	}
 	this.tlc.setDone();
 	this.tlc.notifyAll();
