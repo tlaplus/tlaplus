@@ -5,6 +5,8 @@
 
 package tlc2.pprint;
 
+import util.ToolIO;
+
 
 public class PrettyPrint {
 
@@ -34,12 +36,12 @@ public class PrettyPrint {
       return format;
     }
     catch (ParseException e) {
-      System.err.println("TLC Bug: error while parsing " + value + "\n" + 
+      ToolIO.err.println("TLC Bug: error while parsing " + value + "\n" + 
 			 e.getMessage());
       return value;
     }
     catch (FormatException e) {
-      System.err.println("TLC Bug: error while formating " + value + "\n" + 
+      ToolIO.err.println("TLC Bug: error while formating " + value + "\n" + 
 			 e.getMessage()); 
       return value;
     }
@@ -57,14 +59,14 @@ public class PrettyPrint {
     }
 
     for (int i = 0; i < width; i++) {
-      System.out.print("*");
+        ToolIO.out.print("*");
     }
-    System.out.println("");
-    System.out.println(pp(value,width,padding));
+    ToolIO.out.println("");
+    ToolIO.out.println(pp(value,width,padding));
     for (int i = 0; i < width; i++) {
-      System.out.print("*");
+        ToolIO.out.print("*");
     }
-    System.out.println("");
+    ToolIO.out.println("");
 
     return;
   }
