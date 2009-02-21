@@ -18,13 +18,14 @@ import tla2sany.semantic.OpDefNode;
 import tlc2.TLCGlobals;
 import util.Assert;
 import util.FP64;
+import util.ToolIO;
 import util.UniqueString;
 
+/**
+ * CheckImplFile is a subclass of CheckImpl. It uses files to
+ * communicate with simulator.  Traces are stored in files.
+ **/
 public class CheckImplFile extends CheckImpl {
-  /**
-   * CheckImplFile is a subclass of CheckImpl. It uses files to
-   * communicate with simulator.  Traces are stored in files.
-   **/
   
   private static int WaitForTrace = 10000;
   
@@ -73,14 +74,17 @@ public class CheckImplFile extends CheckImpl {
   public final boolean getTrace() {
     String rfname = this.traceFile + this.ticnt;
     File tfile = new File(rfname);
-    System.out.println("Trying to work on trace " + tfile + " ...");
+    ToolIO.out.println("Trying to work on trace " + tfile + " ...");
     if (!tfile.exists()) return false;
+    
+    
     // Parse the trace file:
-    SpecObj spec = new SpecObj(rfname);
+    // REFACTOR: Call SANY.frontendparse
+    SpecObj spec = new SpecObj(rfname, null);
     try {
-      SANY.frontEndInitialize(spec, System.err);
-      SANY.frontEndParse(spec, System.err);
-      SANY.frontEndSemanticAnalysis(spec, System.err, true);
+      SANY.frontEndInitialize(spec, ToolIO.err);
+      SANY.frontEndParse(spec, ToolIO.err);
+      SANY.frontEndSemanticAnalysis(spec, ToolIO.err, true);
     }
     catch (Throwable e) {
       String msg = e.getMessage();
@@ -143,7 +147,7 @@ public class CheckImplFile extends CheckImpl {
    *    Defaults to no coverage if not specified
    **/
   public static void main(String[] args) {
-    System.out.println("TLC " + TLCGlobals.versionOfTLC);
+    ToolIO.out.println("TLC " + TLCGlobals.versionOfTLC);
 
     String mainFile = null;
     String configFile = null;
@@ -306,14 +310,14 @@ public class CheckImplFile extends CheckImpl {
     }
     catch (Throwable e) {
       // Assert.printStack(e);
-      System.err.println("Error: TLC failed in checking traces. " + e.getMessage());
+      ToolIO.err.println("Error: TLC failed in checking traces. " + e.getMessage());
     }
     System.exit(0);    
   }
 
   private static void printErrorMsg(String msg) {
-    System.err.println(msg);
-    System.err.println("Usage: java tlc2.tool.CheckImplFile [-option] inputfile");
+    ToolIO.err.println(msg);
+    ToolIO.err.println("Usage: java tlc2.tool.CheckImplFile [-option] inputfile");
   }
 
 }
