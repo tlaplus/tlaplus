@@ -18,6 +18,7 @@ import tlc2.util.BitVector;
 import tlc2.util.LongVec;
 import util.FP64;
 import util.InternRMI;
+import util.ToolIO;
 import util.UniqueString;
 
 public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
@@ -98,12 +99,12 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
     
   public void exit() throws IOException {
     String hostname = InetAddress.getLocalHost().getHostName();    
-    System.out.println(hostname + ", work completed. Thank you!");
+    ToolIO.out.println(hostname + ", work completed. Thank you!");
     System.exit(0);
   }
   
   public static void main(String args[]) {
-    System.out.println("TLC Worker " + TLCGlobals.versionOfTLC);
+      ToolIO.out.println("TLC Worker " + TLCGlobals.versionOfTLC);
 
     String specFile = null;
     String configFile = null;
@@ -194,18 +195,18 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
       TLCWorkerRMI worker = new TLCWorker(work, fpSetManager);
       server.registerWorker(worker, hostname);
 
-      System.out.println("TLC worker at " + hostname + " is ready.") ;
+      ToolIO.out.println("TLC worker at " + hostname + " is ready.") ;
     }
     catch (Throwable e) {
       // Assert.printStack(e);
-      System.err.println("Error: Failed to start worker at " + hostname +
+      ToolIO.err.println("Error: Failed to start worker at " + hostname +
 			 " for server " + serverName + ".\n" + e.getMessage());
     }
   }
 
   private static void printErrorMsg(String msg) {
-    System.err.println(msg);
-    System.err.println("Usage: java tlc2.tool.TLCWorker [-option] inputfile host");
+      ToolIO.err.println(msg);
+      ToolIO.err.println("Usage: java tlc2.tool.TLCWorker [-option] inputfile host");
   }
 
 }
