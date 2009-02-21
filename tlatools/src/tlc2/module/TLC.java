@@ -26,6 +26,7 @@ import tlc2.value.Value;
 import tlc2.value.ValueConstants;
 import tlc2.value.ValueVec;
 import util.Assert;
+import util.ToolIO;
 
 public class TLC implements ValueConstants {
 
@@ -42,7 +43,7 @@ public class TLC implements ValueConstants {
    * returns the value v2.
    */
   public static Value Print(Value v1, Value v2) {
-    System.err.println(Value.ppr(v1.toString()) + "  " + Value.ppr(v2.toString()));
+    ToolIO.err.println(Value.ppr(v1.toString()) + "  " + Value.ppr(v2.toString()));
     return v2;
   }
 
@@ -50,7 +51,7 @@ public class TLC implements ValueConstants {
    * Prints to standard error the string v1. Always returns TRUE.
    */
   public static Value PrintT(Value v1) {
-    System.err.println(Value.ppr(v1.toString()));
+    ToolIO.err.println(Value.ppr(v1.toString()));
     return ValTrue;
   }
 
