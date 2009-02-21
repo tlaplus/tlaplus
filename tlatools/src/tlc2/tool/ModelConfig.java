@@ -5,7 +5,6 @@
 
 package tlc2.tool;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.Serializable;
@@ -25,6 +24,9 @@ import tlc2.value.Value;
 import tlc2.value.ValueConstants;
 import tlc2.value.ValueVec;
 import util.Assert;
+import util.NameToFileIStream;
+import util.StringToNamedInputStream;
+import util.ToolIO;
 
 public class ModelConfig implements ValueConstants, Serializable {
   /* Get information from user's model configuration file.  */
@@ -51,10 +53,27 @@ public class ModelConfig implements ValueConstants, Serializable {
   private Hashtable overrides;  
   private Hashtable modConstants;
   private Hashtable modOverrides;
-  private File configFile;
+  private String configFileName;
+  private StringToNamedInputStream resolver; // resolver for the file
 
-  public ModelConfig(String file) {
-    this.configFile = new File(file);
+  /**
+   * Creates a new model config handle
+   * @param configFileName name of the model configuration file
+   * @param resolver the name to stream resolver or <code>null</code> 
+   * is the standard one should be used
+   */
+  // SZ Feb 20, 2009: added name resolver support, to be able to run from a toolbox
+  public ModelConfig(String configFileName, StringToNamedInputStream resolver) 
+  {
+    if (resolver != null) 
+    {
+        this.resolver = resolver;
+    } else {
+        // standard resolver
+        this.resolver = new NameToFileIStream();
+    }
+    
+    this.configFileName = configFileName;
     this.configTbl = new Hashtable();
     Vect temp = new Vect();    
     this.configTbl.put(Constant, temp);
@@ -162,7 +181,9 @@ public class ModelConfig implements ValueConstants, Serializable {
     Vect invariants = (Vect)this.configTbl.get(Invariant);
     Vect props = (Vect)this.configTbl.get(Prop);
     try {
-      FileInputStream fis = new FileInputStream(this.configFile);
+
+      FileInputStream fis = resolver.toIStream(this.configFileName, false);  
+      
       SimpleCharStream scs = new SimpleCharStream(fis, 1, 1);
       TLAplusParserTokenManager tmgr = new TLAplusParserTokenManager(scs, 2);
 
@@ -390,7 +411,7 @@ public class ModelConfig implements ValueConstants, Serializable {
     }
     catch (IOException e) {
       Assert.fail("TLC encountered the following error when trying to read " +
-		  "the configuration file " + this.configFile.getName() + ":\n" +
+		  "the configuration file " + this.configFileName + ":\n" +
 		  e.getMessage());
     }
   }
@@ -440,18 +461,25 @@ public class ModelConfig implements ValueConstants, Serializable {
   }
 
   public static void main(String[] args) {
-    try {
-      FileInputStream fis = new FileInputStream(args[0]);
-      SimpleCharStream scs = new SimpleCharStream(fis, 1, 1);    
-      TLAplusParserTokenManager tmgr = new TLAplusParserTokenManager(scs, 2);
+      try 
+      {
+          // SZ Feb 20, 2009: move to test package
+          // REFACTOR: Name to stream
+          FileInputStream fis = new FileInputStream(args[0]);
+          SimpleCharStream scs = new SimpleCharStream(fis, 1, 1);    
+          TLAplusParserTokenManager tmgr = new TLAplusParserTokenManager(scs, 2);
 
-      Token t = getNextToken(tmgr);
-      while (t.kind != 0) {
-	System.err.println(t);
-	t = getNextToken(tmgr);
+          Token t = getNextToken(tmgr);
+          while (t.kind != 0) 
+          {
+              ToolIO.err.println(t);
+              t = getNextToken(tmgr);
+          }
       }
-    }
-    catch (Exception e) { System.err.println(e.getMessage()); }
+      catch (Exception e) 
+      {
+          ToolIO.err.println(e.getMessage()); 
+      }
   }
   
 }
