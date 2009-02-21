@@ -14,6 +14,8 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
+import util.ToolIO;
+
 public class ObjectPoolStack {
 
   public ObjectPoolStack(int bufSize, String filePrefix) {
@@ -103,7 +105,7 @@ public class ObjectPoolStack {
 	}
       }
       catch (Exception e) {
-	System.err.println("Error: when reading the disk (ObjectPoolStack.Reader.run):\n" +
+	ToolIO.err.println("Error: when reading the disk (ObjectPoolStack.Reader.run):\n" +
 			   e.getMessage());
 	System.exit(1);
       }
@@ -132,7 +134,7 @@ public class ObjectPoolStack {
 	}
       }
       catch (Exception e) {
-	System.err.println("Error: when reading the disk (ObjectPoolStack.Writer.run):\n" +
+	ToolIO.err.println("Error: when reading the disk (ObjectPoolStack.Writer.run):\n" +
 			   e.getMessage());
 	System.exit(1);
       }

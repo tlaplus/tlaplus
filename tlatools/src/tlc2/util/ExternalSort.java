@@ -15,6 +15,8 @@ import java.util.Date;
 import java.util.Random;
 
 import util.Assert;
+import util.ToolIO;
+
 
 public class ExternalSort {
   public static final int ARRAYSIZE = 10000;
@@ -131,7 +133,7 @@ public class ExternalSort {
 				 OutputStream out1, ExternalSortable ex) 
   throws IOException {
     BigInt A [] = new BigInt[SORTSIZE]; // Changed ExternalSortable to BigInt on 9 Jan 2009	
-    int i,j;
+    int i;  // SZ Feb 20, 2009: j removed, since it is not used
     OutputStream out = out0;
     boolean done = false;
     
@@ -249,7 +251,7 @@ public class ExternalSort {
   }
 
   private static InputStream newBZFileIStream(String file) 
-  throws IOException, FileNotFoundException {
+  throws IOException {
     return FileUtil.newBZFileInputStream(file, USEGZIP, USEIBUFFERS, BUFFERSIZE);
   }
 
@@ -260,11 +262,11 @@ public class ExternalSort {
   private static void mainMergeSort(Comparable[] Arr3) 
   throws IOException {
     int i;
-    //    System.out.println("\nAttempting Merge Sort \n");
+    //    ToolIO.out.println("\nAttempting Merge Sort \n");
 
     Sort.sortArray(Arr3,0,ARRAYSIZE-1);
     //    for (i=0; i<ARRAYSIZE; i++) 
-    //      System.out.println(Arr3[i]);
+    //      ToolIO.out.println(Arr3[i]);
   }
 
 
@@ -279,7 +281,7 @@ public class ExternalSort {
     mainMergeSort(Arr);
     mainMergeSort(Arr2);
     long t2 = System.currentTimeMillis();
-    System.out.println("Internal Sorting took " + (t2 - t1) + "ms");
+    ToolIO.out.println("Internal Sorting took " + (t2 - t1) + "ms");
     
     ExSortUtils.writeSizeArrayOfExternalSortable(Arr,0,Arr.length-1,out0);
     ExSortUtils.writeSizeArrayOfExternalSortable(Arr2,0,Arr2.length-1,out1);
@@ -347,7 +349,7 @@ public class ExternalSort {
       do {
 	A = ExSortUtils.readSizeArrayOfExternalSortable(in0, BigInt.BigZero);
 	for (int j = 0; j < A.length; j++) {
-	  System.out.println(A[j]);
+	  ToolIO.out.println(A[j]);
 	}
       } while (true);
     } catch (IOException e) {};
@@ -358,7 +360,7 @@ public class ExternalSort {
       do {
 	A = ExSortUtils.readSizeArrayOfExternalSortable(in0, BigInt.BigZero);
 	for (int j = 0; j < A.length; j++) {
-	  System.out.println(A[j]);
+	  ToolIO.out.println(A[j]);
 	}
       } while (true);
     } catch (IOException e) {};
@@ -379,10 +381,10 @@ public class ExternalSort {
       //      Arr4[i] = Arr[i];
       //      Arr5[i] = Arr[i];
       //      Arr6[i] = Arr[i];
-      //   System.out.println(Arr[i]);
+      //   ToolIO.out.println(Arr[i]);
     }
     out.close();
-    System.out.println("\n \n");
+    ToolIO.out.println("\n \n");
   }
 
   //  private static void mainTestmergeSortFile(BigInt[] A)
@@ -393,34 +395,36 @@ public class ExternalSort {
     OutputStream out;
     
     //    for (i=0;i<A.length;i++)
-    //      System.out.println(A[i]);
+    //      ToolIO.out.println(A[i]);
     
     //    d1 = new Date();    
     //    out = newBZFileOStream("file");
     //    Utilities.writeArrayOfExternalSortable(A,0,A.length-1,out);
     //    out.close();
     //    d2 = new Date();
-    //    System.out.println("Writing the array took " + 
+    //    ToolIO.out.println("Writing the array took " + 
     //	       (d2.getTime() - d1.getTime()) + "ms");
 
 
     //    in = new FileInputStream("file");
     //    B=Utilities.readArrayOfExternalSortable(in, BigInt.BigZero);
     //    for (i=0;i<B.length;i++)
-    //      System.out.println(B[i]);
+    //      ToolIO.out.println(B[i]);
 
     d1 = new Date();
     mergeSortFile("file", BigInt.BigZero);
     d2 = new Date();
-    System.out.println((d2.getTime() - d1.getTime()) + "ms");
+    ToolIO.out.println((d2.getTime() - d1.getTime()) + "ms");
 
     //    in = newBZFileIStream("file");
     //    B=Utilities.readArrayOfExternalSortable(in, BigInt.BigZero);
     //    for (i=1;i<ARRAYSIZE;i++)
     //      if (!B[i].greaterEqual(B[i-1]))
-    //      System.out.println("B["+(i-1)+"] = "+B[i-1]+"   and   B["+i+"] = "+B[i]);
+    //      ToolIO.out.println("B["+(i-1)+"] = "+B[i-1]+"   and   B["+i+"] = "+B[i]);
   }
   
+  // SZ Feb 20, 2009: 
+  // TODO: move to test cases folder
   public static void main(String argv[]) throws IOException {
     BigInt Arr[] = new BigInt[ARRAYSIZE];
     //    BigInt Arr2[] = new BigInt[ARRAYSIZE];
@@ -434,58 +438,58 @@ public class ExternalSort {
     //    mainInitialize(Arr,Arr2,Arr3,Arr4,Arr5,Arr6);
     mainInitialize();
     d2 = new Date();
-    System.out.println("Initializing 6 arrays took "+(d2.getTime() - d1.getTime()) + "ms");
+    ToolIO.out.println("Initializing 6 arrays took "+(d2.getTime() - d1.getTime()) + "ms");
 
     /*
     d1 = new Date();
     mainTestMergeFile(Arr, Arr2);
     d2 = new Date();
-    System.out.println("Testing Merge File took " + 
+    ToolIO.out.println("Testing Merge File took " + 
 		       (d2.getTime() - d1.getTime()) + "ms");
     
     d1 = new Date();
     mainTestMergeFilesToFiles(Arr3);
     d2 = new Date();
-    System.out.println("Testing FilesToFiles took " + 
+    ToolIO.out.println("Testing FilesToFiles took " + 
 		       (d2.getTime() - d1.getTime()) + "ms");
 
-    System.out.print("External Sort took ");
+    ToolIO.out.print("External Sort took ");
     mainTestmergeSortFile(Arr);
-    System.out.println("Resulting file size is: " + (new File("file")).length());
+    ToolIO.out.println("Resulting file size is: " + (new File("file")).length());
 
     USEIBUFFERS=true;
-    System.out.print("External Sort w/Input Buffering took ");
+    ToolIO.out.print("External Sort w/Input Buffering took ");
     mainTestmergeSortFile(Arr2);
-    System.out.println("Resulting file size is: " + (new File("file")).length());
+    ToolIO.out.println("Resulting file size is: " + (new File("file")).length());
     
 
-    System.out.print("External Sort w/Output Buffering took ");
+    ToolIO.out.print("External Sort w/Output Buffering took ");
     USEIBUFFERS=false;
     USEOBUFFERS=true;
     mainTestmergeSortFile(Arr3);
-    System.out.println("Resulting file size is: " + (new File("file")).length());
+    ToolIO.out.println("Resulting file size is: " + (new File("file")).length());
 		       */
 
-    System.out.print("External Sort w/ Buffering took ");
+    ToolIO.out.print("External Sort w/ Buffering took ");
     USEIBUFFERS=true;
     USEOBUFFERS=true;
     //    mainTestmergeSortFile(Arr4);
     mainTestmergeSortFile();
-    System.out.println("Resulting file size is: " + (new File("file")).length());
+    ToolIO.out.println("Resulting file size is: " + (new File("file")).length());
     /*
-    System.out.print("External Sort w/ Zipping took ");
+    ToolIO.out.print("External Sort w/ Zipping took ");
     USEIBUFFERS=false;
     USEOBUFFERS=false;
     USEGZIP=true;
     mainTestmergeSortFile(Arr5);
-    System.out.println("Resulting file size is: " + (new File("file")).length());
+    ToolIO.out.println("Resulting file size is: " + (new File("file")).length());
 
-    System.out.print("External Sort w/ I/O Buffering and Zipping took ");
+    ToolIO.out.print("External Sort w/ I/O Buffering and Zipping took ");
     USEIBUFFERS=true;
     USEOBUFFERS=true;
     USEGZIP=true;
     mainTestmergeSortFile(Arr6);
-    System.out.println("Resulting file size is: " + (new File("file")).length());
+    ToolIO.out.println("Resulting file size is: " + (new File("file")).length());
     */
     //    mainInsertSort(Arr, args);
     //    mainInsertMerge(Arr2,args);
@@ -497,14 +501,14 @@ public class ExternalSort {
     //    d1 = new Date();
     //    mainByteArrayFile(Arr4, Arr5);
     //    d2 = new Date();
-    //    System.out.println("ByteArray took " + (d2.getTime() - d1.getTime())
+    //    ToolIO.out.println("ByteArray took " + (d2.getTime() - d1.getTime())
     //		       + "ms");
 
 
     //    d1 = new Date();
     //    mainBuffOByteArrayFile(Arr4, Arr5);
     //    d2 = new Date();
-    //    System.out.println("BuffOByteArray took " + (d2.getTime() - d1.getTime())
+    //    ToolIO.out.println("BuffOByteArray took " + (d2.getTime() - d1.getTime())
     //		       + "ms");
 
     //    mainBigIntGZFile(Arr4, Arr5);
@@ -532,7 +536,7 @@ public class ExternalSort {
 
     for (int i = 0; i < ARRAYSIZE; i++) {
       if (!Arr4[i].equals(Arr5[i])) {
-      	System.out.println("Byte: Arr4[" + i + "] differs from Arr5[" + i +"]");
+      	ToolIO.out.println("Byte: Arr4[" + i + "] differs from Arr5[" + i +"]");
       }
     }
   }  

@@ -7,6 +7,7 @@ import java.util.Date;
 import java.util.Random;
 
 import util.Assert;
+import util.ToolIO;
 
 public class Combinatorics {
 
@@ -173,14 +174,14 @@ public class Combinatorics {
 	A[2*i] = new BigInteger(20, r);
 	A[2*i+1] = new BigInteger(10, r);
       }
-      System.out.println("A is "+print(A));
+      ToolIO.out.println("A is "+print(A));
       b = toNum(B, A);
       C = toSeq(B, b);
-      System.out.println("C is "+print(C));
+      ToolIO.out.println("C is "+print(C));
       for (i = 0; i < 16; i++)
 	if (!C[i].equals(A[i]))
-	    System.out.println("***********Error***********");
-      System.out.println("b is " + b);
+	    ToolIO.out.println("***********Error***********");
+      ToolIO.out.println("b is " + b);
     }      
   }
 
