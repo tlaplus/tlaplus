@@ -6,24 +6,26 @@ package tlc2.tool;
 import java.io.IOException;
 
 import tlc2.TLCGlobals;
+import util.ToolIO;
 
+/**
+ * CheckImpl is intended to be used with a simulation-based
+ * verification engine.  It checks whether the states generated
+ * during simulation are legal based on the abstract view of a
+ * formal model. It also records coverage information on the
+ * (partial) state space TLC is creating, and subsequently uses that
+ * information to guide the simulation engine to corner cases that
+ * are hard to get.
+ **/
 public abstract class CheckImpl extends ModelChecker {
-  /**
-   * CheckImpl is intended to be used with a simulation-based
-   * verification engine.  It checks whether the states generated
-   * during simulation are legal based on the abstract view of a
-   * formal model. It also records coverage information on the
-   * (partial) state space TLC is creating, and subsequently uses that
-   * information to guide the simulation engine to corner cases that
-   * are hard to get.
-   **/
   
   private static int TraceDuration = 30000;
 
   public CheckImpl(String specFile, String configFile, boolean deadlock,
 		   int depth, String fromChkpt)
   throws IOException {
-    super(specFile, configFile, null, deadlock, fromChkpt);
+    // SZ Feb 20, 2009: patched due to changes to ModelCheker
+    super(specFile, configFile, null, deadlock, fromChkpt, null, null); // no name resolver and no specobj
     this.depth = depth;
     this.curState = null;
     this.coverSet = new DiskFPSet(-1);
@@ -38,7 +40,7 @@ public abstract class CheckImpl extends ModelChecker {
    * state is a state that is in theFPSet-coverSet.
    */
   private int depth;                      // the depth of the state space
-  private long stateCnt;                  // the number of states
+  //private long stateCnt;                  // the number of states // SZ: never
   private FPSet coverSet;                 // the set of covered states
   private TLCState curState;              // the current state
   private TLCTrace.Enumerator stateEnum;  // the enumerator for reachable state
@@ -55,13 +57,13 @@ public abstract class CheckImpl extends ModelChecker {
       this.checkAssumptions();
       this.doInit();
     }
-    System.out.println("Creating a partial state space of depth " +
+    ToolIO.out.println("Creating a partial state space of depth " +
 		       this.depth + " ... ");
     if (!this.runTLC(this.depth)) {
-      System.err.println("\nExit: failed to create the partial state space.");
+      ToolIO.err.println("\nExit: failed to create the partial state space.");
       System.exit(1);
     }
-    System.out.println("completed.");
+    ToolIO.out.println("completed.");
     this.lastTraceTime = System.currentTimeMillis();
     this.stateEnum = this.trace.elements();    
   }
@@ -98,18 +100,18 @@ public abstract class CheckImpl extends ModelChecker {
   public final boolean checkReachability(TLCState s0, TLCState s1) {
     Action next = this.tool.getNextStateSpec();    
     if (!this.tool.isValid(next, s0, s1)) {
-      System.err.println("The following transition is illegal: ");
-      System.err.println(s0);
-      System.err.println(s1);
+      ToolIO.err.println("The following transition is illegal: ");
+      ToolIO.err.println(s0);
+      ToolIO.err.println(s1);
       return false;
     }
     int cnt = this.impliedActions.length;
     for (int i = 0; i < cnt; i++) {
       if (!this.tool.isValid(this.impliedActions[i], s0, s1)) {
-	System.err.println("Error: Action property " + this.tool.getImpliedActNames()[i] +
+	ToolIO.err.println("Error: Action property " + this.tool.getImpliedActNames()[i] +
 			   " is violated.");
-	System.err.println(s0);
-	System.err.println(s1);
+	ToolIO.err.println(s0);
+	ToolIO.err.println(s1);
 	return false;
       }
     }
@@ -133,7 +135,7 @@ public abstract class CheckImpl extends ModelChecker {
 	for (int j = 0; j < cnt; j++) {
 	  if (!this.tool.isValid(this.invariants[j], state)) {
 	    // We get here because of invariant violation:
-	    System.err.println("Error: Invariant " + this.tool.getInvNames()[j] +
+	    ToolIO.err.println("Error: Invariant " + this.tool.getInvNames()[j] +
 			       " is violated. The behavior up to this point is:");
 	    return false;
 	  }
