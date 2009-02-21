@@ -14,6 +14,7 @@ import java.util.Hashtable;
 
 import tlc2.util.Vect;
 import util.Assert;
+import util.ToolIO;
 
 public class TLCConfig {
 
@@ -136,7 +137,7 @@ public class TLCConfig {
   public static void main(String[] args) throws Exception {
     String[] servers = TLCConfig.getStringArray("fp_servers");
     for (int i = 0; i < servers.length; i++) {
-      System.out.println(servers[i]);
+        ToolIO.out.println(servers[i]);
     }
   }
   
