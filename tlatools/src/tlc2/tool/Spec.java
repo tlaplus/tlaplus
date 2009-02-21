@@ -13,6 +13,7 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 
+import tla2sany.drivers.FrontEndException;
 import tla2sany.drivers.SANY;
 import tla2sany.modanalyzer.SpecObj;
 import tla2sany.semantic.AssumeNode;
@@ -51,6 +52,8 @@ import tlc2.value.StringValue;
 import tlc2.value.Value;
 import tlc2.value.ValueConstants;
 import util.Assert;
+import util.StringToNamedInputStream;
+import util.ToolIO;
 import util.UniqueString;
 
 public class Spec implements ValueConstants, ToolGlobals, Serializable {
@@ -79,8 +82,10 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable {
   protected ExprNode[] modelConstraints;   // Model constraints
   protected ExprNode[] actionConstraints;  // Action constraints
   protected ExprNode[] assumptions;        // Assumptions
+  private StringToNamedInputStream resolver; // takes car of path to stream resoltion 
 
-  public Spec(String specDir, String file) {
+  public Spec(String specDir, String file, StringToNamedInputStream resolver) 
+  {
     this.specDir = specDir;
     this.rootFile = file;
     this.rootModule = null;
@@ -98,42 +103,66 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable {
     this.modelConstraints = null;
     this.actionConstraints = null;    
     this.assumptions = null;
+    this.resolver = resolver;
   }
-
-  public Spec(String specDir, String specFile, String configFile) {
-    this(specDir, specFile);
+  // SZ Feb 20, 2009: added support to name resolver, to be able to run outside of the tool
+  public Spec(String specDir, String specFile, String configFile, StringToNamedInputStream resolver) {
+    this(specDir, specFile, resolver);
     this.configFile = configFile;
-    this.config = new ModelConfig(configFile + ".cfg");
+    this.config = new ModelConfig(configFile + ".cfg", resolver);
     this.config.parse();
     ModelValue.setValues();  // called after seeing all model values
   }
-
+  
   /**
    * Processes the specification and collects information to be used
    * by tools. The processing tries to use any customized module (Java
    * class) to override the corresponding TLA+ module.
    */
-  public final void processSpec() {
-    // We first call the SANY frontend to parse and semantic-analyze
-    // the complete TLA+ spec starting with the main module rootFile.
-    SpecObj spec = new SpecObj(this.rootFile);
-    try {
-      SANY.frontEndInitialize(spec, System.err);
-      SANY.frontEndParse(spec, System.err);
-      SANY.frontEndSemanticAnalysis(spec, System.err, true);
-    }
-    catch (Throwable e) {
-      // Assert.printStack(e);
-      String msg = e.getMessage();
-      if (msg == null) msg = "";
-      Assert.fail("Parsing or semantic analysis failed. " + msg);
-    }
-    if (!spec.initErrors.isSuccess() ||
-	!spec.parseErrors.isSuccess() ||
-	!spec.semanticErrors.isSuccess()) {
-      Assert.fail("Parsing or semantic analysis failed.");
-    }
+  // SZ Feb 20, 2009: added support for existing specObj
+  protected final void processSpec(SpecObj spec) 
+  {
+      
+      if (spec == null) 
+      {
+          // construct new specification object, if the 
+          // passed one was null
+          spec = new SpecObj(this.rootFile, resolver);
 
+          // We first call the SANY front-end to parse and semantic-analyze
+          // the complete TLA+ spec starting with the main module rootFile.
+          try
+          {
+              // SZ Feb 20, 2009:
+              // call SANY to parse the module
+              // this method will not throw any exceptions on
+              // checked errors (init, parse, semantic). 
+              // Only if something unexpected happens the 
+              // exception is thrown
+              SANY.frontEndMain(spec, this.rootFile, ToolIO.err);
+          } catch (FrontEndException e)
+          {
+              String msg = e.getMessage();
+              if (msg == null)
+              { 
+                  msg = "";
+              }
+              Assert.fail("Parsing or semantic analysis failed. " + msg);
+          }
+      }
+
+      // SZ Feb 20, 2009:
+      // since failed parsing is not marked by an exception, 
+      // check the status of the spec
+      // check if the specification has been successfully created
+      if (!spec.initErrors.isSuccess() ||
+              !spec.parseErrors.isSuccess() ||
+              !spec.semanticErrors.isSuccess()) 
+      {
+          Assert.fail("Parsing or semantic analysis failed.");
+      }
+
+    
     // Set the rootModule:
     this.moduleTbl = spec.getExternalModuleTable();
     UniqueString rootName = UniqueString.intern(this.rootFile);
@@ -147,7 +176,7 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable {
     }
     TLCState.setVariables(this.variables);
       
-    // Add predefineds (Boolean and String) in defns.
+    // Add predefined (Boolean and String) in defns.
     Defns.init();
     this.defns.put("TRUE", ValTrue);
     this.defns.put("FALSE", ValFalse);
@@ -476,8 +505,8 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable {
       }
     case DecimalKind:
       {
-	DecimalNode expr1 = (DecimalNode)expr;
-	Assert.fail("TLC BUG: could not handle real numbers.\n" + expr);
+	DecimalNode expr1 = (DecimalNode)expr; // SZ: using typed variable 
+	Assert.fail("TLC BUG: could not handle real numbers.\n" + expr1);
 	return;
       }
     case StringKind:
