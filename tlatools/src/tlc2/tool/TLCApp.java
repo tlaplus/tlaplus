@@ -11,6 +11,7 @@ import java.io.IOException;
 import tlc2.TLCGlobals;
 import tlc2.value.Value;
 import util.FP64;
+import util.ToolIO;
 import util.UniqueString;
 
 public class TLCApp extends DistApp {
@@ -28,8 +29,10 @@ public class TLCApp extends DistApp {
     int lastSep = specFile.lastIndexOf(File.separatorChar);
     String specDir = (lastSep == -1) ? "" : specFile.substring(0, lastSep+1);
     specFile = specFile.substring(lastSep+1);
-    this.tool = new Tool(specDir, specFile, configFile);
-    this.tool.init(preprocess);
+    // TODO NameResolver
+    this.tool = new Tool(specDir, specFile, configFile, null);
+    // SZ Feb 20, 2009: added null reference for predefined spec
+    this.tool.init(preprocess, null);
     this.checkDeadlock = deadlock;
     this.preprocess = preprocess;
     this.impliedInits = this.tool.getImpliedInits();
@@ -40,13 +43,16 @@ public class TLCApp extends DistApp {
     this.metadir = ModelChecker.makeMetaDir(specDir, fromChkpt);
   }
 
+  // TODO too many constructors redefinitions, replace with this(..) calls
   public TLCApp(String specDir, String specFile, String configFile,
 		Boolean deadlock, Boolean preprocess)
   throws IOException {
-    this.tool = new Tool(specDir, specFile, configFile);
+      // TODO NameResolver      
+    this.tool = new Tool(specDir, specFile, configFile, null);
     this.checkDeadlock = deadlock.booleanValue();
     this.preprocess = preprocess.booleanValue();
-    this.tool.init(this.preprocess);    
+    // SZ Feb 20, 2009: added null reference to SpecObj
+    this.tool.init(this.preprocess, null);    
     this.impliedInits = this.tool.getImpliedInits();
     this.invariants = this.tool.getInvariants();
     this.impliedActions = this.tool.getImpliedActions();
@@ -306,8 +312,8 @@ public class TLCApp extends DistApp {
   }
 
   private static void printErrorMsg(String msg) {
-    System.err.println(msg);
-    System.err.println("Usage: java tlc2.tool.TLCServer [-option] inputfile");
+    ToolIO.err.println(msg);
+    ToolIO.err.println("Usage: java tlc2.tool.TLCServer [-option] inputfile");
   }
 
 }
