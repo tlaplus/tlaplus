@@ -17,6 +17,7 @@ import tlc2.util.IdThread;
 import tlc2.util.ReadersWriterLock;
 import tlc2.util.Sort;
 import util.Assert;
+import util.ToolIO;
 
 /**
  * A <code>DiskFPSet</code> is a subtype of <code>FPSet</code> that
@@ -632,7 +633,7 @@ public class DiskFPSet extends FPSet {
 	FileUtil.deleteDir(file, true);
       }
       String hostname = InetAddress.getLocalHost().getHostName();    
-      System.out.println(hostname + ", work completed. Thank you!");
+      ToolIO.out.println(hostname + ", work completed. Thank you!");
       System.exit(0);    
     }
 
