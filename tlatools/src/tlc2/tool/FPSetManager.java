@@ -15,6 +15,7 @@ import java.rmi.RemoteException;
 
 import tlc2.util.BitVector;
 import tlc2.util.LongVec;
+import util.ToolIO;
 
 public class FPSetManager implements Serializable {
 
@@ -104,11 +105,11 @@ public class FPSetManager implements Serializable {
 	return this.fpSets[fpIdx].put(fp);
       }
       catch (Exception e) {
-	System.out.println("Warning: Failed to connect from " + this.getHostName() +
+	ToolIO.out.println("Warning: Failed to connect from " + this.getHostName() +
 			   " to the fp server at " + this.hosts[fpIdx] +
 			   ".\n" + e.getMessage());
 	if (this.reassign(fpIdx) == -1) {
-	  System.out.println("Warning: there is no fp server available.");	  
+	  ToolIO.out.println("Warning: there is no fp server available.");	  
 	  return false;
 	}
       }
@@ -123,11 +124,11 @@ public class FPSetManager implements Serializable {
 	res[i] = this.fpSets[i].putBlock(fps[i]);
       }
       catch (Exception e) {
-	System.out.println("Warning: Failed to connect from " + this.getHostName() +
+	ToolIO.out.println("Warning: Failed to connect from " + this.getHostName() +
 			   " to the fp server at " + this.hosts[i] + ".\n" +
 			   e.getMessage());
 	if (this.reassign(i) == -1) {
-	  System.out.println("Warning: there is no fp server available.");
+	  ToolIO.out.println("Warning: there is no fp server available.");
 	}
 	res[i] = new BitVector(fps[i].size());
 	res[i].set(0, fps[i].size()-1);
@@ -144,11 +145,11 @@ public class FPSetManager implements Serializable {
 	res[i] = this.fpSets[i].containsBlock(fps[i]);
       }
       catch (Exception e) {
-	System.out.println("Warning: Failed to connect from " + this.getHostName() +
+	ToolIO.out.println("Warning: Failed to connect from " + this.getHostName() +
 			   " to the fp server at " + this.hosts[i] + ".\n" +
 			   e.getMessage());
 	if (this.reassign(i) == -1) {
-	  System.out.println("Warning: there is no fp server available.");
+	  ToolIO.out.println("Warning: there is no fp server available.");
 	}
 	res[i] = new BitVector(fps[i].size());
 	res[i].set(0, fps[i].size()-1);
@@ -165,11 +166,11 @@ public class FPSetManager implements Serializable {
 	res += this.fpSets[i].size();
       }
       catch (Exception e) {
-	System.out.println("Warning: Failed to connect from " + this.getHostName() +
+	ToolIO.out.println("Warning: Failed to connect from " + this.getHostName() +
 			   " to the fp server at " + this.hosts[i] + ".\n" +
 			   e.getMessage());
 	if (this.reassign(i) == -1) {
-	  System.out.println("Warning: there is no fp server available.");
+	  ToolIO.out.println("Warning: there is no fp server available.");
 	}
       }
     }
@@ -244,7 +245,7 @@ public class FPSetManager implements Serializable {
 	}
       }
       catch (IOException e) {
-	System.err.println("Error: Failed to checkpoint the fingerprint server at " +
+	ToolIO.err.println("Error: Failed to checkpoint the fingerprint server at " +
 			   hosts[this.hostIndex] + ". This server might be down.");
       }
     }
