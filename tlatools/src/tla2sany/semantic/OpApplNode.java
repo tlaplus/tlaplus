@@ -2,7 +2,7 @@
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
 package tla2sany.semantic;
 
-// last modified on Fri 23 Nov 2007 at 15:50:46 PST by lamport
+// last modified on Sun 22 February 2009 at 11:30:16 PST by lamport
 
 /***************************************************************************
 * Modified on 4 Jul 2007 to change the introduced bound symbols from       *
@@ -359,9 +359,43 @@ public class OpApplNode extends ExprNode implements ExploreNode {
 //  private SetOfArgLevelConstraints argLevelConstraints;
 //  private HashSet argLevelParams;
 
+
+/***************************************************************************
+* The following was used for debugging.  It might be useful again, so I'm  *
+* keeping it here in as a comment.                                         *
+***************************************************************************/
+// public static void PrintDebugNode(String str) {
+//    System.out.print(str + " ");
+//    if (debugNode == null) {
+//       System.out.println("null node");
+//     }
+//    else{
+//       int savedlevel = debugNode.levelChecked;
+//       debugNode.levelChecked = 1;
+//       if (debugNode.getAllParams()==null) {
+//          System.out.println("allParams null");
+//          } 
+//       else {
+//          System.out.println(HashSetToString(debugNode.getAllParams()));
+//          };
+//    if (debugNode.getAllParams() != debugParams) {
+//       System.out.print("allParams changed, old value: ");
+//       if (debugParams == null) {
+//         System.out.println("null");
+//         }
+//       else {
+//         System.out.println(HashSetToString(debugParams));
+//        };
+//       debugParams = debugNode.getAllParams();
+//        };
+//    debugNode.levelChecked = savedlevel;
+//    }
+// }
+
   public final boolean levelCheck(int itr) {
     if (this.levelChecked >= itr) return this.levelCorrect;
     this.levelChecked = itr ;
+
     
     /***********************************************************************
     * Level check all operands[i] and ranges[i]                            *
@@ -903,6 +937,8 @@ public class OpApplNode extends ExprNode implements ExploreNode {
         this.argLevelParams.addAll(this.operands[i].getArgLevelParams());
        }; // end for
     } // end else !(this.operator instanceof OpDefNode)
+;
+
     return this.levelCorrect;
   }
   

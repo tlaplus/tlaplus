@@ -1,7 +1,7 @@
 // Copyright (c) 2003 Compaq Corporation.  All rights reserved.
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
 
-// Last modified on Fri 30 Nov 2007 at 14:33:55 PST by lamport
+// Last modified on Sat 21 February 2009 at 10:40:02 PST by lamport
 
 /***************************************************************************
 * Note: This class must be modified to handle assumptions and theorems     *

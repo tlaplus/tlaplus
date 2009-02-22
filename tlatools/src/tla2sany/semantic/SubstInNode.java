@@ -1,7 +1,7 @@
 // Copyright (c) 2003 Compaq Corporation.  All rights reserved.
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
 //
-// Last modified on Fri 23 May 2008 at 20:50:50 PST by lamport
+// Last modified on Sun 22 February 2009 at 11:28:30 PST by lamport
 
 package tla2sany.semantic;
 
@@ -337,6 +337,14 @@ public class SubstInNode extends ExprNode {
     * also in this.body.nonLeibnizParams, then we also add all those       *
     * parameters to this.nonLeibnizParams.                                 *
     ***********************************************************************/
+// XXXXX Here's the bug.  Need to clone these HashSets, not just
+//       set a ref to them.  
+// Same bug seems to appear in LetInNode with levelParams & allParams
+//    (but may not be a bug)                                  
+// To check: in APSubstInNode: this.argLevelParams = Subst...
+//           in OpDefNode: this.levelParams = EmptySet, ...
+//            also, make sure everything set to EmptySet, EmptyLC, EmptyALC
+//                  is not changed.
     this.allParams        = this.body.getAllParams() ;
     this.nonLeibnizParams = this.body.getNonLeibnizParams() ;
     for (int i = 0 ; i < this.substs.length ; i++) {
@@ -360,6 +368,7 @@ public class SubstInNode extends ExprNode {
         if (this.nonLeibnizParams.contains(param)) {
           this.nonLeibnizParams.remove(param) ;
           this.nonLeibnizParams.addAll(substs[i].getExpr().getAllParams()) ;
+
          }; // if
        }; // if (bodyParams.contains(param))
      }; // for    
@@ -412,7 +421,6 @@ public class SubstInNode extends ExprNode {
       * levelCheck(itr) has been called on body and the                   *
       * substs[i].getExpr(), as required.                                  *
       *********************************************************************/
-
     return this.levelCorrect;
   }
 
