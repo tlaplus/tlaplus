@@ -8,6 +8,8 @@
  </topic>
  <topic href="html/tasks/close_spec.html" label="Close specification">
  </topic> 
- <topic href="html/tasks/delete_spec.html" label="Delete existing specification"> 
+ <topic href="html/tasks/delete_spec.html" label="Delete existing specification">
+   </topic> 
+ <topic href="html/tasks/test.html" label="What does this do?"> 
  </topic>
 </toc>
