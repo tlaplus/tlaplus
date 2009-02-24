@@ -21,6 +21,11 @@ import util.InternRMI;
 import util.ToolIO;
 import util.UniqueString;
 
+/**
+ * Not used
+ * @deprecated
+ * @version $Id$
+ */
 public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 
   private DistApp work;

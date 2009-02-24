@@ -3,6 +3,11 @@
 
 package tlc2.tool;
 
+/**
+ * 
+ * @deprecated Not used
+ * @version $Id$
+ */
 public final class TLCWorker_Stub
     extends java.rmi.server.RemoteStub
     implements tlc2.tool.TLCWorkerRMI, java.rmi.Remote
