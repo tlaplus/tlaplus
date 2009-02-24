@@ -21,6 +21,11 @@ import tlc2.util.SetOfLong;
 import util.Assert;
 import util.ToolIO;
 
+/**
+ * Alternative implementation
+ * @deprecated not used currently
+ * @version $Id$
+ */
 public final class MemFPSet1 extends FPSet {
   private String metadir;
   private String filename;
