@@ -11,9 +11,14 @@ import java.io.IOException;
 import tlc2.TLCGlobals;
 import tlc2.value.Value;
 import util.FP64;
+import util.FileUtil;
 import util.ToolIO;
 import util.UniqueString;
 
+/**
+ * @version $Id$
+ * @deprecated RMI related code
+ */
 public class TLCApp extends DistApp {
 
   /* Constructors  */
@@ -31,6 +36,9 @@ public class TLCApp extends DistApp {
     specFile = specFile.substring(lastSep+1);
     // TODO NameResolver
     this.tool = new Tool(specDir, specFile, configFile, null);
+    // SZ Feb 24, 2009: setup the user directory
+    ToolIO.setUserDir(specDir);
+
     // SZ Feb 20, 2009: added null reference for predefined spec
     this.tool.init(preprocess, null);
     this.checkDeadlock = deadlock;
@@ -49,6 +57,9 @@ public class TLCApp extends DistApp {
   throws IOException {
       // TODO NameResolver      
     this.tool = new Tool(specDir, specFile, configFile, null);
+    // SZ Feb 24, 2009: setup the user directory
+    ToolIO.setUserDir(specDir);
+
     this.checkDeadlock = deadlock.booleanValue();
     this.preprocess = preprocess.booleanValue();
     // SZ Feb 20, 2009: added null reference to SpecObj
@@ -218,7 +229,7 @@ public class TLCApp extends DistApp {
       else if (args[index].equals("-recover")) {
         index++;
         if (index < args.length) {
-          fromChkpt = args[index++] + File.separator;
+          fromChkpt = args[index++] + FileUtil.separator;
         }
         else {
 	  printErrorMsg("Error: need to specify the metadata directory for recovery.");
