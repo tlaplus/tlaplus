@@ -17,7 +17,7 @@ import tlc2.util.IdThread;
 import tlc2.util.LongVec;
 import tlc2.util.ObjLongTable;
 import tlc2.value.Value;
-import util.StringToNamedInputStream;
+import util.FilenameToStream;
 import util.ToolIO;
 import util.UniqueString;
 
@@ -45,7 +45,7 @@ public class ModelChecker extends AbstractChecker
      * @param specObj external SpecObj added to enable to work on existing specification 
      */
     public ModelChecker(String specFile, String configFile, String dumpFile, boolean deadlock, String fromChkpt,
-            StringToNamedInputStream resolver, SpecObj specObj) throws EvalException, IOException
+            FilenameToStream resolver, SpecObj specObj) throws EvalException, IOException
     {
         // call the abstract constructor
         super(specFile, configFile, dumpFile, deadlock, fromChkpt, true, resolver, specObj);
@@ -94,7 +94,8 @@ public class ModelChecker extends AbstractChecker
                 return;
             try
             {
-                if (!this.doInit())
+                // SZ Feb 23, 2009: do not ignore cancel on creation of the init states
+                if (!this.doInit(false))
                     return;
             } catch (Throwable e)
             {
@@ -110,7 +111,8 @@ public class ModelChecker extends AbstractChecker
                 try
                 {
                     this.numOfGenStates = 0;
-                    this.doInit();
+                    // SZ Feb 23, 2009: ignore cancel on error reporting
+                    this.doInit(true);
                 } catch (Throwable e1)
                 {
                     // Assert.printStack(e);
@@ -225,8 +227,14 @@ public class ModelChecker extends AbstractChecker
      * @return
      * @throws Throwable
      */
-    public final boolean doInit() throws Throwable
+    public final boolean doInit(boolean ignoreCancel) throws Throwable
     {
+        // SZ Feb 23, 2009: cancel flag set, quit
+        if (!ignoreCancel && this.cancellationFlag)
+        {
+            return false;
+        }
+        
         TLCState curState = null;
 
         try
@@ -313,9 +321,17 @@ public class ModelChecker extends AbstractChecker
      * it is a valid state, check that the invariants are satisfied, check
      * that it satisfies the constraints, and enqueue it in the state queue.
      * Return true if the model checking should stop.
+     * 
+     * This method is called from the workers on every step
      */
     public final boolean doNext(TLCState curState, ObjLongTable counts) throws Throwable
     {
+        // SZ Feb 23, 2009: cancel the calculation
+        if (this.cancellationFlag) 
+        {
+            return false;
+        }
+        
         boolean deadLocked = true;
         TLCState succState = null;
         StateVec liveNextStates = null;
@@ -334,6 +350,13 @@ public class ModelChecker extends AbstractChecker
             // <--
             for (int i = 0; i < this.actions.length; i++)
             {
+                // SZ Feb 23, 2009: cancel the calculation
+                if (this.cancellationFlag) 
+                {
+                    return false;
+                }
+
+                
                 StateVec nextStates = this.tool.getNextStates(this.actions[i], curState);
                 int sz = nextStates.size();
                 this.incNumOfGenStates(sz);
@@ -398,6 +421,12 @@ public class ModelChecker extends AbstractChecker
                             int len = this.invariants.length;
                             for (k = 0; k < len; k++)
                             {
+                                // SZ Feb 23, 2009: cancel the calculation
+                                if (this.cancellationFlag) 
+                                {
+                                    return false;
+                                }
+
                                 if (!tool.isValid(this.invariants[k], succState))
                                 {
                                     // We get here because of invariant violation:
@@ -448,6 +477,12 @@ public class ModelChecker extends AbstractChecker
                         int len = this.impliedActions.length;
                         for (k = 0; k < len; k++)
                         {
+                            // SZ Feb 23, 2009: cancel the calculation
+                            if (this.cancellationFlag) 
+                            {
+                                return false;
+                            }
+
                             if (!tool.isValid(this.impliedActions[k], curState, succState))
                             {
                                 // We get here because of implied-action violation:
@@ -637,7 +672,7 @@ public class ModelChecker extends AbstractChecker
             LiveCheck.close();
         if (this.allStateWriter != null)
             this.allStateWriter.close();
-        FileUtil.deleteDir(new File(this.metadir), success);
+        FileUtil.deleteDir(this.metadir, success, this.tool.getResolver());
     }
 
     public final void printSummary(boolean success) throws IOException
@@ -675,6 +710,9 @@ public class ModelChecker extends AbstractChecker
         return workers[i].getLocalValue(idx);
     }
 
+    /**
+     * Spawn the worker threads
+     */
     protected IdThread[] createAndStartWorkers(AbstractChecker checker, int checkIndex)
     {
         for (int i = 0; i < this.workers.length; i++)
@@ -690,6 +728,7 @@ public class ModelChecker extends AbstractChecker
      */
     protected void runTLCPreLoop()
     {
+        // nothing to do in this implementation
     }
 
     /**
