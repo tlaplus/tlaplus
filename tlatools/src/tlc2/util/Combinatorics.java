@@ -3,7 +3,6 @@
 package tlc2.util;
 
 import java.math.BigInteger;
-import java.util.Date;
 import java.util.Random;
 
 import util.Assert;
@@ -156,7 +155,8 @@ public class Combinatorics {
   public static void main(String argv[]) {
     int i,j;
     BigInteger b;
-    Date d1,d2;
+    // Date d1,d2;
+    // SZ Feb 24, 2009: not used
     BigInteger [] A = new BigInteger[16];
     BigInteger [] B = new BigInteger[16];
     BigInteger [] C;
