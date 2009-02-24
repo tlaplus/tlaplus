@@ -140,7 +140,7 @@ public final class InternTable implements Serializable {
   }
 
   final private String chkptName(String filename, String ext) {
-    return filename + File.separator + "vars." + ext;
+    return filename + FileUtil.separator + "vars." + ext;
   }
 
 }
