@@ -1,12 +1,10 @@
 package tlc2.util;
 
-import java.io.BufferedOutputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 
 import tlc2.tool.TLCState;
-import util.FilenameToStream;
+import util.FileUtil;
 
 /**
  * State writer 
@@ -18,10 +16,10 @@ public class StateWriter
     private PrintWriter writer;
     private int stateNum;
 
-    public StateWriter(String fname, FilenameToStream resolver) throws IOException
+    public StateWriter(String fname) throws IOException
     {
-        FileOutputStream fos = new FileOutputStream(fname);
-        this.writer = new PrintWriter(new BufferedOutputStream(fos));
+        // SZ Feb 24, 2009: stream creation moved
+        this.writer = new PrintWriter(FileUtil.newBFOS(fname));
         this.stateNum = 1;
     }
 
