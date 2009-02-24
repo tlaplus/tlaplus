@@ -24,8 +24,8 @@ import tlc2.value.Value;
 import tlc2.value.ValueConstants;
 import tlc2.value.ValueVec;
 import util.Assert;
-import util.NameToFileIStream;
-import util.StringToNamedInputStream;
+import util.SimpleFilenameToStream;
+import util.FilenameToStream;
 import util.ToolIO;
 
 public class ModelConfig implements ValueConstants, Serializable {
@@ -54,7 +54,7 @@ public class ModelConfig implements ValueConstants, Serializable {
   private Hashtable modConstants;
   private Hashtable modOverrides;
   private String configFileName;
-  private StringToNamedInputStream resolver; // resolver for the file
+  private FilenameToStream resolver; // resolver for the file
 
   /**
    * Creates a new model config handle
@@ -63,14 +63,14 @@ public class ModelConfig implements ValueConstants, Serializable {
    * is the standard one should be used
    */
   // SZ Feb 20, 2009: added name resolver support, to be able to run from a toolbox
-  public ModelConfig(String configFileName, StringToNamedInputStream resolver) 
+  public ModelConfig(String configFileName, FilenameToStream resolver) 
   {
     if (resolver != null) 
     {
         this.resolver = resolver;
     } else {
         // standard resolver
-        this.resolver = new NameToFileIStream();
+        this.resolver = new SimpleFilenameToStream();
     }
     
     this.configFileName = configFileName;
@@ -182,7 +182,7 @@ public class ModelConfig implements ValueConstants, Serializable {
     Vect props = (Vect)this.configTbl.get(Prop);
     try {
 
-      FileInputStream fis = resolver.toIStream(this.configFileName, false);  
+      FileInputStream fis = resolver.toNIStream(this.configFileName, false);  
       
       SimpleCharStream scs = new SimpleCharStream(fis, 1, 1);
       TLAplusParserTokenManager tmgr = new TLAplusParserTokenManager(scs, 2);
