@@ -9,6 +9,7 @@ import java.io.File;
 
 import tla2sany.modanalyzer.SpecObj;
 import tlc2.tool.AbstractChecker;
+import tlc2.tool.Cancelable;
 import tlc2.tool.DFIDModelChecker;
 import tlc2.tool.ModelChecker;
 import tlc2.tool.Simulator;
@@ -17,8 +18,8 @@ import tlc2.util.RandomGenerator;
 import tlc2.value.Value;
 import util.Assert;
 import util.FP64;
-import util.NameToFileIStream;
-import util.StringToNamedInputStream;
+import util.SimpleFilenameToStream;
+import util.FilenameToStream;
 import util.ToolIO;
 import util.UniqueString;
 
@@ -49,14 +50,18 @@ public class TLC
 
     private int fpIndex;
     private int traceDepth;
-    private StringToNamedInputStream resolver;
+    private FilenameToStream resolver;
     private SpecObj specObj;
+    
+    // handle to the cancellable instance (MC or Simulator)
+    private Cancelable instance;
 
     /**
      * Initialization
      */
     public TLC()
     {
+        
         isSimulate = false; // Default to model checking
         cleanup = false;
         deadlock = true;
@@ -73,6 +78,9 @@ public class TLC
 
         fpIndex = 0;
         traceDepth = 100;
+        
+        // instance is not set
+        instance = null;
     }
 
     /*
@@ -125,12 +133,12 @@ public class TLC
         TLC tlc = new TLC();
 
         // handle parameters
-        tlc.handleParameters(args);
-
-        tlc.setResolver(new NameToFileIStream());
-        // call the actual processing method
-        tlc.process();
-
+        if (tlc.handleParameters(args))
+        {
+            tlc.setResolver(new SimpleFilenameToStream());
+            // call the actual processing method
+            tlc.process();
+        }
         // terminate
         System.exit(0);
     }
@@ -138,8 +146,10 @@ public class TLC
     /**
      * This method handles parameter arguments and prepares the actual call
      * <strong>Note:</strong> This method set ups the static TLCGlobals variables
+     * @return status of parsing: true iff parameter check was ok, false otherwise
      */
-    public void handleParameters(String[] args)
+    // SZ Feb 23, 2009: added return status to indicate the error in parsing
+    public boolean handleParameters(String[] args)
     {
         // SZ Feb 20, 2009: extracted this method to separate the 
         // parameter handling from the actual processing
@@ -169,7 +179,7 @@ public class TLC
                 } else
                 {
                     printErrorMsg("Error: expect a file name for -config option.");
-                    return;
+                    return false;
                 }
             } else if (args[index].equals("-difftrace"))
             {
@@ -206,7 +216,7 @@ public class TLC
                 } else
                 {
                     printErrorMsg("Error: A file name for dumping states required.");
-                    return;
+                    return false;
                 }
             } else if (args[index].equals("-depth"))
             {
@@ -220,12 +230,12 @@ public class TLC
                     } catch (Exception e)
                     {
                         printErrorMsg("Error: An integer for trace length required. But encountered " + args[index]);
-                        return;
+                        return false;
                     }
                 } else
                 {
                     printErrorMsg("Error: trace length required.");
-                    return;
+                    return false;
                 }
             } else if (args[index].equals("-seed"))
             {
@@ -240,12 +250,12 @@ public class TLC
                     } catch (Exception e)
                     {
                         printErrorMsg("Error: An integer for seed required. But encountered " + args[index]);
-                        return;
+                        return false;
                     }
                 } else
                 {
                     printErrorMsg("Error: seed required.");
-                    return;
+                    return false;
                 }
             } else if (args[index].equals("-aril"))
             {
@@ -259,12 +269,12 @@ public class TLC
                     } catch (Exception e)
                     {
                         printErrorMsg("Error: An integer for aril required. But encountered " + args[index]);
-                        return;
+                        return false;
                     }
                 } else
                 {
                     printErrorMsg("Error: aril required.");
-                    return;
+                    return false;
                 }
             } else if (args[index].equals("-recover"))
             {
@@ -275,7 +285,7 @@ public class TLC
                 } else
                 {
                     printErrorMsg("Error: need to specify the metadata directory for recovery.");
-                    return;
+                    return false;
                 }
             } else if (args[index].equals("-metadir"))
             {
@@ -286,7 +296,7 @@ public class TLC
                 } else
                 {
                     printErrorMsg("Error: need to specify the metadata directory.");
-                    return;
+                    return false;
                 }
             } else if (args[index].equals("-workers"))
             {
@@ -299,19 +309,19 @@ public class TLC
                         if (num < 1)
                         {
                             printErrorMsg("Error: at least one worker required.");
-                            return;
+                            return false;
                         }
                         TLCGlobals.setNumWorkers(num);
                         index++;
                     } catch (Exception e)
                     {
                         printErrorMsg("Error: worker number required. But encountered " + args[index]);
-                        return;
+                        return false;
                     }
                 } else
                 {
                     printErrorMsg("Error: expect an integer for -workers option.");
-                    return;
+                    return false;
                 }
             } else if (args[index].equals("-dfid"))
             {
@@ -324,19 +334,19 @@ public class TLC
                         if (TLCGlobals.DFIDMax < 0)
                         {
                             printErrorMsg("Error: expect a nonnegative integer for -dfid option.");
-                            return;
+                            return false;
                         }
                         index++;
                     } catch (Exception e)
                     {
                         printErrorMsg("Errorexpect a nonnegative integer for -dfid option. " + "But encountered "
                                 + args[index]);
-                        return;
+                        return false;
                     }
                 } else
                 {
                     printErrorMsg("Error: expect a nonnegative integer for -dfid option.");
-                    return;
+                    return false;
                 }
             } else if (args[index].equals("-terse"))
             {
@@ -349,23 +359,24 @@ public class TLC
                 {
                     try
                     {
-                        TLCGlobals.coverageInterval = Integer.parseInt(args[index]) * 60000;
+                        TLCGlobals.coverageInterval = (int) (Float.parseFloat(args[index]) * 60000);
                         if (TLCGlobals.coverageInterval < 0)
                         {
                             printErrorMsg("Error: expect a nonnegative integer for -coverage option.");
-                            return;
+                            return false;
                         }
                         index++;
-                    } catch (Exception e)
+                    } catch (NumberFormatException e)
                     {
+                        
                         printErrorMsg("Error: An integer for coverage report interval required." + " But encountered "
                                 + args[index]);
-                        return;
+                        return false;
                     }
                 } else
                 {
                     printErrorMsg("Error: coverage report interval required.");
-                    return;
+                    return false;
                 }
             } else if (args[index].equals("-continue"))
             {
@@ -383,18 +394,18 @@ public class TLC
                         {
                             printErrorMsg("Error: The number for -fp must be between 0 and " + (FP64.Polys.length - 1)
                                     + " (inclusive).");
-                            return;
+                            return false;
                         }
                         index++;
                     } catch (Exception e)
                     {
                         printErrorMsg("Error: A number for -fp is required. But encountered " + args[index]);
-                        return;
+                        return false;
                     }
                 } else
                 {
                     printErrorMsg("Error: expect an integer for -workers option.");
-                    return;
+                    return false;
                 }
             } else if (args[index].equals("-view"))
             {
@@ -405,12 +416,12 @@ public class TLC
                 if (args[index].charAt(0) == '-')
                 {
                     printErrorMsg("Error: unrecognized option: " + args[index]);
-                    return;
+                    return false;
                 }
                 if (mainFile != null)
                 {
                     printErrorMsg("Error: more than one input files: " + mainFile + " and " + args[index]);
-                    return;
+                    return false;
                 }
                 mainFile = args[index++];
                 int len = mainFile.length();
@@ -423,12 +434,13 @@ public class TLC
         if (mainFile == null)
         {
             printErrorMsg("Error: Missing input TLA+ module.");
-            return;
+            return false;
         }
         if (configFile == null)
         {
             configFile = mainFile;
         }
+        return true;
     }
     
     /**
@@ -450,7 +462,7 @@ public class TLC
             if (cleanup && fromChkpt == null)
             {
                 // clean up the states directory only when not recovering
-                FileUtil.deleteDir(new File(TLCGlobals.metaRoot), true);
+                FileUtil.deleteDir(TLCGlobals.metaRoot, true, resolver);
             }
             FP64.Init(fpIndex);
 
@@ -470,6 +482,7 @@ public class TLC
                 ToolIO.out.println("Running Random Simulation with seed " + seed + ".");
                 Simulator simulator = new Simulator(mainFile, configFile, null, deadlock, traceDepth, 
                         Long.MAX_VALUE, rng, seed, true, resolver, specObj);
+                instance = simulator;
                 simulator.simulate();
             } else
             {
@@ -486,6 +499,7 @@ public class TLC
                     mc = new DFIDModelChecker(mainFile, configFile, dumpFile, deadlock, fromChkpt, true, resolver, specObj);
                 }
                 
+                instance = mc;
                 mc.modelCheck();
             }
         } catch (Throwable e)
@@ -508,15 +522,18 @@ public class TLC
             {
                 ToolIO.err.println("Error: " + e.getMessage());
             }
+        } finally 
+        {
+            
         }
     }
 
     /**
      * Sets resolver for the file names
      * @param resolver a resolver for the names, if <code>null</code> is used, 
-     * the standard resolver {@link NameToFileIStream} is used
+     * the standard resolver {@link SimpleFilenameToStream} is used
      */
-    public void setResolver(StringToNamedInputStream resolver)
+    public void setResolver(FilenameToStream resolver)
     {
         this.resolver = resolver;
     }
@@ -530,6 +547,18 @@ public class TLC
         this.specObj = specObj;
     }
 
+    /**
+     * Delegate cancellation request to the instance
+     * @param flag
+     */
+    public void setCanceledFlag(boolean flag)
+    {
+        if (this.instance != null) 
+        {
+            this.instance.setCancelFlag(flag);
+            System.out.println("Cancel flag set to " + flag);
+        }
+    }
     
     /**
      * Print out an error message, with usage hint
@@ -540,5 +569,4 @@ public class TLC
         ToolIO.err.println(msg);
         ToolIO.err.println("Usage: java tlc2.TLC [-option] inputfile");
     }
-
 }
