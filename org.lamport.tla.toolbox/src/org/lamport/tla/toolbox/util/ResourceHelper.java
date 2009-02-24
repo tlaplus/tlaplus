@@ -171,6 +171,18 @@ public class ResourceHelper
     }
 
     /**
+     * See {@link ResourceHelper#getParentDir(String)}
+     */
+    public static String getParentDir(IResource resource)
+    {
+        if (resource == null) 
+        {
+            return null;
+        } 
+        return getParentDir(resource.getLocation().toOSString());
+    }
+    
+    /**
      * Retrieves the name of the module (filename without extension)
      * 
      * @param moduleFilename
@@ -182,6 +194,18 @@ public class ResourceHelper
         return getModuleNameChecked(moduleFilename, true);
     }
 
+    /**
+     * See {@link ResourceHelper#getModuleName(String)}
+     */
+    public static String getModuleName(IResource resource)
+    {
+        if (resource == null) 
+        {
+            return null;
+        } 
+        return getModuleName(resource.getLocation().toOSString());
+    }
+    
     /**
      * Retrieves the name of the module (filename without extension)
      * 
