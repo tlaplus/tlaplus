@@ -46,7 +46,7 @@ public class ModuleParserLauncher
      * (non-Javadoc)
      * @see org.lamport.tla.toolbox.spec.parser.IParserLauncher#parseSpecification(toolbox.spec.Spec)
      */
-    public int parseModule(IResource parseResource, IProgressMonitor monitor)
+    public ParseResult parseModule(IResource parseResource, IProgressMonitor monitor)
     {
 
         IProject project = parseResource.getProject();
@@ -58,18 +58,18 @@ public class ModuleParserLauncher
         TLAMarkerHelper.removeProblemMarkers(project, monitor);
 
         // call the parsing
-        int status = this.parseMainModule(parseResource, true);
+        ParseResult result = this.parseMainModule(parseResource, true);
         
-        if (AdapterFactory.isProblemStatus(status))
+        if (AdapterFactory.isProblemStatus(result.getStatus()))
         {
             Activator.getModuleDependencyStorage().parseFailed(parseResource.getName());
         }
         
 
         // store errors inside the specification project
-        this.processParsingErrors(project, status, monitor);
+        this.processParsingErrors(project, result.getStatus(), monitor);
 
-        return status;
+        return result;
     }
 
     /**
@@ -84,7 +84,7 @@ public class ModuleParserLauncher
      *            filename of the module to parse
      * @return status of parsing, one of the {@link IParseConstants} constants
      */
-    private int parseMainModule(IResource parseResource, boolean doSemanticAnalysis)
+    private ParseResult parseMainModule(IResource parseResource, boolean doSemanticAnalysis)
     {
         String rootFilename = parseResource.getLocation().toOSString();
 
@@ -117,7 +117,7 @@ public class ModuleParserLauncher
         {
             // set spec status
             specStatus = IParseConstants.UNKNOWN_ERROR;
-            return specStatus;
+            return new ParseResult(specStatus, null);
             
         } catch (ParseException e)
         {
@@ -232,7 +232,7 @@ public class ModuleParserLauncher
         Activator.getModuleDependencyStorage().put(parseResource.getName(), AdapterFactory.adaptModules(parseResource.getName(), userModules));
         
 
-        return specStatus;
+        return new ParseResult(specStatus, moduleSpec);
     }
 
     /**

@@ -3,6 +3,7 @@ package org.lamport.tla.toolbox.spec.parser;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.lamport.tla.toolbox.spec.Spec;
+import org.lamport.tla.toolbox.util.AdapterFactory;
 
 /**
  * A specification parser parses the root file of the specification
@@ -30,12 +31,17 @@ public class SpecificationParserLauncher
         IResource parseResource = spec.getRootFile();
 
         // call module parse on the root file
-        int status = moduleParser.parseModule(parseResource, monitor);
+        ParseResult result = moduleParser.parseModule(parseResource, monitor);
 
         // set the status back into the spec
-        spec.setStatus(status);
+        spec.setStatus(result.getStatus());
         
-        return status;
+        if (!AdapterFactory.isProblemStatus(result.getStatus())) 
+        {
+            spec.setSpecObj(result.getSpecObj());
+        }
+        
+        return result.getStatus();
     }
 
 }
