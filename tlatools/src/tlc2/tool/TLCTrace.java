@@ -6,14 +6,14 @@
 
 package tlc2.tool;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
 
 import tlc2.TLCGlobals;
 import tlc2.util.BufferedRandomAccessFile;
 import tlc2.util.LongVec;
-import util.BufferedDataInputStream;
-import util.BufferedDataOutputStream;
 import util.FileUtil;
 import util.ToolIO;
 
@@ -230,8 +230,7 @@ public class TLCTrace {
   public synchronized final void beginChkpt() throws IOException {
     this.raf.flush();
     // SZ Feb 24, 2009: FileUtil introduced
-    // changed to buffered stream
-    BufferedDataOutputStream dos = FileUtil.newBdFOS(false, filename + ".tmp");
+    DataOutputStream dos = FileUtil.newDFOS(filename + ".tmp");
     dos.writeLong(this.raf.getFilePointer());
     dos.writeLong(this.lastPtr);
     dos.close();
@@ -248,8 +247,7 @@ public class TLCTrace {
 
   public final void recover() throws IOException {
     // SZ Feb 24, 2009: FileUtil introduced
-    // changed to buffered stream
-    BufferedDataInputStream dis = FileUtil.newBdFIS(false, filename + ".chkpt");
+    DataInputStream dis = FileUtil.newDFIS(filename + ".chkpt");
     long filePos = dis.readLong();
     this.lastPtr = dis.readLong();
     dis.close();
@@ -260,8 +258,7 @@ public class TLCTrace {
 
   public static long getRecoverPtr() throws IOException {
       // SZ Feb 24, 2009: FileUtil introduced
-      // changed to buffered stream
-    BufferedDataInputStream dis = FileUtil.newBdFIS(false, filename + ".chkpt");
+    DataInputStream dis = FileUtil.newDFIS(filename + ".chkpt");
     long res = dis.readLong();
     dis.close();
     return res;
