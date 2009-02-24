@@ -18,6 +18,7 @@ import tla2sany.semantic.OpDefNode;
 import tlc2.TLCGlobals;
 import util.Assert;
 import util.FP64;
+import util.FileUtil;
 import util.ToolIO;
 import util.UniqueString;
 
@@ -179,7 +180,7 @@ public class CheckImplFile extends CheckImpl {
       else if (args[index].equals("-recover")) {
 	index++;
         if (index < args.length) {
-          fromChkpt = args[index++] + File.separator;
+          fromChkpt = args[index++] + FileUtil.separator;
         }
         else {
 	  printErrorMsg("Error: need to specify the metadata directory for recovery.");
