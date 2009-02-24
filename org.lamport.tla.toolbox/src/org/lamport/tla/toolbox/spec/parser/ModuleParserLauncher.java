@@ -27,6 +27,7 @@ import tla2sany.modanalyzer.SpecObj;
 import tla2sany.parser.ParseException;
 import tla2sany.semantic.Errors;
 import tla2sany.semantic.ExternalModuleTable;
+import util.FilenameToStream;
 import util.ToolIO;
 import util.UniqueString;
 
@@ -94,12 +95,16 @@ public class ModuleParserLauncher
         // one of the Spec constants
         int specStatus = 0;
 
-        // Initialize the module variables
-        SpecObj moduleSpec = new SpecObj(ResourceHelper.getModuleName(rootFilename), new RCPNameToFileIStream(null));
-
+        
+        FilenameToStream resolver = new RCPNameToFileIStream(null);
+        
         // Reset the tool output messages.
         ToolIO.reset();
+        ToolIO.setDefaultResolver(resolver);
         ToolIO.setMode(ToolIO.TOOL);
+
+        // Initialize the module variables
+        SpecObj moduleSpec = new SpecObj(ResourceHelper.getModuleName(rootFilename), resolver);
 
         // The parsing methods take a PrintStream on which they print out some (but hardly all) error messages.
         // They're called with this one.

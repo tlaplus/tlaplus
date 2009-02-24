@@ -1,7 +1,6 @@
 package org.lamport.tla.toolbox.util;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Enumeration;
@@ -10,8 +9,7 @@ import java.util.Vector;
 import org.eclipse.core.runtime.FileLocator;
 import org.lamport.tla.toolbox.Activator;
 
-import util.NamedInputStream;
-import util.StringToNamedInputStream;
+import util.FilenameToStream;
 import util.ToolIO;
 
 /**
@@ -19,7 +17,7 @@ import util.ToolIO;
  * 
  * @author zambrovski
  */
-public class RCPNameToFileIStream implements StringToNamedInputStream
+public class RCPNameToFileIStream implements FilenameToStream
 {
 
     // TODO move to generic contsant interface
@@ -79,25 +77,13 @@ public class RCPNameToFileIStream implements StringToNamedInputStream
     }
 
     /**
-     * Tries to find the specified module. It starts in work directory and then looks up in to the library paths for
-     * modules.
+     * Tries to find the specified module. 
+     * Starts in work directory and then looks up in to the library paths for modules.
      * 
-     * @see tla2sany.modanalyzer.StringToNamedInputStream#toIStream(java.lang.String)
+     * @see {@link util.FilenameResolver#resolve(java.lang.String, boolean)}
      */
-    public NamedInputStream toIStream(String name) 
+    public File resolve(String name, boolean isModule)
     {
-        return toIStream(name, true);
-    }
-    
-    /**
-     * Tries to find a specific file
-     * @param name
-     * @param isModule
-     * @return
-     */
-    public NamedInputStream toIStream(String name, boolean isModule)
-    {
-
         if (isModule && name.endsWith(".tla"))
         {
             // user/Foo.tla => user/Foo
@@ -114,21 +100,8 @@ public class RCPNameToFileIStream implements StringToNamedInputStream
             sourceFileName = name;
         }
         
-        String sourceModuleName = name.substring(name.lastIndexOf(File.separator) + 1); // Foo.tla
         File sourceFile = locate(sourceFileName);
-        if (sourceFile != null && sourceFile.exists())
-        {
-            try
-            {
-                NamedInputStream nis = new NamedInputStream(sourceFileName, sourceModuleName, sourceFile);
-                return nis;
-            } catch (FileNotFoundException e)
-            {
-                // TODO improve this
-                ToolIO.out.println("***Internal error: Unable to create NamedInputStream" + " in toIStream method");
-            }
-        }
-        return null;
+        return sourceFile;
     }
 
     /**
@@ -164,5 +137,6 @@ public class RCPNameToFileIStream implements StringToNamedInputStream
         return sourceFile;
 
     }
+
 
 }
