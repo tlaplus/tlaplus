@@ -5,8 +5,6 @@
 
 package tlc2;
 
-import java.io.File;
-
 import tla2sany.modanalyzer.SpecObj;
 import tlc2.tool.AbstractChecker;
 import tlc2.tool.Cancelable;
@@ -18,8 +16,8 @@ import tlc2.value.Value;
 import util.Assert;
 import util.FP64;
 import util.FileUtil;
-import util.SimpleFilenameToStream;
 import util.FilenameToStream;
+import util.SimpleFilenameToStream;
 import util.ToolIO;
 import util.UniqueString;
 
@@ -281,7 +279,7 @@ public class TLC
                 index++;
                 if (index < args.length)
                 {
-                    fromChkpt = args[index++] + File.separator;
+                    fromChkpt = args[index++] + FileUtil.separator;
                 } else
                 {
                     printErrorMsg("Error: need to specify the metadata directory for recovery.");
@@ -292,7 +290,7 @@ public class TLC
                 index++;
                 if (index < args.length)
                 {
-                    TLCGlobals.metaDir = args[index++] + File.separator;
+                    TLCGlobals.metaDir = args[index++] + FileUtil.separator;
                 } else
                 {
                     printErrorMsg("Error: need to specify the metadata directory.");
@@ -462,7 +460,7 @@ public class TLC
             if (cleanup && fromChkpt == null)
             {
                 // clean up the states directory only when not recovering
-                FileUtil.deleteDir(TLCGlobals.metaRoot, true, resolver);
+                FileUtil.deleteDir(TLCGlobals.metaRoot, true);
             }
             FP64.Init(fpIndex);
 
@@ -536,6 +534,7 @@ public class TLC
     public void setResolver(FilenameToStream resolver)
     {
         this.resolver = resolver;
+        ToolIO.setDefaultResolver(resolver);
     }
 
     /**
