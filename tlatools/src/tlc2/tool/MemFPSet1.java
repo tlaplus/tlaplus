@@ -5,12 +5,10 @@
 
 package tlc2.tool;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -75,11 +73,9 @@ public final class MemFPSet1 extends FPSet {
 
   /* Checkpoint. */
   public final void beginChkpt(String fname) throws IOException {
-    FileOutputStream fos = new FileOutputStream(this.chkptName(fname, "tmp"));
-    DataOutputStream dos = new DataOutputStream(new BufferedOutputStream(fos));
+    DataOutputStream dos = FileUtil.newDFOS(this.chkptName(fname, "tmp"));
     this.set.beginChkpt(dos);
     dos.close();
-    fos.close();
   }
   
   public final void commitChkpt(String fname) throws IOException {
@@ -92,11 +88,11 @@ public final class MemFPSet1 extends FPSet {
   } 
 
   public final void recover(String fname) throws IOException {
-    FileInputStream fis = new FileInputStream(this.chkptName(fname, "chkpt"));
-    DataInputStream dis = new DataInputStream(new BufferedInputStream(fis));
+    
+    DataInputStream dis = FileUtil.newDFIS(this.chkptName(fname, "chkpt"));
     this.set.recover(dis);
     dis.close();
-    fis.close();
+    
   }
 
   public final void beginChkpt() throws IOException {
@@ -120,7 +116,7 @@ public final class MemFPSet1 extends FPSet {
   public final void completeRecovery() throws IOException { /*SKIP*/ }
 
   private final String chkptName(String fname, String ext) {
-    return this.metadir + File.separator + fname + ".fp." + ext;
+    return this.metadir + FileUtil.separator + fname + ".fp." + ext;
   }
   
 }

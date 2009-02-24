@@ -298,7 +298,7 @@ public class MemFPSet extends FPSet {
   public final void completeRecovery() throws IOException { /*SKIP*/ }
     
   final private String chkptName(String fname, String ext) {
-    return this.metadir + File.separator + fname + ".fp." + ext;
+    return this.metadir + FileUtil.separator + fname + ".fp." + ext;
   }
 
 }

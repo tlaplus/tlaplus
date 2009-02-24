@@ -356,7 +356,7 @@ public class MemFPIntSet extends FPIntSet {
   }
     
   final private String chkptName(String fname, String ext) {
-    return this.metadir + File.separator + fname + ".fp." + ext;
+    return this.metadir + FileUtil.separator + fname + ".fp." + ext;
   }
 
 }
