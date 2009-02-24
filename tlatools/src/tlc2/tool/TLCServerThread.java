@@ -13,6 +13,11 @@ import tlc2.util.IdThread;
 import tlc2.util.LongVec;
 import util.ToolIO;
 
+/**
+ * 
+ * @deprecated not used currently
+ * @version $Id$
+ */
 public class TLCServerThread extends IdThread {
   /**
    * TLC server threads manage the set of existing TLC workers.

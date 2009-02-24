@@ -2,7 +2,11 @@
 // Contents subject to change without notice.
 
 package tlc2.tool;
-
+/**
+ * 
+ * @deprecated Not used currently
+ * @version $Id$
+ */
 public final class TLCServer_Skel
     implements java.rmi.server.Skeleton
 {

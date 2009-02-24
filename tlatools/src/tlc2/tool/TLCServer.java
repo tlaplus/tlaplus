@@ -20,6 +20,11 @@ import util.InternRMI;
 import util.ToolIO;
 import util.UniqueString;
 
+/**
+ * 
+ * @version $Id$
+ * @deprecated RMI related code, not used
+ */
 public class TLCServer extends UnicastRemoteObject
 implements TLCServerRMI, InternRMI {
   public FPSetManager fpSetManager;
@@ -45,8 +50,8 @@ implements TLCServerRMI, InternRMI {
     this.threads = new TLCServerThread[10];
     this.metadir = work.getMetadir();
     int end = this.metadir.length();
-    if (this.metadir.endsWith(File.separator)) end--;
-    int start = this.metadir.lastIndexOf(File.separator, end-1);
+    if (this.metadir.endsWith(FileUtil.separator)) end--;
+    int start = this.metadir.lastIndexOf(FileUtil.separator, end-1);
     this.filename = this.metadir.substring(start+1, end);
     this.work = work;
     this.stateQueue = new DiskStateQueue(this.metadir);
