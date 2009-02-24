@@ -5,15 +5,15 @@
 
 package tlc2.tool;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.Hashtable;
 
 import tlc2.util.Vect;
 import util.Assert;
+import util.FileUtil;
 import util.ToolIO;
 
 public class TLCConfig {
@@ -25,8 +25,12 @@ public class TLCConfig {
     ConfigTbl = new Hashtable();
     File cfgFile = new File("TLC2.cfg");
     if (!cfgFile.exists()) return;
-    Reader rd = new BufferedReader(new FileReader(cfgFile));
-
+    // SZ Feb 24, 2009: switched to stream method
+    Reader rd = new InputStreamReader(FileUtil.newFIS(cfgFile));
+    if (rd == null) 
+    {
+        return;
+    }
     nextChar = rd.read();
     String nt = nextToken(rd);
     while (true) {
