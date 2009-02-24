@@ -15,6 +15,7 @@ import tlc2.util.BitVector;
 import tlc2.util.BufferedRandomAccessFile;
 import tlc2.util.LongVec;
 import tlc2.util.MemIntQueue;
+import util.FileUtil;
 import util.ToolIO;
 
 public class DiskGraph {
@@ -54,10 +55,10 @@ public class DiskGraph {
   public DiskGraph(String metadir, int soln, boolean hasTableau)
   throws IOException {
     this.metadir = metadir;
-    this.chkptName = metadir + File.separator + "dgraph_" + soln;
-    String fnameForNodes = metadir + File.separator + "nodes_" + soln;
+    this.chkptName = metadir + FileUtil.separator + "dgraph_" + soln;
+    String fnameForNodes = metadir + FileUtil.separator + "nodes_" + soln;
     this.nodeRAF = new BufferedRandomAccessFile(fnameForNodes, "rw");
-    String fnameForPtrs = metadir + File.separator + "ptrs_" + soln;
+    String fnameForPtrs = metadir + FileUtil.separator + "ptrs_" + soln;
     this.nodePtrRAF = new BufferedRandomAccessFile(fnameForPtrs, "rw");
     this.nodePtrTbl = new NodePtrTable(255, hasTableau);
     this.initNodes = new LongVec(1);

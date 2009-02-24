@@ -12,6 +12,7 @@ import tlc2.util.IdThread;
 import tlc2.util.ObjLongTable;
 import tlc2.util.StateWriter;
 import util.Assert;
+import util.FileUtil;
 import util.FilenameToStream;
 import util.ToolIO;
 
@@ -60,11 +61,12 @@ public abstract class AbstractChecker implements Cancelable
         
         this.checkDeadlock = deadlock;
 
-        int lastSep = specFile.lastIndexOf(File.separatorChar);
+        int lastSep = specFile.lastIndexOf(FileUtil.separatorChar);
         String specDir = (lastSep == -1) ? "" : specFile.substring(0, lastSep + 1);
         specFile = specFile.substring(lastSep + 1);
 
         this.tool = new Tool(specDir, specFile, configFile, resolver);
+        
         this.tool.init(preprocess, spec);
         this.checkLiveness = !this.tool.livenessIsTrue();
 
@@ -81,7 +83,7 @@ public abstract class AbstractChecker implements Cancelable
         // Initialize dumpFile:
         if (dumpFile != null)
         {
-            this.allStateWriter = new StateWriter(dumpFile, resolver);
+            this.allStateWriter = new StateWriter(dumpFile);
         }
         this.lastChkpt = System.currentTimeMillis();
 
@@ -159,7 +161,7 @@ public abstract class AbstractChecker implements Cancelable
         if (metadir == null)
         {
             // If not given, use the directory specDir/metaRoot:
-            metadir = specDir + TLCGlobals.metaRoot + File.separator;
+            metadir = specDir + TLCGlobals.metaRoot + FileUtil.separator;
         }
 
         SimpleDateFormat sdf = new SimpleDateFormat("yy-MM-dd-HH-mm-ss");

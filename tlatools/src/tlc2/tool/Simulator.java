@@ -100,6 +100,10 @@ public class Simulator implements Cancelable{
     StateVec theInitStates = null;
     TLCState curState = null;
 
+    if (isCancelled) 
+    {
+        return;
+    }
     // Compute the initial states:
     try {
       theInitStates = this.tool.getInitStates();

@@ -4,7 +4,6 @@ package tlc2.tool;
 
 import java.io.EOFException;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -116,7 +115,7 @@ public class DiskFPSet extends FPSet {
     throws IOException {
         this.metadir = metadir;
         // set the filename
-        this.filename = metadir + File.separator + filename;
+        this.filename = metadir + FileUtil.separator + filename;
         // allocate array of BufferedRAF objects (+1 for main thread)
         this.braf = new BufferedRandomAccessFile[numThreads];
 	this.brafPool = new BufferedRandomAccessFile[5];
@@ -778,6 +777,9 @@ public class DiskFPSet extends FPSet {
       this.completeRecovery();
     }
 
+    /**
+     * @deprecated not used
+     */
     private final void mergeBuff(long[] buff, int len, File fpFile)
     throws IOException {
       File tmpFile = new File(this.filename + ".tmp");
@@ -822,7 +824,7 @@ public class DiskFPSet extends FPSet {
 
     private String getChkptName(String fname, String name) 
     {
-      return this.metadir + File.separator + fname + ".fp." + name;
+      return this.metadir + FileUtil.separator + fname + ".fp." + name;
     }
 
     private String getFPFilename() {

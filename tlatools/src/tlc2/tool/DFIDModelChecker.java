@@ -608,7 +608,7 @@ public class DFIDModelChecker extends AbstractChecker {
     if (this.allStateWriter != null) this.allStateWriter.close();
     // SZ Feb 23, 2009:
     // FileUtil.deleteDir(new File(this.metadir), success);
-    FileUtil.deleteDir(this.metadir, success, tool.getResolver());
+    FileUtil.deleteDir(this.metadir, success);
   }
   
   public final void printSummary(boolean success) throws IOException {
