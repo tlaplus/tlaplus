@@ -53,7 +53,7 @@ public class ToolIO
     * otherwise does nothing and returns false.                            *
     ***********************************************************************/
 
-  private static FilenameToStream resolver = new SimpleFilenameToStream();
+  private static FilenameToStream defaultResolver = new SimpleFilenameToStream();
   
   
   private static String userDir = null ;
@@ -179,14 +179,26 @@ public class ToolIO
   }
   
   
-  public static FilenameToStream getResolver()
+  /**
+   * Retrieves the default resolver
+   * @return
+   */
+  public static FilenameToStream getDefaultResolver()
   {
-      return resolver;
+      return defaultResolver;
   }
   
-  public static void setResolver(FilenameToStream resolver)
+  /**
+   * Sets default resolver
+   * @param resolver
+   */
+  public static void setDefaultResolver(FilenameToStream resolver)
   {
-      ToolIO.resolver = resolver;
+      if (resolver == null) 
+      {
+          resolver = new SimpleFilenameToStream();
+      } 
+      ToolIO.defaultResolver = resolver;
   }
   
  } // class ToolIO
