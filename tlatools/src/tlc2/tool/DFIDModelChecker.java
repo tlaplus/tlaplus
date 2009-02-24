@@ -2,7 +2,6 @@
 
 package tlc2.tool;
 
-import java.io.File;
 import java.io.IOException;
 
 import tla2sany.modanalyzer.SpecObj;
@@ -14,7 +13,7 @@ import tlc2.util.FileUtil;
 import tlc2.util.IdThread;
 import tlc2.util.LongVec;
 import tlc2.util.ObjLongTable;
-import util.StringToNamedInputStream;
+import util.FilenameToStream;
 import util.ToolIO;
 import util.UniqueString;
 
@@ -40,7 +39,7 @@ public class DFIDModelChecker extends AbstractChecker {
      * @param resolver 
      */
     public DFIDModelChecker(String specFile, String configFile, String dumpFile,
-            boolean deadlock, String fromChkpt, boolean preprocess, StringToNamedInputStream resolver, SpecObj specObj)
+            boolean deadlock, String fromChkpt, boolean preprocess, FilenameToStream resolver, SpecObj specObj)
     throws EvalException, IOException 
     {
         // call the abstract constructor
@@ -69,7 +68,7 @@ public class DFIDModelChecker extends AbstractChecker {
     boolean recovered = this.recover();
     try {
       if (!this.checkAssumptions()) return;
-      if (!this.doInit()) return;
+      if (!this.doInit(false)) return;
     }
     catch (Throwable e) {
       // Initial state computation fails with an exception:
@@ -82,7 +81,7 @@ public class DFIDModelChecker extends AbstractChecker {
       this.tool.setCallStack();
       try {
 	this.numOfGenStates = 0;
-	this.doInit();
+	this.doInit(true);
       }
       catch (Throwable e1) {
 	ToolIO.err.println("The error occurred when TLC was evaluating the nested" +
@@ -210,7 +209,8 @@ public class DFIDModelChecker extends AbstractChecker {
   }
 
   /* Compute the set of initial states.  */
-  public final boolean doInit() throws Throwable {
+  // SZ Feb 23, 2009: added ignore cancel flag
+  public final boolean doInit(boolean ignoreCancel) throws Throwable {
     TLCState curState = null;
     try {
       // Generate the initial states:
@@ -606,7 +606,9 @@ public class DFIDModelChecker extends AbstractChecker {
     this.theFPSet.close();
     if (this.checkLiveness) LiveCheck.close();
     if (this.allStateWriter != null) this.allStateWriter.close();
-    FileUtil.deleteDir(new File(this.metadir), success);
+    // SZ Feb 23, 2009:
+    // FileUtil.deleteDir(new File(this.metadir), success);
+    FileUtil.deleteDir(this.metadir, success, tool.getResolver());
   }
   
   public final void printSummary(boolean success) throws IOException {
