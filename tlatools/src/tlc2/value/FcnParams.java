@@ -27,7 +27,7 @@ public class FcnParams {
   public final int length() { return this.argLen; }
   
   public final int size() {
-    int idx = 0;
+    // int idx = 0; // SZ Feb 24, 2009: never read locally
     long sz = 1;
     for (int i = 0; i < this.domains.length; i++) {
       int sz1 = this.domains[i].size();
