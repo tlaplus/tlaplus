@@ -48,7 +48,7 @@ public class ModuleListContributionItem extends CompoundContributionItem
 
         if (spec != null)
         {
-            IResource[] modules = spec.getModules();
+            IResource[] modules = spec.getModuleResources();
             IResource rootModule = spec.getRootFile();
             boolean isRoot;
             for (int i = 0; i < modules.length; i++)
