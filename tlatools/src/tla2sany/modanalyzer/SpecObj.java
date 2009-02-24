@@ -11,9 +11,8 @@ import tla2sany.semantic.Errors;
 import tla2sany.semantic.ExternalModuleTable;
 import tla2sany.st.TreeNode;
 import tla2sany.utilities.Vector;
-import util.NameToFileIStream;
 import util.NamedInputStream;
-import util.StringToNamedInputStream;
+import util.FilenameToStream;
 import util.ToolIO;
 
 /**
@@ -48,7 +47,7 @@ public class SpecObj
     // in the specification, including all inner modules and all top-level
     // external modules.
 
-    private StringToNamedInputStream ntfis = null;
+    private FilenameToStream ntfis = null;
     /***********************************************************************
     * the object used to translate module names to file names              
     *                                                                      
@@ -101,7 +100,7 @@ public class SpecObj
      * Default constructor of the SpecObj with a given primary filename and the default 
      * NameToFileIStream for its resolution 
      * @param pfn primary filename of the specification
-     * @deprecated please use the {@link SpecObj#SpecObj(String, StringToNamedInputStream)} 
+     * @deprecated please use the {@link SpecObj#SpecObj(String, FilenameToStream)} 
      * with <code>null</code> as a second argument
      */
     public SpecObj(String pfn)
@@ -113,13 +112,13 @@ public class SpecObj
      * Constructs a SpecObj for the given filename using a specified filename resolver
      * @param pfn primary filename of the specification
      * @param ntfis string to named input stream resolver, if <code>null</code>, 
-     * the {@link NameToFileIStream} is used
+     * the default from {@link ToolIO#getResolver()} is used
      */
-    public SpecObj(String pfn, StringToNamedInputStream ntfis)
+    public SpecObj(String pfn, FilenameToStream ntfis)
     {
         if (ntfis == null) 
         {
-            ntfis = new NameToFileIStream(); 
+            ntfis = ToolIO.getResolver(); 
         }
         this.primaryFileName = pfn;
         this.ntfis = ntfis;
@@ -251,7 +250,7 @@ public class SpecObj
 
             // find a file derived from the name and create a
             // NamedInputStream for it if possible
-            NamedInputStream nis = this.ntfis.toIStream(name);
+            NamedInputStream nis = this.ntfis.toNIStream(name);
 
             if (nis != null)
             {

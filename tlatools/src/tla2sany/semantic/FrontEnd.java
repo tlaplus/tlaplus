@@ -11,7 +11,7 @@ package tla2sany.semantic;
 import tla2sany.parser.ParseException;
 import tla2sany.st.TreeNode;
 import util.NamedInputStream;
-import util.StringToNamedInputStream;
+import util.FilenameToStream;
 
 public class FrontEnd implements ASTConstants {
   /**
@@ -68,7 +68,7 @@ public class FrontEnd implements ASTConstants {
    * specification.
    */
   public static TreeNode[] parseAll(NamedInputStream nis, int nkind,
-				    StringToNamedInputStream cobj)
+				    FilenameToStream cobj)
   throws ParseException {
     return null;
   }
