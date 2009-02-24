@@ -16,9 +16,9 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.rmi.RemoteException;
 
-import tlc2.util.FileUtil;
 import tlc2.util.SetOfLong;
 import util.Assert;
+import util.FileUtil;
 import util.ToolIO;
 
 /**

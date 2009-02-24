@@ -14,8 +14,8 @@ import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
 import tlc2.TLCGlobals;
-import tlc2.util.FileUtil;
 import util.FP64;
+import util.FileUtil;
 import util.InternRMI;
 import util.ToolIO;
 import util.UniqueString;

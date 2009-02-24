@@ -12,11 +12,11 @@ import java.net.InetAddress;
 import java.rmi.RemoteException;
 
 import tlc2.util.BufferedRandomAccessFile;
-import tlc2.util.FileUtil;
 import tlc2.util.IdThread;
 import tlc2.util.ReadersWriterLock;
 import tlc2.util.Sort;
 import util.Assert;
+import util.FileUtil;
 import util.ToolIO;
 
 /**
