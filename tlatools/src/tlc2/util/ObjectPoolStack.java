@@ -5,15 +5,12 @@
 
 package tlc2.util;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
+import util.FileUtil;
 import util.ToolIO;
 
 public class ObjectPoolStack {
@@ -91,13 +88,11 @@ public class ObjectPoolStack {
 	    while (ObjectPoolStack.this.poolFile == null) {
 	      this.wait();
 	    }
-	    FileInputStream fis = new FileInputStream(ObjectPoolStack.this.poolFile);
-	    ObjectInputStream ois = new ObjectInputStream(new BufferedInputStream(fis));
+	    ObjectInputStream ois = FileUtil.newOBFIS(ObjectPoolStack.this.poolFile);
 	    for (int i = 0; i < ObjectPoolStack.this.buf.length; i++) {
 	      ObjectPoolStack.this.buf[i] = ois.readObject();
 	    }
 	    ois.close();
-	    fis.close();
 	    ObjectPoolStack.this.poolFile = null;
 	    ObjectPoolStack.this.isIdle = true;
 	    ObjectPoolStack.this.notify();	    
@@ -120,13 +115,11 @@ public class ObjectPoolStack {
 	    while (ObjectPoolStack.this.poolFile == null) {
 	      this.wait();
 	    }
-	    FileOutputStream fos = new FileOutputStream(ObjectPoolStack.this.poolFile);
-	    ObjectOutputStream oos = new ObjectOutputStream(new BufferedOutputStream(fos));
+	    ObjectOutputStream oos = FileUtil.newOBFOS(ObjectPoolStack.this.poolFile);
 	    for (int i = 0; i < ObjectPoolStack.this.buf.length; i++) {
 	      oos.writeObject(ObjectPoolStack.this.buf[i]);
 	    }
 	    oos.close();
-	    fos.close();
 	    ObjectPoolStack.this.poolFile = null;
 	    ObjectPoolStack.this.isIdle = true;
 	    ObjectPoolStack.this.notify();
