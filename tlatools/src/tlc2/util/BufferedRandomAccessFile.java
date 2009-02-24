@@ -17,7 +17,7 @@ import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
 
-public final class BufferedRandomAccessFile extends java.io.RandomAccessFile {
+public final class BufferedRandomAccessFile extends RandomAccessFile {
     static final int LogBuffSz = 13; // 8K buffer
     public static final int BuffSz = (1 << LogBuffSz);
     static final int BuffMask = ~(BuffSz - 1);
@@ -111,14 +111,18 @@ public final class BufferedRandomAccessFile extends java.io.RandomAccessFile {
       this.init();
     }
 
-    /** Open a new <code>BufferedRandomAccessFile</code> on the
-        file named <code>name</code> in mode <code>mode</code>, 
-        which should be "r" for reading only, or "rw" for reading
-        and writing. */
+    /** 
+     * Open a new <code>BufferedRandomAccessFile</code> on the
+     * file named <code>name</code> in mode <code>mode</code>, 
+     * which should be "r" for reading only, or "rw" for reading
+     * and writing.
+     * SZ Feb 24, 2009
+     * @deprecated use another constructor 
+     */
     public BufferedRandomAccessFile(String name, String mode)
-    throws IOException {
-      super(name, mode);
-      this.init();
+    throws IOException 
+    {
+        this(new File (name), mode);
     }
     
     /* Initialize the private fields of the file so as to
