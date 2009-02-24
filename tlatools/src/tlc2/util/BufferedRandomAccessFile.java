@@ -25,7 +25,8 @@ public final class BufferedRandomAccessFile extends RandomAccessFile {
     /* This implementation is based on the buffer implementation in
        Modula-3's "Rd", "Wr", "RdClass", and "WrClass" interfaces. */
     private boolean dirty;  // true iff unflushed bytes exist
-    private boolean closed; // true iff the file is closed
+    // SZ Feb 24, 2009: never read
+    // private boolean closed; // true iff the file is closed
     private long curr;      // current position in file
     private long lo, hi;    // bounds on characters in "buff"
     private byte[] buff;    // local buffer
@@ -128,7 +129,9 @@ public final class BufferedRandomAccessFile extends RandomAccessFile {
     /* Initialize the private fields of the file so as to
        make it valid. */
     private void init() {
-      this.dirty = this.closed = false;
+      this.dirty = false;
+      // SZ Feb 24, 2009: never read locally
+      // this.closed = false;
       this.lo = this.curr = this.hi = 0;
       synchronized (mu) {
 	this.buff =
@@ -143,7 +146,8 @@ public final class BufferedRandomAccessFile extends RandomAccessFile {
     public void close() throws IOException {
         // Assert.check(!this.closed);
         this.flush();
-        this.closed = true;
+        // SZ Feb 24, 2009: never read locally
+        // this.closed = true;
         synchronized (mu) {
             // grow "availBuffs" array if necessary
             if (numAvailBuffs >= availBuffs.length) {
