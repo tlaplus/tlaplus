@@ -13,13 +13,15 @@ import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
 import tlc2.TLCGlobals;
+import util.FileUtil;
 import util.ToolIO;
 
 /**
  * Note: All concrete subclasses of this class are required to
  * guarantee that their methods are thread-safe.
+ * @deprecated
+ * @version $Id$
  */
-
 public abstract class FPIntSet extends UnicastRemoteObject
 implements FPIntSetRMI {
 
@@ -138,7 +140,7 @@ implements FPIntSetRMI {
 		      " and " + args[index]);
 	System.exit(0);
       }
-      metadir = args[index++] + File.separator;
+      metadir = args[index++] + FileUtil.separator;
     }
 
     String hostname = "Unknown";

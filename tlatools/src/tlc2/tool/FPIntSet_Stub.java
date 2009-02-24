@@ -2,7 +2,10 @@
 // Contents subject to change without notice.
 
 package tlc2.tool;
-
+/**
+ * @deprecated
+ * @version $Id$
+ */
 public final class FPIntSet_Stub
     extends java.rmi.server.RemoteStub
     implements tlc2.tool.FPIntSetRMI, java.rmi.Remote

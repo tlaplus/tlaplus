@@ -16,6 +16,7 @@ import java.rmi.server.UnicastRemoteObject;
 import tlc2.TLCGlobals;
 import tlc2.util.BitVector;
 import tlc2.util.LongVec;
+import util.FileUtil;
 import util.ToolIO;
 
 /**
@@ -113,7 +114,7 @@ public abstract class FPSet extends UnicastRemoteObject implements FPSetRMI {
 		      " and " + args[index]);
 	System.exit(0);
       }
-      metadir = args[index++] + File.separator;
+      metadir = args[index++] + FileUtil.separator;
     }
 
     String hostname = "Unknown";

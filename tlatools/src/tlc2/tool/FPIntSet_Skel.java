@@ -3,6 +3,10 @@
 
 package tlc2.tool;
 
+/**
+ * @deprecated
+ * @version $Id$
+ */
 public final class FPIntSet_Skel
     implements java.rmi.server.Skeleton
 {

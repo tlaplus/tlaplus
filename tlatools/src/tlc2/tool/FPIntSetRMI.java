@@ -7,7 +7,10 @@ package tlc2.tool;
 
 import java.io.IOException;
 import java.rmi.Remote;
-
+/**
+ * @deprecated
+ * @version $Id$
+ */
 public interface FPIntSetRMI extends Remote {
 
   public void setLeveled(long fp) throws IOException;

@@ -2,7 +2,10 @@
 // Contents subject to change without notice.
 
 package tlc2.tool;
-
+/**
+ * @deprecated
+ * @version $Id$
+ */
 public final class FPSet_Skel
     implements java.rmi.server.Skeleton
 {
