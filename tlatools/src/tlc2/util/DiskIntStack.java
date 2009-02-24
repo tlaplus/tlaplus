@@ -6,12 +6,11 @@
 package tlc2.util;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 
 import util.Assert;
 import util.BufferedDataInputStream;
 import util.BufferedDataOutputStream;
+import util.FileUtil;
 
 /**
  * Alternative implementation
@@ -41,7 +40,7 @@ public final class DiskIntStack {
     this.index = 0;
     this.hiPool = 0;
     this.isIdle = true;
-    this.filePrefix = diskdir + File.separator + name;
+    this.filePrefix = diskdir + FileUtil.separator + name;
     this.poolFile = null;
     this.reader = new Reader();
     this.writer = new Writer();
@@ -124,14 +123,12 @@ public final class DiskIntStack {
 	    while (DiskIntStack.this.poolFile == null) {
 	      this.wait();
 	    }
-	    FileInputStream fis = new FileInputStream(DiskIntStack.this.poolFile);
-	    BufferedDataInputStream bdis = new BufferedDataInputStream(fis);
+	    BufferedDataInputStream bdis = FileUtil.newBdFIS(false, DiskIntStack.this.poolFile);
 	    int len = DiskIntStack.this.rwbuf.length;
 	    for (int i = 0; i < len; i++) {
 	      DiskIntStack.this.rwbuf[i] = bdis.readInt();
 	    }
 	    bdis.close();
-	    fis.close();
 	    DiskIntStack.this.poolFile = null;
 	    DiskIntStack.this.isIdle = true;
 	    DiskIntStack.this.notify();	    
@@ -154,14 +151,12 @@ public final class DiskIntStack {
 	    while (DiskIntStack.this.poolFile == null) {
 	      this.wait();
 	    }
-	    FileOutputStream fos = new FileOutputStream(DiskIntStack.this.poolFile);
-	    BufferedDataOutputStream bdos = new BufferedDataOutputStream(fos);
+	    BufferedDataOutputStream bdos = FileUtil.newBdFOS(false, DiskIntStack.this.poolFile);
 	    int len = DiskIntStack.this.buf.length;
 	    for (int i = 0; i < len; i++) {
 	      bdos.writeInt(DiskIntStack.this.buf[i]);
 	    }
 	    bdos.close();
-	    fos.close();
 	    DiskIntStack.this.poolFile = null;
 	    DiskIntStack.this.isIdle = true;
 	    DiskIntStack.this.notify();
