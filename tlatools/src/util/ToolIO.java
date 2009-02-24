@@ -53,6 +53,9 @@ public class ToolIO
     * otherwise does nothing and returns false.                            *
     ***********************************************************************/
 
+  private static FilenameToStream resolver = new SimpleFilenameToStream();
+  
+  
   private static String userDir = null ;
     /***********************************************************************
     * The GUI needs to change the user directory--the default path for     *
@@ -174,6 +177,18 @@ public class ToolIO
       }
       System.out.println("---- End all messages") ;
   }
+  
+  
+  public static FilenameToStream getResolver()
+  {
+      return resolver;
+  }
+  
+  public static void setResolver(FilenameToStream resolver)
+  {
+      ToolIO.resolver = resolver;
+  }
+  
  } // class ToolIO
 
 class ToolPrintStream extends PrintStream 
