@@ -5,7 +5,6 @@
 
 package tlc2.tool;
 
-import java.io.File;
 import java.io.IOException;
 
 import tla2sany.modanalyzer.SpecObj;
@@ -672,7 +671,7 @@ public class ModelChecker extends AbstractChecker
             LiveCheck.close();
         if (this.allStateWriter != null)
             this.allStateWriter.close();
-        FileUtil.deleteDir(this.metadir, success, this.tool.getResolver());
+        FileUtil.deleteDir(this.metadir, success);
     }
 
     public final void printSummary(boolean success) throws IOException

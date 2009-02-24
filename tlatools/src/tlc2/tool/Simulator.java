@@ -5,8 +5,6 @@
 
 package tlc2.tool;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.PrintWriter;
 
 import tla2sany.modanalyzer.SpecObj;
@@ -16,6 +14,7 @@ import tlc2.tool.liveness.LiveCheck1;
 import tlc2.tool.liveness.LiveException;
 import tlc2.util.ObjLongTable;
 import tlc2.util.RandomGenerator;
+import util.FileUtil;
 import util.FilenameToStream;
 import util.ToolIO;
 
@@ -37,10 +36,13 @@ public class Simulator implements Cancelable{
     public Simulator(String specFile, String configFile, String traceFile,
 		   boolean deadlock, int traceDepth, long traceNum,
 		   RandomGenerator rng, long seed, boolean preprocess, FilenameToStream resolver, SpecObj specObj) {
-    int lastSep = specFile.lastIndexOf(File.separatorChar);
+    int lastSep = specFile.lastIndexOf(FileUtil.separatorChar);
     String specDir = (lastSep == -1) ? "" : specFile.substring(0, lastSep+1);
     specFile = specFile.substring(lastSep+1);
     this.tool = new Tool(specDir, specFile, configFile, resolver);
+    // SZ Feb 24, 2009: setup the user directory
+    ToolIO.setUserDir(specDir);
+
     this.tool.init(preprocess, specObj);   // parse and process the spec
 
     this.checkDeadlock = deadlock;
@@ -88,7 +90,7 @@ public class Simulator implements Cancelable{
   private long seed;
   private long aril;
   private ObjLongTable astCounts;
-private boolean isCancelled;
+  private boolean isCancelled; // SZ Feb 24, 2009: cancellation added
   
   /*
    * This method does simulation on a TLA+ spec. Its argument specifies
@@ -238,8 +240,7 @@ private boolean isCancelled;
 	// format of TLA module, so that it can be read by TLC again. 
 	if (this.traceFile != null) {
 	  String fileName = this.traceFile + traceCnt;
-	  FileOutputStream fos = new FileOutputStream(fileName);
-	  PrintWriter pw = new PrintWriter(fos);
+	  PrintWriter pw = new PrintWriter(FileUtil.newBFOS(fileName));
 	  pw.println("---------------- MODULE " + fileName + " -----------------");
 	  for (idx = 0; idx < traceIdx; idx++) {
 	    pw.println("STATE_" + (idx+1) + " == ");
@@ -247,7 +248,6 @@ private boolean isCancelled;
 	  }
 	  pw.println("=================================================");	  
 	  pw.close();
-	  fos.close();
 	}
       }
     }

@@ -24,8 +24,9 @@ import tlc2.value.Value;
 import tlc2.value.ValueConstants;
 import tlc2.value.ValueVec;
 import util.Assert;
-import util.SimpleFilenameToStream;
+import util.FileUtil;
 import util.FilenameToStream;
+import util.SimpleFilenameToStream;
 import util.ToolIO;
 
 public class ModelConfig implements ValueConstants, Serializable {
@@ -182,8 +183,9 @@ public class ModelConfig implements ValueConstants, Serializable {
     Vect props = (Vect)this.configTbl.get(Prop);
     try {
 
-      FileInputStream fis = resolver.toNIStream(this.configFileName, false);  
-      
+        // SZ 23.02.2009: separated file resolution from stream retrieval
+        // FileInputStream fis = resolver.toNIStream(this.configFileName, false);  
+      FileInputStream fis = FileUtil.newFIS(resolver.resolve(this.configFileName, false));
       SimpleCharStream scs = new SimpleCharStream(fis, 1, 1);
       TLAplusParserTokenManager tmgr = new TLAplusParserTokenManager(scs, 2);
 
