@@ -2,10 +2,6 @@
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
 package tlc2.util;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.math.BigInteger;
-
 import util.Assert;
 
 /**
@@ -82,7 +78,7 @@ public class Sort {
   }
 
   /* Sort the subarray of array A from start to finish inclusive. */
-  private static void mergeSort(Comparable A[], int start, int finish) {
+  public static void mergeSort(Comparable A[], int start, int finish) {
     int i = start, j, s, k, l, top;
     boolean done = false;
 
@@ -180,14 +176,6 @@ public class Sort {
     return i;
   }
       
-  private static void printSizeArrayOfSizeBigIntegers(InputStream in)
-  throws IOException {
-    BigInteger[] A = ByteUtils.readSizeArrayOfSizeBigInts(in);
-    for (int i = 0; i < A.length; i++) {
-      System.out.println(A[i]);
-    }
-  }
-
   /* Sort the <code>long</code>s in <code>a</code>. */
   public static void LongArray(long[] a, int n) {
     int hi = n - 1;
