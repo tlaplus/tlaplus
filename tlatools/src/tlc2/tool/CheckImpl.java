@@ -55,7 +55,8 @@ public abstract class CheckImpl extends ModelChecker {
     boolean recovered = this.recover();
     if (!recovered) {
       this.checkAssumptions();
-      this.doInit();
+      // SZ Feb 23, 2009: added ignore cancel flag
+      this.doInit(false);
     }
     ToolIO.out.println("Creating a partial state space of depth " +
 		       this.depth + " ... ");
