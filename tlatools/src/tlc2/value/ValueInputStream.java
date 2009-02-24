@@ -23,10 +23,6 @@ public final class ValueInputStream implements ValueConstants {
     this.handles = new HandleTable();
   }
 
-  /**
-   * SZ Feb 24, 2009 
-   * @deprecated use another constructor
-   */
   public ValueInputStream(String fname) throws IOException {
       this(new File(fname));
   }
