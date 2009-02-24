@@ -6,16 +6,15 @@
 
 package tlc2.tool;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 
 import tlc2.TLCGlobals;
 import tlc2.util.BufferedRandomAccessFile;
 import tlc2.util.LongVec;
+import util.BufferedDataInputStream;
+import util.BufferedDataOutputStream;
+import util.FileUtil;
 import util.ToolIO;
 
 public class TLCTrace {
@@ -27,7 +26,7 @@ public class TLCTrace {
 
   public TLCTrace(String metadir, String specFile, TraceApp tool)
   throws IOException {
-    filename = metadir + File.separator + specFile + ".st";
+    filename = metadir + FileUtil.separator + specFile + ".st";
     this.raf = new BufferedRandomAccessFile(filename, "rw");
     this.lastPtr = 1;
     this.tool = tool;
@@ -230,12 +229,12 @@ public class TLCTrace {
   /* Checkpoint.  */
   public synchronized final void beginChkpt() throws IOException {
     this.raf.flush();
-    FileOutputStream fos = new FileOutputStream(filename + ".tmp");
-    DataOutputStream dos = new DataOutputStream(fos);
+    // SZ Feb 24, 2009: FileUtil introduced
+    // changed to buffered stream
+    BufferedDataOutputStream dos = FileUtil.newBdFOS(false, filename + ".tmp");
     dos.writeLong(this.raf.getFilePointer());
     dos.writeLong(this.lastPtr);
     dos.close();
-    fos.close();
   }
 
   public final void commitChkpt() throws IOException {
@@ -248,23 +247,23 @@ public class TLCTrace {
   }
 
   public final void recover() throws IOException {
-    FileInputStream fis = new FileInputStream(filename + ".chkpt");
-    DataInputStream dis = new DataInputStream(fis);
+    // SZ Feb 24, 2009: FileUtil introduced
+    // changed to buffered stream
+    BufferedDataInputStream dis = FileUtil.newBdFIS(false, filename + ".chkpt");
     long filePos = dis.readLong();
     this.lastPtr = dis.readLong();
     dis.close();
-    fis.close();
     this.raf.seek(filePos);
   }
 
   public static String getFilename() { return filename; }
 
   public static long getRecoverPtr() throws IOException {
-    FileInputStream fis = new FileInputStream(filename + ".chkpt");
-    DataInputStream dis = new DataInputStream(fis);
+      // SZ Feb 24, 2009: FileUtil introduced
+      // changed to buffered stream
+    BufferedDataInputStream dis = FileUtil.newBdFIS(false, filename + ".chkpt");
     long res = dis.readLong();
     dis.close();
-    fis.close();
     return res;
   }
 
