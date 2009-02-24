@@ -222,7 +222,7 @@ public abstract class Value implements ValueConstants, Serializable {
   /* This method returns the fingerprint of this value. */
   public long fingerPrint(long fp) {
     Assert.fail("TLC has found a state in which the value of a variable contains " +
-		this.ppr(this.toString()));
+		Value.ppr(this.toString())); // SZ Feb 24, 2009: changed to static access
     return 0;      // make compiler happy
   }
 
@@ -232,7 +232,7 @@ public abstract class Value implements ValueConstants, Serializable {
    */
   public Value permute(MVPerm perm) {
     Assert.fail("TLC has found a state in which the value of a variable contains " +
-		this.ppr(this.toString()));
+		Value.ppr(this.toString())); // SZ Feb 24, 2009: changed to static access
     return null;   // make compiler happy
   }
 
