@@ -11,6 +11,7 @@ import java.io.IOException;
 import tlc2.value.ValueInputStream;
 import tlc2.value.ValueOutputStream;
 import util.Assert;
+import util.FileUtil;
 
 public class DiskStateQueue extends StateQueue {
   private final static int BufSize = 8192;  // 4096;
@@ -46,7 +47,7 @@ public class DiskStateQueue extends StateQueue {
     this.loPool = 1;
     this.hiPool = 0;
     this.lastLoPool = 0;
-    this.filePrefix = diskdir + File.separator;
+    this.filePrefix = diskdir + FileUtil.separator;
     File rFile = new File(this.filePrefix + Integer.toString(0));
     this.reader = new StatePoolReader(BufSize, rFile);
     this.loFile = new File(this.filePrefix + Integer.toString(this.loPool));    
