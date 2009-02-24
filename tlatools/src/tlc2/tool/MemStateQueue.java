@@ -10,6 +10,7 @@ import java.io.IOException;
 
 import tlc2.value.ValueInputStream;
 import tlc2.value.ValueOutputStream;
+import util.FileUtil;
 
 public final class MemStateQueue extends StateQueue {
   private final static int InitialSize = 4096;
@@ -50,7 +51,7 @@ public final class MemStateQueue extends StateQueue {
 
   // Checkpoint.
   public final void beginChkpt() throws IOException {
-    String filename = this.diskdir + File.separator + "queue.tmp";
+    String filename = this.diskdir + FileUtil.separator + "queue.tmp";
     ValueOutputStream vos = new ValueOutputStream(filename);
     vos.writeInt(this.len);
     int index = this.start;
@@ -62,9 +63,9 @@ public final class MemStateQueue extends StateQueue {
   }
 
   public final void commitChkpt() throws IOException {
-    String oldName = this.diskdir + File.separator + "queue.chkpt";
+    String oldName = this.diskdir + FileUtil.separator + "queue.chkpt";
     File oldChkpt = new File(oldName);
-    String newName = this.diskdir + File.separator + "queue.tmp";
+    String newName = this.diskdir + FileUtil.separator + "queue.tmp";
     File newChkpt = new File(newName);
     if ((oldChkpt.exists() && !oldChkpt.delete()) ||
 	!newChkpt.renameTo(oldChkpt)) {
@@ -73,7 +74,7 @@ public final class MemStateQueue extends StateQueue {
   }
   
   public final void recover() throws IOException {
-    String filename = this.diskdir + File.separator + "queue.chkpt";
+    String filename = this.diskdir + FileUtil.separator + "queue.chkpt";
     ValueInputStream vis = new ValueInputStream(filename);
     this.len = vis.readInt();
     for (int i = 0; i < this.len; i++) {
