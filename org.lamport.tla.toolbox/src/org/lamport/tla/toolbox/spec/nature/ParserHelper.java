@@ -8,6 +8,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.spec.parser.ModuleParserLauncher;
+import org.lamport.tla.toolbox.spec.parser.ParseResult;
 import org.lamport.tla.toolbox.spec.parser.SpecificationParserLauncher;
 import org.lamport.tla.toolbox.util.AdapterFactory;
 
@@ -42,8 +43,8 @@ public class ParserHelper
 
                 // markers already removed in the parseModule
                 // TLAMarkerHelper.removeProblemMarkers(resource, monitor);
-                int status = moduleParser.parseModule(resource, monitor);
-                System.out.println("Resulting status is: " + AdapterFactory.getStatusAsString(status));
+                ParseResult result = moduleParser.parseModule(resource, monitor);
+                System.out.println("Resulting status is: " + AdapterFactory.getStatusAsString(result.getStatus()));
             }
         };
         try
