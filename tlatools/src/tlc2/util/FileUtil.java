@@ -6,7 +6,6 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,6 +13,7 @@ import java.io.OutputStream;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
+import util.FilenameToStream;
 import util.ToolIO;
 
 /**
@@ -28,8 +28,35 @@ public class FileUtil
      * Deletes the file or directory. Returns true iff the deletion
      * succeeds. The argument recurse forces the deletion of non-empty
      * directory.
+     * @deprecated use {@link FileUtil#deleteDir(String, boolean)}
      */
     public static boolean deleteDir(File file, boolean recurse)
+    {
+        return doDeleteDir(file, recurse, ToolIO.getResolver());
+    }
+    
+    /**
+     * @deprecated don't use it
+     * It is a bad implementation 
+     */
+    public static boolean deleteDir(String filename, boolean recurse)
+    {
+        return deleteDir(filename, recurse, ToolIO.getResolver());
+    }
+
+    public static boolean deleteDir(String filename, boolean recurse, FilenameToStream resolver)
+    {
+        return doDeleteDir(new File(filename), recurse, resolver);
+    }
+    
+    /**
+     * Implementation of the file deletion
+     * @param file
+     * @param recurse
+     * @param resolver
+     * @return
+     */
+    private static boolean doDeleteDir(File file, boolean recurse, FilenameToStream resolver)
     {
         if (file.exists())
         {
@@ -39,9 +66,18 @@ public class FileUtil
             }
             // must be a directory:
             String[] fnames = file.list();
+            File child = null;
             for (int i = 0; i < fnames.length; i++)
             {
-                if (!deleteDir(new File(file, fnames[i]), recurse))
+                
+                if (resolver == null) 
+                {
+                    child = new File(file, fnames[i]);
+                } else {
+                    // TODO
+                }
+                
+                if (!doDeleteDir(child, recurse, resolver))
                 {
                     return false;
                 }
@@ -50,6 +86,8 @@ public class FileUtil
         }
         return true;
     }
+    
+
 
     /**
      * Constructs a input stream from the file
@@ -130,5 +168,21 @@ public class FileUtil
             ToolIO.out.println(A[i]);
         }
     }
+    
+    public static void copyFile(String fromName, String toName) throws IOException
+    {
+        // REFACTOR
+        FileInputStream fis = new FileInputStream(fromName);
+        FileOutputStream fos = new FileOutputStream(toName);
+        byte[] buf = new byte[8192];
+        int n;
+        while ((n = fis.read(buf)) != -1)
+        {
+            fos.write(buf, 0, n);
+        }
+        fis.close();
+        fos.close();
+    }
+
 
 }
