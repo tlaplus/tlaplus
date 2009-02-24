@@ -5,17 +5,18 @@
 
 package tlc2.util;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 import util.Assert;
+import util.FileUtil;
 
+/**
+ * 
+ * @version $Id$
+ */
 public final class MemObjectStack extends ObjectStack {
   private final static int InitialSize = 4096;
   private final static int GrowthFactor = 2;
@@ -26,7 +27,7 @@ public final class MemObjectStack extends ObjectStack {
     
   public MemObjectStack(String metadir, String name) {
     this.states = new Object[InitialSize];
-    this.filename = metadir +  File.separator + name;
+    this.filename = metadir +  FileUtil.separator + name;
   }
     
   final void enqueueInner(Object state) {
@@ -50,14 +51,14 @@ public final class MemObjectStack extends ObjectStack {
   // Checkpoint.
   public final void beginChkpt() throws IOException {
     String tmpfile = this.filename + ".tmp";
-    FileOutputStream fos = new FileOutputStream(tmpfile);
-    ObjectOutputStream oos = new ObjectOutputStream(new BufferedOutputStream(fos));
+    
+    ObjectOutputStream oos = FileUtil.newOBFOS(tmpfile);
     oos.writeInt(this.len);
     for (int i = 0; i < this.len; i++) {
       oos.writeObject(this.states[i++]);
     }
     oos.close();
-    fos.close();
+    
   }
 
   public final void commitChkpt() throws IOException {
@@ -72,8 +73,7 @@ public final class MemObjectStack extends ObjectStack {
   
   public final void recover() throws IOException {
     String chkptfile = this.filename + ".chkpt";
-    FileInputStream fis = new FileInputStream(chkptfile);
-    ObjectInputStream ois = new ObjectInputStream(new BufferedInputStream(fis));
+    ObjectInputStream ois = FileUtil.newOBFIS(chkptfile);
     this.len = ois.readInt();
     try {
       for (int i = 0; i < this.len; i++) {
@@ -87,7 +87,6 @@ public final class MemObjectStack extends ObjectStack {
     }
     finally {
       ois.close();
-      fis.close();
     }
   }
 
