@@ -79,17 +79,17 @@ public class PCalDetectingBuilder extends IncrementalProjectBuilder
                 try
                 {
                     IRegion matchRegion = searchAdapter.find(0, PCAL_ALGORITHM_DEFINITION, true, true, false, false);
+                    
+                    // store the session property
                     QualifiedName key = new QualifiedName(Activator.PLUGIN_ID, IPreferenceConstants.CONTAINS_PCAL_ALGORITHM);
                     if (matchRegion != null ) 
                     {
                         // found a algorithm definition
-                        // TODO add resource property
                         System.out.println("Found algorithm definition in " + resource.getName());
-                        resource.setPersistentProperty(key, new Boolean(true).toString());
+                        resource.setSessionProperty(key, new Boolean(true).toString());
                         
                     } else {
-                        // TODO delete the resource property
-                        resource.setPersistentProperty(key, null);
+                        resource.setSessionProperty(key, null);
                     }
                 } catch (BadLocationException e)
                 {
