@@ -4,13 +4,17 @@
 //      modified on Mon Dec  4 16:20:19 PST 2000 by yuanyu
 package tlc2.util;
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
+import util.FileUtil;
+/**
+ * 
+ * 
+ * @version $Id$
+ */
 public class LongVec implements Cloneable, Serializable {
   private long[] elementData;
   private int elementCount;
@@ -91,16 +95,15 @@ public class LongVec implements Cloneable, Serializable {
     vec.addElement(3);
     vec.addElement(5);
     System.err.println(vec.size());
-    FileOutputStream fos = new FileOutputStream("XXX");
-    ObjectOutputStream oos = new ObjectOutputStream(fos);
+    ObjectOutputStream oos = FileUtil.newOBFOS("XXX");
     oos.writeObject(vec);
-    FileInputStream fis = new FileInputStream("XXX");
-    ObjectInputStream ois = new ObjectInputStream(fis);
+    
+    ObjectInputStream ois = FileUtil.newOBFIS("XXX");
     LongVec vec1 = (LongVec)ois.readObject();
-    System.err.println(vec.size());
-    System.err.println(vec.elementAt(0));
-    System.err.println(vec.elementAt(1));
-    System.err.println(vec.elementAt(2));
+    System.err.println(vec1.size());
+    System.err.println(vec1.elementAt(0));
+    System.err.println(vec1.elementAt(1));
+    System.err.println(vec1.elementAt(2));
   }
 
 }
