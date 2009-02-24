@@ -52,7 +52,7 @@ import tlc2.value.StringValue;
 import tlc2.value.Value;
 import tlc2.value.ValueConstants;
 import util.Assert;
-import util.StringToNamedInputStream;
+import util.FilenameToStream;
 import util.ToolIO;
 import util.UniqueString;
 
@@ -82,9 +82,9 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable {
   protected ExprNode[] modelConstraints;   // Model constraints
   protected ExprNode[] actionConstraints;  // Action constraints
   protected ExprNode[] assumptions;        // Assumptions
-  private StringToNamedInputStream resolver; // takes car of path to stream resoltion 
+  private FilenameToStream resolver; // takes car of path to stream resoltion 
 
-  public Spec(String specDir, String file, StringToNamedInputStream resolver) 
+  public Spec(String specDir, String file, FilenameToStream resolver) 
   {
     this.specDir = specDir;
     this.rootFile = file;
@@ -106,7 +106,7 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable {
     this.resolver = resolver;
   }
   // SZ Feb 20, 2009: added support to name resolver, to be able to run outside of the tool
-  public Spec(String specDir, String specFile, String configFile, StringToNamedInputStream resolver) {
+  public Spec(String specDir, String specFile, String configFile, FilenameToStream resolver) {
     this(specDir, specFile, resolver);
     this.configFile = configFile;
     this.config = new ModelConfig(configFile + ".cfg", resolver);
@@ -1679,4 +1679,9 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable {
     }
     return level;
   }
+  
+    public FilenameToStream getResolver()
+    {
+        return resolver;
+    }
 }
