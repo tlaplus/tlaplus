@@ -1,10 +1,7 @@
 package tlc2.tool;
 
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -13,8 +10,9 @@ import tla2sany.semantic.SemanticNode;
 import tlc2.TLCGlobals;
 import tlc2.util.IdThread;
 import tlc2.util.ObjLongTable;
+import tlc2.util.StateWriter;
 import util.Assert;
-import util.StringToNamedInputStream;
+import util.FilenameToStream;
 import util.ToolIO;
 
 /**
@@ -22,7 +20,7 @@ import util.ToolIO;
  * @author Simon Zambrovski
  * @version $Id$
  */
-public abstract class AbstractChecker
+public abstract class AbstractChecker implements Cancelable
 {
 
     protected static long nextLiveCheck = 1000;
@@ -42,6 +40,7 @@ public abstract class AbstractChecker
     public Action[] actions;
     protected long lastChkpt;
     protected StateWriter allStateWriter;
+    protected boolean cancellationFlag;
 
     /**
      * Constructor of the abstract model checker
@@ -55,8 +54,10 @@ public abstract class AbstractChecker
      * @param spec - pre-built specification object (e.G. from calling SANY from the tool previously)
      */
     public AbstractChecker(String specFile, String configFile, String dumpFile, boolean deadlock, String fromChkpt,
-            boolean preprocess, StringToNamedInputStream resolver, SpecObj spec) throws EvalException, IOException
+            boolean preprocess, FilenameToStream resolver, SpecObj spec) throws EvalException, IOException
     {
+        this.cancellationFlag = false;
+        
         this.checkDeadlock = deadlock;
 
         int lastSep = specFile.lastIndexOf(File.separatorChar);
@@ -80,7 +81,7 @@ public abstract class AbstractChecker
         // Initialize dumpFile:
         if (dumpFile != null)
         {
-            this.allStateWriter = new StateWriter(dumpFile);
+            this.allStateWriter = new StateWriter(dumpFile, resolver);
         }
         this.lastChkpt = System.currentTimeMillis();
 
@@ -183,7 +184,7 @@ public abstract class AbstractChecker
      * @return
      * @throws Throwable
      */
-    public abstract boolean doInit() throws Throwable;
+    public abstract boolean doInit(boolean ignoreCancel) throws Throwable;
     
     /**
      * Create the partial state space for given starting state up
@@ -191,6 +192,12 @@ public abstract class AbstractChecker
      */
     public final boolean runTLC(int depth) throws Exception
     {
+        // SZ Feb 23, 2009: exit if canceled
+        if (this.cancellationFlag) 
+        {
+            return false;
+        }
+        
           if (depth < 2) 
           {
               return true;
@@ -211,7 +218,10 @@ public abstract class AbstractChecker
               this.wait(30000); 
           }
           
-          while (true) {
+          // SZ Feb 23, 2009: exit if canceled
+          // added condition to run in the cycle
+          // while (true) {
+          while (!this.cancellationFlag) {
               long now = System.currentTimeMillis();
               if (now - this.lastChkpt >= TLCGlobals.chkptDuration) {
                   if (!this.doPeriodicWork()) { return false; }
@@ -232,6 +242,12 @@ public abstract class AbstractChecker
           return true;
       }
 
+    public void setCancelFlag(boolean flag)
+    {
+        this.cancellationFlag = flag;
+    }
+
+    
     /**
      * The method for worker initialization and start
      * @param checker the checker instance
@@ -272,34 +288,4 @@ public abstract class AbstractChecker
      * @throws Exception
      */
     public abstract void modelCheck() throws Exception; 
-    
-    /**
-     * State writer 
-     * REFACTOR: move to FileUtils
-     */
-    class StateWriter
-    {
-        private PrintWriter writer;
-        private int stateNum;
-
-        StateWriter(String fname) throws IOException
-        {
-            FileOutputStream fos = new FileOutputStream(fname);
-            this.writer = new PrintWriter(new BufferedOutputStream(fos));
-            this.stateNum = 1;
-        }
-
-        synchronized final void writeState(TLCState state)
-        {
-            this.writer.println("State " + this.stateNum + ":");
-            this.writer.println(state.toString());
-            this.stateNum++;
-        }
-
-        final void close()
-        {
-            this.writer.close();
-        }
-    }
-
 }
