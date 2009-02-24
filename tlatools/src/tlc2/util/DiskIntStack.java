@@ -13,6 +13,12 @@ import util.Assert;
 import util.BufferedDataInputStream;
 import util.BufferedDataOutputStream;
 
+/**
+ * Alternative implementation
+ * 
+ * @version $Id$
+ * @deprecated currently not used 
+ */
 public final class DiskIntStack {
   private final static int BufSize = 16384;
 

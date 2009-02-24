@@ -16,6 +16,11 @@ import java.io.ObjectOutputStream;
 
 import util.Assert;
 
+/**
+ * Alternative implementation
+ * @deprecated not used currently
+ * @version $Id$
+ */
 public class DiskObjectStack extends ObjectStack {
   private final static int BufSize = 8192;
 

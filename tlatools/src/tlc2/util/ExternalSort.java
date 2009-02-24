@@ -17,7 +17,11 @@ import java.util.Random;
 import util.Assert;
 import util.ToolIO;
 
-
+/**
+ * Alternative implementation 
+ * @deprecated not used currently
+ * @version $Id$
+ */
 public class ExternalSort {
   public static final int ARRAYSIZE = 10000;
   public static final int BITS = 211;
