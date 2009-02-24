@@ -5,16 +5,13 @@
 
 package tlc2.util;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 import util.Assert;
+import util.FileUtil;
 
 /**
  * Alternative implementation
@@ -45,7 +42,7 @@ public class DiskObjectStack extends ObjectStack {
     this.buf2 = new Object[BufSize];
     this.buf = this.buf1;
     this.index = 0;
-    this.filePrefix = diskdir + File.separator + name;
+    this.filePrefix = diskdir + FileUtil.separator + name;
     this.diskStack = new ObjectPoolStack(BufSize, this.filePrefix);
   }
   
@@ -88,8 +85,7 @@ public class DiskObjectStack extends ObjectStack {
   /* Checkpoint.  */
   public final void beginChkpt() throws IOException {
     String filename = this.filePrefix + ".tmp";
-    FileOutputStream fos = new FileOutputStream(filename);
-    ObjectOutputStream oos = new ObjectOutputStream(new BufferedOutputStream(fos));
+    ObjectOutputStream oos = FileUtil.newOBFOS(filename);
     oos.writeInt(this.len);
     int index1 = (this.buf == this.buf1) ? this.index : BufSize;
     int index2 = (this.buf == this.buf1) ? 0 : this.index;
@@ -105,7 +101,8 @@ public class DiskObjectStack extends ObjectStack {
   }
 
   public final void commitChkpt() throws IOException {
-    String filename = this.filePrefix + ".chkpt";
+    // SZ 23.02.2009: filename is not used  
+    // String filename = this.filePrefix + ".chkpt"; 
     File oldChkpt = new File(this.filePrefix + ".chkpt");
     File newChkpt = new File(this.filePrefix + ".tmp");
     if ((oldChkpt.exists() && !oldChkpt.delete()) ||
@@ -117,8 +114,8 @@ public class DiskObjectStack extends ObjectStack {
 
   public final void recover() throws IOException {
     String filename = this.filePrefix + ".chkpt";
-    FileInputStream fis = new FileInputStream(filename);
-    ObjectInputStream ois = new ObjectInputStream(new BufferedInputStream(fis));
+    
+    ObjectInputStream ois = FileUtil.newOBFIS(filename);
     this.len = ois.readInt();
     int index1 = ois.readInt();
     int index2 = ois.readInt();
