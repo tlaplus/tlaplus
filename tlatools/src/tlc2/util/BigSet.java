@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Enumeration;
 
+import util.FileUtil;
 import util.Set;
 
 public class BigSet implements Cloneable {
