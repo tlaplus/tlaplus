@@ -72,7 +72,7 @@ public final class MemFPSet2 extends FPSet {
   
   public void init(int numThreads, String metadir, String fname) {
     this.metadir = metadir;
-    this.filename = metadir + File.separator + fname;
+    this.filename = metadir + FileUtil.separator + fname;
   }
 
   public synchronized final long size() { return this.count; }
@@ -130,8 +130,7 @@ public final class MemFPSet2 extends FPSet {
   public final void exit(boolean cleanup) throws IOException {
     if (cleanup) {
       // Delete the metadata directory:
-      File file = new File(this.metadir);
-      FileUtil.deleteDir(file, true);
+      FileUtil.deleteDir(this.metadir, true);
     }
     String hostname = InetAddress.getLocalHost().getHostName();    
     ToolIO.out.println(hostname + ", work completed. Thank you!");
@@ -256,7 +255,7 @@ public final class MemFPSet2 extends FPSet {
   public final void completeRecovery() throws IOException { /*SKIP*/ }
 
   final private String chkptName(String fname, String ext) {
-    return this.metadir + File.separator + fname + ".fp." + ext;
+    return this.metadir + FileUtil.separator + fname + ".fp." + ext;
   }
     
 }
