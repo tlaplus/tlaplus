@@ -5,6 +5,12 @@ package tlc2.util;
 import java.io.File;
 import java.io.IOException;
 
+/**
+ * 
+ * 
+ * @version $Id$
+ * Bogus name!
+ */
 public class RandomAccessFile extends java.io.RandomAccessFile {
     
     public long superSeekCnt = 0L;
