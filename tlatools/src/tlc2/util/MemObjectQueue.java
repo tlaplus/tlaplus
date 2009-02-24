@@ -5,17 +5,18 @@
 
 package tlc2.util;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 import util.Assert;
+import util.FileUtil;
 
+/**
+ * 
+ * @version $Id$
+ */
 public final class MemObjectQueue {
   private final static int InitialSize = 4096;
   private final static int GrowthFactor = 2;
@@ -59,9 +60,8 @@ public final class MemObjectQueue {
 
   // Checkpoint.
   public final void beginChkpt() throws IOException {
-    String filename = this.diskdir + File.separator + "queue.tmp";
-    FileOutputStream fos = new FileOutputStream(filename);
-    ObjectOutputStream oos = new ObjectOutputStream(new BufferedOutputStream(fos));
+    String filename = this.diskdir + FileUtil.separator + "queue.tmp";
+    ObjectOutputStream oos = FileUtil.newOBFOS(filename);
     oos.writeInt(this.len);
     int index = this.start;
     for (int i = 0; i < this.len; i++) {
@@ -69,13 +69,12 @@ public final class MemObjectQueue {
       if (index == this.states.length) index = 0;
     }
     oos.close();
-    fos.close();
   }
 
   public final void commitChkpt() throws IOException {
-    String oldName = this.diskdir + File.separator + "queue.chkpt";
+    String oldName = this.diskdir + FileUtil.separator + "queue.chkpt";
     File oldChkpt = new File(oldName);
-    String newName = this.diskdir + File.separator + "queue.tmp";
+    String newName = this.diskdir + FileUtil.separator + "queue.tmp";
     File newChkpt = new File(newName);
     if ((oldChkpt.exists() && !oldChkpt.delete()) ||
 	!newChkpt.renameTo(oldChkpt)) {
@@ -84,9 +83,8 @@ public final class MemObjectQueue {
   }
   
   public final void recover() throws IOException {
-    String filename = this.diskdir + File.separator + "queue.chkpt";
-    FileInputStream fis = new FileInputStream(filename);
-    ObjectInputStream ois = new ObjectInputStream(new BufferedInputStream(fis));
+    String filename = this.diskdir + FileUtil.separator + "queue.chkpt";
+    ObjectInputStream ois = FileUtil.newOBFIS(filename);
     this.len = ois.readInt();
     try {
       for (int i = 0; i < this.len; i++) {
@@ -95,13 +93,11 @@ public final class MemObjectQueue {
     }
     catch (ClassNotFoundException e) {
       ois.close();
-      fis.close();
       Assert.fail("TLC encountered the following error while restarting from a " +
 		  "checkpoint;\n the checkpoint file is probably corrupted.\n" +
 		  e.getMessage());
     }
     ois.close();
-    fis.close();
   }
 
 }
