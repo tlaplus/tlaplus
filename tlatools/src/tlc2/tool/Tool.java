@@ -55,7 +55,7 @@ import tlc2.value.ValueEnumeration;
 import tlc2.value.ValueExcept;
 import tlc2.value.ValueVec;
 import util.Assert;
-import util.StringToNamedInputStream;
+import util.FilenameToStream;
 import util.ToolIO;
 import util.UniqueString;
 
@@ -78,9 +78,9 @@ public class Tool
    * @param specFile
    * @param configFile
    */
-  public Tool(String specDir, String specFile, String configFile, StringToNamedInputStream stream) 
+  public Tool(String specDir, String specFile, String configFile, FilenameToStream resolver) 
   {
-      super(specDir, specFile, configFile, stream);
+      super(specDir, specFile, configFile, resolver);
       this.actions = null;
       this.callStack = null;
   }
