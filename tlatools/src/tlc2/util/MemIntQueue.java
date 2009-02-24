@@ -10,7 +10,12 @@ import java.io.IOException;
 
 import util.BufferedDataInputStream;
 import util.BufferedDataOutputStream;
+import util.FileUtil;
 
+/**
+ * 
+ * @version $Id$
+ */
 public final class MemIntQueue {
   private final static int InitialSize = 4096;
   private final static int GrowthFactor = 2;
@@ -68,7 +73,7 @@ public final class MemIntQueue {
   
   // Checkpoint.
   public final void beginChkpt() throws IOException {
-    String tmpName = this.diskdir + File.separator + this.filename + ".tmp";
+    String tmpName = this.diskdir + FileUtil.separator + this.filename + ".tmp";
     BufferedDataOutputStream bos = new BufferedDataOutputStream(tmpName);
     bos.writeInt(this.len);
     int index = this.start;
@@ -80,9 +85,9 @@ public final class MemIntQueue {
   }
 
   public final void commitChkpt() throws IOException {
-    String oldName = this.diskdir + File.separator + this.filename + ".chkpt";
+    String oldName = this.diskdir + FileUtil.separator + this.filename + ".chkpt";
     File oldChkpt = new File(oldName);
-    String newName = this.diskdir + File.separator + this.filename + ".tmp";
+    String newName = this.diskdir + FileUtil.separator + this.filename + ".tmp";
     File newChkpt = new File(newName);
     if ((oldChkpt.exists() && !oldChkpt.delete()) ||
 	!newChkpt.renameTo(oldChkpt)) {
@@ -91,7 +96,7 @@ public final class MemIntQueue {
   }
   
   public final void recover() throws IOException {
-    String chkptName = this.diskdir + File.separator + this.filename + ".chkpt";
+    String chkptName = this.diskdir + FileUtil.separator + this.filename + ".chkpt";
     BufferedDataInputStream bis = new BufferedDataInputStream(chkptName);
     this.len = bis.readInt();
     for (int i = 0; i < this.len; i++) {
