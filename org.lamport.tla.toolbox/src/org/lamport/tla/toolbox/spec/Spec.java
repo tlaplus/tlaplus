@@ -15,9 +15,12 @@ import org.eclipse.core.runtime.IAdapterManager;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Platform;
 import org.lamport.tla.toolbox.spec.parser.IParseConstants;
+import org.lamport.tla.toolbox.util.AdapterFactory;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.compare.ResourceNameComparator;
 import org.lamport.tla.toolbox.util.pref.PreferenceStoreHelper;
+
+import tla2sany.modanalyzer.SpecObj;
 
 /**
  * Represents a specification handle in the toolbox
@@ -34,7 +37,10 @@ public class Spec implements IAdaptable
     private IFile rootFile;
 
     /* status of the specification */
-    private int status = IParseConstants.UNPARSED;
+    private int status;
+
+    /* the semantic tree produced by the parser */
+    private SpecObj specObj;
 
     /**
      * Creates a Spec handle for existing project. Use the factory method
@@ -73,6 +79,8 @@ public class Spec implements IAdaptable
     public void initProjectProperties()
     {
         this.rootFile = PreferenceStoreHelper.readProjectRootFile(project);
+        this.specObj = null;
+        this.status = IParseConstants.UNPARSED;
     }
 
     /**
@@ -179,7 +187,7 @@ public class Spec implements IAdaptable
      * 
      * @return
      */
-    public IResource[] getModules()
+    public IResource[] getModuleResources()
     {
         // TODO relate this list to the list of modules, which result after parse
         IResource[] modules = null;
@@ -199,4 +207,36 @@ public class Spec implements IAdaptable
         }
         return modules;
     }
+
+    /**
+     * Returns the SpecObj
+     */
+    public SpecObj getRootModule()
+    {
+        return this.specObj;
+    }
+
+    /**
+     * Returns the SpecObj only on valid status
+     */
+    public SpecObj getValidRootModule()
+    {
+        if (AdapterFactory.isProblemStatus(this.status))
+        {
+            return null;
+        }
+        return getRootModule();
+        
+    }
+    
+    /**
+     * Sets the new spec object
+     * @param specObj
+     */
+    public void setSpecObj(SpecObj specObj)
+    {
+        this.specObj = specObj;
+    }
+
+    
 }
