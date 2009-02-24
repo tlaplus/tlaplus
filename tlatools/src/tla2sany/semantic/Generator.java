@@ -1,7 +1,7 @@
 // Copyright (c) 2003 Compaq Corporation.  All rights reserved.
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
 //
-// last modified on Tue 17 February 2009 at 11:49:18 PST by lamport
+// last modified on Mon 23 February 2009 at 16:05:24 PST by lamport
 
 //
 //  4/9/2006 Added a check in RecordConstructor for duplicate fields
@@ -16,6 +16,7 @@
 package tla2sany.semantic;
 
 import java.util.Enumeration;
+import util.UniqueString;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -29,7 +30,8 @@ import tla2sany.utilities.Stack;
 import tla2sany.utilities.Strings;
 import tla2sany.utilities.Vector;
 import util.Assert;
-import util.UniqueString;
+
+
 
 // This class generates a semantic graph from a parse tree. It also uses
 // the list of modules to access contexts to instantiate or extend.
@@ -622,6 +624,13 @@ public class Generator implements ASTConstants, SyntaxTreeConstants,
     * a DEF in a BY, USE, or HIDE. Parameterized instances can be used in  *
     * a DEF (without the parameters), but only a non-parameterized module  *
     * instance can be used as a fact.                                      *
+    *                                                                      *
+    * It appears that, if an error has occurred, a call with               *
+    * expectedArity>0 can return something other than an OpArgNode         *
+    * (probably an OpApplNode).  This caused a problem in one              *
+    * place--namely, in generateOpArg.  I didn't try figuring out whether  *
+    * this is actually a bug in selectorToNode.  Instead, I just kludged   *
+    * something to handle that case.                                       *
     ***********************************************************************/
     Vector substInPrefix = new Vector() ; // of SubstInNode
     Vector params        = new Vector() ; // of FormalParamNode
@@ -4929,9 +4938,28 @@ OpDefNode node = (OpDefNode) vec.elementAt(i);
         errors.addAbort(opArgSyntaxNode.getLocation(),
                        "Internal error: expected to find arity > 0.", true);
         } ;
-      return (OpArgNode) selectorToNode(genIdToSelector(
+
+         LevelNode ln = selectorToNode(genIdToSelector(
                             (SyntaxTreeNode) opArgSyntaxNode), 
                             targetSymbol.getArity(), false, false, mn);
+
+        /*******************************************************************
+        * Added 23 February 2009: It appears that, in case of an error,    *
+        * selectorToNode can return something other than an OpArgNode      *
+        * here.  (In particular, an OpApplNode.)  Rather than tix          *
+        * selectorToNode, I am adding a kludge to simply ignore the        *
+        * problem and hope that it can be caused only by some other        *
+        * error.  If no error has been found, then we abort and debug if   *
+        * this is encountered.                                             *
+        *******************************************************************/
+         if (!(ln instanceof OpArgNode)) { 
+           if (errors.getNumErrors() > 0) { return nullOpArg; }
+           errors.addAbort(opArgSyntaxNode.getLocation(),
+                           "Internal error: " +
+                           "Expected an operator argument but " +
+                           "found something else.");
+           };
+         return (OpArgNode) ln ;
     } ;
        
     /*******************************************************************

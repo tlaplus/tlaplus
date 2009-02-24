@@ -1,7 +1,7 @@
 // Copyright (c) 2003 Compaq Corporation.  All rights reserved.
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
 //
-// Last modified on Sun 22 February 2009 at 11:28:30 PST by lamport
+// Last modified on Mon 23 February 2009 at  9:58:00 PST by lamport
 
 package tla2sany.semantic;
 
@@ -345,8 +345,13 @@ public class SubstInNode extends ExprNode {
 //           in OpDefNode: this.levelParams = EmptySet, ...
 //            also, make sure everything set to EmptySet, EmptyLC, EmptyALC
 //                  is not changed.
-    this.allParams        = this.body.getAllParams() ;
-    this.nonLeibnizParams = this.body.getNonLeibnizParams() ;
+
+    /***********************************************************************
+    * 23 February 2009: Added ".clone" to the following statements to fix  *
+    * bug.                                                                 *
+    ***********************************************************************/
+    this.allParams        = (HashSet) this.body.getAllParams().clone() ;
+    this.nonLeibnizParams = (HashSet) this.body.getNonLeibnizParams().clone() ;
     for (int i = 0 ; i < this.substs.length ; i++) {
       OpDeclNode param = substs[i].getOp() ;
       if (this.allParams.contains(param)) {

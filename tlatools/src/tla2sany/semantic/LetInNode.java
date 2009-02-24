@@ -4,6 +4,7 @@ package tla2sany.semantic;
 
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.HashSet;
 
 import tla2sany.explorer.ExploreNode;
 import tla2sany.st.TreeNode;
@@ -130,8 +131,15 @@ implements ExploreNode, LevelConstants {
 
     // Calculate level information:
     this.level = this.body.getLevel();
-    this.levelParams = this.body.getLevelParams();
-    this.allParams = this.body.getAllParams();
+
+    /***********************************************************************
+    * 23 February 2009: Added ".clone" to the following statements.  I     *
+    * don't think this is needed and that everything works fine despite    *
+    * the aliasing of the levelParams and allParams fields of this node    *
+    * and its body to the same HashSets, but it doesn't hurt to be safe.   *
+    ***********************************************************************/
+    this.levelParams = (HashSet) this.body.getLevelParams().clone();
+    this.allParams   = (HashSet) this.body.getAllParams().clone();
 
 //    this.levelConstraints = new SetOfLevelConstraints();
     this.levelConstraints.putAll(this.body.getLevelConstraints());
