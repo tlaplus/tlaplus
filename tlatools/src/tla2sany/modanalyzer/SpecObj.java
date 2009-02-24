@@ -11,6 +11,7 @@ import tla2sany.semantic.Errors;
 import tla2sany.semantic.ExternalModuleTable;
 import tla2sany.st.TreeNode;
 import tla2sany.utilities.Vector;
+import util.FileUtil;
 import util.NamedInputStream;
 import util.FilenameToStream;
 import util.ToolIO;
@@ -47,22 +48,24 @@ public class SpecObj
     // in the specification, including all inner modules and all top-level
     // external modules.
 
-    private FilenameToStream ntfis = null;
-    /***********************************************************************
-    * the object used to translate module names to file names              
-    *                                                                      
-    * This field was made public by LL on 8 May 2008 in an effort to       
-    * track down the full file names of included modules.  It seems safer  
-    * to get the NameToFileIStream object from here in case at some later  
-    * time we add a way to allow the user to specify how the parser        
-    * should find a module's file from its name.  This would lead to the   
-    * ability to have different NameToFileIStream objects, so it's better  
-    * for a tool to do file lookup using the actual NameToFileIStream      
-    * object that the parser uses.                                         
-    *
-    * SZA: Since there is no references to this public field, it is
-    * changed to private again.
-    ***********************************************************************/
+    /*
+     * used to translate module names to file names              
+     *                                                                      
+     * This field was made public by LL on 8 May 2008 in an effort to       
+     * track down the full file names of included modules.  It seems safer  
+     * to get the NameToFileIStream object from here in case at some later  
+     * time we add a way to allow the user to specify how the parser        
+     * should find a module's file from its name.  This would lead to the   
+     * ability to have different NameToFileIStream objects, so it's better  
+     * for a tool to do file lookup using the actual NameToFileIStream      
+     * object that the parser uses.                                         
+     *
+     * SZA: Since there is no references to this public field, it is
+     * changed to private again.
+     */
+    // SZ 23.02.2009: renamed according to the purpose
+    private FilenameToStream resolver = null;
+
 
     ParseUnit rootParseUnit = null;
     // The ParseUnit object for the first (i.e. "root") file, roughly
@@ -112,16 +115,16 @@ public class SpecObj
      * Constructs a SpecObj for the given filename using a specified filename resolver
      * @param pfn primary filename of the specification
      * @param ntfis string to named input stream resolver, if <code>null</code>, 
-     * the default from {@link ToolIO#getResolver()} is used
+     * the default from {@link ToolIO#getDefaultResolver()} is used
      */
     public SpecObj(String pfn, FilenameToStream ntfis)
     {
         if (ntfis == null) 
         {
-            ntfis = ToolIO.getResolver(); 
+            ntfis = ToolIO.getDefaultResolver(); 
         }
         this.primaryFileName = pfn;
-        this.ntfis = ntfis;
+        this.resolver = ntfis;
     }
 
     /**
@@ -250,7 +253,9 @@ public class SpecObj
 
             // find a file derived from the name and create a
             // NamedInputStream for it if possible
-            NamedInputStream nis = this.ntfis.toNIStream(name);
+            // SZ 23.02.2009: split the name resolution from the stream retrieval
+            // NamedInputStream nis = this.ntfis.toNIStream(name);
+            NamedInputStream nis = FileUtil.createNamedInputStream(name, this.resolver);
 
             if (nis != null)
             {
@@ -945,6 +950,15 @@ public class SpecObj
 
         return true;
         // loadUnresolvedRelatives(moduleRelationshipsSpec, rootModule, errors);
+    }
+
+    /**
+     * Getter for the name resolver used in the Spec
+     * @return name resolver
+     */
+    public FilenameToStream getResolver()
+    {
+        return resolver;
     }
 
 }

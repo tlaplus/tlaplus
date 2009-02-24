@@ -21,12 +21,16 @@ package tla2sany.modanalyzer;
 // ParseUnit keeps track of whether or not a syntactic unit needs to be 
 // reparsed.  This can be tested with isLoaded(), and done with parseFile().
 
+import java.io.File;
+import java.io.PrintWriter;
+
 import tla2sany.semantic.AbortException;
 import tla2sany.semantic.Errors;
 import tla2sany.st.Location;
 import tla2sany.st.ParseTree;
 import tla2sany.st.TreeNode;
 import tla2sany.utilities.Vector;
+import util.FileUtil;
 import util.NamedInputStream;
 import util.ToolIO;
 
@@ -137,33 +141,46 @@ public class ParseUnit {
   }
 
   private final void writeParseTreeToFile(boolean file, Errors errors) throws AbortException {
-    // Construct the name with a .jcg extension (Jean-Charles Gregoire)
-    java.io.FileOutputStream output;
-    java.io.PrintWriter pw;
-    if (file) {
-      String sinkName = nis.getModuleName() + ".jcg";
-      java.io.File compiled = new java.io.File( sinkName );
+      // Construct the name with a .jcg extension (Jean-Charles Gregoire)
+      PrintWriter pw;
+      if (file) 
+      {
+          String sinkName = nis.getModuleName() + ".jcg";
+          File compiled = this.spec.getResolver().resolve(sinkName, false);
+          
+          // SZ 23.02.2009: name resolver used          
+          // File compiled =  new File( sinkName );
 
-      // if that file already exists, we are about to overwrite it, so delete it first
-      if ( compiled.exists() ) compiled.delete();
-       
-      // Go ahead and write the tree out
-      try{
-        output = new java.io.FileOutputStream( compiled );
-        pw = new java.io.PrintWriter(output); 
-        // This is different from parseTree.SyntaxTreeNode.printST()
-        SyntaxTreePrinter.print( parseTree, pw );
-        pw.flush(); 
-        if( file) pw.close();
-      } catch ( java.io.IOException e ) {
-        errors.addAbort("Error: Failed to open output file " + sinkName +
-		      "\n" + e.getMessage());
+          // if that file already exists, we are about to overwrite it, so delete it first
+          // SZ 23.02.2009: this could lead to problems under windows 
+          if ( compiled.exists() )
+          {
+              compiled.delete();
+
+          } 
+          
+          // SZ 23.02.2009: FileUtil method used
+          //           try {
+          // FileOutputStream output = new FileOutputStream( compiled );
+
+          // Go ahead and write the tree out
+          pw = new PrintWriter(FileUtil.newFOS(compiled)); 
+          
+          // This is different from parseTree.SyntaxTreeNode.printST()
+          SyntaxTreePrinter.print( parseTree, pw );
+          pw.flush(); 
+          pw.close();
+
+          // SZ 23.02.2009:
+          // FileUtil method used
+          // } catch ( IOException e ) {
+          // errors.addAbort("Error: Failed to open output file " + sinkName +
+          //        "\n" + e.getMessage());        }
+      } else {
+          pw = new PrintWriter(ToolIO.out);
+          SyntaxTreePrinter.print( parseTree, pw );
+          pw.flush();
       }
-    } else {
-      pw = new java.io.PrintWriter(ToolIO.out);
-      SyntaxTreePrinter.print( parseTree, pw );
-      pw.flush();
-    }
   }
 
   private final void verifyEquivalenceOfFileAndModuleNames(Errors errors) throws AbortException {
@@ -173,7 +190,7 @@ public class ParseUnit {
     // Remove all of the pathname up to the final "/"
     fName = fName.substring(fName.lastIndexOf(System.getProperty("file.separator"))+1);
 
-    // Remove any extention from file name
+    // Remove any extension from file name
     fName = fName.substring(0,fName.lastIndexOf("."));
 
     // mName = name of top-level module declared in the file
@@ -506,6 +523,7 @@ public class ParseUnit {
   /*************************************************************************
   * If we want to allow plain INSTANCEs inside a LET, this method must be  *
   * modified accordingly.                                                  *
+  * @deprecated not used (no local references)
   *************************************************************************/
   private void getInstanceInLet(TreeNode treeNode, ModuleRelatives currentRelatives) {
     TreeNode[] children = treeNode.heirs();  
