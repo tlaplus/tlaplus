@@ -3,7 +3,6 @@
 package tlc2.util;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Enumeration;
@@ -11,6 +10,10 @@ import java.util.Enumeration;
 import util.FileUtil;
 import util.Set;
 
+/**
+ * @deprecated currently not used
+ * @version $Id$
+ */
 public class BigSet implements Cloneable {
   private static int MaxSize = 10000;
   // four rehashings give ~(>) 13440 els., and .75*13440 ~ 10000
@@ -26,14 +29,23 @@ public class BigSet implements Cloneable {
   public Set els;           // the actual elements
 
   // Constructors
+  /**
+   * @deprecated currently not used
+   */
   public BigSet(String file) {
     this(MaxSize, InitialSize, file); 
   }
-    
+
+  /**
+   * @deprecated currently not used
+   */
   public BigSet(int maxSize, String file) {
     this(maxSize, InitialSize, file);
   }
 
+  /**
+   * @deprecated currently not used
+   */
   public BigSet(int maxSize, int initialSize, String file) {
     this.maxSize = maxSize;
     this.initialSize = initialSize;
@@ -41,12 +53,25 @@ public class BigSet implements Cloneable {
     this.filePtr = 0;
     this.els = new Set(initialSize);
 
+    // SZ Feb 24, 2009: useless code?
+    /*
     try {
       OutputStream out0 = new FileOutputStream(file + "0");
       OutputStream out1 = new FileOutputStream(file + "1");
-      out0.close(); out1.close();
+      out0.close(); 
+      out1.close();
     }
-    catch (IOException e) {}
+    catch (IOException e) {
+    }*/
+    try
+    {
+        new File(file + "0").createNewFile();
+        new File(file + "1").createNewFile();
+    } catch (IOException e)
+    {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+    }
   }
 
   public int size() { return this.els.size(); }
