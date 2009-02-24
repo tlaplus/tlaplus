@@ -117,8 +117,6 @@ public final class BufferedRandomAccessFile extends RandomAccessFile {
      * file named <code>name</code> in mode <code>mode</code>, 
      * which should be "r" for reading only, or "rw" for reading
      * and writing.
-     * SZ Feb 24, 2009
-     * @deprecated use another constructor 
      */
     public BufferedRandomAccessFile(String name, String mode)
     throws IOException 

@@ -21,6 +21,7 @@ import util.ToolIO;
 /**
  * Alternative implementation 
  * @deprecated not used currently
+ * REFACTOR move to test
  * @version $Id$
  */
 public class ExternalSort {
@@ -266,7 +267,6 @@ public class ExternalSort {
 
   private static void mainMergeSort(Comparable[] Arr3) 
   throws IOException {
-    int i;
     //    ToolIO.out.println("\nAttempting Merge Sort \n");
 
     Sort.sortArray(Arr3,0,ARRAYSIZE-1);
