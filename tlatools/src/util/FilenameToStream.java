@@ -2,6 +2,7 @@
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
 package util;
 
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 
 
@@ -20,7 +21,7 @@ public interface FilenameToStream
      * @param name logical name
      * @return FIS or null, if file not found
      */
-    public NamedInputStream toIStream(String name);
+    public NamedInputStream toNIStream(String name);
 
     /**
      * Retrieves an input stream from the file name
@@ -28,8 +29,19 @@ public interface FilenameToStream
      * @param isModule, if true, looks for TLA+ module
      * @return Input Stream or null, if file <code>not</code> found
      */
-    public NamedInputStream toIStream(String name, boolean isModule);
+    public NamedInputStream toNIStream(String name, boolean isModule);
     
+    /**
+     * retrieves a file input from the given name
+     * @param name
+     * @return
+     */
+    public FileInputStream toIStream(String name);
     
+    /**
+     * Retrieves file output stream from the given name 
+     * @param name
+     * @return
+     */
     public FileOutputStream toOStream(String name);
 }

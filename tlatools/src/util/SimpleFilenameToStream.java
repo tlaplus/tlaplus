@@ -5,6 +5,7 @@
 package util;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.net.URL;
@@ -27,11 +28,14 @@ import java.net.URL;
 
 public class SimpleFilenameToStream implements FilenameToStream {
 
-  private static String pathsep     = System.getProperty("path.separator"); 
+  // SZ Feb 23, 2009:
+  // used File.separator and File.pathSeparator instead
+  // the character separating names of directories in the libraryPath    
+  // private static String pathsep     = System.getProperty("path.separator"); 
+  // the character separating names of directories in the libraryPath
+  // private static String filesep     = System.getProperty("file.separator"); 
   
-                                            // the character separating names of directories in the libraryPath
-  private static String filesep     = System.getProperty("file.separator");
-                                            // the character separating names of directories in the libraryPath
+  
   private static String installationBasePath = getInstallationBasePath();
                                             // Find the absolute path in the file system where SANY is installed
   private static String[] libraryPaths = getLibraryPaths();
@@ -59,10 +63,10 @@ public class SimpleFilenameToStream implements FilenameToStream {
     while ( path.charAt(0) == '/' ) { path = path.substring(1); }
 
     // Prepend with the culturally-appropriate file separator character ('/' or '\')
-    path = filesep + path;
+    path = File.separator + path;
 
     // Change any '/'-characters to the culturally-appropriate file separator character
-    path = path.replace('/', filesep.charAt(0) );
+    path = path.replace('/', File.separatorChar );
 
     // Debug
     // System.out.println("Installation base path = " + path);
@@ -75,18 +79,18 @@ public class SimpleFilenameToStream implements FilenameToStream {
     String path = System.getProperty("TLA-Library");
     if (path == null) {
       res = new String[1];
-      res[0] = installationBasePath + filesep + "StandardModules" + filesep;
+      res[0] = installationBasePath + File.separator + "StandardModules" + File.separator;
     }
     else {
-      String[] paths = path.split(pathsep);
+      String[] paths = path.split(File.pathSeparator);
       res = new String[paths.length+1];
       for(int i=0;i<paths.length;i++){
 	res[i] = paths[i];
-	if (!res[i].endsWith(filesep)){
-	  res[i] = res[i] + filesep;
+	if (!res[i].endsWith(File.separator)){
+	  res[i] = res[i] + File.separator;
 	}
       }
-      res[paths.length] = installationBasePath + filesep + "StandardModules" + filesep;
+      res[paths.length] = installationBasePath + File.separator + "StandardModules" + File.separator;
     }
     return res;
   }
@@ -153,9 +157,9 @@ public class SimpleFilenameToStream implements FilenameToStream {
    * This is compatibility method. It constructs input stream
    * for a TLA+ module 
    */
-  public final NamedInputStream toIStream(String name) 
+  public final NamedInputStream toNIStream(String name) 
   {
-      return toIStream(name, true);
+      return toNIStream(name, true);
   }
   /**
    * Returns a NamedInputStream object that corresponds to a file
@@ -170,89 +174,159 @@ public class SimpleFilenameToStream implements FilenameToStream {
    * 
    *  @param isModule flag indicating if the name is referring a TLA + module name
    */
-  public final NamedInputStream toIStream(String name, boolean isModule)
+  public final NamedInputStream toNIStream(String name, boolean isModule)
   {
-      
-    // Strip off one NEWLINE and anything after it, if it is there
-    int n;
-    n = name.indexOf( '\n' );
-    if ( n >= 0 ) {
-      // SZ Feb 20, 2009: the message adjusted to what is actually done 
-      ToolIO.out.println("*** Warning: module name '" + name + "' contained NEWLINE; "
-                          + "Only the part before NEWLINE is considered.");
-      name = name.substring( 0, n );     // Strip off the newline
-    }
-    
-    // SZ Feb 20, 2009: 
-    // if the name is a name of the module
-    if (isModule) 
-    {
-        // SZ Feb 20, 2009: 
-        // Make sure the file name ends with ".tla".
-        if (name.toLowerCase().endsWith(".tla")) 
-        {
-            name = name.substring(0, name.length() - 4);
-        }
-        sourceFileName = name + ".tla";
-    } else 
-    {
-        // SZ Feb 20, 2009: for other files 
-        // leave the name untouched
-        sourceFileName = name;
-    }
-    int nameIndex = name.lastIndexOf(filesep) + 1;
-    sourceModuleName = name.substring(nameIndex);
+      File file = resolveAndSet(name, isModule);
+      // SZ Feb 23, 2009:
+      // moved name resolution and stream creation to separate methods
+      // if no such file exists, then print error and return
+      // SZ Feb 23, 2009: added further checks
+      if ( file == null || !file.exists() || file.isDirectory() ) 
+      {
+          return null;
+      }
 
-    // identify the library property
-    // extract substrings with getProperty("path.separator");
-    // repeat search for each substring until found.
-    // locate() the file corresponding to the sourceFileName
-    File sourceFile = locate();
-
-    // if no such file exists, then print error and return; this code is probably
-    // redundant with the code below
-    if ( !sourceFile.exists() ) {
-	/*
-	// Debugging 
-        System.out.println("Generating error msg.  Stack trace is:"); 
-        try { 
-          throw new Exception(); 
-	} catch (Exception e) { 
-          e.printStackTrace(System.out); 
-	} 
-	System.out.println("Source file '" + sourceFileName +   
-                           "' cannot be found, and neither can files with the with the same " +   
-                           "name in all lower-case or all upper-case.");  
-	*/
-
-	return null;
-    }
-
-    // create a NamedInputStream for the file, and return it if possible
-    // only way it can fail is with FileNotFoundException
-
-    NamedInputStream nis;
-    try {
-      nis = new NamedInputStream( sourceFileName, sourceModuleName, sourceFile );
-    }
-    catch (FileNotFoundException e) {
-      // Does catching this FileNoFoundException do the same thing as checking
-      // for sourceFile.exists() above?  If so,the logic above is redundant
-      // and should be removed
-      ToolIO.out.println("***Internal error: Unable to create NamedInputStream"
-                         + " in toIStream method");
-      return null;
-    }
-    return nis;
+      // for modules, the named input stream is required
+      return getNameInputStream(this.sourceFileName, this.sourceModuleName, file);
   }
+  
 
     /* (non-Javadoc)
      * @see util.FilenameToStream#toOStream(java.lang.String)
      */
     public FileOutputStream toOStream(String name)
     {
-        return null;
+        File file = resolveAndSet(name, false);
+        if ( file == null || !file.exists() || file.isDirectory() ) 
+        {
+            return null;
+        }
+
+        return getOutputStream(file);
     }
+    
+    /* (non-Javadoc)
+     * @see util.FilenameToStream#toIStream(java.lang.String)
+     */
+    public FileInputStream toIStream(String name)
+    {
+        File file = resolveAndSet(name, false);
+        if ( file == null || !file.exists() || file.isDirectory() ) 
+        {
+            return null;
+        }
+
+        return getInputStream(file);
+    }
+
+
+    /**
+     * This method sets up the variables
+     * @return
+     */
+    private File resolveAndSet(String name, boolean isModule)
+    {
+        // Strip off one NEWLINE and anything after it, if it is there
+        int n;
+        n = name.indexOf( '\n' );
+        if ( n >= 0 ) {
+            // SZ Feb 20, 2009: the message adjusted to what is actually done 
+            ToolIO.out.println("*** Warning: module name '" + name + "' contained NEWLINE; "
+                    + "Only the part before NEWLINE is considered.");
+            name = name.substring( 0, n );     // Strip off the newline
+        }
+
+        // SZ Feb 20, 2009: 
+        // if the name is a name of the module
+        if (isModule) 
+        {
+            // SZ Feb 20, 2009: 
+            // Make sure the file name ends with ".tla".
+            if (name.toLowerCase().endsWith(".tla")) 
+            {
+                name = name.substring(0, name.length() - 4);
+            }
+            this.sourceFileName = name + ".tla";
+        } else 
+        {
+            // SZ Feb 20, 2009: for other files 
+            // leave the name untouched
+            this.sourceFileName = name;
+        }
+        
+        this.sourceModuleName = name.substring(name.lastIndexOf(File.separator) + 1);
+
+        // identify the library property
+        // extract substrings with getProperty("path.separator");
+        // repeat search for each substring until found.
+        // locate() the file corresponding to the sourceFileName
+        File sourceFile = locate();
+        return sourceFile;
+    }
+
+    /**
+     * Gracefully create named file input stream
+     * @param fileName
+     * @param moduleName
+     * @param file
+     * @return
+     */
+    public static NamedInputStream getNameInputStream(String fileName, String moduleName, File file)
+    {
+        // create a NamedInputStream for the file, and return it if possible
+        // only way it can fail is with FileNotFoundException
+        try 
+        {
+            // If the named file does not exist, 
+            // is a directory rather than a regular file, 
+            // or for some other reason cannot be opened for reading 
+            // then a FileNotFoundException is thrown.
+            return new NamedInputStream( fileName, moduleName, file );
+        }
+        catch (FileNotFoundException e) 
+        {
+            // Does catching this FileNoFoundException do the same thing as checking
+            // for sourceFile.exists() above?  If so,the logic above is redundant
+            // and should be removed
+            ToolIO.out.println("***Internal error: Unable to create NamedInputStream");
+            return null;
+        }
+    }
+    
+    /**
+     * Gracefully create file input stream
+     * @param file
+     * @return
+     */
+    public static FileInputStream getInputStream(File file)
+    {
+        try
+        {
+            return new FileInputStream(file);
+        } catch (FileNotFoundException e)
+        {
+            ToolIO.out.println("***Internal error: Unable to create InputStream");
+            return null;
+        }
+    } 
+
+    /**
+     * Gracefully create file output stream
+     * @param file
+     * @return
+     */
+    public static FileOutputStream getOutputStream(File file)
+    {
+        try
+        {
+            return new FileOutputStream(file);
+        } catch (FileNotFoundException e)
+        {
+            ToolIO.out.println("***Internal error: Unable to create OutputStream");
+            return null;
+        }
+    }
+
 
 
 } // end class
