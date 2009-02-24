@@ -3,14 +3,12 @@
 package tlc2.value;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.zip.GZIPInputStream;
 
 import tlc2.TLCGlobals;
 import util.Assert;
 import util.BufferedDataInputStream;
+import util.FileUtil;
 import util.UniqueString;
 
 public final class ValueInputStream implements ValueConstants {
@@ -18,26 +16,19 @@ public final class ValueInputStream implements ValueConstants {
   private BufferedDataInputStream dis;
   private HandleTable handles;
 
-  public ValueInputStream(File file) throws IOException {
-    if (TLCGlobals.useGZIP) {
-      InputStream is = new GZIPInputStream(new FileInputStream(file));
-      this.dis = new BufferedDataInputStream(is);
-    }
-    else {
-      this.dis = new BufferedDataInputStream(file);
-    }
+  public ValueInputStream(File file) throws IOException 
+  {
+      // SZ Feb 24, 2009: FileUtil refactoring
+    this.dis = FileUtil.newBdFIS(TLCGlobals.useGZIP, file);
     this.handles = new HandleTable();
   }
 
+  /**
+   * SZ Feb 24, 2009 
+   * @deprecated use another constructor
+   */
   public ValueInputStream(String fname) throws IOException {
-    if (TLCGlobals.useGZIP) {
-      InputStream is = new GZIPInputStream(new FileInputStream(fname));
-      this.dis = new BufferedDataInputStream(is);
-    }
-    else {
-      this.dis = new BufferedDataInputStream(fname);
-    }
-    this.handles = new HandleTable();
+      this(new File(fname));
   }
 
   public final Value read() throws IOException {
