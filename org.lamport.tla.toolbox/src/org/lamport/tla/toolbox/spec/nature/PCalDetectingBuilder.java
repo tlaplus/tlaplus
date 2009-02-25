@@ -86,7 +86,7 @@ public class PCalDetectingBuilder extends IncrementalProjectBuilder
                     {
                         // found a algorithm definition
                         System.out.println("Found algorithm definition in " + resource.getName());
-                        resource.setSessionProperty(key, new Boolean(true).toString());
+                        resource.setSessionProperty(key, new Boolean(true));
                         
                     } else {
                         resource.setSessionProperty(key, null);
