@@ -15,12 +15,15 @@ DESCRIPTION: {General description of the release
 
 2009-xx-xx "0.0.2" 
 ---------------------------------------------------
-- TODO(SZ): fix problem with parse status indicator not disappearing in welcome perspective
+- TODO(SZ): fix problem with parse status indicator not disappearing in welcome perspective (see Readme Tool)
 - TODO(SZ): icons
 - TODO(SZ): splash branding
 - TODO(LL): help content
-- TODO(SZ): intro-page
 
+- FEATURE: TLC lunch
+- FEATURE: Pcal translatess module using the module preferences for PCal run
+- CHANGE: Menu redesign
+- FEATURE: intro-page
 - FEATURE: simpple error report of Pcal errors
 - FEATURE: Pcal translation starts with CTRL + T
 - BUGFIX: The bug in the check that the root file is a TLA file. 
