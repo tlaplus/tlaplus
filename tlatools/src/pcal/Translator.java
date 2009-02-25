@@ -52,6 +52,7 @@ public class Translator
                 errorMessages.add(cleanMessage);
             } else
             {
+                cleanMessage = messages[i];
                 // unknown error format
                 System.out.println(cleanMessage);
             }
