@@ -16,6 +16,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.QualifiedName;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.spec.nature.PCalDetectingBuilder;
@@ -346,5 +347,15 @@ public class ResourceHelper
             return false;
         }
         return spec.getRootFile().equals(module);
-    }    
+    }
+    
+    /**
+     * Constructs qualified name
+     * @param localName
+     * @return
+     */
+    public static QualifiedName getQName(String localName)
+    {
+        return new QualifiedName(Activator.PLUGIN_ID, localName);         
+    }
 }
