@@ -1,6 +1,6 @@
 package org.lamport.tla.toolbox.tool.tlc.job;
 
-import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -20,8 +20,9 @@ import util.ToolIO;
 public class TLCJob extends AbstractJob
 {
     private static final long TIMEOUT = 1000 * 5;
+    private static final int STEP = 30;
 
-    private IFile rootModule;
+    private IResource rootModule;
     private String cfgFilename;
     private TLCThread tlcThread;
 
@@ -30,15 +31,12 @@ public class TLCJob extends AbstractJob
     /**
      * @param name
      */
-    public TLCJob()
+    public TLCJob(IResource rootModule, String cfgFilename)
     {
-        super("TLC run for " + ToolboxHandle.getRootModule().getName());
-
-        // root file
-        rootModule = ToolboxHandle.getRootModule();
-
-        // config file
-        cfgFilename = ToolboxHandle.getConfigFilename();
+        super("TLC run for " + rootModule.getName());
+        
+        this.rootModule = rootModule;
+        this.cfgFilename = cfgFilename;
 
         // initialize the progress reporting variable
         reported = 0;
@@ -46,7 +44,8 @@ public class TLCJob extends AbstractJob
 
     protected Action getJobCompletedAction()
     {
-        return new Action("View job results") {
+        return new Action("View job results") 
+        {
             public void run()
             {
                 System.out.println("Results viewed");
@@ -56,16 +55,18 @@ public class TLCJob extends AbstractJob
 
     protected IStatus run(IProgressMonitor monitor)
     {
-        monitor.beginTask("Running TLC", 100);
+        monitor.beginTask("TLC run for " + rootModule.getName(), IProgressMonitor.UNKNOWN);
 
+        monitor.subTask("Preparing the tool environment");
         // setup tool io
         // Reset the tool output messages.
         ToolIO.reset();
         ToolIO.setMode(ToolIO.TOOL);
         ToolIO.setUserDir(ResourceHelper.getParentDir(rootModule));
-
-        monitor.internalWorked(1);
-
+        monitor.worked(STEP);
+        
+        
+        monitor.subTask("Initilizing TLC");
         // create a TLC instance
         TLC tlc = new TLC();
 
@@ -80,23 +81,27 @@ public class TLCJob extends AbstractJob
                                          //"-coverage", "0.1",
                                          "-workers", "2",
                                          ResourceHelper.getModuleName(rootModule) };
-
         boolean status = tlc.handleParameters(params);
-
+        
         // report errors in parameters
         if (!status)
         {
             return new Status(Status.ERROR, TLCActivator.PLUGIN_ID, "Error processing arguments");
         }
+        monitor.worked(STEP);
 
+        
+        
         // create thread for TLC running
         tlcThread = new TLCThread(tlc);
-
-        monitor.internalWorked(2);
+        
+        monitor.subTask("Starting TLC processing");
 
         // Start the TLC thread
         tlcThread.start();
+        monitor.worked(STEP);
 
+        monitor.subTask("Runing TLC");
         while (this.checkAndSleep())
         {
             // report the messages created since last reporting
@@ -115,7 +120,8 @@ public class TLCJob extends AbstractJob
                 return Status.CANCEL_STATUS;
             }
         }
-
+        monitor.worked(STEP);
+        
         // handle finish
         doFinish();
 

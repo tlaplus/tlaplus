@@ -6,6 +6,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.progress.IProgressConstants;
 
 /**
+ * General job
  * @author Simon Zambrovski
  * @version $Id$
  */
