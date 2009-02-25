@@ -26,6 +26,8 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer
         store.setDefault(IPreferenceConstants.I_PARSE_MODULE_ON_MODIFY, true);
         store.setDefault(IPreferenceConstants.I_PARSE_FILES_ON_MODIFY, true);
         store.setDefault(IPreferenceConstants.I_PARSE_SPEC_ON_MODIFY, true);
+        
+        
     }
 
 }

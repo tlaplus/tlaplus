@@ -25,6 +25,8 @@ public interface IPreferenceConstants
     
     public static final String I_SPEC_LOADED                = "specLoadedName";
 
-    /** Resource persistent property for sticking info about the pcal algorithm */
-    public static final String CONTAINS_PCAL_ALGORITHM      = "containsPCalAlgorithm";
+    /** Resource persistent property for sticking the pcal call params */
+    public static final String PCAL_CAL_PARAMS              = "pCalCallParams";
+    /** Session property indicating if the resource has Pcal algorithm */
+    public static final String CONTAINS_PCAL_ALGORITHM      = "hasPcalAlgorithm";
 }

@@ -41,6 +41,10 @@ public class ResourceBasedPreferenceStore implements IPreferenceStore
         try
         {
             value = resource.getPersistentProperty(new QualifiedName(Activator.PLUGIN_ID, name));
+            if (value == null) 
+            {
+                value = "";
+            }
         } catch (CoreException e)
         {
             // TODO Auto-generated catch block
@@ -53,6 +57,10 @@ public class ResourceBasedPreferenceStore implements IPreferenceStore
     {
         try
         {
+            if (value == null) 
+            {
+                value = "";
+            }
             resource.setPersistentProperty(new QualifiedName(Activator.PLUGIN_ID, name), value);
         } catch (CoreException e)
         {
