@@ -1,7 +1,7 @@
 // Copyright (c) 2003 Compaq Corporation.  All rights reserved.
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
 
-// last modified on Mon  6 Aug 2007 at 14:38:20 PST by lamport
+// last modified on Tue 24 February 2009 at 16:49:51 PST by lamport
 
 // Changed by LL on 17 Mar 2007 to handle THEOREM ASSUME ...
 //   Replaced theoremExpr field with theoremExprOrAssumeProve.
@@ -110,7 +110,39 @@ public class TheoremNode extends LevelNode {
     else { sub = new LevelNode[1];} ;
     if (this.def != null) {sub[0] = this.def;}
     else {sub[0] = this.theoremExprOrAssumeProve;} ;
-    return levelCheckSubnodes(iter, sub);    
+    boolean retVal = levelCheckSubnodes(iter, sub);    
+    /***********************************************************************
+    * Added 24 Feb 2009: Check that                                        *
+    *  - A constant theorem can have only a constant-level proof.          *
+    *  - Only a temporal theorem can have a temporal-level proof.          *
+    ***********************************************************************/
+    if (   (this.proof != null)  
+           /****************************************************************
+           * Must not check if this is a QED step.                         *
+           ****************************************************************/
+        && ! (   (this.theoremExprOrAssumeProve != null)
+              && (this.theoremExprOrAssumeProve instanceof OpApplNode)
+              && (((OpApplNode) 
+                     this.theoremExprOrAssumeProve).operator != null)
+              && (((OpApplNode) 
+                     this.theoremExprOrAssumeProve).operator.getName() 
+                         == OP_qed))) {
+      if (   (this.theoremExprOrAssumeProve.level == ConstantLevel)
+          && (this.proof.level > ConstantLevel)) {
+         errors.addError(
+            stn.getLocation(),
+            "Constant theorem or proof step has non-constant proof.");
+          return false;
+        };
+      if(   (this.proof.level == TemporalLevel)
+         && (this.theoremExprOrAssumeProve.level < TemporalLevel)) {
+          errors.addError(
+            stn.getLocation(),
+            "Non-temporal theorem has temporal-level proof.");
+          return false;
+        };
+     };
+   return retVal; 
   }
 
 //  public final int getLevel() {
