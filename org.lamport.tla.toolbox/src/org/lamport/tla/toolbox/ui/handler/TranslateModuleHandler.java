@@ -1,6 +1,7 @@
 package org.lamport.tla.toolbox.ui.handler;
 
 import java.util.List;
+import java.util.Vector;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -12,8 +13,10 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
+import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.TLAMarkerHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
+import org.lamport.tla.toolbox.util.pref.IPreferenceConstants;
 
 import pcal.Translator;
 
@@ -40,9 +43,52 @@ public class TranslateModuleHandler extends AbstractHandler implements IHandler
         if (editorInput instanceof IFileEditorInput)
         {
             IResource fileToBuild = ((IFileEditorInput) editorInput).getFile();
-            System.out.println(fileToBuild.getLocation().toOSString());
+            System.out.println("Translating " + fileToBuild.getLocation().toOSString());
 
-            translator.runTranslation(new String[] { fileToBuild.getLocation().toOSString() });
+            boolean hasPcalAlg = false;
+            String[] params;
+
+            try
+            {
+                hasPcalAlg = ((Boolean) fileToBuild.getSessionProperty(ResourceHelper
+                        .getQName(IPreferenceConstants.CONTAINS_PCAL_ALGORITHM))).booleanValue();
+                params = ((String) fileToBuild.getPersistentProperty(ResourceHelper
+                        .getQName(IPreferenceConstants.PCAL_CAL_PARAMS))).split(" ");
+
+            } catch (CoreException e1)
+            {
+                e1.printStackTrace();
+                params = new String[0];
+            }
+
+            if (!hasPcalAlg)
+            {
+                // no algorithm detected
+                System.out.println("No algorithm found");
+            } else {
+                System.out.println("Algorithm found");
+            }
+
+            // add params from the resource setting
+            Vector callParams = new Vector();
+            for (int i=0; i < params.length; i++)
+            {
+                if (params[i] != null && !params[i].equals("")) 
+                {
+                    callParams.add(params[i]);
+                }
+            }
+            callParams.add(fileToBuild.getLocation().toOSString());
+            
+
+            StringBuffer buffer = new StringBuffer();
+            for (int i = 0; i < callParams.size(); i++)
+            {
+                buffer.append(" " + callParams.elementAt(i));
+            }
+            System.out.println("Translator invoked with params: '" + buffer.toString()+ "'");
+
+            translator.runTranslation((String[]) callParams.toArray(new String[callParams.size()]));
 
             List errors = translator.getErrorMessages();
 
