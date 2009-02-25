@@ -1,10 +1,12 @@
 package org.lamport.tla.toolbox.ui.property;
 
 import org.eclipse.core.resources.IResource;
-import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.preference.StringFieldEditor;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.lamport.tla.toolbox.util.IHelpConstants;
+import org.lamport.tla.toolbox.util.UIHelper;
 import org.lamport.tla.toolbox.util.pref.IPreferenceConstants;
 import org.lamport.tla.toolbox.util.pref.ResourceBasedPreferenceStore;
 
@@ -14,7 +16,7 @@ import org.lamport.tla.toolbox.util.pref.ResourceBasedPreferenceStore;
  */
 public class ModulePropertyPage extends GenericFieldEditorPropertyPage
 {
-    BooleanFieldEditor algorithmFoundEditor;
+    StringFieldEditor pcalParamEditor;
     
     /** (non-Javadoc)
      * Method declared on PreferencePage
@@ -24,8 +26,8 @@ public class ModulePropertyPage extends GenericFieldEditorPropertyPage
         Control contents = super.createContents(parent);
         // ensure the page has no special buttons
         noDefaultAndApplyButton();
-        // TODO
-        // PlatformUI.getWorkbench().getHelpSystem().setHelp(getControl(), );
+        // setup help
+        UIHelper.setHelp(contents, IHelpConstants.MODULE_PROPERTY_PAGE);
         return contents;
     }
 
@@ -34,9 +36,8 @@ public class ModulePropertyPage extends GenericFieldEditorPropertyPage
      */
     public void createFieldEditors(Composite composite)
     {
-        algorithmFoundEditor = new BooleanFieldEditor(IPreferenceConstants.CONTAINS_PCAL_ALGORITHM, "PCal Algorithm found", composite);
-        addEditor(algorithmFoundEditor);
-        
+        pcalParamEditor = new StringFieldEditor(IPreferenceConstants.PCAL_CAL_PARAMS, "PCal call arguments", composite);
+        addEditor(pcalParamEditor);
     }
 
     public IPreferenceStore getPreferenceStore()
