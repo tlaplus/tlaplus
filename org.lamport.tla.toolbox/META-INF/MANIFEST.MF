@@ -35,5 +35,11 @@ Export-Package: org.lamport.tla.toolbox.tool,
    org.eclipse.swt.widgets",
  pcal;uses:="pcal.exception,tla2tex",
  tlc2;uses:="tlc2.tool",
+ tlc2.module,
+ tlc2.pprint,
+ tlc2.tool,
+ tlc2.tool.liveness,
+ tlc2.util,
+ tlc2.value,
  util
 
