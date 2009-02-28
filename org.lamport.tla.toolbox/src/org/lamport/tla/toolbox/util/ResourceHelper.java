@@ -71,10 +71,10 @@ public class ResourceHelper
                 IProjectDescription description = ws.newProjectDescription(name);
 
                 // set project location
-                if (getParentDir(rootFilename) != null)
+                if (getParentDirName(rootFilename) != null)
                 {
                     // parent directory could be determined
-                    IPath path = new Path(getParentDir(rootFilename)).removeTrailingSeparator();
+                    IPath path = new Path(getParentDirName(rootFilename)).removeTrailingSeparator();
                     path = path.append(name.concat(".toolbox")).addTrailingSeparator();
                     description.setLocation(path);
                 }
@@ -119,7 +119,7 @@ public class ResourceHelper
      * 
      * @param name full filename of the resource
      * @param project
-     * @param createNew, a boolean flag indicating if the file should be created if it does not exist
+     * @param createNew, a boolean flag indicating if the new link should be created if it does not exist
      */
     public static IFile getLinkedFile(IProject project, String name, boolean createNew)
     {
@@ -161,7 +161,7 @@ public class ResourceHelper
      *            path of the module
      * @return path of the container
      */
-    public static String getParentDir(String path)
+    public static String getParentDirName(String path)
     {
         File f = new File(path);
         if (f != null)
@@ -172,15 +172,15 @@ public class ResourceHelper
     }
 
     /**
-     * See {@link ResourceHelper#getParentDir(String)}
+     * See {@link ResourceHelper#getParentDirName(String)}
      */
-    public static String getParentDir(IResource resource)
+    public static String getParentDirName(IResource resource)
     {
         if (resource == null) 
         {
             return null;
         } 
-        return getParentDir(resource.getLocation().toOSString());
+        return getParentDirName(resource.getLocation().toOSString());
     }
     
     /**
