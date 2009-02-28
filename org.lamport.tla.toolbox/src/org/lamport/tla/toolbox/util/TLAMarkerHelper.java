@@ -52,6 +52,7 @@ public class TLAMarkerHelper
 
     /**
      * Installs a problem marker on a given resource
+     * REFACTOR: remove runable....
      */
     public static void installProblemMarker(final IResource resource, final String moduleName, final int severityError,
             final int[] coordinates, final String message, IProgressMonitor monitor)
