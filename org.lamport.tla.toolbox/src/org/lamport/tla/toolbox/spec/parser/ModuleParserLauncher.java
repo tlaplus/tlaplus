@@ -53,7 +53,7 @@ public class ModuleParserLauncher
         IProject project = parseResource.getProject();
 
         // setup the directory of the root file
-        ToolIO.setUserDir(ResourceHelper.getParentDir(parseResource.getLocation().toOSString()));
+        ToolIO.setUserDir(ResourceHelper.getParentDirName(parseResource.getLocation().toOSString()));
 
         // reset problems from previous run
         TLAMarkerHelper.removeProblemMarkers(project, monitor);
