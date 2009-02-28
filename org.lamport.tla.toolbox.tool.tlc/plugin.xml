@@ -9,9 +9,24 @@
             id="org.lamport.tla.toolbox.tool.tlc.commands.category">
       </category>
       <command
-            name="Launch TLC"
             categoryId="org.lamport.tla.toolbox.tool.tlc.commands.category"
-            id="org.lamport.tla.toolbox.tool.tlc.commands.launch">
+            id="org.lamport.tla.toolbox.tool.tlc.commands.launch"
+            name="Launch TLC">
+      </command>
+      <command
+            categoryId="org.lamport.tla.toolbox.tool.tlc.commands.category"
+            id="org.lamport.tla.toolbox.tool.tlc.commands.model.new"
+            name="New Model...">
+      </command>
+      <command
+            categoryId="org.lamport.tla.toolbox.tool.tlc.commands.category"
+            id="org.lamport.tla.toolbox.tool.tlc.commands.model.open"
+            name="Open Model">
+         <commandParameter
+               id="org.lamport.tla.toolbox.tool.tlc.commands.model.open.param"
+               name="modelName"
+               optional="true">
+         </commandParameter>
       </command>
    </extension>
    <extension
@@ -19,6 +34,14 @@
       <handler
             commandId="org.lamport.tla.toolbox.tool.tlc.commands.launch"
             class="org.lamport.tla.toolbox.tool.tlc.handlers.TLCLaunchHandler">
+      </handler>
+      <handler
+            class="org.lamport.tla.toolbox.tool.tlc.handlers.NewModelHandler"
+            commandId="org.lamport.tla.toolbox.tool.tlc.commands.model.new">
+      </handler>
+      <handler
+            class="org.lamport.tla.toolbox.tool.tlc.handlers.OpenModelHandler"
+            commandId="org.lamport.tla.toolbox.tool.tlc.commands.model.open">
       </handler>
    </extension>
    <extension
@@ -35,13 +58,13 @@
       <menuContribution
             locationURI="menu:toolbox.tools.menu?after=toolbox.toolmenus.separator">
          <menu
-               label="TLC"
+               label="Model"
                mnemonic="M"
                id="org.lamport.tla.toolbox.tool.tlc.menus.sampleMenu">
             <command
-                  commandId="org.lamport.tla.toolbox.tool.tlc.commands.launch"
-                  mnemonic="C"
-                  id="toolbox.tool.tlc.launch">
+                  commandId="org.lamport.tla.toolbox.tool.tlc.commands.model.new"
+                  id="toolbox.tool.tlc.model.new"
+                  mnemonic="N">
                <visibleWhen
                      checkEnabled="true">
                   <with
@@ -54,6 +77,24 @@
                   </with>
                </visibleWhen>
             </command>
+            <menu
+                  id="toolbox.tool.tlc.model.open"
+                  label="Open Model"
+                  mnemonic="O">
+               <visibleWhen
+                     checkEnabled="true">
+                  <with
+                        variable="activeWorkbenchWindow.activePerspective">
+                     <equals
+                           value="org.lamport.tla.toolbox.ui.perspective.specLoaded">
+                     </equals>
+                  </with>
+               </visibleWhen>
+               <dynamic
+                     class="org.lamport.tla.toolbox.tool.tlc.launch.ui.ModelContributionItem"
+                     id="toolbox.tool.tlc.model.open.dynamic">
+               </dynamic>
+            </menu>
          </menu>
       </menuContribution>
       <menuContribution
@@ -76,6 +117,7 @@
          </command>
       </menuContribution>
    </extension>
+   
    <extension
          point="org.lamport.toolbox.tool">
       <tool
@@ -83,5 +125,75 @@
             name="TLC">
       </tool>
    </extension>
+   
+   <extension
+         point="org.eclipse.debug.core.launchConfigurationTypes">
+      <launchConfigurationType
+            id="org.lamport.tla.toolbox.tool.tlc.modelCheck"
+            delegate="org.lamport.tla.toolbox.tool.tlc.launch.TLCModelLaunchDelegate"
+            modes="modelcheck"
+            name="TLC Model"
+            public="true"
+            delegateName="TLC ModelChecker"
+            delegateDescription="TLC Model Checker is usefull to find bugs in the specification"
+      >
+      </launchConfigurationType>
+      <launchConfigurationType
+            delegate="org.lamport.tla.toolbox.tool.tlc.launch.TLCSimulateLaunchDelegate"
+            delegateDescription="TLC Model Checker is usefull to find bugs in the specification"
+            delegateName="TLC ModelChecker"
+            id="org.lamport.tla.toolbox.tool.tlc.simulate"
+            modes="simulate"
+            name="TLC Simulate"
+            public="true">
+      </launchConfigurationType>
+   </extension>
+   
+   <extension point="org.eclipse.debug.core.launchModes">
+      <launchMode mode="modelcheck" label="Model Check" launchAsLabel="Check As"></launchMode>
+      <launchMode mode="simulate" label="Simulate" launchAsLabel="Simulate As"></launchMode>
+   </extension>
+   
+   <extension
+	point="org.eclipse.debug.ui.launchConfigurationTypeImages">
+ 		<launchConfigurationTypeImage
+			icon="icons/sample.gif"
+			configTypeID="org.lamport.tla.toolbox.tool.tlc.modelCheck"
+			id="org.lamport.tla.toolbox.tool.tlc.ui.launchConfigurationTypeImage.modelcheck">
+		</launchConfigurationTypeImage>
+   </extension>
+   
+   <extension point="org.eclipse.debug.ui.launchConfigurationTabGroups">
+     <launchConfigurationTabGroup
+           class="org.lamport.tla.toolbox.tool.tlc.launch.ui.ModelCheckerTabGroup"
+           id="toolbox.tlc.modelchecker"
+           type="org.lamport.tla.toolbox.tool.tlc.modelCheck">
 
+<!-- perspective="org.lamport.tla.toolbox.tool.tlc.launchMode2" -->
+      	<launchMode
+             mode="modelcheck" 
+             description="My specific description">
+      	</launchMode>
+     </launchConfigurationTabGroup>
+   </extension>
+   <extension
+         point="org.eclipse.debug.ui.launchGroups">
+      <launchGroup
+            bannerImage="icons/sample.gif"
+            id="org.lamport.tla.toolbox.tool.tlc.launchGroup.modelcheck"
+            image="icons/sample.gif"
+            label="Model Checking"
+            mode="modelcheck"
+            title="Select or configure new model for model checking">
+      </launchGroup>
+      <launchGroup
+            bannerImage="icons/sample.gif"
+            id="org.lamport.tla.toolbox.tool.tlc.launchGroup.simulate"
+            image="icons/sample.gif"
+            label="Simulation"
+            mode="simulate"
+            title="Select or configure new model for MC in simulation mode">
+      </launchGroup>
+   </extension>
+   
 </plugin>
