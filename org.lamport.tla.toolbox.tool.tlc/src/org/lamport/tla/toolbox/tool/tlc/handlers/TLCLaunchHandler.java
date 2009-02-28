@@ -10,6 +10,7 @@ import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.tool.tlc.job.AbstractJob;
 import org.lamport.tla.toolbox.tool.tlc.job.TLCJob;
+import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 
 /**
  * Our sample handler extends AbstractHandler, an IHandler base class.
@@ -35,7 +36,7 @@ public class TLCLaunchHandler extends AbstractHandler
         IResource rootModule = ToolboxHandle.getRootModule();
 
         // config file
-        String cfgFilename = ToolboxHandle.getConfigFilename();
+        IResource cfgFilename = ModelHelper.getConfigFile(rootModule);
 
         
         
