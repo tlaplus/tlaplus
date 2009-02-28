@@ -17,7 +17,6 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.lamport.tla.toolbox.tool.tlc.TLCActivator;
-import org.lamport.tla.toolbox.tool.tlc.handlers.IConfigurationConstants;
 
 /**
  * @author Simon Zambrovski
