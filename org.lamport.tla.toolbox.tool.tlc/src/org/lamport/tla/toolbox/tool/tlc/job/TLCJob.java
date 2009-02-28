@@ -23,7 +23,7 @@ public class TLCJob extends AbstractJob
     private static final int STEP = 30;
 
     private IResource rootModule;
-    private String cfgFilename;
+    private IResource cfgFile;
     private TLCThread tlcThread;
 
     int reported;
@@ -31,12 +31,12 @@ public class TLCJob extends AbstractJob
     /**
      * @param name
      */
-    public TLCJob(IResource rootModule, String cfgFilename)
+    public TLCJob(IResource rootModule, IResource cfgFile)
     {
         super("TLC run for " + rootModule.getName());
         
         this.rootModule = rootModule;
-        this.cfgFilename = cfgFilename;
+        this.cfgFile = cfgFile;
 
         // initialize the progress reporting variable
         reported = 0;
@@ -62,7 +62,7 @@ public class TLCJob extends AbstractJob
         // Reset the tool output messages.
         ToolIO.reset();
         ToolIO.setMode(ToolIO.TOOL);
-        ToolIO.setUserDir(ResourceHelper.getParentDir(rootModule));
+        ToolIO.setUserDir(ResourceHelper.getParentDirName(rootModule));
         monitor.worked(STEP);
         
         
@@ -77,7 +77,7 @@ public class TLCJob extends AbstractJob
         tlc.setSpecObject(ToolboxHandle.getSpecObj());
 
         // handle parameters
-        String[] params = new String[] { "-config", cfgFilename, 
+        String[] params = new String[] { "-config", cfgFile.getName(), 
                                          //"-coverage", "0.1",
                                          "-workers", "2",
                                          ResourceHelper.getModuleName(rootModule) };
