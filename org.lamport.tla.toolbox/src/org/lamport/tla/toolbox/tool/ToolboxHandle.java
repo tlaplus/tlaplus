@@ -1,8 +1,5 @@
 package org.lamport.tla.toolbox.tool;
 
-import java.io.File;
-import java.io.IOException;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.lamport.tla.toolbox.Activator;
@@ -30,38 +27,6 @@ public class ToolboxHandle
         return ((Activator.getSpecManager().getSpecLoaded() == null) ? null : Activator.getSpecManager().getSpecLoaded().getRootFile()); 
     }
 
-
-    /**
-     * Retrieves the filename of the config file
-     * TODO HACK 
-     */
-    public static String getConfigFilename()
-    {
-        IFile rootModule = getRootModule();
-
-        String cfgPath = rootModule.getLocation().removeFileExtension().addFileExtension("cfg").toOSString();
-        
-        File cfgFile = new File(cfgPath);
-        if (!cfgFile.exists())
-        {
-            try
-            {
-                cfgFile.createNewFile();
-            } catch (IOException e)
-            {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-        }
-        if (cfgFile != null && cfgFile.exists())
-        {
-            return cfgFile.getName();
-        } else {
-            return null;
-        }
-        
-    }
-    
     /**
      * Returns the instance preference store
      */
@@ -82,6 +47,15 @@ public class ToolboxHandle
             return spec.getValidRootModule();
         }
         return null;
+    }
+
+
+    /**
+     * @return
+     */
+    public static Spec getCurrentSpec()
+    {
+        return Activator.getSpecManager().getSpecLoaded();
     }
     
     
