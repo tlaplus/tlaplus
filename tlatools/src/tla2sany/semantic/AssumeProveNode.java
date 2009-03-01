@@ -1,6 +1,6 @@
 // Copyright (c) 2003 Compaq Corporation.  All rights reserved.
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
-// Last modified on Tue 17 February 2009 at 17:05:06 PST by lamport
+// Last modified on Sun  1 March 2009 at 14:09:26 PST by lamport
 
 package tla2sany.semantic;
 
@@ -247,7 +247,14 @@ public class AssumeProveNode extends LevelNode {
     for (int i = 0; i < this.assumes.length; i++) {
        this.argLevelParams.addAll(this.assumes[i].getArgLevelParams());
       };
-
+    /***********************************************************************
+    * The following added on 1 Mar 2009.  See                              *
+    * LevelNode.addTemporalLevelConstraintToConstants.                     *
+    ***********************************************************************/
+    if (this.levelCorrect) { 
+      addTemporalLevelConstraintToConstants(this.levelParams,
+                                            this.levelConstraints);
+     };
     return this.levelCorrect ;
    } // end levelCheck
 

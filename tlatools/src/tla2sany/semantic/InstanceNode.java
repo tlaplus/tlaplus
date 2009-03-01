@@ -24,7 +24,7 @@ public class InstanceNode extends LevelNode {
    * 
    *  where I         instance name
    *        param[i]  instance paramater
-   *        M         moodule being instantiated
+   *        M         module being instantiated
    *        mparam[i] constant and variable declared in M
    *        mexp[i]   expression substituted for mexp[i] in this instance
    *

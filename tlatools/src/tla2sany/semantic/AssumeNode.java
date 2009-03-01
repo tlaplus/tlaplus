@@ -65,6 +65,13 @@ public class AssumeNode extends LevelNode {
                       "Level error: assumptions must be level 0 (Constant), " +
                       "but this one has level " + this.getLevel() + "." );
     }
+    /***********************************************************************
+    * The following added on 1 Mar 2009.  See                              *
+    * LevelNode.addTemporalLevelConstraintToConstants.                     *
+    ***********************************************************************/
+    if (res) { addTemporalLevelConstraintToConstants(this.levelParams,
+                                                     this.levelConstraints);
+     };
     return res;
   }
   

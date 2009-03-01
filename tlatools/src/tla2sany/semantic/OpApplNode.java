@@ -2,7 +2,7 @@
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
 package tla2sany.semantic;
 
-// last modified on Sun 22 February 2009 at 11:30:16 PST by lamport
+// last modified on Sun  1 March 2009 at 13:34:22 PST by lamport
 
 /***************************************************************************
 * Modified on 4 Jul 2007 to change the introduced bound symbols from       *
@@ -603,7 +603,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
        } ;
       
       /*********************************************************************
-      * Remove bound identifikers from levelParams, allParams, and         *
+      * Remove bound identifiers from levelParams, allParams, and          *
       * nonLeibnizParams.                                                  *
       *********************************************************************/
       Iterator absIter = allBoundSymbols.iterator() ;

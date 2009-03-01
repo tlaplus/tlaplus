@@ -1,14 +1,14 @@
 // Copyright (c) 2003 Compaq Corporation.  All rights reserved.
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
 
-// last modified on Tue 24 February 2009 at 16:49:51 PST by lamport
+// last modified on Sun  1 March 2009 at 11:21:31 PST by lamport
 
 // Changed by LL on 17 Mar 2007 to handle THEOREM ASSUME ...
 //   Replaced theoremExpr field with theoremExprOrAssumeProve.
 
 /***************************************************************************
-* XXXXXX To be done.  Add an isExpr() method to say whether or not the     *
-* theorem is an ASSUME/PROVE                                               *
+* Decided not to add an isExpr() method to say whether or not the theorem  *
+* is an ASSUME/PROVE                                                       *
 ***************************************************************************/
 
 package tla2sany.semantic;
@@ -64,7 +64,7 @@ public class TheoremNode extends LevelNode {
     this.theoremExprOrAssumeProve = theorem;
     this.module = mn;
     this.def = opd;
-    this.proof = pf;  // XXXXX a placeholder
+    this.proof = pf;  
   }
 
   /* Returns the statement of the theorem  */
@@ -112,28 +112,23 @@ public class TheoremNode extends LevelNode {
     else {sub[0] = this.theoremExprOrAssumeProve;} ;
     boolean retVal = levelCheckSubnodes(iter, sub);    
     /***********************************************************************
-    * Added 24 Feb 2009: Check that                                        *
-    *  - A constant theorem can have only a constant-level proof.          *
-    *  - Only a temporal theorem can have a temporal-level proof.          *
+    * Modified 1 Mar 2009: Check that only a temporal theorem can have a   *
+    * temporal-level proof.                                                *
     ***********************************************************************/
     if (   (this.proof != null)  
            /****************************************************************
-           * Must not check if this is a QED step.                         *
+           * Must not check if this is a QED or CASE.                      *
            ****************************************************************/
         && ! (   (this.theoremExprOrAssumeProve != null)
               && (this.theoremExprOrAssumeProve instanceof OpApplNode)
               && (((OpApplNode) 
                      this.theoremExprOrAssumeProve).operator != null)
-              && (((OpApplNode) 
-                     this.theoremExprOrAssumeProve).operator.getName() 
-                         == OP_qed))) {
-      if (   (this.theoremExprOrAssumeProve.level == ConstantLevel)
-          && (this.proof.level > ConstantLevel)) {
-         errors.addError(
-            stn.getLocation(),
-            "Constant theorem or proof step has non-constant proof.");
-          return false;
-        };
+              && (   (((OpApplNode) 
+                        this.theoremExprOrAssumeProve).operator.getName() 
+                            == OP_qed)
+                  || (((OpApplNode) 
+                        this.theoremExprOrAssumeProve).operator.getName() 
+                            == OP_pfcase)))) {
       if(   (this.proof.level == TemporalLevel)
          && (this.theoremExprOrAssumeProve.level < TemporalLevel)) {
           errors.addError(

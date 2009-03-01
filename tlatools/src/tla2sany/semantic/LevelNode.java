@@ -164,9 +164,28 @@ public int levelChecked   = 0 ;
        } ;
      } ;
     return this.levelCorrect ;
-    
    }
 
+  /*************************************************************************
+  * The following method adds to constrs a level constaint that the        *
+  * level of C < TemporalLevel for every declared CONSTANT C in the set    *
+  * params of nodes.                                                       *
+  *                                                                        *
+  * Called when level checking an ASSUME statement or an ASSUME/PROVE to   *
+  * prevent a declared constant that appears in it from being              *
+  * instantiated by a temporal formula.  Added by LL on 1 Mar 2009         *
+  *************************************************************************/
+  static void addTemporalLevelConstraintToConstants(
+                 HashSet params,
+                 SetOfLevelConstraints constrs ) {
+      Iterator iter = params.iterator();
+      while (iter.hasNext()) {
+        LevelNode node = (LevelNode) iter.next() ;
+        if (node.getKind() == ConstantDeclKind) {
+          constrs.put(node, Levels[ActionLevel]);
+         };
+       }
+   }
 /***************************************************************************
 * The checks in the following methods should probably be eliminated after  *
 * SANY2 is debugged.                                                       *
@@ -2305,7 +2324,7 @@ public int levelChecked   = 0 ;
 // 
 // =============================================================================
 
-// Last modified on Thu 22 May 2008 at 21:02:59 PST by lamport
+// Last modified on Sun  1 March 2009 at 14:12:07 PST by lamport
 
 
 
