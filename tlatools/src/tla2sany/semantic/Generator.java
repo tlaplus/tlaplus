@@ -1,7 +1,7 @@
 // Copyright (c) 2003 Compaq Corporation.  All rights reserved.
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
 //
-// last modified on Mon 23 February 2009 at 16:05:24 PST by lamport
+// last modified on Mon  2 March 2009 at 16:20:31 PST by lamport
 
 //
 //  4/9/2006 Added a check in RecordConstructor for duplicate fields
@@ -5768,6 +5768,14 @@ OpDefNode node = (OpDefNode) vec.elementAt(i);
                      && (curLHS != null)
                      && (((SyntaxTreeNode) 
                              curLHS.heirs()[0]).heirs().length == 0) 
+                     && (curLHS.heirs()).length > 1
+                        /***************************************************
+                        * This test added 2 Mar 2009 to fix following      *
+                        * bug.  When we are here and the left-hand side    *
+                        * is something like a number, then curLHS.heirs()  *
+                        * seems to have length 1 and the following test    *
+                        * causes an ArrayIndexOverflowException.           *
+                        ***************************************************/
                      && (curLHS.heirs()[1].getKind() == IDENTIFIER)
                      && (curLHS.heirs()[1].getUS() == AtUS)) {
   
