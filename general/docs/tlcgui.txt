@@ -1,0 +1,107 @@
+EXECUTION MODES
+  Model-Check
+  Restart (From Checkpoint)
+  Debug
+  Simulation
+  Expression-Evaluation
+
+TO SPECIFY
+  For Model-Check Mode: 
+     The Specification:
+        - A Temporal Formula, or
+        - Initial Predicate
+          Next-state Action
+          [Fairness]:  
+            - A Temporal Formula, or
+            - A set of <<Action, SF/WF choice>> pairs
+   
+     The Model:
+        [Model Values]
+          Should be both declared in TLA+ spec and
+          given to TLC as model values.
+        CONSTANT values
+        [Substitutions]
+          Default includes a substitution for any constant
+          foo with definition of the form:
+             foo == CHOOSE x : x \notin expr, or
+             foo == CHOOSE x : ~ (x \in expr)
+        [Constraint] 
+        [Symmetry]
+   
+     What To Check:
+       [Invariant]
+       [Property]
+       [Possibly: A spec (Module/Formula) + refinement mapping]
+       Deadlock/NoDeadlock
+
+    How to Execute
+      number of worker threads
+     
+    What to Show:
+      [coverage]
+      [warnings]
+      progress: (numbers and/or graph)
+        states generated
+        distinct states generated
+        unexamined states (queue)
+      when checkpointing being done
+        and perhaps how long since last done
+
+  For Debug mode:
+     Same as for Model-Check, plus:
+       BreakPoint actions:
+          Stop
+          ConditionalPrint
+          LocateError:
+             Add start / stop markers, and on error
+               tell user if error occurred between
+               markers.
+         Evaluate an action A on a step s1 -> s2.
+            Done by making the next state action:
+                 s2' /\ A
+            This is done to evaluate the debug actions
+                embedded in A.
+         Rerun a trace, printing out the values of state functions
+           in each state--and perhaps transition functions.
+     Debug definitions:
+        In middle of spec (before next-state action def)
+        Outside spec (in module the EXTENDS spec)
+
+     except:
+        A possible alternative Initial Predicate
+        No coverage?
+
+  For Simulation Mode:
+    Same as for Model-Check, plus
+       depth
+       seed
+       aril
+    except:
+      No coverage?
+      Single thread?
+      No progress?
+
+  For Restart:
+     Same as for Model-Check, plus:
+        the checkpoint
+
+  For Expression-Evaluation
+    The Model (as for Model-Check)
+    A set of expressions to evaluate.
+      (Should be saved between executions)
+    Initial state (only if not all expressions are constant)
+    Second state  (only if some expression is action-level)
+    Add a pretty-printing feature, as discussed with Tom.
+    
+OTHER ACTIONS
+  cleanup
+  check spec for use of identifiers defined in
+    TLC module or additional Toolbox module.
+
+
+OTHER THINGS TO SHOW
+  space used by TLC 
+  errors - 
+    Handling error traces
+       Viewing: Highlight changes from previous state.
+       Selecting states from a trace
