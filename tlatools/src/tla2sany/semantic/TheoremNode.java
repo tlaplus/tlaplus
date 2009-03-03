@@ -1,7 +1,7 @@
 // Copyright (c) 2003 Compaq Corporation.  All rights reserved.
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
 
-// last modified on Sun  1 March 2009 at 11:21:31 PST by lamport
+// last modified on Tue  3 March 2009 at 15:30:24 PST by lamport
 
 // Changed by LL on 17 Mar 2007 to handle THEOREM ASSUME ...
 //   Replaced theoremExpr field with theoremExprOrAssumeProve.
@@ -99,7 +99,10 @@ public class TheoremNode extends LevelNode {
   /* Level checking */
 
   int levelChecked = 0 ;
-  public final boolean levelCheck(int iter) {
+  /* (non-Javadoc)
+ * @see tla2sany.semantic.LevelNode#levelCheck(int)
+ */
+public final boolean levelCheck(int iter) {
     if (levelChecked >= iter) {return true ;} ;
     levelChecked = iter;
     LevelNode sub[] ;
@@ -111,24 +114,31 @@ public class TheoremNode extends LevelNode {
     if (this.def != null) {sub[0] = this.def;}
     else {sub[0] = this.theoremExprOrAssumeProve;} ;
     boolean retVal = levelCheckSubnodes(iter, sub);    
+
     /***********************************************************************
-    * Modified 1 Mar 2009: Check that only a temporal theorem can have a   *
-    * temporal-level proof.                                                *
+    * If the assertion of this theorem node is an OpApplNode,              *
+    * then set oan to the node and oanOp to it's operator.                 *
+    ***********************************************************************/
+    OpApplNode oan = null ;
+    SymbolNode oanOp = null ;
+    if (   (this.theoremExprOrAssumeProve != null)
+        && (this.theoremExprOrAssumeProve instanceof OpApplNode)) {
+       oan   = (OpApplNode) this.theoremExprOrAssumeProve ;
+       oanOp = oan.operator ;
+    } ;
+    
+    /***********************************************************************
+    * Check that only a non-temporal theorem cannot have a temporal-level  *
+    * formula in its proof.                                                *
+    * Modified 3 Mar 2009:                                                 *
     ***********************************************************************/
     if (   (this.proof != null)  
            /****************************************************************
            * Must not check if this is a QED or CASE.                      *
            ****************************************************************/
-        && ! (   (this.theoremExprOrAssumeProve != null)
-              && (this.theoremExprOrAssumeProve instanceof OpApplNode)
-              && (((OpApplNode) 
-                     this.theoremExprOrAssumeProve).operator != null)
-              && (   (((OpApplNode) 
-                        this.theoremExprOrAssumeProve).operator.getName() 
-                            == OP_qed)
-                  || (((OpApplNode) 
-                        this.theoremExprOrAssumeProve).operator.getName() 
-                            == OP_pfcase)))) {
+        && ! (   (oanOp != null)
+              && (oanOp.getName() == OP_qed)
+                  || (oanOp.getName() == OP_pfcase))) {
       if(   (this.proof.level == TemporalLevel)
          && (this.theoremExprOrAssumeProve.level < TemporalLevel)) {
           errors.addError(
@@ -137,8 +147,49 @@ public class TheoremNode extends LevelNode {
           return false;
         };
      };
+
+   /************************************************************************
+   * The following code checks that a PICK step whose body is a            *
+   * temporal formula can have only constant bounds--for example,          *
+   * in                                                                    *
+   *                                                                       *
+   *   PICK c \in S : <>(x=c),                                             *
+   *                                                                       *
+   * the expression S must have constant level.                            *
+   * Added 3 Mar 2009.                                                     *
+   ************************************************************************/
+   if (   (oanOp != null)
+       && (oanOp.getName() == OP_pick)
+       && (oan.ranges != null)
+       && (this.theoremExprOrAssumeProve.level == TemporalLevel)) {
+     for (int i = 0; i < oan.ranges.length; i++) {
+       if (oan.ranges[i].getLevel() != ConstantLevel) {
+         errors.addError(
+                   oan.ranges[i].stn.getLocation(),
+                   "Non-constant bound of temporal PICK.");
+       }
+     }
+   };
    return retVal; 
   }
+
+  /*************************************************************************
+  * The following method checks that in a proof whose current goal is a    *
+  * temporal-level assertion:                                              *
+  *                                                                        *
+  *  - Any HAVE P or CASE P statement must have P of constant-level        *
+  *                                                                        *
+  *  - Any TAKE or WITNESS statement must have constant-level              *
+  *    bounds--e.g., in TAKE x \in S, expression S must have constant      *
+  *    level.                                                              *
+  *                                                                        *
+  * For a CASE statement (which is the only one of these statements that   *
+  * has a proof, the method must be called to check proof of the CASE      *
+  * statement.                                                             *
+  * Added 3 Mar 2009.                                                      *
+  *************************************************************************/
+  private final void levelCheckNonTemporal(ProofNode pnode) {
+   }
 
 //  public final int getLevel() {
 //    if (levelChecked == 0) 
