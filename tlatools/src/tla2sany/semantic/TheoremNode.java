@@ -1,7 +1,7 @@
 // Copyright (c) 2003 Compaq Corporation.  All rights reserved.
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
 
-// last modified on Tue  3 March 2009 at 15:30:24 PST by lamport
+// last modified on Tue  3 March 2009 at 15:59:52 PST by lamport
 
 // Changed by LL on 17 Mar 2007 to handle THEOREM ASSUME ...
 //   Replaced theoremExpr field with theoremExprOrAssumeProve.
@@ -115,18 +115,22 @@ public final boolean levelCheck(int iter) {
     else {sub[0] = this.theoremExprOrAssumeProve;} ;
     boolean retVal = levelCheckSubnodes(iter, sub);    
 
+    if  (this.theoremExprOrAssumeProve != null) { return retVal; } ;
+      /*********************************************************************
+      * I don't know if the theoremExprOrAssumeProve node can be null,     *
+      * but if it is, there's no more level checking to do.                *
+      *********************************************************************/
     /***********************************************************************
     * If the assertion of this theorem node is an OpApplNode,              *
     * then set oan to the node and oanOp to it's operator.                 *
     ***********************************************************************/
     OpApplNode oan = null ;
     SymbolNode oanOp = null ;
-    if (   (this.theoremExprOrAssumeProve != null)
-        && (this.theoremExprOrAssumeProve instanceof OpApplNode)) {
+    if (this.theoremExprOrAssumeProve instanceof OpApplNode) {
        oan   = (OpApplNode) this.theoremExprOrAssumeProve ;
        oanOp = oan.operator ;
     } ;
-    
+
     /***********************************************************************
     * Check that only a non-temporal theorem cannot have a temporal-level  *
     * formula in its proof.                                                *
@@ -170,6 +174,15 @@ public final boolean levelCheck(int iter) {
        }
      }
    };
+   /************************************************************************
+   * Finish the level checking for a temporal-level node.                  *
+   * Added 3 Mar 2009.                                                     *
+   ************************************************************************/
+   if (   (this.theoremExprOrAssumeProve.level == TemporalLevel)
+       && (this.proof != null)
+       && (this.getKind() == NonLeafProofKind)) {
+       levelCheckNonTemporal((NonLeafProofNode) proof);  
+   };
    return retVal; 
   }
 
@@ -188,8 +201,11 @@ public final boolean levelCheck(int iter) {
   * statement.                                                             *
   * Added 3 Mar 2009.                                                      *
   *************************************************************************/
-  private final void levelCheckNonTemporal(ProofNode pnode) {
-   }
+  private final void levelCheckNonTemporal(NonLeafProofNode pnode) {
+      for (int i = 0; i < pnode.getSteps().length; i++) {
+        LevelNode node = pnode.getSteps()[i]; 
+      }
+  }
 
 //  public final int getLevel() {
 //    if (levelChecked == 0) 
