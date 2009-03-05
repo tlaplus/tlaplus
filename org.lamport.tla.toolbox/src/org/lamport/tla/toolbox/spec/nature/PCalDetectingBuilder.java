@@ -1,5 +1,6 @@
 package org.lamport.tla.toolbox.spec.nature;
 
+import java.io.File;
 import java.util.Map;
 
 import org.eclipse.core.resources.IFile;
@@ -66,6 +67,11 @@ public class PCalDetectingBuilder extends IncrementalProjectBuilder
          */
         public boolean visit(IResource resource) throws CoreException
         {
+            // check for resource existence (WS in-sync or out-of-sync)
+            if (!resource.exists() || !new File(resource.getLocation().toOSString()).exists()) 
+            {
+                return false;
+            }
             if (IResource.PROJECT == resource.getType())
             {
                 return true;
