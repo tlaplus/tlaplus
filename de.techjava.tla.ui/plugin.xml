@@ -1,0 +1,297 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+<plugin>
+
+<!-- =================================================================================== -->
+<!-- Extension: UI Extension Points                                                      -->
+<!-- =================================================================================== -->
+   <extension-point id="parser" name="TLA Parser" schema="schema/parser.exsd"/>
+   <extension-point id="modelchecker" name="Model Checker" schema="schema/modelchecker.exsd"/>
+
+<!-- =================================================================================== -->
+<!-- Extension: TLA+ Launcher Configuration Types                                        -->
+<!-- =================================================================================== -->
+<!-- =================================================================================== -->
+<!-- Extension: TLA+ Launcher Configuration Types Groups                                 -->
+<!-- =================================================================================== -->
+<!-- =================================================================================== -->
+<!-- Extension: TLA+ Launcher Configuration Types Image                                  -->
+<!-- =================================================================================== -->
+<!-- =================================================================================== -->
+<!-- Extension: TLA+ Launcher Shortcuts                                                  -->
+<!-- =================================================================================== -->
+<!-- =================================================================================== -->
+<!-- Extension: TLA+ Editor Document setup                                               -->
+<!-- =================================================================================== -->
+ <extension
+       id="de.techjava.tla.ui.editors.DocumentSetup"
+       name="de.techjava.tla.ui.editors.DocumentSetup"
+       point="org.eclipse.core.filebuffers.documentSetup">
+    <participant
+          class="de.techjava.tla.ui.editors.TLADocumentSetupParticipant"
+          extensions="tla"/>
+ </extension>
+<!-- =================================================================================== -->
+<!-- Extension: TLA+ Builder                                                             -->
+<!-- =================================================================================== -->
+   <extension
+         id="builders.TLABuilder"
+         name="TLA+ Syntax Parser"
+         point="org.eclipse.core.resources.builders">
+      <builder hasNature="false">
+         <run class="de.techjava.tla.ui.builders.TLABuilder"/>
+      </builder>
+   </extension>   
+<!-- =================================================================================== -->
+<!-- Extension: TLA+ Markers	                                                         -->
+<!-- =================================================================================== -->
+   <extension
+         id="markers.SanyAbortParserMarker"
+         name="TLA+ Parser Aborts"
+         point="org.eclipse.core.resources.markers">
+      <super type="org.eclipse.core.resources.problemmarker" />
+      <super type="org.eclipse.core.resources.textmarker" />
+      <persistent value="false" />
+    </extension>
+   <extension
+         id="markers.SanyErrorParserMarker"
+         name="TLA+ Parser Errors"
+         point="org.eclipse.core.resources.markers">
+      <super type="org.eclipse.core.resources.problemmarker" />
+      <super type="org.eclipse.core.resources.textmarker"/>
+      <persistent value="false" />
+    </extension>
+   <extension
+         id="markers.SanyWarningParserMarker"
+         name="TLA+ Parser Warnings"
+         point="org.eclipse.core.resources.markers">
+      <super type="org.eclipse.core.resources.problemmarker" />
+      <super type="org.eclipse.core.resources.textmarker" />
+      <persistent value="false" />
+    </extension>
+   <extension
+         id="markers.SanyAbortSemanticMarker"
+         name="TLA+ Semantic Aborts"
+         point="org.eclipse.core.resources.markers">
+      <super type="org.eclipse.core.resources.problemmarker" />
+      <super type="org.eclipse.core.resources.textmarker" />
+      <persistent value="false" />
+    </extension>
+   <extension
+         id="markers.SanyErrorSemanticMarker"
+         name="TLA+ Semantic Errors"
+         point="org.eclipse.core.resources.markers">
+      <super type="org.eclipse.core.resources.problemmarker" />
+      <super type="org.eclipse.core.resources.textmarker" />
+      <persistent value="false" />
+    </extension>
+   <extension
+         id="markers.SanyWarningSemanticMarker"
+         name="TLA+ Semantic Warnings"         
+         point="org.eclipse.core.resources.markers">
+      <super type="org.eclipse.core.resources.problemmarker" />
+      <super type="org.eclipse.core.resources.textmarker" />
+      <persistent value="false" />
+    </extension>
+   <extension
+         id="markers.SanyAbortInitMarker"
+         name="TLA+ Init Aborts"         
+         point="org.eclipse.core.resources.markers">
+      <super type="org.eclipse.core.resources.problemmarker" />
+      <super type="org.eclipse.core.resources.textmarker" />
+      <persistent value="false" />
+   </extension>
+   <extension
+         id="markers.SanyErrorInitMarker"
+		 name="TLA+ Init Errors"         
+         point="org.eclipse.core.resources.markers">
+      <super type="org.eclipse.core.resources.problemmarker" />
+      <super type="org.eclipse.core.resources.textmarker" />
+      <persistent value="false" />
+   </extension>
+
+   <extension
+         id="markers.SanyWarningInitMarker"
+         name="TLA+ Init Warnings"
+         point="org.eclipse.core.resources.markers">
+      <super type="org.eclipse.core.resources.problemmarker" />
+      <super type="org.eclipse.core.resources.textmarker" />
+      <persistent value="false" />
+   </extension>
+<!-- =================================================================================== -->
+<!-- Extension: TLA+ Project Nature                                                      -->
+<!-- =================================================================================== -->
+   <extension
+         id="natures.TLANature"
+         name="TLA+ Nature"
+         point="org.eclipse.core.resources.natures">
+      <runtime>
+         <run class="de.techjava.tla.ui.natures.TLANature"/>
+      </runtime>
+   </extension>
+<!-- =================================================================================== -->
+<!-- Extension: TLA+ File Types                                                          -->
+<!-- =================================================================================== -->
+	<extension 
+		point="org.eclipse.team.core.fileTypes">
+	  <fileTypes extension="tla" type="text"/>
+	  <fileTypes extension="cfg" type="text"/>
+   	</extension>
+
+   
+<!-- =================================================================================== -->
+<!-- Extension: TLA+ Editors                                                             -->
+<!-- =================================================================================== -->
+   <extension
+         point="org.eclipse.ui.editors">
+      <editor
+            class="de.techjava.tla.ui.editors.TLAEditor"
+            icon="icons/full/obj16/tla_obj.gif"
+            contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
+            name="TLA+ Module Editor"
+            id="de.techjava.tla.ui.editors.TLAEditor"
+            extensions="tla"/>
+   </extension>
+<!-- =================================================================================== -->
+<!-- Extension: TLA+ Wizards : New                                                       -->
+<!-- =================================================================================== -->
+   <extension
+         point="org.eclipse.ui.newWizards">
+      <category
+            name="TLA+"
+            id="de.techjava.tla.ui"/>
+      <wizard
+            class="de.techjava.tla.ui.wizards.TLANewFileWizard"
+            icon="icons/full/etool16/new_module_wiz.gif"
+            category="de.techjava.tla.ui"
+            name="TLA+ Module"
+            id="de.techjava.tla.ui.wizards.TLANewFileWizard"/>
+      <wizard
+            class="de.techjava.tla.ui.wizards.TLANewProjectWizard"
+            icon="icons/full/etool16/new_project_wiz.gif"
+            category="de.techjava.tla.ui"
+            project="true"
+            name="TLA+ Project"
+            id="de.techjava.tla.ui.wizards.TLANewProjectWizard">
+         <description/>
+         <selection class="org.eclipse.core.resources.IProject"/>
+      </wizard>
+   </extension>
+
+<!-- =================================================================================== -->
+<!-- Extension: TLA+ Project Nature Images                                               -->
+<!-- =================================================================================== -->
+   <extension
+         point="org.eclipse.ui.ide.projectNatureImages">
+      <image
+            natureId="de.techjava.tla.ui.natures.TLANature"
+            icon="icons/full/ovr16/tla_ovr.gif"
+            id="de.techjava.tla.ui.natures.TLANatureImage"/>
+   </extension>
+<!-- =================================================================================== -->
+<!-- Extension: TLA+ Perspectives                                                        -->
+<!-- =================================================================================== -->
+   <extension
+         point="org.eclipse.ui.perspectives">
+      <perspective
+            class="de.techjava.tla.ui.perspectives.TLAPerspective"
+            fixed="false"
+            name="TLA+"
+            id="de.techjava.tla.ui.perspectives.TLAPerspective"/>
+   </extension>
+<!-- =================================================================================== -->
+<!-- Extension: TLA+ Popup menus                                                         -->
+<!-- =================================================================================== -->
+	<extension point="org.eclipse.ui.popupMenus"> 
+      <objectContribution 
+         id="de.techjava.tla.ui.contribution.ProjectNature" 
+         objectClass="org.eclipse.core.resources.IProject" 
+         nameFilter="*"> 
+         <menu
+            id="de.techjava.tla.ui.ProjectContextMenu" 
+            path="additions" 
+            label="&amp;TLA+"> 
+            <separator name="TLAGroup"/> 
+         </menu> 
+         <action
+               label="&amp;Add TLA+ Nature"
+               class="de.techjava.tla.ui.actions.TLANatureActionDelegate"
+               icon="icons/full/obj16/tla_prj_obj.gif"
+               menubarPath="de.techjava.tla.ui.ProjectContextMenu/TLAGroup"
+               id="de.techjava.tla.ui.actions.AddProjectNature">
+	            <enablement>
+	               <not>
+	                  <objectState
+	                        value="de.techjava.tla.ui.natures.TLANature"
+	                        name="nature"/>
+	               </not>
+	            </enablement>
+         </action>
+         <action
+               label="&amp;Remove TLA+ Nature"
+               class="de.techjava.tla.ui.actions.TLANatureActionDelegate"
+               icon="icons/full/obj16/tla_prj_obj.gif"
+               menubarPath="de.techjava.tla.ui.ProjectContextMenu/TLAGroup"
+               id="de.techjava.tla.ui.actions.RemoveProjectNature">
+	            <enablement>
+	               <objectState
+	                     value="de.techjava.tla.ui.natures.TLANature"
+	                     name="nature"/>
+	            </enablement>
+         </action> 
+      </objectContribution> 
+   </extension>
+
+
+<!-- =================================================================================== -->
+<!-- Extension: TLA+ Preferences                                                         -->
+<!-- =================================================================================== -->
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            class="de.techjava.tla.ui.preferences.TLAPreferencePage"
+            name="TLA+ Preferences"
+            id="de.techjava.tla.ui.preferences.TLAPreferencePage"/>
+      <page
+            class="de.techjava.tla.ui.preferences.TLASyntacticAnalyzerPreferencePage"
+            name="Syntax Analyser"
+            id="de.techjava.tla.ui.preferences.TLASyntacticAnalyzerPreferencePage"
+            category="de.techjava.tla.ui.preferences.TLAPreferencePage"/>
+
+      <page
+            class="de.techjava.tla.ui.preferences.TLAEditorPreferencePage"
+            name="TLA+ Editor"
+            id="de.techjava.tla.ui.preferences.TLAEditorPreferencePage"
+            category="de.techjava.tla.ui.preferences.TLAPreferencePage"/>
+      <page
+            class="de.techjava.tla.ui.preferences.TLAEditorSyntaxPreferencePage"
+            name="TLA+ Syntax Colors"
+            id="de.techjava.tla.ui.preferences.TLAEditorSyntaxPreferencePage"
+            category="de.techjava.tla.ui.preferences.TLAEditorPreferencePage"/>
+   </extension>
+
+
+<!-- =================================================================================== -->
+<!-- Extension: TLA+ Property Pages                                                      -->
+<!-- =================================================================================== -->
+   <extension
+         point="org.eclipse.ui.propertyPages">
+      <page
+            nameFilter="*"
+            class="de.techjava.tla.ui.properties.TLAProjectProperties"
+            name="TLA+ Project Properties"
+            id="de.techjava.tla.ui.properties.TLAProjectPropertyPage">
+            <enabledWhen>
+	            <instanceof
+	                  value="org.eclipse.core.resources.IProject">
+	            </instanceof>
+            </enabledWhen>
+	</page>            
+   </extension>
+
+
+<!-- =================================================================================== -->
+<!-- Extension: TLA+ Working Sets                                                        -->
+<!-- =================================================================================== -->
+   
+</plugin>
