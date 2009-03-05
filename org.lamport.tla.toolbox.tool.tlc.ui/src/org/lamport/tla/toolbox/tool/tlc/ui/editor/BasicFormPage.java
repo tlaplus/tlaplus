@@ -53,7 +53,7 @@ public abstract class BasicFormPage extends FormPage
         // setup body layout
         body.setLayout(getBodyLayout());
         
-        createContent(managedForm);
+        createBodyContent(managedForm);
     }
 
     
@@ -70,7 +70,7 @@ public abstract class BasicFormPage extends FormPage
      * @param toolkit
      * @param body
      */
-    protected void createContent(FormToolkit toolkit, Composite body)
+    protected void createBodyContent(FormToolkit toolkit, Composite body)
     {
         
     }
@@ -80,9 +80,9 @@ public abstract class BasicFormPage extends FormPage
      * @param toolkit
      * @param body
      */
-    protected void createContent(IManagedForm managedForm)
+    protected void createBodyContent(IManagedForm managedForm)
     {
-        createContent(managedForm.getToolkit(), managedForm.getForm().getBody());
+        createBodyContent(managedForm.getToolkit(), managedForm.getForm().getBody());
     }
 
     /**

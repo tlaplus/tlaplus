@@ -15,6 +15,7 @@ import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
 import org.lamport.tla.toolbox.util.IHelpConstants;
 
 /**
+ * Page for displaying parameters
  * @author Simon Zambrovski
  * @version $Id$
  */
@@ -29,7 +30,7 @@ public class ParametersPage extends BasicFormPage
         this.helpId = IHelpConstants.PARAMETERS_MODEL_PAGE;
     }
 
-    protected void createContent(IManagedForm managedForm)
+    protected void createBodyContent(IManagedForm managedForm)
     {
         GridData gd;
         Composite body = managedForm.getForm().getBody();

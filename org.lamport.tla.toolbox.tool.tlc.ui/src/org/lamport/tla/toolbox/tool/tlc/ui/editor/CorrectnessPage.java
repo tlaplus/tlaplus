@@ -34,7 +34,7 @@ public class CorrectnessPage extends BasicFormPage
         this.helpId = IHelpConstants.CORRECTNESS_MODEL_PAGE;
     }
 
-    protected void createContent(IManagedForm managedForm)
+    protected void createBodyContent(IManagedForm managedForm)
     {
         GridData gd;
         Composite body = managedForm.getForm().getBody();

@@ -41,7 +41,7 @@ public class BehaviorFormulaPage extends BasicFormPage
     /* (non-Javadoc)
      * @see org.lamport.tla.toolbox.tool.tlc.ui.editor.BasicFormPage#createContent(org.eclipse.ui.forms.widgets.FormToolkit, org.eclipse.swt.widgets.Composite)
      */
-    protected void createContent(FormToolkit toolkit, Composite parent)
+    protected void createBodyContent(FormToolkit toolkit, Composite parent)
     {
         // enabling button
         toolkit.createButton(parent, "Use sigle formula", SWT.RADIO);

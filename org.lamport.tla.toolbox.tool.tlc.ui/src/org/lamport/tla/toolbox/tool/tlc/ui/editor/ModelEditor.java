@@ -1,8 +1,12 @@
 package org.lamport.tla.toolbox.tool.tlc.ui.editor;
 
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.forms.editor.FormEditor;
+import org.eclipse.ui.part.FileEditorInput;
 
 /**
  * Editor for the model
@@ -18,28 +22,24 @@ public class ModelEditor extends FormEditor
         
     }
 
-
-    /* (non-Javadoc)
-     * @see org.eclipse.ui.forms.editor.FormEditor#addPages()
-     */
-    protected void addPages()
+    public void init(IEditorSite site, IEditorInput input) throws PartInitException
     {
-        try
+        super.init(site, input);
+        if (input instanceof FileEditorInput)
         {
-            // addPage(new GeneralModelPage(this));
-            addPage(new BehaviorFormulaPage(this));
-            addPage(new CorrectnessPage(this));
-            addPage(new ParametersPage(this));
-            addPage(new ModelValuesPage(this));
-            addPage(new LaunchConfigurationPage(this));
-            
-        } catch (PartInitException e)
-        {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            FileEditorInput finput = (FileEditorInput) input;
+            if (finput != null)
+            {
+                IPath path = finput.getPath();
+                // setContentDescription(path.toString());
+                setPartName(path.removeFileExtension().lastSegment());
+                setTitleToolTip(path.toString());
+            }
         }
+
     }
 
+    
     /* (non-Javadoc)
      * @see org.eclipse.ui.part.EditorPart#doSave(org.eclipse.core.runtime.IProgressMonitor)
      */
@@ -62,6 +62,28 @@ public class ModelEditor extends FormEditor
     public boolean isSaveAsAllowed()
     {
         return false;
+    }
+
+
+    /* (non-Javadoc)
+     * @see org.eclipse.ui.forms.editor.FormEditor#addPages()
+     */
+    protected void addPages()
+    {
+        try
+        {
+            addPage(new GeneralModelPage(this));
+            addPage(new BehaviorFormulaPage(this));
+            addPage(new CorrectnessPage(this));
+            addPage(new ParametersPage(this));
+            addPage(new ModelValuesPage(this));
+            addPage(new LaunchConfigurationPage(this));
+            
+        } catch (PartInitException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 
 }

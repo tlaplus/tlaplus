@@ -24,7 +24,7 @@ public class ModelValuesPage extends BasicFormPage
         this.helpId = IHelpConstants.MODEL_VALUE_MODEL_PAGE;
     }
 
-    protected void createContent(IManagedForm managedForm)
+    protected void createBodyContent(IManagedForm managedForm)
     {
         Composite body = managedForm.getForm().getBody();
         FormToolkit toolkit = managedForm.getToolkit();
