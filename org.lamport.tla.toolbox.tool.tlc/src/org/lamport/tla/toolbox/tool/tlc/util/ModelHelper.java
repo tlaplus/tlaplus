@@ -11,6 +11,7 @@ import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationType;
 import org.eclipse.debug.core.ILaunchManager;
+import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.tool.tlc.job.ExtendingTLAModuleCreationOperation;
 import org.lamport.tla.toolbox.tool.tlc.launch.TLCModelLaunchDelegate;
 import org.lamport.tla.toolbox.util.ResourceHelper;
@@ -26,39 +27,56 @@ public class ModelHelper
     /**
      * Constructs the model called FOO_MC_1 from the SpecName FOO
      * if FOO_MC_1 already exists, delivers FOO_MC_2, and so on...
+     * 
+     * This method tests the existence of the launch configuration AND of the file
+     * 
      * @param specProject
      * @param specName
      * @return
      */
     public static String constructModelName(IProject specProject, String specName)
     {
-        return constructModelNameName(specProject, specName + "_MC_1");
+        return doConstructModelName(specProject, specName + "_MC_1");
     }
     
-    
-    private static String constructModelNameName(IProject specProject, String proposition)
+    /**
+     * Implementation of the {@link ModelHelper#constructModelName(IProject, String)}
+     * @param specProject
+     * @param proposition
+     * @return
+     */
+    private static String doConstructModelName(IProject specProject, String proposition)
     {
         ILaunchConfiguration existingModel = getModelByName(specProject, proposition);
-        if (existingModel != null)
+        if (existingModel != null || specProject.getFile(proposition + ".tla").exists())
         {
             String oldNumber = proposition.substring(proposition.lastIndexOf("_") + 1);
             int number = Integer.parseInt(oldNumber) + 1;
             proposition = proposition.substring(0, proposition.lastIndexOf("_") + 1);
-            return constructModelNameName(specProject, proposition + number);
+            return doConstructModelName(specProject, proposition + number);
         }
 
         return proposition;
     }
 
+    /**
+     * Convenience method retrieving the model for the project of the current specification
+     * @param modelName name of the model
+     * @return launch configuration or null, if not found
+     */
+    public static ILaunchConfiguration getModelByName(String modelName)
+    {
+        return getModelByName(ToolboxHandle.getCurrentSpec().getProject(), modelName);
+    }
 
     /**
-     * TODO! add project test
      * @param specProject
-     * @param proposition
+     * @param modelName
      * @return
      */
-    public static ILaunchConfiguration getModelByName(IProject specProject, String proposition)
+    public static ILaunchConfiguration getModelByName(IProject specProject, String modelName)
     {
+        //TODO! add project test
         ILaunchManager launchManager = DebugPlugin.getDefault().getLaunchManager();
         ILaunchConfigurationType launchConfigurationType = launchManager
         .getLaunchConfigurationType(TLCModelLaunchDelegate.LAUNCH_ID);
@@ -69,11 +87,12 @@ public class ModelHelper
             for (int i = 0; i < launchConfigurations.length; i++)
             {
                 
-                if (launchConfigurations[i].getName().equals(proposition)) 
+                if (launchConfigurations[i].getName().equals(modelName)) 
                 {
                     return launchConfigurations[i];
                 }
             }
+            
         } catch (CoreException e)
         {
             // TODO Auto-generated catch block
@@ -81,6 +100,17 @@ public class ModelHelper
         }
 
         return null;
+    }
+    
+    /**
+     * Convenience method
+     * @param modelFile file containing the model
+     * @return ILaunchconfiguration
+     */
+    public static ILaunchConfiguration getModelByFile(IFile modelFile)
+    {
+        ILaunchManager launchManager = DebugPlugin.getDefault().getLaunchManager();
+        return launchManager.getLaunchConfiguration(modelFile);
     }
 
     
@@ -101,9 +131,9 @@ public class ModelHelper
     }
     
     /**
-     * Creates a new model check root
+     * Creates a new model root and retrieves the handle to it
      */
-    public static IFile getModelRootFile(IResource specRootModule, String modelName)
+    public static IFile getNewModelRootFile(IResource specRootModule, String modelName)
     {
         // construct new model checking root module name
         IPath modelRootPath = specRootModule.getLocation().removeLastSegments(1).append(modelName + ".tla");
@@ -127,6 +157,4 @@ public class ModelHelper
 
         return modelRootFile;
     }
-
-
 }
