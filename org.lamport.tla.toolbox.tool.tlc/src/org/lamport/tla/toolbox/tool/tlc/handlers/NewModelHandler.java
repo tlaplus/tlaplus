@@ -10,14 +10,10 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationType;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.core.ILaunchManager;
-import org.eclipse.debug.ui.DebugUITools;
-import org.eclipse.jface.viewers.StructuredSelection;
-import org.eclipse.jface.window.Window;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.tool.tlc.launch.TLCModelLaunchDelegate;
 import org.lamport.tla.toolbox.tool.tlc.launch.ui.IConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
-import org.lamport.tla.toolbox.util.UIHelper;
 
 /**
  * Our sample handler extends AbstractHandler, an IHandler base class.
@@ -52,7 +48,7 @@ public class NewModelHandler extends AbstractHandler implements IConfigurationCo
                 .getName());
         
         // get the model root file
-        IResource modelRoot = ModelHelper.getModelRootFile(specRootModule, modelName);
+        IResource modelRoot = ModelHelper.getNewModelRootFile(specRootModule, modelName);
         
         // get the model configuration
         IResource config = ModelHelper.getConfigFile(ToolboxHandle.getRootModule());
@@ -73,8 +69,8 @@ public class NewModelHandler extends AbstractHandler implements IConfigurationCo
 
             ILaunchConfiguration launchSaved = launchCopy.doSave();
 
-            openLaunchDialog(launchSaved);
-
+            return launchSaved;
+            
         } catch (CoreException e)
         {
             // TODO Auto-generated catch block
@@ -82,25 +78,5 @@ public class NewModelHandler extends AbstractHandler implements IConfigurationCo
         }
 
         return null;
-    }
-
-    /**
-     * 
-     */
-    public static void openLaunchDialog(ILaunchConfiguration configCopy)
-    {
-        int dialogResponse = DebugUITools.openLaunchConfigurationDialogOnGroup(UIHelper.getShellProvider().getShell(),
-                new StructuredSelection(configCopy), "org.lamport.tla.toolbox.tool.tlc.launchGroup.modelcheck");
-        if (Window.CANCEL == dialogResponse)
-        {
-            // cancel pressed
-        } else if (Window.OK == dialogResponse)
-        {
-            // ok pressed
-
-        } else
-        {
-            System.out.println("BUG: Window/Dialog API changed");
-        }
     }
 }
