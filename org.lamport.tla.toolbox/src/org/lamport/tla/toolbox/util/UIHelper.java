@@ -222,6 +222,16 @@ public class UIHelper
     }
 
     /**
+     * Convenience method to reduce client dependencies
+     * @param editorId
+     * @param file
+     * @return
+     */
+    public static IEditorPart openEditor(String editorId, IFile file)
+    {
+        return openEditor(editorId, new FileEditorInput(file));
+    }
+    /**
      * Opens an editor in current workbench window
      * 
      * @param editorId
