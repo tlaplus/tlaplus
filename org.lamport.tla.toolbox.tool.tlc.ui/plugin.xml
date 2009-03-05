@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>
+   <extension
+         point="org.eclipse.ui.editors">
+      <editor
+            class="org.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor"
+            extensions="cfg"
+            icon="icons/sample.gif"
+            id="org.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor"
+            name="Model Editor">
+      </editor>
+   </extension>
+   <extension
+         point="org.eclipse.ui.commands">
+      <category
+            name="TLC UI Commands"
+            id="org.lamport.tla.toolbox.tool.tlc.ui.commands.category">
+      </category>
+      <command
+            categoryId="org.lamport.tla.toolbox.tool.tlc.ui.commands.category"
+            id="org.lamport.tla.toolbox.tool.tlc.ui.commands.model.new"
+            name="New Model...">
+      </command>
+   </extension>
+   
+   <extension
+         point="org.eclipse.ui.handlers">
+      <handler
+            commandId="org.lamport.tla.toolbox.tool.tlc.ui.commands.model.new"
+            class="org.lamport.tla.toolbox.tool.tlc.ui.handlers.OpenEditorHandler">
+      </handler>
+   </extension>
+   
+      <extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            locationURI="menu:toolbox.tools.menu?after=toolbox.toolmenus.separator">
+         <menu
+               label="Model Editor"
+               mnemonic="E"
+               id="org.lamport.tla.toolbox.tool.tlc.ui.menus.modelmenu">
+            <command
+                  commandId="org.lamport.tla.toolbox.tool.tlc.ui.commands.model.new"
+                  id="toolbox.tool.tlc.model.new"
+                  mnemonic="N">
+            </command>
+   		</menu>
+   	</menuContribution>
+   	</extension>
+</plugin>

@@ -1,0 +1,19 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: TLC UI Plugin
+Bundle-SymbolicName: org.lamport.tla.toolbox.tool.tlc.ui;singleton:=true
+Bundle-Version: 1.0.0
+Bundle-Activator: org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator
+Bundle-Vendor: Simon Zambrovski, Leslie Lamport
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.core.runtime,
+ org.eclipse.ui.forms,
+ org.eclipse.ui.editors,
+ org.eclipse.jface.text,
+ org.lamport.tla.toolbox,
+ org.eclipse.ui.ide,
+ org.eclipse.jface.text,
+ org.eclipse.core.resources,
+ org.lamport.tla.toolbox.tool.tlc
+Bundle-RequiredExecutionEnvironment: J2SE-1.4
+Bundle-ActivationPolicy: lazy
