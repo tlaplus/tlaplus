@@ -1,6 +1,5 @@
 package org.lamport.tla.toolbox.ui.wizard;
 
-import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
@@ -45,10 +44,9 @@ public class NewSpecWizard extends Wizard implements INewWizard
         if (!rootNamePath.toFile().exists())
         {
             // create it
-            IWorkspaceRunnable moduleCreateOperation = ResourceHelper.createTLAModuleCreationOperation(rootNamePath);
             try
             {
-                ResourcesPlugin.getWorkspace().run(moduleCreateOperation, null);
+                ResourcesPlugin.getWorkspace().run(ResourceHelper.createTLAModuleCreationOperation(rootNamePath), null);
             } catch (CoreException e)
             {
                 e.printStackTrace();

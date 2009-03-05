@@ -104,11 +104,9 @@ public class AddModuleHandler extends AbstractHandler implements IHandler
                             // and the Spec's project name is /ROOT_DIR/SPEC_NAME.project
                             // the file should be created in /ROOT_DIR/module_name.tla and linked to the virtual path.
 
-                            IWorkspaceRunnable moduleCreateOperation = ResourceHelper.createTLAModuleCreationOperation(modulePath);
-
                             try
                             {
-                                ResourcesPlugin.getWorkspace().run(moduleCreateOperation, null);
+                                ResourcesPlugin.getWorkspace().run(ResourceHelper.createTLAModuleCreationOperation(modulePath), null);
                             } catch (CoreException e)
                             {
                                 e.printStackTrace();
