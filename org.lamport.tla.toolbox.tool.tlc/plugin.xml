@@ -15,16 +15,16 @@
       </command>
       <command
             categoryId="org.lamport.tla.toolbox.tool.tlc.commands.category"
-            id="org.lamport.tla.toolbox.tool.tlc.commands.model.new"
-            name="New Model...">
+            id="org.lamport.tla.toolbox.tool.tlc.commands.modellaunch.new"
+            name="New Model Launch...">
       </command>
       <command
             categoryId="org.lamport.tla.toolbox.tool.tlc.commands.category"
-            id="org.lamport.tla.toolbox.tool.tlc.commands.model.open"
-            name="Open Model">
+            id="org.lamport.tla.toolbox.tool.tlc.commands.modellaunch.open"
+            name="Open Model Launch">
          <commandParameter
-               id="org.lamport.tla.toolbox.tool.tlc.commands.model.open.param"
-               name="modelName"
+               id="org.lamport.tla.toolbox.tool.tlc.commands.modellaunch.open.param"
+               name="modelLaunchName"
                optional="true">
          </commandParameter>
       </command>
@@ -37,11 +37,11 @@
       </handler>
       <handler
             class="org.lamport.tla.toolbox.tool.tlc.handlers.NewModelHandler"
-            commandId="org.lamport.tla.toolbox.tool.tlc.commands.model.new">
+            commandId="org.lamport.tla.toolbox.tool.tlc.commands.modellaunch.new">
       </handler>
       <handler
             class="org.lamport.tla.toolbox.tool.tlc.handlers.OpenModelHandler"
-            commandId="org.lamport.tla.toolbox.tool.tlc.commands.model.open">
+            commandId="org.lamport.tla.toolbox.tool.tlc.commands.modellaunch.open">
       </handler>
    </extension>
    <extension
@@ -58,12 +58,12 @@
       <menuContribution
             locationURI="menu:toolbox.tools.menu?after=toolbox.toolmenus.separator">
          <menu
-               label="Model"
+               label="MC Launch"
                mnemonic="M"
-               id="org.lamport.tla.toolbox.tool.tlc.menus.sampleMenu">
+               id="org.lamport.tla.toolbox.tool.tlc.menus.mcLaunch">
             <command
-                  commandId="org.lamport.tla.toolbox.tool.tlc.commands.model.new"
-                  id="toolbox.tool.tlc.model.new"
+                  commandId="org.lamport.tla.toolbox.tool.tlc.commands.modellaunch.new"
+                  id="toolbox.tool.tlc.modellaunch.new"
                   mnemonic="N">
                <visibleWhen
                      checkEnabled="true">
@@ -78,8 +78,8 @@
                </visibleWhen>
             </command>
             <menu
-                  id="toolbox.tool.tlc.model.open"
-                  label="Open Model"
+                  id="toolbox.tool.tlc.modellaunch.open"
+                  label="Open Model Launch"
                   mnemonic="O">
                <visibleWhen
                      checkEnabled="true">
@@ -132,7 +132,7 @@
             id="org.lamport.tla.toolbox.tool.tlc.modelCheck"
             delegate="org.lamport.tla.toolbox.tool.tlc.launch.TLCModelLaunchDelegate"
             modes="modelcheck"
-            name="TLC Model"
+            name="TLC Modelcheck"
             public="true"
             delegateName="TLC ModelChecker"
             delegateDescription="TLC Model Checker is usefull to find bugs in the specification"
