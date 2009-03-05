@@ -2,7 +2,7 @@
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
 package tla2sany.semantic;
 
-// last modified on Sun  1 March 2009 at 13:34:22 PST by lamport
+// last modified on Wed  4 March 2009 at 18:58:31 PST by lamport
 
 /***************************************************************************
 * Modified on 4 Jul 2007 to change the introduced bound symbols from       *
@@ -936,9 +936,87 @@ public class OpApplNode extends ExprNode implements ExploreNode {
         *******************************************************************/
         this.argLevelParams.addAll(this.operands[i].getArgLevelParams());
        }; // end for
-    } // end else !(this.operator instanceof OpDefNode)
-;
+    }; // end else !(this.operator instanceof OpDefNode)
 
+    /***********************************************************************
+    * Check for the following illegal uses of temporal operators, where A  *
+    * is an action-level formula.                                          *
+    *                                                                      *
+    *  - [] A where A is not [B]_v                                         *
+    *                                                                      *
+    *  - <> A where A is no <<B>>_v                                        *
+    *                                                                      *
+    *  - A ~> X or X ~> A                                                  *
+    *                                                                      *
+    *  - A -+-> X or X -+-> X                                              *
+    *                                                                      *
+    *  - \E or \A with a temporal-level body and an action-level bound.    *
+    *    (Should this be an error with a state-level bound too?)           *
+    *    Note that not a problem with CHOOSE, which does not allow a       *
+    *    temporal body.                                                    *
+    ***********************************************************************/
+    String opName = this.operator.getName().toString();
+    /***********************************************************************
+    * Check for []A.                                                       *
+    ***********************************************************************/
+    if (opName.equals("[]")) {
+      ExprNode arg = (ExprNode) this.getArgs()[0];
+      if (  (arg.getLevel() == ActionLevel)
+          && (arg.getKind() == OpApplKind)) {
+        if (!((OpApplNode) arg).operator.getName().toString().equals(
+                                                           "$SquareAct")) {
+          errors.addError(
+            stn.getLocation(),
+            "[] followed by action not of form [A]_v.");  
+        }
+      }
+    };
+    
+    /***********************************************************************
+    * Check for <>A.                                                       *
+    ***********************************************************************/
+    if (opName.equals("<>")) {
+        ExprNode arg = (ExprNode) this.getArgs()[0];
+        if (  (arg.getLevel() == ActionLevel)
+            && (arg.getKind() == OpApplKind)) {
+          if (!((OpApplNode) arg).operator.getName().toString().equals(
+                                                             "$AngleAct")) {
+            errors.addError(
+              stn.getLocation(),
+              "<> followed by action not of form <<A>>_v.");  
+          }
+        }
+      };
+    
+    /***********************************************************************
+    * Check of ~> and -+->                                                 *
+    ***********************************************************************/
+    if (opName.equals("~>") || opName.equals("-+->")) {
+      if (   (this.getArgs()[0].getLevel() == ActionLevel)
+          || (this.getArgs()[1].getLevel() == ActionLevel)) {
+          errors.addError(
+             stn.getLocation(),
+             "Action used where only temporal formula or " + 
+             "state predicate allowed.");  
+      }
+    };
+    
+    /***********************************************************************
+    * Check of \A and \E.                                                  *
+    ***********************************************************************/
+    if (    (this.level == TemporalLevel)
+        && (   opName.equals("$BoundedExists") 
+            || opName.equals("$BoundedForall"))) {
+      for (int i = 0; i < this.ranges.length; i++) {
+          if (this.ranges[i].getLevel() == ActionLevel) {
+              errors.addError(
+                 this.ranges[i].stn.getLocation(),
+                 "Action-level bound of quantified temporal formula.");
+            }
+          }
+
+    }
+       
     return this.levelCorrect;
   }
   

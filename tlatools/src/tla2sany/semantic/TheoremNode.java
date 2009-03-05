@@ -1,7 +1,7 @@
 // Copyright (c) 2003 Compaq Corporation.  All rights reserved.
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
 
-// last modified on Tue  3 March 2009 at 15:59:52 PST by lamport
+// last modified on Wed  4 March 2009 at 14:23:16 PST by lamport
 
 // Changed by LL on 17 Mar 2007 to handle THEOREM ASSUME ...
 //   Replaced theoremExpr field with theoremExprOrAssumeProve.
@@ -115,7 +115,7 @@ public final boolean levelCheck(int iter) {
     else {sub[0] = this.theoremExprOrAssumeProve;} ;
     boolean retVal = levelCheckSubnodes(iter, sub);    
 
-    if  (this.theoremExprOrAssumeProve != null) { return retVal; } ;
+    if  (this.theoremExprOrAssumeProve == null) { return retVal; } ;
       /*********************************************************************
       * I don't know if the theoremExprOrAssumeProve node can be null,     *
       * but if it is, there's no more level checking to do.                *
@@ -141,8 +141,8 @@ public final boolean levelCheck(int iter) {
            * Must not check if this is a QED or CASE.                      *
            ****************************************************************/
         && ! (   (oanOp != null)
-              && (oanOp.getName() == OP_qed)
-                  || (oanOp.getName() == OP_pfcase))) {
+              && (   (oanOp.getName() == OP_qed)
+                  || (oanOp.getName() == OP_pfcase)))) {
       if(   (this.proof.level == TemporalLevel)
          && (this.theoremExprOrAssumeProve.level < TemporalLevel)) {
           errors.addError(
@@ -178,10 +178,8 @@ public final boolean levelCheck(int iter) {
    * Finish the level checking for a temporal-level node.                  *
    * Added 3 Mar 2009.                                                     *
    ************************************************************************/
-   if (   (this.theoremExprOrAssumeProve.level == TemporalLevel)
-       && (this.proof != null)
-       && (this.getKind() == NonLeafProofKind)) {
-       levelCheckNonTemporal((NonLeafProofNode) proof);  
+   if (this.theoremExprOrAssumeProve.level == TemporalLevel){
+       LevelCheckTemporal(this.proof);  
    };
    return retVal; 
   }
@@ -190,22 +188,73 @@ public final boolean levelCheck(int iter) {
   * The following method checks that in a proof whose current goal is a    *
   * temporal-level assertion:                                              *
   *                                                                        *
-  *  - Any HAVE P or CASE P statement must have P of constant-level        *
+  *  - Any HAVE P or CASE P step must have P of constant-level             *
   *                                                                        *
-  *  - Any TAKE or WITNESS statement must have constant-level              *
+  *  - Any TAKE or WITNESS step must have constant-level                   *
   *    bounds--e.g., in TAKE x \in S, expression S must have constant      *
   *    level.                                                              *
   *                                                                        *
-  * For a CASE statement (which is the only one of these statements that   *
-  * has a proof, the method must be called to check proof of the CASE      *
-  * statement.                                                             *
-  * Added 3 Mar 2009.                                                      *
+  * For a CASE step (which is the only one of these steps that has a       *
+  * proof) and the QED step, the method must be called to check proof of   *
+  * the CASE statement.                                                    *
+  * Added 4 Mar 2009.                                                      *
   *************************************************************************/
-  private final void levelCheckNonTemporal(NonLeafProofNode pnode) {
-      for (int i = 0; i < pnode.getSteps().length; i++) {
-        LevelNode node = pnode.getSteps()[i]; 
-      }
-  }
+  private final static void LevelCheckTemporal(ProofNode pn) {
+     /**********************************************************************
+     * Return if this is not a NonLeafProof.                               *
+     **********************************************************************/
+     if ((pn == null) || (pn.getKind() != NonLeafProofKind)){
+        return;
+      };
+     NonLeafProofNode pnode = (NonLeafProofNode) pn ;
+     for (int i = 0; i < pnode.getSteps().length; i++) {
+       /********************************************************************
+       * Process the i-th proof step.                                      *
+       *                                                                   *
+       * If this step is a TheoremNode whose theorem is an OpApplNode      *
+       * then set tnode and oanode to those nodes, otherwise set them to   *
+       * null.                                                             *
+       ********************************************************************/
+       LevelNode node = pnode.getSteps()[i]; 
+       OpApplNode  oanode = null; 
+       TheoremNode tnode = null; 
+       if (node.getKind() == TheoremKind) {
+          tnode = (TheoremNode) node;
+          if (tnode.theoremExprOrAssumeProve instanceof OpApplNode) {
+            oanode = (OpApplNode) tnode.theoremExprOrAssumeProve;
+          }
+       };
+       if (oanode != null) {
+         UniqueString name = oanode.operator.getName();
+
+         if (   (   (name == OP_take) 
+                 || (name == OP_witness)
+                 || (name == OP_have) ) 
+             && (oanode.getLevel() != ConstantLevel)) {
+                   errors.addError(
+                     oanode.stn.getLocation(),
+                     "Non-constant TAKE, WITNESS, or HAVE " +
+                     "for temporal goal.");
+         } else 
+         if (name == OP_pfcase) {
+           /****************************************************************
+           * This is a CASE, check that its argument is constant and then  *
+           * recursively call LevelCheckTemporal on its proof.             *
+           ****************************************************************/
+           if (oanode.getLevel() != ConstantLevel){
+               errors.addError(
+                 oanode.stn.getLocation(),
+                 "Non-constant CASE for temporal goal.") ; 
+             };
+           LevelCheckTemporal(tnode.getProof()) ;
+         } else 
+         if (name == OP_qed) {
+           LevelCheckTemporal(tnode.getProof()) ;  
+         }
+       }; // if (oanode != null)
+
+     } // for i
+  } // LevelCheckTemporal
 
 //  public final int getLevel() {
 //    if (levelChecked == 0) 

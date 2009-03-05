@@ -2110,6 +2110,8 @@ public class Generator implements ASTConstants, SyntaxTreeConstants,
         checkIfInRecursiveSection(definitions[lvi], "A USE or HIDE");
         UseOrHideNode uohn = generateUseOrHide(definitions[lvi], 
                                                 currentModule) ;
+        uohn.factCheck();
+          // Added 4 Mar 2009.
         if (uohn.facts.length + uohn.defs.length == 0) {
           errors.addError(definitions[lvi].getLocation(),
                           "Empty USE or HIDE statement.");
@@ -5661,11 +5663,14 @@ OpDefNode node = (OpDefNode) vec.elementAt(i);
 
         case N_UseOrHide :
           UseOrHideNode uohn = generateUseOrHide(stepBodySTN, cm) ;
+          
           if (uohn.facts.length + uohn.defs.length == 0) {
             errors.addError(stepBodySTN.getLocation(),
                             "Empty USE or HIDE statement.");
            };
-          pfNumNode = uohn ;
+           uohn.factCheck();
+             // Added 4 Mar 2009.
+           pfNumNode = uohn ;
           steps[i - offset] = pfNumNode ;
           break ;
 

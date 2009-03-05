@@ -1,4 +1,5 @@
 // Copyright (c) 2007 Microsoft Corporation.  All rights reserved.
+// last modified on Wed  4 March 2009 at 16:42:08 PST by lamport 
 package tla2sany.semantic;
 
 import java.util.Hashtable;
@@ -24,6 +25,10 @@ public class UseOrHideNode extends LevelNode {
     * an OpDefNode of type ModuleInstanceKind (with no parameters).  A     *
     * proof management tool will probably put restrictions on the class    *
     * of expressions that can be used as facts.                            *
+    *                                                                      *
+    * 4 Mar 2009: implemented a restriction that arbitrary expressions     *
+    * can't be used as facts.  The only allowable expressions are the      *
+    * names of theorems, assumptions, and steps.                           *
     ***********************************************************************/
   public SymbolNode[] defs  = null ;
     /***********************************************************************
@@ -41,6 +46,25 @@ public class UseOrHideNode extends LevelNode {
     this.defs = theDefs ;
    } ;
   
+  /*************************************************************************
+  * The following method was added 4 Mar 2009 to check the restriction     *
+  * that only the names of facts (and of modules) can be used as facts in  *
+  * a USE or HIDE.                                                         *
+  *************************************************************************/
+  public void factCheck() {
+    if (this.facts == null) { return; };
+    for (int i = 0; i < this.facts.length; i++) {
+      if (    (this.facts[i].getKind() == OpApplKind) 
+           && (((OpApplNode) this.facts[i]).operator.getKind() 
+                   != ThmOrAssumpDefKind)) {
+          errors.addError(
+             this.facts[i].stn.getLocation(),
+               "The only expression allowed as a fact in a USE or HIDE " +
+               "is the name of a theorem, assumption, or step.");
+      } ;
+    } // for
+  }
+
   public boolean levelCheck(int iter) { 
     /***********************************************************************
     * Level checking is performed by level-checking the facts.  Since the  *
