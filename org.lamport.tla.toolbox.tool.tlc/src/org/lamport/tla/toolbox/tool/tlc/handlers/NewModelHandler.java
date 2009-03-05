@@ -26,9 +26,7 @@ import org.lamport.tla.toolbox.util.UIHelper;
  */
 public class NewModelHandler extends AbstractHandler implements IConfigurationConstants
 {
-    public static final Object PARAM_MODEL_NAME = "modelName";
-
-    public static final String COMMAND_ID = null;
+    public static final Object PARAM_MODEL_NAME = "modelLaunchName";
 
     /**
      * The constructor.
@@ -40,15 +38,23 @@ public class NewModelHandler extends AbstractHandler implements IConfigurationCo
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
         // root file
-        IResource rootModule = ToolboxHandle.getRootModule();
+        IResource specRootModule = ToolboxHandle.getRootModule();
 
+        // get the launch manager
         ILaunchManager launchManager = DebugPlugin.getDefault().getLaunchManager();
+        
+        // get the launch type (model check)
         ILaunchConfigurationType launchConfigurationType = launchManager
                 .getLaunchConfigurationType(TLCModelLaunchDelegate.LAUNCH_ID);
 
-        String modelName = ModelHelper.constructModelName(rootModule.getProject(), ToolboxHandle.getCurrentSpec()
+        // retrieve a new model name for the spec 
+        String modelName = ModelHelper.constructModelName(specRootModule.getProject(), ToolboxHandle.getCurrentSpec()
                 .getName());
-        IResource modelRoot = ModelHelper.getModelRootFile(ToolboxHandle.getRootModule(), modelName);
+        
+        // get the model root file
+        IResource modelRoot = ModelHelper.getModelRootFile(specRootModule, modelName);
+        
+        // get the model configuration
         IResource config = ModelHelper.getConfigFile(ToolboxHandle.getRootModule());
         
 
@@ -56,7 +62,7 @@ public class NewModelHandler extends AbstractHandler implements IConfigurationCo
         {
 
             // create new launch instance
-            ILaunchConfigurationWorkingCopy launchCopy = launchConfigurationType.newInstance(rootModule.getProject(),
+            ILaunchConfigurationWorkingCopy launchCopy = launchConfigurationType.newInstance(specRootModule.getProject(),
                     modelName);
 
             launchCopy.setAttribute(SPEC_NAME, ToolboxHandle.getCurrentSpec().getName());

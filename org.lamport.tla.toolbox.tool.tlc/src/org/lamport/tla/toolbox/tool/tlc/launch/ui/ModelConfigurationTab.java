@@ -19,6 +19,7 @@ import org.eclipse.swt.widgets.Text;
 import org.lamport.tla.toolbox.tool.tlc.TLCActivator;
 
 /**
+ * Main configuration tab for TLC
  * @author Simon Zambrovski
  * @version $Id$
  */
@@ -159,7 +160,7 @@ public class ModelConfigurationTab extends AbstractLaunchConfigurationTab implem
      */
     public String getName()
     {
-        return "TLC Model Setup";
+        return "TLC Launch Configuration";
     }
 
     public Image getImage()

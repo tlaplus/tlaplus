@@ -20,8 +20,8 @@ import org.lamport.tla.toolbox.tool.tlc.launch.ui.IConfigurationConstants;
  */
 public class OpenModelHandler extends AbstractHandler implements IConfigurationConstants
 {
-    public static final String COMMAND_ID = "org.lamport.tla.toolbox.tool.tlc.commands.model.open";
-    public static final Object PARAM_MODEL_NAME = "org.lamport.tla.toolbox.tool.tlc.commands.model.open.param";
+    public static final String COMMAND_ID = "org.lamport.tla.toolbox.tool.tlc.commands.modellaunch.open";
+    public static final Object PARAM_MODEL_NAME = "org.lamport.tla.toolbox.tool.tlc.commands.modellaunch.open.param";
 
 
     /**

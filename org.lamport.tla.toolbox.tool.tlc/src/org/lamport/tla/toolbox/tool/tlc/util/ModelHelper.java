@@ -11,6 +11,7 @@ import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationType;
 import org.eclipse.debug.core.ILaunchManager;
+import org.lamport.tla.toolbox.tool.tlc.job.ExtendingTLAModuleCreationOperation;
 import org.lamport.tla.toolbox.tool.tlc.launch.TLCModelLaunchDelegate;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 
@@ -109,17 +110,17 @@ public class ModelHelper
 
         
         // create a module
-        IWorkspaceRunnable moduleCreateOperation = ResourceHelper.createTLAModuleCreationOperation(modelRootPath);
-
+        IWorkspaceRunnable moduleCreateJob = new ExtendingTLAModuleCreationOperation(modelRootPath, ResourceHelper.getModuleName(specRootModule));
+        // create it
         try
         {
-            ResourcesPlugin.getWorkspace().run(moduleCreateOperation, null);
+            ResourcesPlugin.getWorkspace().run(moduleCreateJob, null);
         } catch (CoreException e)
         {
             e.printStackTrace();
             // exception, no chance to recover
-            return null;
         }
+
         
         // create a link in the project
         IFile modelRootFile = ResourceHelper.getLinkedFile(specRootModule.getProject(), modelRootPath.toOSString(), true);
