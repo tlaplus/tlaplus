@@ -5,23 +5,27 @@
    <extension
          point="org.eclipse.ui.commands">
       <category
-            name="TLC Commands"
-            id="org.lamport.tla.toolbox.tool.tlc.commands.category">
+            description="Commands contributed by the TLC model checker"
+            id="org.lamport.tla.toolbox.tool.tlc.commands.category"
+            name="TLC Commands">
       </category>
       <command
             categoryId="org.lamport.tla.toolbox.tool.tlc.commands.category"
+            description="Re-runs TLC on the model last launched."
             id="org.lamport.tla.toolbox.tool.tlc.commands.launch"
-            name="Launch TLC">
+            name="Re-Launch TLC">
       </command>
       <command
             categoryId="org.lamport.tla.toolbox.tool.tlc.commands.category"
+            description="Creates a new model for current specification."
             id="org.lamport.tla.toolbox.tool.tlc.commands.modellaunch.new"
-            name="New Model Launch...">
+            name="New Model...">
       </command>
       <command
             categoryId="org.lamport.tla.toolbox.tool.tlc.commands.category"
+            description="Opens existing model for current specification."
             id="org.lamport.tla.toolbox.tool.tlc.commands.modellaunch.open"
-            name="Open Model Launch">
+            name="Open Launch...">
          <commandParameter
                id="org.lamport.tla.toolbox.tool.tlc.commands.modellaunch.open.param"
                name="modelLaunchName"
@@ -154,46 +158,6 @@
       <launchMode mode="simulate" label="Simulate" launchAsLabel="Simulate As"></launchMode>
    </extension>
    
-   <extension
-	point="org.eclipse.debug.ui.launchConfigurationTypeImages">
- 		<launchConfigurationTypeImage
-			icon="icons/sample.gif"
-			configTypeID="org.lamport.tla.toolbox.tool.tlc.modelCheck"
-			id="org.lamport.tla.toolbox.tool.tlc.ui.launchConfigurationTypeImage.modelcheck">
-		</launchConfigurationTypeImage>
-   </extension>
    
-   <extension point="org.eclipse.debug.ui.launchConfigurationTabGroups">
-     <launchConfigurationTabGroup
-           class="org.lamport.tla.toolbox.tool.tlc.launch.ui.ModelCheckerTabGroup"
-           id="toolbox.tlc.modelchecker"
-           type="org.lamport.tla.toolbox.tool.tlc.modelCheck">
-
-<!-- perspective="org.lamport.tla.toolbox.tool.tlc.launchMode2" -->
-      	<launchMode
-             mode="modelcheck" 
-             description="My specific description">
-      	</launchMode>
-     </launchConfigurationTabGroup>
-   </extension>
-   <extension
-         point="org.eclipse.debug.ui.launchGroups">
-      <launchGroup
-            bannerImage="icons/sample.gif"
-            id="org.lamport.tla.toolbox.tool.tlc.launchGroup.modelcheck"
-            image="icons/sample.gif"
-            label="Model Checking"
-            mode="modelcheck"
-            title="Select or configure new model for model checking">
-      </launchGroup>
-      <launchGroup
-            bannerImage="icons/sample.gif"
-            id="org.lamport.tla.toolbox.tool.tlc.launchGroup.simulate"
-            image="icons/sample.gif"
-            label="Simulation"
-            mode="simulate"
-            title="Select or configure new model for MC in simulation mode">
-      </launchGroup>
-   </extension>
    
 </plugin>
