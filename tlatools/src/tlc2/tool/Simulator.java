@@ -39,9 +39,12 @@ public class Simulator implements Cancelable{
     int lastSep = specFile.lastIndexOf(FileUtil.separatorChar);
     String specDir = (lastSep == -1) ? "" : specFile.substring(0, lastSep+1);
     specFile = specFile.substring(lastSep+1);
-    this.tool = new Tool(specDir, specFile, configFile, resolver);
+
     // SZ Feb 24, 2009: setup the user directory
-    ToolIO.setUserDir(specDir);
+    // SZ Mar 5, 2009: removed it again because of the bug in simulator
+    // ToolIO.setUserDir(specDir);
+    
+    this.tool = new Tool(specDir, specFile, configFile, resolver);
 
     this.tool.init(preprocess, specObj);   // parse and process the spec
 
