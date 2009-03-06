@@ -12,5 +12,5 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.ui.intro,
  org.eclipse.ui.forms,
  org.eclipse.swt,
- org.lamport.tla.toolbox;bundle-version="1.0.0"
+ org.lamport.tla.toolbox
 Bundle-ActivationPolicy: lazy
