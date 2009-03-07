@@ -6,7 +6,7 @@
       <editor
             class="org.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor"
             extensions="launch"
-            icon="icons/sample.gif"
+            icon="icons/full/choice_sc_obj.gif"
             id="org.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor"
             name="Model Editor">
       </editor>
