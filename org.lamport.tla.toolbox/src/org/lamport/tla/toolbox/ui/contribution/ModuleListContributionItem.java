@@ -24,8 +24,11 @@ import org.lamport.tla.toolbox.util.UIHelper;
  */
 public class ModuleListContributionItem extends CompoundContributionItem
 {
-    private ImageDescriptor icon = UIHelper.imageDescriptor("icons/full/etool16/tla_launch_check.gif");
+    private ImageDescriptor rootIcon = UIHelper.imageDescriptor("icons/full/obj16/ftr_mf_obj.gif");
+    private ImageDescriptor icon = UIHelper.imageDescriptor("icons/full/obj16/file_obj.gif");
+    private ImageDescriptor iconAddModule = UIHelper.imageDescriptor("icons/full/newmodule_wiz.gif");    
 
+    
     /**
      * @see org.eclipse.ui.actions.CompoundContributionItem#getContributionItems()
      */
@@ -36,9 +39,9 @@ public class ModuleListContributionItem extends CompoundContributionItem
         Vector moduleContributions = new Vector();
         HashMap parameters = new HashMap();
 
-        // create the contribution item for add spec
+        // create the contribution item for add module
         CommandContributionItemParameter param = new CommandContributionItemParameter(UIHelper.getActiveWindow(),
-                "toolbox.command.module.add", AddModuleHandler.COMMAND_ID, parameters, null, null, null,
+                "toolbox.command.module.add", AddModuleHandler.COMMAND_ID, parameters, iconAddModule, null, null,
                 "Add TLA+ Module...", null, "Adds new TLA+ Module to the specification",
                 CommandContributionItem.STYLE_PUSH, null, true);
 
@@ -67,7 +70,7 @@ public class ModuleListContributionItem extends CompoundContributionItem
 
                 // create the contribution item
                 param = new CommandContributionItemParameter(UIHelper.getActiveWindow(), "toolbox.command.module.open."
-                        + modules[i].getName(), OpenModuleHandler.COMMAND_ID, parameters, ((isRoot) ? icon : null),
+                        + modules[i].getName(), OpenModuleHandler.COMMAND_ID, parameters, ((isRoot) ? rootIcon : icon),
                         null, null, modules[i].getName(), null, "Opens " + modules[i].getName(),
                         CommandContributionItem.STYLE_PUSH, null, true);
 

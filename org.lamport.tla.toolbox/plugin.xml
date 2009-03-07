@@ -77,11 +77,12 @@
             name="TLA+"
             id="toolbox.wizard"/>
       <wizard
-            class="org.lamport.tla.toolbox.ui.wizard.NewSpecWizard"
             category="toolbox.wizard"
-            project="true"
+            class="org.lamport.tla.toolbox.ui.wizard.NewSpecWizard"
+            icon="icons/full/newmodule_wiz.gif"
+            id="toolbox.wizard.NewSpecWizard"
             name="TLA+ Specification"
-            id="toolbox.wizard.NewSpecWizard">
+            project="true">
          <description/>
       </wizard>
    </extension>
@@ -107,6 +108,7 @@
          point="org.eclipse.ui.propertyPages">
       <page
             class="org.lamport.tla.toolbox.ui.property.SpecPropertyPage"
+            icon="icons/full/prop_ps.gif"
             id="toolbox.ui.property.SpecPropertyPage"
             name="Specification Properties">
          <enabledWhen>
@@ -117,6 +119,7 @@
       </page>
       <page
             class="org.lamport.tla.toolbox.ui.property.ModulePropertyPage"
+            icon="icons/full/prop_ps.gif"
             id="toolbox.ui.property.ModulePropertyPage"
             name="Module Properties">
          <enabledWhen>
@@ -279,6 +282,7 @@
             locationURI="menu:toolbox.file.menu?after=toolbox.file.spec.separator">
          <command
                commandId="toolbox.command.spec.new"
+               icon="icons/full/newspec_wiz.gif"
                id="toolbox.menu.spec.new"
                label="New Spec..."
                mnemonic="N">
@@ -293,9 +297,11 @@
             </visibleWhen>
          </command>
          <menu
+               icon="icons/full/obj16/spec_obj.gif"
                id="toolbox.menu.spec.open"
                label="Open Spec"
-               mnemonic="O">
+               mnemonic="O"
+               tooltip="Opens existing specification">
             <visibleWhen
                   checkEnabled="true">
                <with
@@ -344,7 +350,6 @@
             </visibleWhen>
          </command>
          <command
-         	
                commandId="toolbox.command.spec.props"
                id="toolbox.menu.spec.props"
                label="Spec Properties"
@@ -386,6 +391,7 @@
          </menu>
          <command
                commandId="toolbox.command.module.parse.active"
+               icon="icons/full/obj16/complete_task.gif"
                id="toolbox.menu.module.parse"
                label="Parse Module"
                mnemonic="p">
@@ -401,6 +407,7 @@
          </command>
          <command
                commandId="toolbox.command.module.translate.active"
+               icon="icons/full/obj16/start_ccs_task.gif"
                id="toolbox.menu.run.translate"
                label="Translate Module"
                mnemonic="t">
