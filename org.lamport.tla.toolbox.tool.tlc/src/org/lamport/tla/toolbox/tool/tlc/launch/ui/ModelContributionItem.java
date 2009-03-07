@@ -9,9 +9,11 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationType;
 import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.jface.action.IContributionItem;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.actions.CompoundContributionItem;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.menus.CommandContributionItemParameter;
+import org.lamport.tla.toolbox.tool.tlc.TLCActivator;
 import org.lamport.tla.toolbox.tool.tlc.handlers.OpenModelHandler;
 import org.lamport.tla.toolbox.tool.tlc.launch.TLCModelLaunchDelegate;
 import org.lamport.tla.toolbox.util.UIHelper;
@@ -23,6 +25,8 @@ import org.lamport.tla.toolbox.util.UIHelper;
  */
 public class ModelContributionItem extends CompoundContributionItem
 {
+    private ImageDescriptor modelIcon = TLCActivator.getImageDescriptor("icons/full/choice_sc_obj.gif");
+    
     /**
      * @see org.eclipse.ui.actions.CompoundContributionItem#getContributionItems()
      */
@@ -50,7 +54,7 @@ public class ModelContributionItem extends CompoundContributionItem
 
                 // create the contribution item
                 CommandContributionItemParameter param = new CommandContributionItemParameter(UIHelper.getActiveWindow(),
-                        "toolbox.command.model.open." + modelName, OpenModelHandler.COMMAND_ID, parameters, null, null, null,
+                        "toolbox.command.model.open." + modelName, OpenModelHandler.COMMAND_ID, parameters, modelIcon, null, null,
                         modelName, null, "Opens " + modelName, CommandContributionItem.STYLE_PUSH, null,
                         true);
                 

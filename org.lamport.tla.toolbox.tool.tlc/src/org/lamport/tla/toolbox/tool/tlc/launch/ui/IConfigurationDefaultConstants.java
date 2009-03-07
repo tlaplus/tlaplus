@@ -12,5 +12,6 @@ public interface IConfigurationDefaultConstants
     public static final String SPEC_ROOT_FILE_DEFAULT = "";
     public static final String CONFIG_FILE_DEFAULT = "";
     public static final String MODEL_ROOT_FILE_DEFAULT = "";
+    public static final String MODEL_NAME_DEFAULT = "";
 
 }
