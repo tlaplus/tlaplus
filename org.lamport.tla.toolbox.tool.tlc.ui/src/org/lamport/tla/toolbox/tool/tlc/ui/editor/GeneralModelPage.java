@@ -2,14 +2,24 @@ package org.lamport.tla.toolbox.tool.tlc.ui.editor;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfiguration;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
+import org.eclipse.ui.forms.HyperlinkGroup;
 import org.eclipse.ui.forms.editor.FormEditor;
+import org.eclipse.ui.forms.events.HyperlinkAdapter;
+import org.eclipse.ui.forms.events.HyperlinkEvent;
+import org.eclipse.ui.forms.widgets.FormText;
 import org.eclipse.ui.forms.widgets.FormToolkit;
+import org.eclipse.ui.forms.widgets.ImageHyperlink;
 import org.eclipse.ui.forms.widgets.Section;
+import org.eclipse.ui.forms.widgets.TableWrapData;
+import org.eclipse.ui.forms.widgets.TableWrapLayout;
 import org.eclipse.ui.part.FileEditorInput;
 import org.lamport.tla.toolbox.tool.tlc.launch.ui.IConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.ui.IConfigurationDefaultConstants;
@@ -28,13 +38,22 @@ public class GeneralModelPage extends BasicFormPage implements IConfigurationCon
     private Text specName;
     private Text modelName;
     private ILaunchConfiguration config;
+    private Text workers;
+    private Text coverage;
+    private Text depth;
+    private Text seed;
+    private Text aril;
+    private Button simulationOption;
+    private Button mcDFIDOption;
+    private Button mcOption;
+    private Text dfiddepth;
     
 
     public GeneralModelPage(FormEditor editor)
     {
         super(editor, GeneralModelPage.ID, "Model Overview");
-        
         this.helpId = IHelpConstants.GENERAL_MODEL_PAGE;
+        this.imagePath = "icons/full/choice_sc_obj.gif";
     }
 
 
@@ -53,38 +72,277 @@ public class GeneralModelPage extends BasicFormPage implements IConfigurationCon
         }
     }
 
-
-
-
-    protected void createBodyContent(FormToolkit toolkit, Composite body)
-    {
-        
-        Section summarySection = FormHelper.createSectionComposite(body, "Model summary", "Summary about the model", toolkit);
-        Composite summaryArea = (Composite) summarySection.getClient();
-        summaryArea.setLayout(new GridLayout(2, false));
-        
-        toolkit.createLabel(summaryArea, "Spec name");
-        specName = toolkit.createText(summaryArea, "");
-        specName.setEditable(false);
-        
-        toolkit.createLabel(summaryArea, "Model name");
-        modelName = toolkit.createText(summaryArea, "");
-        modelName.setEditable(false);
-        
-        
-        set();
-    }
-
     private void set()
     {
         try
         {
+            mcOption.setSelection(true);
+            
             specName.setText(config.getAttribute(SPEC_NAME, SPEC_NAME_DEFAULT));
+            modelName.setText(config.getAttribute(MODEL_NAME, MODEL_NAME_DEFAULT));
         } catch (CoreException e)
         {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
     }
+
+
+    /**
+     * Creates the UI
+     */
+    protected void createBodyContent(FormToolkit toolkit, Composite body)
+    {
+        Composite left = toolkit.createComposite(body);
+        left.setLayout(new TableWrapLayout());
+        
+        createSummarySection(toolkit, left);
+        createLaunchSection(toolkit, left);
+
+        
+        
+        Composite right = toolkit.createComposite(body);
+        TableWrapData twd = new TableWrapData(TableWrapData.FILL_GRAB);
+        twd.grabHorizontal = true;
+        right.setLayoutData(twd);
+        right.setLayout(new TableWrapLayout());
+        createAdvancedSection(toolkit, right);
+        set();
+    }
+
     
+    /**
+     * @param toolkit
+     * @param body
+     */
+    private void createSummarySection(FormToolkit toolkit, Composite body)
+    {
+        TableWrapData twd;
+        GridData gd;
+        // summary section
+        Section section = FormHelper.createSectionComposite(body, "Model definition", "This section provides summary about the model definition", toolkit);
+        Composite area = (Composite) section.getClient();
+        area.setLayout(new GridLayout(2, false));
+        // layout
+        twd = new TableWrapData();
+        twd.grabHorizontal = true;
+        twd.grabVertical = false;
+        section.setLayoutData(twd);
+        
+        // label spec name
+        FormText specNameLabel = toolkit.createFormText(area, true);
+        specNameLabel.setText("Specification name:", false, false);
+        
+        // field spec name
+        specName = toolkit.createText(area, "");
+        gd = new GridData();
+        gd.widthHint = 200;
+        specName.setLayoutData(gd);
+        specName.setEditable(false);
+        
+        // label model name
+        FormText modelNameLabel = toolkit.createFormText(area, true);
+        modelNameLabel.setText("Configuration name:", false, false);
+        
+        // field model name
+        modelName = toolkit.createText(area, "");
+        gd = new GridData();
+        gd.widthHint = 200;
+        modelName.setLayoutData(gd);
+        modelName.setEditable(false);
+    }
+
+
+
+    /**
+     * @param toolkit
+     * @param body
+     */
+    private void createAdvancedSection(FormToolkit toolkit, Composite body)
+    {
+        TableWrapData twd;
+        GridData gd;
+        // advanced section
+        Section section = FormHelper.createSectionComposite(body, "Advanced configuration", "This section provides advanced options for the model checker run.", toolkit);
+        Composite area = (Composite) section.getClient();
+        area.setLayout(new GridLayout(2, false));
+        // layout
+        twd = new TableWrapData();
+        twd.grabHorizontal = true;
+        twd.grabVertical = false;
+        section.setLayoutData(twd);
+
+        // label modelname
+        FormText workersLabel = toolkit.createFormText(area, true);
+        workersLabel.setText("Number of workers:", false, false);
+
+        // field workers
+        workers = toolkit.createText(area, "1");
+        gd = new GridData();
+        gd.widthHint = 100;
+        workers.setLayoutData(gd);
+
+        // label coverage
+        FormText coverageLabel = toolkit.createFormText(area, true);
+        coverageLabel.setText("Report coverage each (sec.):", false, false);
+
+        // field coverage
+        coverage = toolkit.createText(area, "0");
+        gd = new GridData();
+        gd.widthHint = 100;
+        coverage.setLayoutData(gd);
+        
+    }
+
+
+    /**
+     * @param toolkit
+     * @param body
+     */
+    private void createLaunchSection(FormToolkit toolkit, Composite body)
+    {
+        TableWrapData twd;
+        GridData gd;
+        
+        // launch section
+        Section section = FormHelper.createSectionComposite(body, "Launching", "Launch the model checker:", toolkit);
+        Composite area = (Composite) section.getClient();
+        area.setLayout(new GridLayout(2, false));
+        // layout
+        twd = new TableWrapData();
+        twd.grabHorizontal = false;
+        twd.grabVertical = false;
+        section.setLayoutData(twd);
+
+        HyperlinkGroup group = new HyperlinkGroup(body.getDisplay());
+        // run link
+        ImageHyperlink runLink = toolkit.createImageHyperlink(area, SWT.NONE);
+        runLink.setImage(createRegisteredImage("icons/full/lrun_obj.gif"));
+        runLink.addHyperlinkListener(new HyperlinkAdapter(){
+            public void linkActivated(HyperlinkEvent e)
+            {
+                System.out.println("Run clicked");
+            }
+        });
+        runLink.setText("Run TLC");
+        gd = new GridData();
+        gd.horizontalSpan = 2;
+        gd.widthHint = 200;
+        runLink.setLayoutData(gd);
+
+        // debug link
+        ImageHyperlink debugLink = toolkit.createImageHyperlink(area, SWT.NONE);
+        debugLink.setImage(createRegisteredImage("icons/full/ldebug_obj.gif"));
+        debugLink.addHyperlinkListener(new HyperlinkAdapter()
+        {
+            public void linkActivated(HyperlinkEvent e)
+            {
+                System.out.println("Debug clicked");
+            }
+        });
+        debugLink.setText("Debug TLC");
+        gd = new GridData();
+        gd.horizontalSpan = 2;
+        gd.widthHint = 200;
+        runLink.setLayoutData(gd);
+
+        group.add(runLink);
+        group.add(debugLink);
+
+        createAdvancedLaunchSection(toolkit, area);
+    }
+
+
+
+
+    /**
+     * @param toolkit
+     * @param area
+     */
+    private Section createAdvancedLaunchSection(FormToolkit toolkit, Composite parent)
+    {
+        GridData gd;
+
+        // advanced section
+        Section advancedSection = FormHelper.createSectionComposite(parent, "Launching details", "", toolkit, Section.CLIENT_INDENT | Section.TREE_NODE | Section.COMPACT, getExpansionListener());
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.horizontalSpan = 2;
+        gd.grabExcessHorizontalSpace = true;
+        advancedSection.setLayoutData(gd);
+        
+        Composite area = (Composite) advancedSection.getClient();
+        area.setLayout(new GridLayout(2, false));
+
+        
+        mcOption = toolkit.createButton(area, "Breadth-first mode", SWT.RADIO);
+        gd = new GridData();
+        gd.horizontalSpan = 2;
+        mcOption.setLayoutData(gd);
+
+        
+        mcDFIDOption = toolkit.createButton(area, "Depth-first mode", SWT.RADIO);
+        gd = new GridData();
+        gd.horizontalSpan = 2;
+        mcDFIDOption.setLayoutData(gd);
+        // label depth 
+        FormText dfidDepthLabel = toolkit.createFormText(area, true);
+        dfidDepthLabel.setText("Depth:", false, false);
+        gd = new GridData();
+        gd.horizontalIndent = 10;
+        dfidDepthLabel.setLayoutData(gd);
+        // field depth
+        dfiddepth = toolkit.createText(area, "100");
+        gd = new GridData();
+        gd.widthHint = 100;
+        dfiddepth.setLayoutData(gd);
+
+        
+        
+        simulationOption = toolkit.createButton(area, "Simulation mode", SWT.RADIO);
+        gd = new GridData();
+        gd.horizontalSpan = 2;
+        simulationOption.setLayoutData(gd);
+        
+        
+        // label depth 
+        FormText depthLabel = toolkit.createFormText(area, true);
+        depthLabel.setText("Depth:", false, false);
+        gd = new GridData();
+        gd.horizontalIndent = 10;
+        depthLabel.setLayoutData(gd);
+        // field depth
+        depth = toolkit.createText(area, "100");
+        gd = new GridData();
+        gd.widthHint = 100;
+        depth.setLayoutData(gd);
+
+        // label seed
+        FormText seedLabel = toolkit.createFormText(area, true);
+        seedLabel.setText("Seed:", false, false);
+        gd = new GridData();
+        gd.horizontalIndent = 10;
+        seedLabel.setLayoutData(gd);
+        
+        // field seed
+        seed = toolkit.createText(area, "");
+        gd = new GridData();
+        gd.widthHint = 200;
+        seed.setLayoutData(gd);
+
+        // label seed
+        FormText arilLabel = toolkit.createFormText(area, true);
+        arilLabel.setText("Aril:", false, false);
+        gd = new GridData();
+        gd.horizontalIndent = 10;
+        arilLabel.setLayoutData(gd);
+
+        // field seed
+        aril = toolkit.createText(area, "");
+        gd = new GridData();
+        gd.widthHint = 200;
+        aril.setLayoutData(gd);
+        
+        return advancedSection;
+    }
+
 }

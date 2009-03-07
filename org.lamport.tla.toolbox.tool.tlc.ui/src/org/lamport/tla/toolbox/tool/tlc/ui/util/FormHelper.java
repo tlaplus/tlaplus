@@ -3,6 +3,7 @@ package org.lamport.tla.toolbox.tool.tlc.ui.util;
 import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.jface.text.source.SourceViewerConfiguration;
 import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.forms.events.IExpansionListener;
 import org.eclipse.ui.forms.widgets.FormToolkit;
@@ -24,7 +25,12 @@ public class FormHelper
     public static final int FORM_BODY_VERTICAL_SPACING = 17;
 
     
-    
+    /**
+     * Create TableWrapLayout for the whole page 
+     * @param makeColumnsEqualWidth
+     * @param numColumns
+     * @return
+     */
     public static TableWrapLayout createFormTableWrapLayout(boolean makeColumnsEqualWidth, int numColumns) {
         TableWrapLayout layout = new TableWrapLayout();
 
@@ -41,6 +47,30 @@ public class FormHelper
 
         return layout;
     }
+    
+    /**
+     * Create GridLayout for the whole page
+     * @param makeColumnsEqualWidth
+     * @param numColumns
+     * @return
+     */
+    public static GridLayout createFormGridLayout(boolean makeColumnsEqualWidth, int numColumns) {
+        GridLayout layout = new GridLayout();
+
+        layout.marginTop = FORM_BODY_MARGIN_TOP;
+        layout.marginBottom = FORM_BODY_MARGIN_BOTTOM;
+        layout.marginLeft = FORM_BODY_MARGIN_LEFT;
+        layout.marginRight = FORM_BODY_MARGIN_RIGHT;
+
+        layout.horizontalSpacing = FORM_BODY_HORIZONTAL_SPACING;
+        layout.verticalSpacing = FORM_BODY_VERTICAL_SPACING;
+
+        layout.makeColumnsEqualWidth = makeColumnsEqualWidth;
+        layout.numColumns = numColumns;
+
+        return layout;
+    }
+
     
     /**
      * Constructs a section and returns a section client composite

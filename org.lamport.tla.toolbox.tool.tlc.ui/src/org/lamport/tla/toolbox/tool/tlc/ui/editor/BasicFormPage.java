@@ -1,5 +1,10 @@
 package org.lamport.tla.toolbox.tool.tlc.ui.editor;
 
+import java.util.Enumeration;
+import java.util.Hashtable;
+
+import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Layout;
 import org.eclipse.ui.forms.IManagedForm;
@@ -10,7 +15,7 @@ import org.eclipse.ui.forms.events.ExpansionEvent;
 import org.eclipse.ui.forms.events.IExpansionListener;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
-import org.eclipse.ui.forms.widgets.TableWrapLayout;
+import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
@@ -22,9 +27,14 @@ import org.lamport.tla.toolbox.util.UIHelper;
 public abstract class BasicFormPage extends FormPage
 {
 
-    protected String helpId;
+    protected String helpId = null;
+    protected String imagePath = null;
     protected IExpansionListener formRebuildingListener = null;
+
+    // image registry
+    private Hashtable images = new Hashtable();
     
+
     /**
      * @param editor
      * @param id
@@ -33,38 +43,37 @@ public abstract class BasicFormPage extends FormPage
     public BasicFormPage(FormEditor editor, String id, String title)
     {
         super(editor, id, title);
-        
+
     }
 
     protected void createFormContent(IManagedForm managedForm)
     {
         super.createFormContent(managedForm);
-    
+
         ScrolledForm formWidget = managedForm.getForm();
         formWidget.setText(getTitle());
-    
-        Composite body = formWidget.getBody();        
+        if (imagePath != null)
+        {
+            formWidget.setImage(createRegisteredImage(imagePath));
+        }
+
+        Composite body = formWidget.getBody();
         UIHelper.setHelp(body, helpId);
-        
-        
+
         FormToolkit toolkit = managedForm.getToolkit();
         toolkit.decorateFormHeading(formWidget.getForm());
-    
+
         // setup body layout
         body.setLayout(getBodyLayout());
-        
+
         createBodyContent(managedForm);
     }
 
-    
-    
-    
     protected Layout getBodyLayout()
     {
-        TableWrapLayout layout = FormHelper.createFormTableWrapLayout(false, 2);
-        return layout;
+        return FormHelper.createFormTableWrapLayout(false, 2);
     }
-    
+
     /**
      * Is called to create the body content of the form
      * @param toolkit
@@ -72,8 +81,10 @@ public abstract class BasicFormPage extends FormPage
      */
     protected void createBodyContent(FormToolkit toolkit, Composite body)
     {
-        
+
     }
+    
+    
 
     /**
      * Is called to create the body content of the form
@@ -91,17 +102,50 @@ public abstract class BasicFormPage extends FormPage
      */
     public IExpansionListener getExpansionListener()
     {
-        if (this.formRebuildingListener == null) 
+        if (this.formRebuildingListener == null)
         {
-            this.formRebuildingListener = new ExpansionAdapter() 
-            {
+            this.formRebuildingListener = new ExpansionAdapter() {
                 public void expansionStateChanged(ExpansionEvent e)
                 {
-                    
+
                     getManagedForm().reflow(true);
                 }
             };
         }
         return this.formRebuildingListener;
+    }
+
+    /**
+     * Disposes the images
+     */
+    public void dispose()
+    {
+        Enumeration elements = images.elements();
+        while (elements.hasMoreElements())
+        {
+            ((Image)elements.nextElement()).dispose();
+        }
+        super.dispose();
+    }
+    
+    /**
+     * Retrieves the image and remember it for later reuse / dispose
+     * @param imageName
+     * @return
+     */
+    protected Image createRegisteredImage(String imageName)
+    {
+        Image image = (Image) images.get(imageName);
+        if (image == null) 
+        {
+            ImageDescriptor descr = TLCUIActivator.imageDescriptorFromPlugin(TLCUIActivator.PLUGIN_ID, imageName);
+            if (descr != null) 
+            {
+                image = descr.createImage();
+                images.put(imageName, image);
+            }
+        }
+        
+        return image;
     }
 }

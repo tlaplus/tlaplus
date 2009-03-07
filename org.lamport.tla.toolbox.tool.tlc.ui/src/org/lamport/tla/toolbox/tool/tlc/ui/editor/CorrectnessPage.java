@@ -17,6 +17,7 @@ import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
 import org.lamport.tla.toolbox.util.IHelpConstants;
 
 /**
+ * Page for displaying what to check
  * @author Simon Zambrovski
  * @version $Id$
  */
@@ -32,6 +33,7 @@ public class CorrectnessPage extends BasicFormPage
     {
         super(editor, CorrectnessPage.ID, "Correctness");
         this.helpId = IHelpConstants.CORRECTNESS_MODEL_PAGE;
+        this.imagePath = "icons/full/correctness_obj.gif";
     }
 
     protected void createBodyContent(IManagedForm managedForm)
@@ -127,7 +129,7 @@ public class CorrectnessPage extends BasicFormPage
 
     protected Layout getBodyLayout()
     {
-        return new GridLayout(2, true);
+        return FormHelper.createFormGridLayout(true, 2);
     } 
    
 }

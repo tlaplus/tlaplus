@@ -61,7 +61,7 @@ public class ModelEditor extends FormEditor
      */
     public boolean isSaveAsAllowed()
     {
-        return false;
+        return true;
     }
 
 
@@ -77,7 +77,7 @@ public class ModelEditor extends FormEditor
             addPage(new CorrectnessPage(this));
             addPage(new ParametersPage(this));
             addPage(new ModelValuesPage(this));
-            addPage(new LaunchConfigurationPage(this));
+            // addPage(new LaunchConfigurationPage(this));
             
         } catch (PartInitException e)
         {

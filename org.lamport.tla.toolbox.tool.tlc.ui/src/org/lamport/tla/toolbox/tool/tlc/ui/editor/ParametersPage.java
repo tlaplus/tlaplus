@@ -28,6 +28,7 @@ public class ParametersPage extends BasicFormPage
     {
         super(editor, ParametersPage.ID, "Parameters");
         this.helpId = IHelpConstants.PARAMETERS_MODEL_PAGE;
+        this.imagePath = "icons/full/args_obj.gif";
     }
 
     protected void createBodyContent(IManagedForm managedForm)
@@ -106,6 +107,6 @@ public class ParametersPage extends BasicFormPage
 
     protected Layout getBodyLayout()
     {
-        return new GridLayout();
-    }
+        return FormHelper.createFormGridLayout(false, 1);
+    } 
 }

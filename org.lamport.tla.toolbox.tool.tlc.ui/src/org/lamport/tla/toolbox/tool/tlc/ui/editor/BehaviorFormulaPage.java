@@ -17,6 +17,7 @@ import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
 import org.lamport.tla.toolbox.util.IHelpConstants;
 
 /**
+ * Page to choose the specification formula 
  * @author Simon Zambrovski
  * @version $Id$
  */
@@ -34,7 +35,7 @@ public class BehaviorFormulaPage extends BasicFormPage
     public BehaviorFormulaPage(FormEditor editor)
     {
         super(editor, BehaviorFormulaPage.ID, "Behavior Formula");
-
+        this.imagePath = "icons/full/loop_obj.gif";
         this.helpId = IHelpConstants.BEHAVIOR_FORMULA_MODEL_PAGE;
     }
 
@@ -138,6 +139,4 @@ public class BehaviorFormulaPage extends BasicFormPage
         };
         
     }
-
-    
 }

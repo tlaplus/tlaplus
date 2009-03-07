@@ -9,7 +9,7 @@ import org.osgi.framework.BundleContext;
 public class TLCUIActivator extends AbstractUIPlugin {
 
 	// The plug-in ID
-	public static final String PLUGIN_ID = "org.lamport.tla.toolbox.tool.tlcui";
+	public static final String PLUGIN_ID = "org.lamport.tla.toolbox.tool.tlc.ui";
 
 	// The shared instance
 	private static TLCUIActivator plugin;
