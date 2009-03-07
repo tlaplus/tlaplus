@@ -23,7 +23,6 @@ import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 public class NewModelHandler extends AbstractHandler implements IConfigurationConstants
 {
     public static final Object PARAM_MODEL_NAME = "modelLaunchName";
-
     /**
      * The constructor.
      */
@@ -63,7 +62,7 @@ public class NewModelHandler extends AbstractHandler implements IConfigurationCo
 
             launchCopy.setAttribute(SPEC_NAME, ToolboxHandle.getCurrentSpec().getName());
             launchCopy.setAttribute(SPEC_ROOT_FILE, ToolboxHandle.getRootModule().getLocation().toOSString());
-            
+            launchCopy.setAttribute(MODEL_NAME, modelName);
             launchCopy.setAttribute(MODEL_ROOT_FILE, modelRoot.getLocation().toOSString());
             launchCopy.setAttribute(CONFIG_FILE, config.getLocation().toOSString());
 
