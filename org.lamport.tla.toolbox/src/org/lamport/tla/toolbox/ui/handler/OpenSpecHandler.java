@@ -49,6 +49,9 @@ public class OpenSpecHandler extends AbstractHandler implements IHandler
         // close the initial perspective
         UIHelper.closeWindow(InitialPerspective.ID);
 
+        // store information about opened spec in the spec manager
+        Activator.getSpecManager().setSpecLoaded(spec);
+        
         // open the editor
         IEditorPart part = UIHelper.openEditor(TLA_EDITOR, new FileEditorInput(spec.getRootFile()));
         part.addPropertyListener(new IPropertyListener() {
@@ -63,8 +66,6 @@ public class OpenSpecHandler extends AbstractHandler implements IHandler
             }
         });
 
-        // store information about opened spec in the specmanager
-        Activator.getSpecManager().setSpecLoaded(spec);
 
         return null;
     }
