@@ -211,6 +211,13 @@ class trans
           ToolIO.out.println("pcal.trans Version 1.3 of " + modDate) ;
       }
 
+      // SZ Mar 9, 2009:
+      /*
+       * This method is called in order to make sure, that the
+       * parameters are not sticky because these are could have been initialized
+       * by the previous run  
+       */
+      PcalParams.resetParams();
       /*********************************************************************
       * Get and process arguments.                                         
       *********************************************************************/
