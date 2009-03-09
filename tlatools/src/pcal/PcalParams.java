@@ -7,9 +7,44 @@
 package pcal ;
 import java.util.Vector;
 
+/**
+ * Holds parameters for the PCal Translator
+ * @author Keith Marzullo
+ * @author Simon Zambrovski
+ * @version $Id$
+ */
 public final class PcalParams
- { 
-  
+{ 
+
+    /**
+     * SZ Mar 9, 2009:
+     * Added re-initialization method. Since PcalParams class
+     * is used instead of PcalParams instance, it is required to
+     * take care of parameter initialization and de-initialization
+     * by explicit method. This is required in order to make PCal
+     * instance reentrant. 
+     * 
+     * Maybe in some point of time this should be converted to an ordinary
+     * configuration object, from the collection of public static variables.
+     */
+    public static void resetParams()
+    {
+        Debug = false;
+        SpecOption = false;
+        MyspecOption = false;
+        Spec2Option = false;
+        Myspec2Option = false;
+        SpecFile = "";
+        WriteASTFlag = false;
+        LabelFlag = false;
+        ReportLabelsFlag = false;
+        LabelRoot = "Lbl_";
+        FairnessOption = "";
+        CheckTermination = false;
+        Nocfg = false;
+    }
+    
+    
   /*************************************************************************
   * Parameters related to non-file Options                                 *
   *************************************************************************/
