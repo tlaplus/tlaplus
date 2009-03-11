@@ -1,5 +1,6 @@
 package org.lamport.tla.toolbox.job;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Vector;
 
@@ -10,6 +11,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.TLAMarkerHelper;
 import org.lamport.tla.toolbox.util.pref.IPreferenceConstants;
@@ -21,10 +23,10 @@ import pcal.Translator;
  * @author Simon Zambrovski
  * @version $Id$
  */
-public class TranslatorJob extends WorkspaceJob
+public class TranslatorJob extends WorkspaceJob 
 {
-    private Translator  translator = new Translator();
-    private Vector      callParams = new Vector();
+    private Translator  translator;
+    private Vector      callParams;
     private IResource   fileToBuild;
     
     /**
@@ -33,7 +35,9 @@ public class TranslatorJob extends WorkspaceJob
     public TranslatorJob(IResource fileToBuild)
     {
         super("PCal Translation");
+        this.translator = new Translator();
         this.fileToBuild = fileToBuild;
+        this.callParams = new Vector();
         
         System.out.println("Translating " + fileToBuild.getLocation().toOSString());
 
@@ -78,14 +82,6 @@ public class TranslatorJob extends WorkspaceJob
         callParams.add(fileToBuild.getLocation().toOSString());
         
 
-        StringBuffer buffer = new StringBuffer();
-        for (int i = 0; i < callParams.size(); i++)
-        {
-            buffer.append(" " + callParams.elementAt(i));
-        }
-        System.out.println("Translator invoked with params: '" + buffer.toString()+ "'");
-
-
     }
 
     /**
@@ -94,6 +90,15 @@ public class TranslatorJob extends WorkspaceJob
     public IStatus runInWorkspace(IProgressMonitor monitor) throws CoreException
     {
         monitor.beginTask("PCal Translation", IProgressMonitor.UNKNOWN);
+
+        StringBuffer buffer = new StringBuffer();
+        for (int i = 0; i < callParams.size(); i++)
+        {
+            buffer.append(" " + callParams.elementAt(i));
+        }
+        System.out.println("Translator invoked with params: '" + buffer.toString()+ "'");
+
+        
         translator.runTranslation((String[]) callParams.toArray(new String[callParams.size()]));
 
         monitor.worked(1);
@@ -116,6 +121,30 @@ public class TranslatorJob extends WorkspaceJob
         monitor.worked(1);
         monitor.done();
         return Status.OK_STATUS;
+    }
+    
+    /**
+     * Return as runnable instead of the job
+     * @param fileToBuild
+     * @return
+     */
+    public static IRunnableWithProgress getAsRunnableWithProgress(IResource fileToBuild)
+    {
+        final TranslatorJob job = new TranslatorJob(fileToBuild);
+        return new IRunnableWithProgress()
+        {
+            public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException
+            {
+                try
+                {
+                    job.runInWorkspace(monitor);
+                } catch (CoreException e)
+                {
+                    throw new InvocationTargetException(e);
+                }
+            }
+        };
+        
     }
 
     
