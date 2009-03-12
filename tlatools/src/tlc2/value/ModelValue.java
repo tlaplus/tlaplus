@@ -43,9 +43,30 @@ import util.FP64;
 import util.UniqueString;
 
 public class ModelValue extends Value {
-  private static int count = 0;
-  private static Hashtable mvTable = new Hashtable();
-  public static ModelValue[] mvs = null;
+    
+    /**
+     * A method to reset the model values
+     * All callers should make sure that the model value class has been initialized
+     */
+    public static void init()
+    {
+       count = 0;
+       mvTable = new Hashtable();
+       mvs = null;
+    }
+
+    /**
+     * Workround to the static usage
+     */
+    static 
+    {
+        init();
+    }
+    
+  private static int count;
+  private static Hashtable mvTable;
+  // SZ Mar 9, 2009: public accessed field, this will cause troubles
+  public static ModelValue[] mvs;
 
   public UniqueString val;
   public int index;
@@ -202,5 +223,6 @@ public class ModelValue extends Value {
   public final StringBuffer toString(StringBuffer sb, int offset) {
     return sb.append(this.val);
   }
+
 
 }
