@@ -16,6 +16,7 @@ import util.ToolIO;
 public class PcalDebug
 {
     public static final String UNRECOVERABLE_ERROR = "\nUnrecoverable error:\n -- ";
+    public static final String WARNING = "Warning: ";
     public static final String ERROR_POSTFIX = ".\n";
 
     /**
@@ -34,6 +35,24 @@ public class PcalDebug
     };
 
     /**
+     * Reports a warning 
+     * @param warningText text to be reported
+     */
+    public static void reportWarning(String warningText)
+    {
+        ToolIO.out.println(new StringBuffer(WARNING).append(warningText));
+    }
+
+    /**
+     * Reports a information for the user
+     * @param infoText text to be reported
+     */
+    public static void reportInfo(String infoText)
+    {
+        ToolIO.out.println(infoText);
+    }
+
+    /**
      * Report error message 
      * @param message message to report
      */
@@ -45,7 +64,7 @@ public class PcalDebug
     /**
      * Reports an error
      * @param message message to report
-     * @param ast the AST-object localizing the error
+     * @param ast the AST-object identifying the error location
      */
     public static void reportError(String message, AST ast)
     {

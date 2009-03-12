@@ -208,7 +208,7 @@ class trans
           lastModified.substring(21, lastModified.indexOf(" at"));
       if (ToolIO.getMode() == ToolIO.SYSTEM) 
       { 
-          ToolIO.out.println("pcal.trans Version 1.3 of " + modDate) ;
+          PcalDebug.reportInfo("pcal.trans Version 1.3 of " + modDate) ;
       }
 
       // SZ Mar 9, 2009:
@@ -368,7 +368,7 @@ class trans
           PcalDebug.reportError(e);
           return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
       }
-      ToolIO.out.println("Parsing completed.") ; 
+      PcalDebug.reportInfo("Parsing completed.") ; 
 
       /*********************************************************************
       * For -writeAST option, just write the file AST.tla and halt.        *
@@ -436,7 +436,7 @@ class trans
             return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
         } } ;
 
-        ToolIO.out.println("Translation completed.") ;
+        PcalDebug.reportInfo("Translation completed.") ;
 
       /*********************************************************************
       * Rename the old file by changing its extension from "tla" to "old". *
@@ -479,7 +479,7 @@ class trans
         return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
     }
       
-      ToolIO.out.println("New file " + PcalParams.TLAInputFile + ".tla"
+    PcalDebug.reportInfo("New file " + PcalParams.TLAInputFile + ".tla"
                           + " written.") ;
 
       /*********************************************************************
@@ -505,7 +505,7 @@ class trans
               * cfg file is read-only.                                     *
               *************************************************************/
               writeCfg = false ;
-              ToolIO.out.println("File " + PcalParams.TLAInputFile + 
+              PcalDebug.reportInfo("File " + PcalParams.TLAInputFile + 
                        ".cfg is read only, new version not written." ) ;
             }
         }     
@@ -580,7 +580,7 @@ class trans
              i = i + 1 ;
            } ;
          if (hasSpec)
-           { ToolIO.out.println("File " + PcalParams.TLAInputFile 
+           { PcalDebug.reportInfo("File " + PcalParams.TLAInputFile 
                        + ".cfg already contains SPECIFICATION statement," 
                        + "\n   so new one not written." ) ;
            } 
@@ -595,7 +595,7 @@ class trans
             PcalDebug.reportError(e);
             return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
         }
-         ToolIO.out.println("New file " + PcalParams.TLAInputFile + ".cfg"
+        PcalDebug.reportInfo("New file " + PcalParams.TLAInputFile + ".cfg"
                              + " written.") ;
         } ;
         
@@ -639,7 +639,7 @@ class trans
         PcalDebug.reportError(e);
         return false;
     }
-      ToolIO.out.println("Wrote file AST.tla.") ;
+    PcalDebug.reportInfo("Wrote file AST.tla.") ;
       return true;
     }
 /************************* THE TLC TRANSLATION *****************************/
@@ -695,7 +695,7 @@ class trans
                        PcalParams.SpecFile + ".cfg") ;  
              WriteStringVectorToFile(parseFile, PcalParams.SpecFile + ".cfg") ;
       
-             ToolIO.out.println(
+             PcalDebug.reportInfo(
                   "Wrote files " + PcalParams.SpecFile + ".tla and "
                   + PcalParams.SpecFile + ".cfg.") ;
             
@@ -710,9 +710,9 @@ class trans
       *********************************************************************/
       String javaInvocation ;
       if (PcalParams.SpecOption || PcalParams.MyspecOption)
-           { ToolIO.out.println("Running TLC.") ;
+           { PcalDebug.reportInfo("Running TLC.") ;
              javaInvocation = "java -Xss1m tlc.TLC " ;}
-      else { ToolIO.out.println("Running TLC2.") ;
+      else { PcalDebug.reportInfo("Running TLC2.") ;
              javaInvocation = "java -Xss1m tlc2.TLC " ;} ;
       String tlcOut = "      " ;
       Runtime rt = Runtime.getRuntime() ;
@@ -745,7 +745,7 @@ class trans
                           tlcOut.indexOf("@EndError@")));
         } ;
       tlcOut = tlcOut.substring(2, tlcOut.lastIndexOf(">>")) + "  ";
-      ToolIO.out.println("Read TLC output.") ;
+      PcalDebug.reportInfo("Read TLC output.") ;
 
       /*********************************************************************
       * Set transl to the string obtained by converting tlcOut, which is   *

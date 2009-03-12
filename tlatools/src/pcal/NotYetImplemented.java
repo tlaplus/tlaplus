@@ -7,7 +7,6 @@ import pcal.exception.PcalSymTabException;
 import pcal.exception.PcalTLAGenException;
 import pcal.exception.PcalTranslateException;
 import pcal.exception.RemoveNameConflictsException;
-import util.ToolIO;
 
 /**
  * 
@@ -44,7 +43,8 @@ public class NotYetImplemented
 
         st.Disambiguate();
         if (st.disambiguateReport.size() > 0)
-            ToolIO.out.println("Warning: symbols were renamed.");
+            // SZ March 11, 2009. Warning reporting moved to PCalDebug 
+            PcalDebug.reportWarning("symbols were renamed.");
         if (st.errorReport.length() > 0)
             throw new RemoveNameConflictsException(st.errorReport);
         try

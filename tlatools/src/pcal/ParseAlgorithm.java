@@ -112,7 +112,6 @@ import pcal.exception.ParseAlgorithmException;
 import pcal.exception.TLAExprException;
 import pcal.exception.TokenizerException;
 import pcal.exception.UnrecoverableException;
-import util.ToolIO;
 
 public class ParseAlgorithm
 { 
@@ -318,7 +317,8 @@ public class ParseAlgorithm
              { if (! PcalParams.LabelFlag) { AddedMessagesError() ; } ;
                if (PcalParams.ReportLabelsFlag) { ReportLabels() ; } 
                else
-                { ToolIO.out.println("Labels added.") ; } ;
+                   // SZ March 11, 2009: info reporting using PcalDebug added
+                { PcalDebug.reportInfo("Labels added.") ; } ;
               } ;
            return multiproc ;
          }
@@ -367,7 +367,8 @@ public class ParseAlgorithm
                         { AddedMessagesError() ; } ;
                if (PcalParams.ReportLabelsFlag) { ReportLabels() ; } 
                else
-                { ToolIO.out.println("Labels added.") ; } ;
+                   // SZ March 11, 2009: info reporting using PcalDebug added
+                { PcalDebug.reportInfo("Labels added.") ; } ;
               } ;
            return uniproc ;
          }
@@ -388,13 +389,14 @@ public class ParseAlgorithm
        }
 
    public static void ReportLabels() 
+   // SZ March 11, 2009: info reporting using PcalDebug added
      { if (addedLabels.size() > 1)
-         {ToolIO.out.println("The following labels were added:") ;}
+         {PcalDebug.reportInfo("The following labels were added:") ;}
        else          
-         {ToolIO.out.println("The following label was added:") ;} ;
+         {PcalDebug.reportInfo("The following label was added:") ;} ;
        int i = 0 ;
        while (i < addedLabels.size() )
-        { ToolIO.out.println("  " 
+        { PcalDebug.reportInfo("  " 
               + ((String) addedLabels.elementAt(i)) 
               + " at "
               + ((String) addedLabelsLocs.elementAt(i)));

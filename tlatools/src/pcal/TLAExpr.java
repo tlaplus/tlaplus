@@ -109,7 +109,14 @@ import pcal.exception.TLAExprException;
 import pcal.exception.UnrecoverableException;
 
 public class TLAExpr
-  { public Vector tokens       = new Vector();
+  { 
+  
+    /**
+     * A TLAExpr object represents a TLA+ expression.  The tokens vector is 
+     * a vector of vectors of TLAToken objects.  Each 
+     * subvector contains the tokens in one line of the expression.
+     */
+    public Vector tokens       = new Vector();
     public TLAToken[] anchorTokens = null;
     public int[]      anchorTokCol = null;
 
