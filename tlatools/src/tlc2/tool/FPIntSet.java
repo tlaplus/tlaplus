@@ -54,8 +54,18 @@ implements FPIntSetRMI {
 
   public static final int NEW = 0;
   public static final int DONE = 1;
-  public static int Level = 1;
-  public static int Leveled = 0;
+  
+  
+  /* 
+   * SZ Mar 9, 2009: These variables seem to be used in the following way.
+   * 
+   * An instance of FPIntSet is hold by every worker. In addition, a "global" FPIntSet is used in the ModelChecker.
+   * The static fields are used to compare the "global" value with the instance values of the worker instances.
+   * This is a very fishy, and should be changed to the following: static modifiers should be removed and replaced by explicit
+   * comparison with the instance variable controlled by the model checker 
+   */
+  protected static int Level = 1;
+  protected static int Leveled = 0;
 
   public static void incLevel() {
     Level++;
