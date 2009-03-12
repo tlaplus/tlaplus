@@ -27,6 +27,7 @@ TO SPECIFY
              foo == CHOOSE x : ~ (x \in expr)
         [Constraint] 
         [Symmetry]
+        [View]
    
      What To Check:
        [Invariant]
