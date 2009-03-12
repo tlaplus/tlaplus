@@ -199,7 +199,7 @@ class trans
       * Get and print version number.                                      *
       *********************************************************************/
       String lastModified =  
-         "last modified on Wed 15 February 2009 at 14:52:58 PST by lamport";
+         "last modified on Wed 11 March 2009 at 14:52:58 PST by lamport";
         /*******************************************************************
         * This string is inserted by an Emacs macro when a new version is  *
         * saved.                                                           *
@@ -394,7 +394,7 @@ class trans
       *********************************************************************/
       
         // SZ February.15 2009: made non-static to make PCal stateless for tool runs
-        NotYetImplemented notYetImplemented = new NotYetImplemented(ast);
+        PCalTLAGenerator notYetImplemented = new PCalTLAGenerator(ast);
         try
         {
           notYetImplemented.removeNameConflicts() ;
