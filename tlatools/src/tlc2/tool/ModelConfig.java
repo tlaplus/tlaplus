@@ -73,6 +73,8 @@ public class ModelConfig implements ValueConstants, Serializable {
         // standard resolver
         this.resolver = new SimpleFilenameToStream();
     }
+    // SZ Mar 12, 2009: reset the model values
+    ModelValue.init();
     
     this.configFileName = configFileName;
     this.configTbl = new Hashtable();
