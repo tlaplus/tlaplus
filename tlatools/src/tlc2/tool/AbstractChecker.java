@@ -23,9 +23,9 @@ import util.ToolIO;
  */
 public abstract class AbstractChecker implements Cancelable
 {
-
-    protected static long nextLiveCheck = 1000;
-    protected long numOfGenStates = 0;
+// SZ Mar 9, 2009: static modifier removed
+    protected long nextLiveCheck;
+    protected long numOfGenStates;
     protected TLCState predErrState;
     protected TLCState errState;
     protected boolean done;
@@ -73,8 +73,10 @@ public abstract class AbstractChecker implements Cancelable
         // REFACTOR: file utilites
         this.metadir = makeMetaDir(specDir, fromChkpt);
 
+        this.nextLiveCheck = 1000;
         this.numOfGenStates = 0;
         this.errState = null;
+        this.predErrState = null;
         this.done = false;
         this.keepCallStack = false;
 
