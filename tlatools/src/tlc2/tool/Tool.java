@@ -872,8 +872,14 @@ public class Tool
       }
     case OPCODE_sa:     // [A]_e
       {
-        this.getNextStates(args[0], acts, c, s0, s1, nss);
-        return this.processUnchanged(args[1], acts, c, s0, s1, nss);
+        /* The following two lines of code did not work, and were changed by
+         * YuanYu to mimic the way \/ works.  Change made
+         *  11 Mar 2009, with LL sitting next to him.
+         */
+          //    this.getNextStates(args[0], acts, c, s0, s1, nss);
+          //    return this.processUnchanged(args[1], acts, c, s0, s1, nss);
+        resState = this.getNextStates(args[0], acts, c, s0, resState, nss);
+        return this.processUnchanged(args[1], acts, c, s0, resState, nss);
       }
     case OPCODE_ite:    // IfThenElse
       {

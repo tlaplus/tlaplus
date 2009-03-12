@@ -11,7 +11,7 @@ import tlc2.tool.ModelChecker;
 public class TLCGlobals {
 
   // The current version of TLC
-  public static String versionOfTLC = "Version 2.01 of 20 February 2009";
+  public static String versionOfTLC = "Version 2.01 of 11 March 2009";
 
   // The bound for set enumeration, used for pretty printing
   public static int enumBound = 2000;
