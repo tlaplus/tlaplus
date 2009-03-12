@@ -86,20 +86,27 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable {
 
   public Spec(String specDir, String file, FilenameToStream resolver) 
   {
+      
     this.specDir = specDir;
     this.rootFile = file;
     this.rootModule = null;
     this.config = null;
+    this.moduleTbl = null;
     this.variables = null;
     this.defns = new Defns();
     this.tlaClass = new TLAClass("tlc2.module");
     this.initPredVec = new Vect(5);
     this.nextPred = null;
-    this.temporals = null; this.temporalNames = null;
-    this.impliedTemporals = null; this.impliedTemporalNames = null;
-    this.invariants = null; this.invNames = null;
-    this.impliedInits = null; this.impliedInitNames = null;
-    this.impliedActions = null; this.impliedActNames = null;
+    this.temporals = null; 
+    this.temporalNames = null;
+    this.impliedTemporals = null; 
+    this.impliedTemporalNames = null;
+    this.invariants = null; 
+    this.invNames = null;
+    this.impliedInits = null; 
+    this.impliedInitNames = null;
+    this.impliedActions = null; 
+    this.impliedActNames = null;
     this.modelConstraints = null;
     this.actionConstraints = null;    
     this.assumptions = null;
@@ -108,6 +115,8 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable {
   // SZ Feb 20, 2009: added support to name resolver, to be able to run outside of the tool
   public Spec(String specDir, String specFile, String configFile, FilenameToStream resolver) {
     this(specDir, specFile, resolver);
+    // SZ Mar 9, 2009: added initialization of the modelValue class
+    ModelValue.init();
     this.configFile = configFile;
     this.config = new ModelConfig(configFile + ".cfg", resolver);
     this.config.parse();
