@@ -1,8 +1,12 @@
-package util ;
+package util;
 
 import java.io.PipedOutputStream;
 import java.io.PrintStream;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 
+import tla2sany.semantic.SemanticNode;
 
 /***************************************************************************
 * SANY and TLC were written to communicate only by calling the             *
@@ -28,223 +32,279 @@ import java.io.PrintStream;
 *   TOOL   : Output produced by calling ToolIO.out.println, etc.,          *
 *             buffered and delivered on calls to the class's methods.      *
 ***************************************************************************/
-public class ToolIO 
+public class ToolIO
 {
-/***************************************************************************
-* MODE HANDLING                                                            *
-*                                                                          *
-* The two public methods are the obvious ones for setting and reading the  *
-* mode:                                                                    *
-*                                                                          *
-*    boolean setMode(int mode)                                             *
-*    int     getMode()                                                     *
-***************************************************************************/
-  public static final int SYSTEM = 0 ;
-    /***********************************************************************
-    * In this mode, print() and println() write to System.out.             *
-    ***********************************************************************/
-  public static final int TOOL = 1 ;
-    /***********************************************************************
-    * In this mode, print() and println() write to System.err.             *
-    ***********************************************************************/
-  private static int mode = SYSTEM ;
-    /***********************************************************************
-    * Set the mode and returns true if the mode argument is legal,         *
-    * otherwise does nothing and returns false.                            *
-    ***********************************************************************/
+    /**
+     * In this mode, print() and println() write to System.out.             
+     */
+    public static final int SYSTEM = 0;
 
-  private static FilenameToStream defaultResolver;
-  
-  
-  private static String userDir = null ;
-    /***********************************************************************
-    * The GUI needs to change the user directory--the default path for     *
-    * looking up files.  This seems to be impossible with Java.  So, when  *
-    * this value is non-null, tools should use it for looking up file      *
-    * names--looking up a file named filename with                         *
-    *                                                                      *
-    *    new File(userDir, filename)                                       *
-    ***********************************************************************/
-  public static String getUserDir(){ return userDir; };
-  public static void   setUserDir(String dir){ userDir = dir; };
+    /**
+     * In this mode, print() and println() write to System.err.             
+     */
+    public static final int TOOL = 1;
 
-  /**
-   * Returns the mode of the ToolIO
-   * @return one of {@link ToolIO#SYSTEM},{@link ToolIO#TOOL} 
-   */
-  public static int getMode()
-  { 
-      return mode;
-  }
+    /**
+     * MODE HANDLING                                                            
+     *                                                                          
+     * The two public methods are the obvious ones for setting and reading the  
+     * mode:                                                                    
+     *                                                                          
+     *    boolean setMode(int mode)                                             
+     *    int     getMode()                                                     
+     */
+    private static int mode = SYSTEM;
 
-  /***********************************************************************
-   * Set the mode and returns true if the mode argument is legal,         
-   * otherwise does nothing and returns false.
-   * @param m - the mode, use {@link ToolIO#SYSTEM},{@link ToolIO#TOOL}
-   ***********************************************************************/
-  public static boolean setMode(int m) 
-  {
-    if (m == SYSTEM) 
-    { 
-        mode = m ;
-        out  = System.out ;
-        err  = System.err ;
-        return true ;
-    } 
-    else if (m == TOOL) 
-    { 
-        mode = m ;
-        out  = new ToolPrintStream() ;
-        err  = new ToolPrintStream() ;
-        return true ;
+    /**
+     * Default resolver is responsible for the resolution from module name to
+     * input stream. It is used only if no resolver is specified. 
+     */
+    private static FilenameToStream defaultResolver;
+
+    /**
+     * The GUI needs to change the user directory--the default path for     
+     * looking up files.  This seems to be impossible with Java.  So, when  
+     * this value is non-null, tools should use it for looking up file      
+     * names--looking up a file named filename with                         
+     *                                                                      
+     *    new File(userDir, filename)                                       
+     */
+    private static String userDir = null;
+
+    public static PrintStream out = System.out;
+    public static PrintStream err = System.err;
+
+    // = 1 for testing. Should be set to reasonable value like 1000.
+    private static final int InitialMaxLength = 1;
+
+    /**
+     * List of semantic nodes which are used by tools
+     * @see ToolIO#registerSemanticNode() 
+     */
+    private static List semanticNodes = new LinkedList();
+
+    /**
+     * The current sequence of messages is messages[0] ...                  
+     * messages[length-1] A single message may contain \n characters.       
+     * There will be one message for every call of println().               
+     */
+    static String[] messages = new String[InitialMaxLength];
+    static int length = 0;
+
+    /**
+     * The portion of the next message written by invocations of print()    
+     * not followed by an invocation of println().                          
+     */
+    static String nextMessage = "";
+
+    public static String getUserDir()
+    {
+        return userDir;
     }
-    return false ;
-  } // setMode
 
-  /**
-   * Resets the ToolIO and deletes the messages 
-   * the mode and user directory are not changed 
-   */
-  public static synchronized void reset() 
-  {
-    /***********************************************************************
-    * Throws away all messages obtained so far.                            *
-    ***********************************************************************/
-    messages    = new String[InitialMaxLength] ;
-    length      = 0 ;
-    nextMessage = "" ;
-  } // Reset
+    public static void setUserDir(String dir)
+    {
+        userDir = dir;
+    }
 
-  public static PrintStream out = System.out ;
-  public static PrintStream err = System.err ;
+    /**
+     * Returns the mode of the ToolIO
+     * @return one of {@link ToolIO#SYSTEM},{@link ToolIO#TOOL} 
+     */
+    public static int getMode()
+    {
+        return mode;
+    }
 
-  private static final int InitialMaxLength = 1 ;
-    // = 1 for testing.  Should be set to reasonable value like 1000.
-  static String[] messages = new String[InitialMaxLength] ;
-  static int length = 0 ;
-    /***********************************************************************
-    * The current sequence of messages is messages[0] ...                  *
-    * messages[length-1] A single message may contain \n characters.       *
-    * There will be one message for every call of println().               *
-    ***********************************************************************/
+    /**
+     * Set the mode and returns true if the mode argument is legal,         
+     * otherwise does nothing and returns false.
+     * @param m - the mode, use {@link ToolIO#SYSTEM},{@link ToolIO#TOOL}
+     */
+    public static boolean setMode(int m)
+    {
+        if (m == SYSTEM)
+        {
+            mode = m;
+            out = System.out;
+            err = System.err;
+            return true;
+        } else if (m == TOOL)
+        {
+            mode = m;
+            out = new ToolPrintStream();
+            err = new ToolPrintStream();
+            return true;
+        }
+        return false;
+    }
 
-  static String nextMessage = "" ;
-    /***********************************************************************
-    * The portion of the next message written by invocations of print()    *
-    * not followed by an invocation of println().                          *
-    ***********************************************************************/
+    /**
+     * Resets the ToolIO and deletes the messages and information
+     * about semantic nodes having tool information
+     *  
+     * the mode and user directory are not changed 
+     */
+    public static synchronized void reset()
+    {
+        /*
+         * Throws away all messages obtained so far.                            
+         */
+        messages = new String[InitialMaxLength];
+        length = 0;
+        nextMessage = "";
+        unregisterSemanticNodes();
+    }
 
-  /**
-   * Retrieves the messages send to the err and out streams
-   */
-  public static synchronized String[] getAllMessages() 
-  {
+    /**
+     * Retrieves the messages send to the err and out streams
+     */
+    public static synchronized String[] getAllMessages()
+    {
 
-      // System.out.println("getAllMessages called with length = " + length) ;
-      // for (int i = 0 ; i < messages.length; i++) {
-      //  System.out.println("GetAllMessages: "+ i + ":") ;
-      //  System.out.println(messages[i]) ;
-      // };
+        // System.out.println("getAllMessages called with length = " + length) ;
+        // for (int i = 0 ; i < messages.length; i++) {
+        // System.out.println("GetAllMessages: "+ i + ":") ;
+        // System.out.println(messages[i]) ;
+        // };
 
-      int retLen = length;
-      if (!nextMessage.equals("")) 
-      {
-          retLen++;
-      }
-      String[] ret = new String[retLen];
-      System.arraycopy(messages, 0, ret, 0, retLen);
-      if (!nextMessage.equals("")) 
-      {
-          ret[length] = nextMessage;
-      } 
-      return ret ;
-  } // getAllMessages
+        int retLen = length;
+        if (!nextMessage.equals(""))
+        {
+            retLen++;
+        }
+        String[] ret = new String[retLen];
+        System.arraycopy(messages, 0, ret, 0, retLen);
+        if (!nextMessage.equals(""))
+        {
+            ret[length] = nextMessage;
+        }
+        return ret;
+    } // getAllMessages
 
-  /**
-   * Prints all messages to system out
-   */
-  public static synchronized void printAllMessages() 
-  {
-      /***********************************************************************
-       * For debugging use.                                                   *
-       ***********************************************************************/
-      System.out.println("---- Begin all messages") ;
-      String[] msgs = getAllMessages() ;
-      for (int i = 0 ; i < msgs.length; i++) 
-      {
-          System.out.println("Msg " + i + ":") ;
-          System.out.println(msgs[i]) ; 
-      }
-      System.out.println("---- End all messages") ;
-  }
-  
-  
-  /**
-   * Retrieves the default resolver
-   * @return always not null
-   */
-  public static FilenameToStream getDefaultResolver()
-  {
-      if (defaultResolver == null) 
-      {
-          setDefaultResolver(null);
-      }
-      return defaultResolver;
-  }
-  
-  /**
-   * Sets default resolver
-   * @param resolver
-   */
-  public static void setDefaultResolver(FilenameToStream resolver)
-  {
-      if (resolver == null) 
-      {
-          resolver = new SimpleFilenameToStream();
-      } 
-      ToolIO.defaultResolver = resolver;
-  }
-  
- } // class ToolIO
+    /**
+     * Prints all messages to system out
+     */
+    public static synchronized void printAllMessages()
+    {
+        /*
+         * For debugging use.                                                   
+         */
+        System.out.println("---- Begin all messages");
+        String[] msgs = getAllMessages();
+        for (int i = 0; i < msgs.length; i++)
+        {
+            System.out.println("Msg " + i + ":");
+            System.out.println(msgs[i]);
+        }
+        System.out.println("---- End all messages");
+    }
 
-class ToolPrintStream extends PrintStream 
+    /**
+     * Retrieves the default resolver
+     * @return always not null
+     */
+    public static FilenameToStream getDefaultResolver()
+    {
+        if (defaultResolver == null)
+        {
+            setDefaultResolver(null);
+        }
+        return defaultResolver;
+    }
+
+    /**
+     * Sets default resolver
+     * @param resolver
+     */
+    public static void setDefaultResolver(FilenameToStream resolver)
+    {
+        if (resolver == null)
+        {
+            resolver = new SimpleFilenameToStream();
+        }
+        ToolIO.defaultResolver = resolver;
+    }
+
+    /**
+     * Registers the semantic node
+     * @param node the node containing tool specific information
+     * @param toolId the id of the tool (currently not used)
+     * 
+     * <br><b>Note:</b><br>
+     * This method is called from {@link SemanticNode#setToolObject(int, Object)} 
+     * and identifies the semantic node that carries tool specific information. 
+     * This information can be deleted using {@link ToolIO#cleanToolObjects(int)} 
+     */
+    public static void registerSemanticNode(SemanticNode node, int toolId)
+    {
+        if (!semanticNodes.contains(node))
+        {
+            semanticNodes.add(node);
+        }
+    }
+
+    /**
+     * Sets the tool-specific object for all listed semantic nodes to <code>null</code>
+     * @param toolId the Id of the tool to reset the tool specific information
+     */
+    public static void cleanToolObjects(int toolId)
+    {
+        Iterator iter = semanticNodes.iterator();
+        while(iter.hasNext())
+        {
+            SemanticNode node = (SemanticNode) semanticNodes.iterator();
+            node.setToolObject(toolId, null);
+        }
+    }
+
+    /**
+     * Deletes the information about semantic nodes used with tool-specific information
+     */
+    public static void unregisterSemanticNodes()
+    {
+        semanticNodes = new LinkedList();
+    }
+
+} // class ToolIO
+
+class ToolPrintStream extends PrintStream
 {
     /**
      * Constructor
      */
-    public ToolPrintStream () 
-    { 
-        super(new PipedOutputStream()); 
+    public ToolPrintStream()
+    {
+        super(new PipedOutputStream());
         ToolIO.out = this;
         ToolIO.err = this;
-    } 
-    
+    }
+
     /**
      * Prints a string in to the ToolIO buffer in a separate line
      * @param str String to be printed
      */
-    public void println(String str) 
+    public void println(String str)
     {
         // SZ February 20 2009:
         // This is equivalent to
         // synchronized (this.getClass())
         // but is better to understand
-        // that the actual synchronization is 
+        // that the actual synchronization is
         // performed on the static class object
-        synchronized (ToolPrintStream.class) 
+        synchronized (ToolPrintStream.class)
         {
             // System.out.println("Println called with string:") ;
             // System.out.println(str) ;
-            String thisMessage = ToolIO.nextMessage + str ;
-            ToolIO.nextMessage = "" ;
+            String thisMessage = ToolIO.nextMessage + str;
+            ToolIO.nextMessage = "";
             /*****************************************************************
              * Enlarge the array if necessary.                                *
              *****************************************************************/
-            if (ToolIO.messages.length == ToolIO.length) 
+            if (ToolIO.messages.length == ToolIO.length)
             {
-                String[] newMessages = new String[2*ToolIO.messages.length];
-                System.arraycopy(ToolIO.messages, 0, newMessages, 
-                        0, ToolIO.messages.length);
+                String[] newMessages = new String[2 * ToolIO.messages.length];
+                System.arraycopy(ToolIO.messages, 0, newMessages, 0, ToolIO.messages.length);
                 ToolIO.messages = newMessages;
             }
             ToolIO.messages[ToolIO.length] = thisMessage;
@@ -256,17 +316,17 @@ class ToolPrintStream extends PrintStream
             // and has an empty catch this is a performance killer
             // 
             // The class has been renamed and the synchronization
-            // is executed on another object. 
+            // is executed on another object.
             // In order to avoid this kind of bugs in future
             // just changed to another way of doing this
-            //try { Class.forName("ToolOutput").notifyAll(); }
-            //catch (Exception e) {
-            //    /*******************************************************************
-            //     * I have no idea why this exception could be thrown, or what to do *
-            //     * with it if it is.                                                *
-            //     *******************************************************************/
+            // try { Class.forName("ToolOutput").notifyAll(); }
+            // catch (Exception e) {
+            // /*******************************************************************
+            // * I have no idea why this exception could be thrown, or what to do *
+            // * with it if it is. *
+            // *******************************************************************/
             // } ; // catch
-            
+
             /* **********************************************************************
              * Notify anyone who's waiting for a message.                           *
              * **********************************************************************/
@@ -279,18 +339,18 @@ class ToolPrintStream extends PrintStream
      *
      * @param str The <code>String</code> to be printed
      */
-    public synchronized void print(String str) 
+    public synchronized void print(String str)
     {
         // SZ February 20 2009:
-        // This is equivalent to the next line, but 
-        // it is better visible, that 
+        // This is equivalent to the next line, but
+        // it is better visible, that
         // the synchronization is executed on the static class
         // instance itself
         // synchronized (this.getClass()) {
-        synchronized (ToolPrintStream.class) 
+        synchronized (ToolPrintStream.class)
         {
-            // SZ February 20 2009: 
-            // printing bug fixed instead of printing the string str 
+            // SZ February 20 2009:
+            // printing bug fixed instead of printing the string str
             // the string "str" has been printed
             ToolIO.nextMessage += str;
             // SZ February 20 2009:
@@ -301,12 +361,12 @@ class ToolPrintStream extends PrintStream
             //
             // try { Class.forName("ToolOutput").notifyAll(); }
             // catch (Exception e) {
-            //   /******************************************************************
-            //   * I have no idea why this exception could be thrown, or what to   *
-            //   * do with it if it is.                                            *
-            //   ******************************************************************/
-            //  } ;
-            
+            // /******************************************************************
+            // * I have no idea why this exception could be thrown, or what to *
+            // * do with it if it is. *
+            // ******************************************************************/
+            // } ;
+
             /* *********************************************************************
              * Notify anyone who's waiting for a message.                          *
              * *********************************************************************/
