@@ -63,7 +63,9 @@ import util.UniqueString;
  * This class provides useful methods for tools like model checker
  * and simulator.
  * 
- * It's instance servers as a spec handle
+ * It's instance serves as a spec handle
+ * 
+ * @version $Id$
  */
 public class Tool 
     extends Spec 
@@ -72,6 +74,8 @@ public class Tool
   protected Action[] actions;     // the list of TLA actions.
   private CallStack callStack;    // the call stack.
 
+  private Vect actionVec = new Vect(10);
+  
   /**
    * Creates a new tool handle 
    * @param specDir
@@ -95,7 +99,7 @@ public class Tool
       // Parse and process this spec. 
       // It takes care of all overrides.
       // SZ Feb 20, 2009: added spec reference,
-      // if not null it is just used instead of reparsing
+      // if not null it is just used instead of re-parsing
       super.processSpec(spec);
 
       // Initialize state.
@@ -155,7 +159,7 @@ public class Tool
     return this.actions;
   }
 
-  private Vect actionVec = new Vect(10);
+  
   
   private final void getActions(SemanticNode next, Context con) {
     switch (next.getKind()) {
@@ -2711,56 +2715,67 @@ public class Tool
    * This method converts every definition that is constant into TLC
    * value. By doing this, TLC avoids evaluating the same expression
    * multiple times.
+   * 
+   * The method runs for every module in the module tables
    */
-  private final void processConstantDefns() {
-    ModuleNode[] mods = this.moduleTbl.getModuleNodes();
-    for (int i = 0; i < mods.length; i++) {
-      this.processConstantDefns(mods[i]);
-    }
+  private void processConstantDefns() {
+      ModuleNode[] mods = this.moduleTbl.getModuleNodes();
+      for (int i = 0; i < mods.length; i++) {
+          this.processConstantDefns(mods[i]);
+      }
   }
 
-  private final void processConstantDefns(ModuleNode mod) {
-    OpDeclNode[] consts = mod.getConstantDecls();
-    for (int i = 0; i < consts.length; i++) {
-      Object val = consts[i].getToolObject(TLCGlobals.ToolId);
-      if (val != null && val instanceof Value) {
-        ((Value)val).deepNormalize();
-        // System.err.println(consts[i].getName() + ": " + val);        
-      }
-    }
+  /**
+   * Converts the constant definitions in the corresponding value for the 
+   * module  
+   * @param mod the module to run on
+   */
+  private void processConstantDefns(ModuleNode mod) {
 
-    OpDefNode[] opDefs = mod.getOpDefs();
-    for (int i = 0; i < opDefs.length; i++) {
-      OpDefNode opDef = opDefs[i]; 
-      if (opDef.getArity() == 0) {
-        Object realDef = this.lookup(opDef, Context.Empty, false);
-        if (realDef instanceof OpDefNode) {
-          opDef = (OpDefNode)realDef;
-          if (this.getLevelBound(opDef.getBody(), Context.Empty) == 0) {
-            try {
-              UniqueString opName = opDef.getName();
-              // System.err.println(opName);
-              Value val = this.eval(opDef.getBody(), Context.Empty, TLCState.Empty);
-              val.deepNormalize();
-              // System.err.println(opName + ": " + val);
-              opDef.setToolObject(TLCGlobals.ToolId, val);
-              Object def = this.defns.get(opName);
-              if (def == opDef) {
-                this.defns.put(opName, val);
-              }
-            }
-            catch (Throwable e) {
-              // Assert.printStack(e);
-            }
+      // run for constant definitions
+      OpDeclNode[] consts = mod.getConstantDecls();
+      for (int i = 0; i < consts.length; i++) {
+          Object val = consts[i].getToolObject(TLCGlobals.ToolId);
+          if (val != null && val instanceof Value) {
+              ((Value)val).deepNormalize();
+              // System.err.println(consts[i].getName() + ": " + val);        
           }
-        }
       }
-    }
 
-    ModuleNode[] imods = mod.getInnerModules();
-    for (int i = 0; i < imods.length; i++) {
-      this.processConstantDefns(imods[i]);
-    }
+      // run for constant operator definitions
+      OpDefNode[] opDefs = mod.getOpDefs();
+      for (int i = 0; i < opDefs.length; i++) {
+          OpDefNode opDef = opDefs[i]; 
+          if (opDef.getArity() == 0) {
+              Object realDef = this.lookup(opDef, Context.Empty, false);
+              if (realDef instanceof OpDefNode) {
+                  opDef = (OpDefNode)realDef;
+                  if (this.getLevelBound(opDef.getBody(), Context.Empty) == 0) {
+                      try {
+                          UniqueString opName = opDef.getName();
+                          // System.err.println(opName);
+                          Value val = this.eval(opDef.getBody(), Context.Empty, TLCState.Empty);
+                          val.deepNormalize();
+                          // System.err.println(opName + ": " + val);
+                          opDef.setToolObject(TLCGlobals.ToolId, val);
+                          Object def = this.defns.get(opName);
+                          if (def == opDef) {
+                              this.defns.put(opName, val);
+                          }
+                      }
+                      catch (Throwable e) {
+                          // Assert.printStack(e);
+                      }
+                  }
+              }
+          }
+      }
+
+      // run for all inner modules
+      ModuleNode[] imods = mod.getInnerModules();
+      for (int i = 0; i < imods.length; i++) {
+          this.processConstantDefns(imods[i]);
+      }
   }
 
 }
