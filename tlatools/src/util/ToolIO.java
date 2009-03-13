@@ -140,9 +140,7 @@ public class ToolIO
     }
 
     /**
-     * Resets the ToolIO and deletes the messages and information
-     * about semantic nodes having tool information
-     *  
+     * Resets the ToolIO and deletes the messages   
      * the mode and user directory are not changed 
      */
     public static synchronized void reset()
@@ -153,7 +151,6 @@ public class ToolIO
         messages = new String[InitialMaxLength];
         length = 0;
         nextMessage = "";
-        unregisterSemanticNodes();
     }
 
     /**
@@ -238,7 +235,7 @@ public class ToolIO
      */
     public static void registerSemanticNode(SemanticNode node, int toolId)
     {
-        if (!semanticNodes.contains(node))
+        if (!semanticNodes.contains(node)) 
         {
             semanticNodes.add(node);
         }
@@ -253,7 +250,7 @@ public class ToolIO
         Iterator iter = semanticNodes.iterator();
         while(iter.hasNext())
         {
-            SemanticNode node = (SemanticNode) semanticNodes.iterator();
+            SemanticNode node = (SemanticNode) iter.next();
             node.setToolObject(toolId, null);
         }
     }
