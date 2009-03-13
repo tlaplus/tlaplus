@@ -279,10 +279,7 @@ public abstract class Value implements ValueConstants, Serializable {
     return result;
   }
 
-  public static void setValue(SemanticNode expr, Value val) {
-    expr.setToolObject(TLCGlobals.ToolId, val);
-  }
-  
+ 
   public static Value getValue(SemanticNode expr) {
     return (Value)expr.getToolObject(TLCGlobals.ToolId);
   }
