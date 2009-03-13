@@ -509,7 +509,7 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable {
       {
 	NumeralNode expr1 = (NumeralNode)expr;
 	IntValue val = IntValue.gen(expr1.val());
-	Value.setValue(expr1, val);
+	expr1.setToolObject(TLCGlobals.ToolId, val);
 	return;
       }
     case DecimalKind:
@@ -522,7 +522,7 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable {
       {
 	StringNode expr1 = (StringNode)expr;
 	StringValue val = new StringValue(expr1.getRep());
-	Value.setValue(expr1, val);
+	expr1.setToolObject(TLCGlobals.ToolId, val);
 	return;
       }
     case AssumeKind:
