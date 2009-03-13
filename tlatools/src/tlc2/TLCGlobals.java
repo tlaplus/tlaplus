@@ -74,4 +74,21 @@ public class TLCGlobals {
   // The tool id number for TLC2.
   public static int ToolId = FrontEnd.getToolId();
 
+  
+  /**
+   * Method added to support multiple invocation of TLC
+   * SZ Mar 9, 2009: REFACTOR this class will cause problems and should be converted into a dynamic instance
+   */
+  public static void reset()
+  {
+      DFIDMax = -1;
+      coverageInterval = -1;
+      mainChecker = null;
+      numWorkers = 1;
+      setBound = 1000000;
+      enumBound = 2000;
+      fpServers = null;
+      useGZIP = true;
+      useView = false;
+  } 
 }
