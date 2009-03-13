@@ -9,6 +9,7 @@ import java.util.Hashtable;
 import tla2sany.explorer.ExploreNode;
 import tla2sany.st.Location;
 import tla2sany.st.TreeNode;
+import util.ToolIO;
 
 /**
  * SemanticNode is the (abstract) superclass of all nodes in the
@@ -80,6 +81,7 @@ implements ASTConstants, ExploreNode, LevelConstants {
       this.tools = newTools;
     }
     this.tools[toolId] = obj;
+    ToolIO.registerSemanticNode(this, toolId);
   }
 
   /**
