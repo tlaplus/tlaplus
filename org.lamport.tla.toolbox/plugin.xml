@@ -259,7 +259,7 @@
             contextId="toolbox.contexts.cleaneditor"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="M1+S">
-      </key>      
+      </key>
    </extension>
       
 <!--                                   -->
