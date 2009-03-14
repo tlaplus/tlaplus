@@ -32,22 +32,6 @@
       <view
             allowMultiple="false"
             category="org.lamport.tla.toolbox.category"
-            class="org.lamport.tla.toolbox.ui.view.WelcomeView"
-            icon="icons/full/eview16/console_view2.gif"
-            id="toolbox.view.WelcomeView"
-            name="Welcome">
-      </view>
-      <view
-            allowMultiple="false"
-            category="org.lamport.tla.toolbox.category"
-            class="org.lamport.tla.toolbox.ui.view.SpecLoadedView"
-            icon="icons/full/eview16/console_view2.gif"
-            id="toolbox.view.SpecLoadedView"
-            name="Specification Loaded">
-      </view>
-      <view
-            allowMultiple="false"
-            category="org.lamport.tla.toolbox.category"
             class="org.lamport.tla.toolbox.ui.view.ProblemView"
             icon="icons/full/eview16/console_view2.gif"
             id="toolbox.view.ProblemView"
@@ -270,6 +254,12 @@
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="M1+T">
       </key>
+      <key
+            commandId="toolbox.command.toggle-problem-view"
+            contextId="toolbox.contexts.cleaneditor"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+S">
+      </key>      
    </extension>
       
 <!--                                   -->
