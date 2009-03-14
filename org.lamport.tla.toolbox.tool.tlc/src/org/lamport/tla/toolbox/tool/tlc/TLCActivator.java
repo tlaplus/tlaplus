@@ -3,7 +3,7 @@ package org.lamport.tla.toolbox.tool.tlc;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.lamport.tla.toolbox.tool.IToolboxContribution;
-import org.lamport.tla.toolbox.tool.ToolInitializationException;
+import org.lamport.tla.toolbox.tool.ToolLifecycleException;
 import org.osgi.framework.BundleContext;
 
 /**
@@ -65,7 +65,7 @@ public class TLCActivator extends AbstractUIPlugin implements IToolboxContributi
      * Life cycle method executed by the toolbox 
      * @see org.lamport.tla.toolbox.tool.IToolboxContribution#initialize()
      */
-    public void initialize() throws ToolInitializationException
+    public void initialize() throws ToolLifecycleException
     {
         System.out.println("we are initilized!");
         
@@ -75,7 +75,7 @@ public class TLCActivator extends AbstractUIPlugin implements IToolboxContributi
      * Life cycle method executed by the toolbox
      * @see org.lamport.tla.toolbox.tool.IToolboxContribution#terminate()
      */
-    public void terminate() throws ToolInitializationException
+    public void terminate() throws ToolLifecycleException
     {
         System.out.println("we are terminated!");
         
