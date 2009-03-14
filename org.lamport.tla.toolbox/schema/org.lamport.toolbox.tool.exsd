@@ -49,17 +49,20 @@
 
    <element name="tool">
       <complexType>
-         <attribute name="name" type="string">
+         <attribute name="name" type="string" use="required">
             <annotation>
                <documentation>
-                  Name of the tool
+                  Name of the tool that contributes to the toolbox. The name should be unique in order to be able to get a tool by name.
                </documentation>
+               <appinfo>
+                  <meta.attribute kind="identifier"/>
+               </appinfo>
             </annotation>
          </attribute>
-         <attribute name="classname" type="string">
+         <attribute name="classname" type="string" use="required">
             <annotation>
                <documentation>
-                  Class implementing the main tool lifecycle methods
+                  Class implementing the tool lifecycle methods. The class must implement org.lamport.tla.toolbox.tool.IToolboxContribution interface.
                </documentation>
                <appinfo>
                   <meta.attribute kind="java" basedOn=":org.lamport.tla.toolbox.tool.IToolboxContribution"/>
