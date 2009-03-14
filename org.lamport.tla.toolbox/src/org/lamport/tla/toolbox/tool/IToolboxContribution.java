@@ -3,19 +3,20 @@ package org.lamport.tla.toolbox.tool;
 /**
  * Describes a basic interface for the tool contribution
  * 
- * @author zambrovski
+ * @author Simon Zambrovski
+ * @version $Id$
  */
 public interface IToolboxContribution
 {
     /**
      * Is called during tool initialization
-     * @throws ToolInitializationException
+     * @throws ToolLifecycleException
      */
-    public void initialize() throws ToolInitializationException;
+    public void initialize() throws ToolLifecycleException;
     
     /**
      * Is called during termination of the toolbox
-     * @throws ToolInitializationException
+     * @throws ToolLifecycleException
      */
-    public void terminate() throws ToolInitializationException;
+    public void terminate() throws ToolLifecycleException;
 }
