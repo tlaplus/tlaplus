@@ -1,5 +1,7 @@
 package org.lamport.tla.toolbox.tool.tlc.ui.editor;
 
+import org.eclipse.jface.text.Document;
+import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -7,10 +9,12 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Layout;
 import org.eclipse.ui.forms.IManagedForm;
+import org.eclipse.ui.forms.SectionPart;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.forms.widgets.TableWrapData;
+import org.lamport.tla.toolbox.tool.tlc.ui.util.DirtyMarkingListener;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
 import org.lamport.tla.toolbox.util.IHelpConstants;
 
@@ -23,6 +27,7 @@ public class ParametersPage extends BasicFormPage
 {
 
     public static final String ID = "Parameters";
+    private SourceViewer constraintSource;
 
     public ParametersPage(FormEditor editor)
     {
@@ -62,7 +67,7 @@ public class ParametersPage extends BasicFormPage
         definitionsPart.getSection().setLayoutData(gd);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.widthHint = 100;
-        gd.verticalSpan = 2;
+        gd.verticalSpan = 3;
         definitionsPart.getTableViewer().getTable().setLayoutData(gd);
 
         // new definitions
@@ -73,7 +78,7 @@ public class ParametersPage extends BasicFormPage
         newDefinitionPart.getSection().setLayoutData(gd);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.widthHint = 100;
-        gd.verticalSpan = 2;
+        gd.verticalSpan = 3;
         newDefinitionPart.getTableViewer().getTable().setLayoutData(gd);
 
         // symmetry
@@ -84,29 +89,42 @@ public class ParametersPage extends BasicFormPage
         symmetryPart.getSection().setLayoutData(gd);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.widthHint = 100;
-        gd.verticalSpan = 2;
+        gd.verticalSpan = 3;
         symmetryPart.getTableViewer().getTable().setLayoutData(gd);
 
         // constraint
         Section constraintSection = FormHelper.createSectionComposite(advancedArea, "Constraint", "...", toolkit,
                 Section.DESCRIPTION | Section.TITLE_BAR | Section.TWISTIE | Section.COMPACT, getExpansionListener());
-
+        SectionPart constraintPart = new SectionPart(constraintSection);
+        managedForm.addPart(constraintPart);
+        DirtyMarkingListener constraintListener = new DirtyMarkingListener(constraintPart, true);
+        
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalSpan = 3;
         constraintSection.setLayoutData(gd);
 
         Composite constraintArea = (Composite) constraintSection.getClient();
-        SourceViewer constraintSource = FormHelper.createSourceViewer(toolkit, constraintArea, SWT.V_SCROLL);
+        constraintSource = FormHelper.createSourceViewer(toolkit, constraintArea, SWT.V_SCROLL);
         // layout of the source viewer
         TableWrapData twd = new TableWrapData(TableWrapData.FILL);
         twd.heightHint = 60;
         twd.grabHorizontal = true;
         constraintSource.getTextWidget().setLayoutData(twd);
-
+        constraintSource.addTextListener(constraintListener);
+        
+        setInput();
+        
+        constraintListener.setIgnoreInput(false);
     }
 
     protected Layout getBodyLayout()
     {
         return FormHelper.createFormGridLayout(false, 1);
-    } 
+    }
+    
+    private void setInput()
+    {
+        IDocument constraintDocument = new Document();
+        constraintSource.setDocument(constraintDocument);  
+    }
 }

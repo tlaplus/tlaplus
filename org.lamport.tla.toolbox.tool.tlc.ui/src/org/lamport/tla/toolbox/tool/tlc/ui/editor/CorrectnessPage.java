@@ -13,6 +13,7 @@ import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
+import org.lamport.tla.toolbox.tool.tlc.ui.util.DirtyMarkingListener;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
 import org.lamport.tla.toolbox.util.IHelpConstants;
 
@@ -42,10 +43,20 @@ public class CorrectnessPage extends BasicFormPage
         Composite body = managedForm.getForm().getBody();
         FormToolkit toolkit = managedForm.getToolkit();
         
+        // deadlock button
         Button deadlockButton = toolkit.createButton(body, "Check deadlock", SWT.CHECK);
         gd = new GridData();
         gd.horizontalSpan = 2;
         deadlockButton.setLayoutData(gd);
+
+        // deadlock part        
+        EmptyPart deadlockPart = new EmptyPart();
+        deadlockPart.addControl(deadlockButton);
+        managedForm.addPart(deadlockPart);
+        
+        //listener
+        DirtyMarkingListener listener = new DirtyMarkingListener(deadlockPart, true);
+        deadlockButton.addSelectionListener(listener);
         
         // invariants
         TableSectionPart invariantsPart = new TableSectionPart(body, "Invariants", "Specify invariants to be checked in every state of the specification.", toolkit);
@@ -81,7 +92,7 @@ public class CorrectnessPage extends BasicFormPage
         initPart.getSection().setLayoutData(gd);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.widthHint = 100;
-        gd.verticalSpan = 2;
+        gd.verticalSpan = 3;
         initPart.getTableViewer().getTable().setLayoutData(gd);
         
 
@@ -95,7 +106,7 @@ public class CorrectnessPage extends BasicFormPage
         actionsPart.getSection().setLayoutData(gd);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.widthHint = 100;
-        gd.verticalSpan = 2;
+        gd.verticalSpan = 3;
         actionsPart.getTableViewer().getTable().setLayoutData(gd);
 
 
@@ -109,7 +120,7 @@ public class CorrectnessPage extends BasicFormPage
         actionConstraintsPart.getSection().setLayoutData(gd);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.widthHint = 100;
-        gd.verticalSpan = 2;
+        gd.verticalSpan = 3;
         actionConstraintsPart.getTableViewer().getTable().setLayoutData(gd);
         
         
@@ -117,6 +128,8 @@ public class CorrectnessPage extends BasicFormPage
         propertiesTable = propertiesPart.getTableViewer();
         
         setData();
+        
+        listener.setIgnoreInput(false);
     }
     /**
      * 

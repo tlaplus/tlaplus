@@ -20,7 +20,9 @@ import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 /**
- * Basic form page
+ * Basic form page for the multi-page editor
+ * 
+ * 
  * @author Simon Zambrovski
  * @version $Id$
  */
@@ -78,12 +80,12 @@ public abstract class BasicFormPage extends FormPage
      * Is called to create the body content of the form
      * @param toolkit
      * @param body
+     * 
      */
     protected void createBodyContent(FormToolkit toolkit, Composite body)
     {
 
     }
-    
     
 
     /**

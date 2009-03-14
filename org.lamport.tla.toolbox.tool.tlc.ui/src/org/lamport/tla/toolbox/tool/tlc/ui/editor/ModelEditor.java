@@ -45,7 +45,10 @@ public class ModelEditor extends FormEditor
      */
     public void doSave(IProgressMonitor monitor)
     {
-
+        System.out.println("Save called");
+        this.commitPages(true);
+        
+        this.editorDirtyStateChanged();
     }
 
     /* (non-Javadoc)
@@ -53,7 +56,8 @@ public class ModelEditor extends FormEditor
      */
     public void doSaveAs()
     {
-
+        System.out.println("SaveAs called");
+        
     }
 
     /* (non-Javadoc)
