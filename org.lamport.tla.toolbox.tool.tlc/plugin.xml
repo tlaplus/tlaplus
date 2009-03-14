@@ -60,6 +60,25 @@
    <extension
          point="org.eclipse.ui.menus">
       <menuContribution
+            locationURI="menu:toolbox.tools.menu?after=toolbox.tools.separator">
+         <command
+               commandId="org.lamport.tla.toolbox.tool.tlc.commands.launch"
+               id="toolbox.tool.tlc.launch"
+               mnemonic="C">
+            <visibleWhen
+                  checkEnabled="true">
+               <with
+                     variable="activeWorkbenchWindow.activePerspective">
+                  <not>
+                     <equals
+                           value="org.lamport.tla.toolbox.ui.perspective.problems">
+                     </equals>
+                  </not>
+               </with>
+            </visibleWhen>
+         </command>
+      </menuContribution>
+      <menuContribution
             locationURI="menu:toolbox.tools.menu?after=toolbox.toolmenus.separator">
          <menu
                label="MC Launch"
@@ -101,32 +120,14 @@
             </menu>
          </menu>
       </menuContribution>
-      <menuContribution
-            locationURI="menu:toolbox.tools.menu?after=toolbox.tools.separator">
-         <command
-               commandId="org.lamport.tla.toolbox.tool.tlc.commands.launch"
-               id="toolbox.tool.tlc.launch"
-               mnemonic="C">
-            <visibleWhen
-                  checkEnabled="true">
-               <with
-                     variable="activeWorkbenchWindow.activePerspective">
-                  <not>
-                     <equals
-                           value="org.lamport.tla.toolbox.ui.perspective.problems">
-                     </equals>
-                  </not>
-               </with>
-            </visibleWhen>
-         </command>
-      </menuContribution>
    </extension>
    
    <extension
          point="org.lamport.toolbox.tool">
       <tool
+            name="TLC"
             classname="org.lamport.tla.toolbox.tool.tlc.TLCActivator"
-            name="TLC">
+            >
       </tool>
    </extension>
    
