@@ -27,7 +27,10 @@ public interface IConfigurationConstants
      * Path to the config file (/bar/foo_mc_{i}.cfg)
      */
     public static final String CONFIG_FILE = "configFile";
-
+    /**
+     * formula which points behavior specification
+     */
+    public static final String MODEL_SPECIFICATION = "modelSpec";
     
 
 }
