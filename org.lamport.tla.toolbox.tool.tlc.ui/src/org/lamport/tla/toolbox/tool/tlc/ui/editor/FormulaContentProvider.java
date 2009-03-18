@@ -13,7 +13,7 @@ import org.eclipse.jface.viewers.Viewer;
 public class FormulaContentProvider implements IStructuredContentProvider
 {
     private static final Object[] EMPTY = new Object[0];
-    private Vector formulaList;
+    // private Vector formulaList;
     
     
     public FormulaContentProvider()
@@ -32,7 +32,7 @@ public class FormulaContentProvider implements IStructuredContentProvider
      */
     public void dispose()
     {
-        formulaList = null;
+       //  formulaList = null;
     }
 
     /* (non-Javadoc)
@@ -41,10 +41,12 @@ public class FormulaContentProvider implements IStructuredContentProvider
     public void inputChanged(Viewer viewer, Object oldInput, Object newInput)
     {
         Assert.isNotNull(viewer);
+        /*
         if (newInput instanceof Vector)
         {
             formulaList = (Vector) newInput;
-        } 
+        }
+        */ 
     }
 
     /* (non-Javadoc)
@@ -52,8 +54,9 @@ public class FormulaContentProvider implements IStructuredContentProvider
      */
     public Object[] getElements(Object inputElement)
     {
-        if (formulaList != null) 
+        if (inputElement != null && inputElement instanceof Vector) 
         {
+            Vector formulaList = (Vector) inputElement;
             return formulaList.toArray(new Formula[formulaList.size()]);
         }
         return EMPTY;

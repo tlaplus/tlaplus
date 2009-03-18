@@ -1,5 +1,7 @@
 package org.lamport.tla.toolbox.tool.tlc.ui.editor;
 
+import java.util.Vector;
+
 import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
@@ -183,8 +185,11 @@ public class TableSectionPart extends SectionPart
     private void doRemove()
     {
         IStructuredSelection selection = (IStructuredSelection) tableViewer.getSelection();
-        tableViewer.remove(selection.toArray());
+        Vector input = (Vector)tableViewer.getInput();
+        input.removeAll(selection.toList());
+        tableViewer.setInput(input);
         this.markDirty();
+        
     }
 
     /**
@@ -198,7 +203,10 @@ public class TableSectionPart extends SectionPart
         if (formulaString != null)
         {
             Formula formula = new Formula(formulaString);
-            tableViewer.add(formula);
+            
+            Vector input = ((Vector)tableViewer.getInput());
+            input.add(formula);
+            tableViewer.setInput(input);
             tableViewer.setChecked(formula, true);
             this.markDirty();
         }
@@ -216,8 +224,8 @@ public class TableSectionPart extends SectionPart
         {
             formula.formula = editedFormula;
             tableViewer.setChecked(formula, true);
-            tableViewer.refresh();
             this.markDirty();
+            tableViewer.refresh();
         }
     }
 

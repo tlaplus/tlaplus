@@ -1,5 +1,9 @@
 package org.lamport.tla.toolbox.tool.tlc.ui.editor;
 
+import java.util.Vector;
+
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Layout;
 import org.eclipse.ui.forms.IManagedForm;
@@ -17,6 +21,7 @@ public class ModelValuesPage extends BasicFormPage
 {
 
     public static final String ID = "ModelValues";
+    private CheckboxTableViewer modelValues;
 
     public ModelValuesPage(FormEditor editor)
     {
@@ -32,11 +37,18 @@ public class ModelValuesPage extends BasicFormPage
 
         TableSectionPart propertiesPart = new TableSectionPart(body, "Model Values", "....", toolkit);
         managedForm.addPart(propertiesPart);
-
+        modelValues = propertiesPart.getTableViewer();
     }
+    
+    
 
     protected Layout getBodyLayout()
     {
         return FormHelper.createFormGridLayout(false, 1);
     } 
+    
+    protected void loadData() throws CoreException
+    {
+        modelValues.setInput(new Vector());
+    }
 }

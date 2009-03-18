@@ -15,7 +15,7 @@ import org.eclipse.ui.forms.AbstractFormPart;
 public class EmptyPart extends AbstractFormPart
 {
     private Vector controls = new Vector();
-
+    
     public boolean addControl(Control control)
     {
         Assert.isNotNull(control);
@@ -54,5 +54,4 @@ public class EmptyPart extends AbstractFormPart
         
         return contains;
     }
-
 }

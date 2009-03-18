@@ -1,8 +1,12 @@
 package org.lamport.tla.toolbox.tool.tlc.ui.editor;
 
+import java.util.Vector;
+
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.source.SourceViewer;
+import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -28,6 +32,10 @@ public class ParametersPage extends BasicFormPage
 
     public static final String ID = "Parameters";
     private SourceViewer constraintSource;
+    private CheckboxTableViewer definitionsTable;
+    private CheckboxTableViewer newDefinitionsTable;
+    private CheckboxTableViewer symmetryTable;
+    private CheckboxTableViewer constantTable;
 
     public ParametersPage(FormEditor editor)
     {
@@ -111,20 +119,31 @@ public class ParametersPage extends BasicFormPage
         twd.grabHorizontal = true;
         constraintSource.getTextWidget().setLayoutData(twd);
         constraintSource.addTextListener(constraintListener);
+
+        definitionsTable = definitionsPart.getTableViewer();
+        newDefinitionsTable = newDefinitionPart.getTableViewer();
+        symmetryTable = symmetryPart.getTableViewer();
+        constantTable = constantsPart.getTableViewer();
         
-        setInput();
-        
-        constraintListener.setIgnoreInput(false);
+        ignoringListeners.add(constraintListener);
     }
 
+    protected void loadData() throws CoreException
+    {
+        IDocument constraintDocument = new Document();
+        constraintSource.setDocument(constraintDocument);
+        
+        constantTable.setInput(new Vector());
+        symmetryTable.setInput(new Vector());
+        definitionsTable.setInput(new Vector());
+        newDefinitionsTable.setInput(new Vector());
+        
+    }
+    
+    
     protected Layout getBodyLayout()
     {
         return FormHelper.createFormGridLayout(false, 1);
     }
     
-    private void setInput()
-    {
-        IDocument constraintDocument = new Document();
-        constraintSource.setDocument(constraintDocument);  
-    }
 }

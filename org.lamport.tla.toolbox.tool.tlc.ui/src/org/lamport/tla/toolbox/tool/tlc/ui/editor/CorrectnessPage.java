@@ -2,6 +2,8 @@ package org.lamport.tla.toolbox.tool.tlc.ui.editor;
 
 import java.util.Vector;
 
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -29,6 +31,12 @@ public class CorrectnessPage extends BasicFormPage
     
     private TableViewer invariantsTable;
     private TableViewer propertiesTable;
+
+    private CheckboxTableViewer actionConstraintTable;
+
+    private CheckboxTableViewer actionsTable;
+
+    private CheckboxTableViewer initTable;
 
     public CorrectnessPage(FormEditor editor)
     {
@@ -83,7 +91,7 @@ public class CorrectnessPage extends BasicFormPage
         advancedArea.setLayout(layout);
 
         // init part
-        TableSectionPart initPart = new TableSectionPart(advancedArea, "Action constraints", "...", toolkit);
+        TableSectionPart initPart = new TableSectionPart(advancedArea, "Init", "...", toolkit);
         managedForm.addPart(initPart);
         gd = (GridData) initPart.getTableViewer().getTable().getLayoutData();
         gd.widthHint = 100;
@@ -111,7 +119,7 @@ public class CorrectnessPage extends BasicFormPage
 
 
         // action constraints
-        TableSectionPart actionConstraintsPart = new TableSectionPart(advancedArea, "Init", "...", toolkit);
+        TableSectionPart actionConstraintsPart = new TableSectionPart(advancedArea, "Action constraints", "...", toolkit);
         managedForm.addPart(actionConstraintsPart);
         gd = (GridData) actionConstraintsPart.getTableViewer().getTable().getLayoutData();
         gd.widthHint = 100;
@@ -126,18 +134,23 @@ public class CorrectnessPage extends BasicFormPage
         
         invariantsTable = invariantsPart.getTableViewer();
         propertiesTable = propertiesPart.getTableViewer();
-        
-        setData();
-        
-        listener.setIgnoreInput(false);
+        initTable = initPart.getTableViewer();
+        actionsTable = actionsPart.getTableViewer();
+        actionConstraintTable = actionConstraintsPart.getTableViewer();
+
+        ignoringListeners.add(listener);
     }
     /**
      * 
      */
-    private void setData()
+    protected void loadData() throws CoreException
     {
         invariantsTable.setInput(new Vector());
         propertiesTable.setInput(new Vector());
+        
+        initTable.setInput(new Vector());
+        actionsTable.setInput(new Vector());
+        actionConstraintTable.setInput(new Vector());
     }
 
     protected Layout getBodyLayout()

@@ -13,7 +13,7 @@ import org.eclipse.ui.forms.AbstractFormPart;
  * @author Simon Zambrovski
  * @version $Id$
  */
-public class DirtyMarkingListener implements ITextInputListener, ITextListener, SelectionListener
+public class DirtyMarkingListener implements ITextInputListener, ITextListener, SelectionListener, IgnoringListener
 {
     private final AbstractFormPart part;
     private boolean ignoreInputChange;
