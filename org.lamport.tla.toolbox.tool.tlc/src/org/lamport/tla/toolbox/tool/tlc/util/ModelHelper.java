@@ -10,8 +10,10 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationType;
+import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.core.ILaunchManager;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
+import org.lamport.tla.toolbox.tool.tlc.job.ConfigCreationOperation;
 import org.lamport.tla.toolbox.tool.tlc.job.ExtendingTLAModuleCreationOperation;
 import org.lamport.tla.toolbox.tool.tlc.launch.TLCModelLaunchDelegate;
 import org.lamport.tla.toolbox.util.ResourceHelper;
@@ -124,6 +126,18 @@ public class ModelHelper
         IPath cfgPath = rootModule.getLocation().removeFileExtension().addFileExtension("cfg");
 
         
+        // create config file
+        IWorkspaceRunnable configCreateJob = new ConfigCreationOperation(cfgPath);
+        // create it
+        try
+        {
+            ResourcesPlugin.getWorkspace().run(configCreateJob, null);
+        } catch (CoreException e)
+        {
+            e.printStackTrace();
+            // exception, no chance to recover
+        }
+        
         
         IFile cfgFile = ResourceHelper.getLinkedFile(rootModule.getProject(), cfgPath.toOSString(), true);
 
@@ -156,5 +170,21 @@ public class ModelHelper
         IFile modelRootFile = ResourceHelper.getLinkedFile(specRootModule.getProject(), modelRootPath.toOSString(), true);
 
         return modelRootFile;
+    }
+    
+    /**
+     * Saves the config working copy
+     * @param config
+     */
+    public static void doSaveConfigurationCopy(ILaunchConfigurationWorkingCopy config)
+    {
+        try
+        {
+            config.doSave();
+        } catch (CoreException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 }
