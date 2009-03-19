@@ -5,7 +5,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.Action;
-import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.tool.tlc.TLCActivator;
 import org.lamport.tla.toolbox.util.RCPNameToFileIStream;
 import org.lamport.tla.toolbox.util.ResourceHelper;
@@ -74,7 +73,8 @@ public class TLCJob extends AbstractJob
         tlc.setResolver(new RCPNameToFileIStream(null));
 
         // setup SpecObj from parser
-        tlc.setSpecObject(ToolboxHandle.getSpecObj());
+        // SpecObj specObj = ToolboxHandle.getSpecObj();
+        // tlc.setSpecObject(specObj);
 
         // handle parameters
         String[] params = new String[] { "-config", cfgFile.getName(), 

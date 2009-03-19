@@ -49,6 +49,7 @@ public class ExtendingTLAModuleCreationOperation implements IWorkspaceRunnable
             if (file.createNewFile())
             {
                 // successfully created
+                // TODO file editor input
                 FileOutputStream fos = new FileOutputStream(file);
                 fos.write(content);
                 fos.flush();
