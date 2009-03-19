@@ -11,8 +11,8 @@ import org.eclipse.debug.core.ILaunchConfigurationType;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.core.ILaunchManager;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
+import org.lamport.tla.toolbox.tool.tlc.launch.IConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.TLCModelLaunchDelegate;
-import org.lamport.tla.toolbox.tool.tlc.launch.ui.IConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 
 /**
@@ -50,7 +50,7 @@ public class NewModelHandler extends AbstractHandler implements IConfigurationCo
         IResource modelRoot = ModelHelper.getNewModelRootFile(specRootModule, modelName);
         
         // get the model configuration
-        IResource config = ModelHelper.getConfigFile(ToolboxHandle.getRootModule());
+        IResource config = ModelHelper.getConfigFile(modelRoot);
         
 
         try

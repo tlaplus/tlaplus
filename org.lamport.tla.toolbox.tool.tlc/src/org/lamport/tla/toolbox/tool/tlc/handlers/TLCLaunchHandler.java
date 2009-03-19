@@ -16,6 +16,7 @@ import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
  * Our sample handler extends AbstractHandler, an IHandler base class.
  * @see org.eclipse.core.commands.IHandler
  * @see org.eclipse.core.commands.AbstractHandler
+ * @deprecated to be removed
  */
 public class TLCLaunchHandler extends AbstractHandler
 {
@@ -32,7 +33,8 @@ public class TLCLaunchHandler extends AbstractHandler
      */
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
-        // root file
+
+/*        // root file
         IResource rootModule = ToolboxHandle.getRootModule();
 
         // config file
@@ -58,6 +60,6 @@ public class TLCLaunchHandler extends AbstractHandler
         job.setPriority(Job.LONG);
         job.setUser(true);
         job.schedule();
-        return null;
+*/        return null;
     }
 }

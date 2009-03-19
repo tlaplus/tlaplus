@@ -4,7 +4,7 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
-import org.lamport.tla.toolbox.tool.tlc.launch.ui.IConfigurationConstants;
+import org.lamport.tla.toolbox.tool.tlc.launch.IConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
