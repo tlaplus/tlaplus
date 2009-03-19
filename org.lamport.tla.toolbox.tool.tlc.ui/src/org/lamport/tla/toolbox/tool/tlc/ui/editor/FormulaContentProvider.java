@@ -5,6 +5,7 @@ import java.util.Vector;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.Viewer;
+import org.lamport.tla.toolbox.tool.tlc.model.Formula;
 
 /**
  * @author Simon Zambrovski
@@ -13,18 +14,9 @@ import org.eclipse.jface.viewers.Viewer;
 public class FormulaContentProvider implements IStructuredContentProvider
 {
     private static final Object[] EMPTY = new Object[0];
-    // private Vector formulaList;
-    
     
     public FormulaContentProvider()
     {
-        /*
-        formulaList = new Vector();
-        formulaList.add(new Formula("x = x + 1"));
-        formulaList.add(new Formula("z = z + 1"));
-        formulaList.add(new Formula("y = y + 1"));
-        */
-
     }
     
     /* (non-Javadoc)
@@ -41,12 +33,6 @@ public class FormulaContentProvider implements IStructuredContentProvider
     public void inputChanged(Viewer viewer, Object oldInput, Object newInput)
     {
         Assert.isNotNull(viewer);
-        /*
-        if (newInput instanceof Vector)
-        {
-            formulaList = (Vector) newInput;
-        }
-        */ 
     }
 
     /* (non-Javadoc)
@@ -60,25 +46,5 @@ public class FormulaContentProvider implements IStructuredContentProvider
             return formulaList.toArray(new Formula[formulaList.size()]);
         }
         return EMPTY;
-    }
-    
-    
-    public static class Formula
-    {
-        String formula;
-
-        /**
-         * @param string
-         * @param b
-         */
-        public Formula(String formula)
-        {
-            this.formula = formula;
-        }
-        
-        public String toString()
-        {
-            return formula;
-        }
     }
 }

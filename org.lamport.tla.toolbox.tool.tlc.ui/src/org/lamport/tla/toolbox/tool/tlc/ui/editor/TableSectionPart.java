@@ -2,8 +2,10 @@ package org.lamport.tla.toolbox.tool.tlc.ui.editor;
 
 import java.util.Vector;
 
+import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.DoubleClickEvent;
+import org.eclipse.jface.viewers.ICheckStateListener;
 import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -22,7 +24,7 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.SectionPart;
 import org.eclipse.ui.forms.widgets.FormToolkit;
-import org.lamport.tla.toolbox.tool.tlc.ui.editor.FormulaContentProvider.Formula;
+import org.lamport.tla.toolbox.tool.tlc.model.Formula;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
 import org.lamport.tla.toolbox.tool.tlc.ui.wizard.FormulaWizard;
 
@@ -55,7 +57,7 @@ public class TableSectionPart extends SectionPart
             }
         }
     };
-    
+
     // a listener reacting on selection in the table viewer
     private ISelectionChangedListener fSelectionChangedListener = new ISelectionChangedListener() {
         public void selectionChanged(SelectionChangedEvent event)
@@ -140,6 +142,13 @@ public class TableSectionPart extends SectionPart
                 doEdit();
             }
         });
+        // mark model dirty on checking / un-checking
+        tableViewer.addCheckStateListener(new ICheckStateListener() {
+            public void checkStateChanged(CheckStateChangedEvent event)
+            {
+                doCheck();
+            }
+        });
 
         // add button
         buttonAdd = toolkit.createButton(sectionArea, "Add", SWT.PUSH);
@@ -169,7 +178,6 @@ public class TableSectionPart extends SectionPart
         changeButtonEnablement();
     }
 
-
     /**
      * Retrieves the table viewer
      * @return
@@ -185,11 +193,11 @@ public class TableSectionPart extends SectionPart
     private void doRemove()
     {
         IStructuredSelection selection = (IStructuredSelection) tableViewer.getSelection();
-        Vector input = (Vector)tableViewer.getInput();
+        Vector input = (Vector) tableViewer.getInput();
         input.removeAll(selection.toList());
         tableViewer.setInput(input);
         this.markDirty();
-        
+
     }
 
     /**
@@ -203,8 +211,8 @@ public class TableSectionPart extends SectionPart
         if (formulaString != null)
         {
             Formula formula = new Formula(formulaString);
-            
-            Vector input = ((Vector)tableViewer.getInput());
+
+            Vector input = ((Vector) tableViewer.getInput());
             input.add(formula);
             tableViewer.setInput(input);
             tableViewer.setChecked(formula, true);
@@ -228,7 +236,14 @@ public class TableSectionPart extends SectionPart
             tableViewer.refresh();
         }
     }
-
+    /**
+     * React on formula been checked or un-checked
+     */
+    protected void doCheck()
+    {
+        this.markDirty();
+    }
+    
     /**
      * 
      */

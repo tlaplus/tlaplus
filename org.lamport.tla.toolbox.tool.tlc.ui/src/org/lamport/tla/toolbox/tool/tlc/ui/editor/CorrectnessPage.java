@@ -1,10 +1,10 @@
 package org.lamport.tla.toolbox.tool.tlc.ui.editor;
 
+import java.util.List;
 import java.util.Vector;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
-import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -29,14 +29,13 @@ public class CorrectnessPage extends BasicFormPage
 
     public static final String ID = "Correctness";
     
-    private TableViewer invariantsTable;
-    private TableViewer propertiesTable;
-
+    private CheckboxTableViewer invariantsTable;
+    private CheckboxTableViewer propertiesTable;
+    private CheckboxTableViewer initTable;
+    private CheckboxTableViewer actionsTable;
     private CheckboxTableViewer actionConstraintTable;
 
-    private CheckboxTableViewer actionsTable;
-
-    private CheckboxTableViewer initTable;
+    private Button checkDeadlockButton;
 
     public CorrectnessPage(FormEditor editor)
     {
@@ -51,20 +50,19 @@ public class CorrectnessPage extends BasicFormPage
         Composite body = managedForm.getForm().getBody();
         FormToolkit toolkit = managedForm.getToolkit();
         
-        // deadlock button
-        Button deadlockButton = toolkit.createButton(body, "Check deadlock", SWT.CHECK);
+        checkDeadlockButton = toolkit.createButton(body, "Check deadlock", SWT.CHECK);
         gd = new GridData();
         gd.horizontalSpan = 2;
-        deadlockButton.setLayoutData(gd);
+        checkDeadlockButton.setLayoutData(gd);
 
         // deadlock part        
         EmptyPart deadlockPart = new EmptyPart();
-        deadlockPart.addControl(deadlockButton);
+        deadlockPart.addControl(checkDeadlockButton);
         managedForm.addPart(deadlockPart);
         
         //listener
         DirtyMarkingListener listener = new DirtyMarkingListener(deadlockPart, true);
-        deadlockButton.addSelectionListener(listener);
+        checkDeadlockButton.addSelectionListener(listener);
         
         // invariants
         TableSectionPart invariantsPart = new TableSectionPart(body, "Invariants", "Specify invariants to be checked in every state of the specification.", toolkit);
@@ -98,7 +96,7 @@ public class CorrectnessPage extends BasicFormPage
         // layout 
         gd = new GridData(GridData.FILL_HORIZONTAL);
         initPart.getSection().setLayoutData(gd);
-        gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd = new GridData(GridData.FILL_BOTH);
         gd.widthHint = 100;
         gd.verticalSpan = 3;
         initPart.getTableViewer().getTable().setLayoutData(gd);
@@ -112,7 +110,7 @@ public class CorrectnessPage extends BasicFormPage
         // layout 
         gd = new GridData(GridData.FILL_HORIZONTAL);
         actionsPart.getSection().setLayoutData(gd);
-        gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd = new GridData(GridData.FILL_BOTH);
         gd.widthHint = 100;
         gd.verticalSpan = 3;
         actionsPart.getTableViewer().getTable().setLayoutData(gd);
@@ -126,7 +124,7 @@ public class CorrectnessPage extends BasicFormPage
         // layout 
         gd = new GridData(GridData.FILL_HORIZONTAL);
         actionConstraintsPart.getSection().setLayoutData(gd);
-        gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd = new GridData(GridData.FILL_BOTH);
         gd.widthHint = 100;
         gd.verticalSpan = 3;
         actionConstraintsPart.getTableViewer().getTable().setLayoutData(gd);
@@ -140,22 +138,76 @@ public class CorrectnessPage extends BasicFormPage
 
         ignoringListeners.add(listener);
     }
+
+    
     /**
-     * 
+     * load data from the model
      */
     protected void loadData() throws CoreException
     {
-        invariantsTable.setInput(new Vector());
-        propertiesTable.setInput(new Vector());
+        // check deadlock
+        boolean checkDeadlock = getConfig().getAttribute(MODEL_CORRECTNESS_CHECK_DEADLOCK, MODEL_CORRECTNESS_CHECK_DEADLOCK_DEFAULT);
+        this.checkDeadlockButton.setSelection(checkDeadlock);
         
-        initTable.setInput(new Vector());
-        actionsTable.setInput(new Vector());
-        actionConstraintTable.setInput(new Vector());
+        // invariants
+        List serializedList= getConfig().getAttribute(MODEL_CORRECTNESS_INVARIANTS, new Vector());
+        FormHelper.setSerializedInput(invariantsTable, serializedList);
+
+        // properties
+        serializedList = getConfig().getAttribute(MODEL_CORRECTNESS_PROPERTIES, new Vector());
+        FormHelper.setSerializedInput(propertiesTable, serializedList);
+
+        // init
+        serializedList = getConfig().getAttribute(MODEL_CORRECTNESS_INIT, new Vector());
+        FormHelper.setSerializedInput(initTable, serializedList);
+
+        // actions
+        serializedList = getConfig().getAttribute(MODEL_CORRECTNESS_ACTIONS, new Vector());
+        FormHelper.setSerializedInput(actionsTable, serializedList);
+
+        // actions constraints
+        serializedList = getConfig().getAttribute(MODEL_CORRECTNESS_ACTION_CONSTRAINTS, new Vector());
+        FormHelper.setSerializedInput(actionConstraintTable, serializedList);
     }
 
+    /**
+     * Commit data to the model
+     */
+    protected void commit(boolean onSave)
+    {
+
+        // check deadlock 
+        boolean checkDeadlock = this.checkDeadlockButton.getSelection();
+        getConfig().setAttribute(MODEL_CORRECTNESS_CHECK_DEADLOCK, checkDeadlock);
+        
+        // invariants
+        List serializedList = FormHelper.getSerializedInput(invariantsTable);
+        getConfig().setAttribute(MODEL_CORRECTNESS_INVARIANTS, serializedList);
+
+        // properties
+        serializedList = FormHelper.getSerializedInput(propertiesTable);
+        getConfig().setAttribute(MODEL_CORRECTNESS_PROPERTIES, serializedList);
+
+        // init
+        serializedList = FormHelper.getSerializedInput(initTable);
+        getConfig().setAttribute(MODEL_CORRECTNESS_INIT, serializedList);
+
+        // actions
+        serializedList = FormHelper.getSerializedInput(actionsTable);
+        getConfig().setAttribute(MODEL_CORRECTNESS_ACTIONS, serializedList);
+
+        // action constraints
+        serializedList = FormHelper.getSerializedInput(actionConstraintTable);
+        getConfig().setAttribute(MODEL_CORRECTNESS_ACTION_CONSTRAINTS, serializedList);
+        
+        super.commit(onSave);
+    } 
+
+    
     protected Layout getBodyLayout()
     {
         return FormHelper.createFormGridLayout(true, 2);
-    } 
+    }
+
    
 }

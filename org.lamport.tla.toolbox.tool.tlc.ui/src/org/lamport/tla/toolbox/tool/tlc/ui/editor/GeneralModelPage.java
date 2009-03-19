@@ -1,6 +1,8 @@
 package org.lamport.tla.toolbox.tool.tlc.ui.editor;
 
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -18,9 +20,11 @@ import org.eclipse.ui.forms.widgets.ImageHyperlink;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.forms.widgets.TableWrapData;
 import org.eclipse.ui.forms.widgets.TableWrapLayout;
-import org.lamport.tla.toolbox.tool.tlc.launch.ui.IConfigurationConstants;
-import org.lamport.tla.toolbox.tool.tlc.launch.ui.IConfigurationDefaultConstants;
+import org.lamport.tla.toolbox.tool.tlc.launch.IConfigurationConstants;
+import org.lamport.tla.toolbox.tool.tlc.launch.IConfigurationDefaults;
+import org.lamport.tla.toolbox.tool.tlc.launch.TLCModelLaunchDelegate;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
+import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.util.IHelpConstants;
 
 /**
@@ -28,7 +32,7 @@ import org.lamport.tla.toolbox.util.IHelpConstants;
  * @author Simon Zambrovski
  * @version $Id$
  */
-public class GeneralModelPage extends BasicFormPage implements IConfigurationConstants, IConfigurationDefaultConstants
+public class GeneralModelPage extends BasicFormPage implements IConfigurationConstants, IConfigurationDefaults
 {
 
     public static final String ID = "GeneralModelPage";
@@ -58,8 +62,9 @@ public class GeneralModelPage extends BasicFormPage implements IConfigurationCon
     {
         mcOption.setSelection(true);
 
-        specName.setText(getConfig().getAttribute(SPEC_NAME, SPEC_NAME_DEFAULT));
-        modelName.setText(getConfig().getAttribute(MODEL_NAME, MODEL_NAME_DEFAULT));
+        specName.setText(getConfig().getAttribute(SPEC_NAME, EMPTY_STRING));
+        modelName.setText(getConfig().getAttribute(MODEL_NAME, EMPTY_STRING));
+        
     }
 
     /**
@@ -171,7 +176,7 @@ public class GeneralModelPage extends BasicFormPage implements IConfigurationCon
      * @param toolkit
      * @param body
      */
-    private void createLaunchSection(FormToolkit toolkit, Composite body)
+    private void createLaunchSection(FormToolkit toolkit, final Composite body)
     {
         TableWrapData twd;
         GridData gd;
@@ -191,9 +196,32 @@ public class GeneralModelPage extends BasicFormPage implements IConfigurationCon
         ImageHyperlink runLink = toolkit.createImageHyperlink(area, SWT.NONE);
         runLink.setImage(createRegisteredImage("icons/full/lrun_obj.gif"));
         runLink.addHyperlinkListener(new HyperlinkAdapter() {
+
             public void linkActivated(HyperlinkEvent e)
             {
-                System.out.println("Run clicked");
+                ILaunchConfigurationWorkingCopy config = getConfig();
+                if (config.isDirty()) 
+                {
+                    boolean confirmDirty = MessageDialog.openConfirm(body.getShell(), "Dirty editors", "Press ok to save and proceed or press cancel to abort the launch");
+                    if (confirmDirty) 
+                    {
+                        ModelHelper.doSaveConfigurationCopy(config);
+                    } else {
+                        return;
+                    }
+                }
+                
+                try
+                {
+                    System.out.println("Run clicked");
+                    config.launch(TLCModelLaunchDelegate.MODE_MODELCHECK, null, false);
+                    System.out.println("Finished");
+                } catch (CoreException e1)
+                {
+                    // TODO Auto-generated catch block
+                    e1.printStackTrace();
+                }
+                
             }
         });
         runLink.setText("Run TLC");

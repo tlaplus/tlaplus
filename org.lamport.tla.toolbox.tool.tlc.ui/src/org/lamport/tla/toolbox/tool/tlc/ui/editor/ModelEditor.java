@@ -25,7 +25,7 @@ public class ModelEditor extends FormEditor
 
     public ModelEditor()
     {
-        
+
     }
 
     public void init(IEditorSite site, IEditorInput input) throws PartInitException
@@ -44,7 +44,7 @@ public class ModelEditor extends FormEditor
                 {
                     e.printStackTrace();
                 }
-                
+
                 IPath path = finput.getPath();
                 // setContentDescription(path.toString());
                 setPartName(path.removeFileExtension().lastSegment());
@@ -54,26 +54,15 @@ public class ModelEditor extends FormEditor
 
     }
 
-    
     /* (non-Javadoc)
      * @see org.eclipse.ui.part.EditorPart#doSave(org.eclipse.core.runtime.IProgressMonitor)
      */
     public void doSave(IProgressMonitor monitor)
     {
-        System.out.println("Save called");
-        this.commitPages(true);
+        // System.out.println("Save called");
+        this.commitPages(monitor, true);
         
-        
-        
-        
-        try
-        {
-            configurationCopy.doSave();
-        } catch (CoreException e)
-        {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+        ModelHelper.doSaveConfigurationCopy(configurationCopy);
         
         this.editorDirtyStateChanged();
     }
@@ -81,28 +70,33 @@ public class ModelEditor extends FormEditor
     /**
      * Instead of committing pages, forms and form-parts, we just commit pages 
      */
-    protected void commitPages(boolean onSave) {
-        if (pages != null) {
-            for (int i = 0; i < pages.size(); i++) {
+    protected void commitPages(IProgressMonitor monitor, boolean onSave)
+    {
+        if (pages != null)
+        {
+            for (int i = 0; i < pages.size(); i++)
+            {
                 Object page = pages.get(i);
-                if (page instanceof BasicFormPage) {
-                    BasicFormPage fpage = (BasicFormPage)page;
+                if (page instanceof BasicFormPage)
+                {
+                    BasicFormPage fpage = (BasicFormPage) page;
                     IManagedForm mform = fpage.getManagedForm();
                     if (mform != null && mform.isDirty())
+                    {
                         fpage.commit(onSave);
+                    }
                 }
             }
-        }   
+        }
     }
 
-    
     /* (non-Javadoc)
      * @see org.eclipse.ui.part.EditorPart#doSaveAs()
      */
     public void doSaveAs()
     {
         System.out.println("SaveAs called");
-        
+
     }
 
     /* (non-Javadoc)
@@ -112,7 +106,6 @@ public class ModelEditor extends FormEditor
     {
         return true;
     }
-
 
     /* (non-Javadoc)
      * @see org.eclipse.ui.forms.editor.FormEditor#addPages()
@@ -126,8 +119,7 @@ public class ModelEditor extends FormEditor
             addPage(new CorrectnessPage(this));
             addPage(new ParametersPage(this));
             addPage(new ModelValuesPage(this));
-            // addPage(new LaunchConfigurationPage(this));
-            
+
         } catch (PartInitException e)
         {
             // TODO Auto-generated catch block

@@ -1,7 +1,6 @@
 package org.lamport.tla.toolbox.tool.tlc.ui.editor;
 
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.swt.SWT;
@@ -20,8 +19,6 @@ import org.eclipse.ui.forms.events.ExpansionEvent;
 import org.eclipse.ui.forms.events.IExpansionListener;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
-import org.lamport.tla.toolbox.tool.tlc.launch.ui.IConfigurationConstants;
-import org.lamport.tla.toolbox.tool.tlc.launch.ui.IConfigurationDefaultConstants;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.DirtyMarkingListener;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.IgnoringListener;
@@ -32,7 +29,7 @@ import org.lamport.tla.toolbox.util.IHelpConstants;
  * @author Simon Zambrovski
  * @version $Id$
  */
-public class BehaviorFormulaPage extends BasicFormPage implements IConfigurationConstants, IConfigurationDefaultConstants
+public class BehaviorFormulaPage extends BasicFormPage
 {
 
     public static final String ID = "BehaviorFormula";
@@ -130,41 +127,74 @@ public class BehaviorFormulaPage extends BasicFormPage implements IConfiguration
         ignoringListeners.add(selectionAdapter);
         ignoringListeners.add(initNextFairnessListener);
         ignoringListeners.add(closedListener);
-
     }
+    
+    
 
     /**
-     * 
+     * Load data from the model, or use defaults 
      */
     protected void loadData() throws CoreException
     {
+        boolean isClosedFormula = getConfig().getAttribute(MODEL_BEHAVIOR_IS_CLOSED_SPEC_USED, MODEL_BEHAVIOR_IS_CLOSED_SPEC_USED_DEFAULT);
         
-        String modelSpecification = getConfig().getAttribute(MODEL_SPECIFICATION, MODEL_SPECIFICATION_DEFAULT);
+        // set up the radio buttons
+        this.closedFormulaRadio.setSelection(isClosedFormula);
+        this.initNextFairnessRadio.setSelection(!isClosedFormula);
         
-        Document closedDoc = new Document(modelSpecification);
-        
-        Document initDoc = new Document();
-        Document nextDoc = new Document();
-        Document fairnessDoc = new Document();
+        this.initNextFairnessPart.getSection().setExpanded(this.initNextFairnessRadio.getSelection());
+        this.closedFormulaPart.getSection().setExpanded(this.closedFormulaRadio.getSelection());
 
-        closedFormulaRadio.setSelection(true);
-        initNextFairnessRadio.setSelection(false);
         
-        closedFormulaSource.setDocument(closedDoc);
+
+        // closed spec
+        String modelSpecification = getConfig().getAttribute(MODEL_BEHAVIOR_CLOSED_SPECIFICATION, EMPTY_STRING);
+        Document closedDoc = new Document(modelSpecification);
+        this.closedFormulaSource.setDocument(closedDoc);
+
+        // init
+        String modelInit = getConfig().getAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT, EMPTY_STRING);
+        Document initDoc = new Document(modelInit);
+        this.initFormulaSource.setDocument(initDoc);
+
+        // next
+        String modelNext = getConfig().getAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT, EMPTY_STRING);
+        Document nextDoc = new Document(modelNext);
+        this.nextFormulaSource.setDocument(nextDoc);
         
-        initFormulaSource.setDocument(initDoc);
-        nextFormulaSource.setDocument(nextDoc);
-        fairnessFormulaSource.setDocument(fairnessDoc);
+        // fairness
+        String modelFairness = getConfig().getAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_FAIRNESS, EMPTY_STRING);
+        Document fairnessDoc = new Document(modelFairness);
+        this.fairnessFormulaSource.setDocument(fairnessDoc);
     }
 
     
     
-
+    /**
+     * Commit the page content
+     */
     protected void commit(boolean onSave)
     {
-        // TODO
-        String closedFormula = closedFormulaSource.getDocument().get();
-        getConfig().setAttribute(MODEL_SPECIFICATION, closedFormula);
+        
+        // closed formula
+        String closedFormula = this.closedFormulaSource.getDocument().get();
+        getConfig().setAttribute(MODEL_BEHAVIOR_CLOSED_SPECIFICATION, closedFormula);
+
+        // init formula
+        String initFormula = this.initFormulaSource.getDocument().get();
+        getConfig().setAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT, initFormula);
+
+        // next formula
+        String nextFormula = this.nextFormulaSource.getDocument().get();
+        getConfig().setAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT, nextFormula);
+
+        // fairness formula
+        String fairnessFormula = this.fairnessFormulaSource.getDocument().get();
+        getConfig().setAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_FAIRNESS, fairnessFormula);
+
+        // mode 
+        boolean isClosedSpecification = this.closedFormulaRadio.getSelection();
+        getConfig().setAttribute(MODEL_BEHAVIOR_IS_CLOSED_SPEC_USED, isClosedSpecification);
         
         super.commit(onSave);
     }
