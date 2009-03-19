@@ -149,7 +149,7 @@
             delegateName="TLC ModelChecker"
             id="org.lamport.tla.toolbox.tool.tlc.simulate"
             modes="simulate"
-            name="TLC Simulate"
+            name="TLC Simulation"
             public="true">
       </launchConfigurationType>
    </extension>
