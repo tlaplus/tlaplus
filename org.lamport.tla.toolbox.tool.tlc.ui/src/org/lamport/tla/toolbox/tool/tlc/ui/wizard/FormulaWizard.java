@@ -2,6 +2,7 @@ package org.lamport.tla.toolbox.tool.tlc.ui.wizard;
 
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.wizard.Wizard;
+import org.lamport.tla.toolbox.tool.tlc.model.Formula;
 
 /**
  * A wizard for entering formulas
@@ -10,7 +11,7 @@ import org.eclipse.jface.wizard.Wizard;
  */
 public class FormulaWizard extends Wizard
 {
-    private FormulaPage page;
+    private FormulaWizardPage page;
 
     /**
      * 
@@ -18,7 +19,7 @@ public class FormulaWizard extends Wizard
     public FormulaWizard(String action, String description)
     {
         super();
-        page = new FormulaPage(action, description);
+        page = new FormulaWizardPage(action, description);
     }
 
     /*
@@ -38,23 +39,23 @@ public class FormulaWizard extends Wizard
      * retrieves the formula
      * @return
      */
-    public String getFormula()
+    public Formula getFormula()
     {
-        return page.getDocument().get();
+        return new Formula(page.getDocument().get());
     }
     
     /**
      * Sets a formula to edit
      * @param initialContent
      */
-    public void setFormula(String initialContent)
+    public void setFormula(Formula initialContent)
     {
         Document doc;
         if (initialContent == null) 
         {
             doc = new Document();
         } else {
-            doc = new Document(initialContent);
+            doc = new Document(initialContent.getFormula());
         }
         page.setDocument(doc);
     }

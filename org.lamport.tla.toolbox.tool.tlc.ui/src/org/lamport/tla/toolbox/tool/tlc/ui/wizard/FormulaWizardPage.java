@@ -15,14 +15,14 @@ import org.eclipse.swt.widgets.Composite;
  * @author Simon Zambrovski
  * @version $Id$
  */
-public class FormulaPage extends WizardPage
+public class FormulaWizardPage extends WizardPage
 {
     private SourceViewer sourceViewer;
     private Document document;
     
-    public FormulaPage(String action, String description)
+    public FormulaWizardPage(String action, String description)
     {
-        super("newFormulaAddWizardPage");
+        super("FormulaWizardPage");
         setTitle(action);
         setDescription(description);
     }
