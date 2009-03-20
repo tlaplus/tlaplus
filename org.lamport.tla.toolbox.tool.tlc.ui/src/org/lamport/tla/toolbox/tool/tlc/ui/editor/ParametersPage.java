@@ -51,7 +51,9 @@ public class ParametersPage extends BasicFormPage
         FormToolkit toolkit = managedForm.getToolkit();
 
         // Constants
-        TableSectionPart constantsPart = new TableSectionPart(body, "Constants instantiation",
+        //TableSectionPart constantsPart = new TableSectionPart(body, "Constants instantiation",
+        //        "Specify the values of the model constants.", toolkit);
+        ConstantSectionPart constantsPart = new ConstantSectionPart(body, "Constants instantiation",
                 "Specify the values of the model constants.", toolkit);
         managedForm.addPart(constantsPart);
 

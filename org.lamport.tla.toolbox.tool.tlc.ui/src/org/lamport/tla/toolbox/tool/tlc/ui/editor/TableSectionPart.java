@@ -41,7 +41,7 @@ public class TableSectionPart extends SectionPart
     private Button buttonRemove;
 
     // a listener reacting on clicks
-    private SelectionListener fSelectionListener = new SelectionAdapter() {
+    protected SelectionListener fSelectionListener = new SelectionAdapter() {
         public void widgetSelected(SelectionEvent e)
         {
             Object source = e.getSource();
@@ -59,7 +59,7 @@ public class TableSectionPart extends SectionPart
     };
 
     // a listener reacting on selection in the table viewer
-    private ISelectionChangedListener fSelectionChangedListener = new ISelectionChangedListener() {
+    protected ISelectionChangedListener fSelectionChangedListener = new ISelectionChangedListener() {
         public void selectionChanged(SelectionChangedEvent event)
         {
             Object source = event.getSource();
@@ -109,28 +109,42 @@ public class TableSectionPart extends SectionPart
     {
         GridData gd;
 
+        // create the composite
         Composite sectionArea = (Composite) getSection().getClient();
         sectionArea.setLayout(new GridLayout(2, false));
-
-        Table table = toolkit.createTable(sectionArea, SWT.MULTI | SWT.CHECK | SWT.V_SCROLL | SWT.H_SCROLL);
-
         // The section grabs the entire space
         gd = new GridData(GridData.FILL_BOTH);
         gd.grabExcessVerticalSpace = true;
         getSection().setLayoutData(gd);
 
-        // The table grabs the entire space
+        // create the table
+        Table table = createTable(sectionArea, toolkit);
+        // The table grabs the entire space in the section
         gd = new GridData(GridData.FILL_BOTH);
         gd.grabExcessHorizontalSpace = true;
         gd.grabExcessVerticalSpace = true;
         // span for the buttons
         gd.verticalSpan = 3;
-
         table.setLayoutData(gd);
-        table.setLinesVisible(false);
-        table.setHeaderVisible(false);
 
-        tableViewer = new CheckboxTableViewer(table);
+        // create the table viewer
+        tableViewer = (CheckboxTableViewer) createTableViewer(table);
+
+        // create buttons
+        createButtons(sectionArea, toolkit);
+
+        // setup the buttons
+        changeButtonEnablement();
+    }
+
+    /**
+     * @param table
+     * @return
+     */
+    protected CheckboxTableViewer createTableViewer(Table table)
+    {
+        // create
+        CheckboxTableViewer tableViewer = new CheckboxTableViewer(table);
         // represent formulas in the view
         tableViewer.setContentProvider(new FormulaContentProvider());
         // on changed selection change button enablement
@@ -142,6 +156,7 @@ public class TableSectionPart extends SectionPart
                 doEdit();
             }
         });
+
         // mark model dirty on checking / un-checking
         tableViewer.addCheckStateListener(new ICheckStateListener() {
             public void checkStateChanged(CheckStateChangedEvent event)
@@ -150,6 +165,28 @@ public class TableSectionPart extends SectionPart
             }
         });
 
+        return tableViewer;
+    }
+
+    /**
+     * Creates the table to be put into the tableviewer
+     * @param sectionArea
+     * @return
+     */
+    protected Table createTable(Composite sectionArea, FormToolkit toolkit)
+    {
+        Table table = toolkit.createTable(sectionArea, SWT.MULTI | SWT.CHECK | SWT.V_SCROLL | SWT.H_SCROLL);
+        table.setLinesVisible(false);
+        table.setHeaderVisible(false);
+        return table;
+    }
+
+    /**
+     * @param sectionArea
+     */
+    protected void createButtons(Composite sectionArea, FormToolkit toolkit)
+    {
+        GridData gd;
         // add button
         buttonAdd = toolkit.createButton(sectionArea, "Add", SWT.PUSH);
         buttonAdd.addSelectionListener(fSelectionListener);
@@ -173,9 +210,6 @@ public class TableSectionPart extends SectionPart
         gd.verticalAlignment = SWT.TOP;
         gd.widthHint = 70;
         buttonRemove.setLayoutData(gd);
-
-        // setup the buttons
-        changeButtonEnablement();
     }
 
     /**
@@ -205,13 +239,11 @@ public class TableSectionPart extends SectionPart
      */
     private void doAdd()
     {
-        String formulaString = doEditFormula(null);
+        Formula formula = doEditFormula(null);
 
         // add a formula
-        if (formulaString != null)
+        if (formula != null)
         {
-            Formula formula = new Formula(formulaString);
-
             Vector input = ((Vector) tableViewer.getInput());
             input.add(formula);
             tableViewer.setInput(input);
@@ -227,15 +259,16 @@ public class TableSectionPart extends SectionPart
     {
         IStructuredSelection selection = (IStructuredSelection) tableViewer.getSelection();
         Formula formula = (Formula) selection.getFirstElement();
-        String editedFormula = doEditFormula(formula.formula);
+        Formula editedFormula = doEditFormula(formula);
         if (editedFormula != null)
         {
-            formula.formula = editedFormula;
+            formula.setFormula(editedFormula.getFormula());
             tableViewer.setChecked(formula, true);
             this.markDirty();
             tableViewer.refresh();
         }
     }
+
     /**
      * React on formula been checked or un-checked
      */
@@ -243,7 +276,7 @@ public class TableSectionPart extends SectionPart
     {
         this.markDirty();
     }
-    
+
     /**
      * 
      */
@@ -257,14 +290,14 @@ public class TableSectionPart extends SectionPart
 
     /**
      * Opens a dialog for formula processing and returns the edited formula  
-     * @param formulaString initial formula, can be <code>null</code>
-     * @return result of editing or <code>null</code>, if editing cancelled
+     * @param formula initial formula, can be <code>null</code>
+     * @return result of editing or <code>null</code>, if editing canceled
      */
-    private String doEditFormula(String formulaString)
+    protected Formula doEditFormula(Formula formula)
     {
         // Create the wizard
         FormulaWizard wizard = new FormulaWizard(getSection().getText(), getSection().getDescription());
-        wizard.setFormula(formulaString);
+        wizard.setFormula(formula);
 
         // Create the wizard dialog
         WizardDialog dialog = new WizardDialog(getTableViewer().getTable().getShell(), wizard);
