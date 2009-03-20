@@ -7,7 +7,7 @@ package org.lamport.tla.toolbox.tool.tlc.model;
  */
 public class Formula
 {
-    public String formula;
+    private String formula;
 
     /**
      * Constructs a formula representation
@@ -18,9 +18,26 @@ public class Formula
         this.formula = formula;
     }
     
+    /**
+     * Retrives formula
+     * @return
+     */
+    public String getFormula()
+    {
+        return formula;
+    }
+    
     public String toString()
     {
         return formula;
+    }
+
+    /**
+     * @param formula2
+     */
+    public void setFormula(String formula)
+    {
+        this.formula = formula;
     }
 
 }
