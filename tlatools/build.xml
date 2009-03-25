@@ -80,7 +80,7 @@
 
 
 	<target name="dist-mixed" description="Build a distribution">
-		<!-- create a JAR file for the users and developers-->
+		<!-- create a zip file for the users and developers-->
 		<zip destfile="${dist-mixed.file}">
 			<zipfileset dir="${src.dir}" includes="**/*.java" prefix="tla" />
 			<zipfileset dir="${class.dir}" includes="**/*" prefix="tla" />
