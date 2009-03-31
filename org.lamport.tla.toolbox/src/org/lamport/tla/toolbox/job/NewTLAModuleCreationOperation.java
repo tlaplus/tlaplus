@@ -28,7 +28,6 @@ public class NewTLAModuleCreationOperation implements IWorkspaceRunnable
      */
     public NewTLAModuleCreationOperation(IPath module)
     {
-        // super("Create new TLA+ File " + module.toOSString());
         this.modulePath = module;
     }
 
@@ -39,7 +38,8 @@ public class NewTLAModuleCreationOperation implements IWorkspaceRunnable
     {
         String moduleFileName = modulePath.lastSegment();
 
-        byte[] content = ResourceHelper.getEmptyModuleContent(moduleFileName);
+        byte[] content = ResourceHelper.getEmptyModuleContent(moduleFileName).append(ResourceHelper.getModuleClosingTag()).toString().getBytes();
+        
         try
         {
             // create file
@@ -47,6 +47,7 @@ public class NewTLAModuleCreationOperation implements IWorkspaceRunnable
             if (file.createNewFile())
             {
                 // successfully created
+                // TODO 
                 FileOutputStream fos = new FileOutputStream(file);
                 fos.write(content);
                 fos.flush();
@@ -59,6 +60,7 @@ public class NewTLAModuleCreationOperation implements IWorkspaceRunnable
         {
             throw new CoreException( new Status(Status.ERROR, Activator.PLUGIN_ID, "Error creating TLA+ file", e));
         }
+        
     }
 
     /**
