@@ -1,5 +1,7 @@
 package org.lamport.tla.toolbox.tool.tlc.launch;
 
+import java.util.List;
+
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -17,11 +19,27 @@ public class ModelWriter
     private StringBuffer tlaBuffer;
     private StringBuffer cfgBuffer;
     
-    
+    /**
+     * Constructs new model writer
+     */
     public ModelWriter()
     {
         this.tlaBuffer = new StringBuffer();
         this.cfgBuffer = new StringBuffer();
+    }
+
+    /**
+     * Write the content to files
+     * @param tlaFile
+     * @param cfgFile
+     * @param monitor
+     * @throws CoreException
+     */
+    public void writeFiles(IFile tlaFile, IFile cfgFile, IProgressMonitor monitor) throws CoreException
+    {
+        tlaBuffer.append(ResourceHelper.getModuleClosingTag());    
+        ResourceHelper.replaceContent(tlaFile, tlaBuffer, monitor);
+        ResourceHelper.replaceContent(cfgFile, cfgBuffer, monitor);
     }
     
     /**
@@ -39,22 +57,33 @@ public class ModelWriter
      */
     public void addSpecDefinition(String[] specDefinition) 
     {
+        cfgBuffer.append("SPECIFICATION ");
+        cfgBuffer.append(specDefinition[0]).append(CR);
         tlaBuffer.append(specDefinition[1]).append(CR);
-        cfgBuffer.append("SPECIFICATION ").append(specDefinition[0]).append(CR);
     }
-    
-    
+
     /**
-     * Write the content to files
-     * @param tlaFile
-     * @param cfgFile
-     * @param monitor
-     * @throws CoreException
+     * Puts (String[])element[0] to CFG file and element[1] to TLA_MC file
+     * 
+     * @param elements a list of String[] elements
+     * @param keyword the keyword to be used in the CFG file
      */
-    public void writeFiles(IFile tlaFile, IFile cfgFile, IProgressMonitor monitor) throws CoreException
+    public void addFormulaList(List elements, String keyword)
     {
-        tlaBuffer.append(ResourceHelper.getModuleClosingTag());    
-        ResourceHelper.replaceContent(tlaFile, tlaBuffer, monitor);
-        ResourceHelper.replaceContent(cfgFile, cfgBuffer, monitor);
+        cfgBuffer.append("\n\\* " + keyword + " definition\n");
+        tlaBuffer.append("\n\\* " + keyword + " definition\n");
+        if (elements.isEmpty())
+        {
+            return;
+        }
+        cfgBuffer.append(keyword).append(CR);
+        
+        for (int i=0; i < elements.size(); i++)
+        {
+            String[] element = (String[]) elements.get(i);
+            cfgBuffer.append(element[0]).append(CR);
+            tlaBuffer.append(element[1]).append(CR);
+        }
     }
+
 }

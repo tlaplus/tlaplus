@@ -33,6 +33,16 @@ public class Assignment extends Formula
      */
     public String getLeft()
     {
+        return getParametrizedLabel(this.label);
+    }
+
+    /**
+     * Appends parameters to the label
+     * @param label
+     * @return
+     */
+    public String getParametrizedLabel(String label)
+    {
         return label + listParams();
     }
 

@@ -1,5 +1,7 @@
 package org.lamport.tla.toolbox.tool.tlc.launch;
 
+import java.util.Vector;
+
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -38,31 +40,67 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
 
         System.out.println("Staring TLC on model " + modelName + " of spec " + specName + " in mode " + mode);
 
-        
         String tlaFilename = config.getAttribute(MODEL_ROOT_FILE, EMPTY_STRING);
         String configFilename = config.getAttribute(CONFIG_FILE, EMPTY_STRING);
-        
+
         System.out.println("Model TLA file is: " + tlaFilename);
         System.out.println("Model CFG file is: " + configFilename);
-        
-        
-        // root file
-        IFile rootModule = (IFile) ToolboxHandle.getCurrentSpec().getProject().findMember(new Path(tlaFilename).lastSegment());
-        
-        // config file
-        IFile cfgFile = (IFile) ToolboxHandle.getCurrentSpec().getProject().findMember(new Path(configFilename).lastSegment());
 
-        
+        // root file
+        IFile rootModule = (IFile) ToolboxHandle.getCurrentSpec().getProject().findMember(
+                new Path(tlaFilename).lastSegment());
+
+        // config file
+        IFile cfgFile = (IFile) ToolboxHandle.getCurrentSpec().getProject().findMember(
+                new Path(configFilename).lastSegment());
+
         ModelWriter writer = new ModelWriter();
         // add extend primer
         writer.addPrimer(tlaFilename, rootModuleName);
+
+        /* ------------ behavior -------------- */
         
         // the specification name-formula pair
         writer.addSpecDefinition(ModelHelper.createSpecificationContent(config));
 
+        /* ------------ correctness -------------- */
+        // invariants
+        writer.addFormulaList(ModelHelper.createListContent(config.getAttribute(MODEL_CORRECTNESS_INVARIANTS,
+                new Vector()), "inv"), "INVARIANT");
+        // properties
+        writer.addFormulaList(ModelHelper.createListContent(config.getAttribute(MODEL_CORRECTNESS_PROPERTIES,
+                new Vector()), "prop"), "PROPERTY");
+        // init
+        writer.addFormulaList(ModelHelper.createListContent(config.getAttribute(MODEL_CORRECTNESS_INIT,
+                new Vector()), "init"), "");
+        // actions
+        writer.addFormulaList(ModelHelper.createListContent(config.getAttribute(MODEL_CORRECTNESS_ACTIONS,
+                new Vector()), "action"), "");
+        // actions-constraints
+        writer.addFormulaList(ModelHelper.createListContent(config.getAttribute(MODEL_CORRECTNESS_ACTIONS,
+                new Vector()), "action_constraint"), "ACTION-CONSTRAINT");
+
+        /* ------------ parameters -------------- */
+        // constants
+        writer.addFormulaList(ModelHelper.createConstantsContent(config), "CONSTANT");
+        // definition overrides
+        writer.addFormulaList(ModelHelper.createListContent(config.getAttribute(MODEL_PARAMETER_DEFINITIONS,
+                new Vector()), "def_ov"), "");
+        // new definitions
+        writer.addFormulaList(ModelHelper.createListContent(config.getAttribute(MODEL_PARAMETER_NEW_DEFINITIONS,
+                new Vector()), "def"), "");
+        // symmetry
+        writer.addFormulaList(ModelHelper.createListContent(config.getAttribute(MODEL_PARAMETER_SYMMETRY,
+                new Vector()), "sym"), "SYMMETRY");
+
+        // TODO constraint
+        
+        /* ------------ model values -------------- */
+        // TODO model values
+        
         // write the content
         writer.writeFiles(rootModule, cfgFile, monitor);
-        
+
         // construct TLC job
         AbstractJob job = new TLCJob(rootModule, cfgFile);
         job.addJobChangeListener(new JobChangeAdapter() {
