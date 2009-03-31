@@ -41,7 +41,7 @@ public class ExtendingTLAModuleCreationOperation implements IWorkspaceRunnable
     {
         String moduleFileName = modelRootPath.lastSegment();
 
-        byte[] content = ResourceHelper.getExtendingModuleContent(moduleFileName, modelName);
+        byte[] content = ResourceHelper.getExtendingModuleContent(moduleFileName, modelName).append(ResourceHelper.getModuleClosingTag()).toString().getBytes();
         try
         {
             // create file

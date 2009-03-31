@@ -12,7 +12,11 @@ public interface IConfigurationConstants
      */
     public static final String SPEC_ROOT_FILE = "specRootFile";
     /**
-     * name of the spec (foo) 
+     * Name of the root module (foo)
+     */
+    public static final String SPEC_ROOT_MODULE = "specRootModule";
+    /**
+     * name of the spec (foo_spec) 
      */
     public static final String SPEC_NAME = "specName";
     /**
@@ -27,7 +31,4 @@ public interface IConfigurationConstants
      * Path to the config file (/bar/foo_mc_{i}.cfg)
      */
     public static final String CONFIG_FILE = "configFile";
-    
-    
-
 }

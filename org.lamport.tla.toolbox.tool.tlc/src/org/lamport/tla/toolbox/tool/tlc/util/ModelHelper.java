@@ -1,5 +1,9 @@
 package org.lamport.tla.toolbox.tool.tlc.util;
 
+import java.util.Iterator;
+import java.util.List;
+import java.util.Vector;
+
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -15,7 +19,10 @@ import org.eclipse.debug.core.ILaunchManager;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.tool.tlc.job.ConfigCreationOperation;
 import org.lamport.tla.toolbox.tool.tlc.job.ExtendingTLAModuleCreationOperation;
+import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
+import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationDefaults;
 import org.lamport.tla.toolbox.tool.tlc.launch.TLCModelLaunchDelegate;
+import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 
 /**
@@ -23,9 +30,13 @@ import org.lamport.tla.toolbox.util.ResourceHelper;
  * @author Simon Zambrovski
  * @version $Id$
  */
-public class ModelHelper
+public class ModelHelper implements IModelConfigurationConstants, IModelConfigurationDefaults
 {
+    private static final String LIST_DELIMITER = ";";
+    private static final String PARAM_DELIMITER = ":";
 
+    
+    
     /**
      * Constructs the model called FOO_MC_1 from the SpecName FOO
      * if FOO_MC_1 already exists, delivers FOO_MC_2, and so on...
@@ -186,5 +197,107 @@ public class ModelHelper
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
+    }
+    
+    /**
+     * Creates a serial version of the assignment list
+     */
+    public static List serializeAssignmentList(List assignments)
+    {
+        Iterator iter = assignments.iterator();
+        Vector result = new Vector(assignments.size());
+
+        StringBuffer buffer;
+        while (iter.hasNext())
+        {
+            Assignment assign = (Assignment) iter.next();
+            buffer = new StringBuffer();
+            buffer.append(assign.getLabel()).append(LIST_DELIMITER);
+            for (int j = 0; j < assign.getParams().length; j++)
+            {
+                String param = assign.getParams()[j];
+                if (param != null)
+                {
+                    buffer.append(param);
+                }
+                buffer.append(PARAM_DELIMITER);
+            }
+            buffer.append(LIST_DELIMITER);
+            if (assign.getRight() != null) 
+            {
+                buffer.append(assign.getRight());
+            }
+            
+            result.add(buffer.toString());
+        }
+        return result;
+    }
+    
+    /**
+     * Deserialize assignment list
+     * @param serializedList
+     * @return
+     */
+    public static List deserializeAssignmentList(List serializedList)
+    {
+        Vector result = new Vector(serializedList.size());
+        Iterator iter = serializedList.iterator();
+        String[] fields = new String[]{null, "", ""};
+        while (iter.hasNext())
+        {
+            String[] serFields = ((String)iter.next()).split(LIST_DELIMITER);
+            System.arraycopy(serFields, 0, fields, 0, serFields.length);
+            
+            String[] params;
+            if ("".equals(fields[1]))
+            {
+                params = new String[0];
+            } else {
+                params = fields[1].split(PARAM_DELIMITER);
+            }
+            Assignment assign = new Assignment(fields[0], params, fields[2]);
+            result.add(assign);
+        }        
+        return result;
+    }
+
+    /**
+     * Create a representation of the behavior formula
+     * @param config launch configuration
+     * @return a string array containing two strings: name of the formula, and the formula with the name
+     * @throws CoreException if something went wrong
+     */
+    public static String[] createSpecificationContent(ILaunchConfiguration config) throws CoreException
+    {
+        StringBuffer buffer = new StringBuffer();
+        String identifier = getValidIdentifier("spec");
+
+        buffer.append(identifier).append("==\n");
+
+        if (config.getAttribute(MODEL_BEHAVIOR_IS_CLOSED_SPEC_USED, MODEL_BEHAVIOR_IS_CLOSED_SPEC_USED_DEFAULT))
+        {
+            buffer.append(config.getAttribute(MODEL_BEHAVIOR_CLOSED_SPECIFICATION, EMPTY_STRING));
+        } else
+        {
+            String modelInit = config.getAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT, EMPTY_STRING);
+            String modelNext = config.getAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT, EMPTY_STRING);
+            String modelFairness = config.getAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_FAIRNESS, EMPTY_STRING);
+
+            buffer.append(modelInit).append(" /\\[][ ").append(modelNext).append(" ]_")
+            // TODO replace vars
+                    .append("vars").append(" /\\ ").append(modelFairness);
+        }
+        return new String[] { identifier, buffer.toString() };
+    }
+
+    /**
+     * Retrieves new valid (not used) identifier from given schema
+     * @param schema a naming schema
+     * @return a valid identifier
+     * TODO re-implement
+     */
+    public static String getValidIdentifier(String schema)
+    {
+        return schema + "_1";
     }
 }

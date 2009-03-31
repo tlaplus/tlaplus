@@ -39,21 +39,37 @@ public interface IModelConfigurationConstants extends IConfigurationConstants
      */
     public static final String MODEL_CORRECTNESS_PROPERTIES = "modelCorrectnessProperties";
     /**
-     * 
+     * init list
      */
     public static final String MODEL_CORRECTNESS_INIT = "modelCorrectnessInit";
     /**
-     * 
+     * action list
      */
     public static final String MODEL_CORRECTNESS_ACTIONS = "modelCorrectnessActions";
     /**
-     * 
+     * action constraints list
      */
     public static final String MODEL_CORRECTNESS_ACTION_CONSTRAINTS = "modelCorrectnessActionConstraints";
     /**
-     * TODO change to another editors 
+     * constant list 
      */
     public static final String MODEL_PARAMETER_CONSTANTS = "modelParameterConstants";
+    /**
+     * symmetry list
+     */
+    public static final String MODEL_PARAMETER_SYMMETRY = "modelParameterSymmetry";
+    /**
+     * definitions list
+     */
+    public static final String MODEL_PARAMETER_DEFINITIONS = "modelParameterDefinitions";
+    /**
+     * new definitions list
+     */
+    public static final String MODEL_PARAMETER_NEW_DEFINITIONS = "modelParameterNewDefinitions";
+    /**
+     * constraint 
+     */
+    public static final String MODEL_PARAMETER_CONTRAINT = "modelParameterContraint";
     /**
      * TODO change to another editors
      */

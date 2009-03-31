@@ -7,7 +7,7 @@ package org.lamport.tla.toolbox.tool.tlc.model;
  */
 public class Assignment extends Formula
 {
-    public static final String ASSIGNMENT_SIGN = "<-";
+    public static final String ASSIGNMENT_SIGN = " <- ";
 
     private String label;
     private String[] params = new String[0];
