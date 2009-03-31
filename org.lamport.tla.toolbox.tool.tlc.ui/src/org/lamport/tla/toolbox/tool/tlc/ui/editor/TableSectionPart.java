@@ -10,6 +10,7 @@ import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
+import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.SWT;
@@ -35,7 +36,7 @@ import org.lamport.tla.toolbox.tool.tlc.ui.wizard.FormulaWizard;
  */
 public class TableSectionPart extends SectionPart
 {
-    private CheckboxTableViewer tableViewer;
+    protected TableViewer tableViewer;
     private Button buttonAdd;
     private Button buttonEdit;
     private Button buttonRemove;
@@ -128,10 +129,10 @@ public class TableSectionPart extends SectionPart
         table.setLayoutData(gd);
 
         // create the table viewer
-        tableViewer = (CheckboxTableViewer) createTableViewer(table);
+        tableViewer = createTableViewer(table);
 
         // create buttons
-        createButtons(sectionArea, toolkit);
+        createButtons(sectionArea, toolkit, true, true, true);
 
         // setup the buttons
         changeButtonEnablement();
@@ -141,7 +142,7 @@ public class TableSectionPart extends SectionPart
      * @param table
      * @return
      */
-    protected CheckboxTableViewer createTableViewer(Table table)
+    protected TableViewer createTableViewer(Table table)
     {
         // create
         CheckboxTableViewer tableViewer = new CheckboxTableViewer(table);
@@ -184,39 +185,62 @@ public class TableSectionPart extends SectionPart
     /**
      * @param sectionArea
      */
-    protected void createButtons(Composite sectionArea, FormToolkit toolkit)
+    protected void createButtons(Composite sectionArea, FormToolkit toolkit, boolean add, boolean edit, boolean remove)
     {
         GridData gd;
-        // add button
-        buttonAdd = toolkit.createButton(sectionArea, "Add", SWT.PUSH);
-        buttonAdd.addSelectionListener(fSelectionListener);
-        gd = new GridData();
-        gd.verticalAlignment = SWT.TOP;
-        gd.widthHint = 70;
-        buttonAdd.setLayoutData(gd);
+        int added = 0;
+        if (add)
+        {
+            // add button
+            buttonAdd = toolkit.createButton(sectionArea, "Add", SWT.PUSH);
+            buttonAdd.addSelectionListener(fSelectionListener);
+            gd = new GridData();
+            gd.verticalAlignment = SWT.TOP;
+            gd.widthHint = 70;
+            buttonAdd.setLayoutData(gd);
+            added++;
+        }
 
-        // edit button
-        buttonEdit = toolkit.createButton(sectionArea, "Edit", SWT.PUSH);
-        buttonEdit.addSelectionListener(fSelectionListener);
-        gd = new GridData();
-        gd.verticalAlignment = SWT.TOP;
-        gd.widthHint = 70;
-        buttonEdit.setLayoutData(gd);
+        if (edit)
+        {
+            // edit button
+            buttonEdit = toolkit.createButton(sectionArea, "Edit", SWT.PUSH);
+            buttonEdit.addSelectionListener(fSelectionListener);
+            gd = new GridData();
+            gd.verticalAlignment = SWT.TOP;
+            gd.widthHint = 70;
+            buttonEdit.setLayoutData(gd);
+            added++;
+        }
 
-        // remove button
-        buttonRemove = toolkit.createButton(sectionArea, "Remove", SWT.PUSH);
-        buttonRemove.addSelectionListener(fSelectionListener);
-        gd = new GridData();
-        gd.verticalAlignment = SWT.TOP;
-        gd.widthHint = 70;
-        buttonRemove.setLayoutData(gd);
+        if (remove)
+        {
+            // remove button
+            buttonRemove = toolkit.createButton(sectionArea, "Remove", SWT.PUSH);
+            buttonRemove.addSelectionListener(fSelectionListener);
+            gd = new GridData();
+            gd.verticalAlignment = SWT.TOP;
+            gd.widthHint = 70;
+            buttonRemove.setLayoutData(gd);
+            added++;
+        }
+        
+        if (added < 3) 
+        {
+            Composite span = toolkit.createComposite(sectionArea);
+            gd = new GridData();
+            gd.verticalSpan = 3-added;
+            gd.verticalAlignment = SWT.TOP;
+            gd.widthHint = 70;
+            span.setLayoutData(gd);
+        } 
     }
 
     /**
      * Retrieves the table viewer
      * @return
      */
-    public CheckboxTableViewer getTableViewer()
+    public TableViewer getTableViewer()
     {
         return tableViewer;
     }
@@ -247,7 +271,10 @@ public class TableSectionPart extends SectionPart
             Vector input = ((Vector) tableViewer.getInput());
             input.add(formula);
             tableViewer.setInput(input);
-            tableViewer.setChecked(formula, true);
+            if (tableViewer instanceof CheckboxTableViewer)
+            {
+                ((CheckboxTableViewer) tableViewer).setChecked(formula, true);
+            }
             this.markDirty();
         }
     }
@@ -263,7 +290,10 @@ public class TableSectionPart extends SectionPart
         if (editedFormula != null)
         {
             formula.setFormula(editedFormula.getFormula());
-            tableViewer.setChecked(formula, true);
+            if (tableViewer instanceof CheckboxTableViewer)
+            {
+                ((CheckboxTableViewer) tableViewer).setChecked(formula, true);
+            }
             this.markDirty();
             tableViewer.refresh();
         }
@@ -284,8 +314,14 @@ public class TableSectionPart extends SectionPart
     {
         IStructuredSelection selection = (IStructuredSelection) tableViewer.getSelection();
 
-        buttonRemove.setEnabled(!selection.isEmpty());
-        buttonEdit.setEnabled(selection.size() == 1);
+        if (buttonRemove != null)
+        {
+            buttonRemove.setEnabled(!selection.isEmpty());
+        }
+        if (buttonEdit != null)
+        {
+            buttonEdit.setEnabled(selection.size() == 1);
+        }
     }
 
     /**

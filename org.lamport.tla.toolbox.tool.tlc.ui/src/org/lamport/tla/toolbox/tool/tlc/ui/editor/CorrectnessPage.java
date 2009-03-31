@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Vector;
 
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.jface.viewers.CheckboxTableViewer;
+import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -29,11 +29,11 @@ public class CorrectnessPage extends BasicFormPage
 
     public static final String ID = "Correctness";
     
-    private CheckboxTableViewer invariantsTable;
-    private CheckboxTableViewer propertiesTable;
-    private CheckboxTableViewer initTable;
-    private CheckboxTableViewer actionsTable;
-    private CheckboxTableViewer actionConstraintTable;
+    private TableViewer invariantsTable;
+    private TableViewer propertiesTable;
+    private TableViewer initTable;
+    private TableViewer actionsTable;
+    private TableViewer actionConstraintTable;
 
     private Button checkDeadlockButton;
 

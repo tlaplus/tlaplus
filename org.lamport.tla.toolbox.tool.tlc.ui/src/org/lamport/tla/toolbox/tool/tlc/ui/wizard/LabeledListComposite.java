@@ -1,6 +1,7 @@
 package org.lamport.tla.toolbox.tool.tlc.ui.wizard;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.RowData;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
@@ -14,6 +15,7 @@ public class LabeledListComposite
 {
     Text[] fields;
     String[] values;
+    Composite self;
     
     public LabeledListComposite(Composite parent, String label, String[] values)
     {
@@ -29,27 +31,45 @@ public class LabeledListComposite
      */
     private void initContent(Composite parent, String label)
     {
-        Composite self = new Composite(parent, SWT.NONE);
+        self = new Composite(parent, SWT.NONE);
         self.setLayout(new RowLayout(SWT.HORIZONTAL));
+        RowData rd;
         
         Label l;
-        
         l = new Label(self, SWT.NULL);
-        l.setText(label + "(");
+        l.setText(label);
+        
+        if (fields.length > 0 ) 
+        {
+            l = new Label(self, SWT.NULL);
+            l.setText("(");
+        }
 
         for (int i = 0; i < fields.length; i++)
         {
-            fields[i] = new Text(self, SWT.NONE);
+            fields[i] = new Text(self, SWT.BORDER | SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
             fields[i].setText(values[i]);
+            rd = new RowData();
+            rd.width = 50;
+            rd.height = 25;
+            fields[i].setLayoutData(rd);
+            
             if (i != fields.length - 1) 
             {
                 l = new Label(self, SWT.NULL);
                 l.setText(", ");
             }
         }
-        
+
+        if (fields.length > 0 ) 
+        {
+            l = new Label(self, SWT.NULL);
+            l.setText(")");
+        }
+
         l = new Label(self, SWT.NULL);
-        l.setText(")");
+        l.setText(" <- ");
+        
     }
     
     public String[] getValues()
@@ -62,5 +82,13 @@ public class LabeledListComposite
         }
         
         return result;
+    }
+
+    /**
+     * @param gd
+     */
+    public void setLayoutData(Object layoutData)
+    {
+       self.setLayoutData(layoutData);
     }
 }

@@ -8,6 +8,7 @@ import java.util.Vector;
 import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.jface.text.source.SourceViewerConfiguration;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
+import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -17,6 +18,7 @@ import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.forms.widgets.TableWrapData;
 import org.eclipse.ui.forms.widgets.TableWrapLayout;
 import org.lamport.tla.toolbox.tool.tlc.model.Formula;
+import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 
 /**
  * @author Simon Zambrovski
@@ -154,65 +156,89 @@ public class FormHelper
 
     /**
      * Reads the input (list of formulas) and returns a list of strings which can be serialized 
-     * @param source - checkbox table viewer containing the formulas
+     * @param source - viewer containing the formulas/assignments
      * @return
      */
-    public static List getSerializedInput(CheckboxTableViewer source)
+    public static List getSerializedInput(TableViewer table)
     {
-        
-        List formulas =  (List) source.getInput();
-        Object[] checkedArray = source.getCheckedElements();
-        
-        if (formulas == null) 
+        if (table instanceof CheckboxTableViewer)
         {
-            return null;
-        }
-        
-        Vector result = new Vector(formulas.size()); 
-        List checked = Arrays.asList(checkedArray);
-        
-        
-        Iterator formulaIterator = formulas.iterator();
-        
-        Formula formula;
-        String entry;
-        while(formulaIterator.hasNext())
+            CheckboxTableViewer source = (CheckboxTableViewer) table;
+            List formulas = (List) source.getInput();
+            Object[] checkedArray = source.getCheckedElements();
+
+            if (formulas == null)
+            {
+                return null;
+            }
+
+            Vector result = new Vector(formulas.size());
+            List checked = Arrays.asList(checkedArray);
+
+            Iterator formulaIterator = formulas.iterator();
+
+            Formula formula;
+            String entry;
+            while (formulaIterator.hasNext())
+            {
+                formula = (Formula) formulaIterator.next();
+                entry = ((checked.contains(formula)) ? "1" : "0") + formula.toString();
+                result.add(entry);
+            }
+
+            return result;
+
+        } else
         {
-            formula = (Formula) formulaIterator.next();
-            entry = ((checked.contains(formula)) ? "1" : "0") + formula.toString();
-            result.add(entry);
+            List assignments = (List) table.getInput();
+            if (assignments == null)
+            {
+                return null;
+            }
+
+            return ModelHelper.serializeAssignmentList(assignments);
+
         }
-        
-        return result;
+
     }
 
     /**
      * Performs the inverse operation to {@link FormHelper#getSerializedInput(CheckboxTableViewer)} 
-     * Sets input of the checkbox table viewer read from the serialized list  
      */
-    public static void setSerializedInput(CheckboxTableViewer source, List serializedInput)
+    public static void setSerializedInput(TableViewer table, List serializedInput)
     {
-        Iterator serializedIterator = serializedInput.iterator();
-        Vector checked = new Vector();
-        Vector input = ((Vector)source.getInput());
-        if (input == null) 
+        Vector input = ((Vector) table.getInput());
+        if (input == null)
         {
             input = new Vector();
         }
-        
-        
-        while (serializedIterator.hasNext()) 
+        // handling Formulas
+        if (table instanceof CheckboxTableViewer)
         {
-            String entry = (String) serializedIterator.next();
-            Formula formula = new Formula(entry.substring(1));
-            input.add(formula);
-            if ("1".equals(entry.substring(0, 1))) 
+            Iterator serializedIterator = serializedInput.iterator();
+            Vector checked = new Vector();
+
+            CheckboxTableViewer checkTable = (CheckboxTableViewer) table;
+            while (serializedIterator.hasNext())
             {
-                checked.add(formula);
+                String entry = (String) serializedIterator.next();
+                Formula formula = new Formula(entry.substring(1));
+                input.add(formula);
+                if ("1".equals(entry.substring(0, 1)))
+                {
+                    checked.add(formula);
+                }
             }
+            checkTable.setInput(input);
+            checkTable.setCheckedElements(checked.toArray());
+
+        } else
+        // handling Assignments            
+        {
+            List deserializeAssignmentList = ModelHelper.deserializeAssignmentList(serializedInput);
+            table.setInput(deserializeAssignmentList);
         }
-        source.setInput(input);
-        source.setCheckedElements(checked.toArray());
+
     }
 
 }

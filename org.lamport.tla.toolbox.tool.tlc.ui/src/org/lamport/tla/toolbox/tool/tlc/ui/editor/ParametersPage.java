@@ -1,12 +1,12 @@
 package org.lamport.tla.toolbox.tool.tlc.ui.editor;
 
+import java.util.List;
 import java.util.Vector;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.text.Document;
-import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.source.SourceViewer;
-import org.eclipse.jface.viewers.CheckboxTableViewer;
+import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -32,10 +32,11 @@ public class ParametersPage extends BasicFormPage
 
     public static final String ID = "Parameters";
     private SourceViewer constraintSource;
-    private CheckboxTableViewer definitionsTable;
-    private CheckboxTableViewer newDefinitionsTable;
-    private CheckboxTableViewer symmetryTable;
-    private CheckboxTableViewer constantTable;
+    private TableViewer definitionsTable;
+    private TableViewer newDefinitionsTable;
+    private TableViewer symmetryTable;
+    private TableViewer constantTable;
+    
 
     public ParametersPage(FormEditor editor)
     {
@@ -44,6 +45,45 @@ public class ParametersPage extends BasicFormPage
         this.imagePath = "icons/full/args_obj.gif";
     }
 
+    protected void loadData() throws CoreException
+    {
+        String constraint = getConfig().getAttribute(MODEL_PARAMETER_CONTRAINT, EMPTY_STRING);
+        constraintSource.setDocument(new Document(constraint));
+        
+        List constants = getConfig().getAttribute(MODEL_PARAMETER_CONSTANTS, new Vector());
+        FormHelper.setSerializedInput(constantTable, constants);
+        
+        List symmetry = getConfig().getAttribute(MODEL_PARAMETER_SYMMETRY, new Vector());
+        FormHelper.setSerializedInput(symmetryTable, symmetry);
+        
+        List definitions = getConfig().getAttribute(MODEL_PARAMETER_DEFINITIONS, new Vector());
+        FormHelper.setSerializedInput(definitionsTable, definitions);
+        
+        List newDefinitions = getConfig().getAttribute(MODEL_PARAMETER_NEW_DEFINITIONS, new Vector());
+        FormHelper.setSerializedInput(newDefinitionsTable, newDefinitions);
+    }
+    
+    protected void commit(boolean onSave)
+    {
+        List constants = FormHelper.getSerializedInput(constantTable);
+        getConfig().setAttribute(MODEL_PARAMETER_CONSTANTS, constants);
+
+        List symmetry = FormHelper.getSerializedInput(symmetryTable);
+        getConfig().setAttribute(MODEL_PARAMETER_SYMMETRY, symmetry);
+
+        List definitions = FormHelper.getSerializedInput(definitionsTable);
+        getConfig().setAttribute(MODEL_PARAMETER_DEFINITIONS, definitions);
+
+        List newDefinitions = FormHelper.getSerializedInput(newDefinitionsTable);
+        getConfig().setAttribute(MODEL_PARAMETER_NEW_DEFINITIONS, newDefinitions);
+
+        String constraintFormula = constraintSource.getDocument().get();
+        getConfig().setAttribute(MODEL_PARAMETER_CONTRAINT, constraintFormula);
+        
+        super.commit(onSave);
+    }
+
+    
     protected void createBodyContent(IManagedForm managedForm)
     {
         GridData gd;
@@ -51,8 +91,6 @@ public class ParametersPage extends BasicFormPage
         FormToolkit toolkit = managedForm.getToolkit();
 
         // Constants
-        //TableSectionPart constantsPart = new TableSectionPart(body, "Constants instantiation",
-        //        "Specify the values of the model constants.", toolkit);
         ConstantSectionPart constantsPart = new ConstantSectionPart(body, "Constants instantiation",
                 "Specify the values of the model constants.", toolkit);
         managedForm.addPart(constantsPart);
@@ -130,19 +168,6 @@ public class ParametersPage extends BasicFormPage
         ignoringListeners.add(constraintListener);
     }
 
-    protected void loadData() throws CoreException
-    {
-        IDocument constraintDocument = new Document();
-        constraintSource.setDocument(constraintDocument);
-        
-        constantTable.setInput(new Vector());
-        symmetryTable.setInput(new Vector());
-        definitionsTable.setInput(new Vector());
-        newDefinitionsTable.setInput(new Vector());
-        
-    }
-    
-    
     protected Layout getBodyLayout()
     {
         return FormHelper.createFormGridLayout(false, 1);

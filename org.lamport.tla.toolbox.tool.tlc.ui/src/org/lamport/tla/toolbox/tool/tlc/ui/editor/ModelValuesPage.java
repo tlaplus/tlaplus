@@ -3,7 +3,7 @@ package org.lamport.tla.toolbox.tool.tlc.ui.editor;
 import java.util.Vector;
 
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.jface.viewers.CheckboxTableViewer;
+import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Layout;
 import org.eclipse.ui.forms.IManagedForm;
@@ -21,7 +21,7 @@ public class ModelValuesPage extends BasicFormPage
 {
 
     public static final String ID = "ModelValues";
-    private CheckboxTableViewer modelValues;
+    private TableViewer modelValues;
 
     public ModelValuesPage(FormEditor editor)
     {
