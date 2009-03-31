@@ -1,6 +1,8 @@
 package org.lamport.tla.toolbox.util;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.util.Date;
 
 import org.eclipse.core.resources.ICommand;
 import org.eclipse.core.resources.IFile;
@@ -12,6 +14,7 @@ import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.QualifiedName;
 import org.lamport.tla.toolbox.Activator;
@@ -258,32 +261,43 @@ public class ResourceHelper
 
     /**
      * Creates a simple content for a new TLA+ module
-     * TODO move somewhere else 
+     *  
      * @param moduleFileName, name of the file 
      * @return the stream with content
      */
-    public static byte[] getEmptyModuleContent(String moduleFilename)
+    public static StringBuffer getEmptyModuleContent(String moduleFilename)
     {
         StringBuffer buffer = new StringBuffer();
         buffer.append("---- MODULE ").append(ResourceHelper.getModuleNameChecked(moduleFilename, false)).append(" ----\n").append(
-                "\n\n").append("====\n");
-        return buffer.toString().getBytes();
+                "\n\n");
+        return buffer;
+    }
+    
+    /**
+     * Returns the content for the end of the module
+     * @return
+     */
+    public static StringBuffer getModuleClosingTag()
+    {
+        StringBuffer buffer = new StringBuffer();
+        buffer.append("====\n").append("\\* Generated at ").append(new Date());
+        return buffer;
     }
 
 
     /**
      * Creates a simple content for a new TLA+ module
-     * TODO move somewhere else 
+     *  
      * @param moduleFileName, name of the file 
      * @return the stream with content
      */
-    public static byte[] getExtendingModuleContent(String moduleFilename, String extendedModuleName)
+    public static StringBuffer getExtendingModuleContent(String moduleFilename, String extendedModuleName)
     {
         StringBuffer buffer = new StringBuffer();
         buffer.append("---- MODULE ").append(ResourceHelper.getModuleNameChecked(moduleFilename, false)).append(" ----\n")
         .append("EXTENDS ").append(extendedModuleName).append("\n")
-        .append("\n\n").append("====\n");
-        return buffer.toString().getBytes();
+        .append("\n\n");
+        return buffer;
     }
     
     /**
@@ -319,4 +333,49 @@ public class ResourceHelper
     {
         return new NewTLAModuleCreationOperation(rootNamePath);
     }
+    
+    /**
+     * Writes contents stored in the string buffer to the file, replacing the content 
+     * @param file
+     * @param buffer
+     * @param monitor
+     * @throws CoreException
+     */
+    public static void replaceContent(IFile file, StringBuffer buffer, IProgressMonitor monitor) throws CoreException
+    {
+        boolean force = true;
+        ByteArrayInputStream stream = new ByteArrayInputStream(buffer.toString().getBytes());
+        if (file.exists())
+        {
+            file
+                    .setContents(stream, force ? IResource.FORCE | IResource.KEEP_HISTORY : IResource.KEEP_HISTORY,
+                            monitor);
+        } else
+        {
+            file.create(stream, force, monitor);
+        }
+    }
+
+    /**
+     * Writes contents stored in the string buffer to the file, appending the content
+     * @param file
+     * @param buffer
+     * @param monitor
+     * @throws CoreException
+     */
+    public static void addContent(IFile file, StringBuffer buffer, IProgressMonitor monitor) throws CoreException
+    {
+        boolean force = true;
+        ByteArrayInputStream stream = new ByteArrayInputStream(buffer.toString().getBytes());
+        if (file.exists())
+        {
+            file.appendContents(stream, force ? IResource.FORCE | IResource.KEEP_HISTORY : IResource.KEEP_HISTORY,
+                    monitor);
+        } else
+        {
+            file.create(stream, force, monitor);
+        }
+    }
+    
+    
 }
