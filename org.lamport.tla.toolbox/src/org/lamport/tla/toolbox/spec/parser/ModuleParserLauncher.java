@@ -210,6 +210,7 @@ public class ModuleParserLauncher
             if (module.getModuleName().equals(ResourceHelper.getModuleName(rootFilename)))
             {
                 rootModuleFound = true;
+                module.setRoot(true);
             }
 
 
