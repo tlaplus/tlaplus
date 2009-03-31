@@ -15,6 +15,7 @@ public class Module
 {
     private File file;
     private ModuleNode node;
+    private boolean isRoot = false;
 
     public Module(String absoluteFilename)
     {
@@ -87,4 +88,14 @@ public class Module
         return (getAbsolutePath().indexOf(RCPNameToFileIStream.STANDARD_MODULES) != -1);
     }
 
+    
+    public boolean isRoot()
+    {
+        return isRoot;
+    }
+    
+    public void setRoot(boolean isRoot)
+    {
+        this.isRoot = isRoot;
+    }
 }
