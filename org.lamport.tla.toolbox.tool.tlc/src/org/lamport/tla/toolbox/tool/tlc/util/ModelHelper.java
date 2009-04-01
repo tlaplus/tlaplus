@@ -197,7 +197,15 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
     }
 
     /**
-     * Creates a serial version of the assignment list
+     * Creates a serial version of the assignment list, to be stored in the {@link ILaunchConfiguration}
+     * 
+     * Any assignment consist of a label, parameter list and the right side
+     * These parts are serialized as a list with delimiter {@link ModelHelper#LIST_DELIMETER}
+     * The parameter list is stored as a list with delimiter {@link ModelHelper#PARAM_DELIMITER}
+     * 
+     * If the assignment is using a model value {@link Assignment#isModelValue()} == <code>true, the right
+     * side is set to the label resulting in (foo = foo) 
+     *   
      */
     public static List serializeAssignmentList(List assignments)
     {
@@ -208,8 +216,13 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
         while (iter.hasNext())
         {
             Assignment assign = (Assignment) iter.next();
+
             buffer = new StringBuffer();
+
+            // label
             buffer.append(assign.getLabel()).append(LIST_DELIMITER);
+
+            // parameters if any
             for (int j = 0; j < assign.getParams().length; j++)
             {
                 String param = assign.getParams()[j];
@@ -220,6 +233,10 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
                 buffer.append(PARAM_DELIMITER);
             }
             buffer.append(LIST_DELIMITER);
+
+            // right side
+            // encode the model value usage (if model value is set, the assignment right side is equals to the label)
+
             if (assign.getRight() != null)
             {
                 buffer.append(assign.getRight());
@@ -231,9 +248,8 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
     }
 
     /**
-     * De-serialize assignment list
-     * @param serializedList
-     * @return
+     * De-serialize assignment list. 
+     * @see ModelHelper#serializeAssignmentList(List)
      */
     public static List deserializeAssignmentList(List serializedList)
     {
@@ -253,6 +269,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
             {
                 params = fields[1].split(PARAM_DELIMITER);
             }
+            // assignment with label as right side are treated as model values
             Assignment assign = new Assignment(fields[0], params, fields[2]);
             result.add(assign);
         }
@@ -261,8 +278,9 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
 
     /**
      * De-serialize formula list, to a list of formulas, that are selected (have a leading "1")
-     * @param serializedList
-     * @return a list of formulas
+     * 
+     * The first character of the formula is used to determine if the formula is enabled in the model 
+     * editor or not. This allows the user to persist formulas, which are not used in the current model 
      */
     private static List deserializeFormulaList(List serializedList)
     {
@@ -291,10 +309,12 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
         StringBuffer buffer = new StringBuffer();
         String identifier = getValidIdentifier("spec");
 
+        // the identifier
         buffer.append(identifier).append(" ==\n");
 
         if (config.getAttribute(MODEL_BEHAVIOR_IS_CLOSED_SPEC_USED, MODEL_BEHAVIOR_IS_CLOSED_SPEC_USED_DEFAULT))
         {
+            // append the closed formula
             buffer.append(config.getAttribute(MODEL_BEHAVIOR_CLOSED_SPECIFICATION, EMPTY_STRING));
         } else
         {
@@ -302,13 +322,40 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
             String modelNext = config.getAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT, EMPTY_STRING);
             String modelFairness = config.getAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_FAIRNESS, EMPTY_STRING);
 
+            // append init. next, fairness
             buffer.append(modelInit).append(" /\\[][ ").append(modelNext).append(" ]_")
             // TODO replace vars
                     .append("vars").append(" /\\ ").append(modelFairness);
         }
+        // specification
+        // to .cfg    : <id>
+        // to _MC.tla : <id> == <expression>
+        //            : <id> == <init> /\[][<next>]_vars /\ <fairness>
         return new String[] { identifier, buffer.toString() };
     }
 
+    /**
+     * Create the content for the constraint
+     * @throws CoreException 
+     */
+    public static String[] createConstraintContent(ILaunchConfiguration config) throws CoreException
+    {
+        String constraint = config.getAttribute(MODEL_PARAMETER_CONTRAINT, EMPTY_STRING);
+        if (EMPTY_STRING.equals(constraint) )
+        {
+            return null;
+        }
+        String identifier = getValidIdentifier("constr");
+        StringBuffer buffer = new StringBuffer();
+        
+        // the identifier
+        buffer.append(identifier).append(" ==\n");
+        buffer.append(constraint);
+        
+        return new String[] {identifier, buffer.toString()};
+    }
+
+    
     /**
      * Create representation of constants
      * @param config launch configuration
@@ -328,8 +375,21 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
         {
             label = getValidIdentifier("const");
             constant = (Assignment) constants.get(i);
-            content = new String[] { constant.getLabel() + " <- " + label,
-                    constant.getParametrizedLabel(label) + " ==\n" + constant.getRight() };
+            
+            if (constant.isModelValue())
+            {
+                // model value assignment
+                // to .cfg    : foo = foo
+                // to _MC.tla : <nothing>
+                content = new String[] { constant.getLabel() + " = " + constant.getRight(), "" };
+            } else
+            {
+                // constant instantiation
+                // to .cfg    : foo <- <id>
+                // to _MC.tla : <id> == <expression>
+                content = new String[] { constant.getLabel() + " <- " + label,
+                        constant.getParametrizedLabel(label) + " ==\n" + constant.getRight() };
+            }
             constantContent.add(content);
         }
         return constantContent;
@@ -341,7 +401,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
      * @param labelingScheme
      * @return
      */
-    public static List createListContent(List serializedFormulaList, String labelingScheme) 
+    public static List createListContent(List serializedFormulaList, String labelingScheme)
     {
         List formulaList = ModelHelper.deserializeFormulaList(serializedFormulaList);
         Vector resultContent = new Vector(formulaList.size());
@@ -350,7 +410,10 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
         for (int i = 0; i < formulaList.size(); i++)
         {
             label = getValidIdentifier(labelingScheme);
-            content = new String[]{label, label + " ==\n" + ((Formula)formulaList.get(i)).getFormula()};
+            // formulas
+            // to .cfg    : <id>
+            // to _MC.tla : <id> == <expression>
+            content = new String[] { label, label + " ==\n" + ((Formula) formulaList.get(i)).getFormula() };
             resultContent.add(content);
         }
         return resultContent;
@@ -372,5 +435,6 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
         }
         return schema + "_" + System.currentTimeMillis();
     }
+
 
 }

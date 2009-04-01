@@ -93,7 +93,14 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
         writer.addFormulaList(ModelHelper.createListContent(config.getAttribute(MODEL_PARAMETER_SYMMETRY,
                 new Vector()), "sym"), "SYMMETRY");
 
-        // TODO constraint
+        // constraint
+        String[] constraint = ModelHelper.createConstraintContent(config);
+        if (constraint != null) 
+        {
+            Vector constraintVector = new Vector();
+            constraintVector.add(constraint);
+            writer.addFormulaList(constraintVector, "CONSTRAINT");
+        }
         
         /* ------------ model values -------------- */
         // TODO model values

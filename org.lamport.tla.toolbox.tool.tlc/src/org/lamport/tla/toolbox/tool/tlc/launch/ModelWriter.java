@@ -61,7 +61,7 @@ public class ModelWriter
         cfgBuffer.append(specDefinition[0]).append(CR);
         tlaBuffer.append(specDefinition[1]).append(CR);
     }
-
+    
     /**
      * Puts (String[])element[0] to CFG file and element[1] to TLA_MC file
      * 
@@ -70,12 +70,12 @@ public class ModelWriter
      */
     public void addFormulaList(List elements, String keyword)
     {
-        cfgBuffer.append("\n\\* " + keyword + " definition\n");
-        tlaBuffer.append("\n\\* " + keyword + " definition\n");
         if (elements.isEmpty())
         {
             return;
         }
+        cfgBuffer.append("\n\\* " + keyword + " definition\n");
+        tlaBuffer.append("\n\\* " + keyword + " definition\n");
         cfgBuffer.append(keyword).append(CR);
         
         for (int i=0; i < elements.size(); i++)
@@ -85,5 +85,6 @@ public class ModelWriter
             tlaBuffer.append(element[1]).append(CR);
         }
     }
+
 
 }

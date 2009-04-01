@@ -8,23 +8,32 @@ package org.lamport.tla.toolbox.tool.tlc.model;
 public class Assignment extends Formula
 {
     public static final String ASSIGNMENT_SIGN = " <- ";
+    public static final String EQUALS_SIGN = " = ";
 
     private String label;
     private String[] params = new String[0];
+    private boolean modelValue = false;
 
     /**
-     * @param formula
+     * Constructs the assignment
+     * if the right side is equals to the label, the assignment is treated as a model value assignment
      */
     public Assignment(String label, String[] params, String right)
     {
+        
         super(right);
         this.label = label;
         this.setParams(params);
+        if (this.label != null && right!= null && this.label.equals(right))
+        {
+            // right side equals label => model value
+            setModelValue(true);
+        }
     }
 
     public String getFormula()
     {
-        return getLeft() + ASSIGNMENT_SIGN + getRight();
+        return getLeft() + ((this.modelValue) ? EQUALS_SIGN : ASSIGNMENT_SIGN) + getRight();
     }
     
     /**
@@ -127,6 +136,32 @@ public class Assignment extends Formula
             this.params = params;
         } else {
             this.params = new String[0];
+        }
+    }
+
+    /**
+     * Returns if this assignment is to be set to the model value
+     * @return
+     */
+    public boolean isModelValue()
+    {
+        return modelValue;
+    }
+
+    /**
+     * Set the constant assignment to be a model value
+     * @param modelValue
+     */
+    public void setModelValue(boolean modelValue)
+    {
+        if (modelValue && this.params.length != 0) 
+        {
+            throw new IllegalArgumentException("Operators can not be instantiated with model values");
+        }
+        this.modelValue = modelValue;
+        if (modelValue) 
+        {
+            setRight(this.getLabel());
         }
     }
 
