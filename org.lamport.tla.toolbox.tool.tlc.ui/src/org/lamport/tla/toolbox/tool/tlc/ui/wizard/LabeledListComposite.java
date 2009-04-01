@@ -25,6 +25,14 @@ public class LabeledListComposite
     }
 
     /**
+     * Returns true iff no parameters are used
+     * @return
+     */
+    public boolean hasParameters()
+    {
+        return this.values.length > 0;
+    }
+    /**
      * @param i 
      * @param parent 
      * 
@@ -39,7 +47,7 @@ public class LabeledListComposite
         l = new Label(self, SWT.NULL);
         l.setText(label);
         
-        if (fields.length > 0 ) 
+        if (hasParameters()) 
         {
             l = new Label(self, SWT.NULL);
             l.setText("(");
@@ -61,7 +69,7 @@ public class LabeledListComposite
             }
         }
 
-        if (fields.length > 0 ) 
+        if (hasParameters()) 
         {
             l = new Label(self, SWT.NULL);
             l.setText(")");

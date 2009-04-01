@@ -1,5 +1,6 @@
 package org.lamport.tla.toolbox.tool.tlc.ui.editor;
 
+import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -33,10 +34,8 @@ public class ConstantSectionPart extends TableSectionPart
 
     protected Assignment doEditFormula(Assignment formula)
     {
-        if (formula == null) 
-        {
-            formula = new Assignment("test", new String[] { "a", "b" }, "me");
-        }
+        Assert.isNotNull(formula);
+        
         // Create the wizard
         ConstantWizard wizard = new ConstantWizard(getSection().getText(), getSection().getDescription(), (Assignment) formula);
         // Create the wizard dialog
