@@ -4,6 +4,8 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextInputListener;
 import org.eclipse.jface.text.ITextListener;
 import org.eclipse.jface.text.TextEvent;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.ui.forms.AbstractFormPart;
@@ -13,7 +15,7 @@ import org.eclipse.ui.forms.AbstractFormPart;
  * @author Simon Zambrovski
  * @version $Id$
  */
-public class DirtyMarkingListener implements ITextInputListener, ITextListener, SelectionListener, IgnoringListener
+public class DirtyMarkingListener implements ITextInputListener, ITextListener, SelectionListener, ModifyListener, IgnoringListener 
 {
     private final AbstractFormPart part;
     private boolean ignoreInputChange;
@@ -60,6 +62,17 @@ public class DirtyMarkingListener implements ITextInputListener, ITextListener, 
     }
 
     public void widgetSelected(SelectionEvent e)
+    {
+        if (!ignoreInputChange) 
+        {
+            part.markDirty();
+        }
+    }
+
+    /* (non-Javadoc)
+     * @see org.eclipse.swt.events.ModifyListener#modifyText(org.eclipse.swt.events.ModifyEvent)
+     */
+    public void modifyText(ModifyEvent e)
     {
         if (!ignoreInputChange) 
         {

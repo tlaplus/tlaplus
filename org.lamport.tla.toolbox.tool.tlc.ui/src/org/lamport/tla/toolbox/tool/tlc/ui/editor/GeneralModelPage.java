@@ -11,6 +11,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.forms.HyperlinkGroup;
 import org.eclipse.ui.forms.IManagedForm;
+import org.eclipse.ui.forms.SectionPart;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.events.HyperlinkAdapter;
 import org.eclipse.ui.forms.events.HyperlinkEvent;
@@ -23,6 +24,7 @@ import org.eclipse.ui.forms.widgets.TableWrapLayout;
 import org.lamport.tla.toolbox.tool.tlc.launch.IConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.IConfigurationDefaults;
 import org.lamport.tla.toolbox.tool.tlc.launch.TLCModelLaunchDelegate;
+import org.lamport.tla.toolbox.tool.tlc.ui.util.DirtyMarkingListener;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.util.IHelpConstants;
@@ -64,7 +66,27 @@ public class GeneralModelPage extends BasicFormPage implements IConfigurationCon
 
         specName.setText(getConfig().getAttribute(SPEC_NAME, EMPTY_STRING));
         modelName.setText(getConfig().getAttribute(MODEL_NAME, EMPTY_STRING));
+
+        workers.setText("" + getConfig().getAttribute(LAUNCH_NUMBER_OF_WORKERS, LAUNCH_NUMBER_OF_WORKERS_DEFAULT));
+    }
+
+    /**
+     * Save data back to config
+     */
+    protected void commit(boolean onSave)
+    {
+        int numberOfWorkers = LAUNCH_NUMBER_OF_WORKERS_DEFAULT;
+        try
+        {
+            numberOfWorkers = Integer.parseInt(workers.getText());
+        } catch (NumberFormatException e)
+        {
+            // does not matter
+        }
+        // save the number of workers
+        getConfig().setAttribute(LAUNCH_NUMBER_OF_WORKERS, numberOfWorkers);
         
+        super.commit(onSave);
     }
 
     /**
@@ -86,7 +108,7 @@ public class GeneralModelPage extends BasicFormPage implements IConfigurationCon
         twd.grabHorizontal = true;
         right.setLayoutData(twd);
         right.setLayout(new TableWrapLayout());
-        createAdvancedSection(toolkit, right);
+        createAdvancedSection(toolkit, right, managedForm);
     }
 
     /**
@@ -135,7 +157,7 @@ public class GeneralModelPage extends BasicFormPage implements IConfigurationCon
      * @param toolkit
      * @param body
      */
-    private void createAdvancedSection(FormToolkit toolkit, Composite body)
+    private void createAdvancedSection(FormToolkit toolkit, Composite body, IManagedForm managedForm)
     {
         TableWrapData twd;
         GridData gd;
@@ -150,12 +172,18 @@ public class GeneralModelPage extends BasicFormPage implements IConfigurationCon
         twd.grabVertical = false;
         section.setLayoutData(twd);
 
+        SectionPart advancedPart = new SectionPart(section);
+        managedForm.addPart(advancedPart);
+
+        DirtyMarkingListener advancedListener = new DirtyMarkingListener(advancedPart, true);
+        
         // label modelname
         FormText workersLabel = toolkit.createFormText(area, true);
         workersLabel.setText("Number of workers:", false, false);
 
         // field workers
         workers = toolkit.createText(area, "1");
+        workers.addModifyListener(advancedListener);
         gd = new GridData();
         gd.widthHint = 100;
         workers.setLayoutData(gd);
@@ -166,10 +194,13 @@ public class GeneralModelPage extends BasicFormPage implements IConfigurationCon
 
         // field coverage
         coverage = toolkit.createText(area, "0");
+        coverage.addModifyListener(advancedListener);
         gd = new GridData();
         gd.widthHint = 100;
         coverage.setLayoutData(gd);
 
+        // add the ignoring listeners
+        ignoringListeners.add(advancedListener);
     }
 
     /**
@@ -200,17 +231,19 @@ public class GeneralModelPage extends BasicFormPage implements IConfigurationCon
             public void linkActivated(HyperlinkEvent e)
             {
                 ILaunchConfigurationWorkingCopy config = getConfig();
-                if (config.isDirty()) 
+                if (config.isDirty())
                 {
-                    boolean confirmDirty = MessageDialog.openConfirm(body.getShell(), "Dirty editors", "Press ok to save and proceed or press cancel to abort the launch");
-                    if (confirmDirty) 
+                    boolean confirmDirty = MessageDialog.openConfirm(body.getShell(), "Dirty editors",
+                            "Press ok to save and proceed or press cancel to abort the launch");
+                    if (confirmDirty)
                     {
                         ModelHelper.doSaveConfigurationCopy(config);
-                    } else {
+                    } else
+                    {
                         return;
                     }
                 }
-                
+
                 try
                 {
                     System.out.println("Run clicked");
@@ -221,7 +254,7 @@ public class GeneralModelPage extends BasicFormPage implements IConfigurationCon
                     // TODO Auto-generated catch block
                     e1.printStackTrace();
                 }
-                
+
             }
         });
         runLink.setText("Run TLC");
