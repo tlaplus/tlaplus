@@ -14,7 +14,6 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.model.ILaunchConfigurationDelegate;
 import org.eclipse.debug.core.model.LaunchConfigurationDelegate;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
-import org.lamport.tla.toolbox.tool.tlc.job.AbstractJob;
 import org.lamport.tla.toolbox.tool.tlc.job.TLCJob;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 
@@ -108,8 +107,14 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
         // write the content
         writer.writeFiles(rootModule, cfgFile, monitor);
 
+        // number of workers
+        int numberOfWorkers = config.getAttribute(LAUNCH_NUMBER_OF_WORKERS, LAUNCH_NUMBER_OF_WORKERS_DEFAULT);
+        
+        
         // construct TLC job
-        AbstractJob job = new TLCJob(rootModule, cfgFile);
+        TLCJob job = new TLCJob(rootModule, cfgFile);
+        // number of workers
+        job.setWorkers(numberOfWorkers);
         job.addJobChangeListener(new JobChangeAdapter() {
 
             public void done(IJobChangeEvent event)

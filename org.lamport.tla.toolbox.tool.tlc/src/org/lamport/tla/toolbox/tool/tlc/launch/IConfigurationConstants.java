@@ -31,4 +31,9 @@ public interface IConfigurationConstants
      * Path to the config file (/bar/foo_mc_{i}.cfg)
      */
     public static final String CONFIG_FILE = "configFile";
+    
+    /**
+     * Number of workers to use during TLC launch
+     */
+    public static final String LAUNCH_NUMBER_OF_WORKERS = "numberOfWorkers";
 }
