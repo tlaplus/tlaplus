@@ -24,6 +24,7 @@ public class TLCJob extends AbstractJob
     private IResource rootModule;
     private IResource cfgFile;
     private TLCThread tlcThread;
+    private int workers = 1;
 
     int reported;
 
@@ -41,6 +42,15 @@ public class TLCJob extends AbstractJob
         reported = 0;
     }
 
+    /**
+     * Sets the number of workers
+     * @param workers number of threads to be run in parallel
+     */
+    public void setWorkers(int workers)
+    {
+        this.workers = workers;
+    }
+    
     protected Action getJobCompletedAction()
     {
         return new Action("View job results") 
@@ -79,7 +89,7 @@ public class TLCJob extends AbstractJob
         // handle parameters
         String[] params = new String[] { "-config", cfgFile.getName(), 
                                          //"-coverage", "0.1",
-                                         "-workers", "2",
+                                         "-workers", "" + workers,
                                          ResourceHelper.getModuleName(rootModule) };
         boolean status = tlc.handleParameters(params);
         
