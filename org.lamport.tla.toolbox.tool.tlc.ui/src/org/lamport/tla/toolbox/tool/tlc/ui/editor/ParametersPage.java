@@ -18,9 +18,13 @@ import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.forms.widgets.TableWrapData;
+import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.DirtyMarkingListener;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
+import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.util.IHelpConstants;
+
+import tla2sany.semantic.ModuleNode;
 
 /**
  * Page for displaying parameters
@@ -47,18 +51,35 @@ public class ParametersPage extends BasicFormPage
 
     protected void loadData() throws CoreException
     {
+        // constraint
         String constraint = getConfig().getAttribute(MODEL_PARAMETER_CONTRAINT, EMPTY_STRING);
         constraintSource.setDocument(new Document(constraint));
         
-        List constants = getConfig().getAttribute(MODEL_PARAMETER_CONSTANTS, new Vector());
-        FormHelper.setSerializedInput(constantTable, constants);
+        // constants from the model
+        List savedConstants = getConfig().getAttribute(MODEL_PARAMETER_CONSTANTS, new Vector());
+
+        // get the root module
+        ModuleNode moduleNode = ToolboxHandle.getSpecObj().getExternalModuleTable().getRootModule();
+        // get the list of constants
+        List constants = ModelHelper.createConstantsList(moduleNode);
         
+
+        // TODO check if new constants exist...
+        
+        FormHelper.setSerializedInput(constantTable, savedConstants);
+        
+
+        
+        
+        // symmetry
         List symmetry = getConfig().getAttribute(MODEL_PARAMETER_SYMMETRY, new Vector());
         FormHelper.setSerializedInput(symmetryTable, symmetry);
         
+        // definition overrides
         List definitions = getConfig().getAttribute(MODEL_PARAMETER_DEFINITIONS, new Vector());
         FormHelper.setSerializedInput(definitionsTable, definitions);
         
+        // new definitions
         List newDefinitions = getConfig().getAttribute(MODEL_PARAMETER_NEW_DEFINITIONS, new Vector());
         FormHelper.setSerializedInput(newDefinitionsTable, newDefinitions);
     }
