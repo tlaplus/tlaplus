@@ -26,6 +26,9 @@ import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
 import org.lamport.tla.toolbox.tool.tlc.model.Formula;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 
+import tla2sany.semantic.ModuleNode;
+import tla2sany.semantic.OpDeclNode;
+
 /**
  * Provides utility methods for model manipulation
  * @author Simon Zambrovski
@@ -434,6 +437,24 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
         {
         }
         return schema + "_" + System.currentTimeMillis();
+    }
+
+    /**
+     * Extract the constants from module node
+     * @param moduleNode
+     * @return a list of assignments
+     */
+    public static List createConstantsList(ModuleNode moduleNode)
+    {
+        OpDeclNode[] constantDecls = moduleNode.getConstantDecls();
+        Vector constants = new Vector(constantDecls.length);
+        for (int i = 0; i < constantDecls.length; i++)
+        {
+            Assignment assign = new Assignment(constantDecls[i].getName().toString(), new String[constantDecls[i]
+                    .getNumberOfArgs()], null);
+            constants.add(assign);
+        }
+        return constants;
     }
 
 

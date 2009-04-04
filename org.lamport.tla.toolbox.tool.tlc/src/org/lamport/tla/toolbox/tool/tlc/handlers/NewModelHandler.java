@@ -1,7 +1,7 @@
 package org.lamport.tla.toolbox.tool.tlc.handlers;
 
+import java.util.HashMap;
 import java.util.List;
-import java.util.Vector;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -16,12 +16,11 @@ import org.eclipse.debug.core.ILaunchManager;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.TLCModelLaunchDelegate;
-import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.util.ResourceHelper;
+import org.lamport.tla.toolbox.util.UIHelper;
 
 import tla2sany.semantic.ModuleNode;
-import tla2sany.semantic.OpDeclNode;
 
 /**
  * Our sample handler extends AbstractHandler, an IHandler base class.
@@ -67,7 +66,8 @@ public class NewModelHandler extends AbstractHandler implements IModelConfigurat
         // get the root module
         ModuleNode moduleNode = ToolboxHandle.getSpecObj().getExternalModuleTable().getRootModule();
 
-        List constants = NewModelHandler.createConstantsList(moduleNode);
+        // get the list of constants
+        List constants = ModelHelper.createConstantsList(moduleNode);
 
         try
         {
@@ -92,6 +92,14 @@ public class NewModelHandler extends AbstractHandler implements IModelConfigurat
 
             ILaunchConfiguration launchSaved = launchCopy.doSave();
 
+            
+            // create parameters for the handler
+            HashMap parameters = new HashMap();
+            parameters.put(OpenModelHandler.PARAM_MODEL_NAME, modelName);
+
+            // runs the command and opens the module in the editor
+            UIHelper.runCommand(OpenModelHandler.COMMAND_ID, parameters);
+            
             return launchSaved;
 
         } catch (CoreException e)
@@ -100,21 +108,10 @@ public class NewModelHandler extends AbstractHandler implements IModelConfigurat
             e.printStackTrace();
         }
 
+        
+        
+        
         return null;
-    }
-
-
-    public static List createConstantsList(ModuleNode moduleNode)
-    {
-        OpDeclNode[] constantDecls = moduleNode.getConstantDecls();
-        Vector constants = new Vector(constantDecls.length);
-        for (int i = 0; i < constantDecls.length; i++)
-        {
-            Assignment assign = new Assignment(constantDecls[i].getName().toString(), new String[constantDecls[i]
-                    .getNumberOfArgs()], null);
-            constants.add(assign);
-        }
-        return constants;
     }
 
 }
