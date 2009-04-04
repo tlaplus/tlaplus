@@ -126,7 +126,7 @@ public class AddModuleHandler extends AbstractHandler implements IHandler
                 parameters.put(OpenModuleHandler.PARAM_MODULE, ResourceHelper.getModuleNameChecked(module.getName(),
                         false));
 
-                // runs the command
+                // runs the command and opens the module in the editor
                 UIHelper.runCommand(OpenModuleHandler.COMMAND_ID, parameters);
             }
         }
