@@ -24,8 +24,8 @@ import tla2sany.modanalyzer.SpecObj;
 
 /**
  * Represents a specification handle in the toolbox
- * 
- * @author zambrovski
+ * @version $Id$
+ * @author Simon Zambrovski
  */
 public class Spec implements IAdaptable
 {
@@ -183,6 +183,7 @@ public class Spec implements IAdaptable
 
     /**
      * Retrieves the list of modules in the spec, or an empty list if no modules
+     * <br>
      * The list is sorted on the resource name
      * 
      * @return
