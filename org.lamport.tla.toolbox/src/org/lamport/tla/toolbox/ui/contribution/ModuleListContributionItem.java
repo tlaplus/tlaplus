@@ -11,6 +11,7 @@ import org.eclipse.ui.actions.CompoundContributionItem;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.menus.CommandContributionItemParameter;
 import org.lamport.tla.toolbox.Activator;
+import org.lamport.tla.toolbox.job.DeleteOutOfSyncJob;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.ui.handler.AddModuleHandler;
 import org.lamport.tla.toolbox.ui.handler.OpenModuleHandler;
@@ -38,6 +39,8 @@ public class ModuleListContributionItem extends CompoundContributionItem
         Spec spec = Activator.getSpecManager().getSpecLoaded();
         Vector moduleContributions = new Vector();
         HashMap parameters = new HashMap();
+        
+        Vector outOfSyncResourcesToDelete = new Vector();
 
         // create the contribution item for add module
         CommandContributionItemParameter param = new CommandContributionItemParameter(UIHelper.getActiveWindow(),
@@ -56,10 +59,17 @@ public class ModuleListContributionItem extends CompoundContributionItem
             boolean isRoot;
             for (int i = 0; i < modules.length; i++)
             {
+                // skip non-modules and non-existing files
                 if (!ResourceHelper.isModule(modules[i]))
                 {
                     continue;
+                } 
+                if (!modules[i].isSynchronized(IResource.DEPTH_ZERO)) 
+                {
+                    outOfSyncResourcesToDelete.add(modules[i]); 
+                    continue;
                 }
+                
 
                 isRoot = rootModule.equals(modules[i]);
 
@@ -79,6 +89,10 @@ public class ModuleListContributionItem extends CompoundContributionItem
             }
         }
 
+        DeleteOutOfSyncJob job = new DeleteOutOfSyncJob(outOfSyncResourcesToDelete);
+        job.setRule(DeleteOutOfSyncJob.getDeleteFilesRule(outOfSyncResourcesToDelete));
+        job.schedule();
+        
         return (IContributionItem[]) moduleContributions.toArray(new IContributionItem[moduleContributions.size()]);
     }
 }
