@@ -15,6 +15,7 @@ import org.lamport.tla.toolbox.util.ResourceHelper;
 public class ModelWriter
 {
     private static final String CR = "\n";
+    private static final String SEP = "----";
     
     private StringBuffer tlaBuffer;
     private StringBuffer cfgBuffer;
@@ -59,7 +60,8 @@ public class ModelWriter
     {
         cfgBuffer.append("SPECIFICATION ");
         cfgBuffer.append(specDefinition[0]).append(CR);
-        tlaBuffer.append(specDefinition[1]).append(CR);
+        tlaBuffer.append(specDefinition[1]).append(CR).append(SEP).append(CR);
+        
     }
     
     /**
@@ -82,7 +84,7 @@ public class ModelWriter
         {
             String[] element = (String[]) elements.get(i);
             cfgBuffer.append(element[0]).append(CR);
-            tlaBuffer.append(element[1]).append(CR);
+            tlaBuffer.append(element[1]).append(CR).append(SEP).append(CR);
         }
     }
 
