@@ -114,11 +114,14 @@ public class ModelEditor extends FormEditor
     {
         try
         {
+            /*
             addPage(new GeneralModelPage(this));
             addPage(new BehaviorFormulaPage(this));
             addPage(new CorrectnessPage(this));
             addPage(new ParametersPage(this));
             addPage(new ModelValuesPage(this));
+            */
+            addPage(new MainModelPage(this));
 
         } catch (PartInitException e)
         {
