@@ -25,6 +25,7 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.SectionPart;
 import org.eclipse.ui.forms.widgets.FormToolkit;
+import org.eclipse.ui.forms.widgets.Section;
 import org.lamport.tla.toolbox.tool.tlc.model.Formula;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
 import org.lamport.tla.toolbox.tool.tlc.ui.wizard.FormulaWizard;
@@ -77,7 +78,7 @@ public class TableSectionPart extends SectionPart
      */
     public TableSectionPart(Composite composite, String title, String description, FormToolkit toolkit)
     {
-        super(FormHelper.createSectionComposite(composite, title, description, toolkit));
+        this(composite, title, description, toolkit, Section.DESCRIPTION | Section.TITLE_BAR);
     }
 
     /**
