@@ -32,6 +32,12 @@ public class ConstantSectionPart extends TableSectionPart
         super(composite, title, description, toolkit);
     }
 
+    public ConstantSectionPart(Composite composite, String title, String description, FormToolkit toolkit, int flags)
+    {
+        super(composite, title, description, toolkit, flags);
+    }
+
+    
     protected Assignment doEditFormula(Assignment formula)
     {
         Assert.isNotNull(formula);
