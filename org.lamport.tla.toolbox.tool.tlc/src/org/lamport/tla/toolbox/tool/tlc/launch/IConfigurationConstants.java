@@ -31,9 +31,36 @@ public interface IConfigurationConstants
      * Path to the config file (/bar/foo_mc_{i}.cfg)
      */
     public static final String CONFIG_FILE = "configFile";
-    
     /**
      * Number of workers to use during TLC launch
      */
     public static final String LAUNCH_NUMBER_OF_WORKERS = "numberOfWorkers";
+    /**
+     * How to run TLC (model-checking = true, simulation = false)
+     */
+    public static final String LAUNCH_MC_MODE = "mcMode";
+    /**
+     * the VIEW to map from variables to values
+     */
+    public static final String LAUNCH_VIEW = "view";
+    /**
+     * MC depth first 
+     */
+    public static final String LAUNCH_DFID_MODE = "dfidMode";
+    /**
+     * the depth of DFID run 
+     */
+    public static final String LAUNCH_DFID_DEPTH = "dfidDepth";
+    /**
+     * the depth of simulation run 
+     */
+    public static final String LAUNCH_SIMU_DEPTH = "simuDepth";
+    /**
+     * the aril of simulation run 
+     */
+    public static final String LAUNCH_SIMU_ARIL = "simuAril";
+    /**
+     * the seed of simulation run 
+     */
+    public static final String LAUNCH_SIMU_SEED = "simuSeed";
 }

@@ -26,6 +26,7 @@ public interface IModelConfigurationConstants extends IConfigurationConstants
      * formula which points fairness part of the specification
      */
     public static final String MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_FAIRNESS = "modelBehaviorFairness";
+
     /**
      * flag for checking deadlock
      */
@@ -38,26 +39,19 @@ public interface IModelConfigurationConstants extends IConfigurationConstants
      * property lists
      */
     public static final String MODEL_CORRECTNESS_PROPERTIES = "modelCorrectnessProperties";
-    /**
-     * init list
-     */
-    public static final String MODEL_CORRECTNESS_INIT = "modelCorrectnessInit";
-    /**
-     * action list
-     */
-    public static final String MODEL_CORRECTNESS_ACTIONS = "modelCorrectnessActions";
+    
     /**
      * action constraints list
      */
-    public static final String MODEL_CORRECTNESS_ACTION_CONSTRAINTS = "modelCorrectnessActionConstraints";
+    public static final String MODEL_PARAMETER_ACTION_CONSTRAINT = "modelParameterActionConstraint";
+    /**
+     * constraint 
+     */
+    public static final String MODEL_PARAMETER_CONSTRAINT = "modelParameterContraint";
     /**
      * constant list 
      */
     public static final String MODEL_PARAMETER_CONSTANTS = "modelParameterConstants";
-    /**
-     * symmetry list
-     */
-    public static final String MODEL_PARAMETER_SYMMETRY = "modelParameterSymmetry";
     /**
      * definitions list
      */
@@ -67,11 +61,27 @@ public interface IModelConfigurationConstants extends IConfigurationConstants
      */
     public static final String MODEL_PARAMETER_NEW_DEFINITIONS = "modelParameterNewDefinitions";
     /**
-     * constraint 
+     * advanced model values not used in constant definitions
      */
-    public static final String MODEL_PARAMETER_CONTRAINT = "modelParameterContraint";
+    public static final String MODEL_PARAMETER_MODEL_VALUES = "modelParameterModelValues";
+    
+    
+    
     /**
-     * TODO change to another editors
+     * implied init list, implemented as invariants
+     * @deprecated
      */
-    public static final String MODEL_MODEL_VALUES = "modelModelValues";
+    public static final String MODEL_CORRECTNESS_INIT = "modelCorrectnessInit";
+    /**
+     * implied action list, implemented as properties
+     * @deprecated
+     */
+    public static final String MODEL_CORRECTNESS_ACTIONS = "modelCorrectnessActions";
+
+    /**
+     * symmetry list, implemented in as property of the constant
+     * @deprecated
+     */
+    public static final String MODEL_PARAMETER_SYMMETRY = "modelParameterSymmetry";
+
 }
