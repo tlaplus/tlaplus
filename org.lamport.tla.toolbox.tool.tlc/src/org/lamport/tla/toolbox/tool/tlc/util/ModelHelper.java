@@ -343,7 +343,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
      */
     public static String[] createConstraintContent(ILaunchConfiguration config) throws CoreException
     {
-        String constraint = config.getAttribute(MODEL_PARAMETER_CONTRAINT, EMPTY_STRING);
+        String constraint = config.getAttribute(MODEL_PARAMETER_CONSTRAINT, EMPTY_STRING);
         if (EMPTY_STRING.equals(constraint) )
         {
             return null;
@@ -432,7 +432,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
     {
         try
         {
-            Thread.sleep(1000);
+            Thread.sleep(10);
         } catch (InterruptedException e)
         {
         }
