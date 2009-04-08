@@ -4,8 +4,10 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.ListenerList;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
+import org.eclipse.jface.action.Action;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
@@ -15,11 +17,14 @@ import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.editor.FormPage;
 import org.eclipse.ui.forms.events.ExpansionAdapter;
 import org.eclipse.ui.forms.events.ExpansionEvent;
+import org.eclipse.ui.forms.events.HyperlinkAdapter;
+import org.eclipse.ui.forms.events.HyperlinkEvent;
 import org.eclipse.ui.forms.events.IExpansionListener;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationDefaults;
+import org.lamport.tla.toolbox.tool.tlc.launch.TLCModelLaunchDelegate;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.IgnoringListener;
@@ -32,12 +37,23 @@ import org.lamport.tla.toolbox.util.UIHelper;
  * @author Simon Zambrovski
  * @version $Id$
  */
-public abstract class BasicFormPage extends FormPage implements IModelConfigurationConstants, IModelConfigurationDefaults
+public abstract class BasicFormPage extends FormPage implements IModelConfigurationConstants,
+        IModelConfigurationDefaults
 {
+    public static final String MODE_RUN = "run";
+    public static final String MODE_DEBUG = "debug";
+
     protected ListenerList ignoringListeners = new ListenerList();
     protected String helpId = null;
     protected String imagePath = null;
     protected IExpansionListener formRebuildingListener = null;
+    protected HyperlinkAdapter runDebugAdapter = new HyperlinkAdapter() {
+
+        public void linkActivated(HyperlinkEvent e)
+        {
+            doRun((String) e.getHref());
+        }
+    };
 
     // image registry
     private Hashtable images = new Hashtable();
@@ -50,6 +66,31 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
     public BasicFormPage(FormEditor editor, String id, String title)
     {
         super(editor, id, title);
+    }
+
+    /**
+     * @param mode
+     */
+    protected void doRun(String mode)
+    {
+        // TODO
+        IProgressMonitor monitor = null;
+
+        ILaunchConfigurationWorkingCopy config = getConfig();
+
+        // save the editor if not saved
+        if (getEditor().isDirty())
+        {
+            getEditor().doSave(monitor);
+        }
+
+        try
+        {
+            config.launch(TLCModelLaunchDelegate.MODE_MODELCHECK, monitor, false);
+        } catch (CoreException e1)
+        {
+            e1.printStackTrace();
+        }
     }
 
     /**
@@ -73,6 +114,42 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
 
         FormToolkit toolkit = managedForm.getToolkit();
         toolkit.decorateFormHeading(formWidget.getForm());
+
+        // head construction ---------------------
+
+        // run button
+        formWidget.getForm().getToolBarManager().add(new Action("Run") {
+            public void run()
+            {
+                doRun(MODE_RUN);
+            }
+
+            public ImageDescriptor getImageDescriptor()
+            {
+                return TLCUIActivator.imageDescriptorFromPlugin(TLCUIActivator.PLUGIN_ID, "icons/full/lrun_obj.gif");
+            }
+        });
+
+        // debug button
+        formWidget.getForm().getToolBarManager().add(new Action("Debug") {
+            public void run()
+            {
+                doRun(MODE_DEBUG);
+            }
+
+            public ImageDescriptor getImageDescriptor()
+            {
+                return TLCUIActivator.imageDescriptorFromPlugin(TLCUIActivator.PLUGIN_ID, "icons/full/ldebug_obj.gif");
+            }
+            // TODO enable on debug support
+            public boolean isEnabled()
+            {
+                return false;
+            }
+            
+        });
+
+        formWidget.getForm().getToolBarManager().update(true);
 
         // setup body layout
         body.setLayout(getBodyLayout());
@@ -109,8 +186,9 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
     protected void pageInitializationComplete()
     {
         Object[] listeners = ignoringListeners.getListeners();
-        for (int i = 0; i < listeners.length; ++i) {
-           ((IgnoringListener) listeners[i]).setIgnoreInput(false);
+        for (int i = 0; i < listeners.length; ++i)
+        {
+            ((IgnoringListener) listeners[i]).setIgnoreInput(false);
         }
     }
 

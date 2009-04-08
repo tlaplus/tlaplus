@@ -1,0 +1,461 @@
+package org.lamport.tla.toolbox.tool.tlc.ui.editor;
+
+import java.util.List;
+import java.util.Vector;
+
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jface.text.Document;
+import org.eclipse.jface.text.source.SourceViewer;
+import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.forms.IManagedForm;
+import org.eclipse.ui.forms.SectionPart;
+import org.eclipse.ui.forms.editor.FormEditor;
+import org.eclipse.ui.forms.widgets.FormText;
+import org.eclipse.ui.forms.widgets.FormToolkit;
+import org.eclipse.ui.forms.widgets.Section;
+import org.eclipse.ui.forms.widgets.TableWrapData;
+import org.lamport.tla.toolbox.tool.tlc.launch.IConfigurationConstants;
+import org.lamport.tla.toolbox.tool.tlc.launch.IConfigurationDefaults;
+import org.lamport.tla.toolbox.tool.tlc.ui.util.DirtyMarkingListener;
+import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
+import org.lamport.tla.toolbox.util.IHelpConstants;
+
+/**
+ * Represent all advanced model elements
+ * @author Simon Zambrovski
+ * @version $Id$
+ */
+public class AdvancedModelPage extends BasicFormPage implements IConfigurationConstants, IConfigurationDefaults
+{
+
+    private static final String ID = "advancedModelPage";
+
+    private SourceViewer constraintSource;
+    private SourceViewer actionConstraintSource;
+    private SourceViewer viewSource;
+    private Button dfidOption;
+    private Button mcOption;
+    private Button simulationOption;
+    private Text dfidDepthText;
+    private Text simuDepthText;
+    private Text simuSeedText;
+    private Text simuArilText;
+    private TableViewer modelValuesTable;
+    private TableViewer newDefinitionsTable;
+    private TableViewer definitionsTable;
+
+    /**
+     * Constructs the page
+     * @param editor
+     */
+    public AdvancedModelPage(FormEditor editor)
+    {
+        super(editor, AdvancedModelPage.ID, "Advanced Options");
+        this.helpId = IHelpConstants.ADVANCED_MODEL_PAGE;
+        this.imagePath = "icons/full/choice_sc_obj.gif";
+    }
+
+    /**
+     * Loads data from the model
+     */
+    protected void loadData() throws CoreException
+    {
+        // definition overrides
+        List definitions = getConfig().getAttribute(MODEL_PARAMETER_DEFINITIONS, new Vector());
+        FormHelper.setSerializedInput(definitionsTable, definitions);
+
+        // new definitions
+        List newDefinitions = getConfig().getAttribute(MODEL_PARAMETER_NEW_DEFINITIONS, new Vector());
+        FormHelper.setSerializedInput(newDefinitionsTable, newDefinitions);
+        
+        List modelValues = getConfig().getAttribute(MODEL_PARAMETER_MODEL_VALUES, new Vector());
+        FormHelper.setSerializedInput(modelValuesTable, modelValues);
+
+        // constraint
+        String constraint = getConfig().getAttribute(MODEL_PARAMETER_CONSTRAINT, EMPTY_STRING);
+        constraintSource.setDocument(new Document(constraint));
+
+        // view
+        String view = getConfig().getAttribute(LAUNCH_VIEW, EMPTY_STRING);
+        viewSource.setDocument(new Document(view));
+
+        // action constraint
+        String actionConstraint = getConfig().getAttribute(MODEL_PARAMETER_ACTION_CONSTRAINT, EMPTY_STRING);
+        actionConstraintSource.setDocument(new Document(actionConstraint));
+
+        // run mode mode
+        boolean isMCMode = getConfig().getAttribute(LAUNCH_MC_MODE, LAUNCH_MC_MODE_DEFAULT);
+        mcOption.setSelection(isMCMode);
+        simulationOption.setSelection(!isMCMode);
+
+        // DFID mode
+        boolean isDFIDMode = getConfig().getAttribute(LAUNCH_DFID_MODE, LAUNCH_DFID_MODE_DEFAULT);
+        dfidOption.setSelection(isDFIDMode);
+
+        // DFID depth
+        int dfidDepth = getConfig().getAttribute(LAUNCH_DFID_DEPTH, LAUNCH_DFID_DEPTH_DEFAULT);
+        dfidDepthText.setText("" + dfidDepth);
+
+        // simulation depth
+        int simuDepth = getConfig().getAttribute(LAUNCH_SIMU_DEPTH, LAUNCH_SIMU_DEPTH_DEFAULT);
+        simuDepthText.setText("" + simuDepth);
+
+        // simulation aril
+        int simuAril = getConfig().getAttribute(LAUNCH_SIMU_SEED, LAUNCH_SIMU_ARIL_DEFAULT);
+        if (LAUNCH_SIMU_ARIL_DEFAULT != simuAril) 
+        {
+            simuArilText.setText("" + simuAril);
+        } else {
+            simuArilText.setText("");
+        }
+        
+        // simulation seed
+        int simuSeed = getConfig().getAttribute(LAUNCH_SIMU_ARIL, LAUNCH_SIMU_SEED_DEFAULT);
+        if (LAUNCH_SIMU_SEED_DEFAULT != simuSeed) 
+        {
+            simuSeedText.setText("" + simuSeed);
+        } else {
+            simuSeedText.setText("");
+        }
+
+    }
+
+    /**
+     * Save data back to config
+     */
+    protected void commit(boolean onSave)
+    {
+        boolean isMCMode = mcOption.getSelection();
+        getConfig().setAttribute(LAUNCH_MC_MODE, isMCMode);
+
+        // DFID mode
+        boolean isDFIDMode = dfidOption.getSelection();
+        getConfig().setAttribute(LAUNCH_DFID_MODE, isDFIDMode);
+        
+
+        int dfidDepth = LAUNCH_DFID_DEPTH_DEFAULT; 
+        int simuDepth = LAUNCH_SIMU_DEPTH_DEFAULT; 
+        int simuAril = LAUNCH_SIMU_ARIL_DEFAULT;
+        int simuSeed = LAUNCH_SIMU_SEED_DEFAULT;
+
+        try 
+        {
+            dfidDepth = Integer.parseInt(dfidDepthText.getText());
+        } catch (NumberFormatException e) { 
+            // TODO report format error
+            // add validator?
+ 
+        }
+        try 
+        {
+            simuDepth = Integer.parseInt(simuDepthText.getText());
+        } catch (NumberFormatException e) { 
+            // TODO report format error
+            // add validator?
+ 
+        }
+        if (!"".equals(simuArilText.getText())) 
+        {
+            try 
+            {
+                simuAril = Integer.parseInt(simuArilText.getText());
+            } catch (NumberFormatException e) { 
+                // TODO report format error
+                // add validator?
+     
+            }
+        }
+        if (!"".equals(simuSeedText.getText())) 
+        {
+            try 
+            {
+                simuSeed = Integer.parseInt(simuSeedText.getText());
+            } catch (NumberFormatException e) { 
+                // TODO report format error
+                // add validator?
+     
+            }
+        }
+        
+        // DFID depth
+        getConfig().setAttribute(LAUNCH_DFID_DEPTH, dfidDepth);
+        // simulation depth
+        getConfig().setAttribute(LAUNCH_SIMU_DEPTH, simuDepth);
+        // simulation aril
+        getConfig().setAttribute(LAUNCH_SIMU_SEED, simuSeed);
+        // simulation seed
+        getConfig().setAttribute(LAUNCH_SIMU_ARIL, simuAril);
+
+        // definitions
+        List definitions = FormHelper.getSerializedInput(definitionsTable);
+        getConfig().setAttribute(MODEL_PARAMETER_DEFINITIONS, definitions);
+
+        // new definitions
+        List newDefinitions = FormHelper.getSerializedInput(newDefinitionsTable);
+        getConfig().setAttribute(MODEL_PARAMETER_NEW_DEFINITIONS, newDefinitions);
+
+        // model values
+        List modelValues = FormHelper.getSerializedInput(modelValuesTable);
+        getConfig().setAttribute(MODEL_PARAMETER_MODEL_VALUES, modelValues);
+        
+        // constraint formula
+        String constraintFormula = constraintSource.getDocument().get();
+        getConfig().setAttribute(MODEL_PARAMETER_CONSTRAINT, constraintFormula);
+
+        // view
+        String viewFormula = viewSource.getDocument().get();
+        getConfig().setAttribute(LAUNCH_VIEW, viewFormula);
+        
+        // action constraint formula
+        String actionConstraintFormula = actionConstraintSource.getDocument().get();
+        getConfig().setAttribute(MODEL_PARAMETER_ACTION_CONSTRAINT, actionConstraintFormula);
+
+        super.commit(onSave);
+    }
+
+    /**
+     * Creates the UI
+     */
+    protected void createBodyContent(IManagedForm managedForm)
+    {
+        int sectionFlags = Section.TITLE_BAR | Section.DESCRIPTION | Section.TREE_NODE | Section.EXPANDED;
+
+        FormToolkit toolkit = managedForm.getToolkit();
+        Composite body = managedForm.getForm().getBody();
+
+        GridData gd;
+        TableWrapData twd;
+
+        // left
+        Composite left = toolkit.createComposite(body);
+        twd = new TableWrapData(TableWrapData.FILL_GRAB);
+        twd.grabHorizontal = true;
+        left.setLayout(new GridLayout(1, false));
+        left.setLayoutData(twd);
+
+        // right
+        Composite right = toolkit.createComposite(body);
+        twd = new TableWrapData(TableWrapData.FILL_GRAB);
+        twd.grabHorizontal = true;
+        right.setLayoutData(twd);
+        right.setLayout(new GridLayout(1, false));
+
+        Section section;
+
+        // ---------------------------------------------------------------
+        // new definitions
+        TableSectionPart newDefinitionPart = new TableSectionPart(left, "New Definitions", "...", toolkit, sectionFlags);
+        managedForm.addPart(newDefinitionPart);
+        // layout
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        newDefinitionPart.getSection().setLayoutData(gd);
+        gd = new GridData(GridData.FILL_BOTH);
+        gd.widthHint = 100;
+        gd.verticalSpan = 3;
+        newDefinitionPart.getTableViewer().getTable().setLayoutData(gd);
+        newDefinitionsTable = newDefinitionPart.getTableViewer();
+
+        // ---------------------------------------------------------------
+        // definition overwrite
+        TableSectionPart definitionsPart = new TableSectionPart(right, "Definition Override", "...", toolkit,
+                sectionFlags);
+        managedForm.addPart(definitionsPart);
+        // layout
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        definitionsPart.getSection().setLayoutData(gd);
+        gd = new GridData(GridData.FILL_BOTH);
+        gd.widthHint = 100;
+        gd.verticalSpan = 3;
+        definitionsPart.getTableViewer().getTable().setLayoutData(gd);
+        definitionsTable = definitionsPart.getTableViewer();
+
+        // ---------------------------------------------------------------
+        // constraint
+        section = FormHelper.createSectionComposite(left, "State Constraint", "A constraint that holds on every state",
+                toolkit, sectionFlags, getExpansionListener());
+        SectionPart constraintPart = new SectionPart(section);
+        managedForm.addPart(constraintPart);
+        DirtyMarkingListener constraintListener = new DirtyMarkingListener(constraintPart, true);
+
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.horizontalSpan = 3;
+        section.setLayoutData(gd);
+
+        Composite constraintArea = (Composite) section.getClient();
+        constraintSource = FormHelper.createSourceViewer(toolkit, constraintArea, SWT.V_SCROLL);
+        // layout of the source viewer
+        twd = new TableWrapData(TableWrapData.FILL);
+        twd.heightHint = 60;
+        twd.grabHorizontal = true;
+        constraintSource.getTextWidget().setLayoutData(twd);
+        constraintSource.addTextListener(constraintListener);
+
+        // ---------------------------------------------------------------
+        // action constraint
+        section = FormHelper.createSectionComposite(right, "Action Constraint", "...", toolkit, sectionFlags,
+                getExpansionListener());
+        SectionPart actionConstraintPart = new SectionPart(section);
+        managedForm.addPart(actionConstraintPart);
+        DirtyMarkingListener actionConstraintListener = new DirtyMarkingListener(actionConstraintPart, true);
+
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.horizontalSpan = 3;
+        section.setLayoutData(gd);
+
+        Composite actionConstraintArea = (Composite) section.getClient();
+        actionConstraintSource = FormHelper.createSourceViewer(toolkit, actionConstraintArea, SWT.V_SCROLL);
+        // layout of the source viewer
+        twd = new TableWrapData(TableWrapData.FILL);
+        twd.heightHint = 60;
+        twd.grabHorizontal = true;
+        actionConstraintSource.getTextWidget().setLayoutData(twd);
+        actionConstraintSource.addTextListener(actionConstraintListener);
+
+        // ---------------------------------------------------------------
+        // modelValues
+        TableSectionPart modelValuesPart = new TableSectionPart(left, "Model Values", "....", toolkit, sectionFlags);
+        managedForm.addPart(modelValuesPart);
+        modelValuesTable = modelValuesPart.getTableViewer();
+
+        // layout
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        modelValuesPart.getSection().setLayoutData(gd);
+        gd = new GridData(GridData.FILL_BOTH);
+        gd.widthHint = 100;
+        gd.verticalSpan = 3;
+        modelValuesPart.getTableViewer().getTable().setLayoutData(gd);
+
+        // ---------------------------------------------------------------
+        // launch
+        section = createAdvancedLaunchSection(toolkit, right, sectionFlags);
+        SectionPart launchPart = new SectionPart(section);
+        managedForm.addPart(launchPart);
+        DirtyMarkingListener launchListener = new DirtyMarkingListener(launchPart, true);
+
+        // dirty listeners
+        simuArilText.addModifyListener(launchListener);
+        simuSeedText.addModifyListener(launchListener);
+        simuDepthText.addModifyListener(launchListener);
+        dfidDepthText.addModifyListener(launchListener);
+        simulationOption.addSelectionListener(launchListener);
+        dfidOption.addSelectionListener(launchListener);
+        mcOption.addSelectionListener(launchListener);
+        viewSource.addTextListener(launchListener);
+
+        // add section ignoring listeners
+        ignoringListeners.add(actionConstraintListener);
+        ignoringListeners.add(constraintListener);
+        ignoringListeners.add(launchListener);
+    }
+
+    /**
+     * @param toolkit
+     * @param parent
+     * @param flags
+     */
+    private Section createAdvancedLaunchSection(FormToolkit toolkit, Composite parent, int sectionFlags)
+    {
+        GridData gd;
+
+        // advanced section
+        Section advancedSection = FormHelper.createSectionComposite(parent, "Launching details", "", toolkit,
+                sectionFlags, getExpansionListener());
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.horizontalSpan = 2;
+        gd.grabExcessHorizontalSpace = true;
+        advancedSection.setLayoutData(gd);
+
+        Composite area = (Composite) advancedSection.getClient();
+        area.setLayout(new GridLayout(2, false));
+
+        mcOption = toolkit.createButton(area, "Model-checking mode", SWT.RADIO);
+        gd = new GridData();
+        gd.horizontalSpan = 2;
+        mcOption.setLayoutData(gd);
+
+        // label view
+        FormText viewLabel = toolkit.createFormText(area, true);
+        viewLabel.setText("View:", false, false);
+        gd = new GridData();
+        gd.verticalAlignment = SWT.BEGINNING;
+        gd.horizontalIndent = 10;
+        viewLabel.setLayoutData(gd);
+        // field view
+        viewSource = FormHelper.createSourceViewer(toolkit, area, SWT.V_SCROLL);
+        // layout of the source viewer
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.grabExcessHorizontalSpace = true;
+        gd.heightHint = 60;
+        gd.widthHint = 200;
+        viewSource.getTextWidget().setLayoutData(gd);
+
+        dfidOption = toolkit.createButton(area, "Depth-first", SWT.CHECK);
+        gd = new GridData();
+        gd.horizontalSpan = 2;
+        gd.horizontalIndent = 10;
+        dfidOption.setLayoutData(gd);
+        // label depth
+        FormText dfidDepthLabel = toolkit.createFormText(area, true);
+        dfidDepthLabel.setText("Depth:", false, false);
+        gd = new GridData();
+        gd.horizontalIndent = 10;
+        dfidDepthLabel.setLayoutData(gd);
+        // field depth
+        dfidDepthText = toolkit.createText(area, "100");
+        gd = new GridData();
+        gd.widthHint = 100;
+        dfidDepthText.setLayoutData(gd);
+
+        simulationOption = toolkit.createButton(area, "Simulation mode", SWT.RADIO);
+        gd = new GridData();
+        gd.horizontalSpan = 2;
+        simulationOption.setLayoutData(gd);
+
+        // label depth
+        FormText depthLabel = toolkit.createFormText(area, true);
+        depthLabel.setText("Depth:", false, false);
+        gd = new GridData();
+        gd.horizontalIndent = 10;
+        depthLabel.setLayoutData(gd);
+        // field depth
+        simuDepthText = toolkit.createText(area, "100");
+        gd = new GridData();
+        gd.widthHint = 100;
+        simuDepthText.setLayoutData(gd);
+
+        // label seed
+        FormText seedLabel = toolkit.createFormText(area, true);
+        seedLabel.setText("Seed:", false, false);
+        gd = new GridData();
+        gd.horizontalIndent = 10;
+        seedLabel.setLayoutData(gd);
+
+        // field seed
+        simuSeedText = toolkit.createText(area, "");
+        gd = new GridData();
+        gd.widthHint = 200;
+        simuSeedText.setLayoutData(gd);
+
+        // label seed
+        FormText arilLabel = toolkit.createFormText(area, true);
+        arilLabel.setText("Aril:", false, false);
+        gd = new GridData();
+        gd.horizontalIndent = 10;
+        arilLabel.setLayoutData(gd);
+
+        // field seed
+        simuArilText = toolkit.createText(area, "");
+        gd = new GridData();
+        gd.widthHint = 200;
+        simuArilText.setLayoutData(gd);
+
+        return advancedSection;
+    }
+
+}

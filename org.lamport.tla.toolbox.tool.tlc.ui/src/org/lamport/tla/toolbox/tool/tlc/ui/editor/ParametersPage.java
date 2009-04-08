@@ -52,7 +52,7 @@ public class ParametersPage extends BasicFormPage
     protected void loadData() throws CoreException
     {
         // constraint
-        String constraint = getConfig().getAttribute(MODEL_PARAMETER_CONTRAINT, EMPTY_STRING);
+        String constraint = getConfig().getAttribute(MODEL_PARAMETER_CONSTRAINT, EMPTY_STRING);
         constraintSource.setDocument(new Document(constraint));
         
         // constants from the model
@@ -99,7 +99,7 @@ public class ParametersPage extends BasicFormPage
         getConfig().setAttribute(MODEL_PARAMETER_NEW_DEFINITIONS, newDefinitions);
 
         String constraintFormula = constraintSource.getDocument().get();
-        getConfig().setAttribute(MODEL_PARAMETER_CONTRAINT, constraintFormula);
+        getConfig().setAttribute(MODEL_PARAMETER_CONSTRAINT, constraintFormula);
         
         super.commit(onSave);
     }

@@ -166,7 +166,7 @@ public class CorrectnessPage extends BasicFormPage
         FormHelper.setSerializedInput(actionsTable, serializedList);
 
         // actions constraints
-        serializedList = getConfig().getAttribute(MODEL_CORRECTNESS_ACTION_CONSTRAINTS, new Vector());
+        serializedList = getConfig().getAttribute(MODEL_PARAMETER_ACTION_CONSTRAINT, new Vector());
         FormHelper.setSerializedInput(actionConstraintTable, serializedList);
     }
 
@@ -198,7 +198,7 @@ public class CorrectnessPage extends BasicFormPage
 
         // action constraints
         serializedList = FormHelper.getSerializedInput(actionConstraintTable);
-        getConfig().setAttribute(MODEL_CORRECTNESS_ACTION_CONSTRAINTS, serializedList);
+        getConfig().setAttribute(MODEL_PARAMETER_ACTION_CONSTRAINT, serializedList);
         
         super.commit(onSave);
     } 
