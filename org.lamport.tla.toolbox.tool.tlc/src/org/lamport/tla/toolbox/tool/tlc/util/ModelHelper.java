@@ -28,6 +28,8 @@ import org.lamport.tla.toolbox.util.ResourceHelper;
 
 import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.OpDeclNode;
+import tla2sany.semantic.OpDefNode;
+import tla2sany.semantic.SymbolNode;
 
 /**
  * Provides utility methods for model manipulation
@@ -338,24 +340,27 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
     }
 
     /**
-     * Create the content for the constraint
+     * Create the content for a single source element
+     * @return a list with at most one String[] element
      * @throws CoreException 
      */
-    public static String[] createConstraintContent(ILaunchConfiguration config) throws CoreException
+    public static List createSourceContent(String propertyName, String labelingScheme, ILaunchConfiguration config) throws CoreException
     {
-        String constraint = config.getAttribute(MODEL_PARAMETER_CONSTRAINT, EMPTY_STRING);
+        Vector result = new Vector();
+        String constraint = config.getAttribute(propertyName, EMPTY_STRING);
         if (EMPTY_STRING.equals(constraint) )
         {
-            return null;
+            return result;
         }
-        String identifier = getValidIdentifier("constr");
+        String identifier = getValidIdentifier(labelingScheme);
         StringBuffer buffer = new StringBuffer();
         
         // the identifier
         buffer.append(identifier).append(" ==\n");
         buffer.append(constraint);
         
-        return new String[] {identifier, buffer.toString()};
+        result.add(new String[] {identifier, buffer.toString()});
+        return result;
     }
 
     
@@ -457,5 +462,51 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
         return constants;
     }
 
+    /**
+     * Extract the variables from module node
+     * @param moduleNode
+     * @return a string representation of the variables
+     */
+    public static String createVariableList(ModuleNode moduleNode)
+    {
+        StringBuffer buffer = new StringBuffer();
+        OpDeclNode[] variableDecls = moduleNode.getVariableDecls();
+        for (int i=0; i < variableDecls.length; i++)
+        {
+            buffer.append(variableDecls[i].getName().toString());
+            if (i != variableDecls.length - 1) 
+            {
+                buffer.append(", ");
+            }
+        }
+        return buffer.toString();
+    }
+
+    
+    public static SymbolNode getSymbol(String name, ModuleNode moduleNode)
+    {
+        return moduleNode.getContext().getSymbol(name);
+    }
+    
+    /**
+     * Extract the operator definitions from module node
+     * @param moduleNode
+     * @return a list of assignments
+     */
+    public static List createDefinitionList(ModuleNode moduleNode)
+    {
+        OpDefNode[] operatorDefinitions = moduleNode.getOpDefs();
+        
+        
+        
+        Vector operations = new Vector(operatorDefinitions.length);
+        for (int i = 0; i < operatorDefinitions.length; i++)
+        {
+            Assignment assign = new Assignment(operatorDefinitions[i].getName().toString(), new String[operatorDefinitions[i]
+                    .getNumberOfArgs()], null);
+            operations.add(assign);
+        }
+        return operations;
+    }
 
 }
