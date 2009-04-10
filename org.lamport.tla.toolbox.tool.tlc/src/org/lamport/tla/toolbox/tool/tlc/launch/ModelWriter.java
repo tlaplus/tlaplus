@@ -60,6 +60,7 @@ public class ModelWriter
     {
         cfgBuffer.append("SPECIFICATION ");
         cfgBuffer.append(specDefinition[0]).append(CR);
+        tlaBuffer.append("\n\\* Specification formula\n");
         tlaBuffer.append(specDefinition[1]).append(CR).append(SEP).append(CR);
         
     }
@@ -87,6 +88,21 @@ public class ModelWriter
             tlaBuffer.append(element[1]).append(CR).append(SEP).append(CR);
         }
     }
+    
+    /**
+     * New definitions are added to the _MC.tla file only
+     * @param elements
+     */
+    public void addNewDefinitions(String definitions)
+    {
+        if (definitions.isEmpty())
+        {
+            return;
+        }
+        tlaBuffer.append("\n\\* New definition\n");
+        tlaBuffer.append(definitions).append(CR).append(SEP).append(CR);
+    }
+    
 
 
 }
