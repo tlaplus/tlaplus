@@ -3,6 +3,7 @@ package org.lamport.tla.toolbox.tool.tlc.launch;
 import java.util.Vector;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
@@ -49,6 +50,9 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
         IFile rootModule = (IFile) ToolboxHandle.getCurrentSpec().getProject().findMember(
                 new Path(tlaFilename).lastSegment());
 
+        // project directory
+        IResource projectDir = ToolboxHandle.getCurrentSpec().getProject();
+        
         // config file
         IFile cfgFile = (IFile) ToolboxHandle.getCurrentSpec().getProject().findMember(
                 new Path(configFilename).lastSegment());
@@ -57,49 +61,43 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
         // add extend primer
         writer.addPrimer(tlaFilename, rootModuleName);
 
+        // new definitions
+        writer.addNewDefinitions(config.getAttribute(MODEL_PARAMETER_NEW_DEFINITIONS, EMPTY_STRING));
+
+
+        /* ------------ parameters -------------- */
+        // constants list
+        writer.addFormulaList(ModelHelper.createConstantsContent(config), "CONSTANT");
+
+        // definition overrides list
+        writer.addFormulaList(ModelHelper.createListContent(config.getAttribute(MODEL_PARAMETER_DEFINITIONS,
+                new Vector()), "def_ov"), "");
+
+        // symmetry TODO
+        writer.addFormulaList(ModelHelper.createListContent(config.getAttribute(MODEL_PARAMETER_SYMMETRY,
+                new Vector()), "sym"), "SYMMETRY");
+
+        // constraint
+        writer.addFormulaList(ModelHelper.createSourceContent(MODEL_PARAMETER_CONSTRAINT, "constr", config), "CONSTRAINT");
+
+        // action constraint
+        writer.addFormulaList(ModelHelper.createSourceContent(MODEL_PARAMETER_ACTION_CONSTRAINT, "action_constr", config), "ACTION-CONSTRAINT");
+
+
+        
+        
         /* ------------ behavior -------------- */
         
         // the specification name-formula pair
         writer.addSpecDefinition(ModelHelper.createSpecificationContent(config));
-
-        /* ------------ correctness -------------- */
+        
+        /* ------------ what to check -------------- */
         // invariants
         writer.addFormulaList(ModelHelper.createListContent(config.getAttribute(MODEL_CORRECTNESS_INVARIANTS,
                 new Vector()), "inv"), "INVARIANT");
         // properties
         writer.addFormulaList(ModelHelper.createListContent(config.getAttribute(MODEL_CORRECTNESS_PROPERTIES,
                 new Vector()), "prop"), "PROPERTY");
-        // init
-        writer.addFormulaList(ModelHelper.createListContent(config.getAttribute(MODEL_CORRECTNESS_INIT,
-                new Vector()), "init"), "");
-        // actions
-        writer.addFormulaList(ModelHelper.createListContent(config.getAttribute(MODEL_CORRECTNESS_ACTIONS,
-                new Vector()), "action"), "");
-        // actions-constraints
-        writer.addFormulaList(ModelHelper.createListContent(config.getAttribute(MODEL_CORRECTNESS_ACTIONS,
-                new Vector()), "action_constraint"), "ACTION-CONSTRAINT");
-
-        /* ------------ parameters -------------- */
-        // constants
-        writer.addFormulaList(ModelHelper.createConstantsContent(config), "CONSTANT");
-        // definition overrides
-        writer.addFormulaList(ModelHelper.createListContent(config.getAttribute(MODEL_PARAMETER_DEFINITIONS,
-                new Vector()), "def_ov"), "");
-        // new definitions
-        writer.addFormulaList(ModelHelper.createListContent(config.getAttribute(MODEL_PARAMETER_NEW_DEFINITIONS,
-                new Vector()), "def"), "");
-        // symmetry
-        writer.addFormulaList(ModelHelper.createListContent(config.getAttribute(MODEL_PARAMETER_SYMMETRY,
-                new Vector()), "sym"), "SYMMETRY");
-
-        // constraint
-        String[] constraint = ModelHelper.createConstraintContent(config);
-        if (constraint != null) 
-        {
-            Vector constraintVector = new Vector();
-            constraintVector.add(constraint);
-            writer.addFormulaList(constraintVector, "CONSTRAINT");
-        }
         
         /* ------------ model values -------------- */
         // TODO model values
@@ -112,7 +110,8 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
         
         
         // construct TLC job
-        TLCJob job = new TLCJob(rootModule, cfgFile);
+        TLCJob job = new TLCJob(rootModule, cfgFile, projectDir);
+        
         // number of workers
         job.setWorkers(numberOfWorkers);
         job.addJobChangeListener(new JobChangeAdapter() {
