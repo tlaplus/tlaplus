@@ -15,6 +15,6 @@ public interface IModelConfigurationDefaults extends IConfigurationDefaults
     /**
      * Default for checking the deadlock
      */
-    public static final boolean MODEL_CORRECTNESS_CHECK_DEADLOCK_DEFAULT = false;
+    public static final boolean MODEL_CORRECTNESS_CHECK_DEADLOCK_DEFAULT = true;
 
 }
