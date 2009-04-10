@@ -1,4 +1,4 @@
-package org.lamport.tla.toolbox.tool.tlc.ui.editor;
+package org.lamport.tla.toolbox.tool.tlc.ui.editor.provider;
 
 import java.util.Vector;
 

@@ -11,6 +11,9 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.part.FileEditorInput;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.AdvancedModelPage;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.BasicFormPage;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.MainModelPage;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 
 /**

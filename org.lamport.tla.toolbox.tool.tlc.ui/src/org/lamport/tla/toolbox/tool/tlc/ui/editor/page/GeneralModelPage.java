@@ -1,4 +1,4 @@
-package org.lamport.tla.toolbox.tool.tlc.ui.editor;
+package org.lamport.tla.toolbox.tool.tlc.ui.editor.page;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
@@ -33,6 +33,7 @@ import org.lamport.tla.toolbox.util.IHelpConstants;
  * First page of the model editor, representing the summary
  * @author Simon Zambrovski
  * @version $Id$
+ * @deprecated
  */
 public class GeneralModelPage extends BasicFormPage implements IConfigurationConstants, IConfigurationDefaults
 {
@@ -73,7 +74,7 @@ public class GeneralModelPage extends BasicFormPage implements IConfigurationCon
     /**
      * Save data back to config
      */
-    protected void commit(boolean onSave)
+    public void commit(boolean onSave)
     {
         int numberOfWorkers = LAUNCH_NUMBER_OF_WORKERS_DEFAULT;
         try
@@ -200,7 +201,7 @@ public class GeneralModelPage extends BasicFormPage implements IConfigurationCon
         coverage.setLayoutData(gd);
 
         // add the ignoring listeners
-        ignoringListeners.add(advancedListener);
+        dirtyPartListeners.add(advancedListener);
     }
 
     /**

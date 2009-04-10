@@ -1,4 +1,4 @@
-package org.lamport.tla.toolbox.tool.tlc.ui.editor;
+package org.lamport.tla.toolbox.tool.tlc.ui.editor.page;
 
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -26,6 +26,7 @@ import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationDefaults;
 import org.lamport.tla.toolbox.tool.tlc.launch.TLCModelLaunchDelegate;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.IgnoringListener;
 import org.lamport.tla.toolbox.util.UIHelper;
@@ -43,7 +44,7 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
     public static final String MODE_RUN = "run";
     public static final String MODE_DEBUG = "debug";
 
-    protected ListenerList ignoringListeners = new ListenerList();
+    protected ListenerList dirtyPartListeners = new ListenerList();
     protected String helpId = null;
     protected String imagePath = null;
     protected IExpansionListener formRebuildingListener = null;
@@ -185,7 +186,7 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
      */
     protected void pageInitializationComplete()
     {
-        Object[] listeners = ignoringListeners.getListeners();
+        Object[] listeners = dirtyPartListeners.getListeners();
         for (int i = 0; i < listeners.length; ++i)
         {
             ((IgnoringListener) listeners[i]).setIgnoreInput(false);
@@ -206,7 +207,7 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
     /**
      * Commit the page
      */
-    protected void commit(boolean onSave)
+    public void commit(boolean onSave)
     {
         IManagedForm managedForm = getManagedForm();
         if (managedForm != null)
@@ -280,5 +281,13 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
     public ILaunchConfigurationWorkingCopy getConfig()
     {
         return ((ModelEditor) getEditor()).getConfig();
+    }
+
+    /**
+     * Validation hook
+     */
+    public void validate()
+    {
+        
     }
 }

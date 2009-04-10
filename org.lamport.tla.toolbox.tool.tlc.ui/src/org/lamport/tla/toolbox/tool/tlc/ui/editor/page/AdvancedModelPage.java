@@ -1,4 +1,4 @@
-package org.lamport.tla.toolbox.tool.tlc.ui.editor;
+package org.lamport.tla.toolbox.tool.tlc.ui.editor.page;
 
 import java.util.List;
 import java.util.Vector;
@@ -14,7 +14,6 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.forms.IManagedForm;
-import org.eclipse.ui.forms.SectionPart;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.widgets.FormText;
 import org.eclipse.ui.forms.widgets.FormToolkit;
@@ -22,6 +21,9 @@ import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.forms.widgets.TableWrapData;
 import org.lamport.tla.toolbox.tool.tlc.launch.IConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.IConfigurationDefaults;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.OverrideSectionPart;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.TableSectionPart;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.VSectionPart;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.DirtyMarkingListener;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
 import org.lamport.tla.toolbox.util.IHelpConstants;
@@ -38,6 +40,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
 
     private SourceViewer constraintSource;
     private SourceViewer actionConstraintSource;
+    private SourceViewer newDefinitionsSource;
     private SourceViewer viewSource;
     private Button dfidOption;
     private Button mcOption;
@@ -47,8 +50,8 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
     private Text simuSeedText;
     private Text simuArilText;
     private TableViewer modelValuesTable;
-    private TableViewer newDefinitionsTable;
     private TableViewer definitionsTable;
+
 
     /**
      * Constructs the page
@@ -71,8 +74,8 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         FormHelper.setSerializedInput(definitionsTable, definitions);
 
         // new definitions
-        List newDefinitions = getConfig().getAttribute(MODEL_PARAMETER_NEW_DEFINITIONS, new Vector());
-        FormHelper.setSerializedInput(newDefinitionsTable, newDefinitions);
+        String newDefinitions = getConfig().getAttribute(MODEL_PARAMETER_NEW_DEFINITIONS, EMPTY_STRING);
+        newDefinitionsSource.setDocument(new Document(newDefinitions));
         
         List modelValues = getConfig().getAttribute(MODEL_PARAMETER_MODEL_VALUES, new Vector());
         FormHelper.setSerializedInput(modelValuesTable, modelValues);
@@ -129,7 +132,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
     /**
      * Save data back to config
      */
-    protected void commit(boolean onSave)
+    public void commit(boolean onSave)
     {
         boolean isMCMode = mcOption.getSelection();
         getConfig().setAttribute(LAUNCH_MC_MODE, isMCMode);
@@ -197,7 +200,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         getConfig().setAttribute(MODEL_PARAMETER_DEFINITIONS, definitions);
 
         // new definitions
-        List newDefinitions = FormHelper.getSerializedInput(newDefinitionsTable);
+        String newDefinitions = newDefinitionsSource.getDocument().get();
         getConfig().setAttribute(MODEL_PARAMETER_NEW_DEFINITIONS, newDefinitions);
 
         // model values
@@ -250,21 +253,33 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
 
         // ---------------------------------------------------------------
         // new definitions
-        TableSectionPart newDefinitionPart = new TableSectionPart(left, "New Definitions", "...", toolkit, sectionFlags);
-        managedForm.addPart(newDefinitionPart);
-        // layout
+        
+        section = FormHelper.createSectionComposite(left, "Additional Definitions", "...",
+                toolkit, sectionFlags, getExpansionListener());
+        VSectionPart newDefinitionsPart = new VSectionPart(section, this);
+        managedForm.addPart(newDefinitionsPart);
+        DirtyMarkingListener newDefinitionsListener = new DirtyMarkingListener(newDefinitionsPart, true);
+
         gd = new GridData(GridData.FILL_HORIZONTAL);
-        newDefinitionPart.getSection().setLayoutData(gd);
-        gd = new GridData(GridData.FILL_BOTH);
-        gd.widthHint = 100;
-        gd.verticalSpan = 3;
-        newDefinitionPart.getTableViewer().getTable().setLayoutData(gd);
-        newDefinitionsTable = newDefinitionPart.getTableViewer();
+        gd.horizontalSpan = 3;
+        section.setLayoutData(gd);
+
+        Composite newDefinitionsArea = (Composite) section.getClient();
+        newDefinitionsSource = FormHelper.createSourceViewer(toolkit, newDefinitionsArea, SWT.V_SCROLL);
+        // layout of the source viewer
+        twd = new TableWrapData(TableWrapData.FILL);
+        twd.heightHint = 60;
+        twd.grabHorizontal = true;
+        newDefinitionsSource.getTextWidget().setLayoutData(twd);
+        newDefinitionsSource.addTextListener(newDefinitionsListener);
 
         // ---------------------------------------------------------------
         // definition overwrite
-        TableSectionPart definitionsPart = new TableSectionPart(right, "Definition Override", "...", toolkit,
-                sectionFlags);
+        // TableSectionPart definitionsPart = new TableSectionPart(right, "Definition Override", "...", toolkit,
+        //         sectionFlags, this);
+        OverrideSectionPart definitionsPart = new OverrideSectionPart(right, "Definition Override",
+                "....", toolkit, sectionFlags, this);
+        
         managedForm.addPart(definitionsPart);
         // layout
         gd = new GridData(GridData.FILL_HORIZONTAL);
@@ -279,7 +294,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         // constraint
         section = FormHelper.createSectionComposite(left, "State Constraint", "A constraint that holds on every state",
                 toolkit, sectionFlags, getExpansionListener());
-        SectionPart constraintPart = new SectionPart(section);
+        VSectionPart constraintPart = new VSectionPart(section, this);
         managedForm.addPart(constraintPart);
         DirtyMarkingListener constraintListener = new DirtyMarkingListener(constraintPart, true);
 
@@ -300,7 +315,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         // action constraint
         section = FormHelper.createSectionComposite(right, "Action Constraint", "...", toolkit, sectionFlags,
                 getExpansionListener());
-        SectionPart actionConstraintPart = new SectionPart(section);
+        VSectionPart actionConstraintPart = new VSectionPart(section, this);
         managedForm.addPart(actionConstraintPart);
         DirtyMarkingListener actionConstraintListener = new DirtyMarkingListener(actionConstraintPart, true);
 
@@ -319,7 +334,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
 
         // ---------------------------------------------------------------
         // modelValues
-        TableSectionPart modelValuesPart = new TableSectionPart(left, "Model Values", "....", toolkit, sectionFlags);
+        TableSectionPart modelValuesPart = new TableSectionPart(left, "Model Values", "....", toolkit, sectionFlags, this);
         managedForm.addPart(modelValuesPart);
         modelValuesTable = modelValuesPart.getTableViewer();
 
@@ -334,7 +349,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         // ---------------------------------------------------------------
         // launch
         section = createAdvancedLaunchSection(toolkit, right, sectionFlags);
-        SectionPart launchPart = new SectionPart(section);
+        VSectionPart launchPart = new VSectionPart(section, this);
         managedForm.addPart(launchPart);
         DirtyMarkingListener launchListener = new DirtyMarkingListener(launchPart, true);
 
@@ -349,9 +364,10 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         viewSource.addTextListener(launchListener);
 
         // add section ignoring listeners
-        ignoringListeners.add(actionConstraintListener);
-        ignoringListeners.add(constraintListener);
-        ignoringListeners.add(launchListener);
+        dirtyPartListeners.add(newDefinitionsListener);
+        dirtyPartListeners.add(actionConstraintListener);
+        dirtyPartListeners.add(constraintListener);
+        dirtyPartListeners.add(launchListener);
     }
 
     /**
@@ -419,7 +435,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
 
         // label depth
         FormText depthLabel = toolkit.createFormText(area, true);
-        depthLabel.setText("Depth:", false, false);
+        depthLabel.setText("Maximum length of the trace:", false, false);
         gd = new GridData();
         gd.horizontalIndent = 10;
         depthLabel.setLayoutData(gd);

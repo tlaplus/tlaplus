@@ -1,4 +1,4 @@
-package org.lamport.tla.toolbox.tool.tlc.ui.editor;
+package org.lamport.tla.toolbox.tool.tlc.ui.editor.page;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.text.Document;
@@ -28,6 +28,7 @@ import org.lamport.tla.toolbox.util.IHelpConstants;
  * Page to choose the specification formula 
  * @author Simon Zambrovski
  * @version $Id$
+ * @deprecated
  */
 public class BehaviorFormulaPage extends BasicFormPage
 {
@@ -124,9 +125,9 @@ public class BehaviorFormulaPage extends BasicFormPage
         closedFormulaRadio.addSelectionListener(selectionAdapter);
         initNextFairnessRadio.addSelectionListener(selectionAdapter);
 
-        ignoringListeners.add(selectionAdapter);
-        ignoringListeners.add(initNextFairnessListener);
-        ignoringListeners.add(closedListener);
+        dirtyPartListeners.add(selectionAdapter);
+        dirtyPartListeners.add(initNextFairnessListener);
+        dirtyPartListeners.add(closedListener);
     }
     
     
@@ -173,7 +174,7 @@ public class BehaviorFormulaPage extends BasicFormPage
     /**
      * Commit the page content
      */
-    protected void commit(boolean onSave)
+    public void commit(boolean onSave)
     {
         
         // closed formula

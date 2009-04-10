@@ -8,17 +8,17 @@ import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
  * @author Simon Zambrovski
  * @version $Id$
  */
-public class ConstantWizard extends Wizard
+public class AssignmentWizard extends Wizard
 {
-    private ConstantWizardPage page;
+    private AssignmentWizardPage page;
 
     /**
      * 
      */
-    public ConstantWizard(String action, String description, Assignment initialContent)
+    public AssignmentWizard(String action, String description, Assignment initialContent)
     {
         super();
-        page = new ConstantWizardPage(action, description, initialContent);
+        page = new AssignmentWizardPage(action, description, initialContent);
     }
 
     /*

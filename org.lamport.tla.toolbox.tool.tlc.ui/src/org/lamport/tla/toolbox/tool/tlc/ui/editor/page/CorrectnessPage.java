@@ -1,4 +1,4 @@
-package org.lamport.tla.toolbox.tool.tlc.ui.editor;
+package org.lamport.tla.toolbox.tool.tlc.ui.editor.page;
 
 import java.util.List;
 import java.util.Vector;
@@ -15,6 +15,8 @@ import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.EmptyPart;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.TableSectionPart;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.DirtyMarkingListener;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
 import org.lamport.tla.toolbox.util.IHelpConstants;
@@ -23,6 +25,7 @@ import org.lamport.tla.toolbox.util.IHelpConstants;
  * Page for displaying what to check
  * @author Simon Zambrovski
  * @version $Id$
+ * @deprecated
  */
 public class CorrectnessPage extends BasicFormPage
 {
@@ -65,12 +68,12 @@ public class CorrectnessPage extends BasicFormPage
         checkDeadlockButton.addSelectionListener(listener);
         
         // invariants
-        TableSectionPart invariantsPart = new TableSectionPart(body, "Invariants", "Specify invariants to be checked in every state of the specification.", toolkit);
+        TableSectionPart invariantsPart = new TableSectionPart(body, "Invariants", "Specify invariants to be checked in every state of the specification.", toolkit, this);
         managedForm.addPart(invariantsPart);
         
         
         // properties        
-        TableSectionPart propertiesPart = new TableSectionPart(body, "Properties", "Specify properties to be checked.", toolkit);
+        TableSectionPart propertiesPart = new TableSectionPart(body, "Properties", "Specify properties to be checked.", toolkit, this);
         managedForm.addPart(propertiesPart);
 
 
@@ -89,7 +92,7 @@ public class CorrectnessPage extends BasicFormPage
         advancedArea.setLayout(layout);
 
         // init part
-        TableSectionPart initPart = new TableSectionPart(advancedArea, "Init", "...", toolkit);
+        TableSectionPart initPart = new TableSectionPart(advancedArea, "Init", "...", toolkit, this);
         managedForm.addPart(initPart);
         gd = (GridData) initPart.getTableViewer().getTable().getLayoutData();
         gd.widthHint = 100;
@@ -103,7 +106,7 @@ public class CorrectnessPage extends BasicFormPage
         
 
         // actions part
-        TableSectionPart actionsPart = new TableSectionPart(advancedArea, "Actions", "...", toolkit);
+        TableSectionPart actionsPart = new TableSectionPart(advancedArea, "Actions", "...", toolkit, this);
         managedForm.addPart(actionsPart);
         gd = (GridData) actionsPart.getTableViewer().getTable().getLayoutData();
         gd.widthHint = 100;
@@ -117,7 +120,7 @@ public class CorrectnessPage extends BasicFormPage
 
 
         // action constraints
-        TableSectionPart actionConstraintsPart = new TableSectionPart(advancedArea, "Action constraints", "...", toolkit);
+        TableSectionPart actionConstraintsPart = new TableSectionPart(advancedArea, "Action constraints", "...", toolkit, this);
         managedForm.addPart(actionConstraintsPart);
         gd = (GridData) actionConstraintsPart.getTableViewer().getTable().getLayoutData();
         gd.widthHint = 100;
@@ -136,7 +139,7 @@ public class CorrectnessPage extends BasicFormPage
         actionsTable = actionsPart.getTableViewer();
         actionConstraintTable = actionConstraintsPart.getTableViewer();
 
-        ignoringListeners.add(listener);
+        dirtyPartListeners.add(listener);
     }
 
     
@@ -173,7 +176,7 @@ public class CorrectnessPage extends BasicFormPage
     /**
      * Commit data to the model
      */
-    protected void commit(boolean onSave)
+    public void commit(boolean onSave)
     {
 
         // check deadlock 

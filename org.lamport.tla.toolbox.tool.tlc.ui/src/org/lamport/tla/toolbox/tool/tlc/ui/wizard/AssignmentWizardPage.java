@@ -15,14 +15,14 @@ import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
  * @author Simon Zambrovski
  * @version $Id$
  */
-public class ConstantWizardPage extends WizardPage
+public class AssignmentWizardPage extends WizardPage
 {
     private Assignment assignment;
     private LabeledListComposite paramComposite;
     private Text source;
     private Button makeModelValue;
 
-    public ConstantWizardPage(String action, String description, Assignment assignement)
+    public AssignmentWizardPage(String action, String description, Assignment assignement)
     {
         super("ConstantWizardPage");
         setTitle(action);
@@ -91,7 +91,10 @@ public class ConstantWizardPage extends WizardPage
 
     public void dispose()
     {
-        this.assignment.setModelValue(makeModelValue.getSelection());
+        if (makeModelValue != null) 
+        {
+            this.assignment.setModelValue(makeModelValue.getSelection());
+        }
         if (!this.assignment.isModelValue())
         {
             if (paramComposite.hasParameters())

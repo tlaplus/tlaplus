@@ -1,4 +1,4 @@
-package org.lamport.tla.toolbox.tool.tlc.ui.editor;
+package org.lamport.tla.toolbox.tool.tlc.ui.editor.part;
 
 import java.util.Vector;
 
@@ -10,7 +10,7 @@ import org.eclipse.ui.forms.AbstractFormPart;
 /**
  * Empty part
  * @author Simon Zambrovski
- * @version $Id$
+ * @version $Id: EmptyPart.java 589 2009-03-18 16:53:13Z simonzam $
  */
 public class EmptyPart extends AbstractFormPart
 {

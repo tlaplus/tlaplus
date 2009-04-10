@@ -55,11 +55,11 @@ public class LabeledListComposite
 
         for (int i = 0; i < fields.length; i++)
         {
-            fields[i] = new Text(self, SWT.BORDER | SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
+            fields[i] = new Text(self, SWT.BORDER | SWT.MULTI);
             fields[i].setText(values[i]);
             rd = new RowData();
             rd.width = 50;
-            rd.height = 25;
+            rd.height = 12;
             fields[i].setLayoutData(rd);
             
             if (i != fields.length - 1) 

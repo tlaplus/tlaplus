@@ -9,6 +9,7 @@ import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.ui.forms.AbstractFormPart;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.validator.IValidateble;
 
 /**
  * Mars parts dirty on input
@@ -42,18 +43,12 @@ public class DirtyMarkingListener implements ITextInputListener, ITextListener, 
 
     public void inputDocumentChanged(IDocument oldInput, IDocument newInput)
     {
-        if (!ignoreInputChange) 
-        {
-            part.markDirty();
-        }
+        perform();
     }
 
     public void textChanged(TextEvent event)
     {
-        if (!ignoreInputChange) 
-        {
-            part.markDirty();
-        }
+        perform();
     }
 
     
@@ -63,10 +58,7 @@ public class DirtyMarkingListener implements ITextInputListener, ITextListener, 
 
     public void widgetSelected(SelectionEvent e)
     {
-        if (!ignoreInputChange) 
-        {
-            part.markDirty();
-        }
+        perform();
     }
 
     /* (non-Javadoc)
@@ -74,9 +66,18 @@ public class DirtyMarkingListener implements ITextInputListener, ITextListener, 
      */
     public void modifyText(ModifyEvent e)
     {
+        perform();
+    }
+    
+    private void perform()
+    {
         if (!ignoreInputChange) 
         {
             part.markDirty();
+            if (part instanceof IValidateble)
+            {
+                ((IValidateble)part).validate();
+            }
         }
     }
 }

@@ -1,4 +1,4 @@
-package org.lamport.tla.toolbox.tool.tlc.ui.editor;
+package org.lamport.tla.toolbox.tool.tlc.ui.editor.page;
 
 import java.util.List;
 import java.util.Vector;
@@ -19,6 +19,8 @@ import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.forms.widgets.TableWrapData;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.ConstantSectionPart;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.TableSectionPart;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.DirtyMarkingListener;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
@@ -30,6 +32,7 @@ import tla2sany.semantic.ModuleNode;
  * Page for displaying parameters
  * @author Simon Zambrovski
  * @version $Id$
+ * @deprecated
  */
 public class ParametersPage extends BasicFormPage
 {
@@ -84,7 +87,7 @@ public class ParametersPage extends BasicFormPage
         FormHelper.setSerializedInput(newDefinitionsTable, newDefinitions);
     }
     
-    protected void commit(boolean onSave)
+    public void commit(boolean onSave)
     {
         List constants = FormHelper.getSerializedInput(constantTable);
         getConfig().setAttribute(MODEL_PARAMETER_CONSTANTS, constants);
@@ -113,7 +116,7 @@ public class ParametersPage extends BasicFormPage
 
         // Constants
         ConstantSectionPart constantsPart = new ConstantSectionPart(body, "Constants instantiation",
-                "Specify the values of the model constants.", toolkit);
+                "Specify the values of the model constants.", toolkit, this);
         managedForm.addPart(constantsPart);
 
         // advanced tab
@@ -129,7 +132,7 @@ public class ParametersPage extends BasicFormPage
         advancedArea.setLayout(layout);
 
         // definition overwrite
-        TableSectionPart definitionsPart = new TableSectionPart(advancedArea, "Definition Override", "...", toolkit);
+        TableSectionPart definitionsPart = new TableSectionPart(advancedArea, "Definition Override", "...", toolkit, this);
         managedForm.addPart(definitionsPart);
         // layout 
         gd = new GridData(GridData.FILL_HORIZONTAL);
@@ -140,7 +143,7 @@ public class ParametersPage extends BasicFormPage
         definitionsPart.getTableViewer().getTable().setLayoutData(gd);
 
         // new definitions
-        TableSectionPart newDefinitionPart = new TableSectionPart(advancedArea, "New Definitions", "...", toolkit);
+        TableSectionPart newDefinitionPart = new TableSectionPart(advancedArea, "New Definitions", "...", toolkit, this);
         managedForm.addPart(newDefinitionPart);
         // layout
         gd = new GridData(GridData.FILL_HORIZONTAL);
@@ -151,7 +154,7 @@ public class ParametersPage extends BasicFormPage
         newDefinitionPart.getTableViewer().getTable().setLayoutData(gd);
 
         // symmetry
-        TableSectionPart symmetryPart = new TableSectionPart(advancedArea, "Symmetry", "...", toolkit);
+        TableSectionPart symmetryPart = new TableSectionPart(advancedArea, "Symmetry", "...", toolkit, this);
         managedForm.addPart(symmetryPart);
         // layout
         gd = new GridData(GridData.FILL_HORIZONTAL);
@@ -186,7 +189,7 @@ public class ParametersPage extends BasicFormPage
         symmetryTable = symmetryPart.getTableViewer();
         constantTable = constantsPart.getTableViewer();
         
-        ignoringListeners.add(constraintListener);
+        dirtyPartListeners.add(constraintListener);
     }
 
     protected Layout getBodyLayout()

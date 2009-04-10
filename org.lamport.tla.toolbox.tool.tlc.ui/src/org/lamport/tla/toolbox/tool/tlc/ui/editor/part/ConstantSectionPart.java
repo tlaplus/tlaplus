@@ -1,4 +1,6 @@
-package org.lamport.tla.toolbox.tool.tlc.ui.editor;
+package org.lamport.tla.toolbox.tool.tlc.ui.editor.part;
+
+import java.util.Vector;
 
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.viewers.DoubleClickEvent;
@@ -12,7 +14,9 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
-import org.lamport.tla.toolbox.tool.tlc.ui.wizard.ConstantWizard;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.BasicFormPage;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.provider.AssignmentContentProvider;
+import org.lamport.tla.toolbox.tool.tlc.ui.wizard.AssignmentWizard;
 
 /**
  * Section part for the constants 
@@ -27,14 +31,14 @@ public class ConstantSectionPart extends TableSectionPart
      * @param description
      * @param toolkit
      */
-    public ConstantSectionPart(Composite composite, String title, String description, FormToolkit toolkit)
+    public ConstantSectionPart(Composite composite, String title, String description, FormToolkit toolkit, BasicFormPage page)
     {
-        super(composite, title, description, toolkit);
+        super(composite, title, description, toolkit, page);
     }
 
-    public ConstantSectionPart(Composite composite, String title, String description, FormToolkit toolkit, int flags)
+    public ConstantSectionPart(Composite composite, String title, String description, FormToolkit toolkit, int flags, BasicFormPage page)
     {
-        super(composite, title, description, toolkit, flags);
+        super(composite, title, description, toolkit, flags, page);
     }
 
     
@@ -43,7 +47,7 @@ public class ConstantSectionPart extends TableSectionPart
         Assert.isNotNull(formula);
         
         // Create the wizard
-        ConstantWizard wizard = new ConstantWizard(getSection().getText(), getSection().getDescription(), (Assignment) formula);
+        AssignmentWizard wizard = new AssignmentWizard(getSection().getText(), getSection().getDescription(), (Assignment) formula);
         // Create the wizard dialog
         WizardDialog dialog = new WizardDialog(getTableViewer().getTable().getShell(), wizard);
         dialog.setHelpAvailable(true);
@@ -58,6 +62,24 @@ public class ConstantSectionPart extends TableSectionPart
         }
     }
 
+    
+    /**
+     * Add assignment to the list
+     */
+    protected void doAdd()
+    {
+        Assignment formula = doEditFormula((Assignment)null);
+
+        // add a formula
+        if (formula != null)
+        {
+            Vector input = ((Vector) tableViewer.getInput());
+            input.add(formula);
+            tableViewer.setInput(input);
+            this.doMakeDirty();
+        }
+    }
+    
     protected void doEdit()
     {
         IStructuredSelection selection = (IStructuredSelection) tableViewer.getSelection();
@@ -67,7 +89,7 @@ public class ConstantSectionPart extends TableSectionPart
         {
             formula.setParams(editedFormula.getParams());
             formula.setRight(editedFormula.getRight());
-            this.markDirty();
+            super.doMakeDirty();
             tableViewer.refresh();
         }
     }
@@ -99,7 +121,7 @@ public class ConstantSectionPart extends TableSectionPart
      */
     protected Table createTable(Composite sectionArea, FormToolkit toolkit)
     {
-        Table table = toolkit.createTable(sectionArea, SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL);
+        Table table = toolkit.createTable(sectionArea, SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL | SWT.FULL_SELECTION);
         table.setLinesVisible(false);
         table.setHeaderVisible(false);
         return table;
@@ -110,6 +132,6 @@ public class ConstantSectionPart extends TableSectionPart
      */
     protected void createButtons(Composite sectionArea, FormToolkit toolkit, boolean add, boolean edit, boolean remove)
     {
-        super.createButtons(sectionArea, toolkit, false, true, false);
+        doCreateButtons(sectionArea, toolkit, false, true, false);
     }
 }

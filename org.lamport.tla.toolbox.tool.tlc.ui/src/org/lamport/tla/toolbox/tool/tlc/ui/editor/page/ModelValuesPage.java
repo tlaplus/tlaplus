@@ -1,4 +1,4 @@
-package org.lamport.tla.toolbox.tool.tlc.ui.editor;
+package org.lamport.tla.toolbox.tool.tlc.ui.editor.page;
 
 import java.util.Vector;
 
@@ -9,6 +9,7 @@ import org.eclipse.swt.widgets.Layout;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.widgets.FormToolkit;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.TableSectionPart;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
 import org.lamport.tla.toolbox.util.IHelpConstants;
 
@@ -16,6 +17,7 @@ import org.lamport.tla.toolbox.util.IHelpConstants;
  * Page for entering model values
  * @author Simon Zambrovski
  * @version $Id$
+ * @deprecated
  */
 public class ModelValuesPage extends BasicFormPage
 {
@@ -35,7 +37,7 @@ public class ModelValuesPage extends BasicFormPage
         Composite body = managedForm.getForm().getBody();
         FormToolkit toolkit = managedForm.getToolkit();
 
-        TableSectionPart propertiesPart = new TableSectionPart(body, "Model Values", "....", toolkit);
+        TableSectionPart propertiesPart = new TableSectionPart(body, "Model Values", "....", toolkit, this);
         managedForm.addPart(propertiesPart);
         modelValues = propertiesPart.getTableViewer();
     }

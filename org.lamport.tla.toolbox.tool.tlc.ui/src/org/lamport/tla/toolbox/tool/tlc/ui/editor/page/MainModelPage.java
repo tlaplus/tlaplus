@@ -1,9 +1,10 @@
-package org.lamport.tla.toolbox.tool.tlc.ui.editor;
+package org.lamport.tla.toolbox.tool.tlc.ui.editor.page;
 
 import java.util.List;
 import java.util.Vector;
 
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.jface.viewers.TableViewer;
@@ -15,7 +16,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.forms.HyperlinkGroup;
 import org.eclipse.ui.forms.IManagedForm;
-import org.eclipse.ui.forms.SectionPart;
+import org.eclipse.ui.forms.IMessageManager;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.widgets.FormText;
 import org.eclipse.ui.forms.widgets.FormToolkit;
@@ -24,12 +25,16 @@ import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.forms.widgets.TableWrapData;
 import org.lamport.tla.toolbox.tool.tlc.launch.IConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.IConfigurationDefaults;
+import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.ConstantSectionPart;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.TableSectionPart;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.VSectionPart;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.DirtyMarkingListener;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
 import org.lamport.tla.toolbox.util.IHelpConstants;
 
 /**
- * Main model page represents informnation for most users
+ * Main model page represents information for most users
  * @author Simon Zambrovski
  * @version $Id$
  */
@@ -113,17 +118,52 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         ModuleNode moduleNode = ToolboxHandle.getSpecObj().getExternalModuleTable().getRootModule();
         // get the list of constants
         List constants = ModelHelper.createConstantsList(moduleNode);
-        */
+         */
         // TODO check if new constants exist...
         FormHelper.setSerializedInput(constantTable, savedConstants);
-
-        
     }
 
+    public void validate()
+    {
+        
+        IMessageManager mm = getManagedForm().getMessageManager(); 
+        // clean old messages
+        mm.removeAllMessages();
+        
+        
+        
+        List constants = (List) constantTable.getInput();
+        for (int i=0; i < constants.size(); i++ )
+        {
+            Assignment constant = (Assignment) constants.get(i);
+            if (constant.getRight() == null || "".equals(constant.getRight()))
+            {
+                // right side of assignment undefined
+                mm.addMessage(constant.getLabel(), "Provide a value for constant " + constant.getLabel(), constant, IMessageProvider.ERROR, constantTable.getTable());
+            } 
+        }
+
+        // number of workers
+        String numberOfworkers = workers.getText();
+        try {
+            int number = Integer.parseInt(numberOfworkers);
+            if (number <= 0) 
+            {
+                mm.addMessage("wrongNumber1", "Number of workers must be a positive integer number", null, IMessageProvider.ERROR, workers);
+            }
+        } catch (NumberFormatException e) 
+        {
+            mm.addMessage("wrongNumber2", "Number of workers must be a positive integer number", null, IMessageProvider.ERROR, workers);
+        }
+        
+        super.validate();
+    }
+    
+    
     /**
      * Save data back to config
      */
-    protected void commit(boolean onSave)
+    public void commit(boolean onSave)
     {
         // closed formula
         String closedFormula = this.specSource.getDocument().get();
@@ -172,6 +212,8 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         
         super.commit(onSave);
     }
+    
+    
 
     /**
      * Creates the UI
@@ -217,7 +259,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         layout.numColumns = 2;
         behaviorArea.setLayout(layout);
 
-        SectionPart behaviorPart = new SectionPart(section);
+        VSectionPart behaviorPart = new VSectionPart(section, this);
         managedForm.addPart(behaviorPart);
         DirtyMarkingListener whatIsTheSpecListener = new DirtyMarkingListener(behaviorPart, true);
 
@@ -283,20 +325,20 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
         checkDeadlockButton = toolkit.createButton(toBeCheckedArea, "Deadlock", SWT.CHECK);
 
-        SectionPart toBeCheckedPart = new SectionPart(section);
+        VSectionPart toBeCheckedPart = new VSectionPart(section, this);
         managedForm.addPart(toBeCheckedPart);
         DirtyMarkingListener whatToCheckListener = new DirtyMarkingListener(toBeCheckedPart, true);
         checkDeadlockButton.addSelectionListener(whatToCheckListener);
 
         // invariants
         TableSectionPart invariantsPart = new TableSectionPart(toBeCheckedArea, "Invariants",
-                "Specify invariants to be checked in every state of the specification.", toolkit, sectionFlags);
+                "Specify invariants to be checked in every state of the specification.", toolkit, sectionFlags, this);
         managedForm.addPart(invariantsPart);
         invariantsTable = invariantsPart.getTableViewer();
 
         // properties
         TableSectionPart propertiesPart = new TableSectionPart(toBeCheckedArea, "Properties",
-                "Specify properties to be checked.", toolkit, sectionFlags);
+                "Specify properties to be checked.", toolkit, sectionFlags, this);
         managedForm.addPart(propertiesPart);
         propertiesTable = propertiesPart.getTableViewer();
 
@@ -306,7 +348,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
         // Constants
         ConstantSectionPart constantsPart = new ConstantSectionPart(right, "What is the model?",
-                "Specify the values of the model constants.", toolkit, sectionFlags | Section.EXPANDED);
+                "Specify the values of the model constants.", toolkit, sectionFlags | Section.EXPANDED, this);
         managedForm.addPart(constantsPart);
 
         Composite parametersArea = (Composite) constantsPart.getSection().getClient();
@@ -331,7 +373,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         layout.numColumns = 2;
         howToRunArea.setLayout(layout);
 
-        SectionPart howToRunPart = new SectionPart(section);
+        VSectionPart howToRunPart = new VSectionPart(section, this);
         managedForm.addPart(howToRunPart);
 
         DirtyMarkingListener howToRunListener = new DirtyMarkingListener(howToRunPart, true);
@@ -381,8 +423,9 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
         // add listeners propagating the changes of the elements to the changes of the
         // parts to the list to be activated after the values has been loaded
-        ignoringListeners.add(whatIsTheSpecListener);
-        ignoringListeners.add(whatToCheckListener);
-        ignoringListeners.add(howToRunListener);
+        dirtyPartListeners.add(whatIsTheSpecListener);
+        dirtyPartListeners.add(whatToCheckListener);
+        dirtyPartListeners.add(howToRunListener);
     }
+
 }

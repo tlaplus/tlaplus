@@ -1,4 +1,4 @@
-package org.lamport.tla.toolbox.tool.tlc.ui.editor;
+package org.lamport.tla.toolbox.tool.tlc.ui.editor.part;
 
 import java.util.Vector;
 
@@ -27,16 +27,20 @@ import org.eclipse.ui.forms.SectionPart;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 import org.lamport.tla.toolbox.tool.tlc.model.Formula;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.BasicFormPage;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.provider.FormulaContentProvider;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.validator.IValidateble;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
 import org.lamport.tla.toolbox.tool.tlc.ui.wizard.FormulaWizard;
 
 /**
  * Section part with table and add, edit and remove buttons
  * @author Simon Zambrovski
- * @version $Id$
+ * @version $Id: TableSectionPart.java 625 2009-04-07 04:04:58Z simonzam $
  */
-public class TableSectionPart extends SectionPart
+public class TableSectionPart extends SectionPart implements IValidateble
 {
+    private BasicFormPage page;
     protected TableViewer tableViewer;
     private Button buttonAdd;
     private Button buttonEdit;
@@ -76,9 +80,9 @@ public class TableSectionPart extends SectionPart
      * Constructor of the part without section flags
      * @see TableSectionPart#TableSectionPart(Composite, String, String, FormToolkit, int)
      */
-    public TableSectionPart(Composite composite, String title, String description, FormToolkit toolkit)
+    public TableSectionPart(Composite composite, String title, String description, FormToolkit toolkit, BasicFormPage page)
     {
-        this(composite, title, description, toolkit, Section.DESCRIPTION | Section.TITLE_BAR);
+        this(composite, title, description, toolkit, Section.DESCRIPTION | Section.TITLE_BAR, page);
     }
 
     /**
@@ -89,9 +93,10 @@ public class TableSectionPart extends SectionPart
      * @param toolkit, a toolkit for building controls
      * @param sectionFlags, flags to be passed to the part during construction
      */
-    public TableSectionPart(Composite composite, String title, String description, FormToolkit toolkit, int sectionFlags)
+    public TableSectionPart(Composite composite, String title, String description, FormToolkit toolkit, int sectionFlags, BasicFormPage page)
     {
         super(FormHelper.createSectionComposite(composite, title, description, toolkit, sectionFlags, null));
+        this.page = page;
     }
 
     /**
@@ -177,16 +182,32 @@ public class TableSectionPart extends SectionPart
      */
     protected Table createTable(Composite sectionArea, FormToolkit toolkit)
     {
-        Table table = toolkit.createTable(sectionArea, SWT.MULTI | SWT.CHECK | SWT.V_SCROLL | SWT.H_SCROLL);
+        Table table = toolkit.createTable(sectionArea, SWT.MULTI | SWT.CHECK | SWT.V_SCROLL | SWT.H_SCROLL | SWT.FULL_SELECTION);
         table.setLinesVisible(false);
         table.setHeaderVisible(false);
         return table;
     }
 
+    
     /**
-     * @param sectionArea
+     * Creates buttons
+     * <br>
+     * Subclasses might override this method if they intend to change the buttons. For actual implementation see 
+     * {@link TableSectionPart#doCreateButtons(Composite, FormToolkit, boolean, boolean, boolean)} 
      */
     protected void createButtons(Composite sectionArea, FormToolkit toolkit, boolean add, boolean edit, boolean remove)
+    {
+        doCreateButtons(sectionArea, toolkit, add, edit, remove);
+    }
+    /**
+     * Create up to three buttons in the section area
+     * @param sectionArea
+     * @param toolkit
+     * @param add
+     * @param edit
+     * @param remove
+     */
+    protected void doCreateButtons(Composite sectionArea, FormToolkit toolkit, boolean add, boolean edit, boolean remove)
     {
         GridData gd;
         int added = 0;
@@ -249,20 +270,19 @@ public class TableSectionPart extends SectionPart
     /**
      * Remove the selected formulas
      */
-    private void doRemove()
+    protected void doRemove()
     {
         IStructuredSelection selection = (IStructuredSelection) tableViewer.getSelection();
         Vector input = (Vector) tableViewer.getInput();
         input.removeAll(selection.toList());
         tableViewer.setInput(input);
-        this.markDirty();
-
+        this.doMakeDirty();
     }
 
     /**
      * Add a formula to the list
      */
-    private void doAdd()
+    protected void doAdd()
     {
         Formula formula = doEditFormula(null);
 
@@ -276,7 +296,7 @@ public class TableSectionPart extends SectionPart
             {
                 ((CheckboxTableViewer) tableViewer).setChecked(formula, true);
             }
-            this.markDirty();
+            this.doMakeDirty();
         }
     }
 
@@ -295,7 +315,7 @@ public class TableSectionPart extends SectionPart
             {
                 ((CheckboxTableViewer) tableViewer).setChecked(formula, true);
             }
-            this.markDirty();
+            this.doMakeDirty();
             tableViewer.refresh();
         }
     }
@@ -305,7 +325,7 @@ public class TableSectionPart extends SectionPart
      */
     protected void doCheck()
     {
-        this.markDirty();
+        this.doMakeDirty();
     }
 
     /**
@@ -349,4 +369,23 @@ public class TableSectionPart extends SectionPart
             return null;
         }
     }
+
+    /**
+     * Marks the part dirty and hooks the validation method of the page
+     */
+    protected void doMakeDirty()
+    {
+        this.validate();
+        this.markDirty();
+    }
+
+    
+    /* (non-Javadoc)
+     * @see org.lamport.tla.toolbox.tool.tlc.ui.editor.validator.IValidateble#validate(org.eclipse.jface.text.IDocument, org.eclipse.jface.text.IDocument)
+     */
+    public void validate()
+    {
+        page.validate();
+    }
+    
 }
