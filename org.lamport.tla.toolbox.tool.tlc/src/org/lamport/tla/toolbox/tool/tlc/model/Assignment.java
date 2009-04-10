@@ -8,7 +8,7 @@ package org.lamport.tla.toolbox.tool.tlc.model;
 public class Assignment extends Formula
 {
     public static final String ASSIGNMENT_SIGN = " <- ";
-    public static final String EQUALS_SIGN = " = ";
+    public static final String IS_MV = " [ model value ] ";
 
     private String label;
     private String[] params = new String[0];
@@ -20,11 +20,11 @@ public class Assignment extends Formula
      */
     public Assignment(String label, String[] params, String right)
     {
-        
+
         super(right);
         this.label = label;
         this.setParams(params);
-        if (this.label != null && right!= null && this.label.equals(right))
+        if (this.label != null && right != null && this.label.equals(right))
         {
             // right side equals label => model value
             setModelValue(true);
@@ -33,9 +33,9 @@ public class Assignment extends Formula
 
     public String getFormula()
     {
-        return getLeft() + ((this.modelValue) ? EQUALS_SIGN : ASSIGNMENT_SIGN) + getRight();
+        return getLeft() + ((this.modelValue) ? IS_MV : ASSIGNMENT_SIGN + getRight());
     }
-    
+
     /**
      * Retrieves the left part (label with parameter list)
      * @return
@@ -69,7 +69,7 @@ public class Assignment extends Formula
         for (int i = 0; i < params.length; i++)
         {
             buffer.append(params[i]);
-            buffer.append( (i != params.length - 1) ? ", " : "");
+            buffer.append((i != params.length - 1) ? ", " : "");
         }
         buffer.append(")");
         return buffer.toString();
@@ -99,13 +99,13 @@ public class Assignment extends Formula
 
     /**
      * Retrieve the right part
-     * @return
+     * @return the right side of the assignment, can be <code>null</code>
      */
     public String getRight()
     {
         return super.getFormula();
     }
-    
+
     public String[] getParams()
     {
         return params;
@@ -134,7 +134,8 @@ public class Assignment extends Formula
         if (params != null)
         {
             this.params = params;
-        } else {
+        } else
+        {
             this.params = new String[0];
         }
     }
@@ -154,15 +155,25 @@ public class Assignment extends Formula
      */
     public void setModelValue(boolean modelValue)
     {
-        if (modelValue && this.params.length != 0) 
+        if (modelValue && this.params.length != 0)
         {
             throw new IllegalArgumentException("Operators can not be instantiated with model values");
         }
         this.modelValue = modelValue;
-        if (modelValue) 
+        if (modelValue)
         {
             setRight(this.getLabel());
         }
     }
 
+    public static String[] getArrayOfEmptyStrings(int number)
+    {
+        String[] array = new String[number];
+        String EMPTY = new String("");
+        for (int i = 0; i < number; i++)
+        {
+            array[i] = EMPTY;
+        }
+        return array;
+    }
 }
