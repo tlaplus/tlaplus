@@ -23,6 +23,8 @@ public class TLCJob extends AbstractJob
 
     private IResource rootModule;
     private IResource cfgFile;
+    private IResource projectDir;
+    
     private TLCThread tlcThread;
     private int workers = 1;
 
@@ -31,12 +33,13 @@ public class TLCJob extends AbstractJob
     /**
      * @param name
      */
-    public TLCJob(IResource rootModule, IResource cfgFile)
+    public TLCJob(IResource rootModule, IResource cfgFile, IResource projectDir)
     {
         super("TLC run for " + rootModule.getName());
         
         this.rootModule = rootModule;
         this.cfgFile = cfgFile;
+        this.projectDir = projectDir;
 
         // initialize the progress reporting variable
         reported = 0;
@@ -90,6 +93,7 @@ public class TLCJob extends AbstractJob
         String[] params = new String[] { "-config", cfgFile.getName(), 
                                          //"-coverage", "0.1",
                                          "-workers", "" + workers,
+                                         "-metadir", projectDir.getLocation().toOSString(),
                                          ResourceHelper.getModuleName(rootModule) };
         boolean status = tlc.handleParameters(params);
         
