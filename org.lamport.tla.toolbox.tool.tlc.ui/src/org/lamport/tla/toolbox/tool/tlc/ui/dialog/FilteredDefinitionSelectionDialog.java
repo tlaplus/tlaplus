@@ -59,6 +59,7 @@ public class FilteredDefinitionSelectionDialog extends FilteredItemsSelectionDia
                 if (element instanceof OpDefNode)
                 {
                     OpDefNode node = (OpDefNode) element;
+                    
                     return node.getName().toString()
                             + ((node.getOriginallyDefinedInModuleNode() != null) ? " : "
                                     + node.getOriginallyDefinedInModuleNode().getName().toString() : "");

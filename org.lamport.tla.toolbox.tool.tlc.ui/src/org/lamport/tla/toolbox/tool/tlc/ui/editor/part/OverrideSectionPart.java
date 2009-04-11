@@ -55,8 +55,10 @@ public class OverrideSectionPart extends ConstantSectionPart
             }
         }
         
+        
+        int flags = AssignmentWizard.NONE;
         // Create the wizard
-        AssignmentWizard wizard = new AssignmentWizard(getSection().getText(), getSection().getDescription(), (Assignment) formula);
+        AssignmentWizard wizard = new AssignmentWizard(getSection().getText(), getSection().getDescription(), (Assignment) formula, flags);
         // Create the wizard dialog
         WizardDialog dialog = new WizardDialog(getTableViewer().getTable().getShell(), wizard);
         dialog.setHelpAvailable(true);

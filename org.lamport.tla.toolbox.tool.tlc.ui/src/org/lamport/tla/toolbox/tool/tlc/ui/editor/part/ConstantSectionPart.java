@@ -46,8 +46,10 @@ public class ConstantSectionPart extends TableSectionPart
     {
         Assert.isNotNull(formula);
         
+        int flags = AssignmentWizard.MAKE_SET_MODEL_VALUE | AssignmentWizard.MAKE_MODEL_VALUE;  
+        
         // Create the wizard
-        AssignmentWizard wizard = new AssignmentWizard(getSection().getText(), getSection().getDescription(), (Assignment) formula);
+        AssignmentWizard wizard = new AssignmentWizard(getSection().getText(), getSection().getDescription(), (Assignment) formula, flags);
         // Create the wizard dialog
         WizardDialog dialog = new WizardDialog(getTableViewer().getTable().getShell(), wizard);
         dialog.setHelpAvailable(true);
