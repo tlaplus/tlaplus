@@ -607,124 +607,130 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable {
   private Vect impliedTemporalVec = new Vect();
   private Vect impliedTemporalNameVec = new Vect();    
 
-  /* Process the configuration file. */
-  public final void processConfig() {
-    // Process the invariants:
-    this.processConfigInvariants();
+  /** 
+   * Process the configuration file. 
+   */
+  public final void processConfig() 
+  {
+      // Process the invariants:
+      this.processConfigInvariants();
 
-    // Process specification:
-    String specName = this.config.getSpec();
-    if (specName.length() == 0) {
-      this.processConfigInitAndNext();
-    }
-    else {
-      if (this.config.getInit().length() != 0 ||
-	  this.config.getNext().length() != 0) {
-	Assert.fail("The configuration file cannot specify both INIT/NEXT and" +
-		    " SPECIFICATION fields.");
-      }
-      Object spec = this.defns.get(specName);
-      if (spec instanceof OpDefNode) {
-	OpDefNode opDef = (OpDefNode)spec;
-	if (opDef.getArity() != 0) {
-	  Assert.fail("TLC requires " + specName + " not to take any argument.");
-	}
-	this.processConfigSpec(opDef.getBody(), Context.Empty, List.Empty);
-      }
-      else if (spec == null) {
-	Assert.fail("The name " + specName + " in the config file is not defined.");
+      // Process specification:
+      String specName = this.config.getSpec();
+      if (specName.length() == 0) {
+          this.processConfigInitAndNext();
       }
       else {
-	Assert.fail("The value of " + specName + " i sequal to " + spec);
+          if (this.config.getInit().length() != 0 ||
+                  this.config.getNext().length() != 0) {
+              Assert.fail("The configuration file cannot specify both INIT/NEXT and" +
+              " SPECIFICATION fields.");
+          }
+          Object spec = this.defns.get(specName);
+          if (spec instanceof OpDefNode) {
+              OpDefNode opDef = (OpDefNode)spec;
+              if (opDef.getArity() != 0) {
+                  Assert.fail("TLC requires " + specName + " not to take any argument.");
+              }
+              this.processConfigSpec(opDef.getBody(), Context.Empty, List.Empty);
+          }
+          else if (spec == null) {
+              Assert.fail("The name " + specName + " in the config file is not defined.");
+          }
+          else {
+              Assert.fail("The value of " + specName + " i sequal to " + spec);
+          }
       }
-    }
-    
-    // Process the properties:
-    Vect propNames = this.config.getProperties();
-    for (int i = 0; i < propNames.size(); i++) {
-      String propName = (String)propNames.elementAt(i);
-      Object prop = this.defns.get(propName);
-      if (prop instanceof OpDefNode) {
-	OpDefNode opDef = (OpDefNode)prop;
-	if (opDef.getArity() != 0) {
-	  Assert.fail("TLC requires " + propName + " not to take any argument.");
-	}
-	this.processConfigProps(propName, opDef.getBody(), Context.Empty, List.Empty);
+
+      // Process the properties:
+      Vect propNames = this.config.getProperties();
+      for (int i = 0; i < propNames.size(); i++) {
+          String propName = (String)propNames.elementAt(i);
+          Object prop = this.defns.get(propName);
+          if (prop instanceof OpDefNode) {
+              OpDefNode opDef = (OpDefNode)prop;
+              if (opDef.getArity() != 0) {
+                  Assert.fail("TLC requires " + propName + " not to take any argument.");
+              }
+              this.processConfigProps(propName, opDef.getBody(), Context.Empty, List.Empty);
+          }
+          else if (prop == null) {
+              Assert.fail("The property " + propName + " specified by the configuration" +
+              "\nfile is not defined in the specification.");
+          }
+          else if (!(prop instanceof BoolValue) ||
+                  !(((BoolValue)prop).val)) {
+              Assert.fail("The property " + propName + " is equal to " + prop);
+          }
       }
-      else if (prop == null) {
-	Assert.fail("The property " + propName + " specified by the configuration" +
-		    "\nfile is not defined in the specification.");
+
+      // Postprocess:
+      this.invariants = new Action[this.invVec.size()];
+      this.invNames = new String[this.invVec.size()];
+      for (int i = 0; i < this.invariants.length; i++) {
+          this.invariants[i] = (Action)this.invVec.elementAt(i);
+          this.invNames[i] = (String)this.invNameVec.elementAt(i);
       }
-      else if (!(prop instanceof BoolValue) ||
-	       !(((BoolValue)prop).val)) {
-	Assert.fail("The property " + propName + " is equal to " + prop);
+      this.invVec = null;
+      this.invNameVec = null;
+
+      this.impliedInits = new Action[this.impliedInitVec.size()];
+      this.impliedInitNames = new String[this.impliedInitVec.size()];
+      for (int i = 0; i < this.impliedInits.length; i++) {
+          this.impliedInits[i] = (Action)this.impliedInitVec.elementAt(i);
+          this.impliedInitNames[i] = (String)this.impliedInitNameVec.elementAt(i);
       }
-    }
+      this.impliedInitVec = null;
+      this.impliedInitNameVec = null;
 
-    // Postprocess:
-    this.invariants = new Action[this.invVec.size()];
-    this.invNames = new String[this.invVec.size()];
-    for (int i = 0; i < this.invariants.length; i++) {
-      this.invariants[i] = (Action)this.invVec.elementAt(i);
-      this.invNames[i] = (String)this.invNameVec.elementAt(i);
-    }
-    this.invVec = null;
-    this.invNameVec = null;
+      this.impliedActions = new Action[this.impliedActionVec.size()];
+      this.impliedActNames = new String[this.impliedActionVec.size()];
+      for (int i = 0; i < this.impliedActions.length; i++) {
+          this.impliedActions[i] = (Action)this.impliedActionVec.elementAt(i);
+          this.impliedActNames[i] = (String)this.impliedActNameVec.elementAt(i);
+      }
+      this.impliedActionVec = null;
+      this.impliedActNameVec = null;
 
-    this.impliedInits = new Action[this.impliedInitVec.size()];
-    this.impliedInitNames = new String[this.impliedInitVec.size()];
-    for (int i = 0; i < this.impliedInits.length; i++) {
-      this.impliedInits[i] = (Action)this.impliedInitVec.elementAt(i);
-      this.impliedInitNames[i] = (String)this.impliedInitNameVec.elementAt(i);
-    }
-    this.impliedInitVec = null;
-    this.impliedInitNameVec = null;
+      this.temporals = new Action[this.temporalVec.size()];
+      this.temporalNames = new String[this.temporalNameVec.size()];
+      for (int i = 0; i < this.temporals.length; i++) {
+          this.temporals[i] = (Action)this.temporalVec.elementAt(i);
+          this.temporalNames[i] = (String)this.temporalNameVec.elementAt(i);
+      }
+      this.temporalVec = null;
+      this.temporalNameVec = null;
 
-    this.impliedActions = new Action[this.impliedActionVec.size()];
-    this.impliedActNames = new String[this.impliedActionVec.size()];
-    for (int i = 0; i < this.impliedActions.length; i++) {
-      this.impliedActions[i] = (Action)this.impliedActionVec.elementAt(i);
-      this.impliedActNames[i] = (String)this.impliedActNameVec.elementAt(i);
-    }
-    this.impliedActionVec = null;
-    this.impliedActNameVec = null;
+      this.impliedTemporals = new Action[this.impliedTemporalVec.size()];
+      this.impliedTemporalNames = new String[this.impliedTemporalNameVec.size()];
+      for (int i = 0; i < this.impliedTemporals.length; i++) {
+          this.impliedTemporals[i] = (Action)this.impliedTemporalVec.elementAt(i);
+          this.impliedTemporalNames[i] = (String)this.impliedTemporalNameVec.elementAt(i);
+      }
+      this.impliedTemporalVec = null;
+      this.impliedTemporalNameVec = null;
 
-    this.temporals = new Action[this.temporalVec.size()];
-    this.temporalNames = new String[this.temporalNameVec.size()];
-    for (int i = 0; i < this.temporals.length; i++) {
-      this.temporals[i] = (Action)this.temporalVec.elementAt(i);
-      this.temporalNames[i] = (String)this.temporalNameVec.elementAt(i);
-    }
-    this.temporalVec = null;
-    this.temporalNameVec = null;
-
-    this.impliedTemporals = new Action[this.impliedTemporalVec.size()];
-    this.impliedTemporalNames = new String[this.impliedTemporalNameVec.size()];
-    for (int i = 0; i < this.impliedTemporals.length; i++) {
-      this.impliedTemporals[i] = (Action)this.impliedTemporalVec.elementAt(i);
-      this.impliedTemporalNames[i] = (String)this.impliedTemporalNameVec.elementAt(i);
-    }
-    this.impliedTemporalVec = null;
-    this.impliedTemporalNameVec = null;
-
-    if (this.initPredVec.size() == 0 &&
-	(this.impliedInits.length != 0 ||
-	 this.impliedActions.length != 0 ||
-	 this.variables.length != 0 ||
-	 this.invariants.length != 0 ||
-	 this.impliedTemporals.length != 0)) {
-      Assert.fail("The configuration file did not specify the initial state predicate.");
-    }
-    if (this.nextPred == null &&
-	(this.impliedActions.length != 0 ||
-	 this.invariants.length != 0 ||
-	 this.impliedTemporals.length != 0)) {
-      Assert.fail("The configuration file did not specify the next state predicate.");
-    }
+      if (this.initPredVec.size() == 0 &&
+              (this.impliedInits.length != 0 ||
+                      this.impliedActions.length != 0 ||
+                      this.variables.length != 0 ||
+                      this.invariants.length != 0 ||
+                      this.impliedTemporals.length != 0)) {
+          Assert.fail("The configuration file did not specify the initial state predicate.");
+      }
+      if (this.nextPred == null &&
+              (this.impliedActions.length != 0 ||
+                      this.invariants.length != 0 ||
+                      this.impliedTemporals.length != 0)) {
+          Assert.fail("The configuration file did not specify the next state predicate.");
+      }
   }
 
-  /* Process the INIT and NEXT fields of the config file. */
-  private final void processConfigInitAndNext() {
+  /** 
+   * Process the INIT and NEXT fields of the config file. 
+   */
+  private void processConfigInitAndNext() 
+  {
     String name = this.config.getInit();
     if (name.length() != 0) {
       Object init = this.defns.get(name);
@@ -760,43 +766,38 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable {
     }
   }
 
-  /* Process the INVARIANTS field of the config file. */
-  private final void processConfigInvariants() {
-    Vect invs = this.config.getInvariants();
-    for (int i = 0; i < invs.size(); i++) {
-      String name = (String)invs.elementAt(i);
-      Object inv = this.defns.get(name);
-      if (inv instanceof OpDefNode) {
-	OpDefNode def = (OpDefNode)inv;
-	if (def.getArity() != 0) {
-	  Assert.fail("The invariant " + name + " cannot take any argument.");
-	}
-	this.invNameVec.addElement(name);
-	this.invVec.addElement(new Action(def.getBody(), Context.Empty));
+  /** 
+   * Process the INVARIANTS field of the config file. 
+   */
+  private void processConfigInvariants() 
+  {
+      Vect invs = this.config.getInvariants();
+      for (int i = 0; i < invs.size(); i++) 
+      {
+          String name = (String)invs.elementAt(i);
+          Object inv = this.defns.get(name);
+          if (inv instanceof OpDefNode) 
+          {
+              OpDefNode def = (OpDefNode)inv;
+              if (def.getArity() != 0) {
+                  Assert.fail("The invariant " + name + " cannot take any argument.");
+              }
+              this.invNameVec.addElement(name);
+              this.invVec.addElement(new Action(def.getBody(), Context.Empty));
+          }
+          else if (inv == null) 
+          {
+              Assert.fail("The invariant " + name + " specified by the configuration" +
+              "\nfile is not defined in the specification.");
+          }
+          else if (!(inv instanceof BoolValue) ||
+                  !(((BoolValue)inv).val)) 
+          {
+              Assert.fail("The invariant " + name + " is equal to " + inv);
+          }
       }
-      else if (inv == null) {
-	Assert.fail("The invariant " + name + " specified by the configuration" +
-		    "\nfile is not defined in the specification.");
-      }
-      else if (!(inv instanceof BoolValue) ||
-	       !(((BoolValue)inv).val)) {
-	Assert.fail("The invariant " + name + " is equal to " + inv);
-      }
-    }
   }
 
-  private final ExprNode addSubsts(ExprNode expr, List subs) {
-    ExprNode res = expr;
-
-    while (!subs.isEmpty()) {
-      SubstInNode sn = (SubstInNode)subs.car();
-      res = new SubstInNode(sn.stn, sn.getSubsts(), res,
-			    sn.getInstantiatingModule(),
-			    sn.getInstantiatedModule());
-      subs = subs.cdr();
-    }
-    return res;
-  }
 
   /* Process the SPECIFICATION field of the config file.  */
   private final void processConfigSpec(ExprNode pred, Context c, List subs) {
@@ -818,7 +819,7 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable {
 	  }
 	  ExprNode body = ((OpDefNode)val).getBody();
 	  if (this.getLevelBound(body, c) == 1) {
-	    this.initPredVec.addElement(new Action(this.addSubsts(body, subs), c));
+	    this.initPredVec.addElement(new Action(Spec.addSubsts(body, subs), c));
 	  }
 	  else {
 	    this.processConfigSpec(body, c, subs);
@@ -985,7 +986,7 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable {
 	    }
 	  }
 	  if (this.nextPred == null) {
-	    this.nextPred = new Action(this.addSubsts(arg, subs), c);
+	    this.nextPred = new Action(Spec.addSubsts(arg, subs), c);
 	  }
 	  else {
 	      Assert.fail("The specification contains more than one conjunct of the form [][Next]_v,\nbut TLC can handle only specifications with one next-state relation.");
@@ -993,7 +994,7 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable {
 	  // ---sm 09/06/04 >>>
 	}
 	else {
-	  this.temporalVec.addElement(new Action(this.addSubsts(pred, subs), c));
+	  this.temporalVec.addElement(new Action(Spec.addSubsts(pred, subs), c));
 	  this.temporalNameVec.addElement(pred.toString());
 	}
 	return;
@@ -1002,10 +1003,10 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable {
 
     int level = this.getLevelBound(pred, c);
     if (level <= 1) {
-      this.initPredVec.addElement(new Action(this.addSubsts(pred, subs), c));
+      this.initPredVec.addElement(new Action(Spec.addSubsts(pred, subs), c));
     }
     else if (level == 3) {
-      this.temporalVec.addElement(new Action(this.addSubsts(pred, subs), c));
+      this.temporalVec.addElement(new Action(Spec.addSubsts(pred, subs), c));
       this.temporalNameVec.addElement(pred.toString());
     }
     else {
@@ -1064,10 +1065,10 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable {
 	    name = boxArg1.getOperator().getName().toString();
 	  }
 	  this.impliedActNameVec.addElement(name);
-	  this.impliedActionVec.addElement(new Action(this.addSubsts(boxArg, subs), c));
+	  this.impliedActionVec.addElement(new Action(Spec.addSubsts(boxArg, subs), c));
 	}
 	else if (this.getLevelBound(boxArg, c) < 2) {
-	  this.invVec.addElement(new Action(this.addSubsts(boxArg, subs), c));
+	  this.invVec.addElement(new Action(Spec.addSubsts(boxArg, subs), c));
 	  if ((boxArg instanceof OpApplNode) &&
 	      (((OpApplNode)boxArg).getArgs().length == 0)) {
 	    name = ((OpApplNode)boxArg).getOperator().getName().toString();
@@ -1075,7 +1076,7 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable {
 	  this.invNameVec.addElement(name);
 	}
 	else {
-	  this.impliedTemporalVec.addElement(new Action(this.addSubsts(pred, subs), c));
+	  this.impliedTemporalVec.addElement(new Action(Spec.addSubsts(pred, subs), c));
 	  this.impliedTemporalNameVec.addElement(name);
 	}
 	return;
@@ -1083,11 +1084,11 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable {
     }
     int level = this.getLevelBound(pred, c);
     if (level <= 1) {
-      this.impliedInitVec.addElement(new Action(this.addSubsts(pred, subs), c));
+      this.impliedInitVec.addElement(new Action(Spec.addSubsts(pred, subs), c));
       this.impliedInitNameVec.addElement(name);
     }
     else if (level == 3) {
-      this.impliedTemporalVec.addElement(new Action(this.addSubsts(pred, subs), c));
+      this.impliedTemporalVec.addElement(new Action(Spec.addSubsts(pred, subs), c));
       this.impliedTemporalNameVec.addElement(name);
     }
     else {
@@ -1125,7 +1126,9 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable {
     return constTbl;
   }
 
-  /* Initialize the spec constants using the config file.  */
+  /** 
+   * Initialize the spec constants using the config file.  
+   */
   public final Hashtable initializeConstants() {
     Vect consts = this.config.getConstants();
     if (consts == null) { return new Hashtable(); }
@@ -1143,7 +1146,9 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable {
     return constants;
   }
   
-  /* Get model constraints.  */
+  /** 
+   * Get model constraints.  
+   */
   public final ExprNode[] getModelConstraints() {
     if (this.modelConstraints != null) {
       return this.modelConstraints;
@@ -1182,7 +1187,9 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable {
     return this.modelConstraints;
   }
 
-  /* Get action constraints.  */
+  /**
+   * Get action constraints.  
+   */
   public final ExprNode[] getActionConstraints() {
     if (this.actionConstraints != null) {
       return this.actionConstraints;
@@ -1664,33 +1671,59 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable {
     return level;    
   }
 
-  /* The level of the expression according to level checking. */
-  public final int getLevel(LevelNode expr, Context c) {
-    HashSet lpSet = expr.getLevelParams();
-    if (lpSet.isEmpty()) return expr.getLevel();
-    
-    int level = expr.getLevel();
-    Iterator iter = lpSet.iterator();
-    while (iter.hasNext()) {
-      SymbolNode param = (SymbolNode)iter.next();
-      Object res = c.lookup(param, true);
-      if (res != null) {
-	if (res instanceof LazyValue) {
-	  LazyValue lv = (LazyValue)res;
-	  int plevel = this.getLevel((LevelNode)lv.expr, lv.con);
-	  level = (plevel > level) ? plevel : level;
-	}
-	else if (res instanceof OpDefNode) {
-	  int plevel = this.getLevel((LevelNode)res, c);
-	  level = (plevel > level) ? plevel : level;
-	}
-      }
-    }
-    return level;
-  }
+      
+  
   
     public FilenameToStream getResolver()
     {
         return resolver;
+    }
+
+    /** 
+     * The level of the expression according to level checking.
+     * static method, does not change instance state 
+     */
+    public static int getLevel(LevelNode expr, Context c) 
+    {
+        HashSet lpSet = expr.getLevelParams();
+        if (lpSet.isEmpty()) return expr.getLevel();
+
+        int level = expr.getLevel();
+        Iterator iter = lpSet.iterator();
+        while (iter.hasNext()) {
+            SymbolNode param = (SymbolNode)iter.next();
+            Object res = c.lookup(param, true);
+            if (res != null) {
+                if (res instanceof LazyValue) {
+                    LazyValue lv = (LazyValue)res;
+                    int plevel = getLevel((LevelNode)lv.expr, lv.con);
+                    level = (plevel > level) ? plevel : level;
+                }
+                else if (res instanceof OpDefNode) {
+                    int plevel = getLevel((LevelNode)res, c);
+                    level = (plevel > level) ? plevel : level;
+                }
+            }
+        }
+        return level;
+    }
+    /**
+     * Static method, does not change instance state
+     * @param expr
+     * @param subs
+     * @return
+     */
+    private static final ExprNode addSubsts(ExprNode expr, List subs) 
+    {
+        ExprNode res = expr;
+    
+        while (!subs.isEmpty()) {
+            SubstInNode sn = (SubstInNode)subs.car();
+            res = new SubstInNode(sn.stn, sn.getSubsts(), res,
+                    sn.getInstantiatingModule(),
+                    sn.getInstantiatedModule());
+            subs = subs.cdr();
+        }
+        return res;
     }
 }
