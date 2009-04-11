@@ -9,21 +9,29 @@ import java.io.Serializable;
 
 import util.UniqueString;
 
-public class Defns implements ToolGlobals, Serializable {
-  /**
-   * There are two kinds of definitions stored in the table:
-   * an OpDefNode or a TLC value. A java override method is
-   * stored as a MethodValue.
-   */
+/**
+ * There are two kinds of definitions stored in the table:
+ * an OpDefNode or a TLC value. A java override method is
+ * stored as a MethodValue.
+ */
+public class Defns implements ToolGlobals, Serializable 
+{
   private static int defnIdx;
+  /**
+   * Reinitialize the index
+   */
+  public static void init() 
+  {
+      defnIdx = UniqueString.getVarCount();
+  }
   
   private Object[] table;
 
-  public Defns() { this.table = new Object[defnIdx+32]; }
-
-  public static void init() {
-    defnIdx = UniqueString.getVarCount();
+  public Defns() 
+  { 
+      this.table = new Object[defnIdx+32]; 
   }
+
 
   /**
    * Returns the definition of key if its definition exists.
