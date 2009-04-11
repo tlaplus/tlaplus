@@ -31,10 +31,8 @@ import util.ToolIO;
 
 /** 
  * Stores information from user's model configuration file.
- * @author Yuan Yi
+ * @author Yuan Yu, Leslie Lamport
  * @version $Id$
- * 
- * 
  */
 public class ModelConfig implements ValueConstants, Serializable
 {
