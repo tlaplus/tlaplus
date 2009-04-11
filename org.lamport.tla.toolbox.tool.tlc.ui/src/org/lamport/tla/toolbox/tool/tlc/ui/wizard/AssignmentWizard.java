@@ -10,15 +10,21 @@ import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
  */
 public class AssignmentWizard extends Wizard
 {
-    private AssignmentWizardPage page;
+    public final static int NONE                 = 0;
+    public final static int MAKE_MODEL_VALUE     = 1;
+    public final static int MAKE_SET_MODEL_VALUE = 2;
+    
+    private AssignmentWizardPage assignmentPage;
 
     /**
-     * 
+     * Constructs the assignment wizard
+     * @param fieldFlags bit mask determining fields that are visible
+     * @see {@link AssignmentWizard} constants 
      */
-    public AssignmentWizard(String action, String description, Assignment initialContent)
+    public AssignmentWizard(String action, String description, Assignment initialContent, int fieldFlags)
     {
         super();
-        page = new AssignmentWizardPage(action, description, initialContent);
+        assignmentPage = new AssignmentWizardPage(action, description, initialContent, fieldFlags);
     }
 
     /*
@@ -31,7 +37,7 @@ public class AssignmentWizard extends Wizard
 
     public void addPages()
     {
-        addPage(page);
+        addPage(assignmentPage);
     }
 
     /**
@@ -40,6 +46,6 @@ public class AssignmentWizard extends Wizard
      */
     public Assignment getFormula()
     {
-        return page.getAssignment();
+        return assignmentPage.getAssignment();
     }
 }
