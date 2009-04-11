@@ -116,7 +116,7 @@ public class Tool
       }
 
       // Finally, process the config file.
-      this.processConfig();
+      super.processConfig();
   }
 
   public final void setCallStack() 
