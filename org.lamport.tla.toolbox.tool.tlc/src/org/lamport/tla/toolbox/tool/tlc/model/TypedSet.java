@@ -107,6 +107,11 @@ public class TypedSet
         return result;
     }
 
+    public boolean hasType()
+    {
+        return (type != null);
+    }
+    
     public String getType()
     {
         return type;
@@ -176,6 +181,7 @@ public class TypedSet
 
     /**
      * The string implementation of the typed set
+     * Is used to be set in the right side of assignment ({@link Assignment#setRight(String)})
      * <br><b>Note:</b> {@link TypedSet#toString()} should not be used for comparison
      * @see TypedSet#equals(Object)
      */
