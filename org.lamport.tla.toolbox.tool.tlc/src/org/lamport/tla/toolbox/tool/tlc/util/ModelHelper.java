@@ -210,6 +210,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
      * 
      * If the assignment is using a model value {@link Assignment#isModelValue()} == <code>true, the right
      * side is set to the label resulting in (foo = foo) 
+     * 
      *   
      */
     public static List serializeAssignmentList(List assignments)
@@ -247,6 +248,12 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
                 buffer.append(assign.getRight());
             }
 
+            // isModelValue
+            buffer.append(LIST_DELIMITER).append((assign.isModelValue() ? "1" : "0"));
+
+            // is symmetrical
+            buffer.append(LIST_DELIMITER).append((assign.isSymmetricalSet() ? "1" : "0"));
+
             result.add(buffer.toString());
         }
         return result;
@@ -260,7 +267,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
     {
         Vector result = new Vector(serializedList.size());
         Iterator iter = serializedList.iterator();
-        String[] fields = new String[] { null, "", "" };
+        String[] fields = new String[] { null, "", "", "0", "0" };
         while (iter.hasNext())
         {
             String[] serFields = ((String) iter.next()).split(LIST_DELIMITER);
@@ -276,6 +283,19 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
             }
             // assignment with label as right side are treated as model values
             Assignment assign = new Assignment(fields[0], params, fields[2]);
+
+            // is Model Value 
+            if (fields.length > 3 && fields[3].equals("1"))
+            {
+                assign.setModelValue(true);
+                
+                // is symmetrical
+                if (fields.length > 4 && fields[4].equals("1"))
+                {
+                    assign.setSymmetric(true);
+                }
+            }
+
             result.add(assign);
         }
         return result;
@@ -333,9 +353,9 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
                     .append("vars").append(" /\\ ").append(modelFairness);
         }
         // specification
-        // to .cfg    : <id>
+        // to .cfg : <id>
         // to _MC.tla : <id> == <expression>
-        //            : <id> == <init> /\[][<next>]_vars /\ <fairness>
+        // : <id> == <init> /\[][<next>]_vars /\ <fairness>
         return new String[] { identifier, buffer.toString() };
     }
 
@@ -344,26 +364,26 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
      * @return a list with at most one String[] element
      * @throws CoreException 
      */
-    public static List createSourceContent(String propertyName, String labelingScheme, ILaunchConfiguration config) throws CoreException
+    public static List createSourceContent(String propertyName, String labelingScheme, ILaunchConfiguration config)
+            throws CoreException
     {
         Vector result = new Vector();
         String constraint = config.getAttribute(propertyName, EMPTY_STRING);
-        if (EMPTY_STRING.equals(constraint) )
+        if (EMPTY_STRING.equals(constraint))
         {
             return result;
         }
         String identifier = getValidIdentifier(labelingScheme);
         StringBuffer buffer = new StringBuffer();
-        
+
         // the identifier
         buffer.append(identifier).append(" ==\n");
         buffer.append(constraint);
-        
-        result.add(new String[] {identifier, buffer.toString()});
+
+        result.add(new String[] { identifier, buffer.toString() });
         return result;
     }
 
-    
     /**
      * Create representation of constants
      * @param config launch configuration
@@ -383,17 +403,17 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
         {
             label = getValidIdentifier("const");
             constant = (Assignment) constants.get(i);
-            
+
             if (constant.isModelValue())
             {
                 // model value assignment
-                // to .cfg    : foo = foo
+                // to .cfg : foo = foo
                 // to _MC.tla : <nothing>
                 content = new String[] { constant.getLabel() + " = " + constant.getRight(), "" };
             } else
             {
                 // constant instantiation
-                // to .cfg    : foo <- <id>
+                // to .cfg : foo <- <id>
                 // to _MC.tla : <id> == <expression>
                 content = new String[] { constant.getLabel() + " <- " + label,
                         constant.getParametrizedLabel(label) + " ==\n" + constant.getRight() };
@@ -419,7 +439,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
         {
             label = getValidIdentifier(labelingScheme);
             // formulas
-            // to .cfg    : <id>
+            // to .cfg : <id>
             // to _MC.tla : <id> == <expression>
             content = new String[] { label, label + " ==\n" + ((Formula) formulaList.get(i)).getFormula() };
             resultContent.add(content);
@@ -471,10 +491,10 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
     {
         StringBuffer buffer = new StringBuffer();
         OpDeclNode[] variableDecls = moduleNode.getVariableDecls();
-        for (int i=0; i < variableDecls.length; i++)
+        for (int i = 0; i < variableDecls.length; i++)
         {
             buffer.append(variableDecls[i].getName().toString());
-            if (i != variableDecls.length - 1) 
+            if (i != variableDecls.length - 1)
             {
                 buffer.append(", ");
             }
@@ -482,12 +502,11 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
         return buffer.toString();
     }
 
-    
     public static SymbolNode getSymbol(String name, ModuleNode moduleNode)
     {
         return moduleNode.getContext().getSymbol(name);
     }
-    
+
     /**
      * Extract the operator definitions from module node
      * @param moduleNode
@@ -496,14 +515,12 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
     public static List createDefinitionList(ModuleNode moduleNode)
     {
         OpDefNode[] operatorDefinitions = moduleNode.getOpDefs();
-        
-        
-        
+
         Vector operations = new Vector(operatorDefinitions.length);
         for (int i = 0; i < operatorDefinitions.length; i++)
         {
-            Assignment assign = new Assignment(operatorDefinitions[i].getName().toString(), new String[operatorDefinitions[i]
-                    .getNumberOfArgs()], null);
+            Assignment assign = new Assignment(operatorDefinitions[i].getName().toString(),
+                    new String[operatorDefinitions[i].getNumberOfArgs()], null);
             operations.add(assign);
         }
         return operations;
