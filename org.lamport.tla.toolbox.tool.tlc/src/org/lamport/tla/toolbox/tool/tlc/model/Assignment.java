@@ -1,7 +1,29 @@
 package org.lamport.tla.toolbox.tool.tlc.model;
 
 /**
- * An equation consists of a label, a list of parameters and the right side
+ * An Assignment consists of a label, a list of parameters and the right side.
+ * e.G. <code>F(_, _, _,) <- foo</code>. <code>F</code> is the label, <code>foo</code> is the 
+ * right side, and there are three parameters. Because of the fact, that usually the user 
+ * wants to specify <code>foo</code> as a function of parameters, the parameters can be named. 
+ * So <code>F(a, b, c) <- foo(a, b) + c<code> the three parameters has names <code>a, b, c</code>.  
+ * <br><br>
+ * The label of an assignment is immutable. The parameters and the right side can be changed. 
+ * <br><br>
+ * The right side of assignments with no parameters has different meanings depending on the {@link Assignment#modelValue}.
+ * If the value of {@link Assignment#modelValue} is <code>false</code>, the right side is treated as an ordinary assignment.
+ * <br>
+ * If the value of {@link Assignment#modelValue} is <code>true</code>, the assignment is treated as a assignments of 
+ * model value(s) to a constant. If the right side is equals to the label of the assignment, it is considered, that the 
+ * assignment of type <code>F = F</code> is used. Otherwise, the right side is interpreted as a set of model values and the 
+ * assignment of type <code>F = {f_1, f_2, f_3}</code> with <code>f_1 = f_1, f_2 = f_2, f_3 = f_3</code>.
+ * <br> 
+ * Especially, the right side is parsed using {@link TypedSet#parseSet(String)}. The information whether the set of model values 
+ * is typed or not is not saved explicitly, but is based on the syntax of the set. The set <code>{p_1, p_2, p_3}</code> is typed 
+ * (type p), the set <code>{k_1, i_2, 3}</code> is untyped.
+ * <br>
+ * For assignments with at least one parameter, the value of the {@link Assignment#modelValue} is ignored.
+ * <br>
+ * <br>
  * @author Simon Zambrovski
  * @version $Id$
  */
@@ -33,7 +55,27 @@ public class Assignment extends Formula
 
     public String getFormula()
     {
-        return getLeft() + ((this.modelValue) ? IS_MV : ASSIGNMENT_SIGN + getRight());
+        StringBuffer buffer = new StringBuffer(getLeft());
+        if (this.modelValue)
+        {
+            if (getLeft().equals(getRight())) 
+            {
+                buffer.append(IS_MV);
+            } else {
+                // set of MVs
+                TypedSet set = TypedSet.parseSet(getRight());
+                buffer.append(ASSIGNMENT_SIGN + getRight());
+                if (set.hasType()) 
+                {
+                    buffer.append(" type: " + set.getType());
+                }
+            }
+        } else
+        {
+            buffer.append(ASSIGNMENT_SIGN + getRight());
+        }
+
+        return buffer.toString();
     }
 
     /**
@@ -78,15 +120,6 @@ public class Assignment extends Formula
     public void setFormula(String formula)
     {
         throw new UnsupportedOperationException("Not implemented yet");
-        /*
-        int i;
-        if (formula == null || (i = formula.indexOf(ASSIGNMENT_SIGN)) == -1) 
-        {
-            throw new IllegalArgumentException("Wrong format of the formula");
-        }
-        
-        setRight(formula.substring(0, i));
-        */
     }
 
     /**

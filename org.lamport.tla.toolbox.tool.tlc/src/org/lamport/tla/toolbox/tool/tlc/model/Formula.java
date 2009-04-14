@@ -1,7 +1,7 @@
 package org.lamport.tla.toolbox.tool.tlc.model;
 
 /**
- * Represent a formula
+ * Representation of a formula.
  * @author Simon Zambrovski
  * @version $Id$
  */
