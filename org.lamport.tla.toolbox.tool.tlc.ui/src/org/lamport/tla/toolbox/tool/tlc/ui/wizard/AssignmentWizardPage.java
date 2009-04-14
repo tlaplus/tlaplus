@@ -104,7 +104,7 @@ public class AssignmentWizardPage extends WizardPage
         if (!paramComposite.hasParameters())
         {
             // both bits set, make a radio list
-            if ((fieldFlags & AssignmentWizard.MAKE_MODEL_VALUE & AssignmentWizard.MAKE_SET_MODEL_VALUE) == (AssignmentWizard.MAKE_MODEL_VALUE & AssignmentWizard.MAKE_SET_MODEL_VALUE))
+            if (fieldFlags == AssignmentWizard.SHOW_OPTION)
             {
                 // ordinary value option
                 optionOrdinaryValue = new Button(container, SWT.RADIO);

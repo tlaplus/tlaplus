@@ -11,8 +11,7 @@ import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
 public class AssignmentWizard extends Wizard
 {
     public final static int NONE                 = 0;
-    public final static int MAKE_MODEL_VALUE     = 1;
-    public final static int MAKE_SET_MODEL_VALUE = 2;
+    public final static int SHOW_OPTION          = 1;
     
     
     private Assignment assignment;
