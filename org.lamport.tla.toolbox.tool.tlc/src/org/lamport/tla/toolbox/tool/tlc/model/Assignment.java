@@ -35,6 +35,7 @@ public class Assignment extends Formula
     private String label;
     private String[] params = new String[0];
     private boolean modelValue = false;
+    private boolean symmetry = false;
 
     /**
      * Constructs the assignment
@@ -180,6 +181,27 @@ public class Assignment extends Formula
     public boolean isModelValue()
     {
         return modelValue;
+    }
+    
+    /**
+     * Returns true, if the set of model values is symmetrical 
+     */
+    public boolean isSymmetricalSet() 
+    {
+        return symmetry;
+    }
+    
+    /**
+     * Sets the symmetry property for a set of model values 
+     * @param isSymmetric
+     */
+    public void setSymmetric(boolean isSymmetric)
+    {
+        if (isSymmetric && !modelValue) 
+        {
+            throw new IllegalArgumentException("Current assignment is not a set of model values");
+        }
+        this.symmetry = isSymmetric;
     }
 
     /**
