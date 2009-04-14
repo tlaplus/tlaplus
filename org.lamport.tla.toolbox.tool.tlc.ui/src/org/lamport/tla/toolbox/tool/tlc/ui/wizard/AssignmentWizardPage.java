@@ -31,7 +31,7 @@ public class AssignmentWizardPage extends WizardPage
     private Button optionModelValue;
     private final int fieldFlags;
     private Button optionSetModelValues;
-    private Button makeSymmetricalSet;
+    private Button flagSymmetricalSet;
     private Button optionOrdinaryValue;
     // selection adapter reacting on the choice
     private SelectionListener optionSelectionAdapter = new SelectionAdapter() {
@@ -49,7 +49,7 @@ public class AssignmentWizardPage extends WizardPage
             }
             source.getControl().setEnabled(!modelValueSelected);
             
-            makeSymmetricalSet.setEnabled(modelValueSetSelected);
+            flagSymmetricalSet.setEnabled(modelValueSetSelected);
 
             getContainer().updateButtons();
         }
@@ -129,12 +129,12 @@ public class AssignmentWizardPage extends WizardPage
                 optionSetModelValues.setLayoutData(gd);
 
                 // option to make a set symmetrical
-                makeSymmetricalSet = new Button(container, SWT.CHECK);
-                makeSymmetricalSet.setText("Symmetrical");
+                flagSymmetricalSet = new Button(container, SWT.CHECK);
+                flagSymmetricalSet.setText("Symmetrical");
                 gd = new GridData(SWT.LEFT, SWT.TOP, false, false);
                 gd.horizontalSpan = 2;
                 gd.horizontalIndent = 10;
-                makeSymmetricalSet.setLayoutData(gd);
+                flagSymmetricalSet.setLayoutData(gd);
 
                 // install listeners
                 optionOrdinaryValue.addSelectionListener(optionSelectionAdapter);
@@ -145,12 +145,15 @@ public class AssignmentWizardPage extends WizardPage
                 // set the value from the assignment object
                 if (getAssignment().isModelValue())
                 {
+                    // single model value
                     if (getAssignment().getLabel().equals(getAssignment().getRight()))
                     {
                         optionModelValue.setSelection(getAssignment().isModelValue());
                         source.getTextWidget().setBackground(container.getBackground());
+                    // set of model values
                     } else {
                         optionSetModelValues.setSelection(getAssignment().isModelValue());
+                        flagSymmetricalSet.setSelection(getAssignment().isSymmetricalSet());
                     }
                 } else {
                     optionOrdinaryValue.setSelection(true);
@@ -158,7 +161,6 @@ public class AssignmentWizardPage extends WizardPage
 
             }
         }
-
         setControl(container);
     }
 
@@ -194,6 +196,7 @@ public class AssignmentWizardPage extends WizardPage
                 // set of model values
                 // normalize the right side
                 TypedSet set = TypedSet.parseSet(rightSide);
+                this.getAssignment().setSymmetric(flagSymmetricalSet.getSelection());
                 this.getAssignment().setRight(set.toString());
             } else {
                 // ordinary assignment (with no parameters)
