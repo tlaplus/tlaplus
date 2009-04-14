@@ -41,6 +41,7 @@ import org.lamport.tla.toolbox.util.IHelpConstants;
 public class MainModelPage extends BasicFormPage implements IConfigurationConstants, IConfigurationDefaults
 {
     public static final String ID = "MainModelPage";
+    private Button noSpecRadio;
     private Button closedFormulaRadio;
     private Button initNextFairnessRadio;
     private SourceViewer initFormulaSource;
@@ -263,6 +264,12 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         managedForm.addPart(behaviorPart);
         DirtyMarkingListener whatIsTheSpecListener = new DirtyMarkingListener(behaviorPart, true);
 
+        noSpecRadio = toolkit.createButton(behaviorArea, "No Spec (Calculator mode)", SWT.RADIO);
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.horizontalSpan = 2;
+        noSpecRadio.setLayoutData(gd);
+        noSpecRadio.addSelectionListener(whatIsTheSpecListener);
+        
         // closed formula option
         closedFormulaRadio = toolkit.createButton(behaviorArea, "Single formula", SWT.RADIO);
         gd = new GridData(GridData.FILL_HORIZONTAL);
