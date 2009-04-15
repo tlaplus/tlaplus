@@ -14,7 +14,8 @@ public class StringValue extends Value {
 
   /* Constructor */
   public StringValue(String str) {
-    this.val = UniqueString.intern(str);
+    // SZ 11.04.2009: changed the access method to equivalent
+    this.val = UniqueString.uniqueStringOf(str);
   }
 
   public StringValue(UniqueString var) {
