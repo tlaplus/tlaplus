@@ -31,6 +31,7 @@ public class TLAParsingBuilder extends IncrementalProjectBuilder
     {
         System.out.println("Clean has been invoked");
 
+        // clean removes all markers 
         Spec spec = Activator.getSpecManager().getSpecLoaded();
         TLAMarkerHelper.removeProblemMarkers(spec.getProject(), monitor);
 

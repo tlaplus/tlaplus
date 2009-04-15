@@ -240,7 +240,31 @@ public class AdapterFactory implements IAdapterFactory
         default:
             return "Info";
         }
-
+    }
+    
+    /**
+     * Resolves the origin of the marker 
+     * @param markerType
+     * @return
+     */
+    public static String getMarkerTypeAsText(String markerType) 
+    {
+        if (markerType == null || "".equals(markerType)) 
+        {
+            return "";
+        }
+        if (TLAMarkerHelper.TOOLBOX_MARKERS_ALL_MARKER_ID.equals(markerType)) 
+        {
+            return "TLA+ Toolbox";
+        } else if (TLAMarkerHelper.TOOLBOX_MARKERS_TRANSLATOR_MARKER_ID.equals(markerType))
+        {
+            return "PCal Translator";
+        } else if (TLAMarkerHelper.TOOLBOX_MARKERS_TLAPARSER_MARKER_ID.equals(markerType)) 
+        {
+            return "TLA+ Parser";
+        } else {
+            return "";
+        }
     }
 
     /**

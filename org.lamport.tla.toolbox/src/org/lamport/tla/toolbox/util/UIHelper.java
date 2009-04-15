@@ -179,6 +179,29 @@ public class UIHelper
         }
         return view;
     }
+    
+    /**
+     * Checks weather the view is shown 
+     * @param id view Id
+     * @return
+     */
+    public static boolean isViewShown(String id)
+    {
+        return (getActivePage().findView(id) == null);
+    }
+
+    /**
+     * Hides a view
+     * @param id Id of the view to hide
+     */
+    public static void hideView(String id)
+    {
+        IViewPart findView = getActivePage().findView(id);
+        if (findView != null) 
+        {
+            getActivePage().hideView(findView);
+        }
+    }
 
     /**
      * Returns the perspective to its initial layout
@@ -293,6 +316,15 @@ public class UIHelper
         IWorkbenchWindow window = getActiveWindow();
         if (window == null)
         {
+            // try to get an not null window
+            IWorkbenchWindow[] workbenchWindows = PlatformUI.getWorkbench().getWorkbenchWindows();
+            for (int i=0; i < workbenchWindows.length; i++)
+            {
+                if (workbenchWindows[i] !=null)
+                {
+                    return workbenchWindows[i].getActivePage();
+                }
+            }
             return null;
         }
         return window.getActivePage();
@@ -558,4 +590,6 @@ public class UIHelper
            
         };
     }
+
+
 }

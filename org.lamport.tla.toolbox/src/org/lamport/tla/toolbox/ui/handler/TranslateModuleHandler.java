@@ -10,6 +10,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceRuleFactory;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.core.runtime.jobs.MultiRule;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
@@ -32,12 +33,21 @@ public class TranslateModuleHandler extends AbstractHandler implements IHandler
 
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
+        // Getting progress monitor
+        IWorkbenchWindow window = UIHelper.getActiveWindow();
+        Shell shell = (window != null) ? window.getShell() : null;
+        ProgressMonitorDialog progressDialog = new ProgressMonitorDialog(shell);
+        IProgressMonitor monitor = progressDialog.getProgressMonitor();
+
         IEditorPart activeEditor = UIHelper.getActivePage().getActiveEditor();
 
         if (activeEditor.isDirty())
         { 
             // editor is not saved
-            // TODO react on this!
+            
+            // just save it
+            // TODO 
+            activeEditor.doSave(monitor);
         }
         
 
@@ -47,12 +57,10 @@ public class TranslateModuleHandler extends AbstractHandler implements IHandler
             final IResource fileToBuild = ((IFileEditorInput) editorInput).getFile();
 
             IRunnableWithProgress translatorOperation = TranslatorJob.getAsRunnableWithProgress(fileToBuild);
-            IWorkbenchWindow window = UIHelper.getActiveWindow();
-            Shell shell = window != null ? window.getShell() : null;
             try
             {
-                new ProgressMonitorDialog(shell).run(true, false, translatorOperation);
-                fileToBuild.refreshLocal(IResource.DEPTH_ONE, null);
+                progressDialog.run(true, false, translatorOperation);
+                fileToBuild.refreshLocal(IResource.DEPTH_ONE, monitor);
                 
             } catch (InvocationTargetException e)
             {

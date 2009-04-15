@@ -56,16 +56,15 @@ public class ModuleParserLauncher
         ToolIO.setUserDir(ResourceHelper.getParentDirName(parseResource.getLocation().toOSString()));
 
         // reset problems from previous run
-        TLAMarkerHelper.removeProblemMarkers(project, monitor);
+        TLAMarkerHelper.removeProblemMarkers(project, monitor, TLAMarkerHelper.TOOLBOX_MARKERS_TLAPARSER_MARKER_ID);
 
         // call the parsing
         ParseResult result = this.parseMainModule(parseResource, true);
-        
+
         if (AdapterFactory.isProblemStatus(result.getStatus()))
         {
             Activator.getModuleDependencyStorage().parseFailed(parseResource.getName());
         }
-        
 
         // store errors inside the specification project
         this.processParsingErrors(project, result.getStatus(), monitor);
@@ -95,9 +94,8 @@ public class ModuleParserLauncher
         // one of the Spec constants
         int specStatus = 0;
 
-        
         FilenameToStream resolver = new RCPNameToFileIStream(null);
-        
+
         // Reset the tool output messages.
         ToolIO.reset();
         ToolIO.setDefaultResolver(resolver);
@@ -123,7 +121,7 @@ public class ModuleParserLauncher
             // set spec status
             specStatus = IParseConstants.UNKNOWN_ERROR;
             return new ParseResult(specStatus, null);
-            
+
         } catch (ParseException e)
         {
             // I believe that this exception is thrown iff there is a parsing error.
@@ -163,7 +161,6 @@ public class ModuleParserLauncher
         Vector standardModules = new Vector();
         boolean rootModuleFound = false;
 
-        
         // iterate over parse units
         Enumeration enumerate = moduleSpec.parseUnitContext.keys();
         while (enumerate.hasMoreElements())
@@ -190,7 +187,6 @@ public class ModuleParserLauncher
             // create module holder
             Module module = new Module(absoluteFileName);
 
-
             if (!module.isStandardModule())
             {
             }
@@ -213,7 +209,6 @@ public class ModuleParserLauncher
                 module.setRoot(true);
             }
 
-
             if (module.isStandardModule())
             {
                 standardModules.addElement(module);
@@ -225,18 +220,18 @@ public class ModuleParserLauncher
                 // create a link to the module, so we could open it
                 ResourceHelper.getLinkedFile(parseResource.getProject(), module.getAbsolutePath(), true);
             }
-            
+
         } // while
 
         if (!rootModuleFound)
         {
             specStatus = IParseConstants.COULD_NOT_FIND_MODULE;
         }
-        
+
         // at this point the user modules are known
         // store the dependencies
-        Activator.getModuleDependencyStorage().put(parseResource.getName(), AdapterFactory.adaptModules(parseResource.getName(), userModules));
-        
+        Activator.getModuleDependencyStorage().put(parseResource.getName(),
+                AdapterFactory.adaptModules(parseResource.getName(), userModules));
 
         return new ParseResult(specStatus, moduleSpec);
     }
@@ -352,7 +347,7 @@ public class ModuleParserLauncher
                     coordinates = new int[] { beginLine, beginColumn, endLine, endColumn };
 
                     TLAMarkerHelper.installProblemMarker(module, module.getName(), IMarker.SEVERITY_ERROR, coordinates,
-                            message, monitor);
+                            message, monitor, TLAMarkerHelper.TOOLBOX_MARKERS_TLAPARSER_MARKER_ID);
                 } // if
                 else
                 {
@@ -381,11 +376,11 @@ public class ModuleParserLauncher
                     if (module == null)
                     {
                         TLAMarkerHelper.installProblemMarker(project, project.getName(), IMarker.SEVERITY_ERROR,
-                                coordinates, message, monitor);
+                                coordinates, message, monitor, TLAMarkerHelper.TOOLBOX_MARKERS_TLAPARSER_MARKER_ID);
                     } else
                     {
                         TLAMarkerHelper.installProblemMarker(module, module.getName(), IMarker.SEVERITY_ERROR,
-                                coordinates, message, monitor);
+                                coordinates, message, monitor, TLAMarkerHelper.TOOLBOX_MARKERS_TLAPARSER_MARKER_ID);
                     }
 
                 } // else
@@ -425,7 +420,7 @@ public class ModuleParserLauncher
         case IParseConstants.COULD_NOT_FIND_MODULE:
 
             TLAMarkerHelper.installProblemMarker(project, project.getName(), IMarker.SEVERITY_ERROR, new int[] { -1,
-                    -1, -1, -1 }, "Could not find module", monitor);
+                    -1, -1, -1 }, "Could not find module", monitor, TLAMarkerHelper.TOOLBOX_MARKERS_TLAPARSER_MARKER_ID);
             break;
         case IParseConstants.PARSED:
             break;
@@ -482,12 +477,12 @@ public class ModuleParserLauncher
         if (module == null)
         {
             TLAMarkerHelper.installProblemMarker(project, project.getName(), severityError, coordinates, message,
-                    monitor);
+                    monitor, TLAMarkerHelper.TOOLBOX_MARKERS_TLAPARSER_MARKER_ID);
 
         } else
         {
-            TLAMarkerHelper
-                    .installProblemMarker(module, module.getName(), severityError, coordinates, message, monitor);
+            TLAMarkerHelper.installProblemMarker(module, module.getName(), severityError, coordinates, message,
+                    monitor, TLAMarkerHelper.TOOLBOX_MARKERS_TLAPARSER_MARKER_ID);
         }
     }
 

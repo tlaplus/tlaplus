@@ -45,17 +45,27 @@ public class TLAMarkerHelper
      * Module name (different from the generally use filename)
      */
     public static final String LOCATION_MODULENAME = "toolbox.location.modulename";
+
+    /**
+     * Supertype for all problem markers
+     */
+    public static final String TOOLBOX_MARKERS_ALL_MARKER_ID = "toolbox.markers.ToolboxProblemMarker";
     /**
      * The marker ID for displaying TLA+ Parser Errors
      */
-    public static final String TOOLBOX_MARKERS_PROBLEM_MARKER_ID = "toolbox.markers.TLAParserProblemMarker";
+    public static final String TOOLBOX_MARKERS_TLAPARSER_MARKER_ID = "toolbox.markers.TLAParserProblemMarker";
+    /**
+     * The marker ID for displaying PCal Translation Errors
+     */
+    public static final String TOOLBOX_MARKERS_TRANSLATOR_MARKER_ID = "toolbox.markers.PCalTranslatorProblemMarker";
+    
 
     /**
      * Installs a problem marker on a given resource
      * REFACTOR: remove runable....
      */
     public static void installProblemMarker(final IResource resource, final String moduleName, final int severityError,
-            final int[] coordinates, final String message, IProgressMonitor monitor)
+            final int[] coordinates, final String message, IProgressMonitor monitor, final String type)
     {
         IWorkspaceRunnable runnable = new IWorkspaceRunnable() {
 
@@ -64,7 +74,7 @@ public class TLAMarkerHelper
                 System.out.println("Installing a marker on " + resource.getName() + " with error on module "
                         + moduleName);
 
-                IMarker marker = resource.createMarker(TOOLBOX_MARKERS_PROBLEM_MARKER_ID);
+                IMarker marker = resource.createMarker(type);
                 // Once we have a marker object, we can set its attributes
                 marker.setAttribute(IMarker.SEVERITY, severityError);
                 marker.setAttribute(IMarker.MESSAGE, message);
@@ -129,9 +139,10 @@ public class TLAMarkerHelper
     /**
      * Delete all markers from this resource and all child resources
      * @param resource resource containing markers
-     * @param monitor 
+     * @param monitor
+     * @param type, marker to delete 
      */
-    public static void removeProblemMarkers(final IResource resource, final IProgressMonitor monitor)
+    public static void removeProblemMarkers(final IResource resource, final IProgressMonitor monitor, final String type)
     {
         IWorkspaceRunnable runnable = new IWorkspaceRunnable() {
 
@@ -139,7 +150,7 @@ public class TLAMarkerHelper
             {
                 IMarker[] problems = null;
                 int depth = IResource.DEPTH_INFINITE;
-                problems = resource.findMarkers(TLAMarkerHelper.TOOLBOX_MARKERS_PROBLEM_MARKER_ID, true, depth);
+                problems = resource.findMarkers(type, true, depth);
                 for (int i = 0; i < problems.length; i++)
                 {
                     problems[i].delete();
@@ -155,6 +166,13 @@ public class TLAMarkerHelper
             e.printStackTrace();
         }
     }
+    /**
+     * Convenience method to delete all types of markers
+     */
+    public static void removeProblemMarkers(final IResource resource, final IProgressMonitor monitor)
+    {
+        removeProblemMarkers(resource, monitor, TLAMarkerHelper.TOOLBOX_MARKERS_TLAPARSER_MARKER_ID);
+    }
 
     /**
      * Retrieves problem markers associated with given resource
@@ -167,7 +185,7 @@ public class TLAMarkerHelper
         IMarker[] problems = null;
         try
         {
-            problems = resource.findMarkers(TLAMarkerHelper.TOOLBOX_MARKERS_PROBLEM_MARKER_ID, true,
+            problems = resource.findMarkers(TLAMarkerHelper.TOOLBOX_MARKERS_ALL_MARKER_ID, true,
                     IResource.DEPTH_INFINITE);
         } catch (CoreException e)
         {
@@ -250,6 +268,22 @@ public class TLAMarkerHelper
             return false;
         }
         return (TLAMarkerHelper.getProblemMarkers(spec.getProject(), null).length > 0);
+    }
+
+    /**
+     * @param problem
+     * @return
+     */
+    public static String getType(IMarker problem)
+    {
+        try 
+        {
+            return problem.getType();
+        } catch (CoreException e) 
+        {
+            e.printStackTrace();
+        }
+        return null;
     }
 
 }

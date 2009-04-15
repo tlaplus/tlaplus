@@ -4,8 +4,7 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IHandler;
-import org.lamport.tla.toolbox.ui.perspective.ProblemsPerspective;
-import org.lamport.tla.toolbox.util.TLAMarkerHelper;
+import org.lamport.tla.toolbox.ui.view.ProblemView;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 /**
@@ -24,7 +23,8 @@ public class ToggleProblemViewHandler extends AbstractHandler implements IHandle
         UIHelper.runUIAsync(new Runnable() {
             public void run()
             {
-                
+                /*
+                 * Perspective solution
                 if (UIHelper.isPerspectiveShown(ProblemsPerspective.ID))
                 {
                     // the problem view is shown
@@ -37,6 +37,13 @@ public class ToggleProblemViewHandler extends AbstractHandler implements IHandle
                         UIHelper.openPerspectiveInWindowRight(ProblemsPerspective.ID, null,
                                 ProblemsPerspective.WIDTH);
                     }
+                }
+                */
+                if (UIHelper.isViewShown(ProblemView.ID)) 
+                {
+                    UIHelper.hideView(ProblemView.ID);
+                } else {
+                    UIHelper.openView(ProblemView.ID);
                 }
             }
         });

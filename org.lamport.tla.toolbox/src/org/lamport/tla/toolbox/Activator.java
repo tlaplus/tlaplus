@@ -5,11 +5,12 @@ import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.lamport.tla.toolbox.spec.manager.WorkspaceSpecManager;
 import org.lamport.tla.toolbox.spec.parser.ParserDependencyStorage;
 import org.lamport.tla.toolbox.ui.contribution.ParseStatusContributionItem;
-import org.lamport.tla.toolbox.ui.perspective.ProblemsPerspective;
+import org.lamport.tla.toolbox.ui.view.ProblemView;
 import org.lamport.tla.toolbox.util.TLAMarkerHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 import org.lamport.tla.toolbox.util.pref.IPreferenceConstants;
@@ -77,7 +78,7 @@ public class Activator extends AbstractUIPlugin
 
             private boolean hasMarkerDelta(IResourceChangeEvent event)
             {
-                IMarkerDelta[] deltas = event.findMarkerDeltas(TLAMarkerHelper.TOOLBOX_MARKERS_PROBLEM_MARKER_ID, true);
+                IMarkerDelta[] deltas = event.findMarkerDeltas(TLAMarkerHelper.TOOLBOX_MARKERS_ALL_MARKER_ID, true);
                 if (deltas.length > 0)
                 {
                     return true;
@@ -91,57 +92,33 @@ public class Activator extends AbstractUIPlugin
             public void resourceChanged(final IResourceChangeEvent event)
             {
                 // no marker update
-                if (!hasMarkerDelta(event)) 
+                if (!hasMarkerDelta(event))
                 {
                     return;
                 }
-                
-                if (UIHelper.isPerspectiveShown(ProblemsPerspective.ID))
-                {
-                    // the error view is shown
-                    UIHelper.runUIAsync(new Runnable() {
-                        public void run()
-                        {
 
-                            UIHelper.closeWindow(ProblemsPerspective.ID);
-                            // there were problems -> open the problem view
-
-                            // Instead of explicit status check, look on the problem markers
-                            // if (AdapterFactory.isProblemStatus(spec.getStatus()))
-                            if (TLAMarkerHelper.currentSpecHasProblems())
-                            {
-                                UIHelper.openPerspectiveInWindowRight(ProblemsPerspective.ID, null,
-                                        ProblemsPerspective.WIDTH);
-                            }
-                        }
-                    });
-                } else
-                {
-                    // the perspective is not shown
-                    // look up the preference for raising windows on errors
-                    final boolean showErrors = PreferenceStoreHelper.getInstancePreferenceStore().getBoolean(
-                            IPreferenceConstants.P_PARSER_POPUP_ERRORS);
-                    if (showErrors)
+                UIHelper.runUIAsync(new Runnable() {
+                    public void run()
                     {
-                        UIHelper.runUIAsync(new Runnable() {
-                            public void run()
+                        if (TLAMarkerHelper.currentSpecHasProblems())
+                        {
+                            ProblemView view = (ProblemView) UIHelper.getActivePage().findView(ProblemView.ID);
+                            // show
+                            if (view!= null)
                             {
-
-                                UIHelper.closeWindow(ProblemsPerspective.ID);
-
-                                // there were problems -> open the problem view
-
-                                // Instead of explicit status check, look on the problem markers
-                                // if (AdapterFactory.isProblemStatus(spec.getStatus()))
-                                if (TLAMarkerHelper.currentSpecHasProblems())
-                                {
-                                    UIHelper.openPerspectiveInWindowRight(ProblemsPerspective.ID, null,
-                                            ProblemsPerspective.WIDTH);
-                                }
+                                // already shown, hide
+                                UIHelper.hideView(ProblemView.ID);
                             }
-                        });
+                            
+                            // not shown, show
+                            UIHelper.openView(ProblemView.ID);
+                        } else
+                        {
+                            // hide
+                            UIHelper.hideView(ProblemView.ID);
+                        }
                     }
-                }
+                });
             }
         }, IResourceChangeEvent.POST_BUILD);
     }

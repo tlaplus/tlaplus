@@ -18,7 +18,6 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.ui.part.ViewPart;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.spec.Spec;
-import org.lamport.tla.toolbox.ui.perspective.ProblemsPerspective;
 import org.lamport.tla.toolbox.util.AdapterFactory;
 import org.lamport.tla.toolbox.util.TLAMarkerHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
@@ -33,7 +32,6 @@ public class ProblemView extends ViewPart
 {
     public static final String ID = "toolbox.view.ProblemView";
     private ExpandBar bar = null;
-
     public ProblemView()
     {
     }
@@ -43,13 +41,10 @@ public class ProblemView extends ViewPart
      */
     public void createPartControl(Composite parent)
     {
-        parent.getShell().setText("TLA+ Parse Problems");
-
         bar = new ExpandBar(parent, SWT.V_SCROLL | SWT.BORDER);
         bar.setSpacing(8);
         UIHelper.setHelp(bar, "ProblemView");
         fillData(Activator.getSpecManager().getSpecLoaded());
-
     }
 
     /**
@@ -60,6 +55,9 @@ public class ProblemView extends ViewPart
     {
         if (specLoaded == null)
         {
+            hide();
+            /*
+             * perspective solution
             UIHelper.runUIAsync(new Runnable() {
 
                 public void run()
@@ -67,18 +65,23 @@ public class ProblemView extends ViewPart
                     UIHelper.closeWindow(ProblemsPerspective.ID);
                 }
             });
+            */
             return;
         } else
         {
-            
+
             // retrieve the markers associated with the loaded spec
-            IMarker[] markers = TLAMarkerHelper.getProblemMarkers(specLoaded.getProject(), null); ;
-            
+            IMarker[] markers = TLAMarkerHelper.getProblemMarkers(specLoaded.getProject(), null);
+
+            if (markers == null || markers.length == 0)
+            {
+                hide();
+            }
+
             // sort the markers
             List markersList = new ArrayList(Arrays.asList(markers));
             Collections.sort(markersList, new MarkerComparator());
-            
-            
+
             for (int j = 0; j < markers.length; j++)
             {
                 final IMarker problem = (IMarker) markersList.get(j);
@@ -119,14 +122,29 @@ public class ProblemView extends ViewPart
 
                 ExpandItem item = new ExpandItem(bar, SWT.NONE, 0);
                 item.setExpanded(true);
-                item.setText(AdapterFactory.getSeverityAsText(problem.getAttribute(IMarker.SEVERITY,
+                
+                String markerType = TLAMarkerHelper.getType(problem);
+                item.setText(AdapterFactory.getMarkerTypeAsText(markerType) + " " + AdapterFactory.getSeverityAsText(problem.getAttribute(IMarker.SEVERITY,
                         IMarker.SEVERITY_ERROR)));
                 item.setHeight(problemItem.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
                 item.setControl(problemItem);
                 item.addListener(SWT.MouseDown, listener);
             }
         }
+    }
 
+    /**
+     * 
+     */
+    public void hide()
+    {
+        UIHelper.runUIAsync(new Runnable() 
+        {
+            public void run()
+            {
+                getViewSite().getPage().hideView(ProblemView.this);
+            }
+        });
     }
 
     private boolean isErrorLine(String line, IMarker marker)
