@@ -74,6 +74,9 @@ public class TLCGlobals {
   // The tool id number for TLC2.
   public static int ToolId = FrontEnd.getToolId();
 
+  // debugging field
+  public static boolean debug = false;
+
   
   /**
    * Method added to support multiple invocation of TLC
@@ -90,5 +93,6 @@ public class TLCGlobals {
       fpServers = null;
       useGZIP = true;
       useView = false;
+      debug = false;
   } 
 }

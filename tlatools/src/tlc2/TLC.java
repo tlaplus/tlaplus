@@ -409,6 +409,10 @@ public class TLC
             {
                 index++;
                 TLCGlobals.useView = true;
+            } else if (args[index].equals("-debug"))
+            {
+                index++;
+                TLCGlobals.debug = true;
             } else
             {
                 if (args[index].charAt(0) == '-')
