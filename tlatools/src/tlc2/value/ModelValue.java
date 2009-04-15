@@ -74,7 +74,8 @@ public class ModelValue extends Value {
   
   /* Constructor */
   private ModelValue(String val) {
-    this.val = UniqueString.intern(val);
+    // SZ 11.04.2009: changed access method
+    this.val = UniqueString.uniqueStringOf(val);
     this.index = count++;
     if (   (val.length() > 2)
         && (val.charAt(1) == '_')) {
