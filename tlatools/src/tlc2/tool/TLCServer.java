@@ -77,7 +77,8 @@ implements TLCServerRMI, InternRMI {
   public final long getIrredPolyForFP() { return FP64.getIrredPoly(); }
 
   public final UniqueString intern(String str) {
-    return UniqueString.intern(str);
+    // SZ 11.04.2009: changed access method  
+    return UniqueString.uniqueStringOf(str);
   }
   
   public synchronized final void registerWorker(TLCWorkerRMI worker, String hostname)
