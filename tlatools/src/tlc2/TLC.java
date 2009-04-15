@@ -447,6 +447,7 @@ public class TLC
     public void process()
     {
         ToolIO.cleanToolObjects(TLCGlobals.ToolId);
+        // UniqueString.initialize();
         
         // SZ Feb 20, 2009: extracted this method to separate the 
         // parameter handling from the actual processing
