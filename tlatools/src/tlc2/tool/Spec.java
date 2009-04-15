@@ -65,7 +65,8 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable {
   protected ExternalModuleTable moduleTbl; // The external modules reachable from root
   protected ModuleNode rootModule;         // The root module.
   protected Defns defns;                   // Global definitions reachable from root
-  public OpDeclNode[] variables;           // The state variables.
+  // SZ 10.04.2009: changed the name of the variable to reflect its nature
+  public OpDeclNode[] variablesNodes;      // The state variables.
   protected TLAClass tlaClass;             // TLA built-in classes.
   protected Vect initPredVec;              // The initial state predicate.
   protected Action nextPred;               // The next state predicate.
@@ -92,7 +93,7 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable {
     this.rootModule = null;
     this.config = null;
     this.moduleTbl = null;
-    this.variables = null;
+    this.variablesNodes = null;
     this.defns = new Defns();
     this.tlaClass = new TLAClass("tlc2.module");
     this.initPredVec = new Vect(5);
@@ -174,19 +175,37 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable {
     
     // Set the rootModule:
     this.moduleTbl = spec.getExternalModuleTable();
-    UniqueString rootName = UniqueString.intern(this.rootFile);
+    UniqueString rootName = UniqueString.uniqueStringOf(this.rootFile);
     this.rootModule = this.moduleTbl.getModuleNode(rootName);
     
     // Get all the state variables in the spec:
     OpDeclNode[] varDecls = this.rootModule.getVariableDecls();
-    this.variables = new OpDeclNode[varDecls.length];
-    for (int i = 0; i < varDecls.length; i++) {
-      this.variables[i] = varDecls[i];
+    
+    this.variablesNodes = new OpDeclNode[varDecls.length];
+    UniqueString[] varNames = new UniqueString[varDecls.length];
+    
+    for (int i = 0; i < varDecls.length; i++) 
+    {
+        this.variablesNodes[i] = varDecls[i];
+        varNames[i] = varDecls[i].getName();
+        varNames[i].setLoc(i);
     }
-    TLCState.setVariables(this.variables);
-      
+    
+    // set variables to the static filed in the state
+    TLCState.setVariables(this.variablesNodes);
+    
+    // SZ 11.04.2009: set the number of variables
+    UniqueString.setVariableCount(varDecls.length);
+  
+    // SZ 10.04.2009: moved the initialization 
+    // removed static initialization
+    // Defns.init();
+    // this seems strange, since the size of the definition table has been set during
+    // creation of the Defn object. The reset of the number of definition does not affect the size
+    // of the table
+    this.defns.setDefnCount(varDecls.length);
+
     // Add predefined (Boolean and String) in defns.
-    Defns.init();
     this.defns.put("TRUE", ValTrue);
     this.defns.put("FALSE", ValFalse);
     Value[] elems = new Value[2];
@@ -200,14 +219,14 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable {
     }
     Method[] ms = stringModule.getDeclaredMethods();
     for (int i = 0; i < ms.length; i++) {
-      int mod = ms[i].getModifiers();
-      if (Modifier.isStatic(mod)) {
-	String name = TLARegistry.mapName(ms[i].getName());
-	int acnt = ms[i].getParameterTypes().length;
-	MethodValue mv = new MethodValue(ms[i]);
-	Value val = (acnt == 0) ? mv.apply(EmptyArgs, EvalControl.Clear) : mv;
-	this.defns.put(name, val);
-      }
+        int mod = ms[i].getModifiers();
+        if (Modifier.isStatic(mod)) {
+            String name = TLARegistry.mapName(ms[i].getName());
+            int acnt = ms[i].getParameterTypes().length;
+            MethodValue mv = new MethodValue(ms[i]);
+            Value val = (acnt == 0) ? mv.apply(EmptyArgs, EvalControl.Clear) : mv;
+            this.defns.put(name, val);
+        }
     }
 
     // Process all the constants in the spec.  Note that this must be done
@@ -290,7 +309,7 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable {
 	  int mdf = mds[j].getModifiers();
 	  if (Modifier.isPublic(mdf) && Modifier.isStatic(mdf)) {
 	    String name = TLARegistry.mapName(mds[j].getName());
-	    UniqueString uname = UniqueString.intern(name);	    
+	    UniqueString uname = UniqueString.uniqueStringOf(name);	    
 	    int acnt = mds[j].getParameterTypes().length;
 	    MethodValue mv = new MethodValue(mds[j]);
 	    boolean isConstant = (acnt == 0) && Modifier.isFinal(mdf);
@@ -713,7 +732,7 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable {
       if (this.initPredVec.size() == 0 &&
               (this.impliedInits.length != 0 ||
                       this.impliedActions.length != 0 ||
-                      this.variables.length != 0 ||
+                      this.variablesNodes.length != 0 ||
                       this.invariants.length != 0 ||
                       this.impliedTemporals.length != 0)) {
           Assert.fail("The configuration file did not specify the initial state predicate.");
@@ -977,11 +996,11 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable {
 	  }
 	  // ... and make sure they contain all the state variables
 	  if (varsInSubscript != null) {
-	    for (int i=0; i<this.variables.length; i++) {
-	      if (!varsInSubscript.contains(this.variables[i])) {
+	    for (int i=0; i<this.variablesNodes.length; i++) {
+	      if (!varsInSubscript.contains(this.variablesNodes[i])) {
 		  // Assert.fail("The subscript of the next-state relation specified by the specification\ndoes not contain the state variable " + this.variables[i].getName());
 		Assert.printWarning(TLCGlobals.warn,
-				    "The subscript of the next-state relation specified by the specification\ndoes not seem to contain the state variable " + this.variables[i].getName());
+				    "The subscript of the next-state relation specified by the specification\ndoes not seem to contain the state variable " + this.variablesNodes[i].getName());
 	      }
 	    }
 	  }
