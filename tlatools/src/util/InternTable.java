@@ -7,23 +7,38 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 
+/**
+ * Storage for the UniqueStrings. 
+ * @see {@link UniqueString} for more information 
+ * @author Yuan Yu
+ */
 public final class InternTable implements Serializable {
+  
   private int count;
   private int length;
   private int thresh;
   private UniqueString[] table;
 
-  private static int tokenCnt = 0;      // the token counter 
-  public static final int nullTok = 0;
+  // SZ 10.04.2009: removed unused variable
+  // made token counter to instance variable, since there is only one instance of the InternTable
+  private int tokenCnt = 0;      // the token counter 
+  
+  
+  /**
+   * @deprecated RMI
+   */
+  private InternRMI internSource = null;
 
-  public InternTable(int size) {
+  
+  public InternTable(int size) 
+  {
     this.table = new UniqueString[size] ;
     this.count = 0 ;
     this.length = size ;
     this.thresh = this.length / 2;
   }
 
-  private final void grow() {
+  private void grow() {
     UniqueString[] old = this.table;
     this.count = 0;
     this.length = 2 * this.length + 1;
@@ -35,7 +50,7 @@ public final class InternTable implements Serializable {
     }
   }
 
-  private final void put(UniqueString var) {
+  private void put(UniqueString var) {
     int loc = (var.hashCode() & 0x7FFFFFFF) % length ;
     while (true) {
       UniqueString ent = this.table[loc] ;
@@ -52,7 +67,7 @@ public final class InternTable implements Serializable {
    * If there exists a UniqueString object obj such that obj.getTok()
    * equals id, then get(id) returns obj; otherwise, it returns null.
    */
-  public final UniqueString get(int id) {
+  public UniqueString get(int id) {
     for (int i = 0; i < this.table.length; i++) {
       UniqueString var = this.table[i];
       if (var != null && var.getTok() == id) {
@@ -62,13 +77,18 @@ public final class InternTable implements Serializable {
     return null;
   }
   
-  private InternRMI internSource = null;
 
-  public final void setSource(InternRMI source) {
+  /**
+   * @deprecated RMI
+   */
+  public void setSource(InternRMI source) {
     this.internSource = source;
   }
   
-  private final UniqueString create(String str) {
+  /**
+   * @deprecated RMI
+   */
+  private UniqueString create(String str) {
     if (this.internSource == null) {
       return new UniqueString(str, ++tokenCnt);
     }
@@ -81,7 +101,7 @@ public final class InternTable implements Serializable {
     return null;  // make compiler happy
   }
   
-  public final UniqueString put(String str) {
+  public UniqueString put(String str) {
     synchronized (InternTable.class) {
       if (this.count >= this.thresh) this.grow();
       int loc = (str.hashCode() & 0x7FFFFFFF) % length;
@@ -101,7 +121,7 @@ public final class InternTable implements Serializable {
     }
   }
 
-  public final void beginChkpt(String filename) throws IOException {
+  public void beginChkpt(String filename) throws IOException {
     BufferedDataOutputStream dos =
       new BufferedDataOutputStream(this.chkptName(filename, "tmp"));
     dos.writeInt(tokenCnt);
@@ -112,7 +132,7 @@ public final class InternTable implements Serializable {
     dos.close();
   }
 
-  public final void commitChkpt(String filename) throws IOException {
+  public void commitChkpt(String filename) throws IOException {
     File oldChkpt = new File(this.chkptName(filename, "chkpt"));
     File newChkpt = new File(this.chkptName(filename, "tmp"));
     if ((oldChkpt.exists() && !oldChkpt.delete()) ||
@@ -121,7 +141,7 @@ public final class InternTable implements Serializable {
     }
   }
 
-  public final synchronized void recover(String filename) throws IOException {
+  public synchronized void recover(String filename) throws IOException {
     BufferedDataInputStream dis = 
       new BufferedDataInputStream(this.chkptName(filename, "chkpt"));
     tokenCnt = dis.readInt();
@@ -139,7 +159,7 @@ public final class InternTable implements Serializable {
     dis.close();
   }
 
-  final private String chkptName(String filename, String ext) {
+  private String chkptName(String filename, String ext) {
     return filename + FileUtil.separator + "vars." + ext;
   }
 
