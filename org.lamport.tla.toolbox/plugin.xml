@@ -661,8 +661,8 @@
  Problem marker definition 
 -->
    <extension
-         id="toolbox.markers.TLAParserProblemMarker"
-         name="TLA Parse Problem"
+         id="toolbox.markers.ToolboxProblemMarker"
+         name="Toolbox Problem"
          point="org.eclipse.core.resources.markers">
       <super
             type="org.eclipse.core.resources.problemmarker">
@@ -683,6 +683,24 @@
             name="toolbox.location.endcolumn">
       </attribute>
    </extension>
+   <extension
+         id="toolbox.markers.PCalTranslatorProblemMarker"
+         name="PCal Translation Problem"
+         point="org.eclipse.core.resources.markers">
+      <super
+            type="toolbox.markers.ToolboxProblemMarker">
+      </super>
+   </extension>
+   <extension
+         id="toolbox.markers.TLAParserProblemMarker"
+         name="TLA Parse Problem"
+         point="org.eclipse.core.resources.markers">
+      <super
+            type="toolbox.markers.ToolboxProblemMarker">
+      </super>
+   </extension>
+
+   
 <!--
   Marker resolution
 -->
