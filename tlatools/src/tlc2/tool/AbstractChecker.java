@@ -228,7 +228,10 @@ public abstract class AbstractChecker implements Cancelable
           while (!this.cancellationFlag) {
               long now = System.currentTimeMillis();
               if (now - this.lastChkpt >= TLCGlobals.chkptDuration) {
-                  if (!this.doPeriodicWork()) { return false; }
+                  if (!this.doPeriodicWork()) 
+                  { 
+                      return false; 
+                  }
                   this.lastChkpt = now;
               }
               synchronized(this) {
