@@ -148,6 +148,7 @@ public class AssignmentWizardPage extends WizardPage
                     // single model value
                     if (getAssignment().getLabel().equals(getAssignment().getRight()))
                     {
+                        flagSymmetricalSet.setEnabled(false);
                         optionModelValue.setSelection(getAssignment().isModelValue());
                         source.getTextWidget().setBackground(container.getBackground());
                     // set of model values
@@ -156,6 +157,7 @@ public class AssignmentWizardPage extends WizardPage
                         flagSymmetricalSet.setSelection(getAssignment().isSymmetricalSet());
                     }
                 } else {
+                    flagSymmetricalSet.setEnabled(false);
                     optionOrdinaryValue.setSelection(true);
                 }
 
