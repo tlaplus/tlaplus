@@ -6,11 +6,15 @@ import java.util.Vector;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IResourceRuleFactory;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.ISchedulingRule;
+import org.eclipse.core.runtime.jobs.MultiRule;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.TLAMarkerHelper;
@@ -91,6 +95,10 @@ public class TranslatorJob extends WorkspaceJob
     {
         monitor.beginTask("PCal Translation", IProgressMonitor.UNKNOWN);
 
+        // remove markers
+        monitor.setTaskName("Removing problem markers");
+        TLAMarkerHelper.removeProblemMarkers(fileToBuild, monitor, TLAMarkerHelper.TOOLBOX_MARKERS_TRANSLATOR_MARKER_ID);
+        
         StringBuffer buffer = new StringBuffer();
         for (int i = 0; i < callParams.size(); i++)
         {
@@ -114,7 +122,7 @@ public class TranslatorJob extends WorkspaceJob
                 String errorMessage = (String) errors.get(i);
 
                 TLAMarkerHelper.installProblemMarker(fileToBuild, fileToBuild.getName(), IMarker.SEVERITY_ERROR,
-                        detectLocation(errorMessage), errorMessage, null);
+                        detectLocation(errorMessage), errorMessage, monitor, TLAMarkerHelper.TOOLBOX_MARKERS_TRANSLATOR_MARKER_ID);
             }
         }
 
@@ -128,7 +136,7 @@ public class TranslatorJob extends WorkspaceJob
      * @param fileToBuild
      * @return
      */
-    public static IRunnableWithProgress getAsRunnableWithProgress(IResource fileToBuild)
+    public static IRunnableWithProgress getAsRunnableWithProgress(final IResource fileToBuild)
     {
         final TranslatorJob job = new TranslatorJob(fileToBuild);
         return new IRunnableWithProgress()
@@ -137,6 +145,7 @@ public class TranslatorJob extends WorkspaceJob
             {
                 try
                 {
+                    job.setRule(getFileModificationRule(fileToBuild));
                     job.runInWorkspace(monitor);
                 } catch (CoreException e)
                 {
@@ -144,19 +153,42 @@ public class TranslatorJob extends WorkspaceJob
                 }
             }
         };
-        
     }
+    
+    public static ISchedulingRule getFileModificationRule(IResource file)
+    {
+        IResourceRuleFactory ruleFactory = ResourcesPlugin.getWorkspace().getRuleFactory();
+        ISchedulingRule rule = ruleFactory.modifyRule(file);
+        return rule;
+    }
+    
+
 
     
     private int[] detectLocation(String message)
     {
-        int lineStarts = message.indexOf("line ");
-        int lineEnds = message.indexOf(" , column ");
+        String LINE = "line ";
+        String COLUMN = ", column "; 
+        
+        int lineStarts = message.indexOf(LINE);
+        int lineEnds = message.indexOf(COLUMN);
         if (lineStarts != -1 && lineEnds != -1)
         {
-            String line = message.substring(lineStarts, lineEnds);
-            int lineNumber = Integer.parseInt(line);
-            return new int[] { lineNumber, -1, Integer.parseInt(line), -1 };
+            String line = message.substring(lineStarts + LINE.length(), lineEnds);
+            String column = message.substring(lineEnds + COLUMN.length());
+            
+            
+            int lineNumber = -1;
+            int columnNumber = -1;
+            try 
+            {
+                lineNumber = Integer.parseInt(line);
+            } catch (NumberFormatException e) {  }
+            try 
+            {
+                columnNumber = Integer.parseInt(column);
+            } catch (NumberFormatException e) {  }
+            return new int[] { lineNumber, columnNumber, lineNumber, columnNumber + 1 };
         }
         return new int[] { -1, -1, -1, -1 };
     }
