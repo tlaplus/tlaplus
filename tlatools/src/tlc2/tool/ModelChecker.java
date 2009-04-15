@@ -15,6 +15,7 @@ import tlc2.util.IdThread;
 import tlc2.util.LongVec;
 import tlc2.util.ObjLongTable;
 import tlc2.value.Value;
+import util.DebugReporter;
 import util.FileUtil;
 import util.FilenameToStream;
 import util.ToolIO;
@@ -30,7 +31,6 @@ import util.UniqueString;
 // the name resolver and support for the external specification object has been added
 public class ModelChecker extends AbstractChecker
 {
-
     public FPSet theFPSet; // the set of reachable states (SZ: note the type)
     public StateQueue theStateQueue; // the state queue
     public TLCTrace trace; // the trace file
@@ -78,26 +78,38 @@ public class ModelChecker extends AbstractChecker
      */
     public void modelCheck() throws Exception
     {
+        report("entering modelCheck()");
+        
         // Initialization for liveness checking:
         if (this.checkLiveness)
         {
+            report("initializing liveness checking");
             LiveCheck.init(this.tool, this.actions, this.metadir);
+            report("liveness checking initialized");
         }
 
+        
         boolean recovered = this.recover();
         if (!recovered)
         {
+            
             // We start from scratch. Initialize the state queue and the
             // state set to contain all the initial states.
             if (!this.checkAssumptions())
                 return;
             try
             {
+                report("doInit(false)");
                 // SZ Feb 23, 2009: do not ignore cancel on creation of the init states
-                if (!this.doInit(false))
+                if (!this.doInit(false)) 
+                {
+                    report("exiting, because init failed");    
                     return;
+                }
             } catch (Throwable e)
             {
+                report("exception in init");
+                report(e);
                 // Initial state computation fails with an exception:
                 ToolIO.err.println("Error: " + e.getMessage());
                 if (this.errState != null)
@@ -121,6 +133,7 @@ public class ModelChecker extends AbstractChecker
                 }
                 this.printSummary(false);
                 this.cleanup(false);
+                report("exiting, because init failed with exception");
                 return;
             }
 
@@ -136,23 +149,27 @@ public class ModelChecker extends AbstractChecker
             }
         }
 
+        report("init processed");
         // Finished if there is no next state predicate:
         if (this.actions.length == 0)
         {
             this.reportSuccess();
             this.printSummary(true);
             this.cleanup(true);
+            report("exiting with actions.length == 0");
             return;
         }
 
         boolean success = false;
         try
         {
-
+            report("running TLC");
             success = this.runTLC(Integer.MAX_VALUE);
-            if (!success)
+            if (!success) 
+            {
+                report("TLC terminated with error");
                 return;
-
+            }
             if (this.errState == null)
             {
                 // Always check liveness properties at the end:
@@ -160,9 +177,14 @@ public class ModelChecker extends AbstractChecker
                 {
                     ToolIO.out.println("--Checking temporal properties for the complete state space...");
                     ToolIO.out.flush();
+                    report("checking liveness");
                     success = LiveCheck.check();
-                    if (!success)
+                    report("liveness check complete");
+                    if (!success) 
+                    {
+                        report("exiting error status on liveness check");
                         return;
+                    }
                 }
 
                 // We get here because the checking has been completed.
@@ -193,6 +215,8 @@ public class ModelChecker extends AbstractChecker
             this.printSummary(success);
             this.cleanup(success);
         }
+        
+        report("normal exit");
     }
 
     /** 
@@ -223,7 +247,7 @@ public class ModelChecker extends AbstractChecker
 
     /**
      * Initialize the model checker
-     * @return
+     * @return status, if false, the processing should be stopped
      * @throws Throwable
      */
     public final boolean doInit(boolean ignoreCancel) throws Throwable
@@ -757,4 +781,22 @@ public class ModelChecker extends AbstractChecker
             this.wait(TLCGlobals.progressInterval);
         }
     }
+
+    /**
+     * Debugging support
+     * @param message
+     */
+    private void report(String message)
+    {
+        DebugReporter.report(message);
+    }
+    /**
+     * Debugging support
+     * @param e
+     */
+    private void report(Throwable e)
+    {
+        DebugReporter.report(e);
+    }
+
 }
