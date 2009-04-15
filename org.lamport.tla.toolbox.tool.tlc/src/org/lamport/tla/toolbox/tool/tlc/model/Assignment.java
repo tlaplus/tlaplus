@@ -31,6 +31,7 @@ public class Assignment extends Formula
 {
     public static final String ASSIGNMENT_SIGN = " <- ";
     public static final String IS_MV = " [ model value ] ";
+    public static final String SYMMETRICAL = " <symmetrical> ";
 
     private String label;
     private String[] params = new String[0];
@@ -57,23 +58,19 @@ public class Assignment extends Formula
     public String getFormula()
     {
         StringBuffer buffer = new StringBuffer(getLeft());
+        buffer.append(ASSIGNMENT_SIGN);
         if (this.modelValue)
         {
-            if (getLeft().equals(getRight())) 
+            buffer.append(IS_MV);
+            if (this.isSymmetricalSet()) 
             {
-                buffer.append(IS_MV);
+                buffer.append(SYMMETRICAL);
+                buffer.append(getRight());
             } else {
-                // set of MVs
-                TypedSet set = TypedSet.parseSet(getRight());
-                buffer.append(ASSIGNMENT_SIGN + getRight());
-                if (set.hasType()) 
-                {
-                    buffer.append(" type: " + set.getType());
-                }
+                // buffer.append(getRight());
             }
-        } else
-        {
-            buffer.append(ASSIGNMENT_SIGN + getRight());
+        } else {
+            buffer.append(getRight());
         }
 
         return buffer.toString();
@@ -215,10 +212,6 @@ public class Assignment extends Formula
             throw new IllegalArgumentException("Operators can not be instantiated with model values");
         }
         this.modelValue = modelValue;
-        if (modelValue)
-        {
-            setRight(this.getLabel());
-        }
     }
 
     public static String[] getArrayOfEmptyStrings(int number)
