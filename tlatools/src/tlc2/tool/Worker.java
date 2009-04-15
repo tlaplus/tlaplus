@@ -25,6 +25,8 @@ public class Worker extends IdThread implements IWorker {
   // SZ Feb 20, 2009: changed due to super type introduction 
   public Worker(int id, AbstractChecker tlc) {
     super(id);
+    // SZ 12.04.2009: added thread name
+    this.setName("TLC Worker " + id);
     this.tlc = (ModelChecker) tlc;
     this.squeue = this.tlc.theStateQueue;
     this.astCounts = new ObjLongTable(10);
