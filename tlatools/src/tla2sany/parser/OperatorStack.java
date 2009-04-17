@@ -329,7 +329,7 @@ What do left and right mean?????? What does shift mean????????
                     // new case for mixfix XXX this is not exhaustive.
               Operator mixR  = Operators.getMixfix( oR );
               if ( mixR == null ) { // is infix
-                if (oR == Operator.VoidOperator )
+                if (oR == Operator.VoidOperator() )
                   throw new ParseException(
                          "\n  Missing expression in block " + 
                          tm1.getNode().getLocation().toString() + 
@@ -387,7 +387,7 @@ What do left and right mean?????? What does shift mean????????
                               oL.getIdentifier() + " in block " + 
                               tm2.getNode().getLocation().toString() + 
                               " and " + oR.getIdentifier() + ".");
-		     } else if (oR == Operator.VoidOperator ) {
+		     } else if (oR == Operator.VoidOperator() ) {
 // System.out.println("Case 2");
 	               throw new ParseException(
                                "\n Error following expression at  " + 
@@ -437,7 +437,7 @@ What do left and right mean?????? What does shift mean????????
   final public SyntaxTreeNode finalReduce() throws ParseException {
 
     int n=0;
-    pushOnStack( null, Operator.VoidOperator );
+    pushOnStack( null, Operator.VoidOperator() );
     reduceStack();
     if ( isWellReduced() )
       return ((OSelement) CurrentTop.elementAt(0)).getNode();
