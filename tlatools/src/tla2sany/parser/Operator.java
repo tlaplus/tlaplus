@@ -17,10 +17,20 @@ public class Operator implements tla2sany.st.SyntaxTreeConstants {
   public int Associativity;
   public int Fix;
 
-  static public Operator VoidOperator =  
-                  new Operator(UniqueString.uniqueStringOf("$$_void"), 0, 0, 
-                               Operators.assocNone, Operators.infix);
-
+  private static Operator voidOperator = null;
+  
+  // SZ Apr 16, 2009: changed to a method in order to avoid the usage
+  // of the unique string in the class loading time 
+  public synchronized static Operator VoidOperator()
+  {  
+      if (voidOperator == null) 
+      {
+          voidOperator = new Operator(UniqueString.uniqueStringOf("$$_void"), 0, 0, 
+                  Operators.assocNone, Operators.infix);
+      }
+      return voidOperator;
+  }
+  
   public Operator( UniqueString id, int l, int h, int a, int f) {
     Id = id; Low = l; High = h; Associativity = a; Fix = f;
   }
