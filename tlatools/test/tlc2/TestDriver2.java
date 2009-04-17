@@ -13,29 +13,33 @@ public class TestDriver2
      * @version $Id: TLCJob.java 638 2009-04-10 04:08:14Z simonzam $
      */
     private static final long TIMEOUT = 1000 * 5;
-    private static final int STEP = 30;
 
     private String rootModule;
     private String cfgFile;
     private String projectDir;
 
     private TLCThread tlcThread;
-    private int workers = 1;
+    private int workers = 2;
 
     private int reported;
 
     
     public static void main(String[] args) 
     {
+        if (args.length < 6 ) 
+        {
+            // -workers 2 -config AtomicBakery_MC_1.cfg -metadir C:\org.zambrovski\download\AtomicBakery_MC_1.toolbox AtomicBakery_MC_1
+            System.out.println("Call with: -workers 2 -config AtomicBakery_MC_1.cfg -metadir C:\\org.zambrovski\\download\\AtomicBakery_MC_1.toolbox AtomicBakery_MC_1");
+        }
         TestDriver2 testDriver2 = new TestDriver2(args[6], args[3], args[5]);
         testDriver2.setWorkers(Integer.parseInt(args[1]));
 
-        // -workers 2 -config AtomicBakery_MC_1.cfg -metadir C:\org.zambrovski\download\AtomicBakery_MC_1.toolbox AtomicBakery_MC_1
-        for (int i = 0 ; i < 3; i++)
+        for (int i = 0 ; i < 10; i++)
         {
             testDriver2.reported = 0;
             testDriver2.run();
         }
+        System.exit(0);
     }
     /**
      * @param name
