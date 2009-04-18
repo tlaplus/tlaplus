@@ -15,6 +15,7 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.jface.text,
  org.lamport.tla.toolbox.tool.tlc,
  org.lamport.tla.toolbox,
- org.eclipse.debug.core
+ org.eclipse.debug.core,
+ org.eclipse.ui.console
 Bundle-RequiredExecutionEnvironment: J2SE-1.4
 Bundle-ActivationPolicy: lazy
