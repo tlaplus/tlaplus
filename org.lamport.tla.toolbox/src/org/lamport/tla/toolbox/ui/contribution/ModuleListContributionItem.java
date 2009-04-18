@@ -90,7 +90,7 @@ public class ModuleListContributionItem extends CompoundContributionItem
         }
 
         DeleteOutOfSyncJob job = new DeleteOutOfSyncJob(outOfSyncResourcesToDelete);
-        job.setRule(DeleteOutOfSyncJob.getDeleteFilesRule(outOfSyncResourcesToDelete));
+        job.setRule(ResourceHelper.getDeleteRule((IResource[]) outOfSyncResourcesToDelete.toArray(new IResource[outOfSyncResourcesToDelete.size()])));
         job.schedule();
         
         return (IContributionItem[]) moduleContributions.toArray(new IContributionItem[moduleContributions.size()]);
