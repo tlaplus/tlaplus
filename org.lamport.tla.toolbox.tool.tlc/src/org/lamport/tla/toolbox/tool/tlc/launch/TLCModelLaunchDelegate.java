@@ -1,13 +1,13 @@
 package org.lamport.tla.toolbox.tool.tlc.launch;
 
-import java.util.Vector;
-
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.IJobChangeListener;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.debug.core.ILaunch;
@@ -15,8 +15,9 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.model.ILaunchConfigurationDelegate;
 import org.eclipse.debug.core.model.LaunchConfigurationDelegate;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
+import org.lamport.tla.toolbox.tool.tlc.job.ModelCreationJob;
 import org.lamport.tla.toolbox.tool.tlc.job.TLCJob;
-import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
+import org.lamport.tla.toolbox.util.ResourceHelper;
 
 /**
  * Represents a launch delegate for TLC
@@ -28,109 +29,65 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
 {
     public static final String LAUNCH_ID = "org.lamport.tla.toolbox.tool.tlc.modelCheck";
     public static final String MODE_MODELCHECK = "modelcheck";
+    private IJobChangeListener writingJobStatusListener = new JobChangeAdapter() {
+
+        public void done(IJobChangeEvent event)
+        {
+            String jobName = event.getJob().getName();
+            String status = null;
+            if (event.getResult().isOK())
+            {
+                status = "Done";
+            } else
+            {
+                status = "Cancelled";
+            }
+            System.out.println("JOB Change Listener: " + jobName + " -> { " + status + " }");
+        }
+    };
 
     public void launch(ILaunchConfiguration config, String mode, ILaunch launch, IProgressMonitor monitor)
             throws CoreException
     {
 
+        // name of the specification
         String specName = config.getAttribute(SPEC_NAME, EMPTY_STRING);
+        // model name
         String modelName = config.getAttribute(MODEL_NAME, EMPTY_STRING);
-        // String rootModuleFile = config.getAttribute(SPEC_ROOT_FILE, EMPTY_STRING);
-        String rootModuleName = config.getAttribute(SPEC_ROOT_MODULE, EMPTY_STRING);
-
-        System.out.println("Staring TLC on model " + modelName + " of spec " + specName + " in mode " + mode);
-
+        // TLA model file
         String tlaFilename = config.getAttribute(MODEL_ROOT_FILE, EMPTY_STRING);
+        // CFG file 
         String configFilename = config.getAttribute(CONFIG_FILE, EMPTY_STRING);
-
-        System.out.println("Model TLA file is: " + tlaFilename);
-        System.out.println("Model CFG file is: " + configFilename);
-
-        // root file
-        IFile rootModule = (IFile) ToolboxHandle.getCurrentSpec().getProject().findMember(
-                new Path(tlaFilename).lastSegment());
-
-        // project directory
-        IResource projectDir = ToolboxHandle.getCurrentSpec().getProject();
-        
-        // config file
-        IFile cfgFile = (IFile) ToolboxHandle.getCurrentSpec().getProject().findMember(
-                new Path(configFilename).lastSegment());
-
-        ModelWriter writer = new ModelWriter();
-        // add extend primer
-        writer.addPrimer(tlaFilename, rootModuleName);
-
-        // new definitions
-        writer.addNewDefinitions(config.getAttribute(MODEL_PARAMETER_NEW_DEFINITIONS, EMPTY_STRING));
-
-
-        /* ------------ parameters -------------- */
-        // constants list
-        writer.addFormulaList(ModelHelper.createConstantsContent(config), "CONSTANT");
-
-        // definition overrides list
-        writer.addFormulaList(ModelHelper.createListContent(config.getAttribute(MODEL_PARAMETER_DEFINITIONS,
-                new Vector()), "def_ov"), "");
-
-        // symmetry TODO
-        writer.addFormulaList(ModelHelper.createListContent(config.getAttribute(MODEL_PARAMETER_SYMMETRY,
-                new Vector()), "sym"), "SYMMETRY");
-
-        // constraint
-        writer.addFormulaList(ModelHelper.createSourceContent(MODEL_PARAMETER_CONSTRAINT, "constr", config), "CONSTRAINT");
-
-        // action constraint
-        writer.addFormulaList(ModelHelper.createSourceContent(MODEL_PARAMETER_ACTION_CONSTRAINT, "action_constr", config), "ACTION-CONSTRAINT");
-
-
-        
-        
-        /* ------------ behavior -------------- */
-        
-        // the specification name-formula pair
-        writer.addSpecDefinition(ModelHelper.createSpecificationContent(config));
-        
-        /* ------------ what to check -------------- */
-        // invariants
-        writer.addFormulaList(ModelHelper.createListContent(config.getAttribute(MODEL_CORRECTNESS_INVARIANTS,
-                new Vector()), "inv"), "INVARIANT");
-        // properties
-        writer.addFormulaList(ModelHelper.createListContent(config.getAttribute(MODEL_CORRECTNESS_PROPERTIES,
-                new Vector()), "prop"), "PROPERTY");
-        
-        /* ------------ model values -------------- */
-        // TODO model values
-        
-        // write the content
-        writer.writeFiles(rootModule, cfgFile, monitor);
-
         // number of workers
         int numberOfWorkers = config.getAttribute(LAUNCH_NUMBER_OF_WORKERS, LAUNCH_NUMBER_OF_WORKERS_DEFAULT);
-        
-        
-        // construct TLC job
-        TLCJob job = new TLCJob(rootModule, cfgFile, projectDir);
-        
-        // number of workers
-        job.setWorkers(numberOfWorkers);
-        job.addJobChangeListener(new JobChangeAdapter() {
 
-            public void done(IJobChangeEvent event)
-            {
-                if (event.getResult().isOK())
-                {
-                    System.out.println("JOB Change Listener ------------ { Done }");
-                } else
-                {
-                    System.out.println("JOB Change Listener ------------ { Cancelled }");
-                }
-            }
-        });
-        job.setPriority(Job.LONG);
-        job.setUser(true);
+        System.out.println("Staring TLC on model " + modelName + " of spec " + specName + " in mode " + mode);
+        
+        
+        // project directory
+        IProject projectDir = ToolboxHandle.getCurrentSpec().getProject();
+        // model TLA file
+        IFile tlaFile = (IFile) projectDir.findMember(new Path(tlaFilename).lastSegment());
+        // config file
+        IFile cfgFile = (IFile) projectDir.findMember(new Path(configFilename).lastSegment());
+
+        // model job
+        ModelCreationJob modelJob = new ModelCreationJob(config, tlaFile, cfgFile);
+        modelJob.setPriority(Job.SHORT);
+        modelJob.setRule(ResourceHelper.getModifyRule(new IResource[] { cfgFile, tlaFile }));
         // run the job
-        job.schedule();
+        modelJob.schedule();
+
+        // TLC job
+        TLCJob tlcjob = new TLCJob(tlaFile, cfgFile, projectDir);
+        tlcjob.setWorkers(numberOfWorkers);
+        tlcjob.addJobChangeListener(writingJobStatusListener);
+        tlcjob.setPriority(Job.LONG);
+        tlcjob.setUser(true);
+        tlcjob.setRule(ResourceHelper.getModifyRule(new IResource[] { cfgFile, tlaFile }));
+        
+        // run the job
+        tlcjob.schedule();
     }
 
 }
