@@ -1,5 +1,8 @@
 package org.lamport.tla.toolbox.tool.tlc.ui.editor;
 
+import org.eclipse.core.resources.IResourceChangeEvent;
+import org.eclipse.core.resources.IResourceChangeListener;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -15,6 +18,7 @@ import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.AdvancedModelPage;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.BasicFormPage;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.MainModelPage;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
+import org.lamport.tla.toolbox.util.UIHelper;
 
 /**
  * Editor for the model
@@ -25,7 +29,30 @@ public class ModelEditor extends FormEditor
 {
     public static final String ID = "org.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor";
     private ILaunchConfigurationWorkingCopy configurationCopy;
+    private IResourceChangeListener rootFileListener = new IResourceChangeListener() {
 
+        public void resourceChanged(IResourceChangeEvent event)
+        {
+            UIHelper.runUIAsync(new Runnable() 
+            {
+                public void run()
+                {
+                    for (int i = 0; i < getPageCount(); i++)
+                    {
+                        Object page = pages.get(i);
+                        if (page instanceof BasicFormPage) 
+                        {
+                            BasicFormPage bPage = (BasicFormPage) page;
+                            // re-validate the model on changes of the spec
+                            bPage.validate();
+                        }
+                    }
+                }
+            });
+        }
+    }; 
+    
+    
     public ModelEditor()
     {
 
@@ -54,9 +81,20 @@ public class ModelEditor extends FormEditor
                 setTitleToolTip(path.toString());
             }
         }
-
+        
+        // react on changes of the root file
+        ResourcesPlugin.getWorkspace().addResourceChangeListener(rootFileListener, IResourceChangeEvent.POST_BUILD);
     }
 
+    public void dispose()
+    {
+        // remove the listener
+        ResourcesPlugin.getWorkspace().removeResourceChangeListener(rootFileListener);
+        super.dispose();
+    }
+
+    
+    
     /* (non-Javadoc)
      * @see org.eclipse.ui.part.EditorPart#doSave(org.eclipse.core.runtime.IProgressMonitor)
      */
@@ -139,5 +177,6 @@ public class ModelEditor extends FormEditor
     {
         return configurationCopy;
     }
+
 
 }
