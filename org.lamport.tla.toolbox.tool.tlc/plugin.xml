@@ -158,6 +158,22 @@
       <launchMode mode="modelcheck" label="Model Check" launchAsLabel="Check As"></launchMode>
       <launchMode mode="simulate" label="Simulate" launchAsLabel="Simulate As"></launchMode>
    </extension>
+   <extension
+         point="org.eclipse.ui.console.consoleFactories">
+      <consoleFactory
+            class="org.lamport.tla.toolbox.tool.tlc.ui.ConsoleFactory"
+            icon="icons/full/console_view2.gif"
+            label="TLC Console">
+      </consoleFactory>
+   </extension>
+   <extension
+         point="org.eclipse.ui.perspectives">
+      <perspective
+            class="org.lamport.tla.toolbox.tool.tlc.ui.TLCPerspective"
+            id="org.lamport.tla.toolbox.tool.tlc.perspective"
+            name="TLC Run Perspective">
+      </perspective>
+   </extension>
    
    
    
