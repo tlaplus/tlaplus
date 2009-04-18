@@ -7,9 +7,9 @@ package org.lamport.tla.toolbox.tool.tlc.launch;
 public interface IModelConfigurationConstants extends IConfigurationConstants
 {
     /**
-     * flag showing if one closed formula is used
+     * number showing if one closed formula is used
      */
-    public static final String MODEL_BEHAVIOR_IS_CLOSED_SPEC_USED = "modelBehaviorIsClosedFormulaUsed"; 
+    public static final String MODEL_BEHAVIOR_SPEC_TYPE = "modelBehaviorSpecType"; 
     /**
      * formula which points behavior specification
      */
@@ -26,7 +26,12 @@ public interface IModelConfigurationConstants extends IConfigurationConstants
      * formula which points fairness part of the specification
      */
     public static final String MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_FAIRNESS = "modelBehaviorFairness";
+    /**
+     * Variables
+     */
+    public static final String MODEL_BEHAVIOR_VARS = "modelBehaviorVars";
 
+    
     /**
      * flag for checking deadlock
      */
