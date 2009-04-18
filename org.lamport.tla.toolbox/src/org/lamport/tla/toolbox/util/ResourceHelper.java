@@ -9,6 +9,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IResourceRuleFactory;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -17,6 +18,8 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.QualifiedName;
+import org.eclipse.core.runtime.jobs.ISchedulingRule;
+import org.eclipse.core.runtime.jobs.MultiRule;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.job.NewTLAModuleCreationOperation;
 import org.lamport.tla.toolbox.spec.Spec;
@@ -86,14 +89,12 @@ public class ResourceHelper
                 // set TLA+ Parsing Builder
                 ICommand command = description.newCommand();
                 command.setBuilderName(TLAParsingBuilder.BUILDER_ID);
-                // set PCal detecting builder 
+                // set PCal detecting builder
                 ICommand command2 = description.newCommand();
                 command2.setBuilderName(PCalDetectingBuilder.BUILDER_ID);
-                
+
                 // setup the builders
                 description.setBuildSpec(new ICommand[] { command, command2 });
-                
-                
 
                 // create the project
                 // TODO add progress monitor
@@ -177,13 +178,13 @@ public class ResourceHelper
      */
     public static String getParentDirName(IResource resource)
     {
-        if (resource == null) 
+        if (resource == null)
         {
             return null;
-        } 
+        }
         return getParentDirName(resource.getLocation().toOSString());
     }
-    
+
     /**
      * Retrieves the name of the module (filename without extension)
      * 
@@ -201,13 +202,13 @@ public class ResourceHelper
      */
     public static String getModuleName(IResource resource)
     {
-        if (resource == null) 
+        if (resource == null)
         {
             return null;
-        } 
+        }
         return getModuleName(resource.getLocation().toOSString());
     }
-    
+
     /**
      * Retrieves the name of the module (filename without extension)
      * 
@@ -222,7 +223,7 @@ public class ResourceHelper
     {
         File f = new File(moduleFilename);
         IPath path = new Path(f.getName()).removeFileExtension();
-        //String modulename = f.getName().substring(0, f.getName().lastIndexOf("."));
+        // String modulename = f.getName().substring(0, f.getName().lastIndexOf("."));
         if (checkExistence)
         {
             return (f.exists()) ? path.toOSString() : null;
@@ -268,11 +269,11 @@ public class ResourceHelper
     public static StringBuffer getEmptyModuleContent(String moduleFilename)
     {
         StringBuffer buffer = new StringBuffer();
-        buffer.append("---- MODULE ").append(ResourceHelper.getModuleNameChecked(moduleFilename, false)).append(" ----\n").append(
-                "\n\n");
+        buffer.append("---- MODULE ").append(ResourceHelper.getModuleNameChecked(moduleFilename, false)).append(
+                " ----\n").append("\n\n");
         return buffer;
     }
-    
+
     /**
      * Returns the content for the end of the module
      * @return
@@ -284,7 +285,6 @@ public class ResourceHelper
         return buffer;
     }
 
-
     /**
      * Creates a simple content for a new TLA+ module
      *  
@@ -294,12 +294,11 @@ public class ResourceHelper
     public static StringBuffer getExtendingModuleContent(String moduleFilename, String extendedModuleName)
     {
         StringBuffer buffer = new StringBuffer();
-        buffer.append("---- MODULE ").append(ResourceHelper.getModuleNameChecked(moduleFilename, false)).append(" ----\n")
-        .append("EXTENDS ").append(extendedModuleName).append("\n")
-        .append("\n\n");
+        buffer.append("---- MODULE ").append(ResourceHelper.getModuleNameChecked(moduleFilename, false)).append(
+                " ----\n").append("EXTENDS ").append(extendedModuleName).append("\n").append("\n\n");
         return buffer;
     }
-    
+
     /**
      * Checks, whether the module is the root file of loaded spec
      * @param module the 
@@ -308,13 +307,13 @@ public class ResourceHelper
     public static boolean isRoot(IFile module)
     {
         Spec spec = Activator.getSpecManager().getSpecLoaded();
-        if (spec == null) 
+        if (spec == null)
         {
             return false;
         }
         return spec.getRootFile().equals(module);
     }
-    
+
     /**
      * Constructs qualified name
      * @param localName
@@ -322,7 +321,7 @@ public class ResourceHelper
      */
     public static QualifiedName getQName(String localName)
     {
-        return new QualifiedName(Activator.PLUGIN_ID, localName);         
+        return new QualifiedName(Activator.PLUGIN_ID, localName);
     }
 
     /**
@@ -333,7 +332,7 @@ public class ResourceHelper
     {
         return new NewTLAModuleCreationOperation(rootNamePath);
     }
-    
+
     /**
      * Writes contents stored in the string buffer to the file, replacing the content 
      * @param file
@@ -376,6 +375,57 @@ public class ResourceHelper
             file.create(stream, force, monitor);
         }
     }
-    
-    
+
+    /**
+     * Retrieves a combined rule for modifying the resources
+     * @param resources set of resources
+     * @return a combined rule
+     */
+    public static ISchedulingRule getModifyRule(IResource[] resources)
+    {
+        if (resources == null)
+        {
+            return null;
+        }
+        ISchedulingRule combinedRule = null;
+        IResourceRuleFactory ruleFactory = ResourcesPlugin.getWorkspace().getRuleFactory();
+        for (int i = 0; i < resources.length; i++)
+        {
+            ISchedulingRule rule = ruleFactory.modifyRule(resources[i]);
+            combinedRule = MultiRule.combine(rule, combinedRule);
+        }
+        return combinedRule;
+    }
+    /**
+     * Retrieves a rule for modifying a resource
+     * @param resource
+     * @return
+     */
+    public static ISchedulingRule getModifyRule(IResource resource)
+    {
+        IResourceRuleFactory ruleFactory = ResourcesPlugin.getWorkspace().getRuleFactory();
+        ISchedulingRule rule = ruleFactory.modifyRule(resource);
+        return rule;
+    }
+    /**
+     * Retrieves a combined rule for deleting resource
+     * @param resource
+     * @return
+     */
+    public static ISchedulingRule getDeleteRule(IResource[] resources)
+    {
+        if (resources == null)
+        {
+            return null;
+        }
+        ISchedulingRule combinedRule = null;
+        IResourceRuleFactory ruleFactory = ResourcesPlugin.getWorkspace().getRuleFactory();
+        for (int i = 0; i < resources.length; i++)
+        {
+            ISchedulingRule rule = ruleFactory.deleteRule(resources[i]);
+            combinedRule = MultiRule.combine(rule, combinedRule);
+        }
+        return combinedRule;
+    }
+
 }
