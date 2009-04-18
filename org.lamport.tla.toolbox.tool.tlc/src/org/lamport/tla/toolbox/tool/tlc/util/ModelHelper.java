@@ -284,11 +284,11 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
             // assignment with label as right side are treated as model values
             Assignment assign = new Assignment(fields[0], params, fields[2]);
 
-            // is Model Value 
+            // is Model Value
             if (fields.length > 3 && fields[3].equals("1"))
             {
                 assign.setModelValue(true);
-                
+
                 // is symmetrical
                 if (fields.length > 4 && fields[4].equals("1"))
                 {
@@ -333,30 +333,51 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
     {
         StringBuffer buffer = new StringBuffer();
         String identifier = getValidIdentifier("spec");
+        String[] result = null;
 
         // the identifier
         buffer.append(identifier).append(" ==\n");
 
-        if (config.getAttribute(MODEL_BEHAVIOR_IS_CLOSED_SPEC_USED, MODEL_BEHAVIOR_IS_CLOSED_SPEC_USED_DEFAULT))
+        int specType = config.getAttribute(MODEL_BEHAVIOR_SPEC_TYPE, MODEL_BEHAVIOR_TYPE_DEFAULT);
+
+        switch (specType) 
         {
+        case MODEL_BEHAVIOR_TYPE_NO_SPEC:
+            // no spec - nothing to do
+
+            break;
+        case MODEL_BEHAVIOR_TYPE_SPEC_CLOSED:
             // append the closed formula
             buffer.append(config.getAttribute(MODEL_BEHAVIOR_CLOSED_SPECIFICATION, EMPTY_STRING));
-        } else
-        {
+            result = new String[] { identifier, buffer.toString() };
+            break;
+        case MODEL_BEHAVIOR_TYPE_SPEC_INIT_NEXT:
+            // init, next, fairness
             String modelInit = config.getAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT, EMPTY_STRING);
             String modelNext = config.getAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT, EMPTY_STRING);
-            String modelFairness = config.getAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_FAIRNESS, EMPTY_STRING);
+            String vars = config.getAttribute(MODEL_BEHAVIOR_VARS, EMPTY_STRING);
 
+            String modelFairness = config.getAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_FAIRNESS, EMPTY_STRING);
             // append init. next, fairness
-            buffer.append(modelInit).append(" /\\[][ ").append(modelNext).append(" ]_")
-            // TODO replace vars
-                    .append("vars").append(" /\\ ").append(modelFairness);
+            buffer.append(modelInit).append(" /\\[][ ").append(modelNext).append(" ]_").append("<<").append(vars)
+                    .append(">> ");
+            // add fairness condition, if any
+            if (!EMPTY_STRING.equals(modelFairness))
+            {
+                buffer.append(" /\\ ").append(modelFairness);
+            }
+
+            result = new String[] { identifier, buffer.toString() };
+            break;
+        default:
+            break;
         }
+
         // specification
         // to .cfg : <id>
         // to _MC.tla : <id> == <expression>
         // : <id> == <init> /\[][<next>]_vars /\ <fairness>
-        return new String[] { identifier, buffer.toString() };
+        return result;
     }
 
     /**
