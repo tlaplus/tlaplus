@@ -1,11 +1,15 @@
 package org.lamport.tla.toolbox.tool.tlc.job;
 
+import java.io.IOException;
+
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.Action;
+import org.eclipse.ui.console.IOConsoleOutputStream;
 import org.lamport.tla.toolbox.tool.tlc.TLCActivator;
+import org.lamport.tla.toolbox.tool.tlc.ui.ConsoleFactory;
 import org.lamport.tla.toolbox.util.RCPNameToFileIStream;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 
@@ -27,6 +31,9 @@ public class TLCJob extends AbstractJob
     
     private TLCThread tlcThread;
     private int workers = 1;
+    
+    private IOConsoleOutputStream outputStream = ConsoleFactory.getTLCConsole().newOutputStream();
+    
 
     int reported;
 
@@ -60,6 +67,7 @@ public class TLCJob extends AbstractJob
         {
             public void run()
             {
+                // TODO
                 System.out.println("Results viewed");
             }
         };
@@ -69,6 +77,11 @@ public class TLCJob extends AbstractJob
     {
         monitor.beginTask("TLC run for " + rootModule.getName(), IProgressMonitor.UNKNOWN);
 
+        
+        // open the console
+        ConsoleFactory.getTLCConsole().activate();
+        
+        
         monitor.subTask("Preparing the tool environment");
         // setup tool io
         // Reset the tool output messages.
@@ -159,7 +172,7 @@ public class TLCJob extends AbstractJob
             // nothing to do
             e.printStackTrace();
         }
-        // return true if the tlc is still calculating
+        // return true if the TLC is still calculating
         return (tlcThread.isRunning());
     }
 
@@ -175,7 +188,22 @@ public class TLCJob extends AbstractJob
         String[] messages = ToolIO.getAllMessages();
         for (; reported < messages.length; reported++)
         {
-            System.out.println(messages[reported]);
+            println(messages[reported]);
+        }
+    }
+
+    /**
+     * @param string
+     */
+    private void println(String string)
+    {
+        try
+        {
+            outputStream.write(string);
+            outputStream.write("\n");
+        } catch (IOException e)
+        {
+            e.printStackTrace();
         }
     }
 
@@ -196,7 +224,7 @@ public class TLCJob extends AbstractJob
         {
             synchronized (this)
             {
-                System.out.println("TLC Thread: ------------ {START}");
+                println("TLC Thread {STARTED} -------------");
                 isRunning = true;
             }
             // start TLC
@@ -204,7 +232,7 @@ public class TLCJob extends AbstractJob
 
             synchronized (this)
             {
-                System.out.println("TLC Thread: ------------ {FINISHED}");
+                println("TLC Thread {FINISHED} ------------");
                 isRunning = false;
             }
         }
