@@ -6,15 +6,11 @@ import java.util.Vector;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.IResourceRuleFactory;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.ISchedulingRule;
-import org.eclipse.core.runtime.jobs.MultiRule;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.TLAMarkerHelper;
@@ -145,7 +141,7 @@ public class TranslatorJob extends WorkspaceJob
             {
                 try
                 {
-                    job.setRule(getFileModificationRule(fileToBuild));
+                    job.setRule(ResourceHelper.getModifyRule(fileToBuild));
                     job.runInWorkspace(monitor);
                 } catch (CoreException e)
                 {
@@ -154,16 +150,6 @@ public class TranslatorJob extends WorkspaceJob
             }
         };
     }
-    
-    public static ISchedulingRule getFileModificationRule(IResource file)
-    {
-        IResourceRuleFactory ruleFactory = ResourcesPlugin.getWorkspace().getRuleFactory();
-        ISchedulingRule rule = ruleFactory.modifyRule(file);
-        return rule;
-    }
-    
-
-
     
     private int[] detectLocation(String message)
     {
