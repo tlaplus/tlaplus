@@ -7,12 +7,8 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IHandler;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.IResourceRuleFactory;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.jobs.ISchedulingRule;
-import org.eclipse.core.runtime.jobs.MultiRule;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.swt.widgets.Shell;
@@ -105,21 +101,4 @@ public class TranslateModuleHandler extends AbstractHandler implements IHandler
     }
 
     
-    public ISchedulingRule getModifyRule(IResource[] resources)
-    {
-        if (resources == null)
-        {
-            return null;
-        }
-        ISchedulingRule combinedRule = null;
-        
-        IResourceRuleFactory ruleFactory = ResourcesPlugin.getWorkspace().getRuleFactory();
-        for (int i=0; i < resources.length; i++)
-        {
-           ISchedulingRule rule = ruleFactory.modifyRule(resources[i]); 
-           combinedRule = MultiRule.combine(rule, combinedRule);
-        }
-        return combinedRule;
-    }
-
 }
