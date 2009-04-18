@@ -1,5 +1,6 @@
 package org.lamport.tla.toolbox.tool.tlc.model;
 
+
 /**
  * An Assignment consists of a label, a list of parameters and the right side.
  * e.G. <code>F(_, _, _,) <- foo</code>. <code>F</code> is the label, <code>foo</code> is the 
@@ -62,14 +63,16 @@ public class Assignment extends Formula
         if (this.modelValue)
         {
             buffer.append(IS_MV);
-            if (this.isSymmetricalSet()) 
+            if (this.isSymmetricalSet())
             {
                 buffer.append(SYMMETRICAL);
                 buffer.append(getRight());
-            } else {
+            } else
+            {
                 // buffer.append(getRight());
             }
-        } else {
+        } else
+        {
             buffer.append(getRight());
         }
 
@@ -179,22 +182,22 @@ public class Assignment extends Formula
     {
         return modelValue;
     }
-    
+
     /**
      * Returns true, if the set of model values is symmetrical 
      */
-    public boolean isSymmetricalSet() 
+    public boolean isSymmetricalSet()
     {
         return symmetry;
     }
-    
+
     /**
      * Sets the symmetry property for a set of model values 
      * @param isSymmetric
      */
     public void setSymmetric(boolean isSymmetric)
     {
-        if (isSymmetric && !modelValue) 
+        if (isSymmetric && !modelValue)
         {
             throw new IllegalArgumentException("Current assignment is not a set of model values");
         }
@@ -224,4 +227,25 @@ public class Assignment extends Formula
         }
         return array;
     }
+
+
+    /** 
+     * compares if the signature (label and the number of parameters matches)
+     */
+    public boolean equalSignature(Assignment obj)
+    {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (label == null)
+        {
+            if (obj.label != null)
+                return false;
+        } else if (!label.equals(obj.label))
+            return false;
+
+        return (params.length == obj.params.length);
+    }
+
 }
