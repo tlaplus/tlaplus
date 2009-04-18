@@ -17,11 +17,6 @@
             id="org.lamport.tla.toolbox.ui.perspective.initial"
             name="Initial Perspective">
       </perspective>
-      <perspective
-            class="org.lamport.tla.toolbox.ui.perspective.ProblemsPerspective"
-            id="org.lamport.tla.toolbox.ui.perspective.problems"
-            name="Problems Perspective">
-      </perspective>
    </extension>
    
 <!--                                   -->
@@ -33,7 +28,7 @@
             allowMultiple="false"
             category="org.lamport.tla.toolbox.category"
             class="org.lamport.tla.toolbox.ui.view.ProblemView"
-            icon="icons/full/eview16/console_view2.gif"
+            icon="icons/full/obj16/error_tsk.gif"
             id="toolbox.view.ProblemView"
             name="Problems">
       </view>
@@ -211,9 +206,14 @@
       </category>
       <command
             categoryId="toolbox.command.category.ui"
-            description="Toggles Problem View"
-            id="toolbox.command.toggle-problem-view"
-            name="Toggle Problem View">
+            description="Open the specified view"
+            id="toolbox.command.openview"
+            name="Open View">
+         <commandParameter
+               id="toolbox.openview.name"
+               name="name"
+               optional="false">
+         </commandParameter>
       </command>
       <command
             categoryId="toolbox.command.category.ui"
@@ -253,12 +253,6 @@
             contextId="toolbox.contexts.cleaneditor"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="M1+T">
-      </key>
-      <key
-            commandId="toolbox.command.toggle-problem-view"
-            contextId="toolbox.contexts.cleaneditor"
-            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            sequence="M1+S">
       </key>
    </extension>
       
@@ -432,25 +426,6 @@
       </menuContribution>
 
 
-      <menuContribution
-            locationURI="menu:toolbox.file.menu?after=additions">
-         <command
-               commandId="org.eclipse.ui.window.preferences"
-               id="toolbox.file.preferences"
-               style="push">
-            <visibleWhen
-                  checkEnabled="true">
-               <with
-                     variable="activeWorkbenchWindow.activePerspective">
-                  <not>
-                     <equals
-                           value="org.lamport.tla.toolbox.ui.perspective.problems">
-                     </equals>
-                  </not>
-               </with>
-            </visibleWhen>
-         </command>
-      </menuContribution>
       
       <!-- edit menu -->
       <menuContribution
@@ -520,6 +495,37 @@
                tooltip="Opens the help">
          </command>
       </menuContribution>
+      <menuContribution
+            locationURI="menu:toolbox.window.menu?after=toolbox.window.view.separator">
+         <command
+               commandId="toolbox.command.openview"
+               icon="icons/full/obj16/error_tsk.gif"
+               id="toolbox.menu.open-problems"
+               label="Problems"
+               mnemonic="P"
+               mode="FORCE_TEXT"
+               style="push"
+               tooltip="Opens the view showing problems">
+            <parameter
+                  name="toolbox.openview.name"
+                  value="toolbox.view.ProblemView">
+            </parameter>
+         </command>
+         <command
+               commandId="toolbox.command.openview"
+               icon="icons/full/eview16/console_view2.gif"
+               id="toolbox.menu.open-console"
+               label="Console"
+               mnemonic="C"
+               mode="FORCE_TEXT"
+               style="push"
+               tooltip="Opens the view showing console">
+            <parameter
+                  name="toolbox.openview.name"
+                  value="org.eclipse.ui.console.ConsoleView">
+            </parameter>
+         </command>
+      </menuContribution>
    </extension>
    
 <!--              -->
@@ -548,8 +554,8 @@
             commandId="toolbox.command.spec.props">
       </handler>
       <handler
-            class="org.lamport.tla.toolbox.ui.handler.ToggleProblemViewHandler"
-            commandId="toolbox.command.toggle-problem-view">
+            class="org.lamport.tla.toolbox.ui.handler.OpenViewHandler"
+            commandId="toolbox.command.openview">
       </handler>
       <handler
             class="org.lamport.tla.toolbox.ui.handler.OpenModuleHandler"
@@ -588,7 +594,7 @@
    <extension
          point="org.eclipse.ui.contexts">
       <context
-            description="Clean Editor"
+            description="The current active editor has no modifcation since last save."
             id="toolbox.contexts.cleaneditor"
             name="Clean Editor"
             parentId="org.eclipse.ui.contexts.window">
