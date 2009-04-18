@@ -52,7 +52,6 @@ public class ModelEditor extends FormEditor
         }
     }; 
     
-    
     public ModelEditor()
     {
 
@@ -176,6 +175,27 @@ public class ModelEditor extends FormEditor
     public ILaunchConfigurationWorkingCopy getConfig()
     {
         return configurationCopy;
+    }
+
+    /**
+     * @return
+     */
+    public boolean isComplete()
+    {
+        for (int i = 0; i < pages.size(); i++) 
+        {
+            Object page = pages.get(i);
+            if (page instanceof BasicFormPage)
+            {
+                BasicFormPage bPage = (BasicFormPage) page;
+                if (!bPage.isComplete()) 
+                {
+                    setActivePage(bPage.getId());
+                    return false;
+                }
+            }            
+        }
+        return true;
     }
 
 

@@ -61,18 +61,16 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
     private TableViewer invariantsTable;
     private TableViewer propertiesTable;
     private TableViewer constantTable;
-    private ModifyListener widgetActivatingListener = new ModifyListener() 
-    {
+    private ModifyListener widgetActivatingListener = new ModifyListener() {
         // select the section (radio button) the text field belong to
         public void modifyText(ModifyEvent e)
         {
-            if (e.widget == specSource.getControl()) 
+            if (e.widget == specSource.getControl())
             {
                 noSpecRadio.setSelection(false);
                 closedFormulaRadio.setSelection(true);
                 initNextFairnessRadio.setSelection(false);
-            } else if (e.widget == initFormulaSource.getControl() 
-                    || e.widget == nextFormulaSource.getControl() 
+            } else if (e.widget == initFormulaSource.getControl() || e.widget == nextFormulaSource.getControl()
                     || e.widget == fairnessFormulaSource.getControl())
             {
                 noSpecRadio.setSelection(false);
@@ -151,36 +149,49 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
         // constants from the model
         List savedConstants = getConfig().getAttribute(MODEL_PARAMETER_CONSTANTS, new Vector());
-        // get the root module
-        /*
-        ModuleNode moduleNode = ToolboxHandle.getSpecObj().getExternalModuleTable().getRootModule();
-        // get the list of constants
-        List constants = ModelHelper.createConstantsList(moduleNode);
-         */
-        // TODO check if new constants exist...
         FormHelper.setSerializedInput(constantTable, savedConstants);
-        
+
         validate();
     }
 
     public void validate()
     {
 
+        
         IMessageManager mm = getManagedForm().getMessageManager();
         // clean old messages
         mm.removeAllMessages();
+        // make the run possible
+        setComplete(true);
+        
+        // getting the root module node of the spec
+        // this can be null!
+        ModuleNode rootModuleNode = getRootModuleNode();
 
+        // constants in the table
         List constants = (List) constantTable.getInput();
+        if (rootModuleNode != null) 
+        {
+            ModelHelper.mergeConstantLists(constants, ModelHelper.createConstantsList(rootModuleNode));
+            constantTable.setInput(constants);
+        }
+        
+
         for (int i = 0; i < constants.size(); i++)
         {
             Assignment constant = (Assignment) constants.get(i);
+
+            // the constant is still in the list
             if (constant.getRight() == null || "".equals(constant.getRight()))
             {
                 // right side of assignment undefined
                 mm.addMessage(constant.getLabel(), "Provide a value for constant " + constant.getLabel(), constant,
                         IMessageProvider.ERROR, constantTable.getTable());
+                setComplete(false);
             }
         }
+        
+        
 
         // number of workers
         String numberOfworkers = workers.getText();
@@ -191,45 +202,56 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
             {
                 mm.addMessage("wrongNumber1", "Number of workers must be a positive integer number", null,
                         IMessageProvider.ERROR, workers);
+                setComplete(false);
             }
         } catch (NumberFormatException e)
         {
             mm.addMessage("wrongNumber2", "Number of workers must be a positive integer number", null,
                     IMessageProvider.ERROR, workers);
+            setComplete(false);
         }
 
-        
         // spec or no spec
-        Control selectedOption = closedFormulaRadio.getSelection() ? closedFormulaRadio : (initNextFairnessRadio.getSelection() ? initNextFairnessRadio : null);
-        if (selectedOption != null) 
+        Control selectedOption = closedFormulaRadio.getSelection() ? closedFormulaRadio : (initNextFairnessRadio
+                .getSelection() ? initNextFairnessRadio : null);
+        if (selectedOption != null)
         {
             // the user selected to use a spec
             // check if there are variables declared
-            if (getRootModuleNode() != null && getRootModuleNode().getVariableDecls().length == 0) 
+            if (rootModuleNode != null && rootModuleNode.getVariableDecls().length == 0)
             {
                 // no variables => install an error
-                mm.addMessage("noVariables", "There were no variables declared in the root module", null, IMessageProvider.ERROR, selectedOption);
+                mm.addMessage("noVariables", "There were no variables declared in the root module", null,
+                        IMessageProvider.ERROR, selectedOption);
+                setComplete(false);
             }
         }
 
         // check if the selected fields are filled
-        if (closedFormulaRadio.getSelection() && specSource.getDocument().get().trim().equals("")) 
+        if (closedFormulaRadio.getSelection() && specSource.getDocument().get().trim().equals(""))
         {
-            mm.addMessage("noSpec", "The formula must be provided", null, IMessageProvider.ERROR, specSource.getTextWidget());
+            mm.addMessage("noSpec", "The formula must be provided", null, IMessageProvider.ERROR, specSource
+                    .getTextWidget());
+            setComplete(false);
         } else if (initNextFairnessRadio.getSelection())
         {
             String init = initFormulaSource.getDocument().get().trim();
             String next = nextFormulaSource.getDocument().get().trim();
-            
+
             if (init.equals(""))
             {
-                mm.addMessage("noInit", "The init formula must be provided", null, IMessageProvider.ERROR, initFormulaSource.getTextWidget());
+                mm.addMessage("noInit", "The init formula must be provided", null, IMessageProvider.ERROR,
+                        initFormulaSource.getTextWidget());
+                setComplete(false);
             }
             if (next.equals(""))
             {
-                mm.addMessage("noNext", "The spec formula must be provided", null, IMessageProvider.ERROR, nextFormulaSource.getTextWidget());
+                mm.addMessage("noNext", "The spec formula must be provided", null, IMessageProvider.ERROR,
+                        nextFormulaSource.getTextWidget());
+                setComplete(false);
             }
         }
+
         super.validate();
     }
 
@@ -377,7 +399,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         gd.heightHint = 20;
         initFormulaSource.getTextWidget().setLayoutData(gd);
         initFormulaSource.getTextWidget().addModifyListener(whatIsTheSpecListener);
-        initFormulaSource.getTextWidget().addModifyListener(widgetActivatingListener);        
+        initFormulaSource.getTextWidget().addModifyListener(widgetActivatingListener);
 
         // next
         toolkit.createLabel(behaviorArea, "Next:");
@@ -519,7 +541,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
     protected ModuleNode getRootModuleNode()
     {
         SpecObj specObj = ToolboxHandle.getSpecObj();
-        if (specObj !=null) 
+        if (specObj != null)
         {
             return specObj.getExternalModuleTable().getRootModule();
         }

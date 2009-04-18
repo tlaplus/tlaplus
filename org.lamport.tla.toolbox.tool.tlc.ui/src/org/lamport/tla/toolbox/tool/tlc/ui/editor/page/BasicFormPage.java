@@ -8,6 +8,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.ListenerList;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
@@ -58,6 +59,7 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
 
     // image registry
     private Hashtable images = new Hashtable();
+    private boolean isComplete;
 
     /**
      * @param editor
@@ -77,6 +79,14 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
         // TODO
         IProgressMonitor monitor = null;
 
+        if (!((ModelEditor)getEditor()).isComplete())
+        {
+            MessageDialog.openError(getSite().getShell(), "TLC Launch not allowed", "The model contains errors, which should be corrected before the TLC launch");
+            return;
+        }
+        
+        
+        
         ILaunchConfigurationWorkingCopy config = getConfig();
 
         // save the editor if not saved
@@ -289,5 +299,19 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
     public void validate()
     {
         
+    }
+
+    /**
+     * 
+     * @return
+     */
+    public boolean isComplete()
+    {
+        return isComplete;
+    }
+
+    public void setComplete(boolean isComplete)
+    {
+        this.isComplete = isComplete;
     }
 }
