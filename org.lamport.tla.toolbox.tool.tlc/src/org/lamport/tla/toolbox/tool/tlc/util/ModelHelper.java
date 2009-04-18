@@ -340,8 +340,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
 
         int specType = config.getAttribute(MODEL_BEHAVIOR_SPEC_TYPE, MODEL_BEHAVIOR_TYPE_DEFAULT);
 
-        switch (specType) 
-        {
+        switch (specType) {
         case MODEL_BEHAVIOR_TYPE_NO_SPEC:
             // no spec - nothing to do
 
@@ -497,10 +496,30 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
         for (int i = 0; i < constantDecls.length; i++)
         {
             Assignment assign = new Assignment(constantDecls[i].getName().toString(), new String[constantDecls[i]
-                    .getNumberOfArgs()], null);
+                    .getNumberOfArgs()], "");
             constants.add(assign);
         }
         return constants;
+    }
+
+    /**
+     * Checks whether the constant defined by assignment is defined in the module node
+     * @param assignment
+     * @param node
+     * @return
+     */
+    public static boolean hasConstant(Assignment assignment, ModuleNode moduleNode)
+    {
+        OpDeclNode[] constantDecls = moduleNode.getConstantDecls();
+        for (int i = 0; i < constantDecls.length; i++)
+        {
+            if (assignment.getLabel().equals(constantDecls[i].getName().toString())
+                    && assignment.getParams().length == constantDecls[i].getNumberOfArgs())
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -545,6 +564,55 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
             operations.add(assign);
         }
         return operations;
+    }
+
+    /**
+     * This method eventually changes the constants list. If the signature constants of both
+     * lists are equal, the constants list is left untouched. Otherwise, all constants not present
+     * in the constantsFromModule are removed, and all missing are added.
+     * <br>
+     * For constant comparison {@link Assignment#equalSignature(Assignment)} is used
+     * 
+     * @param constants the list with constants, eventually the subject of change
+     * @param constantsFromModule a list of constants from the module (no right side, no params)
+     */
+    public static void mergeConstantLists(List constants, List constantsFromModule)
+    {
+        Vector constantsToAdd = new Vector();
+        Vector constantsUsed = new Vector();
+        
+
+        // iterate over constants from module
+        for (int i = 0; i < constantsFromModule.size(); i++)
+        {
+            Assignment fromModule = (Assignment) constantsFromModule.get(i);
+            // find it in the module list
+            boolean found = false;
+
+            for (int j = 0; j < constants.size(); j++)
+            {
+                Assignment constant = (Assignment) constants.get(j);
+                if (fromModule.equalSignature(constant))
+                {
+                    // store the information that the constant is used
+                    constantsUsed.add(constant);
+                    found = true;
+                    break;
+                }
+            }
+            // constant is in the module but not in the model
+            if (!found)
+            {
+                // save the constant for adding later
+                constantsToAdd.add(fromModule);
+            }
+        }
+
+        // at this point, all used constants are in the constantUsed list
+        constants.retainAll(constantsUsed);
+
+        // all constants to add are in constantsTo Add list
+        constants.addAll(constantsToAdd);
     }
 
 }
