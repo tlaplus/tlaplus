@@ -137,7 +137,7 @@ public class BehaviorFormulaPage extends BasicFormPage
      */
     protected void loadData() throws CoreException
     {
-        boolean isClosedFormula = getConfig().getAttribute(MODEL_BEHAVIOR_IS_CLOSED_SPEC_USED, MODEL_BEHAVIOR_IS_CLOSED_SPEC_USED_DEFAULT);
+        boolean isClosedFormula = getConfig().getAttribute(MODEL_BEHAVIOR_SPEC_TYPE, MODEL_BEHAVIOR_TYPE_DEFAULT) == MODEL_BEHAVIOR_TYPE_SPEC_CLOSED;
         
         // set up the radio buttons
         this.closedFormulaRadio.setSelection(isClosedFormula);
@@ -195,7 +195,8 @@ public class BehaviorFormulaPage extends BasicFormPage
 
         // mode 
         boolean isClosedSpecification = this.closedFormulaRadio.getSelection();
-        getConfig().setAttribute(MODEL_BEHAVIOR_IS_CLOSED_SPEC_USED, isClosedSpecification);
+        int value = (isClosedSpecification) ? MODEL_BEHAVIOR_TYPE_SPEC_CLOSED : MODEL_BEHAVIOR_TYPE_SPEC_INIT_NEXT; 
+        getConfig().setAttribute(MODEL_BEHAVIOR_SPEC_TYPE, value);
         
         super.commit(onSave);
     }
