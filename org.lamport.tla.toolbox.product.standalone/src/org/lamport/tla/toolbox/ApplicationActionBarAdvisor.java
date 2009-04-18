@@ -25,7 +25,10 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
     private IWorkbenchAction quitAction;
     private IWorkbenchAction saveAction;
 
-    // private IWorkbenchAction saveAsAction;
+    private IWorkbenchAction preferencesAction;
+
+    private IWorkbenchAction newEditorAction;
+    private IWorkbenchAction newWindowAction;
 
     /**
      * @param configurer
@@ -56,11 +59,17 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         register(quitAction);
 
         saveAction = ActionFactory.SAVE.create(window);
-        saveAction.setText("Save Module");
+        //saveAction.setText("Save");
         register(saveAction);
         
-        // saveAsAction = ActionFactory.SAVE_AS.create(window);
-        // register(saveAsAction);
+        preferencesAction = ActionFactory.PREFERENCES.create(window);
+        register(preferencesAction);
+        
+        newEditorAction = ActionFactory.NEW_EDITOR.create(window);
+        register(newEditorAction);
+        
+        newWindowAction = ActionFactory.OPEN_NEW_WINDOW.create(window);
+        register(newWindowAction);
 
     }
 
@@ -88,6 +97,15 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         toolsMenu.add(new Separator("toolbox.tools.separator"));
         toolsMenu.add(new Separator("toolbox.toolmenus.separator"));
 
+        MenuManager windowMenu = new MenuManager("&Window", "toolbox.window.menu");
+        windowMenu.add(newEditorAction);
+        windowMenu.add(newWindowAction);
+        windowMenu.add(new Separator("toolbox.window.open.separator"));
+        windowMenu.add(new Separator());
+        windowMenu.add(new Separator("toolbox.window.view.separator"));
+        windowMenu.add(new Separator());
+        windowMenu.add(preferencesAction);
+
         /*
         MenuManager helpMenu = new MenuManager("&Help", IWorkbenchActionConstants.M_HELP);
 
@@ -103,8 +121,8 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
 
         menuBar.add(fileMenu);
         menuBar.add(toolsMenu);
+        menuBar.add(windowMenu);
         menuBar.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
-        // menuBar.add(dynamicHelpAction);
         // menuBar.add(helpMenu);
     }
 
