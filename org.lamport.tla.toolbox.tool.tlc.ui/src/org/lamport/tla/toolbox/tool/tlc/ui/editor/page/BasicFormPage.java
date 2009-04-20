@@ -59,7 +59,8 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
 
     // image registry
     private Hashtable images = new Hashtable();
-    private boolean isComplete;
+    // the page completion status (true by default)
+    private boolean isComplete = true;
 
     /**
      * @param editor
