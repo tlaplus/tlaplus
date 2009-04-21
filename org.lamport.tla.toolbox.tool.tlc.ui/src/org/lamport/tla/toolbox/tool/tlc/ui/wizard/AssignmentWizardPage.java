@@ -94,6 +94,7 @@ public class AssignmentWizardPage extends WizardPage
         });
         styledText.setBackgroundMode(SWT.INHERIT_FORCE);
         styledText.setEditable(true);
+        styledText.setFocus();
 
         gd = new GridData(SWT.RIGHT, SWT.TOP, true, true);
         gd.minimumWidth = 500;
@@ -146,7 +147,7 @@ public class AssignmentWizardPage extends WizardPage
                 if (getAssignment().isModelValue())
                 {
                     // single model value
-                    if (getAssignment().getLabel().equals(getAssignment().getRight()))
+                    if (!getAssignment().isSetOfModelValues())
                     {
                         flagSymmetricalSet.setEnabled(false);
                         optionModelValue.setSelection(getAssignment().isModelValue());
@@ -163,6 +164,7 @@ public class AssignmentWizardPage extends WizardPage
 
             }
         }
+        
         setControl(container);
     }
 
@@ -174,7 +176,7 @@ public class AssignmentWizardPage extends WizardPage
     {
         return ((AssignmentWizard) getWizard()).getFormula();
     }
-
+    
     public boolean finish()
     {
         return false;
