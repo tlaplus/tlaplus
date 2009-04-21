@@ -21,8 +21,8 @@ import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.forms.widgets.TableWrapData;
 import org.lamport.tla.toolbox.tool.tlc.launch.IConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.IConfigurationDefaults;
+import org.lamport.tla.toolbox.tool.tlc.model.TypedSet;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.OverrideSectionPart;
-import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.TableSectionPart;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.VSectionPart;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.DirtyMarkingListener;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
@@ -42,6 +42,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
     private SourceViewer actionConstraintSource;
     private SourceViewer newDefinitionsSource;
     private SourceViewer viewSource;
+    private SourceViewer modelValuesSource;
     private Button dfidOption;
     private Button mcOption;
     private Button simulationOption;
@@ -49,7 +50,6 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
     private Text simuDepthText;
     private Text simuSeedText;
     private Text simuArilText;
-    private TableViewer modelValuesTable;
     private TableViewer definitionsTable;
 
 
@@ -77,8 +77,9 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         String newDefinitions = getConfig().getAttribute(MODEL_PARAMETER_NEW_DEFINITIONS, EMPTY_STRING);
         newDefinitionsSource.setDocument(new Document(newDefinitions));
         
-        List modelValues = getConfig().getAttribute(MODEL_PARAMETER_MODEL_VALUES, new Vector());
-        FormHelper.setSerializedInput(modelValuesTable, modelValues);
+        // advanced model values
+        String modelValues = getConfig().getAttribute(MODEL_PARAMETER_MODEL_VALUES, EMPTY_STRING);
+        modelValuesSource.setDocument(new Document(modelValues));
 
         // constraint
         String constraint = getConfig().getAttribute(MODEL_PARAMETER_CONSTRAINT, EMPTY_STRING);
@@ -204,8 +205,9 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         getConfig().setAttribute(MODEL_PARAMETER_NEW_DEFINITIONS, newDefinitions);
 
         // model values
-        List modelValues = FormHelper.getSerializedInput(modelValuesTable);
-        getConfig().setAttribute(MODEL_PARAMETER_MODEL_VALUES, modelValues);
+        String modelValues = modelValuesSource.getDocument().get();
+        TypedSet modelValuesSet = TypedSet.parseSet(modelValues);
+        getConfig().setAttribute(MODEL_PARAMETER_MODEL_VALUES, modelValuesSet.toString());
         
         // constraint formula
         String constraintFormula = constraintSource.getDocument().get();
@@ -334,17 +336,22 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
 
         // ---------------------------------------------------------------
         // modelValues
-        TableSectionPart modelValuesPart = new TableSectionPart(left, "Model Values", "....", toolkit, sectionFlags, this);
+        section = FormHelper.createSectionComposite(left, "Model Values", "....", toolkit, sectionFlags, getExpansionListener());
+        VSectionPart modelValuesPart = new VSectionPart(section, this);
         managedForm.addPart(modelValuesPart);
-        modelValuesTable = modelValuesPart.getTableViewer();
-
-        // layout
+        DirtyMarkingListener modelValuesListener = new DirtyMarkingListener(modelValuesPart, true);
         gd = new GridData(GridData.FILL_HORIZONTAL);
-        modelValuesPart.getSection().setLayoutData(gd);
-        gd = new GridData(GridData.FILL_BOTH);
-        gd.widthHint = 100;
-        gd.verticalSpan = 3;
-        modelValuesPart.getTableViewer().getTable().setLayoutData(gd);
+        gd.horizontalSpan = 3;
+        section.setLayoutData(gd);
+
+        Composite modelValueArea = (Composite) section.getClient();
+        modelValuesSource = FormHelper.createSourceViewer(toolkit, modelValueArea, SWT.V_SCROLL);
+        // layout of the source viewer
+        twd = new TableWrapData(TableWrapData.FILL);
+        twd.heightHint = 60;
+        twd.grabHorizontal = true;
+        modelValuesSource.getTextWidget().setLayoutData(twd);
+        modelValuesSource.addTextListener(modelValuesListener);
 
         // ---------------------------------------------------------------
         // launch
@@ -366,6 +373,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         // add section ignoring listeners
         dirtyPartListeners.add(newDefinitionsListener);
         dirtyPartListeners.add(actionConstraintListener);
+        dirtyPartListeners.add(modelValuesListener);
         dirtyPartListeners.add(constraintListener);
         dirtyPartListeners.add(launchListener);
     }
