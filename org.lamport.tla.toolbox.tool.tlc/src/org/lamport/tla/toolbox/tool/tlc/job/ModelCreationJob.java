@@ -1,5 +1,6 @@
 package org.lamport.tla.toolbox.tool.tlc.job;
 
+import java.util.List;
 import java.util.Vector;
 
 import org.eclipse.core.resources.IFile;
@@ -12,6 +13,7 @@ import org.eclipse.jface.action.Action;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationDefaults;
 import org.lamport.tla.toolbox.tool.tlc.launch.ModelWriter;
+import org.lamport.tla.toolbox.tool.tlc.model.TypedSet;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 
 /**
@@ -57,53 +59,61 @@ public class ModelCreationJob extends AbstractJob implements IModelConfiguration
         {
             String tlaFilename = config.getAttribute(MODEL_ROOT_FILE, EMPTY_STRING);
             String rootModuleName = config.getAttribute(SPEC_ROOT_MODULE, EMPTY_STRING);
+            
+/*            // skip modifications if nothing changed
             long modelTime = config.getFile().getLocalTimeStamp();
-            // skip modifications if nothing changed
             if ( modelTime <= this.tlaFile.getLocalTimeStamp() || modelTime <= this.cfgFile.getLocalTimeStamp() ) 
             {
                 return Status.OK_STATUS;    
-            } else 
-            {
-                System.out.println("Model TLA file is: " + this.tlaFile.getName());
-                System.out.println("Model CFG file is: " + this.cfgFile.getName());
-                
-                ModelWriter writer = new ModelWriter();
-                // add extend primer
-                writer.addPrimer(tlaFilename, rootModuleName);
-                // new definitions
-                writer.addNewDefinitions(config.getAttribute(MODEL_PARAMETER_NEW_DEFINITIONS, EMPTY_STRING));
-                /* ------------ parameters -------------- */
-                // constants list
-                writer.addFormulaList(ModelHelper.createConstantsContent(config), "CONSTANT");
-                // definition overrides list
-                writer.addFormulaList(ModelHelper.createListContent(config.getAttribute(MODEL_PARAMETER_DEFINITIONS,
-                        new Vector()), "def_ov"), "");
-                // symmetry TODO
-                // writer.addFormulaList(ModelHelper.createListContent(new Vector(), new Vector()), "sym"), "SYMMETRY");
-
-                // constraint
-                writer.addFormulaList(ModelHelper.createSourceContent(MODEL_PARAMETER_CONSTRAINT, "constr", config),
-                        "CONSTRAINT");
-                // action constraint
-                writer.addFormulaList(ModelHelper.createSourceContent(MODEL_PARAMETER_ACTION_CONSTRAINT, "action_constr",
-                        config), "ACTION-CONSTRAINT");
-                /* ------------ behavior -------------- */
-                // the specification name-formula pair
-                writer.addSpecDefinition(ModelHelper.createSpecificationContent(config));
-                /* ------------ what to check -------------- */
-                // invariants
-                writer.addFormulaList(ModelHelper.createListContent(config.getAttribute(MODEL_CORRECTNESS_INVARIANTS,
-                        new Vector()), "inv"), "INVARIANT");
-                // properties
-                writer.addFormulaList(ModelHelper.createListContent(config.getAttribute(MODEL_CORRECTNESS_PROPERTIES,
-                        new Vector()), "prop"), "PROPERTY");
-                /* ------------ model values -------------- */
-                // TODO model values
-                // write the content
-                writer.writeFiles(tlaFile, cfgFile, monitor);
-                return Status.OK_STATUS;
-                
             }
+*/            
+            
+            System.out.println("Model TLA file is: " + this.tlaFile.getName());
+            System.out.println("Model CFG file is: " + this.cfgFile.getName());
+            
+            ModelWriter writer = new ModelWriter();
+            
+            // add extend primer
+            writer.addPrimer(tlaFilename, rootModuleName);
+            
+            // constants list
+            List constants = ModelHelper.deserializeAssignmentList(config.getAttribute(MODEL_PARAMETER_CONSTANTS,
+                    new Vector()));
+            
+            // the advanced model values
+            TypedSet modelValues = TypedSet.parseSet(config.getAttribute(MODEL_PARAMETER_MODEL_VALUES, EMPTY_STRING)); 
+            
+            // add constants and model values
+            writer.addConstants(constants, modelValues);
+            
+            // new definitions
+            writer.addNewDefinitions(config.getAttribute(MODEL_PARAMETER_NEW_DEFINITIONS, EMPTY_STRING));
+
+            // definition overrides list
+            List overrides = ModelHelper.deserializeAssignmentList(config.getAttribute(MODEL_PARAMETER_DEFINITIONS, new Vector()));
+            writer.addFormulaList(ModelHelper.createOverridesContent(overrides, "def_ov"), "");
+            
+            // constraint
+            writer.addFormulaList(ModelHelper.createSourceContent(MODEL_PARAMETER_CONSTRAINT, "constr", config),
+                    "CONSTRAINT");
+            // action constraint
+            writer.addFormulaList(ModelHelper.createSourceContent(MODEL_PARAMETER_ACTION_CONSTRAINT, "action_constr",
+                    config), "ACTION-CONSTRAINT");
+            
+            // the specification name-formula pair
+            writer.addSpecDefinition(ModelHelper.createSpecificationContent(config));
+            
+            // invariants
+            writer.addFormulaList(ModelHelper.createFormulaListContent(config.getAttribute(MODEL_CORRECTNESS_INVARIANTS,
+                    new Vector()), "inv"), "INVARIANT");
+            
+            // properties
+            writer.addFormulaList(ModelHelper.createFormulaListContent(config.getAttribute(MODEL_CORRECTNESS_PROPERTIES,
+                    new Vector()), "prop"), "PROPERTY");
+
+            // write down the files
+            writer.writeFiles(tlaFile, cfgFile, monitor );
+            return Status.OK_STATUS;
             
         } catch (CoreException e)
         {

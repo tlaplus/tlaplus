@@ -39,12 +39,10 @@ public class ConfigCreationOperation implements IWorkspaceRunnable
         {
             // create file
             File file = new File(configPath.toOSString());
-/*          
             if (file.exists())
             {
                 return;
             }
-*/            
             if (file.createNewFile())
             {
                 // successfully created

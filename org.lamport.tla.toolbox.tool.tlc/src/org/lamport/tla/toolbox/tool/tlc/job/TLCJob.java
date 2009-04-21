@@ -77,7 +77,6 @@ public class TLCJob extends AbstractJob
     {
         monitor.beginTask("TLC run for " + rootModule.getName(), IProgressMonitor.UNKNOWN);
 
-        
         // open the console
         ConsoleFactory.getTLCConsole().activate();
         
