@@ -15,7 +15,9 @@ import org.eclipse.debug.core.model.ILaunchConfigurationDelegate;
 import org.eclipse.debug.core.model.LaunchConfigurationDelegate;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.tool.tlc.job.ModelCreationJob;
+import org.lamport.tla.toolbox.tool.tlc.job.TLCInternalJob;
 import org.lamport.tla.toolbox.tool.tlc.job.TLCJob;
+import org.lamport.tla.toolbox.tool.tlc.job.TLCProcessJob;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 
 /**
@@ -88,7 +90,8 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
         modelJob.schedule();
 
         // TLC job
-        TLCJob tlcjob = new TLCJob(tlaFile, cfgFile, project);
+        //TLCJob tlcjob = new TLCJob(tlaFile, cfgFile, project);
+        TLCJob tlcjob = new TLCProcessJob(tlaFile, cfgFile, project);
         tlcjob.setWorkers(numberOfWorkers);
         tlcjob.addJobChangeListener(writingJobStatusListener);
         tlcjob.setPriority(Job.LONG);
