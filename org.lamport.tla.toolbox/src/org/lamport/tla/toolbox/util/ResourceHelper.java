@@ -16,8 +16,10 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.QualifiedName;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.core.runtime.jobs.MultiRule;
 import org.lamport.tla.toolbox.Activator;
@@ -286,6 +288,18 @@ public class ResourceHelper
     }
 
     /**
+     * Returns the content for the end of the module
+     * @return
+     */
+    public static StringBuffer getConfigClosingTag()
+    {
+        StringBuffer buffer = new StringBuffer();
+        buffer.append("\\* Generated at ").append(new Date());
+        return buffer;
+    }
+
+    
+    /**
      * Creates a simple content for a new TLA+ module
      *  
      * @param moduleFileName, name of the file 
@@ -295,7 +309,7 @@ public class ResourceHelper
     {
         StringBuffer buffer = new StringBuffer();
         buffer.append("---- MODULE ").append(ResourceHelper.getModuleNameChecked(moduleFilename, false)).append(
-                " ----\n").append("EXTENDS ").append(extendedModuleName).append("\n").append("\n\n");
+                " ----\n").append("EXTENDS ").append(extendedModuleName).append(", TLC").append("\n\n");
         return buffer;
     }
 
@@ -346,12 +360,14 @@ public class ResourceHelper
         ByteArrayInputStream stream = new ByteArrayInputStream(buffer.toString().getBytes());
         if (file.exists())
         {
-            file
-                    .setContents(stream, force ? IResource.FORCE | IResource.KEEP_HISTORY : IResource.KEEP_HISTORY,
+            file.setContents(stream, force ? IResource.FORCE | IResource.KEEP_HISTORY : IResource.KEEP_HISTORY,
                             monitor);
         } else
         {
-            file.create(stream, force, monitor);
+            throw new CoreException(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Exected " + file.getName() + " file has been removed externally"));
+            // this will create a file in a wrong location
+            // instead of /rootfile-dir/file.cfg it will create it under /specdir/file.cfg
+            // file.create(stream, force, monitor);
         }
     }
 
@@ -391,10 +407,22 @@ public class ResourceHelper
         IResourceRuleFactory ruleFactory = ResourcesPlugin.getWorkspace().getRuleFactory();
         for (int i = 0; i < resources.length; i++)
         {
+            // if one of the resources does not exist
+            // something is screwed up
+            if (resources[i] == null || !resources[i].exists()) 
+            {
+                return null;
+            }
             ISchedulingRule rule = ruleFactory.modifyRule(resources[i]);
             combinedRule = MultiRule.combine(rule, combinedRule);
         }
         return combinedRule;
+    }
+    
+    public static ISchedulingRule getCreateRule(IResource resource) 
+    {
+        IResourceRuleFactory ruleFactory = ResourcesPlugin.getWorkspace().getRuleFactory();
+        return ruleFactory.createRule(resource);
     }
     /**
      * Retrieves a rule for modifying a resource
