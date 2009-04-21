@@ -69,24 +69,5 @@ public interface IModelConfigurationConstants extends IConfigurationConstants
      * advanced model values not used in constant definitions
      */
     public static final String MODEL_PARAMETER_MODEL_VALUES = "modelParameterModelValues";
-    
-    
-    
-    /**
-     * implied init list, implemented as invariants
-     * @deprecated
-     */
-    public static final String MODEL_CORRECTNESS_INIT = "modelCorrectnessInit";
-    /**
-     * implied action list, implemented as properties
-     * @deprecated
-     */
-    public static final String MODEL_CORRECTNESS_ACTIONS = "modelCorrectnessActions";
-
-    /**
-     * symmetry list, implemented in as property of the constant
-     * @deprecated
-     */
-    public static final String MODEL_PARAMETER_SYMMETRY = "modelParameterSymmetry";
 
 }

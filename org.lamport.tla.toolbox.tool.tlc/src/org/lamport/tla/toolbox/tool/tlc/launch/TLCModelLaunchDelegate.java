@@ -5,7 +5,6 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.IJobChangeListener;
 import org.eclipse.core.runtime.jobs.Job;
@@ -52,6 +51,11 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
 
         // name of the specification
         String specName = config.getAttribute(SPEC_NAME, EMPTY_STRING);
+        
+        // name of the spec root module
+        // String specRootFilename = config.getAttribute(SPEC_ROOT_FILE, EMPTY_STRING);
+        
+        
         // model name
         String modelName = config.getAttribute(MODEL_NAME, EMPTY_STRING);
         // TLA model file
@@ -65,11 +69,16 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
         
         
         // project directory
-        IProject projectDir = ToolboxHandle.getCurrentSpec().getProject();
+        IProject project = ToolboxHandle.getCurrentSpec().getProject();
+
+        // refresh local resources
+        project.refreshLocal(IResource.DEPTH_INFINITE, monitor);
+        
         // model TLA file
-        IFile tlaFile = (IFile) projectDir.findMember(new Path(tlaFilename).lastSegment());
+        IFile tlaFile = ResourceHelper.getLinkedFile(project, tlaFilename, true);
+        
         // config file
-        IFile cfgFile = (IFile) projectDir.findMember(new Path(configFilename).lastSegment());
+        IFile cfgFile = ResourceHelper.getLinkedFile(project, configFilename, true);
 
         // model job
         ModelCreationJob modelJob = new ModelCreationJob(config, tlaFile, cfgFile);
@@ -79,7 +88,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
         modelJob.schedule();
 
         // TLC job
-        TLCJob tlcjob = new TLCJob(tlaFile, cfgFile, projectDir);
+        TLCJob tlcjob = new TLCJob(tlaFile, cfgFile, project);
         tlcjob.setWorkers(numberOfWorkers);
         tlcjob.addJobChangeListener(writingJobStatusListener);
         tlcjob.setPriority(Job.LONG);

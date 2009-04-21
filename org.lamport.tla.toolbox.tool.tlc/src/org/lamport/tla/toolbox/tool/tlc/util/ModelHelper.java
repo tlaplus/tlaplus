@@ -1,5 +1,6 @@
 package org.lamport.tla.toolbox.tool.tlc.util;
 
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
@@ -11,6 +12,7 @@ import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationType;
@@ -135,24 +137,24 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
      * Retrieves the the config file
      * REFACTOR HACK 
      */
-    public static IFile getConfigFile(IResource rootModule)
+    public static IFile getConfigFile(IResource modelRootFile, IProgressMonitor monitor)
     {
 
-        IPath cfgPath = rootModule.getLocation().removeFileExtension().addFileExtension("cfg");
+        IPath cfgPath = modelRootFile.getLocation().removeFileExtension().addFileExtension("cfg");
 
         // create config file
         IWorkspaceRunnable configCreateJob = new ConfigCreationOperation(cfgPath);
         // create it
         try
         {
-            ResourcesPlugin.getWorkspace().run(configCreateJob, null);
+            ResourcesPlugin.getWorkspace().run(configCreateJob, monitor);
         } catch (CoreException e)
         {
             e.printStackTrace();
             // exception, no chance to recover
         }
 
-        IFile cfgFile = ResourceHelper.getLinkedFile(rootModule.getProject(), cfgPath.toOSString(), true);
+        IFile cfgFile = ResourceHelper.getLinkedFile(modelRootFile.getProject(), cfgPath.toOSString(), true);
 
         return cfgFile;
     }
@@ -405,53 +407,51 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
     }
 
     /**
-     * Create representation of constants
-     * @param config launch configuration
-     * @return a list of string pairs each representing a constant instantiation 
-     * @throws CoreException 
+     * Converts formula list to a string representation
+     * @param serializedFormulaList, list of strings representing formulas (with enablement flag)
+     * @param labelingScheme
+     * @return
      */
-    public static List createConstantsContent(ILaunchConfiguration config) throws CoreException
+    public static List createFormulaListContent(List serializedFormulaList, String labelingScheme)
     {
-        List constants = ModelHelper.deserializeAssignmentList(config.getAttribute(MODEL_PARAMETER_CONSTANTS,
-                new Vector()));
-        Vector constantContent = new Vector(constants.size());
+        List formulaList = ModelHelper.deserializeFormulaList(serializedFormulaList);
+        return (createListContent(formulaList, labelingScheme));
+    }
 
-        Assignment constant;
+    /**
+     * Create a list of overrides
+     * @param overrides
+     * @param string
+     * @return
+     */
+    public static List createOverridesContent(List overrides, String labelingScheme)
+    {
+        Vector resultContent = new Vector(overrides.size());
         String[] content;
-        String label;
-        for (int i = 0; i < constants.size(); i++)
+        String id;
+        Assignment formula;
+        for (int i = 0; i < overrides.size(); i++)
         {
-            label = getValidIdentifier("const");
-            constant = (Assignment) constants.get(i);
-
-            if (constant.isModelValue())
-            {
-                // model value assignment
-                // to .cfg : foo = foo
-                // to _MC.tla : <nothing>
-                content = new String[] { constant.getLabel() + " = " + constant.getRight(), "" };
-            } else
-            {
-                // constant instantiation
-                // to .cfg : foo <- <id>
-                // to _MC.tla : <id> == <expression>
-                content = new String[] { constant.getLabel() + " <- " + label,
-                        constant.getParametrizedLabel(label) + " ==\n" + constant.getRight() };
-            }
-            constantContent.add(content);
+            id = getValidIdentifier(labelingScheme);
+            // formulas
+            // to .cfg : <id>
+            // to _MC.tla : <id> == <expression>
+            formula = ((Assignment) overrides.get(i));
+            content = new String[] { formula.getLabel() + " <- " + id,
+                    formula.getParametrizedLabel(id) + " ==\n" + formula.getRight() };
+            resultContent.add(content);
         }
-        return constantContent;
+        return resultContent;
     }
 
     /**
      * Converts formula list to a string representation
-     * @param serializedFormulaList
-     * @param labelingScheme
+     * @param formulaList list of assignments
+     * @param labelingScheme 
      * @return
      */
-    public static List createListContent(List serializedFormulaList, String labelingScheme)
+    public static List createListContent(List formulaList, String labelingScheme)
     {
-        List formulaList = ModelHelper.deserializeFormulaList(serializedFormulaList);
         Vector resultContent = new Vector(formulaList.size());
         String[] content;
         String label;
@@ -495,8 +495,10 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
         Vector constants = new Vector(constantDecls.length);
         for (int i = 0; i < constantDecls.length; i++)
         {
-            Assignment assign = new Assignment(constantDecls[i].getName().toString(), new String[constantDecls[i]
-                    .getNumberOfArgs()], "");
+            String[] params = new String[constantDecls[i].getNumberOfArgs()];
+            // pre-fill the empty array
+            Arrays.fill(params, "");
+            Assignment assign = new Assignment(constantDecls[i].getName().toString(), params, "");
             constants.add(assign);
         }
         return constants;
@@ -559,8 +561,10 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
         Vector operations = new Vector(operatorDefinitions.length);
         for (int i = 0; i < operatorDefinitions.length; i++)
         {
-            Assignment assign = new Assignment(operatorDefinitions[i].getName().toString(),
-                    new String[operatorDefinitions[i].getNumberOfArgs()], null);
+            String[] params = new String[operatorDefinitions[i].getNumberOfArgs()];
+            // pre-fill the empty array
+            Arrays.fill(params, "");
+            Assignment assign = new Assignment(operatorDefinitions[i].getName().toString(), params, "");
             operations.add(assign);
         }
         return operations;
@@ -580,7 +584,6 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
     {
         Vector constantsToAdd = new Vector();
         Vector constantsUsed = new Vector();
-        
 
         // iterate over constants from module
         for (int i = 0; i < constantsFromModule.size(); i++)

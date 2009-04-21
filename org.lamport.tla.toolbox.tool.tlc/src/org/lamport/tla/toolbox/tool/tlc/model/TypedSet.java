@@ -80,7 +80,7 @@ public class TypedSet
                     {
                         typePatternViolated = true;
                     }
-                    // exit if type pattern is vialated
+                    // exit if type pattern is violated
                     if (typePatternViolated) 
                     {
                         break;
@@ -125,6 +125,33 @@ public class TypedSet
     public String[] getValues()
     {
         return values;
+    }
+    /**
+     * retrieves the number of values in the set
+     * @return number of values in the set, or null if none
+     */
+    public int getValueCount()
+    {
+       if (values == null) 
+       {
+           return 0;
+       } else {
+           return values.length; 
+       }
+    }
+    /**
+     * Retrieves a value by index
+     * @param index, index of the value, should be smaller then the value of {@link TypedSet#getValueCount()}
+     * @return value (with type, if any) or null if index out of range 
+     */
+    public String getValue(int index)
+    {
+        if (index >= getValueCount())
+        {
+            return null;
+        } else {
+            return (hasType() ? getType() + SEPARATOR : "") + values[index];
+        }
     }
 
     public void setValues(String[] values)
@@ -202,6 +229,15 @@ public class TypedSet
         }
         buffer.append("}");
         return buffer.toString();
+    }
+    /**
+     * Same as toString, but without curly braces
+     * @return
+     */
+    public String toStringWithoutBraces()
+    {
+        String set = toString();
+        return set.substring(1, set.length() - 1);
     }
 
 }

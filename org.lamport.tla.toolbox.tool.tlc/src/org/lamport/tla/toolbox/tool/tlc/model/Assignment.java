@@ -1,6 +1,7 @@
 package org.lamport.tla.toolbox.tool.tlc.model;
 
 
+
 /**
  * An Assignment consists of a label, a list of parameters and the right side.
  * e.G. <code>F(_, _, _,) <- foo</code>. <code>F</code> is the label, <code>foo</code> is the 
@@ -90,12 +91,12 @@ public class Assignment extends Formula
 
     /**
      * Appends parameters to the label
-     * @param label
+     * @param id
      * @return
      */
-    public String getParametrizedLabel(String label)
+    public String getParametrizedLabel(String id)
     {
-        return label + listParams();
+        return id + listParams();
     }
 
     /**
@@ -182,6 +183,14 @@ public class Assignment extends Formula
     {
         return modelValue;
     }
+    
+    /**
+     * Returns true, iff the assignment is a set of model values
+     */
+    public boolean isSetOfModelValues()
+    {
+        return modelValue && !getLabel().equals(getRight());
+    }
 
     /**
      * Returns true, if the set of model values is symmetrical 
@@ -247,5 +256,4 @@ public class Assignment extends Formula
 
         return (params.length == obj.params.length);
     }
-
 }
