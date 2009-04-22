@@ -18,7 +18,7 @@ public class TypedSet
     private static final String SEPARATOR = "_";
     private static final String PATTERN = "[\\s]*,[\\s]*";
 
-    private String[] values = null;
+    private String[] values = new String[0];
     private String type = null;
 
     /**
@@ -30,7 +30,7 @@ public class TypedSet
     {
         TypedSet result = new TypedSet();
 
-        if (set == null || "".equals(set))
+        if (set == null || "".equals(set) || "{}".equals(set))
         {
             return result;
         }
