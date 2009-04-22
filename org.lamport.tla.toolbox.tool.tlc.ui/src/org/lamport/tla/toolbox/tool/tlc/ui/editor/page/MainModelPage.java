@@ -342,6 +342,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         // constants
         List constants = FormHelper.getSerializedInput(constantTable);
         getConfig().setAttribute(MODEL_PARAMETER_CONSTANTS, constants);
+        
 
         // variables
         String variables = ModelHelper.createVariableList(SemanticHelper.getRootModuleNode());
