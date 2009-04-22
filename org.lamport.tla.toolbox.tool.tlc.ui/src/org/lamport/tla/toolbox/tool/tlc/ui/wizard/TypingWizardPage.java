@@ -95,7 +95,7 @@ public class TypingWizardPage extends WizardPage
         // select the typed option
         optionTyped.setSelection(true);
         typeCombo.setText("A");
-
+        //setUntypedOption();
         setControl(container);
     }
 
@@ -119,4 +119,16 @@ public class TypingWizardPage extends WizardPage
         }
         super.dispose();
     }
+    
+    public void setUntypedOption()
+    {
+        // get the formula
+        Assignment assignment = ((AssignmentWizard)getWizard()).getFormula();
+        // parse the set
+        TypedSet set = TypedSet.parseSet(assignment.getRight());
+        
+        optionUntyped.setEnabled(!set.hasANumberOnlyValue());
+    }
+    
+    
 }
