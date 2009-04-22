@@ -63,6 +63,15 @@ public class NewModelHandler extends AbstractHandler implements IModelConfigurat
         // get the model configuration
         IResource config = ModelHelper.getConfigFile(modelRoot, null);
 
+        
+        try
+        {
+            ToolboxHandle.getCurrentSpec().getProject().refreshLocal(IResource.DEPTH_INFINITE, null);
+        } catch (CoreException e1)
+        {
+            e1.printStackTrace();
+        }
+        
         // get the root module
         ModuleNode moduleNode = ToolboxHandle.getSpecObj().getExternalModuleTable().getRootModule();
 

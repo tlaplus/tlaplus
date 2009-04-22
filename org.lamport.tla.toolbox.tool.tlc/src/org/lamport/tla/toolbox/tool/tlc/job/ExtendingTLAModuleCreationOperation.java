@@ -44,20 +44,25 @@ public class ExtendingTLAModuleCreationOperation implements IWorkspaceRunnable
         byte[] content = ResourceHelper.getExtendingModuleContent(moduleFileName, modelName).append(ResourceHelper.getModuleClosingTag()).toString().getBytes();
         try
         {
-            // create file
+            
+            // create file handle
             File file = new File(modelRootPath.toOSString());
-            if (file.createNewFile())
+            
+            // no need to create a new file
+            if (file.exists())
             {
-                // successfully created
-                // TODO file editor input
-                FileOutputStream fos = new FileOutputStream(file);
-                fos.write(content);
-                fos.flush();
-                fos.close();
-            } else
-            {
-                throw new RuntimeException("Error creating a file");
+                return;
             }
+            if (!file.createNewFile())
+            {
+                throw new RuntimeException("Error creating a file " + modelRootPath.toOSString());
+            }
+            
+            FileOutputStream fos = new FileOutputStream(file);
+            fos.write(content);
+            fos.flush();
+            fos.close();
+
         } catch (IOException e)
         {
             throw new CoreException( new Status(Status.ERROR, TLCActivator.PLUGIN_ID, "Error creating TLA+ file", e));
