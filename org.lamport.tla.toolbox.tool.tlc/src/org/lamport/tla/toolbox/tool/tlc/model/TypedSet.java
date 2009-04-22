@@ -1,6 +1,8 @@
 package org.lamport.tla.toolbox.tool.tlc.model;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Representation of a typed set.
@@ -27,19 +29,19 @@ public class TypedSet
     public static TypedSet parseSet(String set)
     {
         TypedSet result = new TypedSet();
-        
-        if (set == null || "".equals(set)) 
+
+        if (set == null || "".equals(set))
         {
             return result;
         }
-        
+
         String[] parsedSet = null;
         // if the curly braces are provided, cut them
         if (set.charAt(0) == '{' && set.charAt(set.length() - 1) == '}')
         {
             set = set.substring(1, set.length() - 1);
         }
-        // split by comma surrounded by any kind of spaces/tabs/new lines 
+        // split by comma surrounded by any kind of spaces/tabs/new lines
         parsedSet = set.split(PATTERN);
 
         if (parsedSet.length > 0)
@@ -56,11 +58,10 @@ public class TypedSet
                 // type is provided
                 result.setType(parsedSet[0].substring(0, typeSeparatorPosition));
                 parsedSet[0] = parsedSet[0].substring(typeSeparatorPosition + 1);
-                 
-                
+
                 // assume that all strings have same structure
                 // and set type violated to false
-                // this also checks that strings like e.G. "P_", "x_" are not valid 
+                // this also checks that strings like e.G. "P_", "x_" are not valid
                 // because they miss the untyped part
                 boolean typePatternViolated = parsedSet[0].isEmpty();
 
@@ -72,7 +73,7 @@ public class TypedSet
                     if (parsedSet[i].startsWith(result.getType() + "_"))
                     {
                         parsedSet[i] = parsedSet[i].substring(typeSeparatorPosition + 1);
-                        if (parsedSet[i].isEmpty()) 
+                        if (parsedSet[i].isEmpty())
                         {
                             typePatternViolated = true;
                         }
@@ -81,7 +82,7 @@ public class TypedSet
                         typePatternViolated = true;
                     }
                     // exit if type pattern is violated
-                    if (typePatternViolated) 
+                    if (typePatternViolated)
                     {
                         break;
                     }
@@ -111,7 +112,7 @@ public class TypedSet
     {
         return (type != null);
     }
-    
+
     public String getType()
     {
         return type;
@@ -126,19 +127,45 @@ public class TypedSet
     {
         return values;
     }
+    
+    /**
+     * Convenience interface for iteration over the values
+     * This method disconnects the actual typed set from the collection of values
+     * @return a list containing the values
+     */
+    public List getValuesAsList()
+    {
+        if (!hasType()) 
+        {
+            return Arrays.asList(values);
+        } else 
+        {
+            List typedList = new ArrayList(values.length);
+            // add type to the list
+            for (int i = 0; i < values.length; i++)
+            {
+                String value = type + SEPARATOR + values[i];
+                typedList.add(value);
+            }
+            return typedList;
+        }
+    }
+
     /**
      * retrieves the number of values in the set
      * @return number of values in the set, or null if none
      */
     public int getValueCount()
     {
-       if (values == null) 
-       {
-           return 0;
-       } else {
-           return values.length; 
-       }
+        if (values == null)
+        {
+            return 0;
+        } else
+        {
+            return values.length;
+        }
     }
+
     /**
      * Retrieves a value by index
      * @param index, index of the value, should be smaller then the value of {@link TypedSet#getValueCount()}
@@ -149,14 +176,20 @@ public class TypedSet
         if (index >= getValueCount())
         {
             return null;
-        } else {
+        } else
+        {
             return (hasType() ? getType() + SEPARATOR : "") + values[index];
         }
     }
 
     public void setValues(String[] values)
     {
-        this.values = values;
+        if (values == null) 
+        {
+            this.values = new String[0];
+        } else {
+            this.values = values;
+        }
     }
 
     public int hashCode()
@@ -217,7 +250,7 @@ public class TypedSet
         StringBuffer buffer = new StringBuffer("{");
         for (int i = 0; i < this.values.length; i++)
         {
-            if (this.type != null) 
+            if (this.type != null)
             {
                 buffer.append(this.type).append(SEPARATOR);
             }
@@ -230,6 +263,7 @@ public class TypedSet
         buffer.append("}");
         return buffer.toString();
     }
+
     /**
      * Same as toString, but without curly braces
      * @return
@@ -240,4 +274,39 @@ public class TypedSet
         return set.substring(1, set.length() - 1);
     }
 
+    /**
+     * This test functions checks whether the type has at least one value
+     * that contain only of digits
+     * @return true if on of the values (taking the type into account) is a digit
+     */
+    public boolean hasANumberOnlyValue()
+    {
+        if (hasType()) 
+        {
+            return !hasValidType();
+        } else {
+            for (int i=0; i < values.length; i++)
+            {
+                if (values[i].matches("[0-9]*"))
+                {
+                    // a digit sequence found
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
+    
+    public boolean hasValidType()
+    {
+        if (type != null)
+        {
+            if (!type.matches("[A-Za-z]{1}[A-Za-z0-9]*")) 
+            {
+                // the type must be a valid identifier
+                return false;
+            }
+        }
+        return true;
+    }
 }
