@@ -1,9 +1,11 @@
 package org.lamport.tla.toolbox.tool.tlc.ui.editor.page;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
 
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.jface.viewers.TableViewer;
@@ -14,6 +16,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.forms.IManagedForm;
+import org.eclipse.ui.forms.IMessageManager;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.widgets.FormText;
 import org.eclipse.ui.forms.widgets.FormToolkit;
@@ -21,12 +24,14 @@ import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.forms.widgets.TableWrapData;
 import org.lamport.tla.toolbox.tool.tlc.launch.IConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.IConfigurationDefaults;
+import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
 import org.lamport.tla.toolbox.tool.tlc.model.TypedSet;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.OverrideSectionPart;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.VSectionPart;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.DirtyMarkingListener;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
 import org.lamport.tla.toolbox.util.IHelpConstants;
+
 
 /**
  * Represent all advanced model elements
@@ -52,7 +57,6 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
     private Text simuArilText;
     private TableViewer definitionsTable;
 
-
     /**
      * Constructs the page
      * @param editor
@@ -76,7 +80,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         // new definitions
         String newDefinitions = getConfig().getAttribute(MODEL_PARAMETER_NEW_DEFINITIONS, EMPTY_STRING);
         newDefinitionsSource.setDocument(new Document(newDefinitions));
-        
+
         // advanced model values
         String modelValues = getConfig().getAttribute(MODEL_PARAMETER_MODEL_VALUES, EMPTY_STRING);
         modelValuesSource.setDocument(new Document(modelValues));
@@ -112,22 +116,26 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
 
         // simulation aril
         int simuAril = getConfig().getAttribute(LAUNCH_SIMU_SEED, LAUNCH_SIMU_ARIL_DEFAULT);
-        if (LAUNCH_SIMU_ARIL_DEFAULT != simuAril) 
+        if (LAUNCH_SIMU_ARIL_DEFAULT != simuAril)
         {
             simuArilText.setText("" + simuAril);
-        } else {
+        } else
+        {
             simuArilText.setText("");
         }
-        
+
         // simulation seed
         int simuSeed = getConfig().getAttribute(LAUNCH_SIMU_ARIL, LAUNCH_SIMU_SEED_DEFAULT);
-        if (LAUNCH_SIMU_SEED_DEFAULT != simuSeed) 
+        if (LAUNCH_SIMU_SEED_DEFAULT != simuSeed)
         {
             simuSeedText.setText("" + simuSeed);
-        } else {
+        } else
+        {
             simuSeedText.setText("");
         }
 
+        // validate data from the model
+        validate();
     }
 
     /**
@@ -141,52 +149,21 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         // DFID mode
         boolean isDFIDMode = dfidOption.getSelection();
         getConfig().setAttribute(LAUNCH_DFID_MODE, isDFIDMode);
-        
 
-        int dfidDepth = LAUNCH_DFID_DEPTH_DEFAULT; 
-        int simuDepth = LAUNCH_SIMU_DEPTH_DEFAULT; 
+        int dfidDepth = Integer.parseInt(dfidDepthText.getText());
+        int simuDepth = Integer.parseInt(simuDepthText.getText());
         int simuAril = LAUNCH_SIMU_ARIL_DEFAULT;
         int simuSeed = LAUNCH_SIMU_SEED_DEFAULT;
 
-        try 
+        if (!"".equals(simuArilText.getText()))
         {
-            dfidDepth = Integer.parseInt(dfidDepthText.getText());
-        } catch (NumberFormatException e) { 
-            // TODO report format error
-            // add validator?
- 
+            simuAril = Integer.parseInt(simuArilText.getText());
         }
-        try 
+        if (!"".equals(simuSeedText.getText()))
         {
-            simuDepth = Integer.parseInt(simuDepthText.getText());
-        } catch (NumberFormatException e) { 
-            // TODO report format error
-            // add validator?
- 
+            simuSeed = Integer.parseInt(simuSeedText.getText());
         }
-        if (!"".equals(simuArilText.getText())) 
-        {
-            try 
-            {
-                simuAril = Integer.parseInt(simuArilText.getText());
-            } catch (NumberFormatException e) { 
-                // TODO report format error
-                // add validator?
-     
-            }
-        }
-        if (!"".equals(simuSeedText.getText())) 
-        {
-            try 
-            {
-                simuSeed = Integer.parseInt(simuSeedText.getText());
-            } catch (NumberFormatException e) { 
-                // TODO report format error
-                // add validator?
-     
-            }
-        }
-        
+
         // DFID depth
         getConfig().setAttribute(LAUNCH_DFID_DEPTH, dfidDepth);
         // simulation depth
@@ -208,7 +185,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         String modelValues = modelValuesSource.getDocument().get();
         TypedSet modelValuesSet = TypedSet.parseSet(modelValues);
         getConfig().setAttribute(MODEL_PARAMETER_MODEL_VALUES, modelValuesSet.toString());
-        
+
         // constraint formula
         String constraintFormula = constraintSource.getDocument().get();
         getConfig().setAttribute(MODEL_PARAMETER_CONSTRAINT, constraintFormula);
@@ -216,7 +193,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         // view
         String viewFormula = viewSource.getDocument().get();
         getConfig().setAttribute(LAUNCH_VIEW, viewFormula);
-        
+
         // action constraint formula
         String actionConstraintFormula = actionConstraintSource.getDocument().get();
         getConfig().setAttribute(MODEL_PARAMETER_ACTION_CONSTRAINT, actionConstraintFormula);
@@ -224,6 +201,112 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         super.commit(onSave);
     }
 
+    public void validate()
+    {
+        IMessageManager mm = getManagedForm().getMessageManager();
+        // clean old messages
+        mm.removeAllMessages();
+        // make the run possible
+        setComplete(true);
+        
+        // setup the names from the current page
+        getLookupHelper().resetModelNames(this);
+
+        try
+        {
+            int dfidDepth = Integer.parseInt(dfidDepthText.getText());
+            if (dfidDepth <= 0)
+            {
+                mm.addMessage("dfid1", "Depth of DFID launch must be a positive integer", null, IMessageProvider.ERROR,
+                        dfidDepthText);
+                setComplete(false);
+            }
+        } catch (NumberFormatException e)
+        {
+            mm.addMessage("dfid2", "Depth of DFID launch must be a positive integer", null, IMessageProvider.ERROR,
+                    dfidDepthText);
+            setComplete(false);
+        }
+        try
+        {
+            int simuDepth = Integer.parseInt(simuDepthText.getText());
+            if (simuDepth <= 0)
+            {
+                mm.addMessage("simuDepth1", "Length of the simulation tracemust be a positive integer", null,
+                        IMessageProvider.ERROR, simuDepthText);
+                setComplete(false);
+            }
+
+        } catch (NumberFormatException e)
+        {
+            mm.addMessage("simuDepth2", "Length of the simulation trace must be a positive integer", null,
+                    IMessageProvider.ERROR, simuDepthText);
+            setComplete(false);
+        }
+        if (!EMPTY_STRING.equals(simuArilText.getText()))
+        {
+            try
+            {
+                long simuAril = Long.parseLong(simuArilText.getText());
+                if (simuAril <= 0)
+                {
+                    mm.addMessage("simuAril1", "The simulation aril must be a positive integer", null,
+                            IMessageProvider.ERROR, simuArilText);
+                    setComplete(false);
+                }
+            } catch (NumberFormatException e)
+            {
+                mm.addMessage("simuAril2", "The simulation aril must be a positive integer", null,
+                        IMessageProvider.ERROR, simuArilText);
+                setComplete(false);
+            }
+        }
+        if (!EMPTY_STRING.equals(simuSeedText.getText()))
+        {
+            try
+            {
+                // long simuSeed =
+                Long.parseLong(simuSeedText.getText());
+
+            } catch (NumberFormatException e)
+            {
+                mm.addMessage("simuSeed1", "The simulation aril must be a positive integer", null,
+                        IMessageProvider.ERROR, simuSeedText);
+                setComplete(false);
+            }
+        }
+
+        // check the model values
+        TypedSet modelValuesSet = TypedSet.parseSet(modelValuesSource.getDocument().get());
+        if (modelValuesSet.getValueCount() > 0)
+        {
+            // there were values defined
+
+            // check if those are numbers?
+            if (modelValuesSet.hasANumberOnlyValue())
+            {
+                mm.addMessage("modelValues1", "A model value can not be an number", modelValuesSet,
+                        IMessageProvider.ERROR, modelValuesSource.getControl());
+                setComplete(false);
+            }
+            List values = modelValuesSet.getValuesAsList();
+            // check list of model values
+            validateListElements(values, modelValuesSource.getControl(), "modelValues2_", "A model value", "Advanced Model Values");
+        }
+
+        // check the definition overrides
+        List definitions = (List) definitionsTable.getInput();
+        for (int i = 0; i < definitions.size(); i++)
+        {
+            Assignment definition = (Assignment) definitions.get(i);
+            List values = Arrays.asList(definition.getParams());
+            // check list of parameters
+            validateListElements(values, definitionsTable.getTable(), "param1_", "A parameter name", "Definition Overrides");
+        }
+
+        super.validate();
+    }
+    
     /**
      * Creates the UI
      */
@@ -255,9 +338,9 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
 
         // ---------------------------------------------------------------
         // new definitions
-        
-        section = FormHelper.createSectionComposite(left, "Additional Definitions", "...",
-                toolkit, sectionFlags, getExpansionListener());
+
+        section = FormHelper.createSectionComposite(left, "Additional Definitions", "...", toolkit, sectionFlags,
+                getExpansionListener());
         VSectionPart newDefinitionsPart = new VSectionPart(section, this);
         managedForm.addPart(newDefinitionsPart);
         DirtyMarkingListener newDefinitionsListener = new DirtyMarkingListener(newDefinitionsPart, true);
@@ -278,10 +361,10 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         // ---------------------------------------------------------------
         // definition overwrite
         // TableSectionPart definitionsPart = new TableSectionPart(right, "Definition Override", "...", toolkit,
-        //         sectionFlags, this);
-        OverrideSectionPart definitionsPart = new OverrideSectionPart(right, "Definition Override",
-                "....", toolkit, sectionFlags, this);
-        
+        // sectionFlags, this);
+        OverrideSectionPart definitionsPart = new OverrideSectionPart(right, "Definition Override", "....", toolkit,
+                sectionFlags, this);
+
         managedForm.addPart(definitionsPart);
         // layout
         gd = new GridData(GridData.FILL_HORIZONTAL);
@@ -336,7 +419,8 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
 
         // ---------------------------------------------------------------
         // modelValues
-        section = FormHelper.createSectionComposite(left, "Model Values", "....", toolkit, sectionFlags, getExpansionListener());
+        section = FormHelper.createSectionComposite(left, "Model Values", "....", toolkit, sectionFlags,
+                getExpansionListener());
         VSectionPart modelValuesPart = new VSectionPart(section, this);
         managedForm.addPart(modelValuesPart);
         DirtyMarkingListener modelValuesListener = new DirtyMarkingListener(modelValuesPart, true);

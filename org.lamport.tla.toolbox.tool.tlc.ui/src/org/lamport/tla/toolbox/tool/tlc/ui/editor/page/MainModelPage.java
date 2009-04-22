@@ -1,5 +1,6 @@
 package org.lamport.tla.toolbox.tool.tlc.ui.editor.page;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
 
@@ -26,19 +27,19 @@ import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.ImageHyperlink;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.forms.widgets.TableWrapData;
-import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.tool.tlc.launch.IConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.IConfigurationDefaults;
 import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
+import org.lamport.tla.toolbox.tool.tlc.model.TypedSet;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.ConstantSectionPart;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.TableSectionPart;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.VSectionPart;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.DirtyMarkingListener;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
+import org.lamport.tla.toolbox.tool.tlc.ui.util.SemanticHelper;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.util.IHelpConstants;
 
-import tla2sany.modanalyzer.SpecObj;
 import tla2sany.semantic.ModuleNode;
 
 /**
@@ -156,42 +157,66 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
     public void validate()
     {
-
-        
         IMessageManager mm = getManagedForm().getMessageManager();
         // clean old messages
         mm.removeAllMessages();
         // make the run possible
         setComplete(true);
-        
+
         // getting the root module node of the spec
         // this can be null!
-        ModuleNode rootModuleNode = getRootModuleNode();
+        ModuleNode rootModuleNode = SemanticHelper.getRootModuleNode();
+
+        // setup the names from the current page
+        getLookupHelper().resetModelNames(this);
 
         // constants in the table
         List constants = (List) constantTable.getInput();
-        if (rootModuleNode != null) 
+        // merge constants with currently defined in the specobj, if any
+        if (rootModuleNode != null)
         {
             ModelHelper.mergeConstantLists(constants, ModelHelper.createConstantsList(rootModuleNode));
             constantTable.setInput(constants);
         }
-        
 
+        // iterate over the constants
         for (int i = 0; i < constants.size(); i++)
         {
             Assignment constant = (Assignment) constants.get(i);
 
+            List values = Arrays.asList(constant.getParams());
+            // check list of parameters
+            validateListElements(values, constantTable.getTable(), "param1_", "A parameter name", "Constant Assignment");
+
             // the constant is still in the list
-            if (constant.getRight() == null || "".equals(constant.getRight()))
+            if (constant.getRight() == null || EMPTY_STRING.equals(constant.getRight()))
             {
                 // right side of assignment undefined
                 mm.addMessage(constant.getLabel(), "Provide a value for constant " + constant.getLabel(), constant,
                         IMessageProvider.ERROR, constantTable.getTable());
                 setComplete(false);
+            } else
+            {
+                if (constant.isSetOfModelValues())
+                {
+                    TypedSet modelValuesSet = TypedSet.parseSet(constant.getRight());
+                    if (modelValuesSet.getValueCount() > 0)
+                    {
+                        // there were values defined
+                        // check if those are numbers?
+                        if (modelValuesSet.hasANumberOnlyValue())
+                        {
+                            mm.addMessage("modelValues1", "A model value can not be an number", modelValuesSet,
+                                    IMessageProvider.ERROR, constantTable.getTable());
+                            setComplete(false);
+                        }
+                        // check list of model values
+                        validateListElements(modelValuesSet.getValuesAsList(), constantTable.getTable(),
+                                "modelValues2_", "A model value", "Constant Assignment");
+                    }
+                }
             }
         }
-        
-        
 
         // number of workers
         String numberOfworkers = workers.getText();
@@ -203,6 +228,16 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
                 mm.addMessage("wrongNumber1", "Number of workers must be a positive integer number", null,
                         IMessageProvider.ERROR, workers);
                 setComplete(false);
+            } else
+            {
+                if (number > Runtime.getRuntime().availableProcessors())
+                {
+                    mm.addMessage("strangeNumber1", "Specified number of workers is " + number
+                            + ". The number of CPU Cores available on the system is "
+                            + Runtime.getRuntime().availableProcessors()
+                            + ".\n It is not advisable that the number of workers exceeds the number of CPU Cores.", null,
+                            IMessageProvider.WARNING, workers);
+                }
             }
         } catch (NumberFormatException e)
         {
@@ -309,7 +344,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         getConfig().setAttribute(MODEL_PARAMETER_CONSTANTS, constants);
 
         // variables
-        String variables = ModelHelper.createVariableList(getRootModuleNode());
+        String variables = ModelHelper.createVariableList(SemanticHelper.getRootModuleNode());
         getConfig().setAttribute(MODEL_BEHAVIOR_VARS, variables);
 
         super.commit(onSave);
@@ -495,6 +530,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         workers = toolkit.createText(howToRunArea, "1");
         workers.addModifyListener(howToRunListener);
         gd = new GridData();
+        gd.horizontalIndent = 10;
         gd.widthHint = 100;
         workers.setLayoutData(gd);
 
@@ -532,19 +568,5 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         dirtyPartListeners.add(whatIsTheSpecListener);
         dirtyPartListeners.add(whatToCheckListener);
         dirtyPartListeners.add(howToRunListener);
-    }
-
-    /**
-     * A convenience access to the root module node
-     * @return a module or null, if spec not parsed
-     */
-    protected ModuleNode getRootModuleNode()
-    {
-        SpecObj specObj = ToolboxHandle.getSpecObj();
-        if (specObj != null)
-        {
-            return specObj.getExternalModuleTable().getRootModule();
-        }
-        return null;
     }
 }

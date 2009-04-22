@@ -2,18 +2,22 @@ package org.lamport.tla.toolbox.tool.tlc.ui.editor.page;
 
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.List;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.ListenerList;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Layout;
 import org.eclipse.ui.forms.IManagedForm;
+import org.eclipse.ui.forms.IMessageManager;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.editor.FormPage;
 import org.eclipse.ui.forms.events.ExpansionAdapter;
@@ -30,7 +34,11 @@ import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.IgnoringListener;
+import org.lamport.tla.toolbox.tool.tlc.ui.util.SemanticHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
+
+import tla2sany.semantic.SymbolNode;
+import tla2sany.st.Location;
 
 /**
  * Basic form page for the multi-page editor
@@ -314,5 +322,74 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
     public void setComplete(boolean isComplete)
     {
         this.isComplete = isComplete;
+    }
+    
+    /**
+     * retrieves the helper to lookup names 
+     * @return
+     */
+    public SemanticHelper getLookupHelper()
+    {
+        return ((ModelEditor)this.getEditor()).getHelper();
+    }
+
+    /**
+     * Checks if the elements of the given list comply with the requirement of being not already defined in the context
+     * of the current model and the specification. The method will iterate through the list and check whether every element
+     * satisfies the requirement. On violation, it adds the error message to the message manager.  
+     * @param values The list to check
+     * @param listSource the control serving as the origin of the list, on errors a small error icon will be added next to it 
+     * @param errorMessagePrefix the prefix of the error messages to be used
+     * @param elementType the type of the element, used in the error message
+     * @param listSourceDescription the description of the list source, used in error reporting
+     */
+    public void validateListElements(List values, Control listSource, String errorMessagePrefix, String elementType, String listSourceDescription)
+    {
+        if (values == null) 
+        {
+            return;
+        }
+        IMessageManager mm = getManagedForm().getMessageManager();
+        SemanticHelper helper = getLookupHelper();
+        String message;
+        for (int i = 0; i < values.size(); i++)
+        {
+            String value = (String)values.get(i);
+            Object usageHint = helper.getUsedHint(value);
+            if (usageHint != null)
+            {
+                message = elementType + " " + value + " may not be used, since it is ";
+                if (usageHint instanceof SymbolNode) 
+                {
+                    message += "";
+                    SymbolNode node = (SymbolNode) usageHint;
+                    Location location = node.getLocation();
+                    if (location.source().equals("--TLA+ BUILTINS--")) 
+                    {
+                        message += "a built-in TLA+ definition.";
+                    } else {
+                        message += "an identifier already defined at " + location.toString() + ".";
+                    }
+                } else if (usageHint instanceof String) 
+                {
+                    if (SemanticHelper.KEYWORD.equals(usageHint))
+                    {
+                        message += "a TLA+ keyword.";
+                    } else 
+                    {
+                        message += "already used in " + usageHint;
+                    }
+                } else {
+                    message = "Error during validation. This is a bug";
+                }
+                mm.addMessage(errorMessagePrefix + i, message, value.toString(), IMessageProvider.ERROR,
+                        listSource);
+                setComplete(false);
+            } else
+            {
+                // just adding the name
+                helper.addName(value, this, listSourceDescription);
+            }
+        }
     }
 }
