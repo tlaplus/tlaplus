@@ -356,12 +356,11 @@ public class ResourceHelper
      */
     public static void replaceContent(IFile file, StringBuffer buffer, IProgressMonitor monitor) throws CoreException
     {
-        boolean force = true;
         ByteArrayInputStream stream = new ByteArrayInputStream(buffer.toString().getBytes());
         if (file.exists())
         {
-            file.setContents(stream, force ? IResource.FORCE | IResource.KEEP_HISTORY : IResource.KEEP_HISTORY,
-                            monitor);
+            // System.out.println(buffer.toString());
+            file.setContents(stream, IResource.FORCE | IResource.KEEP_HISTORY, monitor);
         } else
         {
             throw new CoreException(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Exected " + file.getName() + " file has been removed externally"));
@@ -384,8 +383,8 @@ public class ResourceHelper
         ByteArrayInputStream stream = new ByteArrayInputStream(buffer.toString().getBytes());
         if (file.exists())
         {
-            file.appendContents(stream, force ? IResource.FORCE | IResource.KEEP_HISTORY : IResource.KEEP_HISTORY,
-                    monitor);
+            // System.out.println(buffer.toString());
+            file.appendContents(stream, IResource.FORCE | IResource.KEEP_HISTORY, monitor);
         } else
         {
             file.create(stream, force, monitor);
