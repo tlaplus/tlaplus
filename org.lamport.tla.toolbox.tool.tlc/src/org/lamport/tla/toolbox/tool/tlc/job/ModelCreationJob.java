@@ -91,7 +91,7 @@ public class ModelCreationJob extends AbstractJob implements IModelConfiguration
 
             // definition overrides list
             List overrides = ModelHelper.deserializeAssignmentList(config.getAttribute(MODEL_PARAMETER_DEFINITIONS, new Vector()));
-            writer.addFormulaList(ModelHelper.createOverridesContent(overrides, "def_ov"), "");
+            writer.addFormulaList(ModelHelper.createOverridesContent(overrides, "def_ov"), "CONSTANT");
             
             // constraint
             writer.addFormulaList(ModelHelper.createSourceContent(MODEL_PARAMETER_CONSTRAINT, "constr", config),
