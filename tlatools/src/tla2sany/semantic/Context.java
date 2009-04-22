@@ -37,7 +37,7 @@ import util.UniqueString;
  * seems to be no need to provide methods to manipulate or do anything
  * with contexts except pass them to the Front End.
  */
-final public class Context implements ExploreNode {
+public class Context implements ExploreNode {
 
   class Pair {
     Pair       link;
@@ -56,16 +56,16 @@ final public class Context implements ExploreNode {
       lastPair = this;
     }
     
-    public final SymbolNode getSymbol() { return this.info; }
+    public SymbolNode getSymbol() { return this.info; }
   } // class Pair
 
   public class InitialSymbolEnumeration {
 
     Enumeration e = initialContext.content();
 
-    public final boolean hasMoreElements() { return e.hasMoreElements(); }
+    public boolean hasMoreElements() { return e.hasMoreElements(); }
 
-    public final SymbolNode nextElement() {
+    public SymbolNode nextElement() {
       return (SymbolNode)(((Pair)(e.nextElement())).getSymbol());
     }
   }
@@ -74,9 +74,9 @@ final public class Context implements ExploreNode {
 
     Enumeration e = Context.this.content();
 
-    public final boolean hasMoreElements() { return e.hasMoreElements(); }
+    public boolean hasMoreElements() { return e.hasMoreElements(); }
 
-    public final SymbolNode nextElement() {
+    public SymbolNode nextElement() {
       return ((Pair)(e.nextElement())).getSymbol();
     }
   }
@@ -117,14 +117,14 @@ final public class Context implements ExploreNode {
    * declarations only of the built-in operators of TLA+.  This
    * context assigns no meanings to module names.
    */
-  public static final Context getGlobalContext() { 
+  public static Context getGlobalContext() { 
     return initialContext; 
   }
 
-  public final Errors getErrors() { return errors; }
+  public Errors getErrors() { return errors; }
 
   // Adds a symbol to the (unique) initialContext; aborts if already there
-  public static final void addGlobalSymbol(UniqueString name, SymbolNode sn, Errors errors) 
+  public static void addGlobalSymbol(UniqueString name, SymbolNode sn, Errors errors) 
   throws AbortException {
     if (initialContext.getSymbol(name) != null) {
       errors.addAbort(Location.nullLoc,
@@ -141,7 +141,7 @@ final public class Context implements ExploreNode {
    * Returns symbol node associated with "name" in this Context, if
    * one exists; else returns null
    */
-  public final SymbolNode getSymbol(Object name) {
+  public SymbolNode getSymbol(Object name) {
     Pair r = (Pair)table.get(name);
     if (r != null) {
       return r.info;
@@ -153,12 +153,12 @@ final public class Context implements ExploreNode {
    * Adds a (UniqueString, SymbolNode) pair to this context; no-op if
    * already present
    */
-  final void addSymbolToContext(Object name, SymbolNode s) {
+  public void addSymbolToContext(Object name, SymbolNode s) {
     table.put(name, new Pair(s));    // Links to & updates lastPair
   }
 
   // Tests whether a name is present in this context
-  final boolean occurSymbol(Object name) { 
+  public boolean occurSymbol(Object name) { 
     return table.containsKey(name); 
   }
 
@@ -166,7 +166,7 @@ final public class Context implements ExploreNode {
    * Returns Enumeration of the elements of the Hashtable "Table",
    * which are pair of the form (Pair link, SymbolNode sn)
    */
-  final Enumeration content() { 
+  public Enumeration content() { 
     return table.elements(); 
   }
 
@@ -174,7 +174,7 @@ final public class Context implements ExploreNode {
    * Returns a new ContextSymbolEnumeration object, which enumerates
    * the SymbolNodes of THIS context
    */
-  public final ContextSymbolEnumeration getContextSymbolEnumeration() {
+  public ContextSymbolEnumeration getContextSymbolEnumeration() {
     return new ContextSymbolEnumeration();
   }
 
@@ -182,7 +182,7 @@ final public class Context implements ExploreNode {
    * Returns a Vector of those SymbolNodes in this Context that are
    * instances of class "template" (or one of its subclasses)
    */
-  final Vector getByClass( Class template ) {
+  public Vector getByClass( Class template ) {
     Vector result = new Vector();
     Enumeration list = table.elements();
     while (list.hasMoreElements()) {
@@ -199,8 +199,9 @@ final public class Context implements ExploreNode {
    * instances of class OpDefNode and that are NOT of kind BuiltInKind
    * or ModuleInstanceKind
    */
-  public final Vector getOpDefs() {
-    Class template = OpDefNode.class;
+  public Vector getOpDefs() {
+      // SZ Apr 21, 2009: not used instance
+      // Class template = OpDefNode.class;
     Pair nextPair = lastPair;
 
     Vector result = new Vector();
@@ -219,8 +220,9 @@ final public class Context implements ExploreNode {
   * instances of class ThmOrAssumpDefNode or ModuleInstanceKind            *
   * Code copied from getOpDefs().                                          *
   *************************************************************************/
-  public final Vector getThmOrAssDefs() {
-    Class template = ThmOrAssumpDefNode.class;
+  public Vector getThmOrAssDefs() {
+      // SZ Apr 21, 2009: not used instance
+      // Class template = ThmOrAssumpDefNode.class;
     Pair nextPair = lastPair;
 
     Vector result = new Vector();
@@ -235,7 +237,7 @@ final public class Context implements ExploreNode {
   /** 
    * Returns vector of OpDeclNodes that represent CONSTANT declarations 
    */
-  public final Vector getConstantDecls() {
+  public Vector getConstantDecls() {
     Class templateClass = OpDeclNode.class;
     Enumeration list = table.elements();
 
@@ -251,7 +253,7 @@ final public class Context implements ExploreNode {
   }
 
   /* Returns vector of OpDeclNodes that represent CONSTANT declarations  */
-  public final Vector getVariableDecls() {
+  public Vector getVariableDecls() {
     Class templateClass = OpDeclNode.class;
     Enumeration list = table.elements();
 
@@ -269,7 +271,7 @@ final public class Context implements ExploreNode {
    * Returns a Vector of those SymbolNodes in this Context that are
    * instances of class ModuleNode
    */
-  public final Vector getModDefs() {
+  public Vector getModDefs() {
     Class template = ModuleNode.class;
     Enumeration list = table.elements();
 
@@ -292,7 +294,7 @@ final public class Context implements ExploreNode {
    * true if there is no error or there are only warnings; returns
    * false if there is an error
    */
-  final boolean mergeExtendContext(Context ct) {
+  public boolean mergeExtendContext(Context ct) {
     boolean erc = true;
 
     // check locality, and multiplicity
@@ -352,7 +354,7 @@ final public class Context implements ExploreNode {
    * SymbolTable class.  The tricky part is duplicating the
    * linked-list of Pairs starting from this.lastpair. 
    */
-  final Context duplicate(ExternalModuleTable exMT) {    // Added argument exMT (DRJ)
+  public Context duplicate(ExternalModuleTable exMT) {    // Added argument exMT (DRJ)
     Context dup       = new Context(exMT, errors);
     Pair    p         = this.lastPair;
     Pair    current   = null;
@@ -378,9 +380,9 @@ final public class Context implements ExploreNode {
    * toString, levelDataToString, and walkGraph methods to implement
    * ExploreNode interface
    */
-  public final String levelDataToString() { return "Dummy level string"; }
+  public String levelDataToString() { return "Dummy level string"; }
 
-  public final String toString(int depth) {
+  public String toString(int depth) {
     return "Please use Context.getContextEntryStringVector()" +
       " instead of Context.toString()";
   }  
@@ -393,7 +395,7 @@ final public class Context implements ExploreNode {
   * comment in the walkGraph method of this file for a bit more            *
   * information.                                                           *
   *************************************************************************/
-  public final Vector getContextEntryStringVector(int depth, boolean b) {
+  public Vector getContextEntryStringVector(int depth, boolean b) {
     Vector ctxtEntries = new Vector(100);  // vector of Strings
     Context naturalsContext = 
                exMT.getContext(UniqueString.uniqueStringOf("Naturals"));
@@ -428,7 +430,7 @@ final public class Context implements ExploreNode {
     return ctxtEntries;
   }
 
-  public final void walkGraph(Hashtable semNodesTable) {
+  public void walkGraph(Hashtable semNodesTable) {
     UniqueString key;
     Enumeration  Enum = table.keys();
 
