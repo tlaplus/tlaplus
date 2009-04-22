@@ -143,6 +143,8 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
      */
     public void commit(boolean onSave)
     {
+        System.out.println("Advanced page commit");
+        
         boolean isMCMode = mcOption.getSelection();
         getConfig().setAttribute(LAUNCH_MC_MODE, isMCMode);
 

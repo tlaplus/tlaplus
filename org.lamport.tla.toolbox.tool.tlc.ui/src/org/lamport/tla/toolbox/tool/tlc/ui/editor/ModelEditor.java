@@ -11,7 +11,6 @@ import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.part.FileEditorInput;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.AdvancedModelPage;
@@ -144,11 +143,11 @@ public class ModelEditor extends FormEditor
             for (int i = 0; i < pages.size(); i++)
             {
                 Object page = pages.get(i);
+                
                 if (page instanceof BasicFormPage)
                 {
                     BasicFormPage fpage = (BasicFormPage) page;
-                    IManagedForm mform = fpage.getManagedForm();
-                    if (mform != null && mform.isDirty())
+                    if (fpage.isInitialized()) 
                     {
                         fpage.commit(onSave);
                     }

@@ -295,6 +295,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
      */
     public void commit(boolean onSave)
     {
+        System.out.println("Main page commit");
         // closed formula
         String closedFormula = this.specSource.getDocument().get();
         getConfig().setAttribute(MODEL_BEHAVIOR_CLOSED_SPECIFICATION, closedFormula);

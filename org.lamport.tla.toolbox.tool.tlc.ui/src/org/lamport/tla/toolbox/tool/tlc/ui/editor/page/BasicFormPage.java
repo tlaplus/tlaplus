@@ -56,6 +56,8 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
     protected ListenerList dirtyPartListeners = new ListenerList();
     protected String helpId = null;
     protected String imagePath = null;
+    protected boolean initialized = false;
+    
     protected IExpansionListener formRebuildingListener = null;
     protected HyperlinkAdapter runDebugAdapter = new HyperlinkAdapter() {
 
@@ -210,6 +212,8 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
         {
             ((IgnoringListener) listeners[i]).setIgnoreInput(false);
         }
+        
+        initialized = true;
     }
 
     /**
@@ -391,5 +395,10 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
                 helper.addName(value, this, listSourceDescription);
             }
         }
+    }
+    
+    public boolean isInitialized()
+    {
+        return initialized;
     }
 }
