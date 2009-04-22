@@ -17,6 +17,7 @@ import org.eclipse.ui.part.FileEditorInput;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.AdvancedModelPage;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.BasicFormPage;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.MainModelPage;
+import org.lamport.tla.toolbox.tool.tlc.ui.util.SemanticHelper;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
@@ -29,18 +30,23 @@ public class ModelEditor extends FormEditor
 {
     public static final String ID = "org.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor";
     private ILaunchConfigurationWorkingCopy configurationCopy;
+    private SemanticHelper helper;
+
     private IResourceChangeListener rootFileListener = new IResourceChangeListener() {
 
         public void resourceChanged(IResourceChangeEvent event)
         {
-            UIHelper.runUIAsync(new Runnable() 
-            {
+            // update the specobject of the helper
+            helper.resetSpecNames();
+
+            // re-validate the pages
+            UIHelper.runUIAsync(new Runnable() {
                 public void run()
                 {
                     for (int i = 0; i < getPageCount(); i++)
                     {
                         Object page = pages.get(i);
-                        if (page instanceof BasicFormPage) 
+                        if (page instanceof BasicFormPage)
                         {
                             BasicFormPage bPage = (BasicFormPage) page;
                             // re-validate the model on changes of the spec
@@ -50,11 +56,11 @@ public class ModelEditor extends FormEditor
                 }
             });
         }
-    }; 
-    
+    };
+
     public ModelEditor()
     {
-
+        helper = new SemanticHelper();
     }
 
     public void init(IEditorSite site, IEditorInput input) throws PartInitException
@@ -80,9 +86,32 @@ public class ModelEditor extends FormEditor
                 setTitleToolTip(path.toString());
             }
         }
-        
+
         // react on changes of the root file
         ResourcesPlugin.getWorkspace().addResourceChangeListener(rootFileListener, IResourceChangeEvent.POST_BUILD);
+
+        // update the spec object of the helper
+        helper.resetSpecNames();
+
+        // initial re-validate the pages
+        UIHelper.runUIAsync(new Runnable() {
+            public void run()
+            {
+                // since validation is cheap and we are interested in
+                
+                for (int i = 0; i < getPageCount(); i++)
+                {
+                    Object page = pages.get(i);
+                    if (page instanceof BasicFormPage)
+                    {
+                        BasicFormPage bPage = (BasicFormPage) page;
+                        // re-validate the model on changes of the spec
+                        bPage.validate();
+                    }
+                }
+            }
+        });
+
     }
 
     public void dispose()
@@ -92,8 +121,6 @@ public class ModelEditor extends FormEditor
         super.dispose();
     }
 
-    
-    
     /* (non-Javadoc)
      * @see org.eclipse.ui.part.EditorPart#doSave(org.eclipse.core.runtime.IProgressMonitor)
      */
@@ -101,9 +128,9 @@ public class ModelEditor extends FormEditor
     {
         // System.out.println("Save called");
         this.commitPages(monitor, true);
-        
+
         ModelHelper.doSaveConfigurationCopy(configurationCopy);
-        
+
         this.editorDirtyStateChanged();
     }
 
@@ -161,7 +188,7 @@ public class ModelEditor extends FormEditor
             addPage(new ParametersPage(this));
             addPage(new ModelValuesPage(this));
             */
-            
+
             addPage(new MainModelPage(this));
             addPage(new AdvancedModelPage(this));
 
@@ -182,21 +209,29 @@ public class ModelEditor extends FormEditor
      */
     public boolean isComplete()
     {
-        for (int i = 0; i < pages.size(); i++) 
+        for (int i = 0; i < pages.size(); i++)
         {
             Object page = pages.get(i);
             if (page instanceof BasicFormPage)
             {
                 BasicFormPage bPage = (BasicFormPage) page;
-                if (!bPage.isComplete()) 
+                if (!bPage.isComplete())
                 {
                     setActivePage(bPage.getId());
                     return false;
                 }
-            }            
+            }
         }
         return true;
     }
 
+    /**
+     * Current helper instance
+     * @return
+     */
+    public SemanticHelper getHelper()
+    {
+        return this.helper;
+    }
 
 }
