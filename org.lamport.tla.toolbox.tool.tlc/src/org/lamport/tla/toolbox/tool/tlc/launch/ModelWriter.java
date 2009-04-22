@@ -32,8 +32,8 @@ public class ModelWriter
      */
     public ModelWriter()
     {
-        this.tlaBuffer = new StringBuffer();
-        this.cfgBuffer = new StringBuffer();
+        this.tlaBuffer = new StringBuffer(1024);
+        this.cfgBuffer = new StringBuffer(1024);
     }
 
     /**
@@ -99,6 +99,7 @@ public class ModelWriter
                     addMVTypedSet(setOfMVs, "\\* MV CONSTANT declarations");
                     cfgBuffer.append("\\* MV CONSTANT definitions").append(CR);
                     tlaBuffer.append("\\* MV CONSTANT definitions").append(CR);
+                    
                     String id = addArrowAssignment(constant, "const");
                     if (constant.isSymmetricalSet())
                     {
@@ -162,6 +163,7 @@ public class ModelWriter
         String id = ModelHelper.getValidIdentifier(schema);
         tlaBuffer.append(constant.getParametrizedLabel(id)).append(DEFINES).append(CR).append(constant.getRight())
                 .append(CR);
+        cfgBuffer.append("CONSTANT").append(CR);
         cfgBuffer.append(constant.getLabel()).append(ARROW).append(id).append(CR);
         return id;
     }
