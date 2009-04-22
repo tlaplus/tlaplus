@@ -580,10 +580,11 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
      * @param constants the list with constants, eventually the subject of change
      * @param constantsFromModule a list of constants from the module (no right side, no params)
      */
-    public static void mergeConstantLists(List constants, List constantsFromModule)
+    public static List mergeConstantLists(List constants, List constantsFromModule)
     {
         Vector constantsToAdd = new Vector();
         Vector constantsUsed = new Vector();
+        Vector constantsToDelete = new Vector();
 
         // iterate over constants from module
         for (int i = 0; i < constantsFromModule.size(); i++)
@@ -610,12 +611,19 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
                 constantsToAdd.add(fromModule);
             }
         }
-
+         
+        // add all
+        constantsToDelete.addAll(constants);
+        // remove all used
+        constantsToDelete.removeAll(constantsUsed);
+        
         // at this point, all used constants are in the constantUsed list
         constants.retainAll(constantsUsed);
 
         // all constants to add are in constantsTo Add list
         constants.addAll(constantsToAdd);
+        
+        return constantsToDelete;
     }
 
 }
