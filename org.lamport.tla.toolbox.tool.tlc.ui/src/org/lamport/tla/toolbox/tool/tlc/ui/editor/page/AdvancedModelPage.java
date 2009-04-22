@@ -203,6 +203,10 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
 
     public void validate()
     {
+        if (getManagedForm() == null) 
+        {
+            return;
+        }
         IMessageManager mm = getManagedForm().getMessageManager();
         // clean old messages
         mm.removeAllMessages();
