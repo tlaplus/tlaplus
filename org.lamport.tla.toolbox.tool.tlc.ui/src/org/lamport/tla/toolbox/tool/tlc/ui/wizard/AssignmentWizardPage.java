@@ -2,7 +2,6 @@ package org.lamport.tla.toolbox.tool.tlc.ui.wizard;
 
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.source.SourceViewer;
-import org.eclipse.jface.text.source.SourceViewerConfiguration;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
@@ -19,6 +18,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
 import org.lamport.tla.toolbox.tool.tlc.model.TypedSet;
+import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
 
 /**
  * @author Simon Zambrovski
@@ -40,15 +40,15 @@ public class AssignmentWizardPage extends WizardPage
             boolean modelValueSelected = optionModelValue.getSelection();
             boolean modelValueSetSelected = optionSetModelValues.getSelection();
 
-
-            if (modelValueSelected) 
+            if (modelValueSelected)
             {
                 source.getTextWidget().setBackground(getControl().getBackground());
-            } else {
+            } else
+            {
                 source.getTextWidget().setBackground(Display.getCurrent().getSystemColor(SWT.COLOR_WHITE));
             }
             source.getControl().setEnabled(!modelValueSelected);
-            
+
             flagSymmetricalSet.setEnabled(modelValueSetSelected);
 
             getContainer().updateButtons();
@@ -78,11 +78,10 @@ public class AssignmentWizardPage extends WizardPage
         gd = new GridData(SWT.LEFT, SWT.TOP, false, true);
         paramComposite.setLayoutData(gd);
 
-        source = new SourceViewer(container, null, null, false, SWT.BORDER | SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
-        SourceViewerConfiguration configuration = new SourceViewerConfiguration();
-        source.configure(configuration);
-        source.setDocument(new Document(getAssignment().getRight()));
+        source = FormHelper.createSourceViewer(container, SWT.BORDER | SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
 
+        // set data
+        source.setDocument(new Document(getAssignment().getRight()));
         StyledText styledText = source.getTextWidget();
         styledText.addModifyListener(new ModifyListener() {
 
@@ -142,7 +141,6 @@ public class AssignmentWizardPage extends WizardPage
                 optionModelValue.addSelectionListener(optionSelectionAdapter);
                 optionSetModelValues.addSelectionListener(optionSelectionAdapter);
 
-                
                 // set the value from the assignment object
                 if (getAssignment().isModelValue())
                 {
@@ -152,19 +150,21 @@ public class AssignmentWizardPage extends WizardPage
                         flagSymmetricalSet.setEnabled(false);
                         optionModelValue.setSelection(getAssignment().isModelValue());
                         source.getTextWidget().setBackground(container.getBackground());
-                    // set of model values
-                    } else {
+                        // set of model values
+                    } else
+                    {
                         optionSetModelValues.setSelection(getAssignment().isModelValue());
                         flagSymmetricalSet.setSelection(getAssignment().isSymmetricalSet());
                     }
-                } else {
+                } else
+                {
                     flagSymmetricalSet.setEnabled(false);
                     optionOrdinaryValue.setSelection(true);
                 }
 
             }
         }
-        
+
         setControl(container);
     }
 
@@ -176,7 +176,7 @@ public class AssignmentWizardPage extends WizardPage
     {
         return ((AssignmentWizard) getWizard()).getFormula();
     }
-    
+
     public boolean finish()
     {
         return false;
@@ -184,30 +184,34 @@ public class AssignmentWizardPage extends WizardPage
 
     public void dispose()
     {
-        String rightSide = source.getDocument().get();
-        // if the model value(s) option exist 
+        
+        String rightSide = FormHelper.trimTrailingSpaces(source.getDocument().get());
+        
+        // if the model value(s) option exist
         if (optionModelValue != null && optionSetModelValues != null)
         {
             this.getAssignment().setModelValue(optionModelValue.getSelection() || optionSetModelValues.getSelection());
 
             // handling the option selected
-            if (optionModelValue.getSelection()) 
+            if (optionModelValue.getSelection())
             {
                 // model value
                 this.getAssignment().setRight(this.getAssignment().getLabel());
-            } else if (optionSetModelValues.getSelection()) 
+            } else if (optionSetModelValues.getSelection())
             {
                 // set of model values
                 // normalize the right side
                 TypedSet set = TypedSet.parseSet(rightSide);
                 this.getAssignment().setSymmetric(flagSymmetricalSet.getSelection());
                 this.getAssignment().setRight(set.toString());
-            } else {
+            } else
+            {
                 // ordinary assignment (with no parameters)
                 this.getAssignment().setRight(rightSide);
             }
-            
-        } else {
+
+        } else
+        {
             // no options - e.G. definition override, or constant with multiple parameters
             this.getAssignment().setRight(rightSide);
         }
@@ -232,7 +236,7 @@ public class AssignmentWizardPage extends WizardPage
         }
         return null;
     }
-    
+
     protected boolean isTypeInputPossible()
     {
         // only a set of model values can be typed
@@ -240,13 +244,12 @@ public class AssignmentWizardPage extends WizardPage
         {
             return false;
         }
-        String set = source.getDocument().get();
-        TypedSet parsedSet = TypedSet.parseSet(set.trim());
+        String set = FormHelper.trimTrailingSpaces(source.getDocument().get());
+        TypedSet parsedSet = TypedSet.parseSet(set);
 
         return (parsedSet.getType() == null);
     }
 
-    
     public boolean isCurrentPage()
     {
         return super.isCurrentPage();

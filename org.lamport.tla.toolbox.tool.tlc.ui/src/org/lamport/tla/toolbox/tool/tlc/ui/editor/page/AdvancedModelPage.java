@@ -180,24 +180,24 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         getConfig().setAttribute(MODEL_PARAMETER_DEFINITIONS, definitions);
 
         // new definitions
-        String newDefinitions = newDefinitionsSource.getDocument().get();
+        String newDefinitions = FormHelper.trimTrailingSpaces(newDefinitionsSource.getDocument().get());
         getConfig().setAttribute(MODEL_PARAMETER_NEW_DEFINITIONS, newDefinitions);
 
         // model values
-        String modelValues = modelValuesSource.getDocument().get();
+        String modelValues = FormHelper.trimTrailingSpaces(modelValuesSource.getDocument().get());
         TypedSet modelValuesSet = TypedSet.parseSet(modelValues);
         getConfig().setAttribute(MODEL_PARAMETER_MODEL_VALUES, modelValuesSet.toString());
 
         // constraint formula
-        String constraintFormula = constraintSource.getDocument().get();
+        String constraintFormula = FormHelper.trimTrailingSpaces(constraintSource.getDocument().get());
         getConfig().setAttribute(MODEL_PARAMETER_CONSTRAINT, constraintFormula);
 
         // view
-        String viewFormula = viewSource.getDocument().get();
+        String viewFormula = FormHelper.trimTrailingSpaces(viewSource.getDocument().get());
         getConfig().setAttribute(LAUNCH_VIEW, viewFormula);
 
         // action constraint formula
-        String actionConstraintFormula = actionConstraintSource.getDocument().get();
+        String actionConstraintFormula = FormHelper.trimTrailingSpaces(actionConstraintSource.getDocument().get());
         getConfig().setAttribute(MODEL_PARAMETER_ACTION_CONSTRAINT, actionConstraintFormula);
 
         super.commit(onSave);
@@ -283,7 +283,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         }
 
         // check the model values
-        TypedSet modelValuesSet = TypedSet.parseSet(modelValuesSource.getDocument().get());
+        TypedSet modelValuesSet = TypedSet.parseSet(FormHelper.trimTrailingSpaces(modelValuesSource.getDocument().get()));
         if (modelValuesSet.getValueCount() > 0)
         {
             // there were values defined

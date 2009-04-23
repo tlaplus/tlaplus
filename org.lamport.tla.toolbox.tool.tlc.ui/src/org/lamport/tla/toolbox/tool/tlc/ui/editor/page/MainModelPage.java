@@ -297,19 +297,19 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
     {
         System.out.println("Main page commit");
         // closed formula
-        String closedFormula = this.specSource.getDocument().get();
+        String closedFormula = FormHelper.trimTrailingSpaces(this.specSource.getDocument().get());
         getConfig().setAttribute(MODEL_BEHAVIOR_CLOSED_SPECIFICATION, closedFormula);
 
         // init formula
-        String initFormula = this.initFormulaSource.getDocument().get();
+        String initFormula = FormHelper.trimTrailingSpaces(this.initFormulaSource.getDocument().get());
         getConfig().setAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT, initFormula);
 
         // next formula
-        String nextFormula = this.nextFormulaSource.getDocument().get();
+        String nextFormula = FormHelper.trimTrailingSpaces(this.nextFormulaSource.getDocument().get());
         getConfig().setAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT, nextFormula);
 
         // fairness formula
-        String fairnessFormula = this.fairnessFormulaSource.getDocument().get();
+        String fairnessFormula = FormHelper.trimTrailingSpaces(this.fairnessFormulaSource.getDocument().get());
         getConfig().setAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_FAIRNESS, fairnessFormula);
 
         // mode

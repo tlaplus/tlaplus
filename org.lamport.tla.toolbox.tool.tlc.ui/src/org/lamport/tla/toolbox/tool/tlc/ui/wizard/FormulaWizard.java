@@ -3,6 +3,7 @@ package org.lamport.tla.toolbox.tool.tlc.ui.wizard;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.wizard.Wizard;
 import org.lamport.tla.toolbox.tool.tlc.model.Formula;
+import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
 
 /**
  * A wizard for entering formulas
@@ -41,7 +42,7 @@ public class FormulaWizard extends Wizard
      */
     public Formula getFormula()
     {
-        return new Formula(page.getDocument().get());
+        return new Formula(FormHelper.trimTrailingSpaces(page.getDocument().get()));
     }
     
     /**

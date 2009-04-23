@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 
+import org.eclipse.jface.text.TabsToSpacesConverter;
 import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.jface.text.source.SourceViewerConfiguration;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
@@ -18,6 +19,7 @@ import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.forms.widgets.TableWrapData;
 import org.eclipse.ui.forms.widgets.TableWrapLayout;
 import org.lamport.tla.toolbox.tool.tlc.model.Formula;
+import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 
 /**
@@ -141,16 +143,31 @@ public class FormHelper
      */
     public static SourceViewer createSourceViewer(FormToolkit toolkit, Composite parent, int flags)
     {
-        SourceViewer sourceViewer = new SourceViewer(parent, null, null, false, flags);
+        SourceViewer sourceViewer = createSourceViewer(parent, flags);
         sourceViewer.setData(FormToolkit.KEY_DRAW_BORDER, FormToolkit.TREE_BORDER);
+        
+        sourceViewer.getTextWidget().setData(FormToolkit.KEY_DRAW_BORDER, FormToolkit.TREE_BORDER);
+        toolkit.adapt(sourceViewer.getTextWidget(), true, true);
+
+        return sourceViewer;
+    }
+    
+    /**
+     * Creates the source viewer
+     * @param parent
+     * @param flags
+     * @return
+     */
+    public static SourceViewer createSourceViewer(Composite parent, int flags)
+    {
+        SourceViewer sourceViewer = new SourceViewer(parent, null, null, false, flags);
         SourceViewerConfiguration configuration = new SourceViewerConfiguration();
         sourceViewer.configure(configuration);
+        sourceViewer.setTabsToSpacesConverter(getTabToSpacesConverter());
 
         StyledText control = sourceViewer.getTextWidget();
-        control.setData(FormToolkit.KEY_DRAW_BORDER, FormToolkit.TREE_BORDER);
+        control.setFont(TLCUIActivator.getDefault().getCourierFont());
         control.setEditable(true);
-        toolkit.adapt(control, true, true);
-
         return sourceViewer;
     }
 
@@ -233,7 +250,7 @@ public class FormHelper
             checkTable.setCheckedElements(checked.toArray());
 
         } else
-        // handling Assignments            
+        // handling Assignments
         {
             List deserializeAssignmentList = ModelHelper.deserializeAssignmentList(serializedInput);
             table.setInput(deserializeAssignmentList);
@@ -241,4 +258,38 @@ public class FormHelper
 
     }
 
+    /**
+     * Retrieves the tab to spaces converter
+     * @return
+     */
+    public static TabsToSpacesConverter getTabToSpacesConverter()
+    {
+        TabsToSpacesConverter converter = new TabsToSpacesConverter();
+        converter.setNumberOfSpacesPerTab(4);
+        return converter;
+    }
+
+    /**
+     * Cuts the trailing \n \t and spaces
+     * @param string
+     * @return the string without trailing whitespaces
+     */
+    public static String trimTrailingSpaces(String string)
+    {
+        if (string == null) 
+        {
+            return null;
+        } 
+        for (int i = string.length() - 1; i >= 0; i--)
+        {
+            if (string.charAt(i) == '\t' || string.charAt(i) == ' ' || string.charAt(i) == '\n' || string.charAt(i) == '\r') 
+            {
+                continue;
+            } else {
+                string = string.substring(0, i + 1);
+                return string;
+            }
+        }
+        return string;
+    }
 }

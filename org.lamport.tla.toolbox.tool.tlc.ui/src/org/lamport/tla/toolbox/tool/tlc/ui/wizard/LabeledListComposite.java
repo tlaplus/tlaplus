@@ -55,7 +55,7 @@ public class LabeledListComposite
 
         for (int i = 0; i < fields.length; i++)
         {
-            fields[i] = new Text(self, SWT.BORDER | SWT.MULTI);
+            fields[i] = new Text(self, SWT.BORDER | SWT.SINGLE);
             fields[i].setText(values[i]);
             rd = new RowData();
             rd.width = 50;
