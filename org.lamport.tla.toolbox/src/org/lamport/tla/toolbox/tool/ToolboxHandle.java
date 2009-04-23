@@ -8,6 +8,7 @@ import org.lamport.tla.toolbox.util.pref.IPreferenceConstants;
 import org.lamport.tla.toolbox.util.pref.PreferenceStoreHelper;
 
 import tla2sany.modanalyzer.SpecObj;
+import util.UniqueString;
 
 /**
  * Provides shortcuts to the internal toolbox methods, that should be made accessible to the other tools
@@ -41,7 +42,15 @@ public class ToolboxHandle
      */
     public static SpecObj getSpecObj()
     {
-        Spec spec = Activator.getSpecManager().getSpecLoaded();
+        Spec spec = null;
+        try 
+        {
+            spec = Activator.getSpecManager().getSpecLoaded();
+        } catch (IllegalStateException e) 
+        {
+            // this happens is the workspace is closed
+            // just return null for e.G. JUnit tests
+        }
         if (spec != null) 
         {
             return spec.getValidRootModule();
@@ -56,6 +65,19 @@ public class ToolboxHandle
     public static Spec getCurrentSpec()
     {
         return Activator.getSpecManager().getSpecLoaded();
+    }
+
+    /**
+     * @param name
+     * @return
+     */
+    public static boolean isUserModule(String name)
+    {
+        if (name == null || name.isEmpty()) 
+        {
+            return false;
+        }
+        return Activator.getModuleDependencyStorage().hasModule(name);
     }
     
     

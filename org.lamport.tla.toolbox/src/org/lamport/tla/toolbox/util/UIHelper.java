@@ -436,6 +436,10 @@ public class UIHelper
     {
         IActionBars bars = null;
         IWorkbenchWindow window = getRootApplicationWindow();
+        if (window == null)
+        {
+            return null;
+        }
         IWorkbenchPage page = window.getActivePage();
         if (page != null)
         {

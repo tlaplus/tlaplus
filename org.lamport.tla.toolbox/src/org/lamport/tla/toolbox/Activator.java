@@ -5,7 +5,6 @@ import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.lamport.tla.toolbox.spec.manager.WorkspaceSpecManager;
 import org.lamport.tla.toolbox.spec.parser.ParserDependencyStorage;
@@ -13,8 +12,6 @@ import org.lamport.tla.toolbox.ui.contribution.ParseStatusContributionItem;
 import org.lamport.tla.toolbox.ui.view.ProblemView;
 import org.lamport.tla.toolbox.util.TLAMarkerHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
-import org.lamport.tla.toolbox.util.pref.IPreferenceConstants;
-import org.lamport.tla.toolbox.util.pref.PreferenceStoreHelper;
 import org.osgi.framework.BundleContext;
 
 /**

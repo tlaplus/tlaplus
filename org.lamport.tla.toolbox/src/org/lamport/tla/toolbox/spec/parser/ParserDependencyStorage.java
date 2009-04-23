@@ -28,10 +28,20 @@ public class ParserDependencyStorage
     }
 
     /**
+     * Looks up a module
+     * @param moduleName
+     * @return true
+     */
+    public boolean hasModule(String moduleName) 
+    {
+        return moduleStore.containsKey(moduleName) || moduleStore.containsValue(moduleName); 
+    }
+    
+    /**
      * After the parse has been invoked on the parsed module, the list of modules has been delivered
      *  
      * @param parsedModule the module on which the parse has been invoked 
-     * @param listOfParsedModules a list of modules, found during the parse operation
+     * @param listOfParsedModules a list of modules, found during the parse operation, excluding the standard modules
      */
     public List put(String parsedModule, List listOfParsedModules)
     {
