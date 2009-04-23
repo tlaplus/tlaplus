@@ -87,7 +87,7 @@ public class ToolboxHandle
     }
 
     /**
-     * @return
+     * Returns the classpath entry of the tla2tool.jar (the TLA tools) 
      */
     public static IPath getTLAToolsClasspath()
     {
@@ -102,7 +102,7 @@ public class ToolboxHandle
     }
 
     /**
-     * 
+     * Returns the directory entry of the standard modules
      */
     public static IPath getModulesClasspath()
     {
