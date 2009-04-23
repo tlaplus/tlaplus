@@ -289,15 +289,18 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
             // there were values defined
 
             // check if those are numbers?
+            /*
             if (modelValuesSet.hasANumberOnlyValue())
             {
                 mm.addMessage("modelValues1", "A model value can not be an number", modelValuesSet,
                         IMessageProvider.ERROR, modelValuesSource.getControl());
                 setComplete(false);
-            }
+            }*/
             List values = modelValuesSet.getValuesAsList();
-            // check list of model values
-            validateListElements(values, modelValuesSource.getControl(), "modelValues2_", "A model value", "Advanced Model Values");
+            // check list of model values if these are already used
+            validateUsage(values, modelValuesSource.getControl(), "modelValues2_", "A model value", "Advanced Model Values");
+            // check whether the model values are valid ids
+            validateId(values, modelValuesSource.getControl(), "modelValues2_", "A model value");
         }
 
         // check the definition overrides
@@ -307,7 +310,9 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
             Assignment definition = (Assignment) definitions.get(i);
             List values = Arrays.asList(definition.getParams());
             // check list of parameters
-            validateListElements(values, definitionsTable.getTable(), "param1_", "A parameter name", "Definition Overrides");
+            validateUsage(values, definitionsTable.getTable(), "param1_", "A parameter name", "Definition Overrides");
+            // check whether the parameters are valid ids
+            validateId(values, definitionsTable.getTable(), "param1_", "A parameter name");
         }
 
         super.validate();

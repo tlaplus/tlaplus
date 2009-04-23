@@ -338,6 +338,33 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
     }
 
     /**
+     * Validates if the elements of the list are ids
+     * @param values
+     * @param listSource
+     * @param errorMessagePrefix
+     * @param elementType
+     */
+    public void validateId(List values, Control listSource, String errorMessagePrefix, String elementType)
+    {
+        if (values == null) 
+        {
+            return;
+        }
+        String message;
+        IMessageManager mm = getManagedForm().getMessageManager();
+        for (int i = 0; i < values.size(); i++)
+        {
+            String value = (String)values.get(i);
+            if (!FormHelper.isIdentifier(value)) 
+            {
+                message = elementType + " " + value + " may not be used, since it is not a valid identifier.\nAn identifier is non-empty sequence of letters, digits und '_' with at least one letter.";
+                mm.addMessage(errorMessagePrefix + i, message, value.toString(), IMessageProvider.ERROR,
+                        listSource);
+                setComplete(false);
+            }
+        }
+    }
+    /**
      * Checks if the elements of the given list comply with the requirement of being not already defined in the context
      * of the current model and the specification. The method will iterate through the list and check whether every element
      * satisfies the requirement. On violation, it adds the error message to the message manager.  
@@ -347,7 +374,7 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
      * @param elementType the type of the element, used in the error message
      * @param listSourceDescription the description of the list source, used in error reporting
      */
-    public void validateListElements(List values, Control listSource, String errorMessagePrefix, String elementType, String listSourceDescription)
+    public void validateUsage(List values, Control listSource, String errorMessagePrefix, String elementType, String listSourceDescription)
     {
         if (values == null) 
         {

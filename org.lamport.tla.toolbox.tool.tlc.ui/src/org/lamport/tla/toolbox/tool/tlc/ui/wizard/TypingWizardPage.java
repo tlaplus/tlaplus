@@ -119,16 +119,4 @@ public class TypingWizardPage extends WizardPage
         }
         super.dispose();
     }
-    
-    public void setUntypedOption()
-    {
-        // get the formula
-        Assignment assignment = ((AssignmentWizard)getWizard()).getFormula();
-        // parse the set
-        TypedSet set = TypedSet.parseSet(assignment.getRight());
-        
-        optionUntyped.setEnabled(!set.hasANumberOnlyValue());
-    }
-    
-    
 }

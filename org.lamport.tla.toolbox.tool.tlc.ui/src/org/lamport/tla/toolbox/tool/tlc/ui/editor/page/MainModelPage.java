@@ -186,7 +186,9 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
             List values = Arrays.asList(constant.getParams());
             // check list of parameters
-            validateListElements(values, constantTable.getTable(), "param1_", "A parameter name", "Constant Assignment");
+            validateUsage(values, constantTable.getTable(), "param1_", "A parameter name", "Constant Assignment");
+            // check parameters
+            validateId(values, constantTable.getTable(), "param1_", "A parameter name");
 
             // the constant is still in the list
             if (constant.getRight() == null || EMPTY_STRING.equals(constant.getRight()))
@@ -204,15 +206,20 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
                     {
                         // there were values defined
                         // check if those are numbers?
+                        /*
                         if (modelValuesSet.hasANumberOnlyValue())
                         {
                             mm.addMessage("modelValues1", "A model value can not be an number", modelValuesSet,
                                     IMessageProvider.ERROR, constantTable.getTable());
                             setComplete(false);
-                        }
+                        }*/
+
+                        List mvList = modelValuesSet.getValuesAsList();
                         // check list of model values
-                        validateListElements(modelValuesSet.getValuesAsList(), constantTable.getTable(),
-                                "modelValues2_", "A model value", "Constant Assignment");
+                        validateUsage(mvList, constantTable.getTable(), "modelValues2_", "A model value",
+                                "Constant Assignment");
+                        // check if the values are correct ids
+                        validateId(mvList, constantTable.getTable(), "modelValues2_", "A model value");
                     }
                 }
             }
@@ -235,8 +242,8 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
                     mm.addMessage("strangeNumber1", "Specified number of workers is " + number
                             + ". The number of CPU Cores available on the system is "
                             + Runtime.getRuntime().availableProcessors()
-                            + ".\n It is not advisable that the number of workers exceeds the number of CPU Cores.", null,
-                            IMessageProvider.WARNING, workers);
+                            + ".\n It is not advisable that the number of workers exceeds the number of CPU Cores.",
+                            null, IMessageProvider.WARNING, workers);
                 }
             }
         } catch (NumberFormatException e)
@@ -343,7 +350,6 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         // constants
         List constants = FormHelper.getSerializedInput(constantTable);
         getConfig().setAttribute(MODEL_PARAMETER_CONSTANTS, constants);
-        
 
         // variables
         String variables = ModelHelper.createVariableList(SemanticHelper.getRootModuleNode());
@@ -415,9 +421,9 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
         // spec
         toolkit.createLabel(behaviorArea, "Spec:");
-        specSource = FormHelper.createSourceViewer(toolkit, behaviorArea, SWT.NONE);
+        specSource = FormHelper.createSourceViewer(toolkit, behaviorArea, SWT.NONE | SWT.SINGLE);
         gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.heightHint = 20;
+        gd.heightHint = 16;
         specSource.getTextWidget().setLayoutData(gd);
         specSource.getTextWidget().addModifyListener(whatIsTheSpecListener);
         specSource.getTextWidget().addModifyListener(widgetActivatingListener);
@@ -431,27 +437,27 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
         // init
         toolkit.createLabel(behaviorArea, "Init:");
-        initFormulaSource = FormHelper.createSourceViewer(toolkit, behaviorArea, SWT.NONE);
+        initFormulaSource = FormHelper.createSourceViewer(toolkit, behaviorArea, SWT.NONE | SWT.SINGLE);
         gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.heightHint = 20;
+        gd.heightHint = 16;
         initFormulaSource.getTextWidget().setLayoutData(gd);
         initFormulaSource.getTextWidget().addModifyListener(whatIsTheSpecListener);
         initFormulaSource.getTextWidget().addModifyListener(widgetActivatingListener);
 
         // next
         toolkit.createLabel(behaviorArea, "Next:");
-        nextFormulaSource = FormHelper.createSourceViewer(toolkit, behaviorArea, SWT.NONE);
+        nextFormulaSource = FormHelper.createSourceViewer(toolkit, behaviorArea, SWT.NONE | SWT.SINGLE);
         gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.heightHint = 20;
+        gd.heightHint = 16;
         nextFormulaSource.getTextWidget().setLayoutData(gd);
         nextFormulaSource.getTextWidget().addModifyListener(whatIsTheSpecListener);
         nextFormulaSource.getTextWidget().addModifyListener(widgetActivatingListener);
 
         // fairness
         toolkit.createLabel(behaviorArea, "Fairness:");
-        fairnessFormulaSource = FormHelper.createSourceViewer(toolkit, behaviorArea, SWT.NONE);
+        fairnessFormulaSource = FormHelper.createSourceViewer(toolkit, behaviorArea, SWT.NONE | SWT.SINGLE);
         gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.heightHint = 20;
+        gd.heightHint = 16;
         fairnessFormulaSource.getTextWidget().setLayoutData(gd);
         fairnessFormulaSource.getTextWidget().addModifyListener(whatIsTheSpecListener);
         fairnessFormulaSource.getTextWidget().addModifyListener(widgetActivatingListener);

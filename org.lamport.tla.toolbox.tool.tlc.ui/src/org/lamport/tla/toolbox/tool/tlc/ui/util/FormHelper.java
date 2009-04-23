@@ -292,4 +292,18 @@ public class FormHelper
         }
         return string;
     }
+    
+    /**
+     * Returns true, if the string matches [A-Za-z0-9_]*[A-Za-z]{1}[A-Za-z0-9_]*
+     * @param string
+     * @return true, if the string consists of any nun-zero number letters, _ and digits but has at least one letter 
+     */
+    public static boolean isIdentifier(String string)
+    {
+        if (string == null || string.equals(""))
+        {
+            return false;
+        }
+        return string.matches("[A-Za-z0-9_]*[A-Za-z]{1}[A-Za-z0-9_]*");
+    }
 }
