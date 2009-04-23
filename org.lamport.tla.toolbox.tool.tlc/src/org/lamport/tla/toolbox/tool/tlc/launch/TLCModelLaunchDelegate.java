@@ -90,8 +90,8 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
         modelJob.schedule();
 
         // TLC job
-        TLCJob tlcjob = new TLCInternalJob(tlaFile, cfgFile, project);
-        // TLCJob tlcjob = new TLCProcessJob(tlaFile, cfgFile, project);
+        // TLCJob tlcjob = new TLCInternalJob(tlaFile, cfgFile, project);
+        TLCJob tlcjob = new TLCProcessJob(tlaFile, cfgFile, project, launch);
         tlcjob.setWorkers(numberOfWorkers);
         tlcjob.addJobChangeListener(writingJobStatusListener);
         tlcjob.setPriority(Job.LONG);

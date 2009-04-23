@@ -5,6 +5,7 @@ import java.io.IOException;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.debug.core.ILaunch;
 import org.eclipse.jface.action.Action;
 import org.eclipse.ui.console.IOConsoleOutputStream;
 import org.lamport.tla.toolbox.tool.tlc.ui.ConsoleFactory;
@@ -22,6 +23,7 @@ public abstract class TLCJob extends AbstractJob
     protected IResource projectDir;
     protected int workers = 1;
     protected IOConsoleOutputStream outputStream = ConsoleFactory.getTLCConsole().newOutputStream();
+    protected ILaunch launch;
 
 
     /**
@@ -29,12 +31,13 @@ public abstract class TLCJob extends AbstractJob
      * @param cfgFile
      * @param projectDir
      */
-    public TLCJob(IResource rootModule, IResource cfgFile, IResource projectDir)
+    public TLCJob(IResource rootModule, IResource cfgFile, IResource projectDir, ILaunch launch)
     {
         super("TLC run for " + rootModule.getName());
         this.rootModule = rootModule;
         this.cfgFile = cfgFile;
         this.projectDir = projectDir;
+        this.launch = launch;
     }
 
     /**
@@ -77,6 +80,21 @@ public abstract class TLCJob extends AbstractJob
             e.printStackTrace();
         }
     }
+    
+    /**
+     * @param string
+     */
+    protected void print(String string)
+    {
+        try
+        {
+            outputStream.write(string);
+        } catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+    }
+    
 
     /**
      * Initilizes the console and shows the view 

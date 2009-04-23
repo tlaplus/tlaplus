@@ -5,6 +5,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.debug.core.ILaunch;
 import org.lamport.tla.toolbox.tool.tlc.TLCActivator;
 import org.lamport.tla.toolbox.util.RCPNameToFileIStream;
 import org.lamport.tla.toolbox.util.ResourceHelper;
@@ -27,9 +28,9 @@ public class TLCInternalJob extends TLCJob
     /**
      * @param name
      */
-    public TLCInternalJob(IResource rootModule, IResource cfgFile, IResource projectDir)
+    public TLCInternalJob(IResource rootModule, IResource cfgFile, IResource projectDir, ILaunch launch)
     {
-        super(rootModule, cfgFile, projectDir);
+        super(rootModule, cfgFile, projectDir, launch);
         
         // initialize the progress reporting variable
         reported = 0;
