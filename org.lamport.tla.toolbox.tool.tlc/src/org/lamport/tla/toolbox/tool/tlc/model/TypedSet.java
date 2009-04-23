@@ -274,10 +274,12 @@ public class TypedSet
         return set.substring(1, set.length() - 1);
     }
 
+    
     /**
      * This test functions checks whether the type has at least one value
      * that contain only of digits
      * @return true if on of the values (taking the type into account) is a digit
+     * @deprecated
      */
     public boolean hasANumberOnlyValue()
     {

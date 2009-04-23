@@ -65,13 +65,19 @@ public class Assignment extends Formula
         if (this.modelValue)
         {
             buffer.append(IS_MV);
-            if (this.isSymmetricalSet())
+            if (isSetOfModelValues()) 
             {
-                buffer.append(SYMMETRICAL);
-                buffer.append(getFormattedRight());
-            } else
+                if (this.isSymmetricalSet())
+                {
+                    buffer.append(SYMMETRICAL);
+                    buffer.append(getFormattedRight());
+                } else {
+                    // print out the set
+                    buffer.append(getFormattedRight());                    
+                }
+            } else 
             {
-                // buffer.append(getRight());
+                // a single value, nothing to print
             }
         } else
         {
