@@ -14,6 +14,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.dialogs.FilteredItemsSelectionDialog;
+import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 
 import tla2sany.modanalyzer.SpecObj;
@@ -128,9 +129,9 @@ public class FilteredDefinitionSelectionDialog extends FilteredItemsSelectionDia
      */
     protected Comparator getItemsComparator()
     {
-        return new Comparator() {
-
-            // group by modules, sort by operator name
+        return new Comparator() 
+        {
+            // group by modules, sort by user modules first, then by module name and then then by operator name
             public int compare(Object arg0, Object arg1)
             {
                 OpDefNode node0 = (OpDefNode) arg0;
@@ -138,11 +139,39 @@ public class FilteredDefinitionSelectionDialog extends FilteredItemsSelectionDia
                 
                 ModuleNode module0 = node0.getOriginallyDefinedInModuleNode();
                 ModuleNode module1 = node1.getOriginallyDefinedInModuleNode();
+
+                boolean module0user = ToolboxHandle.isUserModule(module0.getName().toString());
+                boolean module1user = ToolboxHandle.isUserModule(module1.getName().toString());
                 
-                int moduleCompare = module0.getName().toString().compareTo(module1.getName().toString());
+                if (module0user)
+                {
+                    // module 0 is a user module
+                    if (module1user) 
+                    {
+                        // both are user
+                    } else 
+                    {
+                        // module 1 is a standard module
+                        return -1;
+                    }
+                } else {
+                    // module 0 is not a user module
+                    if (module1user) 
+                    {
+                        // module 1 is a user module
+                        return 1;
+                    } else {
+                        // none are user modules
+                    }
+                }
+
+                // at this point both modules are user modules, or both are standard modules
+                // compare based on the name
+                
+                int moduleCompare = module0.getName().toString().compareToIgnoreCase(module1.getName().toString());
                 if (moduleCompare == 0) 
                 {
-                    return node0.getName().toString().compareTo(node1.getName().toString());
+                    return node0.getName().toString().compareToIgnoreCase(node1.getName().toString());
                 } else {
                     return moduleCompare;
                 }
