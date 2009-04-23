@@ -61,20 +61,21 @@ public class Assignment extends Formula
     {
         StringBuffer buffer = new StringBuffer(getLeft());
         buffer.append(ASSIGNMENT_SIGN);
+        
         if (this.modelValue)
         {
             buffer.append(IS_MV);
             if (this.isSymmetricalSet())
             {
                 buffer.append(SYMMETRICAL);
-                buffer.append(getRight());
+                buffer.append(getFormattedRight());
             } else
             {
                 // buffer.append(getRight());
             }
         } else
         {
-            buffer.append(getRight());
+            buffer.append(getFormattedRight());
         }
 
         return buffer.toString();
@@ -140,6 +141,26 @@ public class Assignment extends Formula
     {
         return super.getFormula();
     }
+
+    /**
+     * Retrieves a formatted version of the right side 
+     * @return right side ending with ... iff \n is contained in the right side
+     */
+    public String getFormattedRight()
+    {
+        String tempRight = getRight();
+        if (tempRight == null) 
+        {
+            return null;
+        }
+        int i = -1;
+        if ( (i = tempRight.indexOf("\n")) != -1) 
+        {
+            tempRight = tempRight.substring(0, i + 1) + " ..."; 
+        }
+        return tempRight;
+    }
+
 
     public String[] getParams()
     {
@@ -256,4 +277,5 @@ public class Assignment extends Formula
 
         return (params.length == obj.params.length);
     }
+    
 }
