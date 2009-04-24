@@ -44,18 +44,18 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
     private static final String PARAM_DELIMITER = ":";
 
     /**
-     * Constructs the model called FOO_MC_1 from the SpecName FOO
-     * if FOO_MC_1 already exists, delivers FOO_MC_2, and so on...
+     * Constructs the model called Foo___Model_1 from the SpecName Foo
+     * if Foo___Model_1 already exists, delivers Foo___Model_2, and so on...
      * 
      * This method tests the existence of the launch configuration AND of the file
      * 
      * @param specProject
-     * @param specName
      * @return
      */
-    public static String constructModelName(IProject specProject, String specName)
+    public static String constructModelName(IProject specProject)
     {
-        return doConstructModelName(specProject, specName + "_MC_1");
+        
+        return doConstructModelName(specProject, "Model_1");
     }
 
     /**
@@ -66,6 +66,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
      */
     private static String doConstructModelName(IProject specProject, String proposition)
     {
+        
         ILaunchConfiguration existingModel = getModelByName(specProject, proposition);
         if (existingModel != null || specProject.getFile(proposition + ".tla").exists())
         {
@@ -77,6 +78,22 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
 
         return proposition;
     }
+    /**
+     * Transforms a model name to the name visible to the user 
+     * @param modelFile
+     * @return
+     */
+    public static String getModelName(IFile modelFile) 
+    {
+        String name = modelFile.getLocation().removeFileExtension().lastSegment();
+        int i = name.indexOf(modelFile.getProject().getName()+"___");
+        if (i != -1) 
+        {
+            name = name.substring(i + (modelFile.getProject().getName()+"___").length());
+        }
+        return name;
+    }
+
 
     /**
      * Convenience method retrieving the model for the project of the current specification
@@ -89,13 +106,15 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
     }
 
     /**
+     * Retrieves the model name by name
      * @param specProject
      * @param modelName
      * @return
      */
     public static ILaunchConfiguration getModelByName(IProject specProject, String modelName)
     {
-        // TODO! add project test
+        modelName = specProject.getName() + "___" + modelName;
+        
         ILaunchManager launchManager = DebugPlugin.getDefault().getLaunchManager();
         ILaunchConfigurationType launchConfigurationType = launchManager
                 .getLaunchConfigurationType(TLCModelLaunchDelegate.LAUNCH_ID);
@@ -625,5 +644,6 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
         
         return constantsToDelete;
     }
+
 
 }

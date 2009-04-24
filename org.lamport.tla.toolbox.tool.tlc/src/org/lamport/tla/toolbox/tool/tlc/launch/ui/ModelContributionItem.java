@@ -18,6 +18,7 @@ import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.tool.tlc.TLCActivator;
 import org.lamport.tla.toolbox.tool.tlc.handlers.OpenModelHandler;
 import org.lamport.tla.toolbox.tool.tlc.launch.TLCModelLaunchDelegate;
+import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 /**
@@ -57,14 +58,17 @@ public class ModelContributionItem extends CompoundContributionItem
                 }
 
                 HashMap parameters = new HashMap();
+                // user visible model name
+                String modelNameUser = ModelHelper.getModelName(launchConfigurations[i].getFile());
 
                 // fill the model name for the handler
-                parameters.put(OpenModelHandler.PARAM_MODEL_NAME, modelName);
+                parameters.put(OpenModelHandler.PARAM_MODEL_NAME, modelNameUser);
 
+                
                 // create the contribution item
                 CommandContributionItemParameter param = new CommandContributionItemParameter(UIHelper
                         .getActiveWindow(), "toolbox.command.model.open." + modelName, OpenModelHandler.COMMAND_ID,
-                        parameters, modelIcon, null, null, modelName, null, "Opens " + modelName,
+                        parameters, modelIcon, null, null, modelNameUser, null, "Opens " + modelNameUser,
                         CommandContributionItem.STYLE_PUSH, null, true);
 
                 // add contribution item to the list

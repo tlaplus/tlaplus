@@ -4,7 +4,6 @@ import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
@@ -79,10 +78,9 @@ public class ModelEditor extends FormEditor
                     e.printStackTrace();
                 }
 
-                IPath path = finput.getPath();
                 // setContentDescription(path.toString());
-                setPartName(path.removeFileExtension().lastSegment());
-                setTitleToolTip(path.toString());
+                setPartName(ModelHelper.getModelName(finput.getFile()));
+                setTitleToolTip(finput.getPath().toString());
             }
         }
 

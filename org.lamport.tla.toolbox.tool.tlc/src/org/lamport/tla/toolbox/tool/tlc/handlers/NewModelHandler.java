@@ -6,6 +6,7 @@ import java.util.List;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.DebugPlugin;
@@ -13,6 +14,9 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationType;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.core.ILaunchManager;
+import org.eclipse.jface.dialogs.IInputValidator;
+import org.eclipse.jface.dialogs.InputDialog;
+import org.eclipse.jface.window.Window;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.TLCModelLaunchDelegate;
@@ -30,6 +34,7 @@ import tla2sany.semantic.ModuleNode;
 public class NewModelHandler extends AbstractHandler implements IModelConfigurationConstants
 {
     public static final Object PARAM_MODEL_NAME = "modelLaunchName";
+    private String modelName = null;
 
     /**
      * The constructor.
@@ -54,16 +59,41 @@ public class NewModelHandler extends AbstractHandler implements IModelConfigurat
                 .getLaunchConfigurationType(TLCModelLaunchDelegate.LAUNCH_ID);
 
         // retrieve a new model name for the spec
-        String modelName = ModelHelper.constructModelName(specRootModule.getProject(), ToolboxHandle.getCurrentSpec()
-                .getName());
+        modelName = ModelHelper.constructModelName(specRootModule.getProject());
+
+        IInputValidator modelNameInputValidator = new ModelNameValidator(specRootModule.getProject());
+        final InputDialog dialog = new InputDialog(UIHelper.getShellProvider().getShell(), "New model...",
+                "Plese input the name of the model to create", modelName, modelNameInputValidator);
+
+        dialog.setBlockOnOpen(true);
+        UIHelper.runUISync(new Runnable() {
+
+            public void run()
+            {
+                int open = dialog.open();
+                switch (open) {
+                case Window.OK:
+                    modelName = dialog.getValue();
+                    break;
+                case Window.CANCEL:
+                    // cancel model creation
+                    modelName = null;
+                }
+            }
+        });
+        if (modelName == null)
+        {
+            // exit processing if no model name at place
+            return null;
+        }
 
         // get the model root file
-        IResource modelRoot = ModelHelper.getNewModelRootFile(specRootModule, modelName);
+        IResource modelRoot = ModelHelper.getNewModelRootFile(specRootModule, specRootModule.getProject().getName()
+                + "___" + modelName);
 
         // get the model configuration
         IResource config = ModelHelper.getConfigFile(modelRoot, null);
 
-        
         try
         {
             ToolboxHandle.getCurrentSpec().getProject().refreshLocal(IResource.DEPTH_INFINITE, null);
@@ -71,7 +101,7 @@ public class NewModelHandler extends AbstractHandler implements IModelConfigurat
         {
             e1.printStackTrace();
         }
-        
+
         // get the root module
         ModuleNode moduleNode = ToolboxHandle.getSpecObj().getExternalModuleTable().getRootModule();
 
@@ -83,7 +113,7 @@ public class NewModelHandler extends AbstractHandler implements IModelConfigurat
 
             // create new launch instance
             ILaunchConfigurationWorkingCopy launchCopy = launchConfigurationType.newInstance(specRootModule
-                    .getProject(), modelName);
+                    .getProject(), specRootModule.getProject().getName() + "___" + modelName);
 
             launchCopy.setAttribute(SPEC_NAME, ToolboxHandle.getCurrentSpec().getName());
             launchCopy.setAttribute(SPEC_ROOT_FILE, specRootModule.getLocation().toOSString());
@@ -101,14 +131,13 @@ public class NewModelHandler extends AbstractHandler implements IModelConfigurat
 
             ILaunchConfiguration launchSaved = launchCopy.doSave();
 
-            
             // create parameters for the handler
             HashMap parameters = new HashMap();
             parameters.put(OpenModelHandler.PARAM_MODEL_NAME, modelName);
 
             // runs the command and opens the module in the editor
             UIHelper.runCommand(OpenModelHandler.COMMAND_ID, parameters);
-            
+
             return launchSaved;
 
         } catch (CoreException e)
@@ -117,10 +146,33 @@ public class NewModelHandler extends AbstractHandler implements IModelConfigurat
             e.printStackTrace();
         }
 
-        
-        
-        
         return null;
     }
+
+    class ModelNameValidator implements IInputValidator
+    {
+        private final IProject project;
+
+        public ModelNameValidator(IProject project)
+        {
+            this.project = project;
+
+        }
+
+        public String isValid(String newText)
+        {
+
+            if (newText == null || "".equals(newText))
+            {
+                return "Model name must be not empty";
+            }
+            ILaunchConfiguration existingModel = ModelHelper.getModelByName(project, newText);
+            if (existingModel != null)
+            {
+                return "Model with the name " + newText + " already exists. Please choose a different name";
+            }
+            return null;
+        }
+    };
 
 }

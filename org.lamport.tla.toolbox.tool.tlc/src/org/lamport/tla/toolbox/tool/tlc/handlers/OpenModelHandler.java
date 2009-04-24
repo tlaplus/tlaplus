@@ -31,7 +31,6 @@ public class OpenModelHandler extends AbstractHandler implements IConfigurationC
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
         String modelName = event.getParameter((String) PARAM_MODEL_NAME);
-
         System.out.println("Open handler invoked on " + modelName);
 
         IFile launchFile = ModelHelper.getModelByName(modelName).getFile();
