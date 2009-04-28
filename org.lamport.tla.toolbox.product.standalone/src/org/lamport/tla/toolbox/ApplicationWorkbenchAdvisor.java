@@ -9,6 +9,7 @@ import org.eclipse.ui.application.WorkbenchAdvisor;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.util.UIHelper;
+import org.eclipse.ui.internal.ide.model.WorkbenchAdapterBuilder;
 
 /**
  * This workbench advisor creates the window advisor, and specifies
@@ -47,34 +48,14 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
         // save the positions of windows etc...
         configurer.setSaveAndRestore(true);
 
-        /*
-        // REMOVE: only required for the navigator, will be removed
-                WorkbenchAdapterBuilder.registerAdapters();
-
-                final String ICONS_PATH = "icons/full/";
-                final String PATH_OBJECT = ICONS_PATH + "obj16/";
-                Bundle ideBundle = Platform.getBundle(IDEWorkbenchPlugin.IDE_WORKBENCH);
-                declareWorkbenchImage(configurer, ideBundle,
-                        IDE.SharedImages.IMG_OBJ_PROJECT, PATH_OBJECT + "prj_obj.gif",
-                        true);
-                declareWorkbenchImage(configurer, ideBundle,
-                        IDE.SharedImages.IMG_OBJ_PROJECT_CLOSED, PATH_OBJECT
-                                + "cprj_obj.gif", true);
-         */
+        // register adapter
+        WorkbenchAdapterBuilder.registerAdapters();
 
     }
-    /*    
-        private void declareWorkbenchImage(IWorkbenchConfigurer configurer_p,
-                Bundle ideBundle, String symbolicName, String path, boolean shared) {
-            URL url = ideBundle.getEntry(path);
-            ImageDescriptor desc = ImageDescriptor.createFromURL(url);
-            configurer_p.declareImage(symbolicName, desc, shared);
-        }
-    */
 
     public boolean preShutdown()
     {
-        if (! ToolboxHandle.getInstanceStore().getBoolean(ToolboxHandle.I_RESTORE_LAST_SPEC))
+        if (!ToolboxHandle.getInstanceStore().getBoolean(ToolboxHandle.I_RESTORE_LAST_SPEC))
         {
             UIHelper.getActivePage().closeAllEditors(true);
             UIHelper.switchPerspective(getInitialWindowPerspectiveId());
