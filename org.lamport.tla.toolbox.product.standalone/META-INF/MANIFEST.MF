@@ -14,3 +14,4 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.swt,
  org.lamport.tla.toolbox
 Bundle-ActivationPolicy: lazy
+Import-Package: org.eclipse.ui.internal.ide.model
