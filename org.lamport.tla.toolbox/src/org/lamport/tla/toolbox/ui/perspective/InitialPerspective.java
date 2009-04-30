@@ -2,6 +2,7 @@ package org.lamport.tla.toolbox.ui.perspective;
 
 import org.eclipse.ui.IPageLayout;
 import org.eclipse.ui.IPerspectiveFactory;
+import org.lamport.tla.toolbox.ui.provider.SpecExplorer;
 
 /**
  * The initial perspective with actions for the spec manager and the welcome view
@@ -24,6 +25,7 @@ public class InitialPerspective implements IPerspectiveFactory
         layout.addStandaloneView(INTRO_VIEW_ID, false, IPageLayout.LEFT, 0.9f, editorArea);
         layout.getViewLayout(INTRO_VIEW_ID).setCloseable(false);
         
-        layout.addFastView(SpecLoadedPerspective.SPEC_EXPLORER_VIEW_ID, 0.25f);
+        layout.addFastView(SpecExplorer.VIEW_ID, 0.25f);
+        layout.getViewLayout(SpecExplorer.VIEW_ID).setCloseable(false);
     }
 }
