@@ -11,20 +11,19 @@ import org.eclipse.ui.IPerspectiveFactory;
 public class InitialPerspective implements IPerspectiveFactory
 {
 
+    /**
+     * TODO refactor
+     */
+    public static final String INTRO_VIEW_ID = "org.eclipse.ui.internal.introview";
     public static final String ID = "org.lamport.tla.toolbox.ui.perspective.initial";
 
     public void createInitialLayout(IPageLayout layout)
     {
         String editorArea = layout.getEditorArea();
         layout.setEditorAreaVisible(false);
-        layout.addStandaloneView("org.eclipse.ui.internal.introview", false, IPageLayout.LEFT, 0.9f, editorArea);
-        layout.getViewLayout("org.eclipse.ui.internal.introview").setCloseable(false);
-        // layout.getViewLayout("org.eclipse.ui.internal.introview").setMoveable(false);
-        /*
-        layout.addStandaloneView(WelcomeView.ID, true, IPageLayout.LEFT, 0.5f, editorArea);
-        layout.getViewLayout(WelcomeView.ID).setCloseable(true);
-        */
+        layout.addStandaloneView(INTRO_VIEW_ID, false, IPageLayout.LEFT, 0.9f, editorArea);
+        layout.getViewLayout(INTRO_VIEW_ID).setCloseable(false);
         
-        // layout.addStandaloneView("toolbox.view.Navigator", true, IPageLayout.RIGHT, 0.5f, editorArea);
+        layout.addFastView(SpecLoadedPerspective.SPEC_EXPLORER_VIEW_ID, 0.25f);
     }
 }
