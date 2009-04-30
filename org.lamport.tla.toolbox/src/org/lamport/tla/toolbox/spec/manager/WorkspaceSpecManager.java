@@ -11,6 +11,7 @@ import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
@@ -25,11 +26,12 @@ import org.lamport.tla.toolbox.util.pref.PreferenceStoreHelper;
  * @version $Id$
  * @author Simon Zambrovski
  */
-public class WorkspaceSpecManager extends GenericSelectionProvider implements ISpecManager, IResourceChangeListener
+public class WorkspaceSpecManager extends GenericSelectionProvider implements ISpecManager, IResourceChangeListener,
+        IAdaptable
 {
     private Hashtable specStorage = new Hashtable(47);
     private Spec loadedSpec = null;
-    
+
     /**
      * Constructor
      */
@@ -167,7 +169,6 @@ public class WorkspaceSpecManager extends GenericSelectionProvider implements IS
             // touch the spec
             this.loadedSpec.setLastModified();
         }
-
     }
 
     /*
@@ -189,8 +190,7 @@ public class WorkspaceSpecManager extends GenericSelectionProvider implements IS
         }
 
     }
-    
-    
+
     /**
      * Constructs a specification name from the proposition string
      * @param proposition a string with spec name 
@@ -222,10 +222,11 @@ public class WorkspaceSpecManager extends GenericSelectionProvider implements IS
      */
     public ISelection getSelection()
     {
-        if (this.loadedSpec != null) 
+        if (this.loadedSpec != null)
         {
             return new StructuredSelection(this.loadedSpec);
-        } else {
+        } else
+        {
             return null;
         }
     }
@@ -235,33 +236,45 @@ public class WorkspaceSpecManager extends GenericSelectionProvider implements IS
      */
     public void setSelection(ISelection selection)
     {
-        if (selection == null) 
+        if (selection == null)
         {
             setSpecLoaded(null);
             return;
-        } 
-        if (selection instanceof IStructuredSelection) 
+        }
+        if (selection instanceof IStructuredSelection)
         {
             IStructuredSelection sSelection = (IStructuredSelection) selection;
             if (sSelection.toArray() instanceof Spec[])
             {
-                Spec[] specs = (Spec[]) sSelection.toArray(); 
-                if (specs.length == 0) 
+                Spec[] specs = (Spec[]) sSelection.toArray();
+                if (specs.length == 0)
                 {
-                    setSpecLoaded(null);   
-                } else if (specs.length == 1){
-                    setSpecLoaded(specs[0]); 
-                } else {
+                    setSpecLoaded(null);
+                } else if (specs.length == 1)
+                {
+                    setSpecLoaded(specs[0]);
+                } else
+                {
                     throw new IllegalArgumentException("Only one specification can be selected");
                 }
-            } else {
-                throw new IllegalArgumentException("Workspace specification manager only accepts specification objects to be selected");
+            } else
+            {
+                throw new IllegalArgumentException(
+                        "Workspace specification manager only accepts specification objects to be selected");
             }
-        } else {
-            throw new IllegalArgumentException("Workspace specification manager only accepts specification object in a StructuredSelection");
+        } else
+        {
+            throw new IllegalArgumentException(
+                    "Workspace specification manager only accepts specification object in a StructuredSelection");
         }
     }
 
-    
-    
+    /**
+     * Only support the interface, no real adaptivity
+     */
+    public Object getAdapter(Class adapter)
+    {
+        return null;
+    }
+
 }
