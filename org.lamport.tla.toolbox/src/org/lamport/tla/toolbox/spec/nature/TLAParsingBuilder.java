@@ -44,7 +44,8 @@ public class TLAParsingBuilder extends IncrementalProjectBuilder
 
     protected IProject[] build(int kind, Map args, IProgressMonitor monitor) throws CoreException
     {
-        if (getProject() != Activator.getSpecManager().getSpecLoaded().getProject())
+        Spec spec = Activator.getSpecManager().getSpecLoaded();
+        if (spec == null || getProject() != spec.getProject())
         {
             // skip the build calls on wrong projects (which are in WS, but not a current spec)
             return null;
@@ -82,7 +83,6 @@ public class TLAParsingBuilder extends IncrementalProjectBuilder
                 delta.accept(moduleFinder);
 
                 IResource rootFile = null;
-                Spec spec = Activator.getSpecManager().getSpecLoaded();
                 if (spec != null)
                 {
                     rootFile = spec.getRootFile();
