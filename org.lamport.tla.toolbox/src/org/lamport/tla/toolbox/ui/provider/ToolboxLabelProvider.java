@@ -5,9 +5,12 @@ import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.ide.IDE.SharedImages;
 import org.eclipse.ui.navigator.IDescriptionProvider;
+import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.spec.Module;
 import org.lamport.tla.toolbox.spec.Spec;
+import org.lamport.tla.toolbox.spec.manager.WorkspaceSpecManager;
 
 /**
  * Label provider for all toolbox internal elements
@@ -39,7 +42,11 @@ extends LabelProvider implements ILabelProvider, IDescriptionProvider
     {
         if (element instanceof Spec) 
         {
-            return PlatformUI.getWorkbench().getSharedImages().getImage(org.eclipse.ui.ide.IDE.SharedImages.IMG_OBJ_PROJECT_CLOSED);
+            if (((Spec)element) == Activator.getSpecManager().getSpecLoaded()) 
+            {
+                return PlatformUI.getWorkbench().getSharedImages().getImage(SharedImages.IMG_OBJ_PROJECT);
+            }
+            return PlatformUI.getWorkbench().getSharedImages().getImage(SharedImages.IMG_OBJ_PROJECT_CLOSED);
         } else if (element instanceof Module) 
         {
             
