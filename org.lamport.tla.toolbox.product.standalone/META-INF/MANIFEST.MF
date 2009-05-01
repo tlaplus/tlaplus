@@ -11,7 +11,7 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.eclipse.ui.intro,
  org.eclipse.ui.forms,
+ org.eclipse.ui.ide;bundle-version="3.4.1",
  org.eclipse.swt,
  org.lamport.tla.toolbox
 Bundle-ActivationPolicy: lazy
-Import-Package: org.eclipse.ui.internal.ide.model
