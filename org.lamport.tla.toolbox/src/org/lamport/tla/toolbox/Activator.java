@@ -70,6 +70,22 @@ public class Activator extends AbstractUIPlugin
             }
         }, IResourceChangeEvent.POST_BUILD);
 
+        // update CNF viewers
+        workspace.addResourceChangeListener(new IResourceChangeListener() {
+
+            public void resourceChanged(IResourceChangeEvent event)
+            {
+                UIHelper.runUIAsync(new Runnable() {
+
+                    public void run()
+                    {
+                        UIHelper.updateCNFViewers();
+                    }
+                });
+            }
+        }, IResourceChangeEvent.POST_BUILD);
+
+        
         // react with window pop-up, if set up in the preferences
         workspace.addResourceChangeListener(new IResourceChangeListener() {
 
