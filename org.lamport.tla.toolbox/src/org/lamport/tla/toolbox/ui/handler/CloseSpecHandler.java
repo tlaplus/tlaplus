@@ -16,6 +16,8 @@ import org.lamport.tla.toolbox.util.UIHelper;
  */
 public class CloseSpecHandler extends AbstractHandler implements IHandler
 {
+    public final static String COMMAND_ID = "toolbox.command.spec.close";
+    
 
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
