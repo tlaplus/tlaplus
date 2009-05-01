@@ -32,15 +32,16 @@
             id="toolbox.view.ProblemView"
             name="Problems">
       </view>
-      <!-- view
+      <view
             allowMultiple="false"
             category="org.lamport.tla.toolbox.category"
-            class="org.lamport.tla.toolbox.ui.view.ProblemMarkerView"
-            icon="icons/full/eview16/console_view2.gif"
-            id="toolbox.view.ProblemMarkerView"
-            name="Problem Markers"
-            restorable="true">
-      </view -->
+            class="org.lamport.tla.toolbox.ui.provider.SpecExplorer"
+            fastViewWidthRatio="0.75"
+            icon="icons/full/etool16/new_project_wiz.gif"
+            id="toolbox.view.SpecView"
+            name="Specification Explorer"
+            restorable="false">
+      </view>
       <category
             id="org.lamport.tla.toolbox.category"
             name="TLA+ Toolbox">
@@ -139,6 +140,12 @@
       </command>
       <command
             categoryId="toolbox.command.category.spec"
+            description="Open the specification"
+            id="toolbox.command.spec.open.delegate"
+            name="Open Specification">
+      </command>
+      <command
+            categoryId="toolbox.command.category.spec"
             description="Specification Properties"
             id="toolbox.command.spec.props"
             name="Specification Properties">
@@ -230,6 +237,13 @@
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="M3+X">
       </key>
+      <key
+            commandId="toolbox.command.spec.open.delegate"
+            contextId="org.eclipse.ui.contexts.window"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="F3">
+      </key>
+      
       <!-- key
             commandId="toolbox.command.help"
             contextId="org.eclipse.ui.contexts.window"
@@ -393,7 +407,7 @@
                commandId="toolbox.command.module.translate.active"
                icon="icons/full/obj16/start_ccs_task.gif"
                id="toolbox.menu.run.translate"
-               label="Translate Module"
+               label="PCal Translate Module"
                mnemonic="t">
             <visibleWhen
                   checkEnabled="true">
@@ -525,6 +539,71 @@
                   value="org.eclipse.ui.console.ConsoleView">
             </parameter>
          </command>
+         <command
+               commandId="toolbox.command.openview"
+               icon="icons/full/etool16/new_project_wiz.gif"
+               id="toolbox.menu.open-specExplorer"
+               label="Specification Explorer"
+               mnemonic="S"
+               mode="FORCE_TEXT"
+               style="push"
+               tooltip="Opens the Specification Explorer">
+            <parameter
+                  name="toolbox.openview.name"
+                  value="toolbox.view.SpecView">
+            </parameter>
+         </command>
+      </menuContribution>
+      <menuContribution
+            locationURI="popup:toolbox.view.popup.spec?after=group.new">
+         <command
+               commandId="toolbox.command.spec.new"
+               icon="icons/full/newspec_wiz.gif"
+               id="toolbox.popupmenu.spec.new"
+               label="New Specification"
+               mnemonic="N"
+               style="push">
+         </command>
+      </menuContribution>
+      <menuContribution
+            locationURI="popup:toolbox.view.popup.spec?after=group.open">
+         <command
+               commandId="toolbox.command.spec.open.delegate"
+               icon="icons/full/newspec_wiz.gif"
+               id="toolbox.popupmenu.spec.open.delegate"
+               label="Open Specification"
+               mnemonic="O"
+               style="push"
+               >
+         </command>
+      </menuContribution>
+      <menuContribution
+            locationURI="popup:toolbox.view.popup.spec?after=group.edit">
+         <command
+               commandId="org.eclipse.ui.edit.delete"
+               id="toolbox.popupmenu.spec.delete"
+               label="Delete"
+               mnemonic="D"
+               style="push">
+         </command>
+         <command
+               commandId="org.eclipse.ui.edit.rename"
+               id="toolbox.popupmenu.spec.rename"
+               label="Rename"
+               mnemonic="R"
+               style="push">
+         </command>
+      </menuContribution>
+      <menuContribution
+            locationURI="popup:toolbox.view.popup.spec?after=group.properties">
+         <command
+               commandId="org.eclipse.ui.file.properties"
+               id="toolbox.popupmenu.spec.props"
+               label="Properties"
+               mnemonic="I"
+               style="push"
+               tooltip="Shows properties of current specification">
+         </command>
       </menuContribution>
    </extension>
    
@@ -550,6 +629,18 @@
             commandId="toolbox.command.spec.open">
       </handler>
       <handler
+            class="org.lamport.tla.toolbox.ui.handler.OpenSpecHandlerDelegate"
+            commandId="toolbox.command.spec.open.delegate">
+		    <enabledWhen>
+		            <count value="1" />
+		    </enabledWhen>
+		    <activeWhen>
+		        <with variable="activePartId">
+		            <equals value="toolbox.view.SpecView" />
+		        </with>
+		    </activeWhen>
+      </handler>
+      <handler
             class="org.lamport.tla.toolbox.ui.handler.SpecPropertiesHandler"
             commandId="toolbox.command.spec.props">
       </handler>
@@ -561,6 +652,38 @@
             class="org.lamport.tla.toolbox.ui.handler.OpenModuleHandler"
             commandId="toolbox.command.module.open">
       </handler>
+	<handler commandId="org.eclipse.ui.edit.delete"
+	        class="org.lamport.tla.toolbox.ui.handler.DeleteSpecHandler">
+	    <enabledWhen>
+	        <not>
+	            <count value="0" />
+	        </not>
+	    </enabledWhen>
+	    <activeWhen>
+	        <with variable="activePartId">
+	            <equals value="toolbox.view.SpecView" />
+	        </with>
+	    </activeWhen>
+	</handler>
+ <handler
+       class="org.lamport.tla.toolbox.ui.handler.RenameSpecHandler"
+       commandId="org.eclipse.ui.edit.rename">
+    <enabledWhen>
+       <count
+             value="1">
+       </count>
+    </enabledWhen>
+    <activeWhen>
+       <with
+             variable="activePartId">
+          <equals
+                value="toolbox.view.SpecView">
+          </equals>
+       </with>
+    </activeWhen>
+ </handler>
+      
+      
       <handler
             class="org.lamport.tla.toolbox.ui.handler.TranslateModuleHandler"
             commandId="toolbox.command.module.translate.active">
@@ -751,5 +874,88 @@
    		<!-- markerFieldReference id="org.eclipse.ui.ide.priorityField"/ -->
 		<!-- markerFieldReference id="org.eclipse.ui.ide.descriptionField"/ -->		          
       </markerContentGenerator>
-   </extension>   
+   </extension>
+   <extension
+         point="org.eclipse.ui.navigator.viewer">
+      <viewer
+            viewerId="toolbox.view.SpecView">
+         <popupMenu
+               allowsPlatformContributions="true"
+               id="toolbox.view.popup.spec">
+            <insertionPoint
+                  name="group.new"
+                  separator="false">
+            </insertionPoint>
+            <insertionPoint
+                  name="group.open"
+                  separator="false">
+            </insertionPoint>
+            <insertionPoint
+                  name="group.edit"
+                  separator="true">
+            </insertionPoint>
+            <insertionPoint
+                  name="additions"
+                  separator="true">
+            </insertionPoint>
+            <insertionPoint
+                  name="group.properties"
+                  separator="true">
+            </insertionPoint>
+         </popupMenu>
+      </viewer>
+      <viewerContentBinding
+            viewerId="toolbox.view.SpecView">
+         <includes>
+            <contentExtension
+                  isRoot="false"
+                  pattern="toolbox.content.SpecContent">
+            </contentExtension>
+            
+         </includes>
+      </viewerContentBinding>
+   </extension>
+   
+   <!--                       -->
+   <!-- Specification content -->
+   <!--                       -->
+   
+   <extension
+         point="org.eclipse.ui.navigator.navigatorContent">
+      <navigatorContent
+            activeByDefault="true"
+            contentProvider="org.lamport.tla.toolbox.ui.provider.SpecContentProvider"
+            icon="icons/full/obj16/spec_obj.gif"
+            id="toolbox.content.SpecContent"
+            labelProvider="org.lamport.tla.toolbox.ui.provider.ToolboxLabelProvider"
+            name="Specifications"
+            priority="normal"
+            providesSaveables="false">
+         <triggerPoints>
+            <instanceof
+                  value="org.lamport.tla.toolbox.spec.manager.WorkspaceSpecManager">
+            </instanceof>
+         </triggerPoints>
+         <possibleChildren>
+            <or>
+               <instanceof
+                     value="org.lamport.tla.toolbox.spec.Spec">
+               </instanceof>
+               <instanceof
+                     value="org.lamport.tla.toolbox.spec.Module">
+               </instanceof>
+            </or>
+         </possibleChildren>
+         
+	      <commonWizard
+	        		type="new"
+					wizardId="toolbox.wizard.NewSpecWizard">
+				<enablement>
+					<or>
+						<instanceof value="org.lamport.tla.toolbox.spec.Spec" />	
+					</or>
+		         </enablement>
+			</commonWizard>          
+      </navigatorContent>
+   </extension>
 </plugin>
