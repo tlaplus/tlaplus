@@ -10,7 +10,6 @@ import org.eclipse.ui.navigator.IDescriptionProvider;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.spec.Module;
 import org.lamport.tla.toolbox.spec.Spec;
-import org.lamport.tla.toolbox.spec.manager.WorkspaceSpecManager;
 
 /**
  * Label provider for all toolbox internal elements
