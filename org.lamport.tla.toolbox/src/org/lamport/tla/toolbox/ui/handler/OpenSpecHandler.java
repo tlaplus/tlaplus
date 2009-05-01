@@ -24,7 +24,7 @@ public class OpenSpecHandler extends AbstractHandler implements IHandler
     // TODO move in some other place!!!!!
     public static final String TLA_EDITOR_OLD = "de.techjava.tla.ui.editors.TLAEditor";
     public static final String TLA_EDITOR_CURRENT = "org.lamport.tla.toolbox.editor.basic.TLAEditor";
-    
+
     public static final String TLA_EDITOR = TLA_EDITOR_CURRENT;
     public static final String COMMAND_ID = "toolbox.command.spec.open";
     public static final String PARAM_SPEC = "toolbox.command.spec.open.param";
@@ -32,9 +32,17 @@ public class OpenSpecHandler extends AbstractHandler implements IHandler
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
         String specName = event.getParameter(PARAM_SPEC);
+        // if no spec name, exit
         if (specName == null)
         {
             return null;
+        }
+        
+        
+        // if another spec is currently loaded, close it
+        if (Activator.getSpecManager().getSpecLoaded() != null) 
+        {
+            UIHelper.runCommand(CloseSpecHandler.COMMAND_ID, null);   
         }
 
         final Spec spec = Activator.getSpecManager().getSpecByName(specName);
@@ -51,7 +59,7 @@ public class OpenSpecHandler extends AbstractHandler implements IHandler
 
         // store information about opened spec in the spec manager
         Activator.getSpecManager().setSpecLoaded(spec);
-        
+
         // open the editor
         IEditorPart part = UIHelper.openEditor(TLA_EDITOR, new FileEditorInput(spec.getRootFile()));
         part.addPropertyListener(new IPropertyListener() {
@@ -61,11 +69,10 @@ public class OpenSpecHandler extends AbstractHandler implements IHandler
                 if (IWorkbenchPartConstants.PROP_DIRTY == propId)
                 {
                     // here the listeners to editor changes go into
-                    
-                } 
+
+                }
             }
         });
-
 
         return null;
     }
