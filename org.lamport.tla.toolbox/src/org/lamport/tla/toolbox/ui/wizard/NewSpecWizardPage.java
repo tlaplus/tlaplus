@@ -199,7 +199,7 @@ public class NewSpecWizardPage extends WizardPage
             }
         } else
         {
-            // the spec name field is empty
+            // the spec name field is empty, try to fill it from the module name
             if (fileTextDirty)
             {
                 // if we got to this point, the fileText is a valid entry
@@ -208,11 +208,18 @@ public class NewSpecWizardPage extends WizardPage
                 String moduleName = ResourceHelper.getModuleNameChecked(getRootFilename(), false);
 
                 Spec existingSpec = Activator.getSpecManager().getSpecByName(moduleName);
-                if (existingSpec != null) {
+                if (existingSpec != null) 
+                {
                     moduleName = Activator.getSpecManager().constructSpecName(moduleName, true);
                 }
                 specNameText.setText(moduleName);
             }
+        }
+        // project directory exists
+        if (ResourceHelper.peekProject(getSpecName(), rootfilePath)) 
+        {
+            reportError("A toolbox directory for provided specification name already exist.\nPlease select a different specification name of root module.");
+            return;
         }
 
         // every seems to be fine
@@ -226,6 +233,8 @@ public class NewSpecWizardPage extends WizardPage
             // allow this
             reportWarning("Root file name does not exist. A new file will be created.");
         } 
+        
+
         
         // we should not enable the next/finish if both fields are virgin
         if (!fileTextDirty || !specNameDirty)
