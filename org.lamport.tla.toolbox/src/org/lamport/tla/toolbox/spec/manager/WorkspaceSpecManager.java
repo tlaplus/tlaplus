@@ -1,6 +1,7 @@
 package org.lamport.tla.toolbox.spec.manager;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 
@@ -17,7 +18,11 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.spec.nature.TLANature;
+import org.lamport.tla.toolbox.ui.handler.CloseSpecHandler;
+import org.lamport.tla.toolbox.ui.handler.OpenSpecHandler;
 import org.lamport.tla.toolbox.ui.property.GenericSelectionProvider;
+import org.lamport.tla.toolbox.util.ResourceHelper;
+import org.lamport.tla.toolbox.util.UIHelper;
 import org.lamport.tla.toolbox.util.pref.IPreferenceConstants;
 import org.lamport.tla.toolbox.util.pref.PreferenceStoreHelper;
 
@@ -192,6 +197,59 @@ public class WorkspaceSpecManager extends GenericSelectionProvider implements IS
     }
 
     /**
+     * Renames a spec 
+     * @param spec
+     * @param newName
+     */
+    public void renameSpec(Spec spec, String newName)
+    {
+        boolean setBack = false;
+        if (this.loadedSpec == spec)
+        {
+            // renaming current spec...
+            // close it here
+            UIHelper.runCommand(CloseSpecHandler.COMMAND_ID, new HashMap());
+            setBack = true;
+        }
+        specStorage.remove(spec.getName());
+
+        IProject project = ResourceHelper.projectRename(spec.getProject(), newName);
+        if (project != null)
+        {
+            spec = new Spec(project);
+            addSpec(spec);
+        }
+
+        // set the spec
+        if (setBack)
+        {
+            // reopen the spec
+            HashMap parameters = new HashMap();
+            parameters.put(OpenSpecHandler.PARAM_SPEC, newName);
+            UIHelper.runCommand(OpenSpecHandler.COMMAND_ID, parameters);
+        } else
+        {
+            spec.setLastModified();
+        }
+    }
+
+    /**
+     * Removes the specification
+     * @param spec specification to remove
+     */
+    public void removeSpec(Spec spec)
+    {
+        if (this.loadedSpec == spec)
+        {
+            // deleting current spec...
+            // close it here
+            UIHelper.runCommand(CloseSpecHandler.COMMAND_ID, new HashMap());
+        }
+        ResourceHelper.deleteProject(spec.getProject());
+        specStorage.remove(spec.getName());
+    }
+
+    /**
      * Constructs a specification name from the proposition string
      * @param proposition a string with spec name 
      * @param firstRun a flag for the first run
@@ -276,5 +334,4 @@ public class WorkspaceSpecManager extends GenericSelectionProvider implements IS
     {
         return null;
     }
-
 }
