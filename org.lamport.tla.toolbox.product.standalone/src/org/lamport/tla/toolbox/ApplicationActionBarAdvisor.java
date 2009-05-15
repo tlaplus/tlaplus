@@ -29,6 +29,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
 
     private IWorkbenchAction newEditorAction;
     private IWorkbenchAction newWindowAction;
+    private IWorkbenchAction resetPerspectiveAction;
 
     /**
      * @param configurer
@@ -69,7 +70,11 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         register(newEditorAction);
         
         newWindowAction = ActionFactory.OPEN_NEW_WINDOW.create(window);
+        newWindowAction.setText("New Toolbox window");
         register(newWindowAction);
+        
+        resetPerspectiveAction = ActionFactory.RESET_PERSPECTIVE.create(window);
+        register(resetPerspectiveAction);
 
     }
 
@@ -95,11 +100,13 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
 
         MenuManager toolsMenu = new MenuManager("&Tools", "toolbox.tools.menu");
         toolsMenu.add(new Separator("toolbox.tools.separator"));
+        toolsMenu.add(new Separator());
         toolsMenu.add(new Separator("toolbox.toolmenus.separator"));
 
         MenuManager windowMenu = new MenuManager("&Window", "toolbox.window.menu");
         windowMenu.add(newEditorAction);
         windowMenu.add(newWindowAction);
+        windowMenu.add(resetPerspectiveAction);
         windowMenu.add(new Separator("toolbox.window.open.separator"));
         windowMenu.add(new Separator());
         windowMenu.add(new Separator("toolbox.window.view.separator"));
