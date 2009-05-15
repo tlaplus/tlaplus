@@ -6,7 +6,6 @@ import java.util.List;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.DebugPlugin;
@@ -21,19 +20,19 @@ import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.TLCModelLaunchDelegate;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
+import org.lamport.tla.toolbox.tool.tlc.util.ModelNameValidator;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 import tla2sany.semantic.ModuleNode;
 
 /**
- * Our sample handler extends AbstractHandler, an IHandler base class.
+ * Handler for creation of new models
  * @see org.eclipse.core.commands.IHandler
  * @see org.eclipse.core.commands.AbstractHandler
  */
 public class NewModelHandler extends AbstractHandler implements IModelConfigurationConstants
 {
-    public static final Object PARAM_MODEL_NAME = "modelLaunchName";
     private String modelName = null;
 
     /**
@@ -148,31 +147,5 @@ public class NewModelHandler extends AbstractHandler implements IModelConfigurat
 
         return null;
     }
-
-    class ModelNameValidator implements IInputValidator
-    {
-        private final IProject project;
-
-        public ModelNameValidator(IProject project)
-        {
-            this.project = project;
-
-        }
-
-        public String isValid(String newText)
-        {
-
-            if (newText == null || "".equals(newText))
-            {
-                return "Model name must be not empty";
-            }
-            ILaunchConfiguration existingModel = ModelHelper.getModelByName(project, newText);
-            if (existingModel != null)
-            {
-                return "Model with the name " + newText + " already exists. Please choose a different name";
-            }
-            return null;
-        }
-    };
 
 }
