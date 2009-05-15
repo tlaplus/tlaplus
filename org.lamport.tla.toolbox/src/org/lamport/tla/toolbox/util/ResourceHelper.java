@@ -36,6 +36,18 @@ import org.lamport.tla.toolbox.spec.nature.TLAParsingBuilder;
  */
 public class ResourceHelper
 {
+
+    /**
+     * Look up if a project exist and return true if so
+     * @param name name of the project
+     * @return
+     */
+    public static boolean peekProject(String name, String rootFilename) 
+    {
+        String root = getParentDirName(rootFilename); 
+        File projectDir = new File(root.concat("/").concat(name).concat(".toolbox"));
+        return projectDir.exists();
+    }
     /**
      * Retrieves a project by name or creates a new project
      * <br><b>Note:</b> If the project does not exist in workspace it will be created, based
@@ -59,7 +71,6 @@ public class ResourceHelper
         {
             return null;
         }
-
         IWorkspace ws = ResourcesPlugin.getWorkspace();
         IProject project = ws.getRoot().getProject(name);
 
@@ -453,6 +464,50 @@ public class ResourceHelper
             combinedRule = MultiRule.combine(rule, combinedRule);
         }
         return combinedRule;
+    }
+    
+    /**
+     * Renames and moves the project
+     * @param project
+     * @param specName
+     */
+    public static IProject projectRename(IProject project, String specName)
+    {
+        IProgressMonitor monitor = null;
+        try
+        {
+            IProjectDescription description = project.getDescription();
+            
+            // move the project location
+            IPath path = description.getLocation().removeLastSegments(1).removeTrailingSeparator().append(specName.concat(".toolbox")).addTrailingSeparator();
+            description.setLocation(path);
+            description.setName(specName);
+            
+            project.copy(description, IResource.NONE | IResource.SHALLOW, monitor);
+            project.delete(IResource.NONE, monitor);
+            
+            return ResourcesPlugin.getWorkspace().getRoot().getProject(specName);
+        } catch (CoreException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return null;
+    }
+    /**
+     * Deletes the project
+     * @param project
+     */
+    public static void deleteProject(IProject project)
+    {
+        IProgressMonitor monitor = null;
+        try
+        {
+            project.delete(true, monitor);
+        } catch (CoreException e)
+        {
+            e.printStackTrace();
+        }
     }
 
 }
