@@ -8,14 +8,18 @@
    <extension
          point="org.eclipse.ui.perspectives">
       <perspective
-            name="SpecLoaded Perspective"
             class="org.lamport.tla.toolbox.ui.perspective.SpecLoadedPerspective"
-            id="org.lamport.tla.toolbox.ui.perspective.specLoaded">
+            fixed="false"
+            icon="icons/full/etool16/new_project_wiz.gif"
+            id="org.lamport.tla.toolbox.ui.perspective.specLoaded"
+            name="Specification">
       </perspective>
       <perspective
             class="org.lamport.tla.toolbox.ui.perspective.InitialPerspective"
+            fixed="false"
+            icon="icons/full/newmodule_wiz.gif"
             id="org.lamport.tla.toolbox.ui.perspective.initial"
-            name="Initial Perspective">
+            name="Welcome to Toolbox">
       </perspective>
    </extension>
    
@@ -228,7 +232,21 @@
             id="toolbox.command.help"
             name="Help">
       </command>
+      <command
+            categoryId="toolbox.command.category.ui"
+            description="Switches to the perspective"
+            id="toolbox.command.switchperspective"
+            name="Switches to the perspective">
+         <commandParameter
+               id="toolbox.switchperspective.id"
+               name="name"
+               optional="false">
+         </commandParameter>
+      </command>
    </extension>
+<!-- 
+ Key bindings
+-->   
    <extension
          point="org.eclipse.ui.bindings">
       <key
@@ -314,6 +332,20 @@
                   id="toolbox.menu.spec.open.dynamic">
             </dynamic>
          </menu>
+         <command
+               commandId="toolbox.command.openview"
+               icon="icons/full/etool16/new_project_wiz.gif"
+               id="toolbox.menu.open-specExplorer"
+               label="Specification Explorer"
+               mnemonic="E"
+               mode="FORCE_TEXT"
+               style="push"
+               tooltip="Opens the Specification Explorer">
+            <parameter
+                  name="toolbox.openview.name"
+                  value="toolbox.view.SpecView">
+            </parameter>
+         </command>
          
          <command
                commandId="toolbox.command.module.parse.root"
@@ -324,9 +356,11 @@
                   checkEnabled="true">
                <with
                      variable="activeWorkbenchWindow.activePerspective">
-                  <equals
-                        value="org.lamport.tla.toolbox.ui.perspective.specLoaded">
-                  </equals>
+                  <not>
+                     <equals
+                           value="org.lamport.tla.toolbox.ui.perspective.initial">
+                     </equals>
+                  </not>
                </with>
             </visibleWhen>
          </command>
@@ -341,9 +375,11 @@
                   checkEnabled="true">
                <with
                      variable="activeWorkbenchWindow.activePerspective">
-                  <equals
-                        value="org.lamport.tla.toolbox.ui.perspective.specLoaded">
-                  </equals>
+                  <not>
+                     <equals
+                           value="org.lamport.tla.toolbox.ui.perspective.initial">
+                     </equals>
+                  </not>
                </with>
             </visibleWhen>
          </command>
@@ -358,9 +394,11 @@
                   checkEnabled="true">
                <with
                      variable="activeWorkbenchWindow.activePerspective">
-                  <equals
-                        value="org.lamport.tla.toolbox.ui.perspective.specLoaded">
-                  </equals>
+                  <not>
+                     <equals
+                           value="org.lamport.tla.toolbox.ui.perspective.initial">
+                     </equals>
+                  </not>
                </with>
             </visibleWhen>
          </command>
@@ -377,9 +415,11 @@
                   checkEnabled="true">
                <with
                      variable="activeWorkbenchWindow.activePerspective">
-                  <equals
-                        value="org.lamport.tla.toolbox.ui.perspective.specLoaded">
-                  </equals>
+                  <not>
+                     <equals
+                           value="org.lamport.tla.toolbox.ui.perspective.initial">
+                     </equals>
+                  </not>
                </with>
             </visibleWhen>
             <dynamic
@@ -397,9 +437,11 @@
                   checkEnabled="true">
                <with
                      variable="activeWorkbenchWindow.activePerspective">
-                  <equals
-                        value="org.lamport.tla.toolbox.ui.perspective.specLoaded">
-                  </equals>
+                  <not>
+                     <equals
+                           value="org.lamport.tla.toolbox.ui.perspective.initial">
+                     </equals>
+                  </not>
                </with>
             </visibleWhen>
          </command>
@@ -413,9 +455,11 @@
                   checkEnabled="true">
                <with
                      variable="activeWorkbenchWindow.activePerspective">
-                  <equals
-                        value="org.lamport.tla.toolbox.ui.perspective.specLoaded">
-                  </equals>
+                  <not>
+                     <equals
+                           value="org.lamport.tla.toolbox.ui.perspective.initial">
+                     </equals>
+                  </not>
                </with>
             </visibleWhen>
          </command>
@@ -430,9 +474,11 @@
                   checkEnabled="true">
                <with
                      variable="activeWorkbenchWindow.activePerspective">
-                  <equals
-                        value="org.lamport.tla.toolbox.ui.perspective.specLoaded">
-                  </equals>
+                  <not>
+                     <equals
+                           value="org.lamport.tla.toolbox.ui.perspective.initial">
+                     </equals>
+                  </not>
                </with>
             </visibleWhen>
          </command>
@@ -451,9 +497,11 @@
                   checkEnabled="true">
                <with
                      variable="activeWorkbenchWindow.activePerspective">
-                  <equals
-                        value="org.lamport.tla.toolbox.ui.perspective.specLoaded">
-                  </equals>
+                  <not>
+                     <equals
+                           value="org.lamport.tla.toolbox.ui.perspective.initial">
+                     </equals>
+                  </not>
                </with>
             </visibleWhen>
             <command
@@ -509,6 +557,7 @@
                tooltip="Opens the help">
          </command>
       </menuContribution>
+      
       <menuContribution
             locationURI="menu:toolbox.window.menu?after=toolbox.window.view.separator">
          <command
@@ -524,36 +573,20 @@
                   name="toolbox.openview.name"
                   value="toolbox.view.ProblemView">
             </parameter>
-         </command>
-         <command
-               commandId="toolbox.command.openview"
-               icon="icons/full/eview16/console_view2.gif"
-               id="toolbox.menu.open-console"
-               label="Console"
-               mnemonic="C"
-               mode="FORCE_TEXT"
-               style="push"
-               tooltip="Opens the view showing console">
-            <parameter
-                  name="toolbox.openview.name"
-                  value="org.eclipse.ui.console.ConsoleView">
-            </parameter>
-         </command>
-         <command
-               commandId="toolbox.command.openview"
-               icon="icons/full/etool16/new_project_wiz.gif"
-               id="toolbox.menu.open-specExplorer"
-               label="Specification Explorer"
-               mnemonic="S"
-               mode="FORCE_TEXT"
-               style="push"
-               tooltip="Opens the Specification Explorer">
-            <parameter
-                  name="toolbox.openview.name"
-                  value="toolbox.view.SpecView">
-            </parameter>
+            <visibleWhen
+                  checkEnabled="true">
+               <with
+                     variable="activeWorkbenchWindow.activePerspective">
+                  <not>
+                     <equals
+                           value="org.lamport.tla.toolbox.ui.perspective.initial">
+                     </equals>
+                  </not>
+               </with>
+            </visibleWhen>
          </command>
       </menuContribution>
+      
       <menuContribution
             locationURI="popup:toolbox.view.popup.spec?after=group.new">
          <command
@@ -565,6 +598,7 @@
                style="push">
          </command>
       </menuContribution>
+      
       <menuContribution
             locationURI="popup:toolbox.view.popup.spec?after=group.open">
          <command
@@ -577,6 +611,7 @@
                >
          </command>
       </menuContribution>
+
       <menuContribution
             locationURI="popup:toolbox.view.popup.spec?after=group.edit">
          <command
@@ -594,6 +629,7 @@
                style="push">
          </command>
       </menuContribution>
+
       <menuContribution
             locationURI="popup:toolbox.view.popup.spec?after=group.properties">
          <command
@@ -704,10 +740,93 @@
             class="org.lamport.tla.toolbox.ui.handler.ModulePropertiesHandler"
             commandId="toolbox.command.module.props">
       </handler>
+      <handler
+            class="org.lamport.tla.toolbox.ui.handler.SwichPerspectiveHandler"
+            commandId="toolbox.command.switchperspective">
+      </handler>
 
    </extension>
    
    <!-- Adapters -->
+   <extension
+         point="org.eclipse.ui.navigator.viewer">
+      <viewer
+            viewerId="toolbox.view.SpecView">
+         <popupMenu
+               allowsPlatformContributions="true"
+               id="toolbox.view.popup.spec">
+            <insertionPoint
+                  name="group.new"
+                  separator="false">
+            </insertionPoint>
+            <insertionPoint
+                  name="group.open"
+                  separator="false">
+            </insertionPoint>
+            <insertionPoint
+                  name="group.edit"
+                  separator="true">
+            </insertionPoint>
+            <insertionPoint
+                  name="additions"
+                  separator="true">
+            </insertionPoint>
+            <insertionPoint
+                  name="group.properties"
+                  separator="true">
+            </insertionPoint>
+         </popupMenu>
+      </viewer>
+      <viewerContentBinding
+            viewerId="toolbox.view.SpecView">
+         <includes>
+            <contentExtension
+                  isRoot="false"
+                  pattern="toolbox.content.SpecContent">
+            </contentExtension>
+            
+         </includes>
+      </viewerContentBinding>
+   </extension>
+   
+   <extension
+         point="org.eclipse.ui.navigator.navigatorContent">
+      <navigatorContent
+            activeByDefault="true"
+            contentProvider="org.lamport.tla.toolbox.ui.provider.SpecContentProvider"
+            icon="icons/full/obj16/spec_obj.gif"
+            id="toolbox.content.SpecContent"
+            labelProvider="org.lamport.tla.toolbox.ui.provider.ToolboxLabelProvider"
+            name="Specifications"
+            priority="normal"
+            providesSaveables="false">
+         <triggerPoints>
+            <instanceof
+                  value="org.lamport.tla.toolbox.spec.manager.WorkspaceSpecManager">
+            </instanceof>
+         </triggerPoints>
+         <possibleChildren>
+            <or>
+               <instanceof
+                     value="org.lamport.tla.toolbox.spec.Spec">
+               </instanceof>
+               <instanceof
+                     value="org.lamport.tla.toolbox.spec.Module">
+               </instanceof>
+            </or>
+         </possibleChildren>
+         
+	      <commonWizard
+	        		type="new"
+					wizardId="toolbox.wizard.NewSpecWizard">
+				<enablement>
+					<or>
+						<instanceof value="org.lamport.tla.toolbox.spec.Spec" />	
+					</or>
+		         </enablement>
+			</commonWizard>          
+      </navigatorContent>
+   </extension>
    <extension
      point="org.eclipse.ui.keywords">
     <keyword
@@ -875,87 +994,8 @@
 		<!-- markerFieldReference id="org.eclipse.ui.ide.descriptionField"/ -->		          
       </markerContentGenerator>
    </extension>
-   <extension
-         point="org.eclipse.ui.navigator.viewer">
-      <viewer
-            viewerId="toolbox.view.SpecView">
-         <popupMenu
-               allowsPlatformContributions="true"
-               id="toolbox.view.popup.spec">
-            <insertionPoint
-                  name="group.new"
-                  separator="false">
-            </insertionPoint>
-            <insertionPoint
-                  name="group.open"
-                  separator="false">
-            </insertionPoint>
-            <insertionPoint
-                  name="group.edit"
-                  separator="true">
-            </insertionPoint>
-            <insertionPoint
-                  name="additions"
-                  separator="true">
-            </insertionPoint>
-            <insertionPoint
-                  name="group.properties"
-                  separator="true">
-            </insertionPoint>
-         </popupMenu>
-      </viewer>
-      <viewerContentBinding
-            viewerId="toolbox.view.SpecView">
-         <includes>
-            <contentExtension
-                  isRoot="false"
-                  pattern="toolbox.content.SpecContent">
-            </contentExtension>
-            
-         </includes>
-      </viewerContentBinding>
-   </extension>
    
    <!--                       -->
    <!-- Specification content -->
    <!--                       -->
-   
-   <extension
-         point="org.eclipse.ui.navigator.navigatorContent">
-      <navigatorContent
-            activeByDefault="true"
-            contentProvider="org.lamport.tla.toolbox.ui.provider.SpecContentProvider"
-            icon="icons/full/obj16/spec_obj.gif"
-            id="toolbox.content.SpecContent"
-            labelProvider="org.lamport.tla.toolbox.ui.provider.ToolboxLabelProvider"
-            name="Specifications"
-            priority="normal"
-            providesSaveables="false">
-         <triggerPoints>
-            <instanceof
-                  value="org.lamport.tla.toolbox.spec.manager.WorkspaceSpecManager">
-            </instanceof>
-         </triggerPoints>
-         <possibleChildren>
-            <or>
-               <instanceof
-                     value="org.lamport.tla.toolbox.spec.Spec">
-               </instanceof>
-               <instanceof
-                     value="org.lamport.tla.toolbox.spec.Module">
-               </instanceof>
-            </or>
-         </possibleChildren>
-         
-	      <commonWizard
-	        		type="new"
-					wizardId="toolbox.wizard.NewSpecWizard">
-				<enablement>
-					<or>
-						<instanceof value="org.lamport.tla.toolbox.spec.Spec" />	
-					</or>
-		         </enablement>
-			</commonWizard>          
-      </navigatorContent>
-   </extension>
 </plugin>
