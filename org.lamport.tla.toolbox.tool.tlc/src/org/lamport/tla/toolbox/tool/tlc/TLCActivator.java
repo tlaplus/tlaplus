@@ -1,9 +1,18 @@
 package org.lamport.tla.toolbox.tool.tlc;
 
+import org.eclipse.core.resources.IResourceChangeEvent;
+import org.eclipse.core.resources.IResourceChangeListener;
+import org.eclipse.core.resources.IWorkspace;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.ui.IViewPart;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.navigator.CommonNavigator;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.lamport.tla.toolbox.tool.IToolboxContribution;
 import org.lamport.tla.toolbox.tool.ToolLifecycleException;
+import org.lamport.tla.toolbox.tool.tlc.launch.ui.ModelExplorer;
+import org.lamport.tla.toolbox.util.UIHelper;
 import org.osgi.framework.BundleContext;
 
 /**
@@ -30,6 +39,33 @@ public class TLCActivator extends AbstractUIPlugin implements IToolboxContributi
 	public void start(BundleContext context) throws Exception {
 		super.start(context);
 		plugin = this;
+
+        // register the listeners
+        IWorkspace workspace = ResourcesPlugin.getWorkspace();
+
+        // update CNF viewers
+        workspace.addResourceChangeListener(new IResourceChangeListener() {
+
+            public void resourceChanged(IResourceChangeEvent event)
+            {
+                UIHelper.runUIAsync(new Runnable() {
+
+                    public void run()
+                    {
+                        IWorkbenchPage page = UIHelper.getActivePage();
+                        if (page != null) 
+                        {
+                            IViewPart findView = UIHelper.getActivePage().findView(ModelExplorer.VIEW_ID);
+                            if (findView != null && findView instanceof CommonNavigator) 
+                            {
+                                ((CommonNavigator)findView).getCommonViewer().refresh();
+                            }
+                        }
+                    }
+                });
+            }
+        });
+
 	}
 
 	/*
