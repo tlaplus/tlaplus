@@ -15,8 +15,8 @@ public class SpecLoadedPerspective implements IPerspectiveFactory
 
     public final static String ID = "org.lamport.tla.toolbox.ui.perspective.specLoaded";
 
-    // TODO move
-    public final static String CONSOLE_VIEW_ID = "org.eclipse.ui.console.ConsoleView";
+    // move
+    // public final static String CONSOLE_VIEW_ID = "org.eclipse.ui.console.ConsoleView";
     
 
     public void createInitialLayout(IPageLayout layout)
@@ -27,7 +27,7 @@ public class SpecLoadedPerspective implements IPerspectiveFactory
         layout.addPlaceholder(ProblemView.ID, IPageLayout.RIGHT, 0.75f, editorArea);
         // even if there is no dependency to the console plugin, we specify the possible location of the console
         // this might be useful for tools
-        layout.addPlaceholder(CONSOLE_VIEW_ID, IPageLayout.BOTTOM, 0.75f, editorArea);
+        // layout.addPlaceholder(CONSOLE_VIEW_ID, IPageLayout.BOTTOM, 0.75f, editorArea);
         layout.addFastView(SpecExplorer.VIEW_ID, 0.25f);
         layout.getViewLayout(SpecExplorer.VIEW_ID).setCloseable(false);
     }
