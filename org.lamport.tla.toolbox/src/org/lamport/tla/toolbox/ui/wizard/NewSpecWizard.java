@@ -39,6 +39,7 @@ public class NewSpecWizard extends Wizard implements INewWizard
 
         String rootFilename = page.getRootFilename();
         IPath rootNamePath = new Path(page.getRootFilename());
+        String specName = page.getSpecName();
         
         // if the root file does not exist
         if (!rootNamePath.toFile().exists())
@@ -54,9 +55,12 @@ public class NewSpecWizard extends Wizard implements INewWizard
                 return false;
             }
         }
-
+        
+        
         // create new spec
-        spec = Spec.createNewSpec(page.getSpecName(), rootFilename);
+        spec = Spec.createNewSpec(specName, rootFilename);
+        
+        
         // add spec to the spec manager
         Activator.getSpecManager().addSpec(spec);
 
