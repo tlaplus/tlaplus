@@ -10,6 +10,7 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbenchPage;
 import org.lamport.tla.toolbox.spec.Spec;
+import org.lamport.tla.toolbox.ui.provider.SpecExplorer;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 /**
@@ -32,7 +33,7 @@ public class OpenSpecHandlerDelegate extends AbstractHandler implements IHandler
         IWorkbenchPage activePage = UIHelper.getActivePage();
         if (activePage != null)
         {
-            ISelection selection = activePage.getSelection("toolbox.view.SpecView");
+            ISelection selection = activePage.getSelection(SpecExplorer.VIEW_ID);
             if (selection != null && selection instanceof IStructuredSelection
                     && ((IStructuredSelection) selection).size() == 1)
             {
