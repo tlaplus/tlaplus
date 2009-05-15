@@ -43,7 +43,6 @@ import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.internal.WorkbenchWindow;
 import org.eclipse.ui.intro.IIntroPart;
-import org.eclipse.ui.navigator.CommonNavigator;
 import org.eclipse.ui.part.FileEditorInput;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.ui.contribution.ParseStatusContributionItem;
@@ -595,22 +594,5 @@ public class UIHelper
             }
            
         };
-    }
-
-
-    /**
-     * Update the content of the view
-     */
-    public static void updateCNFViewers()
-    {
-        IWorkbenchPage page = UIHelper.getActivePage();
-        if (page != null) 
-        {
-            IViewPart findView = UIHelper.getActivePage().findView("toolbox.view.SpecView");
-            if (findView != null && findView instanceof CommonNavigator) 
-            {
-                ((CommonNavigator)findView).getCommonViewer().refresh();
-            }
-        }
     }
 }
