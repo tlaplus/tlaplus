@@ -21,6 +21,8 @@ Bundle-ClassPath: tla2tools.jar,
  StandardModules/
 Export-Package: org.lamport.tla.toolbox.spec,
  org.lamport.tla.toolbox.tool,
+ org.lamport.tla.toolbox.ui.provider,
+ org.lamport.tla.toolbox.ui.view,
  org.lamport.tla.toolbox.util;
   uses:="org.eclipse.jface.window,
    org.eclipse.core.runtime,
