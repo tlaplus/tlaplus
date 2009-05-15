@@ -16,16 +16,20 @@ DESCRIPTION: {General description of the release
 2009-xx-xx "0.0.2" 
 ---------------------------------------------------
 - TODO(SZ): fix problem with parse status indicator not disappearing in welcome perspective (see Readme Tool)
-- TODO(SZ): icons
-- TODO(SZ): splash branding
 - TODO(LL): help content
+- TODO(SZ): Clone model
+- TODO(SZ): Open model (F3)
+- TODO(SZ): Double-Click open
+- TODO(SZ): cancellation of TLC
 
 
+- FEATURE: TLC run as external process
+- FEATURE: icons
+- FEATURE: splash branding
 - FEATURE: Model creation dialog added
 - FEATURE: TLC Launch creates the _MC module to launch on
 - FEATURE: TLC Launch configuration added
 - FEATURE: TLC launch added
-
 - FEATURE: PCal runs as a job
 - FEATURE: Pcal translates module using the module preferences for PCal run
 - CHANGE: Menu redesign
