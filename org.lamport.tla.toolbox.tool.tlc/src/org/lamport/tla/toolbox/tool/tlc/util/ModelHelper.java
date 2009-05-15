@@ -18,6 +18,8 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationType;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.core.ILaunchManager;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.part.FileEditorInput;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.tool.tlc.job.ConfigCreationOperation;
 import org.lamport.tla.toolbox.tool.tlc.job.ExtendingTLAModuleCreationOperation;
@@ -27,6 +29,7 @@ import org.lamport.tla.toolbox.tool.tlc.launch.TLCModelLaunchDelegate;
 import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
 import org.lamport.tla.toolbox.tool.tlc.model.Formula;
 import org.lamport.tla.toolbox.util.ResourceHelper;
+import org.lamport.tla.toolbox.util.UIHelper;
 
 import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.OpDeclNode;
@@ -42,6 +45,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
 {
     private static final String LIST_DELIMITER = ";";
     private static final String PARAM_DELIMITER = ":";
+    private static long globalCounter = 1;
 
     /**
      * Constructs the model called Foo___Model_1 from the SpecName Foo
@@ -64,7 +68,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
      * @param proposition
      * @return
      */
-    private static String doConstructModelName(IProject specProject, String proposition)
+    public static String doConstructModelName(IProject specProject, String proposition)
     {
         
         ILaunchConfiguration existingModel = getModelByName(specProject, proposition);
@@ -492,7 +496,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
      * @return a valid identifier
      * TODO re-implement
      */
-    public static String getValidIdentifier(String schema)
+    public static synchronized String getValidIdentifier(String schema)
     {
         try
         {
@@ -500,7 +504,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
         } catch (InterruptedException e)
         {
         }
-        return schema + "_" + System.currentTimeMillis();
+        return schema + "_" + System.currentTimeMillis() + 1000 * ( ++globalCounter );
     }
 
     /**
@@ -643,6 +647,16 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
         constants.addAll(constantsToAdd);
         
         return constantsToDelete;
+    }
+
+    /**
+     * Retrieves the editor with model instance opened, or null, if no editor found
+     * @param model
+     * @return
+     */
+    public static IEditorPart isModelOpenedInEditor(ILaunchConfiguration model)
+    {
+        return UIHelper.getActivePage().findEditor(new FileEditorInput(model.getFile()));
     }
 
 

@@ -1,0 +1,34 @@
+/**
+ * 
+ */
+package org.lamport.tla.toolbox.tool.tlc.util;
+
+import org.eclipse.core.resources.IProject;
+import org.eclipse.debug.core.ILaunchConfiguration;
+import org.eclipse.jface.dialogs.IInputValidator;
+
+public class ModelNameValidator implements IInputValidator
+{
+    private final IProject project;
+
+    public ModelNameValidator(IProject project)
+    {
+        this.project = project;
+
+    }
+
+    public String isValid(String newText)
+    {
+
+        if (newText == null || "".equals(newText))
+        {
+            return "Model name must be not empty";
+        }
+        ILaunchConfiguration existingModel = ModelHelper.getModelByName(project, newText);
+        if (existingModel != null)
+        {
+            return "Model with the name " + newText + " already exists. Please choose a different name";
+        }
+        return null;
+    }
+}
