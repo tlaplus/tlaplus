@@ -12,8 +12,14 @@ import org.eclipse.jface.window.Window;
 import org.eclipse.ui.IWorkbenchPage;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.spec.Spec;
+import org.lamport.tla.toolbox.ui.provider.SpecExplorer;
 import org.lamport.tla.toolbox.util.UIHelper;
 
+/**
+ * Handler for renaming the specifications
+ * @author Simon Zambrovski
+ * @version $Id$
+ */
 public class RenameSpecHandler extends AbstractHandler implements IHandler
 {
     private String specName;
@@ -23,22 +29,21 @@ public class RenameSpecHandler extends AbstractHandler implements IHandler
      */
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
-
         /*
          * No parameter try to get it from active navigator if any
          */
         IWorkbenchPage activePage = UIHelper.getActivePage();
         if (activePage != null)
         {
-            ISelection selection = activePage.getSelection("toolbox.view.SpecView");
+            ISelection selection = activePage.getSelection(SpecExplorer.VIEW_ID);
             if (selection != null && selection instanceof IStructuredSelection)
             {
                 Spec spec = (Spec) ((IStructuredSelection) selection).getFirstElement();
                 
-                specName = "Copy of " + spec.getName();
+                specName = spec.getName() + "_Copy";
                 
                 IInputValidator specNameInputValidator = new SpecNameValidator();
-                final InputDialog dialog = new InputDialog(UIHelper.getShellProvider().getShell(), "New model...",
+                final InputDialog dialog = new InputDialog(UIHelper.getShellProvider().getShell(), "New specification name",
                         "Please input the new name of the specification", specName, specNameInputValidator);
                 dialog.setBlockOnOpen(true);
                 UIHelper.runUISync(new Runnable() {
@@ -61,8 +66,8 @@ public class RenameSpecHandler extends AbstractHandler implements IHandler
                     // exit processing if no specName at place
                     return null;
                 }
-                
                 System.out.println("Rename " + spec.getName() + " to " + specName);
+                Activator.getSpecManager().renameSpec(spec, specName);
             } 
         }
 
