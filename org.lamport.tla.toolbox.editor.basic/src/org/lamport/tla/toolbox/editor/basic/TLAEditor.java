@@ -1,17 +1,24 @@
 package org.lamport.tla.toolbox.editor.basic;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.window.Window;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.contexts.IContextActivation;
 import org.eclipse.ui.contexts.IContextService;
+import org.eclipse.ui.dialogs.SaveAsDialog;
 import org.eclipse.ui.editors.text.FileDocumentProvider;
 import org.eclipse.ui.editors.text.TextEditor;
 import org.eclipse.ui.part.FileEditorInput;
 import org.lamport.tla.toolbox.editor.basic.util.ElementStateAdapter;
 import org.lamport.tla.toolbox.util.ResourceHelper;
+import org.lamport.tla.toolbox.util.UIHelper;
 
 /**
  * Basic editor without any additional features
@@ -23,8 +30,9 @@ public class TLAEditor extends TextEditor
     private IContextService contextService = null;
     private IContextActivation contextActivation = null;
 
-    private Image rootImage = TLAEditorActivator.imageDescriptorFromPlugin(TLAEditorActivator.PLUGIN_ID, "/icons/root_file.gif").createImage();
-    
+    private Image rootImage = TLAEditorActivator.imageDescriptorFromPlugin(TLAEditorActivator.PLUGIN_ID,
+            "/icons/root_file.gif").createImage();
+
     /**
      * Constructor
      */
@@ -75,11 +83,47 @@ public class TLAEditor extends TextEditor
         this.contextActivation = contextService.activateContext("toolbox.contexts.cleaneditor");
     }
 
-    
     public void dispose()
     {
         super.dispose();
         rootImage.dispose();
+    }
+
+    protected void performSaveAs(IProgressMonitor progressMonitor)
+    {
+        IFile file = ((FileEditorInput) getEditorInput()).getFile();
+        Shell shell = UIHelper.getShellProvider().getShell();
+        SaveAsDialog saveAsDialog = null;
+        while (true)
+        {
+            saveAsDialog = new SaveAsDialog(shell);
+            saveAsDialog.setHelpAvailable(true);
+            saveAsDialog.setBlockOnOpen(true);
+            saveAsDialog.setOriginalFile(file);
+            int result = saveAsDialog.open();
+            if (result == Window.OK)
+            {
+                IPath newPath = saveAsDialog.getResult();
+                if (newPath.toFile().exists())
+                {
+                    boolean confirmOverride = MessageDialog.openQuestion(shell, "Override file?",
+                            "The provided filename already exists. The existing file will be overriden.\nDo you want to override the file "
+                                    + newPath.toOSString() + " ?");
+                    if (!confirmOverride)
+                    {
+                        continue;
+                    }
+                }
+                
+                System.out.println("TODO: Save " + file + " as " + newPath);
+                // break out on save
+                break;
+            } else 
+            {
+                // break out on cancel of the dialog
+                break;
+            }
+        }
     }
 
 }
