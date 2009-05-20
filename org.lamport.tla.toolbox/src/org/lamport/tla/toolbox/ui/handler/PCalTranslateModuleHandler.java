@@ -6,6 +6,7 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IHandler;
+import org.eclipse.core.commands.IHandler2;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -24,9 +25,10 @@ import org.lamport.tla.toolbox.util.UIHelper;
  * @author Simon Zambrovski
  * @version $Id$
  */
-public class TranslateModuleHandler extends AbstractHandler implements IHandler
+public class PCalTranslateModuleHandler extends AbstractHandler implements IHandler, IHandler2
 {
-
+    public final static String COMMAND_ID = "toolbox.command.module.translate.active";
+    
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
         // Getting progress monitor
@@ -43,6 +45,7 @@ public class TranslateModuleHandler extends AbstractHandler implements IHandler
             
             // just save it
             // TODO 
+            
             activeEditor.doSave(monitor);
         }
         
@@ -99,6 +102,4 @@ public class TranslateModuleHandler extends AbstractHandler implements IHandler
         }
         return null;
     }
-
-    
 }
