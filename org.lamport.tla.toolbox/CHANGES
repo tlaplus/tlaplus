@@ -17,22 +17,23 @@ DESCRIPTION: {General description of the release
 ---------------------------------------------------
 - TODO(SZ): fix problem with parse status indicator not disappearing in welcome perspective (see Readme Tool)
 - TODO(LL): help content
-- TODO(SZ): Clone model
-- TODO(SZ): Open model (F3)
-- TODO(SZ): Double-Click open
-- TODO(SZ): cancellation of TLC
+- TODO(SZ): Links on the 1st page of ModelEditor (google)
+- TODO(SZ): module actions to react on the module (PCal translation to enable only on PCal modules)
+- TODO(SZ): fast views forgets about the views that are opened on restart 
 
-
-- FEATURE: TLC run as external process
+- FEATURE: Specification Explorer (new, open, delete, rename, properties)
+- FEATURE: Model Explorer (new, open, rename, delete, clone)
+- FEATURE: TLC run as external process (interruptible)
 - FEATURE: icons
 - FEATURE: splash branding
 - FEATURE: Model creation dialog added
 - FEATURE: TLC Launch creates the _MC module to launch on
-- FEATURE: TLC Launch configuration added
+- FEATURE: TLC configuration added (called model)
 - FEATURE: TLC launch added
 - FEATURE: PCal runs as a job
 - FEATURE: Pcal translates module using the module preferences for PCal run
 - CHANGE: Menu redesign
+- FEATURE: Console added
 - FEATURE: introduction page added
 - FEATURE: simple error report of Pcal errors
 - FEATURE: Pcal translation starts with CTRL + T
@@ -46,8 +47,7 @@ DESCRIPTION: {General description of the release
 - CHANGE: Problem View toggling is looking on the problems, not on the spec status (this avoid empty problem view window to be shown ever) 
 - BUGFIX: If the Problem View is shown and the build happens it reopens with the new errors (if any errors)
 - FEATURE: Help button now only opens the content help
-- FEATURE: Context help activated (hitting F1 everywhere)
-- FEATURE: In a non-dirty editor CTRL + S toggles the "Problem View"  
+- FEATURE: Context help activated (hitting F1 everywhere)  
 - FEATURE: On errors reported from SANY located in modules, which are not yet part of the Spec-Project (linked-in) the resources 
 will become part of the project
 - FEATURE: "Open module" menu, based on SANY run
