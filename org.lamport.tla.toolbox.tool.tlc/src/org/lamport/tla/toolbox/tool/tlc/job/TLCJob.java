@@ -18,6 +18,8 @@ import org.lamport.tla.toolbox.tool.tlc.ui.ConsoleFactory;
 public abstract class TLCJob extends AbstractJob
 {
 
+    protected static final int STEP = 30;
+    protected static final long TIMEOUT = 1000 * 5;
     protected IResource rootModule;
     protected IResource cfgFile;
     protected IResource projectDir;
@@ -94,6 +96,12 @@ public abstract class TLCJob extends AbstractJob
             e.printStackTrace();
         }
     }
+   
+    /**
+     * Checks if TLC is still running
+     * @return true, if TLC is still running
+     */
+    public abstract boolean checkAndSleep();
     
 
     /**

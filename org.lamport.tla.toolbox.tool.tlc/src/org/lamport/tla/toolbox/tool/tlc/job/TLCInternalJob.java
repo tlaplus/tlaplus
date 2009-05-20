@@ -19,9 +19,6 @@ import util.ToolIO;
  */
 public class TLCInternalJob extends TLCJob
 {
-    private static final long TIMEOUT = 1000 * 5;
-    private static final int STEP = 30;
-
     private TLCThread tlcThread;
     int reported;
 
@@ -121,7 +118,7 @@ public class TLCInternalJob extends TLCJob
     }
 
     // decrement the number and sleep
-    private boolean checkAndSleep()
+    public boolean checkAndSleep()
     {
         try
         {
