@@ -11,14 +11,16 @@ import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.core.ILaunchManager;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.TLCModelLaunchDelegate;
+import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 
 /**
  * Clones the launch configuration
  */
 public class CloneModelHandler extends AbstractHandler implements IModelConfigurationConstants
 {
-    public static final String PARAM_MODEL_NAME = "modelLaunchName";
-    public static final String PARAM_MODELCOPY_NAME = "modelLaunchCopyName";
+    public static final String PARAM_MODEL_NAME = "toolbox.tool.tlc.commands.model.open.param.modelName";
+    public static final String PARAM_MODELCOPY_NAME = "toolbox.tool.tlc.commands.model.open.param.modelCloneName";
+    public static final String COMMAND_ID = "toolbox.tool.tlc.commands.model.clone";
 
     /**
      * The constructor.
@@ -53,9 +55,8 @@ public class CloneModelHandler extends AbstractHandler implements IModelConfigur
                 if (modelName.equals(launchConfigurations[i].getName()))
                 {
                     ILaunchConfigurationWorkingCopy copy = launchConfigurations[i].copy(modelCopyName);
-                    // TODO add test if the everything went fine
-
                     copy.doSave();
+                    break;
                 }
             }
 
