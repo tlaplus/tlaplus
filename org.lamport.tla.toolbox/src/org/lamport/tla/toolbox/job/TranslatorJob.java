@@ -48,7 +48,9 @@ public class TranslatorJob extends WorkspaceJob
         {
             hasPcalAlg = ((Boolean) fileToBuild.getSessionProperty(ResourceHelper
                     .getQName(IPreferenceConstants.CONTAINS_PCAL_ALGORITHM))).booleanValue();
-            String paramString = ((String) fileToBuild.getPersistentProperty(ResourceHelper
+            
+            
+            String paramString = ((String) fileToBuild.getProject().getPersistentProperty(ResourceHelper
                     .getQName(IPreferenceConstants.PCAL_CAL_PARAMS)));
             if (paramString != null) 
             {
