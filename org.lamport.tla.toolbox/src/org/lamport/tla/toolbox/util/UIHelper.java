@@ -244,6 +244,15 @@ public class UIHelper
 
         return null;
     }
+    
+    /**
+     * Retrieves the id of currently selected perspective
+     * @return
+     */
+    public static String getActivePerspectiveId()
+    {
+        return UIHelper.getActivePage().getPerspective().getId();
+    }
 
     /**
      * Convenience method to reduce client dependencies
@@ -469,7 +478,9 @@ public class UIHelper
                 }
             }
 
+            
             ParseStatusContributionItem parseStatusContributionItem = new ParseStatusContributionItem();
+            
             bars.getStatusLineManager().add(parseStatusContributionItem);
             bars.updateActionBars();
 
