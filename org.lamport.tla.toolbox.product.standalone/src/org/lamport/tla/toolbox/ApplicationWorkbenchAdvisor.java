@@ -9,6 +9,7 @@ import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.application.WorkbenchAdvisor;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
 import org.eclipse.ui.ide.IDE;
+import org.eclipse.ui.internal.ide.model.WorkbenchAdapterBuilder;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.util.UIHelper;
 import org.osgi.framework.Bundle;
@@ -26,9 +27,16 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
     public static final String PERSPECTIVE_ID = "org.lamport.tla.toolbox.ui.perspective.initial";
     public static final String IDE_PLUGIN = "org.eclipse.ui.ide";
     public static final String PATH_OBJECT = "icons/full/obj16/";
+    public static final String PATH_WIZBAN = "icons/full/wizban/";
     
     public static final String PRJ_OBJ = PATH_OBJECT + "prj_obj.gif"; 
     public static final String PRJ_OBJ_C = PATH_OBJECT + "cprj_obj.gif";
+    public static final String SAVEAS_DLG = PATH_WIZBAN + "saveas_wiz.png";
+    
+    /**
+     * Image definition from {@link org.eclipse.ui.internal.ide.IDEInternalWorkbenchImages#IMG_DLGBAN_SAVEAS_DLG}
+     */
+    public static final String IMG_DLGBAN_SAVEAS_DLG = "IMG_DLGBAN_SAVEAS_DLG";
 
     public WorkbenchWindowAdvisor createWorkbenchWindowAdvisor(IWorkbenchWindowConfigurer configurer)
     {
@@ -45,18 +53,22 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
      */
     public void initialize(IWorkbenchConfigurer configurer)
     {
-        super.initialize(configurer);
         // save the positions of windows etc...
         configurer.setSaveAndRestore(true);
 
+        super.initialize(configurer);
+        
         Bundle ideBundle = Platform.getBundle(IDE_PLUGIN);
         declareWorkbenchImage(configurer, ideBundle, IDE.SharedImages.IMG_OBJ_PROJECT, PRJ_OBJ,
                 true);
         declareWorkbenchImage(configurer, ideBundle, IDE.SharedImages.IMG_OBJ_PROJECT_CLOSED, PRJ_OBJ_C, true);
-
+        
+        declareWorkbenchImage(configurer, ideBundle, IMG_DLGBAN_SAVEAS_DLG, SAVEAS_DLG, true);
+        
         // register adapter
         // IDE.registerAdapters();
-
+        // TODO replace, as soon as 3.5 is the Eclipse used
+        WorkbenchAdapterBuilder.registerAdapters();
     }
 
     private void declareWorkbenchImage(IWorkbenchConfigurer configurer, Bundle ideBundle, String symbolicName,

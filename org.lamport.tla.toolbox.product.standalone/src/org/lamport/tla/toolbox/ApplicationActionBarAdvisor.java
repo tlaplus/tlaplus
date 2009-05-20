@@ -18,17 +18,18 @@ import org.eclipse.ui.application.IActionBarConfigurer;
 public class ApplicationActionBarAdvisor extends ActionBarAdvisor
 {
     private IWorkbenchAction helpContentsAction;
-    private IWorkbenchAction aboutAction;
-    private IWorkbenchAction helpSearchAction;
-    private IWorkbenchAction dynamicHelpAction;
+    // private IWorkbenchAction aboutAction;
+    // private IWorkbenchAction helpSearchAction;
+    // private IWorkbenchAction dynamicHelpAction;
 
     private IWorkbenchAction quitAction;
     private IWorkbenchAction saveAction;
+    private IWorkbenchAction saveAsAction;
 
     private IWorkbenchAction preferencesAction;
 
     private IWorkbenchAction newEditorAction;
-    private IWorkbenchAction newWindowAction;
+    // private IWorkbenchAction newWindowAction;
     private IWorkbenchAction resetPerspectiveAction;
 
     /**
@@ -47,35 +48,40 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         helpContentsAction = ActionFactory.HELP_CONTENTS.create(window);
         register(helpContentsAction);
 
-        helpSearchAction = ActionFactory.HELP_SEARCH.create(window);
-        register(helpSearchAction);
+        // helpSearchAction = ActionFactory.HELP_SEARCH.create(window);
+        // register(helpSearchAction);
 
-        dynamicHelpAction = ActionFactory.DYNAMIC_HELP.create(window);
-        register(dynamicHelpAction);
+        // dynamicHelpAction = ActionFactory.DYNAMIC_HELP.create(window);
+        // register(dynamicHelpAction);
 
-        aboutAction = ActionFactory.ABOUT.create(window);
-        register(aboutAction);
+        // aboutAction = ActionFactory.ABOUT.create(window);
+        // register(aboutAction);
 
         quitAction = ActionFactory.QUIT.create(window);
         register(quitAction);
 
         saveAction = ActionFactory.SAVE.create(window);
-        //saveAction.setText("Save");
         register(saveAction);
+        
+        saveAsAction = ActionFactory.SAVE_AS.create(window);
+        register(saveAsAction);
         
         preferencesAction = ActionFactory.PREFERENCES.create(window);
         register(preferencesAction);
         
+        /*
         newEditorAction = ActionFactory.NEW_EDITOR.create(window);
         register(newEditorAction);
-        
+        */
+        /*
         newWindowAction = ActionFactory.OPEN_NEW_WINDOW.create(window);
         newWindowAction.setText("New Toolbox window");
         register(newWindowAction);
+        */
         
         resetPerspectiveAction = ActionFactory.RESET_PERSPECTIVE.create(window);
         register(resetPerspectiveAction);
-
+        
     }
 
     /* (non-Javadoc)
@@ -90,32 +96,32 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         fileMenu.add(new Separator("toolbox.file.module.separator"));
         
         fileMenu.add(saveAction);
-
-        // fileMenu.add(saveAsAction);
+        fileMenu.add(saveAsAction);
+        // place all save actions here
+        fileMenu.add(new Separator("toolbox.file.save.separator"));
 
         // place holder for other actions
         fileMenu.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
+        fileMenu.add(preferencesAction);
         fileMenu.add(new Separator());
         fileMenu.add(quitAction);
 
-        MenuManager toolsMenu = new MenuManager("&Tools", "toolbox.tools.menu");
-        toolsMenu.add(new Separator("toolbox.tools.separator"));
-        toolsMenu.add(new Separator());
-        toolsMenu.add(new Separator("toolbox.toolmenus.separator"));
-
         MenuManager windowMenu = new MenuManager("&Window", "toolbox.window.menu");
-        windowMenu.add(newEditorAction);
-        windowMenu.add(newWindowAction);
-        windowMenu.add(resetPerspectiveAction);
+        
         windowMenu.add(new Separator("toolbox.window.open.separator"));
+
+        // don't need to add
+        // windowMenu.add(resetPerspectiveAction);
+        
+        windowMenu.add(new Separator());
+        windowMenu.add(new Separator("toolbox.window.tools.separator"));
         windowMenu.add(new Separator());
         windowMenu.add(new Separator("toolbox.window.view.separator"));
         windowMenu.add(new Separator());
-        windowMenu.add(preferencesAction);
+        
 
         /*
         MenuManager helpMenu = new MenuManager("&Help", IWorkbenchActionConstants.M_HELP);
-
         // Help Contents
         helpMenu.add(helpContentsAction);
         // Help Search
@@ -127,8 +133,8 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         */
 
         menuBar.add(fileMenu);
-        menuBar.add(toolsMenu);
         menuBar.add(windowMenu);
+        menuBar.add(new Separator("toolbox.tools.separator"));
         menuBar.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
         // menuBar.add(helpMenu);
     }

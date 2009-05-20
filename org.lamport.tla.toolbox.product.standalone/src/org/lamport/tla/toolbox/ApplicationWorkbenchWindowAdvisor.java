@@ -36,44 +36,23 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor
     }
 
     /* (non-Javadoc)
-     * @see org.eclipse.ui.application.WorkbenchWindowAdvisor#postWindowOpen()
-     */
-    public void postWindowOpen()
-    {
-        super.postWindowOpen();
-        // check if this is really required
-        // UIHelper.switchPerspective(InitialPerspective.ID);
-    }
-
-    /* (non-Javadoc)
      * @see org.eclipse.ui.application.WorkbenchWindowAdvisor#preWindowShellClose()
      */
     public boolean preWindowShellClose()
     {
-        //
-        // save the editors?
-        /*
-        Spec spec = Activator.getSpecManager().getSpecLoaded();
-        if (spec != null) 
-        {
-            spec.setOpenedModules(UIHelper.getOpenedResources());
-        }
-        */
-
 
         IWorkbench workbench = getWindowConfigurer().getWorkbenchConfigurer().getWorkbench();
         /*
-         * if more than one window is opened and currently the root window is being closed, we should exit from the application
+         * if more than one window is opened and currently the root window is being closed, exit the application
          */
-        if (workbench.getWorkbenchWindowCount() > 1 && WindowUtils.isRootWindow(workbench.getActiveWorkbenchWindow()))  
+        if (workbench.getWorkbenchWindowCount() > 1 && WindowUtils.isRootWindow(workbench.getActiveWorkbenchWindow()))
         {
             // System.out.println("A root shell is about to be closed");
             return workbench.close();
-        } else {
+        } else
+        {
             return super.preWindowShellClose();
         }
     }
 
-    
-    
 }
