@@ -22,6 +22,58 @@
             name="Welcome to Toolbox">
       </perspective>
    </extension>
+   <extension
+         point="org.eclipse.ui.perspectiveExtensions">
+      <perspectiveExtension
+            targetID="org.lamport.tla.toolbox.ui.perspective.specLoaded">
+         <view
+               closeable="true"
+               id="toolbox.view.ProblemView"
+               minimized="false"
+               moveable="true"
+               ratio="0.75"
+               relationship="right"
+               relative="org.eclipse.ui.editorss"
+               showTitle="true"
+               visible="false">
+         </view>
+         <view
+               closeable="false"
+               id="toolbox.view.SpecView"
+               minimized="false"
+               moveable="false"
+               ratio="0.25"
+               relationship="fast"
+               showTitle="true"
+               visible="false">
+         </view>
+      </perspectiveExtension>
+      <perspectiveExtension
+            targetID="org.lamport.tla.toolbox.ui.perspective.initial">
+         <view
+               closeable="false"
+               id="org.eclipse.ui.internal.introview"
+               minimized="false"
+               moveable="false"
+               ratio="1.0"
+               relationship="left"
+               relative="org.eclipse.ui.editorss"
+               showTitle="true"
+               standalone="true"
+               visible="true">
+         </view>
+         <view
+               closeable="false"
+               id="toolbox.view.SpecView"
+               minimized="false"
+               moveable="false"
+               ratio="0.25"
+               relationship="fast"
+               showTitle="true"
+               visible="false">
+         </view>
+      </perspectiveExtension>
+   </extension>
    
 <!--                                   -->
 <!-- Views to be displayed to the user -->
@@ -101,7 +153,8 @@
             </instanceof>
          </enabledWhen>
       </page>
-      <page
+      <!-- Module preferences are disabled -->
+      <!-- page
             class="org.lamport.tla.toolbox.ui.property.ModulePropertyPage"
             icon="icons/full/prop_ps.gif"
             id="toolbox.ui.property.ModulePropertyPage"
@@ -111,7 +164,7 @@
                   value="org.eclipse.core.resources.IFile">
             </instanceof>
          </enabledWhen>
-      </page>
+      </page -->
    </extension>
    
 <!--                                   -->
@@ -143,10 +196,10 @@
          </commandParameter>
       </command>
       <command
-            categoryId="toolbox.command.category.spec"
-            description="Open the specification"
-            id="toolbox.command.spec.open.delegate"
-            name="Open Specification">
+            categoryId="toolbox.command.category.ui"
+            description="Open the element selected in explorer"
+            id="toolbox.command.cnf.open.delegate"
+            name="Open Element">
       </command>
       <command
             categoryId="toolbox.command.category.spec"
@@ -203,12 +256,13 @@
             id="toolbox.command.module.translate.active"
             name="Translate module">
       </command>
-      <command
+      <!-- Module preferences are disabled -->
+      <!-- command
             categoryId="toolbox.command.category.module"
             description="Modules Properties"
             id="toolbox.command.module.props"
             name="Modules Properties">
-      </command>
+      </command -->
       
       <category
             description="UI Commands"
@@ -256,7 +310,7 @@
             sequence="M3+X">
       </key>
       <key
-            commandId="toolbox.command.spec.open.delegate"
+            commandId="toolbox.command.cnf.open.delegate"
             contextId="org.eclipse.ui.contexts.window"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="F3">
@@ -463,7 +517,8 @@
                </with>
             </visibleWhen>
          </command>
-         <command
+         <!-- disable module properties -->
+         <!-- command
                commandId="toolbox.command.module.props"
                id="toolbox.menu.module.props"
                label="Module Properties"
@@ -481,8 +536,7 @@
                   </not>
                </with>
             </visibleWhen>
-         </command>
-         
+         </command-->
       </menuContribution>
 
 
@@ -557,6 +611,44 @@
                tooltip="Opens the help">
          </command>
       </menuContribution>
+      <menuContribution
+            locationURI="menu:toolbox.window.menu?after=toolbox.window.open.separator">
+         <command
+               commandId="org.eclipse.ui.window.newEditor"
+               id="toolbox.menu.new.editor"
+               label="New Editor..."
+               mnemonic="E"
+               mode="FORCE_TEXT"
+               style="push"
+               tooltip="Opens a new editor">
+         </command>
+         <command
+               commandId="org.eclipse.ui.window.resetPerspective"
+               id="toolbox.menu.reset.perspective"
+               label="Reset Window Layout"
+               mnemonic="R"
+               mode="FORCE_TEXT"
+               style="push"
+               tooltip="Reset the window to the default layout">
+         </command>
+      </menuContribution>
+      <menuContribution
+            locationURI="menu:toolbox.window.menu?after=toolbox.window.tools.separator">
+         <command
+               commandId="toolbox.command.switchperspective"
+               icon="icons/full/obj16/ftr_mf_obj.gif"
+               id="toolbox.menu.switchperspective-specLoaded"
+               label="Specification"
+               mnemonic="S"
+               mode="FORCE_TEXT"
+               style="radio"
+               tooltip="Switches to default specification mode">
+            <parameter
+                  name="toolbox.switchperspective.id"
+                  value="org.lamport.tla.toolbox.ui.perspective.specLoaded">
+            </parameter>
+         </command>
+      </menuContribution>
       
       <menuContribution
             locationURI="menu:toolbox.window.menu?after=toolbox.window.view.separator">
@@ -602,7 +694,7 @@
       <menuContribution
             locationURI="popup:toolbox.view.popup.spec?after=group.open">
          <command
-               commandId="toolbox.command.spec.open.delegate"
+               commandId="toolbox.command.cnf.open.delegate"
                icon="icons/full/newspec_wiz.gif"
                id="toolbox.popupmenu.spec.open.delegate"
                label="Open Specification"
@@ -666,7 +758,7 @@
       </handler>
       <handler
             class="org.lamport.tla.toolbox.ui.handler.OpenSpecHandlerDelegate"
-            commandId="toolbox.command.spec.open.delegate">
+            commandId="toolbox.command.cnf.open.delegate">
 		    <enabledWhen>
 		            <count value="1" />
 		    </enabledWhen>
@@ -701,32 +793,59 @@
 	        </with>
 	    </activeWhen>
 	</handler>
- <handler
-       class="org.lamport.tla.toolbox.ui.handler.RenameSpecHandler"
-       commandId="org.eclipse.ui.edit.rename">
-    <enabledWhen>
-       <count
-             value="1">
-       </count>
-    </enabledWhen>
-    <activeWhen>
-       <with
-             variable="activePartId">
-          <equals
-                value="toolbox.view.SpecView">
-          </equals>
-       </with>
-    </activeWhen>
- </handler>
-      
-      
+     <handler
+           class="org.lamport.tla.toolbox.ui.handler.RenameSpecHandler"
+           commandId="org.eclipse.ui.edit.rename">
+        <enabledWhen>
+           <count
+                 value="1">
+           </count>
+        </enabledWhen>
+        <activeWhen>
+           <with
+                 variable="activePartId">
+              <equals
+                    value="toolbox.view.SpecView">
+              </equals>
+           </with>
+        </activeWhen>
+     </handler>
       <handler
-            class="org.lamport.tla.toolbox.ui.handler.TranslateModuleHandler"
+            class="org.lamport.tla.toolbox.ui.handler.PCalTranslateModuleHandler"
             commandId="toolbox.command.module.translate.active">
+         <!-- activeWhen>
+            <with
+                  variable="org.eclipse.jface.viewers.ISelection">
+                 <test
+                    forcePluginActivation="true"
+                    property="toolbox.property.hasPCALAlgorithm"
+                 >
+                 </test>
+            </with>
+         </activeWhen -->
+        <!--activeWhen>
+           <iterate>
+              <adapt type="org.eclipse.core.resources.IResource">
+                 <test
+                       args="org.lamport.tla.toolbox.hasPcalAlgorithm, true"
+                       forcePluginActivation="true"
+                       property="org.eclipse.core.resources.sessionProperty"
+                       value="sessionProperty"/>
+              </adapt>
+           </iterate>
+        </activeWhen-->
       </handler>
       <handler
             class="org.lamport.tla.toolbox.ui.handler.ParseModuleHandler"
             commandId="toolbox.command.module.parse.active">
+            <!-- activeWhen>
+                <with
+                      variable="activeEditorId">
+                      <test
+                            property="org.lamport.tla.toolbox.editor.basic.TLAEditor">
+                      </test>
+                </with>
+            </activeWhen -->
       </handler>
       <handler
             class="org.lamport.tla.toolbox.ui.handler.AddModuleHandler"
@@ -736,18 +855,39 @@
             class="org.lamport.tla.toolbox.ui.handler.HelpHandler"
             commandId="toolbox.command.help">
       </handler>
-      <handler
+      <!-- Module properties disabled -->
+      <!-- handler
             class="org.lamport.tla.toolbox.ui.handler.ModulePropertiesHandler"
             commandId="toolbox.command.module.props">
-      </handler>
+      </handler-->
       <handler
             class="org.lamport.tla.toolbox.ui.handler.SwichPerspectiveHandler"
             commandId="toolbox.command.switchperspective">
+         <activeWhen>
+            <with
+                  variable="activeWorkbenchWindow.activePerspective">
+               <not>
+                  <equals
+                        value="org.lamport.tla.toolbox.ui.perspective.initial">
+                  </equals>
+               </not>
+            </with>
+         </activeWhen>
       </handler>
 
    </extension>
    
    <!-- Adapters -->
+   <extension
+         point="org.eclipse.core.expressions.propertyTesters">
+      <propertyTester
+            class="org.lamport.tla.toolbox.ui.expression.PCalPropertyTester"
+            id="toolbox.propertyTester.PCALTester"
+            namespace="toolbox.property"
+            properties="hasPCALAlgorithm"
+            type="org.eclipse.jface.viewers.ISelection">
+      </propertyTester>
+   </extension>
    <extension
          point="org.eclipse.ui.navigator.viewer">
       <viewer
