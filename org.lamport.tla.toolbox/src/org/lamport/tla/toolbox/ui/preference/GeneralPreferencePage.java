@@ -1,8 +1,14 @@
 package org.lamport.tla.toolbox.ui.preference;
 
+import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
+import org.lamport.tla.toolbox.util.IHelpConstants;
+import org.lamport.tla.toolbox.util.UIHelper;
+import org.lamport.tla.toolbox.util.pref.IPreferenceConstants;
 import org.lamport.tla.toolbox.util.pref.PreferenceStoreHelper;
 
 /**
@@ -29,6 +35,14 @@ public class GeneralPreferencePage extends FieldEditorPreferencePage implements 
         setPreferenceStore(PreferenceStoreHelper.getInstancePreferenceStore());
         setDescription("General toolbox preferences");
     }
+    
+    protected Control createContents(Composite parent)
+    {
+        Control pageControl = super.createContents(parent);
+        UIHelper.setHelp(pageControl, IHelpConstants.GENERAL_PREFERENCE_PAGE);
+        return pageControl;
+    }
+
 
     /**
      * Creates the field editors. Field editors are abstractions of
@@ -47,6 +61,9 @@ public class GeneralPreferencePage extends FieldEditorPreferencePage implements 
                 1, new String[][] { { "&Choice 1", "choice1" }, { "C&hoice 2", "choice2" } }, getFieldEditorParent()));
         addField(new StringFieldEditor(PreferenceConstants.P_STRING, "A &text preference:", getFieldEditorParent()));
         */
+        addField(new BooleanFieldEditor(IPreferenceConstants.I_RESTORE_LAST_SPEC,
+                "&Continue Previous Session on Restart", getFieldEditorParent()));
+
     }
 
     /**

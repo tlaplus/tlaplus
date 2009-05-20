@@ -44,8 +44,6 @@ public class ParserPreferencePage extends FieldEditorPreferencePage implements I
      */
     protected void createFieldEditors()
     {
-        addField(new BooleanFieldEditor(IPreferenceConstants.I_RESTORE_LAST_SPEC,
-                "&Remember last loaded specification beyond restart", getFieldEditorParent()));
 
         addField(new BooleanFieldEditor(IPreferenceConstants.P_PARSER_POPUP_ERRORS,
                 "&Popup problem window on parse errors", getFieldEditorParent()));
