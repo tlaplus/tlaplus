@@ -1,17 +1,25 @@
 package org.lamport.tla.toolbox;
 
+import org.eclipse.core.commands.Command;
 import org.eclipse.core.resources.IMarkerDelta;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.navigator.CommonNavigator;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.eclipse.ui.progress.UIJob;
 import org.lamport.tla.toolbox.spec.manager.WorkspaceSpecManager;
 import org.lamport.tla.toolbox.spec.parser.ParserDependencyStorage;
 import org.lamport.tla.toolbox.ui.contribution.ParseStatusContributionItem;
+import org.lamport.tla.toolbox.ui.handler.SwichPerspectiveHandler;
 import org.lamport.tla.toolbox.ui.provider.SpecExplorer;
 import org.lamport.tla.toolbox.ui.view.ProblemView;
 import org.lamport.tla.toolbox.util.TLAMarkerHelper;
@@ -48,29 +56,42 @@ public class Activator extends AbstractUIPlugin
         // register the listeners
         IWorkspace workspace = ResourcesPlugin.getWorkspace();
 
-        // install the parse status widget
-        UIHelper.runUIAsync(new Runnable() {
+        final Runnable parseStatusUpdateRunable = new Runnable() {
 
             public void run()
             {
                 parseStatusWidget = UIHelper.getStatusBarContributionItem();
-                parseStatusWidget.updateStatus();
+                if (parseStatusWidget != null)
+                {
+                    parseStatusWidget.updateStatus();
+                }
             }
-        });
+        };
+
+        // activate handler to show the radio buttons in perspective selection 
+        UIJob job = new UIJob("InitCommandsWorkaround") {
+            public IStatus runInUIThread(IProgressMonitor monitor)
+            {
+
+                ICommandService commandService = (ICommandService) PlatformUI.getWorkbench().getActiveWorkbenchWindow()
+                        .getService(ICommandService.class);
+                Command switchPerspectiveCommand = commandService.getCommand(SwichPerspectiveHandler.COMMAND_ID);
+                switchPerspectiveCommand.isEnabled();
+                return new Status(IStatus.OK, PLUGIN_ID, "Init commands workaround performed succesfully");
+            }
+
+        };
+        job.schedule();
+
+        // install the parse status widget
+        UIHelper.runUIAsync(parseStatusUpdateRunable);
 
         // update widget on resource modifications
         workspace.addResourceChangeListener(new IResourceChangeListener() {
 
             public void resourceChanged(IResourceChangeEvent event)
             {
-                UIHelper.runUIAsync(new Runnable() {
-
-                    public void run()
-                    {
-                        parseStatusWidget = UIHelper.getStatusBarContributionItem();
-                        parseStatusWidget.updateStatus();
-                    }
-                });
+                UIHelper.runUIAsync(parseStatusUpdateRunable);
             }
         }, IResourceChangeEvent.POST_BUILD);
 
@@ -84,12 +105,12 @@ public class Activator extends AbstractUIPlugin
                     public void run()
                     {
                         IWorkbenchPage page = UIHelper.getActivePage();
-                        if (page != null) 
+                        if (page != null)
                         {
                             IViewPart findView = UIHelper.getActivePage().findView(SpecExplorer.VIEW_ID);
-                            if (findView != null && findView instanceof CommonNavigator) 
+                            if (findView != null && findView instanceof CommonNavigator)
                             {
-                                ((CommonNavigator)findView).getCommonViewer().refresh();
+                                ((CommonNavigator) findView).getCommonViewer().refresh();
                             }
                         }
                     }
@@ -97,7 +118,6 @@ public class Activator extends AbstractUIPlugin
             }
         });
 
-        
         // react with window pop-up, if set up in the preferences
         workspace.addResourceChangeListener(new IResourceChangeListener() {
 
@@ -129,12 +149,12 @@ public class Activator extends AbstractUIPlugin
                         {
                             ProblemView view = (ProblemView) UIHelper.getActivePage().findView(ProblemView.ID);
                             // show
-                            if (view!= null)
+                            if (view != null)
                             {
                                 // already shown, hide
                                 UIHelper.hideView(ProblemView.ID);
                             }
-                            
+
                             // not shown, show
                             UIHelper.openView(ProblemView.ID);
                         } else
