@@ -13,6 +13,7 @@ import org.lamport.tla.toolbox.util.pref.ResourceBasedPreferenceStore;
 /**
  * @author Simon Zambrovski
  * @version $Id$
+ * @deprecated Not used 
  */
 public class ModulePropertyPage extends GenericFieldEditorPropertyPage
 {
@@ -27,7 +28,7 @@ public class ModulePropertyPage extends GenericFieldEditorPropertyPage
         // ensure the page has no special buttons
         noDefaultAndApplyButton();
         // setup help
-        UIHelper.setHelp(contents, IHelpConstants.MODULE_PROPERTY_PAGE);
+        // UIHelper.setHelp(contents, IHelpConstants.MODULE_PROPERTY_PAGE);
         return contents;
     }
 
