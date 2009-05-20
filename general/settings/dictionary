@@ -2,6 +2,9 @@ simon
 zambrovski
 spec
 toolbox
+multi
+tla
+registry
 leslie
 config
 registry
@@ -10,3 +13,4 @@ whitespaces
 programmatically
 popup
 retargetable
+
