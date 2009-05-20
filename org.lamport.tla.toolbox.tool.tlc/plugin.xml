@@ -10,12 +10,6 @@
       </category>
       <command
             categoryId="toolbox.tool.tlc.commands.category"
-            description="Switches to TLC Perspective"
-            id="toolbox.tool.tlc.commands.perspective"
-            name="TLC Perspective">
-      </command>
-      <command
-            categoryId="toolbox.tool.tlc.commands.category"
             description="Creates a new model for current specification."
             id="toolbox.tool.tlc.commands.model.new"
             name="New Model...">
@@ -33,12 +27,6 @@
       </command>
       <command
             categoryId="toolbox.tool.tlc.commands.category"
-            description="Opens selected model."
-            id="toolbox.tool.tlc.commands.model.open.delegate"
-            name="Open Selected Model ">
-      </command>
-      <command
-            categoryId="toolbox.tool.tlc.commands.category"
             description="Deletes existing model."
             id="toolbox.tool.tlc.commands.model.delete"
             name="Delete Model">
@@ -47,6 +35,28 @@
                name="modelName"
                optional="false">
          </commandParameter>
+      </command>
+      <command
+            categoryId="toolbox.tool.tlc.commands.category"
+            description="Creates a copy of a model."
+            id="toolbox.tool.tlc.commands.model.clone"
+            name="Clone Model">
+         <commandParameter
+               id="toolbox.tool.tlc.commands.model.open.param.modelName"
+               name="modelName"
+               optional="false">
+         </commandParameter>
+         <commandParameter
+               id="toolbox.tool.tlc.commands.model.open.param.modelCloneName"
+               name="modelCloneName"
+               optional="false">
+         </commandParameter>
+      </command>
+      <command
+            categoryId="toolbox.tool.tlc.commands.category"
+            description="Creates a copy of selected model."
+            id="toolbox.tool.tlc.commands.model.clone.delegate"
+            name="Clone Model">
       </command>
    </extension>
    <extension
@@ -60,8 +70,16 @@
             commandId="toolbox.tool.tlc.commands.model.open">
       </handler>
       <handler
+            class="org.lamport.tla.toolbox.tool.tlc.handlers.DeleteModelHandler"
+            commandId="toolbox.tool.tlc.commands.model.delete">
+      </handler>
+      <handler
+            class="org.lamport.tla.toolbox.tool.tlc.handlers.CloneModelHandler"
+            commandId="toolbox.tool.tlc.commands.model.clone">
+      </handler>
+      <handler
             class="org.lamport.tla.toolbox.tool.tlc.handlers.OpenModelHandlerDelegate"
-            commandId="toolbox.tool.tlc.commands.model.open.delegate">
+            commandId="toolbox.command.cnf.open.delegate">
          <enabledWhen>
             <count
                   value="1">
@@ -113,23 +131,29 @@
          </activeWhen>
       </handler>
       <handler
-            class="org.lamport.tla.toolbox.tool.tlc.handlers.DeleteModelHandler"
-            commandId="toolbox.tool.tlc.commands.model.delete">
+            class="org.lamport.tla.toolbox.tool.tlc.handlers.CloneModelHandlerDelegate"
+            commandId="toolbox.tool.tlc.commands.model.clone.delegate">
+         <enabledWhen>
+            <count
+                  value="1">
+            </count>
+         </enabledWhen>
+         <activeWhen>
+            <with
+                  variable="activePartId">
+               <equals
+                     value="toolbox.tool.tlc.ModelView">
+               </equals>
+            </with>
+         </activeWhen>
       </handler>
    </extension>
    <extension
-         point="org.eclipse.ui.bindings">
-      <key
-            commandId="toolbox.tool.tlc.modellaunch.open"
-            contextId="org.eclipse.ui.contexts.window"
-            sequence="F3"
-            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration">
-      </key>
-   </extension>
-   <extension
          point="org.eclipse.ui.menus">
+         
       <menuContribution
-            locationURI="menu:toolbox.tools.menu?after=toolbox.tools.separator">
+            locationURI="menu:toolbox.window.menu?after=toolbox.window.tools.separator">
+            <!-- menu:toolbox.tools.menu?after=toolbox.tools.separator -->
          <command
                commandId="toolbox.command.switchperspective"
                icon="icons/full/choice_sc_obj.gif"
@@ -143,103 +167,150 @@
                   name="toolbox.switchperspective.id"
                   value="org.lamport.tla.toolbox.tool.perspective.tlc">
             </parameter>
-            <visibleWhen
-                  checkEnabled="true">
-               <with
-                     variable="activeWorkbenchWindow.activePerspective">
-                  <equals
-                        value="org.lamport.tla.toolbox.ui.perspective.specLoaded">
-                  </equals>
-               </with>
-            </visibleWhen>
          </command>
       </menuContribution>
       <menuContribution
-            locationURI="menu:toolbox.tools.menu?after=toolbox.toolmenus.separator">
+            locationURI="menu:org.eclipse.ui.main.menu?after=toolbox.tools.separator">
+         <menu
+               id="toolbox.toolmenus.tlc"
+               label="TLC Model Checker"
+               mnemonic="M"
+               tooltip="TLC Model Checker Actions">
+            <command
+                  commandId="toolbox.tool.tlc.commands.model.new"
+                  id="toolbox.tool.tlc.modellaunch.new"
+                  mnemonic="N">
+               <visibleWhen
+                     checkEnabled="true">
+                  <with
+                        variable="activeWorkbenchWindow.activePerspective">
+                     <equals
+                           value="org.lamport.tla.toolbox.tool.perspective.tlc">
+                     </equals>
+                  </with>
+               </visibleWhen>
+            </command>
+            <menu
+                  id="toolbox.tool.tlc.modellaunch.open"
+                  label="Open Model"
+                  mnemonic="O">
+               <dynamic
+                     class="org.lamport.tla.toolbox.tool.tlc.launch.ui.ModelContributionItem"
+                     id="toolbox.tool.tlc.model.open.dynamic">
+               </dynamic>
+               <visibleWhen
+                     checkEnabled="true">
+                  <with
+                        variable="activeWorkbenchWindow.activePerspective">
+                     <equals
+                           value="org.lamport.tla.toolbox.tool.perspective.tlc">
+                     </equals>
+                  </with>
+               </visibleWhen>
+            </menu>
+            <command
+                  commandId="toolbox.command.openview"
+                  icon="icons/full/choice_sc_obj.gif"
+                  id="toolbox.menu.open-modelExplorer"
+                  label="Model Explorer"
+                  mnemonic="M"
+                  mode="FORCE_TEXT"
+                  style="push"
+                  tooltip="Opens the Model Explorer">
+               <parameter
+                     name="toolbox.openview.name"
+                     value="toolbox.tool.tlc.ModelView">
+               </parameter>
+               <visibleWhen
+                     checkEnabled="true">
+                  <with
+                        variable="activeWorkbenchWindow.activePerspective">
+                     <equals
+                           value="org.lamport.tla.toolbox.tool.perspective.tlc">
+                     </equals>
+                  </with>
+               </visibleWhen>
+            </command>
+            <separator
+                  name="org.lamport.tla.toolbox.tool.tlc.separator"
+                  visible="true">
+            </separator>
+            <command
+                  commandId="toolbox.command.openview"
+                  icon="icons/full/console_view2.gif"
+                  id="toolbox.menu.open-console"
+                  label="Console"
+                  mnemonic="C"
+                  mode="FORCE_TEXT"
+                  style="push"
+                  tooltip="Opens the view showing console">
+               <parameter
+                     name="toolbox.openview.name"
+                     value="org.eclipse.ui.console.ConsoleView">
+               </parameter>
+               <visibleWhen
+                     checkEnabled="true">
+                  <with
+                        variable="activeWorkbenchWindow.activePerspective">
+                     <equals
+                           value="org.lamport.tla.toolbox.tool.perspective.tlc">
+                     </equals>
+                  </with>
+               </visibleWhen>
+            </command>
+         </menu>
+      </menuContribution>
+   </extension>   
+   <extension
+         point="org.eclipse.ui.menus">
+         <menuContribution
+            locationURI="popup:toolbox.view.popup.model?after=group.new">
          <command
                commandId="toolbox.tool.tlc.commands.model.new"
-               id="toolbox.tool.tlc.modellaunch.new"
-               mnemonic="N">
-            <visibleWhen
-                  checkEnabled="true">
-               <with
-                     variable="activeWorkbenchWindow.activePerspective">
-                  <equals
-                        value="org.lamport.tla.toolbox.tool.perspective.tlc">
-                  </equals>
-               </with>
-            </visibleWhen>
-         </command>
-         <menu
-               id="toolbox.tool.tlc.modellaunch.open"
-               label="Open Model"
-               mnemonic="O">
-            <dynamic
-                  class="org.lamport.tla.toolbox.tool.tlc.launch.ui.ModelContributionItem"
-                  id="toolbox.tool.tlc.model.open.dynamic">
-            </dynamic>
-            <visibleWhen
-                  checkEnabled="true">
-               <with
-                     variable="activeWorkbenchWindow.activePerspective">
-                  <equals
-                        value="org.lamport.tla.toolbox.tool.perspective.tlc">
-                  </equals>
-               </with>
-            </visibleWhen>
-         </menu>
-         <command
-               commandId="toolbox.command.openview"
                icon="icons/full/choice_sc_obj.gif"
-               id="toolbox.menu.open-modelExplorer"
-               label="Model Explorer"
-               mnemonic="M"
-               mode="FORCE_TEXT"
-               style="push"
-               tooltip="Opens the Model Explorer">
-            <parameter
-                  name="toolbox.openview.name"
-                  value="toolbox.tool.tlc.ModelView">
-            </parameter>
-            <visibleWhen
-                  checkEnabled="true">
-               <with
-                     variable="activeWorkbenchWindow.activePerspective">
-                  <equals
-                        value="org.lamport.tla.toolbox.tool.perspective.tlc">
-                  </equals>
-               </with>
-            </visibleWhen>
+               id="toolbox.popupmenu.model.new"
+               label="New Model"
+               mnemonic="N"
+               style="push">
          </command>
-         <separator
-               name="org.lamport.tla.toolbox.tool.tlc.separator"
-               visible="true">
-         </separator>
-         <command
-               commandId="toolbox.command.openview"
-               icon="icons/full/console_view2.gif"
-               id="toolbox.menu.open-console"
-               label="Console"
-               mnemonic="C"
-               mode="FORCE_TEXT"
-               style="push"
-               tooltip="Opens the view showing console">
-            <parameter
-                  name="toolbox.openview.name"
-                  value="org.eclipse.ui.console.ConsoleView">
-            </parameter>
-            <visibleWhen
-                  checkEnabled="true">
-               <with
-                     variable="activeWorkbenchWindow.activePerspective">
-                  <equals
-                        value="org.lamport.tla.toolbox.tool.perspective.tlc">
-                  </equals>
-               </with>
-            </visibleWhen>
-         </command>
-         
       </menuContribution>
+      <menuContribution
+            locationURI="popup:toolbox.view.popup.model?after=group.open">
+         <command
+               commandId="toolbox.command.cnf.open.delegate"
+               icon="icons/full/choice_sc_obj.gif"
+               id="toolbox.popupmenu.model.open.delegate"
+               label="Open Model"
+               mnemonic="O"
+               style="push"
+               >
+         </command>
+      </menuContribution>
+      <menuContribution
+            locationURI="popup:toolbox.view.popup.model?after=group.edit">
+         <command
+               commandId="org.eclipse.ui.edit.delete"
+               id="toolbox.popupmenu.model.delete"
+               label="Delete"
+               mnemonic="D"
+               style="push">
+         </command>
+         <command
+               commandId="org.eclipse.ui.edit.rename"
+               id="toolbox.popupmenu.model.rename"
+               label="Rename"
+               mnemonic="R"
+               style="push">
+         </command>
+         <command
+               commandId="toolbox.tool.tlc.commands.model.clone.delegate"
+               id="toolbox.popupmenu.model.clone"
+               label="Clone"
+               mnemonic="C"
+               style="push">
+         </command>
+      </menuContribution>
+      
    </extension>
    
    <extension
@@ -381,58 +452,66 @@ Console Facory
          point="org.eclipse.ui.perspectives">
       <perspective
             class="org.lamport.tla.toolbox.tool.tlc.ui.TLCPerspective"
-            fixed="false"
             icon="icons/full/choice_sc_obj.gif"
             id="org.lamport.tla.toolbox.tool.perspective.tlc"
             name="TLC Model Checker">
       </perspective>
    </extension>
+   <extension
+         point="org.eclipse.ui.perspectiveExtensions">
+      <perspectiveExtension
+            targetID="org.lamport.tla.toolbox.tool.perspective.tlc">
+         <view
+               closeable="true"
+               id="toolbox.view.ProblemView"
+               minimized="false"
+               moveable="true"
+               ratio="0.75"
+               relationship="right"
+               relative="org.eclipse.ui.editorss"
+               showTitle="true"
+               standalone="false"
+               visible="false">
+         </view>
+         <view
+               closeable="false"
+               id="toolbox.view.SpecView"
+               minimized="true"
+               moveable="false"
+               ratio="0.25"
+               relationship="fast"
+               relative="org.eclipse.ui.editorss"
+               showTitle="true"
+               standalone="true"
+               visible="false">
+         </view>
+         <view
+               closeable="false"
+               id="toolbox.tool.tlc.ModelView"
+               minimized="true"
+               moveable="false"
+               ratio="0.25"
+               relationship="fast"
+               relative="org.eclipse.ui.editorss"
+               showTitle="true"
+               standalone="true"
+               visible="false">
+         </view>
+         <view
+               closeable="true"
+               id="org.eclipse.ui.console.ConsoleView"
+               moveable="true"
+               ratio="0.75"
+               relationship="bottom"
+               relative="org.eclipse.ui.editorss"
+               showTitle="true"
+               standalone="false"
+               visible="false">
+         </view>
+      </perspectiveExtension>
+   </extension>
    
    <!--                                   -->
 <!-- Menus                             -->
-<!--                                   -->   
-   <extension
-         point="org.eclipse.ui.menus">
-         <menuContribution
-            locationURI="popup:toolbox.view.popup.model?after=group.new">
-         <command
-               commandId="toolbox.tool.tlc.commands.model.new"
-               icon="icons/full/choice_sc_obj.gif"
-               id="toolbox.popupmenu.model.new"
-               label="New Model"
-               mnemonic="N"
-               style="push">
-         </command>
-      </menuContribution>
-      <menuContribution
-            locationURI="popup:toolbox.view.popup.model?after=group.open">
-         <command
-               commandId="toolbox.tool.tlc.commands.model.open.delegate"
-               icon="icons/full/choice_sc_obj.gif"
-               id="toolbox.popupmenu.model.open.delegate"
-               label="Open Model"
-               mnemonic="O"
-               style="push"
-               >
-         </command>
-      </menuContribution>
-      <menuContribution
-            locationURI="popup:toolbox.view.popup.model?after=group.edit">
-         <command
-               commandId="org.eclipse.ui.edit.delete"
-               id="toolbox.popupmenu.spec.delete"
-               label="Delete"
-               mnemonic="D"
-               style="push">
-         </command>
-         <command
-               commandId="org.eclipse.ui.edit.rename"
-               id="toolbox.popupmenu.spec.rename"
-               label="Rename"
-               mnemonic="R"
-               style="push">
-         </command>
-      </menuContribution>
-      
-   </extension>
+<!--                                   -->
 </plugin>
