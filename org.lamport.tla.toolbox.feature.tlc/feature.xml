@@ -28,62 +28,62 @@
          id="org.lamport.tla.toolbox.tool.tlc"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="1.0.0"
          unpack="false"/>
 
    <plugin
          id="org.eclipse.debug.core"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="3.4.0.v20080612"
          unpack="false"/>
 
    <plugin
          id="org.eclipse.ui.console"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="3.3.0.v20080529-1300"
          unpack="false"/>
 
    <plugin
          id="org.lamport.tla.toolbox.tool.tlc.ui"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="1.0.0"
          unpack="false"/>
 
    <plugin
          id="org.eclipse.ui.navigator"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="3.3.101.M20080827-0800"
          unpack="false"/>
 
    <plugin
          id="org.eclipse.jdt.launching"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="3.4.1.v20080729_r341"
          unpack="false"/>
 
    <plugin
          id="org.eclipse.jdt.core"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="3.4.2.v_883_R34x"
          unpack="false"/>
 
    <plugin
          id="org.eclipse.jdt.debug"
          download-size="0"
          install-size="0"
-         version="0.0.0"/>
+         version="3.4.0.v20080604"/>
 
    <plugin
          id="org.eclipse.ui"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="3.4.1.M20080910-0800"
          unpack="false"/>
 
 </feature>
