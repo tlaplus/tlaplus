@@ -442,6 +442,20 @@ public class TLC
         {
             configFile = mainFile;
         }
+        
+        if (TLCGlobals.debug) 
+        {
+            ToolIO.out.println("TLC argumens:");
+            for (int i=0; i < args.length; i++)
+            {
+                ToolIO.out.print(args[i]);
+                if (i < args.length - 1) 
+                {
+                    ToolIO.out.print(" ");
+                }
+            }
+            ToolIO.out.print("\n");
+        }
         return true;
     }
     
