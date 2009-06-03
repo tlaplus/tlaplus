@@ -21,6 +21,8 @@ import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.SemanticNode;
 import tla2sany.st.Location;
 import tla2sany.st.TreeNode;
+import util.FileUtil;
+import util.NamedInputStream;
 import util.ToolIO;
 import util.UniqueString;
 
@@ -404,26 +406,33 @@ public class SANY {
       // file Filename leaving the result (normally) in Specification
       // spec.
       SpecObj spec = new SpecObj(args[i], null);
-      try {
-        frontEndMain(spec, args[i], ToolIO.out);
-      }
-      catch (FrontEndException fe) {
-// For debugging
-fe.printStackTrace();   
-        ToolIO.out.println(fe);
-        return;
-      }
+      // check if file exists
+      if (FileUtil.createNamedInputStream(args[i], spec.getResolver()) != null) 
+      {
+          try {
+              frontEndMain(spec, args[i], ToolIO.out);
+            }
+            catch (FrontEndException fe) {
+              // For debugging
+              fe.printStackTrace();   
+              ToolIO.out.println(fe);
+              return;
+            }
 
-      // Compile operator usage stats
-      if (doStats) frontEndStatistics(spec);
+            // Compile operator usage stats
+            if (doStats) frontEndStatistics(spec);
 
-      if (doDebugging) {
-        // Run the Semantic Graph Exploration tool
-        Explorer explorer = new Explorer(spec.getExternalModuleTable());
-        try {
-          explorer.main();
-        }
-        catch (ExplorerQuitException e) { /*do nothing*/ }
+            if (doDebugging) {
+              // Run the Semantic Graph Exploration tool
+              Explorer explorer = new Explorer(spec.getExternalModuleTable());
+              try {
+                explorer.main();
+              }
+              catch (ExplorerQuitException e) { /*do nothing*/ }
+            }
+      } else 
+      {
+          ToolIO.out.println("Cannot find the specified file " + args[i] + ".");
       }
     }
   }
