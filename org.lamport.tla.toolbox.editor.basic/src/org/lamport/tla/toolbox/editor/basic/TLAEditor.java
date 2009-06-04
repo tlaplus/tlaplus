@@ -104,6 +104,8 @@ public class TLAEditor extends TextEditor
         FileDialog saveAsDialog = null;
         while (true)
         {
+            // construct the dialog
+            // should this be replaced by a dialog showing the logical view of the FS?
             saveAsDialog = new FileDialog(shell);
             saveAsDialog.setOverwrite(true);
             saveAsDialog.setText("Select the new filename...");
@@ -112,6 +114,7 @@ public class TLAEditor extends TextEditor
             saveAsDialog.setFilterPath(file.getLocation().toOSString());
             String result = saveAsDialog.open();
             saveAsDialog = null;
+            // no cancellation
             if (result != null)
             {
                 IPath newPath = new Path(result);
@@ -151,8 +154,7 @@ public class TLAEditor extends TextEditor
                         newFileCreated = newFile.createNewFile();
                     } catch (IOException e)
                     {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
+                        // do nothing, since we react on the newFileCreated being false
                     }
                     if (!newFileCreated)
                     {
@@ -189,6 +191,7 @@ public class TLAEditor extends TextEditor
                     if (saveAsSuccess)
                     {
                         // change the input
+                        // alternatively, open another editor with the new resource? 
                         setInput(newInput);
                     }
                 }
