@@ -1,22 +1,28 @@
 package org.lamport.tla.toolbox.editor.basic;
 
+import java.io.File;
+import java.io.IOException;
+
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.window.Window;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.contexts.IContextActivation;
 import org.eclipse.ui.contexts.IContextService;
-import org.eclipse.ui.dialogs.SaveAsDialog;
 import org.eclipse.ui.editors.text.FileDocumentProvider;
 import org.eclipse.ui.editors.text.TextEditor;
 import org.eclipse.ui.part.FileEditorInput;
+import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.lamport.tla.toolbox.editor.basic.util.ElementStateAdapter;
+import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
@@ -91,39 +97,108 @@ public class TLAEditor extends TextEditor
 
     protected void performSaveAs(IProgressMonitor progressMonitor)
     {
+
         IFile file = ((FileEditorInput) getEditorInput()).getFile();
         Shell shell = UIHelper.getShellProvider().getShell();
-        SaveAsDialog saveAsDialog = null;
+        IPath specRootPrefix = new Path(ResourceHelper.getParentDirName(ToolboxHandle.getRootModule()));
+        FileDialog saveAsDialog = null;
         while (true)
         {
-            saveAsDialog = new SaveAsDialog(shell);
-            saveAsDialog.setHelpAvailable(true);
-            saveAsDialog.setBlockOnOpen(true);
-            saveAsDialog.setOriginalFile(file);
-            int result = saveAsDialog.open();
-            if (result == Window.OK)
+            saveAsDialog = new FileDialog(shell);
+            saveAsDialog.setOverwrite(true);
+            saveAsDialog.setText("Select the new filename...");
+            saveAsDialog.setFilterExtensions(new String[] { "*.tla" });
+            saveAsDialog.setFilterNames(new String[] { "TLA+ Files" });
+            saveAsDialog.setFilterPath(file.getLocation().toOSString());
+            String result = saveAsDialog.open();
+            saveAsDialog = null;
+            if (result != null)
             {
-                IPath newPath = saveAsDialog.getResult();
-                if (newPath.toFile().exists())
+                IPath newPath = new Path(result);
+                // check whether the file is in the same directory as the root module
+                if (!specRootPrefix.isPrefixOf(newPath))
                 {
-                    boolean confirmOverride = MessageDialog.openQuestion(shell, "Override file?",
-                            "The provided filename already exists. The existing file will be overriden.\nDo you want to override the file "
-                                    + newPath.toOSString() + " ?");
-                    if (!confirmOverride)
+                    MessageDialog.openError(shell, "Wrong location selected",
+                            "The provided filename point to the same directory as the specification root file");
+                    continue;
+                }
+
+                // fix the extension
+                if (!"tla".equals(newPath.getFileExtension()))
+                {
+                    newPath = newPath.addFileExtension("tla");
+                }
+
+                File newFile = newPath.toFile();
+                if (newFile.exists())
+                {
+                    boolean confirmOverwrite = MessageDialog.openQuestion(shell, "Overwrite file?",
+                            "The provided filename already exists. The existing file will be overwritten.\nDo you want to overwrite the file "
+                                    + newPath.toOSString() + "?");
+                    if (!confirmOverwrite)
                     {
                         continue;
                     }
+
+                    // overwriting existing file file exists
+                } else
+                {
+                    // file does not exist
+                    // create the empty file
+                    boolean newFileCreated = false;
+                    try
+                    {
+                        newFileCreated = newFile.createNewFile();
+                    } catch (IOException e)
+                    {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
+                    if (!newFileCreated)
+                    {
+                        MessageDialog.openError(shell, "Error saving a file", "File could not be created");
+                        break;
+                    }
                 }
-                
-                System.out.println("TODO: Save " + file + " as " + newPath);
+
+                // create a link to a file
+                IFile newResource = ResourceHelper.getLinkedFile(file.getProject(), newPath.toOSString());
+
+                // new editor input
+                IEditorInput newInput = new FileEditorInput(newResource);
+
+                System.out.println("TODO: Save " + file.getLocation().toOSString() + " as " + newPath);
+
+                // get the document provider
+                IDocumentProvider provider = getDocumentProvider();
+                boolean saveAsSuccess = false;
+                try
+                {
+                    // notify
+                    provider.aboutToChange(newInput);
+                    // perform the save
+                    provider.saveDocument(progressMonitor, newInput, provider.getDocument(getEditorInput()), true);
+                    saveAsSuccess = true;
+                } catch (CoreException x)
+                {
+                    MessageDialog.openError(shell, "Error saving a file", "File could not be created");
+                } finally
+                {
+                    // notify
+                    provider.changed(newInput);
+                    if (saveAsSuccess)
+                    {
+                        // change the input
+                        setInput(newInput);
+                    }
+                }
                 // break out on save
                 break;
-            } else 
+            } else
             {
                 // break out on cancel of the dialog
                 break;
             }
         }
     }
-
 }
