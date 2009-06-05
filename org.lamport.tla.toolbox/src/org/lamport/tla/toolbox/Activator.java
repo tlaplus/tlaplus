@@ -39,7 +39,7 @@ public class Activator extends AbstractUIPlugin
     private static Activator plugin;
     private static WorkspaceSpecManager specManager;
     private static ParserDependencyStorage parserDependencyStorage;
-    private ParseStatusContributionItem parseStatusWidget = null;
+    private ParseStatusContributionItem parseStatusContributionItem = null;
 
     /**
      * The constructor
@@ -60,10 +60,10 @@ public class Activator extends AbstractUIPlugin
 
             public void run()
             {
-                parseStatusWidget = UIHelper.getStatusBarContributionItem();
-                if (parseStatusWidget != null)
+                parseStatusContributionItem = getStatusBarContributionItem();
+                if (parseStatusContributionItem != null)
                 {
-                    parseStatusWidget.updateStatus();
+                    parseStatusContributionItem.updateStatus();
                 }
             }
         };
@@ -211,4 +211,21 @@ public class Activator extends AbstractUIPlugin
         }
         return parserDependencyStorage;
     }
+
+    /**
+     * This method is called by the ParseContributionItem during initialization
+     */
+    public void setParseStatusContribution(ParseStatusContributionItem parseStatusContributionItem)
+    {
+        this.parseStatusContributionItem = parseStatusContributionItem;
+    }
+
+    /**
+     * Retrieve the ParseStatusContributionItem
+     */
+    public ParseStatusContributionItem getStatusBarContributionItem()
+    {
+        return this.parseStatusContributionItem;
+    }
+
 }

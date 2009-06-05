@@ -86,7 +86,8 @@
             class="org.lamport.tla.toolbox.ui.view.ProblemView"
             icon="icons/full/obj16/error_tsk.gif"
             id="toolbox.view.ProblemView"
-            name="Problems">
+            name="Problems"
+            restorable="true">
       </view>
       <view
             allowMultiple="false"
@@ -96,7 +97,7 @@
             icon="icons/full/etool16/new_project_wiz.gif"
             id="toolbox.view.SpecView"
             name="Specification Explorer"
-            restorable="false">
+            restorable="true">
       </view>
       <category
             id="org.lamport.tla.toolbox.category"
@@ -133,9 +134,15 @@
       <page
             class="org.lamport.tla.toolbox.ui.preference.ParserPreferencePage"
             id="toolbox.ui.preferences.ParserPreferencePage"
-            name="Parser Preferences"
+            name="TLA+ Parser Preferences"
             category="toolbox.ui.preferences.GeneralPreferencePage">
             <keywordReference id="toolbox.keywords.Parser"/>
+      </page>
+      <page
+            category="toolbox.ui.preferences.GeneralPreferencePage"
+            class="org.lamport.tla.toolbox.ui.preference.TranslatorPreferencePage"
+            id="toolbox.ui.preferences.ParserPreferencePage"
+            name="PCal Translator Preferences">
       </page>
       
    </extension>
@@ -732,6 +739,31 @@
                style="push"
                tooltip="Shows properties of current specification">
          </command>
+      </menuContribution>
+      
+<!--                         -->
+<!-- Status bar parse status -->
+<!--                         -->
+      <menuContribution
+            locationURI="toolbar:org.eclipse.ui.trim.status">
+         <toolbar
+               id="toolbox.trim">
+            <control
+                  class="org.lamport.tla.toolbox.ui.contribution.ParseStatusContributionItem"
+                  id="toolobx.contributions.parse.status">
+               <visibleWhen
+                     checkEnabled="true">
+                  <not>
+                     <with
+                           variable="activeWorkbenchWindow.activePerspective">
+                        <equals
+                              value="org.lamport.tla.toolbox.ui.perspective.initial">
+                        </equals>
+                     </with>
+                  </not>
+               </visibleWhen>
+            </control>
+         </toolbar>
       </menuContribution>
    </extension>
    

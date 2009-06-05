@@ -1,63 +1,76 @@
 package org.lamport.tla.toolbox.ui.contribution;
 
-import org.eclipse.jface.action.ContributionItem;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.ui.menus.WorkbenchWindowControlContribution;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.util.AdapterFactory;
 
 /**
- * A widget placed to the status line that shows the parse status of the root module 
- * @version $Id$
+ * A widget placed to the status line that shows the parse status of the root module
+ * <br>
+ * For additional help look at org.eclipse.ui.examples.contributions plugin
  * @author Simon Zambrovski
+ * @version $Id$
  */
-public class ParseStatusContributionItem extends ContributionItem
+public class ParseStatusContributionItem extends WorkbenchWindowControlContribution
 {
-    private Label statusLabel = null;
+    // the element
+    private Composite composite;
+    // label to display status
+    private Label statusLabel;
 
     public ParseStatusContributionItem()
     {
-
+        super("specParseStatusState");
+        Activator.getDefault().setParseStatusContribution(this);
     }
+    
+    protected Control createControl(Composite parent)
+    {
+        // If the composite is good just return it.
+        if (composite != null && !composite.isDisposed()) 
+        {
+            return composite;
+        }
 
-    public ParseStatusContributionItem(String id)
-    {
-        super(id);
-    }
-    /**
-     * Creates the control 
-     */
-    public void fill(Composite parent)
-    {
+        
         // Create a composite to place the label in
-        Composite comp = new Composite(parent, SWT.NONE);
+        composite = new Composite(parent, SWT.NONE);
+        // composite.setData(this);
+        
 
         // Give some room around the control
         FillLayout layout = new FillLayout();
         layout.marginHeight = 2;
         layout.marginWidth = 2;
-        comp.setLayout(layout);
+        composite.setLayout(layout);
 
-        // Create a label for the trim.
-        statusLabel = new Label(comp, SWT.BORDER | SWT.CENTER);
+        // Create label inside composite.   
+        statusLabel = new Label(composite, SWT.BORDER | SWT.CENTER);
         statusLabel.setForeground(parent.getDisplay().getSystemColor(SWT.COLOR_BLACK));
-        statusLabel.setToolTipText("Parse status");
-        
-        // display status
-        this.updateStatus();
+        statusLabel.setToolTipText("Specification Parse Status");
+        statusLabel.setSize(100, 20);
+
+        // update status
+        updateStatus();
+        return composite;
     }
 
-
-    /**
-     * Updates status from the specification currently loaded in the SpecManager
-     */
+     // Updates status from the specification currently loaded in the SpecManager
     public void updateStatus()
     {
+        if (statusLabel == null || statusLabel.isDisposed()) 
+        {
+            return;
+        }
+        
         Spec spec = Activator.getSpecManager().getSpecLoaded();
-        if (spec == null) 
+        if (spec == null)
         {
             return;
         }
@@ -66,4 +79,16 @@ public class ParseStatusContributionItem extends ContributionItem
         statusLabel.setForeground(statusLabel.getDisplay().getSystemColor(AdapterFactory.getStatusAsSWTFGColor(spec)));
         statusLabel.redraw();
     }
+
+    public void update()
+    {
+        updateStatus();
+    }
+
+    protected int computeWidth(Control control)
+    {
+        return 100;
+    }
+
+    
 }
