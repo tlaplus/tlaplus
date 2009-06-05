@@ -437,59 +437,6 @@ public class UIHelper
     }
 
     /**
-     * Returns a status bar contribution.
-     * This method will install the item, if it not already installed, and return the first item it finds in the status bar
-     * 
-     * @return ParseStatusContributionItem
-     */
-    public static synchronized ParseStatusContributionItem getStatusBarContributionItem()
-    {
-        IActionBars bars = null;
-        IWorkbenchWindow window = getRootApplicationWindow();
-        if (window == null)
-        {
-            return null;
-        }
-        IWorkbenchPage page = window.getActivePage();
-        if (page != null)
-        {
-            IWorkbenchPart part = page.getActivePart();
-            if (part != null)
-            {
-                IWorkbenchPartSite site = part.getSite();
-                if (site != null && site instanceof IViewSite)
-                {
-                    bars = ((IViewSite) site).getActionBars();
-                } else if (site != null && site instanceof IEditorSite)
-                {
-                    bars = ((IEditorSite) site).getActionBars();
-                }
-            }
-        }
-
-        if (bars != null)
-        {
-            IContributionItem[] items = bars.getStatusLineManager().getItems();
-            for (int i = 0; i < items.length; i++)
-            {
-                if (items[i] instanceof ParseStatusContributionItem)
-                {
-                    return (ParseStatusContributionItem) items[i];
-                }
-            }
-
-            
-            ParseStatusContributionItem parseStatusContributionItem = new ParseStatusContributionItem();
-            
-            bars.getStatusLineManager().add(parseStatusContributionItem);
-            bars.updateActionBars();
-
-            return parseStatusContributionItem;
-        }
-        return null;
-    }
-
-    /**
      * Runs a task in synchronous UI thread 
      * @param task
      */
