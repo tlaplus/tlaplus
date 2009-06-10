@@ -14,6 +14,7 @@ import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.part.FileEditorInput;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.AdvancedModelPage;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.BasicFormPage;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.IDoRunContainer;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.MainModelPage;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.SemanticHelper;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
@@ -44,7 +45,7 @@ public class ModelEditor extends FormEditor
                     for (int i = 0; i < getPageCount(); i++)
                     {
                         Object page = pages.get(i);
-                        if (page instanceof BasicFormPage)
+                        if (page instanceof ISectionManager)
                         {
                             BasicFormPage bPage = (BasicFormPage) page;
                             // re-validate the model on changes of the spec
@@ -55,6 +56,9 @@ public class ModelEditor extends FormEditor
             });
         }
     };
+    
+    // section manager
+    private SectionManager sectionManager = new SectionManager();
 
     public ModelEditor()
     {
@@ -99,7 +103,7 @@ public class ModelEditor extends FormEditor
                 for (int i = 0; i < getPageCount(); i++)
                 {
                     Object page = pages.get(i);
-                    if (page instanceof BasicFormPage)
+                    if (page instanceof ISectionManager)
                     {
                         BasicFormPage bPage = (BasicFormPage) page;
                         // re-validate the model on changes of the spec
@@ -142,7 +146,7 @@ public class ModelEditor extends FormEditor
             {
                 Object page = pages.get(i);
                 
-                if (page instanceof BasicFormPage)
+                if (page instanceof ISectionManager)
                 {
                     BasicFormPage fpage = (BasicFormPage) page;
                     if (fpage.isInitialized()) 
@@ -209,7 +213,7 @@ public class ModelEditor extends FormEditor
         for (int i = 0; i < pages.size(); i++)
         {
             Object page = pages.get(i);
-            if (page instanceof BasicFormPage)
+            if (page instanceof IDoRunContainer)
             {
                 BasicFormPage bPage = (BasicFormPage) page;
                 if (!bPage.isComplete())
@@ -229,6 +233,14 @@ public class ModelEditor extends FormEditor
     public SemanticHelper getHelper()
     {
         return this.helper;
+    }
+
+    /**
+     * @return
+     */
+    public SectionManager getSectionManager()
+    {
+        return this.sectionManager;
     }
 
 }
