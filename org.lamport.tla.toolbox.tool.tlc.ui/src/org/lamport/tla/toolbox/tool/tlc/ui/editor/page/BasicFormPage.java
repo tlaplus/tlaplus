@@ -25,12 +25,14 @@ import org.eclipse.ui.forms.events.ExpansionEvent;
 import org.eclipse.ui.forms.events.HyperlinkAdapter;
 import org.eclipse.ui.forms.events.HyperlinkEvent;
 import org.eclipse.ui.forms.events.IExpansionListener;
+import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationDefaults;
 import org.lamport.tla.toolbox.tool.tlc.launch.TLCModelLaunchDelegate;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.ISectionManager;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.IgnoringListener;
@@ -48,17 +50,17 @@ import tla2sany.st.Location;
  * @version $Id$
  */
 public abstract class BasicFormPage extends FormPage implements IModelConfigurationConstants,
-        IModelConfigurationDefaults
+        IModelConfigurationDefaults, ISectionManager, IDoRunContainer
 {
-    public static final String MODE_RUN = "run";
-    public static final String MODE_DEBUG = "debug";
 
     protected ListenerList dirtyPartListeners = new ListenerList();
     protected String helpId = null;
     protected String imagePath = null;
     protected boolean initialized = false;
-    
+
     protected IExpansionListener formRebuildingListener = null;
+    
+    // adapter calling doRun() method
     protected HyperlinkAdapter runDebugAdapter = new HyperlinkAdapter() {
 
         public void linkActivated(HyperlinkEvent e)
@@ -85,19 +87,18 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
     /**
      * @param mode
      */
-    protected void doRun(String mode)
+    public void doRun(String mode)
     {
         // TODO
         IProgressMonitor monitor = null;
 
-        if (!((ModelEditor)getEditor()).isComplete())
+        if (!((ModelEditor) getEditor()).isComplete())
         {
-            MessageDialog.openError(getSite().getShell(), "TLC Launch not allowed", "The model contains errors, which should be corrected before the TLC launch");
+            MessageDialog.openError(getSite().getShell(), "TLC Launch not allowed",
+                    "The model contains errors, which should be corrected before the TLC launch");
             return;
         }
-        
-        
-        
+
         ILaunchConfigurationWorkingCopy config = getConfig();
 
         // save the editor if not saved
@@ -111,6 +112,7 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
             config.launch(TLCModelLaunchDelegate.MODE_MODELCHECK, monitor, false);
         } catch (CoreException e1)
         {
+            // TODO
             e1.printStackTrace();
         }
     }
@@ -163,12 +165,13 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
             {
                 return TLCUIActivator.imageDescriptorFromPlugin(TLCUIActivator.PLUGIN_ID, "icons/full/ldebug_obj.gif");
             }
+
             // TODO enable on debug support
             public boolean isEnabled()
             {
                 return false;
             }
-            
+
         });
 
         formWidget.getForm().getToolBarManager().update(true);
@@ -212,7 +215,7 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
         {
             ((IgnoringListener) listeners[i]).setIgnoreInput(false);
         }
-        
+
         initialized = true;
     }
 
@@ -248,9 +251,8 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
         return FormHelper.createFormTableWrapLayout(false, 2);
     }
 
-    /**
-     * Retrieves the instance of the expansion listener, that rebuilds the form
-     * @return
+    /* (non-Javadoc)
+     * @see org.lamport.tla.toolbox.tool.tlc.ui.editor.page.ISectionConstants#getExpansionListener()
      */
     public IExpansionListener getExpansionListener()
     {
@@ -311,7 +313,7 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
      */
     public void validate()
     {
-        
+
     }
 
     /**
@@ -327,14 +329,14 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
     {
         this.isComplete = isComplete;
     }
-    
+
     /**
      * retrieves the helper to lookup names 
      * @return
      */
     public SemanticHelper getLookupHelper()
     {
-        return ((ModelEditor)this.getEditor()).getHelper();
+        return ((ModelEditor) this.getEditor()).getHelper();
     }
 
     /**
@@ -343,10 +345,12 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
      * @param listSource
      * @param errorMessagePrefix
      * @param elementType
+     * @param sectionIndex the index of the section to expand   
      */
-    public void validateId(List values, Control listSource, String errorMessagePrefix, String elementType)
+    public void validateId(List values, Control listSource, String errorMessagePrefix, String elementType,
+            String sectionIndex)
     {
-        if (values == null) 
+        if (values == null)
         {
             return;
         }
@@ -354,16 +358,20 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
         IMessageManager mm = getManagedForm().getMessageManager();
         for (int i = 0; i < values.size(); i++)
         {
-            String value = (String)values.get(i);
-            if (!FormHelper.isIdentifier(value)) 
+            String value = (String) values.get(i);
+            if (!FormHelper.isIdentifier(value))
             {
-                message = elementType + " " + value + " may not be used, since it is not a valid identifier.\nAn identifier is non-empty sequence of letters, digits und '_' with at least one letter.";
-                mm.addMessage(errorMessagePrefix + i, message, value.toString(), IMessageProvider.ERROR,
-                        listSource);
+                message = elementType
+                        + " "
+                        + value
+                        + " may not be used, since it is not a valid identifier.\nAn identifier is non-empty sequence of letters, digits und '_' with at least one letter.";
+                mm.addMessage(errorMessagePrefix + i, message, value.toString(), IMessageProvider.ERROR, listSource);
                 setComplete(false);
+                expandSection(sectionIndex);
             }
         }
     }
+
     /**
      * Checks if the elements of the given list comply with the requirement of being not already defined in the context
      * of the current model and the specification. The method will iterate through the list and check whether every element
@@ -373,10 +381,12 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
      * @param errorMessagePrefix the prefix of the error messages to be used
      * @param elementType the type of the element, used in the error message
      * @param listSourceDescription the description of the list source, used in error reporting
+     * @param sectionIndex index of the section to expand 
      */
-    public void validateUsage(List values, Control listSource, String errorMessagePrefix, String elementType, String listSourceDescription)
+    public void validateUsage(List values, Control listSource, String errorMessagePrefix, String elementType,
+            String listSourceDescription, String sectionIndex)
     {
-        if (values == null) 
+        if (values == null)
         {
             return;
         }
@@ -385,37 +395,39 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
         String message;
         for (int i = 0; i < values.size(); i++)
         {
-            String value = (String)values.get(i);
+            String value = (String) values.get(i);
             Object usageHint = helper.getUsedHint(value);
             if (usageHint != null)
             {
                 message = elementType + " " + value + " may not be used, since it is ";
-                if (usageHint instanceof SymbolNode) 
+                if (usageHint instanceof SymbolNode)
                 {
                     message += "";
                     SymbolNode node = (SymbolNode) usageHint;
                     Location location = node.getLocation();
-                    if (location.source().equals("--TLA+ BUILTINS--")) 
+                    if (location.source().equals("--TLA+ BUILTINS--"))
                     {
                         message += "a built-in TLA+ definition.";
-                    } else {
+                    } else
+                    {
                         message += "an identifier already defined at " + location.toString() + ".";
                     }
-                } else if (usageHint instanceof String) 
+                } else if (usageHint instanceof String)
                 {
                     if (SemanticHelper.KEYWORD.equals(usageHint))
                     {
                         message += "a TLA+ keyword.";
-                    } else 
+                    } else
                     {
                         message += "already used in " + usageHint;
                     }
-                } else {
+                } else
+                {
                     message = "Error during validation. This is a bug";
                 }
-                mm.addMessage(errorMessagePrefix + i, message, value.toString(), IMessageProvider.ERROR,
-                        listSource);
+                mm.addMessage(errorMessagePrefix + i, message, value.toString(), IMessageProvider.ERROR, listSource);
                 setComplete(false);
+                expandSection(sectionIndex);
             } else
             {
                 // just adding the name
@@ -423,9 +435,31 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
             }
         }
     }
-    
+
     public boolean isInitialized()
     {
         return initialized;
     }
+
+    /**
+     * Delegate to the section manager
+     * @param sectionId
+     */
+    public void expandSection(String sectionId)
+    {
+        ((ModelEditor) getEditor()).getSectionManager().expandSection(sectionId);
+    }
+    
+    /**
+     * Adds the section to the section manager in order to be able to expand the sections on events 
+     * (like errors, hyperlinks, etc...)
+     * @param sectionId
+     * @param pageId
+     * @param section
+     */
+    public void addSection(String sectionId, ExpandableComposite section) 
+    {
+        ((ModelEditor) getEditor()).getSectionManager().addSection(section, sectionId, getId());
+    }
+
 }
