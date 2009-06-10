@@ -15,12 +15,13 @@ DESCRIPTION: {General description of the release
 
 2009-xx-xx "0.0.2" 
 ---------------------------------------------------
-- TODO(SZ): fix problem with parse status indicator not disappearing in welcome perspective (see Readme Tool)
-- TODO(LL): help content
-- TODO(SZ): Links on the 1st page of ModelEditor (google)
-- TODO(SZ): module actions to react on the module (PCal translation to enable only on PCal modules)
-- TODO(SZ): fast views forgets about the views that are opened on restart 
 
+- TODO(LL): help content
+- TODO(SZ): module actions to react on the module (PCal translation to enable only on PCal modules)
+
+- BUGFIX : Links on the 1st page of ModelEditor 
+- BUGFIX : Problem with parse status indicator not disappearing in welcome perspective
+- BUGFIX : fast views forgets about the views that are opened on restart 
 - FEATURE: Specification Explorer (new, open, delete, rename, properties)
 - FEATURE: Model Explorer (new, open, rename, delete, clone)
 - FEATURE: TLC run as external process (interruptible)
@@ -32,20 +33,20 @@ DESCRIPTION: {General description of the release
 - FEATURE: TLC launch added
 - FEATURE: PCal runs as a job
 - FEATURE: Pcal translates module using the module preferences for PCal run
-- CHANGE: Menu redesign
+- CHANGE : Menu redesign
 - FEATURE: Console added
 - FEATURE: introduction page added
 - FEATURE: simple error report of Pcal errors
 - FEATURE: Pcal translation starts with CTRL + T
-- BUGFIX: The bug in the check that the root file is a TLA file. 
+- BUGFIX : The bug in the check that the root file is a TLA file. 
 - FEATURE: PCal translation added
 - FEATURE: Preferences on auto-build added (module, spec, files)
-- BUGFIX: On switched off auto-build and shown "Problems View", the view is not repainted on save of a modified file 
+- BUGFIX : On switched off auto-build and shown "Problems View", the view is not repainted on save of a modified file 
 - FEATURE: In the editors tabs, root modules are marked with a special symbol
 - FEATURE: In the list of modules in "Open Module" sub-menu marks the root module with specific icon
 - FEATURE: The Parse Specification (root module) can be triggered by CTRL + R shortcut
-- CHANGE: Problem View toggling is looking on the problems, not on the spec status (this avoid empty problem view window to be shown ever) 
-- BUGFIX: If the Problem View is shown and the build happens it reopens with the new errors (if any errors)
+- CHANGE : Problem View toggling is looking on the problems, not on the spec status (this avoid empty problem view window to be shown ever) 
+- BUGFIX : If the Problem View is shown and the build happens it reopens with the new errors (if any errors)
 - FEATURE: Help button now only opens the content help
 - FEATURE: Context help activated (hitting F1 everywhere)  
 - FEATURE: On errors reported from SANY located in modules, which are not yet part of the Spec-Project (linked-in) the resources 
@@ -56,12 +57,12 @@ will become part of the project
 - FEATURE: Add module to the spec with OS-based dialog
 - FEATURE: "Create new spec" allows to pick an non-existent root file, which will be created.
 - FEATURE: On changes in a file the dependency list is considered before rebuild 
-- CHANGE: Status "semantic warning" has been added to the resolution of the parse status. It is marked by the warning 
+- CHANGE : Status "semantic warning" has been added to the resolution of the parse status. It is marked by the warning 
 written on the yellow background. The warning is a problem status and causes the problem window to pop-up.
-- CHANGE: The defaults for preferences "spacesForTabs" and "lineNumberRuler" has been changed
-- BUGFIX: The parse status "Could not find module" is handled correctly. The Marker is attached to the Spec itself. 
-- BUGFIX: The parse status widget is shown from the beginning on and is permanently visible
-- BUGFIX: System.err redirected prior starting of the SANY
+- CHANGE : The defaults for preferences "spacesForTabs" and "lineNumberRuler" has been changed
+- BUGFIX : The parse status "Could not find module" is handled correctly. The Marker is attached to the Spec itself. 
+- BUGFIX : The parse status widget is shown from the beginning on and is permanently visible
+- BUGFIX : System.err redirected prior starting of the SANY
 
 2009-01-28 "0.0.1" 
 ---------------------------------------------------
