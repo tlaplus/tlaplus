@@ -12,6 +12,7 @@ public interface IPreferenceConstants
     public static final String DEFAULT_NOT_SET                = "not set";
     
     public static final String P_PARSER_POPUP_ERRORS        = "parserPopupErrors";
+    public static final String P_TRANSLATE_POPUP_ERRORS     = "translatorPopupErrors";
     
     /** 
      * restore the same state of the specification after a restart
@@ -22,6 +23,7 @@ public interface IPreferenceConstants
     public static final String I_PARSE_FILES_ON_MODIFY      = "autoParseTopModules";
     public static final String I_PARSE_MODULE_ON_MODIFY     = "autoParseModule";
     public static final String I_PARSE_SPEC_ON_MODIFY       = "autoParseSpec";
+    public static final String I_TRANSLATE_MODULE_ON_MODIFY = "autoTranslateModule";
     
     public static final String I_SPEC_LOADED                = "specLoadedName";
 
