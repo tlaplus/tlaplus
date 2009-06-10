@@ -9,6 +9,9 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IDocumentPartitioner;
+import org.eclipse.jface.text.rules.FastPartitioner;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Shell;
@@ -27,9 +30,10 @@ import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 /**
- * Basic editor without any additional features
+ * Basic editor for TLA+
  *
- * @author zambrovski
+ * @author Simon Zambrovski
+ * @verion $Id$
  */
 public class TLAEditor extends TextEditor
 {
@@ -45,7 +49,8 @@ public class TLAEditor extends TextEditor
     public TLAEditor()
     {
         super();
-        setDocumentProvider(new FileDocumentProvider());
+        setDocumentProvider(new TLADocumentProvider());
+        // help id
         setHelpContextId("org.lamport.tla.toolbox.editor.basic.main_editor_window");
 
         getDocumentProvider().addElementStateListener(new ElementStateAdapter() {
@@ -61,6 +66,14 @@ public class TLAEditor extends TextEditor
                 }
             }
         });
+
+    }
+
+    protected void initializeEditor()
+    {
+        super.initializeEditor();
+        // source configuration
+        setSourceViewerConfiguration(new TLASourceViewerConfiguration());
     }
 
     /*
@@ -191,7 +204,7 @@ public class TLAEditor extends TextEditor
                     if (saveAsSuccess)
                     {
                         // change the input
-                        // alternatively, open another editor with the new resource? 
+                        // alternatively, open another editor with the new resource?
                         setInput(newInput);
                     }
                 }
@@ -202,6 +215,25 @@ public class TLAEditor extends TextEditor
                 // break out on cancel of the dialog
                 break;
             }
+        }
+    }
+
+    public static class TLADocumentProvider extends FileDocumentProvider
+    {
+        /**
+         * @see org.eclipse.ui.texteditor.AbstractDocumentProvider#createDocument(java.lang.Object)
+         */
+        protected IDocument createDocument(Object element) throws CoreException
+        {
+            IDocument document = super.createDocument(element);
+            if (document != null)
+            {
+                IDocumentPartitioner partitioner = new FastPartitioner(new TLAPartitionScanner(),
+                        TLAPartitionScanner.TLA_PARTITION_TYPES);
+                partitioner.connect(document);
+                document.setDocumentPartitioner(partitioner);
+            }
+            return document;
         }
     }
 }
