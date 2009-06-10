@@ -12,6 +12,15 @@
             class="org.lamport.tla.toolbox.editor.basic.TLAEditor">
       </editor>
    </extension>
+ <extension
+       id="org.lamport.tla.toolbox.editor.basic.DocumentSetup"
+       name="org.lamport.tla.toolbox.editor.basic.DocumentSetup"
+       point="org.eclipse.core.filebuffers.documentSetup">
+    <participant
+          class="org.lamport.tla.toolbox.editor.basic.TLADocumentSetupParticipant"
+          extensions="tla"/>
+ </extension>
+    
    <extension
          point="org.eclipse.help.contexts">
       <contexts
