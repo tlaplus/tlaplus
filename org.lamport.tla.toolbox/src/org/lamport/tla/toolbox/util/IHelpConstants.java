@@ -9,7 +9,10 @@ public interface IHelpConstants
 {
 
     public static final String PARSER_PREFERENCE_PAGE = "ParserPreferencePage";
+    public static final String TRANSLATOR_PREFERENCE_PAGE = "TranslatorPreferencePage";
     public static final String GENERAL_PREFERENCE_PAGE = "GeneralPreferencePage";
+
+    // removed
     // public static final String MODULE_PROPERTY_PAGE = "ModulePropertyPage";
     public static final String SPEC_PROPERTY_PAGE = "SpecPropertyPage";
 
@@ -18,6 +21,7 @@ public interface IHelpConstants
     public static final String MAIN_MODEL_PAGE = "mainModelPage";
     public static final String ADVANCED_MODEL_PAGE = "advancedModelPage";
 
+    // removed
     // public static final String GENERAL_MODEL_PAGE = "";
     // public static final String LAUNCH_MODEL_PAGE = "";
     // public static final String MODEL_VALUE_MODEL_PAGE = "";
