@@ -388,7 +388,7 @@
             icon="icons/full/choice_sc_obj.gif"
             id="toolbox.tool.tlc.ModelView"
             name="Model Explorer"
-            restorable="false">
+            restorable="true">
       </view>
    </extension>
 <!--
