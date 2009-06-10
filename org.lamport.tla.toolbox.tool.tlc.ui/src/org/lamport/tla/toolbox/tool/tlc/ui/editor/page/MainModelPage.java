@@ -22,8 +22,12 @@ import org.eclipse.ui.forms.HyperlinkGroup;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.IMessageManager;
 import org.eclipse.ui.forms.editor.FormEditor;
+import org.eclipse.ui.forms.events.HyperlinkAdapter;
+import org.eclipse.ui.forms.events.HyperlinkEvent;
+import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.eclipse.ui.forms.widgets.FormText;
 import org.eclipse.ui.forms.widgets.FormToolkit;
+import org.eclipse.ui.forms.widgets.Hyperlink;
 import org.eclipse.ui.forms.widgets.ImageHyperlink;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.forms.widgets.TableWrapData;
@@ -31,6 +35,7 @@ import org.lamport.tla.toolbox.tool.tlc.launch.IConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.IConfigurationDefaults;
 import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
 import org.lamport.tla.toolbox.tool.tlc.model.TypedSet;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.SectionManager;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.ConstantSectionPart;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.TableSectionPart;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.VSectionPart;
@@ -50,7 +55,8 @@ import tla2sany.semantic.ModuleNode;
 public class MainModelPage extends BasicFormPage implements IConfigurationConstants, IConfigurationDefaults
 {
     public static final String ID = "MainModelPage";
-    private Button noSpecRadio;
+    // private Button noSpecRadio;
+
     private Button closedFormulaRadio;
     private Button initNextFairnessRadio;
     private SourceViewer initFormulaSource;
@@ -68,19 +74,34 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         {
             if (e.widget == specSource.getControl())
             {
-                noSpecRadio.setSelection(false);
+                // noSpecRadio.setSelection(false);
                 closedFormulaRadio.setSelection(true);
                 initNextFairnessRadio.setSelection(false);
             } else if (e.widget == initFormulaSource.getControl() || e.widget == nextFormulaSource.getControl()
                     || e.widget == fairnessFormulaSource.getControl())
             {
-                noSpecRadio.setSelection(false);
+                // noSpecRadio.setSelection(false);
                 closedFormulaRadio.setSelection(false);
                 initNextFairnessRadio.setSelection(true);
             }
         }
     };
+    /**
+     * section expanding adapter
+     * {@link Hyperlink#getHref()} must deliver the section id as described in {@link SectionManager#addSection(ExpandableComposite, String, String)}
+     */
+    protected HyperlinkAdapter sectionExpandingAapter = new HyperlinkAdapter() {
+        public void linkActivated(HyperlinkEvent e)
+        {
+            String sectionId = (String) e.getHref();
+            // first switch to the page (and construct it if not yet constructed)
+            getEditor().setActivePage(AdvancedModelPage.ID);
+            // then expand the section
+            expandSection(sectionId);
+        }
+    };
 
+    
     /**
      * constructs the main model page 
      * @param editor
@@ -155,6 +176,9 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         validate();
     }
 
+    /**
+     * Validates the input in the fields
+     */
     public void validate()
     {
         IMessageManager mm = getManagedForm().getMessageManager();
@@ -186,9 +210,10 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
             List values = Arrays.asList(constant.getParams());
             // check list of parameters
-            validateUsage(values, constantTable.getTable(), "param1_", "A parameter name", "Constant Assignment");
+            validateUsage(values, constantTable.getTable(), "param1_", "A parameter name", "Constant Assignment",
+                    SEC_WHAT_IS_THE_MODEL);
             // check parameters
-            validateId(values, constantTable.getTable(), "param1_", "A parameter name");
+            validateId(values, constantTable.getTable(), "param1_", "A parameter name", SEC_WHAT_IS_THE_MODEL);
 
             // the constant is still in the list
             if (constant.getRight() == null || EMPTY_STRING.equals(constant.getRight()))
@@ -197,6 +222,8 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
                 mm.addMessage(constant.getLabel(), "Provide a value for constant " + constant.getLabel(), constant,
                         IMessageProvider.ERROR, constantTable.getTable());
                 setComplete(false);
+                expandSection(SEC_WHAT_IS_THE_MODEL);
+
             } else
             {
                 if (constant.isSetOfModelValues())
@@ -217,9 +244,10 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
                         List mvList = modelValuesSet.getValuesAsList();
                         // check list of model values
                         validateUsage(mvList, constantTable.getTable(), "modelValues2_", "A model value",
-                                "Constant Assignment");
+                                "Constant Assignment", SEC_WHAT_IS_THE_MODEL);
                         // check if the values are correct ids
-                        validateId(mvList, constantTable.getTable(), "modelValues2_", "A model value");
+                        validateId(mvList, constantTable.getTable(), "modelValues2_", "A model value",
+                                SEC_WHAT_IS_THE_MODEL);
                     }
                 }
             }
@@ -235,6 +263,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
                 mm.addMessage("wrongNumber1", "Number of workers must be a positive integer number", null,
                         IMessageProvider.ERROR, workers);
                 setComplete(false);
+                expandSection(SEC_HOW_TO_RUN);
             } else
             {
                 if (number > Runtime.getRuntime().availableProcessors())
@@ -244,6 +273,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
                             + Runtime.getRuntime().availableProcessors()
                             + ".\n It is not advisable that the number of workers exceeds the number of CPU Cores.",
                             null, IMessageProvider.WARNING, workers);
+                    expandSection(SEC_HOW_TO_RUN);
                 }
             }
         } catch (NumberFormatException e)
@@ -251,6 +281,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
             mm.addMessage("wrongNumber2", "Number of workers must be a positive integer number", null,
                     IMessageProvider.ERROR, workers);
             setComplete(false);
+            expandSection(SEC_HOW_TO_RUN);
         }
 
         // spec or no spec
@@ -266,6 +297,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
                 mm.addMessage("noVariables", "There were no variables declared in the root module", null,
                         IMessageProvider.ERROR, selectedOption);
                 setComplete(false);
+                expandSection(SEC_HOW_TO_RUN);
             }
         }
 
@@ -275,6 +307,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
             mm.addMessage("noSpec", "The formula must be provided", null, IMessageProvider.ERROR, specSource
                     .getTextWidget());
             setComplete(false);
+            expandSection(SEC_WHAT_IS_THE_SPEC);
         } else if (initNextFairnessRadio.getSelection())
         {
             String init = initFormulaSource.getDocument().get().trim();
@@ -285,12 +318,14 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
                 mm.addMessage("noInit", "The init formula must be provided", null, IMessageProvider.ERROR,
                         initFormulaSource.getTextWidget());
                 setComplete(false);
+                expandSection(SEC_WHAT_IS_THE_SPEC);
             }
             if (next.equals(""))
             {
                 mm.addMessage("noNext", "The spec formula must be provided", null, IMessageProvider.ERROR,
                         nextFormulaSource.getTextWidget());
                 setComplete(false);
+                expandSection(SEC_WHAT_IS_THE_SPEC);
             }
         }
 
@@ -320,7 +355,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         getConfig().setAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_FAIRNESS, fairnessFormula);
 
         // mode
-        int specType = (this.noSpecRadio.getSelection()) ? MODEL_BEHAVIOR_TYPE_NO_SPEC : (this.closedFormulaRadio
+        int specType = /* (this.noSpecRadio.getSelection()) ? MODEL_BEHAVIOR_TYPE_NO_SPEC :*/(this.closedFormulaRadio
                 .getSelection() ? MODEL_BEHAVIOR_TYPE_SPEC_CLOSED : MODEL_BEHAVIOR_TYPE_SPEC_INIT_NEXT);
 
         getConfig().setAttribute(MODEL_BEHAVIOR_SPEC_TYPE, specType);
@@ -391,11 +426,11 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         // ------------------------------------------
         // what is the spec
         section = FormHelper.createSectionComposite(left, "What is the spec?", "The behavior specification:", toolkit,
-                sectionFlags | Section.EXPANDED, getExpansionListener());
+                sectionFlags, getExpansionListener());
         // only grab horizontal space
         gd = new GridData(GridData.FILL_HORIZONTAL);
-        // gd.horizontalSpan = 2;
         section.setLayoutData(gd);
+        addSection(SEC_WHAT_IS_THE_SPEC, section);
 
         Composite behaviorArea = (Composite) section.getClient();
         layout = new GridLayout();
@@ -406,11 +441,11 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         managedForm.addPart(behaviorPart);
         DirtyMarkingListener whatIsTheSpecListener = new DirtyMarkingListener(behaviorPart, true);
 
-        noSpecRadio = toolkit.createButton(behaviorArea, "No Spec (Calculator mode)", SWT.RADIO);
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.horizontalSpan = 2;
-        noSpecRadio.setLayoutData(gd);
-        noSpecRadio.addSelectionListener(whatIsTheSpecListener);
+        // noSpecRadio = toolkit.createButton(behaviorArea, "No Spec (Calculator mode)", SWT.RADIO);
+        // gd = new GridData(GridData.FILL_HORIZONTAL);
+        // gd.horizontalSpan = 2;
+        // noSpecRadio.setLayoutData(gd);
+        // noSpecRadio.addSelectionListener(whatIsTheSpecListener);
 
         // closed formula option
         closedFormulaRadio = toolkit.createButton(behaviorArea, "Single formula", SWT.RADIO);
@@ -465,11 +500,11 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         // ------------------------------------------
         // what to check
         section = FormHelper.createSectionComposite(left, "What to check?", "List of invariants and properties:",
-                toolkit, Section.TITLE_BAR | Section.TREE_NODE | Section.EXPANDED, getExpansionListener());
+                toolkit, sectionFlags, getExpansionListener());
         // only grab horizontal space
         gd = new GridData(GridData.FILL_HORIZONTAL);
-        // gd.horizontalSpan = 2;
         section.setLayoutData(gd);
+        addSection(SEC_WHAT_TO_CHECK, section);
 
         Composite toBeCheckedArea = (Composite) section.getClient();
         layout = new GridLayout();
@@ -500,27 +535,61 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
         // Constants
         ConstantSectionPart constantsPart = new ConstantSectionPart(right, "What is the model?",
-                "Specify the values of the model constants.", toolkit, sectionFlags | Section.EXPANDED, this);
+                "Specify the values of the model constants.", toolkit, sectionFlags, this);
         managedForm.addPart(constantsPart);
 
         Composite parametersArea = (Composite) constantsPart.getSection().getClient();
-        FormText createFormText = toolkit.createFormText(parametersArea, true);
-        createFormText.setText("Some advanced features http://www.google.de/", false, true);
+        HyperlinkGroup group = new HyperlinkGroup(parametersArea.getDisplay());
+
+        // create a composite to put the text into
+        Composite linkedText = toolkit.createComposite(parametersArea);
+        gd = new GridData();
+        gd.horizontalSpan = 2;
+        linkedText.setLayoutData(gd);
+        linkedText.setLayout(new GridLayout(6, false));
+
+        // the text
+        FormText createFormText = toolkit.createFormText(linkedText, true);
+        createFormText.setText("Some advanced features:", false, false);
+
+        // 
+        Hyperlink hyper;
+
+        hyper = toolkit.createHyperlink(linkedText, "Additional definitions,", SWT.NONE);
+        hyper.setHref(SEC_ADDITIONAL_DEFINITION);
+        hyper.addHyperlinkListener(sectionExpandingAapter);
+
+        hyper = toolkit.createHyperlink(linkedText, "Definition override,", SWT.NONE);
+        hyper.setHref(SEC_DEFINITION_OVERRIDE);
+        hyper.addHyperlinkListener(sectionExpandingAapter);
+
+        hyper = toolkit.createHyperlink(linkedText, "State constraints,", SWT.NONE);
+        hyper.setHref(SEC_STATE_CONSTRAINT);
+        hyper.addHyperlinkListener(sectionExpandingAapter);
+
+        hyper = toolkit.createHyperlink(linkedText, "Action constraints,", SWT.NONE);
+        hyper.setHref(SEC_ACTION_CONSTRAINT);
+        hyper.addHyperlinkListener(sectionExpandingAapter);
+        
+        hyper = toolkit.createHyperlink(linkedText, "Additional model values.", SWT.NONE);
+        hyper.setHref(SEC_MODEL_VALUES);
+        hyper.addHyperlinkListener(sectionExpandingAapter);
+
 
         constantTable = constantsPart.getTableViewer();
 
-        gd = new GridData();
-        gd.horizontalSpan = 2;
-        createFormText.setLayoutData(gd);
+        addSection(SEC_WHAT_IS_THE_MODEL, constantsPart.getSection());
 
         // ------------------------------------------
         // run tab
         section = FormHelper.createSectionComposite(right, "How to run?", "Parameters of the TLC launch.", toolkit,
-                sectionFlags | Section.EXPANDED, getExpansionListener());
+                sectionFlags, getExpansionListener());
         gd = new GridData(GridData.FILL_HORIZONTAL);
         section.setLayoutData(gd);
+        addSection(SEC_HOW_TO_RUN, section);
 
         final Composite howToRunArea = (Composite) section.getClient();
+        group = new HyperlinkGroup(howToRunArea.getDisplay());
         layout = new GridLayout();
         layout.numColumns = 2;
         howToRunArea.setLayout(layout);
@@ -541,8 +610,6 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         gd.horizontalIndent = 10;
         gd.widthHint = 100;
         workers.setLayoutData(gd);
-
-        HyperlinkGroup group = new HyperlinkGroup(howToRunArea.getDisplay());
 
         // run link
         ImageHyperlink runLink = toolkit.createImageHyperlink(howToRunArea, SWT.NONE);

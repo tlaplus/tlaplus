@@ -41,7 +41,7 @@ import org.lamport.tla.toolbox.util.IHelpConstants;
 public class AdvancedModelPage extends BasicFormPage implements IConfigurationConstants, IConfigurationDefaults
 {
 
-    private static final String ID = "advancedModelPage";
+    public static final String ID = "advancedModelPage";
 
     private SourceViewer constraintSource;
     private SourceViewer actionConstraintSource;
@@ -226,12 +226,14 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
                 mm.addMessage("dfid1", "Depth of DFID launch must be a positive integer", null, IMessageProvider.ERROR,
                         dfidDepthText);
                 setComplete(false);
+                expandSection(SEC_LAUNCHING_SETUP);
             }
         } catch (NumberFormatException e)
         {
             mm.addMessage("dfid2", "Depth of DFID launch must be a positive integer", null, IMessageProvider.ERROR,
                     dfidDepthText);
             setComplete(false);
+            expandSection(SEC_LAUNCHING_SETUP);
         }
         try
         {
@@ -241,6 +243,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
                 mm.addMessage("simuDepth1", "Length of the simulation tracemust be a positive integer", null,
                         IMessageProvider.ERROR, simuDepthText);
                 setComplete(false);
+                expandSection(SEC_LAUNCHING_SETUP);
             }
 
         } catch (NumberFormatException e)
@@ -248,6 +251,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
             mm.addMessage("simuDepth2", "Length of the simulation trace must be a positive integer", null,
                     IMessageProvider.ERROR, simuDepthText);
             setComplete(false);
+            expandSection(SEC_LAUNCHING_SETUP);
         }
         if (!EMPTY_STRING.equals(simuArilText.getText()))
         {
@@ -265,6 +269,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
                 mm.addMessage("simuAril2", "The simulation aril must be a positive integer", null,
                         IMessageProvider.ERROR, simuArilText);
                 setComplete(false);
+                expandSection(SEC_LAUNCHING_SETUP);
             }
         }
         if (!EMPTY_STRING.equals(simuSeedText.getText()))
@@ -278,6 +283,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
             {
                 mm.addMessage("simuSeed1", "The simulation aril must be a positive integer", null,
                         IMessageProvider.ERROR, simuSeedText);
+                expandSection(SEC_LAUNCHING_SETUP);
                 setComplete(false);
             }
         }
@@ -298,9 +304,9 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
             }*/
             List values = modelValuesSet.getValuesAsList();
             // check list of model values if these are already used
-            validateUsage(values, modelValuesSource.getControl(), "modelValues2_", "A model value", "Advanced Model Values");
+            validateUsage(values, modelValuesSource.getControl(), "modelValues2_", "A model value", "Advanced Model Values", SEC_MODEL_VALUES);
             // check whether the model values are valid ids
-            validateId(values, modelValuesSource.getControl(), "modelValues2_", "A model value");
+            validateId(values, modelValuesSource.getControl(), "modelValues2_", "A model value", SEC_MODEL_VALUES);
         }
 
         // check the definition overrides
@@ -310,9 +316,9 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
             Assignment definition = (Assignment) definitions.get(i);
             List values = Arrays.asList(definition.getParams());
             // check list of parameters
-            validateUsage(values, definitionsTable.getTable(), "param1_", "A parameter name", "Definition Overrides");
+            validateUsage(values, definitionsTable.getTable(), "param1_", "A parameter name", "Definition Overrides", SEC_DEFINITION_OVERRIDE);
             // check whether the parameters are valid ids
-            validateId(values, definitionsTable.getTable(), "param1_", "A parameter name");
+            validateId(values, definitionsTable.getTable(), "param1_", "A parameter name", SEC_DEFINITION_OVERRIDE);
         }
 
         super.validate();
@@ -323,7 +329,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
      */
     protected void createBodyContent(IManagedForm managedForm)
     {
-        int sectionFlags = Section.TITLE_BAR | Section.DESCRIPTION | Section.TREE_NODE | Section.EXPANDED;
+        int sectionFlags = Section.TITLE_BAR | Section.DESCRIPTION | Section.TREE_NODE;
 
         FormToolkit toolkit = managedForm.getToolkit();
         Composite body = managedForm.getForm().getBody();
@@ -350,7 +356,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         // ---------------------------------------------------------------
         // new definitions
 
-        section = FormHelper.createSectionComposite(left, "Additional Definitions", "...", toolkit, sectionFlags,
+        section = FormHelper.createSectionComposite(left, "Additional Definitions", "Definitions required for the model checking, in addition to the definitions in the specificatoin modules.", toolkit, sectionFlags,
                 getExpansionListener());
         VSectionPart newDefinitionsPart = new VSectionPart(section, this);
         managedForm.addPart(newDefinitionsPart);
@@ -359,6 +365,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalSpan = 3;
         section.setLayoutData(gd);
+        addSection(SEC_ADDITIONAL_DEFINITION, section);
 
         Composite newDefinitionsArea = (Composite) section.getClient();
         newDefinitionsSource = FormHelper.createSourceViewer(toolkit, newDefinitionsArea, SWT.V_SCROLL);
@@ -371,9 +378,8 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
 
         // ---------------------------------------------------------------
         // definition overwrite
-        // TableSectionPart definitionsPart = new TableSectionPart(right, "Definition Override", "...", toolkit,
-        // sectionFlags, this);
-        OverrideSectionPart definitionsPart = new OverrideSectionPart(right, "Definition Override", "....", toolkit,
+
+        OverrideSectionPart definitionsPart = new OverrideSectionPart(right, "Definition Override", "Replacement of operators and functions defined in specification modules.", toolkit,
                 sectionFlags, this);
 
         managedForm.addPart(definitionsPart);
@@ -385,10 +391,11 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         gd.verticalSpan = 3;
         definitionsPart.getTableViewer().getTable().setLayoutData(gd);
         definitionsTable = definitionsPart.getTableViewer();
-
+        addSection(SEC_DEFINITION_OVERRIDE, definitionsPart.getSection());
+        
         // ---------------------------------------------------------------
         // constraint
-        section = FormHelper.createSectionComposite(left, "State Constraint", "A constraint that holds on every state",
+        section = FormHelper.createSectionComposite(left, "State Constraint", "A state constraint is a formula restricting the possible states by a state predicate.",
                 toolkit, sectionFlags, getExpansionListener());
         VSectionPart constraintPart = new VSectionPart(section, this);
         managedForm.addPart(constraintPart);
@@ -397,6 +404,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalSpan = 3;
         section.setLayoutData(gd);
+        addSection(SEC_STATE_CONSTRAINT, section);
 
         Composite constraintArea = (Composite) section.getClient();
         constraintSource = FormHelper.createSourceViewer(toolkit, constraintArea, SWT.V_SCROLL);
@@ -406,10 +414,11 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         twd.grabHorizontal = true;
         constraintSource.getTextWidget().setLayoutData(twd);
         constraintSource.addTextListener(constraintListener);
+        
 
         // ---------------------------------------------------------------
         // action constraint
-        section = FormHelper.createSectionComposite(right, "Action Constraint", "...", toolkit, sectionFlags,
+        section = FormHelper.createSectionComposite(right, "Action Constraint", "An action constraint is a formula restricting the possible transitions.", toolkit, sectionFlags,
                 getExpansionListener());
         VSectionPart actionConstraintPart = new VSectionPart(section, this);
         managedForm.addPart(actionConstraintPart);
@@ -418,7 +427,8 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalSpan = 3;
         section.setLayoutData(gd);
-
+        addSection(SEC_ACTION_CONSTRAINT, section);
+        
         Composite actionConstraintArea = (Composite) section.getClient();
         actionConstraintSource = FormHelper.createSourceViewer(toolkit, actionConstraintArea, SWT.V_SCROLL);
         // layout of the source viewer
@@ -430,7 +440,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
 
         // ---------------------------------------------------------------
         // modelValues
-        section = FormHelper.createSectionComposite(left, "Model Values", "....", toolkit, sectionFlags,
+        section = FormHelper.createSectionComposite(left, "Model Values", "An additional set of model values.", toolkit, sectionFlags,
                 getExpansionListener());
         VSectionPart modelValuesPart = new VSectionPart(section, this);
         managedForm.addPart(modelValuesPart);
@@ -438,6 +448,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalSpan = 3;
         section.setLayoutData(gd);
+        addSection(SEC_MODEL_VALUES, section);
 
         Composite modelValueArea = (Composite) section.getClient();
         modelValuesSource = FormHelper.createSourceViewer(toolkit, modelValueArea, SWT.V_SCROLL);
@@ -454,6 +465,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         VSectionPart launchPart = new VSectionPart(section, this);
         managedForm.addPart(launchPart);
         DirtyMarkingListener launchListener = new DirtyMarkingListener(launchPart, true);
+        addSection(SEC_LAUNCHING_SETUP, section);
 
         // dirty listeners
         simuArilText.addModifyListener(launchListener);
@@ -483,7 +495,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         GridData gd;
 
         // advanced section
-        Section advancedSection = FormHelper.createSectionComposite(parent, "Launching details", "", toolkit,
+        Section advancedSection = FormHelper.createSectionComposite(parent, "Launching Setup", "Advanced settings of the TLC model checker", toolkit,
                 sectionFlags, getExpansionListener());
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalSpan = 2;
@@ -576,5 +588,4 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
 
         return advancedSection;
     }
-
 }
