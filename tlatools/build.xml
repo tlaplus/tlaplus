@@ -99,7 +99,7 @@
 	
 	
 	<target name="javacc" description="Generates JavaCC based Parser">
-		<mkdir dir="${src-gen}"/>
+		<mkdir dir="${srcgen.dir}"/>
 		<!-- generates the parser -->
 		<javacc target="javacc/tla+.jj" outputdirectory="${srcgen.dir}" javacchome="${env.JAVACC_HOME}" />
 	</target>
