@@ -8,11 +8,15 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.IDocumentPartitioner;
-import org.eclipse.jface.text.rules.FastPartitioner;
+import org.eclipse.jface.text.source.ISourceViewer;
+import org.eclipse.jface.text.source.IVerticalRuler;
+import org.eclipse.jface.text.source.projection.ProjectionSupport;
+import org.eclipse.jface.text.source.projection.ProjectionViewer;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
@@ -20,11 +24,12 @@ import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.contexts.IContextActivation;
 import org.eclipse.ui.contexts.IContextService;
-import org.eclipse.ui.editors.text.FileDocumentProvider;
 import org.eclipse.ui.editors.text.TextEditor;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.IDocumentProvider;
-import org.lamport.tla.toolbox.editor.basic.util.ElementStateAdapter;
+import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
+import org.eclipse.ui.texteditor.TextOperationAction;
+import org.lamport.tla.toolbox.editor.basic.actions.DefineFoldingRegionAction;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
@@ -33,12 +38,13 @@ import org.lamport.tla.toolbox.util.UIHelper;
  * Basic editor for TLA+
  *
  * @author Simon Zambrovski
- * @verion $Id$
+ * @version $Id$
  */
 public class TLAEditor extends TextEditor
 {
     private IContextService contextService = null;
     private IContextActivation contextActivation = null;
+    private ProjectionSupport projectionSupport;
 
     private Image rootImage = TLAEditorActivator.imageDescriptorFromPlugin(TLAEditorActivator.PLUGIN_ID,
             "/icons/root_file.gif").createImage();
@@ -49,10 +55,11 @@ public class TLAEditor extends TextEditor
     public TLAEditor()
     {
         super();
-        setDocumentProvider(new TLADocumentProvider());
         // help id
         setHelpContextId("org.lamport.tla.toolbox.editor.basic.main_editor_window");
 
+        /*
+        setDocumentProvider(new FileDocumentProvider());
         getDocumentProvider().addElementStateListener(new ElementStateAdapter() {
             public void elementDirtyStateChanged(Object element, boolean isDirty)
             {
@@ -67,6 +74,7 @@ public class TLAEditor extends TextEditor
             }
         });
 
+        */
     }
 
     protected void initializeEditor()
@@ -102,12 +110,75 @@ public class TLAEditor extends TextEditor
         this.contextActivation = contextService.activateContext("toolbox.contexts.cleaneditor");
     }
 
-    public void dispose()
+    /**
+     * Customize the editor popup menu
+     */
+    protected void editorContextMenuAboutToShow(IMenuManager menu)
     {
-        super.dispose();
-        rootImage.dispose();
+        super.editorContextMenuAboutToShow(menu);
+        addAction(menu, "ContentAssistProposal"); //$NON-NLS-1$
+        addAction(menu, "ContentAssistTip"); //$NON-NLS-1$
+        addAction(menu, "DefineFoldingRegion"); //$NON-NLS-1$
     }
 
+    /*
+     * @see org.eclipse.ui.texteditor.ExtendedTextEditor#createSourceViewer(org.eclipse.swt.widgets.Composite, org.eclipse.jface.text.source.IVerticalRuler, int)
+     */
+    protected ISourceViewer createSourceViewer(Composite parent, IVerticalRuler ruler, int styles)
+    {
+
+        fAnnotationAccess = createAnnotationAccess();
+        fOverviewRuler = createOverviewRuler(getSharedColors());
+
+        ISourceViewer viewer = new ProjectionViewer(parent, ruler, getOverviewRuler(), isOverviewRulerVisible(), styles);
+        // ensure decoration support has been created and configured.
+        getSourceViewerDecorationSupport(viewer);
+
+        return viewer;
+    }
+
+    public void createPartControl(Composite parent)
+    {
+        super.createPartControl(parent);
+        ProjectionViewer viewer = (ProjectionViewer) getSourceViewer();
+        projectionSupport = new ProjectionSupport(viewer, getAnnotationAccess(), getSharedColors());
+        projectionSupport.addSummarizableAnnotationType("org.eclipse.ui.workbench.texteditor.error"); //$NON-NLS-1$
+        projectionSupport.addSummarizableAnnotationType("org.eclipse.ui.workbench.texteditor.warning"); //$NON-NLS-1$
+        projectionSupport.install();
+        viewer.doOperation(ProjectionViewer.TOGGLE);
+    }
+
+    public void dispose()
+    {
+        rootImage.dispose();
+        super.dispose();
+    }
+
+    /** The <code>JavaEditor</code> implementation of this 
+     * <code>AbstractTextEditor</code> method extend the 
+     * actions to add those specific to the receiver
+     */
+    protected void createActions()
+    {
+        super.createActions();
+
+        IAction a = new TextOperationAction(TLAEditorMessages.getResourceBundle(),
+                "ContentAssistProposal.", this, ISourceViewer.CONTENTASSIST_PROPOSALS); //$NON-NLS-1$
+        a.setActionDefinitionId(ITextEditorActionDefinitionIds.CONTENT_ASSIST_PROPOSALS);
+        setAction("ContentAssistProposal", a); //$NON-NLS-1$
+
+        a = new TextOperationAction(TLAEditorMessages.getResourceBundle(),
+                "ContentAssistTip.", this, ISourceViewer.CONTENTASSIST_CONTEXT_INFORMATION); //$NON-NLS-1$
+        a.setActionDefinitionId(ITextEditorActionDefinitionIds.CONTENT_ASSIST_CONTEXT_INFORMATION);
+        setAction("ContentAssistTip", a); //$NON-NLS-1$
+
+        a = new DefineFoldingRegionAction(TLAEditorMessages.getResourceBundle(), "DefineFoldingRegion.", this); //$NON-NLS-1$
+        setAction("DefineFoldingRegion", a); //$NON-NLS-1$
+    }
+
+    /**
+     * Save as support
+     */
     protected void performSaveAs(IProgressMonitor progressMonitor)
     {
 
@@ -218,22 +289,17 @@ public class TLAEditor extends TextEditor
         }
     }
 
-    public static class TLADocumentProvider extends FileDocumentProvider
+    public Object getAdapter(Class required)
     {
-        /**
-         * @see org.eclipse.ui.texteditor.AbstractDocumentProvider#createDocument(java.lang.Object)
-         */
-        protected IDocument createDocument(Object element) throws CoreException
+        /* projection support */
+        if (projectionSupport != null)
         {
-            IDocument document = super.createDocument(element);
-            if (document != null)
-            {
-                IDocumentPartitioner partitioner = new FastPartitioner(new TLAPartitionScanner(),
-                        TLAPartitionScanner.TLA_PARTITION_TYPES);
-                partitioner.connect(document);
-                document.setDocumentPartitioner(partitioner);
-            }
-            return document;
+            Object adapter = projectionSupport.getAdapter(getSourceViewer(), required);
+            if (adapter != null)
+                return adapter;
         }
+
+        return super.getAdapter(required);
     }
+
 }

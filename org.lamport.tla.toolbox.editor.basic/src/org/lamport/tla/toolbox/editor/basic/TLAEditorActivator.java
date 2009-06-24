@@ -3,6 +3,7 @@ package org.lamport.tla.toolbox.editor.basic;
 import org.eclipse.jface.text.rules.IPartitionTokenScanner;
 import org.eclipse.jface.text.rules.ITokenScanner;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.lamport.tla.toolbox.editor.basic.tla.TLACodeScanner;
 import org.osgi.framework.BundleContext;
 
 /**
@@ -20,9 +21,7 @@ public class TLAEditorActivator extends AbstractUIPlugin
     // token scanner
     private TLAPartitionScanner partitionTokenScanner;
     private TLAColorProvider colorProvider;
-    private TLACodeScanner codeScanner;
-    private TLADocScanner docScanner;
-    
+    private TLACodeScanner tlaCodeScanner;
 
     /**
      * The constructor
@@ -90,11 +89,10 @@ public class TLAEditorActivator extends AbstractUIPlugin
      */
     public ITokenScanner getTLACodeScanner()
     {
-        if (codeScanner== null) 
+        if (tlaCodeScanner== null) 
         {
-            codeScanner = new TLACodeScanner();
+            tlaCodeScanner = new TLACodeScanner();
         }
-        return codeScanner; 
+        return tlaCodeScanner; 
     }
-
 }

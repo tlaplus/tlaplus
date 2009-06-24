@@ -9,29 +9,24 @@ import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Display;
 
 /**
+ * Color provider
  * @author Simon Zambrovski
  * @version $Id$
  */
 public class TLAColorProvider
 {
 
-    public static final RGB MULTI_LINE_COMMENT = new RGB(128, 0, 0);
-    public static final RGB COMMENT = new RGB(128, 128, 0);
-    public static final RGB KEYWORD = new RGB(0, 0, 128);
+    public static final RGB MULTI_LINE_COMMENT = new RGB(64, 64, 255);
+    public static final RGB COMMENT = new RGB(0, 128, 64);
 
-    // public static final RGB TYPE = new RGB(0, 0, 128);
-    public static final RGB STRING = new RGB(0, 128, 0);
-    public static final RGB DEFAULT = new RGB(0, 0, 0);
-    
-    /*
-    public static final RGB JAVADOC_KEYWORD = new RGB(0, 128, 0);
-    public static final RGB JAVADOC_TAG = new RGB(128, 128, 128);
-    public static final RGB JAVADOC_LINK = new RGB(128, 128, 128);
-    public static final RGB JAVADOC_DEFAULT = new RGB(0, 128, 128);
-    */
+    public static final RGB TLA_KEYWORD = new RGB(128, 0, 128); 
+    public static final RGB TLA_VALUE = new RGB(196, 32, 32); 
+    public static final RGB TLA_DEFAULT = new RGB(0, 0, 0);
+    public static final RGB CONTENT_ASSIST_BACKGROUNG = new RGB(150, 150, 0);
     
     
     protected Map fColorTable = new HashMap(10);
+    
 
     /**
      * Release all of the color resources held onto by the receiver.
