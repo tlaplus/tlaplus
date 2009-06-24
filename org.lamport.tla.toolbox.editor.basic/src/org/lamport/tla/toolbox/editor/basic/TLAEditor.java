@@ -59,7 +59,7 @@ public class TLAEditor extends TextEditor
         setHelpContextId("org.lamport.tla.toolbox.editor.basic.main_editor_window");
 
         /*
-        setDocumentProvider(new FileDocumentProvider());
+        setDocumentProvider();
         getDocumentProvider().addElementStateListener(new ElementStateAdapter() {
             public void elementDirtyStateChanged(Object element, boolean isDirty)
             {
@@ -73,8 +73,8 @@ public class TLAEditor extends TextEditor
                 }
             }
         });
-
         */
+
     }
 
     protected void initializeEditor()
@@ -83,7 +83,6 @@ public class TLAEditor extends TextEditor
         // source configuration
         setSourceViewerConfiguration(new TLASourceViewerConfiguration());
     }
-
     /*
      * (non-Javadoc)
      * @see org.eclipse.ui.texteditor.AbstractTextEditor#init(org.eclipse.ui.IEditorSite, org.eclipse.ui.IEditorInput)
