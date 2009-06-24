@@ -8,7 +8,7 @@
             name="TLA+ Basic Editor"
             extensions="tla"
             icon="icons/tla_obj.gif"
-            contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
+            contributorClass="org.lamport.tla.toolbox.editor.basic.TLAEditorActionContributor"
             class="org.lamport.tla.toolbox.editor.basic.TLAEditor">
       </editor>
    </extension>
