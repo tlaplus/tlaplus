@@ -74,8 +74,11 @@ public class ToolboxHandle
     }
 
     /**
-     * @param name
-     * @return
+     * Determines if the module is a user module (not StandardModule)<br>
+     * Note: only looks for parsed spec...
+     * @param name a filename of the module (like foo.tla)
+     * @return true if the user belongs to the spec
+     * 
      */
     public static boolean isUserModule(String name)
     {
