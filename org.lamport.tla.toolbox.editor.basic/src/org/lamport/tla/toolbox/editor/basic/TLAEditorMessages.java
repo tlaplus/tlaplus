@@ -13,10 +13,15 @@ package org.lamport.tla.toolbox.editor.basic;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
+/**
+ * Editor messages 
+ * @author Simon Zambrovski
+ * @version $Id$
+ */
 public class TLAEditorMessages
 {
 
-    private static final String RESOURCE_BUNDLE = "org.lamport.tla.toolbox.editor.basic.TLAEditorMessages";//$NON-NLS-1$
+    private static final String RESOURCE_BUNDLE = TLAEditorMessages.class.getPackage().getName() + ".TLAEditorMessages";//$NON-NLS-1$
     private static ResourceBundle fgResourceBundle = ResourceBundle.getBundle(RESOURCE_BUNDLE);
 
     private TLAEditorMessages()

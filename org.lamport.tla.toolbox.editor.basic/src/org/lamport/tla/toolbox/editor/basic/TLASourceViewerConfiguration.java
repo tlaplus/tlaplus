@@ -1,9 +1,11 @@
 package org.lamport.tla.toolbox.editor.basic;
 
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.text.contentassist.ContentAssistant;
 import org.eclipse.jface.text.contentassist.IContentAssistant;
+import org.eclipse.jface.text.hyperlink.IHyperlinkDetector;
 import org.eclipse.jface.text.presentation.IPresentationReconciler;
 import org.eclipse.jface.text.presentation.PresentationReconciler;
 import org.eclipse.jface.text.rules.BufferedRuleBasedScanner;
@@ -11,7 +13,7 @@ import org.eclipse.jface.text.rules.DefaultDamagerRepairer;
 import org.eclipse.jface.text.rules.Token;
 import org.eclipse.jface.text.source.IAnnotationHover;
 import org.eclipse.jface.text.source.ISourceViewer;
-import org.eclipse.jface.text.source.SourceViewerConfiguration;
+import org.eclipse.ui.editors.text.TextSourceViewerConfiguration;
 import org.lamport.tla.toolbox.editor.basic.tla.TLAAnnotationHover;
 import org.lamport.tla.toolbox.editor.basic.tla.TLACompletionProcessor;
 
@@ -20,13 +22,23 @@ import org.lamport.tla.toolbox.editor.basic.tla.TLACompletionProcessor;
  * @author Simon Zambrovski
  * @version $Id$
  */
-public class TLASourceViewerConfiguration extends SourceViewerConfiguration
+public class TLASourceViewerConfiguration extends TextSourceViewerConfiguration
 {
     /**
      * Constructor
      */
     public TLASourceViewerConfiguration() 
     {
+        super();
+    }
+
+    /**
+     * Constructs configuration based on a preference store  
+     * @param preferenceStore
+     */
+    public TLASourceViewerConfiguration(IPreferenceStore preferenceStore)
+    {
+        super(preferenceStore);
     }
 
     /**
@@ -85,6 +97,21 @@ public class TLASourceViewerConfiguration extends SourceViewerConfiguration
     }
     
     /**
+     * Ruler annotation
+     */
+    public IAnnotationHover getAnnotationHover(ISourceViewer sourceViewer)
+    {
+        return new TLAAnnotationHover();
+    }
+    
+    
+    public IHyperlinkDetector[] getHyperlinkDetectors(ISourceViewer sourceViewer)
+    {
+        // TODO Auto-generated method stub
+        return super.getHyperlinkDetectors(sourceViewer);
+    }
+    
+    /**
      * Single token scanner, returns attributed token
      */
     public static class SingleTokenScanner extends BufferedRuleBasedScanner
@@ -95,9 +122,8 @@ public class TLASourceViewerConfiguration extends SourceViewerConfiguration
         }
     }
 
-    public IAnnotationHover getAnnotationHover(ISourceViewer sourceViewer)
-    {
-        return new TLAAnnotationHover();
-    }
+
+
+
 
 }

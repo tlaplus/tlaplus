@@ -50,25 +50,20 @@ public class TLAEditorActionContributor extends TextEditorActionContributor
         }
     }
 
-    private void doSetActiveEditor(IEditorPart part)
-    {
-        super.setActiveEditor(part);
-
-        ITextEditor editor = null;
-        if (part instanceof ITextEditor)
-            editor = (ITextEditor) part;
-
-        fContentAssistProposal.setAction(getAction(editor, "ContentAssistProposal")); //$NON-NLS-1$
-        fContentAssistTip.setAction(getAction(editor, "ContentAssistTip")); //$NON-NLS-1$
-    }
-
     /*
      * @see IEditorActionBarContributor#setActiveEditor(IEditorPart)
      */
     public void setActiveEditor(IEditorPart part)
     {
         super.setActiveEditor(part);
-        doSetActiveEditor(part);
+        ITextEditor editor = null;
+        if (part instanceof ITextEditor) 
+        {
+            editor = (ITextEditor) part;
+        }
+        fContentAssistProposal.setAction(getAction(editor, "ContentAssistProposal")); //$NON-NLS-1$
+        fContentAssistTip.setAction(getAction(editor, "ContentAssistTip")); //$NON-NLS-1$
+
     }
 
     /*
@@ -76,7 +71,7 @@ public class TLAEditorActionContributor extends TextEditorActionContributor
      */
     public void dispose()
     {
-        doSetActiveEditor(null);
+        setActiveEditor(null);
         super.dispose();
     }
 }
