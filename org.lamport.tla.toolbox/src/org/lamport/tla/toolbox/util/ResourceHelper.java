@@ -48,6 +48,34 @@ public class ResourceHelper
         File projectDir = new File(root.concat("/").concat(name).concat(".toolbox"));
         return projectDir.exists();
     }
+    
+    /**
+     * Retrieves a resource in the current project (the one of current loaded spec) 
+     * @param name name of the module (no extension)
+     * @return IResource if found or <code>null</code>
+     */
+    public static IResource getResourceByModuleName(String name)
+    {
+        return getResourceByName(getModuleFileName(name));
+    }
+    
+    /**
+     * Retrieves a resource in the current project (the one of current loaded spec) 
+     * @param name name of the resource
+     * @return IResource if found or <code>null</code>
+     */
+    public static IResource getResourceByName(String name)
+    {
+        Spec spec = Activator.getSpecManager().getSpecLoaded();
+        if (spec != null) 
+        {
+            IProject project = spec.getProject();
+            return getLinkedFile(project, name, false);
+        }
+        return null;
+    }
+
+    
     /**
      * Retrieves a project by name or creates a new project
      * <br><b>Note:</b> If the project does not exist in workspace it will be created, based
