@@ -28,4 +28,56 @@
             plugin="org.lamport.tla.toolbox.editor.basic">
       </contexts>
    </extension>
+   <extension
+         point="org.eclipse.ui.commands">
+      <command
+            description="Opens the declaration for the currently selected cross reference"
+            id="toolbox.tla.editor.hyperlinking.OpenDeclaration"
+            name="Open Declaration">
+      </command>
+   </extension>
+   <extension
+         point="org.eclipse.ui.handlers">
+      <handler
+            class="org.lamport.tla.toolbox.editor.basic.TLAEditor$OpenDeclarationHandler"
+            commandId="toolbox.tla.editor.hyperlinking.OpenDeclaration">
+      </handler>
+   </extension>
+   <extension
+         point="org.eclipse.ui.bindings">
+      <key
+            commandId="toolbox.tla.editor.hyperlinking.OpenDeclaration"
+            contextId="org.eclipse.ui.textEditorScope"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="F3">
+      </key>
+   </extension>
+   <extension
+         point="org.eclipse.ui.menus">
+         		<menuContribution locationURI="popup:#TextEditorContext?after=group.open">
+			<command commandId="toolbox.tla.editor.hyperlinking.OpenDeclaration">
+			</command>
+		</menuContribution>
+         
+   </extension>
+   <extension
+         point="org.eclipse.ui.workbench.texteditor.hyperlinkDetectorTargets">
+      <target
+            id="org.lamport.tla.tlaCode"
+            name="TLA+ Editor">
+         <context
+               type="org.lamport.tla.toolbox.editor.basic.TLAEditor">
+         </context>
+      </target>
+   </extension>
+   <extension
+         point="org.eclipse.ui.workbench.texteditor.hyperlinkDetectors">
+      <hyperlinkDetector
+            activate="true"
+            class="org.lamport.tla.toolbox.editor.basic.tla.TLAHyperlinkDetector"
+            id="toolbox.editor.basic.hyperlinkDetector.tla"
+            name="TLA+ Hyperlink detector"
+            targetId="org.eclipse.ui.DefaultTextEditor">
+      </hyperlinkDetector>
+   </extension>
 </plugin>
