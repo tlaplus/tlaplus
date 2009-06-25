@@ -552,6 +552,7 @@
       <menuContribution
             locationURI="menu:org.eclipse.ui.main.menu?after=toolbox.file.menu">
          <menu
+               id="toolbox.edit.menu"
                label="Edit"
                mnemonic="E">
             <visibleWhen
