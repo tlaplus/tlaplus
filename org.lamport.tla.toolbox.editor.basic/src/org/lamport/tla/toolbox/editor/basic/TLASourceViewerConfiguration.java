@@ -5,9 +5,10 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.text.contentassist.ContentAssistant;
 import org.eclipse.jface.text.contentassist.IContentAssistant;
-import org.eclipse.jface.text.hyperlink.IHyperlinkDetector;
 import org.eclipse.jface.text.presentation.IPresentationReconciler;
 import org.eclipse.jface.text.presentation.PresentationReconciler;
+import org.eclipse.jface.text.reconciler.IReconciler;
+import org.eclipse.jface.text.reconciler.MonoReconciler;
 import org.eclipse.jface.text.rules.BufferedRuleBasedScanner;
 import org.eclipse.jface.text.rules.DefaultDamagerRepairer;
 import org.eclipse.jface.text.rules.Token;
@@ -24,21 +25,17 @@ import org.lamport.tla.toolbox.editor.basic.tla.TLACompletionProcessor;
  */
 public class TLASourceViewerConfiguration extends TextSourceViewerConfiguration
 {
-    /**
-     * Constructor
-     */
-    public TLASourceViewerConfiguration() 
-    {
-        super();
-    }
+
+    private final TLAEditor editor;
 
     /**
      * Constructs configuration based on a preference store  
      * @param preferenceStore
      */
-    public TLASourceViewerConfiguration(IPreferenceStore preferenceStore)
+    public TLASourceViewerConfiguration(IPreferenceStore preferenceStore, TLAEditor editor)
     {
         super(preferenceStore);
+        this.editor = editor;
     }
 
     /**
@@ -59,7 +56,6 @@ public class TLASourceViewerConfiguration extends TextSourceViewerConfiguration
         reconciler.setDamager(dr, TLAPartitionScanner.TLA_MULTILINE_COMMENT);
         reconciler.setRepairer(dr, TLAPartitionScanner.TLA_MULTILINE_COMMENT);
 
-        
         return reconciler;
     }
 
@@ -76,26 +72,27 @@ public class TLASourceViewerConfiguration extends TextSourceViewerConfiguration
      */
     public String[] getConfiguredContentTypes(ISourceViewer sourceViewer)
     {
-        return new String[] { IDocument.DEFAULT_CONTENT_TYPE, TLAPartitionScanner.TLA_MULTILINE_COMMENT};
+        return new String[] { IDocument.DEFAULT_CONTENT_TYPE, TLAPartitionScanner.TLA_MULTILINE_COMMENT };
     }
-    
-    
+
     /**
      * Content assistant
      */
-    public IContentAssistant getContentAssistant(ISourceViewer sourceViewer) {
+    public IContentAssistant getContentAssistant(ISourceViewer sourceViewer)
+    {
 
-        ContentAssistant assistant= new ContentAssistant();
+        ContentAssistant assistant = new ContentAssistant();
         assistant.setDocumentPartitioning(getConfiguredDocumentPartitioning(sourceViewer));
         assistant.setContentAssistProcessor(new TLACompletionProcessor(), IDocument.DEFAULT_CONTENT_TYPE);
         assistant.enableAutoActivation(true);
         assistant.setAutoActivationDelay(500);
         assistant.setProposalPopupOrientation(IContentAssistant.PROPOSAL_OVERLAY);
         assistant.setContextInformationPopupOrientation(IContentAssistant.CONTEXT_INFO_ABOVE);
-        assistant.setContextInformationPopupBackground(TLAEditorActivator.getDefault().getTLAColorProvider().getColor(TLAColorProvider.CONTENT_ASSIST_BACKGROUNG));
+        assistant.setContextInformationPopupBackground(TLAEditorActivator.getDefault().getTLAColorProvider().getColor(
+                TLAColorProvider.CONTENT_ASSIST_BACKGROUNG));
         return assistant;
     }
-    
+
     /**
      * Ruler annotation
      */
@@ -103,14 +100,18 @@ public class TLASourceViewerConfiguration extends TextSourceViewerConfiguration
     {
         return new TLAAnnotationHover();
     }
-    
-    
-    public IHyperlinkDetector[] getHyperlinkDetectors(ISourceViewer sourceViewer)
+
+    /**
+     * 
+     */
+    public IReconciler getReconciler(ISourceViewer sourceViewer)
     {
-        // TODO Auto-generated method stub
-        return super.getHyperlinkDetectors(sourceViewer);
+        TLAReconcilingStrategy strategy = new TLAReconcilingStrategy();
+        strategy.setEditor(editor);
+        MonoReconciler reconciler = new MonoReconciler(strategy, false);
+        return reconciler;
     }
-    
+
     /**
      * Single token scanner, returns attributed token
      */
@@ -122,8 +123,9 @@ public class TLASourceViewerConfiguration extends TextSourceViewerConfiguration
         }
     }
 
-
-
-
+    public String[] getDefaultPrefixes(ISourceViewer sourceViewer, String contentType)
+    {
+        return new String[] { "\\*", "" };
+    }
 
 }
