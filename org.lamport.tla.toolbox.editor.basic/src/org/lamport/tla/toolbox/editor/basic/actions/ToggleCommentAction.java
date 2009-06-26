@@ -33,7 +33,8 @@ import org.lamport.tla.toolbox.editor.basic.TLAEditorMessages;
  */
 public class ToggleCommentAction extends TextEditorAction
 {
-
+    public static final String COMMAND_ID = "toolbox.tla.editor.ToggleCommentAction";
+    
     /** The text operation target */
     private ITextOperationTarget fOperationTarget;
     /** The document partitioning */
