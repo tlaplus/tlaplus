@@ -19,19 +19,22 @@ public class OpenDeclarationAction extends Action implements IHyperlink
     private IResource resource;
     private IRegion location;
     private String label;
+    private final IRegion hyperlinkLocation;
 
     /**
      * Constructs the action
-     * @param resource resource to link
-     * @param location location in the resource
-     * @param label label of the hyperlink
+     * @param targetResource resource to link
+     * @param targetLocation location in the resource
+     * @param hyperlinkLabel label of the hyperlink
+     * @param hyperlinkLocation location of the hyperlink
      */
-    public OpenDeclarationAction(IResource resource, IRegion location, String label)
+    public OpenDeclarationAction(IResource targetResource, IRegion targetLocation, String hyperlinkLabel, IRegion hyperlinkLocation)
     {
         super();
-        this.resource = resource;
-        this.location = location;
-        this.label = label;
+        this.resource = targetResource;
+        this.location = targetLocation;
+        this.label = hyperlinkLabel;
+        this.hyperlinkLocation = hyperlinkLocation;
     }
 
     /**
@@ -51,7 +54,7 @@ public class OpenDeclarationAction extends Action implements IHyperlink
      */
     public IRegion getHyperlinkRegion()
     {
-        return this.location;
+        return this.hyperlinkLocation;
     }
 
     /* (non-Javadoc)
