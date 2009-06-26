@@ -2,6 +2,8 @@ package org.lamport.tla.toolbox.editor.basic;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -12,7 +14,6 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.action.IAction;
-import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.IRegion;
@@ -20,8 +21,11 @@ import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.eclipse.jface.text.hyperlink.IHyperlinkDetector;
+import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.IVerticalRuler;
+import org.eclipse.jface.text.source.projection.ProjectionAnnotation;
+import org.eclipse.jface.text.source.projection.ProjectionAnnotationModel;
 import org.eclipse.jface.text.source.projection.ProjectionSupport;
 import org.eclipse.jface.text.source.projection.ProjectionViewer;
 import org.eclipse.swt.graphics.Image;
@@ -41,7 +45,6 @@ import org.eclipse.ui.texteditor.ChainedPreferenceStore;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.eclipse.ui.texteditor.TextOperationAction;
-import org.lamport.tla.toolbox.editor.basic.actions.DefineFoldingRegionAction;
 import org.lamport.tla.toolbox.editor.basic.actions.ToggleCommentAction;
 import org.lamport.tla.toolbox.editor.basic.util.ElementStateAdapter;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
@@ -59,10 +62,17 @@ public class TLAEditor extends TextEditor
     public static final String ID = "org.lamport.tla.toolbox.editor.basic.TLAEditor";
     private IContextService contextService = null;
     private IContextActivation contextActivation = null;
-    private ProjectionSupport projectionSupport;
 
+    // projection support is required for folding
+    private ProjectionSupport projectionSupport;
+    // image for root module icon
     private Image rootImage = TLAEditorActivator.imageDescriptorFromPlugin(TLAEditorActivator.PLUGIN_ID,
             "/icons/root_file.gif").createImage();
+
+    // currently installed annotations 
+    private Annotation[] oldAnnotations;
+    // annotation model
+    private ProjectionAnnotationModel annotationModel;
 
     /**
      * Constructor
@@ -112,9 +122,8 @@ public class TLAEditor extends TextEditor
                 TLAEditorActivator.getDefault().getPreferenceStore(), EditorsUI.getPreferenceStore() });
 
         // set source viewer configuration
-        setSourceViewerConfiguration(new TLASourceViewerConfiguration(preferenceStore));
+        setSourceViewerConfiguration(new TLASourceViewerConfiguration(preferenceStore, this));
 
-        
         // set preference store
         setPreferenceStore(preferenceStore);
 
@@ -136,17 +145,6 @@ public class TLAEditor extends TextEditor
         // grab context service and activate the context on editor load
         this.contextService = (IContextService) getSite().getService(IContextService.class);
         this.contextActivation = contextService.activateContext("toolbox.contexts.cleaneditor");
-    }
-
-    /**
-     * Customize the editor popup menu
-     */
-    protected void editorContextMenuAboutToShow(IMenuManager menu)
-    {
-        super.editorContextMenuAboutToShow(menu);
-        addAction(menu, "ContentAssistProposal"); //$NON-NLS-1$
-        addAction(menu, "ContentAssistTip"); //$NON-NLS-1$
-        addAction(menu, "DefineFoldingRegion"); //$NON-NLS-1$
     }
 
     /*
@@ -174,6 +172,8 @@ public class TLAEditor extends TextEditor
         projectionSupport.addSummarizableAnnotationType("org.eclipse.ui.workbench.texteditor.warning"); //$NON-NLS-1$
         projectionSupport.install();
         viewer.doOperation(ProjectionViewer.TOGGLE);
+        
+        this.annotationModel = viewer.getProjectionAnnotationModel(); 
     }
 
     /**
@@ -196,11 +196,12 @@ public class TLAEditor extends TextEditor
         setAction("ContentAssistTip", a); //$NON-NLS-1$
 
         // define folding region action
-        a = new DefineFoldingRegionAction(TLAEditorMessages.getResourceBundle(), "DefineFoldingRegion.", this); //$NON-NLS-1$
+/*      a = new DefineFoldingRegionAction(TLAEditorMessages.getResourceBundle(), "DefineFoldingRegion.", this); //$NON-NLS-1$
         setAction("DefineFoldingRegion", a); //$NON-NLS-1$
         markAsStateDependentAction("DefineFoldingRegion", true); //$NON-NLS-1$
         markAsSelectionDependentAction("DefineFoldingRegion", true); //$NON-NLS-1$
-
+*/
+        
         // toggle comment
         a = new ToggleCommentAction(TLAEditorMessages.getResourceBundle(), "ToggleComment.", this); //$NON-NLS-1$
         a.setActionDefinitionId(TLAEditorActivator.PLUGIN_ID + ".ToggleCommentAction");
@@ -218,6 +219,29 @@ public class TLAEditor extends TextEditor
             markAsStateDependentAction("Format", true); //$NON-NLS-1$
             markAsSelectionDependentAction("Format", true); //$NON-NLS-1$
         }
+    }
+
+    /**
+     * Update the annotation structure in the editor
+     * @param positions
+     */
+    public void updateFoldingStructure(ArrayList positions)
+    {
+
+        Annotation[] annotations = new Annotation[positions.size()];
+
+        // this will hold the new annotations along
+        // with their corresponding positions
+        HashMap newAnnotations = new HashMap();
+
+        for (int i = 0; i < positions.size(); i++)
+        {
+            ProjectionAnnotation annotation = new ProjectionAnnotation();
+            newAnnotations.put(annotation, positions.get(i));
+            annotations[i] = annotation;
+        }
+        this.annotationModel.modifyAnnotations(oldAnnotations, newAnnotations, null);
+        oldAnnotations = annotations;
     }
 
     /**
@@ -369,7 +393,7 @@ public class TLAEditor extends TextEditor
 
             ITextSelection selection = (ITextSelection) editor.getSelectionProvider().getSelection();
             IRegion region = new Region(selection.getOffset(), selection.getLength());
-            
+
             // get the detectors
             IHyperlinkDetector[] hyperlinkDetectors = editor.getSourceViewerConfiguration().getHyperlinkDetectors(
                     internalSourceViewer);
