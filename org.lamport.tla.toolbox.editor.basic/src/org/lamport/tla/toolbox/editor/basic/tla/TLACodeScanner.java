@@ -7,8 +7,6 @@ import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.text.rules.EndOfLineRule;
 import org.eclipse.jface.text.rules.IRule;
 import org.eclipse.jface.text.rules.IToken;
-import org.eclipse.jface.text.rules.IWhitespaceDetector;
-import org.eclipse.jface.text.rules.IWordDetector;
 import org.eclipse.jface.text.rules.RuleBasedScanner;
 import org.eclipse.jface.text.rules.SingleLineRule;
 import org.eclipse.jface.text.rules.Token;
@@ -17,6 +15,7 @@ import org.eclipse.jface.text.rules.WordRule;
 import org.eclipse.swt.SWT;
 import org.lamport.tla.toolbox.editor.basic.TLAColorProvider;
 import org.lamport.tla.toolbox.editor.basic.TLAEditorActivator;
+import org.lamport.tla.toolbox.editor.basic.util.DocumentHelper;
 
 /**
  * Syntactic code scanning and coloring
@@ -25,7 +24,18 @@ import org.lamport.tla.toolbox.editor.basic.TLAEditorActivator;
  */
 public class TLACodeScanner extends RuleBasedScanner
 {
+    /**
+     * String quotes
+     */
+    public static final String STRING_QUOTES = "\"";
+    /**
+     * Single line comment
+     */
+    public static final String COMMENT_START_SEQUENCE = "\\*";
 
+    /**
+     * Construct the rules
+     */
     public TLACodeScanner()
     {
         TLAColorProvider provider = TLAEditorActivator.getDefault().getTLAColorProvider();
@@ -38,16 +48,16 @@ public class TLACodeScanner extends RuleBasedScanner
         List rules = new ArrayList();
 
         // Add rule for single line comments.
-        rules.add(new EndOfLineRule("\\*", comment)); //$NON-NLS-1$
+        rules.add(new EndOfLineRule(COMMENT_START_SEQUENCE, comment)); //$NON-NLS-1$
 
         // Add rule for strings.
-        rules.add(new SingleLineRule("\"", "\"", value, '\\')); //$NON-NLS-2$ //$NON-NLS-1$
+        rules.add(new SingleLineRule(STRING_QUOTES, STRING_QUOTES, value, '\\')); //$NON-NLS-2$ //$NON-NLS-1$
 
         // Add generic whitespace rule.
-        rules.add(new WhitespaceRule(new TLAWhitespaceDetector()));
+        rules.add(new WhitespaceRule(DocumentHelper.getDefaultWhitespaceDetector()));
 
         // Add word rule for standard words
-        WordRule wordRule = new WordRule(new TLAWordDetector(), other);
+        WordRule wordRule = new WordRule(DocumentHelper.getDefaultWordDetector(), other);
         
         // add values
         for (int i = 0; i < ITLAReserveredWords.ALL_VALUES_ARRAY.length; i++)
@@ -66,37 +76,5 @@ public class TLACodeScanner extends RuleBasedScanner
         IRule[] result = new IRule[rules.size()];
         rules.toArray(result);
         setRules(result);
-    }
-
-    public class TLAWhitespaceDetector implements IWhitespaceDetector
-    {
-
-        /* (non-Javadoc)
-         * Method declared on IWhitespaceDetector
-         */
-        public boolean isWhitespace(char character)
-        {
-            return Character.isWhitespace(character);
-        }
-    }
-
-    public class TLAWordDetector implements IWordDetector
-    {
-
-        /* (non-Javadoc)
-         * Method declared on IWordDetector.
-         */
-        public boolean isWordPart(char character)
-        {
-            return Character.isJavaIdentifierPart(character);
-        }
-
-        /* (non-Javadoc)
-         * Method declared on IWordDetector.
-         */
-        public boolean isWordStart(char character)
-        {
-            return Character.isJavaIdentifierStart(character);
-        }
     }
 }
