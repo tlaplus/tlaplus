@@ -19,6 +19,7 @@ DESCRIPTION: {General description of the release
 - TODO(LL): help content
 - TODO(SZ): module actions to react on the module (PCal translation to enable only on PCal modules)
 
+- FEATURE: Editor improvements: folding of multi-line comments, syntax highlighting, content assist, hyper-linking (ctrl + click), goto definition (F3)    
 - BUGFIX : Links on the 1st page of ModelEditor 
 - BUGFIX : Problem with parse status indicator not disappearing in welcome perspective
 - BUGFIX : fast views forgets about the views that are opened on restart 
