@@ -1,8 +1,6 @@
 package org.lamport.tla.toolbox.editor.basic.tla;
 
-import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.source.IAnnotationHover;
 import org.eclipse.jface.text.source.ISourceViewer;
 
@@ -20,6 +18,7 @@ public class TLAAnnotationHover implements IAnnotationHover
     {
         IDocument document = sourceViewer.getDocument();
 
+        /*
         try
         {
             IRegion info = document.getLineInformation(lineNumber);
@@ -27,7 +26,7 @@ public class TLAAnnotationHover implements IAnnotationHover
         } catch (BadLocationException x)
         {
         }
-
+*/
         return null;
     }
 }
