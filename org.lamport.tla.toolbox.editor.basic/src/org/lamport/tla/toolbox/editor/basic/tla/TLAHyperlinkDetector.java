@@ -13,6 +13,7 @@ import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.eclipse.ui.editors.text.FileDocumentProvider;
 import org.eclipse.ui.part.FileEditorInput;
 import org.lamport.tla.toolbox.editor.basic.actions.OpenDeclarationAction;
+import org.lamport.tla.toolbox.editor.basic.util.DocumentHelper;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 
@@ -34,11 +35,6 @@ public class TLAHyperlinkDetector extends AbstractHyperlinkDetector
 
     public IHyperlink[] detectHyperlinks(ITextViewer textViewer, IRegion region, boolean canShowMultipleHyperlinks)
     {
-        if (region.getLength() == 0)
-        {
-            System.out.println("Hyperlink request at position " + region.getOffset());
-            // TODO
-        }
         if (ToolboxHandle.getSpecObj() == null)
         {
             // no spec
@@ -50,7 +46,14 @@ public class TLAHyperlinkDetector extends AbstractHyperlinkDetector
         IDocument document = textViewer.getDocument();
         try
         {
+            if (region.getLength() == 0)
+            {
+                region = DocumentHelper.getRegionExpandedBoth(document, region.getOffset(), DocumentHelper
+                        .getDefaultWordDetector());
+            }
             label = document.get(region.getOffset(), region.getLength());
+            
+            // System.out.println("Hyperlink request at position " + region.getOffset() + " for '" + label + "'");
 
             SymbolNode resolvedSymbol = ToolboxHandle.getSpecObj().getExternalModuleTable().getRootModule()
                     .getContext().getSymbol(UniqueString.uniqueStringOf(label));
@@ -59,7 +62,6 @@ public class TLAHyperlinkDetector extends AbstractHyperlinkDetector
             if (resolvedSymbol != null)
             {
                 TreeNode csNode = resolvedSymbol.getTreeNode();
-
                 IResource resource = null;
                 // 
                 if (ToolboxHandle.isUserModule(ResourceHelper.getModuleFileName(csNode.getFilename())))
@@ -77,7 +79,7 @@ public class TLAHyperlinkDetector extends AbstractHyperlinkDetector
                 FileDocumentProvider fileDocumentProvider = new FileDocumentProvider();
                 fileDocumentProvider.connect(fileEditorInput);
                 document = fileDocumentProvider.getDocument(fileEditorInput);
-                
+
                 try
                 {
                     // find the line in the document
@@ -89,7 +91,7 @@ public class TLAHyperlinkDetector extends AbstractHyperlinkDetector
                     int endOffset = endLineRegion.getOffset() + csNode.getLocation().endColumn();
 
                     return new IHyperlink[] { new OpenDeclarationAction(resource, new Region(startOffset, endOffset
-                            - startOffset), label) };
+                            - startOffset), label, region) };
 
                 } catch (BadLocationException e)
                 {
