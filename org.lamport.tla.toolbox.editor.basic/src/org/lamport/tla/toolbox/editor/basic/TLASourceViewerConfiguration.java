@@ -52,9 +52,19 @@ public class TLASourceViewerConfiguration extends TextSourceViewerConfiguration
         reconciler.setRepairer(dr, IDocument.DEFAULT_CONTENT_TYPE);
 
         dr = new DefaultDamagerRepairer(new SingleTokenScanner(new TextAttribute(provider
-                .getColor(TLAColorProvider.MULTI_LINE_COMMENT))));
-        reconciler.setDamager(dr, TLAPartitionScanner.TLA_MULTILINE_COMMENT);
-        reconciler.setRepairer(dr, TLAPartitionScanner.TLA_MULTILINE_COMMENT);
+                .getColor(TLAColorProvider.TLA_MULTI_LINE_COMMENT))));
+        reconciler.setDamager(dr, TLAPartitionScanner.TLA_MULTI_LINE_COMMENT);
+        reconciler.setRepairer(dr, TLAPartitionScanner.TLA_MULTI_LINE_COMMENT);
+
+        dr = new DefaultDamagerRepairer(new SingleTokenScanner(new TextAttribute(provider
+                .getColor(TLAColorProvider.TLA_SINGLE_LINE_COMMENT))));
+        reconciler.setDamager(dr, TLAPartitionScanner.TLA_SINGLE_LINE_COMMENT);
+        reconciler.setRepairer(dr, TLAPartitionScanner.TLA_SINGLE_LINE_COMMENT);
+
+        dr = new DefaultDamagerRepairer(new SingleTokenScanner(new TextAttribute(provider
+                .getColor(TLAColorProvider.TLA_VALUE))));
+        reconciler.setDamager(dr, TLAPartitionScanner.TLA_STRING);
+        reconciler.setRepairer(dr, TLAPartitionScanner.TLA_STRING);
 
         return reconciler;
     }
@@ -72,7 +82,8 @@ public class TLASourceViewerConfiguration extends TextSourceViewerConfiguration
      */
     public String[] getConfiguredContentTypes(ISourceViewer sourceViewer)
     {
-        return new String[] { IDocument.DEFAULT_CONTENT_TYPE, TLAPartitionScanner.TLA_MULTILINE_COMMENT };
+        return new String[] { IDocument.DEFAULT_CONTENT_TYPE, TLAPartitionScanner.TLA_MULTI_LINE_COMMENT,
+                TLAPartitionScanner.TLA_SINGLE_LINE_COMMENT, TLAPartitionScanner.TLA_STRING };
     }
 
     /**
