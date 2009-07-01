@@ -115,7 +115,7 @@ public class TLAReconcilingStrategy implements IReconcilingStrategy, IReconcilin
                 IRegion lineOnPartitionStart = document.getLineInformationOfOffset(partitions[i].getOffset());
 
                 // if the multi-line comment is contains multiple lines
-                if (partitions[i].getType().equals(TLAPartitionScanner.TLA_MULTILINE_COMMENT)
+                if (partitions[i].getType().equals(TLAPartitionScanner.TLA_MULTI_LINE_COMMENT)
                         && partitions[i].getLength() > lineOnPartitionStart.getLength())
                 {
                     positions.add(new Position(partitions[i].getOffset(), partitions[i].getLength()));
