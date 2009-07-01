@@ -79,9 +79,9 @@ public class RenameModelHandlerDelegate extends AbstractHandler implements IHand
                     return null;
                 }
 
-                boolean wasOpened = false;
                 final IEditorPart editor = ModelHelper.isModelOpenedInEditor(model);
-                if (wasOpened = (editor != null))
+                boolean wasOpened = (editor != null);
+                if (wasOpened)
                 {
                     UIHelper.runUISync(new Runnable() {
 
