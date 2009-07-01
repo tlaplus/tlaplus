@@ -16,11 +16,11 @@ import org.eclipse.swt.widgets.Display;
 public class TLAColorProvider
 {
 
-    public static final RGB MULTI_LINE_COMMENT = new RGB(64, 64, 255);
-    public static final RGB COMMENT = new RGB(0, 128, 64);
+    public static final RGB TLA_MULTI_LINE_COMMENT = new RGB(64, 64, 255);
+    public static final RGB TLA_SINGLE_LINE_COMMENT = new RGB(0, 128, 64);
 
     public static final RGB TLA_KEYWORD = new RGB(128, 0, 128); 
-    public static final RGB TLA_VALUE = new RGB(196, 32, 32); 
+    public static final RGB TLA_VALUE = new RGB(0, 0, 255); 
     public static final RGB TLA_DEFAULT = new RGB(0, 0, 0);
     public static final RGB CONTENT_ASSIST_BACKGROUNG = new RGB(150, 150, 0);
     
