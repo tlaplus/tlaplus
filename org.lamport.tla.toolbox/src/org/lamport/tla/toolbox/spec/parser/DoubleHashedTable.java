@@ -45,7 +45,7 @@ public class DoubleHashedTable
 
     public boolean containsValue(Object value)
     {
-        return forwardStore.containsValue(value);
+        return backwardStore.containsKey(value);
     }
 
     public List getValues(Object key)
