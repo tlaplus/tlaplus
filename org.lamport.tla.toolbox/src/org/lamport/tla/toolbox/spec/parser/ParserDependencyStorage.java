@@ -72,13 +72,35 @@ public class ParserDependencyStorage
     }
 
     /**
-     * Retrieves the list of modules, that should be re-parsed, because a module has changed 
+     * Retrieves the list of modules, that should be re-parsed, because a module has changed
+     * <br><b>Note:</b> The modules on the list returned EXTEND the changed module 
      * @param changedModule the name of the changed module
      * @return list of modules to re-parse
      */
-    public List getListOfModules(String changedModule)
+    public List getListOfModulesToReparse(String changedModule)
     {
         Vector dependantModules = (Vector) moduleStore.getKeys(changedModule);
+        if (dependantModules == null)
+        {
+            dependantModules = new Vector();
+        }
+        return dependantModules;
+    }
+    
+    /**
+     * Retrieves the list of modules that are EXTEND-ed by current module
+     * @param rootModule, name of the module
+     * @return list of modules it depends (EXTEND) on
+     */
+    public List getListOfExtendedModules(String rootModule)
+    {
+        Vector dependantModules = null;
+        if (rootModule == null) 
+        {
+            dependantModules = new Vector();
+            return dependantModules;
+        }
+        dependantModules = (Vector) moduleStore.getValues(rootModule);
         if (dependantModules == null)
         {
             dependantModules = new Vector();
