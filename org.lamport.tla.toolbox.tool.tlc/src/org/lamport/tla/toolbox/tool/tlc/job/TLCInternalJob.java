@@ -1,7 +1,6 @@
 package org.lamport.tla.toolbox.tool.tlc.job;
 
 
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -25,9 +24,9 @@ public class TLCInternalJob extends TLCJob
     /**
      * @param name
      */
-    public TLCInternalJob(IResource rootModule, IResource cfgFile, IResource projectDir, ILaunch launch)
+    public TLCInternalJob(String specName, String modelName, ILaunch launch)
     {
-        super(rootModule, cfgFile, projectDir, launch);
+        super(specName, modelName, launch);
         
         // initialize the progress reporting variable
         reported = 0;
@@ -64,7 +63,7 @@ public class TLCInternalJob extends TLCJob
         String[] params = new String[] { "-config", cfgFile.getName(), 
                                          //"-coverage", "0.1",
                                          "-workers", "" + workers,
-                                         "-metadir", projectDir.getLocation().toOSString(),
+                                         "-metadir", launchDir.getLocation().toOSString(),
                                          ResourceHelper.getModuleName(rootModule) };
         boolean status = tlc.handleParameters(params);
         

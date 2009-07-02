@@ -2,27 +2,38 @@ package org.lamport.tla.toolbox.tool.tlc.job;
 
 import java.io.IOException;
 
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.Assert;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.debug.core.ILaunch;
+import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.jface.action.Action;
 import org.eclipse.ui.console.IOConsoleOutputStream;
+import org.lamport.tla.toolbox.tool.tlc.TLCActivator;
+import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
+import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationDefaults;
 import org.lamport.tla.toolbox.tool.tlc.ui.ConsoleFactory;
+import org.lamport.tla.toolbox.util.ResourceHelper;
 
 /**
  * Abstract TLC job
  * @author Simon Zambrovski
  * @version $Id$
  */
-public abstract class TLCJob extends AbstractJob
+public abstract class TLCJob extends AbstractJob implements IModelConfigurationConstants, IModelConfigurationDefaults
 {
 
     protected static final int STEP = 30;
     protected static final long TIMEOUT = 1000 * 5;
     protected IResource rootModule;
     protected IResource cfgFile;
-    protected IResource projectDir;
+    protected IFolder launchDir;
     protected int workers = 1;
     protected IOConsoleOutputStream outputStream = ConsoleFactory.getTLCConsole().newOutputStream();
     protected ILaunch launch;
@@ -31,15 +42,20 @@ public abstract class TLCJob extends AbstractJob
     /**
      * @param rootModule
      * @param cfgFile
-     * @param projectDir
+     * @param launchDir
      */
-    public TLCJob(IResource rootModule, IResource cfgFile, IResource projectDir, ILaunch launch)
+    public TLCJob(String specName, String modelName, ILaunch launch)
     {
-        super("TLC run for " + rootModule.getName());
-        this.rootModule = rootModule;
-        this.cfgFile = cfgFile;
-        this.projectDir = projectDir;
+        super("TLC run for " + modelName);
+        IProject project = ResourceHelper.getProject(specName);
+        Assert.isNotNull(project, "Error accessing the spec project " + specName);
+        
+        this.launchDir = project.getFolder(modelName);
+        Assert.isNotNull(this.launchDir, "Error accessing the model folder " + modelName);
+        
         this.launch = launch;
+        this.rootModule = this.launchDir.getFile("MC.tla");
+        this.cfgFile = this.launchDir.getFile("MC.cfg");
     }
 
     /**

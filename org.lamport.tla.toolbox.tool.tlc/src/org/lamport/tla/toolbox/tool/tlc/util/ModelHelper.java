@@ -7,12 +7,7 @@ import java.util.Vector;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.IWorkspaceRunnable;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationType;
@@ -21,14 +16,11 @@ import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.part.FileEditorInput;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
-import org.lamport.tla.toolbox.tool.tlc.job.ConfigCreationOperation;
-import org.lamport.tla.toolbox.tool.tlc.job.ExtendingTLAModuleCreationOperation;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationDefaults;
 import org.lamport.tla.toolbox.tool.tlc.launch.TLCModelLaunchDelegate;
 import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
 import org.lamport.tla.toolbox.tool.tlc.model.Formula;
-import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 import tla2sany.semantic.ModuleNode;
@@ -154,60 +146,6 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
     {
         ILaunchManager launchManager = DebugPlugin.getDefault().getLaunchManager();
         return launchManager.getLaunchConfiguration(modelFile);
-    }
-
-    /**
-     * Retrieves the the config file
-     * REFACTOR HACK 
-     */
-    public static IFile getConfigFile(IResource modelRootFile, IProgressMonitor monitor)
-    {
-
-        IPath cfgPath = modelRootFile.getLocation().removeFileExtension().addFileExtension("cfg");
-
-        // create config file
-        IWorkspaceRunnable configCreateJob = new ConfigCreationOperation(cfgPath);
-        // create it
-        try
-        {
-            ResourcesPlugin.getWorkspace().run(configCreateJob, monitor);
-        } catch (CoreException e)
-        {
-            e.printStackTrace();
-            // exception, no chance to recover
-        }
-
-        IFile cfgFile = ResourceHelper.getLinkedFile(modelRootFile.getProject(), cfgPath.toOSString(), true);
-
-        return cfgFile;
-    }
-
-    /**
-     * Creates a new model root and retrieves the handle to it
-     */
-    public static IFile getNewModelRootFile(IResource specRootModule, String modelName)
-    {
-        // construct new model checking root module name
-        IPath modelRootPath = specRootModule.getLocation().removeLastSegments(1).append(modelName + ".tla");
-
-        // create a module
-        IWorkspaceRunnable moduleCreateJob = new ExtendingTLAModuleCreationOperation(modelRootPath, ResourceHelper
-                .getModuleName(specRootModule));
-        // create it
-        try
-        {
-            ResourcesPlugin.getWorkspace().run(moduleCreateJob, null);
-        } catch (CoreException e)
-        {
-            e.printStackTrace();
-            // exception, no chance to recover
-        }
-
-        // create a link in the project
-        IFile modelRootFile = ResourceHelper.getLinkedFile(specRootModule.getProject(), modelRootPath.toOSString(),
-                true);
-
-        return modelRootFile;
     }
 
     /**

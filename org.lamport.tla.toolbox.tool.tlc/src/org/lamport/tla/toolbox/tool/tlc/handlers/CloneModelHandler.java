@@ -55,6 +55,7 @@ public class CloneModelHandler extends AbstractHandler implements IModelConfigur
                 if (modelName.equals(launchConfigurations[i].getName()))
                 {
                     ILaunchConfigurationWorkingCopy copy = launchConfigurations[i].copy(modelCopyName);
+                    copy.setAttribute(MODEL_NAME, ModelHelper.getModelName(copy.getFile()));
                     copy.doSave();
                     break;
                 }

@@ -86,21 +86,6 @@ public class NewModelHandler extends AbstractHandler implements IModelConfigurat
             return null;
         }
 
-        // get the model root file
-        IResource modelRoot = ModelHelper.getNewModelRootFile(specRootModule, specRootModule.getProject().getName()
-                + "___" + modelName);
-
-        // get the model configuration
-        IResource config = ModelHelper.getConfigFile(modelRoot, null);
-
-        try
-        {
-            ToolboxHandle.getCurrentSpec().getProject().refreshLocal(IResource.DEPTH_INFINITE, null);
-        } catch (CoreException e1)
-        {
-            e1.printStackTrace();
-        }
-
         // get the root module
         ModuleNode moduleNode = ToolboxHandle.getSpecObj().getExternalModuleTable().getRootModule();
 
@@ -116,10 +101,9 @@ public class NewModelHandler extends AbstractHandler implements IModelConfigurat
 
             launchCopy.setAttribute(SPEC_NAME, ToolboxHandle.getCurrentSpec().getName());
             launchCopy.setAttribute(SPEC_ROOT_FILE, specRootModule.getLocation().toOSString());
-            launchCopy.setAttribute(SPEC_ROOT_MODULE, rootModuleName);
+            // FIXME change the model name on rename!
             launchCopy.setAttribute(MODEL_NAME, modelName);
-            launchCopy.setAttribute(MODEL_ROOT_FILE, modelRoot.getLocation().toOSString());
-            launchCopy.setAttribute(CONFIG_FILE, config.getLocation().toOSString());
+            
             if (constants.size() == 0)
             {
                 launchCopy.setAttribute(MODEL_PARAMETER_CONSTANTS, (List) null);

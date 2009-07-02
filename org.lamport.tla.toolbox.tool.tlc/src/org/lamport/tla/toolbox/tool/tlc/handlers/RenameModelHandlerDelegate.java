@@ -18,6 +18,7 @@ import org.eclipse.jface.window.Window;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
+import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.ui.ModelExplorer;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelNameValidator;
@@ -28,7 +29,7 @@ import org.lamport.tla.toolbox.util.UIHelper;
  * @author Simon Zambrovski
  * @version $Id$
  */
-public class RenameModelHandlerDelegate extends AbstractHandler implements IHandler
+public class RenameModelHandlerDelegate extends AbstractHandler implements IHandler, IModelConfigurationConstants
 {
 
     private String modelName;
@@ -100,6 +101,7 @@ public class RenameModelHandlerDelegate extends AbstractHandler implements IHand
                 {
                     // create the model with the new name
                     ILaunchConfigurationWorkingCopy copy = model.copy(newModelName);
+                    copy.setAttribute(MODEL_NAME, modelName);
                     copy.doSave();
 
                     // delete the old model
