@@ -96,15 +96,16 @@ public class TLAParsingBuilder extends IncrementalProjectBuilder
 
                 for (int i = 0; i < moduleFinder.modules.size(); i++)
                 {
-                    String changedModule = (String) moduleFinder.modules.get(i);
+                    
+                    IResource changedModule = (IResource) moduleFinder.modules.get(i);
 
                     // call build on the changed resource
                     // if the file is a Root file it will call buildSpec
                     // otherwise buildModule is invoked
-                    build(changedModule, rootFile, monitor);
+                    build(changedModule.getProjectRelativePath().toString(), rootFile, monitor);
 
                     // get the modules to rebuild
-                    List modulesToRebuild = Activator.getModuleDependencyStorage().getListOfModules(changedModule);
+                    List modulesToRebuild = Activator.getModuleDependencyStorage().getListOfModulesToReparse(changedModule.getProjectRelativePath().toString());
 
                     // iterate over modules and rebuild them
                     for (int j = 0; j < modulesToRebuild.size(); j++)
@@ -156,13 +157,31 @@ public class TLAParsingBuilder extends IncrementalProjectBuilder
         } else
         {
             // retrieve a resource
-            final IResource moduleFile = ResourceHelper.getLinkedFile(getProject(), moduleFileName, false);
-            if (moduleFile == null)
+            IProject project = getProject();
+            // get the file 
+            IResource moduleFile = project.getFile(moduleFileName);
+            
+            /*
+             * At this point of time, all modules should have been linked
+            if (!moduleFile.exists()) 
+            {
+                moduleFile = ResourceHelper.getLinkedFile(project, moduleFileName, false);
+            }*/
+            
+            if (moduleFile == null || !moduleFile.exists())
             {
                 throw new IllegalStateException("Resource not found during build");
             }
-            // run the module build
-            ParserHelper.rebuildModule(moduleFile, monitor);
+
+            
+            // never build derived resources
+            if (!moduleFile.isDerived())
+            {
+                // run the module build
+                ParserHelper.rebuildModule(moduleFile, monitor);
+            } else {
+                System.out.println("Skipping resource: " + moduleFileName);    
+            }
         }
     }
 
@@ -190,7 +209,7 @@ public class TLAParsingBuilder extends IncrementalProjectBuilder
                 // a file found
                 if (ResourceHelper.isModule(resource))
                 {
-                    modules.add(resource.getName());
+                    modules.add(resource);
                 }
             }
             // we want the visitor to visit the whole tree

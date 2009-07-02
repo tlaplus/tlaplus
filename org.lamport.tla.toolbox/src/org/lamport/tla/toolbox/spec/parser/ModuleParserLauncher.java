@@ -5,11 +5,13 @@ import java.io.PrintStream;
 import java.util.Enumeration;
 import java.util.Vector;
 
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.Path;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.spec.Module;
 import org.lamport.tla.toolbox.spec.Spec;
@@ -52,22 +54,23 @@ public class ModuleParserLauncher
 
         IProject project = parseResource.getProject();
 
-        // setup the directory of the root file
+        // setup the directory of the file
         ToolIO.setUserDir(ResourceHelper.getParentDirName(parseResource.getLocation().toOSString()));
+        
 
         // reset problems from previous run
-        TLAMarkerHelper.removeProblemMarkers(project, monitor, TLAMarkerHelper.TOOLBOX_MARKERS_TLAPARSER_MARKER_ID);
+        TLAMarkerHelper.removeProblemMarkers(parseResource, monitor, TLAMarkerHelper.TOOLBOX_MARKERS_TLAPARSER_MARKER_ID);
 
         // call the parsing
-        ParseResult result = this.parseMainModule(parseResource, true);
+        ParseResult result = this.parseModule(parseResource, true);
 
         if (AdapterFactory.isProblemStatus(result.getStatus()))
         {
-            Activator.getModuleDependencyStorage().parseFailed(parseResource.getName());
+            Activator.getModuleDependencyStorage().parseFailed(parseResource.getProjectRelativePath().toString());
         }
 
         // store errors inside the specification project
-        this.processParsingErrors(project, result.getStatus(), monitor);
+        this.processParsingErrors(project, result, monitor);
 
         return result;
     }
@@ -84,10 +87,10 @@ public class ModuleParserLauncher
      *            filename of the module to parse
      * @return status of parsing, one of the {@link IParseConstants} constants
      */
-    private ParseResult parseMainModule(IResource parseResource, boolean doSemanticAnalysis)
+    private ParseResult parseModule(IResource parseResource, boolean doSemanticAnalysis)
     {
-        String rootFilename = parseResource.getLocation().toOSString();
-
+        String moduleFilename = parseResource.getLocation().toOSString();
+        
         // clean the results of previos parsing
         this.cleanUp();
 
@@ -102,7 +105,7 @@ public class ModuleParserLauncher
         ToolIO.setMode(ToolIO.TOOL);
 
         // Initialize the module variables
-        SpecObj moduleSpec = new SpecObj(ResourceHelper.getModuleName(rootFilename), resolver);
+        SpecObj moduleSpec = new SpecObj(ResourceHelper.getModuleName(moduleFilename), resolver);
 
         // The parsing methods take a PrintStream on which they print out some (but hardly all) error messages.
         // They're called with this one.
@@ -120,7 +123,7 @@ public class ModuleParserLauncher
         {
             // set spec status
             specStatus = IParseConstants.UNKNOWN_ERROR;
-            return new ParseResult(specStatus, null);
+            return new ParseResult(specStatus, null, parseResource);
 
         } catch (ParseException e)
         {
@@ -203,7 +206,7 @@ public class ModuleParserLauncher
                 }
             }
 
-            if (module.getModuleName().equals(ResourceHelper.getModuleName(rootFilename)))
+            if (module.getModuleName().equals(ResourceHelper.getModuleName(moduleFilename)))
             {
                 rootModuleFound = true;
                 module.setRoot(true);
@@ -217,8 +220,14 @@ public class ModuleParserLauncher
                 // if the module is not a standard module
                 userModules.addElement(module);
 
-                // create a link to the module, so we could open it
-                ResourceHelper.getLinkedFile(parseResource.getProject(), module.getAbsolutePath(), true);
+                // check whether the absolute filename of the module contains an absolute filename of the project
+                // if yes, that means that the module is resides (in the FS) inside of the project directory
+                // and no linking is required
+                if (module.getAbsolutePath().indexOf( parseResource.getProject().getLocation().toOSString() ) != 0) 
+                {
+                    // create a link to the module, so we could open it
+                    ResourceHelper.getLinkedFile(parseResource.getProject(), module.getAbsolutePath(), true);
+                }
             }
 
         } // while
@@ -233,7 +242,7 @@ public class ModuleParserLauncher
         Activator.getModuleDependencyStorage().put(parseResource.getName(),
                 AdapterFactory.adaptModules(parseResource.getName(), userModules));
 
-        return new ParseResult(specStatus, moduleSpec);
+        return new ParseResult(specStatus, moduleSpec, parseResource);
     }
 
     /**
@@ -291,10 +300,10 @@ public class ModuleParserLauncher
          * - "Could not parse module Foo from file FooBar"<br>
          * I have no idea when that is produced.
          */
-    private void processParsingErrors(IProject project, int parseStatus, IProgressMonitor monitor)
+    private void processParsingErrors(IProject project, ParseResult result, IProgressMonitor monitor)
     {
 
-        switch (parseStatus) {
+        switch (result.getStatus()) {
         /* ------------------ SYNTAX ERRORS --------------------- */
 
         case IParseConstants.SYNTAX_ERROR:
@@ -314,8 +323,9 @@ public class ModuleParserLauncher
                 int parsingModuleIndex = output[nextMsg - 1].indexOf("Parsing module") + 15;
                 String nameToFind = output[nextMsg - 1].substring(parsingModuleIndex, output[nextMsg - 1].indexOf(" ",
                         parsingModuleIndex + 1));
-                IFile module = ResourceHelper.getLinkedFile(project, ResourceHelper.getModuleFileName(nameToFind),
-                        false);
+                
+                IFile module = ResourceHelper.getLinkedFile(result.getParsedResource().getParent(), ResourceHelper.getModuleFileName(nameToFind), false);
+                
 
                 // coordinates of the error
                 int[] coordinates = null;
@@ -407,7 +417,7 @@ public class ModuleParserLauncher
                 {
                     for (int i = 0; i < errors[j].length; i++)
                     {
-                        encodeSematicErrorFromString(project, errors[j][i], holderType[j], monitor);
+                        encodeSematicErrorFromString(project, result.getParsedResource(), errors[j][i], holderType[j], monitor);
                     }
                 }// for i, for j
 
@@ -426,7 +436,7 @@ public class ModuleParserLauncher
             break;
         default:
 
-            throw new RuntimeException("No default expected. Still spec.getStatus() returned a value of " + parseStatus);
+            throw new RuntimeException("No default expected. Still spec.getStatus() returned a value of " + result.getStatus());
         }
         cleanUp();
     } // ProcessParsingErrorMsgs
@@ -438,7 +448,7 @@ public class ModuleParserLauncher
      * @param severityError
      * @param monitor
      */
-    private void encodeSematicErrorFromString(IProject project, String message, int severityError,
+    private void encodeSematicErrorFromString(IProject project, IResource parsedResource, String message, int severityError,
             IProgressMonitor monitor)
     {
 
@@ -467,7 +477,7 @@ public class ModuleParserLauncher
             int endModuleIdx = message.indexOf("\n", beginModuleIdx);
             if (endModuleIdx != -1)
             {
-                module = ResourceHelper.getLinkedFile(project, ResourceHelper.getModuleFileName(message.substring(
+                module = ResourceHelper.getLinkedFile(parsedResource.getParent(), ResourceHelper.getModuleFileName(message.substring(
                         beginModuleIdx, endModuleIdx)), false);
             }
         }

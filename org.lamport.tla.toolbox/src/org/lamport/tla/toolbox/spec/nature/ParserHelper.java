@@ -35,7 +35,7 @@ public class ParserHelper
         {
             return;
         }
-        System.out.println("Module build invoked on " + resource.getName() + " ...");
+        System.out.println("Module build invoked on " + resource.getProjectRelativePath().toString() + " ...");
         IWorkspaceRunnable run = new IWorkspaceRunnable() {
 
             public void run(IProgressMonitor monitor) throws CoreException

@@ -3,6 +3,7 @@ package org.lamport.tla.toolbox.tool;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.List;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.FileLocator;
@@ -119,6 +120,17 @@ public class ToolboxHandle
         return null;
     }
 
+    /**
+     * Retrieves the list of modules that are EXTEND-ed by current module
+     * <br><b>Note:</b>Only works for current spec
+     * @param rootModule, name of the module
+     * @return list of modules it depends (EXTEND) on
+     */
+    public static List getExtendedModules(String moduleName)
+    {
+        return Activator.getModuleDependencyStorage().getListOfExtendedModules(moduleName);
+    }
+    
     
     public static IPath getBundleLocation()
     {

@@ -5,6 +5,7 @@ import java.io.File;
 import java.util.Date;
 
 import org.eclipse.core.resources.ICommand;
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
@@ -17,6 +18,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.core.runtime.Status;
@@ -42,13 +44,13 @@ public class ResourceHelper
      * @param name name of the project
      * @return
      */
-    public static boolean peekProject(String name, String rootFilename) 
+    public static boolean peekProject(String name, String rootFilename)
     {
-        String root = getParentDirName(rootFilename); 
+        String root = getParentDirName(rootFilename);
         File projectDir = new File(root.concat("/").concat(name).concat(".toolbox"));
         return projectDir.exists();
     }
-    
+
     /**
      * Retrieves a resource in the current project (the one of current loaded spec) 
      * @param name name of the module (no extension)
@@ -58,7 +60,7 @@ public class ResourceHelper
     {
         return getResourceByName(getModuleFileName(name));
     }
-    
+
     /**
      * Retrieves a resource in the current project (the one of current loaded spec) 
      * @param name name of the resource
@@ -67,7 +69,7 @@ public class ResourceHelper
     public static IResource getResourceByName(String name)
     {
         Spec spec = Activator.getSpecManager().getSpecLoaded();
-        if (spec != null) 
+        if (spec != null)
         {
             IProject project = spec.getProject();
             return getLinkedFile(project, name, false);
@@ -75,7 +77,6 @@ public class ResourceHelper
         return null;
     }
 
-    
     /**
      * Retrieves a project by name or creates a new project
      * <br><b>Note:</b> If the project does not exist in workspace it will be created, based
@@ -95,6 +96,17 @@ public class ResourceHelper
      */
     public static IProject getProject(String name, String rootFilename)
     {
+        return getProject(name, rootFilename, true);
+    }
+
+
+    /**
+     * Retrieves the project handle
+     * @param name name of the project
+     * @return a project handle
+     */
+    public static IProject getProject(String name) 
+    {
         if (name == null)
         {
             return null;
@@ -102,8 +114,27 @@ public class ResourceHelper
         IWorkspace ws = ResourcesPlugin.getWorkspace();
         IProject project = ws.getRoot().getProject(name);
 
+        return project;
+    }
+    
+    /**
+     * Retrieves a project by name or creates a new project is <code>createMissing</code> is set to <code>true</code>
+     * @param name name of the project, should not be null
+     * @param rootFilename path to the root filename, should not be null
+     * @param createMissing a boolean flag if a missing project should be created 
+     * @return a working IProject instance or null if project not at place and createMissing was false
+     */
+    public static IProject getProject(String name, String rootFilename, boolean createMissing)
+    {
+        if (name == null)
+        {
+            return null;
+        }
+
+        IProject project = getProject(name);
+        
         // create a project
-        if (!project.exists())
+        if (!project.exists() && createMissing)
         {
             try
             {
@@ -113,7 +144,7 @@ public class ResourceHelper
                 }
 
                 // create a new description for the given name
-                IProjectDescription description = ws.newProjectDescription(name);
+                IProjectDescription description = project.getWorkspace().newProjectDescription(name);
 
                 // set project location
                 if (getParentDirName(rootFilename) != null)
@@ -164,28 +195,37 @@ public class ResourceHelper
      * @param project
      * @param createNew, a boolean flag indicating if the new link should be created if it does not exist
      */
-    public static IFile getLinkedFile(IProject project, String name, boolean createNew)
+    public static IFile getLinkedFile(IContainer project, String name, boolean createNew)
     {
         if (name == null || project == null)
         {
             return null;
         }
         IPath location = new Path(name);
-        IFile file = project.getFile(location.lastSegment());
-        if (createNew && !file.isLinked())
+        IFile file = project.getFile(new Path(location.lastSegment()));
+        if (createNew)
         {
-            try
+            if (!file.isLinked())
             {
-                // TODO add progress monitor
-                file.createLink(location, IResource.NONE, null);
-                return file;
+                try
+                {
+                    // TODO add progress monitor
+                    file.createLink(location, IResource.NONE, new NullProgressMonitor());
+                    return file;
 
-            } catch (CoreException e)
-            {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                } catch (CoreException e)
+                {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
             }
-        }
+            if (file.exists()) 
+            {
+                return file;
+            } else {
+                return null;
+            }
+        } 
         return file;
     }
 
@@ -337,7 +377,6 @@ public class ResourceHelper
         return buffer;
     }
 
-    
     /**
      * Creates a simple content for a new TLA+ module
      *  
@@ -402,7 +441,8 @@ public class ResourceHelper
             file.setContents(stream, IResource.FORCE | IResource.KEEP_HISTORY, monitor);
         } else
         {
-            throw new CoreException(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Exected " + file.getName() + " file has been removed externally"));
+            throw new CoreException(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Exected " + file.getName()
+                    + " file has been removed externally"));
             // this will create a file in a wrong location
             // instead of /rootfile-dir/file.cfg it will create it under /specdir/file.cfg
             // file.create(stream, force, monitor);
@@ -447,7 +487,7 @@ public class ResourceHelper
         {
             // if one of the resources does not exist
             // something is screwed up
-            if (resources[i] == null || !resources[i].exists()) 
+            if (resources[i] == null || !resources[i].exists())
             {
                 return null;
             }
@@ -456,12 +496,13 @@ public class ResourceHelper
         }
         return combinedRule;
     }
-    
-    public static ISchedulingRule getCreateRule(IResource resource) 
+
+    public static ISchedulingRule getCreateRule(IResource resource)
     {
         IResourceRuleFactory ruleFactory = ResourcesPlugin.getWorkspace().getRuleFactory();
         return ruleFactory.createRule(resource);
     }
+
     /**
      * Retrieves a rule for modifying a resource
      * @param resource
@@ -473,6 +514,7 @@ public class ResourceHelper
         ISchedulingRule rule = ruleFactory.modifyRule(resource);
         return rule;
     }
+
     /**
      * Retrieves a combined rule for deleting resource
      * @param resource
@@ -493,7 +535,7 @@ public class ResourceHelper
         }
         return combinedRule;
     }
-    
+
     /**
      * Renames and moves the project
      * @param project
@@ -505,15 +547,16 @@ public class ResourceHelper
         try
         {
             IProjectDescription description = project.getDescription();
-            
+
             // move the project location
-            IPath path = description.getLocation().removeLastSegments(1).removeTrailingSeparator().append(specName.concat(".toolbox")).addTrailingSeparator();
+            IPath path = description.getLocation().removeLastSegments(1).removeTrailingSeparator().append(
+                    specName.concat(".toolbox")).addTrailingSeparator();
             description.setLocation(path);
             description.setName(specName);
-            
+
             project.copy(description, IResource.NONE | IResource.SHALLOW, monitor);
             project.delete(IResource.NONE, monitor);
-            
+
             return ResourcesPlugin.getWorkspace().getRoot().getProject(specName);
         } catch (CoreException e)
         {
@@ -522,6 +565,7 @@ public class ResourceHelper
         }
         return null;
     }
+
     /**
      * Deletes the project
      * @param project

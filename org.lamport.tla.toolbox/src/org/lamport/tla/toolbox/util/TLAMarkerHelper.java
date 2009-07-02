@@ -58,7 +58,6 @@ public class TLAMarkerHelper
      * The marker ID for displaying PCal Translation Errors
      */
     public static final String TOOLBOX_MARKERS_TRANSLATOR_MARKER_ID = "toolbox.markers.PCalTranslatorProblemMarker";
-    
 
     /**
      * Installs a problem marker on a given resource
@@ -71,7 +70,7 @@ public class TLAMarkerHelper
 
             public void run(IProgressMonitor monitor) throws CoreException
             {
-                System.out.println("Installing a marker on " + resource.getName() + " with error on module "
+                System.out.println("Installing a marker on " + resource.getProjectRelativePath().toOSString() + " with error on module "
                         + moduleName);
 
                 IMarker marker = resource.createMarker(type);
@@ -166,6 +165,7 @@ public class TLAMarkerHelper
             e.printStackTrace();
         }
     }
+
     /**
      * Convenience method to delete all types of markers
      */
@@ -240,19 +240,24 @@ public class TLAMarkerHelper
      */
     public static void gotoMarker(IMarker problem)
     {
-        IFile module = (IFile) problem.getResource();
-        IEditorPart part = UIHelper.openEditor(OpenSpecHandler.TLA_EDITOR, new FileEditorInput(module));
-        IGotoMarker gotoMarker = null;
-        if (part instanceof IGotoMarker)
+        if (problem.getResource() instanceof IFile)
         {
-            gotoMarker = (IGotoMarker) part;
-        } else
-        {
-            gotoMarker = (IGotoMarker) part.getAdapter(IGotoMarker.class);
-        }
-        if (gotoMarker != null)
-        {
-            gotoMarker.gotoMarker(problem);
+            IFile module = (IFile) problem.getResource();
+            IEditorPart part = UIHelper.openEditor(OpenSpecHandler.TLA_EDITOR, new FileEditorInput(module));
+            IGotoMarker gotoMarker = null;
+            if (part instanceof IGotoMarker)
+            {
+                gotoMarker = (IGotoMarker) part;
+            } else
+            {
+                gotoMarker = (IGotoMarker) part.getAdapter(IGotoMarker.class);
+            }
+            if (gotoMarker != null)
+            {
+                gotoMarker.gotoMarker(problem);
+            }
+        } else {
+            // nothing to open
         }
     }
 
@@ -276,10 +281,10 @@ public class TLAMarkerHelper
      */
     public static String getType(IMarker problem)
     {
-        try 
+        try
         {
             return problem.getType();
-        } catch (CoreException e) 
+        } catch (CoreException e)
         {
             e.printStackTrace();
         }

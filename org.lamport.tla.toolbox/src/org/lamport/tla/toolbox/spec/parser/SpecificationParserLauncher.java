@@ -4,6 +4,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.util.AdapterFactory;
+import org.lamport.tla.toolbox.util.TLAMarkerHelper;
 
 /**
  * A specification parser parses the root file of the specification
@@ -30,6 +31,9 @@ public class SpecificationParserLauncher
         // parsed resource is the root file
         IResource parseResource = spec.getRootFile();
 
+        // reset problems from previous run
+        TLAMarkerHelper.removeProblemMarkers(parseResource.getProject(), monitor, TLAMarkerHelper.TOOLBOX_MARKERS_TLAPARSER_MARKER_ID);
+        
         // call module parse on the root file
         ParseResult result = moduleParser.parseModule(parseResource, monitor);
 
