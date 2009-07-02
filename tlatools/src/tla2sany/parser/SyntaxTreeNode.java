@@ -1,6 +1,6 @@
 // Copyright (c) 2003 Compaq Corporation.  All rights reserved.
 // jcg wrote this.
-// Last modified on Sat 13 Oct 2007 at  9:16:19 PST by lamport
+// Last modified on Wed  1 July 2009 at 16:30:00 PST by lamport
 // last revised February 1st 2000
 
 /***************************************************************************
@@ -449,7 +449,12 @@ public class SyntaxTreeNode implements TreeNode, SyntaxTreeConstants,
          + ")" : image.toString()) 
          + "\t" + (operator != "" ? operator + "\t" : "")
          + "  #heirs: " + heirs.length + "\t"
-         + "  kind:   " + kind + "\n"
+         + "  kind:   " + kind + 
+           /****************************************************************
+           * Hack added by LL on 21 Jun 2009 to print pre-comments.        *
+           ****************************************************************/
+          ((preComment.length != 0)?("\tpreComment[0]: " + preComment[0]):(""))
+          + "\n"      
          );
 
     for (int i=0; i<heirs.length; i++) {

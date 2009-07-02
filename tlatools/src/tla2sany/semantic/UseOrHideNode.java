@@ -1,5 +1,5 @@
 // Copyright (c) 2007 Microsoft Corporation.  All rights reserved.
-// last modified on Wed  4 March 2009 at 16:42:08 PST by lamport 
+// last modified on Wed  1 July 2009 at 16:54:04 PST by lamport 
 package tla2sany.semantic;
 
 import java.util.Hashtable;
@@ -50,16 +50,19 @@ public class UseOrHideNode extends LevelNode {
   * The following method was added 4 Mar 2009 to check the restriction     *
   * that only the names of facts (and of modules) can be used as facts in  *
   * a USE or HIDE.                                                         *
+  *                                                                        *
+  * It was modified on 1 Jul 2009 to allow the use of expressions as       *
+  * facts in a USE.                                                        *
   *************************************************************************/
   public void factCheck() {
-    if (this.facts == null) { return; };
+    if (this.facts == null || this.getKind() == UseKind) { return; };
     for (int i = 0; i < this.facts.length; i++) {
       if (    (this.facts[i].getKind() == OpApplKind) 
            && (((OpApplNode) this.facts[i]).operator.getKind() 
                    != ThmOrAssumpDefKind)) {
           errors.addError(
              this.facts[i].stn.getLocation(),
-               "The only expression allowed as a fact in a USE or HIDE " +
+               "The only expression allowed as a fact in a HIDE " +
                "is the name of a theorem, assumption, or step.");
       } ;
     } // for

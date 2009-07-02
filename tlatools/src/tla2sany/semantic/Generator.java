@@ -1,7 +1,7 @@
 // Copyright (c) 2003 Compaq Corporation.  All rights reserved.
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
 //
-// last modified on Mon  2 March 2009 at 16:20:31 PST by lamport
+// last modified on Wed  1 July 2009 at 16:16:36 PST by lamport
 
 //
 //  4/9/2006 Added a check in RecordConstructor for duplicate fields
@@ -5482,6 +5482,12 @@ OpDefNode node = (OpDefNode) vec.elementAt(i);
     *          N_QEDStep      : $Qed                                       *
     ***********************************************************************/
   throws AbortException {
+    int numberOfPops = 0;
+      /*********************************************************************
+      * For each SUFFICES ASSUME/PROVE step, we push a new context onto    *
+      * the symbol table containing declarations of any NEW symbols.       *
+      * These need to be popped off when through processing the proof.     *
+      *********************************************************************/
     if (stn.getKind() == N_TerminalProof) {
        return generateLeafProof(stn, cm) ;} ;
 
@@ -5529,11 +5535,16 @@ OpDefNode node = (OpDefNode) vec.elementAt(i);
         *******************************************************************/
         
       /*********************************************************************
-      * For an ASSUME/PROVE that is not a SUFFICES, pushPopAssumeContext   *
-      * is set true and assumeContext is set to a context containing the   *
-      * declarations from the outer-most NEWs of the ASSUME.               *
+      * For an ASSUME/PROVE, we set assumeContext to a context containing  *
+      * the declarations from the outer-most NEWs of the ASSUME. For an    *
+      * ordinary ASSUME/PROVE, this context is pushed onto the symbol      *
+      * table for statement's processing the proof.  For a SUFFICE         *
+      * ASSUME/PROVE, it is pushed onto the symbol table after processing  *
+      * the statement's proof so the outermost NEW declarations are        *
+      * visible for the rest of the current proof.                         *
+      * The handling of the assumeContext was changed on 1 Jul 2009        *
+      * because SUFFICE ASSUME/PROVE was not being handled properly.       *
       *********************************************************************/
-      boolean pushPopAssumeContext = false ;
       Context assumeContext = null;
 
       /*********************************************************************
@@ -5712,17 +5723,14 @@ OpDefNode node = (OpDefNode) vec.elementAt(i);
                isAssumeProve = true ;
 
                /************************************************************
-               * For an ordinary ASSUME/PROVE, we need to save symbol      *
+               * For an ASSUME/PROVE, we need save the symbol              *
                * declarations from top-level NEW statements in the ASSUME  *
-               * to make them visible only in the proof.  If this is a     *
-               * SUFFICES ASSUME/PROVE, we don't need to do that because   *
-               * we want those symbol declarations to be visible outside   *
-               * the PROVE clause as well.                                 *
+               * to make them visible only in the statement's proof for    *
+               * an ordinary ASSUME/PROVE, and only after the statement's  *
+               * proof for a SUFFICES ASSUME/PROVE.                        *
                ************************************************************/
-               if (!isSuffices) {
-                 pushPopAssumeContext = true ;
-                 symbolTable.pushContext(new Context(moduleTable, errors)) ;
-                } ;
+               symbolTable.pushContext(new Context(moduleTable, errors)) ;
+
                currentGoal = tadn ;
                  /**********************************************************
                  * Need to set currentGoal before generating the           *
@@ -5735,10 +5743,8 @@ OpDefNode node = (OpDefNode) vec.elementAt(i);
                  * Added 16 Feb 2009 by LL.                                *
                  **********************************************************/
                currentGoal = null ;
-               if (pushPopAssumeContext) {
-                 assumeContext = symbolTable.getContext() ;
-                 symbolTable.popContext() ;
-                } ;
+               assumeContext = symbolTable.getContext() ;
+               symbolTable.popContext() ;
                prevIsInfix = false ;
                }
              else {  
@@ -6019,12 +6025,26 @@ OpDefNode node = (OpDefNode) vec.elementAt(i);
        ***********************************************************************/
        ProofNode proof = null ;
        if (stepPfSTN != null) { 
-         if (pushPopAssumeContext) {
+         /******************************************************************
+         * For an ordinary ASSUME/PROVE, must make the ASSUME's            *
+         * declarations visible in the statement's proof.                  *
+         ******************************************************************/
+         if (isAssumeProve && !isSuffices) {
            symbolTable.pushContext(assumeContext) ;
           } ;
          proof = generateProof(stepPfSTN, cm); 
-         if (pushPopAssumeContext) {symbolTable.popContext(); } ;
+         if (isAssumeProve && !isSuffices) {symbolTable.popContext(); } ;
         } ;
+
+       /********************************************************************
+       * For a SUFFICES ASSUME/PROVE, must make the ASSUME's declarations  *
+       * visible after the proof.  This is done by pushing assumeContext   *
+       * onto the symbol table and incrementing numberOfPops so it will    *
+       * be popped at the end of the proof.                                *
+       ********************************************************************/
+       if (isAssumeProve && isSuffices) {
+           numberOfPops++ ;
+           symbolTable.pushContext(assumeContext) ; } ;
        if (isAssumeProve) { ((AssumeProveNode) body).inProof = false ; } ;
          /******************************************************************
          * For an ASSUME/PROVE, set the inProof field to false.            *
@@ -6059,6 +6079,14 @@ OpDefNode node = (OpDefNode) vec.elementAt(i);
     for (int i = 0 ; i < insts.length; i++) {
       insts[i] = (InstanceNode) iVec.elementAt(i) ; 
      }; 
+
+    /***********************************************************************
+    * Pop the contexts that were pushed onto the symbol table for SUFFICE  *
+    * ASSUME/PROVE steps.                                                  *
+    ***********************************************************************/
+    for (int i = 0; i < numberOfPops; i++) {
+      symbolTable.popContext(); 
+     };
     symbolTable.popContext();
     return new NonLeafProofNode(stn, steps, insts, pfCtxt);
       /*********************************************************************
@@ -6445,6 +6473,13 @@ errors.addAbort(stn.getLocation(), "Uses generateNumerable_Step") ;
       /*********************************************************************
       * To hold the facts and then the defs.                               *
       *********************************************************************/
+
+/***************************************************************************
+* Added as a hack.  Additional processing needed to really handle "ONLY".  *
+***************************************************************************/
+    if (heirs[nextTok].getKind() == TLAplusParserConstants.ONLY) {
+      nextTok++ ;
+     } ;
 
     /***********************************************************************
     * Get the facts.                                                       *
