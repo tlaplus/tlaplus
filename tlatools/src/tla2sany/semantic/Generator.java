@@ -1,7 +1,7 @@
 // Copyright (c) 2003 Compaq Corporation.  All rights reserved.
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
 //
-// last modified on Thu  2 July 2009 at 14:37:03 PST by lamport
+// last modified on Fri  3 July 2009 at 12:43:32 PST by lamport
 
 //
 //  4/9/2006 Added a check in RecordConstructor for duplicate fields
@@ -6496,9 +6496,9 @@ errors.addAbort(stn.getLocation(), "Uses generateNumerable_Step") ;
    
     boolean isOnly = false;
       /*********************************************************************
-      * True iff this is an "ONLY" step.  For the moment, the javacc       *
-      * parsing allows this only for a BY ONLY. However, to add a USE      *
-      * ONLY, it is necessary only to modify the javacc code.              *
+      * True iff this is an "ONLY" step--either a BY ONLY or a USE ONLY.   *
+      * However, we may decide not to include USE ONLY in the language,    *
+      * which wil require a simple modification of the javacc code.        *
       *********************************************************************/
       
     if (heirs[0].getKind() == TLAplusParserConstants.HIDE)

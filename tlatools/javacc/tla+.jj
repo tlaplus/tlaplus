@@ -2694,7 +2694,8 @@ UseOrHideOrBy() : {
       (t = <ONLY> {addHeir(new SyntaxTreeNode(mn, t)); })?
     | t = <USE> 
       {addHeir(new SyntaxTreeNode(mn, t));}
-    | t = <HIDE> 
+      (t = <ONLY> {addHeir(new SyntaxTreeNode(mn, t)); })?
+     | t = <HIDE> 
       {addHeir(new SyntaxTreeNode(mn, t));}
    )
     {expecting = "an expression, `MODULE' or `DEF'"; }

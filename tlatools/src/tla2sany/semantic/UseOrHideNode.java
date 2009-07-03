@@ -1,5 +1,5 @@
 // Copyright (c) 2007 Microsoft Corporation.  All rights reserved.
-// last modified on Thu  2 July 2009 at 14:44:35 PST by lamport 
+// last modified on Fri  3 July 2009 at 12:41:45 PST by lamport 
 package tla2sany.semantic;
 
 import java.util.Hashtable;
@@ -38,10 +38,10 @@ public class UseOrHideNode extends LevelNode {
 
   public boolean isOnly ;
     /***********************************************************************
-    * True iff this node was formed from an "ONLY" step.  At the moment,   *
-    * this is possible only if the node was temporarily constructed for    *
-    * making a LeafProofNode for a "BY ONLY" proof.  But, we may add a     *
-    * "USE ONLY" construct as well.                                        *
+    * True iff this node was formed from an "ONLY" step.  This is          *
+    * possible only if the node is of kind UseKind or if it was            *
+    * temporarily constructed for making a LeafProofNode for a "BY ONLY"   *
+    * proof.  However, the "ONLY BY" construct might be disabled.          *
     ***********************************************************************/
     
   /*************************************************************************
@@ -104,6 +104,7 @@ public class UseOrHideNode extends LevelNode {
     if (depth <= 0) return "";
     String ret = "\n*UseOrHideNode:\n"
                   + super.toString(depth)
+                  + Strings.indent(2, "\nisOnly: " + this.isOnly) 
                   + Strings.indent(2, "\nfacts:") ;
     for (int i = 0 ; i < this.facts.length; i++) {
         ret += Strings.indent(4, this.facts[i].toString(1)) ;
