@@ -1700,7 +1700,8 @@ Body() : {
     | LOOKAHEAD ( 2 ) tn = Assumption()
     | LOOKAHEAD ( 2 ) tn = Theorem()
     | LOOKAHEAD ( 1 ) tn = Module() { belchDEF(); }
-    | LOOKAHEAD ( { (getToken(1).kind == USE) || (getToken(1).kind == HIDE) } )
+    | LOOKAHEAD ( {    (getToken(1).kind == USE && getToken(2).kind != ONLY) 
+                    || (getToken(1).kind == HIDE) } )
       tn = UseOrHideOrBy()  ) { addHeir(tn); } )*
   { sn = getLastHeirs(); epa();
     return new SyntaxTreeNode(mn, N_Body, sn );

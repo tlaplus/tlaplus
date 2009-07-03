@@ -1580,7 +1580,8 @@ Token t;
                 break;
               default:
                 jj_la1[12] = jj_gen;
-                if ((getToken(1).kind == USE) || (getToken(1).kind == HIDE)) {
+                if ((getToken(1).kind == USE && getToken(2).kind != ONLY)
+                                    || (getToken(1).kind == HIDE)) {
                   tn = UseOrHideOrBy();
                 } else {
                   jj_consume_token(-1);
@@ -8381,12 +8382,6 @@ ClosedStart() : {
     finally { jj_save(76, xla); }
   }
 
-  final private boolean jj_3R_292() {
-    if (jj_scan_token(COMMA)) return true;
-    if (jj_3R_63()) return true;
-    return false;
-  }
-
   final private boolean jj_3R_93() {
     if (jj_3R_63()) return true;
     Token xsp;
@@ -10741,11 +10736,6 @@ ClosedStart() : {
     return false;
   }
 
-  final private boolean jj_3R_56() {
-    if (jj_3R_115()) return true;
-    return false;
-  }
-
   final private boolean jj_3R_112() {
     Token xsp;
     xsp = jj_scanpos;
@@ -10770,6 +10760,11 @@ ClosedStart() : {
 
   final private boolean jj_3R_113() {
     if (jj_scan_token(VARIABLE)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_56() {
+    if (jj_3R_115()) return true;
     return false;
   }
 
@@ -10800,11 +10795,6 @@ ClosedStart() : {
     return false;
   }
 
-  final private boolean jj_3R_57() {
-    if (jj_3R_116()) return true;
-    return false;
-  }
-
   final private boolean jj_3_75() {
     if (jj_3R_95()) return true;
     return false;
@@ -10815,13 +10805,18 @@ ClosedStart() : {
     return false;
   }
 
-  final private boolean jj_3_5() {
-    if (jj_3R_62()) return true;
+  final private boolean jj_3R_57() {
+    if (jj_3R_116()) return true;
     return false;
   }
 
   final private boolean jj_3R_111() {
     if (jj_3R_102()) return true;
+    return false;
+  }
+
+  final private boolean jj_3_5() {
+    if (jj_3R_62()) return true;
     return false;
   }
 
@@ -10840,11 +10835,6 @@ ClosedStart() : {
     return false;
   }
 
-  final private boolean jj_3R_55() {
-    if (jj_3R_114()) return true;
-    return false;
-  }
-
   final private boolean jj_3R_110() {
     if (jj_3R_104()) return true;
     return false;
@@ -10856,8 +10846,8 @@ ClosedStart() : {
     return false;
   }
 
-  final private boolean jj_3R_54() {
-    if (jj_3R_113()) return true;
+  final private boolean jj_3R_55() {
+    if (jj_3R_114()) return true;
     return false;
   }
 
@@ -10866,8 +10856,8 @@ ClosedStart() : {
     return false;
   }
 
-  final private boolean jj_3R_53() {
-    if (jj_scan_token(SEPARATOR)) return true;
+  final private boolean jj_3R_54() {
+    if (jj_3R_113()) return true;
     return false;
   }
 
@@ -10878,6 +10868,11 @@ ClosedStart() : {
     jj_scanpos = xsp;
     if (jj_3R_296()) return true;
     }
+    return false;
+  }
+
+  final private boolean jj_3R_53() {
+    if (jj_scan_token(SEPARATOR)) return true;
     return false;
   }
 
@@ -10908,7 +10903,8 @@ ClosedStart() : {
     if (jj_3R_57()) {
     jj_scanpos = xsp;
     lookingAhead = true;
-    jj_semLA = (getToken(1).kind == USE) || (getToken(1).kind == HIDE);
+    jj_semLA = (getToken(1).kind == USE && getToken(2).kind != ONLY)
+                    || (getToken(1).kind == HIDE);
     lookingAhead = false;
     if (!jj_semLA || jj_3R_58()) return true;
     }
@@ -11170,11 +11166,6 @@ ClosedStart() : {
     return false;
   }
 
-  final private boolean jj_3R_116() {
-    if (jj_3R_158()) return true;
-    return false;
-  }
-
   final private boolean jj_3_51() {
     if (jj_3R_63()) return true;
     Token xsp;
@@ -11195,6 +11186,11 @@ ClosedStart() : {
   final private boolean jj_3R_275() {
     if (jj_scan_token(COMMA)) return true;
     if (jj_3R_246()) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_116() {
+    if (jj_3R_158()) return true;
     return false;
   }
 
@@ -11605,6 +11601,12 @@ ClosedStart() : {
       xsp = jj_scanpos;
       if (jj_3R_293()) { jj_scanpos = xsp; break; }
     }
+    return false;
+  }
+
+  final private boolean jj_3R_292() {
+    if (jj_scan_token(COMMA)) return true;
+    if (jj_3R_63()) return true;
     return false;
   }
 
