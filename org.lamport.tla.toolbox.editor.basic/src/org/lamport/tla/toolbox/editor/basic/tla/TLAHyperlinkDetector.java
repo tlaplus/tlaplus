@@ -17,8 +17,8 @@ import org.lamport.tla.toolbox.editor.basic.util.DocumentHelper;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 
+import tla2sany.parser.SyntaxTreeNode;
 import tla2sany.semantic.SymbolNode;
-import tla2sany.st.TreeNode;
 import util.UniqueString;
 
 /**
@@ -52,7 +52,7 @@ public class TLAHyperlinkDetector extends AbstractHyperlinkDetector
                         .getDefaultWordDetector());
             }
             label = document.get(region.getOffset(), region.getLength());
-            
+
             // System.out.println("Hyperlink request at position " + region.getOffset() + " for '" + label + "'");
 
             SymbolNode resolvedSymbol = ToolboxHandle.getSpecObj().getExternalModuleTable().getRootModule()
@@ -61,7 +61,13 @@ public class TLAHyperlinkDetector extends AbstractHyperlinkDetector
             // try symbols (does not work for module nodes)
             if (resolvedSymbol != null)
             {
-                TreeNode csNode = resolvedSymbol.getTreeNode();
+                SyntaxTreeNode csNode = (SyntaxTreeNode) resolvedSymbol.getTreeNode();
+                for (int i = 0; i < csNode.getAttachedComments().length; i++)
+                {
+                    System.out.println(csNode.getAttachedComments()[i]);
+                }
+                
+                
                 IResource resource = null;
                 // 
                 if (ToolboxHandle.isUserModule(ResourceHelper.getModuleFileName(csNode.getFilename())))
