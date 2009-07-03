@@ -104,6 +104,7 @@ public class LeafProofNode extends ProofNode {
       } ;
     ret += Strings.indent(2, "\nomitted: " + this.omitted)
             + Strings.indent(2, "\nonlyFlag: " + this.onlyFlag);
+    ret += this.getPreCommentsAsString() ;
     return ret;
    }
 
