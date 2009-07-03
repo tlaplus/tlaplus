@@ -33,8 +33,8 @@ public class ParserDependencyStorageTest extends TestCase
     {
         store.put("module1", Arrays.asList(new String[]{"extend1", "extend2", "extend1"}));
         
-        assertTrue(store.getListOfModules("extend1").contains("module1") && store.getListOfModules("extend1").size() == 1);
-        assertTrue(store.getListOfModules("extend2").contains("module1") && store.getListOfModules("extend2").size() == 1);
+        assertTrue(store.getListOfModulesToReparse("extend1").contains("module1") && store.getListOfModulesToReparse("extend1").size() == 1);
+        assertTrue(store.getListOfModulesToReparse("extend2").contains("module1") && store.getListOfModulesToReparse("extend2").size() == 1);
     }
     
     /**
@@ -48,9 +48,9 @@ public class ParserDependencyStorageTest extends TestCase
         store.put("A", Arrays.asList(new String[]{"E", "D", "E"}));
         store.put("B", Arrays.asList(new String[]{"C", "E", "D", "E"}));
         
-        List cModules = store.getListOfModules("C");
-        List dModules = store.getListOfModules("D");
-        List eModules = store.getListOfModules("E");
+        List cModules = store.getListOfModulesToReparse("C");
+        List dModules = store.getListOfModulesToReparse("D");
+        List eModules = store.getListOfModulesToReparse("E");
         
         assertEquals(1, cModules.size());
         assertTrue(cModules.contains("B"));
@@ -80,9 +80,9 @@ public class ParserDependencyStorageTest extends TestCase
         store.put("B", Arrays.asList(new String[]{"C", "E", "D", "E"}));
         store.parseFailed("A");
         
-        List cModules = store.getListOfModules("C");
-        List dModules = store.getListOfModules("D");
-        List eModules = store.getListOfModules("E");
+        List cModules = store.getListOfModulesToReparse("C");
+        List dModules = store.getListOfModulesToReparse("D");
+        List eModules = store.getListOfModulesToReparse("E");
         
         assertEquals(1, cModules.size());
         assertTrue(cModules.contains("B"));
@@ -104,7 +104,7 @@ public class ParserDependencyStorageTest extends TestCase
     {
         List modules1 = store.put("A", Arrays.asList(new String[]{"B", "C"}));
         List modules2 = store.put("A", Arrays.asList(new String[]{"C", "D"}));
-        List modulesD  = store.getListOfModules("D");
+        List modulesD  = store.getListOfModulesToReparse("D");
         
         assertNull(modules1);
         
