@@ -41,7 +41,7 @@ public class LeafProofNode extends ProofNode {
     * facts and defs field will be null.  But that is also the case for    *
     * an "OBVIOUS" proof.                                                  *
     ***********************************************************************/
-  boolean onlyFlag ;
+  boolean isOnly ;
     /***********************************************************************
     * True iff this is a "BY ONLY" proof.                                  *
     ***********************************************************************/
@@ -55,7 +55,7 @@ public class LeafProofNode extends ProofNode {
     this.facts   = theFacts ;
     this.defs    = theDefs ;
     this.omitted = omit ;
-    this.onlyFlag = only ;
+    this.isOnly = only ;
    } ;
 
 
@@ -65,7 +65,7 @@ public class LeafProofNode extends ProofNode {
   public LevelNode[]  getFacts() {return facts ; } ;
   public SymbolNode[] getDefs() {return defs ;} ;
   public boolean getOmitted() {return omitted ;} ;
-  public boolean getOnlyFlag() {return onlyFlag ;} ;
+  public boolean getOnlyFlag() {return isOnly ;} ;
   
   public boolean levelCheck(int iter) { 
     /***********************************************************************
@@ -103,7 +103,7 @@ public class LeafProofNode extends ProofNode {
         ret += Strings.indent(4, this.defs[i].toString(depth-1)) ;
       } ;
     ret += Strings.indent(2, "\nomitted: " + this.omitted)
-            + Strings.indent(2, "\nonlyFlag: " + this.onlyFlag);
+            + Strings.indent(2, "\nonlyFlag: " + this.isOnly);
     return ret;
    }
 
