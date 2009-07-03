@@ -80,7 +80,7 @@ public abstract class OpDefOrDeclNode extends SymbolNode {
            + "  orgDefInModule: " + (originallyDefinedInModule != null 
                              ? originallyDefinedInModule.getName().toString() 
                              : "<null>" )
-           + this.PreCommentsAsString();
+           + this.getPreCommentsAsString();
   }
   
 }
