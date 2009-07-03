@@ -104,16 +104,18 @@ implements ASTConstants, ExploreNode, LevelConstants {
   /* Returns the same concrete syntax tree node. */
   public final TreeNode getTreeNode() { return this.stn; }
 
-  /* Returns the array of comments immediately preceding the first
+  /**
+   * Returns the array of comments immediately preceding the first
    * token of the spec that produces this semantic node.
    */
   public String[] getPreComments() { return ((SyntaxTreeNode) this.stn).getAttachedComments() ; }  
  
-  /* Returns the result of getPreComments poorly formatted for
+  /** 
+   * Returns the result of getPreComments poorly formatted for
    * printing.  To be used in the toString methods for the various
    * node types.
    */
-  public String PreCommentsAsString() { return SyntaxTreeNode.PreCommentToString(this.getPreComments()) ; } 
+  public String getPreCommentsAsString() { return SyntaxTreeNode.PreCommentToString(this.getPreComments()) ; } 
   
   /**
    * This returns the context of the node in the semantic tree.  It is
