@@ -1,7 +1,7 @@
 // Copyright (c) 2003 Compaq Corporation.  All rights reserved.
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
 //
-// last modified on Wed  1 July 2009 at 16:16:36 PST by lamport
+// last modified on Thu  2 July 2009 at 14:37:03 PST by lamport
 
 //
 //  4/9/2006 Added a check in RecordConstructor for duplicate fields
@@ -474,11 +474,22 @@ public class Generator implements ASTConstants, SyntaxTreeConstants,
            break ;
 
            default:
-             errors.addAbort(
+             /***************************************************************
+             * This error occurs on silly input like                        *
+             *                                                              *
+             *        USE DEF <<1, 2>>                                      *
+             *                                                              *
+             * It therefore seems better to report a mysterious error and   *
+             * let processing continue in the hopes that it will generate   *
+             * a later, more useful error.                                  *
+             ***************************************************************/
+//             errors.addAbort(
+             errors.addError(
                stn.getLocation(),
-               "Internal error: Selector had unexpected node kind " + 
-                stn.getKind()) ;
-           break ;
+//               "Internal error: Selector had unexpected node kind " + 
+//               stn.getKind()) ;
+              "Unexpected token found." ) ;
+            break ;
           } ;
         } // for
       }
@@ -521,7 +532,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants,
                         throws AbortException {
     /***********************************************************************
     * Constructs a selector in which all the addSelector calls to          *
-    * translate the GeneralId node genId have beed made and finish has     *
+    * translate the GeneralId node genId have been made and finish has     *
     * been called.                                                         *
     *                                                                      *
     * See the commments in tla+.jj before the OpOrExpr() production to     *
@@ -532,7 +543,18 @@ public class Generator implements ASTConstants, SyntaxTreeConstants,
     TreeNode[] prefixElts = prefix.heirs() ;
     SyntaxTreeNode lastOp = (SyntaxTreeNode) genId.heirs()[1] ;
     for (int i = 0 ; i < prefixElts.length; i++) {
-      SyntaxTreeNode thisPrefix = (SyntaxTreeNode) prefixElts[i].heirs()[0] ;
+      TreeNode[] pe = prefixElts[i].heirs();
+      if (pe.length == 0) { 
+        /*******************************************************************
+        * We reach this point when processing the nonsensical input        *
+        *   HIDE DEF X'                                                    *
+        * So we report a not very helpful error in the hopes that further  *
+        * processing will produce a more useful error message.             *
+        *******************************************************************/
+        errors.addError(genId.getLocation(), 
+                "Was expecting a GeneralId."); 
+        break ;} ;
+      SyntaxTreeNode thisPrefix = (SyntaxTreeNode) pe[0] ;
       switch (thisPrefix.getKind()) {
         case N_OpArgs: 
           retval.addSelector(thisPrefix, thisPrefix) ;
@@ -2284,7 +2306,13 @@ OpDefNode node = (OpDefNode) vec.elementAt(i);
 //    SymbolNode symbolNode = 
      SymbolTable st = null ;
      if (declare) {st = symbolTable;};
-     return new  OpDeclNode(us, declKind, declLevel, arity, cm, 
+
+     /**********************************************************************
+     * Changed us to Operators.resolveSynonym(us) in the following so      *
+     * constant declarations work with any synonym for an operator--e.g.,  *
+     * with both (+) and \oplus.                                           *
+     **********************************************************************/
+     return new  OpDeclNode(Operators.resolveSynonym(us), declKind, declLevel, arity, cm, 
                             st, treeNode);
   }
 
@@ -2637,7 +2665,7 @@ OpDefNode node = (OpDefNode) vec.elementAt(i);
     * if it was declared in a RECURSIVE statement, then there is no need   *
     * to add this OpDeclNode to the symbol table.  As near as I can tell   *
     * (which might not be near enough), this OpDeclNode's entry in the     *
-    * symbol table is needed in only so the name will be declared in case  *
+    * symbol table is needed only so the name will be declared in case     *
     * of a recursive call.  The check for whether a function call in the   *
     * body actually is recursive is made by calling the recursionCheck     *
     * method of the Function subclass to see if the OpApplNode is in the   *
@@ -2756,10 +2784,16 @@ OpDefNode node = (OpDefNode) vec.elementAt(i);
     functions.pop();
 
     oan.setArgs( lhs );
-
+    /***********************************************************************
+    *  Test for odn != null added 2 Jul 2009 to avoid bug that caused      *
+    *  popping of empty symbol table when the function name was            *
+    *  already declared to be a variable.                                  *
+    ***********************************************************************/
+    if (odn != null){
     // Restore old context
     symbolTable.popContext();
-
+    }
+    
     // if the function body turned out to be non-recursive, then we
     // should null-out the fcnDefForRecursion ref put in place above,
     // since it is unnecessary for a nonrecursive func
@@ -5449,7 +5483,7 @@ OpDefNode node = (OpDefNode) vec.elementAt(i);
   private final ProofNode generateProof(TreeNode stn, ModuleNode cm) 
     /***********************************************************************
     * Node stn is of kind N_TerminalProof or an N_Proof.  The heirs of an  *
-    * N_Proof node consist of an option PROOF token followed by a          *
+    * N_Proof node consist of an optional PROOF token followed by a        *
     * seequence of N_ProofStep nodes.  The heirs of an N_ProofStep node    *
     * are a StartStep() token, a statement body, and an optional proof.    *
     * A statement body is one of the following node kinds:                 *
@@ -6422,12 +6456,15 @@ errors.addAbort(stn.getLocation(), "Uses generateNumerable_Step") ;
       nextTok++ ;
      } ;
     
+    boolean isOnly = false ;
+    
     if (heirs[nextTok].getKind() == TLAplusParserConstants.BY) {
       /*********************************************************************
       * For a BY proof, call generate a UseOrHideNode and use its facts    *
       * and defs field.                                                    *
       *********************************************************************/
       UseOrHideNode uh = generateUseOrHide(stn, cm) ;
+      isOnly = uh.isOnly ;
       facts = uh.facts;
       defs  = uh.defs;
       /*********************************************************************
@@ -6443,7 +6480,7 @@ errors.addAbort(stn.getLocation(), "Uses generateNumerable_Step") ;
       if (heirs[nextTok].getKind() == TLAplusParserConstants.OMITTED) {
        omitted = true ; };
      } ;
-    return new LeafProofNode(stn, facts, defs, omitted) ;    
+    return new LeafProofNode(stn, facts, defs, omitted, isOnly) ;    
    }
 
   UseOrHideNode 
@@ -6456,6 +6493,13 @@ errors.addAbort(stn.getLocation(), "Uses generateNumerable_Step") ;
     ***********************************************************************/
     int kind = UseKind ;
     TreeNode heirs[] = stn.heirs() ;
+   
+    boolean isOnly = false;
+      /*********************************************************************
+      * True iff this is an "ONLY" step.  For the moment, the javacc       *
+      * parsing allows this only for a BY ONLY. However, to add a USE      *
+      * ONLY, it is necessary only to modify the javacc code.              *
+      *********************************************************************/
       
     if (heirs[0].getKind() == TLAplusParserConstants.HIDE)
       {kind = HideKind; } ;
@@ -6474,10 +6518,8 @@ errors.addAbort(stn.getLocation(), "Uses generateNumerable_Step") ;
       * To hold the facts and then the defs.                               *
       *********************************************************************/
 
-/***************************************************************************
-* Added as a hack.  Additional processing needed to really handle "ONLY".  *
-***************************************************************************/
     if (heirs[nextTok].getKind() == TLAplusParserConstants.ONLY) {
+      isOnly = true;
       nextTok++ ;
      } ;
 
@@ -6586,7 +6628,7 @@ errors.addAbort(stn.getLocation(), "Uses generateNumerable_Step") ;
             ***************************************************************/
             errors.addError(
               heirs[nextTok].getLocation(),
-              "DEF clause entry ought to describe a defined operator.") ;
+              "DEF clause entry should describe a defined operator.") ;
            } // else
          } // else
         nextTok++ ;
@@ -6600,7 +6642,7 @@ errors.addAbort(stn.getLocation(), "Uses generateNumerable_Step") ;
         defs[i] = (SymbolNode) vec.elementAt(i) ;
        } ;
      } // else of if (nextTok >= heirs.length)
-    return new UseOrHideNode(kind, stn, facts, defs) ;
+    return new UseOrHideNode(kind, stn, facts, defs, isOnly) ;
    } // generateUseOrHide
 
   void processRecursive(TreeNode tn, ModuleNode cm) {

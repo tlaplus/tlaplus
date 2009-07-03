@@ -1,5 +1,5 @@
 // Copyright (c) 2007 Microsoft Corporation.  All rights reserved.
-// last modified on Wed  1 July 2009 at 16:54:04 PST by lamport 
+// last modified on Thu  2 July 2009 at 14:44:35 PST by lamport 
 package tla2sany.semantic;
 
 import java.util.Hashtable;
@@ -36,15 +36,24 @@ public class UseOrHideNode extends LevelNode {
     * ModuleInstanceKind OpDefNode or a ThmOrAssumpDefNode                 *
     ***********************************************************************/
 
+  public boolean isOnly ;
+    /***********************************************************************
+    * True iff this node was formed from an "ONLY" step.  At the moment,   *
+    * this is possible only if the node was temporarily constructed for    *
+    * making a LeafProofNode for a "BY ONLY" proof.  But, we may add a     *
+    * "USE ONLY" construct as well.                                        *
+    ***********************************************************************/
+    
   /*************************************************************************
   * The constructor.                                                       *
   *************************************************************************/
   public UseOrHideNode(int kind, TreeNode stn, LevelNode[] theFacts, 
-                   SymbolNode[] theDefs) {
+                   SymbolNode[] theDefs, boolean only) {
     super(kind, stn) ;
     this.facts = theFacts ;
     this.defs = theDefs ;
-   } ;
+    this.isOnly = only ;
+  } ;
   
   /*************************************************************************
   * The following method was added 4 Mar 2009 to check the restriction     *

@@ -1,7 +1,7 @@
 // Copyright (c) 2003 Compaq Corporation.  All rights reserved.
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
 
-// last modified on Wed  4 March 2009 at 14:23:16 PST by lamport
+// last modified on Thu  2 July 2009 at 15:44:27 PST by lamport
 
 // Changed by LL on 17 Mar 2007 to handle THEOREM ASSUME ...
 //   Replaced theoremExpr field with theoremExprOrAssumeProve.
@@ -15,6 +15,7 @@ package tla2sany.semantic;
 
 import java.util.Hashtable;
 
+import tla2sany.parser.SyntaxTreeNode;
 import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
 import util.UniqueString;
@@ -47,6 +48,12 @@ public class TheoremNode extends LevelNode {
      * step is a SUFFICES step.                                            *
      **********************************************************************/
      
+   private String[] preComments = null ;
+    /***********************************************************************
+    * The array of comments that precede the THEOREM token for an          *
+    * outer-level theorem.                                                 *
+    ***********************************************************************/
+
    ProofNode proof;
      /**********************************************************************
      * The proof, if there is one; else null.                              *
@@ -96,6 +103,15 @@ public class TheoremNode extends LevelNode {
     return def.getName() ;
     } 
 
+  /*************************************************************************
+  * Methods for setting and fetching the preComments field.                *
+  *************************************************************************/
+  public String[] getPreComments() { return preComments ; }
+  public void setPreComments(String[] preComments) { 
+    this.preComments = preComments; 
+    return ; 
+    }
+  
   /* Level checking */
 
   int levelChecked = 0 ;
@@ -317,6 +333,9 @@ public final boolean levelCheck(int iter) {
                       2, 
                       "\n SUFFICES step");
      } ;
+
+    res += "\t" + SyntaxTreeNode.PreCommentToString(preComments);
+
     if (proof != null) {
       res = res + Strings.indent(
                       2, 

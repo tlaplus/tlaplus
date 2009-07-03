@@ -1,6 +1,6 @@
 // Copyright (c) 2007 Microsoft Corporation.  All rights reserved.
 
-// last modified on Tue 17 February 2009 at 14:53:21 PST by lamport
+// last modified on Thu  2 July 2009 at 15:44:33 PST by lamport
 /***************************************************************************
 * The ThmOrAssumpDefNode constructor is invoked in                         *
 * semantic/Generator.java to construct the nodes corresponding to the      *
@@ -25,7 +25,9 @@ package tla2sany.semantic;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
+import tla2sany.parser.SyntaxTreeNode;
 import tla2sany.st.TreeNode;
+ 
 import tla2sany.utilities.Strings;
 import tla2sany.utilities.Vector;
 import util.UniqueString;
@@ -51,7 +53,7 @@ public class ThmOrAssumpDefNode extends SymbolNode
     * If this represents a theorem, then this is the value of the          *
     * TheoremNode's suffices field (which is false unless the TheoremNode  *
     * represents a SUFFICES proof step).  This is a kludge added for the   *
-    * following reason.  To check if a reference ot a subexpression of an  *
+    * following reason.  To check if a reference to a subexpression of an  *
     * ASSUME/PROVE is legal, we need to know whether or not the            *
     * ASSUME/PROVE lies within a SUFFICES step.  However, the reference    *
     * accesses the ThmOrAssumpDefNode, while it's the TheoremNode that     *
@@ -65,6 +67,7 @@ public class ThmOrAssumpDefNode extends SymbolNode
     *                                                                      *
     * This field is set by setSuffices() and read by isSuffices() ;        *
     ***********************************************************************/
+  
     
   /*************************************************************************
   * The following field is used to implement the OpDefOrLabel interface.   *
@@ -211,7 +214,8 @@ public class ThmOrAssumpDefNode extends SymbolNode
     * Returns true iff the body is an ExprNode (rather than an             *
     * AssumeProveNode or APSubstInNode).                                   *
     ***********************************************************************/
-    
+
+  
   /*************************************************************************
   * Implementations of the abstract methods of the SymbolNode superclass.  *
   *************************************************************************/
@@ -370,7 +374,7 @@ public class ThmOrAssumpDefNode extends SymbolNode
          } ;
       }  
     else {ret += "\n  Labels: null";};
-
+    
     return ret ;
    }
 }

@@ -7,6 +7,7 @@ package tla2sany.semantic;
 import java.util.Hashtable;
 
 import tla2sany.explorer.ExploreNode;
+import tla2sany.parser.SyntaxTreeNode;
 import tla2sany.st.Location;
 import tla2sany.st.TreeNode;
 import util.ToolIO;
@@ -103,6 +104,17 @@ implements ASTConstants, ExploreNode, LevelConstants {
   /* Returns the same concrete syntax tree node. */
   public final TreeNode getTreeNode() { return this.stn; }
 
+  /* Returns the array of comments immediately preceding the first
+   * token of the spec that produces this semantic node.
+   */
+  public String[] getPreComments() { return ((SyntaxTreeNode) this.stn).getAttachedComments() ; }  
+ 
+  /* Returns the result of getPreComments poorly formatted for
+   * printing.  To be used in the toString methods for the various
+   * node types.
+   */
+  public String PreCommentsAsString() { return SyntaxTreeNode.PreCommentToString(this.getPreComments()) ; } 
+  
   /**
    * This returns the context of the node in the semantic tree.  It is
    * not defined what that means.  Here's the idea behind this method.

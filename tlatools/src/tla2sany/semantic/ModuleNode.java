@@ -16,6 +16,7 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 
+import tla2sany.parser.SyntaxTreeNode;
 import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
 import tla2sany.utilities.Vector;
@@ -495,7 +496,8 @@ public class ModuleNode extends SymbolNode {
     * topLevelVec.                                                         *
     ***********************************************************************/
     AssumeNode an = new AssumeNode( stn, ass, this, tadn ) ;
-    assumptionVec.addElement(an);
+    an.setPreComments(((SyntaxTreeNode) stn).getAttachedComments()) ;
+   assumptionVec.addElement(an);
     topLevelVec.addElement(an);
   }
 
@@ -509,6 +511,7 @@ public class ModuleNode extends SymbolNode {
     * LL Change: 29 Jul 2007 - Add node to topLevelVec.                    *
     ***********************************************************************/
     TheoremNode tn = new TheoremNode( stn, thm, this, pf, tadn ) ;
+    tn.setPreComments(((SyntaxTreeNode) stn).getAttachedComments()) ;
     theoremVec.addElement(tn);
     topLevelVec.addElement(tn);
   }

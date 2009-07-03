@@ -282,12 +282,12 @@ public class SyntaxTreeNode implements TreeNode, SyntaxTreeConstants,
 
   public final String [] getPreComments()  { return preComment; }
 
+   /***********************************************************************
+   * For a token node, returns its pre-comments.  Otherwise, it returns   *
+   * the pre-comments attached to the first token-node descendant of      *
+   * this node.                                                           *
+   ***********************************************************************/
   public final String [] getAttachedComments() {
-    /***********************************************************************
-    * For a token node, returns its pre-comments.  Otherwise, it returns   *
-    * the pre-comments attached to the first token-node descendant of      *
-    * this node.                                                           *
-    ***********************************************************************/
     if (this.kind < SyntaxTreeConstants.NULL_ID) { return preComment; } ;
     if (this.heirs().length == 0) {
       String[] res = new String[1] ;
@@ -444,18 +444,14 @@ public class SyntaxTreeNode implements TreeNode, SyntaxTreeConstants,
     }
 
     for (int i = 0; i < indentLevel; i++) System.out.print(Strings.blanks[2]);
-
+    
     System.out.print((image == null ? "(" + SyntaxNodeImage[kind].toString() 
          + ")" : image.toString()) 
          + "\t" + (operator != "" ? operator + "\t" : "")
          + "  #heirs: " + heirs.length + "\t"
-         + "  kind:   " + kind + 
-           /****************************************************************
-           * Hack added by LL on 21 Jun 2009 to print pre-comments.        *
-           ****************************************************************/
-          ((preComment.length != 0)?("\tpreComment[0]: " + preComment[0]):(""))
-          + "\n"      
-         );
+         + "  kind:   " + kind + PreCommentToString(preComment) + "\n"      
+                  // Printing of preComment added by LL on 2 Jul 2009
+    );
 
     for (int i=0; i<heirs.length; i++) {
       if (heirs[i] != null)
@@ -469,5 +465,13 @@ public class SyntaxTreeNode implements TreeNode, SyntaxTreeConstants,
     } // end for
     
   } // end method
-
-}
+ 
+  public static String PreCommentToString(String[] pcarray) {
+    if (pcarray == null || pcarray.length == 0) {return "";};
+    String res = "\n preComment: ";
+    for (int i = 0; i < pcarray.length; i++) {
+      res = res +  ((i==0)?"":"\n             ") + i + " " + pcarray[i];
+    };
+    return res ;
+  }
+  }

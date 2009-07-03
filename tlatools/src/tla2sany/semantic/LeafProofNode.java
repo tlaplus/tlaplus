@@ -16,7 +16,7 @@ public class LeafProofNode extends ProofNode {
   *                                                                        *
   * A leaf proof has the syntax                                            *
   *                                                                        *
-  *   [PROOF]   BY [facts] [DEF[S] defs].                                  *
+  *   [PROOF]   BY [ONLY] [facts] [DEF[S] defs].                           *
   *           | OBVIOUS                                                    *
   *           | OMITTED                                                    *
   *                                                                        *
@@ -41,16 +41,21 @@ public class LeafProofNode extends ProofNode {
     * facts and defs field will be null.  But that is also the case for    *
     * an "OBVIOUS" proof.                                                  *
     ***********************************************************************/
-
+  boolean onlyFlag ;
+    /***********************************************************************
+    * True iff this is a "BY ONLY" proof.                                  *
+    ***********************************************************************/
+    
   /*************************************************************************
   * The constructor.                                                       *
   *************************************************************************/
   public LeafProofNode(TreeNode stn, LevelNode[] theFacts, 
-                   SymbolNode[] theDefs, boolean omit) {
+                   SymbolNode[] theDefs, boolean omit, boolean only) {
     super(LeafProofKind, stn) ;
     this.facts   = theFacts ;
     this.defs    = theDefs ;
     this.omitted = omit ;
+    this.onlyFlag = only ;
    } ;
 
 
@@ -60,7 +65,8 @@ public class LeafProofNode extends ProofNode {
   public LevelNode[]  getFacts() {return facts ; } ;
   public SymbolNode[] getDefs() {return defs ;} ;
   public boolean getOmitted() {return omitted ;} ;
-
+  public boolean getOnlyFlag() {return onlyFlag ;} ;
+  
   public boolean levelCheck(int iter) { 
     /***********************************************************************
     * Level checking is performed by level-checking the facts.  Since the  *
@@ -96,7 +102,8 @@ public class LeafProofNode extends ProofNode {
     for (int i = 0 ; i < this.defs.length; i++) {
         ret += Strings.indent(4, this.defs[i].toString(depth-1)) ;
       } ;
-    ret += Strings.indent(2, "\nomitted: " + this.omitted) ;
+    ret += Strings.indent(2, "\nomitted: " + this.omitted)
+            + Strings.indent(2, "\nonlyFlag: " + this.onlyFlag);
     return ret;
    }
 

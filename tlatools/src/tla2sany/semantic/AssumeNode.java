@@ -5,6 +5,7 @@ package tla2sany.semantic;
 import java.util.HashSet;
 import java.util.Hashtable;
 
+import tla2sany.parser.SyntaxTreeNode;
 import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
 
@@ -26,6 +27,14 @@ public class AssumeNode extends LevelNode {
     * "ASSUME foo == ...", this is the ThmOrAssumpDefNode for the          *
     * definition.                                                          *
     ***********************************************************************/
+
+  private String[] preComments = null ;
+    /***********************************************************************
+    * The array of comments that precede the ASSUME token for an           *
+    * outer-level theorem.                                                 *
+    ***********************************************************************/
+
+
 //  boolean     localness;
 //  Assumptions can no longer be local
 
@@ -50,6 +59,15 @@ public class AssumeNode extends LevelNode {
   public final ThmOrAssumpDefNode getDef() {return this.def;};  
 
 //  public final boolean isLocal() { return false; }
+
+  /*************************************************************************
+  * Methods for setting and fetching the preComments field.                *
+  *************************************************************************/
+  public String[] getPreComments() { return preComments ; }
+  public void setPreComments(String[] preComments) { 
+    this.preComments = preComments; 
+    return ; 
+    }
   
   /* Level checking */
   int levelChecked = 0 ;
@@ -124,6 +142,7 @@ public class AssumeNode extends LevelNode {
 //                        "   local: " + localness +
          ((assumeExpr != null)  ? 
              Strings.indent(2,assumeExpr.toString(depth-1)) : "" ));
+   res = res + SyntaxTreeNode.PreCommentToString(preComments);
    if (def != null) {
       res = res + Strings.indent(
                       4, 
