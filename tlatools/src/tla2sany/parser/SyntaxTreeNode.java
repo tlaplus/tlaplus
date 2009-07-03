@@ -290,8 +290,14 @@ public class SyntaxTreeNode implements TreeNode, SyntaxTreeConstants,
   public final String [] getAttachedComments() {
     if (this.kind < SyntaxTreeConstants.NULL_ID) { return preComment; } ;
     if (this.heirs().length == 0) {
-      String[] res = new String[1] ;
-      res[0] = "No left-most token node???" ;
+        String[] res = new String[0] ;
+     /** 
+      * On 3 Jul 2009 LL replaced the following code with this.  It
+      * appears that this method was never used until printing of 
+      * comments in debug mode was added in Jul 2009.
+      */
+//      String[] res = new String[1] ;
+//      res[0] = "No left-most token node???" ;
       return res ; } ;
     return ((SyntaxTreeNode) this.heirs()[0]).getAttachedComments() ;
    }

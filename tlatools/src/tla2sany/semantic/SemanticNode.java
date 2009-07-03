@@ -160,7 +160,8 @@ implements ASTConstants, ExploreNode, LevelConstants {
   public String toString(int depth) {
     if (depth <= 0) return "";
     return ("  uid: " + myUID +
-	    "  kind: " + (kind == -1 ? "<none>" : kinds[kind]));
+	    "  kind: " + (kind == -1 ? "<none>" : kinds[kind])
+	    + getPreCommentsAsString());
   }
 
   // YY's code

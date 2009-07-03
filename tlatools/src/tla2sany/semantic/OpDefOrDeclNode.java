@@ -79,8 +79,7 @@ public abstract class OpDefOrDeclNode extends SymbolNode {
            + "  arity: " + arity 
            + "  orgDefInModule: " + (originallyDefinedInModule != null 
                              ? originallyDefinedInModule.getName().toString() 
-                             : "<null>" )
-           + this.getPreCommentsAsString();
+                             : "<null>" );
   }
   
 }

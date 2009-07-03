@@ -48,12 +48,7 @@ public class TheoremNode extends LevelNode {
      * step is a SUFFICES step.                                            *
      **********************************************************************/
      
-   private String[] preComments = null ;
-    /***********************************************************************
-    * The array of comments that precede the THEOREM token for an          *
-    * outer-level theorem.                                                 *
-    ***********************************************************************/
-
+  
    ProofNode proof;
      /**********************************************************************
      * The proof, if there is one; else null.                              *
@@ -102,16 +97,7 @@ public class TheoremNode extends LevelNode {
     if (def == null) {return null;} ;
     return def.getName() ;
     } 
-
-  /*************************************************************************
-  * Methods for setting and fetching the preComments field.                *
-  *************************************************************************/
-  public String[] getPreComments() { return preComments ; }
-  public void setPreComments(String[] preComments) { 
-    this.preComments = preComments; 
-    return ; 
-    }
-  
+ 
   /* Level checking */
 
   int levelChecked = 0 ;
@@ -333,8 +319,6 @@ public final boolean levelCheck(int iter) {
                       2, 
                       "\n SUFFICES step");
      } ;
-
-    res += "\t" + SyntaxTreeNode.PreCommentToString(preComments);
 
     if (proof != null) {
       res = res + Strings.indent(

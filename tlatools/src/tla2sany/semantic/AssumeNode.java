@@ -28,12 +28,6 @@ public class AssumeNode extends LevelNode {
     * definition.                                                          *
     ***********************************************************************/
 
-  private String[] preComments = null ;
-    /***********************************************************************
-    * The array of comments that precede the ASSUME token for an           *
-    * outer-level theorem.                                                 *
-    ***********************************************************************/
-
 
 //  boolean     localness;
 //  Assumptions can no longer be local
@@ -60,15 +54,7 @@ public class AssumeNode extends LevelNode {
 
 //  public final boolean isLocal() { return false; }
 
-  /*************************************************************************
-  * Methods for setting and fetching the preComments field.                *
-  *************************************************************************/
-  public String[] getPreComments() { return preComments ; }
-  public void setPreComments(String[] preComments) { 
-    this.preComments = preComments; 
-    return ; 
-    }
-  
+   
   /* Level checking */
   int levelChecked = 0 ;
   public final boolean levelCheck(int iter) {
@@ -138,11 +124,10 @@ public class AssumeNode extends LevelNode {
     String res = 
        Strings.indent(
          2, 
-         "\n*AssumeNode " + super.toString( depth ) +
+         "\n*AssumeNode " + super.toString( depth ) + 
 //                        "   local: " + localness +
          ((assumeExpr != null)  ? 
              Strings.indent(2,assumeExpr.toString(depth-1)) : "" ));
-   res = res + SyntaxTreeNode.PreCommentToString(preComments);
    if (def != null) {
       res = res + Strings.indent(
                       4, 

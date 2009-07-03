@@ -496,7 +496,6 @@ public class ModuleNode extends SymbolNode {
     * topLevelVec.                                                         *
     ***********************************************************************/
     AssumeNode an = new AssumeNode( stn, ass, this, tadn ) ;
-    an.setPreComments(((SyntaxTreeNode) stn).getAttachedComments()) ;
    assumptionVec.addElement(an);
     topLevelVec.addElement(an);
   }
@@ -511,7 +510,6 @@ public class ModuleNode extends SymbolNode {
     * LL Change: 29 Jul 2007 - Add node to topLevelVec.                    *
     ***********************************************************************/
     TheoremNode tn = new TheoremNode( stn, thm, this, pf, tadn ) ;
-    tn.setPreComments(((SyntaxTreeNode) stn).getAttachedComments()) ;
     theoremVec.addElement(tn);
     topLevelVec.addElement(tn);
   }
