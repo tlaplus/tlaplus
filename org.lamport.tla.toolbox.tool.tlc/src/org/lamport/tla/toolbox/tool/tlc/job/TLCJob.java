@@ -2,20 +2,15 @@ package org.lamport.tla.toolbox.tool.tlc.job;
 
 import java.io.IOException;
 
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.Assert;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.debug.core.ILaunch;
-import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.jface.action.Action;
 import org.eclipse.ui.console.IOConsoleOutputStream;
-import org.lamport.tla.toolbox.tool.tlc.TLCActivator;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationDefaults;
 import org.lamport.tla.toolbox.tool.tlc.ui.ConsoleFactory;
@@ -37,9 +32,11 @@ public abstract class TLCJob extends AbstractJob implements IModelConfigurationC
     protected int workers = 1;
     protected IOConsoleOutputStream outputStream = ConsoleFactory.getTLCConsole().newOutputStream();
     protected ILaunch launch;
+    protected String modelName;
 
 
     /**
+     * Creates a TLC job for a given spec and model
      * @param rootModule
      * @param cfgFile
      * @param launchDir
@@ -47,6 +44,7 @@ public abstract class TLCJob extends AbstractJob implements IModelConfigurationC
     public TLCJob(String specName, String modelName, ILaunch launch)
     {
         super("TLC run for " + modelName);
+        this.modelName = modelName;
         IProject project = ResourceHelper.getProject(specName);
         Assert.isNotNull(project, "Error accessing the spec project " + specName);
         

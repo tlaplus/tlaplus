@@ -1,7 +1,5 @@
 package org.lamport.tla.toolbox.tool.tlc.job;
 
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -19,7 +17,6 @@ import org.eclipse.jdt.launching.JavaRuntime;
 import org.eclipse.jdt.launching.VMRunnerConfiguration;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.tool.tlc.TLCActivator;
-import org.lamport.tla.toolbox.tool.tlc.launch.TLCModelLaunchDelegate;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 
 import tlc2.TLC;
@@ -101,8 +98,6 @@ public class TLCProcessJob extends TLCJob
                 runner.run(tlcConfig, launch, new SubProgressMonitor(monitor, STEP));
             } catch (CoreException e)
             {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
                 return new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID, "Error launching TLC modle checker", e);
             }
 
@@ -132,6 +127,10 @@ public class TLCProcessJob extends TLCJob
             // process found
             if (process != null)
             {
+                // step 5
+                monitor.worked(STEP);
+                monitor.subTask("Model checking...");
+
                 process.getStreamsProxy().getOutputStreamMonitor().addListener(consleListener);
                 process.getStreamsProxy().getErrorStreamMonitor().addListener(consleListener);
 
@@ -147,20 +146,22 @@ public class TLCProcessJob extends TLCJob
                             process.terminate();
                         } catch (DebugException e)
                         {
-                            // TODO Auto-generated catch block
-                            e.printStackTrace();
+                            // react on the status code
+                            switch (e.getStatus().getCode())
+                            {
+                            case DebugException.TARGET_REQUEST_FAILED:
+                            case DebugException.NOT_SUPPORTED:
+                            default:
+                                return new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID, "Error terminating the running TLC instance. This is a bug. Make sure to exit the toolbox.");
+                            }
                         }
 
                         // abnormal termination
                         return Status.CANCEL_STATUS;
                     }
-
-                    // step 5 - n
-                    monitor.worked(STEP);
-                    monitor.subTask("Model checking...");
                 }
 
-                // step n+1
+                // step 6
                 monitor.worked(STEP);
                 monitor.subTask("Model checking finished.");
 
@@ -171,22 +172,15 @@ public class TLCProcessJob extends TLCJob
 
             } else
             {
-                // TODO process not found
-                return new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID, "Error launching TLC");
+                // process not found
+                return new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID, "Error launching TLC, the launched process cound not be found");
             }
 
         } finally
         {
-            // delete the semaphor
-            String modelLockName = this.launchDir.getName() + TLCModelLaunchDelegate.MODEL_LOCK;
-            IFile semaphor = this.rootModule.getProject().getFile(modelLockName);
-            try
-            {
-                semaphor.delete(IResource.FORCE, new SubProgressMonitor(monitor, STEP));
-            } catch (CoreException e)
-            {
-                e.printStackTrace();
-            }  
+            // delete the lock
+            // ModelHelper.removeLock(modelName, rootModule.getParent());
+
             // make sure to complete the monitor
             monitor.done();
         }
@@ -205,7 +199,7 @@ public class TLCProcessJob extends TLCJob
         } catch (InterruptedException e)
         {
             // nothing to do
-            e.printStackTrace();
+            // e.printStackTrace();
         }
         // return true if the TLC is still calculating
         return (!process.isTerminated());

@@ -1,16 +1,16 @@
 package org.lamport.tla.toolbox.tool.tlc.launch;
 
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.IJobChangeListener;
+import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
+import org.eclipse.core.runtime.jobs.MultiRule;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.model.ILaunchConfigurationDelegate;
@@ -19,6 +19,7 @@ import org.lamport.tla.toolbox.tool.tlc.TLCActivator;
 import org.lamport.tla.toolbox.tool.tlc.job.ModelCreationJob;
 import org.lamport.tla.toolbox.tool.tlc.job.TLCJob;
 import org.lamport.tla.toolbox.tool.tlc.job.TLCProcessJob;
+import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 
 /**
@@ -31,8 +32,6 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
 {
     public static final String LAUNCH_ID = "org.lamport.tla.toolbox.tool.tlc.modelCheck";
     public static final String MODE_MODELCHECK = "modelcheck";
-    /** name of the model lock file preventing multiple runs in the same directory */
-    public static final String MODEL_LOCK = "_model.lock";
 
     private IJobChangeListener writingJobStatusListener = new JobChangeAdapter() {
 
@@ -51,13 +50,27 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
         }
     };
 
+    /**
+     * A simple mutex rule 
+     */
+    public class MutexRule implements ISchedulingRule
+    {
+        public boolean isConflicting(ISchedulingRule rule)
+        {
+            return rule == this;
+        }
+        public boolean contains(ISchedulingRule rule)
+        {
+            return rule == this;
+        }
+    }
+
     public void launch(ILaunchConfiguration config, String mode, ILaunch launch, IProgressMonitor monitor)
             throws CoreException
     {
-
         // name of the specification
         String specName = config.getAttribute(SPEC_NAME, EMPTY_STRING);
-        
+
         // model name
         String modelName = config.getAttribute(MODEL_NAME, EMPTY_STRING);
 
@@ -69,29 +82,36 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
             throw new CoreException(new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID,
                     "Error accessing the spec project " + specName));
         }
-        
-        String modelLockName = modelName + MODEL_LOCK;
-        IFile semaphor = project.getFile(modelLockName);
-        if (semaphor.exists()) 
+
+        if (ModelHelper.hasLock(modelName, project))
         {
-            // previous run has not been completed 
+            // previous run has not been completed
             // exit
-            throw new CoreException(new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID, "The " + modelLockName + " has been found. Another TLC is possible running on the same model, or has been terminated non-gracefully"));
+            throw new CoreException(
+                    new Status(
+                            IStatus.ERROR,
+                            TLCActivator.PLUGIN_ID,
+                            "The lock for "
+                                    + modelName
+                                    + " has been found. Another TLC is possible running on the same model, or has been terminated non-gracefully"));
         }
-        
-        
+
+        // Mutex rule for the following jobs to run after each other 
+        MutexRule mutexRule = new MutexRule();
+
         // number of workers
         int numberOfWorkers = config.getAttribute(LAUNCH_NUMBER_OF_WORKERS, LAUNCH_NUMBER_OF_WORKERS_DEFAULT);
 
-        
         // model job
-        ModelCreationJob modelJob = new ModelCreationJob(config);
+        ModelCreationJob modelJob = new ModelCreationJob(specName, modelName, config);
         modelJob.setPriority(Job.SHORT);
-        modelJob.setRule(ResourceHelper.getCreateRule(semaphor /*ResourcesPlugin.getWorkspace().getRoot()*/ /*modelFolder, cfgFile, tlaFile*/ ));        
-        
-        // run the job
+        // the combination of two rules is used
+        // the mutexRule prevents TLCProcessJob from running during the files are being written
+        // the modify rule prevents modifications of the project during the creation of the model files
+        ISchedulingRule combinedRule1 = MultiRule.combine(mutexRule, ResourceHelper.getModifyRule(project));
+        modelJob.setRule(combinedRule1);
         modelJob.schedule();
-        
+
         // TLC job
         // TLCJob tlcjob = new TLCInternalJob(tlaFile, cfgFile, project);
         TLCJob tlcjob = new TLCProcessJob(specName, modelName, launch);
@@ -99,10 +119,8 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
         tlcjob.addJobChangeListener(writingJobStatusListener);
         tlcjob.setPriority(Job.LONG);
         tlcjob.setUser(true);
-        tlcjob.setRule(ResourceHelper.getDeleteRule( new IResource[] { semaphor /* ResourcesPlugin.getWorkspace().getRoot()*/ /*modelFolder, cfgFile, tlaFile*/ }));
-        
-        // run the job
+        tlcjob.setRule(mutexRule);
         tlcjob.schedule();
-        
     }
+
 }

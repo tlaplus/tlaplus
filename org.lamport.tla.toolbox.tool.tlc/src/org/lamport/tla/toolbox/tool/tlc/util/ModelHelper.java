@@ -1,13 +1,21 @@
 package org.lamport.tla.toolbox.tool.tlc.util;
 
+import java.io.ByteArrayInputStream;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IResourceRuleFactory;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationType;
@@ -35,6 +43,9 @@ import tla2sany.semantic.SymbolNode;
  */
 public class ModelHelper implements IModelConfigurationConstants, IModelConfigurationDefaults
 {
+    /** name of the model lock file preventing multiple runs in the same directory */
+    public static final String MODEL_LOCK = "_model.lock";
+
     private static final String LIST_DELIMITER = ";";
     private static final String PARAM_DELIMITER = ":";
     private static long globalCounter = 1;
@@ -50,7 +61,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
      */
     public static String constructModelName(IProject specProject)
     {
-        
+
         return doConstructModelName(specProject, "Model_1");
     }
 
@@ -62,7 +73,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
      */
     public static String doConstructModelName(IProject specProject, String proposition)
     {
-        
+
         ILaunchConfiguration existingModel = getModelByName(specProject, proposition);
         if (existingModel != null || specProject.getFile(proposition + ".tla").exists())
         {
@@ -74,22 +85,22 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
 
         return proposition;
     }
+
     /**
      * Transforms a model name to the name visible to the user 
      * @param modelFile
      * @return
      */
-    public static String getModelName(IFile modelFile) 
+    public static String getModelName(IFile modelFile)
     {
         String name = modelFile.getLocation().removeFileExtension().lastSegment();
-        int i = name.indexOf(modelFile.getProject().getName()+"___");
-        if (i != -1) 
+        int i = name.indexOf(modelFile.getProject().getName() + "___");
+        if (i != -1)
         {
-            name = name.substring(i + (modelFile.getProject().getName()+"___").length());
+            name = name.substring(i + (modelFile.getProject().getName() + "___").length());
         }
         return name;
     }
-
 
     /**
      * Convenience method retrieving the model for the project of the current specification
@@ -110,7 +121,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
     public static ILaunchConfiguration getModelByName(IProject specProject, String modelName)
     {
         modelName = specProject.getName() + "___" + modelName;
-        
+
         ILaunchManager launchManager = DebugPlugin.getDefault().getLaunchManager();
         ILaunchConfigurationType launchConfigurationType = launchManager
                 .getLaunchConfigurationType(TLCModelLaunchDelegate.LAUNCH_ID);
@@ -442,7 +453,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
         } catch (InterruptedException e)
         {
         }
-        return schema + "_" + System.currentTimeMillis() + 1000 * ( ++globalCounter );
+        return schema + "_" + System.currentTimeMillis() + 1000 * (++globalCounter);
     }
 
     /**
@@ -572,18 +583,18 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
                 constantsToAdd.add(fromModule);
             }
         }
-         
+
         // add all
         constantsToDelete.addAll(constants);
         // remove all used
         constantsToDelete.removeAll(constantsUsed);
-        
+
         // at this point, all used constants are in the constantUsed list
         constants.retainAll(constantsUsed);
 
         // all constants to add are in constantsTo Add list
         constants.addAll(constantsToAdd);
-        
+
         return constantsToDelete;
     }
 
@@ -597,5 +608,96 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
         return UIHelper.getActivePage().findEditor(new FileEditorInput(model.getFile()));
     }
 
+    /**
+     * Removes the lock for the given model
+     * @param modelName name of the model
+     * @param lockContainer container of the lock
+     */
+    public static synchronized void createLock(String modelName, IContainer lockContainer)
+    {
+        IFile semaphor = getModelLockFile(modelName, lockContainer);
+        try
+        {
+            semaphor.create(new ByteArrayInputStream("1".getBytes()), IResource.DERIVED, new NullProgressMonitor());
+            System.out.println("Lock created");
+        } catch (CoreException e)
+        {
+            e.printStackTrace();
+        } 
+    }
+
+    /**
+     * Checks the presence of the lock file for the given model
+     * @param modelName model name
+     * @param lockContainer container holding the lock
+     * @return true if the lock is present
+     */
+    public static synchronized boolean hasLock(String modelName, IContainer lockContainer)
+    {
+        IFile semaphor = getModelLockFile(modelName, lockContainer);
+        return semaphor.exists();
+    }
+
+    /**
+     * Removes the lock for the given model
+     * @param modelName name of the model
+     * @param lockContainer container of the lock
+     */
+    public static synchronized void removeLock(String modelName, IContainer lockContainer)
+    {
+        IFile semaphor = getModelLockFile(modelName, lockContainer);
+        try
+        {
+            semaphor.delete(IResource.FORCE, new NullProgressMonitor());
+            System.out.println("Lock deleted");
+        } catch (CoreException e)
+        {
+            e.printStackTrace();
+        }
+    }
+    
+    /**
+     * Construct the file handle to the model lock
+     * <br><b>Note:</b> This is a handle operation, neither the container nor the file are verified.
+     * @param modelName name of the model
+     * @param lockContainer container for the lock file (usually project directory)
+     * @return file handle to the model lock
+     */
+    public static IFile getModelLockFile(String modelName, IContainer lockContainer)
+    {
+        String modelLockName = modelName + ModelHelper.MODEL_LOCK;
+        IFile semaphor = lockContainer.getFile(new Path(modelLockName));
+        return semaphor;
+    }
+
+    
+    public static ISchedulingRule getCreateRule(IResource resource)
+    {
+        IResourceRuleFactory ruleFactory = ResourcesPlugin.getWorkspace().getRuleFactory();
+        return ruleFactory.createRule(resource);
+    }
+
+    /**
+     * Retrieves a rule for modifying a resource
+     * @param resource
+     * @return
+     */
+    public static ISchedulingRule getModifyRule(IResource resource)
+    {
+        IResourceRuleFactory ruleFactory = ResourcesPlugin.getWorkspace().getRuleFactory();
+        ISchedulingRule rule = ruleFactory.modifyRule(resource);
+        return rule;
+    }
+
+    /**
+     * Retrieves a combined rule for deleting resource
+     * @param resource
+     * @return
+     */
+    public static ISchedulingRule getDeleteRule(IResource resource)
+    {
+        IResourceRuleFactory ruleFactory = ResourcesPlugin.getWorkspace().getRuleFactory();
+        return ruleFactory.deleteRule(resource);
+    }
 
 }

@@ -26,7 +26,6 @@ import org.lamport.tla.toolbox.tool.tlc.TLCActivator;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationDefaults;
 import org.lamport.tla.toolbox.tool.tlc.launch.ModelWriter;
-import org.lamport.tla.toolbox.tool.tlc.launch.TLCModelLaunchDelegate;
 import org.lamport.tla.toolbox.tool.tlc.model.TypedSet;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.util.ResourceHelper;
@@ -40,10 +39,14 @@ public class ModelCreationJob extends AbstractJob implements IModelConfiguration
 {
 
     private final ILaunchConfiguration config;
+    private final String modelName;
+    private final String specName;
 
-    public ModelCreationJob(ILaunchConfiguration config)
+    public ModelCreationJob(String specName, String modelName, ILaunchConfiguration config)
     {
-        super("Model creation");
+        super("Model preparation for " + modelName);
+        this.specName = specName;
+        this.modelName = modelName;
         this.config = config;
 
     }
@@ -73,8 +76,6 @@ public class ModelCreationJob extends AbstractJob implements IModelConfiguration
             monitor.beginTask("Creating model", 30);
 
             monitor.subTask("Reading model parameters");
-            final String specName = config.getAttribute(SPEC_NAME, EMPTY_STRING);
-            final String modelName = config.getAttribute(MODEL_NAME, EMPTY_STRING);
             final String specRootFilename = config.getAttribute(SPEC_ROOT_FILE, EMPTY_STRING);
 
             // step 1
@@ -90,10 +91,6 @@ public class ModelCreationJob extends AbstractJob implements IModelConfiguration
                         "Error accessing the spec project " + specName));
             }
 
-            String modelLockName = modelName + TLCModelLaunchDelegate.MODEL_LOCK;
-            IFile semaphor = project.getFile(modelLockName);
-            semaphor.create(new ByteArrayInputStream("1".getBytes()), IResource.DERIVED, new SubProgressMonitor(monitor, STEP)); 
-            
             // retrieve the root file
             IFile specRootFile = ResourceHelper.getLinkedFile(project, specRootFilename, false);
             if (specRootFile == null)
@@ -125,6 +122,10 @@ public class ModelCreationJob extends AbstractJob implements IModelConfiguration
                 modelFolder.create(IResource.DERIVED | IResource.FORCE, true, new SubProgressMonitor(monitor, STEP));
             }
 
+            // create the lock
+            // ModelHelper.createLock(modelName, modelFolder);
+
+            
             // step 2
             IPath targetFolderPath = modelFolder.getProjectRelativePath().addTrailingSeparator();
             monitor.subTask("Copying files");
@@ -176,19 +177,12 @@ public class ModelCreationJob extends AbstractJob implements IModelConfiguration
 
             }, createRule, IWorkspace.AVOID_UPDATE, new SubProgressMonitor(monitor, STEP));
 
-            /*            // skip modifications if nothing changed
-                        long modelTime = config.getFile().getLocalTimeStamp();
-                        if ( modelTime <= this.tlaFile.getLocalTimeStamp() || modelTime <= this.cfgFile.getLocalTimeStamp() ) 
-                        {
-                            return Status.OK_STATUS;    
-                        }
-            */
 
-            System.out.println("Model TLA file is: " + tlaFile.getName());
-            System.out.println("Model CFG file is: " + cfgFile.getName());
+            System.out.println("Model TLA file is: " + tlaFile.getProjectRelativePath().toString());
+            System.out.println("Model CFG file is: " + cfgFile.getProjectRelativePath().toString());
 
             monitor.worked(STEP);
-            monitor.subTask("Writing contents");
+            monitor.subTask("Creating contents");
 
             ModelWriter writer = new ModelWriter();
 
@@ -231,12 +225,14 @@ public class ModelCreationJob extends AbstractJob implements IModelConfiguration
             writer.addFormulaList(ModelHelper.createFormulaListContent(config.getAttribute(
                     MODEL_CORRECTNESS_PROPERTIES, new Vector()), "prop"), "PROPERTY");
 
+            monitor.worked(STEP);
+            monitor.subTask("Writing contents");
+
             // write down the files
             writer.writeFiles(tlaFile, cfgFile, monitor);
 
-            //
-            project.refreshLocal(IResource.DEPTH_INFINITE, new SubProgressMonitor(monitor, STEP));
-
+            // refresh the model folder 
+            modelFolder.refreshLocal(IResource.DEPTH_INFINITE, new SubProgressMonitor(monitor, STEP));
             return Status.OK_STATUS;
 
         } catch (CoreException e)
@@ -250,5 +246,4 @@ public class ModelCreationJob extends AbstractJob implements IModelConfiguration
         }
 
     }
-
 }
