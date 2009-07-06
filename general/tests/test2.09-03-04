@@ -1,0 +1,2522 @@
+
+c:\users\lamport\tlc\tests>echo "STARTING" 
+"STARTING"
+
+c:\users\lamport\tlc\tests>java -mx100m tlc2.TLC -cleanup  test1 
+TLC2 Version 2.01 of 20 February 2009
+Model-checking
+Parsing file test1.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Naturals.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\TLC.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Sequences.tla
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module TLC
+Semantic processing of module test1
+"Test 1 OK"  TRUE
+"Test 2 OK"  TRUE
+"Test 3 OK"  TRUE
+"Test 4 OK"  TRUE
+"Test 5 OK"  TRUE
+"Test 6 OK"  TRUE
+"Test 7 OK"  TRUE
+"Test 8 OK"  TRUE
+"Test 9 OK"  TRUE
+"Test 10 OK"  TRUE
+"Test 11 OK"  TRUE
+"Test 12 OK"  TRUE
+"Test 13 OK"  TRUE
+"Test 14 OK"  TRUE
+"Test 15 OK"  TRUE
+"Test Completed"  TRUE
+Finished computing initial states: 1 distinct state generated.
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+    calculated (optimistic):  5.421010862427522E-20
+    based on the actual fingerprints:  1.0842021724855044E-19
+2 states generated, 1 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 1.
+
+c:\users\lamport\tlc\tests>java -mx100m tlc2.TLC -cleanup  test2 
+TLC2 Version 2.01 of 20 February 2009
+Model-checking
+Parsing file test2.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Naturals.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\TLC.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Sequences.tla
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module TLC
+Semantic processing of module test2
+"Test 1 OK"  TRUE
+"Test 2 OK"  TRUE
+"Test 3 OK"  TRUE
+"Test 4 OK"  TRUE
+"Test 5 OK"  TRUE
+"Test 6 OK"  TRUE
+"Test 7 OK"  TRUE
+"Test 8 OK"  TRUE
+"Test 9 OK"  TRUE
+"Test 10 OK"  TRUE
+"Test 11 OK"  TRUE
+"Test 12 OK"  TRUE
+"Test 13 OK"  TRUE
+Finished computing initial states: 1 distinct state generated.
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+    calculated (optimistic):  5.421010862427522E-20
+    based on the actual fingerprints:  1.0842021724855044E-19
+2 states generated, 1 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 1.
+
+c:\users\lamport\tlc\tests>java -mx100m tlc2.TLC -cleanup  test3 
+TLC2 Version 2.01 of 20 February 2009
+Model-checking
+Parsing file test3.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Naturals.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\TLC.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Sequences.tla
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module TLC
+Semantic processing of module test3
+"Test 1"  TRUE
+"Test 2"  TRUE
+"Test 3"  TRUE
+"Test 4"  TRUE
+"Test 5"  TRUE
+"Test 6"  TRUE
+"Test 7"  TRUE
+"Test 8"  TRUE
+"Test 9"  TRUE
+"Test 10"  TRUE
+"Test 11"  TRUE
+"Test 12"  TRUE
+"Test 13"  TRUE
+"Test 14"  TRUE
+"Test 15"  TRUE
+"Test 16"  TRUE
+"Test 17"  TRUE
+"Test 18"  TRUE
+"Test 19"  TRUE
+"Test 20"  TRUE
+"Test 21"  TRUE
+"Test 22"  TRUE
+"Tests completed"  TRUE
+"Tests completed"  TRUE
+Finished computing initial states: 1 distinct state generated.
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+    calculated (optimistic):  5.421010862427522E-20
+    based on the actual fingerprints:  1.0842021724855044E-19
+2 states generated, 1 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 1.
+
+c:\users\lamport\tlc\tests>java -mx100m tlc2.TLC -cleanup  test4 
+TLC2 Version 2.01 of 20 February 2009
+Model-checking
+Parsing file test4.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Naturals.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\TLC.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Sequences.tla
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module TLC
+Semantic processing of module test4
+"Should find only one distinct state"  TRUE
+Finished computing initial states: 1 distinct state generated.
+"Test 1"  TRUE
+"Test 2"  TRUE
+"Test 2"  TRUE
+"Test 2"  TRUE
+"Test 2"  TRUE
+"Test 3"  TRUE
+"Test 4"  TRUE
+"Test 5"  TRUE
+"Test 6"  TRUE
+"Test 6"  TRUE
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+    calculated (optimistic):  5.421010862427522E-19
+    based on the actual fingerprints:  1.0842021724855044E-19
+11 states generated, 1 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 1.
+
+c:\users\lamport\tlc\tests>java -mx100m tlc2.TLC -cleanup  test5 
+TLC2 Version 2.01 of 20 February 2009
+Model-checking
+Parsing file test5.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Integers.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\TLC.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Naturals.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Sequences.tla
+Semantic processing of module Naturals
+Semantic processing of module Integers
+Semantic processing of module Sequences
+Semantic processing of module TLC
+Semantic processing of module test5
+"Test 1 OK"  TRUE
+"Test 2 OK"  TRUE
+"Test 3 OK"  TRUE
+"Test 4 OK"  TRUE
+"Test 5 OK"  TRUE
+"Test 6 OK"  TRUE
+"Test 7 OK"  TRUE
+"Test 8 OK"  TRUE
+"Test 9 OK"  TRUE
+"Test 10 OK"  TRUE
+"Test 11 OK"  TRUE
+"Test 12 OK"  TRUE
+"Test 13 OK"  TRUE
+"Test 14 OK"  TRUE
+"Test 15 OK"  TRUE
+"Test 16 OK"  TRUE
+Finished computing initial states: 1 distinct state generated.
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+    calculated (optimistic):  5.421010862427522E-20
+    based on the actual fingerprints:  1.0842021724855044E-19
+2 states generated, 1 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 1.
+
+c:\users\lamport\tlc\tests>java -mx100m tlc2.TLC -cleanup  test6 
+TLC2 Version 2.01 of 20 February 2009
+Model-checking
+Parsing file test6.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Integers.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\TLC.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Naturals.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Sequences.tla
+Semantic processing of module Naturals
+Semantic processing of module Integers
+Semantic processing of module Sequences
+Semantic processing of module TLC
+Semantic processing of module test6
+"Test 1 OK"  TRUE
+"Test 2 OK"  TRUE
+"Test 3 OK"  TRUE
+"Test 4 OK"  TRUE
+"Test 5 OK"  TRUE
+"Test 6 OK"  TRUE
+"Test 7 OK"  TRUE
+"Test 8 OK"  TRUE
+"Test 9 OK"  TRUE
+"Test 10 OK"  TRUE
+"Test 11 OK"  TRUE
+"Test 12 OK"  TRUE
+"Test 13 OK"  TRUE
+"Test 14 OK"  TRUE
+"Test 15 OK"  TRUE
+"Test 16 OK"  TRUE
+"Test 17 OK"  TRUE
+"Test 18 OK"  TRUE
+"Test 19 OK"  TRUE
+"Test 20 OK"  TRUE
+"Test 21 OK"  TRUE
+"Test 22 OK"  TRUE
+"Test 23 OK"  TRUE
+"Test 24 OK"  TRUE
+"Test 25 OK"  TRUE
+"Test 26 OK"  TRUE
+"Test 27 OK"  TRUE
+Finished computing initial states: 1 distinct state generated.
+Error: Attempted to apply the operator overridden by the java method
+public static tlc2.value.Value tlc2.module.TLC.Assert(tlc2.value.Value,tlc2.value.Value),
+but it produced the following error:
+The first argument of Assert evaluated to FALSE; the second argument was:
+"This is a bug, too"
+
+
+The behavior up to this point is:
+STATE 1: <Initial predicate>
+/\ w = 0
+/\ x = TRUE
+/\ y = TRUE
+/\ z = FALSE
+
+
+The error occurred when TLC was evaluating the nested
+expressions at the following positions:
+0. Line 16, column 13 to line 17, column 56 in test6
+1. Line 17, column 17 to line 17, column 19 in test6
+2. Line 18, column 13 to line 18, column 56 in test6
+3. Line 18, column 22 to line 18, column 56 in test6
+
+
+1 states generated, 1 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 1.
+
+c:\users\lamport\tlc\tests>java -mx100m tlc2.TLC -cleanup  test7 
+TLC2 Version 2.01 of 20 February 2009
+Model-checking
+Parsing file test7.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Integers.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\TLC.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Naturals.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Sequences.tla
+Semantic processing of module Naturals
+Semantic processing of module Integers
+Semantic processing of module Sequences
+Semantic processing of module TLC
+Semantic processing of module test7
+"Test 1 OK"  TRUE
+"Test 1a OK"  TRUE
+"Test 2 OK"  TRUE
+"Test 2a OK"  TRUE
+"Test 3 OK"  TRUE
+"Test 4 OK"  TRUE
+"Test 5 OK"  TRUE
+"Test 5a OK"  TRUE
+"Test 6 OK"  TRUE
+"Test 6a OK"  TRUE
+"Test 7 OK"  TRUE
+"Test 8 OK"  TRUE
+"Test 9 OK"  TRUE
+"Test 10 OK"  TRUE
+"Test 11 OK"  TRUE
+"Test 12 OK"  TRUE
+"Test 13 OK"  TRUE
+"Test 14 OK"  TRUE
+Finished computing initial states: 1 distinct state generated.
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+    calculated (optimistic):  5.421010862427522E-20
+    based on the actual fingerprints:  1.0842021724855044E-19
+2 states generated, 1 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 1.
+
+c:\users\lamport\tlc\tests>java -mx100m tlc2.TLC -cleanup  test8 
+TLC2 Version 2.01 of 20 February 2009
+Model-checking
+Parsing file test8.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Integers.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\TLC.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Sequences.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Naturals.tla
+Semantic processing of module Naturals
+Semantic processing of module Integers
+Semantic processing of module Sequences
+Semantic processing of module TLC
+Semantic processing of module test8
+"Test 1 OK"  TRUE
+"Test 2 OK"  TRUE
+"Test 3 OK"  TRUE
+"Test 4 OK"  TRUE
+"Test 5 OK"  TRUE
+"Test 6 OK"  TRUE
+"Test 7 OK"  TRUE
+"Test 8 OK"  TRUE
+"Test 9 OK"  TRUE
+"Test 10 OK"  TRUE
+"Test 11 OK"  TRUE
+"Test 12 OK"  TRUE
+"Test 12a OK"  TRUE
+"Test 13 OK"  TRUE
+"Test 14 OK"  TRUE
+"Test 16 OK"  TRUE
+"Test 17 OK"  TRUE
+"Test 18 OK"  TRUE
+"Test 19 OK"  TRUE
+"Test 20 OK"  TRUE
+"Test 21 OK"  TRUE
+"Test 22 OK"  TRUE
+Finished computing initial states: 1 distinct state generated.
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+    calculated (optimistic):  5.421010862427522E-20
+    based on the actual fingerprints:  1.0842021724855044E-19
+2 states generated, 1 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 1.
+
+c:\users\lamport\tlc\tests>java -mx100m tlc2.TLC -cleanup  test9 
+TLC2 Version 2.01 of 20 February 2009
+Model-checking
+Parsing file test9.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Integers.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\TLC.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\FiniteSets.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Naturals.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Sequences.tla
+Semantic processing of module Naturals
+Semantic processing of module Integers
+Semantic processing of module Sequences
+Semantic processing of module TLC
+Semantic processing of module FiniteSets
+Semantic processing of module test9
+"Test 1 OK"  TRUE
+"Test 2 OK"  TRUE
+"Test 3 OK"  TRUE
+"Test 4 OK"  TRUE
+"Test 5 OK"  TRUE
+"Test 6 OK"  TRUE
+"Test 7 OK"  TRUE
+"Test 8 OK"  TRUE
+"Test 9 OK"  TRUE
+"Test 10 OK"  TRUE
+"Test 11 OK"  TRUE
+"Test 12 OK"  TRUE
+"Test 13 OK"  TRUE
+"Test 14 OK"  TRUE
+Finished computing initial states: 1 distinct state generated.
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+    calculated (optimistic):  5.421010862427522E-20
+    based on the actual fingerprints:  1.0842021724855044E-19
+2 states generated, 1 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 1.
+
+c:\users\lamport\tlc\tests>java -mx100m tlc2.TLC -cleanup  test10 
+TLC2 Version 2.01 of 20 February 2009
+Model-checking
+Parsing file test10.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Integers.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\TLC.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Naturals.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Sequences.tla
+Semantic processing of module Naturals
+Semantic processing of module Integers
+Semantic processing of module Sequences
+Semantic processing of module TLC
+Semantic processing of module test10
+"Test 1 OK"  TRUE
+"Test 2 OK"  TRUE
+"Test 3 OK"  TRUE
+"Test 4 OK"  TRUE
+"Test 5 OK"  TRUE
+"Test 6 OK"  TRUE
+"Test 7 OK"  TRUE
+"Test 8 OK"  TRUE
+"Test 9 OK"  TRUE
+"Test 10 OK"  TRUE
+"Test 11 OK"  TRUE
+"Test 12 OK"  TRUE
+"Test 13 OK"  TRUE
+"Test 14 OK"  TRUE
+"Test 15 OK"  TRUE
+"Test 16 OK"  TRUE
+"Test 17 OK"  TRUE
+"Test 18 OK"  TRUE
+"Test 19 OK"  TRUE
+"Test 20 OK"  TRUE
+"Test 21 OK"  TRUE
+"Test 22 OK"  TRUE
+"Test 23 OK"  TRUE
+"Test 24 OK"  TRUE
+"Test 25 OK"  TRUE
+"Test 26 OK"  TRUE
+"Test 27  OK"  TRUE
+"Test 28 OK"  TRUE
+"Test 29 OK"  TRUE
+"Test 30 OK"  TRUE
+"Test 31 OK"  TRUE
+Finished computing initial states: 1 distinct state generated.
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+    calculated (optimistic):  5.421010862427522E-20
+    based on the actual fingerprints:  1.0842021724855044E-19
+2 states generated, 1 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 1.
+
+c:\users\lamport\tlc\tests>java -mx100m tlc2.TLC -cleanup  test11 
+TLC2 Version 2.01 of 20 February 2009
+Model-checking
+Parsing file test11.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Integers.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\TLC.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\FiniteSets.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Naturals.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Sequences.tla
+Semantic processing of module Naturals
+Semantic processing of module Integers
+Semantic processing of module Sequences
+Semantic processing of module TLC
+Semantic processing of module FiniteSets
+Semantic processing of module test11
+"Test 1 OK"  TRUE
+"Test 2 OK"  TRUE
+"Test 3 OK"  TRUE
+"Test 4 OK"  TRUE
+"Test 5 OK"  TRUE
+"Test 6 OK"  TRUE
+"Test 7 OK"  TRUE
+"Test 8 OK"  TRUE
+"Test 9 OK"  TRUE
+"Test 10 OK"  TRUE
+"Test 11 OK"  TRUE
+"Test 12 OK"  TRUE
+"Test 13 OK"  TRUE
+"Test 14 OK"  TRUE
+"Test 15 OK"  TRUE
+"Test 16 OK"  TRUE
+"Test 17 OK"  TRUE
+"Test 18 OK"  TRUE
+"Test 19 OK"  TRUE
+"Test 20: Enumeration of [{1+1,2} -> {3-1,2,1+1}]"  TRUE
+(2 :> 2)  TRUE
+<<"Test 21: evaluation of [{1+1,2} -> {3-1,2,1+1}] = ", {(2 :> 2)}>>  TRUE
+"Test 22 OK"  TRUE
+"Test 23 OK"  TRUE
+"Test 24 OK"  TRUE
+"Test 25 OK"  TRUE
+Finished computing initial states: 1 distinct state generated.
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+    calculated (optimistic):  5.421010862427522E-20
+    based on the actual fingerprints:  1.0842021724855044E-19
+2 states generated, 1 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 1.
+
+c:\users\lamport\tlc\tests>java -mx100m tlc2.TLC -cleanup  test12 
+TLC2 Version 2.01 of 20 February 2009
+Model-checking
+Parsing file test12.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Integers.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\TLC.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\FiniteSets.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Naturals.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Sequences.tla
+Semantic processing of module Naturals
+Semantic processing of module Integers
+Semantic processing of module Sequences
+Semantic processing of module TLC
+Semantic processing of module FiniteSets
+Semantic processing of module test12
+"Test 1 OK"  TRUE
+"Test 2 OK"  TRUE
+"Test 3 OK"  TRUE
+"Test 4 OK"  TRUE
+"Test 5 OK"  TRUE
+"Test 6 OK"  TRUE
+"Test 7 OK"  TRUE
+"Test 8 OK"  TRUE
+"Test 9 OK"  TRUE
+"Test 10 OK"  TRUE
+"Test 11 OK"  TRUE
+"Test 12 OK"  TRUE
+"Test 13 OK"  TRUE
+"Test 14 OK"  TRUE
+"Test 15 OK"  TRUE
+"Test 16 OK"  TRUE
+"Test 17 OK"  TRUE
+"Test 18 OK"  TRUE
+"Test 19 OK"  TRUE
+"Test 20 OK"  TRUE
+"Test 21 OK"  TRUE
+"Test 22 OK"  TRUE
+"Test 23 OK"  TRUE
+Finished computing initial states: 1 distinct state generated.
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+    calculated (optimistic):  5.421010862427522E-20
+    based on the actual fingerprints:  1.0842021724855044E-19
+2 states generated, 1 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 1.
+
+c:\users\lamport\tlc\tests>java -mx100m tlc2.TLC -cleanup  test13 
+TLC2 Version 2.01 of 20 February 2009
+Model-checking
+Parsing file test13.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Integers.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\TLC.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\FiniteSets.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Sequences.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Naturals.tla
+Semantic processing of module Naturals
+Semantic processing of module Integers
+Semantic processing of module Sequences
+Semantic processing of module TLC
+Semantic processing of module FiniteSets
+Semantic processing of module test13
+"Test 1 OK"  TRUE
+"Test 2 OK"  TRUE
+"Test 3 OK"  TRUE
+"Test 4 OK"  TRUE
+"Test 5 OK"  TRUE
+"Test 6 OK"  TRUE
+"Test 7 OK"  TRUE
+"Test 8 OK"  TRUE
+"Test 9 OK"  TRUE
+"Test 9 OK"  TRUE
+"Test 10 OK"  TRUE
+"Test 11 OK"  TRUE
+Finished computing initial states: 1 distinct state generated.
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+    calculated (optimistic):  5.421010862427522E-20
+    based on the actual fingerprints:  1.0842021724855044E-19
+2 states generated, 1 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 1.
+
+c:\users\lamport\tlc\tests>java -mx100m tlc2.TLC -cleanup  test14 
+TLC2 Version 2.01 of 20 February 2009
+Model-checking
+Parsing file test14.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Integers.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\TLC.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\FiniteSets.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Sequences.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Naturals.tla
+Semantic processing of module Naturals
+Semantic processing of module Integers
+Semantic processing of module Sequences
+Semantic processing of module TLC
+Semantic processing of module FiniteSets
+Semantic processing of module test14
+"Test 1 OK"  TRUE
+"Test 2 OK"  TRUE
+"Test 3 OK"  TRUE
+"Test 4 OK"  TRUE
+"Test 5 OK"  TRUE
+"Test 6 OK"  TRUE
+"Test 7 OK"  TRUE
+Finished computing initial states: 1 distinct state generated.
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+    calculated (optimistic):  5.421010862427522E-20
+    based on the actual fingerprints:  1.0842021724855044E-19
+2 states generated, 1 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 1.
+
+c:\users\lamport\tlc\tests>java -mx100m tlc2.TLC -cleanup  test15 
+TLC2 Version 2.01 of 20 February 2009
+Model-checking
+Parsing file test15.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\TLC.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Naturals.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Sequences.tla
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module TLC
+Semantic processing of module test15
+"Test 1 OK"  TRUE
+"Test 2 OK"  TRUE
+"Test 3 OK"  TRUE
+"Test 4 OK"  TRUE
+"Test 5 OK"  TRUE
+"Test 6 OK"  TRUE
+"Test 7 OK"  TRUE
+"Test 8 OK"  TRUE
+"Test 9 OK"  TRUE
+"Test 10 OK"  TRUE
+"Test 11 OK"  TRUE
+"Test 12 OK"  TRUE
+"Test 13 OK"  TRUE
+"Test 14 OK"  TRUE
+"Test 15 OK"  TRUE
+"Test 16 OK"  TRUE
+Finished computing initial states: 1 distinct state generated.
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+    calculated (optimistic):  5.421010862427522E-20
+    based on the actual fingerprints:  1.0842021724855044E-19
+2 states generated, 1 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 1.
+
+c:\users\lamport\tlc\tests>java -mx100m tlc2.TLC -cleanup  test16 
+TLC2 Version 2.01 of 20 February 2009
+Model-checking
+Parsing file test16.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\TLC.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Naturals.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Sequences.tla
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module TLC
+Semantic processing of module test16
+"Test 1 OK"  TRUE
+"Test 2 OK"  TRUE
+"Test 3 OK"  TRUE
+"Test 4 OK"  TRUE
+"Test 5 OK"  TRUE
+"Test 6 OK"  TRUE
+Finished computing initial states: 1 distinct state generated.
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+    calculated (optimistic):  5.421010862427522E-20
+    based on the actual fingerprints:  1.0842021724855044E-19
+2 states generated, 1 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 1.
+
+c:\users\lamport\tlc\tests>java -mx100m tlc2.TLC -cleanup  test17 
+TLC2 Version 2.01 of 20 February 2009
+Model-checking
+Parsing file test17.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\TLC.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Naturals.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Sequences.tla
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module TLC
+Semantic processing of module test17
+"There should be two distinct states"  TRUE
+Finished computing initial states: 1 distinct state generated.
+"Starting Test 1"  TRUE
+"Starting Test 2"  TRUE
+"Starting Test 3"  TRUE
+"Starting Test 4"  TRUE
+"Starting Test 5"  TRUE
+"Starting Test 6"  TRUE
+"Starting Test 7"  TRUE
+"Starting Test 8"  TRUE
+"Starting Test 9"  TRUE
+"Starting Test 10"  TRUE
+"Starting Test 11"  TRUE
+"Starting Test 12"  TRUE
+"Starting Test 13"  TRUE
+"Starting Test 14"  TRUE
+"Starting Test 15"  TRUE
+"Starting Test 16"  TRUE
+"Starting Test 17"  TRUE
+"Starting Test 18"  TRUE
+"Starting Test 19"  TRUE
+"Starting Test 20"  TRUE
+"Starting Test 21"  TRUE
+"Starting Test 22"  TRUE
+"Starting Test 23"  TRUE
+"Starting Test 24"  TRUE
+"Starting Test 25"  TRUE
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+    calculated (optimistic):  5.421010862427522E-19
+    based on the actual fingerprints:  1.0842021724855044E-19
+7 states generated, 2 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 2.
+
+c:\users\lamport\tlc\tests>java -mx100m tlc2.TLC -cleanup  test18 
+TLC2 Version 2.01 of 20 February 2009
+Model-checking
+Parsing file test18.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\TLC.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Naturals.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Sequences.tla
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module TLC
+Semantic processing of module test18
+"There should be only one distinct state"  TRUE
+Finished computing initial states: 1 distinct state generated.
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+    calculated (optimistic):  7.047314121155779E-19
+    based on the actual fingerprints:  1.0842021724855044E-19
+14 states generated, 1 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 1.
+
+c:\users\lamport\tlc\tests>java -mx100m tlc2.TLC -cleanup  test19 
+TLC2 Version 2.01 of 20 February 2009
+Model-checking
+Parsing file test19.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Naturals.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Sequences.tla
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module test19
+Finished computing initial states: 400000 distinct states generated.
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+    calculated (optimistic):  8.673617379884035E-9
+    based on the actual fingerprints:  8.658910610268688E-13
+800000 states generated, 400000 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 1.
+
+c:\users\lamport\tlc\tests>java -mx100m tlc2.TLC -cleanup  test20 
+TLC2 Version 2.01 of 20 February 2009
+Model-checking
+Parsing file test20.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Naturals.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Sequences.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\TLC.tla
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module TLC
+Semantic processing of module test20
+"Test 1 OK"  TRUE
+"Test 2 OK"  TRUE
+"Test 3 OK"  TRUE
+"Test 4 OK"  TRUE
+"Test 5 OK"  TRUE
+"Test 6 OK"  TRUE
+"Test 7 OK"  TRUE
+"Test 8 OK"  TRUE
+"Test 9 OK"  TRUE
+"Test 10 OK"  TRUE
+"Test 11 OK"  TRUE
+Finished computing initial states: 1 distinct state generated.
+"Test N1 begun"  TRUE
+"Test N2 Passed"  TRUE
+"Test N3 Passed"  TRUE
+"Test N4 Passed"  TRUE
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+    calculated (optimistic):  2.1684043449710089E-19
+    based on the actual fingerprints:  1.0842021724855044E-19
+5 states generated, 1 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 1.
+
+c:\users\lamport\tlc\tests>java -mx100m tlc2.TLC -cleanup  test21 
+TLC2 Version 2.01 of 20 February 2009
+Model-checking
+Parsing file test21.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Naturals.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Sequences.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\TLC.tla
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module TLC
+Semantic processing of module test21
+Finished computing initial states: 1 distinct state generated.
+"Test 1 OK"  TRUE
+"Test 2 OK"  TRUE
+"Test 3 OK"  TRUE
+"Test 4 OK"  TRUE
+"Test 5 OK"  TRUE
+"Test 6 OK"  TRUE
+"Test 7 OK"  TRUE
+"Test 8 OK"  TRUE
+"Test 9 OK"  TRUE
+"Test 10 OK"  TRUE
+"Test 11 OK"  TRUE
+"Test 12 OK"  FALSE
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+    calculated (optimistic):  6.505213034913027E-19
+    based on the actual fingerprints:  1.0842021724855044E-19
+8 states generated, 2 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 2.
+
+c:\users\lamport\tlc\tests>java -mx100m tlc2.TLC -cleanup  test22 
+TLC2 Version 2.01 of 20 February 2009
+Model-checking
+Parsing file test22.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\TLC.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Naturals.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Sequences.tla
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module TLC
+Semantic processing of module test22
+"Distinct States should equal Distinct Initial States"  TRUE
+Finished computing initial states: 64 distinct states generated.
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+    calculated (optimistic):  4.440892098500626E-15
+    based on the actual fingerprints:  1.8751146935158118E-16
+1344 states generated, 64 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 1.
+
+c:\users\lamport\tlc\tests>java -mx100m tlc2.TLC -cleanup  test23 
+TLC2 Version 2.01 of 20 February 2009
+Model-checking
+Parsing file test23.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Naturals.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\FiniteSets.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\TLC.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Sequences.tla
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module FiniteSets
+Semantic processing of module TLC
+Semantic processing of module test23
+"Computing Inv"  TRUE
+<<"B1", [a |-> 1, b |-> 1, c |-> 1]>>  TRUE
+[a |-> 1]  TRUE
+"Test 0a OK"  TRUE
+"Test 0b OK"  TRUE
+"Test 0c OK"  TRUE
+"Test 0d OK"  TRUE
+"Test 0e OK"  TRUE
+"Test 1aa OK"  TRUE
+"Finished test 1aa"  TRUE
+"Test 1a OK"  TRUE
+"Finished test 1a"  TRUE
+"Test 1b OK"  TRUE
+"Test 1c OK"  TRUE
+"Test 2 OK"  TRUE
+"Test 3 OK"  TRUE
+"Test 4 OK"  TRUE
+"Test 5 OK"  TRUE
+"Test 6 OK"  TRUE
+"Test 7 OK"  TRUE
+"Test 8 OK"  TRUE
+"Test 9 OK"  TRUE
+"Test 10 OK"  TRUE
+"Test 11 OK"  TRUE
+"Test 12 OK"  TRUE
+"Test 13 OK"  TRUE
+"Test 14 OK"  TRUE
+"Test 15 OK"  TRUE
+"Test 16 OK"  TRUE
+"Test 17 OK"  TRUE
+"Test 18 OK"  TRUE
+"Test 19 OK"  TRUE
+"Computing Init"  TRUE
+Finished computing initial states: 1 distinct state generated.
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+    calculated (optimistic):  5.421010862427522E-20
+    based on the actual fingerprints:  1.0842021724855044E-19
+2 states generated, 1 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 1.
+
+c:\users\lamport\tlc\tests>java -mx100m tlc2.TLC -cleanup  test24 
+TLC2 Version 2.01 of 20 February 2009
+Model-checking
+Parsing file test24.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Naturals.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\TLC.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Sequences.tla
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module TLC
+Semantic processing of module test24
+Finished computing initial states: 1 distinct state generated.
+"Test 1 OK"  TRUE
+"Test 2 OK"  TRUE
+"Test 3 OK"  TRUE
+"Test 4 OK"  TRUE
+"Test 5 OK"  TRUE
+"Test 6 OK"  TRUE
+"Test 7 OK"  TRUE
+"Test 8 OK"  TRUE
+"Test 9 OK"  TRUE
+"Test 10 OK"  TRUE
+"Test 11 OK"  TRUE
+"Test 1 OK"  TRUE
+"Test 2 OK"  TRUE
+"Test 3 OK"  TRUE
+"Test 4 OK"  TRUE
+"Test 5 OK"  TRUE
+"Test 6 OK"  TRUE
+"Test 7 OK"  TRUE
+"Test 8 OK"  TRUE
+"Test 9 OK"  TRUE
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+    calculated (optimistic):  2.0599841277224584E-18
+    based on the actual fingerprints:  1.5906876236359973E-19
+21 states generated, 2 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 2.
+
+c:\users\lamport\tlc\tests>java -mx100m tlc2.TLC -cleanup  test25 
+TLC2 Version 2.01 of 20 February 2009
+Model-checking
+Parsing file test25.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Naturals.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Sequences.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\TLC.tla
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module TLC
+Semantic processing of module test25
+"Should find only one state"  TRUE
+Finished computing initial states: 1 distinct state generated.
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+    calculated (optimistic):  1.0842021724855044E-19
+    based on the actual fingerprints:  1.0842021724855044E-19
+3 states generated, 1 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 1.
+
+c:\users\lamport\tlc\tests>java -mx100m tlc2.TLC -cleanup  test26 
+TLC2 Version 2.01 of 20 February 2009
+Model-checking
+Parsing file test26.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\TLC.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Naturals.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Sequences.tla
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module TLC
+Semantic processing of module test26
+"Test 1 OK"  TRUE
+"Test 2 OK"  TRUE
+"Test 3 OK"  TRUE
+Finished computing initial states: 1 distinct state generated.
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+    calculated (optimistic):  5.421010862427522E-20
+    based on the actual fingerprints:  1.0842021724855044E-19
+2 states generated, 1 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 1.
+
+c:\users\lamport\tlc\tests>java -mx100m tlc2.TLC -cleanup  test27 
+TLC2 Version 2.01 of 20 February 2009
+Model-checking
+Parsing file test27.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Naturals.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Sequences.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\FiniteSets.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\TLC.tla
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module FiniteSets
+Semantic processing of module TLC
+Semantic processing of module test27
+<<"Number of distinct states =", 63504>>  TRUE
+Finished computing initial states: 16 distinct states generated.
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+    calculated (optimistic):  3.6020180588236528E-9
+    based on the actual fingerprints:  1.0506145918018297E-10
+1109824 states generated, 63504 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 7.
+
+c:\users\lamport\tlc\tests>java -mx100m tlc2.TLC -cleanup  test28 
+TLC2 Version 2.01 of 20 February 2009
+Model-checking
+Parsing file test28.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\TLC.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Naturals.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Sequences.tla
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module TLC
+Semantic processing of module test28
+"Test 1 OK"  TRUE
+"Test 2 OK"  TRUE
+"Test 3 OK"  TRUE
+"Test 4 OK"  TRUE
+"Test 5 OK"  TRUE
+"Test 6 OK"  TRUE
+"Test 7 OK"  TRUE
+Finished computing initial states: 1 distinct state generated.
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+    calculated (optimistic):  5.421010862427522E-20
+    based on the actual fingerprints:  1.0842021724855044E-19
+2 states generated, 1 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 1.
+
+c:\users\lamport\tlc\tests>java -mx100m tlc2.TLC -cleanup  test29 
+TLC2 Version 2.01 of 20 February 2009
+Model-checking
+Parsing file test29.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\TLC.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Naturals.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Sequences.tla
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module TLC
+Semantic processing of module test29
+Finished computing initial states: 1 distinct state generated.
+"Test 1 OK"  TRUE
+"Test 2 OK"  TRUE
+"Test 3 OK"  TRUE
+"Test 4 OK"  TRUE
+"Test 5 OK"  TRUE
+"Test 6 OK"  TRUE
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+    calculated (optimistic):  5.421010862427522E-20
+    based on the actual fingerprints:  1.0842021724855044E-19
+2 states generated, 1 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 1.
+
+c:\users\lamport\tlc\tests>java -mx100m tlc2.TLC -cleanup  test30 
+TLC2 Version 2.01 of 20 February 2009
+Model-checking
+Parsing file test30.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\TLC.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Naturals.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Sequences.tla
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module TLC
+Semantic processing of module test30
+"Test 1 OK"  TRUE
+"Test 2 OK"  TRUE
+"Test 3 OK"  TRUE
+"Test 4 OK"  TRUE
+"Test 5 OK"  TRUE
+"Test 6 OK"  TRUE
+"Test 7 OK"  TRUE
+Finished computing initial states: 1 distinct state generated.
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+    calculated (optimistic):  5.421010862427522E-20
+    based on the actual fingerprints:  1.0842021724855044E-19
+2 states generated, 1 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 1.
+
+c:\users\lamport\tlc\tests>java -mx100m tlc2.TLC -cleanup  test31 
+TLC2 Version 2.01 of 20 February 2009
+Model-checking
+Parsing file test31.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\TLC.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Naturals.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Sequences.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\FiniteSets.tla
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module TLC
+Semantic processing of module FiniteSets
+Semantic processing of module test31
+"This test should generate 3 distinct state"  TRUE
+Finished computing initial states: 1 distinct state generated.
+"1"  TRUE
+<<"Generated state", 1, 1>>  TRUE
+<<"Generated state", 2, 1>>  TRUE
+<<"Generated state", 3, 1>>  TRUE
+"1"  TRUE
+<<"Generated state", 1, 1>>  TRUE
+<<"Generated state", 2, 1>>  TRUE
+<<"Generated state", 3, 1>>  TRUE
+"1"  TRUE
+<<"Generated state", 1, 1>>  TRUE
+<<"Generated state", 2, 1>>  TRUE
+<<"Generated state", 3, 1>>  TRUE
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+    calculated (optimistic):  1.6263032587282567E-18
+    based on the actual fingerprints:  2.5235704384877184E-19
+13 states generated, 3 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 2.
+
+c:\users\lamport\tlc\tests>java -mx100m tlc2.TLC -cleanup  test32 
+TLC2 Version 2.01 of 20 February 2009
+Model-checking
+Parsing file test32.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\TLC.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Naturals.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Sequences.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\FiniteSets.tla
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module TLC
+Semantic processing of module FiniteSets
+Semantic processing of module test32
+Finished computing initial states: 1 distinct state generated.
+"Test1 OK"  TRUE
+"Test2 OK"  TRUE
+"Test 4 started -- should finish"  TRUE
+"Test 4 completed"  TRUE
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+    calculated (optimistic):  1.0842021724855044E-19
+    based on the actual fingerprints:  1.0842021724855044E-19
+3 states generated, 1 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 1.
+
+c:\users\lamport\tlc\tests>java -mx100m tlc2.TLC -cleanup  test33 
+TLC2 Version 2.01 of 20 February 2009
+Model-checking
+Parsing file test33.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\TLC.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Naturals.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Sequences.tla
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module TLC
+Semantic processing of module test33
+<<"Computing", 117649, "States">>  TRUE
+Finished computing initial states: 117649 distinct states generated.
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+    calculated (optimistic):  7.503376826660003E-10
+    based on the actual fingerprints:  9.800339616741408E-13
+235298 states generated, 117649 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 1.
+
+c:\users\lamport\tlc\tests>java -mx100m tlc2.TLC -cleanup  test34 
+TLC2 Version 2.01 of 20 February 2009
+Model-checking
+Parsing file test34.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\TLC.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Naturals.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Sequences.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\FiniteSets.tla
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module TLC
+Semantic processing of module FiniteSets
+Semantic processing of module test34
+"Test 1 OK"  TRUE
+"Test 2 OK"  TRUE
+"Test 3 OK"  TRUE
+"Test 4 OK"  TRUE
+Finished computing initial states: 1 distinct state generated.
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+    calculated (optimistic):  5.421010862427522E-20
+    based on the actual fingerprints:  1.0842021724855044E-19
+2 states generated, 1 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 1.
+
+c:\users\lamport\tlc\tests>java -mx100m tlc2.TLC -cleanup  test35 
+TLC2 Version 2.01 of 20 February 2009
+Model-checking
+Parsing file test35.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Sequences.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Integers.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\TLC.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Naturals.tla
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module Integers
+Semantic processing of module TLC
+Semantic processing of module test35
+"Test 1 OK"  TRUE
+"Test 2 OK"  TRUE
+"Test 3 OK"  TRUE
+"Test 4 OK"  TRUE
+"Test 5 OK"  TRUE
+"Test 6 OK"  TRUE
+"Test 7 OK"  TRUE
+"Test 8 OK"  TRUE
+"Test 9 OK"  TRUE
+"Test 10 OK"  TRUE
+"Test 11 OK"  TRUE
+"Test 12 OK"  TRUE
+"Test 13 OK"  TRUE
+"Test 16 OK"  TRUE
+"Test 18 OK"  TRUE
+"Test 19 OK"  TRUE
+"Test 20 OK"  TRUE
+Finished computing initial states: 1 distinct state generated.
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+    calculated (optimistic):  5.421010862427522E-20
+    based on the actual fingerprints:  1.0842021724855044E-19
+2 states generated, 1 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 1.
+
+c:\users\lamport\tlc\tests>java -mx100m tlc2.TLC -cleanup  test36 
+TLC2 Version 2.01 of 20 February 2009
+Model-checking
+Parsing file test36.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Naturals.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\TLC.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Sequences.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\FiniteSets.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Bags.tla
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module TLC
+Semantic processing of module FiniteSets
+Semantic processing of module Bags
+Semantic processing of module test36
+"Test 1 OK"  TRUE
+"Test 2 OK"  TRUE
+"Test 3 OK"  TRUE
+"Test 4 OK"  TRUE
+"Test 5 OK"  TRUE
+"Test 6 OK"  TRUE
+"Test 7 OK"  TRUE
+"Test 8 OK"  TRUE
+"Test 9 OK"  TRUE
+"Test 10 OK"  TRUE
+"TLC Fails Tests 11 & 12 because SubBag not implemented"  TRUE
+"Test 13 OK"  TRUE
+"Test 14 OK"  TRUE
+"Test 15 OK"  TRUE
+"Test 16 OK"  TRUE
+Finished computing initial states: 1 distinct state generated.
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+    calculated (optimistic):  5.421010862427522E-20
+    based on the actual fingerprints:  1.0842021724855044E-19
+2 states generated, 1 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 1.
+
+c:\users\lamport\tlc\tests>java -mx100m tlc2.TLC -cleanup  test37 
+TLC2 Version 2.01 of 20 February 2009
+Model-checking
+Parsing file test37.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\FiniteSets.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\TLC.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Naturals.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Sequences.tla
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module FiniteSets
+Semantic processing of module TLC
+Semantic processing of module test37
+"Test 1 OK"  TRUE
+"Test 2 OK"  TRUE
+"Test 3 OK"  TRUE
+"Test 4 OK"  TRUE
+Finished computing initial states: 1 distinct state generated.
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+    calculated (optimistic):  5.421010862427522E-20
+    based on the actual fingerprints:  1.0842021724855044E-19
+2 states generated, 1 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 1.
+
+c:\users\lamport\tlc\tests>java -mx100m tlc2.TLC -cleanup  test38 
+TLC2 Version 2.01 of 20 February 2009
+Model-checking
+Parsing file test38.tla
+Parsing file test38a.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\TLC.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Naturals.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Sequences.tla
+Semantic processing of module test38a
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module TLC
+Semantic processing of module test38
+"Test OK"  TRUE
+Finished computing initial states: 1 distinct state generated.
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+    calculated (optimistic):  5.421010862427522E-20
+    based on the actual fingerprints:  1.0842021724855044E-19
+2 states generated, 1 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 1.
+
+c:\users\lamport\tlc\tests>java -mx100m tlc2.TLC -cleanup  test39 
+TLC2 Version 2.01 of 20 February 2009
+Model-checking
+Parsing file test39.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\TLC.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Integers.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Sequences.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\FiniteSets.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Naturals.tla
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module TLC
+Semantic processing of module Integers
+Semantic processing of module FiniteSets
+Semantic processing of module test39
+Finished computing initial states: 1 distinct state generated.
+"Test1 OK"  TRUE
+"Test2 OK"  TRUE
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+    calculated (optimistic):  4.87890977618477E-19
+    based on the actual fingerprints:  1.5635781919842E-19
+6 states generated, 3 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 2.
+
+c:\users\lamport\tlc\tests>java -mx100m tlc2.TLC -cleanup  test40 
+TLC2 Version 2.01 of 20 February 2009
+Model-checking
+Parsing file test40.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Naturals.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\TLC.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Sequences.tla
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module TLC
+Semantic processing of module test40
+"Test 1 OK"  TRUE
+"Test 2 OK"  TRUE
+"Test 2a OK"  TRUE
+"Test 3 OK"  TRUE
+"Test 4 OK"  TRUE
+"Test 5 OK"  TRUE
+"Test 6 OK"  TRUE
+"Test 7 OK"  TRUE
+"Test 8 OK"  TRUE
+"Test 9 OK"  TRUE
+"Test 10 OK"  TRUE
+"Test 11 OK"  TRUE
+"Test 12 OK"  TRUE
+"Test 13 OK"  TRUE
+"Test 14 OK"  TRUE
+"Test 15 OK"  TRUE
+"Test 16 OK"  TRUE
+"Test 17 OK"  TRUE
+"Test 18 OK"  TRUE
+"Test 19 OK"  TRUE
+"Test 20 OK"  TRUE
+"Test 21 OK"  TRUE
+Finished computing initial states: 1 distinct state generated.
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+    calculated (optimistic):  5.421010862427522E-20
+    based on the actual fingerprints:  1.0842021724855044E-19
+2 states generated, 1 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 1.
+
+c:\users\lamport\tlc\tests>java -mx100m tlc2.TLC -cleanup  test41 
+TLC2 Version 2.01 of 20 February 2009
+Model-checking
+Parsing file test41.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Integers.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\TLC.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Naturals.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Sequences.tla
+Semantic processing of module Naturals
+Semantic processing of module Integers
+Semantic processing of module Sequences
+Semantic processing of module TLC
+Semantic processing of module test41
+"Test 1 OK"  TRUE
+"Test 2 OK"  TRUE
+"Test 3 OK"  TRUE
+"Test 4 OK"  TRUE
+"Test 5 OK"  TRUE
+"Test 6 OK"  TRUE
+"Test 7 OK"  TRUE
+"Test 8 OK"  TRUE
+"Test 9 OK"  TRUE
+"Test 10 OK"  TRUE
+"Test 11 OK"  TRUE
+"Test 12 OK"  TRUE
+"Test 13 OK"  TRUE
+"Test 14 OK"  TRUE
+"Test 15 OK"  TRUE
+"Test 16 OK"  TRUE
+"Test 17 OK"  TRUE
+"Test 18 OK"  TRUE
+"Test 19 OK"  TRUE
+"Test 20 OK"  TRUE
+"Test 21 OK"  TRUE
+"Test 22 OK"  TRUE
+"Test 23 OK"  TRUE
+"Test 24 OK"  TRUE
+"Test 25 OK"  TRUE
+"Test 26 OK"  TRUE
+"Test 27 OK"  TRUE
+"Test 28 OK"  TRUE
+Finished computing initial states: 1 distinct state generated.
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+    calculated (optimistic):  5.421010862427522E-20
+    based on the actual fingerprints:  1.0842021724855044E-19
+2 states generated, 1 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 1.
+
+c:\users\lamport\tlc\tests>java -mx100m tlc2.TLC -cleanup  test42 
+TLC2 Version 2.01 of 20 February 2009
+Model-checking
+Parsing file test42.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\TLC.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Integers.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Sequences.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Naturals.tla
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module TLC
+Semantic processing of module Integers
+Semantic processing of module test42
+"Test 1 OK"  TRUE
+"Test 2 OK"  TRUE
+"Test 3 OK"  TRUE
+"Test 4 OK"  TRUE
+"Test 5 OK"  TRUE
+Finished computing initial states: 1 distinct state generated.
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+    calculated (optimistic):  5.421010862427522E-20
+    based on the actual fingerprints:  1.0842021724855044E-19
+2 states generated, 1 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 1.
+
+c:\users\lamport\tlc\tests>java -mx100m tlc2.TLC -cleanup  test43 
+TLC2 Version 2.01 of 20 February 2009
+Model-checking
+Parsing file test43.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\TLC.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Integers.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Sequences.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Naturals.tla
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module TLC
+Semantic processing of module Integers
+Semantic processing of module test43
+"Test 1 OK"  TRUE
+"Test 2 OK"  TRUE
+"Test 3 OK"  TRUE
+"Test 4 OK"  TRUE
+"Test 5 OK"  TRUE
+"Test 6 OK"  TRUE
+"Test 7 OK"  TRUE
+"Test 8 OK"  TRUE
+"Test 9 OK"  TRUE
+"Test 10 OK"  TRUE
+"Test 11 OK"  TRUE
+"Test 12 OK"  TRUE
+"Test 13 OK"  TRUE
+Finished computing initial states: 1 distinct state generated.
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+    calculated (optimistic):  5.421010862427522E-20
+    based on the actual fingerprints:  1.0842021724855044E-19
+2 states generated, 1 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 1.
+
+c:\users\lamport\tlc\tests>java -mx100m tlc2.TLC -cleanup  test44 
+TLC2 Version 2.01 of 20 February 2009
+Model-checking
+Parsing file test44.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\TLC.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Integers.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Sequences.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Naturals.tla
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module TLC
+Semantic processing of module Integers
+Semantic processing of module test44
+"Test 1 OK"  TRUE
+"Test 2 OK"  TRUE
+"Test 3 OK"  TRUE
+"Test 4 OK"  TRUE
+"Test 5 OK"  TRUE
+"Test 6 OK"  TRUE
+"Test 7 OK"  TRUE
+"Test 8 OK"  TRUE
+"Test 9 OK"  TRUE
+"Test 10 OK"  TRUE
+"Test 11 OK"  TRUE
+"Test 12 OK"  TRUE
+"Test 13 OK"  TRUE
+"Test 14 OK"  TRUE
+"Test 15 OK"  TRUE
+"Test 16 OK"  TRUE
+"Test 17 OK"  TRUE
+"Test 18 OK"  TRUE
+"Test 19 OK"  TRUE
+"Test 20 OK"  TRUE
+"Test 21 OK"  TRUE
+"Test 22 OK"  TRUE
+"Test 23 OK"  TRUE
+"Test 24 OK"  TRUE
+"Test 25 OK"  TRUE
+"Test 26 OK"  TRUE
+"Test 27 OK"  TRUE
+"Test 28 OK"  TRUE
+"Test 29 OK"  TRUE
+"Test 30 OK"  TRUE
+"Test 31 OK"  TRUE
+"Test 32 OK"  TRUE
+"Test 33 OK"  TRUE
+"Test 34 OK"  TRUE
+"Test 35 OK"  TRUE
+"Test 36 OK"  TRUE
+"Test 37 OK"  TRUE
+"Test 38 OK"  TRUE
+"Test 39 OK"  TRUE
+"Test 40 OK"  TRUE
+"Test 41 OK"  TRUE
+"Test 42 OK"  TRUE
+"Test 43 OK"  TRUE
+"Test 44 OK"  TRUE
+"Test 45 OK"  TRUE
+"Test 46 OK"  TRUE
+"Test 47 OK"  TRUE
+"Test 48 OK"  TRUE
+"Test 49 OK"  TRUE
+"Test 50 OK"  TRUE
+"Test 51 OK"  TRUE
+"Test 52 OK"  TRUE
+"Test 53 OK"  TRUE
+"Test 54 OK"  TRUE
+"Test 55 OK"  TRUE
+"Test 56 OK"  TRUE
+"Test 57 OK"  TRUE
+"Test 58 OK"  TRUE
+"Test 59 OK"  TRUE
+"Test 60 OK"  TRUE
+"Test 61 OK"  TRUE
+"Test 62 OK"  TRUE
+"Test 63 OK"  TRUE
+"Test 64 OK"  TRUE
+"Test 65 OK"  TRUE
+"Test 66 OK"  TRUE
+"Test 67 OK"  TRUE
+"Test 68 OK"  TRUE
+"Test 69 OK"  TRUE
+"Test 70 OK"  TRUE
+"Test 71 OK"  TRUE
+"Test 72 OK"  TRUE
+"Test 73 OK"  TRUE
+"Test 74 OK"  TRUE
+"Test 75 OK"  TRUE
+"Test 76 OK"  TRUE
+"Test 77 OK"  TRUE
+"Test 78 OK"  TRUE
+"Test 79 OK"  TRUE
+"Test 80 OK"  TRUE
+"Test 81 OK"  TRUE
+"Test 82 OK"  TRUE
+"Test 83 OK"  TRUE
+"Test 84 OK"  TRUE
+"Test 85 OK"  TRUE
+"Test 86 OK"  TRUE
+"Test 87 OK"  TRUE
+Finished computing initial states: 1 distinct state generated.
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+    calculated (optimistic):  5.421010862427522E-20
+    based on the actual fingerprints:  1.0842021724855044E-19
+2 states generated, 1 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 1.
+
+c:\users\lamport\tlc\tests>java -mx100m tlc2.TLC -cleanup  test45 
+TLC2 Version 2.01 of 20 February 2009
+Model-checking
+Parsing file test45.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Naturals.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\TLC.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Sequences.tla
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module TLC
+Semantic processing of module test45
+"Test 1 OK"  TRUE
+"Test 2 OK"  TRUE
+"Test 3  OK"  TRUE
+"Test 4 OK"  TRUE
+"Test 5 OK"  TRUE
+"Test 6 OK"  TRUE
+"Test 7 OK"  TRUE
+"Test 8 OK"  TRUE
+"Test 9 OK"  TRUE
+"Test 10 OK"  TRUE
+"Test 11 OK"  TRUE
+"Test 12 OK"  TRUE
+Finished computing initial states: 1 distinct state generated.
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+    calculated (optimistic):  5.421010862427522E-20
+    based on the actual fingerprints:  1.0842021724855044E-19
+2 states generated, 1 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 1.
+
+c:\users\lamport\tlc\tests>java -mx100m tlc2.TLC -cleanup  test46 
+TLC2 Version 2.01 of 20 February 2009
+Model-checking
+Parsing file test46.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Naturals.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Sequences.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\FiniteSets.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\TLC.tla
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module FiniteSets
+Semantic processing of module TLC
+Semantic processing of module test46
+Finished computing initial states: 1 distinct state generated.
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+    calculated (optimistic):  3.74049749507499E-17
+    based on the actual fingerprints:  1.3099521167914988E-18
+121 states generated, 6 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 3.
+
+c:\users\lamport\tlc\tests>java -mx100m tlc2.TLC -cleanup  test47 
+TLC2 Version 2.01 of 20 February 2009
+Model-checking
+Parsing file test47.tla
+Parsing file test47a.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Integers.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Naturals.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\TLC.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Sequences.tla
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module TLC
+Semantic processing of module test47a
+Semantic processing of module Integers
+Semantic processing of module test47
+Finished computing initial states: 1 distinct state generated.
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+    calculated (optimistic):  1.6263032587282567E-19
+    based on the actual fingerprints:  3.992986046397577E-19
+4 states generated, 3 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 3.
+
+c:\users\lamport\tlc\tests>java -mx100m tlc2.TLC -cleanup  test48 
+TLC2 Version 2.01 of 20 February 2009
+Model-checking
+Parsing file test48.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\TLC.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Naturals.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Sequences.tla
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module TLC
+Semantic processing of module test48
+Finished computing initial states: 1 distinct state generated.
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+    calculated (optimistic):  3.415236843329339E-18
+    based on the actual fingerprints:  1.0842021724855044E-19
+64 states generated, 1 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 1.
+
+c:\users\lamport\tlc\tests>java -mx100m tlc2.TLC -cleanup  test49 
+TLC2 Version 2.01 of 20 February 2009
+Model-checking
+Parsing file test49.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\TLC.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Naturals.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Sequences.tla
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module TLC
+Semantic processing of module test49
+Finished computing initial states: 1 distinct state generated.
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+    calculated (optimistic):  4.87890977618477E-19
+    based on the actual fingerprints:  1.0842021724855044E-19
+10 states generated, 1 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 1.
+
+c:\users\lamport\tlc\tests>java -mx100m tlc2.TLC -cleanup  test50 
+TLC2 Version 2.01 of 20 February 2009
+Model-checking
+Parsing file test50.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Naturals.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Sequences.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Bags.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\TLC.tla
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module TLC
+Semantic processing of module Bags
+Semantic processing of module test50
+"Test 1 OK"  TRUE
+"Test 2 OK"  TRUE
+"Test 3 OK"  TRUE
+"Test 4 OK"  TRUE
+"Test 5 OK"  TRUE
+"Test 6 OK"  TRUE
+"Test 7 OK"  TRUE
+Finished computing initial states: 1 distinct state generated.
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+    calculated (optimistic):  5.421010862427522E-20
+    based on the actual fingerprints:  1.0842021724855044E-19
+2 states generated, 1 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 1.
+
+c:\users\lamport\tlc\tests>java -mx100m tlc2.TLC -cleanup  test51 
+TLC2 Version 2.01 of 20 February 2009
+Model-checking
+Parsing file test51.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\TLC.tla
+Parsing file test51a.tla
+Parsing file test51b.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Naturals.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Sequences.tla
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module TLC
+Semantic processing of module test51a
+Semantic processing of module test51b
+Semantic processing of module test51
+"Test 1 OK"  TRUE
+"Test 2 OK"  TRUE
+"Test 3 OK"  TRUE
+"Test 4 OK"  TRUE
+"Test 5 OK"  TRUE
+"Test 6 OK"  TRUE
+"Test 7 OK"  TRUE
+"Test 8 OK"  TRUE
+"Test 9 OK"  TRUE
+"Test 10 OK"  TRUE
+"Test 11 OK"  TRUE
+"Test 12 OK"  TRUE
+"Test 13 OK"  TRUE
+"Test 14 OK"  TRUE
+"Test 15 OK"  TRUE
+"Test 16 OK"  TRUE
+"Test 17 OK"  TRUE
+"Test 18 OK"  TRUE
+"Test 19 OK"  TRUE
+"Test 20 OK"  TRUE
+"Test 21 OK"  TRUE
+"Test 22 OK"  TRUE
+"Test 23 OK"  TRUE
+"Test 24 OK"  TRUE
+"Test 25 OK"  TRUE
+"Test 26 OK"  TRUE
+"Test 27 OK"  TRUE
+"Test 28 OK"  TRUE
+"Test 29 OK"  TRUE
+"Test 30 OK"  TRUE
+"Test 31 OK"  TRUE
+"Test 32 OK"  TRUE
+"Test 33 OK"  TRUE
+"Test 34 OK"  TRUE
+"Test 35 OK"  TRUE
+"Test 36 OK"  TRUE
+"Test 37 OK"  TRUE
+"Test 38 OK"  TRUE
+"Test 39 OK"  TRUE
+"Test 40 OK"  TRUE
+"Test 41 OK"  TRUE
+"Test 42 OK"  TRUE
+"Test 43 OK"  TRUE
+"Test 44 OK"  TRUE
+"Test 45 OK"  TRUE
+"Test 46 OK"  TRUE
+"Test 47 OK"  TRUE
+"Test 48 OK"  TRUE
+"Test 49 OK"  TRUE
+"Test 50 OK"  TRUE
+"Test 51 OK"  TRUE
+"Test 52 OK"  TRUE
+"Test 53 OK"  TRUE
+"Test 54 OK"  TRUE
+"Test 55 OK"  TRUE
+"Test 56 OK"  TRUE
+"Test 57 OK"  TRUE
+"Test 58 OK"  TRUE
+"Test 59 OK"  TRUE
+"Test 60 OK"  TRUE
+"Test 61 OK"  TRUE
+"Test 62 OK"  TRUE
+"Test 63 OK"  TRUE
+"Test 64 OK"  TRUE
+"Test 65 OK"  TRUE
+"Test 66 OK"  TRUE
+"Test 67 OK"  TRUE
+"Test 68 OK"  TRUE
+"Test 69 OK"  TRUE
+"Test 70 OK"  TRUE
+"Test 71 OK"  TRUE
+"Test 72 OK"  TRUE
+"Test 73 OK"  TRUE
+"Test 74 OK"  TRUE
+"Test 75 OK"  TRUE
+"Test 76 OK"  TRUE
+"Test 77 OK"  TRUE
+"Test 78 OK"  TRUE
+"Test 79 OK"  TRUE
+"Test 80 OK"  TRUE
+"Test 81 OK"  TRUE
+"Test 82 OK"  TRUE
+"Test 83 OK"  TRUE
+"Test 84 OK"  TRUE
+"Test 85 OK"  TRUE
+"Test 86 OK"  TRUE
+"Test 87 OK"  TRUE
+"Test 88 OK"  TRUE
+"Test 89 OK"  TRUE
+"Test 90 OK"  TRUE
+"Test 91 OK"  TRUE
+"Test 92 OK"  TRUE
+"Test 93 OK"  TRUE
+"Test 94 OK"  TRUE
+"Test 95 OK"  TRUE
+Finished computing initial states: 0 distinct states generated.
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+    calculated (optimistic):  0.0
+    based on the actual fingerprints:  1.0842021724855044E-19
+0 states generated, 0 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 0.
+
+c:\users\lamport\tlc\tests>java -mx100m tlc2.TLC -cleanup  test52 
+TLC2 Version 2.01 of 20 February 2009
+Model-checking
+Parsing file test52.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\TLC.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Naturals.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Sequences.tla
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module TLC
+Semantic processing of module test52
+Warning: The subscript of the next-state relation specified by the specification
+does not seem to contain the state variable y
+(Use the -nowarning option to disable this warning.)
+"Test1 Begun"  TRUE
+"Test1 Finished"  TRUE
+Finished computing initial states: 1 distinct state generated.
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+    calculated (optimistic):  1.0842021724855044E-19
+    based on the actual fingerprints:  3.4287555079200947E-19
+3 states generated, 2 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 2.
+
+c:\users\lamport\tlc\tests>java -mx100m tlc2.TLC -cleanup  test53 
+TLC2 Version 2.01 of 20 February 2009
+Model-checking
+Parsing file test53.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\TLC.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Naturals.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Sequences.tla
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module TLC
+Semantic processing of module test53
+Finished computing initial states: 1 distinct state generated.
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+    calculated (optimistic):  4.87890977618477E-19
+    based on the actual fingerprints:  1.0842021724855044E-19
+10 states generated, 1 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 1.
+
+c:\users\lamport\tlc\tests>java -mx100m tlc2.TLC -cleanup  test54 
+TLC2 Version 2.01 of 20 February 2009
+Model-checking
+Parsing file test54.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\TLC.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Naturals.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Sequences.tla
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module TLC
+Semantic processing of module test54
+Finished computing initial states: 1 distinct state generated.
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+    calculated (optimistic):  4.87890977618477E-19
+    based on the actual fingerprints:  1.0842021724855044E-19
+10 states generated, 1 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 1.
+
+c:\users\lamport\tlc\tests>java -mx100m tlc2.TLC -cleanup  test55 
+TLC2 Version 2.01 of 20 February 2009
+Model-checking
+Parsing file test55.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Naturals.tla
+Parsing file test55a.tla
+Semantic processing of module Naturals
+Semantic processing of module test55a
+Semantic processing of module test55
+Finished computing initial states: 1 distinct state generated.
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+    calculated (optimistic):  1.0842021724855044E-19
+    based on the actual fingerprints:  3.6768693785569027E-19
+3 states generated, 2 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 2.
+
+c:\users\lamport\tlc\tests>java -mx100m tlc2.TLC -cleanup  test56 
+TLC2 Version 2.01 of 20 February 2009
+Model-checking
+Parsing file test56.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Naturals.tla
+Parsing file test56a.tla
+Semantic processing of module Naturals
+Semantic processing of module test56a
+Semantic processing of module test56
+Finished computing initial states: 3 distinct states generated.
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+    calculated (optimistic):  9.75781955236954E-19
+    based on the actual fingerprints:  1.6262447381494354E-18
+9 states generated, 6 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 2.
+
+c:\users\lamport\tlc\tests>java -mx100m tlc2.TLC -cleanup  test57 
+TLC2 Version 2.01 of 20 February 2009
+Model-checking
+Parsing file test57.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Naturals.tla
+Parsing file test57a.tla
+Semantic processing of module Naturals
+Semantic processing of module test57a
+Semantic processing of module test57
+Error: Invariant Invariant1 is violated by the initial state:
+x = 1
+
+
+c:\users\lamport\tlc\tests>java -mx100m tlc2.TLC -cleanup  test58 
+TLC2 Version 2.01 of 20 February 2009
+Model-checking
+Parsing file test58.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Naturals.tla
+Semantic processing of module Naturals
+Semantic processing of module test58
+java.lang.NumberFormatException: For input string: "\b111111"
+java.lang.RuntimeException: Parsing or semantic analysis failed. java.lang.NumberFormatException: For input string: "\b111111"
+	at util.Assert.fail(Assert.java:19)
+	at tlc2.tool.Spec.processSpec(Spec.java:150)
+	at tlc2.tool.Tool.init(Tool.java:99)
+	at tlc2.tool.AbstractChecker.<init>(AbstractChecker.java:70)
+	at tlc2.tool.ModelChecker.<init>(ModelChecker.java:50)
+	at tlc2.TLC.process(TLC.java:493)
+	at tlc2.TLC.main(TLC.java:138)
+Error: Parsing or semantic analysis failed. java.lang.NumberFormatException: For input string: "\b111111"
+
+c:\users\lamport\tlc\tests>java -mx100m tlc2.TLC -cleanup  test59 
+TLC2 Version 2.01 of 20 February 2009
+Model-checking
+Parsing file test59.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Naturals.tla
+Parsing file test59a.tla
+Semantic processing of module Naturals
+Semantic processing of module test59a
+Semantic processing of module test59
+Implied-temporal checking--satisfiability problem has 1 branches.
+Finished computing initial states: 1 distinct state generated.
+--Checking temporal properties for the complete state space...
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+    calculated (optimistic):  2.710505431213761E-19
+    based on the actual fingerprints:  6.692552905108789E-19
+6 states generated, 5 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 5.
+
+c:\users\lamport\tlc\tests>java -mx100m tlc2.TLC -cleanup  test60 
+TLC2 Version 2.01 of 20 February 2009
+Model-checking
+Parsing file test60.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Sequences.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\TLC.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Naturals.tla
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module TLC
+Semantic processing of module test60
+Finished computing initial states: 0 distinct states generated.
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+    calculated (optimistic):  0.0
+    based on the actual fingerprints:  1.0842021724855044E-19
+0 states generated, 0 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 0.
+
+c:\users\lamport\tlc\tests>java -mx100m tlc2.TLC -cleanup  test61 
+TLC2 Version 2.01 of 20 February 2009
+Model-checking
+Parsing file test61.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Naturals.tla
+Parsing file test61a.tla
+Semantic processing of module Naturals
+Semantic processing of module test61a
+Semantic processing of module test61
+java.lang.RuntimeException: The configuration file did not specify the initial state predicate.
+	at util.Assert.fail(Assert.java:19)
+	at tlc2.tool.Spec.processConfig(Spec.java:707)
+	at tlc2.tool.Tool.init(Tool.java:115)
+	at tlc2.tool.AbstractChecker.<init>(AbstractChecker.java:70)
+	at tlc2.tool.ModelChecker.<init>(ModelChecker.java:50)
+	at tlc2.TLC.process(TLC.java:493)
+	at tlc2.TLC.main(TLC.java:138)
+Error: The configuration file did not specify the initial state predicate.
+
+c:\users\lamport\tlc\tests>java -mx100m tlc2.TLC -cleanup  test62 
+TLC2 Version 2.01 of 20 February 2009
+Model-checking
+Parsing file test62.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\TLC.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Naturals.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Sequences.tla
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module TLC
+Semantic processing of module test62
+"Should print this"  TRUE
+"And this"
+Finished computing initial states: 0 distinct states generated.
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+    calculated (optimistic):  0.0
+    based on the actual fingerprints:  1.0842021724855044E-19
+0 states generated, 0 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 0.
+
+c:\users\lamport\tlc\tests>java -mx100m tlc2.TLC -cleanup  test201 
+TLC2 Version 2.01 of 20 February 2009
+Model-checking
+Parsing file test201.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Naturals.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\TLC.tla
+Parsing file test201a.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Sequences.tla
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module TLC
+Semantic processing of module test201a
+Semantic processing of module test201
+"Test1 OK"
+"Test2 OK"
+"Test201 OK"
+Finished computing initial states: 0 distinct states generated.
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+    calculated (optimistic):  0.0
+    based on the actual fingerprints:  1.0842021724855044E-19
+0 states generated, 0 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 0.
+
+c:\users\lamport\tlc\tests>java -mx100m tlc2.TLC -cleanup  test202 
+TLC2 Version 2.01 of 20 February 2009
+Model-checking
+Parsing file test202.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Naturals.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\TLC.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Sequences.tla
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module TLC
+Semantic processing of module test202
+"Test 1 OK"
+"Test 2 OK"
+"Test 3 OK"
+Finished computing initial states: 0 distinct states generated.
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+    calculated (optimistic):  0.0
+    based on the actual fingerprints:  1.0842021724855044E-19
+0 states generated, 0 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 0.
+
+c:\users\lamport\tlc\tests>java -mx100m tlc2.TLC -cleanup  test203 
+TLC2 Version 2.01 of 20 February 2009
+Model-checking
+Parsing file test203.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Naturals.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\TLC.tla
+Parsing file test203a.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Sequences.tla
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module TLC
+Semantic processing of module test203a
+Semantic processing of module test203
+"Test1 OK"
+Finished computing initial states: 0 distinct states generated.
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+    calculated (optimistic):  0.0
+    based on the actual fingerprints:  1.0842021724855044E-19
+0 states generated, 0 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 0.
+
+c:\users\lamport\tlc\tests>java -mx100m tlc2.TLC -cleanup  test204 
+TLC2 Version 2.01 of 20 February 2009
+Model-checking
+Parsing file test204.tla
+Semantic processing of module test204
+Finished computing initial states: 0 distinct states generated.
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+    calculated (optimistic):  0.0
+    based on the actual fingerprints:  1.0842021724855044E-19
+0 states generated, 0 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 0.
+
+c:\users\lamport\tlc\tests>java -mx100m tlc2.TLC -cleanup  test205 
+TLC2 Version 2.01 of 20 February 2009
+Model-checking
+Parsing file test205.tla
+Parsing file test204.tla
+Semantic processing of module test204
+Semantic processing of module test205
+Finished computing initial states: 0 distinct states generated.
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+    calculated (optimistic):  0.0
+    based on the actual fingerprints:  1.0842021724855044E-19
+0 states generated, 0 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 0.
+
+c:\users\lamport\tlc\tests>java -mx100m tlc2.TLC -cleanup  test206 
+TLC2 Version 2.01 of 20 February 2009
+Model-checking
+Parsing file test206.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\TLC.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Integers.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Naturals.tla
+Parsing file test206a.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Sequences.tla
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module TLC
+Semantic processing of module Integers
+Semantic processing of module test206a
+Semantic processing of module test206
+Finished computing initial states: 0 distinct states generated.
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+    calculated (optimistic):  0.0
+    based on the actual fingerprints:  1.0842021724855044E-19
+0 states generated, 0 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 0.
+
+c:\users\lamport\tlc\tests>java -mx100m tlc2.TLC -cleanup  test207 
+TLC2 Version 2.01 of 20 February 2009
+Model-checking
+Parsing file test207.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\TLC.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Naturals.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Sequences.tla
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module TLC
+Semantic processing of module test207
+"SANY2 Test"
+Finished computing initial states: 0 distinct states generated.
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+    calculated (optimistic):  0.0
+    based on the actual fingerprints:  1.0842021724855044E-19
+0 states generated, 0 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 0.
+
+c:\users\lamport\tlc\tests>java -mx100m tlc2.TLC -cleanup  test208 
+TLC2 Version 2.01 of 20 February 2009
+Model-checking
+Parsing file test208.tla
+Semantic processing of module test208
+Finished computing initial states: 0 distinct states generated.
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+    calculated (optimistic):  0.0
+    based on the actual fingerprints:  1.0842021724855044E-19
+0 states generated, 0 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 0.
+
+c:\users\lamport\tlc\tests>java -mx100m tlc2.TLC -cleanup  test209 
+TLC2 Version 2.01 of 20 February 2009
+Model-checking
+Parsing file test209.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Naturals.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Sequences.tla
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module test209
+Finished computing initial states: 0 distinct states generated.
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+    calculated (optimistic):  0.0
+    based on the actual fingerprints:  1.0842021724855044E-19
+0 states generated, 0 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 0.
+
+c:\users\lamport\tlc\tests>java tla2sany.SANY test210 
+
+****** SANY2 Version .95 created  4 March 2009
+
+Parsing file test210.tla
+Semantic processing of module test210
+Semantic errors:
+
+*** Errors: 9
+
+line 33, col 16 to line 33, col 19 of module test210
+
+Accessing subexpression labeled `laby' of ASSUME/PROVE clause within the scope of a declaration
+ from outside that declaration's scope.
+
+
+line 35, col 16 to line 35, col 16 of module test210
+
+Accessing ASSUME/PROVE clause within the scope of a declaration
+ from outside that declaration's scope.
+
+
+line 42, col 41 to line 42, col 55 of module test210
+
+Label not allowed within scope of declaration in nested ASSUME/PROVE.
+
+
+line 43, col 30 to line 43, col 44 of module test210
+
+Label not allowed within scope of declaration in nested ASSUME/PROVE.
+
+
+line 55, col 16 to line 55, col 16 of module test210
+
+Accessing non-existent subexpression of a SUFFICES
+
+
+line 62, col 15 to line 62, col 18 of module test210
+
+Accessing subexpression labeled `laby' of ASSUME/PROVE clause within the scope of a declaration
+ from outside that declaration's scope.
+
+
+line 63, col 15 to line 63, col 18 of module test210
+
+Accessing subexpression labeled `labi' of ASSUME/PROVE clause within the scope of a declaration
+ from outside that declaration's scope.
+
+
+line 64, col 15 to line 64, col 18 of module test210
+
+Accessing subexpression labeled `labu' of ASSUME/PROVE clause within the scope of a declaration
+ from outside that declaration's scope.
+
+
+line 65, col 15 to line 65, col 15 of module test210
+
+Accessing ASSUME/PROVE clause within the scope of a declaration
+ from outside that declaration's scope.
+
+
+
+
+c:\users\lamport\tlc\tests>java tla2sany.SANY test211 
+
+****** SANY2 Version .95 created  4 March 2009
+
+Parsing file test211.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Integers.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\FiniteSets.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Naturals.tla
+Parsing file C:\users\lamport\tla\tla2\tlatools\class\tla2sany\StandardModules\Sequences.tla
+Semantic processing of module Naturals
+Semantic processing of module Integers
+Semantic processing of module Sequences
+Semantic processing of module FiniteSets
+Semantic processing of module test211
+
+c:\users\lamport\tlc\tests>java tla2sany.SANY test212 
+
+****** SANY2 Version .95 created  4 March 2009
+
+Parsing file test212.tla
+Parsing file test212b.tla
+Parsing file test212a.tla
+Semantic processing of module test212b
+Semantic processing of module test212a
+Semantic processing of module test212
+Semantic errors:
+
+*** Errors: 6
+
+line 27, col 1 to line 27, col 62 of module test212
+
+Error in instantiating module 'test212a':
+ A non-Leibniz operator substituted for 'Op2'.
+
+
+line 28, col 1 to line 28, col 62 of module test212
+
+Error in instantiating module 'test212a':
+ A non-Leibniz operator substituted for 'Op'.
+
+
+line 29, col 1 to line 29, col 62 of module test212
+
+Error in instantiating module 'test212a':
+ A non-Leibniz operator substituted for 'Op'.
+
+
+line 30, col 1 to line 30, col 64 of module test212
+
+Error in instantiating module 'test212a':
+ A non-Leibniz operator substituted for 'Op2'.
+
+
+line 31, col 1 to line 31, col 63 of module test212
+
+Error in instantiating module 'test212a':
+ A non-Leibniz operator substituted for 'Op2'.
+
+
+line 32, col 1 to line 32, col 63 of module test212
+
+Error in instantiating module 'test212a':
+ A non-Leibniz operator substituted for 'Op2'.
+
+
+
+
+c:\users\lamport\tlc\tests>java tla2sany.SANY test213 
+
+****** SANY2 Version .95 created  4 March 2009
+
+Parsing file test213.tla
+Parsing file test213b.tla
+Semantic processing of module test213b
+Semantic processing of module test213
+Semantic errors:
+
+*** Errors: 8
+
+line 13, col 1 to line 13, col 52 of module test213
+
+Level error in instantiating module 'test213b':
+The level of the expression or operator substituted for 'C' must be at most 2.
+
+
+line 14, col 1 to line 14, col 52 of module test213
+
+Level error in instantiating module 'test213b':
+The level of the expression or operator substituted for 'D' must be at most 2.
+
+
+line 23, col 7 to line 23, col 9 of module test213
+
+Non-temporal theorem has temporal-level proof.
+
+
+line 29, col 8 to line 29, col 15 of module test213
+
+Non-constant CASE for temporal goal.
+
+
+line 31, col 8 to line 31, col 15 of module test213
+
+Non-constant TAKE, WITNESS, or HAVE for temporal goal.
+
+
+line 33, col 8 to line 33, col 22 of module test213
+
+Non-constant TAKE, WITNESS, or HAVE for temporal goal.
+
+
+line 43, col 8 to line 43, col 11 of module test213
+
+Non-temporal theorem has temporal-level proof.
+
+
+line 42, col 1 to line 46, col 14 of module test213
+
+Non-temporal theorem has temporal-level proof.
+
+
+
+
+c:\users\lamport\tlc\tests>java tla2sany.SANY test214 
+
+****** SANY2 Version .95 created  4 March 2009
+
+Parsing file test214.tla
+Semantic processing of module test214
+Semantic errors:
+
+*** Errors: 4
+
+line 7, col 10 to line 7, col 14 of module test214
+
+The only expression allowed as a fact in a USE or HIDE is the name of a theorem, assumption, or step.
+
+
+line 10, col 11 to line 10, col 14 of module test214
+
+The only expression allowed as a fact in a USE or HIDE is the name of a theorem, assumption, or step.
+
+
+line 13, col 12 to line 13, col 15 of module test214
+
+The only expression allowed as a fact in a USE or HIDE is the name of a theorem, assumption, or step.
+
+
+line 13, col 39 to line 13, col 42 of module test214
+
+The only expression allowed as a fact in a USE or HIDE is the name of a theorem, assumption, or step.
+
+
+
+
+c:\users\lamport\tlc\tests>java tla2sany.SANY test215 
+
+****** SANY2 Version .95 created  4 March 2009
+
+Parsing file test215.tla
+Semantic processing of module test215
+Semantic errors:
+
+*** Errors: 8
+
+line 8, col 6 to line 8, col 14 of module test215
+
+Action used where only temporal formula or state predicate allowed.
+
+
+line 9, col 6 to line 9, col 14 of module test215
+
+Action used where only temporal formula or state predicate allowed.
+
+
+line 12, col 6 to line 12, col 16 of module test215
+
+Action used where only temporal formula or state predicate allowed.
+
+
+line 13, col 6 to line 13, col 16 of module test215
+
+Action used where only temporal formula or state predicate allowed.
+
+
+line 16, col 6 to line 16, col 11 of module test215
+
+<> followed by action not of form <<A>>_v.
+
+
+line 20, col 8 to line 20, col 13 of module test215
+
+[] followed by action not of form [A]_v.
+
+
+line 23, col 25 to line 23, col 26 of module test215
+
+Action-level bound of quantified temporal formula.
+
+
+line 26, col 26 to line 26, col 27 of module test215
+
+Action-level bound of quantified temporal formula.
+
+
+
+
+c:\users\lamport\tlc\tests>echo "DONE" 
+"DONE"

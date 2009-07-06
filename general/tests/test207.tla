@@ -16,10 +16,20 @@ THEOREM Thm == ASSUME NEW J PROVE lab :: TRUE
      PROVE  TRUE
 <1>3 SUFFICES ASSUME NEW K
               PROVE  TRUE
-<1>4 K = 0
+  <2>1. \A K : TRUE
+  <2>2. SUFFICES ASSUME NEW L
+                 PROVE  TRUE
+  <2>3. QED
+<1>3a. DEFINE L == 0
+<*>4.  K = 0
+  <2>1. DEFINE F == 7
+  <2>2. QED
+<1>4a. DEFINE F == 42
 <1>5 QED
 
 J == 0
+I == 0
+F == 1
 
 ASSUME PrintT("SANY2 Test")
 

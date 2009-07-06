@@ -1,0 +1,63 @@
+This directory contains regression tests for TLC.  
+
+As of 29 Nov 2005, the following test files revealed bugs:
+
+   test6  - TLC not making proper use of level info when splitting
+            next-state action.
+   test57 - Subtle bug in handling ENABLED under instantiation 
+   test58 - Parser doesn't handle octal, binary, and hex numbers.
+   test60 - TLC incorrectly handles escape characters in a string 
+            so that Len does not count them properly.
+            - Corrected after 26 apr 2006
+   test61 - instantiation of form Foo(X) == INSTANCE ...  doesn't work.
+
+   etest7 - TLC fails to complain about a CONSTANT statement in the 
+            cfg file replacing a constant by a non-constant.
+
+Note: testN for N > 200 are tests for tlc2.
+   test210 is supposed to produce errors.
+--------------------
+List of files:
+
+   index.txt
+     Lists all the tests--but not up to date.
+
+   test.bat
+     Runs all correct tests.  Run in cygwin with
+     test.bat >& test.yy-mm-dd
+   
+   test2.bat
+     Like test.bat, except for TLC2
+
+   eclipse-test2.bat
+     Like test.bat, except for TLC2 and using the Eclipse version 
+
+   etest.bat
+     Runs all error tests.  Run in cygwin with
+     etest.bat >& etest.01-12-31    
+   
+   test*.{tla,cfg}
+      Tests that should be correct.
+   
+   etest*.{tla,cfg}
+      Tests that should produce errors.
+ 
+   test.yy-mm-dd
+   etest.yy-mm-dd
+     Results of running test.bat and etest.bat on date yy-mm-dd
+   
+   dotests
+      An obsolete unix shell script to run all the tests.
+   
+   test-run.yy-mm-dd
+      The output from running dotests with the version of TLC dated
+      yy-mm-dd.
+
+To run a regression test on Digital Unix, type
+
+   dotests >& test-run.yy-mm-dd &
+   tail -f test-run.yy-mm-dd
+
+and the use dxdiff to compare the output with the previous test.
+
+

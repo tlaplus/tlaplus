@@ -1,4 +1,6 @@
-`. last modified on Fri 30 Nov 2007 at 17:08:32 PST by lamport 
+\* Test of moderately large proof.
+
+`. last modified on Wed  4 March 2009 at 17:55:12 PST by lamport 
    Major changes made 21 Sep 2007:
      variable chosen renamed learned
      action Choose renamed Learn
@@ -713,8 +715,14 @@ THEOREM InductiveInvariance == Inv /\ Next => Inv'
   (*************************************************************************)
   (* It is straighforward to show that TypeOK /\ Next => TypeOK'.          *)
   (*************************************************************************)
-  
-<1> USE TypeOK
+
+\* <1> USE TypeOK
+\* On 4 Mar 2009 it became illegal to use arbitrary expressions as
+\* facts in a USE or HIDE--making this USE illegal
+
+<1>2a. TypeOK
+  PROOF OBVIOUS
+<1> USE <1>2a  
   (*************************************************************************)
   (* This statement means that from now on, we are free to use TypeOK      *)
   (* without explicitly mentioning that we're using it.  In an informal    *)
@@ -801,7 +809,7 @@ THEOREM InductiveInvariance == Inv /\ Next => Inv'
         (* Proof by contradiction.                                         *)
         (*******************************************************************)
 
-      <4> USE k < maxcfg
+      <4> HAVE k < maxcfg
 
       <4>2. CASE i > cfgi[k+1]
         <5>1. b < cfgb[k+1]
