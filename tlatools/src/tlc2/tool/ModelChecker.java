@@ -68,6 +68,10 @@ public class ModelChecker extends AbstractChecker
 
         // Initialize all the workers:
         this.workers = new Worker[TLCGlobals.getNumWorkers()];
+        for (int i = 0; i < this.workers.length; i++)
+        {
+            this.workers[i] = new Worker(i, this);
+        }
     }
 
     /**
@@ -736,11 +740,10 @@ public class ModelChecker extends AbstractChecker
     /**
      * Spawn the worker threads
      */
-    protected IdThread[] createAndStartWorkers(AbstractChecker checker, int checkIndex)
+    protected IdThread[] startWorkers(AbstractChecker checker, int checkIndex)
     {
         for (int i = 0; i < this.workers.length; i++)
         {
-            this.workers[i] = new Worker(i, checker);
             this.workers[i].start();
         }
         return this.workers;

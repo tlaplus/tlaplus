@@ -208,7 +208,7 @@ public abstract class AbstractChecker implements Cancelable
           }
           
           // Start all the workers:
-          IdThread[] workers = createAndStartWorkers(this, depth);
+          IdThread[] workers = startWorkers(this, depth);
     
           // Check progress periodically:
           int count = TLCGlobals.coverageInterval/TLCGlobals.progressInterval;
@@ -261,7 +261,7 @@ public abstract class AbstractChecker implements Cancelable
      * @param checkIndex the check level (depth or level)
      * @return the array of initialized worker threads
      */
-    protected abstract IdThread[] createAndStartWorkers(AbstractChecker checker, int checkIndex);
+    protected abstract IdThread[] startWorkers(AbstractChecker checker, int checkIndex);
     
     /**
      * Hook to run some work before entering the worker loop

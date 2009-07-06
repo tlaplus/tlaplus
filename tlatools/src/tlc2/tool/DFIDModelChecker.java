@@ -632,7 +632,7 @@ public class DFIDModelChecker extends AbstractChecker {
   /**
    * Create workers
    */
-  protected IdThread[] createAndStartWorkers(AbstractChecker checker, int checkIndex)
+  protected IdThread[] startWorkers(AbstractChecker checker, int checkIndex)
   {
       for (int i = 0; i < this.workers.length; i++) {
           this.workers[i] = new DFIDWorker(i, checkIndex, checker);
