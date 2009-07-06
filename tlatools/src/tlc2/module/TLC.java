@@ -5,6 +5,7 @@
 
 package tlc2.module;
 
+import tlc2.TLCGlobals;
 import tlc2.tool.EvalControl;
 import tlc2.tool.EvalException;
 import tlc2.tool.TLARegistry;
@@ -115,7 +116,7 @@ public class TLC implements ValueConstants {
 	  ((Worker)th).setLocalValue(idx, val);
 	}
 	else {
-	  tlc2.TLCGlobals.mainChecker.setAllValues(idx, val);
+	  TLCGlobals.mainChecker.setAllValues(idx, val);
 	}
 	return ValTrue;
       }
