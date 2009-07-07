@@ -1,0 +1,156 @@
+The Trace Explorer
+-----------------
+
+The trace explorer should be one of the two first TLC debugging
+features to be implemented in the toolbox.  (The other is the ability
+to display the region mentioned in a TLC message.)
+
+I will describe the Trace Explorer with an example.  We take the spec
+
+   VARIABLES x, y
+   Init == x = 0 /\ y = 0
+   Next == /\ x' = x+1
+           /\ y' = y + x
+
+and check the invariant  
+
+   Inv == x < 3
+
+This produces the following error trace.
+
+   STATE 1: <Initial predicate>
+   /\ x = 0
+   /\ y = 0
+   
+   STATE 2: <Action line 8, col 3 to line 9, col 15 of module Test>
+   /\ x = 1
+   /\ y = 0
+   
+   STATE 3: <Action line 8, col 3 to line 9, col 15 of module Test>
+   /\ x = 2
+   /\ y = 1
+   
+   STATE 4: <Action line 8, col 3 to line 9, col 15 of module Test>
+   /\ x = 3
+   /\ y = 3
+
+Within the toolbox, the user defines the following "pseudo-variables"
+
+  sum == x + y
+  big == x' > y
+
+Note the prime in the definition of big.  The term pseudo-variables
+isn't very good; we should find another one.
+
+The user then tells the toobox to update the trace.  This causes the
+trace to be displayed something like the following.  (The actual
+formatting needs to be thought about; don't take this seriously.)
+
+   STATE 1: <Initial predicate>
+   /\ x = 0
+   /\ y = 0
+   \* sum = 0
+   \* big = TRUE
+   
+   STATE 2: <Action line 8, col 3 to line 9, col 15 of module Test>
+   /\ x = 1
+   /\ y = 0
+   \* sum = 1
+   \* big = TRUE
+   
+   STATE 3: <Action line 8, col 3 to line 9, col 15 of module Test>
+   /\ x = 2
+   /\ y = 1
+   \* sum = 3
+   \* big = TRUE
+   
+   STATE 4: <Action line 8, col 3 to line 9, col 15 of module Test>
+   /\ x = 3
+   /\ y = 3
+   \* sum = 6
+   \* big = FALSE
+
+Values that change from one state to the next are highlighted in some
+way.  The user can specify which variables and pseudo-variables are to
+be displayed in the trace, and in what order.  
+
+Here is how this might be implemented.  From the state trace, the
+toolbox simply constructs the following initial predicate and
+next-state relation:
+
+   TInit ==
+      /\ x = 0 
+      /\ y = 0
+      /\ TLCSet(1, 1)
+   
+   TNext ==
+   \/ /\ x = 0
+      /\ y = 0
+      /\ x' = 1
+      /\ y' = 0
+      /\ PrintT("STATE " \o ToString(TLCGet(1)) \o ":")
+      /\ TLCSet(1, 1+TLCGet(1))
+      /\ PrintT(<<"sum", sum, "__end__sum">>)
+      /\ PrintT(<<"big", big, "__end__big">>)
+      
+   \/ /\ x = 1
+      /\ y = 0
+      /\ x' = 2
+      /\ y' = 1
+      /\ PrintT("STATE " \o ToString(TLCGet(1)) \o ":")
+      /\ TLCSet(1, 1+TLCGet(1))
+      /\ PrintT(<<"sum", sum, "__end__sum">>)
+      /\ PrintT(<<"big", big, "__end__big">>)
+      
+   \/ /\ x = 2
+      /\ y = 1
+      /\ x' = 3
+      /\ y' = 3
+      /\ PrintT("STATE " \o ToString(TLCGet(1)) \o ":")
+      /\ TLCSet(1, 1+TLCGet(1))
+      /\ PrintT(<<"sum", sum, "__end__sum">>)
+      /\ PrintT(<<"big", big, "__end__big">>)
+      
+   \/ /\ x = 3
+      /\ y = 3
+      /\ x' = 3
+      /\ y' = 3
+      /\ PrintT("STATE " \o ToString(TLCGet(1)) \o ":")
+      /\ TLCSet(1, 1+TLCGet(1))
+      /\ PrintT(<<"sum", sum, "__end__sum">>)
+      /\ PrintT(<<"big", big, "__end__big">>)
+
+Executing this spec causes TLC to print the following
+   
+   "STATE 1:"
+   <<"sum", 0, "__end__sum">>
+   <<"big", TRUE, "__end__big">>
+   "STATE 2:"
+   <<"sum", 1, "__end__sum">>
+   <<"big", TRUE, "__end__big">>
+   "STATE 3:"
+   <<"sum", 3, "__end__sum">>
+   <<"big", TRUE, "__end__big">>
+   "STATE 4:"
+   <<"sum", 6, "__end__sum">>
+   <<"big", FALSE, "__end__big">>
+
+and the rest is straightforward.  (To handle weird cases, something
+more unlikely than "__end__" needs to be used.)
+
+Note that TLC must be run with the same model values, replacesments,
+etc. used in running the model, but without constraint, invariant/property
+checking.  (Symmetry doesn't matter.)
+
+The only thing that's not straightforward is handling errors produced
+by evaluating pseudo-variables--for example, if big had been defined
+by
+
+   big == x' \div (y-3)
+
+However, the trace will tell the toolbox at which point in the trace
+the error occurred, and in the evaluation of which pseudo-variable.
+
+
+
+
