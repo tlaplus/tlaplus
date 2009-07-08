@@ -11,7 +11,7 @@ import org.eclipse.ui.navigator.CommonNavigator;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.lamport.tla.toolbox.tool.IToolboxContribution;
 import org.lamport.tla.toolbox.tool.ToolLifecycleException;
-import org.lamport.tla.toolbox.tool.tlc.launch.ui.ModelExplorer;
+import org.lamport.tla.toolbox.tool.tlc.ui.modelexplorer.ModelExplorer;
 import org.lamport.tla.toolbox.util.UIHelper;
 import org.osgi.framework.BundleContext;
 

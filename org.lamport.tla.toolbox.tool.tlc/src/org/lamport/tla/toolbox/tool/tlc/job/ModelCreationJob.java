@@ -56,7 +56,8 @@ public class ModelCreationJob extends AbstractJob implements IModelConfiguration
      */
     protected Action getJobCompletedAction()
     {
-        return new Action() {
+        return new Action() 
+        {
             public void run()
             {
                 System.out.print("Model files created");
@@ -245,5 +246,10 @@ public class ModelCreationJob extends AbstractJob implements IModelConfiguration
             monitor.done();
         }
 
+    }
+
+    public final ILaunchConfiguration getConfig()
+    {
+        return config;
     }
 }

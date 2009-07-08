@@ -1,21 +1,13 @@
 package org.lamport.tla.toolbox.tool.tlc.util;
 
-import java.io.ByteArrayInputStream;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 
-import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.IResourceRuleFactory;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.core.runtime.Path;
-import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationType;
@@ -603,101 +595,50 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
      * @param model
      * @return
      */
-    public static IEditorPart isModelOpenedInEditor(ILaunchConfiguration model)
+    public static IEditorPart getEditorWithModelOpened(ILaunchConfiguration model)
     {
         return UIHelper.getActivePage().findEditor(new FileEditorInput(model.getFile()));
     }
 
+
     /**
-     * Removes the lock for the given model
-     * @param modelName name of the model
-     * @param lockContainer container of the lock
+     * Signals the start of model execution
+     * @param config
      */
-    public static synchronized void createLock(String modelName, IContainer lockContainer)
+    public static void lockModel(ILaunchConfiguration config) throws CoreException 
     {
-        IFile semaphor = getModelLockFile(modelName, lockContainer);
-        try
-        {
-            semaphor.create(new ByteArrayInputStream("1".getBytes()), IResource.DERIVED, new NullProgressMonitor());
-            System.out.println("Lock created");
-        } catch (CoreException e)
-        {
-            e.printStackTrace();
-        } 
+        ModelHelper.writeAttributeValue(config, IModelConfigurationConstants.MODEL_IS_RUNNING, true);
     }
 
     /**
-     * Checks the presence of the lock file for the given model
-     * @param modelName model name
-     * @param lockContainer container holding the lock
-     * @return true if the lock is present
+     * Signals the end of model execution
+     * @param config
      */
-    public static synchronized boolean hasLock(String modelName, IContainer lockContainer)
+    public static void unlockModel(ILaunchConfiguration config) throws CoreException
     {
-        IFile semaphor = getModelLockFile(modelName, lockContainer);
-        return semaphor.exists();
+        ModelHelper.writeAttributeValue(config, IModelConfigurationConstants.MODEL_IS_RUNNING, false);
     }
 
+    
+    
     /**
-     * Removes the lock for the given model
-     * @param modelName name of the model
-     * @param lockContainer container of the lock
+     * Write a boolean value into the launch config and saves it
+     * @param config
+     * @param attributeName
+     * @param value
      */
-    public static synchronized void removeLock(String modelName, IContainer lockContainer)
+    public static void writeAttributeValue(ILaunchConfiguration config, String attributeName, boolean value) throws CoreException 
     {
-        IFile semaphor = getModelLockFile(modelName, lockContainer);
-        try
+        ILaunchConfigurationWorkingCopy copy;
+        if (config instanceof ILaunchConfigurationWorkingCopy) 
         {
-            semaphor.delete(IResource.FORCE, new NullProgressMonitor());
-            System.out.println("Lock deleted");
-        } catch (CoreException e)
-        {
-            e.printStackTrace();
+            copy = (ILaunchConfigurationWorkingCopy) config;
+        } else {
+            copy = config.getWorkingCopy();
         }
+        
+        copy.setAttribute(attributeName, value);
+        copy.doSave();
     }
     
-    /**
-     * Construct the file handle to the model lock
-     * <br><b>Note:</b> This is a handle operation, neither the container nor the file are verified.
-     * @param modelName name of the model
-     * @param lockContainer container for the lock file (usually project directory)
-     * @return file handle to the model lock
-     */
-    public static IFile getModelLockFile(String modelName, IContainer lockContainer)
-    {
-        String modelLockName = modelName + ModelHelper.MODEL_LOCK;
-        IFile semaphor = lockContainer.getFile(new Path(modelLockName));
-        return semaphor;
-    }
-
-    
-    public static ISchedulingRule getCreateRule(IResource resource)
-    {
-        IResourceRuleFactory ruleFactory = ResourcesPlugin.getWorkspace().getRuleFactory();
-        return ruleFactory.createRule(resource);
-    }
-
-    /**
-     * Retrieves a rule for modifying a resource
-     * @param resource
-     * @return
-     */
-    public static ISchedulingRule getModifyRule(IResource resource)
-    {
-        IResourceRuleFactory ruleFactory = ResourcesPlugin.getWorkspace().getRuleFactory();
-        ISchedulingRule rule = ruleFactory.modifyRule(resource);
-        return rule;
-    }
-
-    /**
-     * Retrieves a combined rule for deleting resource
-     * @param resource
-     * @return
-     */
-    public static ISchedulingRule getDeleteRule(IResource resource)
-    {
-        IResourceRuleFactory ruleFactory = ResourcesPlugin.getWorkspace().getRuleFactory();
-        return ruleFactory.deleteRule(resource);
-    }
-
 }

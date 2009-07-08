@@ -29,7 +29,14 @@ import tlc2.TLC;
 public class TLCProcessJob extends TLCJob
 {
     private IProcess process = null;
+    private IStreamListener consleListener = new IStreamListener() {
+        public void streamAppended(String text, IStreamMonitor monitor)
+        {
+            print(text);
+        }
+    };
 
+    
     /**
      * @param name
      */
@@ -101,31 +108,14 @@ public class TLCProcessJob extends TLCJob
                 return new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID, "Error launching TLC modle checker", e);
             }
 
-            IStreamListener consleListener = new IStreamListener() {
-                public void streamAppended(String text, IStreamMonitor monitor)
-                {
-                    print(text);
-                }
-            };
-
-            // find the process
-            ILaunchManager launchManager = DebugPlugin.getDefault().getLaunchManager();
-            IProcess[] processes = launchManager.getProcesses();
-            for (int i = 0; i < processes.length; i++)
-            {
-                if (processes[i].getLaunch().equals(launch))
-                {
-                    this.process = processes[i];
-                    break;
-                }
-            }
+            this.process = findProcessForLaunch(launch);
 
             // step 4
             monitor.worked(STEP);
             monitor.subTask("Connecting to running instance");
 
             // process found
-            if (process != null)
+            if (this.process != null)
             {
                 // step 5
                 monitor.worked(STEP);
@@ -154,7 +144,7 @@ public class TLCProcessJob extends TLCJob
                             default:
                                 return new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID, "Error terminating the running TLC instance. This is a bug. Make sure to exit the toolbox.");
                             }
-                        }
+                        } 
 
                         // abnormal termination
                         return Status.CANCEL_STATUS;
@@ -178,9 +168,6 @@ public class TLCProcessJob extends TLCJob
 
         } finally
         {
-            // delete the lock
-            // ModelHelper.removeLock(modelName, rootModule.getParent());
-
             // make sure to complete the monitor
             monitor.done();
         }
@@ -203,5 +190,24 @@ public class TLCProcessJob extends TLCJob
         }
         // return true if the TLC is still calculating
         return (!process.isTerminated());
+    }
+    
+    /**
+     * Retrieves a process to a given ILaunch
+     * @param launch
+     * @return
+     */
+    public static IProcess findProcessForLaunch(ILaunch launch)
+    {
+        // find the process
+        IProcess[] processes = DebugPlugin.getDefault().getLaunchManager().getProcesses();
+        for (int i = 0; i < processes.length; i++)
+        {
+            if (processes[i].getLaunch().equals(launch))
+            {
+                return processes[i];
+            }
+        }
+        return null;
     }
 }
