@@ -31,6 +31,10 @@ public interface IModelConfigurationConstants extends IConfigurationConstants
      */
     public static final String MODEL_BEHAVIOR_VARS = "modelBehaviorVars";
 
+    /**
+     * model is being run
+     */
+    public static final String MODEL_IS_RUNNING = "modelIsRunning"; 
     
     /**
      * flag for checking deadlock
