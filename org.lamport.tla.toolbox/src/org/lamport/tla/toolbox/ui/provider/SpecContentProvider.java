@@ -94,7 +94,7 @@ public class SpecContentProvider implements ITreeContentProvider
         /**
          * @deprecated not used
          */
-        private Module[] constructModules(Spec spec)
+        protected Module[] constructModules(Spec spec)
         {
             
             Vector outOfSyncResourcesToDelete = new Vector();
