@@ -7,7 +7,9 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationType;
@@ -86,6 +88,25 @@ public class NewModelHandler extends AbstractHandler implements IModelConfigurat
             return null;
         }
 
+        if (ToolboxHandle.getSpecObj() == null) 
+        {
+            // try to rebuild the project
+            try
+            {
+                ToolboxHandle.getCurrentSpec().getProject().build(IncrementalProjectBuilder.FULL_BUILD, new NullProgressMonitor());
+            } catch (CoreException e)
+            {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+        
+        if (ToolboxHandle.getSpecObj() == null) 
+        {
+            System.out.println("Strange, no specObject");
+            return null;
+        }
+        
         // get the root module
         ModuleNode moduleNode = ToolboxHandle.getSpecObj().getExternalModuleTable().getRootModule();
 

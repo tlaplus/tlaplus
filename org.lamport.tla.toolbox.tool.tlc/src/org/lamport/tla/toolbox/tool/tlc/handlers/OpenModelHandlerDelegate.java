@@ -10,7 +10,7 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbenchPage;
-import org.lamport.tla.toolbox.tool.tlc.launch.ui.ModelExplorer;
+import org.lamport.tla.toolbox.tool.tlc.ui.modelexplorer.ModelExplorer;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
