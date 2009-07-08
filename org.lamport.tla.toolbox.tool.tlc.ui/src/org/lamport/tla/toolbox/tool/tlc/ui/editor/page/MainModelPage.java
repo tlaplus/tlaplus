@@ -12,6 +12,7 @@ import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -542,39 +543,48 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         HyperlinkGroup group = new HyperlinkGroup(parametersArea.getDisplay());
 
         // create a composite to put the text into
-        Composite linkedText = toolkit.createComposite(parametersArea);
+        Composite linksPanelToAdvancedPage = toolkit.createComposite(parametersArea);
         gd = new GridData();
         gd.horizontalSpan = 2;
-        linkedText.setLayoutData(gd);
-        linkedText.setLayout(new GridLayout(6, false));
+        
+        linksPanelToAdvancedPage.setLayoutData(gd);
+        linksPanelToAdvancedPage.setLayout(new FillLayout(SWT.VERTICAL));
+
+        
+        // first line with hyperlinks
+        Composite elementLine = toolkit.createComposite(linksPanelToAdvancedPage);
+        elementLine.setLayout(new FillLayout(SWT.HORIZONTAL));
 
         // the text
-        FormText createFormText = toolkit.createFormText(linkedText, true);
-        createFormText.setText("Some advanced features:", false, false);
+        FormText labelText = toolkit.createFormText(elementLine, false);
+        labelText.setText("Some advanced features:", false, false);
 
-        // 
+        // the hyperlinks 
         Hyperlink hyper;
-
-        hyper = toolkit.createHyperlink(linkedText, "Additional definitions,", SWT.NONE);
+        
+        hyper = toolkit.createHyperlink(elementLine, "Additional definitions,", SWT.NONE);
         hyper.setHref(SEC_ADDITIONAL_DEFINITION);
         hyper.addHyperlinkListener(sectionExpandingAapter);
 
-        hyper = toolkit.createHyperlink(linkedText, "Definition override,", SWT.NONE);
+        hyper = toolkit.createHyperlink(elementLine, "Definition override,", SWT.NONE);
         hyper.setHref(SEC_DEFINITION_OVERRIDE);
         hyper.addHyperlinkListener(sectionExpandingAapter);
 
-        hyper = toolkit.createHyperlink(linkedText, "State constraints,", SWT.NONE);
+        // second line with hyperlinks
+        Composite elementLine2 = toolkit.createComposite(linksPanelToAdvancedPage);
+        elementLine2.setLayout(new FillLayout(SWT.HORIZONTAL));
+
+        hyper = toolkit.createHyperlink(elementLine2, "State constraints,", SWT.NONE);
         hyper.setHref(SEC_STATE_CONSTRAINT);
         hyper.addHyperlinkListener(sectionExpandingAapter);
 
-        hyper = toolkit.createHyperlink(linkedText, "Action constraints,", SWT.NONE);
+        hyper = toolkit.createHyperlink(elementLine2, "Action constraints,", SWT.NONE);
         hyper.setHref(SEC_ACTION_CONSTRAINT);
         hyper.addHyperlinkListener(sectionExpandingAapter);
         
-        hyper = toolkit.createHyperlink(linkedText, "Additional model values.", SWT.NONE);
+        hyper = toolkit.createHyperlink(elementLine2, "Additional model values.", SWT.NONE);
         hyper.setHref(SEC_MODEL_VALUES);
         hyper.addHyperlinkListener(sectionExpandingAapter);
-
 
         constantTable = constantsPart.getTableViewer();
 

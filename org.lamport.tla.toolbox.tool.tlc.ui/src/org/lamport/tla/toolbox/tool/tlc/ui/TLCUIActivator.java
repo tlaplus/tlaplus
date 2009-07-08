@@ -1,5 +1,6 @@
 package org.lamport.tla.toolbox.tool.tlc.ui;
 
+import org.eclipse.core.runtime.Status;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
@@ -14,6 +15,7 @@ public class TLCUIActivator extends AbstractUIPlugin
 
     // The plug-in ID
     public static final String PLUGIN_ID = "org.lamport.tla.toolbox.tool.tlc.ui";
+
 
     // The shared instance
     private static TLCUIActivator plugin;
@@ -65,5 +67,16 @@ public class TLCUIActivator extends AbstractUIPlugin
             cFont = new Font(UIHelper.getShellProvider().getShell().getDisplay(), "Courier New", 11, SWT.NORMAL);
         }
         return cFont;
+    }
+
+    /**
+     * Logs an error
+     * @param message
+     * @param e 
+     */
+    public static void logError(String message, Throwable e)
+    {
+        getDefault().getLog().log(new Status(Status.ERROR, TLCUIActivator.PLUGIN_ID, message, e));
+        
     }
 }

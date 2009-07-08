@@ -9,10 +9,14 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.ListenerList;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Layout;
@@ -32,6 +36,7 @@ import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationDefaults;
 import org.lamport.tla.toolbox.tool.tlc.launch.TLCModelLaunchDelegate;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
+import org.lamport.tla.toolbox.tool.tlc.ui.contribution.DynamicContributionItem;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.ISectionManager;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
@@ -45,7 +50,6 @@ import tla2sany.st.Location;
 /**
  * Basic form page for the multi-page editor
  * 
- * 
  * @author Simon Zambrovski
  * @version $Id$
  */
@@ -57,10 +61,10 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
     protected String helpId = null;
     protected String imagePath = null;
     protected boolean initialized = false;
-
     protected IExpansionListener formRebuildingListener = null;
-    
+
     // adapter calling doRun() method
+    // is reacting on clicking of Run model
     protected HyperlinkAdapter runDebugAdapter = new HyperlinkAdapter() {
 
         public void linkActivated(HyperlinkEvent e)
@@ -68,7 +72,6 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
             doRun((String) e.getHref());
         }
     };
-
     // image registry
     private Hashtable images = new Hashtable();
     // the page completion status (true by default)
@@ -89,7 +92,6 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
      */
     public void doRun(String mode)
     {
-        // TODO
         IProgressMonitor monitor = null;
 
         if (!((ModelEditor) getEditor()).isComplete())
@@ -107,13 +109,14 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
             getEditor().doSave(monitor);
         }
 
+        // launching the config
         try
         {
             config.launch(TLCModelLaunchDelegate.MODE_MODELCHECK, monitor, false);
-        } catch (CoreException e1)
+
+        } catch (CoreException e)
         {
-            // TODO
-            e1.printStackTrace();
+            TLCUIActivator.logError("Error launching the configuration " + config.getName(), e);
         }
     }
 
@@ -141,44 +144,17 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
 
         // head construction ---------------------
 
+        IToolBarManager toolbarManager = formWidget.getForm().getToolBarManager();
         // run button
-        formWidget.getForm().getToolBarManager().add(new Action("Run") {
-            public void run()
-            {
-                doRun(MODE_RUN);
-            }
+        toolbarManager.add(new DynamicContributionItem(new RunAction()));
 
-            public ImageDescriptor getImageDescriptor()
-            {
-                return TLCUIActivator.imageDescriptorFromPlugin(TLCUIActivator.PLUGIN_ID, "icons/full/lrun_obj.gif");
-            }
-        });
-
-        // debug button
-        formWidget.getForm().getToolBarManager().add(new Action("Debug") {
-            public void run()
-            {
-                doRun(MODE_DEBUG);
-            }
-
-            public ImageDescriptor getImageDescriptor()
-            {
-                return TLCUIActivator.imageDescriptorFromPlugin(TLCUIActivator.PLUGIN_ID, "icons/full/ldebug_obj.gif");
-            }
-
-            // TODO enable on debug support
-            public boolean isEnabled()
-            {
-                return false;
-            }
-
-        });
-
-        formWidget.getForm().getToolBarManager().update(true);
+        // refresh the tool-bar
+        toolbarManager.update(true);
 
         // setup body layout
         body.setLayout(getBodyLayout());
 
+        // create the body of the page
         createBodyContent(managedForm);
 
         try
@@ -186,9 +162,14 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
             loadData();
         } catch (CoreException e)
         {
-            e.printStackTrace();
+            TLCUIActivator.logError("Error loading data from the model into the form fields", e);
         }
 
+        // check the model is-running state
+        formWidget.getForm().setEnabled(!isModelInUse());
+
+        // finalizes the page construction
+        // activates the change listeners
         pageInitializationComplete();
     }
 
@@ -270,19 +251,6 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
     }
 
     /**
-     * Disposes the images
-     */
-    public void dispose()
-    {
-        Enumeration elements = images.elements();
-        while (elements.hasMoreElements())
-        {
-            ((Image) elements.nextElement()).dispose();
-        }
-        super.dispose();
-    }
-
-    /**
      * Retrieves the image and remember it for later reuse / dispose
      * @param imageName
      * @return
@@ -303,6 +271,10 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
         return image;
     }
 
+    /**
+     * Retrieves the configuration the editor is editing
+     * @return
+     */
     public ILaunchConfigurationWorkingCopy getConfig()
     {
         return ((ModelEditor) getEditor()).getConfig();
@@ -317,7 +289,7 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
     }
 
     /**
-     * 
+     * Returns if the input is complete and the page contains no errors
      * @return
      */
     public boolean isComplete()
@@ -325,6 +297,10 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
         return isComplete;
     }
 
+    /**
+     * Sets if the page is complete and the contains no errors
+     * @param isComplete
+     */
     public void setComplete(boolean isComplete)
     {
         this.isComplete = isComplete;
@@ -436,6 +412,10 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
         }
     }
 
+    /**
+     * Returns true, if the page has been initialized (loaded)
+     * @return boolean flag indicating if the method pageInitializationComplete() has been called
+     */
     public boolean isInitialized()
     {
         return initialized;
@@ -449,7 +429,7 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
     {
         ((ModelEditor) getEditor()).getSectionManager().expandSection(sectionId);
     }
-    
+
     /**
      * Adds the section to the section manager in order to be able to expand the sections on events 
      * (like errors, hyperlinks, etc...)
@@ -457,9 +437,88 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
      * @param pageId
      * @param section
      */
-    public void addSection(String sectionId, ExpandableComposite section) 
+    public void addSection(String sectionId, ExpandableComposite section)
     {
         ((ModelEditor) getEditor()).getSectionManager().addSection(section, sectionId, getId());
     }
 
+    /**
+     * Disposes the images
+     */
+    public void dispose()
+    {
+        Enumeration elements = images.elements();
+        while (elements.hasMoreElements())
+        {
+            ((Image) elements.nextElement()).dispose();
+        }
+        super.dispose();
+    }
+
+    /**
+     * Forces the form refresh
+     */
+    public void refresh()
+    {
+        IManagedForm mForm = this.getManagedForm();
+        if (mForm != null)
+        {
+            // refresh the tool-bar
+            IToolBarManager toolBarManager = mForm.getForm().getToolBarManager();
+            toolBarManager.markDirty();
+            toolBarManager.update(true);
+
+            // refresh enablement status
+            boolean model = !isModelInUse();
+            if (model) 
+            {
+                mForm.getForm().getBody().setBackground(mForm.getForm().getBody().getShell().getDisplay().getSystemColor(SWT.COLOR_WHITE));
+            } else {
+                mForm.getForm().getBody().setBackground(mForm.getForm().getBody().getShell().getDisplay().getSystemColor(SWT.COLOR_GRAY));
+            }
+            mForm.getForm().getBody().setEnabled(model);
+            
+            mForm.getForm().update();
+        }
+    }
+
+    /**
+     * Returns true, if the model is being run, that is the attribute MODEL_IS_RUNNING is true
+     * @return true if the underlying model file has attribute MODEL_IS_RUNNING set to true 
+     */
+    public boolean isModelInUse()
+    {
+        try
+        {
+            return getConfig().getAttribute(MODEL_IS_RUNNING, false);
+        } catch (CoreException e)
+        {
+            TLCUIActivator.logError("Error determining model status", e);
+            return true;
+        }
+    }
+
+    /**
+     * The run action
+     */
+    class RunAction extends Action
+    {
+        RunAction()
+        {
+            super("Run", TLCUIActivator.imageDescriptorFromPlugin(TLCUIActivator.PLUGIN_ID, "icons/full/lrun_obj.gif"));
+        }
+
+        public void run()
+        {
+            doRun(MODE_RUN);
+        }
+
+        /**
+         * Run is only enabled if the model is not in use
+         */
+        public boolean isEnabled()
+        {
+            return !isModelInUse();
+        }
+    }
 }

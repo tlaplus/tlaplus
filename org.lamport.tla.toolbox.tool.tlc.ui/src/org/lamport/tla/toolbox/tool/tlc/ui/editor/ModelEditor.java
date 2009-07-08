@@ -2,6 +2,7 @@ package org.lamport.tla.toolbox.tool.tlc.ui.editor;
 
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
+import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -12,10 +13,12 @@ import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.part.FileEditorInput;
+import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.AdvancedModelPage;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.BasicFormPage;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.IDoRunContainer;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.MainModelPage;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.ResultPage;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.SemanticHelper;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
@@ -32,10 +35,9 @@ public class ModelEditor extends FormEditor
     private SemanticHelper helper;
 
     private IResourceChangeListener rootFileListener = new IResourceChangeListener() {
-
         public void resourceChanged(IResourceChangeEvent event)
         {
-            // update the specobject of the helper
+            // update the specObject of the helper
             helper.resetSpecNames();
 
             // re-validate the pages
@@ -56,7 +58,35 @@ public class ModelEditor extends FormEditor
             });
         }
     };
-    
+
+    private IResourceChangeListener modelFileListener = new IResourceChangeListener() {
+        public void resourceChanged(IResourceChangeEvent event)
+        {
+            FileEditorInput finput = getFileEditorInput();
+            IResourceDelta findMember = event.getDelta().findMember(finput.getFile().getFullPath());
+            if (findMember != null)
+            {
+                UIHelper.runUIAsync(new Runnable() {
+                    public void run()
+                    {
+                        // update the tool bar
+                        if (pages != null)
+                        {
+                            for (int i = 0; i < pages.size(); i++)
+                            {
+                                Object page = pages.get(i);
+                                if (page instanceof BasicFormPage)
+                                {
+                                    ((BasicFormPage) page).refresh();
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+    };
+
     // section manager
     private SectionManager sectionManager = new SectionManager();
 
@@ -65,30 +95,41 @@ public class ModelEditor extends FormEditor
         helper = new SemanticHelper();
     }
 
+    /**
+     * Initialize the editor
+     */
     public void init(IEditorSite site, IEditorInput input) throws PartInitException
     {
         super.init(site, input);
-        if (input instanceof FileEditorInput)
-        {
-            FileEditorInput finput = (FileEditorInput) input;
-            if (finput != null)
-            {
-                ILaunchConfiguration configuration = ModelHelper.getModelByFile(finput.getFile());
-                try
-                {
-                    configurationCopy = configuration.getWorkingCopy();
-                } catch (CoreException e)
-                {
-                    e.printStackTrace();
-                }
 
-                // setContentDescription(path.toString());
-                setPartName(ModelHelper.getModelName(finput.getFile()));
-                setTitleToolTip(finput.getPath().toString());
+        // grab the input
+        FileEditorInput finput = getFileEditorInput();
+        if (finput != null)
+        {
+            ILaunchConfiguration configuration = ModelHelper.getModelByFile(finput.getFile());
+            try
+            {
+                configurationCopy = configuration.getWorkingCopy();
+            } catch (CoreException e)
+            {
+                TLCUIActivator.logError("Could not load model content for " + finput.getName(), e);
             }
+
+            /*
+             * Install a resource change listener on the file opened
+             * Update the information from the file is the file changes
+             */
+            ResourcesPlugin.getWorkspace().addResourceChangeListener(modelFileListener,
+                    IResourceChangeEvent.POST_CHANGE);
+            // setContentDescription(path.toString());
+            setPartName(ModelHelper.getModelName(finput.getFile()));
+            setTitleToolTip(finput.getFile().getProjectRelativePath().toString());
         }
 
-        // react on changes of the root file
+        /*
+         * Install resource change listener on the root file of the specification
+         * react on changes of the root file
+         */
         ResourcesPlugin.getWorkspace().addResourceChangeListener(rootFileListener, IResourceChangeEvent.POST_BUILD);
 
         // update the spec object of the helper
@@ -99,7 +140,7 @@ public class ModelEditor extends FormEditor
             public void run()
             {
                 // since validation is cheap and we are interested in
-                
+
                 for (int i = 0; i < getPageCount(); i++)
                 {
                     Object page = pages.get(i);
@@ -117,8 +158,9 @@ public class ModelEditor extends FormEditor
 
     public void dispose()
     {
-        // remove the listener
+        // remove the listeners
         ResourcesPlugin.getWorkspace().removeResourceChangeListener(rootFileListener);
+        ResourcesPlugin.getWorkspace().removeResourceChangeListener(modelFileListener);
         super.dispose();
     }
 
@@ -127,11 +169,8 @@ public class ModelEditor extends FormEditor
      */
     public void doSave(IProgressMonitor monitor)
     {
-        // System.out.println("Save called");
         this.commitPages(monitor, true);
-
         ModelHelper.doSaveConfigurationCopy(configurationCopy);
-
         this.editorDirtyStateChanged();
     }
 
@@ -145,11 +184,11 @@ public class ModelEditor extends FormEditor
             for (int i = 0; i < pages.size(); i++)
             {
                 Object page = pages.get(i);
-                
-                if (page instanceof ISectionManager)
+
+                if (page instanceof BasicFormPage)
                 {
                     BasicFormPage fpage = (BasicFormPage) page;
-                    if (fpage.isInitialized()) 
+                    if (fpage.isInitialized())
                     {
                         fpage.commit(onSave);
                     }
@@ -182,16 +221,9 @@ public class ModelEditor extends FormEditor
     {
         try
         {
-            /*
-            addPage(new GeneralModelPage(this));
-            addPage(new BehaviorFormulaPage(this));
-            addPage(new CorrectnessPage(this));
-            addPage(new ParametersPage(this));
-            addPage(new ModelValuesPage(this));
-            */
-
             addPage(new MainModelPage(this));
             addPage(new AdvancedModelPage(this));
+            addPage(new ResultPage(this));
 
         } catch (PartInitException e)
         {
@@ -243,4 +275,19 @@ public class ModelEditor extends FormEditor
         return this.sectionManager;
     }
 
+    /**
+     * Retrieve the file editor input
+     * @return
+     */
+    public FileEditorInput getFileEditorInput()
+    {
+        IEditorInput input = getEditorInput();
+        if (input instanceof FileEditorInput)
+        {
+            return (FileEditorInput) input;
+        } else
+        {
+            throw new IllegalStateException("Something wierd. The editor is designed for FileEditorInputOnly");
+        }
+    }
 }
