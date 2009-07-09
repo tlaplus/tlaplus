@@ -14,16 +14,8 @@
    </description>
 
    <includes
-         id="org.eclipse.rcp"
-         version="0.0.0"
-         os="linux,macosx,win32"
-         ws="carbon,win32,wpf"
-         arch="sparc,x86,x86_64"/>
-
-   <includes
-         id="org.eclipse.help"
-         version="0.0.0"
-         os=""/>
+         id="org.eclipse.platform"
+         version="0.0.0"/>
 
    <includes
          id="org.lamport.tla.toolbox.feature.base"
