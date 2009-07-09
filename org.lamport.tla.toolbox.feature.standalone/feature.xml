@@ -14,10 +14,6 @@
    </description>
 
    <includes
-         id="org.eclipse.platform"
-         version="0.0.0"/>
-
-   <includes
          id="org.lamport.tla.toolbox.feature.base"
          version="0.0.0"
          os=""
@@ -35,6 +31,19 @@
    <includes
          id="org.lamport.tla.toolbox.feature.tlc"
          version="0.0.0"/>
+
+   <includes
+         id="org.eclipse.equinox.p2.user.ui"
+         version="1.1.0.v20090605-1440-7u6Fb3FbPbJP5MjJjZgifk"
+         optional="true"/>
+
+   <includes
+         id="org.eclipse.help"
+         version="1.1.0.v20090602-7e7eFAlFEx2XZoYqwI68e2F"/>
+
+   <includes
+         id="org.eclipse.rcp"
+         version="3.5.0.v20090519-9SA0FwxFv6x089WEf-TWh11"/>
 
    <plugin
          id="org.lamport.tla.toolbox.product.standalone"
