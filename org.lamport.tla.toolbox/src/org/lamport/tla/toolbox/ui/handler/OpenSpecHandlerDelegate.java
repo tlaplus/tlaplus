@@ -21,6 +21,8 @@ import org.lamport.tla.toolbox.util.UIHelper;
 public class OpenSpecHandlerDelegate extends AbstractHandler implements IHandler
 {
 
+    public static final String COMMAND_ID = "toolbox.command.cnf.open.delegate";
+
     /* (non-Javadoc)
      * @see org.eclipse.core.commands.IHandler#execute(org.eclipse.core.commands.ExecutionEvent)
      */
