@@ -9,7 +9,6 @@ import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.application.WorkbenchAdvisor;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
 import org.eclipse.ui.ide.IDE;
-import org.eclipse.ui.internal.ide.model.WorkbenchAdapterBuilder;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.util.UIHelper;
 import org.osgi.framework.Bundle;
@@ -34,7 +33,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
     public static final String SAVEAS_DLG = PATH_WIZBAN + "saveas_wiz.png";
     
     /**
-     * Image definition from {@link org.eclipse.ui.internal.ide.IDEInternalWorkbenchImages#IMG_DLGBAN_SAVEAS_DLG}
+     * Image definition from org.eclipse.ui.internal.ide.IDEInternalWorkbenchImages#IMG_DLGBAN_SAVEAS_DLG
      */
     public static final String IMG_DLGBAN_SAVEAS_DLG = "IMG_DLGBAN_SAVEAS_DLG";
 
@@ -66,9 +65,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
         declareWorkbenchImage(configurer, ideBundle, IMG_DLGBAN_SAVEAS_DLG, SAVEAS_DLG, true);
         
         // register adapter
-        // IDE.registerAdapters();
-        // TODO replace, as soon as 3.5 is the Eclipse used
-        WorkbenchAdapterBuilder.registerAdapters();
+        IDE.registerAdapters();
     }
 
     private void declareWorkbenchImage(IWorkbenchConfigurer configurer, Bundle ideBundle, String symbolicName,

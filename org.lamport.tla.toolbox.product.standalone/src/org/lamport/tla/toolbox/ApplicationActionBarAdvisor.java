@@ -28,7 +28,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
 
     private IWorkbenchAction preferencesAction;
 
-    private IWorkbenchAction newEditorAction;
+    // private IWorkbenchAction newEditorAction;
     // private IWorkbenchAction newWindowAction;
     private IWorkbenchAction resetPerspectiveAction;
 
@@ -135,7 +135,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         menuBar.add(fileMenu);
         menuBar.add(windowMenu);
         menuBar.add(new Separator("toolbox.tools.separator"));
-        menuBar.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
+        // menuBar.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
         // menuBar.add(helpMenu);
     }
 

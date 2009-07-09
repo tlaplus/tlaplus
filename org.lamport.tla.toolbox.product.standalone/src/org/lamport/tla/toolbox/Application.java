@@ -1,9 +1,5 @@
 package org.lamport.tla.toolbox;
 
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
 import org.eclipse.swt.widgets.Display;
