@@ -9,6 +9,7 @@ import org.eclipse.core.commands.IHandler;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -24,8 +25,8 @@ import org.lamport.tla.toolbox.util.UIHelper;
  */
 public class ParseSpecHandler extends AbstractHandler implements IHandler
 {
-    // TODO provide the monitor
-    private IProgressMonitor monitor = null;
+    // TODO improve
+    private IProgressMonitor monitor = new NullProgressMonitor();
 
     /**
      * @see IHandler#execute(ExecutionEvent event)
@@ -66,8 +67,10 @@ public class ParseSpecHandler extends AbstractHandler implements IHandler
         return null;
     }
 
-    // TODO refine this...
-    private void saveDirtyEditors()
+    /**
+     * @deprecated
+     */
+    protected void saveDirtyEditors()
     {
         Display display = Display.getCurrent();
         if (display == null)
