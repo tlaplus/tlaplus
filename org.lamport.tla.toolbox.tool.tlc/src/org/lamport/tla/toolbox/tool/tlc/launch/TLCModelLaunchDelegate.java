@@ -58,7 +58,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
         String modelName = config.getAttribute(MODEL_NAME, EMPTY_STRING);
 
         // read out the running attribute
-        boolean isRunning = config.getAttribute(MODEL_IS_RUNNING, false);
+        boolean isRunning = ModelHelper.isModelLocked(config);
 
         // retrieve the project containing the specification
         IProject project = ResourceHelper.getProject(specName);
@@ -111,11 +111,9 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
         tlcjob.setPriority(Job.LONG);
         tlcjob.setUser(true);
         // the combination of two rules is used
-        // 
-        ISchedulingRule tlcRule = MultiRule.combine(mutexRule, ResourceHelper.getModifyRule(config.getFile()));
-        tlcjob.setRule(tlcRule);
+        // ISchedulingRule tlcRule = MultiRule.combine(mutexRule, ResourceHelper.getModifyRule(config.getFile()));
+        tlcjob.setRule(mutexRule);
 
-        
         // setup the job listener. which reacts on termination and errors  
         ModelJobChangeListener modelJobListener = new ModelJobChangeListener(config, tlcjob);
         modelJob.addJobChangeListener(modelJobListener);
