@@ -1,8 +1,8 @@
 package org.lamport.tla.toolbox.tool.tlc.ui.editor;
 
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
-import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -16,7 +16,6 @@ import org.eclipse.ui.part.FileEditorInput;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.AdvancedModelPage;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.BasicFormPage;
-import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.IDoRunContainer;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.MainModelPage;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.ResultPage;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.SemanticHelper;
@@ -28,12 +27,22 @@ import org.lamport.tla.toolbox.util.UIHelper;
  * @author Simon Zambrovski
  * @version $Id$
  */
-public class ModelEditor extends FormEditor
+public class ModelEditor extends FormEditor implements ModelHelper.IResourceProvider
 {
+    /**
+     * Editor ID
+     */
     public static final String ID = "org.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor";
-    private ILaunchConfigurationWorkingCopy configurationCopy;
-    private SemanticHelper helper;
 
+    /*
+     * working copy of the model
+     */
+    private ILaunchConfigurationWorkingCopy configurationCopy;
+    // helper to resolve semantic matches of words
+    private SemanticHelper helper;
+    // reacts on model changes
+    private IResourceChangeListener modelFileListener;
+    // react on spec root file changes
     private IResourceChangeListener rootFileListener = new IResourceChangeListener() {
         public void resourceChanged(IResourceChangeEvent event)
         {
@@ -46,50 +55,21 @@ public class ModelEditor extends FormEditor
                 {
                     for (int i = 0; i < getPageCount(); i++)
                     {
-                        Object page = pages.get(i);
-                        if (page instanceof ISectionManager)
-                        {
-                            BasicFormPage bPage = (BasicFormPage) page;
-                            // re-validate the model on changes of the spec
-                            bPage.validate();
-                        }
+                        BasicFormPage page = (BasicFormPage) pages.get(i);
+                        // re-validate the model on changes of the spec
+                        page.validate();
                     }
                 }
             });
         }
     };
 
-    private IResourceChangeListener modelFileListener = new IResourceChangeListener() {
-        public void resourceChanged(IResourceChangeEvent event)
-        {
-            FileEditorInput finput = getFileEditorInput();
-            IResourceDelta findMember = event.getDelta().findMember(finput.getFile().getFullPath());
-            if (findMember != null)
-            {
-                UIHelper.runUIAsync(new Runnable() {
-                    public void run()
-                    {
-                        // update the tool bar
-                        if (pages != null)
-                        {
-                            for (int i = 0; i < pages.size(); i++)
-                            {
-                                Object page = pages.get(i);
-                                if (page instanceof BasicFormPage)
-                                {
-                                    ((BasicFormPage) page).refresh();
-                                }
-                            }
-                        }
-                    }
-                });
-            }
-        }
-    };
-
     // section manager
     private SectionManager sectionManager = new SectionManager();
 
+    /**
+     * Simple editor constructor
+     */
     public ModelEditor()
     {
         helper = new SemanticHelper();
@@ -119,11 +99,30 @@ public class ModelEditor extends FormEditor
              * Install a resource change listener on the file opened
              * Update the information from the file is the file changes
              */
-            ResourcesPlugin.getWorkspace().addResourceChangeListener(modelFileListener,
-                    IResourceChangeEvent.POST_CHANGE);
+            modelFileListener = ModelHelper.installModelModificationResourceChangeListener(this, new Runnable() {
+                public void run()
+                {
+                    // update the pages
+                    for (int i = 0; i < getPageCount(); i++)
+                    {
+                        BasicFormPage page = (BasicFormPage) pages.get(i);
+                        ((BasicFormPage) page).refresh();
+                    }
+
+                    if (isModelInUse())
+                    {
+                        // goto result page
+                        setActivePage(ResultPage.ID);
+                    }
+                    // TODO evtl. add more graphical sugar here,
+                    // like changing the model icon, changing the editor title (part name)
+                    
+                }
+            });
+
             // setContentDescription(path.toString());
-            setPartName(ModelHelper.getModelName(finput.getFile()));
-            setTitleToolTip(finput.getFile().getProjectRelativePath().toString());
+            this.setPartName(ModelHelper.getModelName(finput.getFile()));
+            this.setTitleToolTip(finput.getFile().getProjectRelativePath().toString());
         }
 
         /*
@@ -140,22 +139,20 @@ public class ModelEditor extends FormEditor
             public void run()
             {
                 // since validation is cheap and we are interested in
-
                 for (int i = 0; i < getPageCount(); i++)
                 {
-                    Object page = pages.get(i);
-                    if (page instanceof ISectionManager)
-                    {
-                        BasicFormPage bPage = (BasicFormPage) page;
-                        // re-validate the model on changes of the spec
-                        bPage.validate();
-                    }
+                    BasicFormPage page = (BasicFormPage) pages.get(i);
+                    // re-validate the model on changes of the spec
+                    page.validate();
                 }
             }
         });
 
     }
 
+    /*
+     * @see org.eclipse.ui.forms.editor.FormEditor#dispose()
+     */
     public void dispose()
     {
         // remove the listeners
@@ -164,7 +161,7 @@ public class ModelEditor extends FormEditor
         super.dispose();
     }
 
-    /* (non-Javadoc)
+    /* 
      * @see org.eclipse.ui.part.EditorPart#doSave(org.eclipse.core.runtime.IProgressMonitor)
      */
     public void doSave(IProgressMonitor monitor)
@@ -174,47 +171,37 @@ public class ModelEditor extends FormEditor
         this.editorDirtyStateChanged();
     }
 
+    /* 
+     * @see org.eclipse.ui.part.EditorPart#doSaveAs()
+     */
+    public void doSaveAs()
+    {
+    }
+
+    /* 
+     * @see org.eclipse.ui.part.EditorPart#isSaveAsAllowed()
+     */
+    public boolean isSaveAsAllowed()
+    {
+        return false;
+    }
+
     /**
      * Instead of committing pages, forms and form-parts, we just commit pages 
      */
     protected void commitPages(IProgressMonitor monitor, boolean onSave)
     {
-        if (pages != null)
+        for (int i = 0; i < getPageCount(); i++)
         {
-            for (int i = 0; i < pages.size(); i++)
+            BasicFormPage page = (BasicFormPage) pages.get(i);
+            if (page.isInitialized())
             {
-                Object page = pages.get(i);
-
-                if (page instanceof BasicFormPage)
-                {
-                    BasicFormPage fpage = (BasicFormPage) page;
-                    if (fpage.isInitialized())
-                    {
-                        fpage.commit(onSave);
-                    }
-                }
+                page.commit(onSave);
             }
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.ui.part.EditorPart#doSaveAs()
-     */
-    public void doSaveAs()
-    {
-        System.out.println("SaveAs called");
-
-    }
-
-    /* (non-Javadoc)
-     * @see org.eclipse.ui.part.EditorPart#isSaveAsAllowed()
-     */
-    public boolean isSaveAsAllowed()
-    {
-        return true;
-    }
-
-    /* (non-Javadoc)
+    /*
      * @see org.eclipse.ui.forms.editor.FormEditor#addPages()
      */
     protected void addPages()
@@ -227,8 +214,7 @@ public class ModelEditor extends FormEditor
 
         } catch (PartInitException e)
         {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            TLCUIActivator.logError("Error initializing editor", e);
         }
     }
 
@@ -238,21 +224,18 @@ public class ModelEditor extends FormEditor
     }
 
     /**
-     * @return
+     * Checks weather the pages are complete and goes to the first (in order of addition) incomplete page if any
+     * @return true if all pages are complete, false otherwise
      */
     public boolean isComplete()
     {
-        for (int i = 0; i < pages.size(); i++)
+        for (int i = 0; i < getPageCount(); i++)
         {
-            Object page = pages.get(i);
-            if (page instanceof IDoRunContainer)
+            BasicFormPage page = (BasicFormPage) pages.get(i);
+            if (!page.isComplete())
             {
-                BasicFormPage bPage = (BasicFormPage) page;
-                if (!bPage.isComplete())
-                {
-                    setActivePage(bPage.getId());
-                    return false;
-                }
+                setActivePage(page.getId());
+                return false;
             }
         }
         return true;
@@ -290,4 +273,29 @@ public class ModelEditor extends FormEditor
             throw new IllegalStateException("Something wierd. The editor is designed for FileEditorInputOnly");
         }
     }
+
+    /* (non-Javadoc)
+     * @see org.lamport.tla.toolbox.tool.tlc.util.ModelHelper.IResourceProvider#getResource()
+     */
+    public IResource getResource()
+    {
+        return getFileEditorInput().getFile();
+    }
+
+    /**
+     * Retrieves if the working copy of the model is in use
+     * @return true, if the model is locked 
+     */
+    public boolean isModelInUse()
+    {
+        try
+        {
+            return ModelHelper.isModelLocked(getConfig());
+        } catch (CoreException e)
+        {
+            TLCUIActivator.logError("Error determining model status", e);
+            return true;
+        }
+    }
+
 }

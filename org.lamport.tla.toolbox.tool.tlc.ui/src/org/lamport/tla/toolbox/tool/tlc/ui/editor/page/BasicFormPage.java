@@ -7,16 +7,14 @@ import java.util.List;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.ListenerList;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Layout;
@@ -57,6 +55,7 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
         IModelConfigurationDefaults, ISectionManager, IDoRunContainer
 {
 
+    public static final String RUNNING_TITLE = " ( model checking is in progress )";
     protected ListenerList dirtyPartListeners = new ListenerList();
     protected String helpId = null;
     protected String imagePath = null;
@@ -88,11 +87,12 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
     }
 
     /**
+     * Launch TLC
      * @param mode
      */
     public void doRun(String mode)
     {
-        IProgressMonitor monitor = null;
+        IProgressMonitor monitor = new NullProgressMonitor();
 
         if (!((ModelEditor) getEditor()).isComplete())
         {
@@ -143,7 +143,6 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
         toolkit.decorateFormHeading(formWidget.getForm());
 
         // head construction ---------------------
-
         IToolBarManager toolbarManager = formWidget.getForm().getToolBarManager();
         // run button
         toolbarManager.add(new DynamicContributionItem(new RunAction()));
@@ -159,6 +158,7 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
 
         try
         {
+            // load data from the model
             loadData();
         } catch (CoreException e)
         {
@@ -166,7 +166,7 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
         }
 
         // check the model is-running state
-        formWidget.getForm().setEnabled(!isModelInUse());
+        refresh();
 
         // finalizes the page construction
         // activates the change listeners
@@ -468,16 +468,28 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
             toolBarManager.markDirty();
             toolBarManager.update(true);
 
-            // refresh enablement status
-            boolean model = !isModelInUse();
-            if (model) 
-            {
-                mForm.getForm().getBody().setBackground(mForm.getForm().getBody().getShell().getDisplay().getSystemColor(SWT.COLOR_WHITE));
-            } else {
-                mForm.getForm().getBody().setBackground(mForm.getForm().getBody().getShell().getDisplay().getSystemColor(SWT.COLOR_GRAY));
-            }
-            mForm.getForm().getBody().setEnabled(model);
+            // get the usage status
+            boolean modelInUse = isModelInUse();
             
+            // refresh the title
+            String title = mForm.getForm().getText();
+            int titleIndex = title.indexOf(RUNNING_TITLE); 
+            if (modelInUse) 
+            {
+                if (titleIndex == -1) 
+                {
+                    mForm.getForm().setText(title + RUNNING_TITLE);
+                }
+            } else {
+                if (titleIndex != -1) 
+                {
+                    mForm.getForm().setText(title.substring(0, titleIndex));
+                }
+            }
+            
+            
+            // refresh enablement status
+            mForm.getForm().getBody().setEnabled(!modelInUse);
             mForm.getForm().update();
         }
     }
@@ -488,14 +500,7 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
      */
     public boolean isModelInUse()
     {
-        try
-        {
-            return getConfig().getAttribute(MODEL_IS_RUNNING, false);
-        } catch (CoreException e)
-        {
-            TLCUIActivator.logError("Error determining model status", e);
-            return true;
-        }
+        return ((ModelEditor)getEditor()).isModelInUse();
     }
 
     /**
@@ -506,12 +511,17 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
         RunAction()
         {
             super("Run", TLCUIActivator.imageDescriptorFromPlugin(TLCUIActivator.PLUGIN_ID, "icons/full/lrun_obj.gif"));
+            this.setDescription("Run TLC");
+            this.setToolTipText("Starts the TLC model checker");
         }
 
         public void run()
         {
+            System.out.println("Run");
             doRun(MODE_RUN);
+            
         }
+
 
         /**
          * Run is only enabled if the model is not in use

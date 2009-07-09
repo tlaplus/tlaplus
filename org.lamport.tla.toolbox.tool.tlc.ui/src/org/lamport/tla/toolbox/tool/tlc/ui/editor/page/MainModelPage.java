@@ -56,7 +56,7 @@ import tla2sany.semantic.ModuleNode;
 public class MainModelPage extends BasicFormPage implements IConfigurationConstants, IConfigurationDefaults
 {
     public static final String ID = "MainModelPage";
-    // private Button noSpecRadio;
+    public static final String TITLE = "Model Overview";
 
     private Button closedFormulaRadio;
     private Button initNextFairnessRadio;
@@ -109,7 +109,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
      */
     public MainModelPage(FormEditor editor)
     {
-        super(editor, MainModelPage.ID, "Model Overview");
+        super(editor, MainModelPage.ID, MainModelPage.TITLE);
         this.helpId = IHelpConstants.MAIN_MODEL_PAGE;
         this.imagePath = "icons/full/choice_sc_obj.gif";
     }
