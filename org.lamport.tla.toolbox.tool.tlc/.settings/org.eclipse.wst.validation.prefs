@@ -1,0 +1,12 @@
+#Wed Jul 08 13:16:07 PDT 2009
+DELEGATES_PREFERENCE=delegateValidatorList
+USER_BUILD_PREFERENCE=enabledBuildValidatorList
+USER_MANUAL_PREFERENCE=enabledManualValidatorList
+USER_PREFERENCE=overrideGlobalPreferencestruedisableAllValidationfalseversion1.2.102.v200905201610
+eclipse.preferences.version=1
+override=true
+suspend=false
+vals/org.eclipse.wst.dtd.core.dtdDTDValidator/global=TF01
+vals/org.eclipse.wst.xml.core.xml/global=TF03
+vals/org.eclipse.wst.xsd.core.xsd/global=TF02162org.eclipse.wst.xsd.core.internal.validation.eclipse.Validator
+vf.version=3
