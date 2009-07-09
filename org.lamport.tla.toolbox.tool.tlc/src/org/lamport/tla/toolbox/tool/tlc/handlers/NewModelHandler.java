@@ -21,7 +21,6 @@ import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.TLCModelLaunchDelegate;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelNameValidator;
-import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 import tla2sany.semantic.ModuleNode;
@@ -46,9 +45,6 @@ public class NewModelHandler extends AbstractHandler implements IModelConfigurat
     {
         // root file
         IResource specRootModule = ToolboxHandle.getRootModule();
-
-        // root module name
-        String rootModuleName = ResourceHelper.getModuleName(specRootModule);
 
         // get the launch manager
         ILaunchManager launchManager = DebugPlugin.getDefault().getLaunchManager();
