@@ -6,7 +6,13 @@ import java.util.List;
 import java.util.Vector;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.resources.IMarkerDelta;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IResourceChangeEvent;
+import org.eclipse.core.resources.IResourceChangeListener;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunchConfiguration;
@@ -35,8 +41,15 @@ import tla2sany.semantic.SymbolNode;
  */
 public class ModelHelper implements IModelConfigurationConstants, IModelConfigurationDefaults
 {
-    /** name of the model lock file preventing multiple runs in the same directory */
-    public static final String MODEL_LOCK = "_model.lock";
+    /**
+     * 
+     */
+    private static final String TLC_MODEL_MARKER = "org.lamport.tla.toolbox.tlc.modelMarker";
+
+    /**
+     * model is being run
+     */
+    private static final String MODEL_IS_RUNNING = "modelIsRunning";
 
     private static final String LIST_DELIMITER = ";";
     private static final String PARAM_DELIMITER = ":";
@@ -600,14 +613,115 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
         return UIHelper.getActivePage().findEditor(new FileEditorInput(model.getFile()));
     }
 
+    /**
+     * Installs a model modification change listener  
+     * @param provider provider for the file representing the model
+     * @param runnable a runnable to run if the model is changed 
+     */
+    public static IResourceChangeListener installModelModificationResourceChangeListener(
+            final IResourceProvider provider, final Runnable runnable)
+    {
+        // construct the listener
+        IResourceChangeListener listener = new IResourceChangeListener() {
+            public void resourceChanged(IResourceChangeEvent event)
+            {
+                // get the marker changes
+                IMarkerDelta[] markerChanges = event.findMarkerDeltas(TLC_MODEL_MARKER, false);
+
+                // usually this list has at most one element
+                for (int i = 0; i < markerChanges.length; i++)
+                {
+                    if (provider.getResource().equals(markerChanges[i].getResource()))
+                    {
+                        UIHelper.runUIAsync(runnable);
+                    }
+                }
+            }
+        };
+
+        // add to the workspace root
+        ResourcesPlugin.getWorkspace().addResourceChangeListener(listener, IResourceChangeEvent.POST_CHANGE);
+
+        // return the listener
+        return listener;
+    }
+
+    /**
+     * Checks whether the model is locked or not
+     * @param config
+     * @return
+     * @throws CoreException
+     */
+    public static boolean isModelLocked(ILaunchConfiguration config) throws CoreException
+    {
+        // marker
+        IFile resource = config.getFile();
+        IMarker marker;
+        IMarker[] foundMarkers = resource.findMarkers(TLC_MODEL_MARKER, false, IResource.DEPTH_ZERO);
+        if (foundMarkers.length > 0)
+        {
+            marker = foundMarkers[0];
+            // remove trash if any
+            for (int i = 1; i < foundMarkers.length; i++)
+            {
+                foundMarkers[i].delete();
+            }
+
+            return marker.getAttribute(MODEL_IS_RUNNING, false);
+        } else
+        {
+            return false;
+        }
+
+        /*
+        // persistence property
+        String isLocked = config.getFile().getPersistentProperty(new QualifiedName(TLCActivator.PLUGIN_ID, MODEL_IS_RUNNING));
+        if (isLocked == null) 
+        {
+            return false;
+        } else {
+            return Boolean.getBoolean(isLocked);
+        }
+        */
+
+        /*
+        return config.getAttribute(MODEL_IS_RUNNING, false);
+        */
+    }
 
     /**
      * Signals the start of model execution
      * @param config
      */
-    public static void lockModel(ILaunchConfiguration config) throws CoreException 
+    public static void lockModel(ILaunchConfiguration config) throws CoreException
     {
+        IFile resource = config.getFile();
+        IMarker marker;
+        IMarker[] foundMarkers = resource.findMarkers(TLC_MODEL_MARKER, false, IResource.DEPTH_ZERO);
+        if (foundMarkers.length > 0)
+        {
+            marker = foundMarkers[0];
+            // remove trash if any
+            for (int i = 1; i < foundMarkers.length; i++)
+            {
+                foundMarkers[i].delete();
+            }
+        } else
+        {
+            marker = config.getFile().createMarker(TLC_MODEL_MARKER);
+        }
+
+        marker.setAttribute(MODEL_IS_RUNNING, true);
+
+        /*
+        // persistence property
+        config.getFile().setPersistentProperty(new QualifiedName(TLCActivator.PLUGIN_ID, MODEL_IS_RUNNING), Boolean.toString(true));
+         */
+
+        /*
+        // file modification 
         ModelHelper.writeAttributeValue(config, IModelConfigurationConstants.MODEL_IS_RUNNING, true);
+         */
     }
 
     /**
@@ -616,29 +730,62 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
      */
     public static void unlockModel(ILaunchConfiguration config) throws CoreException
     {
+        IFile resource = config.getFile();
+        IMarker marker;
+        IMarker[] foundMarkers = resource.findMarkers(TLC_MODEL_MARKER, false, IResource.DEPTH_ZERO);
+        if (foundMarkers.length > 0)
+        {
+            marker = foundMarkers[0];
+            // remove trash if any
+            for (int i = 1; i < foundMarkers.length; i++)
+            {
+                foundMarkers[i].delete();
+            }
+        } else
+        {
+            marker = config.getFile().createMarker(TLC_MODEL_MARKER);
+        }
+
+        marker.setAttribute(MODEL_IS_RUNNING, false);
+
+        /*
+        // persistence property
+        config.getFile().setPersistentProperty(new QualifiedName(TLCActivator.PLUGIN_ID, MODEL_IS_RUNNING), Boolean.toString(false));
+        */
+
+        /*
+        // file modification 
         ModelHelper.writeAttributeValue(config, IModelConfigurationConstants.MODEL_IS_RUNNING, false);
+        */
     }
 
-    
-    
     /**
      * Write a boolean value into the launch config and saves it
      * @param config
      * @param attributeName
      * @param value
      */
-    public static void writeAttributeValue(ILaunchConfiguration config, String attributeName, boolean value) throws CoreException 
+    public static void writeAttributeValue(ILaunchConfiguration config, String attributeName, boolean value)
+            throws CoreException
     {
         ILaunchConfigurationWorkingCopy copy;
-        if (config instanceof ILaunchConfigurationWorkingCopy) 
+        if (config instanceof ILaunchConfigurationWorkingCopy)
         {
             copy = (ILaunchConfigurationWorkingCopy) config;
-        } else {
+        } else
+        {
             copy = config.getWorkingCopy();
         }
-        
+
         copy.setAttribute(attributeName, value);
         copy.doSave();
     }
-    
+
+    /**
+     * Simple interface for getting a resource 
+     */
+    public static interface IResourceProvider
+    {
+        public IResource getResource();
+    }
 }
