@@ -89,9 +89,11 @@ public class TLCProcessJob extends TLCJob
             tlcConfig.setProgramArguments(args);
             tlcConfig.setVMArguments(vmArgs);
             tlcConfig.setWorkingDirectory(workingDir);
+            
 
             // get default VM (the same the toolbox is started with)
             IVMRunner runner = JavaRuntime.getDefaultVMInstall().getVMRunner(ILaunchManager.RUN_MODE);
+
 
             launch.setAttribute(DebugPlugin.ATTR_CAPTURE_OUTPUT, "true");
 
@@ -108,7 +110,9 @@ public class TLCProcessJob extends TLCJob
                 return new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID, "Error launching TLC modle checker", e);
             }
 
+            // find the running process
             this.process = findProcessForLaunch(launch);
+            
 
             // step 4
             monitor.worked(STEP);
