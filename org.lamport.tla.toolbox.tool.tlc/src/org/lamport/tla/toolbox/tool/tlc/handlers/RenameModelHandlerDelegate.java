@@ -12,6 +12,7 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.jface.dialogs.IInputValidator;
 import org.eclipse.jface.dialogs.InputDialog;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.window.Window;
@@ -31,9 +32,8 @@ import org.lamport.tla.toolbox.util.UIHelper;
  */
 public class RenameModelHandlerDelegate extends AbstractHandler implements IHandler, IModelConfigurationConstants
 {
-
+    private final Object RETURN = null;
     private String modelName;
-
     /**
      * @see org.eclipse.core.commands.IHandler#execute(org.eclipse.core.commands.ExecutionEvent)
      */
@@ -50,10 +50,25 @@ public class RenameModelHandlerDelegate extends AbstractHandler implements IHand
             {
                 // root file
                 IResource specRootModule = ToolboxHandle.getRootModule();
+                // model file
                 ILaunchConfiguration model = (ILaunchConfiguration) ((IStructuredSelection) selection)
                         .getFirstElement();
-
                 modelName = ModelHelper.getModelName(model.getFile()) + "_Copy";
+                
+                try
+                {
+                    if (ModelHelper.isModelLocked(model)) 
+                    {
+                        MessageDialog.openError(UIHelper.getShellProvider().getShell(), "Could not rename models",
+                                "Could not rename the model " + modelName + ", because it is being model checked.");
+                        return RETURN;
+                    }
+                } catch (CoreException e1)
+                {
+                    e1.printStackTrace();
+                }
+                
+                
 
                 IInputValidator modelNameInputValidator = new ModelNameValidator(specRootModule.getProject());
                 final InputDialog dialog = new InputDialog(UIHelper.getShellProvider().getShell(), "Rename model...",
@@ -77,7 +92,7 @@ public class RenameModelHandlerDelegate extends AbstractHandler implements IHand
                 if (modelName == null)
                 {
                     // exit processing if no specName at place
-                    return null;
+                    return RETURN;
                 }
 
                 final IEditorPart editor = ModelHelper.getEditorWithModelOpened(model);
@@ -122,7 +137,7 @@ public class RenameModelHandlerDelegate extends AbstractHandler implements IHand
             }
         }
 
-        return null;
+        return RETURN;
     }
 
 }
