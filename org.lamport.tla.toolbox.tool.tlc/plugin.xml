@@ -98,9 +98,11 @@
             class="org.lamport.tla.toolbox.tool.tlc.handlers.RenameModelHandlerDelegate"
             commandId="org.eclipse.ui.edit.rename">
          <enabledWhen>
-            <count
-                  value="1">
-            </count>
+            <and>
+               <count
+                     value="1">
+               </count>
+            </and>
          </enabledWhen>
          <activeWhen>
             <with
@@ -195,7 +197,7 @@
                   label="Open Model"
                   mnemonic="O">
                <dynamic
-                     class="org.lamport.tla.toolbox.tool.tlc.launch.ui.ModelContributionItem"
+                     class="org.lamport.tla.toolbox.tool.tlc.ui.modelexplorer.ModelContributionItem"
                      id="toolbox.tool.tlc.model.open.dynamic">
                </dynamic>
                <visibleWhen
@@ -355,9 +357,9 @@
    <extension
          point="org.eclipse.ui.navigator.navigatorContent">
       <navigatorContent
-            contentProvider="org.lamport.tla.toolbox.tool.tlc.launch.ui.ModelContentProvider"
+            contentProvider="org.lamport.tla.toolbox.tool.tlc.ui.modelexplorer.ModelContentProvider"
             id="toolbox.tool.tlc.content.ModelContent"
-            labelProvider="org.lamport.tla.toolbox.tool.tlc.launch.ui.ModelLabelProvider"
+            labelProvider="org.lamport.tla.toolbox.tool.tlc.ui.modelexplorer.ModelLabelProvider"
             name="TLC Models"
             priority="normal">
          <possibleChildren>
@@ -383,7 +385,7 @@
       <view
             allowMultiple="false"
             category="org.lamport.tla.toolbox.category"
-            class="org.lamport.tla.toolbox.tool.tlc.launch.ui.ModelExplorer"
+            class="org.lamport.tla.toolbox.tool.tlc.ui.modelexplorer.ModelExplorer"
             fastViewWidthRatio="0.25"
             icon="icons/full/choice_sc_obj.gif"
             id="toolbox.tool.tlc.ModelView"
@@ -509,6 +511,20 @@ Console Facory
                visible="false">
          </view>
       </perspectiveExtension>
+   </extension>
+   <extension
+         id="org.lamport.tla.toolbox.tlc.modelMarker"
+         name="Model Marker"
+         point="org.eclipse.core.resources.markers">
+      <super
+            type="org.eclipse.core.resources.marker">
+      </super>
+      <attribute
+            name="modelIsRunning">
+      </attribute>
+      <persistent
+            value="true">
+      </persistent>
    </extension>
    
    <!--                                   -->
