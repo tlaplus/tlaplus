@@ -1,5 +1,6 @@
 package org.lamport.tla.toolbox.tool.tlc.ui.modelexplorer;
 
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.graphics.Image;
@@ -36,7 +37,20 @@ public class ModelLabelProvider extends LabelProvider implements IDescriptionPro
     {
         if (element instanceof ILaunchConfiguration)
         {
-            return ModelHelper.getModelName(((ILaunchConfiguration) element).getFile());
+            ILaunchConfiguration config = (ILaunchConfiguration) element;
+            String modelName = ModelHelper.getModelName(config.getFile());
+            try
+            {
+                if (ModelHelper.isModelLocked(config)) 
+                {
+                    return modelName + " [ modelchecking ]";
+                }
+            } catch (CoreException e)
+            {
+                // TODO
+                e.printStackTrace();
+            }
+            return modelName; 
         }
         return null;
     }
