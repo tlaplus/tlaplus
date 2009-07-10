@@ -121,6 +121,10 @@ public abstract class AbstractChecker implements Cancelable
         return true;
     }
 
+    /**
+     * Responsible for printing the coverage information
+     * @param workers
+     */
     protected void reportCoverage(IWorker[] workers)
     {
           if (TLCGlobals.coverageInterval >= 0) {

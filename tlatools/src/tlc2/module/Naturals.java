@@ -59,7 +59,13 @@ public class Naturals extends UserObj implements ValueConstants {
   public static IntValue Times(IntValue x, IntValue y) {
     int n1 = x.val;
     int n2 = y.val;
-    long res = n1 * n2;
+    /* The following line was originally
+     *      long res = n1 * n2
+     * which was wrong because in Java, * for ints  multiplication mod
+     * 2^n for some n.  I'm not sure the new code is correct, but it's
+     * at least better.  Modified by LL on 10 Jul 2009.
+     */
+    long res = ((long) n1) * ((long)n2);
     if (-2147483648 > res || res > 2147483647) {
       throw new EvalException("Overflow when computing " + n1 + "*" + n2);
     }
