@@ -5,6 +5,8 @@
 
 package tlc2.pprint;
 
+import tlc2.output.EC;
+import tlc2.output.MP;
 import util.ToolIO;
 
 
@@ -36,17 +38,20 @@ public class PrettyPrint {
       return format;
     }
     catch (ParseException e) {
-      ToolIO.err.println("TLC Bug: error while parsing " + value + "\n" + 
-			 e.getMessage());
-      return value;
+        MP.printTLCBug(EC.TLC_PP_PARSING_VALUE, new String[]{value, e.getMessage()});
+        return value;
     }
     catch (FormatException e) {
-      ToolIO.err.println("TLC Bug: error while formating " + value + "\n" + 
-			 e.getMessage()); 
-      return value;
+        MP.printTLCBug(EC.TLC_PP_FORMATING_VALUE, new String[]{value, e.getMessage()});
+        return value;
     }
   }
 
+  /**
+   * Not called from the code. Seems to be for testing only
+   * @param argv
+   * 
+   */
   public static void main(String[] argv) {
     String value = argv[0];
     int    width = Integer.parseInt(argv[1]);
