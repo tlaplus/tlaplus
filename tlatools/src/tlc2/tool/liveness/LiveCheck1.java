@@ -7,19 +7,20 @@ package tlc2.tool.liveness;
 
 import java.io.IOException;
 
+import tlc2.output.EC;
+import tlc2.output.MP;
+import tlc2.output.StatePrinter;
 import tlc2.tool.Action;
 import tlc2.tool.EvalException;
 import tlc2.tool.StateVec;
 import tlc2.tool.TLCState;
 import tlc2.tool.TLCStateInfo;
-import tlc2.tool.TLCTrace;
 import tlc2.tool.Tool;
 import tlc2.util.LongObjTable;
 import tlc2.util.MemObjectStack;
 import tlc2.util.ObjectStack;
 import tlc2.util.Vect;
 import util.FP64;
-import util.ToolIO;
 
 public class LiveCheck1 {
   /**
@@ -560,7 +561,10 @@ public class LiveCheck1 {
   }
 
   /* Print out the error state trace.  */
-  static void printErrorTrace(BEGraphNode node) throws IOException {
+  static void printErrorTrace(BEGraphNode node) throws IOException 
+  {
+      MP.printError(EC.TLC_TEMPORAL_PROPERTY_VIOLATED);
+      
     // First, find a "bad" cycle from the "bad" scc.
     ObjectStack cycleStack = new MemObjectStack(metadir, "cyclestack");
     int slen = currentOOS.checkState.length;
@@ -682,7 +686,7 @@ public class LiveCheck1 {
     long fp = prefix[0].stateFP;
     TLCStateInfo sinfo = myTool.getState(fp);
     if (sinfo == null) {
-      throw new EvalException("Failed to recover the initial state from its fingerprint.");
+      throw new EvalException(MP.getMessage(EC.TLC_FAILED_TO_RECOVER_INIT));
     }
     states[stateNum++] = sinfo;
 
@@ -692,7 +696,7 @@ public class LiveCheck1 {
       if (fp1 != fp) {
 	sinfo = myTool.getState(fp1, sinfo.state);
 	if (sinfo == null) {
-	  throw new EvalException("Failed to recover the next state from its fingerprint.");
+	  throw new EvalException(MP.getMessage(EC.TLC_FAILED_TO_RECOVER_NEXT));
 	}
 	states[stateNum++] = sinfo;
       }
@@ -702,7 +706,7 @@ public class LiveCheck1 {
     // Print the prefix:
     TLCState lastState = null;    
     for (int i = 0; i < stateNum; i++) {
-      TLCTrace.printState(states[i], lastState, i+1);
+      StatePrinter.printState(states[i], lastState, i+1);
       lastState = states[i].state;
     }
 
@@ -719,14 +723,14 @@ public class LiveCheck1 {
       if (fps[i] != fps[i-1]) {
 	sinfo = myTool.getState(fps[i], sinfo.state);
 	if (sinfo == null) {
-	  throw new EvalException("Failed to recover the next state from its fingerprint.");
+	  throw new EvalException(MP.getMessage(EC.TLC_FAILED_TO_RECOVER_NEXT));
 	}
-	TLCTrace.printState(sinfo, lastState, ++stateNum);
+	StatePrinter.printState(sinfo, lastState, ++stateNum);
 	lastState = sinfo.state;	
       }
     }
-    ToolIO.err.print("STATE " + (++stateNum) + ": ");
-    ToolIO.err.println("Back to state " + cyclePos + ".\n");
+    StatePrinter.printStutteringState(++stateNum);
+    MP.printMessage(EC.TLC_BACK_TO_STATE, "" + cyclePos);
   }
   
   /**
@@ -797,13 +801,12 @@ public class LiveCheck1 {
     }
     // This component must contain a counter-example because all three
     // conditions are satisfied. So, print a counter-example!
-    try {
-      ToolIO.err.println("Error: Temporal properties were violated. The following" +
-			 " behaviour constitutes a counter-example:\n");
-      printErrorTrace(node);
-    }
-    catch (IOException e) {
-      ToolIO.err.println("Error: " + e.getMessage());
+    try 
+    {
+        printErrorTrace(node);
+    } catch (IOException e) 
+    {
+        MP.printError(EC.GENERAL, e.getMessage());
     }
     throw new LiveException("LiveCheck: Found error trace.");
   }

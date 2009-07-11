@@ -6,15 +6,16 @@ package tlc2.tool.liveness;
 
 import java.io.IOException;
 
+import tlc2.output.EC;
+import tlc2.output.MP;
+import tlc2.output.StatePrinter;
 import tlc2.tool.EvalException;
 import tlc2.tool.TLCState;
 import tlc2.tool.TLCStateInfo;
-import tlc2.tool.TLCTrace;
 import tlc2.util.IdThread;
 import tlc2.util.LongVec;
 import tlc2.util.MemIntQueue;
 import tlc2.util.MemIntStack;
-import util.ToolIO;
 
 public class LiveWorker extends IdThread {
 
@@ -283,10 +284,9 @@ public class LiveWorker extends IdThread {
     }
     // This component must contain a counter-example because all three
     // conditions are satisfied. So, print a counter-example!
-    if (setErrFound()) {
-      ToolIO.err.println("Error: Temporal properties were violated.\n" +
-			 "The following behaviour constitutes a counter-example:\n");
-      this.printErrorTrace(state, tidx, com);
+    if (setErrFound()) 
+    {
+      this.printTrace(state, tidx, com);
     }
     return false;
   }
@@ -316,8 +316,11 @@ public class LiveWorker extends IdThread {
    * graph.  The prefix path and the "bad" cycle together forms a
    * counter-example.
    */
-  private void printErrorTrace(long state, int tidx, NodePtrTable nodeTbl)
+  private void printTrace(long state, int tidx, NodePtrTable nodeTbl)
   throws IOException {
+      
+      MP.printError(EC.TLC_TEMPORAL_PROPERTY_VIOLATED);
+      
     // First, find a "bad" cycle from the "bad" scc.
     int slen = this.oos.checkState.length;
     int alen = this.oos.checkAction.length;
@@ -521,7 +524,7 @@ public class LiveWorker extends IdThread {
     long fp = prefix.elementAt(plen-1);
     TLCStateInfo sinfo = LiveCheck.myTool.getState(fp);
     if (sinfo == null) {
-      throw new EvalException("Failed to recover the initial state from its fingerprint.");
+      throw new EvalException(MP.getMessage(EC.TLC_FAILED_TO_RECOVER_INIT));
     }
     states[stateNum++] = sinfo;
 
@@ -531,7 +534,7 @@ public class LiveWorker extends IdThread {
       if (curFP != fp) {
 	sinfo = LiveCheck.myTool.getState(curFP, sinfo.state);
 	if (sinfo == null) {
-	  throw new EvalException("Failed to recover the next state from its fingerprint.");
+	  throw new EvalException(MP.getMessage(EC.TLC_FAILED_TO_RECOVER_NEXT));
 	}
 	states[stateNum++] = sinfo;
 	fp = curFP;
@@ -541,7 +544,7 @@ public class LiveWorker extends IdThread {
     // Print the prefix:
     TLCState lastState = null;
     for (int i = 0; i < stateNum; i++) {
-      TLCTrace.printState(states[i], lastState, i+1);
+      StatePrinter.printState(states[i], lastState, i+1);
       lastState = states[i].state;
     }
 
@@ -559,52 +562,58 @@ public class LiveWorker extends IdThread {
       if (curFP != fp) {
 	sinfo = LiveCheck.myTool.getState(curFP, sinfo.state);
 	if (sinfo == null) {
-	  throw new EvalException("Failed to recover the next state from its fingerprint.");
+	  throw new EvalException(MP.getMessage(EC.TLC_FAILED_TO_RECOVER_NEXT));
 	}
-	TLCTrace.printState(sinfo, lastState, ++stateNum);
+	StatePrinter.printState(sinfo, lastState, ++stateNum);
 	lastState = sinfo.state;
 	fp = curFP;
       }
     }
 
-    if (fp == cycleFP) {
-      ToolIO.err.println("STATE " + (++stateNum) + ": Stuttering");
-    }
-    else {
+    if (fp == cycleFP) 
+    {
+        StatePrinter.printStutteringState(++stateNum);
+    } else 
+    {
       sinfo = LiveCheck.myTool.getState(cycleFP, sinfo.state);
-      if (sinfo == null) {
-        throw new EvalException("Failed to recover the next state from its fingerprint.");
+      if (sinfo == null) 
+      {
+          throw new EvalException(MP.getMessage(EC.TLC_FAILED_TO_RECOVER_NEXT));
       }
-      ToolIO.err.println("STATE " + (++stateNum) + ": " + sinfo.info);
-      ToolIO.err.println("Back to state " + cyclePos + ".\n");
+      StatePrinter.printState(sinfo, null, (++stateNum));
+      // SZ Jul 10, 2009: replaced with state printer
+      // ToolIO.err.println("STATE " + (++stateNum) + ": " + sinfo.info);
+      MP.printMessage(EC.TLC_BACK_TO_STATE, "" + cyclePos);
     }
   }
 
-  public final void run() {
-    try {
-      while (true) {
-	// Get next OOS, and work on it:
-	int idx = getNextOOS();
-	if (idx == -1 || hasErrFound()) break;
+  public final void run() 
+  {
+      try {
+          while (true) {
+              // Get next OOS, and work on it:
+              int idx = getNextOOS();
+              if (idx == -1 || hasErrFound()) break;
 
-	this.oos = LiveCheck.solutions[idx];
-	this.dg = LiveCheck.dgraphs[idx];
-	this.dg.createCache();
-	PossibleErrorModel[] pems = this.oos.pems;
-	for (int i = 0; i < pems.length; i++) {
-	  if (!hasErrFound()) {
-	    this.pem = pems[i];
-	    this.checkSccs();
-	  }
-	}
-	this.dg.destroyCache();
+              this.oos = LiveCheck.solutions[idx];
+              this.dg = LiveCheck.dgraphs[idx];
+              this.dg.createCache();
+              PossibleErrorModel[] pems = this.oos.pems;
+              for (int i = 0; i < pems.length; i++) {
+                  if (!hasErrFound()) {
+                      this.pem = pems[i];
+                      this.checkSccs();
+                  }
+              }
+              this.dg.destroyCache();
+          }
       }
-    }
-    catch (Exception e) {
-      ToolIO.err.println("Error: " + e.getMessage());
-      // Assert.printStack(e);
-      return;
-    }
+      catch (Exception e) 
+      {
+          MP.printError(EC.GENERAL, e.getMessage());
+          // Assert.printStack(e);
+          return;
+      }
   }
 
 }
