@@ -44,16 +44,16 @@ public class TLC implements ValueConstants {
    * returns the value v2.
    */
   public static Value Print(Value v1, Value v2) {
-    ToolIO.err.println(Value.ppr(v1.toString()) + "  " + Value.ppr(v2.toString()));
-    return v2;
+      ToolIO.err.println(Value.ppr(v1.toString()) + "  " + Value.ppr(v2.toString()));
+      return v2;
   }
 
   /**
    * Prints to standard error the string v1. Always returns TRUE.
    */
   public static Value PrintT(Value v1) {
-    ToolIO.err.println(Value.ppr(v1.toString()));
-    return ValTrue;
+      ToolIO.err.println(Value.ppr(v1.toString()));
+      return ValTrue;
   }
 
   /* Returns the string value of the string representation of v. */
