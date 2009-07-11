@@ -10,12 +10,14 @@ import java.io.IOException;
 import tla2sany.modanalyzer.SpecObj;
 import tla2sany.semantic.ExprNode;
 import tlc2.TLCGlobals;
+import tlc2.output.EC;
+import tlc2.output.MP;
 import tlc2.tool.liveness.LiveCheck;
 import tlc2.util.IdThread;
 import tlc2.util.LongVec;
 import tlc2.util.ObjLongTable;
 import tlc2.value.Value;
-import util.DebugReporter;
+import util.DebugPrinter;
 import util.FileUtil;
 import util.FilenameToStream;
 import util.ToolIO;
@@ -83,7 +85,7 @@ public class ModelChecker extends AbstractChecker
     public void modelCheck() throws Exception
     {
         report("entering modelCheck()");
-        
+
         // Initialization for liveness checking:
         if (this.checkLiveness)
         {
@@ -92,11 +94,10 @@ public class ModelChecker extends AbstractChecker
             report("liveness checking initialized");
         }
 
-        
         boolean recovered = this.recover();
         if (!recovered)
         {
-            
+
             // We start from scratch. Initialize the state queue and the
             // state set to contain all the initial states.
             if (!this.checkAssumptions())
@@ -105,9 +106,9 @@ public class ModelChecker extends AbstractChecker
             {
                 report("doInit(false)");
                 // SZ Feb 23, 2009: do not ignore cancel on creation of the init states
-                if (!this.doInit(false)) 
+                if (!this.doInit(false))
                 {
-                    report("exiting, because init failed");    
+                    report("exiting, because init failed");
                     return;
                 }
             } catch (Throwable e)
@@ -115,12 +116,15 @@ public class ModelChecker extends AbstractChecker
                 report("exception in init");
                 report(e);
                 // Initial state computation fails with an exception:
-                ToolIO.err.println("Error: " + e.getMessage());
+
                 if (this.errState != null)
                 {
-                    ToolIO.err.println("While working on the initial state:");
-                    ToolIO.err.println(this.errState);
+                    MP.printError(EC.TLC_INITIAL_STATE, new String[] { e.getMessage(), this.errState.toString() });
+                } else
+                {
+                    MP.printError(EC.GENERAL, e.getMessage());
                 }
+
                 // Replay the error with the error stack recorded:
                 this.tool.setCallStack();
                 try
@@ -131,9 +135,7 @@ public class ModelChecker extends AbstractChecker
                 } catch (Throwable e1)
                 {
                     // Assert.printStack(e);
-                    ToolIO.err.println("\nThe error occurred when TLC was evaluating the nested"
-                            + "\nexpressions at the following positions:");
-                    this.tool.printCallStack();
+                    MP.printError(EC.TLC_NESTED_EXPRESSION, this.tool.getCallStack().toString());
                 }
                 this.printSummary(false);
                 this.cleanup(false);
@@ -144,11 +146,11 @@ public class ModelChecker extends AbstractChecker
             if (this.numOfGenStates == this.theFPSet.size())
             {
                 String plural = (this.numOfGenStates == 1) ? "" : "s";
-                ToolIO.err.println("Finished computing initial states: " + this.numOfGenStates + " distinct state"
+                ToolIO.out.println("Finished computing initial states: " + this.numOfGenStates + " distinct state"
                         + plural + " generated.");
             } else
             {
-                ToolIO.err.println("Finished computing initial states: " + this.numOfGenStates
+                ToolIO.out.println("Finished computing initial states: " + this.numOfGenStates
                         + " states generated, with " + this.theFPSet.size() + " of them distinct.");
             }
         }
@@ -169,7 +171,7 @@ public class ModelChecker extends AbstractChecker
         {
             report("running TLC");
             success = this.runTLC(Integer.MAX_VALUE);
-            if (!success) 
+            if (!success)
             {
                 report("TLC terminated with error");
                 return;
@@ -184,7 +186,7 @@ public class ModelChecker extends AbstractChecker
                     report("checking liveness");
                     success = LiveCheck.check();
                     report("liveness check complete");
-                    if (!success) 
+                    if (!success)
                     {
                         report("exiting error status on liveness check");
                         return;
@@ -204,22 +206,20 @@ public class ModelChecker extends AbstractChecker
                 } catch (Throwable e)
                 {
                     // Assert.printStack(e);
-                    ToolIO.err.println("\nThe error occurred when TLC was evaluating the nested"
-                            + "\nexpressions at the following positions:");
-                    this.tool.printCallStack();
+                    MP.printError(EC.TLC_NESTED_EXPRESSION, this.tool.getCallStack().toString());
                 }
             }
         } catch (Exception e)
         {
             // Assert.printStack(e);
             success = false;
-            ToolIO.err.println("Error: " + e.getMessage());
+            MP.printError(EC.GENERAL, e.getMessage());
         } finally
         {
             this.printSummary(success);
             this.cleanup(success);
         }
-        
+
         report("normal exit");
     }
 
@@ -235,14 +235,14 @@ public class ModelChecker extends AbstractChecker
             {
                 if (!this.tool.isValid(assumps[i]))
                 {
-                    ToolIO.err.println("Error: Assumption " + assumps[i] + " is false.");
+                    MP.printError(EC.TLC_ASSUMPTION_FALSE, assumps[i].toString());
                     return false;
                 }
             } catch (Exception e)
             {
                 // Assert.printStack(e);
-                ToolIO.err.println("Error: Evaluating assumption " + assumps[i] + " failed.");
-                ToolIO.err.println(e.getMessage());
+                MP.printError(EC.TLC_ASSUMPTION_EVALUATION_ERROR,
+                        new String[] { assumps[i].toString(), e.getMessage() });
                 return false;
             }
         }
@@ -261,7 +261,7 @@ public class ModelChecker extends AbstractChecker
         {
             return false;
         }
-        
+
         TLCState curState = null;
 
         try
@@ -275,8 +275,7 @@ public class ModelChecker extends AbstractChecker
                 // Check if the state is a legal state
                 if (!this.tool.isGoodState(curState))
                 {
-                    ToolIO.err.println("Error: State was not completely specified by the " + "initial predicate:");
-                    ToolIO.err.println(curState.toString());
+                    MP.printError(EC.TLC_INITIAL_STATE, curState.toString());
                     return false;
                 }
                 boolean inModel = this.tool.isInModel(curState);
@@ -309,9 +308,7 @@ public class ModelChecker extends AbstractChecker
                         if (!this.tool.isValid(this.invariants[j], curState))
                         {
                             // We get here because of invariant violation:
-                            ToolIO.err.println("Error: Invariant " + this.tool.getInvNames()[j]
-                                    + " is violated by the initial state:");
-                            ToolIO.err.println(curState.toString());
+                            MP.printError(EC.TLC_INVARIANT_VIOLATED_INITIAL, new String[] {this.tool.getInvNames()[j].toString(), curState.toString()});
                             if (!TLCGlobals.continuation)
                                 return false;
                         }
@@ -321,9 +318,7 @@ public class ModelChecker extends AbstractChecker
                         if (!this.tool.isValid(this.impliedInits[j], curState))
                         {
                             // We get here because of implied-inits violation:
-                            ToolIO.err.println("Error: Property " + this.tool.getImpliedInitNames()[j]
-                                    + " is violated by the initial state:");
-                            ToolIO.err.println(curState.toString());
+                            MP.printError(EC.TLC_PROPERTY_VIOLATED_INITIAL, new String[] {this.tool.getImpliedInitNames()[j], curState.toString()});
                             return false;
                         }
                     }
@@ -334,7 +329,7 @@ public class ModelChecker extends AbstractChecker
             // Assert.printStack(e);
             if (e instanceof OutOfMemoryError)
             {
-                ToolIO.err.println("OutOfMemoryError: There are probably too many initial states.");
+                MP.printError(EC.SYSTEM_OUT_OF_MEMORY_TOO_MANY_INIT);
                 return false;
             }
             this.errState = curState;
@@ -354,11 +349,11 @@ public class ModelChecker extends AbstractChecker
     public final boolean doNext(TLCState curState, ObjLongTable counts) throws Throwable
     {
         // SZ Feb 23, 2009: cancel the calculation
-        if (this.cancellationFlag) 
+        if (this.cancellationFlag)
         {
             return false;
         }
-        
+
         boolean deadLocked = true;
         TLCState succState = null;
         StateVec liveNextStates = null;
@@ -378,12 +373,11 @@ public class ModelChecker extends AbstractChecker
             for (int i = 0; i < this.actions.length; i++)
             {
                 // SZ Feb 23, 2009: cancel the calculation
-                if (this.cancellationFlag) 
+                if (this.cancellationFlag)
                 {
                     return false;
                 }
 
-                
                 StateVec nextStates = this.tool.getNextStates(this.actions[i], curState);
                 int sz = nextStates.size();
                 this.incNumOfGenStates(sz);
@@ -397,9 +391,7 @@ public class ModelChecker extends AbstractChecker
                     {
                         if (this.setErrState(curState, succState, false))
                         {
-                            ToolIO.err.println("Error: Successor state is not completely specified by the"
-                                    + " next-state action.\nThe behavior up to this point is:");
-
+                            MP.printError(EC.TLC_STATE_NOT_COMPLETELY_SPECIFIED_NEXT);
                             this.trace.printTrace(curState.uid, curState, succState);
                             this.theStateQueue.finishAll();
 
@@ -449,7 +441,7 @@ public class ModelChecker extends AbstractChecker
                             for (k = 0; k < len; k++)
                             {
                                 // SZ Feb 23, 2009: cancel the calculation
-                                if (this.cancellationFlag) 
+                                if (this.cancellationFlag)
                                 {
                                     return false;
                                 }
@@ -461,16 +453,14 @@ public class ModelChecker extends AbstractChecker
                                     {
                                         if (TLCGlobals.continuation)
                                         {
-                                            ToolIO.err.println("Error: Invariant " + this.tool.getInvNames()[k]
-                                                    + " is violated. The behavior up to this point is:");
+                                            MP.printError(EC.TLC_INVARIANT_VIOLATED_BEHAVIOR, this.tool.getInvNames()[k]);
                                             this.trace.printTrace(curState.uid, curState, succState);
                                             break;
                                         } else
                                         {
                                             if (this.setErrState(curState, succState, false))
                                             {
-                                                ToolIO.err.println("Error: Invariant " + this.tool.getInvNames()[k]
-                                                        + " is violated. The behavior up to this point is:");
+                                                MP.printError(EC.TLC_INVARIANT_VIOLATED_BEHAVIOR, this.tool.getInvNames()[k]);
                                                 this.trace.printTrace(curState.uid, curState, succState);
                                                 this.theStateQueue.finishAll();
                                                 this.notify();
@@ -486,10 +476,7 @@ public class ModelChecker extends AbstractChecker
                         {
                             if (this.setErrState(curState, succState, true))
                             {
-                                ToolIO.err.println("Error: Evaluating invariant " + this.tool.getInvNames()[k]
-                                        + " failed.");
-                                ToolIO.err.println(e.getMessage());
-                                ToolIO.err.println("\nThe behavior up to this point is:");
+                                MP.printError(EC.TLC_INVARIANT_EVALUATION_FAILED, new String[]{this.tool.getInvNames()[k], e.getMessage()});
                                 this.trace.printTrace(curState.uid, curState, succState);
                                 this.theStateQueue.finishAll();
                                 this.notify();
@@ -505,7 +492,7 @@ public class ModelChecker extends AbstractChecker
                         for (k = 0; k < len; k++)
                         {
                             // SZ Feb 23, 2009: cancel the calculation
-                            if (this.cancellationFlag) 
+                            if (this.cancellationFlag)
                             {
                                 return false;
                             }
@@ -517,18 +504,14 @@ public class ModelChecker extends AbstractChecker
                                 {
                                     if (TLCGlobals.continuation)
                                     {
-                                        ToolIO.err.println("Error: Action property "
-                                                + this.tool.getImpliedActNames()[k]
-                                                + " is violated. The behavior up to this point is:");
+                                        MP.printError(EC.TLC_ACTION_PROPERTY_VIOLATED_BEHAVIOR, this.tool.getImpliedActNames()[k]);
                                         this.trace.printTrace(curState.uid, curState, succState);
                                         break;
                                     } else
                                     {
                                         if (this.setErrState(curState, succState, false))
                                         {
-                                            ToolIO.err.println("Error: Action property "
-                                                    + this.tool.getImpliedActNames()[k]
-                                                    + " is violated. The behavior up to this point is:");
+                                            MP.printError(EC.TLC_ACTION_PROPERTY_VIOLATED_BEHAVIOR, this.tool.getImpliedActNames()[k]);
                                             this.trace.printTrace(curState.uid, curState, succState);
                                             this.theStateQueue.finishAll();
                                             this.notify();
@@ -544,10 +527,7 @@ public class ModelChecker extends AbstractChecker
                     {
                         if (this.setErrState(curState, succState, true))
                         {
-                            ToolIO.err.println("Error: Evaluating action property " + this.tool.getImpliedActNames()[k]
-                                    + " failed.");
-                            ToolIO.err.println(e.getMessage());
-                            ToolIO.err.println("\nThe behavior up to this point is:");
+                            MP.printError(EC.TLC_ACTION_PROPERTY_EVALUATION_FAILED, new String[]{this.tool.getImpliedActNames()[k], e.getMessage()});
                             this.trace.printTrace(curState.uid, curState, succState);
                             this.theStateQueue.finishAll();
                             this.notify();
@@ -565,7 +545,7 @@ public class ModelChecker extends AbstractChecker
                 {
                     if (this.setErrState(curState, null, false))
                     {
-                        ToolIO.err.println("Error: deadlock reached. The behavior up to this point is:");
+                        MP.printError(EC.TLC_DEADLOCK_REACHED);
                         this.trace.printTrace(curState.uid, curState, null);
                         this.theStateQueue.finishAll();
                         this.notify();
@@ -593,21 +573,14 @@ public class ModelChecker extends AbstractChecker
                 {
                     if (e instanceof StackOverflowError)
                     {
-                        ToolIO.err.println("Error: This was a Java StackOverflowError. It was probably the result\n"
-                                + "of an incorrect recursive function definition that caused TLC to enter\n"
-                                + "an infinite loop when trying to compute the function or its application\n"
-                                + "to an element in its putative domain.");
+                        MP.printError(EC.SYSTEM_STACK_OVERFLOW);
                     } else if (e instanceof OutOfMemoryError)
                     {
-                        ToolIO.err
-                                .println("Error: Java ran out of memory. Running Java with a larger memory allocation\n"
-                                        + "pool (heap) may fix this. But it won't help if some state has an enormous\n"
-                                        + "number of successor states, or if TLC must compute the value of a huge set.\n");
+                        MP.printError(EC.SYSTEM_OUT_OF_MEMORY);
                     } else
                     {
-                        ToolIO.err.println("Error: " + e.getMessage());
+                        MP.printError(EC.GENERAL, e.getMessage());
                     }
-                    ToolIO.err.println("\nThe behavior up to this point is:");
                     this.trace.printTrace(curState.uid, curState, succState);
                     this.theStateQueue.finishAll();
                     this.notify();
@@ -791,15 +764,16 @@ public class ModelChecker extends AbstractChecker
      */
     private void report(String message)
     {
-        DebugReporter.report(message);
+        DebugPrinter.print(message);
     }
+
     /**
      * Debugging support
      * @param e
      */
     private void report(Throwable e)
     {
-        DebugReporter.report(e);
+        DebugPrinter.print(e);
     }
 
 }

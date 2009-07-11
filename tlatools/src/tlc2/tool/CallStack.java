@@ -36,25 +36,35 @@ public class CallStack {
   }
   
   // Returns a string representation of this.
-  public final String toString() {
-    StringBuffer sb = new StringBuffer();
-    for (int i = 0; i < this.index; i++) {
-      sb.append(i + ". ");
-      SemanticNode expr = this.stack[i];
-      Location loc = expr.getTreeNode().getLocation();
-      sb.append("Line ");
-      sb.append(loc.beginLine());
-      sb.append(", column ");
-      sb.append(loc.beginColumn());
-      sb.append(" to line ");
-      sb.append(loc.endLine());
-      sb.append(", column ");
-      sb.append(loc.endColumn());
-      sb.append(" in ");
-      sb.append(loc.source() + "\n");
-    }
-    sb.append("\n");
-    return sb.toString();
+  public final String toString() 
+  {
+      /*
+       * Moved in the distinction if the call stack is empty or not (from Tool) 
+       */
+      if (this.index > 0) 
+      {
+          StringBuffer sb = new StringBuffer();
+          for (int i = 0; i < this.index; i++) {
+              sb.append(i + ". ");
+              SemanticNode expr = this.stack[i];
+              Location loc = expr.getTreeNode().getLocation();
+              sb.append("Line ");
+              sb.append(loc.beginLine());
+              sb.append(", column ");
+              sb.append(loc.beginColumn());
+              sb.append(" to line ");
+              sb.append(loc.endLine());
+              sb.append(", column ");
+              sb.append(loc.endColumn());
+              sb.append(" in ");
+              sb.append(loc.source() + "\n");
+          }
+          sb.append("\n");
+          return sb.toString();
+          
+      } else {
+          return "    The error call stack is empty.\n";
+      }
   }
 
 }

@@ -134,6 +134,8 @@ implements FPIntSetRMI {
   public abstract void commitChkpt(String filename) throws IOException;
   public abstract void recover(String filename) throws IOException;
   
+  // SZ Jul 10, 2009: test method?
+  // TODO move to test
   public static void main(String args[]) {
     ToolIO.out.println("TLC FP Server " + TLCGlobals.versionOfTLC);
 
@@ -161,7 +163,7 @@ implements FPIntSetRMI {
       if (!filedir.exists()) {
 	boolean created = filedir.mkdirs();
 	if (!created) {
-	  ToolIO.err.println("Error: fingerprint server could not make a directory" +
+	  System.err.println("Error: fingerprint server could not make a directory" +
 			     " for the disk files it needs to write.\n");
 	  System.exit(0);
 	}
@@ -175,24 +177,24 @@ implements FPIntSetRMI {
       }
       Registry rg = LocateRegistry.createRegistry(Port);
       rg.rebind("FPSetServer", fpSet);
-      ToolIO.out.println("Fingerprint set server at " + hostname + " is ready.");
+      System.out.println("Fingerprint set server at " + hostname + " is ready.");
 
       synchronized(fpSet) {
 	while (true) {
-	  ToolIO.out.println("Progress: The number of fingerprints stored at " +
+	    System.out.println("Progress: The number of fingerprints stored at " +
 			     hostname + " is " + fpSet.size() + ".");
 	  fpSet.wait(300000);	  
 	}
       }
     }
     catch (Exception e) {
-      ToolIO.err.println(hostname + ": Error: " + e.getMessage());
+        System.err.println(hostname + ": Error: " + e.getMessage());
     }
   }
 
   private static void printErrorMsg(String msg) {
-    ToolIO.err.println(msg);
-    ToolIO.err.println("Usage: java tlc2.tool.FPSet [-option] metadir");
+      System.err.println(msg);
+      System.err.println("Usage: java tlc2.tool.FPSet [-option] metadir");
   }
 
 }

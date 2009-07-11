@@ -37,6 +37,8 @@ import tla2sany.semantic.Subst;
 import tla2sany.semantic.SubstInNode;
 import tla2sany.semantic.SymbolNode;
 import tlc2.TLCGlobals;
+import tlc2.output.EC;
+import tlc2.output.MP;
 import tlc2.util.Context;
 import tlc2.util.List;
 import tlc2.util.ObjLongTable;
@@ -215,7 +217,8 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable {
 
     Class stringModule = this.tlaClass.loadClass("Strings");
     if (stringModule == null) {
-      Assert.fail("This is a TLC bug: TLC could not find its built-in String module.\n");
+        
+      Assert.fail(MP.getTLCBug(EC.TLC_STRING_MODULE_NOT_FOUND));
     }
     Method[] ms = stringModule.getDeclaredMethods();
     for (int i = 0; i < ms.length; i++) {

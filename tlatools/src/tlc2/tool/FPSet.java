@@ -17,7 +17,6 @@ import tlc2.TLCGlobals;
 import tlc2.util.BitVector;
 import tlc2.util.LongVec;
 import util.FileUtil;
-import util.ToolIO;
 
 /**
  * An <code>FPSet</code> is a set of 64-bit fingerprints.
@@ -98,65 +97,72 @@ public abstract class FPSet extends UnicastRemoteObject implements FPSetRMI {
     return bv;
   }
 
-  public static void main(String args[]) {
-    ToolIO.out.println("TLC FP Server " + TLCGlobals.versionOfTLC);
+  
+  // SZ Jul 10, 2009: this method is not used
+  public static void main(String args[]) 
+  {
+      System.out.println("TLC FP Server " + TLCGlobals.versionOfTLC);
 
-    String metadir = null;
-    String fromChkpt = null;
-    int index = 0;
-    while (index < args.length) {
-      if (args[index].charAt(0) == '-') {
-	printErrorMsg("Error: unrecognized option: " + args[index]);
-	System.exit(0);
+      String metadir = null;
+      String fromChkpt = null;
+      int index = 0;
+      while (index < args.length) {
+          if (args[index].charAt(0) == '-') {
+              printErrorMsg("Error: unrecognized option: " + args[index]);
+              System.exit(0);
+          }
+          if (metadir != null) {
+              printErrorMsg("Error: more than one directory for metadata: " + metadir +
+                      " and " + args[index]);
+              System.exit(0);
+          }
+          metadir = args[index++] + FileUtil.separator;
       }
-      if (metadir != null) {
-	printErrorMsg("Error: more than one directory for metadata: " + metadir +
-		      " and " + args[index]);
-	System.exit(0);
-      }
-      metadir = args[index++] + FileUtil.separator;
-    }
 
-    String hostname = "Unknown";
-    try {
-      hostname = InetAddress.getLocalHost().getHostName();
-      metadir = (metadir == null) ? hostname : (metadir + hostname);
-      File filedir = new File(metadir);
-      if (!filedir.exists()) {
-	boolean created = filedir.mkdirs();
-	if (!created) {
-	  ToolIO.err.println("Error: fingerprint server could not make a directory" +
-			     " for the disk files it needs to write.\n");
-	  System.exit(0);
-	}
-      }
-      // Start memory-based fingerprint set server.
-      // Note: It would be wrong to use the disk-based implementation.
-      FPSet fpSet = new MemFPSet2();
-      fpSet.init(1, metadir, "fpset");
-      if (fromChkpt != null) {
-	fpSet.recover();    // recover when instructed
-      }
-      Registry rg = LocateRegistry.createRegistry(Port);
-      rg.rebind("FPSetServer", fpSet);
-      ToolIO.out.println("Fingerprint set server at " + hostname + " is ready.");
+      String hostname = "Unknown";
+      try {
+          hostname = InetAddress.getLocalHost().getHostName();
+          metadir = (metadir == null) ? hostname : (metadir + hostname);
+          File filedir = new File(metadir);
+          if (!filedir.exists()) {
+              boolean created = filedir.mkdirs();
+              if (!created) 
+              {
+                  System.err.println("Error: fingerprint server could not make a directory for the disk files it needs to write.\n");
+                  System.exit(0);
+              }
+          }
+          // Start memory-based fingerprint set server.
+          // Note: It would be wrong to use the disk-based implementation.
+          FPSet fpSet = new MemFPSet2();
+          fpSet.init(1, metadir, "fpset");
+          if (fromChkpt != null) {
+              fpSet.recover();    // recover when instructed
+          }
+          Registry rg = LocateRegistry.createRegistry(Port);
+          rg.rebind("FPSetServer", fpSet);
+          System.out.println("Fingerprint set server at " + hostname + " is ready.");
 
-      synchronized(fpSet) {
-	while (true) {
-	    ToolIO.out.println("Progress: The number of fingerprints stored at " +
-			     hostname + " is " + fpSet.size() + ".");
-	  fpSet.wait(300000);	  
-	}
+          synchronized(fpSet) 
+          {
+              while (true) 
+              {
+                  System.out.println("Progress: The number of fingerprints stored at " +
+                          hostname + " is " + fpSet.size() + ".");
+                  fpSet.wait(300000);	  
+              }
+          }
       }
-    }
-    catch (Exception e) {
-      ToolIO.err.println(hostname + ": Error: " + e.getMessage());
-    }
+      catch (Exception e) 
+      {
+          System.out.println(hostname + ": Error: " + e.getMessage());
+      }
   }
 
-  private static void printErrorMsg(String msg) {
-    ToolIO.err.println(msg);
-    ToolIO.err.println("Usage: java tlc2.tool.FPSet [-option] metadir");
+  private static void printErrorMsg(String msg) 
+  {
+      System.out.println(msg);
+      System.out.println("Usage: java tlc2.tool.FPSet [-option] metadir");
   }
 
 }

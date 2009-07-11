@@ -11,7 +11,9 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
 
-import tlc2.TLCGlobals;
+import tlc2.output.EC;
+import tlc2.output.MP;
+import tlc2.output.StatePrinter;
 import tlc2.util.BufferedRandomAccessFile;
 import tlc2.util.LongVec;
 import util.FileUtil;
@@ -55,40 +57,6 @@ public class TLCTrace {
     return this.raf.readLong();
   }
 
-  public static void printState(TLCStateInfo s, int num) {
-    ToolIO.err.println("STATE " + num + ": " + s.info);
-    ToolIO.err.println(s.state);
-  }
-
-  public static void printState(TLCStateInfo s, TLCState lastState, int num) {
-    ToolIO.err.println("STATE " + num + ": " + s.info);
-    
-    /* Added by rjoshi. */
-    if (lastState != null && TLCGlobals.printDiffsOnly) {
-      ToolIO.err.println(s.state.toString(lastState));
-    }
-    else {
-      ToolIO.err.println(s.state);
-    }
-  }
-
-  public static void printState(TLCState s, int num) {
-    ToolIO.err.println("STATE " + num + ":");
-    ToolIO.err.println(s);
-  }
-
-  public static void printState(TLCState s, TLCState lastState, int num) {
-    ToolIO.err.println("STATE " + num + ":");
-
-    /* Added by rjoshi. */
-    if (lastState != null && TLCGlobals.printDiffsOnly) {
-      ToolIO.err.println(s.toString(lastState));
-    }
-    else {
-      ToolIO.err.println(s);
-    }
-  }
-  
   public synchronized final int getLevel() throws IOException {
     long curLoc = this.raf.getFilePointer();
     int level = 0;
@@ -129,8 +97,7 @@ public class TLCTrace {
       long fp = fps.elementAt(len-1);
       TLCStateInfo sinfo = this.tool.getState(fp);
       if (sinfo == null) {
-	ToolIO.err.println("Error: Failed to recover the initial state from" +
-			   " its fingerprint. This is probably a TLC bug(1).");
+	ToolIO.err.println("Failed to recover the initial state from its fingerprint. This is probably a TLC bug(1).");
 	System.exit(1);
       }
       res[stateNum++] = sinfo;
@@ -138,8 +105,7 @@ public class TLCTrace {
 	fp = fps.elementAt(i);
 	sinfo = this.tool.getState(fp, sinfo.state);
 	if (sinfo == null) {
-	  ToolIO.err.println("Error: Failed to recover the state from its" +
-			     " fingerprint. This is probably a TLC bug(2).");
+	  ToolIO.err.println("Failed to recover the state from its fingerprint. This is probably a TLC bug(2).");
 	  System.exit(1);
 	}
 	res[stateNum++] = sinfo;
@@ -153,59 +119,68 @@ public class TLCTrace {
    * state, according to the spec. s2 is a next state of s1.
    */
   public synchronized final void printTrace(long loc1, TLCState s1, TLCState s2)
-  throws IOException, WorkerException {
-    // Print the prefix leading to s1:
-    TLCState lastState = null;
-    TLCStateInfo[] prefix = this.getTrace(loc1, false);
-    int idx = 0;
-    while (idx < prefix.length) {
-      printState(prefix[idx], lastState, idx+1);
-      lastState = prefix[idx].state;
-      idx++;
-    }
+  throws IOException, WorkerException 
+  {
+      MP.printError(EC.TLC_BEHAVIOR_UP_TO_THIS_POINT);
+      // Print the prefix leading to s1:
+      TLCState lastState = null;
+      TLCStateInfo[] prefix = this.getTrace(loc1, false);
+      int idx = 0;
+      while (idx < prefix.length) 
+      {
+          StatePrinter.printState(prefix[idx], lastState, idx+1);
+          lastState = prefix[idx].state;
+          idx++;
+      }
 
-    // Print s1:
-    TLCStateInfo sinfo;
-    if (prefix.length == 0) {
-      sinfo = this.tool.getState(s1.fingerPrint());
-      if (sinfo == null) {
-	ToolIO.err.println("Error: Failed to recover the initial state from" +
-			   " its fingerprint. This is probably a TLC bug(3).");
-	System.exit(1);
+      // Print s1:
+      TLCStateInfo sinfo;
+      if (prefix.length == 0) {
+          sinfo = this.tool.getState(s1.fingerPrint());
+          if (sinfo == null) 
+          {
+              ToolIO.err.println("Failed to recover the initial state from its fingerprint. This is probably a TLC bug(3).");
+              System.exit(1);
+          }
       }
-    }
-    else {
-      TLCState s0 = prefix[prefix.length-1].state;
-      sinfo = this.tool.getState(s1.fingerPrint(), s0);
-      if (sinfo == null) {
-	ToolIO.err.println("Error: Failed to find the action that generated the" +
-			   " following state. This is probably a TLC bug(4).");
-	ToolIO.err.println(s1);      
-	System.exit(1);
+      else 
+      {
+          TLCState s0 = prefix[prefix.length-1].state;
+          sinfo = this.tool.getState(s1.fingerPrint(), s0);
+          if (sinfo == null) 
+          {
+              ToolIO.err.println("Failed to find the action that generated the following state. This is probably a TLC bug(4).");
+              ToolIO.err.println(s1);      
+              System.exit(1);
+          }
       }
-    }
-    if (s2 == null) { lastState = null; }
-    printState(sinfo, lastState, ++idx);
-    lastState = sinfo.state;
-    
-    // Print s2:
-    if (s2 != null) {
-      sinfo = this.tool.getState(s2, s1);
-      if (sinfo == null) {
-	ToolIO.err.println("Error: Failed to find the action to the following" +
-			   " states. This is probably a TLC bug(5).");
-	ToolIO.err.println(s2);      
-	System.exit(1);
+      if (s2 == null) 
+      { 
+          lastState = null; 
       }
-      printState(sinfo, null, ++idx);
-    }
+      StatePrinter.printState(sinfo, lastState, ++idx);
+      lastState = sinfo.state;
+
+      // Print s2:
+      if (s2 != null) {
+          sinfo = this.tool.getState(s2, s1);
+          if (sinfo == null) 
+          {
+              ToolIO.err.println("Failed to find the action to the following states. This is probably a TLC bug(5).");
+              ToolIO.err.println(s2);      
+              System.exit(1);
+          }
+          StatePrinter.printState(sinfo, null, ++idx);
+      }
   }
 
+
   /**
+   * SZ Jul 10, 2009: method not used 
    * Returns a sequence of states that reaches, but excludes the
    * state with fingerprint fp.
    */
-  public final TLCStateInfo[] printPrefix(long fp) throws IOException {
+  protected final TLCStateInfo[] printPrefix(long fp) throws IOException {
     // First, find the location for fp:
     this.raf.seek(0);
     this.raf.readLongNat();    /*drop*/
@@ -219,7 +194,7 @@ public class TLCTrace {
     TLCStateInfo[] prefix = this.getTrace(this.lastPtr, false);
     int idx = 0;
     while (idx < prefix.length) {
-      printState(prefix[idx], lastState, idx+1);
+        StatePrinter.printState(prefix[idx], lastState, idx+1);
       lastState = prefix[idx].state;
       idx++;
     }

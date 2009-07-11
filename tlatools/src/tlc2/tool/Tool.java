@@ -56,7 +56,6 @@ import tlc2.value.ValueExcept;
 import tlc2.value.ValueVec;
 import util.Assert;
 import util.FilenameToStream;
-import util.ToolIO;
 import util.UniqueString;
 
 /**
@@ -124,13 +123,9 @@ public class Tool
       this.callStack = new CallStack(); 
   }
 
-  public final void printCallStack() {
-    if (this.callStack.size() > 0) {
-      ToolIO.err.println(this.callStack);
-    }
-    else {
-      ToolIO.err.println("    The error call stack is empty.\n");
-    }
+  public final CallStack getCallStack() 
+  {
+      return this.callStack;
   }
    
   /**

@@ -286,8 +286,8 @@ implements TLCServerRMI, InternRMI {
 	}
 	catch (Throwable e1) {
 	  ToolIO.err.println("The error occurred when TLC was evaluating the nested" +
-			     "\nexpressions at the following positions:");
-	  server.work.printCallStack();
+			     "\nexpressions at the following positions:\n" +
+	  server.work.printCallStack());
 	}
       }
     }

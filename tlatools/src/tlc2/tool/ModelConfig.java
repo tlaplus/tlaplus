@@ -558,12 +558,12 @@ public class ModelConfig implements ValueConstants, Serializable
             Token t = getNextToken(tmgr);
             while (t.kind != 0)
             {
-                ToolIO.err.println(t);
+                System.err.println(t);
                 t = getNextToken(tmgr);
             }
         } catch (Exception e)
         {
-            ToolIO.err.println(e.getMessage());
+            System.err.println(e.getMessage());
         }
     }
 

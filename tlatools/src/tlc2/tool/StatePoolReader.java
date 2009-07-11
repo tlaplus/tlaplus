@@ -10,9 +10,10 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
+import tlc2.output.EC;
+import tlc2.output.MP;
 import tlc2.value.ValueInputStream;
 import util.Assert;
-import util.ToolIO;
 
 public class StatePoolReader extends Thread {
 
@@ -148,10 +149,9 @@ public class StatePoolReader extends Thread {
 	}
       }
     }
-    catch (ClassNotFoundException e) {
-      Assert.fail("TLC encountered the following error while restarting from a " +
-		  "checkpoint;\n the checkpoint file is probably corrupted.\n" +
-		  e.getMessage());
+    catch (ClassNotFoundException e) 
+    {
+      Assert.fail(MP.getError(EC.SYSTEM_CHECKPOINT_RECOVERY_CORRUPT, e.getMessage()));
     }
   }
   
@@ -177,10 +177,10 @@ public class StatePoolReader extends Thread {
 	}
       }
     }
-    catch (Exception e) {
+    catch (Exception e) 
+    {
       // Assert.printStack(e);
-      ToolIO.err.println("Error: when reading the disk (StatePoolReader.run):\n" +
-			 e.getMessage());
+      MP.printError(EC.SYSTEM_ERROR_READING_POOL, e.getMessage());
       System.exit(1);
     }
   }

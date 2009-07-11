@@ -5,10 +5,11 @@
 
 package tlc2.tool;
 
+import tlc2.output.EC;
+import tlc2.output.MP;
 import tlc2.util.IdThread;
 import tlc2.util.ObjLongTable;
 import tlc2.value.Value;
-import util.ToolIO;
 
 public class Worker extends IdThread implements IWorker {
   /**
@@ -77,7 +78,7 @@ public class Worker extends IdThread implements IWorker {
       // Assert.printStack(e);
       synchronized(this.tlc) {
 	if (this.tlc.setErrState(curState, null, true)) {
-          ToolIO.err.println("Error: " + e.getMessage());
+	    MP.printError(EC.GENERAL, e.getMessage());
 	}
 	this.squeue.finishAll();
 	this.tlc.notify();

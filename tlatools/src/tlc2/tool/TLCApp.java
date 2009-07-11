@@ -194,8 +194,10 @@ public class TLCApp extends DistApp {
 
   public final void setCallStack() { this.tool.setCallStack(); }
 
-  public final void printCallStack() {
-    this.tool.printCallStack();
+  public final String printCallStack() {
+      // SZ Jul 10, 2009: check if this is ok
+      // changed the method signature
+    return this.tool.getCallStack().toString();
   }
 
   public static TLCApp create(String args[]) throws IOException {

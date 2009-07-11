@@ -8,7 +8,8 @@ package tlc2.tool;
 import java.io.IOException;
 
 import tlc2.TLCGlobals;
-import util.ToolIO;
+import tlc2.output.EC;
+import tlc2.output.MP;
 
 public abstract class StateQueue {
   /**
@@ -90,29 +91,31 @@ public abstract class StateQueue {
   }
 
   private final boolean isAvail() {
-    if (this.finish) return false;
-    while (this.len < 1 || this.stop) {
-      this.numWaiting++;
-      if (this.numWaiting >= TLCGlobals.getNumWorkers()) {
-	if (this.len < 1) {
-	  this.numWaiting--;
-	  return false;
-	}
-	synchronized (this.mu) {
-	  this.mu.notify();
-	}
-      }
-      try {
-	this.wait();
-      }
-      catch (Exception e) {
-	ToolIO.err.println(e.getMessage());
-	System.exit(1);
-      }
-      this.numWaiting--;
       if (this.finish) return false;
-    }
-    return true;
+      while (this.len < 1 || this.stop) {
+          this.numWaiting++;
+          if (this.numWaiting >= TLCGlobals.getNumWorkers()) {
+              if (this.len < 1) {
+                  this.numWaiting--;
+                  return false;
+              }
+              synchronized (this.mu) {
+                  this.mu.notify();
+              }
+          }
+          try {
+              this.wait();
+          }
+          catch (Exception e) 
+          {
+              // SZ Jul 10, 2009: added error prefix
+              MP.printError(EC.GENERAL, e.getMessage());
+              System.exit(1);
+          }
+          this.numWaiting--;
+          if (this.finish) return false;
+      }
+      return true;
   }
   
   public final synchronized void finishAll() {
@@ -121,28 +124,29 @@ public abstract class StateQueue {
   }
   
   public final boolean suspendAll() {
-    boolean needWait = false;
-    synchronized (this) {
-      if (this.finish) return false;
-      this.stop = true;
-      needWait = this.numWaiting < TLCGlobals.getNumWorkers();
-    }
-    while (needWait) {
-      synchronized (this.mu) {
-	try {
-	  this.mu.wait();
-	}
-	catch (Exception e) {
-	  ToolIO.err.println(e.getMessage());
-	  System.exit(1);
-	}
-      }
+      boolean needWait = false;
       synchronized (this) {
-	if (this.finish) return false;
-	needWait = this.numWaiting < TLCGlobals.getNumWorkers();
+          if (this.finish) return false;
+          this.stop = true;
+          needWait = this.numWaiting < TLCGlobals.getNumWorkers();
       }
-    }
-    return true;
+      while (needWait) {
+          synchronized (this.mu) {
+              try {
+                  this.mu.wait();
+              }
+              catch (Exception e) {
+                  // SZ Jul 10, 2009: added error prefix
+                  MP.printError(EC.GENERAL, e.getMessage());
+                  System.exit(1);
+              }
+          }
+          synchronized (this) {
+              if (this.finish) return false;
+              needWait = this.numWaiting < TLCGlobals.getNumWorkers();
+          }
+      }
+      return true;
   }
 
   public final synchronized void resumeAll() {

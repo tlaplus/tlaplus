@@ -3,11 +3,13 @@
 package tlc2.tool;
 
 import tlc2.TLCGlobals;
+import tlc2.output.EC;
+import tlc2.output.MP;
+import tlc2.output.StatePrinter;
 import tlc2.util.IdThread;
 import tlc2.util.LongVec;
 import tlc2.util.ObjLongTable;
 import tlc2.util.RandomGenerator;
-import util.ToolIO;
 
 public class DFIDWorker extends IdThread implements IWorker {
   /**
@@ -117,14 +119,26 @@ public class DFIDWorker extends IdThread implements IWorker {
     return -1;
   }
 
-  public final void printTrace(TLCState s1, TLCState s2) {
-    int idx = 0;
-    while (idx < this.curLevel) {
-      TLCTrace.printState(this.stateStack[idx], ++idx);
-    }
-    if (s2 != null) {
-      TLCTrace.printState(s2, idx+1);
-    }
+  /**
+   * Prints the stacktrace
+   * @param code error code
+   * @param params params
+   * @param s1 
+   * @param s2
+   */
+  public final void printTrace(int errorCode, String[] parameters, TLCState s1, TLCState s2) 
+  {
+      MP.printError(errorCode, parameters);
+      MP.printError(EC.TLC_BEHAVIOR_UP_TO_THIS_POINT);
+      int idx = 0;
+      while (idx < this.curLevel) 
+      {
+          StatePrinter.printState(this.stateStack[idx], ++idx);
+      }
+      if (s2 != null) 
+      {
+          StatePrinter.printState(s2, idx+1);
+      }
   }
 
   /* This method does a depth-first search up to the depth of toLevel. */
@@ -193,7 +207,7 @@ public class DFIDWorker extends IdThread implements IWorker {
       this.tlc.setStop(2);
       synchronized(this.tlc) {
 	if (this.tlc.setErrState(curState, null, true)) {
-          ToolIO.err.println("Error: " + e.getMessage());
+          MP.printError(EC.GENERAL, e.getMessage());
 	}
 	this.tlc.setDone();
 	this.tlc.notifyAll();

@@ -47,6 +47,6 @@ public abstract class DistApp implements TraceApp, Serializable {
   public abstract void setCallStack();
 
   /* Prints call stack.  */
-  public abstract void printCallStack();
+  public abstract String printCallStack();
   
 }

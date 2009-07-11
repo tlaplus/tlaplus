@@ -10,9 +10,10 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
+import tlc2.output.EC;
+import tlc2.output.MP;
 import tlc2.value.ValueOutputStream;
 import util.Assert;
-import util.ToolIO;
 
 public class StatePoolWriter extends Thread {
 
@@ -84,10 +85,9 @@ public class StatePoolWriter extends Thread {
 	  this.buf[i] = (TLCState)ois.readObject();
 	}
       }
-      catch (ClassNotFoundException e) {
-	Assert.fail("TLC encountered the following error while restarting from a " +
-		    "checkpoint;\n the checkpoint file is probably corrupted.\n" +
-		    e.getMessage());
+      catch (ClassNotFoundException e) 
+      {
+          Assert.fail(MP.getMessage(EC.SYSTEM_CHECKPOINT_RECOVERY_CORRUPT, e.getMessage()));
       }
     }
     else {
@@ -119,8 +119,7 @@ public class StatePoolWriter extends Thread {
     }
     catch (Exception e) {
       // Assert.printStack(e);
-      ToolIO.err.println("Error: when writing the disk (StatePoolWriter.run):\n" +
-			 e.getMessage());
+        MP.printError(EC.SYSTEM_ERROR_WRITING_POOL, e.getMessage());
       System.exit(1);
     }
   }

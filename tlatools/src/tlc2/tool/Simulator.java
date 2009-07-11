@@ -10,6 +10,9 @@ import java.io.PrintWriter;
 import tla2sany.modanalyzer.SpecObj;
 import tla2sany.semantic.SemanticNode;
 import tlc2.TLCGlobals;
+import tlc2.output.EC;
+import tlc2.output.MP;
+import tlc2.output.StatePrinter;
 import tlc2.tool.liveness.LiveCheck1;
 import tlc2.tool.liveness.LiveException;
 import tlc2.util.ObjLongTable;
@@ -18,7 +21,8 @@ import util.FileUtil;
 import util.FilenameToStream;
 import util.ToolIO;
 
-public class Simulator implements Cancelable{
+public class Simulator implements Cancelable 
+{
 
     /* Constructors  */
     /**
@@ -117,34 +121,33 @@ public class Simulator implements Cancelable{
 	  for (int j = 0; j < this.invariants.length; j++) {
 	    if (!this.tool.isValid(this.invariants[j], curState)) {
 	      // We get here because of invariant violation:
-	      ToolIO.err.println("Error: Invariant " + this.tool.getInvNames()[j] +
-				 " is violated by the initial state:");
-	      ToolIO.err.println(curState.toString());
+	        MP.printError(EC.TLC_INVARIANT_VIOLATED_INITIAL, new String[]{this.tool.getInvNames()[j], curState.toString()});
 	      return;
 	    }
 	  }
 	}
 	else {
-	  ToolIO.err.println("Error: The state is not completely specified by " +
-			     "the initial state predicate:");	  
-	  ToolIO.err.println(curState.toString());
+	    MP.printError(EC.TLC_STATE_NOT_COMPLETELY_SPECIFIED_INITIAL, curState.toString());
 	  return;
 	}
       }
     }
     catch (Exception e) {
-      // Assert.printStack(e);
-      ToolIO.err.println(e.getMessage());
-      if (curState != null) {
-	ToolIO.err.println("While working on the initial state:");
-	ToolIO.err.println(curState.toString());
-      }
-      this.printSummary();
-      return;
+        // Assert.printStack(e);
+        if (curState != null)
+        {
+            MP.printError(EC.TLC_INITIAL_STATE, new String[] { e.getMessage(), curState.toString() });
+        } else
+        {
+            MP.printError(EC.GENERAL, e.getMessage());
+        }
+        
+        this.printSummary();
+        return;
     }
     if (this.numOfGenStates == 0) {
-      ToolIO.err.println("Error: There is no state satisfying the initial state predicate.");
-      return;
+        MP.printError(EC.TLC_NO_STATES_SATISFYING_INIT);
+        return;
     }
     theInitStates.deepNormalize();
 
@@ -174,7 +177,7 @@ public class Simulator implements Cancelable{
 	  if (nextStates == null) {
 	    if (this.checkDeadlock) {
 	      // We get here because of deadlock:
-	      this.printBehavior(curState, traceIdx, "Error: Deadlock reached.");
+	      this.printBehavior(EC.TLC_DEADLOCK_REACHED, null, curState, traceIdx);
 	      if (!TLCGlobals.continuation) { return; }
 	    }
 	    break;	    
@@ -188,9 +191,7 @@ public class Simulator implements Cancelable{
 	    }
 
 	    if (!this.tool.isGoodState(state)) {
-	      String msg = "Error: Successor state is not completely specified " +
-		"by the next-state action:";
-	      this.printBehavior(state, traceIdx, msg);
+	      this.printBehavior(EC.TLC_STATE_NOT_COMPLETELY_SPECIFIED_NEXT, null, state, traceIdx);
 	      return;
 	    }
 	    else {
@@ -198,17 +199,14 @@ public class Simulator implements Cancelable{
 		for (idx = 0; idx < this.invariants.length; idx++) {
 		  if (!this.tool.isValid(this.invariants[idx], state)) {
 		    // We get here because of invariant violation:
-		    String msg = "Error: Invariant "+ this.tool.getInvNames()[idx] + " is violated.";
-		    this.printBehavior(state, traceIdx, msg);
+		    this.printBehavior(EC.TLC_INVARIANT_VIOLATED_BEHAVIOR, new String[]{this.tool.getInvNames()[idx]}, state, traceIdx);
 		    if (!TLCGlobals.continuation) { return; }
 		  }
 		}
 	      }
 	      catch (Exception e) {
 		// Assert.printStack(e);
-		String msg = "Error: Evaluating invariant " + this.tool.getInvNames()[idx] +
-		  " failed. " + e.getMessage();
-		this.printBehavior(state, traceIdx, msg);
+	          this.printBehavior(EC.TLC_INVARIANT_EVALUATION_FAILED, new String[]{this.tool.getInvNames()[idx], e.getMessage()}, state, traceIdx);
 		return;
 	      }
 
@@ -216,18 +214,15 @@ public class Simulator implements Cancelable{
 		for (idx = 0; idx < this.impliedActions.length; idx++) {
 		  if (!this.tool.isValid(this.impliedActions[idx], curState, state)) {
 		    // We get here because of implied-action violation:
-		    String msg = "Error: Implied-action " + this.tool.getImpliedActNames()[idx] +
-		      " is violated. The behavior up to this point is:";
-		    this.printBehavior(state, traceIdx, msg);
+		    
+		    this.printBehavior(EC.TLC_ACTION_PROPERTY_VIOLATED_BEHAVIOR, new String[]{this.tool.getImpliedActNames()[idx]}, state, traceIdx);
 		    if (!TLCGlobals.continuation) { return; }
 		  }
 		}
 	      }
 	      catch (Exception e) {
 		// Assert.printStack(e);
-		String msg = "Error: Evaluating implied-action " +
-		  this.tool.getImpliedActNames()[idx] + " failed. " + e.getMessage();
-		this.printBehavior(state, traceIdx, msg);
+		this.printBehavior(EC.TLC_ACTION_PROPERTY_EVALUATION_FAILED, new String[]{this.tool.getImpliedActNames()[idx], e.getMessage()}, state, traceIdx);
 		return;
 	      }
 	    }
@@ -243,28 +238,30 @@ public class Simulator implements Cancelable{
           LiveCheck1.checkTrace(stateTrace, traceIdx);
         }
 
-	// Write the trace out if desired.  The trace is printed in the
-	// format of TLA module, so that it can be read by TLC again. 
-	if (this.traceFile != null) {
-	  String fileName = this.traceFile + traceCnt;
-	  PrintWriter pw = new PrintWriter(FileUtil.newBFOS(fileName));
-	  pw.println("---------------- MODULE " + fileName + " -----------------");
-	  for (idx = 0; idx < traceIdx; idx++) {
-	    pw.println("STATE_" + (idx+1) + " == ");
-	    pw.println(this.stateTrace[idx] + "\n");
-	  }
-	  pw.println("=================================================");	  
-	  pw.close();
-	}
+    	// Write the trace out if desired.  The trace is printed in the
+    	// format of TLA module, so that it can be read by TLC again. 
+    	if (this.traceFile != null) 
+    	{
+    	    String fileName = this.traceFile + traceCnt;
+    	    // TODO is it ok here?
+    	    PrintWriter pw = new PrintWriter(FileUtil.newBFOS(fileName));
+    	    pw.println("---------------- MODULE " + fileName + " -----------------");
+    	    for (idx = 0; idx < traceIdx; idx++) {
+    	        pw.println("STATE_" + (idx+1) + " == ");
+    	        pw.println(this.stateTrace[idx] + "\n");
+    	    }
+    	    pw.println("=================================================");	  
+    	    pw.close();
+    	}
       }
     }
     catch (Throwable e) {
       // Assert.printStack(e);
-      if (e instanceof LiveException) {
-	this.printSummary();
-      }
-      else {
-	this.printBehavior(curState, traceIdx, e.getMessage());
+      if (e instanceof LiveException) 
+      {
+          this.printSummary();
+      } else {
+          this.printBehavior(EC.GENERAL, new String[]{e.getMessage()}, curState, traceIdx);
       }
     }
   }
@@ -273,22 +270,26 @@ public class Simulator implements Cancelable{
    * Prints out the simulation behavior, in case of an error.
    * (unless we're at maximum depth, in which case don't!)
    */
-  public final void printBehavior(TLCState state, int traceIdx, String msg) {
-    ToolIO.err.println(msg);
-    if (this.traceDepth == Long.MAX_VALUE) {
-      ToolIO.err.println("\nThe error state is: ");
-      ToolIO.err.println(state.toString());
-    }
-    else {
-      ToolIO.err.println("\nThe behavior up to this point is:");
-      TLCState lastState = null;
-      for (int idx = 0; idx < traceIdx; idx++) {
-	TLCTrace.printState(this.stateTrace[idx], lastState, idx+1);
-	lastState = this.stateTrace[idx];
+  public final void printBehavior(int errorCode, String[] parameters, TLCState state, int traceIdx) 
+  {
+      
+      MP.printMessage(errorCode, parameters);
+      if (this.traceDepth == Long.MAX_VALUE) 
+      {
+          MP.printMessage(EC.TLC_ERROR_STATE);
+          StatePrinter.printState(state);
       }
-      TLCTrace.printState(state, null, traceIdx+1);
-    }
-    this.printSummary();
+      else {
+          MP.printMessage(EC.TLC_BEHAVIOR_UP_TO_THIS_POINT);
+          TLCState lastState = null;
+          for (int i = 0; i < traceIdx; i++) 
+          {
+              StatePrinter.printState(this.stateTrace[i], lastState, i+1);
+              lastState = this.stateTrace[i];
+          }
+          StatePrinter.printState(state, null, traceIdx+1);
+      }
+      this.printSummary();
   }
 
   /**
@@ -330,51 +331,71 @@ public class Simulator implements Cancelable{
     return null;
   }
     
-  public final void printSummary() {
-    this.reportCoverage();
-    ToolIO.out.println("The number of states generated: " + this.numOfGenStates);
-    ToolIO.out.println("Simulation using seed " + seed + " and aril " + this.aril);
+  /**
+   * Prints the summary
+   */
+  public final void printSummary() 
+  {
+      this.reportCoverage();
+      ToolIO.out.println("The number of states generated: " + this.numOfGenStates);
+      ToolIO.out.println("Simulation using seed " + seed + " and aril " + this.aril);
   }
 
-  public final void reportCoverage() {
-    if (TLCGlobals.coverageInterval >= 0) {
-      ToolIO.out.println("The coverage stats:");
-      ObjLongTable counts = this.tool.getPrimedLocs();
-      ObjLongTable.Enumerator keys = this.astCounts.keys();
-      Object key;
-      while ((key = keys.nextElement()) != null) {
-	String loc = ((SemanticNode)key).getLocation().toString();	
-	counts.add(loc, astCounts.get(key));
+  /**
+   * Reports coverage
+   */
+  public final void reportCoverage() 
+  {
+      if (TLCGlobals.coverageInterval >= 0) 
+      {
+          ToolIO.out.println("The coverage stats:");
+          ObjLongTable counts = this.tool.getPrimedLocs();
+          ObjLongTable.Enumerator keys = this.astCounts.keys();
+          Object key;
+          while ((key = keys.nextElement()) != null) 
+          {
+              String loc = ((SemanticNode)key).getLocation().toString();	
+              counts.add(loc, astCounts.get(key));
+          }
+          Object[] skeys = counts.sortStringKeys();
+          for (int i = 0; i < skeys.length; i++) {
+              long val = counts.get(skeys[i]);
+              ToolIO.out.println("  " + skeys[i] + ": " + val);
+          }
       }
-      Object[] skeys = counts.sortStringKeys();
-      for (int i = 0; i < skeys.length; i++) {
-	long val = counts.get(skeys[i]);
-	ToolIO.out.println("  " + skeys[i] + ": " + val);
-      }
-    }
   }
 
-  final class ProgressReport extends Thread {
-    public void run() {
-      int count = TLCGlobals.coverageInterval/TLCGlobals.progressInterval;
-      try {
-	while (true) {
-	  synchronized(this) {
-	    this.wait(TLCGlobals.progressInterval);
-	  }
-	  ToolIO.out.println("Progress: " + numOfGenStates + " states checked.");
-	  if (count > 1) {
-	    count--;
-	  }
-	  else {
-	    reportCoverage();
-	    count = TLCGlobals.coverageInterval/TLCGlobals.progressInterval;
-	  }
-	}
+  /**
+   * Reports progress information
+   */
+  final class ProgressReport extends Thread 
+  {
+      public void run() 
+      {
+          int count = TLCGlobals.coverageInterval/TLCGlobals.progressInterval;
+          try {
+              while (true) 
+              {
+                  synchronized(this) 
+                  {
+                      this.wait(TLCGlobals.progressInterval);
+                  }
+                  ToolIO.out.println("Progress: " + numOfGenStates + " states checked.");
+                  if (count > 1) 
+                  {
+                      count--;
+                  } else 
+                  {
+                      reportCoverage();
+                      count = TLCGlobals.coverageInterval/TLCGlobals.progressInterval;
+                  }
+              }
+          }
+          catch (Exception e) 
+          {
+              // SZ Jul 10, 2009: changed from error to bug
+              MP.printTLCBug(EC.TLC_REPORTER_DIED, null);
+          }
       }
-      catch (Exception e) {
-	ToolIO.err.println("Error: Progress report thread died.");
-      }
-    }
   }
 }
