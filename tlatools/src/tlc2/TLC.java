@@ -6,6 +6,8 @@
 package tlc2;
 
 import tla2sany.modanalyzer.SpecObj;
+import tlc2.output.EC;
+import tlc2.output.MP;
 import tlc2.tool.AbstractChecker;
 import tlc2.tool.Cancelable;
 import tlc2.tool.DFIDModelChecker;
@@ -14,6 +16,7 @@ import tlc2.tool.Simulator;
 import tlc2.util.RandomGenerator;
 import tlc2.value.Value;
 import util.Assert;
+import util.DebugPrinter;
 import util.FP64;
 import util.FileUtil;
 import util.FilenameToStream;
@@ -445,16 +448,17 @@ public class TLC
         
         if (TLCGlobals.debug) 
         {
-            ToolIO.out.println("TLC argumens:");
+            StringBuffer buffer = new StringBuffer("TLC argumens:");
             for (int i=0; i < args.length; i++)
             {
-                ToolIO.out.print(args[i]);
+                buffer.append(args[i]);
                 if (i < args.length - 1) 
                 {
-                    ToolIO.out.print(" ");
+                    buffer.append(" ");
                 }
             }
-            ToolIO.out.print("\n");
+            buffer.append("\n");
+            DebugPrinter.print(buffer.toString());
         }
         return true;
     }
@@ -527,18 +531,13 @@ public class TLC
             Assert.printStack(e);
             if (e instanceof StackOverflowError)
             {
-                ToolIO.err.println("Error: This was a Java StackOverflowError. It was probably the result\n"
-                        + "of an incorrect recursive function definition that caused TLC to enter\n"
-                        + "an infinite loop when trying to compute the function or its application\n"
-                        + "to an element in its putative domain.");
+                MP.printError(EC.SYSTEM_STACK_OVERFLOW);
             } else if (e instanceof OutOfMemoryError)
             {
-                ToolIO.err.println("Error: Java ran out of memory.  Running Java with a larger memory allocation\n"
-                        + "pool (heap) may fix this.  But it won't help if some state has an enormous\n"
-                        + "number of successor states, or if TLC must compute the value of a huge set.");
+                MP.printError(EC.SYSTEM_OUT_OF_MEMORY);
             } else
             {
-                ToolIO.err.println("Error: " + e.getMessage());
+                MP.printError(EC.GENERAL, e.getMessage());
             }
         } finally 
         {
@@ -575,17 +574,17 @@ public class TLC
         if (this.instance != null) 
         {
             this.instance.setCancelFlag(flag);
-            System.out.println("Cancel flag set to " + flag);
+            DebugPrinter.print("Cancel flag set to " + flag);
         }
     }
     
     /**
      * Print out an error message, with usage hint
      * @param msg, message to print
+     * TODO remove this method and replace the calls
      */
     private static void printErrorMsg(String msg)
     {
-        ToolIO.err.println(msg);
-        ToolIO.err.println("Usage: java tlc2.TLC [-option] inputfile");
+        MP.printError(EC.WRONG_COMMANDLINE_PARAMS_TLC, msg);
     }
 }

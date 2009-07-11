@@ -5,6 +5,8 @@
 
 package tlc2;
 
+import tlc2.output.EC;
+import tlc2.output.MP;
 import tlc2.tool.Simulator;
 import tlc2.util.RandomGenerator;
 import util.ToolIO;
@@ -169,19 +171,19 @@ public class Generator {
       ToolIO.out.println("Generating random traces with seed " + seed + ".");
       Simulator simulator = new Simulator(mainFile, configFile, traceFile,
 					  deadlock, traceDepth, traceNum,
-					  rng, seed, true, null);
+					  rng, seed, true, null, /* no spec obj */ null);
       simulator.simulate();
     }
     catch (Exception e) {
       // Assert.printStack(e);
-        ToolIO.out.println("Error: " + e.getMessage());
+        MP.printError(EC.GENERAL, e.getMessage());
     }
     //System.exit(0); //SZ: no-op removed
   }
 
+  // TODO replace 
   private static void printErrorMsg(String msg) {
-      ToolIO.err.println(msg);
-      ToolIO.err.println("Usage: java tlc2.Simulator [-option] inputfile");
+      MP.printError(EC.WRONG_COMMANDLINE_PARAMS_SIMULATOR, msg);
   }
 
 }
