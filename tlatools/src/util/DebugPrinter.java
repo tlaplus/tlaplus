@@ -7,13 +7,13 @@ import tlc2.TLCGlobals;
  * @author Simon Zambrovski
  * @version $Id$
  */
-public class DebugReporter
+public class DebugPrinter
 {
     /**
      * Prints out a message if the program has been called with -debug option 
      * @param message
      */
-    public static void report(String message)
+    public static void print(String message)
     {
         if (TLCGlobals.debug) 
         {
@@ -25,7 +25,7 @@ public class DebugReporter
      * Exception stacktrace printer
      * @param e
      */
-    public static void report(Throwable e)
+    public static void print(Throwable e)
     {
         if (TLCGlobals.debug) 
         {
