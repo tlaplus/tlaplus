@@ -732,14 +732,20 @@ if (opArgs.kind != N_OpArgs) { ToolIO.out.println("Bug: not N_OpArgs node"); };
 
   private final void bpa( String s) { // Beginning of Production Actions 
     addHeir( null );
-if (System.getProperty("TLA-StackTrace", "off").equals("on")) ToolIO.out.println("Beginning " + s);
+    if (System.getProperty("TLA-StackTrace", "off").equals("on")) 
+    { 
+        ToolIO.out.println("Beginning " + s);
+    }
     pushMsg( s, getToken(1) );
     expecting = emptyString;
   }
 
   private final void epa() {
     popMsg();
-if (System.getProperty("TLA-StackTrace", "off").equals("on")) ToolIO.out.println("Ending " + msgStack [ msgStackCurrentSize   ]);
+    if (System.getProperty("TLA-StackTrace", "off").equals("on")) 
+    {
+        ToolIO.out.println("Ending " + msgStack [ msgStackCurrentSize   ]);
+    }
     Assert.assertion( popHeir() );
     expecting = emptyString;
   }
