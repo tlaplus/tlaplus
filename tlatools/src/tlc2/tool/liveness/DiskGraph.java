@@ -207,7 +207,10 @@ public class DiskGraph {
     else {
       while (this.nodePtrRAF.getFilePointer() < ptr) {
 	long fp = this.nodePtrRAF.readLong();
-	int tidx = this.nodePtrRAF.readInt(); // SZ Feb 20, 2009: variable never read locally
+    // SZ Jul 13, 2009: removed to kill the warning	
+	// SZ Feb 20, 2009: variable never read locally
+	// int tidx = 
+	this.nodePtrRAF.readInt(); 
 	long loc = this.nodePtrRAF.readLongNat();
 	this.nodePtrTbl.put(fp, loc);
       }
@@ -269,7 +272,10 @@ public class DiskGraph {
     int numOfInits = this.initNodes.size();
     for (int i = 0; i < numOfInits; i += 2) {
       long state0 = this.initNodes.elementAt(i);
-      int tidx0 = (int)this.initNodes.elementAt(i+1); // SZ Feb 20, 2009: variable never read locally
+      // SZ Jul 13, 2009: removed to kill the warning
+      // SZ Feb 20, 2009: variable never read locally
+      // int tidx0 = (int) 
+      this.initNodes.elementAt(i+1); 
       if (state0 == state) {
 	LongVec res = new LongVec(1);
 	res.addElement(state0);
