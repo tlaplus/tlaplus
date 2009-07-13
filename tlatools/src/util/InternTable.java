@@ -12,167 +12,184 @@ import java.io.Serializable;
  * @see {@link UniqueString} for more information 
  * @author Yuan Yu, Simon Zambrovski
  */
-public final class InternTable implements Serializable {
-  
-  private int count;
-  private int length;
-  private int thresh;
-  private UniqueString[] table;
+public final class InternTable implements Serializable
+{
 
-  // SZ 10.04.2009: removed unused variable
-  // made token counter to instance variable, since there is only one instance of the InternTable
-  private int tokenCnt = 0;      // the token counter 
-  
+    private int count;
+    private int length;
+    private int thresh;
+    private UniqueString[] table;
+
+    // SZ 10.04.2009: removed unused variable
+    // made token counter to instance variable, since there is only one instance of the InternTable
+    private int tokenCnt = 0; // the token counter
 
     // SZ Jul 13, 2009: RMI removed
-    //  /**
-    //   * @deprecated RMI
-    //   */
-    //  private InternRMI internSource = null;
+    // /**
+    // * @deprecated RMI
+    // */
+    // private InternRMI internSource = null;
 
-  
-  public InternTable(int size) 
-  {
-    this.table = new UniqueString[size] ;
-    this.count = 0 ;
-    this.length = size ;
-    this.thresh = this.length / 2;
-  }
-
-  private void grow() {
-    UniqueString[] old = this.table;
-    this.count = 0;
-    this.length = 2 * this.length + 1;
-    this.thresh = this.length / 2;
-    this.table = new UniqueString[this.length];
-    for (int i = 0; i < old.length; i++) {
-      UniqueString var = old[i];
-      if (var != null) this.put(var);
+    public InternTable(int size)
+    {
+        this.table = new UniqueString[size];
+        this.count = 0;
+        this.length = size;
+        this.thresh = this.length / 2;
     }
-  }
 
-  private void put(UniqueString var) {
-    int loc = (var.hashCode() & 0x7FFFFFFF) % length ;
-    while (true) {
-      UniqueString ent = this.table[loc] ;
-      if (ent == null) {
-	this.table[loc] = var;
-	this.count++;
-	return;
-      }
-      loc = (loc + 1) % length;
+    private void grow()
+    {
+        UniqueString[] old = this.table;
+        this.count = 0;
+        this.length = 2 * this.length + 1;
+        this.thresh = this.length / 2;
+        this.table = new UniqueString[this.length];
+        for (int i = 0; i < old.length; i++)
+        {
+            UniqueString var = old[i];
+            if (var != null)
+                this.put(var);
+        }
     }
-  }
 
-  /**
-   * If there exists a UniqueString object obj such that obj.getTok()
-   * equals id, then get(id) returns obj; otherwise, it returns null.
-   */
-  public UniqueString get(int id) {
-    for (int i = 0; i < this.table.length; i++) {
-      UniqueString var = this.table[i];
-      if (var != null && var.getTok() == id) {
-	return var;
-      }
+    private void put(UniqueString var)
+    {
+        int loc = (var.hashCode() & 0x7FFFFFFF) % length;
+        while (true)
+        {
+            UniqueString ent = this.table[loc];
+            if (ent == null)
+            {
+                this.table[loc] = var;
+                this.count++;
+                return;
+            }
+            loc = (loc + 1) % length;
+        }
     }
-    return null;
-  }
-  
-  /**
-   * Create the unique string based on the token
-   */
-  private UniqueString create(String str) 
-  {
-      return new UniqueString(str, ++tokenCnt);
-  }
 
-// SZ Jul 13, 2009: original version, including RMI-related structures
-//  /**
-//   * @deprecated RMI
-//   */
-//  private UniqueString create(String str) {
-//    if (this.internSource == null) {
-//      return new UniqueString(str, ++tokenCnt);
-//    }
-//    try {
-//      return this.internSource.intern(str);
-//    }
-//    catch (Exception e) {
-//      Assert.fail("Failed to intern " + str + ".");
-//    }
-//    return null;  // make compiler happy
-//  }
-  
-  
-  public UniqueString put(String str) {
-    synchronized (InternTable.class) {
-      if (this.count >= this.thresh) this.grow();
-      int loc = (str.hashCode() & 0x7FFFFFFF) % length;
-      while (true) {
-	UniqueString ent = this.table[loc];
-	if (ent == null) {
-	  UniqueString var = this.create(str);
-	  this.table[loc] = var;
-	  this.count++;
-	  return var;
-	}
-	if (ent.toString().equals(str)) {
-	  return ent;
-	}
-	loc = (loc + 1) % length;
-      }
+    /**
+     * If there exists a UniqueString object obj such that obj.getTok()
+     * equals id, then get(id) returns obj; otherwise, it returns null.
+     */
+    public UniqueString get(int id)
+    {
+        for (int i = 0; i < this.table.length; i++)
+        {
+            UniqueString var = this.table[i];
+            if (var != null && var.getTok() == id)
+            {
+                return var;
+            }
+        }
+        return null;
     }
-  }
 
-  public void beginChkpt(String filename) throws IOException {
-    BufferedDataOutputStream dos =
-      new BufferedDataOutputStream(this.chkptName(filename, "tmp"));
-    dos.writeInt(tokenCnt);
-    for (int i = 0; i < this.table.length; i++) {
-      UniqueString var = this.table[i];
-      if (var != null) var.write(dos);
+    /**
+     * Create the unique string based on the token
+     */
+    private UniqueString create(String str)
+    {
+        return new UniqueString(str, ++tokenCnt);
     }
-    dos.close();
-  }
 
-  public void commitChkpt(String filename) throws IOException {
-    File oldChkpt = new File(this.chkptName(filename, "chkpt"));
-    File newChkpt = new File(this.chkptName(filename, "tmp"));
-    if ((oldChkpt.exists() && !oldChkpt.delete()) ||
-	!newChkpt.renameTo(oldChkpt)) {
-      throw new IOException("InternTable.commitChkpt: cannot delete " + oldChkpt);
+    // SZ Jul 13, 2009: original version, including RMI-related structures
+    // /**
+    // * @deprecated RMI
+    // */
+    // private UniqueString create(String str) {
+    // if (this.internSource == null) {
+    // return new UniqueString(str, ++tokenCnt);
+    // }
+    // try {
+    // return this.internSource.intern(str);
+    // }
+    // catch (Exception e) {
+    // Assert.fail("Failed to intern " + str + ".");
+    // }
+    // return null; // make compiler happy
+    // }
+
+    public UniqueString put(String str)
+    {
+        synchronized (InternTable.class)
+        {
+            if (this.count >= this.thresh)
+                this.grow();
+            int loc = (str.hashCode() & 0x7FFFFFFF) % length;
+            while (true)
+            {
+                UniqueString ent = this.table[loc];
+                if (ent == null)
+                {
+                    UniqueString var = this.create(str);
+                    this.table[loc] = var;
+                    this.count++;
+                    return var;
+                }
+                if (ent.toString().equals(str))
+                {
+                    return ent;
+                }
+                loc = (loc + 1) % length;
+            }
+        }
     }
-  }
 
-  public synchronized void recover(String filename) throws IOException {
-    BufferedDataInputStream dis = 
-      new BufferedDataInputStream(this.chkptName(filename, "chkpt"));
-    tokenCnt = dis.readInt();
-    try {
-      while (!dis.atEOF()) {
-	UniqueString var = UniqueString.read(dis);
-	this.put(var);
-      }
+    public void beginChkpt(String filename) throws IOException
+    {
+        BufferedDataOutputStream dos = new BufferedDataOutputStream(this.chkptName(filename, "tmp"));
+        dos.writeInt(tokenCnt);
+        for (int i = 0; i < this.table.length; i++)
+        {
+            UniqueString var = this.table[i];
+            if (var != null)
+                var.write(dos);
+        }
+        dos.close();
     }
-    catch (EOFException e) {
-      Assert.fail("TLC encountered the following error while restarting from a " +
-		  "checkpoint;\n the checkpoint file is probably corrupted.\n" +
-		  e.getMessage());
+
+    public void commitChkpt(String filename) throws IOException
+    {
+        File oldChkpt = new File(this.chkptName(filename, "chkpt"));
+        File newChkpt = new File(this.chkptName(filename, "tmp"));
+        if ((oldChkpt.exists() && !oldChkpt.delete()) || !newChkpt.renameTo(oldChkpt))
+        {
+            throw new IOException("InternTable.commitChkpt: cannot delete " + oldChkpt);
+        }
     }
-    dis.close();
-  }
 
-  private String chkptName(String filename, String ext) {
-    return filename + FileUtil.separator + "vars." + ext;
-  }
+    public synchronized void recover(String filename) throws IOException
+    {
+        BufferedDataInputStream dis = new BufferedDataInputStream(this.chkptName(filename, "chkpt"));
+        tokenCnt = dis.readInt();
+        try
+        {
+            while (!dis.atEOF())
+            {
+                UniqueString var = UniqueString.read(dis);
+                this.put(var);
+            }
+        } catch (EOFException e)
+        {
+            Assert.fail("TLC encountered the following error while restarting from a "
+                    + "checkpoint;\n the checkpoint file is probably corrupted.\n" + e.getMessage());
+        }
+        dis.close();
+    }
 
-  
-//SZ Jul 13, 2009: RMI is not used
-///**
-// * @deprecated RMI
-// */
-//public void setSource(InternRMI source) {
-//  this.internSource = source;
-//}
+    private String chkptName(String filename, String ext)
+    {
+        return filename + FileUtil.separator + "vars." + ext;
+    }
+
+    // SZ Jul 13, 2009: RMI is not used
+    // /**
+    // * @deprecated RMI
+    // */
+    // public void setSource(InternRMI source) {
+    // this.internSource = source;
+    // }
 
 }
