@@ -27,7 +27,6 @@ import util.Assert;
 import util.FileUtil;
 import util.FilenameToStream;
 import util.SimpleFilenameToStream;
-import util.ToolIO;
 
 /** 
  * Stores information from user's model configuration file.
