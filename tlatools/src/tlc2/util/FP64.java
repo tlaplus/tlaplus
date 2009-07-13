@@ -1,7 +1,7 @@
 // Copyright (c) 2003 Compaq Corporation.  All rights reserved.
 // Last modified on Tue May 25 23:22:20 PDT 1999 by yuanyu
 
-package util;
+package tlc2.util;
 
 import java.io.IOException;
 import java.io.InputStream;

@@ -9,8 +9,8 @@ import tla2sany.semantic.SymbolNode;
 import tlc2.TLCGlobals;
 import tlc2.tool.EvalControl;
 import tlc2.util.Context;
+import tlc2.util.FP64;
 import util.Assert;
-import util.FP64;
 
 public class TupleValue extends Value implements Applicable {
   public Value[] elems;          // the elements of this tuple.

@@ -16,11 +16,11 @@ import tlc2.tool.StateVec;
 import tlc2.tool.TLCState;
 import tlc2.tool.TLCStateInfo;
 import tlc2.tool.Tool;
+import tlc2.util.FP64;
 import tlc2.util.LongObjTable;
 import tlc2.util.MemObjectStack;
 import tlc2.util.ObjectStack;
 import tlc2.util.Vect;
-import util.FP64;
 
 public class LiveCheck1 {
   /**

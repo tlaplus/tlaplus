@@ -18,8 +18,8 @@ import tlc2.tool.TLCState;
 import tlc2.tool.TLCStateVec;
 import tlc2.tool.WorkerException;
 import tlc2.util.BitVector;
+import tlc2.util.FP64;
 import tlc2.util.LongVec;
-import util.FP64;
 import util.ToolIO;
 
 /**

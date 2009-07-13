@@ -8,8 +8,8 @@ package tlc2.value;
 import java.util.Arrays;
 
 import tlc2.tool.EvalControl;
+import tlc2.util.FP64;
 import util.Assert;
-import util.FP64;
 
 public class FcnRcdValue extends Value implements Applicable {
   public Value[] domain;

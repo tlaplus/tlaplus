@@ -5,8 +5,8 @@
 
 package tlc2.value;
 
+import tlc2.util.FP64;
 import util.Assert;
-import util.FP64;
 
 public class BoolValue extends Value {
   public boolean val;   // the boolean

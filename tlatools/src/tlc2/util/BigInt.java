@@ -8,7 +8,6 @@ import java.io.OutputStream;
 import java.math.BigInteger;
 import java.util.Random;
 
-import util.FP64;
 
 public class BigInt extends BigInteger implements Cloneable, ExternalSortable {
 

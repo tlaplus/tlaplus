@@ -7,6 +7,7 @@ import java.io.Serializable;
 
 import tlc2.tool.Defns;
 import tlc2.tool.TLCState;
+import tlc2.util.FP64;
 
 /**
  * For any string (state variable, operator definition) the strings are stored 

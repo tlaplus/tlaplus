@@ -38,8 +38,8 @@ package tlc2.value;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
+import tlc2.util.FP64;
 import util.Assert;
-import util.FP64;
 import util.UniqueString;
 
 public class ModelValue extends Value {

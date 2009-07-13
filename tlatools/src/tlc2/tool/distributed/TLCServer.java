@@ -22,7 +22,7 @@ import tlc2.tool.TLCConfig;
 import tlc2.tool.TLCState;
 import tlc2.tool.TLCTrace;
 import tlc2.tool.WorkerException;
-import util.FP64;
+import tlc2.util.FP64;
 import util.FileUtil;
 import util.ToolIO;
 import util.UniqueString;

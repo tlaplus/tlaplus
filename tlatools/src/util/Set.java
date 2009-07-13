@@ -29,7 +29,7 @@ class SetEntry {
   }
 }
 
-/*
+/**
  * This class implements a set. Any non-<code>null</code> object can
  * be used as a key (element).
  * <p>

@@ -10,8 +10,8 @@ import java.io.Serializable;
 import tla2sany.semantic.SemanticNode;
 import tlc2.TLCGlobals;
 import tlc2.pprint.PrettyPrint;
+import tlc2.util.FP64;
 import util.Assert;
-import util.FP64;
 
 public abstract class Value implements ValueConstants, Serializable {
   /**
