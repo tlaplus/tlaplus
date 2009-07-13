@@ -10,7 +10,7 @@ import java.io.Serializable;
 /**
  * Storage for the UniqueStrings. 
  * @see {@link UniqueString} for more information 
- * @author Yuan Yu
+ * @author Yuan Yu, Simon Zambrovski
  */
 public final class InternTable implements Serializable {
   
@@ -23,11 +23,12 @@ public final class InternTable implements Serializable {
   // made token counter to instance variable, since there is only one instance of the InternTable
   private int tokenCnt = 0;      // the token counter 
   
-  
-  /**
-   * @deprecated RMI
-   */
-  private InternRMI internSource = null;
+
+    // SZ Jul 13, 2009: RMI removed
+    //  /**
+    //   * @deprecated RMI
+    //   */
+    //  private InternRMI internSource = null;
 
   
   public InternTable(int size) 
@@ -77,29 +78,31 @@ public final class InternTable implements Serializable {
     return null;
   }
   
-
   /**
-   * @deprecated RMI
+   * Create the unique string based on the token
    */
-  public void setSource(InternRMI source) {
-    this.internSource = source;
-  }
-  
-  /**
-   * @deprecated RMI
-   */
-  private UniqueString create(String str) {
-    if (this.internSource == null) {
+  private UniqueString create(String str) 
+  {
       return new UniqueString(str, ++tokenCnt);
-    }
-    try {
-      return this.internSource.intern(str);
-    }
-    catch (Exception e) {
-      Assert.fail("Failed to intern " + str + ".");
-    }
-    return null;  // make compiler happy
   }
+
+// SZ Jul 13, 2009: original version, including RMI-related structures
+//  /**
+//   * @deprecated RMI
+//   */
+//  private UniqueString create(String str) {
+//    if (this.internSource == null) {
+//      return new UniqueString(str, ++tokenCnt);
+//    }
+//    try {
+//      return this.internSource.intern(str);
+//    }
+//    catch (Exception e) {
+//      Assert.fail("Failed to intern " + str + ".");
+//    }
+//    return null;  // make compiler happy
+//  }
+  
   
   public UniqueString put(String str) {
     synchronized (InternTable.class) {
@@ -162,5 +165,14 @@ public final class InternTable implements Serializable {
   private String chkptName(String filename, String ext) {
     return filename + FileUtil.separator + "vars." + ext;
   }
+
+  
+//SZ Jul 13, 2009: RMI is not used
+///**
+// * @deprecated RMI
+// */
+//public void setSource(InternRMI source) {
+//  this.internSource = source;
+//}
 
 }
