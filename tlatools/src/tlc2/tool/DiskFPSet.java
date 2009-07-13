@@ -777,51 +777,6 @@ public class DiskFPSet extends FPSet {
       this.completeRecovery();
     }
 
-    /**
-     * @deprecated not used
-     */
-    private final void mergeBuff(long[] buff, int len, File fpFile)
-    throws IOException {
-      File tmpFile = new File(this.filename + ".tmp");
-      tmpFile.delete();
-      BufferedRandomAccessFile fpRAF = new BufferedRandomAccessFile(fpFile, "rw");
-      BufferedRandomAccessFile tmpRAF = new BufferedRandomAccessFile(tmpFile, "rw");
-      int i = 0;
-      long value = 0L;
-      try {
-	value = fpRAF.readLong();
-	while (i < len) {
-	  if (value < buff[i]) {
-	    tmpRAF.writeLong(value);
-	    value = fpRAF.readLong();
-	  }
-	  else {
-	    tmpRAF.writeLong(buff[i++]);
-	  }
-	}
-      } catch (EOFException e) { /*SKIP*/ }
-
-      if (i < len) {
-	for (int j = i; j < len; j++) {
-	  tmpRAF.writeLong(buff[j]);
-	}
-      }
-      else {
-	try {
-	  do {
-	    tmpRAF.writeLong(value);
-	    value = fpRAF.readLong();
-	  } while (true);
-	} catch (EOFException e) { /*SKIP*/ }
-      }
-
-      fpRAF.close();
-      tmpRAF.close();
-      fpFile.delete();
-      tmpFile.renameTo(fpFile);
-    }
-
-
     private String getChkptName(String fname, String name) 
     {
       return this.metadir + FileUtil.separator + fname + ".fp." + name;
@@ -830,5 +785,49 @@ public class DiskFPSet extends FPSet {
     private String getFPFilename() {
         return this.filename + ".fp";
     }
-  
+
+//  /**
+//  * 
+//  */
+// private final void mergeBuff(long[] buff, int len, File fpFile)
+// throws IOException {
+//   File tmpFile = new File(this.filename + ".tmp");
+//   tmpFile.delete();
+//   BufferedRandomAccessFile fpRAF = new BufferedRandomAccessFile(fpFile, "rw");
+//   BufferedRandomAccessFile tmpRAF = new BufferedRandomAccessFile(tmpFile, "rw");
+//   int i = 0;
+//   long value = 0L;
+//   try {
+//value = fpRAF.readLong();
+//while (i < len) {
+// if (value < buff[i]) {
+//   tmpRAF.writeLong(value);
+//   value = fpRAF.readLong();
+// }
+// else {
+//   tmpRAF.writeLong(buff[i++]);
+// }
+//}
+//   } catch (EOFException e) { /*SKIP*/ }
+//
+//   if (i < len) {
+//for (int j = i; j < len; j++) {
+// tmpRAF.writeLong(buff[j]);
+//}
+//   }
+//   else {
+//try {
+// do {
+//   tmpRAF.writeLong(value);
+//   value = fpRAF.readLong();
+// } while (true);
+//} catch (EOFException e) { /*SKIP*/ }
+//   }
+//
+//   fpRAF.close();
+//   tmpRAF.close();
+//   fpFile.delete();
+//   tmpFile.renameTo(fpFile);
+// }
+
 }
