@@ -7,14 +7,14 @@ package tlc2.pprint;
 
 public class Parse {
 
-/***************************************************************************/
+/* *********************************************************************** */
 /* This class provides a parse method that accepts a string                */
 /* representation of a TLC value and an integer indexing into that         */
 /* string, and the method returns a parse tree for the subvalue starting   */
 /* at the designated index in the string.                                  */
-/***************************************************************************/
+/* *********************************************************************** */
 
-/***************************************************************************/
+/* *********************************************************************** */
 /* The following constants aid in parsing the string representation of     */
 /* TLC values.                                                             */
 /*                                                                         */
@@ -28,7 +28,7 @@ public class Parse {
 /* Div gives the string like "|->" separating elements of pairs like the   */
 /* name/value pairs defining a field in a record or like ":>" separating   */
 /* the argument/value pairs defining a function.                           */
-/***************************************************************************/
+/* *********************************************************************** */
 
   private static final char setOpen = '{';
   private static final char setClose = '}';
@@ -39,7 +39,8 @@ public class Parse {
   private static final char recOpen = '[';
   private static final char recClose = ']';
   private static final String recDiv = "|->";
-  private static final String recSep = ",";
+  // SZ Jul 13, 2009: not used:
+  // private static final String recSep = ",";
 
   private static final char funOpen = '(';
   private static final char funClose = ')';
