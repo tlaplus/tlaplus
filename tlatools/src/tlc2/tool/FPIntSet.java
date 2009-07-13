@@ -184,9 +184,9 @@ public abstract class FPIntSet
 //    }
 //  }
 
-  private static void printErrorMsg(String msg) {
-      System.err.println(msg);
-      System.err.println("Usage: java tlc2.tool.FPSet [-option] metadir");
-  }
+//  private static void printErrorMsg(String msg) {
+//      System.err.println(msg);
+//      System.err.println("Usage: java tlc2.tool.FPSet [-option] metadir");
+//  }
 
 }
