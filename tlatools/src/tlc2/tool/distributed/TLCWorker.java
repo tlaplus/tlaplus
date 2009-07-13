@@ -21,7 +21,6 @@ import tlc2.util.BitVector;
 import tlc2.util.LongVec;
 import util.FP64;
 import util.ToolIO;
-import util.UniqueString;
 
 /**
  * @deprecated not used currently
