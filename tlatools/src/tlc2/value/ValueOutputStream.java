@@ -299,7 +299,8 @@ public final class ValueOutputStream implements ValueConstants {
       this.threshold = (int)(this.spine.length * 0.75);
     }
 
-    final int size() { return this.size; }
+// SZ Jul 13, 2009: not used
+//    final int size() { return this.size; }
     
     final int put(Object val) {
       int index = (System.identityHashCode(val) & 0x7FFFFFFF) % this.spine.length;
