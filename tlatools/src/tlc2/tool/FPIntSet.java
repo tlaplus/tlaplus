@@ -4,26 +4,18 @@
 
 package tlc2.tool;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.InetAddress;
 import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
-import java.rmi.server.UnicastRemoteObject;
-
-import tlc2.TLCGlobals;
-import util.FileUtil;
-import util.ToolIO;
 
 /**
- * Note: All concrete subclasses of this class are required to
+ * <b>Note:</b> All concrete subclasses of this class are required to
  * guarantee that their methods are thread-safe.
- * @deprecated
  * @version $Id$
  */
-public abstract class FPIntSet extends UnicastRemoteObject
-implements FPIntSetRMI {
+public abstract class FPIntSet
+// SZ Jul 13, 2009: there is no reason to extend the RMI interfaces, since they are not used
+// extends UnicastRemoteObject implements FPIntSetRMI 
+{
 
   public static int Port = 10998;   // port # for fpset server
 
@@ -134,63 +126,63 @@ implements FPIntSetRMI {
   public abstract void commitChkpt(String filename) throws IOException;
   public abstract void recover(String filename) throws IOException;
   
-  // SZ Jul 10, 2009: test method?
-  // TODO move to test
-  public static void main(String args[]) {
-    ToolIO.out.println("TLC FP Server " + TLCGlobals.versionOfTLC);
-
-    String metadir = null;
-    String fromChkpt = null;
-    int index = 0;
-    while (index < args.length) {
-      if (args[index].charAt(0) == '-') {
-	printErrorMsg("Error: unrecognized option: " + args[index]);
-	System.exit(0);
-      }
-      if (metadir != null) {
-	printErrorMsg("Error: more than one directory for metadata: " + metadir +
-		      " and " + args[index]);
-	System.exit(0);
-      }
-      metadir = args[index++] + FileUtil.separator;
-    }
-
-    String hostname = "Unknown";
-    try {
-      hostname = InetAddress.getLocalHost().getHostName();
-      metadir = (metadir == null) ? hostname : (metadir + hostname);
-      File filedir = new File(metadir);
-      if (!filedir.exists()) {
-	boolean created = filedir.mkdirs();
-	if (!created) {
-	  System.err.println("Error: fingerprint server could not make a directory" +
-			     " for the disk files it needs to write.\n");
-	  System.exit(0);
-	}
-      }
-      // Start memory-based fingerprint set server.
-      // Note: It would be wrong to use the disk-based implementation.
-      FPIntSet fpSet = new MemFPIntSet();
-      fpSet.init(1, metadir, "fpset");
-      if (fromChkpt != null) {
-	fpSet.recover();    // recover when instructed
-      }
-      Registry rg = LocateRegistry.createRegistry(Port);
-      rg.rebind("FPSetServer", fpSet);
-      System.out.println("Fingerprint set server at " + hostname + " is ready.");
-
-      synchronized(fpSet) {
-	while (true) {
-	    System.out.println("Progress: The number of fingerprints stored at " +
-			     hostname + " is " + fpSet.size() + ".");
-	  fpSet.wait(300000);	  
-	}
-      }
-    }
-    catch (Exception e) {
-        System.err.println(hostname + ": Error: " + e.getMessage());
-    }
-  }
+// SZ Jul 10, 2009: main method that could have been used during the RMI tests
+// removed since it is dead code now
+//  public static void main(String args[]) {
+//    ToolIO.out.println("TLC FP Server " + TLCGlobals.versionOfTLC);
+//
+//    String metadir = null;
+//    String fromChkpt = null;
+//    int index = 0;
+//    while (index < args.length) {
+//      if (args[index].charAt(0) == '-') {
+//	printErrorMsg("Error: unrecognized option: " + args[index]);
+//	System.exit(0);
+//      }
+//      if (metadir != null) {
+//	printErrorMsg("Error: more than one directory for metadata: " + metadir +
+//		      " and " + args[index]);
+//	System.exit(0);
+//      }
+//      metadir = args[index++] + FileUtil.separator;
+//    }
+//
+//    String hostname = "Unknown";
+//    try {
+//      hostname = InetAddress.getLocalHost().getHostName();
+//      metadir = (metadir == null) ? hostname : (metadir + hostname);
+//      File filedir = new File(metadir);
+//      if (!filedir.exists()) {
+//	boolean created = filedir.mkdirs();
+//	if (!created) {
+//	  System.err.println("Error: fingerprint server could not make a directory" +
+//			     " for the disk files it needs to write.\n");
+//	  System.exit(0);
+//	}
+//      }
+//      // Start memory-based fingerprint set server.
+//      // Note: It would be wrong to use the disk-based implementation.
+//      FPIntSet fpSet = new MemFPIntSet();
+//      fpSet.init(1, metadir, "fpset");
+//      if (fromChkpt != null) {
+//	fpSet.recover();    // recover when instructed
+//      }
+//      Registry rg = LocateRegistry.createRegistry(Port);
+//      rg.rebind("FPSetServer", fpSet);
+//      System.out.println("Fingerprint set server at " + hostname + " is ready.");
+//
+//      synchronized(fpSet) {
+//	while (true) {
+//	    System.out.println("Progress: The number of fingerprints stored at " +
+//			     hostname + " is " + fpSet.size() + ".");
+//	  fpSet.wait(300000);	  
+//	}
+//      }
+//    }
+//    catch (Exception e) {
+//        System.err.println(hostname + ": Error: " + e.getMessage());
+//    }
+//  }
 
   private static void printErrorMsg(String msg) {
       System.err.println(msg);
