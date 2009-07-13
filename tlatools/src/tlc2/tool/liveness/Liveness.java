@@ -19,6 +19,7 @@ import tlc2.tool.Action;
 import tlc2.tool.BuiltInOPs;
 import tlc2.tool.ContextEnumerator;
 import tlc2.tool.EvalControl;
+import tlc2.tool.Spec;
 import tlc2.tool.TLCState;
 import tlc2.tool.Tool;
 import tlc2.tool.ToolGlobals;
@@ -85,7 +86,7 @@ public class Liveness implements ToolGlobals, ASTConstants {
       }
     default:
       {
-	int level = tool.getLevel(expr, con);
+	int level = Spec.getLevel(expr, con);
 	if (level > 2) {
 	  Assert.fail("TLC cannot handle this temporal formula " + expr);
 	}
@@ -130,7 +131,7 @@ public class Liveness implements ToolGlobals, ASTConstants {
       }
 
       if (opcode == 0) {
-	int level = tool.getLevel(expr, con);
+	int level = Spec.getLevel(expr, con);
 	if (level > 2) {
 	  Assert.fail("TLC cannot handle the temporal formula " + expr);
 	}
@@ -157,7 +158,7 @@ public class Liveness implements ToolGlobals, ASTConstants {
 	}
 	catch (Exception e) {
 	  // Assert.printStack(e);
-	  int level = tool.getLevel(expr, con);
+	  int level = Spec.getLevel(expr, con);
 	  if (level > 2) {
 	    Assert.fail("TLC cannot handle this temporal formula " + expr);
 	  }
@@ -182,7 +183,7 @@ public class Liveness implements ToolGlobals, ASTConstants {
 	}
 	catch (Exception e) {
 	  // Assert.printStack(e);
-	  int level = tool.getLevel(expr, con);
+	  int level = Spec.getLevel(expr, con);
 	  if (level > 2) {
 	    Assert.fail("TLC cannot handle this temporal formula " + expr);
 	  }
@@ -220,8 +221,12 @@ public class Liveness implements ToolGlobals, ASTConstants {
 	  if (fval instanceof FcnLambdaValue) {
 	    FcnLambdaValue fcn = (FcnLambdaValue)fval;
 	    if (fcn.fcnRcd == null) {
+	     // this could be a bug, since con1 is created but not
+	     // used
+	     // SZ Jul 13, 2009: removed to kill the warning
 	     // SZ Feb 20, 2009: variable never read locally
-	      Context con1 = tool.getFcnContext(fcn, args, con, TLCState.Empty,
+	     //  Context con1 = 
+	      tool.getFcnContext(fcn, args, con, TLCState.Empty,
 						TLCState.Empty, EvalControl.Clear); 
 	      return astToLive(tool, (ExprNode)fcn.body, con);
 	    }
@@ -306,8 +311,8 @@ public class Liveness implements ToolGlobals, ASTConstants {
       }
     default:
       {
-	// We handle all the other builtin operators here.
-	int level = tool.getLevel(expr, con);
+	// We handle all the other built-in operators here.
+	int level = Spec.getLevel(expr, con);
 	if (level > 2) {
 	  Assert.fail("TLC cannot handle the temporal formula " + expr);
 	}
