@@ -191,7 +191,7 @@ public class BufferedDataOutputStream extends FilterOutputStream {
         int off = 0;
         while (n > 0) {
             int toCopy = Math.min(n, this.buff.length - this.len);
-	    s.getBytes(off, off + toCopy, this.buff, this.len);
+            s.getBytes(off, off + toCopy, this.buff, this.len);
             this.len += toCopy; off += toCopy; n -= toCopy;
             if (this.buff.length == this.len) {
                 // write buffer to underlying stream
