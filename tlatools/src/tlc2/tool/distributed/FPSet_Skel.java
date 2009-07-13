@@ -59,7 +59,7 @@ public final class FPSet_Skel
 		throw new java.rmi.server.SkeletonMismatchException("interface hash mismatch");
 	}
 	
-	tlc2.tool.FPSet server = (tlc2.tool.FPSet) obj;
+	tlc2.tool.fp.FPSet server = (tlc2.tool.fp.FPSet) obj;
 	switch (opnum) {
 	case 0: // beginChkpt(String)
 	{

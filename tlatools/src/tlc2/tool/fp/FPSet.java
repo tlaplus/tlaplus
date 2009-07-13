@@ -3,7 +3,7 @@
 // Last modified on Mon 30 Apr 2007 at 13:13:19 PST by lamport
 //      modified on Tue May 15 11:44:57 PDT 2001 by yuanyu
 
-package tlc2.tool;
+package tlc2.tool.fp;
 
 import java.io.IOException;
 import java.rmi.RemoteException;

@@ -5,7 +5,13 @@
 
 package tlc2.tool;
 
-public class EvalException extends RuntimeException {
+/**
+ * Evaluation exception
+ * @author Simon Zambrovski
+ * @version $Id$
+ */
+public class EvalException extends RuntimeException 
+{
   public static int ERROR = 0;
   public static int ASSERT = 1;
 

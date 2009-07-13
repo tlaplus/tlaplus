@@ -7,6 +7,7 @@ package tlc2.tool;
 
 import tlc2.output.EC;
 import tlc2.output.MP;
+import tlc2.tool.queue.StateQueue;
 import tlc2.util.IdThread;
 import tlc2.util.ObjLongTable;
 import tlc2.value.Value;

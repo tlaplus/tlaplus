@@ -56,7 +56,7 @@ public final class FPIntSet_Skel
 		throw new java.rmi.server.SkeletonMismatchException("interface hash mismatch");
 	}
 	
-	tlc2.tool.FPIntSet server = (tlc2.tool.FPIntSet) obj;
+	tlc2.tool.fp.FPIntSet server = (tlc2.tool.fp.FPIntSet) obj;
 	switch (opnum) {
 	case 0: // allLeveled()
 	{

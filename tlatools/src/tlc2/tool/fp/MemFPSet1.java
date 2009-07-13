@@ -3,7 +3,7 @@
 // Last modified on Mon 30 Apr 2007 at 13:15:06 PST by lamport
 //      modified on Tue May 15 23:11:51 PDT 2001 by yuanyu
 
-package tlc2.tool;
+package tlc2.tool.fp;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;

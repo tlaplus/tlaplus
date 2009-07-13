@@ -3,13 +3,14 @@
 // Last modified on Mon 30 Apr 2007 at 13:18:27 PST by lamport
 //      modified on Tue Feb 13 18:38:24 PST 2001 by yuanyu
 
-package tlc2.tool;
+package tlc2.tool.queue;
 
 import java.io.IOException;
 
 import tlc2.TLCGlobals;
 import tlc2.output.EC;
 import tlc2.output.MP;
+import tlc2.tool.TLCState;
 
 public abstract class StateQueue {
   /**

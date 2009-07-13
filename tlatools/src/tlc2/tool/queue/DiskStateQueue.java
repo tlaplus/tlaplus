@@ -3,11 +3,14 @@
 // Last modified on Mon 30 Apr 2007 at  9:25:48 PST by lamport  
 //      modified on Thu Feb  8 23:32:12 PST 2001 by yuanyu   
 
-package tlc2.tool;
+package tlc2.tool.queue;
 
 import java.io.File;
 import java.io.IOException;
 
+import tlc2.tool.StatePoolReader;
+import tlc2.tool.StatePoolWriter;
+import tlc2.tool.TLCState;
 import tlc2.value.ValueInputStream;
 import tlc2.value.ValueOutputStream;
 import util.Assert;

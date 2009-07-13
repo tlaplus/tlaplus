@@ -1,6 +1,6 @@
 // Copyright (c) 2003 Compaq Corporation.  All rights reserved.
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
-package tlc2.tool;
+package tlc2.tool.fp;
 
 import java.io.EOFException;
 import java.io.File;
@@ -10,6 +10,7 @@ import java.io.RandomAccessFile;
 import java.net.InetAddress;
 import java.rmi.RemoteException;
 
+import tlc2.tool.TLCTrace;
 import tlc2.util.BufferedRandomAccessFile;
 import tlc2.util.IdThread;
 import tlc2.util.ReadersWriterLock;

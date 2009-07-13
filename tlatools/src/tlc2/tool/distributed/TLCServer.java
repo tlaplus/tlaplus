@@ -14,14 +14,14 @@ import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
 import tlc2.TLCGlobals;
-import tlc2.tool.DiskFPSet;
-import tlc2.tool.DiskStateQueue;
-import tlc2.tool.FPSet;
-import tlc2.tool.StateQueue;
 import tlc2.tool.TLCConfig;
 import tlc2.tool.TLCState;
 import tlc2.tool.TLCTrace;
 import tlc2.tool.WorkerException;
+import tlc2.tool.fp.DiskFPSet;
+import tlc2.tool.fp.FPSet;
+import tlc2.tool.queue.DiskStateQueue;
+import tlc2.tool.queue.StateQueue;
 import tlc2.util.FP64;
 import util.FileUtil;
 import util.ToolIO;

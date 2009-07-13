@@ -3,11 +3,12 @@
 // Last modified on Mon 30 Apr 2007 at 13:15:31 PST by lamport
 //      modified on Mon Dec 18 22:56:08 PST 2000 by yuanyu
 
-package tlc2.tool;
+package tlc2.tool.queue;
 
 import java.io.File;
 import java.io.IOException;
 
+import tlc2.tool.TLCState;
 import tlc2.value.ValueInputStream;
 import tlc2.value.ValueOutputStream;
 import util.FileUtil;

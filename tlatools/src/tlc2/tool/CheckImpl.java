@@ -6,6 +6,9 @@ package tlc2.tool;
 import java.io.IOException;
 
 import tlc2.TLCGlobals;
+import tlc2.tool.fp.DiskFPSet;
+import tlc2.tool.fp.FPSet;
+import tlc2.tool.queue.DiskStateQueue;
 import util.ToolIO;
 
 /**
