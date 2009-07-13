@@ -16,8 +16,9 @@ import tla2sany.semantic.ExternalModuleTable;
 import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.OpDefNode;
 import tlc2.TLCGlobals;
+import tlc2.util.FP64;
 import util.Assert;
-import util.FP64;
+
 import util.FileUtil;
 import util.ToolIO;
 import util.UniqueString;
