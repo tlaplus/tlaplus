@@ -302,15 +302,16 @@ public final class UniqueString implements Serializable
         return new UniqueString(str, tok1, loc1);
     }
 
-    
-    /**
-     * Sets the source 
-     * @param source
-     * @deprecated used only in RMI
-     */
-    public static void setSource(InternRMI source)
-    {
-        internTbl.setSource(source);
-    }
+
+// SZ Jul 13, 2009: disabled, since RMI is not used
+//    /**
+//     * Sets the source 
+//     * @param source
+//     * @deprecated used only in RMI
+//     */
+//    public static void setSource(InternRMI source)
+//    {
+//        internTbl.setSource(source);
+//    }
 
 }
