@@ -16,7 +16,6 @@
 package tla2sany.semantic;
 
 import java.util.Enumeration;
-import util.UniqueString;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -29,7 +28,10 @@ import tla2sany.st.TreeNode;
 import tla2sany.utilities.Stack;
 import tla2sany.utilities.Strings;
 import tla2sany.utilities.Vector;
+import tlc2.output.EC;
+import tlc2.output.MP;
 import util.Assert;
+import util.UniqueString;
 
 
 
@@ -2390,7 +2392,8 @@ OpDefNode node = (OpDefNode) vec.elementAt(i);
           }
           else {
             // parameter must be postfix operator
-            Assert.check( ss[ lvi ].isKind( N_PostfixDecl ) ); 
+            // SZ Jul 13, 2009: added the message to the assert
+            Assert.check( ss[ lvi ].isKind( N_PostfixDecl ), MP.getError(EC.TLC_PARAMETER_MUST_BE_POSTFIX) ); 
             name = sss[1].getUS();
             arity = 1;
           }
