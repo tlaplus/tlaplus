@@ -345,8 +345,9 @@ public class MemFPIntSet extends FPIntSet {
 	this.count++;
       }
     }
-    catch (EOFException e) {
-      Assert.check(false);
+    catch (EOFException e) 
+    {
+      Assert.check(false, "Disk I/O error, accessing the checkpoint file");
     }
     dis.close();
   }

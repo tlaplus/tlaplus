@@ -7,6 +7,8 @@ package tlc2.tool.fp;
 import java.io.IOException;
 import java.rmi.RemoteException;
 
+import tlc2.output.EC;
+import tlc2.output.MP;
 import tlc2.tool.TLCTrace;
 import tlc2.util.BufferedRandomAccessFile;
 import util.Assert;
@@ -120,7 +122,7 @@ public class MultiFPSet extends FPSet {
   public final void prepareRecovery() throws IOException { /*SKIP*/ }
 
   public final void recoverFP(long fp) throws IOException {
-    Assert.check(!this.put(fp));
+    Assert.check(!this.put(fp), MP.getMessage(EC.TLC_FP_NOT_IN_SET));
   }
   
   public final void completeRecovery() throws IOException { /*SKIP*/ }

@@ -5,7 +5,8 @@
 
 package tlc2.value;
 
-import tlc2.TLCGlobals;
+import tlc2.output.EC;
+import tlc2.output.MP;
 import tlc2.util.FP64;
 import util.Assert;
 import util.UniqueString;
@@ -100,9 +101,7 @@ public class RecordValue extends Value implements Applicable {
 	return new RecordValue(newNames, newValues, this.isNorm);
       }
       else {
-	Assert.printWarning(TLCGlobals.warn,
-			    "Record field name " + ppr(arcVal.toString()) +
-			    " is not a string.");
+          MP.printWarning(EC.TLC_WRONG_RECORD_FIELD_NAME, new String[]{ppr(arcVal.toString())});
       }
     }
     return ex.value;

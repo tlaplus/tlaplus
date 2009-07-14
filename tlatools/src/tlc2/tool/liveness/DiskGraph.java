@@ -11,12 +11,13 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+import tlc2.output.EC;
+import tlc2.output.MP;
 import tlc2.util.BitVector;
 import tlc2.util.BufferedRandomAccessFile;
 import tlc2.util.LongVec;
 import tlc2.util.MemIntQueue;
 import util.FileUtil;
-import util.ToolIO;
 
 public class DiskGraph {
   /**
@@ -432,8 +433,10 @@ public class DiskGraph {
       this.nodeRAF.seek(nodePtr);
       this.nodePtrRAF.seek(nodePtrPtr);
     }
-    catch (IOException e) {
-      ToolIO.err.println("DiskGraph.toString(): " + e);
+    catch (IOException e) 
+    {
+        MP.printError(EC.SYSTEM_DISKGRAPH_ACCESS, e);
+      
       System.exit(1);
     }
     return sb.toString();

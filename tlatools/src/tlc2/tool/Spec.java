@@ -966,7 +966,7 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable {
                   return;
                 }
 		default : // give up
-		  Assert.warn("cannot handle subscript " + subscript);
+		  Assert.fail("cannot handle subscript " + subscript);
 		  return;
 		}
 	      }
@@ -993,8 +993,7 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable {
 	  }
 	  catch (Exception e) { // probably a ClassCastException
 	    // Assert.printStack(e);
-	    Assert.printWarning(TLCGlobals.warn,
-				"TLC could not determine if the subscript of the next-state relation contains\nall state variables. Proceed with fingers crossed.");
+	    MP.printWarning(EC.TLC_COULD_NOT_DETERMINE_SUBSCRIPT, new String[0]);
 	    varsInSubscript = null;
 	  }
 	  // ... and make sure they contain all the state variables
@@ -1002,8 +1001,7 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable {
 	    for (int i=0; i<this.variablesNodes.length; i++) {
 	      if (!varsInSubscript.contains(this.variablesNodes[i])) {
 		  // Assert.fail("The subscript of the next-state relation specified by the specification\ndoes not contain the state variable " + this.variables[i].getName());
-		Assert.printWarning(TLCGlobals.warn,
-				    "The subscript of the next-state relation specified by the specification\ndoes not seem to contain the state variable " + this.variablesNodes[i].getName());
+	          MP.printWarning(EC.TLC_SUBSCRIPT_CONTAIN_NO_STATE_VAR, new String[]{this.variablesNodes[i].getName().toString()});
 	      }
 	    }
 	  }

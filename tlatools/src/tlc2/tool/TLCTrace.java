@@ -96,16 +96,19 @@ public class TLCTrace {
     if (len > 0) {
       long fp = fps.elementAt(len-1);
       TLCStateInfo sinfo = this.tool.getState(fp);
-      if (sinfo == null) {
-	ToolIO.err.println("Failed to recover the initial state from its fingerprint. This is probably a TLC bug(1).");
-	System.exit(1);
+      if (sinfo == null) 
+      {
+          MP.printError(EC.TLC_FAILED_TO_RECOVER_INIT);
+          MP.printError(EC.TLC_BUG, "1");
+          System.exit(1);
       }
       res[stateNum++] = sinfo;
       for (int i = len - 2; i >= 0; i--) {
 	fp = fps.elementAt(i);
 	sinfo = this.tool.getState(fp, sinfo.state);
 	if (sinfo == null) {
-	  ToolIO.err.println("Failed to recover the state from its fingerprint. This is probably a TLC bug(2).");
+        MP.printError(EC.TLC_FAILED_TO_RECOVER_INIT);
+        MP.printError(EC.TLC_BUG, "2");
 	  System.exit(1);
 	}
 	res[stateNum++] = sinfo;
@@ -139,7 +142,8 @@ public class TLCTrace {
           sinfo = this.tool.getState(s1.fingerPrint());
           if (sinfo == null) 
           {
-              ToolIO.err.println("Failed to recover the initial state from its fingerprint. This is probably a TLC bug(3).");
+              MP.printError(EC.TLC_FAILED_TO_RECOVER_INIT);
+              MP.printError(EC.TLC_BUG, "3");
               System.exit(1);
           }
       }
@@ -149,8 +153,9 @@ public class TLCTrace {
           sinfo = this.tool.getState(s1.fingerPrint(), s0);
           if (sinfo == null) 
           {
-              ToolIO.err.println("Failed to find the action that generated the following state. This is probably a TLC bug(4).");
-              ToolIO.err.println(s1);      
+              MP.printError(EC.TLC_FAILED_TO_RECOVER_INIT);
+              MP.printError(EC.TLC_BUG, "4");
+              StatePrinter.printState(s1); 
               System.exit(1);
           }
       }
@@ -166,8 +171,9 @@ public class TLCTrace {
           sinfo = this.tool.getState(s2, s1);
           if (sinfo == null) 
           {
-              ToolIO.err.println("Failed to find the action to the following states. This is probably a TLC bug(5).");
-              ToolIO.err.println(s2);      
+              MP.printError(EC.TLC_FAILED_TO_RECOVER_INIT);
+              MP.printError(EC.TLC_BUG, "5");
+              StatePrinter.printState(s2);
               System.exit(1);
           }
           StatePrinter.printState(sinfo, null, ++idx);

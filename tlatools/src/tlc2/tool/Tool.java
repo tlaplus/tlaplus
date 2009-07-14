@@ -22,6 +22,8 @@ import tla2sany.semantic.SubstInNode;
 import tla2sany.semantic.SymbolNode;
 import tla2sany.semantic.ThmOrAssumpDefNode;
 import tlc2.TLCGlobals;
+import tlc2.output.EC;
+import tlc2.output.MP;
 import tlc2.util.Context;
 import tlc2.util.Vect;
 import tlc2.value.Applicable;
@@ -1049,9 +1051,7 @@ public class Tool
         resState = this.getNextStates(acts, s0, s1, nss);
       }
       else {
-        Assert.printWarning(TLCGlobals.warn,
-                            "The variable " + varName + " was changed while" +
-                            " it is specified as UNCHANGED at\n" + expr);
+          MP.printWarning(EC.TLC_UNCHANGED_VARIABLE_CHANGED, new String[]{varName.toString(), expr.toString()});
       }
       return resState;
     }
@@ -1432,9 +1432,7 @@ public class Tool
           Value atVal = result.select(lhs);
           if (atVal == null) {
             // Do nothing but warn:
-            Assert.printWarning(TLCGlobals.warn,
-                                "The EXCEPT was applied to non-existing fields of the" +
-                                " value at\n" + args[0]);
+              MP.printWarning(EC.TLC_EXCEPT_APPLIED_TO_UNKNOWN_FIELD, new String[]{args[0].toString()});
           }
           else {
             Context c1 = c.cons(EXCEPT_AT, atVal);
@@ -2446,9 +2444,7 @@ public class Tool
       if (v1.equals(v0)) {
         return this.enabled(acts, s0, s1);
       }
-      Assert.printWarning(TLCGlobals.warn,
-                          "The variable " + varName + " was changed while it" +
-                          " is specified as UNCHANGED at\n" + expr);
+      MP.printWarning(EC.TLC_UNCHANGED_VARIABLE_CHANGED, new String[]{varName.toString() , expr.toString()});
       return null;
     }
       

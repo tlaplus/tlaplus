@@ -16,7 +16,6 @@ import tlc2.tool.Simulator;
 import tlc2.util.FP64;
 import tlc2.util.RandomGenerator;
 import tlc2.value.Value;
-import util.Assert;
 import util.DebugPrinter;
 import util.FileUtil;
 import util.FilenameToStream;
@@ -526,18 +525,17 @@ public class TLC
             }
         } catch (Throwable e)
         {
-            System.gc();
-            // Uncommented by LL on 2 July 2007
-            Assert.printStack(e);
             if (e instanceof StackOverflowError)
             {
-                MP.printError(EC.SYSTEM_STACK_OVERFLOW);
+                System.gc();
+                MP.printError(EC.SYSTEM_STACK_OVERFLOW, e);
             } else if (e instanceof OutOfMemoryError)
             {
-                MP.printError(EC.SYSTEM_OUT_OF_MEMORY);
+                System.gc();
+                MP.printError(EC.SYSTEM_OUT_OF_MEMORY, e);
             } else
             {
-                MP.printError(EC.GENERAL, e.getMessage());
+                MP.printError(EC.GENERAL, e);
             }
         } finally 
         {

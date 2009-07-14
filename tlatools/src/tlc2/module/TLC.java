@@ -6,6 +6,8 @@
 package tlc2.module;
 
 import tlc2.TLCGlobals;
+import tlc2.output.EC;
+import tlc2.output.MP;
 import tlc2.tool.EvalControl;
 import tlc2.tool.EvalException;
 import tlc2.tool.TLARegistry;
@@ -34,8 +36,8 @@ public class TLC implements ValueConstants {
   private static RandomGenerator rng;
   
   static {
-    Assert.check(TLARegistry.put("MakeFcn", ":>") == null);
-    Assert.check(TLARegistry.put("CombineFcn", "@@") == null);
+    Assert.check(TLARegistry.put("MakeFcn", ":>") == null, MP.getMessage(EC.TLC_REGISTRY_INIT_ERROR, "MakeFcn"));
+    Assert.check(TLARegistry.put("CombineFcn", "@@") == null, MP.getMessage(EC.TLC_REGISTRY_INIT_ERROR, "CombineFcn"));
     rng = new RandomGenerator();
   }
 
@@ -69,9 +71,7 @@ public class TLC implements ValueConstants {
     if ((v1 instanceof BoolValue) && ((BoolValue)v1).val) {
       return v1;
     }
-    String msg = "The first argument of Assert evaluated to FALSE; the" +
-      " second argument was:\n" + Value.ppr(v2.toString());
-    throw new EvalException(EvalException.ASSERT, msg);
+    throw new EvalException(EvalException.ASSERT, MP.getMessage(EC.TLC_VALUE_ASSERT_FAILED, Value.ppr(v2.toString())));
   }
 
   /**

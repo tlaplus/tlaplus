@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.rmi.RemoteException;
 
+import tlc2.output.EC;
+import tlc2.output.MP;
 import util.Assert;
 import util.BufferedDataInputStream;
 import util.BufferedDataOutputStream;
@@ -225,7 +227,7 @@ public final class MemFPSet2 extends FPSet {
       new BufferedDataInputStream(this.chkptName(fname, "chkpt"));
     try {
       while (!dis.atEOF()) {
-	Assert.check(!this.put(dis.readLong()));
+	Assert.check(!this.put(dis.readLong()), MP.getMessage(EC.TLC_FP_NOT_IN_SET));
       }
     }
     catch (EOFException e) {
@@ -249,7 +251,7 @@ public final class MemFPSet2 extends FPSet {
   public final void prepareRecovery() throws IOException { /*SKIP*/ }
 
   public final void recoverFP(long fp) throws IOException {
-    Assert.check(!this.put(fp));
+    Assert.check(!this.put(fp), MP.getMessage(EC.TLC_FP_NOT_IN_SET));
   }
   
   public final void completeRecovery() throws IOException { /*SKIP*/ }

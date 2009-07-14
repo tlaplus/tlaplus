@@ -33,8 +33,10 @@ public class Sequences extends UserObj implements ValueConstants {
     this.size = size;
   }
 
-  static {
-    Assert.check(TLARegistry.put("Concat", "\\o") == null);
+  static 
+  {
+     // SZ Jul 13, 2009: added message for initialization assertion
+    Assert.check(TLARegistry.put("Concat", "\\o") == null, "TLA Registry initialization error");
   }
     
   /* The set of all sequences of value range. */

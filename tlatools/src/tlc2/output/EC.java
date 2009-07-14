@@ -7,6 +7,32 @@ package tlc2.output;
  */
 public interface EC
 {
+    // Check and CheckImpl
+    // check if the TLC option is the same for params
+    public static final int CHECK_FAILED_TO_CHECK = 3000;
+    public static final int CHECK_COULD_NOT_READ_TRACE = 3001;
+    public static final int CHECK_PARSING_FAILED = 3002;
+    
+    public static final int CHECK_PARAM_EXPECT_CONFIG_FILENAME = 3100;
+    public static final int CHECK_PARAM_USAGE = 3101;
+    public static final int CHECK_PARAM_MISSING_TLA_MODULE = 3102;
+    public static final int CHECK_PARAM_NEED_TO_SPECIFY_CONFIG_DIR = 3103;
+    public static final int CHECK_PARAM_WORKER_NUMBER_REQUIRED = 3104;
+    public static final int CHECK_PARAM_WORKER_NUMBER_TOO_SMALL = 3105;
+    public static final int CHECK_PARAM_WORKER_NUMBER_REQUIRED2 = 3106;
+    public static final int CHECK_PARAM_DEPTH_REQUIRED = 3107;
+    public static final int CHECK_PARAM_DEPTH_REQUIRED2 = 3108;
+    public static final int CHECK_PARAM_TRACE_REQUIRED = 3109;
+    public static final int CHECK_PARAM_COVREAGE_REQUIRED = 3110;
+    public static final int CHECK_PARAM_COVREAGE_REQUIRED2 = 3111;
+    public static final int CHECK_PARAM_COVREAGE_TOO_SMALL = 3112;
+    public static final int CHECK_PARAM_UNRECOGNIZED = 3113;
+    public static final int CHECK_PARAM_TOO_MANY_INPUT_FILES = 3114;
+
+    
+    
+    // TODO remove all these
+    public static final int UNKNOWN = -1;
     public final static int UNIT_TEST = -123456;
     
     public static final int GENERAL = 1000;
@@ -44,16 +70,40 @@ public interface EC
     
     public static final int TLC_ERROR_STATE = 2120;
     public static final int TLC_BEHAVIOR_UP_TO_THIS_POINT = 2121;
-
     public static final int TLC_BACK_TO_STATE = 2122;
-
     public static final int TLC_FAILED_TO_RECOVER_INIT = 2123;
-
     public static final int TLC_REPORTER_DIED = 2124;
 
     public static final int SYSTEM_ERROR_READING_POOL = 2125;
-
     public static final int SYSTEM_CHECKPOINT_RECOVERY_CORRUPT = 2126;
-
     public static final int SYSTEM_ERROR_WRITING_POOL = 2127;
+    public static final int TLC_BUG = 2128;
+
+    public static final int SYSTEM_DISKGRAPH_ACCESS = 2129;
+    public static final int TLC_AAAAAAA = 2130;
+    public static final int TLC_REGISTRY_INIT_ERROR = 2131;
+    public static final int TLC_VALUE_ASSERT_FAILED = 2132;
+    public static final int TLC_FP_NOT_IN_SET = 2133;
+    public static final int TLC_INDEX_ERROR = 2134;
+    public static final int SYSTEM_STREAM_EMPTY = 2135;
+    public static final int TLC_PARAMETER_MUST_BE_POSTFIX = 2136;
+    public static final int SYSTEM_FILE_NULL = 2137;
+    public static final int SYSTEM_INTERRUPTED = 2138;
+    public static final int TLC_COULD_NOT_DETERMINE_SUBSCRIPT = 2139;
+    public static final int TLC_SUBSCRIPT_CONTAIN_NO_STATE_VAR = 2140;
+    public static final int TLC_WRONG_TUPLE_FIELD_NAME = 2141;
+    public static final int TLC_WRONG_RECORD_FIELD_NAME = 2142;
+    public static final int TLC_UNCHANGED_VARIABLE_CHANGED = 2143;
+    public static final int TLC_EXCEPT_APPLIED_TO_UNKNOWN_FIELD = 2144;
+    
+    
+    
+    
+
+
+
+    
+
+    
+    
 }

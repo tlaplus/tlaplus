@@ -12,6 +12,8 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.rmi.RemoteException;
 
+import tlc2.output.EC;
+import tlc2.output.MP;
 import tlc2.util.SetOfLong;
 import util.Assert;
 import util.FileUtil;
@@ -108,7 +110,7 @@ public final class MemFPSet1 extends FPSet {
   public final void prepareRecovery() throws IOException { /*SKIP*/ }
 
   public final void recoverFP(long fp) throws IOException {
-    Assert.check(!this.set.put(fp));
+    Assert.check(!this.set.put(fp), MP.getMessage(EC.TLC_FP_NOT_IN_SET));
   }
   
   public final void completeRecovery() throws IOException { /*SKIP*/ }

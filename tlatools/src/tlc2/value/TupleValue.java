@@ -6,7 +6,8 @@
 package tlc2.value;
 
 import tla2sany.semantic.SymbolNode;
-import tlc2.TLCGlobals;
+import tlc2.output.EC;
+import tlc2.output.MP;
 import tlc2.tool.EvalControl;
 import tlc2.util.Context;
 import tlc2.util.FP64;
@@ -77,7 +78,7 @@ public class TupleValue extends Value implements Applicable {
     }
     int idx = ((IntValue)arg).val;
     if (idx <= 0 || idx > this.elems.length) {
-      Assert.warn("Attempted to apply tuple\n" + ppr(this.toString()) +
+      Assert.fail("Attempted to apply tuple\n" + ppr(this.toString()) +
 		  "\nto integer " + idx + " which is out of domain.");
     }
     return this.elems[idx-1];
@@ -118,9 +119,7 @@ public class TupleValue extends Value implements Applicable {
 	}
 	return new TupleValue(newElems);
       }
-      Assert.printWarning(TLCGlobals.warn,
-			  "Tuple field name " + ppr(arcVal.toString()) +
-			  " is not an integer.");
+      MP.printWarning(EC.TLC_WRONG_TUPLE_FIELD_NAME, new String[]{ppr(arcVal.toString())});
     }
     return ex.value;
   }

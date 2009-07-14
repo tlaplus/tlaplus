@@ -4,6 +4,8 @@
 //      modified on Mon Jun 19 14:29:07 PDT 2000 by yuanyu
 package tlc2.util;
 
+import tlc2.output.EC;
+import tlc2.output.MP;
 import util.Assert;
 
 /** A <code>ReadersWriterLock</code> is a class that can be
@@ -41,8 +43,9 @@ public class ReadersWriterLock {
         while (this.hasWriter || this.waitingWriters > 0) {
             try {
                 this.wait();
-            } catch (InterruptedException e) {
-                Assert.fail();
+            } catch (InterruptedException e) 
+            {
+                Assert.fail(MP.getTLCBug(EC.SYSTEM_INTERRUPTED));
             }
         }
         this.numReaders++;
@@ -68,7 +71,7 @@ public class ReadersWriterLock {
             try {
                 this.wait();
             } catch (InterruptedException e) {
-                Assert.fail();
+                Assert.fail(MP.getTLCBug(EC.SYSTEM_INTERRUPTED));
             }
             this.waitingWriters--;
         }

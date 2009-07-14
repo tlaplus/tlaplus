@@ -348,10 +348,9 @@ public class ByteUtils {
     for (int i = 0; i<len; i++)
       A[i] = readSizeBigInt(in);
     }
-    catch (IOException e) {
-      throw new RuntimeException
-	("Can't read an array of BigInts from the input stream; "
-	 + "not enough bytes, but not empty.");
+    catch (IOException e) 
+    {
+      Assert.fail("Can't read an array of BigInts from the input stream; not enough bytes, but not empty.");
     }
     return A;
   }
@@ -403,8 +402,7 @@ public class ByteUtils {
 	writeSizeByteArray(out, readSizeByteArray(in));
     }
     catch (IOException e) {
-      throw new RuntimeException
-	("Can't append in to out; not enough bytes, but not empty.");
+      Assert.fail("Can't append in to out; not enough bytes, but not empty.");
     }
   }
 
@@ -429,8 +427,7 @@ public class ByteUtils {
 	writeSizeByteArray(out, readSizeByteArray(in));
     }
     catch (IOException e) {
-      throw new RuntimeException
-	("Can't append in to out; not enough bytes, but not empty.");
+      Assert.fail("Can't append in to out; not enough bytes, but not empty.");
     }
   }
 

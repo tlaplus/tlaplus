@@ -7,12 +7,13 @@ package tlc2.tool.liveness;
 import java.io.IOException;
 
 import tlc2.TLCGlobals;
+import tlc2.output.EC;
+import tlc2.output.MP;
 import tlc2.tool.Action;
 import tlc2.tool.StateVec;
 import tlc2.tool.TLCState;
 import tlc2.tool.Tool;
 import tlc2.util.LongVec;
-import util.ToolIO;
 
 public class LiveCheck {
 
@@ -312,7 +313,7 @@ public class LiveCheck {
 
   public static void recover() throws IOException {
     for (int i = 0; i < dgraphs.length; i++) {
-      ToolIO.err.println("AAAAAA");      
+      MP.printMessage(EC.TLC_AAAAAAA);      
       dgraphs[i].recover();
     }
   }

@@ -8,6 +8,13 @@ package tlc2.tool;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
+/**
+ * Provides a mapping between the TLA+ names and Java names.
+ * <br><b>Note:</b>
+ * 
+ * @author Simon Zambrovski
+ * @version $Id$
+ */
 public class TLARegistry {
 
   private static Hashtable javaToTLA = new Hashtable();
@@ -16,6 +23,12 @@ public class TLARegistry {
     return (String)javaToTLA.get(name);
   }
 
+  /**
+   * puts a value into the registry.
+   * @param tname the TLA+ name 
+   * @param jname the corresponding Java name
+   * @return the previous value, if one
+   */
   public static String put(String tname, String jname) {
     return (String)javaToTLA.put(tname, jname);
   }

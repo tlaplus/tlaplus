@@ -10,8 +10,9 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
+import tlc2.output.EC;
+import tlc2.output.MP;
 import util.FileUtil;
-import util.ToolIO;
 
 public class ObjectPoolStack {
 
@@ -81,57 +82,57 @@ public class ObjectPoolStack {
   }
 
   class Reader extends Thread {
-    public void run() {
-      try {
-	synchronized(this) {
-	  while (true) {
-	    while (ObjectPoolStack.this.poolFile == null) {
-	      this.wait();
-	    }
-	    ObjectInputStream ois = FileUtil.newOBFIS(ObjectPoolStack.this.poolFile);
-	    for (int i = 0; i < ObjectPoolStack.this.buf.length; i++) {
-	      ObjectPoolStack.this.buf[i] = ois.readObject();
-	    }
-	    ois.close();
-	    ObjectPoolStack.this.poolFile = null;
-	    ObjectPoolStack.this.isIdle = true;
-	    ObjectPoolStack.this.notify();	    
-	  }
-	}
+      public void run() {
+          try {
+              synchronized(this) {
+                  while (true) {
+                      while (ObjectPoolStack.this.poolFile == null) {
+                          this.wait();
+                      }
+                      ObjectInputStream ois = FileUtil.newOBFIS(ObjectPoolStack.this.poolFile);
+                      for (int i = 0; i < ObjectPoolStack.this.buf.length; i++) {
+                          ObjectPoolStack.this.buf[i] = ois.readObject();
+                      }
+                      ois.close();
+                      ObjectPoolStack.this.poolFile = null;
+                      ObjectPoolStack.this.isIdle = true;
+                      ObjectPoolStack.this.notify();	    
+                  }
+              }
+          }
+          catch (Exception e) 
+          {
+              MP.printError(EC.SYSTEM_ERROR_WRITING_POOL, e);
+              System.exit(1);
+          }
       }
-      catch (Exception e) {
-	ToolIO.err.println("Error: when reading the disk (ObjectPoolStack.Reader.run):\n" +
-			   e.getMessage());
-	System.exit(1);
-      }
-    }
   }
 
   class Writer extends Thread {
-    public void run() {
-      try {
-	synchronized(this) {
-	  while (true) {
-	    while (ObjectPoolStack.this.poolFile == null) {
-	      this.wait();
-	    }
-	    ObjectOutputStream oos = FileUtil.newOBFOS(ObjectPoolStack.this.poolFile);
-	    for (int i = 0; i < ObjectPoolStack.this.buf.length; i++) {
-	      oos.writeObject(ObjectPoolStack.this.buf[i]);
-	    }
-	    oos.close();
-	    ObjectPoolStack.this.poolFile = null;
-	    ObjectPoolStack.this.isIdle = true;
-	    ObjectPoolStack.this.notify();
-	  }
-	}
+      public void run() {
+          try {
+              synchronized(this) {
+                  while (true) {
+                      while (ObjectPoolStack.this.poolFile == null) {
+                          this.wait();
+                      }
+                      ObjectOutputStream oos = FileUtil.newOBFOS(ObjectPoolStack.this.poolFile);
+                      for (int i = 0; i < ObjectPoolStack.this.buf.length; i++) {
+                          oos.writeObject(ObjectPoolStack.this.buf[i]);
+                      }
+                      oos.close();
+                      ObjectPoolStack.this.poolFile = null;
+                      ObjectPoolStack.this.isIdle = true;
+                      ObjectPoolStack.this.notify();
+                  }
+              }
+          }
+          catch (Exception e) 
+          {
+              MP.printError(EC.SYSTEM_ERROR_READING_POOL, e);
+              System.exit(1);
+          }
       }
-      catch (Exception e) {
-	ToolIO.err.println("Error: when reading the disk (ObjectPoolStack.Writer.run):\n" +
-			   e.getMessage());
-	System.exit(1);
-      }
-    }
   }
     
 }

@@ -5,6 +5,8 @@ package tlc2.util;
 import java.math.BigInteger;
 import java.util.Random;
 
+import tlc2.output.EC;
+import tlc2.output.MP;
 import util.Assert;
 import util.ToolIO;
 
@@ -33,24 +35,28 @@ public class Combinatorics {
     }
   }
 
-  public static long sumChoose(int n, int m) {
-    Assert.check(((m>=0) && (n>=0) && (n>=m)), 
-		 "The arguments to sumChoose are not appropriate.");
-    if (m == 0)
-      return (long)1;
-    else if (m == n)
-      return ((long)1 << n);
-    else if (m == 1)
-      return (long)n;
-    else if (m == n-1)
-      return ((long)2 << n) - n;
-    else {
-      int j = choosePairToInt(n,m);
-      if (j < CHOOSETABLESIZE)
-	return SUMCHOOSETABLE[j];
-      String msg = "Choose can only deal with numbers up to 62";
-      throw new RuntimeException(msg);
-    }
+  public static long sumChoose(int n, int m) 
+  {
+      Assert.check(((m>=0) && (n>=0) && (n>=m)), "The arguments to sumChoose are not appropriate.");
+      if (m == 0)
+          return (long)1;
+      else if (m == n)
+          return ((long)1 << n);
+      else if (m == 1)
+          return (long)n;
+      else if (m == n-1)
+          return ((long)2 << n) - n;
+      else 
+      {
+          int j = choosePairToInt(n,m);
+          if (j < CHOOSETABLESIZE) 
+          {
+              return SUMCHOOSETABLE[j];
+          }
+          Assert.fail("Choose can only deal with numbers up to 62");
+          // make the compiler happy
+          return Long.MIN_VALUE;
+      }
   }
 	     
   private static int choosePairToInt(int n, int m) {
@@ -79,7 +85,7 @@ public class Combinatorics {
   }
 
   public static BigInteger toNum(BigInteger[] B, BigInteger[] N, int len) {
-    Assert.check((B.length >= len) && (len > 0));
+    Assert.check((B.length >= len) && (len > 0), MP.getTLCBug(EC.TLC_INDEX_ERROR));
 
     BigInteger num = N[len-1];
     for (int i = len-2; i >= 0; i--) {
@@ -93,7 +99,7 @@ public class Combinatorics {
   }
 
   public static BigInteger[] toSeq(BigInteger[] B, BigInteger n, int len) {
-    Assert.check((B.length >= len) && (len != 0));
+    Assert.check((B.length >= len) && (len != 0), MP.getTLCBug(EC.TLC_INDEX_ERROR));
 
     BigInteger[] nlist = new BigInteger[len];
     BigInteger num = n;

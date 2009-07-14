@@ -10,6 +10,8 @@ import java.io.RandomAccessFile;
 import java.net.InetAddress;
 import java.rmi.RemoteException;
 
+import tlc2.output.EC;
+import tlc2.output.MP;
 import tlc2.tool.TLCTrace;
 import tlc2.util.BufferedRandomAccessFile;
 import tlc2.util.IdThread;
@@ -351,7 +353,7 @@ public class DiskFPSet extends FPSet {
             int midPage = (loPage+1) + (int)((dhi-dlo-1.0) * (dfp-dloVal) / (dhiVal-dloVal));
             if (midPage == hiPage) midPage--; // Needed due to limited precision of doubles
 
-            Assert.check(loPage < midPage && midPage < hiPage);
+            Assert.check(loPage < midPage && midPage < hiPage, MP.getTLCBug(EC.TLC_INDEX_ERROR));
             long v = this.index[midPage];
             if (fp < v) {
                 hiPage = midPage; hiVal = v;
@@ -363,7 +365,7 @@ public class DiskFPSet extends FPSet {
                 return true;
             }
         }
-        Assert.check(hiPage == loPage + 1);
+        Assert.check(hiPage == loPage + 1, MP.getTLCBug(EC.TLC_INDEX_ERROR));
 
 	boolean diskHit = false;
         try {
@@ -397,7 +399,7 @@ public class DiskFPSet extends FPSet {
                 long midEntry = loEntry + (long)((dhi - dlo) * (dfp - dloVal) / (dhiVal - dloVal));
                 if (midEntry == hiEntry) midEntry--;
                 
-                Assert.check(loEntry <= midEntry && midEntry < hiEntry);
+                Assert.check(loEntry <= midEntry && midEntry < hiEntry, MP.getTLCBug(EC.TLC_INDEX_ERROR));
                 raf.seek(midEntry * LongSize);
                 long v = raf.readLong();
 
@@ -504,7 +506,7 @@ public class DiskFPSet extends FPSet {
         File currFile = new File(realName);
         currFile.delete();
         boolean status = tmpFile.renameTo(currFile);
-        Assert.check(status);
+        Assert.check(status, "Could not rename file during the clean-up");
 
         // reopen a BufferedRAF for each thread
         for (int i = 0; i < this.braf.length; i++) {
@@ -535,7 +537,7 @@ public class DiskFPSet extends FPSet {
       tmpRAF.close();
       currFile.delete();
       boolean status = tmpFile.renameTo(currFile);
-      Assert.check(status);
+      Assert.check(status, "Could not rename file during the clean-up");
     }
   
     private int currIndex;
@@ -605,7 +607,7 @@ public class DiskFPSet extends FPSet {
                 } catch (EOFException e) { eof = true; }
             } while (!eof);
         }
-        Assert.check(this.currIndex == indexLen - 1);
+        Assert.check(this.currIndex == indexLen - 1, MP.getTLCBug(EC.TLC_INDEX_ERROR));
 
         // maintain object invariants
         this.fileCnt += buffLen;
@@ -695,7 +697,7 @@ public class DiskFPSet extends FPSet {
                 this.writeFP(currRAF, fp);
             }
         } catch (EOFException e) {
-            Assert.check(this.currIndex == indexLen - 1);
+            Assert.check(this.currIndex == indexLen - 1, MP.getTLCBug(EC.TLC_INDEX_ERROR));
             this.index[indexLen - 1] = fp;
         }
 

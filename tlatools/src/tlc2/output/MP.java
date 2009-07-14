@@ -1,5 +1,7 @@
 package tlc2.output;
 
+import tlc2.TLCGlobals;
+import util.Set;
 import util.ToolIO;
 
 /**
@@ -14,7 +16,27 @@ public class MP
     private static final int NONE = 0;
     private static final int ERROR = 1;
     private static final int TLCBUG = 2;
+    private static final int WARNING = 3;
+    private static MP instance = null;
 
+    private Set warningHistory;
+    
+    /**
+     * The internal instance
+     */
+    static 
+    {
+        instance = new MP();
+    }
+    
+    /**
+     * Private constructor to avoid instantiations
+     */
+    private MP()
+    {
+        warningHistory = new Set();    
+    }
+    
     /**
      * Returns the formatted message
      * @param messageClass one of ERROR, TLCBUG
@@ -32,13 +54,16 @@ public class MP
         StringBuffer b = new StringBuffer();
 
         // depending on message class add different prefix
-        switch (messageClass) {
+        switch (messageClass) 
+        {
         case ERROR:
             b.append("Error: ");
             break;
         case TLCBUG:
             b.append("TLC Bug: ");
             break;
+        case WARNING:
+            b.append("Warning: ");
         case NONE:
         default:
             break;
@@ -145,14 +170,20 @@ public class MP
                     + "The following behaviour constitutes a counter-example:\n");
             break;
 
+            // this is a TLC bug
         case EC.TLC_FAILED_TO_RECOVER_NEXT:
             b.append("Failed to recover the next state from its fingerprint.");
             break;
-
+            // this is a TLC bug
         case EC.TLC_FAILED_TO_RECOVER_INIT:
             b.append("Failed to recover the initial state from its fingerprint.");
             break;
 
+        case EC.TLC_BUG:
+            b.append("This is probably a TLC bug(%1%).");
+            break;
+            
+            
         case EC.TLC_NO_STATES_SATISFYING_INIT:
             b.append("There is no state satisfying the initial state predicate.");
             break;
@@ -188,15 +219,145 @@ public class MP
             
             
         case EC.SYSTEM_ERROR_WRITING_POOL:
-            b.append("Error: when writing the disk (StatePoolWriter.run):\n%1%");
+            b.append("when writing the disk (StatePoolWriter.run):\n%1%");
+            break;
+       
+        case EC.SYSTEM_DISKGRAPH_ACCESS:
+            b.append("DiskGraph.toString()");
             break;
             
+        case EC.TLC_AAAAAAA:
+            b.append("AAAAAA");
+            break;
+        case EC.TLC_REGISTRY_INIT_ERROR:
+            b.append("TLA+ Registry initialization error. The name %1% is already in use.");
+            break;
             
+/* ************************************************************************ */
+        case EC.CHECK_FAILED_TO_CHECK:
+            b.append("TLC failed in checking traces.");
+            break;
+        case EC.CHECK_PARAM_USAGE:
+            b.append("Usage: java tlc2.tool.CheckImplFile [-option] inputfile");
+            break;
             
+        case EC.CHECK_PARAM_MISSING_TLA_MODULE:
+            b.append("Missing input TLA+ module.");
+            break;
             
+        case EC.CHECK_PARAM_EXPECT_CONFIG_FILENAME:
+            b.append("Expect a file name for -config option.");
+            break;
+        
+        case EC.CHECK_PARAM_NEED_TO_SPECIFY_CONFIG_DIR:
+            b.append("need to specify the metadata directory for recovery.");
+            break;
             
+        case EC.CHECK_PARAM_WORKER_NUMBER_REQUIRED:
+            b.append("Worker number required. But encountered %1%");
+            break;
+
+        case EC.CHECK_PARAM_WORKER_NUMBER_TOO_SMALL:
+            b.append("At least one worker is required.");
+            break;
+
+        case EC.CHECK_PARAM_WORKER_NUMBER_REQUIRED2:
+            b.append("Expect an integer for -workers option.");
+            break;
+           
+        case EC.CHECK_PARAM_DEPTH_REQUIRED:
+            b.append("Depth must be an integer. But encountered %1%");
+            break;
             
+        case EC.CHECK_PARAM_DEPTH_REQUIRED2:
+            b.append("Expect an integer for -depth option.");
+            break;
             
+
+        case EC.CHECK_PARAM_TRACE_REQUIRED:
+            b.append("Expect a filename for -trace option.");
+            break;
+
+        case EC.CHECK_PARAM_COVREAGE_REQUIRED:
+            b.append("An integer for coverage report interval required. But encountered %1%");
+            break;
+
+        case EC.CHECK_PARAM_COVREAGE_REQUIRED2:
+            b.append("Coverage report interval required.");
+            break;
+
+        case EC.CHECK_PARAM_COVREAGE_TOO_SMALL:
+            b.append("Expect a nonnegative integer for -coverage option.");
+            break;
+            
+        case EC.CHECK_PARAM_UNRECOGNIZED:
+            b.append("Unrecognized option: %1%");
+            break;
+        case EC.CHECK_PARAM_TOO_MANY_INPUT_FILES:
+            b.append("More than one input files: %1% and %2%");
+            break;
+                                    
+        case EC.CHECK_COULD_NOT_READ_TRACE:
+            b.append("TLC could not read in the trace. %1%");
+            break;
+
+        case EC.CHECK_PARSING_FAILED:
+            b.append("Parsing or semantic analysis failed.");
+            break;
+            
+        case EC.TLC_VALUE_ASSERT_FAILED:
+            b.append("The first argument of Assert evaluated to FALSE; the second argument was:\n%1%");
+            break;
+            
+        case EC.TLC_FP_NOT_IN_SET:
+            b.append("The fingerprint is not in set.");
+            break;
+            
+        case EC.TLC_INDEX_ERROR:
+            b.append("Index error.");
+            break;
+            
+        case EC.SYSTEM_STREAM_EMPTY:
+            b.append("The provided input stream was null, empty or could not be accessed.");
+            break;
+            
+        case EC.TLC_PARAMETER_MUST_BE_POSTFIX:
+            b.append("Parameter must be a postfix operator");
+            break;
+            
+        case EC.SYSTEM_FILE_NULL:
+            b.append("File must be not null");
+            break;
+            
+        case EC.SYSTEM_INTERRUPTED:
+            b.append("Thread has been interrupted.");
+            break;
+            
+        case EC.TLC_COULD_NOT_DETERMINE_SUBSCRIPT:
+            b.append("TLC could not determine if the subscript of the next-state relation contains\nall state variables. Proceed with fingers crossed.");
+            break;
+        
+        case EC.TLC_SUBSCRIPT_CONTAIN_NO_STATE_VAR:
+            b.append("The subscript of the next-state relation specified by the specification\ndoes not seem to contain the state variable %1%");
+            break;
+            
+        case EC.TLC_WRONG_TUPLE_FIELD_NAME:
+            b.append("Tuple field name %1% is not an integer.");
+            break;
+            
+        case EC.TLC_WRONG_RECORD_FIELD_NAME:
+            b.append("Record field name %1% is not a string.");
+            break;
+
+        case EC.TLC_UNCHANGED_VARIABLE_CHANGED:
+            b.append("The variable %1% was changed while it  is specified as UNCHANGED at\n%1");
+            break;
+            
+        case EC.TLC_EXCEPT_APPLIED_TO_UNKNOWN_FIELD:
+            b.append("The EXCEPT was applied to non-existing fields of the value at\n%1%");
+            break;
+        
+
             
 
         /* 
@@ -224,6 +385,19 @@ public class MP
                 // stop processing
                 break;
             }
+        }
+
+
+        // post processing
+        switch (messageClass) 
+        {
+        case WARNING:
+            b.append("\n(Use the -nowarning option to disable this warning.)");
+        case ERROR:
+        case TLCBUG:
+        case NONE:
+        default:
+            break;
         }
         return b.toString();
     }
@@ -328,6 +502,32 @@ public class MP
         // write the output
         ToolIO.err.println(getMessage(ERROR, errorCode, parameters));
     }
+    
+    
+    /**
+     * Prints the error by code and the provided exception
+     * @param errorCode 
+     * @param cause
+     * @param includeStackTrace boolean flag if the stack-trace should be printed
+     */
+    public static void printError(int errorCode, Throwable cause, boolean includeStackTrace)
+    {
+        printError(errorCode, cause.getMessage());
+        if (includeStackTrace) 
+        {
+            cause.printStackTrace(ToolIO.err);
+        }
+    }
+
+    /**
+     * Prints the error by code and reports the exception message 
+     * @param errorCode
+     * @param cause
+     */
+    public static void printError(int errorCode, Throwable cause)
+    {
+        printError(errorCode, cause, false);
+    }
 
     /**
      * Prints the error for a given error code
@@ -371,5 +571,28 @@ public class MP
         // write the output
         ToolIO.err.println(getMessage(TLCBUG, errorCode, parameters));
     }
+    
+    
+    /**
+     * Prints a warning (if the global switch is enabled and it is not a duplicate warning)
+     * @param errorCode
+     * @param parameters
+     */
+    public static void printWarning(int errorCode, String[] parameters)
+    {
+        // only print warnings if the global warning switch was enabled
+        if (TLCGlobals.warn)
+        {
+            // construct the message
+            String message = getMessage(WARNING, errorCode, parameters);
+            // if the message has not been printed
+            if (instance.warningHistory.put(message) == null) 
+            {
+                // print it
+                ToolIO.err.println(message);
+            }
+        }
+    }
+ 
 
 }
