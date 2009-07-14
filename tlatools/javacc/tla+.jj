@@ -78,6 +78,7 @@ config.jj.
 // 30/11/2002, added NUMBER_CONSTANTS forms for \b, \o and \f
 // 4/9/2006, modified belchDef to improve error location in case of wrong definition LHS: ( ... ) == 
 // --- modified handling of STRING_LITERAL to reduce escape sequences to char values..
+// changed the Assert to the one in util package 
 
 options {
   LOOKAHEAD = 1;
@@ -98,7 +99,7 @@ import tla2sany.st.TreeNode;
 
 import tla2sany.utilities.Vector;
 import tla2sany.utilities.Stack;
-import tla2sany.utilities.Assert;
+import util.Assert;
 import util.UniqueString;
 import util.ToolIO;
 
@@ -193,7 +194,7 @@ public class TLAplusParser implements tla2sany.st.SyntaxTreeConstants, ParseTree
       } else  PErrors.push( new ParseError( msg  )) ;
 //      PErrors.push( new ParseError( tme.getMessage() )) ;
     } /*** end catch(TokenMgrError) ****/
-    if ( PErrors.empty() ) Assert.assertion( heirsIndex == 0 );
+    if ( PErrors.empty() ) Assert.check( heirsIndex == 0, "Assertion error in TLA+ Parser sanity check" );
       /*********************************************************************
       * This is a sanity check.  The assertion should never be false.      *
       *********************************************************************/
@@ -832,7 +833,7 @@ if (System.getProperty("TLA-StackTrace", "off").equals("on")) ToolIO.out.println
   private final void epa() {
     popMsg();
 if (System.getProperty("TLA-StackTrace", "off").equals("on")) ToolIO.out.println("Ending " + msgStack [ msgStackCurrentSize   ]);
-    Assert.assertion( popHeir() );
+    Assert.check( popHeir(), "Assertion error in epa()" );
     expecting = emptyString;
   }
 //
@@ -3940,7 +3941,7 @@ SBracketCases() : {
     )
   )
   { SyntaxTreeNode sn[] = getLastHeirs();
-    Assert.assertion(kind !=0);
+    Assert.check(kind !=0, "Assertion error in SBracketCases()");
     epa(); return new SyntaxTreeNode(mn, kind, sn); }
 }
 
