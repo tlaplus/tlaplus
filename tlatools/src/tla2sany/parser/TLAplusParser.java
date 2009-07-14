@@ -5954,6 +5954,7 @@ SyntaxTreeNode tn;
       throw new ParseException();
     }
     SyntaxTreeNode sn[] = getLastHeirs();
+    // replace this and fix in the jj file too!
     Assert.check(kind !=0, MP.getMessage(EC.UNKNOWN));
     epa(); 
     {   
