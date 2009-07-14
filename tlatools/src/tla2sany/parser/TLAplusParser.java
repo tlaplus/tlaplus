@@ -6,7 +6,9 @@ import tla2sany.st.TreeNode;
 
 import tla2sany.utilities.Vector;
 import tla2sany.utilities.Stack;
-import tla2sany.utilities.Assert;
+import tlc2.output.EC;
+import tlc2.output.MP;
+import util.Assert;
 import util.UniqueString;
 import util.ToolIO;
 
@@ -101,7 +103,7 @@ public class TLAplusParser implements tla2sany.st.SyntaxTreeConstants, ParseTree
       } else  PErrors.push( new ParseError( msg  )) ;
 //      PErrors.push( new ParseError( tme.getMessage() )) ;
     } /*** end catch(TokenMgrError) ****/
-    if ( PErrors.empty() ) Assert.assertion( heirsIndex == 0 );
+    if ( PErrors.empty() ) Assert.check( heirsIndex == 0, "TLA+ Parser sanity check" );
       /*********************************************************************
       * This is a sanity check.  The assertion should never be false.      *
       *********************************************************************/
@@ -746,7 +748,9 @@ if (opArgs.kind != N_OpArgs) { ToolIO.out.println("Bug: not N_OpArgs node"); };
     {
         ToolIO.out.println("Ending " + msgStack [ msgStackCurrentSize   ]);
     }
-    Assert.assertion( popHeir() );
+    
+    // TODO provide some message
+    Assert.check( popHeir(), MP.getMessage(EC.UNKNOWN));
     expecting = emptyString;
   }
 //
@@ -5950,8 +5954,12 @@ SyntaxTreeNode tn;
       throw new ParseException();
     }
     SyntaxTreeNode sn[] = getLastHeirs();
-    Assert.assertion(kind !=0);
-    epa(); {if (true) return new SyntaxTreeNode(mn, kind, sn);}
+    Assert.check(kind !=0, MP.getMessage(EC.UNKNOWN));
+    epa(); 
+    {   
+        if (true) 
+            return new SyntaxTreeNode(mn, kind, sn);
+    }
     throw new Error("Missing return statement in function");
   }
 
