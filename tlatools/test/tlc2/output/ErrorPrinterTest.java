@@ -1,5 +1,6 @@
 package tlc2.output;
 
+import tla2sany.output.SANYCodes;
 import util.ToolIO;
 import junit.framework.TestCase;
 
@@ -27,8 +28,8 @@ public class ErrorPrinterTest extends TestCase
     {
         MP.printError(EC.UNIT_TEST);
         String[] allMessages = ToolIO.getAllMessages();
-        assertEquals(allMessages.length, 1);
-        assertEquals(allMessages[0], "Error: [%1%][%2%]");
+        assertEquals(1, allMessages.length);
+        assertEquals("Error: [%1%][%2%]", allMessages[0]);
     }
 
     /**
@@ -39,8 +40,8 @@ public class ErrorPrinterTest extends TestCase
         String parameter = "EXPECTED";
         MP.printError(EC.UNIT_TEST, parameter);
         String[] allMessages = ToolIO.getAllMessages();
-        assertEquals(allMessages.length, 1);
-        assertEquals(allMessages[0], "Error: [" + parameter + "][%2%]");
+        assertEquals(1, allMessages.length);
+        assertEquals("Error: [" + parameter + "][%2%]", allMessages[0]);
     }
 
     /**
@@ -51,8 +52,17 @@ public class ErrorPrinterTest extends TestCase
         String[] parameters = new String[] { "EXPECTED", "EXPECTED2", "TOO MANY" };
         MP.printError(EC.UNIT_TEST, parameters);
         String[] allMessages = ToolIO.getAllMessages();
-        assertEquals(allMessages.length, 1);
-        assertEquals(allMessages[0], "Error: [" + parameters[0] + "][" + parameters[1] + "]");
+        assertEquals(1, allMessages.length);
+        assertEquals("Error: [" + parameters[0] + "][" + parameters[1] + "]", allMessages[0]);
+    }
+
+    public void testPrintErrorSANY()
+    {
+        String[] parameters = new String[] { "SANY" };
+        MP.printError(SANYCodes.UNIT_TEST, parameters);
+        String[] allMessages = ToolIO.getAllMessages();
+        assertEquals(1, allMessages.length);
+        assertEquals("Error: Some String with "+parameters[0]+" parameter", allMessages[0]);
     }
 
 }
