@@ -5,6 +5,7 @@
 
 package tlc2.module;
 
+import tlc2.output.EC;
 import tlc2.tool.EvalException;
 import tlc2.tool.TLARegistry;
 import tlc2.value.BoolValue;
@@ -53,14 +54,10 @@ public class Integers extends UserObj implements ValueConstants {
 
   public static BoolValue LT(Value x, Value y) {
     if (!(x instanceof IntValue)) {
-      String msg = "The first argument of < must be an integer" +
-	", but instead it is\n" + Value.ppr(x.toString());
-      throw new EvalException(msg);
+      throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[]{"first", "<", "\bn integer", Value.ppr(x.toString())});
     }
     if (!(y instanceof IntValue)) {
-      String msg = "The second argument of < must be an integer" +
-	", but instead it is\n" + Value.ppr(y.toString());
-      throw new EvalException(msg);
+      throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[]{"second", "<", "\bn integer", Value.ppr(y.toString())});      
     }
 
     return (((IntValue)x).val < ((IntValue)y).val) ? ValTrue : ValFalse;
@@ -142,8 +139,7 @@ public class Integers extends UserObj implements ValueConstants {
 
   public static IntValue Mod(IntValue x, IntValue y) {
     if (y.val <= 0) {
-      throw new EvalException("The second argument of % should be a positive" +
-			      " number; but instead it is: " + y);
+      throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[]{"second", "%", "positive number", y.toString()});      
     }
     int r = x.val % y.val;
     return IntValue.gen(r < 0 ? (r+y.val) : r); 
@@ -151,8 +147,7 @@ public class Integers extends UserObj implements ValueConstants {
 
   public static IntValue Expt(IntValue x, IntValue y) {
     if (y.val < 0) {
-      throw new EvalException("The second argument of ^ should be a natural" +
-			      " number; but instead it is: " + y);
+        throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[]{"second", "^", "natural number", y.toString()});      
     }
     if (y.val == 0) {
       if (x.val == 0) {
@@ -171,25 +166,27 @@ public class Integers extends UserObj implements ValueConstants {
   }
   
   public final int compareTo(Value val) {
-    if (val instanceof UserValue) {
-      if (((UserValue)val).userObj instanceof Integers) {
-	return 0;
+      if (val instanceof UserValue) {
+          if (((UserValue)val).userObj instanceof Integers) 
+          {
+              return 0;
+          }
+          if (((UserValue)val).userObj instanceof Naturals) 
+          {
+              return 1;
+          }
       }
-      if (((UserValue)val).userObj instanceof Naturals) {
-	return 1;
-      }
-    }
-    if (val instanceof ModelValue) return 1;
-    String msg = "Comparing Int with the value\n" + Value.ppr(val.toString());
-    throw new EvalException(msg);
+      if (val instanceof ModelValue) return 1;
+      throw new EvalException(EC.TLC_MODULE_ATTEMPTED_TO_COMPARE, new String[]{"Int", Value.ppr(val.toString())});
   }
 
   public final boolean member(Value val) {
-    if (val instanceof IntValue) return true;
-    if (val instanceof ModelValue)  
-      return ((ModelValue) val).modelValueMember(this) ;
-    throw new EvalException("Checking if the value:\n" + Value.ppr(val.toString()) +
-			    "\nis an element of Int.");
+      if (val instanceof IntValue) return true;
+      if (val instanceof ModelValue) 
+      {
+          return ((ModelValue) val).modelValueMember(this);
+      }
+      throw new EvalException(EC.TLC_MODULE_ATTEMPTED_TO_CHECK_MEMBER, new String[]{Value.ppr(val.toString()), "Int"});
   }
 
   public final boolean isFinite() { return false; }

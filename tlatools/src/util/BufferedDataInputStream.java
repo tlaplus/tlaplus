@@ -52,7 +52,7 @@ public class BufferedDataInputStream extends FilterInputStream {
         super(is);
         this.initFields();
         this.len = this.in.read(this.buff);
-        Assert.check(this.len != 0, MP.getTLCBug(EC.SYSTEM_STREAM_EMPTY));
+        Assert.check(this.len != 0, EC.SYSTEM_STREAM_EMPTY);
     }
     
     /** Open this input stream on the underlying input stream
@@ -80,10 +80,10 @@ public class BufferedDataInputStream extends FilterInputStream {
         different underlying stream without requiring internal resources
         to be re-allocated. */
     public void open(InputStream is) throws IOException {
-        Assert.check(this.in == null, MP.getTLCBug(EC.SYSTEM_STREAM_EMPTY));
+        Assert.check(this.in == null, EC.SYSTEM_STREAM_EMPTY);
         this.in = is;
         this.len = this.in.read(this.buff);
-        Assert.check(this.len != 0, MP.getTLCBug(EC.SYSTEM_STREAM_EMPTY));
+        Assert.check(this.len != 0, EC.SYSTEM_STREAM_EMPTY);
     }
     
     /** Equivalent to <code>this.open(new FileInputStream(name))</code>. */
@@ -126,7 +126,7 @@ public class BufferedDataInputStream extends FilterInputStream {
             if (this.curr == this.len) {
                 // refill buffer from underlying input stream
                 this.len = this.in.read(this.buff);
-                Assert.check(this.len != 0, MP.getTLCBug(EC.SYSTEM_STREAM_EMPTY));
+                Assert.check(this.len != 0, EC.SYSTEM_STREAM_EMPTY);
                 this.curr = 0;
             }
         }
@@ -163,7 +163,7 @@ public class BufferedDataInputStream extends FilterInputStream {
         if (this.curr == this.len) {
             // refill buffer from underlying input stream
             this.len = this.in.read(this.buff);
-            Assert.check(this.len != 0, MP.getTLCBug(EC.SYSTEM_STREAM_EMPTY));
+            Assert.check(this.len != 0, EC.SYSTEM_STREAM_EMPTY);
             this.curr = 0;
         }
         return res;
@@ -278,7 +278,7 @@ public class BufferedDataInputStream extends FilterInputStream {
 	  if (this.curr == this.len) {
 	    // refill buffer from underlying input stream
 	    this.len = this.in.read(this.buff);
-	    Assert.check(this.len != 0, MP.getTLCBug(EC.SYSTEM_STREAM_EMPTY));
+	    Assert.check(this.len != 0, EC.SYSTEM_STREAM_EMPTY);
 	    this.curr = 0;
 	  }
 	}
@@ -297,12 +297,12 @@ public class BufferedDataInputStream extends FilterInputStream {
             n -= (this.len - this.curr);
             // refill buffer from underlying input stream
             this.len = this.in.read(this.buff);
-            Assert.check(this.len != 0, MP.getTLCBug(EC.SYSTEM_STREAM_EMPTY));
+            Assert.check(this.len != 0, EC.SYSTEM_STREAM_EMPTY);
             this.curr = 0;
         }
         if (n > 0 && this.len < 0) throw new EOFException();
         this.curr += n;
-        Assert.check(this.len < 0 || this.curr < this.len, MP.getTLCBug(EC.TLC_INDEX_ERROR));
+        Assert.check(this.len < 0 || this.curr < this.len, EC.SYSTEM_INDEX_ERROR);
     }
 
 }

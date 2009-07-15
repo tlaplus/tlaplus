@@ -7,6 +7,7 @@ package tlc2.module;
 
 import java.util.Hashtable;
 
+import tlc2.output.EC;
 import tlc2.tool.EvalException;
 import tlc2.util.Vect;
 import tlc2.value.Enumerable;
@@ -22,9 +23,7 @@ public class TransitiveClosure implements ValueConstants {
   /* Implement the Warshall algorithm for transitive closure. */
   public static Value Warshall(Value rel) {
     if (!(rel instanceof Enumerable)) {
-      String msg = "Applying TransitiveClosure to the following value," +
-	"\nwhich is not an enumerable set:\n" + Value.ppr(rel.toString());
-      throw new EvalException(msg);
+      throw new EvalException(EC.TLC_MODULE_TRANSITIVE_CLOSURE1, Value.ppr(rel.toString()));
     }
     int maxLen = 2 * rel.size();
     boolean[][] matrix = new boolean[maxLen][maxLen];
@@ -36,9 +35,7 @@ public class TransitiveClosure implements ValueConstants {
     while ((elem = elems.nextElement()) != null) {
       TupleValue tv = TupleValue.convert(elem);
       if (tv == null || tv.size() != 2) {
-	String msg = "Applying TransitiveClosure to a set containing\n" +
-	  "the following value:\n" + Value.ppr(elem.toString());
-	throw new EvalException(msg);
+	throw new EvalException(EC.TLC_MODULE_TRANSITIVE_CLOSURE2, Value.ppr(elem.toString()));
       }
       Value elem1 = tv.elems[0];
       Value elem2 = tv.elems[1];

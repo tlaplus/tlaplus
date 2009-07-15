@@ -8,6 +8,7 @@ package tlc2.value;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+import tlc2.output.EC;
 import tlc2.tool.EvalException;
 import util.Assert;
 
@@ -49,20 +50,22 @@ public class MethodValue extends OpValue implements Applicable {
   }
 
   public final Value apply(Value[] args, int control) {
-    Value res = null;
-    try {
-      res = (Value)this.md.invoke(null, args);
-    }
-    catch (Exception e) {
-      String msg = "Attempted to apply the operator overridden by the java " +
-	"method\n" + this.md + ",\nbut it produced the following error:\n";
-      if (e instanceof InvocationTargetException) {
-	Throwable e1 = ((InvocationTargetException)e).getTargetException();
-	throw new EvalException(msg + e1.getMessage() + "\n");
+      Value res = null;
+      try 
+      {
+          res = (Value)this.md.invoke(null, args);
+      } catch (Exception e) 
+      {
+          if (e instanceof InvocationTargetException) 
+          {
+              Throwable targetException = ((InvocationTargetException)e).getTargetException();
+              throw new EvalException(EC.TLC_VALUE_JAVA_METHOD_OVERRIDE, new String[]{this.md.toString(), targetException.getMessage()});
+          } else 
+          {
+              Assert.fail(EC.TLC_VALUE_JAVA_METHOD_OVERRIDE, new String[]{this.md.toString(), e.getMessage()});
+          }
       }
-      Assert.fail(msg + e.getMessage());
-    }
-    return res;
+      return res;
   }
 
   public final Value select(Value arg) {

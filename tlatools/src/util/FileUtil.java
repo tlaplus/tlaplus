@@ -16,9 +16,13 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.math.BigInteger;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
+import tlc2.TLCGlobals;
+import tlc2.output.EC;
 import tlc2.util.BigInt;
 import tlc2.util.ByteUtils;
 
@@ -191,6 +195,41 @@ public class FileUtil
         fos.close();
     }
 
+    
+    /**
+     * The MetaDir is fromChkpt if it is not null. Otherwise, create a
+     * new one based on the current time.
+     * @param specDir the specification directory
+     * @param fromChkpt, path of the checkpoints if recovering, or <code>null</code>
+     * 
+     */
+    public static String makeMetaDir(String specDir, String fromChkpt)
+    {
+        if (fromChkpt != null)
+        {
+            return fromChkpt;
+        }
+        String metadir = TLCGlobals.metaDir;
+        if (metadir == null)
+        {
+            // If not given, use the directory specDir/metaRoot:
+            metadir = specDir + TLCGlobals.metaRoot + FileUtil.separator;
+        }
+
+        SimpleDateFormat sdf = new SimpleDateFormat("yy-MM-dd-HH-mm-ss");
+        metadir += sdf.format(new Date());
+        File filedir = new File(metadir);
+        
+        // ensure the non-existence
+        Assert.check(!filedir.exists(), EC.SYSTEM_METADIR_EXISTS, metadir);
+
+        // ensure the dirs are created
+        Assert.check(filedir.mkdirs(), EC.SYSTEM_METADIR_CREATION_ERROR, metadir);
+        
+        return metadir;
+    }
+
+    
     public static NamedInputStream createNamedInputStream(String name, FilenameToStream resolver)
     {
         // Strip off one NEWLINE and anything after it, if it is there

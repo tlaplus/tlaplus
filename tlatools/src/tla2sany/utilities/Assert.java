@@ -14,7 +14,7 @@ public class Assert
 
     // SZ Jul 13, 2009: fishy way to exit the program
     /**
-     * @deprecated Use {@linkplain util.Assert#check(boolean, String)} instead of this method
+     * @deprecated Use {@linkplain util.Assert#check(boolean, int, String[])} instead of this method
      */
     public final static void assertion(boolean b)
     {
@@ -26,7 +26,7 @@ public class Assert
 
     // SZ Jul 13, 2009: method not used
     /**
-     * @deprecated Use {@linkplain util.Assert#fail(String)} instead of this method
+     * @deprecated Use {@linkplain util.Assert#fail(int, String[])} instead of this method
      */
     public final static void fail(String msg)
     {

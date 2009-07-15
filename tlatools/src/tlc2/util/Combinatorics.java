@@ -3,12 +3,9 @@
 package tlc2.util;
 
 import java.math.BigInteger;
-import java.util.Random;
 
 import tlc2.output.EC;
-import tlc2.output.MP;
 import util.Assert;
-import util.ToolIO;
 
 public class Combinatorics {
 
@@ -19,8 +16,7 @@ public class Combinatorics {
   private static long[] SUMCHOOSETABLE = new long[CHOOSETABLESIZE];
 
   public static long choose(int n, int m) {
-    Assert.check(((m >= 0) && (n >= 0) && (n >= m)), 
-		 "The arguments to choose are not appropriate.");
+    Assert.check(((m >= 0) && (n >= 0) && (n >= m)), EC.TLC_CHOOSE_ARGUMENTS_WRONG, "choose");
     if (m == 0 || m == n)
       return (long)1;
     else if (m == 1 || m == n-1)
@@ -30,14 +26,14 @@ public class Combinatorics {
       if (j < CHOOSETABLESIZE) {
 	return CHOOSETABLE[j];
       }
-      Assert.fail("Choose can only deal with numbers up to "+ MAXCHOOSENUM);
+      Assert.fail(EC.TLC_CHOOSE_UPPER_BOUND, String.valueOf(MAXCHOOSENUM));
       return 0;   // make compiler happy
     }
   }
 
   public static long sumChoose(int n, int m) 
   {
-      Assert.check(((m>=0) && (n>=0) && (n>=m)), "The arguments to sumChoose are not appropriate.");
+      Assert.check(((m>=0) && (n>=0) && (n>=m)), EC.TLC_CHOOSE_ARGUMENTS_WRONG, "sumChoose");
       if (m == 0)
           return (long)1;
       else if (m == n)
@@ -53,7 +49,7 @@ public class Combinatorics {
           {
               return SUMCHOOSETABLE[j];
           }
-          Assert.fail("Choose can only deal with numbers up to 62");
+          Assert.fail(EC.TLC_CHOOSE_UPPER_BOUND, String.valueOf(MAXCHOOSENUM));
           // make the compiler happy
           return Long.MIN_VALUE;
       }
@@ -85,7 +81,7 @@ public class Combinatorics {
   }
 
   public static BigInteger toNum(BigInteger[] B, BigInteger[] N, int len) {
-    Assert.check((B.length >= len) && (len > 0), MP.getTLCBug(EC.TLC_INDEX_ERROR));
+    Assert.check((B.length >= len) && (len > 0), EC.SYSTEM_INDEX_ERROR);
 
     BigInteger num = N[len-1];
     for (int i = len-2; i >= 0; i--) {
@@ -99,7 +95,7 @@ public class Combinatorics {
   }
 
   public static BigInteger[] toSeq(BigInteger[] B, BigInteger n, int len) {
-    Assert.check((B.length >= len) && (len != 0), MP.getTLCBug(EC.TLC_INDEX_ERROR));
+    Assert.check((B.length >= len) && (len != 0), EC.SYSTEM_INDEX_ERROR);
 
     BigInteger[] nlist = new BigInteger[len];
     BigInteger num = n;
@@ -157,38 +153,39 @@ public class Combinatorics {
     }
     return new String(sb);
   }
-  
-  public static void main(String argv[]) {
-    int i,j;
-    BigInteger b;
-    // Date d1,d2;
-    // SZ Feb 24, 2009: not used
-    BigInteger [] A = new BigInteger[16];
-    BigInteger [] B = new BigInteger[16];
-    BigInteger [] C;
-    Random r = new Random();
 
-    
-    for (i=0; i<8; i++) {
-      B[2*i] = BigInteger.valueOf(1048576);
-      B[2*i+1] = BigInteger.valueOf(1024);
-    }
-
-    
-    for (j = 0; j < 200; j++) {
-      for (i = 0; i < 8; i++) {
-	A[2*i] = new BigInteger(20, r);
-	A[2*i+1] = new BigInteger(10, r);
-      }
-      ToolIO.out.println("A is "+print(A));
-      b = toNum(B, A);
-      C = toSeq(B, b);
-      ToolIO.out.println("C is "+print(C));
-      for (i = 0; i < 16; i++)
-	if (!C[i].equals(A[i]))
-	    ToolIO.out.println("***********Error***********");
-      ToolIO.out.println("b is " + b);
-    }      
-  }
+// SZ Jul 14, 2009: Dead code. not used.
+//  public static void main(String argv[]) {
+//    int i,j;
+//    BigInteger b;
+//    // Date d1,d2;
+//    // SZ Feb 24, 2009: not used
+//    BigInteger [] A = new BigInteger[16];
+//    BigInteger [] B = new BigInteger[16];
+//    BigInteger [] C;
+//    Random r = new Random();
+//
+//    
+//    for (i=0; i<8; i++) {
+//      B[2*i] = BigInteger.valueOf(1048576);
+//      B[2*i+1] = BigInteger.valueOf(1024);
+//    }
+//
+//    
+//    for (j = 0; j < 200; j++) {
+//      for (i = 0; i < 8; i++) {
+//	A[2*i] = new BigInteger(20, r);
+//	A[2*i+1] = new BigInteger(10, r);
+//      }
+//      ToolIO.out.println("A is "+print(A));
+//      b = toNum(B, A);
+//      C = toSeq(B, b);
+//      ToolIO.out.println("C is "+print(C));
+//      for (i = 0; i < 16; i++)
+//	if (!C[i].equals(A[i]))
+//	    ToolIO.out.println("***********Error***********");
+//      ToolIO.out.println("b is " + b);
+//    }      
+//  }
 
 }

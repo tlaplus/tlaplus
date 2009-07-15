@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.rmi.RemoteException;
 
+import tlc2.output.EC;
 import util.Assert;
 import util.BufferedDataInputStream;
 import util.BufferedDataOutputStream;
@@ -347,7 +348,7 @@ public class MemFPIntSet extends FPIntSet {
     }
     catch (EOFException e) 
     {
-      Assert.check(false, "Disk I/O error, accessing the checkpoint file");
+      Assert.fail(EC.SYSTEM_DISK_IO_ERROR_FOR_FILE, "checkpoints");
     }
     dis.close();
   }

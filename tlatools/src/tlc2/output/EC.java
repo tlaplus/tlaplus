@@ -31,7 +31,9 @@ public interface EC
 
     
     
-    // TODO remove all these
+    /*
+     * TODO remove all these
+     */
     public static final int UNKNOWN = -1;
     public final static int UNIT_TEST = -123456;
     
@@ -77,24 +79,70 @@ public interface EC
     public static final int SYSTEM_ERROR_READING_POOL = 2125;
     public static final int SYSTEM_CHECKPOINT_RECOVERY_CORRUPT = 2126;
     public static final int SYSTEM_ERROR_WRITING_POOL = 2127;
-    public static final int TLC_BUG = 2128;
-
-    public static final int SYSTEM_DISKGRAPH_ACCESS = 2129;
-    public static final int TLC_AAAAAAA = 2130;
-    public static final int TLC_REGISTRY_INIT_ERROR = 2131;
-    public static final int TLC_VALUE_ASSERT_FAILED = 2132;
-    public static final int TLC_FP_NOT_IN_SET = 2133;
-    public static final int TLC_INDEX_ERROR = 2134;
+    public static final int SYSTEM_INDEX_ERROR = 2134;
     public static final int SYSTEM_STREAM_EMPTY = 2135;
-    public static final int TLC_PARAMETER_MUST_BE_POSTFIX = 2136;
     public static final int SYSTEM_FILE_NULL = 2137;
     public static final int SYSTEM_INTERRUPTED = 2138;
+    public static final int SYSTEM_UNABLE_NOT_RENAME_FILE = 2160;
+    public static final int SYSTEM_DISK_IO_ERROR_FOR_FILE = 2161;
+    public static final int SYSTEM_METADIR_EXISTS = 2162;
+    public static final int SYSTEM_METADIR_CREATION_ERROR = 2163;
+    public static final int SYSTEM_UNABLE_TO_OPEN_FILE = 2167;
+
+    public static final int SANY_PARSER_CHECK = 4000;
+    /*
+     * Bad description
+     */
+    public static final int TLC_BUG = 2128;
+
+    /*
+     * refactor 
+     */
+    public static final int SYSTEM_DISKGRAPH_ACCESS = 2129;
+    
+    public static final int TLC_AAAAAAA = 2130;
+    public static final int TLC_REGISTRY_INIT_ERROR = 2131;
+    public static final int TLC_CHOOSE_ARGUMENTS_WRONG = 2164;
+    public static final int TLC_CHOOSE_UPPER_BOUND = 2165;
+    
+    
+    public static final int TLC_VALUE_ASSERT_FAILED = 2132;
+    public static final int TLC_VALUE_JAVA_METHOD_OVERRIDE = 2154;
+    
+    public static final int TLC_FP_NOT_IN_SET = 2133;
+    public static final int TLC_FP_VALUE_ALREADY_ON_DISK = 2166;
+    
+    
+    public static final int TLC_LIVE_BEGRAPH_FAILED_TO_CONSTRUCT = 2159;
+    /*
+     * Check this message
+     */
+    public static final int TLC_PARAMETER_MUST_BE_POSTFIX = 2136;
     public static final int TLC_COULD_NOT_DETERMINE_SUBSCRIPT = 2139;
     public static final int TLC_SUBSCRIPT_CONTAIN_NO_STATE_VAR = 2140;
     public static final int TLC_WRONG_TUPLE_FIELD_NAME = 2141;
     public static final int TLC_WRONG_RECORD_FIELD_NAME = 2142;
     public static final int TLC_UNCHANGED_VARIABLE_CHANGED = 2143;
     public static final int TLC_EXCEPT_APPLIED_TO_UNKNOWN_FIELD = 2144;
+    
+
+    public static final int TLC_MODULE_TLCGET_UNDEFINED = 2145;
+    /*
+    public static final int TLC_MODULE_TLCGET_WRONG_ARGUMENT = 2146;
+    public static final int TLC_MODULE_TLCSET_WRONG_ARGUMENT = 2147;
+    public static final int TLC_MODULE_TLCADAD_WRONG_ARGUMENT = 2148;
+    public static final int TLC_MODULE_TLCADAD_WRONG_ARGUMENT2 = 2149;
+    public static final int TLC_MODULE_TLCSORTSEQ_WRONG_ARGUMENT = 2150;
+    public static final int TLC_MODULE_TLCSORTSEQ_WRONG_ARGUMENT2 = 2151;
+    public static final int TLC_MODULE_TLCSORTSEQ_WRONG_ARGUMENT3 = 2152;
+    */
+    public static final int TLC_MODULE_APPLYING_TO_NOT_FINITE_SET = 2153;
+    public static final int TLC_MODULE_ATTEMPTED_TO_COMPARE = 2155;
+    public static final int TLC_MODULE_ATTEMPTED_TO_CHECK_MEMBER = 2158;
+    public static final int TLC_MODULE_TRANSITIVE_CLOSURE1 = 2156;
+    public static final int TLC_MODULE_TRANSITIVE_CLOSURE2 = 2157;
+    public static final int TLC_MODULE_APPLYING_FUNCTION_WITH_INIFINTE_DOMAIN = 2168;
+    public static final int TLC_MODULE_ARGUMENT_ERROR = 2169;
     
     
     

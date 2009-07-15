@@ -122,7 +122,7 @@ public class MultiFPSet extends FPSet {
   public final void prepareRecovery() throws IOException { /*SKIP*/ }
 
   public final void recoverFP(long fp) throws IOException {
-    Assert.check(!this.put(fp), MP.getMessage(EC.TLC_FP_NOT_IN_SET));
+    Assert.check(!this.put(fp), EC.TLC_FP_NOT_IN_SET);
   }
   
   public final void completeRecovery() throws IOException { /*SKIP*/ }

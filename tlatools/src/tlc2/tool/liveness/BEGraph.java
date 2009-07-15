@@ -5,6 +5,7 @@
 
 package tlc2.tool.liveness;
 
+import tlc2.output.EC;
 import tlc2.tool.EvalException;
 import tlc2.util.MemObjectQueue;
 import tlc2.util.MemObjectStack;
@@ -74,7 +75,7 @@ public class BEGraph {
       while (!found) {
 	NodeAndParent np = (NodeAndParent)queue.dequeue();
 	if (np == null) {
-	  throw new EvalException("BEGraph.GetPath: Failed to construct a path.");
+	  throw new EvalException(EC.TLC_LIVE_BEGRAPH_FAILED_TO_CONSTRUCT);
 	}
 	BEGraphNode curNode = np.node;
 	for (int i = 0; i < curNode.nextSize(); i++) {

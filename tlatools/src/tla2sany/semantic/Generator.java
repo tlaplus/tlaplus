@@ -2393,7 +2393,7 @@ OpDefNode node = (OpDefNode) vec.elementAt(i);
           else {
             // parameter must be postfix operator
             // SZ Jul 13, 2009: added the message to the assert
-            Assert.check( ss[ lvi ].isKind( N_PostfixDecl ), MP.getError(EC.TLC_PARAMETER_MUST_BE_POSTFIX) ); 
+            Assert.check( ss[ lvi ].isKind( N_PostfixDecl ), EC.TLC_PARAMETER_MUST_BE_POSTFIX ); 
             name = sss[1].getUS();
             arity = 1;
           }

@@ -17,7 +17,7 @@ public class DebugPrinter
     {
         if (TLCGlobals.debug) 
         {
-            System.err.println(Thread.currentThread().getId() + "\t" + message);
+            System.out.println(Thread.currentThread().getId() + "\t" + message);
         }
     }
 

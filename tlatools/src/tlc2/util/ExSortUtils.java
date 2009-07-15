@@ -12,6 +12,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Vector;
 
+import util.Assert;
+
 public class ExSortUtils {
 
   /** Writes the length of the sub array and then each element of A in
@@ -59,7 +61,7 @@ public class ExSortUtils {
       }
     }
     catch (IOException e) {
-      throw new RuntimeException
+      Assert.fail
 	("Can't read an array of ExternalSortables from the input stream; "
 	 + "not enough bytes, but not empty.");
     }
@@ -117,8 +119,7 @@ public class ExSortUtils {
       }
     }
     catch (IOException e) {
-      throw new RuntimeException
-	("Can't append in to out; not enough bytes, but not empty.");
+      Assert.fail("Can't append in to out; not enough bytes, but not empty.");
     }
   }
 
@@ -145,8 +146,7 @@ public class ExSortUtils {
       }
     }
     catch (IOException e) {
-      throw new RuntimeException
-	("Can't append in to out; not enough bytes, but not empty.");
+        Assert.fail("Can't append in to out; not enough bytes, but not empty.");
     }
   }
 }

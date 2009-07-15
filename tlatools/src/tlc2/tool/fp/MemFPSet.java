@@ -9,7 +9,6 @@ import java.net.InetAddress;
 import java.rmi.RemoteException;
 
 import tlc2.output.EC;
-import tlc2.output.MP;
 import util.Assert;
 import util.BufferedDataInputStream;
 import util.BufferedDataOutputStream;
@@ -270,11 +269,11 @@ public class MemFPSet extends FPSet {
       new BufferedDataInputStream(this.chkptName(fname, "chkpt"));
     try {
       while (!dis.atEOF()) {
-          Assert.check(!this.put(dis.readLong()), MP.getMessage(EC.TLC_FP_NOT_IN_SET));
+          Assert.check(!this.put(dis.readLong()), EC.TLC_FP_NOT_IN_SET);
       }
     }
     catch (EOFException e) {
-      Assert.check(false, "Disk I/O error, accessing the checkpoint file");
+      Assert.fail(EC.SYSTEM_DISK_IO_ERROR_FOR_FILE, "checkpoints");
     }
     dis.close();
   }
@@ -294,7 +293,7 @@ public class MemFPSet extends FPSet {
   public final void prepareRecovery() throws IOException { /*SKIP*/ }
 
   public final void recoverFP(long fp) throws IOException {
-    Assert.check(!this.put(fp), MP.getMessage(EC.TLC_FP_NOT_IN_SET));
+    Assert.check(!this.put(fp), EC.TLC_FP_NOT_IN_SET);
   }
   
   public final void completeRecovery() throws IOException { /*SKIP*/ }

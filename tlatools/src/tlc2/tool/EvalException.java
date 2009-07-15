@@ -5,32 +5,63 @@
 
 package tlc2.tool;
 
+import tlc2.output.MP;
+
 /**
  * Evaluation exception
  * @author Simon Zambrovski
  * @version $Id$
  */
-public class EvalException extends RuntimeException 
+public class EvalException extends RuntimeException
 {
-  public static int ERROR = 0;
-  public static int ASSERT = 1;
+// SZ Jul 14, 2009: not used since error codes are in the {@link EC} class    
+//    public final static int ERROR = 0;
+//    public final static int ASSERT = 1;
+//    private int type;
 
-  private int errno;
+    /**
+     * Constructs the evaluation exception
+     * @deprecated use other constructors with error codes
+     */
+    public EvalException(String msg)
+    {
+        super(msg);
+    }
 
-  public EvalException(String msg) {
-    super(msg);
-    this.errno = ERROR;
-  }
+    public EvalException(int errorCode, String[] parameters)
+    {
+        super(MP.getMessage(errorCode, parameters));
+    }
 
-  public EvalException(int errno, String msg) {
-    super(msg);
-    this.errno = errno;
-  }
+    public EvalException(int errorCode, String parameter)
+    {
+        super(MP.getMessage(errorCode, parameter));
+    }
 
-  public final int getErrno() { return this.errno; }
+    public EvalException(int errorCode)
+    {
+        super(MP.getMessage(errorCode));        
+    }
 
-  public final EvalException addMessage(String msg) {
-    return new EvalException(this.errno, this.getMessage() + "\n" + msg);
-  }
+    
+    // SZ Jul 14, 2009: refactored and deprecated, all usage changed to standard constructor 
+    // public EvalException(int type, String message)
+    // {
+    //      super(message);
+    //      this.type = type;
+    // }
+    
+    
+
+    // SZ Jul 14, 2009: not used
+    // public final int getErrno()
+    // {
+    //      return this.type;
+    // }
+
+    // SZ Jul 14, 2009: not used
+    // public final EvalException addMessage(String msg) {
+    //      return new EvalException(this.errno, this.getMessage() + "\n" + msg);
+    // }
 
 }

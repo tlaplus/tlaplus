@@ -115,32 +115,37 @@ public class DiskFPSet extends FPSet {
     }
 
     public final void init(int numThreads, String metadir, String filename)
-    throws IOException {
+    throws IOException 
+    {
         this.metadir = metadir;
         // set the filename
         this.filename = metadir + FileUtil.separator + filename;
         // allocate array of BufferedRAF objects (+1 for main thread)
         this.braf = new BufferedRandomAccessFile[numThreads];
-	this.brafPool = new BufferedRandomAccessFile[5];
-	this.poolIndex = 0;
+        this.brafPool = new BufferedRandomAccessFile[5];
+        this.poolIndex = 0;
 
-        try {
+        try 
+        {
             // create/truncate backing file:
             FileOutputStream f = new FileOutputStream(this.getFPFilename());
             f.close();
 
             // open all "this.braf" and "this.brafPool" objects on currName:
-            for (int i = 0; i < numThreads; i++) {
+            for (int i = 0; i < numThreads; i++) 
+            {
                 this.braf[i] = new BufferedRandomAccessFile(this.getFPFilename(), "r");
             }
-	    for (int i = 0; i < brafPool.length; i++) {
+            for (int i = 0; i < brafPool.length; i++) 
+            {
                 this.brafPool[i] = new BufferedRandomAccessFile(this.getFPFilename(), "r");
             }
         }
-	catch (IOException e) {
-	  // fatal error -- print error message and exit
-	  String msg = "Fatal error: unable to open " + this.getFPFilename() + ".\n" + e;
-	  throw new IOException(msg);
+        catch (IOException e) 
+        {
+            // fatal error -- print error message and exit
+            String message = MP.getMessage(EC.SYSTEM_UNABLE_TO_OPEN_FILE, new String[]{this.getFPFilename(), e.getMessage()});
+            throw new IOException(message, e);
         }
     }
 
@@ -353,7 +358,7 @@ public class DiskFPSet extends FPSet {
             int midPage = (loPage+1) + (int)((dhi-dlo-1.0) * (dfp-dloVal) / (dhiVal-dloVal));
             if (midPage == hiPage) midPage--; // Needed due to limited precision of doubles
 
-            Assert.check(loPage < midPage && midPage < hiPage, MP.getTLCBug(EC.TLC_INDEX_ERROR));
+            Assert.check(loPage < midPage && midPage < hiPage, EC.SYSTEM_INDEX_ERROR);
             long v = this.index[midPage];
             if (fp < v) {
                 hiPage = midPage; hiVal = v;
@@ -365,7 +370,7 @@ public class DiskFPSet extends FPSet {
                 return true;
             }
         }
-        Assert.check(hiPage == loPage + 1, MP.getTLCBug(EC.TLC_INDEX_ERROR));
+        Assert.check(hiPage == loPage + 1, EC.SYSTEM_INDEX_ERROR);
 
 	boolean diskHit = false;
         try {
@@ -399,7 +404,7 @@ public class DiskFPSet extends FPSet {
                 long midEntry = loEntry + (long)((dhi - dlo) * (dfp - dloVal) / (dhiVal - dloVal));
                 if (midEntry == hiEntry) midEntry--;
                 
-                Assert.check(loEntry <= midEntry && midEntry < hiEntry, MP.getTLCBug(EC.TLC_INDEX_ERROR));
+                Assert.check(loEntry <= midEntry && midEntry < hiEntry, EC.SYSTEM_INDEX_ERROR);
                 raf.seek(midEntry * LongSize);
                 long v = raf.readLong();
 
@@ -506,7 +511,7 @@ public class DiskFPSet extends FPSet {
         File currFile = new File(realName);
         currFile.delete();
         boolean status = tmpFile.renameTo(currFile);
-        Assert.check(status, "Could not rename file during the clean-up");
+        Assert.check(status, EC.SYSTEM_UNABLE_NOT_RENAME_FILE);
 
         // reopen a BufferedRAF for each thread
         for (int i = 0; i < this.braf.length; i++) {
@@ -537,7 +542,7 @@ public class DiskFPSet extends FPSet {
       tmpRAF.close();
       currFile.delete();
       boolean status = tmpFile.renameTo(currFile);
-      Assert.check(status, "Could not rename file during the clean-up");
+      Assert.check(status, EC.SYSTEM_UNABLE_NOT_RENAME_FILE);
     }
   
     private int currIndex;
@@ -575,39 +580,51 @@ public class DiskFPSet extends FPSet {
         if (this.fileCnt > 0) {
             try {
                 value = inRAF.readLong();
-            } catch (EOFException e) { eof = true; }
+            } catch (EOFException e) 
+            { 
+                eof = true; 
+            }
         } else {
             eof = true;
         }
 
         // merge while both lists still have elements remaining
-        while (!eof && i < buffLen) {
-            if (value < buff[i]) {
+        while (!eof && i < buffLen) 
+        {
+            if (value < buff[i]) 
+            {
                 this.writeFP(outRAF, value);
-                try {
+                try 
+                {
                     value = inRAF.readLong();
-                } catch (EOFException e) { eof = true; }
-            } else {
-                Assert.check(value != buff[i],
-			     "DiskFPSet.mergeNewEntries: " + value + " is already on disk.\n");
+                } catch (EOFException e) 
+                { 
+                    eof = true; 
+                }
+            } else 
+            {
+                Assert.check(value != buff[i], EC.TLC_FP_VALUE_ALREADY_ON_DISK, String.valueOf(value));
                 this.writeFP(outRAF, buff[i++]);
             }
         }
 
         // write elements of remaining list
         if (eof) {
-            while (i < buffLen) {
+            while (i < buffLen) 
+            {
                 this.writeFP(outRAF, buff[i++]);
             }
-        } else {
-            do {
+        } else 
+        {
+            do 
+            {
                 this.writeFP(outRAF, value);
                 try {
                     value = inRAF.readLong();
                 } catch (EOFException e) { eof = true; }
             } while (!eof);
         }
-        Assert.check(this.currIndex == indexLen - 1, MP.getTLCBug(EC.TLC_INDEX_ERROR));
+        Assert.check(this.currIndex == indexLen - 1, EC.SYSTEM_INDEX_ERROR);
 
         // maintain object invariants
         this.fileCnt += buffLen;
@@ -697,7 +714,7 @@ public class DiskFPSet extends FPSet {
                 this.writeFP(currRAF, fp);
             }
         } catch (EOFException e) {
-            Assert.check(this.currIndex == indexLen - 1, MP.getTLCBug(EC.TLC_INDEX_ERROR));
+            Assert.check(this.currIndex == indexLen - 1, EC.SYSTEM_INDEX_ERROR);
             this.index[indexLen - 1] = fp;
         }
 

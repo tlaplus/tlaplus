@@ -519,9 +519,10 @@ public class TLC
                 {
                     mc = new DFIDModelChecker(mainFile, configFile, dumpFile, deadlock, fromChkpt, true, resolver, specObj);
                 }
-                
+                ToolIO.out.println("Starting...");
                 instance = mc;
                 mc.modelCheck();
+                ToolIO.out.println("Finished.");
             }
         } catch (Throwable e)
         {
@@ -533,6 +534,9 @@ public class TLC
             {
                 System.gc();
                 MP.printError(EC.SYSTEM_OUT_OF_MEMORY, e);
+            } else if (e instanceof RuntimeException) 
+            {
+                e.printStackTrace();
             } else
             {
                 MP.printError(EC.GENERAL, e);

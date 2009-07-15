@@ -5,27 +5,39 @@
 
 package tlc2.module;
 
+import tlc2.output.EC;
 import tlc2.tool.EvalException;
 import tlc2.value.UserObj;
 import tlc2.value.UserValue;
 import tlc2.value.Value;
 
-public class AnySet extends UserObj {
+public class AnySet extends UserObj
+{
 
-  private static Value AnySet = new UserValue(new AnySet());
+    private static Value AnySet = new UserValue(new AnySet());
 
-  public static Value ANY() { return AnySet; }
+    public static Value ANY()
+    {
+        return AnySet;
+    }
 
-  public final int compareTo(Value val) {
-    String msg = "Attempted to compare ANY with the value\n" + Value.ppr(val.toString());
-    throw new EvalException(msg);
-  }
+    public final int compareTo(Value val)
+    {
+        throw new EvalException(EC.TLC_MODULE_ATTEMPTED_TO_COMPARE, new String[] { "ANY", Value.ppr(val.toString()) });
+    }
 
-  public final boolean member(Value val) { return true; }
+    public final boolean member(Value val)
+    {
+        return true;
+    }
 
-  public final boolean isFinite() { return false; }
-  
-  public final StringBuffer toString(StringBuffer sb, int offset) {
-    return sb.append("ANY");
-  }
+    public final boolean isFinite()
+    {
+        return false;
+    }
+
+    public final StringBuffer toString(StringBuffer sb, int offset)
+    {
+        return sb.append("ANY");
+    }
 }

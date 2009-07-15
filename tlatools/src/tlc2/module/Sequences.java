@@ -5,6 +5,7 @@
 
 package tlc2.module;
 
+import tlc2.output.EC;
 import tlc2.tool.EvalControl;
 import tlc2.tool.EvalException;
 import tlc2.tool.TLARegistry;
@@ -36,7 +37,7 @@ public class Sequences extends UserObj implements ValueConstants {
   static 
   {
      // SZ Jul 13, 2009: added message for initialization assertion
-    Assert.check(TLARegistry.put("Concat", "\\o") == null, "TLA Registry initialization error");
+    Assert.check(TLARegistry.put("Concat", "\\o") == null, EC.TLC_REGISTRY_INIT_ERROR, "Concat");
   }
     
   /* The set of all sequences of value range. */
@@ -311,10 +312,13 @@ public class Sequences extends UserObj implements ValueConstants {
       }
       return cmp;
     }
-    if (s instanceof ModelValue) return 1;    
-    String msg = "Comparing the value\n" + Value.ppr(this.toString()) +
-      "\nwith the value:\n" + Value.ppr(s.toString());
-    throw new EvalException(msg);
+    if (s instanceof ModelValue) 
+    {
+        return 1;    
+    }
+    // SZ Jul 14, 2009:
+    // replaced the message with a standard one, thrown by mismatch of compared elements
+    throw new EvalException(EC.TLC_MODULE_ATTEMPTED_TO_COMPARE, new String[]{Value.ppr(this.toString()), Value.ppr(s.toString())});
   }
 
   public final boolean member(Value s) {
@@ -322,9 +326,7 @@ public class Sequences extends UserObj implements ValueConstants {
     if (seq == null) {
       if (s instanceof ModelValue)   
       return ((ModelValue) s).modelValueMember(this) ;
-      String msg ="Attempted to check if the value\n" + Value.ppr(s.toString()) +
-	"\nis an element of\n" + Value.ppr(this.toString());
-      throw new EvalException(msg);
+      throw new EvalException(EC.TLC_MODULE_ATTEMPTED_TO_CHECK_MEMBER, new String[]{Value.ppr(s.toString()), Value.ppr(this.toString())});
     }
     int len = seq.size();
     if (len > this.size) return false;

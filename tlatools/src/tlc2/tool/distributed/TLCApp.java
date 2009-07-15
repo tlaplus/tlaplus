@@ -10,7 +10,6 @@ import java.io.IOException;
 
 import tlc2.TLCGlobals;
 import tlc2.tool.Action;
-import tlc2.tool.ModelChecker;
 import tlc2.tool.StateVec;
 import tlc2.tool.TLCState;
 import tlc2.tool.TLCStateInfo;
@@ -55,7 +54,7 @@ public class TLCApp extends DistApp {
     this.impliedActions = this.tool.getImpliedActions();
     this.actions = this.tool.getActions();
     this.fromChkpt = fromChkpt;
-    this.metadir = ModelChecker.makeMetaDir(specDir, fromChkpt);
+    this.metadir = FileUtil.makeMetaDir(specDir, fromChkpt);
   }
 
   // TODO too many constructors redefinitions, replace with this(..) calls

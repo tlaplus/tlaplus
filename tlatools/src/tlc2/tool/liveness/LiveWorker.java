@@ -524,7 +524,7 @@ public class LiveWorker extends IdThread {
     long fp = prefix.elementAt(plen-1);
     TLCStateInfo sinfo = LiveCheck.myTool.getState(fp);
     if (sinfo == null) {
-      throw new EvalException(MP.getMessage(EC.TLC_FAILED_TO_RECOVER_INIT));
+      throw new EvalException(EC.TLC_FAILED_TO_RECOVER_INIT);
     }
     states[stateNum++] = sinfo;
 
@@ -534,7 +534,7 @@ public class LiveWorker extends IdThread {
       if (curFP != fp) {
 	sinfo = LiveCheck.myTool.getState(curFP, sinfo.state);
 	if (sinfo == null) {
-	  throw new EvalException(MP.getMessage(EC.TLC_FAILED_TO_RECOVER_NEXT));
+	  throw new EvalException(EC.TLC_FAILED_TO_RECOVER_NEXT);
 	}
 	states[stateNum++] = sinfo;
 	fp = curFP;
@@ -562,7 +562,7 @@ public class LiveWorker extends IdThread {
       if (curFP != fp) {
 	sinfo = LiveCheck.myTool.getState(curFP, sinfo.state);
 	if (sinfo == null) {
-	  throw new EvalException(MP.getMessage(EC.TLC_FAILED_TO_RECOVER_NEXT));
+	  throw new EvalException(EC.TLC_FAILED_TO_RECOVER_NEXT);
 	}
 	StatePrinter.printState(sinfo, lastState, ++stateNum);
 	lastState = sinfo.state;
@@ -578,7 +578,7 @@ public class LiveWorker extends IdThread {
       sinfo = LiveCheck.myTool.getState(cycleFP, sinfo.state);
       if (sinfo == null) 
       {
-          throw new EvalException(MP.getMessage(EC.TLC_FAILED_TO_RECOVER_NEXT));
+          throw new EvalException(EC.TLC_FAILED_TO_RECOVER_NEXT);
       }
       StatePrinter.printState(sinfo, null, (++stateNum));
       // SZ Jul 10, 2009: replaced with state printer

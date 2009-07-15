@@ -215,6 +215,7 @@ public class ModelChecker extends AbstractChecker
             }
         } catch (Exception e)
         {
+            report("TLC terminated with error");
             // Assert.printStack(e);
             success = false;
             MP.printError(EC.GENERAL, e.getMessage());
@@ -224,7 +225,7 @@ public class ModelChecker extends AbstractChecker
             this.cleanup(success);
         }
 
-        report("normal exit");
+        report("exiting modelCheck()");
     }
 
     /** 

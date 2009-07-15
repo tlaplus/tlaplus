@@ -110,7 +110,7 @@ public final class MemFPSet1 extends FPSet {
   public final void prepareRecovery() throws IOException { /*SKIP*/ }
 
   public final void recoverFP(long fp) throws IOException {
-    Assert.check(!this.set.put(fp), MP.getMessage(EC.TLC_FP_NOT_IN_SET));
+    Assert.check(!this.set.put(fp), EC.TLC_FP_NOT_IN_SET);
   }
   
   public final void completeRecovery() throws IOException { /*SKIP*/ }

@@ -686,7 +686,7 @@ public class LiveCheck1 {
     long fp = prefix[0].stateFP;
     TLCStateInfo sinfo = myTool.getState(fp);
     if (sinfo == null) {
-      throw new EvalException(MP.getMessage(EC.TLC_FAILED_TO_RECOVER_INIT));
+      throw new EvalException(EC.TLC_FAILED_TO_RECOVER_INIT);
     }
     states[stateNum++] = sinfo;
 
@@ -696,7 +696,7 @@ public class LiveCheck1 {
       if (fp1 != fp) {
 	sinfo = myTool.getState(fp1, sinfo.state);
 	if (sinfo == null) {
-	  throw new EvalException(MP.getMessage(EC.TLC_FAILED_TO_RECOVER_NEXT));
+	  throw new EvalException(EC.TLC_FAILED_TO_RECOVER_NEXT);
 	}
 	states[stateNum++] = sinfo;
       }
@@ -723,7 +723,7 @@ public class LiveCheck1 {
       if (fps[i] != fps[i-1]) {
 	sinfo = myTool.getState(fps[i], sinfo.state);
 	if (sinfo == null) {
-	  throw new EvalException(MP.getMessage(EC.TLC_FAILED_TO_RECOVER_NEXT));
+	  throw new EvalException(EC.TLC_FAILED_TO_RECOVER_NEXT);
 	}
 	StatePrinter.printState(sinfo, lastState, ++stateNum);
 	lastState = sinfo.state;	

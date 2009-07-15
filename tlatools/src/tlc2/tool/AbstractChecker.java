@@ -1,9 +1,6 @@
 package tlc2.tool;
 
-import java.io.File;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 import tla2sany.modanalyzer.SpecObj;
 import tla2sany.semantic.SemanticNode;
@@ -11,7 +8,6 @@ import tlc2.TLCGlobals;
 import tlc2.util.IdThread;
 import tlc2.util.ObjLongTable;
 import tlc2.util.StateWriter;
-import util.Assert;
 import util.FileUtil;
 import util.FilenameToStream;
 import util.ToolIO;
@@ -70,8 +66,8 @@ public abstract class AbstractChecker implements Cancelable
         this.tool.init(preprocess, spec);
         this.checkLiveness = !this.tool.livenessIsTrue();
 
-        // REFACTOR: file utilites
-        this.metadir = makeMetaDir(specDir, fromChkpt);
+        // moved to file utilities
+        this.metadir = FileUtil.makeMetaDir(specDir, fromChkpt);
 
         this.nextLiveCheck = 1000;
         this.numOfGenStates = 0;
@@ -148,44 +144,6 @@ public abstract class AbstractChecker implements Cancelable
               }
           }
       }
-
-    /**
-     * The MetaDir is fromChkpt if it is not null. Otherwise, create a
-     * new one based on the current time.
-     * @param specDir the specification directory
-     * @param fromChkpt, path of the checkpoints if recovering, or <code>null</code>
-     * 
-     * REFACTOR: move to FileUtils
-     */
-    public static String makeMetaDir(String specDir, String fromChkpt)
-    {
-        if (fromChkpt != null)
-        {
-            return fromChkpt;
-        }
-        String metadir = TLCGlobals.metaDir;
-        if (metadir == null)
-        {
-            // If not given, use the directory specDir/metaRoot:
-            metadir = specDir + TLCGlobals.metaRoot + FileUtil.separator;
-        }
-
-        SimpleDateFormat sdf = new SimpleDateFormat("yy-MM-dd-HH-mm-ss");
-        metadir += sdf.format(new Date());
-        File filedir = new File(metadir);
-        if (filedir.exists())
-        {
-            Assert.fail("Error: TLC writes its files to a directory whose name is generated"
-                    + " from the current time.\nThis directory should be " + metadir
-                    + ", but that directory already exists.\n"
-                    + "Trying to run TLC again will probably fix this problem.\n");
-        } else
-        {
-            Assert.check(filedir.mkdirs(), "Error: TLC could not make a directory for the disk files"
-                    + " it needs to write.\n");
-        }
-        return metadir;
-    }
 
     /**
      * Initialize the model checker

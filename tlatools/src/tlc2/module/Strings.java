@@ -5,6 +5,7 @@
 
 package tlc2.module;
 
+import tlc2.output.EC;
 import tlc2.tool.EvalException;
 import tlc2.value.ModelValue;
 import tlc2.value.StringValue;
@@ -24,18 +25,14 @@ public class Strings extends UserObj {
       return 0;
     }
     if (val instanceof ModelValue) return 1;
-    String msg = "Attempted to compare STRING with the value\n" +
-      Value.ppr(val.toString());
-    throw new EvalException(msg);
+    throw new EvalException(EC.TLC_MODULE_ATTEMPTED_TO_COMPARE, new String[]{"STRING", Value.ppr(val.toString())});
   }
 
   public final boolean member(Value val) {
     if (val instanceof StringValue) return true;
     if (val instanceof ModelValue)  
       return ((ModelValue) val).modelValueMember(this) ;
-    String msg = "Attempted to check if the value:\n" + Value.ppr(val.toString()) +
-      "\nis an element of STRING.";
-    throw new EvalException(msg);
+    throw new EvalException(EC.TLC_MODULE_ATTEMPTED_TO_CHECK_MEMBER, new String[] {Value.ppr(val.toString()), "STRING"});
   }
 
   public final boolean isFinite() { return false; }

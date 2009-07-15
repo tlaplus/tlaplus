@@ -3,14 +3,12 @@ package tla2sany.parser;
 
 import tla2sany.st.ParseTree;
 import tla2sany.st.TreeNode;
-
-import tla2sany.utilities.Vector;
 import tla2sany.utilities.Stack;
+import tla2sany.utilities.Vector;
 import tlc2.output.EC;
-import tlc2.output.MP;
 import util.Assert;
-import util.UniqueString;
 import util.ToolIO;
+import util.UniqueString;
 
 public class TLAplusParser implements tla2sany.st.SyntaxTreeConstants, ParseTree, TLAplusParserConstants {
 
@@ -103,11 +101,15 @@ public class TLAplusParser implements tla2sany.st.SyntaxTreeConstants, ParseTree
       } else  PErrors.push( new ParseError( msg  )) ;
 //      PErrors.push( new ParseError( tme.getMessage() )) ;
     } /*** end catch(TokenMgrError) ****/
-    if ( PErrors.empty() ) Assert.check( heirsIndex == 0, "TLA+ Parser sanity check" );
+    if ( PErrors.empty() ) 
+    {
+        Assert.check( heirsIndex == 0, EC.SANY_PARSER_CHECK);
+    }
       /*********************************************************************
       * This is a sanity check.  The assertion should never be false.      *
       *********************************************************************/
-    else {
+    else 
+    {
       /*********************************************************************
       * An error has been pushed onto PErrors.  It might have been done    *
       * when an exception was caught, or by detecting an error during the  *
@@ -750,7 +752,7 @@ if (opArgs.kind != N_OpArgs) { ToolIO.out.println("Bug: not N_OpArgs node"); };
     }
     
     // TODO provide some message
-    Assert.check( popHeir(), MP.getMessage(EC.UNKNOWN));
+    Assert.check( popHeir(), EC.UNKNOWN);
     expecting = emptyString;
   }
 //
@@ -5955,7 +5957,7 @@ SyntaxTreeNode tn;
     }
     SyntaxTreeNode sn[] = getLastHeirs();
     // replace this and fix in the jj file too!
-    Assert.check(kind !=0, MP.getMessage(EC.UNKNOWN));
+    Assert.check(kind !=0, EC.UNKNOWN);
     epa(); 
     {   
         if (true) 

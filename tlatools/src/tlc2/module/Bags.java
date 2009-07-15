@@ -5,6 +5,7 @@
 
 package tlc2.module;
 
+import tlc2.output.EC;
 import tlc2.tool.EvalControl;
 import tlc2.tool.EvalException;
 import tlc2.tool.TLARegistry;
@@ -31,9 +32,7 @@ public class Bags implements ValueConstants {
   public static BoolValue IsABag(Value b) {
     FcnRcdValue fcn = FcnRcdValue.convert(b);
     if (fcn == null) {
-      String msg = "Applying IsABag to the following value, which\n" +
-	"is not a function with a finite domain:\n" + Value.ppr(b.toString());
-      throw new EvalException(msg);
+      throw new EvalException(EC.TLC_MODULE_APPLYING_FUNCTION_WITH_INIFINTE_DOMAIN, new String[]{"IsBag", Value.ppr(b.toString())});
     }
     Value[] vals = fcn.values;
     for (int i = 0; i < vals.length; i++) {
@@ -48,9 +47,7 @@ public class Bags implements ValueConstants {
   public static IntValue BagCardinality(Value b) {
     FcnRcdValue fcn = FcnRcdValue.convert(b);
     if (fcn == null) {
-      String msg = "Applying BagCardinality to the following value, which\n" +
-	"is not a function with a finite domain:\n" + Value.ppr(b.toString());
-      throw new EvalException(msg);
+        throw new EvalException(EC.TLC_MODULE_APPLYING_FUNCTION_WITH_INIFINTE_DOMAIN, new String[]{"BagCardinality", Value.ppr(b.toString())});
     }
     int num = 0;
     Value[] vals = fcn.values;
@@ -85,9 +82,7 @@ public class Bags implements ValueConstants {
 	if (values[i] instanceof IntValue) {
 	  return (((IntValue)values[i]).val > 0) ? ValTrue : ValFalse;
 	}
-	String msg = "The second argument of BagIn should be bag, but" +
-	  " instead it is:\n" + Value.ppr(b.toString());
-	throw new EvalException(msg);
+	    throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[]{"second", "BagIn", "bag", Value.ppr(b.toString())});
       }
     }
     return ValFalse;
@@ -103,9 +98,7 @@ public class Bags implements ValueConstants {
 	if (values[i] instanceof IntValue) {
 	  return (IntValue)values[i];
 	}
-	String msg = "The second argument of CopiesIn should be a bag," +
-	  " but instead it is:\n" + Value.ppr(b.toString());
-	throw new EvalException(msg);
+	throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[]{"second", "CopiesIn", "bag", Value.ppr(b.toString())});
       }
     }
     return ValZero;
@@ -115,14 +108,10 @@ public class Bags implements ValueConstants {
     FcnRcdValue fcn1 = FcnRcdValue.convert(b1);
     FcnRcdValue fcn2 = FcnRcdValue.convert(b2);
     if (!IsABag(fcn1).val) {
-      String msg = "The first argument of (+) should be a bag, but" +
-	" instead it is:\n" + Value.ppr(b1.toString());
-      throw new EvalException(msg);
+      throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[]{"first", "(+)", "bag", Value.ppr(b1.toString())});
     }
     if (!IsABag(fcn2).val) {
-      String msg = "The second argument of (+) should be a bag, but" +
-	" instead it is:\n" + Value.ppr(b2.toString());
-      throw new EvalException(msg);
+      throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[]{"second", "(+)", "bag", Value.ppr(b2.toString())});
     }
     Value[] domain1 = fcn1.domain;
     Value[] values1 = fcn1.values;
@@ -163,14 +152,10 @@ public class Bags implements ValueConstants {
     FcnRcdValue fcn1 = FcnRcdValue.convert(b1);
     FcnRcdValue fcn2 = FcnRcdValue.convert(b2);
     if (fcn1 == null) {
-      String msg = "The first argument of (-) should be a bag, but" +
-	" instead it is:\n" + Value.ppr(b1.toString());
-      throw new EvalException(msg);
+      throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[]{"first", "(-)", "bag", Value.ppr(b1.toString())});
     }
     if (fcn2 == null) {
-      String msg = "The second argument of (-) should be a bag, but" +
-	" instead it is:\n" + Value.ppr(b2.toString());
-      throw new EvalException(msg);
+        throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[]{"second", "(-)", "bag", Value.ppr(b2.toString())});
     }
     Value[] domain1 = fcn1.domain;
     Value[] values1 = fcn1.values;
@@ -231,6 +216,7 @@ public class Bags implements ValueConstants {
       if (fcn == null) {
 	String msg = "Applying BagUnion to the following set, whose\n" +
 	  "element is not a bag:\n" + Value.ppr(s.toString());
+
 	throw new EvalException(msg);
       }
       domain = fcn.domain;
@@ -262,47 +248,42 @@ public class Bags implements ValueConstants {
   }
 
   public static BoolValue SqSubseteq(Value b1, Value b2) {
-    FcnRcdValue fcn1 = FcnRcdValue.convert(b1);
-    FcnRcdValue fcn2 = FcnRcdValue.convert(b2);
-    if (fcn1 == null) {
-      String msg = "Applying \\sqsubseteq to the following value, which\n" +
-	"is not a function with a finite domain:\n" + Value.ppr(b1.toString());
-      throw new EvalException(msg);
-    }
-    if (fcn2 == null) {
-      String msg = "Applying \\sqsubseteq to the following value, which\n" +
-	"is not a function with a finite domain:\n" + Value.ppr(b2.toString());
-      throw new EvalException(msg);
-    }
-    Value[] domain1 = fcn1.domain;
-    Value[] values1 = fcn1.values;
-    Value[] domain2 = fcn2.domain;
-    Value[] values2 = fcn2.values;
-    for (int i = 0; i < domain1.length; i++) {
-      int v1 = ((IntValue)values1[i]).val;
-      for (int j = 0; j < domain2.length; j++) {
-	if (domain1[i].equals(domain2[j])) {
-	  int v2 = ((IntValue)values2[j]).val;
-	  v1 -= v2;
-	  break;
-	}
+      FcnRcdValue fcn1 = FcnRcdValue.convert(b1);
+      FcnRcdValue fcn2 = FcnRcdValue.convert(b2);
+      if (fcn1 == null) 
+      {
+          throw new EvalException(EC.TLC_MODULE_APPLYING_FUNCTION_WITH_INIFINTE_DOMAIN, new String[]{"\\sqsubseteq", Value.ppr(b1.toString())});
       }
-      if (v1 > 0) return ValFalse;
-    }
-    return ValTrue;
+      if (fcn2 == null) 
+      {
+
+          throw new EvalException(EC.TLC_MODULE_APPLYING_FUNCTION_WITH_INIFINTE_DOMAIN, new String[]{"\\sqsubseteq", Value.ppr(b2.toString())});
+      }
+      Value[] domain1 = fcn1.domain;
+      Value[] values1 = fcn1.values;
+      Value[] domain2 = fcn2.domain;
+      Value[] values2 = fcn2.values;
+      for (int i = 0; i < domain1.length; i++) {
+          int v1 = ((IntValue)values1[i]).val;
+          for (int j = 0; j < domain2.length; j++) {
+              if (domain1[i].equals(domain2[j])) {
+                  int v2 = ((IntValue)values2[j]).val;
+                  v1 -= v2;
+                  break;
+              }
+          }
+          if (v1 > 0) return ValFalse;
+      }
+      return ValTrue;
   }
 
   public static Value BagOfAll(Value f, Value b) {
     if (!(f instanceof Applicable)) {
-      String msg = "The fisrt argument of BagOfAll must be an operator," +
-	" but instead it is\n" + Value.ppr(f.toString());
-      throw new EvalException(msg);
+      throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[]{"first", "BagOfAll", "\bn operator", Value.ppr(f.toString())});
     }
     FcnRcdValue fcn = FcnRcdValue.convert(b);
     if (fcn == null) {
-      String msg = "The second argument of BagOfAll must be a function" +
-	" with a finite domain:\n" + Value.ppr(b.toString());
-      throw new EvalException(msg);
+        throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[]{"second", "BagOfAll", "function with a finite domain", Value.ppr(b.toString())});
     }
     Applicable ff = (Applicable)f;
     ValueVec dVec = new ValueVec();
@@ -351,30 +332,27 @@ public class Bags implements ValueConstants {
   ******/
   
   public static Value BagToSet(Value b) {
-    FcnRcdValue fcn = FcnRcdValue.convert(b);
-    if (fcn == null) {
-      String msg = "Applying BagToSet to the following value, which\n" +
-	"is not a function with a finite domain:\n" + Value.ppr(b.toString());
-      throw new EvalException(msg);
-    }
-    return fcn.getDomain();
+      FcnRcdValue fcn = FcnRcdValue.convert(b);
+      if (fcn == null) 
+      {
+          throw new EvalException(EC.TLC_MODULE_APPLYING_FUNCTION_WITH_INIFINTE_DOMAIN, new String[]{"BagToSet", Value.ppr(b.toString())});
+      }
+      return fcn.getDomain();
   }
 
   public static Value SetToBag(Value b) {
-    SetEnumValue s1 = SetEnumValue.convert(b);
-    if (s1 == null) {
-      String msg = "Applying BagToSet to the following value, which\n" +
-	"is not a function with a finite domain:\n" + Value.ppr(b.toString());
-      throw new EvalException(msg);
-    }
-    ValueVec elems = s1.elems;
-    Value[] domain = new Value[elems.size()];
-    Value[] values = new Value[elems.size()];
-    for (int i = 0; i < elems.size(); i++) {
-      domain[i] = elems.elementAt(i);
-      values[i] = ValOne;
-    }
-    return new FcnRcdValue(domain, values, s1.isNormalized());
+      SetEnumValue s1 = SetEnumValue.convert(b);
+      if (s1 == null) {
+          throw new EvalException(EC.TLC_MODULE_APPLYING_FUNCTION_WITH_INIFINTE_DOMAIN, new String[]{"BagToSet", Value.ppr(b.toString())});
+      }
+      ValueVec elems = s1.elems;
+      Value[] domain = new Value[elems.size()];
+      Value[] values = new Value[elems.size()];
+      for (int i = 0; i < elems.size(); i++) {
+          domain[i] = elems.elementAt(i);
+          values[i] = ValOne;
+      }
+      return new FcnRcdValue(domain, values, s1.isNormalized());
   }
 
 }

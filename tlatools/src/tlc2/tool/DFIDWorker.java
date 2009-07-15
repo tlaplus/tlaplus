@@ -130,7 +130,7 @@ public class DFIDWorker extends IdThread implements IWorker {
   public final void printTrace(int errorCode, String[] parameters, TLCState s1, TLCState s2) 
   {
       MP.printError(errorCode, parameters);
-      MP.printError(EC.TLC_BEHAVIOR_UP_TO_THIS_POINT);
+      MP.printMessage(EC.TLC_BEHAVIOR_UP_TO_THIS_POINT);
       int idx = 0;
       while (idx < this.curLevel) 
       {

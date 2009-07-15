@@ -4,10 +4,17 @@
 
 package util;
 
+import tlc2.output.EC;
+import tlc2.output.MP;
+
 /**
  * A toolkit for checking conditions and throwing unchecked exceptions if they are not met.
  * 
  * @author Yuan Yu, Simon Zambrovski
+ * @version $Id$
+ */
+/**
+ * @author Simon Zambrovski
  * @version $Id$
  */
 public class Assert
@@ -15,6 +22,7 @@ public class Assert
     /**
      * Unconditioned way to throw an exception
      * @param reason the explaining message to be enclosed into the exception
+     * @deprecated Use {@link EC} constants instead
      */
     public static void fail(String reason) throws RuntimeException
     {
@@ -22,16 +30,77 @@ public class Assert
     }
 
     /**
+     * Unconditioned way to throw an exception
+     * @param errorCode error code of explanation
+     * @param parameters parameters for the message
+     */
+    public static void fail(int errorCode, String[] parameters)
+    {
+        throw new RuntimeException(MP.getMessage(errorCode, parameters));
+    }
+
+    /**
+     * Unconditioned way to throw an exception
+     * @param errorCode error code of explanation
+     * @param parameter parameter for the message
+     */
+    public static void fail(int errorCode, String parameter)
+    {
+        throw new RuntimeException(MP.getMessage(errorCode, parameter));
+    }
+
+    /**
+     * Unconditioned way to throw an exception
+     * @param errorCode error code of explanation
+     */
+    public static void fail(int errorCode)
+    {
+        throw new RuntimeException(MP.getMessage(errorCode));
+    }
+
+    /**
      * Checks whether the condition is true. Throws an unchecked exception if otherwise
-     * @param condition the condition to check
-     * @param reason the message explaining the exception
+     * @param condition condition the condition to check
+     * @param errorCode error code of explanation
+     * @param parameter parameter for the message
      * @throws RuntimeException
      */
-    public static void check(boolean condition, String reason) throws RuntimeException
+    public static void check(boolean condition, int errorCode, String[] parameters) throws RuntimeException
     {
         if (!condition) 
         {
-            throw new RuntimeException(reason);
+            throw new RuntimeException(MP.getMessage(errorCode, parameters));
         }
     }
+
+    /**
+     * Checks whether the condition is true. Throws an unchecked exception if otherwise
+     * @param condition condition the condition to check
+     * @param errorCode error code of explanation
+     * @param parameters parameters for the message
+     * @throws RuntimeException
+     */
+    public static void check(boolean condition, int errorCode, String parameter) throws RuntimeException
+    {
+        if (!condition) 
+        {
+            throw new RuntimeException(MP.getMessage(errorCode, parameter));
+        }
+    }
+
+    /**
+     * Checks whether the condition is true. Throws an unchecked exception if otherwise
+     * @param condition condition the condition to check
+     * @param errorCode error code of explanation
+     * @throws RuntimeException
+     */
+    public static void check(boolean condition, int errorCode) throws RuntimeException
+    {
+        if (!condition) 
+        {
+            throw new RuntimeException(MP.getMessage(errorCode));
+        }
+    }
+
+
 }
