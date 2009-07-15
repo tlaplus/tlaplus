@@ -74,8 +74,11 @@ public class ExternalSort {
       return true;
     }
     // This case should be caught by readInt above
-    Assert.check((in0Size > 0) && (in1Size > 0), 
-		 "in0size and in1size should both be greater than 0");
+    if ((in0Size > 0) && (in1Size > 0) )
+    {
+        Assert.fail("in0size and in1size should both be greater than 0");
+    } 
+		 
 
     ByteUtils.writeInt(out, in0Size+in1Size);
     a0 = (BigInt) ex; 
@@ -109,8 +112,10 @@ public class ExternalSort {
       }
     }
 
-    Assert.check((in0Pos==in0Size) != (in1Pos==in1Size), 
-		 "Exactly one of in0Pos==in0Size, in1Pos==in1Size must be true");
+    if((in0Pos==in0Size) != (in1Pos==in1Size))
+    { 
+		 Assert.fail("Exactly one of in0Pos==in0Size, in1Pos==in1Size must be true");
+    }
     if (in0Pos == in0Size) {
       a1.write(out);
       in1Pos++;
