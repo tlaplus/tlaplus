@@ -1,11 +1,13 @@
 package tlc2.output;
 
+import tla2sany.output.SANYCodes;
+
 /**
  * Interface containing the error code constants 
  * @author Simon Zambrovski
  * @version $Id$
  */
-public interface EC
+public interface EC extends SANYCodes
 {
     // Check and CheckImpl
     // check if the TLC option is the same for params
@@ -88,8 +90,6 @@ public interface EC
     public static final int SYSTEM_METADIR_EXISTS = 2162;
     public static final int SYSTEM_METADIR_CREATION_ERROR = 2163;
     public static final int SYSTEM_UNABLE_TO_OPEN_FILE = 2167;
-
-    public static final int SANY_PARSER_CHECK = 4000;
     /*
      * Bad description
      */
