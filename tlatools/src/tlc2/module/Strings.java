@@ -13,31 +13,43 @@ import tlc2.value.UserObj;
 import tlc2.value.UserValue;
 import tlc2.value.Value;
 
-public class Strings extends UserObj {
+public class Strings extends UserObj
+{
 
-  private static Value SetString = new UserValue(new Strings());
+    private static Value SetString = new UserValue(new Strings());
 
-  public static Value STRING() { return SetString; }
-
-  public final int compareTo(Value val) {
-    if ((val instanceof UserValue) &&
-	(((UserValue)val).userObj instanceof Strings)) {
-      return 0;
+    public static Value STRING()
+    {
+        return SetString;
     }
-    if (val instanceof ModelValue) return 1;
-    throw new EvalException(EC.TLC_MODULE_ATTEMPTED_TO_COMPARE, new String[]{"STRING", Value.ppr(val.toString())});
-  }
 
-  public final boolean member(Value val) {
-    if (val instanceof StringValue) return true;
-    if (val instanceof ModelValue)  
-      return ((ModelValue) val).modelValueMember(this) ;
-    throw new EvalException(EC.TLC_MODULE_ATTEMPTED_TO_CHECK_MEMBER, new String[] {Value.ppr(val.toString()), "STRING"});
-  }
+    public final int compareTo(Value val)
+    {
+        if ((val instanceof UserValue) && (((UserValue) val).userObj instanceof Strings))
+        {
+            return 0;
+        }
+        if (val instanceof ModelValue)
+            return 1;
+        throw new EvalException(EC.TLC_MODULE_COMPARE_VALUE, new String[] { "STRING", Value.ppr(val.toString()) });
+    }
 
-  public final boolean isFinite() { return false; }
-  
-  public final StringBuffer toString(StringBuffer sb, int offset) {
-    return sb.append("STRING");
-  }
+    public final boolean member(Value val)
+    {
+        if (val instanceof StringValue)
+            return true;
+        if (val instanceof ModelValue)
+            return ((ModelValue) val).modelValueMember(this);
+        throw new EvalException(EC.TLC_MODULE_CHECK_MEMBER_OF, new String[] { Value.ppr(val.toString()), "STRING" });
+    }
+
+    public final boolean isFinite()
+    {
+        return false;
+    }
+
+    public final StringBuffer toString(StringBuffer sb, int offset)
+    {
+        return sb.append("STRING");
+    }
 }

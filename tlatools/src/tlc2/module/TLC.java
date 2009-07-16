@@ -77,8 +77,7 @@ public class TLC implements ValueConstants
         {
             return v1;
         }
-        throw new EvalException(EC.TLC_VALUE_ASSERT_FAILED, Value
-                .ppr(v2.toString()));
+        throw new EvalException(EC.TLC_VALUE_ASSERT_FAILED, Value.ppr(v2.toString()));
     }
 
     /**
@@ -114,7 +113,8 @@ public class TLC implements ValueConstants
                 return res;
             }
         }
-        throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[]{"\b" /* delete the space*/, "TLCGet", "nonnegative integer", Value.ppr(vidx.toString())});
+        throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[] { "\b" /* delete the space*/, "TLCGet",
+                "nonnegative integer", Value.ppr(vidx.toString()) });
     }
 
     public static Value TLCSet(Value vidx, Value val)
@@ -135,8 +135,9 @@ public class TLC implements ValueConstants
                 return ValTrue;
             }
         }
-        
-        throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[]{"first", "TLCSet", "nonnegative integer", Value.ppr(vidx.toString())});
+
+        throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[] { "first", "TLCSet", "nonnegative integer",
+                Value.ppr(vidx.toString()) });
     }
 
     public static Value MakeFcn(Value d, Value e)
@@ -154,11 +155,13 @@ public class TLC implements ValueConstants
         FcnRcdValue fcn2 = FcnRcdValue.convert(f2);
         if (fcn1 == null)
         {
-            throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[]{"first", "@@", "function", Value.ppr(f1.toString())});
+            throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[] { "first", "@@", "function",
+                    Value.ppr(f1.toString()) });
         }
         if (fcn2 == null)
         {
-            throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[]{"second", "@@", "function", Value.ppr(f2.toString())});
+            throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[] { "second", "@@", "function",
+                    Value.ppr(f2.toString()) });
         }
         ValueVec dom = new ValueVec();
         ValueVec vals = new ValueVec();
@@ -243,11 +246,13 @@ public class TLC implements ValueConstants
         TupleValue seq = TupleValue.convert(s);
         if (seq == null)
         {
-            throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[]{"first", "SortSeq", "natural number", Value.ppr(s.toString())});
+            throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[] { "first", "SortSeq", "natural number",
+                    Value.ppr(s.toString()) });
         }
         if (!(cmp instanceof Applicable))
         {
-            throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[]{"second", "SortSeq", "function", Value.ppr(cmp.toString())});
+            throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[] { "second", "SortSeq", "function",
+                    Value.ppr(cmp.toString()) });
         }
         Applicable fcmp = (Applicable) cmp;
         Value[] elems = seq.elems;
@@ -282,15 +287,17 @@ public class TLC implements ValueConstants
         {
             return ((BoolValue) res).val;
         }
-            throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[]{"second", "SortSeq", "noolean function", Value.ppr(res.toString())});
-        }
+        throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[] { "second", "SortSeq", "noolean function",
+                Value.ppr(res.toString()) });
+    }
 
     public static Value Permutations(Value s)
     {
         SetEnumValue s1 = SetEnumValue.convert(s);
         if (s1 == null)
         {
-            throw new EvalException(EC.TLC_MODULE_APPLYING_TO_NOT_FINITE_SET, new String[]{"Permutations", Value.ppr(s.toString())});
+            throw new EvalException(EC.TLC_MODULE_APPLYING_TO_WRONG_VALUE, new String[] { "Permutations",
+                    "a finite set", Value.ppr(s.toString()) });
         }
         s1.normalize();
         ValueVec elems = s1.elems;
@@ -369,7 +376,8 @@ public class TLC implements ValueConstants
             SetEnumValue domSet = SetEnumValue.convert(sfv.domain);
             if (domSet == null)
             {
-                throw new EvalException(EC.TLC_MODULE_APPLYING_TO_NOT_FINITE_SET, new String[]{"RandomElement", Value.ppr(val.toString())});
+                throw new EvalException(EC.TLC_MODULE_APPLYING_TO_WRONG_VALUE, new String[] { "RandomElement",
+                        "a finite set", Value.ppr(val.toString()) });
             }
             domSet.normalize();
             ValueVec elems = domSet.elems;
@@ -406,7 +414,8 @@ public class TLC implements ValueConstants
             SetEnumValue enumVal = SetEnumValue.convert(val);
             if (enumVal == null)
             {
-                throw new EvalException(EC.TLC_MODULE_APPLYING_TO_NOT_FINITE_SET, new String[]{"RandomElement", Value.ppr(val.toString())});
+                throw new EvalException(EC.TLC_MODULE_APPLYING_TO_WRONG_VALUE, new String[] { "RandomElement",
+                        "a finite set", Value.ppr(val.toString()) });
             }
             int sz = enumVal.size();
             int index = (int) Math.floor(rng.nextDouble() * sz);

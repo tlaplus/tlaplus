@@ -23,7 +23,7 @@ public class AnySet extends UserObj
 
     public final int compareTo(Value val)
     {
-        throw new EvalException(EC.TLC_MODULE_ATTEMPTED_TO_COMPARE, new String[] { "ANY", Value.ppr(val.toString()) });
+        throw new EvalException(EC.TLC_MODULE_COMPARE_VALUE, new String[] { "ANY", Value.ppr(val.toString()) });
     }
 
     public final boolean member(Value val)
