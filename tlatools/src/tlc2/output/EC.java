@@ -102,7 +102,7 @@ public interface EC
     public static final int TLC_FP_VALUE_ALREADY_ON_DISK = 2166;
 
     public static final int TLC_LIVE_BEGRAPH_FAILED_TO_CONSTRUCT = 2159;
-    public static final int TLC_PARAMETER_MUST_BE_POSTFIX = 2136; // TODO Check this message
+    public static final int TLC_PARAMETER_MUST_BE_POSTFIX = 2136; 
     public static final int TLC_COULD_NOT_DETERMINE_SUBSCRIPT = 2139;
     public static final int TLC_SUBSCRIPT_CONTAIN_NO_STATE_VAR = 2140;
     public static final int TLC_WRONG_TUPLE_FIELD_NAME = 2141;

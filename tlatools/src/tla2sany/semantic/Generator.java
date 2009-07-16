@@ -29,7 +29,7 @@ import tla2sany.utilities.Stack;
 import tla2sany.utilities.Strings;
 import tla2sany.utilities.Vector;
 import tlc2.output.EC;
-import util.Assert;
+import tlc2.output.MP;
 import util.UniqueString;
 import util.WrongInvocationException;
 
@@ -2393,7 +2393,10 @@ OpDefNode node = (OpDefNode) vec.elementAt(i);
           else {
             // parameter must be postfix operator
             // SZ Jul 13, 2009: added the message to the assert
-            Assert.check( ss[ lvi ].isKind( N_PostfixDecl ), EC.TLC_PARAMETER_MUST_BE_POSTFIX ); 
+            if(! ss[ lvi ].isKind( N_PostfixDecl )) 
+            {
+                throw new WrongInvocationException(MP.getMessage(EC.TLC_PARAMETER_MUST_BE_POSTFIX)); 
+            }
             name = sss[1].getUS();
             arity = 1;
           }
