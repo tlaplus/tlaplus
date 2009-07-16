@@ -10,12 +10,13 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
+import tlc2.output.EC;
 import util.Assert;
 import util.FileUtil;
 
 /**
  * Alternative implementation
- * @deprecated not used currently
+ * not used currently
  * @version $Id$
  */
 public class DiskObjectStack extends ObjectStack {
@@ -56,8 +57,7 @@ public class DiskObjectStack extends ObjectStack {
 	this.index = 0;
       }
       catch (Exception e) {
-	Assert.fail("TLC encountered the following error writing the stack of " +
-		    "unexamined states:\n" + e.getMessage());
+          Assert.fail(EC.SYSTEM_ERROR_WRITING_STATES, new String[]{"stack", e.getMessage()});      
       }
     }
     this.buf[this.index++] = state;
@@ -75,8 +75,7 @@ public class DiskObjectStack extends ObjectStack {
 	}
       }
       catch (Exception e) {
-	Assert.fail("TLC encountered the following error reading the stack of " +
-		    "unexplored states:\n" + e.getMessage());
+	Assert.fail(EC.SYSTEM_ERROR_READING_STATES, new String[]{"stack", e.getMessage()});
       }
     }
     return this.buf[--this.index];
@@ -128,9 +127,7 @@ public class DiskObjectStack extends ObjectStack {
       }
     }
     catch (ClassNotFoundException e) {
-      Assert.fail("TLC encountered the following error while restarting from a " +
-		  "checkpoint;\n the checkpoint file is probably corrupted.\n" +
-		  e.getMessage());
+        Assert.fail(EC.SYSTEM_CHECKPOINT_RECOVERY_CORRUPT, e.getMessage());
     }
     finally {
       ois.close();

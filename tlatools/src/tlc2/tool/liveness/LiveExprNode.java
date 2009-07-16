@@ -9,6 +9,7 @@ import tlc2.tool.TLCState;
 import tlc2.tool.Tool;
 import tlc2.util.Vect;
 import util.Assert;
+import util.WrongInvocationException;
 
 /**
  * LNConj - a conjunction. (contains list of conjuncts)
@@ -558,8 +559,7 @@ abstract class LiveExprNode {
       return this;
     }
     // We do not deal with actions:
-    Assert.fail("LiveExprNode.makeBinary: TLC encounters actions.");
-    return null;
+    throw new WrongInvocationException("LiveExprNode.makeBinary: TLC encounters actions.");
   }
 
   /**

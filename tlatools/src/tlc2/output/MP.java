@@ -232,7 +232,14 @@ public class MP
                 b.append("TLC encountered the following error while restarting from a "
                         + "checkpoint;\n the checkpoint file is probably corrupted.\n%1%");
                 break;
+            case EC.SYSTEM_ERROR_READING_STATES:
+                b.append("TLC encountered the following error reading the %1% of unexplored states:\n%2%");
+                break;
+            case EC.SYSTEM_ERROR_WRITING_STATES:
+                b.append("TLC encountered the following error writing the %1% of unexplored states:\n%2%");
+                break;
 
+                
             case EC.SYSTEM_ERROR_WRITING_POOL:
                 b.append("when writing the disk (StatePoolWriter.run):\n%1%");
                 break;
@@ -316,9 +323,13 @@ public class MP
                 b.append("TLC could not read in the trace. %1%");
                 break;
 
-            case EC.CHECK_PARSING_FAILED:
+            case EC.TLC_PARSING_FAILED:
                 b.append("Parsing or semantic analysis failed.");
                 break;
+            case EC.TLC_PARSING_FAILED2:
+                b.append("Parsing or semantic analysis failed.%1%");
+                break;
+
             /* ************************************************************************ */
             case EC.TLC_VALUE_ASSERT_FAILED:
                 b.append("The first argument of Assert evaluated to FALSE; the second argument was:\n%1%");
@@ -452,6 +463,33 @@ public class MP
                 b.append("TLA+ Parser sanity check");
                 break;
 
+            case EC.TLC_ARGUMENT_MISMATCH:
+                b.append("Argument mismatch in operator application.%1");
+                break;
+                
+            case EC.TLC_TOO_MNY_POSSIBLE_STATES:
+                b.append("Too many possible next states for the last state in the trace.");
+                break;
+            case EC.TLC_ERROR_REPLACING_MODULES:
+                b.append("Found a Java class for module %1%, but unable to read\n" +
+                        "it as a Java class object. %2%");
+                break;
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
             case EC.GENERAL:
                 // the general error adapts to the number of parameters that are passed
                 for (int i = 0; i < parameters.length; i++)

@@ -3,7 +3,7 @@
 // Last modified on Mon 30 Apr 2007 at 13:18:29 PST by lamport
 //      modified on Tue May 15 11:35:52 PDT 2001 by yuanyu
 
-package tlc2.tool;
+package tlc2.tool.distributed;
 
 import java.io.File;
 import java.io.IOException;

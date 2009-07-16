@@ -154,12 +154,7 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable {
               SANY.frontEndMain(spec, this.rootFile, ToolIO.err);
           } catch (FrontEndException e)
           {
-              String msg = e.getMessage();
-              if (msg == null)
-              { 
-                  msg = "";
-              }
-              Assert.fail("Parsing or semantic analysis failed. " + msg);
+              Assert.fail(EC.TLC_PARSING_FAILED2, e);
           }
       }
 
@@ -171,7 +166,7 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable {
               !spec.parseErrors.isSuccess() ||
               !spec.semanticErrors.isSuccess()) 
       {
-          Assert.fail("Parsing or semantic analysis failed.");
+          Assert.fail(EC.TLC_PARSING_FAILED);
       }
 
     
@@ -218,7 +213,7 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable {
     Class stringModule = this.tlaClass.loadClass("Strings");
     if (stringModule == null) {
         
-      Assert.fail(MP.getTLCBug(EC.TLC_STRING_MODULE_NOT_FOUND));
+      Assert.fail(EC.TLC_STRING_MODULE_NOT_FOUND);
     }
     Method[] ms = stringModule.getDeclaredMethods();
     for (int i = 0; i < ms.length; i++) {
@@ -260,8 +255,7 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable {
       UniqueString name = rootConsts[i].getName();
       Object val = constants.get(name.toString());
       if (val == null && !overrides.containsKey(name.toString())) {
-	Assert.fail("The constant parameter " + name + " is not assigned" +
-		    " a value by the configuration file.");
+          Assert.fail("The constant parameter " + name + " is not assigned a value by the configuration file.");
       }
       rootConsts[i].setToolObject(TLCGlobals.ToolId, val);
       this.defns.put(name, val);

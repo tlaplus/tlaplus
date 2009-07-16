@@ -5,7 +5,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 
 import tla2sany.st.TreeNode;
-import util.Assert;
+import util.WrongInvocationException;
 
 /***************************************************************************
 * Note: The SANY1 level checking algorithm is specified in the file        *
@@ -121,9 +121,8 @@ public int levelChecked   = 0 ;
     * tools that use the level information provided by SANY. However, it   *
     * is crucial that this requirement be obeyed during level checking.    *
     ***********************************************************************/
-    Assert.fail("Level checking of " + kinds[this.getKind()] +
+      throw new WrongInvocationException("Level checking of " + kinds[this.getKind()] +
                  " node not implemented.");
-    return false ;
    } 
 
   public boolean levelCheckSubnodes(int iter, LevelNode[] sub) {
@@ -192,7 +191,7 @@ public int levelChecked   = 0 ;
 ***************************************************************************/
   public int getLevel(){
     if (this.levelChecked == 0) 
-      {Assert.fail("getLevel called before levelCheck");};
+      {throw new WrongInvocationException("getLevel called before levelCheck");};
     return this.level;
   }
 
@@ -203,7 +202,7 @@ public int levelChecked   = 0 ;
     * level of the object.                                                 *
     ***********************************************************************/
     if (this.levelChecked == 0) 
-       {Assert.fail("getLevelParams called before levelCheck");};
+       {throw new WrongInvocationException("getLevelParams called before levelCheck");};
     return this.levelParams;
    }
 
@@ -213,7 +212,7 @@ public int levelChecked   = 0 ;
     * from the local context that appear within the object.                *
     ***********************************************************************/
     if (this.levelChecked == 0) 
-       {Assert.fail("getAllParams called before levelCheck");};
+       {throw new WrongInvocationException("getAllParams called before levelCheck");};
     return this.allParams;
    }
 
@@ -224,7 +223,7 @@ public int levelChecked   = 0 ;
     * nonLeibniz argument.                                                 *
     ***********************************************************************/
     if (this.levelChecked == 0) 
-       {Assert.fail("getAllParams called before levelCheck");};
+       {throw new WrongInvocationException("getAllParams called before levelCheck");};
     return this.nonLeibnizParams;
    }
 
@@ -235,7 +234,7 @@ public int levelChecked   = 0 ;
     * key/parameter must have a level <= the value/int.                    *
     ***********************************************************************/
     if (this.levelChecked == 0) 
-       {Assert.fail("getLevelConstraints called before levelCheck");};
+       {throw new WrongInvocationException("getLevelConstraints called before levelCheck");};
     return this.levelConstraints;
    }
 
@@ -248,7 +247,7 @@ public int levelChecked   = 0 ;
     * number k.position.                                                   *
     ***********************************************************************/
     if (this.levelChecked == 0) 
-       {Assert.fail("getArgLevelConstraints called before levelCheck");};
+       {throw new WrongInvocationException("getArgLevelConstraints called before levelCheck");};
     return this.argLevelConstraints;
    }
 
@@ -258,7 +257,7 @@ public int levelChecked   = 0 ;
     * ArgLevelParam.java for an explanation of those objects.)             *
     ***********************************************************************/
     if (this.levelChecked == 0) 
-       {Assert.fail("getArgLevelParams called before levelCheck");};
+       {throw new WrongInvocationException("getArgLevelParams called before levelCheck");};
     return this.argLevelParams;}
     
   public String defaultLevelDataToString() {
@@ -316,7 +315,7 @@ public int levelChecked   = 0 ;
     * some nodes need to print additional level information.               *
     ***********************************************************************/
     if (this.levelChecked == 0) 
-       {Assert.fail("levelDataToString called before levelCheck");};
+       {throw new WrongInvocationException("levelDataToString called before levelCheck");};
     return this.defaultLevelDataToString() ;}
 }
 

@@ -8,7 +8,7 @@ package tlc2.util;
 import java.io.PrintWriter;
 import java.util.Hashtable;
 
-import util.Assert;
+import util.WrongInvocationException;
 
 public abstract class Sx {
 
@@ -23,14 +23,14 @@ public abstract class Sx {
 
   public static Sx car(Sx a) {
     if (!(a instanceof SxPair)) {
-      Assert.fail("Error: car must be applied to cons.");
+        throw new WrongInvocationException("Car must be applied to cons.");
     }
     return ((SxPair)a).car;
   }
 
   public static Sx cdr(Sx a) {
     if (!(a instanceof SxPair)) {
-      Assert.fail("Error: cdr must be applied to cons.");
+        throw new WrongInvocationException("Cdr must be applied to cons.");
     }
     return ((SxPair)a).cdr;
   }

@@ -22,6 +22,7 @@ import tlc2.value.ValueInputStream;
 import tlc2.value.ValueOutputStream;
 import util.Assert;
 import util.UniqueString;
+import util.WrongInvocationException;
 
 /**
  * This class represents a TLA+ state, which simply is an assignment
@@ -95,8 +96,7 @@ implements Cloneable, Serializable {
   }
 
   public final TLCState bind(SymbolNode id, Value value, SemanticNode expr) {
-    Assert.fail("TLCStateMutSource.bind: This is a TLC bug.");
-    return null;    // make compiler happy
+    throw new WrongInvocationException("TLCStateMutSource.bind: This is a TLC bug.");
   }
   
   public final TLCState unbind(UniqueString name) {

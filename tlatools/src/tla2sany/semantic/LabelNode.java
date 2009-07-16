@@ -46,8 +46,8 @@ import tla2sany.parser.SyntaxTreeNode;
 import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
 import tla2sany.utilities.Vector;
-import util.Assert;
 import util.UniqueString;
+import util.WrongInvocationException;
 
 
 public class LabelNode extends ExprNode 
@@ -224,37 +224,37 @@ public class LabelNode extends ExprNode
 
   public final int getLevel() {
     if (levelChecked == 0) 
-      {Assert.fail("getLevel called for TheoremNode before levelCheck");};
+      {throw new WrongInvocationException("getLevel called for TheoremNode before levelCheck");};
     return this.body.getLevel();
   }
 
   public final HashSet getLevelParams() {
     if (levelChecked == 0) 
-      {Assert.fail("getLevelParams called for ThmNode before levelCheck");};
+      {throw new WrongInvocationException("getLevelParams called for ThmNode before levelCheck");};
     return this.body.getLevelParams();
   }
 
   public final HashSet getAllParams() {
     if (levelChecked == 0) 
-      {Assert.fail("getAllParams called for ThmNode before levelCheck");};
+      {throw new WrongInvocationException("getAllParams called for ThmNode before levelCheck");};
     return this.body.getAllParams();
   }
 
   public final SetOfLevelConstraints getLevelConstraints() {
     if (levelChecked == 0) 
-       {Assert.fail("getLevelConstraints called for ThmNode before levelCheck");};
+       {throw new WrongInvocationException("getLevelConstraints called for ThmNode before levelCheck");};
     return this.body.getLevelConstraints();
   }
 
   public final SetOfArgLevelConstraints getArgLevelConstraints() {
     if (levelChecked == 0) 
-      {Assert.fail("getArgLevelConstraints called for ThmNode before levelCheck");};
+      {throw new WrongInvocationException("getArgLevelConstraints called for ThmNode before levelCheck");};
     return this.body.getArgLevelConstraints();
   }
 
   public final HashSet getArgLevelParams() {
     if (levelChecked == 0) 
-      {Assert.fail("getArgLevelParams called for ThmNode before levelCheck");};
+      {throw new WrongInvocationException("getArgLevelParams called for ThmNode before levelCheck");};
     return this.body.getArgLevelParams();
   }
   

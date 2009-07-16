@@ -8,9 +8,10 @@ package tlc2.tool.queue;
 import java.io.File;
 import java.io.IOException;
 
-import tlc2.tool.StatePoolReader;
-import tlc2.tool.StatePoolWriter;
+import tlc2.output.EC;
 import tlc2.tool.TLCState;
+import tlc2.util.StatePoolReader;
+import tlc2.util.StatePoolWriter;
 import tlc2.value.ValueInputStream;
 import tlc2.value.ValueOutputStream;
 import util.Assert;
@@ -70,8 +71,7 @@ public class DiskStateQueue extends StateQueue {
 	this.enqIndex = 0;
       }
       catch (Exception e) {
-	Assert.fail("TLC encountered the following error writing the queue of " +
-		    "unexamined states:\n" + e.getMessage());
+          Assert.fail(EC.SYSTEM_ERROR_WRITING_STATES, new String[]{"queue", e.getMessage()});
       }
     }
     this.enqBuf[this.enqIndex++] = state;
@@ -120,8 +120,7 @@ public class DiskStateQueue extends StateQueue {
       }
     }
     catch (Exception e) {
-      Assert.fail("TLC encountered the following error reading the queue of " +
-		  "unexamined states:\n" + e.getMessage());
+        Assert.fail(EC.SYSTEM_ERROR_READING_STATES, new String[]{"queue", e.getMessage()});
     }
   }
 

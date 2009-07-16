@@ -5,52 +5,67 @@
 
 package tlc2.tool;
 
+import tlc2.output.EC;
 import util.Assert;
 
-public class TLAClass {
-  /* Load a class from a file. */
-  private String pkg;
+/**
+ * 
+ * @author Yuan Yu, Simon Zambrovski
+ * @version $Id$
+ */
+public class TLAClass
+{
+    /* Load a class from a file. */
+    private String pkg;
 
-  public TLAClass(String pkg) {
-    if (pkg.length() != 0 &&
-	pkg.charAt(pkg.length()-1) != '.') {
-      this.pkg = pkg + '.';
+    public TLAClass(String pkg)
+    {
+        if (pkg.length() != 0 && pkg.charAt(pkg.length() - 1) != '.')
+        {
+            this.pkg = pkg + '.';
+        } else
+        {
+            this.pkg = pkg;
+        }
     }
-    else {
-      this.pkg = pkg;
-    }
-  }
 
-  /**
-   * This method attempts to load the java class with the given name.
-   **/
-  public synchronized Class loadClass(String name) {
-    Class cl = null;
-    try {
-      try {
-	cl = Class.forName(name);
-      }
-      catch (Exception e) { /*SKIP*/ }
-      if (cl == null) {
-	try {
-	  cl = Class.forName(this.pkg + name);
-	}
-	catch (Exception e) { /*SKIP*/ }
-      }
+    /**
+     * This method attempts to load the java class with the given name.
+     **/
+    public synchronized Class loadClass(String name)
+    {
+        Class cl = null;
+        try
+        {
+            try
+            {
+                cl = Class.forName(name);
+            } catch (Exception e)
+            { /*SKIP*/
+            }
+            if (cl == null)
+            {
+                try
+                {
+                    cl = Class.forName(this.pkg + name);
+                } catch (Exception e)
+                { /*SKIP*/
+                }
+            }
+        } catch (Throwable e)
+        {
+            Assert.fail(EC.TLC_ERROR_REPLACING_MODULES, new String[] { name, e.getMessage() });
+        }
+        return cl;
     }
-    catch (Throwable e) {
-      Assert.fail("Found a Java class for module " + name + ", but unable to read\n" +
-		  "it as a Java class object. " + e.getMessage());
-    }
-    return cl;
-  }
 
-  public static void main(String argv[]) {
-    TLAClass tc = new TLAClass("tlc2.module");
-    Class c = tc.loadClass("Strings");  // must set CLASSPATH correctly
-    System.err.println("c = " + c);
-    // Class c1 = tc.loadClass("Class");
-    // System.err.println("c1 = " + c1);
-  }
-  
+    public static void main(String argv[])
+    {
+        TLAClass tc = new TLAClass("tlc2.module");
+        Class c = tc.loadClass("Strings"); // must set CLASSPATH correctly
+        System.err.println("c = " + c);
+        // Class c1 = tc.loadClass("Class");
+        // System.err.println("c1 = " + c1);
+    }
+
 }

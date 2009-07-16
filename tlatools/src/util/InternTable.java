@@ -7,6 +7,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 
+import tlc2.output.EC;
+
 /**
  * Storage for the UniqueStrings. 
  * @see {@link UniqueString} for more information 
@@ -173,8 +175,7 @@ public final class InternTable implements Serializable
             }
         } catch (EOFException e)
         {
-            Assert.fail("TLC encountered the following error while restarting from a "
-                    + "checkpoint;\n the checkpoint file is probably corrupted.\n" + e.getMessage());
+            Assert.fail(EC.SYSTEM_CHECKPOINT_RECOVERY_CORRUPT, e.getMessage());
         }
         dis.close();
     }

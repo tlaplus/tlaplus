@@ -7,6 +7,7 @@ package tlc2.tool;
 
 import tla2sany.semantic.SemanticNode;
 import tlc2.TLCGlobals;
+import tlc2.output.EC;
 import tlc2.value.Value;
 import util.Assert;
 import util.UniqueString;
@@ -51,7 +52,7 @@ public final class StateVec {
   public final void grow(int add) {
     int oldLen = this.v.length;
     if (oldLen >= TLCGlobals.setBound) {
-      Assert.fail("Too many possible next states for the last state in the trace.");
+      Assert.fail(EC.TLC_TOO_MNY_POSSIBLE_STATES);
     }
     int newLen = Math.min(Math.max(oldLen+add, 2*oldLen), TLCGlobals.setBound);
     TLCState oldv[] = this.v;

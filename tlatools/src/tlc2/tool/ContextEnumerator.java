@@ -6,6 +6,7 @@
 package tlc2.tool;
 
 import tla2sany.semantic.SymbolNode;
+import tlc2.output.EC;
 import tlc2.util.Context;
 import tlc2.value.TupleValue;
 import tlc2.value.Value;
@@ -35,38 +36,38 @@ public final class ContextEnumerator {
   }
   
   public final Context nextElement() {
-    Context con1 = this.con;
-    if (this.isDone) return null;
-    for (int i = 0; i < enums.length; i++) {
-      if (this.vars[i] instanceof SymbolNode) {
-	con1 = con1.cons((SymbolNode)this.vars[i], this.currentElems[i]);
+      Context con1 = this.con;
+      if (this.isDone) return null;
+      for (int i = 0; i < enums.length; i++) {
+          if (this.vars[i] instanceof SymbolNode) {
+              con1 = con1.cons((SymbolNode)this.vars[i], this.currentElems[i]);
+          }
+          else {
+              SymbolNode[] varList = (SymbolNode[])this.vars[i];
+              Value argVal = this.currentElems[i];
+              if (!(argVal instanceof TupleValue)) {
+                  Assert.fail(EC.TLC_ARGUMENT_MISMATCH, varList[0].toString());
+              }
+              Value[] valList = ((TupleValue)argVal).elems;
+              if (varList.length != valList.length) {
+                  Assert.fail(EC.TLC_ARGUMENT_MISMATCH, varList[0].toString());
+              }
+              for (int j = 0; j < varList.length; j++) {
+                  con1 = con1.cons(varList[j], valList[j]);
+              }
+          }
       }
-      else {
-	SymbolNode[] varList = (SymbolNode[])this.vars[i];
-	Value argVal = this.currentElems[i];
-	if (!(argVal instanceof TupleValue)) {
-	  Assert.fail("Argument mismatch in operator application." + varList[0]);
-	}
-	Value[] valList = ((TupleValue)argVal).elems;
-	if (varList.length != valList.length) {
-	  Assert.fail("Argument mismatch in operator application." + varList[0]);
-	}
-	for (int j = 0; j < varList.length; j++) {
-	  con1 = con1.cons(varList[j], valList[j]);
-	}
+      for (int i = 0; i < enums.length; i++) {
+          this.currentElems[i] = this.enums[i].nextElement();
+          if (this.currentElems[i] != null) break;
+          if (i == this.enums.length - 1) {
+              this.isDone = true;
+              break;
+          }
+          this.enums[i].reset();
+          this.currentElems[i] = this.enums[i].nextElement();
       }
-    }
-    for (int i = 0; i < enums.length; i++) {
-      this.currentElems[i] = this.enums[i].nextElement();
-      if (this.currentElems[i] != null) break;
-      if (i == this.enums.length - 1) {
-	this.isDone = true;
-	break;
-      }
-      this.enums[i].reset();
-      this.currentElems[i] = this.enums[i].nextElement();
-    }
-    return con1;
+      return con1;
   }
 
 }

@@ -29,9 +29,9 @@ import tla2sany.utilities.Stack;
 import tla2sany.utilities.Strings;
 import tla2sany.utilities.Vector;
 import tlc2.output.EC;
-import tlc2.output.MP;
 import util.Assert;
 import util.UniqueString;
+import util.WrongInvocationException;
 
 
 
@@ -3493,7 +3493,7 @@ OpDefNode node = (OpDefNode) vec.elementAt(i);
        TreeNode[] children = treeNode.heirs();
        int numOfChildren = children.length;
        if (numOfChildren % 2 != 0) { 
-          Assert.fail("AssumeProve has odd number of children"); } ;
+           throw new WrongInvocationException("AssumeProve has odd number of children"); } ;
        int numOfAssumptions = (numOfChildren - 2) / 2 ;
        apn.assumes = new LevelNode[numOfAssumptions] ;
        boolean inDeclScope = false ;
@@ -6836,7 +6836,7 @@ errors.addAbort(stn.getLocation(), "Uses generateNumerable_Step") ;
      * The label should be represented as an N_OpApplication node.         *
      **********************************************************************/
       if (labelExpChildren[0].getKind() != N_OpApplication)
-        { Assert.fail("Label has unexpected syntax tree kind.") ; };
+        { throw new WrongInvocationException("Label has unexpected syntax tree kind.") ; };
 
       TreeNode[] opApplChildren = labelExpChildren[0].heirs() ;
       name = opApplChildren[0].heirs()[1].getUS() ;
@@ -6919,7 +6919,7 @@ errors.addAbort(stn.getLocation(), "Uses generateNumerable_Step") ;
     ***********************************************************************/
     int size = LSlabels.size() ;
     if (size == 0) 
-      {Assert.fail ("popLabelNodeSet called on empty stack.");} ;
+      {throw new WrongInvocationException("popLabelNodeSet called on empty stack.");} ;
     Hashtable retVal = (Hashtable) LSlabels.elementAt(size-1) ;
     LSlabels.removeElementAt(size-1) ;
     LSparamSeq.removeElementAt(size-1) ;
@@ -6940,7 +6940,7 @@ errors.addAbort(stn.getLocation(), "Uses generateNumerable_Step") ;
     ***********************************************************************/
     int size = LSlabels.size() ;
     if (size == 0) 
-      {Assert.fail ("addLabelNodeToSet called on empty stack.");} ;
+      {throw new WrongInvocationException("addLabelNodeToSet called on empty stack.");} ;
     Hashtable ht = (Hashtable) LSlabels.elementAt(size-1) ;
     if (ht == null) {
       ht = new Hashtable() ;
@@ -6985,7 +6985,7 @@ errors.addAbort(stn.getLocation(), "Uses generateNumerable_Step") ;
             (Vector) LSparamSeq.elementAt(LSparamSeq.size() - 1) ;
     int size = lastFormalParams.size() ;
     if (size == 0) 
-      {Assert.fail ("popFormalParams called on empty stack.");} ;
+      {throw new WrongInvocationException("popFormalParams called on empty stack.");} ;
     lastFormalParams.removeElementAt(size - 1);
    }    
 
@@ -7275,7 +7275,7 @@ errors.addAbort(stn.getLocation(), "Uses generateNumerable_Step") ;
 //        participants = new Vector(100) ;
 //       } // if (unresolvedSum == 0)
       if (unresolvedSum < 0) { 
-        Assert.fail("Defined more recursive operators than were declared " +
+          throw new WrongInvocationException("Defined more recursive operators than were declared " +
                     "in RECURSIVE statements.") ;
        };
      } // if (nd.inRecursive)

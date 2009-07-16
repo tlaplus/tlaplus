@@ -7,6 +7,7 @@ package tlc2.tool.liveness;
 
 import tlc2.util.BitVector;
 import util.Assert;
+import util.WrongInvocationException;
 
 public class BEGraphNode {
   /**
@@ -111,8 +112,7 @@ public class BEGraphNode {
   }
 
   public TBGraphNode getTNode(TBGraph tableau) {
-    Assert.fail("TLC bug: should never call BEGraphNode.getTNode().");
-    return null;
+      throw new WrongInvocationException("TLC bug: should never call BEGraphNode.getTNode().");
   }
   
   public String nodeInfo() { return Long.toString(this.stateFP); }

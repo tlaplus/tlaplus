@@ -12,7 +12,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Vector;
 
-import util.Assert;
 
 // SZ Feb 20, 2009: tests moved to the unit-test source folder, imports organized 
 public class ByteUtils {
@@ -86,7 +85,7 @@ public class ByteUtils {
    * BigInt equals b.  If b requires a byte array of size greater
    * than length, a runtime error is thrown.
    */
-  public static byte[] bigIntToByteArray(BigInt b, int len) {
+  public static byte[] bigIntToByteArray(BigInt b, int len) throws IOException{
     byte[] bA = b.toByteArray();
     return byteArrayToByteArray(bA, len);
   }
@@ -96,9 +95,9 @@ public class ByteUtils {
    * of size length that when converted to a BigInt equals bA
    * If the length of bA > length, a runtime error is thrown.
    */
-  public static byte[] byteArrayToByteArray(byte[] bA, int length) {
+  public static byte[] byteArrayToByteArray(byte[] bA, int length) throws IOException{
     if (bA.length > length) {
-      Assert.fail("byteArrayToByteArray: b needs more than length bytes.");
+        throw new IOException("byteArrayToByteArray: b needs more than length bytes.");
     }
     
     int bi, li;  // counters for bA, lA
@@ -169,7 +168,7 @@ public class ByteUtils {
     int bAlen = bA.length;
 
     if (bAlen > len) {
-      Assert.fail("writeByteArray: the byte array too large");
+        throw new IOException("writeByteArray: the byte array too large");
     }
     out.write(byteArrayToByteArray(bA, len));
   }
@@ -253,10 +252,10 @@ public class ByteUtils {
 
     if (cnt < 4) {
       if (cnt <= 0) {
-	Assert.fail("readInt: the input stream is empty.");
+          throw new IOException("readInt: the input stream is empty.");
       }
       else {
-	Assert.fail("readInt: not enought bytes.");
+          throw new IOException("readInt: not enought bytes.");
       }
     }
     return byteArrayToInt(b);
@@ -274,10 +273,10 @@ public class ByteUtils {
 
     if (cnt < 8) {
       if (cnt <= 0) {
-	Assert.fail("readLong: the imput stream is empty.");
+          throw new IOException("readLong: the imput stream is empty.");
       }
       else {
-	Assert.fail("readLong: not enought bytes.");
+          throw new IOException("readLong: not enought bytes.");
       }
     }
     return byteArrayToLong(b);
@@ -296,7 +295,7 @@ public class ByteUtils {
     int cnt = read(in, bA);
 
     if (cnt != len) {
-      Assert.fail("readSizeByteArray: not enough bytes.");
+        throw new IOException("readSizeByteArray: not enough bytes.");
     }
     return bA;
   }
@@ -315,7 +314,7 @@ public class ByteUtils {
     int cnt = read(in, bA);
 
     if (cnt != len) {
-      Assert.fail("readSizeBigInt: not enough bytes.");
+        throw new IOException("readSizeBigInt: not enough bytes.");
     }
     return new BigInt(bA);
   }
@@ -338,8 +337,7 @@ public class ByteUtils {
       len = readInt(in);
     }
     catch (IOException e) {
-      throw new IOException
-	("Can't read an array of BigInts from the input stream; it's empty.");
+      throw new IOException("Can't read an array of BigInts from the input stream; it's empty.");
     }
     
     A = new BigInt[len];
@@ -350,7 +348,7 @@ public class ByteUtils {
     }
     catch (IOException e) 
     {
-      Assert.fail("Can't read an array of BigInts from the input stream; not enough bytes, but not empty.");
+        throw new IOException("Can't read an array of BigInts from the input stream; not enough bytes, but not empty.");
     }
     return A;
   }
@@ -402,7 +400,7 @@ public class ByteUtils {
 	writeSizeByteArray(out, readSizeByteArray(in));
     }
     catch (IOException e) {
-      Assert.fail("Can't append in to out; not enough bytes, but not empty.");
+        throw new IOException("Can't append in to out; not enough bytes, but not empty.");
     }
   }
 
@@ -427,7 +425,7 @@ public class ByteUtils {
 	writeSizeByteArray(out, readSizeByteArray(in));
     }
     catch (IOException e) {
-      Assert.fail("Can't append in to out; not enough bytes, but not empty.");
+        throw new IOException("Can't append in to out; not enough bytes, but not empty.");
     }
   }
 

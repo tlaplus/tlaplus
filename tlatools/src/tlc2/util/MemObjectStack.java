@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
+import tlc2.output.EC;
 import util.Assert;
 import util.FileUtil;
 
@@ -81,9 +82,7 @@ public final class MemObjectStack extends ObjectStack {
       }
     }
     catch (ClassNotFoundException e) {
-      Assert.fail("TLC encountered the following error while restarting from " +
-		  "a checkpoint;\n the checkpoint file is probably corrupted.\n" +
-		  e.getMessage());
+      Assert.fail(EC.SYSTEM_CHECKPOINT_RECOVERY_CORRUPT, e.getMessage());
     }
     finally {
       ois.close();

@@ -2,7 +2,7 @@
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
 package tlc2.util;
 
-import util.Assert;
+import util.WrongInvocationException;
 
 /**
  * The <code>Sort</code> class provides sorting methods.<P>
@@ -44,7 +44,7 @@ public class Sort {
    */
   private static void merge(Comparable A[], int start1, int finish1, int finish2) {
     if (finish2 < finish1) {
-      Assert.fail("Cannot merge subarrays where finish2 < finish1.");
+        throw new WrongInvocationException("Cannot merge subarrays where finish2 < finish1.");
     }
     int i = start1;
     int j = finish1+1;

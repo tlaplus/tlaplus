@@ -13,10 +13,6 @@ import tlc2.output.MP;
  * @author Yuan Yu, Simon Zambrovski
  * @version $Id$
  */
-/**
- * @author Simon Zambrovski
- * @version $Id$
- */
 public class Assert
 {
     /**
@@ -47,6 +43,16 @@ public class Assert
     public static void fail(int errorCode, String parameter)
     {
         throw new RuntimeException(MP.getMessage(errorCode, parameter));
+    }
+
+    /**
+     * Unconditioned way to throw an exception, the runtime will chain the cause
+     * @param errorCode error code of explanation
+     * @param cause reason of the fail and the message for the runtime exception
+     */
+    public static void fail(int errorCode, Throwable cause)
+    {
+        throw new RuntimeException(MP.getMessage(errorCode, cause.getMessage()), cause);
     }
 
     /**

@@ -40,8 +40,8 @@ import tla2sany.st.Location;
 import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
 import tla2sany.utilities.Vector;
-import util.Assert;
 import util.UniqueString;
+import util.WrongInvocationException;
 
   /**
    * An OpDefNode can have one of the following kinds:                    
@@ -1030,21 +1030,21 @@ public class OpDefNode extends OpDefOrDeclNode
 ***************************************************************************/
   public final int getMaxLevel(int i) {
     if (this.levelChecked == 0) 
-      {Assert.fail("getMaxLevel called before levelCheck");};
+      {throw new WrongInvocationException("getMaxLevel called before levelCheck");};
     int idx = (this.getArity() == -1) ? 0 : i;
     return this.maxLevels[idx];
   }
 
   public final int getWeight(int i) {
     if (this.levelChecked == 0) 
-      {Assert.fail("getWeight called before levelCheck");};
+      {throw new WrongInvocationException("getWeight called before levelCheck");};
     int idx = (this.getArity() == -1) ? 0 : i;
     return this.weights[idx];
   }  
 
   public final int getMinMaxLevel(int i, int j) {
     if (this.levelChecked == 0) 
-      {Assert.fail("getMinMaxLevel called before levelCheck");};
+      {throw new WrongInvocationException("getMinMaxLevel called before levelCheck");};
     if (this.minMaxLevel == null) {
       return ConstantLevel;
     }
@@ -1053,7 +1053,7 @@ public class OpDefNode extends OpDefOrDeclNode
 
   public final boolean getOpLevelCond(int i, int j, int k) {
     if (this.levelChecked == 0) 
-      {Assert.fail("getOpLevelCond called before levelCheck");};
+      {throw new WrongInvocationException("getOpLevelCond called before levelCheck");};
     if (this.opLevelCond == null) {
       return false;
     }

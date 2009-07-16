@@ -216,7 +216,8 @@ public final class MemFPSet2 extends FPSet {
     File oldChkpt = new File(this.chkptName(fname, "chkpt"));
     File newChkpt = new File(this.chkptName(fname, "tmp"));
     if ((oldChkpt.exists() && !oldChkpt.delete()) ||
-	!newChkpt.renameTo(oldChkpt)) {
+	!newChkpt.renameTo(oldChkpt)) 
+    {
       throw new IOException("MemFPSet2.commitChkpt: cannot delete " + oldChkpt);
     }
   }
@@ -229,8 +230,9 @@ public final class MemFPSet2 extends FPSet {
 	Assert.check(!this.put(dis.readLong()), EC.TLC_FP_NOT_IN_SET);
       }
     }
-    catch (EOFException e) {
-      Assert.fail("MemFPSet2.recover: failed.");
+    catch (EOFException e) 
+    {
+        throw new IOException("MemFPSet2.recover: failed.", e);
     }
     dis.close();
   }

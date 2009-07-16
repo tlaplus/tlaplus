@@ -16,12 +16,11 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 
-import tla2sany.parser.SyntaxTreeNode;
 import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
 import tla2sany.utilities.Vector;
-import util.Assert;
 import util.UniqueString;
+import util.WrongInvocationException;
 
 public class ModuleNode extends SymbolNode {
 
@@ -897,8 +896,7 @@ public class ModuleNode extends SymbolNode {
   }
 
   public final int getLevel() {
-    Assert.fail("Internal Error: Should never call ModuleNode.getLevel()");
-    return -1;    // make compiler happy
+      throw new WrongInvocationException("Internal Error: Should never call ModuleNode.getLevel()");
   }
   
 

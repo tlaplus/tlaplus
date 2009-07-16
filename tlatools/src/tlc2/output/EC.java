@@ -13,7 +13,7 @@ public interface EC extends SANYCodes
     // check if the TLC option is the same for params
     public static final int CHECK_FAILED_TO_CHECK = 3000;
     public static final int CHECK_COULD_NOT_READ_TRACE = 3001;
-    public static final int CHECK_PARSING_FAILED = 3002;
+    
     
     public static final int CHECK_PARAM_EXPECT_CONFIG_FILENAME = 3100;
     public static final int CHECK_PARAM_USAGE = 3101;
@@ -127,23 +127,20 @@ public interface EC extends SANYCodes
     
 
     public static final int TLC_MODULE_TLCGET_UNDEFINED = 2145;
-    /*
-    public static final int TLC_MODULE_TLCGET_WRONG_ARGUMENT = 2146;
-    public static final int TLC_MODULE_TLCSET_WRONG_ARGUMENT = 2147;
-    public static final int TLC_MODULE_TLCADAD_WRONG_ARGUMENT = 2148;
-    public static final int TLC_MODULE_TLCADAD_WRONG_ARGUMENT2 = 2149;
-    public static final int TLC_MODULE_TLCSORTSEQ_WRONG_ARGUMENT = 2150;
-    public static final int TLC_MODULE_TLCSORTSEQ_WRONG_ARGUMENT2 = 2151;
-    public static final int TLC_MODULE_TLCSORTSEQ_WRONG_ARGUMENT3 = 2152;
-    */
     public static final int TLC_MODULE_APPLYING_TO_NOT_FINITE_SET = 2153;
+    public static final int TLC_MODULE_APPLYING_FUNCTION_WITH_INIFINTE_DOMAIN = 2168;
     public static final int TLC_MODULE_ATTEMPTED_TO_COMPARE = 2155;
     public static final int TLC_MODULE_ATTEMPTED_TO_CHECK_MEMBER = 2158;
     public static final int TLC_MODULE_TRANSITIVE_CLOSURE1 = 2156;
     public static final int TLC_MODULE_TRANSITIVE_CLOSURE2 = 2157;
-    public static final int TLC_MODULE_APPLYING_FUNCTION_WITH_INIFINTE_DOMAIN = 2168;
     public static final int TLC_MODULE_ARGUMENT_ERROR = 2169;
-    
+    public static final int TLC_ARGUMENT_MISMATCH = 2170;
+    public static final int TLC_PARSING_FAILED2 = 2171;
+    public static final int TLC_PARSING_FAILED = 3002;
+    public static final int TLC_TOO_MNY_POSSIBLE_STATES = 2172;
+    public static final int TLC_ERROR_REPLACING_MODULES = 2173;
+    public static final int SYSTEM_ERROR_READING_STATES = 2174;    
+    public static final int SYSTEM_ERROR_WRITING_STATES = 2175;
     
     
     

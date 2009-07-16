@@ -7,6 +7,7 @@ package tlc2.util;
 
 import java.io.File;
 
+import tlc2.output.EC;
 import util.Assert;
 import util.BufferedDataInputStream;
 import util.BufferedDataOutputStream;
@@ -14,9 +15,9 @@ import util.FileUtil;
 
 /**
  * Alternative implementation
+ * currently not used 
  * 
  * @version $Id$
- * @deprecated currently not used 
  */
 public final class DiskIntStack {
   private final static int BufSize = 16384;
@@ -67,8 +68,7 @@ public final class DiskIntStack {
 	this.index = 0;
       }
       catch (Exception e) {
-	Assert.fail("TLC encountered the following error writing the stack " +
-		    this.filePrefix + ":\n" + e.getMessage());
+          Assert.fail(EC.SYSTEM_ERROR_WRITING_STATES, new String[]{"stack", e.getMessage()});          
       }
     }
     this.buf[this.index++] = x;
@@ -100,8 +100,7 @@ public final class DiskIntStack {
 	this.buf = this.buf2;
       }
       catch (Exception e) {
-	Assert.fail("TLC encountered the following error reading the stack " +
-		    this.filePrefix + ":\n" + e.getMessage());
+          Assert.fail(EC.SYSTEM_ERROR_READING_STATES, new String[]{"stack", e.getMessage()});
       }
     }
     this.size--;
@@ -136,9 +135,8 @@ public final class DiskIntStack {
 	}
       }
       catch (Exception e) {
-	System.err.println("Error: when reading the disk (DiskIntStack.Reader.run):\n" +
+          Assert.fail("Error: when reading the disk (DiskIntStack.Reader.run):\n" +
 			   e.getMessage());
-	System.exit(1);
       }
     }
   }
@@ -164,9 +162,8 @@ public final class DiskIntStack {
 	}
       }
       catch (Exception e) {
-	System.err.println("Error: when reading the disk (DiskIntStack.Writer.run):\n" +
+          Assert.fail("Error: when reading the disk (DiskIntStack.Writer.run):\n" +
 			   e.getMessage());
-	System.exit(1);
       }
     }
   }

@@ -3,7 +3,7 @@
 // Last modified on Mon 30 Apr 2007 at 13:18:27 PST by lamport  
 //      modified on Thu Feb  8 23:31:49 PST 2001 by yuanyu   
 
-package tlc2.tool;
+package tlc2.util;
 
 import java.io.File;
 import java.io.IOException;
@@ -12,11 +12,17 @@ import java.io.ObjectOutputStream;
 
 import tlc2.output.EC;
 import tlc2.output.MP;
+import tlc2.tool.TLCState;
 import tlc2.value.ValueOutputStream;
 import util.Assert;
 
 public class StatePoolWriter extends Thread {
 
+    private TLCState[] buf;     
+    private File poolFile;           // the file to be written
+    private StatePoolReader reader;  // the consumer if not null
+
+    
   public StatePoolWriter(int bufSize) {
     this.buf = new TLCState[bufSize];
     this.poolFile = null;
@@ -28,10 +34,6 @@ public class StatePoolWriter extends Thread {
     this.poolFile = null;
     this.reader = reader;
   }
-
-  private TLCState[] buf;     
-  private File poolFile;           // the file to be written
-  private StatePoolReader reader;  // the consumer if not null
 
   /*
    * This method first completes the preceding write if not started.
@@ -87,7 +89,7 @@ public class StatePoolWriter extends Thread {
       }
       catch (ClassNotFoundException e) 
       {
-          Assert.fail(MP.getMessage(EC.SYSTEM_CHECKPOINT_RECOVERY_CORRUPT, e.getMessage()));
+          Assert.fail(EC.SYSTEM_CHECKPOINT_RECOVERY_CORRUPT, e);
       }
     }
     else {

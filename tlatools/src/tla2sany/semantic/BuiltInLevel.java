@@ -10,7 +10,7 @@ package tla2sany.semantic;
 
 import java.util.HashMap;
 
-import util.Assert;
+import util.WrongInvocationException;
 
 public class BuiltInLevel implements LevelConstants {
 
@@ -153,7 +153,7 @@ public class BuiltInLevel implements LevelConstants {
       if (d != null) {
 	OpDefNode opDef = (OpDefNode)gcon.getSymbol(sn.getName());
 	if (opDef.getArity() != d.arity) {
-	  Assert.fail("Level data for " + sn.getName() + " has the wrong arity");
+	    throw new WrongInvocationException("Level data for " + sn.getName() + " has the wrong arity");
 	}
 	opDef.setBuiltinLevel(d);
       }	

@@ -14,6 +14,7 @@ import util.BufferedDataInputStream;
 import util.BufferedDataOutputStream;
 import util.FileUtil;
 import util.ToolIO;
+import util.WrongInvocationException;
 
 /**
  * A <code>MemFPIntSet</code> is a subclass of <code>FPIntSet</code>
@@ -107,7 +108,7 @@ public class MemFPIntSet extends FPIntSet {
       }
     }
 
-    Assert.fail("MemFPIntSet.setLeveled: The fp must have been in the set.");
+    throw new WrongInvocationException("MemFPIntSet.setLeveled: The fp must have been in the set.");
   }
   
   public synchronized final int setStatus(long fp, int status) {

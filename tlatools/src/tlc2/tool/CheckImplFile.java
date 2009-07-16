@@ -99,13 +99,11 @@ public class CheckImplFile extends CheckImpl
         } catch (Throwable e)
         {
             String msg = e.getMessage();
-            if (msg == null)
-                msg = "";
-            Assert.fail(MP.getMessage(EC.CHECK_COULD_NOT_READ_TRACE, msg));
+            Assert.fail(EC.CHECK_COULD_NOT_READ_TRACE, msg);
         }
         if (!spec.initErrors.isSuccess() || !spec.parseErrors.isSuccess() || !spec.semanticErrors.isSuccess())
         {
-            Assert.fail(MP.getMessage(EC.CHECK_PARSING_FAILED));
+            Assert.fail(EC.TLC_PARSING_FAILED);
         }
 
         // Set the rootModule:

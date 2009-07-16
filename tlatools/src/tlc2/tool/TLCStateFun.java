@@ -13,8 +13,8 @@ import tlc2.util.Context;
 import tlc2.value.Value;
 import tlc2.value.ValueInputStream;
 import tlc2.value.ValueOutputStream;
-import util.Assert;
 import util.UniqueString;
+import util.WrongInvocationException;
 
 /**
  * This class represents a TLA+ state, which simply is an assignment
@@ -38,8 +38,7 @@ public final class TLCStateFun extends TLCState {
   public final TLCState createEmpty() { return Empty; }
 
   public final TLCState bind(UniqueString name, Value value, SemanticNode expr) {
-    Assert.fail("TLCStateFun.bind: This is a TLC bug.");
-    return null;    // make compiler happy
+      throw new WrongInvocationException("TLCStateFun.bind: This is a TLC bug.");
   }
 
   public final TLCState bind(SymbolNode id, Value value, SemanticNode expr) {
@@ -47,8 +46,7 @@ public final class TLCStateFun extends TLCState {
   }
   
   public final TLCState unbind(UniqueString name) {
-    Assert.fail("TLCStateFun.unbind: This is a TLC bug.");
-    return null;   // make compiler happy   
+      throw new WrongInvocationException("TLCStateFun.unbind: This is a TLC bug.");
   }
   
   public final Value lookup(UniqueString var) {
@@ -63,22 +61,19 @@ public final class TLCStateFun extends TLCState {
   }
   
   public final TLCState copy() {
-    Assert.fail("TLCStateFun.copy: This is a TLC bug.");
-    return null;   // make compiler happy    
+      throw new WrongInvocationException("TLCStateFun.copy: This is a TLC bug.");
   }
   
   public final TLCState deepCopy() {
-    Assert.fail("TLCStateFun.deepCopy: This is a TLC bug.");
-    return null;   // make compiler happy    
+      throw new WrongInvocationException("TLCStateFun.deepCopy: This is a TLC bug.");
   }
   
   public final void deepNormalize() {
-    Assert.fail("TLCStateFun.normalizeFcns: This is a TLC bug.");
+      throw new WrongInvocationException("TLCStateFun.normalizeFcns: This is a TLC bug.");
   }
   
   public final long fingerPrint() {
-    Assert.fail("TLCStateFun.fingerPrint: This is a TLC bug.");
-    return 0;      // make compiler happy    
+      throw new WrongInvocationException("TLCStateFun.fingerPrint: This is a TLC bug.");
   }
 
   public final boolean allAssigned() { return true; }  
@@ -96,11 +91,11 @@ public final class TLCStateFun extends TLCState {
   }
   
   public final void read(ValueInputStream vis) throws IOException {
-    Assert.fail("TLCStateFun.read: This is a TLC bug.");
+      throw new WrongInvocationException("TLCStateFun.read: This is a TLC bug.");
   }
 
   public final void write(ValueOutputStream vos) throws IOException {
-    Assert.fail("TLCStateFun.write: This is a TLC bug.");
+      throw new WrongInvocationException("TLCStateFun.write: This is a TLC bug.");
   }
   
   /* Returns a string representation of this state.  */
@@ -123,8 +118,7 @@ public final class TLCStateFun extends TLCState {
   }
   
   public final String toString(TLCState lastState) {
-    Assert.fail("TLCStateFun.toString: This is a TLC bug.");
-    return null;   // make compiler happy
+      throw new WrongInvocationException("TLCStateFun.toString: This is a TLC bug.");
   }
   
 }

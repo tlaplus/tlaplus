@@ -3,7 +3,7 @@
 // Last modified on Mon 30 Apr 2007 at 13:18:27 PST by lamport  
 //      modified on Tue Feb 22 11:56:59 PST 2000 by yuanyu   
 
-package tlc2.tool;
+package tlc2.util;
 
 import java.io.File;
 import java.io.IOException;
@@ -12,6 +12,7 @@ import java.io.ObjectOutputStream;
 
 import tlc2.output.EC;
 import tlc2.output.MP;
+import tlc2.tool.TLCState;
 import tlc2.value.ValueInputStream;
 import util.Assert;
 
@@ -151,7 +152,7 @@ public class StatePoolReader extends Thread {
     }
     catch (ClassNotFoundException e) 
     {
-      Assert.fail(MP.getError(EC.SYSTEM_CHECKPOINT_RECOVERY_CORRUPT, e.getMessage()));
+      Assert.fail(EC.SYSTEM_CHECKPOINT_RECOVERY_CORRUPT, e);
     }
   }
   
