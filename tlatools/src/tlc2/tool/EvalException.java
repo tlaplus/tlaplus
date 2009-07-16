@@ -19,14 +19,6 @@ public class EvalException extends RuntimeException
 //    public final static int ASSERT = 1;
 //    private int type;
 
-    /**
-     * Constructs the evaluation exception
-     * @deprecated use other constructors with error codes
-     */
-    public EvalException(String msg)
-    {
-        super(msg);
-    }
 
     public EvalException(int errorCode, String[] parameters)
     {

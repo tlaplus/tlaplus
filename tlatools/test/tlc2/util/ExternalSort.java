@@ -17,6 +17,7 @@ import java.util.Random;
 import util.Assert;
 import util.FileUtil;
 import util.ToolIO;
+import util.WrongInvocationException;
 
 /**
  * Alternative implementation 
@@ -76,7 +77,7 @@ public class ExternalSort {
     // This case should be caught by readInt above
     if ((in0Size > 0) && (in1Size > 0) )
     {
-        Assert.fail("in0size and in1size should both be greater than 0");
+        throw new WrongInvocationException("in0size and in1size should both be greater than 0");
     } 
 		 
 
@@ -114,7 +115,7 @@ public class ExternalSort {
 
     if((in0Pos==in0Size) != (in1Pos==in1Size))
     { 
-		 Assert.fail("Exactly one of in0Pos==in0Size, in1Pos==in1Size must be true");
+        throw new WrongInvocationException("Exactly one of in0Pos==in0Size, in1Pos==in1Size must be true");
     }
     if (in0Pos == in0Size) {
       a1.write(out);

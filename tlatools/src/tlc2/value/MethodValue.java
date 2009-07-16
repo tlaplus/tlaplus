@@ -11,6 +11,7 @@ import java.lang.reflect.Method;
 import tlc2.output.EC;
 import tlc2.tool.EvalException;
 import util.Assert;
+import util.WrongInvocationException;
 
 public class MethodValue extends OpValue implements Applicable {
   public Method md;
@@ -45,8 +46,7 @@ public class MethodValue extends OpValue implements Applicable {
   }
 
   public final Value apply(Value arg, int control) {
-    Assert.fail("It is a TLC bug: Should use the other apply method.");
-    return null;   // make compiler happy
+    throw new WrongInvocationException("It is a TLC bug: Should use the other apply method.");
   }
 
   public final Value apply(Value[] args, int control) {
@@ -59,18 +59,17 @@ public class MethodValue extends OpValue implements Applicable {
           if (e instanceof InvocationTargetException) 
           {
               Throwable targetException = ((InvocationTargetException)e).getTargetException();
-              throw new EvalException(EC.TLC_VALUE_JAVA_METHOD_OVERRIDE, new String[]{this.md.toString(), targetException.getMessage()});
+              throw new EvalException(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE, new String[]{this.md.toString(), targetException.getMessage()});
           } else 
           {
-              Assert.fail(EC.TLC_VALUE_JAVA_METHOD_OVERRIDE, new String[]{this.md.toString(), e.getMessage()});
+              Assert.fail(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE, new String[]{this.md.toString(), e.getMessage()});
           }
       }
       return res;
   }
 
   public final Value select(Value arg) {
-    Assert.fail("It is a TLC bug: Attempted to call MethodValue.select().");
-    return null;   // make compiler happy    
+      throw new WrongInvocationException("It is a TLC bug: Attempted to call MethodValue.select().");
   }
   
   public final Value takeExcept(ValueExcept ex) {
@@ -99,12 +98,11 @@ public class MethodValue extends OpValue implements Applicable {
 
   /* Should never normalize an operator. */
   public final boolean isNormalized() {
-    Assert.fail("It is a TLC bug: Attempted to normalize an operator.");
-    return true;  // make compiler happy
+      throw new WrongInvocationException("It is a TLC bug: Attempted to normalize an operator.");
   }
   
   public final void normalize() {
-    Assert.fail("It is a TLC bug: Attempted to normalize an operator.");
+      throw new WrongInvocationException("It is a TLC bug: Attempted to normalize an operator.");
   }
 
   public final boolean isDefined() { return true; }
@@ -112,8 +110,7 @@ public class MethodValue extends OpValue implements Applicable {
   public final Value deepCopy() { return this; }
 
   public final boolean assignable(Value val) {
-    Assert.fail("It is a TLC bug: Attempted to initialize an operator.");
-    return false;   // make compiler happy
+      throw new WrongInvocationException("It is a TLC bug: Attempted to initialize an operator.");
   }
 
   /* String representation of the value.  */

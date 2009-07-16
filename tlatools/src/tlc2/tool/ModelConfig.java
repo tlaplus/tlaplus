@@ -15,6 +15,7 @@ import tla2sany.parser.TLAplusParserConstants;
 import tla2sany.parser.TLAplusParserTokenManager;
 import tla2sany.parser.Token;
 import tla2sany.parser.TokenMgrError;
+import tlc2.output.EC;
 import tlc2.util.Vect;
 import tlc2.value.IntValue;
 import tlc2.value.ModelValue;
@@ -23,7 +24,6 @@ import tlc2.value.StringValue;
 import tlc2.value.Value;
 import tlc2.value.ValueConstants;
 import tlc2.value.ValueVec;
-import util.Assert;
 import util.FileUtil;
 import util.FilenameToStream;
 import util.SimpleFilenameToStream;
@@ -138,14 +138,12 @@ public class ModelConfig implements ValueConstants, Serializable
                     tt = getNextToken(tmgr);
                     if (tt.kind == TLAplusParserConstants.EOF)
                     {
-                        Assert.fail("TLC found an error in the configuration file at line " + loc
-                                + "\nThe keyword INIT was not followed by an identifier.\n");
+                        throw new ConfigFileException(EC.CFG_MISSING_ID, new String[]{Init, String.valueOf(loc)});
                     }
                     String old = (String) this.configTbl.put(Init, tt.image);
                     if (old.length() != 0)
                     {
-                        Assert.fail("TLC found an error in the configuration file at line " + loc
-                                + "\nThe keyword INIT appeared twice.\n");
+                        throw new ConfigFileException(EC.CFG_TWICE_KEYWORD, new String[]{Spec, String.valueOf(loc)});
                     }
                     tt = getNextToken(tmgr);
                 } else if (tval.equals(Next))
@@ -153,14 +151,12 @@ public class ModelConfig implements ValueConstants, Serializable
                     tt = getNextToken(tmgr);
                     if (tt.kind == TLAplusParserConstants.EOF)
                     {
-                        Assert.fail("TLC found an error in the configuration file at line " + loc
-                                + "\nThe keyword NEXT was not followed by an identifier.\n");
+                        throw new ConfigFileException(EC.CFG_MISSING_ID, new String[]{Next, String.valueOf(loc)});
                     }
                     String old = (String) this.configTbl.put(Next, tt.image);
                     if (old.length() != 0)
                     {
-                        Assert.fail("TLC found an error in the configuration file at line " + loc
-                                + "\nThe keyword NEXT appeared twice.\n");
+                        throw new ConfigFileException(EC.CFG_TWICE_KEYWORD, new String[]{Next, String.valueOf(loc)});
                     }
                     tt = getNextToken(tmgr);
                 } else if (tval.equals(Spec))
@@ -168,14 +164,12 @@ public class ModelConfig implements ValueConstants, Serializable
                     tt = getNextToken(tmgr);
                     if (tt.kind == TLAplusParserConstants.EOF)
                     {
-                        Assert.fail("TLC found an error in the configuration file at line " + loc
-                                + "\nThe keyword SPECIFICATION was not followed by " + "an identifier.\n");
+                        throw new ConfigFileException(EC.CFG_MISSING_ID, new String[]{Spec, String.valueOf(loc)});
                     }
                     String old = (String) this.configTbl.put(Spec, tt.image);
                     if (old.length() != 0)
                     {
-                        Assert.fail("TLC found an error in the configuration file at line " + loc
-                                + "\nThe keyword SPECIFICATION appeared twice.\n");
+                        throw new ConfigFileException(EC.CFG_TWICE_KEYWORD, new String[]{Spec, String.valueOf(loc)});
                     }
                     tt = getNextToken(tmgr);
                 } else if (tval.equals(View))
@@ -183,14 +177,12 @@ public class ModelConfig implements ValueConstants, Serializable
                     tt = getNextToken(tmgr);
                     if (tt.kind == TLAplusParserConstants.EOF)
                     {
-                        Assert.fail("TLC found an error in the configuration file at line " + loc
-                                + "\nThe keyword VIEW was not followed by an identifier.\n");
+                        throw new ConfigFileException(EC.CFG_MISSING_ID, new String[]{View, String.valueOf(loc)});
                     }
                     String old = (String) this.configTbl.put(View, tt.image);
                     if (old.length() != 0)
                     {
-                        Assert.fail("TLC found an error in the configuration file at line " + loc
-                                + "\nThe keyword VIEW appeared twice.\n");
+                        throw new ConfigFileException(EC.CFG_TWICE_KEYWORD, new String[]{View, String.valueOf(loc)});
                     }
                     tt = getNextToken(tmgr);
                 } else if (tval.equals(Symmetry))
@@ -198,14 +190,12 @@ public class ModelConfig implements ValueConstants, Serializable
                     tt = getNextToken(tmgr);
                     if (tt.kind == TLAplusParserConstants.EOF)
                     {
-                        Assert.fail("TLC found an error in the configuration file at line " + loc
-                                + "\nThe keyword SYMMETRY was not followed by " + "an identifier.\n");
+                        throw new ConfigFileException(EC.CFG_MISSING_ID, new String[]{Symmetry, String.valueOf(loc)});
                     }
                     String old = (String) this.configTbl.put(Symmetry, tt.image);
                     if (old.length() != 0)
                     {
-                        Assert.fail("TLC found an error in the configuration file at line " + loc
-                                + "\nThe keyword SYMMETRY appeared twice.\n");
+                        throw new ConfigFileException(EC.CFG_TWICE_KEYWORD, new String[]{Symmetry, String.valueOf(loc)});
                     }
                     tt = getNextToken(tmgr);
                 } else if (tval.equals(Type))
@@ -213,14 +203,12 @@ public class ModelConfig implements ValueConstants, Serializable
                     tt = getNextToken(tmgr);
                     if (tt.kind == TLAplusParserConstants.EOF)
                     {
-                        Assert.fail("TLC found an error in the configuration file at line " + loc
-                                + "\nThe keyword TYPE was not followed by an identifier.\n");
+                        throw new ConfigFileException(EC.CFG_MISSING_ID, new String[]{Type, String.valueOf(loc)});
                     }
                     String old = (String) this.configTbl.put(Type, tt.image);
                     if (old.length() != 0)
                     {
-                        Assert.fail("TLC found an error in the configuration file at line " + loc
-                                + "\nThe keyword TYPE appeared twice.\n");
+                        throw new ConfigFileException(EC.CFG_TWICE_KEYWORD, new String[]{Type, String.valueOf(loc)});
                     }
                     tt = getNextToken(tmgr);
                 } else if (tval.equals(TypeConstraint))
@@ -228,14 +216,12 @@ public class ModelConfig implements ValueConstants, Serializable
                     tt = getNextToken(tmgr);
                     if (tt.kind == TLAplusParserConstants.EOF)
                     {
-                        Assert.fail("TLC found an error in the configuration file at line " + loc
-                                + "\nThe keyword TYPE-CONSTRAINT was not " + "followed by an identifier.\n");
+                        throw new ConfigFileException(EC.CFG_MISSING_ID, new String[]{TypeConstraint, String.valueOf(loc)});
                     }
                     String old = (String) this.configTbl.put(TypeConstraint, tt.image);
                     if (old.length() != 0)
                     {
-                        Assert.fail("TLC found an error in the configuration file at line " + loc
-                                + "\nThe keyword TYPE-CONSTRAINT appeared twice.\n");
+                        throw new ConfigFileException(EC.CFG_TWICE_KEYWORD, new String[]{TypeConstraint, String.valueOf(loc)});
                     }
                     tt = getNextToken(tmgr);
                 } else if (tval.equals(Constant) || tval.equals(Constants))
@@ -256,21 +242,18 @@ public class ModelConfig implements ValueConstants, Serializable
                                 tt = getNextToken(tmgr);
                                 if (tt.kind == TLAplusParserConstants.EOF)
                                 {
-                                    Assert.fail("TLC found an error in the configuration file at line "
-                                            + scs.getBeginLine() + ".\nExpect an identifier after <-[.\n");
+                                    throw new ConfigFileException(EC.CFG_EXPECT_ID, new String[]{String.valueOf(scs.getBeginLine()), "<-["});
                                 }
                                 String modName = tt.image;
                                 tt = getNextToken(tmgr);
                                 if (!tt.image.equals("]"))
                                 {
-                                    Assert.fail("TLC found an error in the configuration file at line "
-                                            + scs.getBeginLine() + ".\nIt was expecting ], but did not find one.\n");
+                                    throw new ConfigFileException(EC.CFG_EXPECTED_SYMBOL, new String[]{String.valueOf(scs.getBeginLine()), "]"});
                                 }
                                 tt = getNextToken(tmgr);
                                 if (tt.kind == TLAplusParserConstants.EOF)
                                 {
-                                    Assert.fail("TLC found an error in the configuration file at line "
-                                            + scs.getBeginLine() + ".\nExpect an identifier after <-[mod].\n");
+                                    throw new ConfigFileException(EC.CFG_EXPECT_ID, new String[]{String.valueOf(scs.getBeginLine()), "<-[mod]"});
                                 }
                                 Hashtable defs = (Hashtable) this.modOverrides.get(modName);
                                 if (defs == null)
@@ -284,9 +267,7 @@ public class ModelConfig implements ValueConstants, Serializable
                                 // This is a main module override:
                                 if (tt.kind == TLAplusParserConstants.EOF)
                                 {
-                                    Assert.fail("TLC found an error in the configuration file at line "
-                                            + scs.getBeginLine() + ".\nThe symbol <- was not followed by an "
-                                            + "identifier.\n");
+                                    throw new ConfigFileException(EC.CFG_EXPECT_ID, new String[]{String.valueOf(scs.getBeginLine()), "<-"});
                                 }
                                 this.overrides.put(line.elementAt(0), tt.image);
                             }
@@ -305,17 +286,13 @@ public class ModelConfig implements ValueConstants, Serializable
                                 }
                                 if (!tt.image.equals(")"))
                                 {
-                                    Assert.fail("TLC found an error in the configuration file at line "
-                                            + scs.getBeginLine());
+                                    throw new ConfigFileException(EC.CFG_GENERAL, new String[]{ String.valueOf(loc)});
                                 }
                                 tt = getNextToken(tmgr);
                             }
                             if (!tt.image.equals("="))
                             {
-                                Assert
-                                        .fail("TLC found an error in the configuration file at line "
-                                                + scs.getBeginLine() + ".\nIt was expecting = or <- and didn't "
-                                                + "find it.\n");
+                                throw new ConfigFileException(EC.CFG_EXPECTED_SYMBOL, new String[]{String.valueOf(scs.getBeginLine()), "= or <-"});
                             }
                             tt = getNextToken(tmgr);
                             if (tt.image.equals("["))
@@ -324,15 +301,13 @@ public class ModelConfig implements ValueConstants, Serializable
                                 tt = getNextToken(tmgr);
                                 if (tt.kind == TLAplusParserConstants.EOF)
                                 {
-                                    Assert.fail("TLC found an error in the configuration file at line "
-                                            + scs.getBeginLine() + ".\nExpect an identifier after =[.\n");
+                                    throw new ConfigFileException(EC.CFG_EXPECT_ID, new String[]{String.valueOf(scs.getBeginLine()), "=["});
                                 }
                                 String modName = tt.image;
                                 tt = getNextToken(tmgr);
                                 if (!tt.image.equals("]"))
                                 {
-                                    Assert.fail("TLC found an error in the configuration file at line "
-                                            + scs.getBeginLine() + ".\nIt was expecting ], but did not find one.\n");
+                                    throw new ConfigFileException(EC.CFG_EXPECTED_SYMBOL, new String[]{String.valueOf(scs.getBeginLine()), "]"});
                                 }
                                 tt = getNextToken(tmgr);
                                 line.addElement(this.parseValue(tt, scs, tmgr));
@@ -385,14 +360,12 @@ public class ModelConfig implements ValueConstants, Serializable
                     }
                 } else
                 {
-                    Assert.fail("TLC found an error in the configuration file at line " + loc
-                            + ".\nIt was expecting a keyword and didn't find it.\n");
+                    throw new ConfigFileException(EC.CFG_EXPECTED_SYMBOL, new String[]{String.valueOf(scs.getBeginLine()), "a keyword"});
                 }
             }
         } catch (IOException e)
         {
-            Assert.fail("TLC encountered the following error when trying to read " + "the configuration file "
-                    + this.configFileName + ":\n" + e.getMessage());
+            throw new ConfigFileException(EC.CFG_ERROR_READING_FILE, new String[] {this.configFileName, e.getMessage()}, e);
         }
     }
 
@@ -433,17 +406,14 @@ public class ModelConfig implements ValueConstants, Serializable
             }
             if (!tt.image.equals("}"))
             {
-                Assert.fail("TLC found an error in the configuration file at line " + scs.getBeginLine()
-                        + ".\nIt was expecting `}' but didn't find it.\n");
+                throw new ConfigFileException(EC.CFG_EXPECTED_SYMBOL, new String[]{String.valueOf(scs.getBeginLine()), "}"});
             }
             return new SetEnumValue(elems, false);
         } else if (tt.kind != TLAplusParserConstants.EOF)
         {
             return ModelValue.make(tt.image);
         }
-        Assert.fail("TLC found an error in the configuration file at line " + scs.getBeginLine()
-                + ".\nIt was expecting a value, but didn't find it.\n");
-        return null; // make compiler happy
+        throw new ConfigFileException(EC.CFG_EXPECTED_SYMBOL, new String[]{String.valueOf(scs.getBeginLine()), "a value"});
     }
 
     /**

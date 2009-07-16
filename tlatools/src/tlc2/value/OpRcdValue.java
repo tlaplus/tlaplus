@@ -7,6 +7,7 @@ package tlc2.value;
 
 import tlc2.util.Vect;
 import util.Assert;
+import util.WrongInvocationException;
 
 public class OpRcdValue extends OpValue implements Applicable {
   public Vect domain;
@@ -60,8 +61,7 @@ public class OpRcdValue extends OpValue implements Applicable {
   }
 
   public final Value apply(Value arg, int control) {
-    Assert.fail("Error(TLC): Should use the other apply method.");
-    return null;   // make compiler happy
+      throw new WrongInvocationException("Should use the other apply method.");
   }
 
   public final Value apply(Value[] args, int control) {
@@ -123,12 +123,11 @@ public class OpRcdValue extends OpValue implements Applicable {
 
   /* Should never normalize an operator. */
   public final boolean isNormalized() {
-    Assert.fail("Should not normalize an operator.");
-    return false;         // make compiler happy
+      throw new WrongInvocationException("Should not normalize an operator.");
   }
   
   public final void normalize() {
-    Assert.fail("Should not normalize an operator.");
+      throw new WrongInvocationException("Should not normalize an operator.");
   }
 
   public final boolean isDefined() {
@@ -142,8 +141,7 @@ public class OpRcdValue extends OpValue implements Applicable {
   public final Value deepCopy() { return this; }
 
   public final boolean assignable(Value val) {
-    Assert.fail("Should not initialize an operator.");
-    return false;       // make compiler happy
+      throw new WrongInvocationException("Should not initialize an operator.");
   }
 
   /* Pretty-printing  */

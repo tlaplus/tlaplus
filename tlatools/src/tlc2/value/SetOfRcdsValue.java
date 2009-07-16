@@ -6,6 +6,7 @@
 package tlc2.value;
 
 import tlc2.TLCGlobals;
+import tlc2.output.EC;
 import util.Assert;
 import util.UniqueString;
 
@@ -98,7 +99,7 @@ public class SetOfRcdsValue extends Value implements Enumerable {
     for (int i = 0; i < this.values.length; i++) {
       sz *= this.values[i].size();
       if (sz < -2147483648 || sz > 2147483647) {
-	Assert.fail("Overflow when computing the number of elements in:\n" +
+	Assert.fail(EC.TLC_MODULE_OVERFLOW, "the number of elements in:\n" +
 		    ppr(this.toString()));
       }
     }

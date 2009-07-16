@@ -6,10 +6,10 @@ import java.io.File;
 import java.io.IOException;
 
 import tlc2.TLCGlobals;
-import util.Assert;
 import util.BufferedDataInputStream;
 import util.FileUtil;
 import util.UniqueString;
+import util.WrongInvocationException;
 
 public final class ValueInputStream implements ValueConstants {
 
@@ -145,8 +145,7 @@ public final class ValueInputStream implements ValueConstants {
       }
     default:
       {
-	Assert.fail("ValueInputStream: Can not unpickle a value of kind " + kind);
-	return null;    // make compiler happy
+	throw new WrongInvocationException("ValueInputStream: Can not unpickle a value of kind " + kind);
       }
     }      
   }

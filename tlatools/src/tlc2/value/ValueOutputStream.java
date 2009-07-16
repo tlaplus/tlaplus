@@ -10,8 +10,8 @@ import java.util.Arrays;
 import java.util.zip.GZIPOutputStream;
 
 import tlc2.TLCGlobals;
-import util.Assert;
 import util.BufferedDataOutputStream;
+import util.WrongInvocationException;
 
 public final class ValueOutputStream implements ValueConstants {
 
@@ -245,7 +245,7 @@ public final class ValueOutputStream implements ValueConstants {
       }
     default:
       {
-	Assert.fail("ValueOutputStream: Can not pickle the value\n" +
+	throw new WrongInvocationException("ValueOutputStream: Can not pickle the value\n" +
 		    Value.ppr(val.toString()));
       }
     }

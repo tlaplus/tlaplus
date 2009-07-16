@@ -1,8 +1,7 @@
 package tlc2.output;
 
-import tla2sany.output.SANYCodes;
-import util.ToolIO;
 import junit.framework.TestCase;
+import util.ToolIO;
 
 /**
  * @author Simon Zambrovski
@@ -56,13 +55,5 @@ public class ErrorPrinterTest extends TestCase
         assertEquals("Error: [" + parameters[0] + "][" + parameters[1] + "]", allMessages[0]);
     }
 
-    public void testPrintErrorSANY()
-    {
-        String[] parameters = new String[] { "SANY" };
-        MP.printError(SANYCodes.UNIT_TEST, parameters);
-        String[] allMessages = ToolIO.getAllMessages();
-        assertEquals(1, allMessages.length);
-        assertEquals("Error: Some String with "+parameters[0]+" parameter", allMessages[0]);
-    }
 
 }

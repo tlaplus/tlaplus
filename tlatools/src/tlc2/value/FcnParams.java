@@ -6,6 +6,7 @@
 package tlc2.value;
 
 import tla2sany.semantic.FormalParamNode;
+import tlc2.output.EC;
 import util.Assert;
 
 public class FcnParams {
@@ -36,14 +37,14 @@ public class FcnParams {
 	for (int j = 1; j < len1; j++) {
 	  sz *= sz1;
 	  if (sz < -2147483648 || sz > 2147483647) {
-	    Assert.fail("Overflow when computing the number of elements in:\n" +
+	    Assert.fail(EC.TLC_MODULE_OVERFLOW, "the number of elements in:\n" +
 			this.toString());
 	  }
 	}
       }
       sz *= sz1;
       if (sz < -2147483648 || sz > 2147483647) {
-	Assert.fail("Overflow when computing the number of elements in:\n" +
+	Assert.fail(EC.TLC_MODULE_OVERFLOW, "the number of elements in:\n" +
 		    this.toString());
       }
     }

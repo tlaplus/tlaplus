@@ -7,6 +7,7 @@ package tlc2.value;
 
 import java.util.BitSet;
 
+import tlc2.output.EC;
 import util.Assert;
 
 public class SubsetValue extends Value implements Enumerable {
@@ -71,7 +72,7 @@ public class SubsetValue extends Value implements Enumerable {
   public final int size() {
     int sz = this.set.size();
     if (sz >= 31) {
-      Assert.fail("Overflow when computing the number of elements in:\n" +
+      Assert.fail(EC.TLC_MODULE_OVERFLOW, "the number of elements in:\n" +
 		  ppr(this.toString()));
     }
     return (1 << sz);

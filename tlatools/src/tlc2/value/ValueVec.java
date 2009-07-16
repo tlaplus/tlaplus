@@ -9,6 +9,7 @@ import java.io.Serializable;
 
 import tlc2.TLCGlobals;
 import util.Assert;
+import util.WrongInvocationException;
 
 public class ValueVec implements Cloneable, Serializable {
   private Value[] elementData;
@@ -84,7 +85,7 @@ public class ValueVec implements Cloneable, Serializable {
 
   public final void ensureCapacity(int minCapacity) {
     if (elementData.length >= TLCGlobals.setBound) {
-      Assert.fail("Attempted to construct a set with too many elements (>" +
+      throw new WrongInvocationException("Attempted to construct a set with too many elements (>" +
 		  TLCGlobals.setBound + ").");
     }
     if (elementData.length < minCapacity) {
