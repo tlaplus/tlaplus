@@ -86,15 +86,9 @@ public interface EC
     public static final int SYSTEM_METADIR_EXISTS = 2162;
     public static final int SYSTEM_METADIR_CREATION_ERROR = 2163;
     public static final int SYSTEM_UNABLE_TO_OPEN_FILE = 2167;
-    /*
-     * Bad description
-     */
-    public static final int TLC_BUG = 2128;
+    public static final int TLC_BUG = 2128; // TODO Bad description
 
-    /*
-     * refactor 
-     */
-    public static final int SYSTEM_DISKGRAPH_ACCESS = 2129;
+    public static final int SYSTEM_DISKGRAPH_ACCESS = 2129; // TODO refactor  
 
     public static final int TLC_AAAAAAA = 2130;
     public static final int TLC_REGISTRY_INIT_ERROR = 2131;
@@ -108,10 +102,7 @@ public interface EC
     public static final int TLC_FP_VALUE_ALREADY_ON_DISK = 2166;
 
     public static final int TLC_LIVE_BEGRAPH_FAILED_TO_CONSTRUCT = 2159;
-    /*
-     * Check this message
-     */
-    public static final int TLC_PARAMETER_MUST_BE_POSTFIX = 2136;
+    public static final int TLC_PARAMETER_MUST_BE_POSTFIX = 2136; // TODO Check this message
     public static final int TLC_COULD_NOT_DETERMINE_SUBSCRIPT = 2139;
     public static final int TLC_SUBSCRIPT_CONTAIN_NO_STATE_VAR = 2140;
     public static final int TLC_WRONG_TUPLE_FIELD_NAME = 2141;
@@ -124,9 +115,7 @@ public interface EC
     public static final int TLC_MODULE_COMPARE_VALUE = 2155;
     public static final int TLC_MODULE_CHECK_MEMBER_OF = 2158;
     public static final int TLC_MODULE_TRANSITIVE_CLOSURE = 2157;
-    /**
-     * The %1% argument of %2% should be a %3%, but instead it is:<br>%4%
-     */
+    /** The %1% argument of %2% should be a %3%, but instead it is:<br>%4% */
     public static final int TLC_MODULE_ARGUMENT_ERROR = 2169;
     public static final int TLC_ARGUMENT_MISMATCH = 2170;
     public static final int TLC_PARSING_FAILED2 = 2171;
