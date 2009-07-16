@@ -74,5 +74,4 @@ public class StatePrinter
         ToolIO.err.println("STATE " + num + ": Stuttering");
     }
 
-    
 }
