@@ -40,7 +40,7 @@ public class DeleteModelHandler extends AbstractHandler implements IModelConfigu
 
         // get the launch type (model check)
         ILaunchConfigurationType launchConfigurationType = launchManager
-                .getLaunchConfigurationType(TLCModelLaunchDelegate.LAUNCH_ID);
+                .getLaunchConfigurationType(TLCModelLaunchDelegate.LAUNCH_CONFIGURATION_TYPE);
 
         String modelName = event.getParameter(DeleteModelHandler.PARAM_MODEL_NAME);
         if (modelName == null)

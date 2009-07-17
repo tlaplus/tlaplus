@@ -35,7 +35,7 @@ public class ModelContentProvider implements ITreeContentProvider
 
                 Vector modelContributions = new Vector();
 
-                IProject specProject = ToolboxHandle.getCurrentSpec().getProject();
+                IProject specProject = currentSpec.getProject();
                 try
                 {
                     ILaunchConfiguration[] launchConfigurations = launchManager

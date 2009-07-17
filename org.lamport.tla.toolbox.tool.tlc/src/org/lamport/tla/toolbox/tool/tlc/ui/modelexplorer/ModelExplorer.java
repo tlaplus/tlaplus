@@ -25,7 +25,7 @@ public class ModelExplorer extends CommonNavigator
     protected Object getInitialInput()
     {
         ILaunchConfigurationType launchConfigurationType = DebugPlugin.getDefault().getLaunchManager()
-                .getLaunchConfigurationType(TLCModelLaunchDelegate.LAUNCH_ID);
+                .getLaunchConfigurationType(TLCModelLaunchDelegate.LAUNCH_CONFIGURATION_TYPE);
         return launchConfigurationType;
     }
 

@@ -36,7 +36,7 @@ public class CloneModelHandler extends AbstractHandler implements IModelConfigur
 
         // get the launch type (model check)
         ILaunchConfigurationType launchConfigurationType = launchManager
-                .getLaunchConfigurationType(TLCModelLaunchDelegate.LAUNCH_ID);
+                .getLaunchConfigurationType(TLCModelLaunchDelegate.LAUNCH_CONFIGURATION_TYPE);
 
         String modelName = event.getParameter(PARAM_MODEL_NAME);
         String modelCopyName = event.getParameter(PARAM_MODELCOPY_NAME);

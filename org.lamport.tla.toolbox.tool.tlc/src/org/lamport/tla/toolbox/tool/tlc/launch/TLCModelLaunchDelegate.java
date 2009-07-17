@@ -29,7 +29,7 @@ import org.lamport.tla.toolbox.util.ResourceHelper;
 public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implements ILaunchConfigurationDelegate,
         IModelConfigurationConstants, IModelConfigurationDefaults
 {
-    public static final String LAUNCH_ID = "org.lamport.tla.toolbox.tool.tlc.modelCheck";
+    public static final String LAUNCH_CONFIGURATION_TYPE = "org.lamport.tla.toolbox.tool.tlc.modelCheck";
     public static final String MODE_MODELCHECK = "modelcheck";
 
     /**
@@ -82,7 +82,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
                                     + " has been found. Another TLC is possible running on the same model, or has been terminated non-gracefully"));
         } else
         {
-            
+
             // setup the running flag
             // from this point any termination of the run must reset the flag
             ModelHelper.lockModel(config);
@@ -93,16 +93,16 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
 
         // number of workers
         int numberOfWorkers = config.getAttribute(LAUNCH_NUMBER_OF_WORKERS, LAUNCH_NUMBER_OF_WORKERS_DEFAULT);
-         
+
         // model job
         ModelCreationJob modelJob = new ModelCreationJob(specName, modelName, config);
+        
         modelJob.setPriority(Job.SHORT);
         // the combination of two rules is used
         // the mutexRule prevents TLCProcessJob from running during the files are being written
         // the modify rule prevents modifications of the project during the creation of the model files
         ISchedulingRule modelRule = MultiRule.combine(mutexRule, ResourceHelper.getModifyRule(project));
         modelJob.setRule(modelRule);
-
 
         // TLC job
         // TLCJob tlcjob = new TLCInternalJob(tlaFile, cfgFile, project);
@@ -111,24 +111,22 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
         tlcjob.setPriority(Job.LONG);
         tlcjob.setUser(true);
         // the combination of two rules is used
-        // ISchedulingRule tlcRule = MultiRule.combine(mutexRule, ResourceHelper.getModifyRule(config.getFile()));
-        tlcjob.setRule(mutexRule);
+        ISchedulingRule tlcRule = MultiRule.combine(mutexRule, ResourceHelper.getCreateRule(tlcjob.getOutputFile()));
+        tlcjob.setRule(tlcRule);
 
-        // setup the job listener. which reacts on termination and errors  
+        // setup the job listener. which reacts on termination and errors
         ModelJobChangeListener modelJobListener = new ModelJobChangeListener(config, tlcjob);
         modelJob.addJobChangeListener(modelJobListener);
-        
+
         // setup the job change listener
         TLCJobChangeListener tlcJobListener = new TLCJobChangeListener(config);
         tlcjob.addJobChangeListener(tlcJobListener);
-        
+
         // launch the jobs
         modelJob.schedule();
         tlcjob.schedule();
     }
 
-    
-    
     /**
      * listens to the termination of the model creation job 
      */
@@ -202,7 +200,8 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
     /**
      * A listener writing the  
      */
-    class SimpleJobChangeListener extends JobChangeAdapter {
+    class SimpleJobChangeListener extends JobChangeAdapter
+    {
 
         public void done(IJobChangeEvent event)
         {
@@ -214,8 +213,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
             } else
             {
                 // analyze the cause
-                switch (event.getResult().getSeverity()) 
-                {
+                switch (event.getResult().getSeverity()) {
                 case IStatus.CANCEL:
                     status = "Cancelled";
                     break;

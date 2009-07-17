@@ -51,7 +51,7 @@ public class NewModelHandler extends AbstractHandler implements IModelConfigurat
 
         // get the launch type (model check)
         ILaunchConfigurationType launchConfigurationType = launchManager
-                .getLaunchConfigurationType(TLCModelLaunchDelegate.LAUNCH_ID);
+                .getLaunchConfigurationType(TLCModelLaunchDelegate.LAUNCH_CONFIGURATION_TYPE);
 
         // retrieve a new model name for the spec
         modelName = ModelHelper.constructModelName(specRootModule.getProject());

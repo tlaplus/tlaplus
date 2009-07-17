@@ -72,7 +72,7 @@ public class TLCProcessJob extends TLCJob
             // arguments
             // String[] args = new String[] { ResourceHelper.getModuleName(rootModule) };
             String[] args = new String[] { "-config", cfgFile.getName(), // configuration file
-                //    "-coverage", "0.1", // coverage
+                    "-coverage", "0.1", // coverage
                     "-workers", "" + workers, // number of workers
                     // "-debug",
                     "-metadir", launchDir.getLocation().toOSString(), // running in directory

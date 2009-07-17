@@ -1,13 +1,16 @@
 package org.lamport.tla.toolbox.tool.tlc.job;
 
-import java.io.IOException;
+import java.io.ByteArrayInputStream;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.Assert;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.jface.action.Action;
 import org.eclipse.ui.console.IOConsoleOutputStream;
@@ -25,15 +28,15 @@ public abstract class TLCJob extends AbstractJob implements IModelConfigurationC
 {
 
     protected static final int STEP = 30;
-    protected static final long TIMEOUT = 1000 * 5;
-    protected IResource rootModule;
-    protected IResource cfgFile;
+    protected static final long TIMEOUT = 1000 * 1;
+    protected IFile rootModule;
+    protected IFile cfgFile;
+    protected IFile outFile;
     protected IFolder launchDir;
     protected int workers = 1;
     protected IOConsoleOutputStream outputStream = ConsoleFactory.getTLCConsole().newOutputStream();
     protected ILaunch launch;
     protected String modelName;
-
 
     /**
      * Creates a TLC job for a given spec and model
@@ -45,15 +48,17 @@ public abstract class TLCJob extends AbstractJob implements IModelConfigurationC
     {
         super("TLC run for " + modelName);
         this.modelName = modelName;
+
         IProject project = ResourceHelper.getProject(specName);
         Assert.isNotNull(project, "Error accessing the spec project " + specName);
-        
+
         this.launchDir = project.getFolder(modelName);
         Assert.isNotNull(this.launchDir, "Error accessing the model folder " + modelName);
-        
+
         this.launch = launch;
         this.rootModule = this.launchDir.getFile("MC.tla");
         this.cfgFile = this.launchDir.getFile("MC.cfg");
+        this.outFile = this.launchDir.getFile("MC.out");
     }
 
     /**
@@ -67,8 +72,7 @@ public abstract class TLCJob extends AbstractJob implements IModelConfigurationC
 
     protected Action getJobCompletedAction()
     {
-        return new Action("View job results") 
-        {
+        return new Action("View job results") {
             public void run()
             {
                 // TODO
@@ -83,46 +87,51 @@ public abstract class TLCJob extends AbstractJob implements IModelConfigurationC
     protected abstract IStatus run(IProgressMonitor monitor);
 
     /**
-     * @param string
+     * @param message
      */
-    protected void println(String string)
+    protected void println(String message)
     {
-        try
-        {
-            outputStream.write(string);
-            outputStream.write("\n");
-        } catch (IOException e)
-        {
-            e.printStackTrace();
-        }
+        print(message + "\n");
     }
-    
+
     /**
      * @param string
      */
-    protected void print(String string)
+    protected void print(String message)
     {
         try
         {
-            outputStream.write(string);
-        } catch (IOException e)
+            // outputStream.write(message + "\n");
+            this.outFile.appendContents(new ByteArrayInputStream(message.getBytes()), IResource.FORCE,
+                    new NullProgressMonitor());
+
+        } catch (CoreException e)
         {
+            // TODO Auto-generated catch block
             e.printStackTrace();
         }
     }
-   
+
     /**
      * Checks if TLC is still running
      * @return true, if TLC is still running
      */
     public abstract boolean checkAndSleep();
-    
 
     /**
-     * Initilizes the console and shows the view 
+     * Initializes the console and shows the view 
      */
     protected void initConsole()
     {
-        ConsoleFactory.getTLCConsole().activate();
+        // ConsoleFactory.getTLCConsole().activate();
+    }
+
+    /**
+     * Retrieves the output file
+     * @return
+     */
+    public IResource getOutputFile()
+    {
+        return this.outFile;
     }
 }

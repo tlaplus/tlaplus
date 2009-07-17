@@ -56,8 +56,7 @@ public class ModelCreationJob extends AbstractJob implements IModelConfiguration
      */
     protected Action getJobCompletedAction()
     {
-        return new Action() 
-        {
+        return new Action() {
             public void run()
             {
                 System.out.print("Model files created");
@@ -126,13 +125,12 @@ public class ModelCreationJob extends AbstractJob implements IModelConfiguration
             // create the lock
             // ModelHelper.createLock(modelName, modelFolder);
 
-            
             // step 2
             IPath targetFolderPath = modelFolder.getProjectRelativePath().addTrailingSeparator();
             monitor.subTask("Copying files");
 
-            specRootFile.copy(targetFolderPath.append(specRootFile.getProjectRelativePath()), IResource.DERIVED | IResource.FORCE,
-                    new SubProgressMonitor(monitor, 1));
+            specRootFile.copy(targetFolderPath.append(specRootFile.getProjectRelativePath()), IResource.DERIVED
+                    | IResource.FORCE, new SubProgressMonitor(monitor, 1));
             IResource specRootFileCopy = modelFolder.findMember(specRootFile.getProjectRelativePath());
             if (specRootFileCopy == null)
             {
@@ -152,35 +150,38 @@ public class ModelCreationJob extends AbstractJob implements IModelConfiguration
                     moduleFile = ResourceHelper.getLinkedFile(project, module, false);
                     if (moduleFile != null)
                     {
-                        moduleFile.copy(targetFolderPath.append(moduleFile.getProjectRelativePath()), IResource.DERIVED | IResource.FORCE,
-                                new SubProgressMonitor(monitor, STEP / extendedModules.size()));
+                        moduleFile.copy(targetFolderPath.append(moduleFile.getProjectRelativePath()), IResource.DERIVED
+                                | IResource.FORCE, new SubProgressMonitor(monitor, STEP / extendedModules.size()));
                     }
                 }
             }
 
-            // create the model
+            // create the MC.tla, MC.cfg and MC.out
             final IFile tlaFile = project.getFile(targetFolderPath.append("MC").addFileExtension("tla"));
             final IFile cfgFile = project.getFile(targetFolderPath.append("MC").addFileExtension("cfg"));
+            final IFile outFile = project.getFile(targetFolderPath.append("MC").addFileExtension("out"));
 
-            ISchedulingRule createRule = MultiRule.combine(ResourceHelper.getCreateRule(tlaFile), ResourceHelper
-                    .getCreateRule(cfgFile));
+            ISchedulingRule createRule = MultiRule.combine(ResourceHelper.getCreateRule(outFile), MultiRule.combine(
+                    ResourceHelper.getCreateRule(tlaFile), ResourceHelper.getCreateRule(cfgFile)));
 
             ResourcesPlugin.getWorkspace().run(new IWorkspaceRunnable() {
 
                 public void run(IProgressMonitor monitor) throws CoreException
                 {
                     // create the files
-                    tlaFile.create(new ByteArrayInputStream("".getBytes()), IResource.DERIVED | IResource.FORCE, new SubProgressMonitor(
-                            monitor, 1));
-                    cfgFile.create(new ByteArrayInputStream("".getBytes()), IResource.DERIVED | IResource.FORCE, new SubProgressMonitor(
-                            monitor, 1));
+                    tlaFile.create(new ByteArrayInputStream("".getBytes()), IResource.DERIVED | IResource.FORCE,
+                            new SubProgressMonitor(monitor, 1));
+                    cfgFile.create(new ByteArrayInputStream("".getBytes()), IResource.DERIVED | IResource.FORCE,
+                            new SubProgressMonitor(monitor, 1));
+                    outFile.create(new ByteArrayInputStream("".getBytes()), IResource.DERIVED | IResource.FORCE,
+                            new SubProgressMonitor(monitor, 1));
                 }
 
             }, createRule, IWorkspace.AVOID_UPDATE, new SubProgressMonitor(monitor, STEP));
 
-
             System.out.println("Model TLA file is: " + tlaFile.getProjectRelativePath().toString());
             System.out.println("Model CFG file is: " + cfgFile.getProjectRelativePath().toString());
+            System.out.println("Model OUT file is: " + outFile.getProjectRelativePath().toString());
 
             monitor.worked(STEP);
             monitor.subTask("Creating contents");
@@ -232,7 +233,7 @@ public class ModelCreationJob extends AbstractJob implements IModelConfiguration
             // write down the files
             writer.writeFiles(tlaFile, cfgFile, monitor);
 
-            // refresh the model folder 
+            // refresh the model folder
             modelFolder.refreshLocal(IResource.DEPTH_INFINITE, new SubProgressMonitor(monitor, STEP));
             return Status.OK_STATUS;
 

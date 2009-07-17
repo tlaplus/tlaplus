@@ -44,6 +44,7 @@ public class TLCActivator extends AbstractUIPlugin implements IToolboxContributi
         IWorkspace workspace = ResourcesPlugin.getWorkspace();
 
         // update CNF viewers
+
         workspace.addResourceChangeListener(new IResourceChangeListener() {
 
             public void resourceChanged(IResourceChangeEvent event)
@@ -114,6 +115,6 @@ public class TLCActivator extends AbstractUIPlugin implements IToolboxContributi
     public void terminate() throws ToolLifecycleException
     {
         System.out.println("we are terminated!");
-        
     }
+    
 }

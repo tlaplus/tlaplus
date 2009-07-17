@@ -129,7 +129,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
 
         ILaunchManager launchManager = DebugPlugin.getDefault().getLaunchManager();
         ILaunchConfigurationType launchConfigurationType = launchManager
-                .getLaunchConfigurationType(TLCModelLaunchDelegate.LAUNCH_ID);
+                .getLaunchConfigurationType(TLCModelLaunchDelegate.LAUNCH_CONFIGURATION_TYPE);
 
         try
         {
@@ -619,7 +619,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
      * @param runnable a runnable to run if the model is changed 
      */
     public static IResourceChangeListener installModelModificationResourceChangeListener(
-            final IResourceProvider provider, final Runnable runnable)
+            final IFileProvider provider, final Runnable runnable)
     {
         // construct the listener
         IResourceChangeListener listener = new IResourceChangeListener() {
@@ -631,7 +631,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
                 // usually this list has at most one element
                 for (int i = 0; i < markerChanges.length; i++)
                 {
-                    if (provider.getResource().equals(markerChanges[i].getResource()))
+                    if (provider.getResource(IFileProvider.TYPE_MODEL).equals(markerChanges[i].getResource()))
                     {
                         UIHelper.runUIAsync(runnable);
                     }
@@ -645,7 +645,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
         // return the listener
         return listener;
     }
-
+    
     /**
      * Checks whether the model is locked or not
      * @param config
@@ -784,8 +784,12 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
     /**
      * Simple interface for getting a resource 
      */
-    public static interface IResourceProvider
+    public static interface IFileProvider
     {
-        public IResource getResource();
+        public static final int TYPE_MODEL = 1;
+        public static final int TYPE_RESULT = 2;
+        
+        public IFile getResource(int type);
     }
+
 }
