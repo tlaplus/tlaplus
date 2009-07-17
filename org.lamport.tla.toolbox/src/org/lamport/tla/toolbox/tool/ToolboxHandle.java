@@ -67,6 +67,15 @@ public class ToolboxHandle
     }
 
     /**
+     * Retrieves the spec by name
+     * @param name
+     * @return
+     */
+    public static Spec getSpecByName(String name)
+    {
+        return Activator.getSpecManager().getSpecByName(name);
+    }
+    /**
      * @return
      */
     public static Spec getCurrentSpec()
