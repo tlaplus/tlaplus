@@ -20,12 +20,6 @@ public interface IHelpConstants
 
     public static final String MAIN_MODEL_PAGE = "mainModelPage";
     public static final String ADVANCED_MODEL_PAGE = "advancedModelPage";
-
-    // removed
-    // public static final String GENERAL_MODEL_PAGE = "";
-    // public static final String LAUNCH_MODEL_PAGE = "";
-    // public static final String MODEL_VALUE_MODEL_PAGE = "";
-    // public static final String PARAMETERS_MODEL_PAGE = "";
-    // public static final String CORRECTNESS_MODEL_PAGE = "";
+    public static final String RESULT_MODEL_PAGE = "resultModelPage";
 
 }
