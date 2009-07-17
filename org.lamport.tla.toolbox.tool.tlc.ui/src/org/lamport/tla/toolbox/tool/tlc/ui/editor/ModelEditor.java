@@ -1,6 +1,6 @@
 package org.lamport.tla.toolbox.tool.tlc.ui.editor;
 
-import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -12,6 +12,7 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.forms.editor.FormEditor;
+import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.part.FileEditorInput;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.AdvancedModelPage;
@@ -20,6 +21,7 @@ import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.MainModelPage;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.ResultPage;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.SemanticHelper;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
+import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper.IFileProvider;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 /**
@@ -27,7 +29,7 @@ import org.lamport.tla.toolbox.util.UIHelper;
  * @author Simon Zambrovski
  * @version $Id$
  */
-public class ModelEditor extends FormEditor implements ModelHelper.IResourceProvider
+public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
 {
     /**
      * Editor ID
@@ -41,7 +43,11 @@ public class ModelEditor extends FormEditor implements ModelHelper.IResourceProv
     // helper to resolve semantic matches of words
     private SemanticHelper helper;
     // reacts on model changes
-    private IResourceChangeListener modelFileListener;
+    private IResourceChangeListener modelFileChangeListener;
+
+    // reacts on changes of the output file
+    private IResourceChangeListener outputFileChangeListener;
+
     // react on spec root file changes
     private IResourceChangeListener rootFileListener = new IResourceChangeListener() {
         public void resourceChanged(IResourceChangeEvent event)
@@ -67,12 +73,15 @@ public class ModelEditor extends FormEditor implements ModelHelper.IResourceProv
     // section manager
     private SectionManager sectionManager = new SectionManager();
 
+    private ResultPage resultPage;
+
     /**
      * Simple editor constructor
      */
     public ModelEditor()
     {
         helper = new SemanticHelper();
+        resultPage = new ResultPage(this);
     }
 
     /**
@@ -96,10 +105,14 @@ public class ModelEditor extends FormEditor implements ModelHelper.IResourceProv
             }
 
             /*
-             * Install a resource change listener on the file opened
-             * Update the information from the file is the file changes
+             * Install a resource change listener on the file opened which react on marker changes
              */
-            modelFileListener = ModelHelper.installModelModificationResourceChangeListener(this, new Runnable() {
+            modelFileChangeListener = ModelHelper.installModelModificationResourceChangeListener(this,
+            /* 
+             * If the model file is changed, refresh the changes in the editor
+             * if the model is in use, activate the third page 
+             */
+            new Runnable() {
                 public void run()
                 {
                     // update the pages
@@ -115,10 +128,16 @@ public class ModelEditor extends FormEditor implements ModelHelper.IResourceProv
                         setActivePage(ResultPage.ID);
                     }
                     // TODO evtl. add more graphical sugar here,
-                    // like changing the model icon, changing the editor title (part name)
-                    
+                    // like changing the model icon, 
+                    // changing the editor title (part name)
                 }
             });
+
+            /*
+             * Install a resource change listener on the output file
+             * Update the information from the file is the file changes
+             */
+            ResourcesPlugin.getWorkspace().addResourceChangeListener(resultPage, IResourceChangeEvent.POST_CHANGE);
 
             // setContentDescription(path.toString());
             this.setPartName(ModelHelper.getModelName(finput.getFile()));
@@ -157,7 +176,8 @@ public class ModelEditor extends FormEditor implements ModelHelper.IResourceProv
     {
         // remove the listeners
         ResourcesPlugin.getWorkspace().removeResourceChangeListener(rootFileListener);
-        ResourcesPlugin.getWorkspace().removeResourceChangeListener(modelFileListener);
+        ResourcesPlugin.getWorkspace().removeResourceChangeListener(modelFileChangeListener);
+        ResourcesPlugin.getWorkspace().removeResourceChangeListener(resultPage);
         super.dispose();
     }
 
@@ -210,7 +230,7 @@ public class ModelEditor extends FormEditor implements ModelHelper.IResourceProv
         {
             addPage(new MainModelPage(this));
             addPage(new AdvancedModelPage(this));
-            addPage(new ResultPage(this));
+            addPage(resultPage);
 
         } catch (PartInitException e)
         {
@@ -270,16 +290,29 @@ public class ModelEditor extends FormEditor implements ModelHelper.IResourceProv
             return (FileEditorInput) input;
         } else
         {
-            throw new IllegalStateException("Something wierd. The editor is designed for FileEditorInputOnly");
+            throw new IllegalStateException("Something weird. The editor is designed for FileEditorInputOnly");
         }
     }
 
     /* (non-Javadoc)
      * @see org.lamport.tla.toolbox.tool.tlc.util.ModelHelper.IResourceProvider#getResource()
      */
-    public IResource getResource()
+    public IFile getResource(int type)
     {
-        return getFileEditorInput().getFile();
+        IFile result = getFileEditorInput().getFile();
+
+        switch (type) {
+        case IFileProvider.TYPE_MODEL:
+            break;
+        case IFileProvider.TYPE_RESULT:
+            String modelName = ModelHelper.getModelName(result);
+            result = result.getProject().getFolder(modelName).getFile("MC.out");
+            break;
+        default:
+            result = null;
+            break;
+        }
+        return result;
     }
 
     /**

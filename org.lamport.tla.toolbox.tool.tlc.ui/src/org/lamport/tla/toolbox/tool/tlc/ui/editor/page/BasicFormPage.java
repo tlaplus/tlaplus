@@ -54,7 +54,6 @@ import tla2sany.st.Location;
 public abstract class BasicFormPage extends FormPage implements IModelConfigurationConstants,
         IModelConfigurationDefaults, ISectionManager, IDoRunContainer
 {
-
     public static final String RUNNING_TITLE = " ( model checking is in progress )";
     protected ListenerList dirtyPartListeners = new ListenerList();
     protected String helpId = null;
@@ -429,6 +428,16 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
     {
         ((ModelEditor) getEditor()).getSectionManager().expandSection(sectionId);
     }
+    
+    /**
+     * Enables or disables the section
+     * @param sectionId
+     * @param enabled
+     */
+    public void enableSection(String sectionId, boolean enabled)
+    {
+        ((ModelEditor) getEditor()).getSectionManager().enableSection(sectionId, enabled);
+    }
 
     /**
      * Adds the section to the section manager in order to be able to expand the sections on events 
@@ -440,6 +449,19 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
     public void addSection(String sectionId, ExpandableComposite section)
     {
         ((ModelEditor) getEditor()).getSectionManager().addSection(section, sectionId, getId());
+    }
+
+    /**
+     * Enables or disables all section on the current page
+     * @param enabled 
+     */
+    public void setAllSectionsEnabled(boolean enabled)
+    {
+        String[] sectionIds = ((ModelEditor) getEditor()).getSectionManager().getSectionsForPage(getId());
+        for (int i = 0; i < sectionIds.length; i++) 
+        {
+            enableSection(sectionIds[i], enabled);
+        }
     }
 
     /**
@@ -487,8 +509,8 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
                 }
             }
             
-            
             // refresh enablement status
+            setAllSectionsEnabled(!modelInUse);
             mForm.getForm().getBody().setEnabled(!modelInUse);
             mForm.getForm().update();
         }
@@ -519,9 +541,7 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
         {
             System.out.println("Run");
             doRun(MODE_RUN);
-            
         }
-
 
         /**
          * Run is only enabled if the model is not in use

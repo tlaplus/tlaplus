@@ -20,4 +20,9 @@ public interface ISectionManager
     public final static String SEC_ACTION_CONSTRAINT = "__action_constraints";
     public final static String SEC_MODEL_VALUES = "__model_values";
     public final static String SEC_LAUNCHING_SETUP = "__launching_setup";
+
+    // sections of the third page
+    public final static String SEC_PROGRESS = "__progress";
+    public final static String SEC_OUTPUT = "__output";
+
 }
