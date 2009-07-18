@@ -5,9 +5,8 @@ import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.IDocumentListener;
+import org.eclipse.jface.text.rules.FastPartitioner;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -219,15 +218,6 @@ public class ResultPage extends BasicFormPage implements IResourceChangeListener
         return text;
     }
 
-
-    /**
-     * 
-     */
-    public void requery()
-    {
-        System.out.println("Requery called");
-    }
-
     /* (non-Javadoc)
      * @see org.eclipse.core.resources.IResourceChangeListener#resourceChanged(org.eclipse.core.resources.IResourceChangeEvent)
      */
@@ -240,39 +230,35 @@ public class ResultPage extends BasicFormPage implements IResourceChangeListener
             switch(logDelta.getKind()) 
             {
             case IResourceDelta.ADDED:
-                ReadOnlyFileEditorInput fInput = new ReadOnlyFileEditorInput(logFile);
-                FileDocumentProvider fileDocumentProvider = new FileDocumentProvider();
-                try
-                {
-                    fileDocumentProvider.connect(fInput);
-                    document = fileDocumentProvider.getDocument(fInput);
-                    document.addDocumentListener(new IDocumentListener() {
-
-                        public void documentAboutToBeChanged(DocumentEvent event)
-                        {
-                            
-                        }
-
-                        public void documentChanged(DocumentEvent event)
-                        {
-                            System.out.print(">>" + event.fText);
-                        }
-                        
-                    });
-                } catch (CoreException e)
-                {
-                    e.printStackTrace();
-                }
+                initDocument();
                 break;
             case IResourceDelta.REMOVED:
                 document = null;
                 break;
             case IResourceDelta.CHANGED:
+                // System.out.println(">> change");
                 break;
             }
         } 
     }
+
     
+    private void initDocument()
+    {
+        IFile logFile = ((IFileProvider)getEditor()).getResource(IFileProvider.TYPE_RESULT);
+        ReadOnlyFileEditorInput fInput = new ReadOnlyFileEditorInput(logFile);
+        FileDocumentProvider fileDocumentProvider = new FileDocumentProvider();
+        try
+        {
+            fileDocumentProvider.connect(fInput);
+            document = fileDocumentProvider.getDocument(fInput);
+            document.setDocumentPartitioner(new FastPartitioner(new LogPartitionTokenScanner(), LogPartitionTokenScanner.CONTENT_TYPES));
+        } catch (CoreException e)
+        {
+            e.printStackTrace();
+        }
+        
+    }
     
     public void dispose()
     {
