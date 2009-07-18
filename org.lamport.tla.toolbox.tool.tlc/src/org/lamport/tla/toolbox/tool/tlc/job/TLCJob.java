@@ -1,16 +1,20 @@
 package org.lamport.tla.toolbox.tool.tlc.job;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IWorkspaceRunnable;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.jface.action.Action;
 import org.eclipse.ui.console.IOConsoleOutputStream;
@@ -32,11 +36,14 @@ public abstract class TLCJob extends AbstractJob implements IModelConfigurationC
     protected IFile rootModule;
     protected IFile cfgFile;
     protected IFile outFile;
+    protected ISchedulingRule rule;
     protected IFolder launchDir;
     protected int workers = 1;
     protected IOConsoleOutputStream outputStream = ConsoleFactory.getTLCConsole().newOutputStream();
     protected ILaunch launch;
     protected String modelName;
+    
+    protected boolean appendConsole = false;
 
     /**
      * Creates a TLC job for a given spec and model
@@ -59,6 +66,7 @@ public abstract class TLCJob extends AbstractJob implements IModelConfigurationC
         this.rootModule = this.launchDir.getFile("MC.tla");
         this.cfgFile = this.launchDir.getFile("MC.cfg");
         this.outFile = this.launchDir.getFile("MC.out");
+        this.rule = ResourceHelper.getModifyRule(outFile);
     }
 
     /**
@@ -72,7 +80,8 @@ public abstract class TLCJob extends AbstractJob implements IModelConfigurationC
 
     protected Action getJobCompletedAction()
     {
-        return new Action("View job results") {
+        return new Action("View job results") 
+        {
             public void run()
             {
                 // TODO
@@ -86,28 +95,34 @@ public abstract class TLCJob extends AbstractJob implements IModelConfigurationC
      */
     protected abstract IStatus run(IProgressMonitor monitor);
 
-    /**
-     * @param message
-     */
-    protected void println(String message)
-    {
-        print(message + "\n");
-    }
 
     /**
+     * Reports progress to the console, output file, etc...
      * @param string
      */
-    protected void print(String message)
+    protected void reportProgress(final String message) 
     {
         try
         {
-            // outputStream.write(message + "\n");
-            this.outFile.appendContents(new ByteArrayInputStream(message.getBytes()), IResource.FORCE,
-                    new NullProgressMonitor());
-
+            ResourcesPlugin.getWorkspace().run(new IWorkspaceRunnable() 
+            {
+                public void run(IProgressMonitor monitor) throws CoreException
+                {
+                    // System.out.print(Thread.currentThread().getId() + " : " + message);
+                    outFile.appendContents(new ByteArrayInputStream(message.getBytes()), IResource.KEEP_HISTORY | IResource.FORCE, monitor);
+                }
+            }, rule, IResource.NONE, new NullProgressMonitor());
+            
+            // if the console output is active, print to it
+            if (appendConsole) 
+            {
+                this.outputStream.write(message.getBytes());
+            }
         } catch (CoreException e)
         {
-            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IOException e)
+        {
             e.printStackTrace();
         }
     }
@@ -123,15 +138,6 @@ public abstract class TLCJob extends AbstractJob implements IModelConfigurationC
      */
     protected void initConsole()
     {
-        // ConsoleFactory.getTLCConsole().activate();
-    }
-
-    /**
-     * Retrieves the output file
-     * @return
-     */
-    public IResource getOutputFile()
-    {
-        return this.outFile;
+        ConsoleFactory.getTLCConsole().activate();
     }
 }

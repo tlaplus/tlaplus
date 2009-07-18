@@ -29,10 +29,11 @@ import tlc2.TLC;
 public class TLCProcessJob extends TLCJob
 {
     private IProcess process = null;
-    private IStreamListener consleListener = new IStreamListener() {
+    private IStreamListener consleListener = new IStreamListener() 
+    {
         public void streamAppended(String text, IStreamMonitor monitor)
         {
-            print(text);
+            reportProgress(text);
         }
     };
 
@@ -74,7 +75,7 @@ public class TLCProcessJob extends TLCJob
             String[] args = new String[] { "-config", cfgFile.getName(), // configuration file
                     "-coverage", "0.1", // coverage
                     "-workers", "" + workers, // number of workers
-                    // "-debug",
+                    // "-debug", // internal debug statements, not for productive use
                     "-metadir", launchDir.getLocation().toOSString(), // running in directory
                     ResourceHelper.getModuleName(rootModule) // name of the module to check
             };

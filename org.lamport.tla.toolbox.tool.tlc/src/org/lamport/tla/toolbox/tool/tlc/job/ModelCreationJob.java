@@ -234,7 +234,7 @@ public class ModelCreationJob extends AbstractJob implements IModelConfiguration
             writer.writeFiles(tlaFile, cfgFile, monitor);
 
             // refresh the model folder
-            modelFolder.refreshLocal(IResource.DEPTH_INFINITE, new SubProgressMonitor(monitor, STEP));
+            modelFolder.refreshLocal(IResource.DEPTH_ONE, new SubProgressMonitor(monitor, STEP));
             return Status.OK_STATUS;
 
         } catch (CoreException e)

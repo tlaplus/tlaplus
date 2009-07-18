@@ -145,7 +145,7 @@ public class TLCInternalJob extends TLCJob
         String[] messages = ToolIO.getAllMessages();
         for (; reported < messages.length; reported++)
         {
-            println(messages[reported]);
+            reportProgress(messages[reported]);
         }
     }
 
@@ -166,7 +166,7 @@ public class TLCInternalJob extends TLCJob
         {
             synchronized (this)
             {
-                println("TLC Thread {STARTED} -------------");
+                reportProgress("TLC Thread {STARTED} -------------\n");
                 isRunning = true;
             }
             // start TLC
@@ -174,7 +174,7 @@ public class TLCInternalJob extends TLCJob
 
             synchronized (this)
             {
-                println("TLC Thread {FINISHED} ------------");
+                reportProgress("TLC Thread {FINISHED} ------------\n");
                 isRunning = false;
             }
         }

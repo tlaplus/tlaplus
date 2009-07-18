@@ -110,9 +110,8 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
         tlcjob.setWorkers(numberOfWorkers);
         tlcjob.setPriority(Job.LONG);
         tlcjob.setUser(true);
-        // the combination of two rules is used
-        ISchedulingRule tlcRule = MultiRule.combine(mutexRule, ResourceHelper.getCreateRule(tlcjob.getOutputFile()));
-        tlcjob.setRule(tlcRule);
+        // The TLC job itself does not do any file IO
+        tlcjob.setRule(mutexRule);
 
         // setup the job listener. which reacts on termination and errors
         ModelJobChangeListener modelJobListener = new ModelJobChangeListener(config, tlcjob);
