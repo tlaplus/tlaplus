@@ -526,6 +526,13 @@ Console Facory
             value="true">
       </persistent>
    </extension>
+   <extension
+         point="org.eclipse.core.filebuffers.documentSetup">
+      <participant
+            class="org.lamport.tla.toolbox.tool.tlc.util.DocumentSetupParticipant"
+            fileNames="MC.out">
+      </participant>
+   </extension>
    
    <!--                                   -->
 <!-- Menus                             -->
