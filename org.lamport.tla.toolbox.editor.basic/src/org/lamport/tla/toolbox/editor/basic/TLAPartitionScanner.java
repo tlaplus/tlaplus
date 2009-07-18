@@ -69,7 +69,6 @@ public class TLAPartitionScanner implements IPartitionTokenScanner
      */
     public TLAPartitionScanner()
     {
-        super();
     }
 
     /* (non-Javadoc)
