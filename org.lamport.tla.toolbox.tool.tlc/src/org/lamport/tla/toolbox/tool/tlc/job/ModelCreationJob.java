@@ -25,9 +25,9 @@ import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.tool.tlc.TLCActivator;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationDefaults;
-import org.lamport.tla.toolbox.tool.tlc.launch.ModelWriter;
 import org.lamport.tla.toolbox.tool.tlc.model.TypedSet;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
+import org.lamport.tla.toolbox.tool.tlc.util.ModelWriter;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 
 /**
