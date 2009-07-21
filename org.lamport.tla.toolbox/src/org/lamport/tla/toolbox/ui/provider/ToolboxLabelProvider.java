@@ -21,9 +21,14 @@ extends LabelProvider implements ILabelProvider, IDescriptionProvider
 {
     public String getText(Object element)
     {
+        if (element == null) 
+        {
+            return null;
+        }
         if (element instanceof Spec)
         {
-            return ((Spec)element).getName() + " [ " +((Spec)element).getRootFile().getName() + " ]";
+            Spec spec = (Spec)element;
+            return spec.getName() + " [ " +spec.getRootFile().getName() + " ]";
         } else if (element instanceof Module) 
         {
             return ((Module)element).getModuleName();
@@ -39,6 +44,10 @@ extends LabelProvider implements ILabelProvider, IDescriptionProvider
     
     public Image getImage(Object element)
     {
+        if (element == null) 
+        {
+            return null;
+        }
         if (element instanceof Spec) 
         {
             if (((Spec)element) == Activator.getSpecManager().getSpecLoaded()) 
