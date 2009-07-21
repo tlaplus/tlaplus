@@ -2,13 +2,13 @@ package org.lamport.tla.toolbox.tool.tlc.ui.wizard;
 
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.source.SourceViewer;
-import org.eclipse.jface.text.source.SourceViewerConfiguration;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
 
 /**
  * A page with a simple field for formula editing
@@ -36,10 +36,9 @@ public class FormulaWizardPage extends WizardPage
         GridLayout layout = new GridLayout(1, false);
         container.setLayout(layout);
 
-        sourceViewer = new SourceViewer(container, null, null, false, SWT.V_SCROLL | SWT.H_SCROLL | SWT.BORDER);
-        SourceViewerConfiguration configuration = new SourceViewerConfiguration();
-        sourceViewer.configure(configuration);
         
+        sourceViewer = FormHelper.createSourceViewer(container, SWT.BORDER | SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
+       
         GridData gd = new GridData(SWT.CENTER, SWT.CENTER, true, true);
         gd.heightHint = 200;
         gd.widthHint = 400;
