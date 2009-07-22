@@ -1,4 +1,4 @@
-package org.lamport.tla.toolbox.tool.tlc.launch;
+package org.lamport.tla.toolbox.tool.tlc.util;
 
 import java.util.List;
 import java.util.Vector;
@@ -8,7 +8,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
 import org.lamport.tla.toolbox.tool.tlc.model.TypedSet;
-import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 
 /**

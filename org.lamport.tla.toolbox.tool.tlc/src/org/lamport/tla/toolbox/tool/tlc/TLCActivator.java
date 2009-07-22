@@ -4,6 +4,7 @@ import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchPage;
@@ -116,5 +117,16 @@ public class TLCActivator extends AbstractUIPlugin implements IToolboxContributi
     {
         System.out.println("we are terminated!");
     }
-    
+
+    /**
+     * Logs an error
+     * @param message
+     * @param e 
+     */
+    public static void logError(String message, Throwable e)
+    {
+        getDefault().getLog().log(new Status(Status.ERROR, TLCActivator.PLUGIN_ID, message, e));
+        
+    }
+
 }

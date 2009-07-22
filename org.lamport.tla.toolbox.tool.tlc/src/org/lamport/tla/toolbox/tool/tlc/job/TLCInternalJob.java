@@ -1,11 +1,15 @@
 package org.lamport.tla.toolbox.tool.tlc.job;
 
 
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.debug.core.ILaunch;
+import org.eclipse.debug.core.IStreamListener;
 import org.lamport.tla.toolbox.tool.tlc.TLCActivator;
+import org.lamport.tla.toolbox.tool.tlc.output.IProcessOutputSink;
+import org.lamport.tla.toolbox.tool.tlc.output.internal.BroadcastStreamListener;
 import org.lamport.tla.toolbox.util.RCPNameToFileIStream;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 
@@ -13,12 +17,15 @@ import tlc2.TLC;
 import util.ToolIO;
 
 /**
+ * Runs TLC as internal process
  * @author Simon Zambrovski
  * @version $Id$
+ * @deprecated
  */
 public class TLCInternalJob extends TLCJob
 {
     private TLCThread tlcThread;
+    private IStreamListener outputListener;
     int reported;
 
     /**
@@ -30,14 +37,14 @@ public class TLCInternalJob extends TLCJob
         
         // initialize the progress reporting variable
         reported = 0;
+        
+        outputListener = new BroadcastStreamListener(modelName, IProcessOutputSink.TYPE_OUT);
     }
 
     protected IStatus run(IProgressMonitor monitor)
     {
         
         monitor.beginTask("TLC run for " + rootModule.getName(), IProgressMonitor.UNKNOWN);
-        // init the console
-        initConsole();
         
         monitor.subTask("Preparing the tool environment");
         // setup tool io
@@ -60,11 +67,15 @@ public class TLCInternalJob extends TLCJob
         // tlc.setSpecObject(specObj);
 
         // handle parameters
-        String[] params = new String[] { "-config", cfgFile.getName(), 
-                                         //"-coverage", "0.1",
-                                         "-workers", "" + workers,
-                                         "-metadir", launchDir.getLocation().toOSString(),
-                                         ResourceHelper.getModuleName(rootModule) };
+        String[] params;
+        try
+        {
+            params = constructProgramArguments();
+        } catch (CoreException e)
+        {
+            return new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID, "Error reading model parameters", e);
+        }
+        
         boolean status = tlc.handleParameters(params);
         
         // report errors in parameters
@@ -73,7 +84,6 @@ public class TLCInternalJob extends TLCJob
             return new Status(Status.ERROR, TLCActivator.PLUGIN_ID, "Error processing arguments");
         }
         monitor.worked(STEP);
-
         
         
         // create thread for TLC running
@@ -89,7 +99,7 @@ public class TLCInternalJob extends TLCJob
         while (this.checkAndSleep())
         {
             // report the messages created since last reporting
-            reportProgress(monitor);
+            reportProgress();
 
             // check the cancellation status
             if (monitor.isCanceled())
@@ -98,7 +108,7 @@ public class TLCInternalJob extends TLCJob
                 tlc.setCanceledFlag(true);
 
                 // report the messages created since last reporting
-                reportProgress(monitor);
+                reportProgress();
 
                 // abnormal termination
                 return Status.CANCEL_STATUS;
@@ -110,7 +120,7 @@ public class TLCInternalJob extends TLCJob
         doFinish();
 
         // report progress
-        reportProgress(monitor);
+        reportProgress();
 
         // successful termination
         return Status.OK_STATUS;
@@ -134,18 +144,15 @@ public class TLCInternalJob extends TLCJob
     }
 
     /**
-     * Report progress to the monitor 
-     * @param monitor
-     * TODO 
+     * Report progress to the fake listener
      */
-    protected void reportProgress(IProgressMonitor monitor)
+    protected void reportProgress()
     {
         // report progress
-
         String[] messages = ToolIO.getAllMessages();
         for (; reported < messages.length; reported++)
         {
-            reportProgress(messages[reported]);
+            outputListener.streamAppended(messages[reported], null);
         }
     }
 
@@ -166,7 +173,6 @@ public class TLCInternalJob extends TLCJob
         {
             synchronized (this)
             {
-                reportProgress("TLC Thread {STARTED} -------------\n");
                 isRunning = true;
             }
             // start TLC
@@ -174,7 +180,6 @@ public class TLCInternalJob extends TLCJob
 
             synchronized (this)
             {
-                reportProgress("TLC Thread {FINISHED} ------------\n");
                 isRunning = false;
             }
         }

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.2"?>
 <plugin>
+   <extension-point id="org.lamport.tla.toolbox.tlc.processOutputSink" name="TLC Process Output Sink" schema="schema/org.lamport.tla.toolbox.tlc.processOutputSink.exsd"/>
    <extension
          point="org.eclipse.ui.commands">
       <category
@@ -237,29 +238,6 @@
                   name="org.lamport.tla.toolbox.tool.tlc.separator"
                   visible="true">
             </separator>
-            <command
-                  commandId="toolbox.command.openview"
-                  icon="icons/full/console_view2.gif"
-                  id="toolbox.menu.open-console"
-                  label="Console"
-                  mnemonic="C"
-                  mode="FORCE_TEXT"
-                  style="push"
-                  tooltip="Opens the view showing console">
-               <parameter
-                     name="toolbox.openview.name"
-                     value="org.eclipse.ui.console.ConsoleView">
-               </parameter>
-               <visibleWhen
-                     checkEnabled="true">
-                  <with
-                        variable="activeWorkbenchWindow.activePerspective">
-                     <equals
-                           value="org.lamport.tla.toolbox.tool.perspective.tlc">
-                     </equals>
-                  </with>
-               </visibleWhen>
-            </command>
          </menu>
       </menuContribution>
    </extension>   
@@ -336,20 +314,10 @@
             delegateDescription="TLC Model Checker is usefull to find bugs in the specification"
       >
       </launchConfigurationType>
-      <launchConfigurationType
-            delegate="org.lamport.tla.toolbox.tool.tlc.launch.TLCSimulateLaunchDelegate"
-            delegateDescription="TLC Model Checker is usefull to find bugs in the specification"
-            delegateName="TLC ModelChecker"
-            id="org.lamport.tla.toolbox.tool.tlc.simulate"
-            modes="simulate"
-            name="TLC Simulation"
-            public="true">
-      </launchConfigurationType>
    </extension>
    
    <extension point="org.eclipse.debug.core.launchModes">
       <launchMode mode="modelcheck" label="Model Check" launchAsLabel="Check As"></launchMode>
-      <launchMode mode="simulate" label="Simulate" launchAsLabel="Simulate As"></launchMode>
    </extension>
 <!-- 
  NCE definition
@@ -435,17 +403,6 @@
       </viewerContentBinding>
    </extension>
 
-<!-- 
-Console Facory 
--->
-   <extension
-         point="org.eclipse.ui.console.consoleFactories">
-      <consoleFactory
-            class="org.lamport.tla.toolbox.tool.tlc.ui.ConsoleFactory"
-            icon="icons/full/console_view2.gif"
-            label="TLC Console">
-      </consoleFactory>
-   </extension>
 
 <!-- 
  Perspective 
@@ -512,6 +469,7 @@ Console Facory
          </view>
       </perspectiveExtension>
    </extension>
+<!-- Model marker for marking models in use -->   
    <extension
          id="org.lamport.tla.toolbox.tlc.modelMarker"
          name="Model Marker"
@@ -526,15 +484,7 @@ Console Facory
             value="true">
       </persistent>
    </extension>
-   <extension
-         point="org.eclipse.core.filebuffers.documentSetup">
-      <participant
-            class="org.lamport.tla.toolbox.tool.tlc.util.DocumentSetupParticipant"
-            fileNames="MC.out">
-      </participant>
-   </extension>
-   
-   <!--                                   -->
+<!--                                   -->
 <!-- Menus                             -->
 <!--                                   -->
 </plugin>

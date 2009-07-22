@@ -9,14 +9,14 @@ import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchManager;
-import org.eclipse.debug.core.IStreamListener;
 import org.eclipse.debug.core.model.IProcess;
-import org.eclipse.debug.core.model.IStreamMonitor;
 import org.eclipse.jdt.launching.IVMRunner;
 import org.eclipse.jdt.launching.JavaRuntime;
 import org.eclipse.jdt.launching.VMRunnerConfiguration;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.tool.tlc.TLCActivator;
+import org.lamport.tla.toolbox.tool.tlc.output.IProcessOutputSink;
+import org.lamport.tla.toolbox.tool.tlc.output.internal.BroadcastStreamListener;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 
 import tlc2.TLC;
@@ -29,16 +29,9 @@ import tlc2.TLC;
 public class TLCProcessJob extends TLCJob
 {
     private IProcess process = null;
-    private IStreamListener consleListener = new IStreamListener() 
-    {
-        public void streamAppended(String text, IStreamMonitor monitor)
-        {
-            reportProgress(text);
-        }
-    };
-
     
     /**
+     * Constructs a process job
      * @param name
      */
     public TLCProcessJob(String specName, String modelName, ILaunch launch)
@@ -53,15 +46,14 @@ public class TLCProcessJob extends TLCJob
     {
         try
         {
+
             // start the monitor ( we don't know the )
             monitor.beginTask("Running TLC model checker", IProgressMonitor.UNKNOWN);
-
-            // init the console
-            initConsole();
 
             // step 1
             monitor.worked(STEP);
             monitor.subTask("Preparing the TLC Launch");
+
 
             // classpath
             String[] classPath = new String[] { ToolboxHandle.getTLAToolsClasspath().toOSString() };
@@ -71,30 +63,20 @@ public class TLCProcessJob extends TLCJob
             // String mainClassFQCN = SANY.class.getName();
 
             // arguments
-            // String[] args = new String[] { ResourceHelper.getModuleName(rootModule) };
-            String[] args = new String[] { "-config", cfgFile.getName(), // configuration file
-                    "-coverage", "0.1", // coverage
-                    "-workers", "" + workers, // number of workers
-                    // "-debug", // internal debug statements, not for productive use
-                    "-metadir", launchDir.getLocation().toOSString(), // running in directory
-                    ResourceHelper.getModuleName(rootModule) // name of the module to check
-            };
-
-            String workingDir = ResourceHelper.getParentDirName(rootModule);
+            String[] arguments = constructProgramArguments();
 
             // using -D to pass the System property of the location of standard modules
             String[] vmArgs = new String[] { "-DTLA-Library=" + ToolboxHandle.getModulesClasspath().toOSString() };
 
             // assemble the config
             VMRunnerConfiguration tlcConfig = new VMRunnerConfiguration(mainClassFQCN, classPath);
-            tlcConfig.setProgramArguments(args);
+            // tlcConfig.setProgramArguments(new String[] { ResourceHelper.getModuleName(rootModule) });
+            tlcConfig.setProgramArguments(arguments);
             tlcConfig.setVMArguments(vmArgs);
-            tlcConfig.setWorkingDirectory(workingDir);
-            
+            tlcConfig.setWorkingDirectory(ResourceHelper.getParentDirName(rootModule));
 
             // get default VM (the same the toolbox is started with)
             IVMRunner runner = JavaRuntime.getDefaultVMInstall().getVMRunner(ILaunchManager.RUN_MODE);
-
 
             launch.setAttribute(DebugPlugin.ATTR_CAPTURE_OUTPUT, "true");
 
@@ -113,7 +95,6 @@ public class TLCProcessJob extends TLCJob
 
             // find the running process
             this.process = findProcessForLaunch(launch);
-            
 
             // step 4
             monitor.worked(STEP);
@@ -126,8 +107,9 @@ public class TLCProcessJob extends TLCJob
                 monitor.worked(STEP);
                 monitor.subTask("Model checking...");
 
-                process.getStreamsProxy().getOutputStreamMonitor().addListener(consleListener);
-                process.getStreamsProxy().getErrorStreamMonitor().addListener(consleListener);
+                // register the broadcasting listener
+                process.getStreamsProxy().getOutputStreamMonitor().addListener(new BroadcastStreamListener(modelName, IProcessOutputSink.TYPE_OUT));
+                process.getStreamsProxy().getErrorStreamMonitor().addListener(new BroadcastStreamListener(modelName, IProcessOutputSink.TYPE_ERROR));
 
                 // loop until the process is terminated
                 while (checkAndSleep())
@@ -142,14 +124,14 @@ public class TLCProcessJob extends TLCJob
                         } catch (DebugException e)
                         {
                             // react on the status code
-                            switch (e.getStatus().getCode())
-                            {
+                            switch (e.getStatus().getCode()) {
                             case DebugException.TARGET_REQUEST_FAILED:
                             case DebugException.NOT_SUPPORTED:
                             default:
-                                return new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID, "Error terminating the running TLC instance. This is a bug. Make sure to exit the toolbox.");
+                                return new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID,
+                                        "Error terminating the running TLC instance. This is a bug. Make sure to exit the toolbox.");
                             }
-                        } 
+                        }
 
                         // abnormal termination
                         return Status.CANCEL_STATUS;
@@ -168,9 +150,13 @@ public class TLCProcessJob extends TLCJob
             } else
             {
                 // process not found
-                return new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID, "Error launching TLC, the launched process cound not be found");
+                return new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID,
+                        "Error launching TLC, the launched process cound not be found");
             }
 
+        } catch (CoreException e)
+        {
+            return new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID, "Error reading model parameters", e);
         } finally
         {
             // make sure to complete the monitor
@@ -196,7 +182,7 @@ public class TLCProcessJob extends TLCJob
         // return true if the TLC is still calculating
         return (!process.isTerminated());
     }
-    
+
     /**
      * Retrieves a process to a given ILaunch
      * @param launch
