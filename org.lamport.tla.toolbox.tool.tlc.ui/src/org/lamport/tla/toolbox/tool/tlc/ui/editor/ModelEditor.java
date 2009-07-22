@@ -12,7 +12,6 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.forms.editor.FormEditor;
-import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.part.FileEditorInput;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.AdvancedModelPage;
@@ -44,9 +43,6 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
     private SemanticHelper helper;
     // reacts on model changes
     private IResourceChangeListener modelFileChangeListener;
-
-    // reacts on changes of the output file
-    private IResourceChangeListener outputFileChangeListener;
 
     // react on spec root file changes
     private IResourceChangeListener rootFileListener = new IResourceChangeListener() {

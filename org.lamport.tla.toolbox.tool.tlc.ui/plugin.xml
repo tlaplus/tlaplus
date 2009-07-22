@@ -11,4 +11,50 @@
             name="Model Editor">
       </editor>
    </extension>
+   <extension
+         point="org.lamport.tla.toolbox.tlc.processOutputSink">
+      <sink
+            class="org.lamport.tla.toolbox.tool.tlc.ui.output.ConsoleProcessOutputSink">
+      </sink>
+   </extension>
+<!-- 
+Console Facory 
+-->
+   <extension
+         point="org.eclipse.ui.console.consoleFactories">
+      <consoleFactory
+            class="org.lamport.tla.toolbox.tool.tlc.ui.console.ConsoleFactory"
+            icon="icons/full/console_view2.gif"
+            label="TLC Console">
+      </consoleFactory>
+   </extension>
+   <extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            locationURI="menu:toolbox.toolmenus.tlc?after=org.lamport.tla.toolbox.tool.tlc.separator">
+		<command
+		      commandId="toolbox.command.openview"
+		      icon="icons/full/console_view2.gif"
+		      id="toolbox.menu.open-console"
+		      label="Console"
+		      mnemonic="C"
+		      mode="FORCE_TEXT"
+		      style="push"
+		      tooltip="Opens the view showing console">
+		   <parameter
+		         name="toolbox.openview.name"
+		         value="org.eclipse.ui.console.ConsoleView">
+		   </parameter>
+		   <visibleWhen
+		         checkEnabled="true">
+		      <with
+		            variable="activeWorkbenchWindow.activePerspective">
+		         <equals
+		               value="org.lamport.tla.toolbox.tool.perspective.tlc">
+		         </equals>
+		      </with>
+		   </visibleWhen>
+		</command>
+		</menuContribution>
+	</extension>
 </plugin>
