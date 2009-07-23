@@ -10,6 +10,9 @@ import org.eclipse.ui.application.WorkbenchAdvisor;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
 import org.eclipse.ui.ide.IDE;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
+import org.lamport.tla.toolbox.tool.ToolboxLifecycleException;
+import org.lamport.tla.toolbox.tool.ToolboxLifecycleParticipant;
+import org.lamport.tla.toolbox.util.ToolboxParticipantManger;
 import org.lamport.tla.toolbox.util.UIHelper;
 import org.osgi.framework.Bundle;
 
@@ -36,6 +39,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
      * Image definition from org.eclipse.ui.internal.ide.IDEInternalWorkbenchImages#IMG_DLGBAN_SAVEAS_DLG
      */
     public static final String IMG_DLGBAN_SAVEAS_DLG = "IMG_DLGBAN_SAVEAS_DLG";
+    private ToolboxLifecycleParticipant[] registeredTools;
 
     public WorkbenchWindowAdvisor createWorkbenchWindowAdvisor(IWorkbenchWindowConfigurer configurer)
     {
@@ -83,6 +87,34 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
             UIHelper.getActivePage().closeAllEditors(true);
             UIHelper.switchPerspective(getInitialWindowPerspectiveId());
         }
+        
+        try 
+        {
+            ToolboxParticipantManger.terminate(registeredTools);
+        } catch (ToolboxLifecycleException e)
+        {
+            // TODO
+            e.printStackTrace();
+        }
+        
         return super.preShutdown();
     }
+
+    public void postStartup()
+    {
+        super.postStartup();
+        
+        try 
+        {
+            registeredTools = ToolboxParticipantManger.getRegisteredTools();
+            ToolboxParticipantManger.initialize(registeredTools);
+        } catch (ToolboxLifecycleException e)
+        {
+            // TODO
+            e.printStackTrace();
+        }
+        
+    }
+    
+    
 }
