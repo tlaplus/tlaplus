@@ -51,6 +51,16 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
     public void launch(ILaunchConfiguration config, String mode, ILaunch launch, IProgressMonitor monitor)
             throws CoreException
     {
+        if (!config.exists()) 
+        {
+            throw new CoreException(
+                    new Status(
+                            IStatus.ERROR,
+                            TLCActivator.PLUGIN_ID,
+                            "Tried to start a model that does not exist."));
+        }
+
+        
         // name of the specification
         String specName = config.getAttribute(SPEC_NAME, EMPTY_STRING);
 
