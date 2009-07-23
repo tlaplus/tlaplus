@@ -293,14 +293,6 @@
       
    </extension>
    
-   <extension
-         point="org.lamport.toolbox.tool">
-      <tool
-            name="TLC"
-            classname="org.lamport.tla.toolbox.tool.tlc.TLCActivator"
-            >
-      </tool>
-   </extension>
    
    <extension
          point="org.eclipse.debug.core.launchConfigurationTypes">
@@ -483,6 +475,29 @@
       <persistent
             value="true">
       </persistent>
+   </extension>
+   <extension
+         id="org.lamport.tla.toolbox.tlc.crashedModelMarker"
+         name="Crashed Model Marker"
+         point="org.eclipse.core.resources.markers">
+      <super
+            type="org.eclipse.core.resources.marker">
+      </super>
+      <persistent
+            value="true">
+      </persistent>
+   </extension>
+   <extension
+         point="org.lamport.tla.toolbox.participant">
+      <participant
+            class="org.lamport.tla.toolbox.tool.tlc.TLCLifecycleParticipant">
+      </participant>
+   </extension>
+   <extension
+         point="org.lamport.tla.toolbox.spec">
+      <participant
+            class="org.lamport.tla.toolbox.tool.tlc.TLCSpecLifeCycleParticipant">
+      </participant>
    </extension>
 <!--                                   -->
 <!-- Menus                             -->
