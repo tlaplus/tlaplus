@@ -22,6 +22,7 @@ import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.part.FileEditorInput;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
+import org.lamport.tla.toolbox.tool.tlc.TLCActivator;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationDefaults;
 import org.lamport.tla.toolbox.tool.tlc.launch.TLCModelLaunchDelegate;
@@ -44,7 +45,9 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
     /**
      * 
      */
-    private static final String TLC_MODEL_MARKER = "org.lamport.tla.toolbox.tlc.modelMarker";
+    private static final String TLC_MODEL_IN_USE_MARKER = "org.lamport.tla.toolbox.tlc.modelMarker";
+
+    private static final String TLC_CRASHED_MARKER = "org.lamport.tla.toolbox.tlc.crashedModelMarker";
 
     /**
      * model is being run
@@ -146,8 +149,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
 
         } catch (CoreException e)
         {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            TLCActivator.logError("Error finding the model name", e);
         }
 
         return null;
@@ -175,8 +177,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
             config.doSave();
         } catch (CoreException e)
         {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            TLCActivator.logError("Error saving the model", e);
         }
     }
 
@@ -448,7 +449,6 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
      * Retrieves new valid (not used) identifier from given schema
      * @param schema a naming schema
      * @return a valid identifier
-     * TODO re-implement
      */
     public static synchronized String getValidIdentifier(String schema)
     {
@@ -618,15 +618,15 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
      * @param provider provider for the file representing the model
      * @param runnable a runnable to run if the model is changed 
      */
-    public static IResourceChangeListener installModelModificationResourceChangeListener(
-            final IFileProvider provider, final Runnable runnable)
+    public static IResourceChangeListener installModelModificationResourceChangeListener(final IFileProvider provider,
+            final Runnable runnable)
     {
         // construct the listener
         IResourceChangeListener listener = new IResourceChangeListener() {
             public void resourceChanged(IResourceChangeEvent event)
             {
                 // get the marker changes
-                IMarkerDelta[] markerChanges = event.findMarkerDeltas(TLC_MODEL_MARKER, false);
+                IMarkerDelta[] markerChanges = event.findMarkerDeltas(TLC_MODEL_IN_USE_MARKER, false);
 
                 // usually this list has at most one element
                 for (int i = 0; i < markerChanges.length; i++)
@@ -645,7 +645,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
         // return the listener
         return listener;
     }
-    
+
     /**
      * Checks whether the model is locked or not
      * @param config
@@ -656,23 +656,28 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
     {
         // marker
         IFile resource = config.getFile();
-        IMarker marker;
-        IMarker[] foundMarkers = resource.findMarkers(TLC_MODEL_MARKER, false, IResource.DEPTH_ZERO);
-        if (foundMarkers.length > 0)
+        if (resource.exists())
         {
-            marker = foundMarkers[0];
-            // remove trash if any
-            for (int i = 1; i < foundMarkers.length; i++)
+            IMarker marker;
+            IMarker[] foundMarkers = resource.findMarkers(TLC_MODEL_IN_USE_MARKER, false, IResource.DEPTH_ZERO);
+            if (foundMarkers.length > 0)
             {
-                foundMarkers[i].delete();
-            }
+                marker = foundMarkers[0];
+                // remove trash if any
+                for (int i = 1; i < foundMarkers.length; i++)
+                {
+                    foundMarkers[i].delete();
+                }
 
-            return marker.getAttribute(MODEL_IS_RUNNING, false);
+                return marker.getAttribute(MODEL_IS_RUNNING, false);
+            } else
+            {
+                return false;
+            }
         } else
         {
             return false;
         }
-
         /*
         // persistence property
         String isLocked = config.getFile().getPersistentProperty(new QualifiedName(TLCActivator.PLUGIN_ID, MODEL_IS_RUNNING));
@@ -690,29 +695,107 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
     }
 
     /**
+     * Looks up if the model has a stale marker. The stale marker is installed in case,
+     * if the model is locked, but no TLC is running on this model.
+     * @param config
+     * @return
+     * @throws CoreException
+     */
+    public static boolean isModelStale(ILaunchConfiguration config) throws CoreException
+    {
+        // marker
+        IFile resource = config.getFile();
+        if (resource.exists())
+        {
+            IMarker[] foundMarkers = resource.findMarkers(TLC_CRASHED_MARKER, false, IResource.DEPTH_ZERO);
+            if (foundMarkers.length > 0)
+            {
+                return true;
+            } else
+            {
+                return false;
+            }
+        } else
+        {
+            return false;
+        }
+    }
+
+    /**
+     * Tries to recover model after an abnormal TLC termination
+     * It deletes all temporary files on disk and restores the state to unlocked.
+     * @param config
+     */
+    public static void recoverModel(ILaunchConfigurationWorkingCopy config) throws CoreException
+    {
+        IFile resource = config.getFile();
+        if (resource.exists())
+        {
+            // remove any crashed markers
+            IMarker[] foundMarkers = resource.findMarkers(TLC_CRASHED_MARKER, false, IResource.DEPTH_ZERO);
+            if (foundMarkers.length == 0)
+            {
+                return;
+            }
+
+            ModelHelper.cleanUp(config);
+
+            for (int i = 0; i < foundMarkers.length; i++)
+            {
+                foundMarkers[i].delete();
+            }
+
+            foundMarkers = resource.findMarkers(TLC_MODEL_IN_USE_MARKER, false, IResource.DEPTH_ZERO);
+            for (int i = 0; i < foundMarkers.length; i++)
+            {
+                foundMarkers[i].delete();
+            }
+        }
+    }
+
+    /**
+     * Cleans up the TLC working directory
+     * @param config
+     */
+    private static void cleanUp(ILaunchConfigurationWorkingCopy config) throws CoreException
+    {
+        // TODO
+    }
+
+    /**
+     * Signals that the model is staled
+     */
+    public static void staleModel(ILaunchConfiguration config) throws CoreException
+    {
+        config.getFile().createMarker(TLC_CRASHED_MARKER);
+    }
+
+    /**
      * Signals the start of model execution
      * @param config
      */
     public static void lockModel(ILaunchConfiguration config) throws CoreException
     {
         IFile resource = config.getFile();
-        IMarker marker;
-        IMarker[] foundMarkers = resource.findMarkers(TLC_MODEL_MARKER, false, IResource.DEPTH_ZERO);
-        if (foundMarkers.length > 0)
+        if (resource.exists())
         {
-            marker = foundMarkers[0];
-            // remove trash if any
-            for (int i = 1; i < foundMarkers.length; i++)
+            IMarker marker;
+            IMarker[] foundMarkers = resource.findMarkers(TLC_MODEL_IN_USE_MARKER, false, IResource.DEPTH_ZERO);
+            if (foundMarkers.length > 0)
             {
-                foundMarkers[i].delete();
+                marker = foundMarkers[0];
+                // remove trash if any
+                for (int i = 1; i < foundMarkers.length; i++)
+                {
+                    foundMarkers[i].delete();
+                }
+            } else
+            {
+                marker = resource.createMarker(TLC_MODEL_IN_USE_MARKER);
             }
-        } else
-        {
-            marker = config.getFile().createMarker(TLC_MODEL_MARKER);
+
+            marker.setAttribute(MODEL_IS_RUNNING, true);
         }
-
-        marker.setAttribute(MODEL_IS_RUNNING, true);
-
         /*
         // persistence property
         config.getFile().setPersistentProperty(new QualifiedName(TLCActivator.PLUGIN_ID, MODEL_IS_RUNNING), Boolean.toString(true));
@@ -731,23 +814,25 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
     public static void unlockModel(ILaunchConfiguration config) throws CoreException
     {
         IFile resource = config.getFile();
-        IMarker marker;
-        IMarker[] foundMarkers = resource.findMarkers(TLC_MODEL_MARKER, false, IResource.DEPTH_ZERO);
-        if (foundMarkers.length > 0)
+        if (config.exists())
         {
-            marker = foundMarkers[0];
-            // remove trash if any
-            for (int i = 1; i < foundMarkers.length; i++)
+            IMarker marker;
+            IMarker[] foundMarkers = resource.findMarkers(TLC_MODEL_IN_USE_MARKER, false, IResource.DEPTH_ZERO);
+            if (foundMarkers.length > 0)
             {
-                foundMarkers[i].delete();
+                marker = foundMarkers[0];
+                // remove trash if any
+                for (int i = 1; i < foundMarkers.length; i++)
+                {
+                    foundMarkers[i].delete();
+                }
+            } else
+            {
+                marker = resource.createMarker(TLC_MODEL_IN_USE_MARKER);
             }
-        } else
-        {
-            marker = config.getFile().createMarker(TLC_MODEL_MARKER);
+
+            marker.setAttribute(MODEL_IS_RUNNING, false);
         }
-
-        marker.setAttribute(MODEL_IS_RUNNING, false);
-
         /*
         // persistence property
         config.getFile().setPersistentProperty(new QualifiedName(TLCActivator.PLUGIN_ID, MODEL_IS_RUNNING), Boolean.toString(false));
@@ -788,7 +873,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
     {
         public static final int TYPE_MODEL = 1;
         public static final int TYPE_RESULT = 2;
-        
+
         public IFile getResource(int type);
     }
 
