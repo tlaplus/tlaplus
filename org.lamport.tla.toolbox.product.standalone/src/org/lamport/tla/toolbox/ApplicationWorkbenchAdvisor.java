@@ -12,7 +12,7 @@ import org.eclipse.ui.ide.IDE;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.tool.ToolboxLifecycleException;
 import org.lamport.tla.toolbox.tool.ToolboxLifecycleParticipant;
-import org.lamport.tla.toolbox.util.ToolboxParticipantManger;
+import org.lamport.tla.toolbox.util.ToolboxLifecycleParticipantManger;
 import org.lamport.tla.toolbox.util.UIHelper;
 import org.osgi.framework.Bundle;
 
@@ -90,7 +90,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
         
         try 
         {
-            ToolboxParticipantManger.terminate(registeredTools);
+            ToolboxLifecycleParticipantManger.terminate(registeredTools);
         } catch (ToolboxLifecycleException e)
         {
             // TODO
@@ -106,8 +106,8 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
         
         try 
         {
-            registeredTools = ToolboxParticipantManger.getRegisteredTools();
-            ToolboxParticipantManger.initialize(registeredTools);
+            registeredTools = ToolboxLifecycleParticipantManger.getRegisteredTools();
+            ToolboxLifecycleParticipantManger.initialize(registeredTools);
         } catch (ToolboxLifecycleException e)
         {
             // TODO
