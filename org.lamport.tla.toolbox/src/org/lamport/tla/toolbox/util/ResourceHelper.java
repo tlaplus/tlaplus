@@ -131,6 +131,7 @@ public class ResourceHelper
             return null;
         }
 
+        IProgressMonitor monitor = new NullProgressMonitor();
         IProject project = getProject(name);
         
         // create a project
@@ -169,17 +170,16 @@ public class ResourceHelper
                 description.setBuildSpec(new ICommand[] { command, command2 });
 
                 // create the project
-                // TODO add progress monitor
-                project.create(description, null);
+                project.create(description, monitor);
+                // refresh
+                project.refreshLocal(IResource.DEPTH_INFINITE, monitor);
 
                 // open the project
-                // TODO add progress monitor
-                project.open(null);
+                project.open(monitor);
 
             } catch (CoreException e)
             {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                Activator.logError("Error creating the project " + name, e);
             }
         }
 
@@ -554,6 +554,7 @@ public class ResourceHelper
             description.setLocation(path);
             description.setName(specName);
 
+            project.refreshLocal(IResource.DEPTH_INFINITE, monitor);
             project.copy(description, IResource.NONE | IResource.SHALLOW, monitor);
             project.delete(IResource.NONE, monitor);
 
