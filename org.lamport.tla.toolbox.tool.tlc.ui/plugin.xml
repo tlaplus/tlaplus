@@ -17,6 +17,13 @@
             class="org.lamport.tla.toolbox.tool.tlc.ui.output.ConsoleProcessOutputSink">
       </sink>
    </extension>
+   <extension
+         point="org.lamport.tla.toolbox.tlc.processOutputSink">
+      <sink
+            class="org.lamport.tla.toolbox.tool.tlc.ui.output.ParsingProcessOutputSink">
+      </sink>
+   </extension>
+
 <!-- 
 Console Facory 
 -->
