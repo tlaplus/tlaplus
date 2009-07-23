@@ -228,4 +228,21 @@ public class Activator extends AbstractUIPlugin
         return this.parseStatusContributionItem;
     }
 
+    /**
+     * @param string
+     * @param e
+     */
+    public static void logError(String message, Throwable cause)
+    {
+        getDefault().getLog().log(new Status(IStatus.ERROR, PLUGIN_ID, message, cause));
+    }
+
+    /**
+     * @param string
+     */
+    public static void logDebug(String message)
+    {
+        getDefault().getLog().log(new Status(IStatus.INFO, PLUGIN_ID, message));        
+    }
+
 }
