@@ -12,6 +12,7 @@ import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
+import org.lamport.tla.toolbox.tool.tlc.TLCActivator;
 
 /**
  * Provides information about TLC models (launch configurations)
@@ -31,31 +32,29 @@ public class ModelContentProvider implements ITreeContentProvider
             if (currentSpec != null)
             {
                 ILaunchManager launchManager = DebugPlugin.getDefault().getLaunchManager();
-                ILaunchConfigurationType launchConfigurationType = (ILaunchConfigurationType) parentElement;
+                ILaunchConfigurationType configType = (ILaunchConfigurationType) parentElement;
 
-                Vector modelContributions = new Vector();
+                Vector models = new Vector();
 
                 IProject specProject = currentSpec.getProject();
                 try
                 {
-                    ILaunchConfiguration[] launchConfigurations = launchManager
-                            .getLaunchConfigurations(launchConfigurationType);
-                    for (int i = 0; i < launchConfigurations.length; i++)
+                    ILaunchConfiguration[] configs = launchManager.getLaunchConfigurations(configType);
+                    for (int i = 0; i < configs.length; i++)
                     {
                         // skip launches from other specs (projects)
-                        if (!specProject.equals(launchConfigurations[i].getFile().getProject()))
+                        if (!specProject.equals(configs[i].getFile().getProject()) || !configs[i].exists())
                         {
                             continue;
                         }
-                        modelContributions.add(launchConfigurations[i]);
+                        models.add(configs[i]);
                     }
                 } catch (CoreException e)
                 {
-                    // TODO
-                    e.printStackTrace();
+                    TLCActivator.logError("Error fetching the models", e);
                 }
 
-                return modelContributions.toArray(new ILaunchConfiguration[modelContributions.size()]);
+                return models.toArray(new ILaunchConfiguration[models.size()]);
             }
             return EMPTY_ARRAY;
         } else if (parentElement instanceof ILaunchConfiguration)
@@ -77,14 +76,13 @@ public class ModelContentProvider implements ITreeContentProvider
         {
             try
             {
-                if (((ILaunchConfiguration) element).exists()) 
+                if (((ILaunchConfiguration) element).exists())
                 {
                     return ((ILaunchConfiguration) element).getType();
-                } 
+                }
             } catch (CoreException e)
             {
-                // TODO
-                e.printStackTrace();
+                TLCActivator.logError("Error finding the spec for the model", e);
             }
         }
         return null;
@@ -106,7 +104,7 @@ public class ModelContentProvider implements ITreeContentProvider
 
     public void inputChanged(Viewer viewer, Object oldInput, Object newInput)
     {
-        // npothing to to do
+        // nothing to do
     }
 
 }
