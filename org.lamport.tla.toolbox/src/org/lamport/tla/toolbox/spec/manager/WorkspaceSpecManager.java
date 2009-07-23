@@ -13,15 +13,19 @@ import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
+import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.spec.nature.TLANature;
+import org.lamport.tla.toolbox.tool.SpecEvent;
 import org.lamport.tla.toolbox.ui.handler.CloseSpecHandler;
 import org.lamport.tla.toolbox.ui.handler.OpenSpecHandler;
 import org.lamport.tla.toolbox.ui.property.GenericSelectionProvider;
 import org.lamport.tla.toolbox.util.ResourceHelper;
+import org.lamport.tla.toolbox.util.SpecLifecycleManager;
 import org.lamport.tla.toolbox.util.UIHelper;
 import org.lamport.tla.toolbox.util.pref.IPreferenceConstants;
 import org.lamport.tla.toolbox.util.pref.PreferenceStoreHelper;
@@ -36,13 +40,19 @@ public class WorkspaceSpecManager extends GenericSelectionProvider implements IS
 {
     private Hashtable specStorage = new Hashtable(47);
     private Spec loadedSpec = null;
+    private SpecLifecycleManager lifecycleManager = null;
 
     /**
      * Constructor
      */
     public WorkspaceSpecManager()
     {
+        // initialize the spec life cycle manager
+        lifecycleManager = new SpecLifecycleManager();
+        lifecycleManager.initialize();
 
+        IProgressMonitor monitor = null;
+        
         IWorkspace ws = ResourcesPlugin.getWorkspace();
 
         String specLoadedName = PreferenceStoreHelper.getInstancePreferenceStore().getString(
@@ -72,13 +82,20 @@ public class WorkspaceSpecManager extends GenericSelectionProvider implements IS
                 } else
                 {
                     // DELETE closed projects
-                    projects[i].delete(true, null);
+                    projects[i].delete(IResource.FORCE | IResource.ALWAYS_DELETE_PROJECT_CONTENT, monitor);
                 }
             }
+            
+            if (specLoadedName != null && !specLoadedName.equals("") && this.loadedSpec == null) 
+            {
+                // there was a spec loaded but it was not found
+                // explicit un-set it
+                setSpecLoaded(null);
+            }
+            
         } catch (CoreException e)
         {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            Activator.logError("Error initializing specification workspace", e);
         }
 
         ws.addResourceChangeListener(this);
@@ -111,6 +128,7 @@ public class WorkspaceSpecManager extends GenericSelectionProvider implements IS
     public void addSpec(Spec spec)
     {
         specStorage.put(spec.getName(), spec);
+        lifecycleManager.sendEvent(new SpecEvent(spec, SpecEvent.TYPE_CREATE));
     }
 
     /*
@@ -166,14 +184,24 @@ public class WorkspaceSpecManager extends GenericSelectionProvider implements IS
      * (non-Javadoc)
      * @see org.lamport.tla.toolbox.spec.manager.ISpecManager#setSpecLoaded(toolbox.spec.Spec)
      */
-    public void setSpecLoaded(Spec loadedSpec)
+    public void setSpecLoaded(Spec spec)
     {
-        this.loadedSpec = loadedSpec;
+        if (spec == null) 
+        {
+            // close a spec
+            this.lifecycleManager.sendEvent(new SpecEvent(this.loadedSpec, SpecEvent.TYPE_CLOSE));
+        } else 
+        {
+            // open a spec
+            this.lifecycleManager.sendEvent(new SpecEvent(spec, SpecEvent.TYPE_OPEN));
+        }
+        
+        this.loadedSpec = spec;
         if (this.loadedSpec != null)
         {
             // touch the spec
             this.loadedSpec.setLastModified();
-        }
+        } 
     }
 
     /*
@@ -203,6 +231,7 @@ public class WorkspaceSpecManager extends GenericSelectionProvider implements IS
      */
     public void renameSpec(Spec spec, String newName)
     {
+        this.lifecycleManager.sendEvent(new SpecEvent(spec, SpecEvent.TYPE_RENAME));
         boolean setBack = false;
         if (this.loadedSpec == spec)
         {
@@ -239,6 +268,7 @@ public class WorkspaceSpecManager extends GenericSelectionProvider implements IS
      */
     public void removeSpec(Spec spec)
     {
+        this.lifecycleManager.sendEvent(new SpecEvent(spec, SpecEvent.TYPE_DELETE));
         if (this.loadedSpec == spec)
         {
             // deleting current spec...

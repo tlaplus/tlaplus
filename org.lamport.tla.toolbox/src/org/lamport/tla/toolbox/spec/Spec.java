@@ -9,6 +9,7 @@ import java.util.List;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IAdapterManager;
@@ -65,7 +66,6 @@ public class Spec implements IAdaptable
     public static Spec createNewSpec(String name, String rootFilename)
     {
         IProject project = ResourceHelper.getProject(name, rootFilename);
-
         PreferenceStoreHelper.storeRootFilename(project, rootFilename);
 
         Spec spec = new Spec(project);
@@ -81,6 +81,8 @@ public class Spec implements IAdaptable
         this.rootFile = PreferenceStoreHelper.readProjectRootFile(project);
         this.specObj = null;
         this.status = IParseConstants.UNPARSED;
+        
+        Assert.isNotNull(this.rootFile);
     }
 
     /**
