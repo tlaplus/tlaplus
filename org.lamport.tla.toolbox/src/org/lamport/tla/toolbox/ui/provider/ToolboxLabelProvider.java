@@ -1,5 +1,6 @@
 package org.lamport.tla.toolbox.ui.provider;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.graphics.Image;
@@ -16,23 +17,27 @@ import org.lamport.tla.toolbox.spec.Spec;
  * @author Simon Zambrovski
  * @version $Id$
  */
-public class ToolboxLabelProvider 
-extends LabelProvider implements ILabelProvider, IDescriptionProvider
+public class ToolboxLabelProvider extends LabelProvider implements ILabelProvider, IDescriptionProvider
 {
     public String getText(Object element)
     {
-        if (element == null) 
+        if (element == null)
         {
             return null;
         }
         if (element instanceof Spec)
         {
-            Spec spec = (Spec)element;
-            return spec.getName() + " [ " +spec.getRootFile().getName() + " ]";
-        } else if (element instanceof Module) 
+            Spec spec = (Spec) element;
+            IFile root = spec.getRootFile();
+            if (root == null)
+            {
+                return null;
+            }
+            return spec.getName() + " [ " + root.getName() + " ]";
+        } else if (element instanceof Module)
         {
-            return ((Module)element).getModuleName();
-        } 
+            return ((Module) element).getModuleName();
+        }
         return null;
     }
 
@@ -41,23 +46,23 @@ extends LabelProvider implements ILabelProvider, IDescriptionProvider
         String text = getText(element);
         return "This is a description of " + text;
     }
-    
+
     public Image getImage(Object element)
     {
-        if (element == null) 
+        if (element == null)
         {
             return null;
         }
-        if (element instanceof Spec) 
+        if (element instanceof Spec)
         {
-            if (((Spec)element) == Activator.getSpecManager().getSpecLoaded()) 
+            if (((Spec) element) == Activator.getSpecManager().getSpecLoaded())
             {
                 return PlatformUI.getWorkbench().getSharedImages().getImage(SharedImages.IMG_OBJ_PROJECT);
             }
             return PlatformUI.getWorkbench().getSharedImages().getImage(SharedImages.IMG_OBJ_PROJECT_CLOSED);
-        } else if (element instanceof Module) 
+        } else if (element instanceof Module)
         {
-            
+
             return PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FILE);
         }
         return null;
