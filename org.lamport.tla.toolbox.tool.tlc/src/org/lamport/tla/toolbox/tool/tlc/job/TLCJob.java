@@ -12,6 +12,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.jface.action.Action;
+import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationDefaults;
 import org.lamport.tla.toolbox.util.ResourceHelper;
@@ -24,6 +25,10 @@ import org.lamport.tla.toolbox.util.ResourceHelper;
 public abstract class TLCJob extends AbstractJob implements IModelConfigurationConstants, IModelConfigurationDefaults
 {
 
+    public static class AllJobMatcher
+    {
+    }
+
     protected static final int STEP = 30;
     protected static final long TIMEOUT = 1000 * 1;
     protected IFile rootModule;
@@ -33,6 +38,7 @@ public abstract class TLCJob extends AbstractJob implements IModelConfigurationC
     protected int workers = 1;
     protected ILaunch launch;
     protected String modelName;
+    private final String specName;
 
     protected boolean appendConsole = true;
 
@@ -45,6 +51,7 @@ public abstract class TLCJob extends AbstractJob implements IModelConfigurationC
     public TLCJob(String specName, String modelName, ILaunch launch)
     {
         super("TLC run for " + modelName);
+        this.specName = specName;
         this.modelName = modelName;
 
         IProject project = ResourceHelper.getProject(specName);
@@ -165,5 +172,24 @@ public abstract class TLCJob extends AbstractJob implements IModelConfigurationC
      * @return true, if TLC is still running
      */
     public abstract boolean checkAndSleep();
+
+    /**
+     * Matches the spec (by name) or generic to the AllJobMatcher
+     */
+    public boolean belongsTo(Object family)
+    {
+        if (family != null)
+        {
+            if (family instanceof Spec)
+            {
+                Spec spec = (Spec) family;
+                return (spec.getName().equals(this.specName));
+            } else if (family instanceof AllJobMatcher)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
 
 }
