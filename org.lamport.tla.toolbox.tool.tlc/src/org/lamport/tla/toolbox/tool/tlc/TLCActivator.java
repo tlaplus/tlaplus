@@ -10,8 +10,6 @@ import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.navigator.CommonNavigator;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
-import org.lamport.tla.toolbox.tool.IToolboxContribution;
-import org.lamport.tla.toolbox.tool.ToolLifecycleException;
 import org.lamport.tla.toolbox.tool.tlc.ui.modelexplorer.ModelExplorer;
 import org.lamport.tla.toolbox.util.UIHelper;
 import org.osgi.framework.BundleContext;
@@ -19,7 +17,7 @@ import org.osgi.framework.BundleContext;
 /**
  * The activator class controls the plug-in life cycle
  */
-public class TLCActivator extends AbstractUIPlugin implements IToolboxContribution {
+public class TLCActivator extends AbstractUIPlugin {
 
 	// The plug-in ID
 	public static final String PLUGIN_ID = "org.lamport.tla.toolbox.tool.tlc";
@@ -30,7 +28,8 @@ public class TLCActivator extends AbstractUIPlugin implements IToolboxContributi
 	/**
 	 * The constructor
 	 */
-	public TLCActivator() {
+	public TLCActivator() 
+	{
 	}
 
 	/*
@@ -98,25 +97,6 @@ public class TLCActivator extends AbstractUIPlugin implements IToolboxContributi
 	public static ImageDescriptor getImageDescriptor(String path) {
 		return imageDescriptorFromPlugin(PLUGIN_ID, path);
 	}
-
-    /** 
-     * Life cycle method executed by the toolbox 
-     * @see org.lamport.tla.toolbox.tool.IToolboxContribution#initialize()
-     */
-    public void initialize() throws ToolLifecycleException
-    {
-        System.out.println("we are initilized!");
-        
-    }
-
-    /** 
-     * Life cycle method executed by the toolbox
-     * @see org.lamport.tla.toolbox.tool.IToolboxContribution#terminate()
-     */
-    public void terminate() throws ToolLifecycleException
-    {
-        System.out.println("we are terminated!");
-    }
 
     /**
      * Logs an error
