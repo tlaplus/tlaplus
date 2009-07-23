@@ -459,7 +459,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         toolkit.createLabel(behaviorArea, "Spec:");
         specSource = FormHelper.createSourceViewer(toolkit, behaviorArea, SWT.NONE | SWT.SINGLE);
         gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.heightHint = 16;
+        gd.heightHint = 18;
         specSource.getTextWidget().setLayoutData(gd);
         specSource.getTextWidget().addModifyListener(whatIsTheSpecListener);
         specSource.getTextWidget().addModifyListener(widgetActivatingListener);
@@ -475,7 +475,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         toolkit.createLabel(behaviorArea, "Init:");
         initFormulaSource = FormHelper.createSourceViewer(toolkit, behaviorArea, SWT.NONE | SWT.SINGLE);
         gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.heightHint = 16;
+        gd.heightHint = 18;
         initFormulaSource.getTextWidget().setLayoutData(gd);
         initFormulaSource.getTextWidget().addModifyListener(whatIsTheSpecListener);
         initFormulaSource.getTextWidget().addModifyListener(widgetActivatingListener);
@@ -484,7 +484,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         toolkit.createLabel(behaviorArea, "Next:");
         nextFormulaSource = FormHelper.createSourceViewer(toolkit, behaviorArea, SWT.NONE | SWT.SINGLE);
         gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.heightHint = 16;
+        gd.heightHint = 18;
         nextFormulaSource.getTextWidget().setLayoutData(gd);
         nextFormulaSource.getTextWidget().addModifyListener(whatIsTheSpecListener);
         nextFormulaSource.getTextWidget().addModifyListener(widgetActivatingListener);
@@ -493,7 +493,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         toolkit.createLabel(behaviorArea, "Fairness:");
         fairnessFormulaSource = FormHelper.createSourceViewer(toolkit, behaviorArea, SWT.NONE | SWT.SINGLE);
         gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.heightHint = 16;
+        gd.heightHint = 18;
         fairnessFormulaSource.getTextWidget().setLayoutData(gd);
         fairnessFormulaSource.getTextWidget().addModifyListener(whatIsTheSpecListener);
         fairnessFormulaSource.getTextWidget().addModifyListener(widgetActivatingListener);

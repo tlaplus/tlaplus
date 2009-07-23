@@ -40,6 +40,7 @@ import org.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.IgnoringListener;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.SemanticHelper;
+import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 import tla2sany.semantic.SymbolNode;
@@ -54,6 +55,7 @@ import tla2sany.st.Location;
 public abstract class BasicFormPage extends FormPage implements IModelConfigurationConstants,
         IModelConfigurationDefaults, ISectionManager, IDoRunContainer
 {
+    public static final String CRASHED_TITLE = " ( model checking has crashed )";
     public static final String RUNNING_TITLE = " ( model checking is in progress )";
     protected ListenerList dirtyPartListeners = new ListenerList();
     protected String helpId = null;
@@ -143,6 +145,7 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
 
         // head construction ---------------------
         IToolBarManager toolbarManager = formWidget.getForm().getToolBarManager();
+
         // run button
         toolbarManager.add(new DynamicContributionItem(new RunAction()));
 
@@ -428,7 +431,7 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
     {
         ((ModelEditor) getEditor()).getSectionManager().expandSection(sectionId);
     }
-    
+
     /**
      * Enables or disables the section
      * @param sectionId
@@ -458,7 +461,7 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
     public void setAllSectionsEnabled(boolean enabled)
     {
         String[] sectionIds = ((ModelEditor) getEditor()).getSectionManager().getSectionsForPage(getId());
-        for (int i = 0; i < sectionIds.length; i++) 
+        for (int i = 0; i < sectionIds.length; i++)
         {
             enableSection(sectionIds[i], enabled);
         }
@@ -485,29 +488,44 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
         IManagedForm mForm = this.getManagedForm();
         if (mForm != null)
         {
-            // refresh the tool-bar
-            IToolBarManager toolBarManager = mForm.getForm().getToolBarManager();
-            toolBarManager.markDirty();
-            toolBarManager.update(true);
+            IToolBarManager toolbarManager = mForm.getForm().getToolBarManager();
 
             // get the usage status
             boolean modelInUse = isModelInUse();
-            
+
             // refresh the title
             String title = mForm.getForm().getText();
-            int titleIndex = title.indexOf(RUNNING_TITLE); 
-            if (modelInUse) 
+            int titleIndex = Math.max(title.indexOf(RUNNING_TITLE), title.indexOf(CRASHED_TITLE));
+            // restore the title
+            if (titleIndex != -1) 
             {
-                if (titleIndex == -1) 
+                title = title.substring(0, titleIndex);
+            }
+            
+            if (modelInUse)
+            {
+                if (isModelStale())
+                {
+                    mForm.getForm().setText(title + CRASHED_TITLE);
+                    // the model crashed
+                    toolbarManager.add(new DynamicContributionItem(new ModelRecoveryAction()));
+                } else 
                 {
                     mForm.getForm().setText(title + RUNNING_TITLE);
                 }
-            } else {
-                if (titleIndex != -1) 
+            } else
+            {
+                // restore the title, only if we need
+                if (titleIndex != -1)
                 {
-                    mForm.getForm().setText(title.substring(0, titleIndex));
+                    mForm.getForm().setText(title);
                 }
             }
+
+            // refresh the tool-bar
+            toolbarManager.markDirty();
+            toolbarManager.update(true);
+
             
             // refresh enablement status
             setAllSectionsEnabled(!modelInUse);
@@ -522,7 +540,12 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
      */
     public boolean isModelInUse()
     {
-        return ((ModelEditor)getEditor()).isModelInUse();
+        return ((ModelEditor) getEditor()).isModelInUse();
+    }
+
+    public boolean isModelStale()
+    {
+        return ((ModelEditor) getEditor()).isModelStale();
     }
 
     /**
@@ -539,7 +562,7 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
 
         public void run()
         {
-            System.out.println("Run");
+            // System.out.println("Run");
             doRun(MODE_RUN);
         }
 
@@ -549,6 +572,33 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
         public boolean isEnabled()
         {
             return !isModelInUse();
+        }
+    }
+
+    class ModelRecoveryAction extends Action
+    {
+        ModelRecoveryAction()
+        {
+            super("Restore model", TLCUIActivator.imageDescriptorFromPlugin(TLCUIActivator.PLUGIN_ID,
+                    "icons/full/loop_obj.gif"));
+            this.setDescription("Restore model");
+            this.setToolTipText("Restore the model after the TLC crashed");
+        }
+
+        public void run()
+        {
+            try
+            {
+                ModelHelper.recoverModel(((ModelEditor) getEditor()).getConfig());
+            } catch (CoreException e)
+            {
+                TLCUIActivator.logError("Error recovering the model", e);
+            }
+        }
+
+        public boolean isEnabled()
+        {
+            return isModelStale();
         }
     }
 }
