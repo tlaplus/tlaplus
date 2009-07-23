@@ -92,6 +92,7 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
         if (finput != null)
         {
             ILaunchConfiguration configuration = ModelHelper.getModelByFile(finput.getFile());
+            
             try
             {
                 configurationCopy = configuration.getWorkingCopy();
@@ -320,6 +321,22 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
         try
         {
             return ModelHelper.isModelLocked(getConfig());
+        } catch (CoreException e)
+        {
+            TLCUIActivator.logError("Error determining model status", e);
+            return true;
+        }
+    }
+
+    /**
+     * Retrieves if the working copy of the model is still left 
+     * in in-use status, even if no process is running on it anymore
+     */
+    public boolean isModelStale()
+    {
+        try
+        {
+            return ModelHelper.isModelStale(getConfig());
         } catch (CoreException e)
         {
             TLCUIActivator.logError("Error determining model status", e);
