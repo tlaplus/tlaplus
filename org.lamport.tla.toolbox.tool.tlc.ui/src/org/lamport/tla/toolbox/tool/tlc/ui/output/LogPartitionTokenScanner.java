@@ -18,12 +18,15 @@ public class LogPartitionTokenScanner extends RuleBasedPartitionScanner
 {
 
     public static final String TLA_PARTITIONING = "__tlc_output_partitioning"; //$NON-NLS-1$
-
+    
+    
     public static final String COVERAGE = "__tlc_coverage"; //$NON-NLS-1$
     public static final String INIT_END = "__tlc_init_end"; //$NON-NLS-1$
     public static final String INIT_START = "__tlc_init_start"; //$NON-NLS-1$
     public static final String OUTPUT = "__tlc_output"; //$NON-NLS-1$
     public static final String PROGRESS = "__tlc_progress"; //$NON-NLS-1$
+    
+    public static final String DEFAULT_CONTENT_TYPE = OUTPUT; 
     public static final String[] CONTENT_TYPES = new String[] { COVERAGE, INIT_START, INIT_END, OUTPUT, PROGRESS };
 
     public LogPartitionTokenScanner()
@@ -42,9 +45,9 @@ public class LogPartitionTokenScanner extends RuleBasedPartitionScanner
         IToken progress = new Token(PROGRESS);
         
         // output produced by the print statements
-        IToken output = new Token(OUTPUT);
+        // IToken output = new Token(OUTPUT);
 
-        rules.add(new MultiLineRule("The coverage statistics :", "End of statistics.", coverage, (char) 0, false));
+        rules.add(new MultiLineRule("The coverage statistics", "End of statistics", coverage, (char) 0, false));
         rules.add(new SingleLineRule("Progress(", "", progress));
         rules.add(new SingleLineRule("Finished computing initial states:", "", init_end));
         rules.add(new SingleLineRule("Computing initial states...", "", init_start));
@@ -53,7 +56,7 @@ public class LogPartitionTokenScanner extends RuleBasedPartitionScanner
         setPredicateRules((IPredicateRule[]) rules.toArray(new IPredicateRule[rules.size()]));
 
         // output is default
-        setDefaultReturnToken(output);
+        setDefaultReturnToken(new Token(DEFAULT_CONTENT_TYPE));
     }
 
     public IToken nextToken()
