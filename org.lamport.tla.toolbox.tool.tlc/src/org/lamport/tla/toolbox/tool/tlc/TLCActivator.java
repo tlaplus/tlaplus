@@ -1,17 +1,7 @@
 package org.lamport.tla.toolbox.tool.tlc;
 
-import org.eclipse.core.resources.IResourceChangeEvent;
-import org.eclipse.core.resources.IResourceChangeListener;
-import org.eclipse.core.resources.IWorkspace;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.ui.IViewPart;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.navigator.CommonNavigator;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
-import org.lamport.tla.toolbox.tool.tlc.ui.modelexplorer.ModelExplorer;
-import org.lamport.tla.toolbox.util.UIHelper;
 import org.osgi.framework.BundleContext;
 
 /**
@@ -39,34 +29,6 @@ public class TLCActivator extends AbstractUIPlugin {
 	public void start(BundleContext context) throws Exception {
 		super.start(context);
 		plugin = this;
-
-        // register the listeners
-        IWorkspace workspace = ResourcesPlugin.getWorkspace();
-
-        // update CNF viewers
-
-        workspace.addResourceChangeListener(new IResourceChangeListener() {
-
-            public void resourceChanged(IResourceChangeEvent event)
-            {
-                UIHelper.runUIAsync(new Runnable() {
-
-                    public void run()
-                    {
-                        IWorkbenchPage page = UIHelper.getActivePage();
-                        if (page != null) 
-                        {
-                            IViewPart findView = UIHelper.getActivePage().findView(ModelExplorer.VIEW_ID);
-                            if (findView != null && findView instanceof CommonNavigator) 
-                            {
-                                ((CommonNavigator)findView).getCommonViewer().refresh();
-                            }
-                        }
-                    }
-                });
-            }
-        });
-
 	}
 
 	/*
@@ -85,17 +47,6 @@ public class TLCActivator extends AbstractUIPlugin {
 	 */
 	public static TLCActivator getDefault() {
 		return plugin;
-	}
-
-	/**
-	 * Returns an image descriptor for the image file at the given
-	 * plug-in relative path
-	 *
-	 * @param path the path
-	 * @return the image descriptor
-	 */
-	public static ImageDescriptor getImageDescriptor(String path) {
-		return imageDescriptorFromPlugin(PLUGIN_ID, path);
 	}
 
     /**
