@@ -9,7 +9,6 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.eclipse.debug.core,
  org.lamport.tla.toolbox,
- org.eclipse.ui.navigator;bundle-version="3.3.101",
  org.eclipse.jdt.launching;bundle-version="3.4.1"
 Bundle-RequiredExecutionEnvironment: J2SE-1.4
 Bundle-ActivationPolicy: lazy
