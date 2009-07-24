@@ -14,19 +14,205 @@
    <extension
          point="org.lamport.tla.toolbox.tlc.processOutputSink">
       <sink
-            class="org.lamport.tla.toolbox.tool.tlc.ui.output.ConsoleProcessOutputSink">
+            class="org.lamport.tla.toolbox.tool.tlc.ui.output.ParsingProcessOutputSink">
       </sink>
+   </extension>
+   <extension
+         point="org.eclipse.ui.commands">
+      <category
+            description="Commands contributed by the TLC model checker"
+            id="toolbox.tool.tlc.commands.category"
+            name="TLC Commands">
+      </category>
+      <command
+            categoryId="toolbox.tool.tlc.commands.category"
+            description="Creates a new model for current specification."
+            id="toolbox.tool.tlc.commands.model.new"
+            name="New Model...">
+      </command>
+      <command
+            categoryId="toolbox.tool.tlc.commands.category"
+            description="Opens existing model for current specification."
+            id="toolbox.tool.tlc.commands.model.open"
+            name="Open Model...">
+         <commandParameter
+               id="toolbox.tool.tlc.commands.model.open.param"
+               name="modelLaunchName"
+               optional="false">
+         </commandParameter>
+      </command>
+      <command
+            categoryId="toolbox.tool.tlc.commands.category"
+            description="Deletes existing model."
+            id="toolbox.tool.tlc.commands.model.delete"
+            name="Delete Model">
+         <commandParameter
+               id="toolbox.tool.tlc.commands.model.delete.param"
+               name="modelName"
+               optional="false">
+         </commandParameter>
+      </command>
+      <command
+            categoryId="toolbox.tool.tlc.commands.category"
+            description="Creates a copy of a model."
+            id="toolbox.tool.tlc.commands.model.clone"
+            name="Clone Model">
+         <commandParameter
+               id="toolbox.tool.tlc.commands.model.open.param.modelName"
+               name="modelName"
+               optional="false">
+         </commandParameter>
+         <commandParameter
+               id="toolbox.tool.tlc.commands.model.open.param.modelCloneName"
+               name="modelCloneName"
+               optional="false">
+         </commandParameter>
+      </command>
+      <command
+            categoryId="toolbox.tool.tlc.commands.category"
+            description="Creates a copy of selected model."
+            id="toolbox.tool.tlc.commands.model.clone.delegate"
+            name="Clone Model">
+      </command>
    </extension>
    <extension
          point="org.lamport.tla.toolbox.tlc.processOutputSink">
       <sink
-            class="org.lamport.tla.toolbox.tool.tlc.ui.output.ParsingProcessOutputSink">
+            class="org.lamport.tla.toolbox.tool.tlc.ui.output.ConsoleProcessOutputSink">
       </sink>
    </extension>
-
-<!-- 
-Console Facory 
--->
+   <extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            locationURI="menu:toolbox.window.menu?after=toolbox.window.tools.separator">
+         <command
+               commandId="toolbox.command.switchperspective"
+               icon="icons/full/choice_sc_obj.gif"
+               id="toolbox.menu.switchperspective-tlc"
+               label="TLC Model Checker"
+               mnemonic="T"
+               mode="FORCE_TEXT"
+               style="radio"
+               tooltip="Switches to TLC mode">
+            <parameter
+                  name="toolbox.switchperspective.id"
+                  value="org.lamport.tla.toolbox.tool.perspective.tlc">
+            </parameter>
+         </command>
+      </menuContribution>
+      <menuContribution
+            locationURI="menu:org.eclipse.ui.main.menu?after=toolbox.tools.separator">
+         <menu
+               id="toolbox.toolmenus.tlc"
+               label="TLC Model Checker"
+               mnemonic="M"
+               tooltip="TLC Model Checker Actions">
+            <command
+                  commandId="toolbox.tool.tlc.commands.model.new"
+                  id="toolbox.tool.tlc.modellaunch.new"
+                  mnemonic="N">
+               <visibleWhen
+                     checkEnabled="true">
+                  <with
+                        variable="activeWorkbenchWindow.activePerspective">
+                     <equals
+                           value="org.lamport.tla.toolbox.tool.perspective.tlc">
+                     </equals>
+                  </with>
+               </visibleWhen>
+            </command>
+            <menu
+                  id="toolbox.tool.tlc.modellaunch.open"
+                  label="Open Model"
+                  mnemonic="O">
+               <dynamic
+                     class="org.lamport.tla.toolbox.tool.tlc.ui.modelexplorer.ModelContributionItem"
+                     id="toolbox.tool.tlc.model.open.dynamic">
+               </dynamic>
+               <visibleWhen
+                     checkEnabled="true">
+                  <with
+                        variable="activeWorkbenchWindow.activePerspective">
+                     <equals
+                           value="org.lamport.tla.toolbox.tool.perspective.tlc">
+                     </equals>
+                  </with>
+               </visibleWhen>
+            </menu>
+            <separator
+                  name="org.lamport.tla.toolbox.tool.tlc.separator"
+                  visible="true">
+            </separator>
+         </menu>
+      </menuContribution>
+   </extension>
+   <extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            locationURI="popup:toolbox.explorer.popup?after=group.new">
+         <command
+               commandId="toolbox.tool.tlc.commands.model.new"
+               icon="icons/full/choice_sc_obj.gif"
+               id="toolbox.popupmenu.model.new"
+               label="New Model"
+               mnemonic="N"
+               style="push">
+         </command>
+      </menuContribution>
+      <menuContribution
+            locationURI="popup:toolbox.explorer.popup?after=group.edit">
+         <command
+               commandId="toolbox.tool.tlc.commands.model.clone.delegate"
+               icon="icons/full/copy_edit.gif"
+               id="toolbox.popupmenu.model.clone"
+               label="Clone"
+               mnemonic="C"
+               style="push">
+         </command>
+      </menuContribution>
+   </extension>
+   <extension
+         point="org.eclipse.ui.navigator.viewer">
+      <viewer
+            viewerId="toolbox.view.ToolboxExplorer">
+      </viewer>
+      <viewerContentBinding
+            viewerId="toolbox.view.ToolboxExplorer">
+         <includes>
+            <contentExtension
+                  isRoot="false"
+                  pattern="toolbox.content.ModelContent">
+            </contentExtension>
+         </includes>
+      </viewerContentBinding>
+   </extension>
+   <extension
+         point="org.eclipse.ui.navigator.navigatorContent">
+      <navigatorContent
+            activeByDefault="true"
+            contentProvider="org.lamport.tla.toolbox.tool.tlc.ui.modelexplorer.ModelContentProvider"
+            icon="icons/full/choice_sc_obj.gif"
+            id="toolbox.content.ModelContent"
+            labelProvider="org.lamport.tla.toolbox.tool.tlc.ui.modelexplorer.ModelLabelProvider"
+            name="TLC Models"
+            priority="normal"
+            providesSaveables="false">
+         <possibleChildren>
+            <or>
+               <instanceof
+                     value="org.eclipse.debug.core.ILaunchConfiguration">
+               </instanceof>
+            </or>
+         </possibleChildren>
+         <triggerPoints>
+            <or>
+               <instanceof
+                     value="org.lamport.tla.toolbox.spec.Spec">
+               </instanceof>
+            </or>
+         </triggerPoints>
+      </navigatorContent>
+   </extension>
    <extension
          point="org.eclipse.ui.console.consoleFactories">
       <consoleFactory
@@ -64,4 +250,165 @@ Console Facory
 		</command>
 		</menuContribution>
 	</extension>
+   <extension
+         point="org.eclipse.ui.perspectives">
+      <perspective
+            class="org.lamport.tla.toolbox.tool.tlc.ui.TLCPerspective"
+            icon="icons/full/choice_sc_obj.gif"
+            id="org.lamport.tla.toolbox.tool.perspective.tlc"
+            name="TLC Model Checker">
+      </perspective>
+   </extension>
+   <extension
+         point="org.eclipse.ui.perspectiveExtensions">
+      <perspectiveExtension
+            targetID="org.lamport.tla.toolbox.tool.perspective.tlc">
+         <view
+               closeable="true"
+               id="toolbox.view.ProblemView"
+               minimized="false"
+               moveable="true"
+               ratio="0.75"
+               relationship="right"
+               relative="org.eclipse.ui.editorss"
+               showTitle="true"
+               standalone="false"
+               visible="false">
+         </view>
+         <view
+               closeable="false"
+               id="toolbox.view.ToolboxExplorer"
+               minimized="true"
+               moveable="false"
+               ratio="0.25"
+               relationship="fast"
+               relative="org.eclipse.ui.editorss"
+               showTitle="true"
+               standalone="true"
+               visible="false">
+         </view>
+         <view
+               closeable="true"
+               id="org.eclipse.ui.console.ConsoleView"
+               moveable="true"
+               ratio="0.75"
+               relationship="bottom"
+               relative="org.eclipse.ui.editorss"
+               showTitle="true"
+               standalone="false"
+               visible="false">
+         </view>
+      </perspectiveExtension>
+   </extension>
+
+<!-- 
+Console Facory 
+-->
+   <extension
+         point="org.eclipse.ui.handlers">
+      <handler
+            class="org.lamport.tla.toolbox.tool.tlc.handlers.NewModelHandler"
+            commandId="toolbox.tool.tlc.commands.model.new">
+      </handler>
+      <handler
+            class="org.lamport.tla.toolbox.tool.tlc.handlers.OpenModelHandler"
+            commandId="toolbox.tool.tlc.commands.model.open">
+      </handler>
+      <handler
+            class="org.lamport.tla.toolbox.tool.tlc.handlers.DeleteModelHandler"
+            commandId="toolbox.tool.tlc.commands.model.delete">
+      </handler>
+      <handler
+            class="org.lamport.tla.toolbox.tool.tlc.handlers.CloneModelHandler"
+            commandId="toolbox.tool.tlc.commands.model.clone">
+      </handler>
+      <handler
+            class="org.lamport.tla.toolbox.tool.tlc.handlers.OpenModelHandlerDelegate"
+            commandId="toolbox.command.cnf.open.delegate">
+         <enabledWhen>
+            <count
+                  value="1">
+            </count>
+         </enabledWhen>
+         <activeWhen>
+            <with
+                  variable="selection">
+               <iterate
+                     ifEmpty="false"
+                     operator="or">
+                  <instanceof
+                        value="org.eclipse.debug.core.ILaunchConfiguration">
+                  </instanceof>
+               </iterate>
+            </with>
+         </activeWhen>
+      </handler>
+      <handler
+            class="org.lamport.tla.toolbox.tool.tlc.handlers.RenameModelHandlerDelegate"
+            commandId="org.eclipse.ui.edit.rename">
+         <enabledWhen>
+            <and>
+               <count
+                     value="1">
+               </count>
+            </and>
+         </enabledWhen>
+         <activeWhen>
+            <with
+                  variable="selection">
+               <iterate
+                     ifEmpty="false"
+                     operator="or">
+                  <instanceof
+                        value="org.eclipse.debug.core.ILaunchConfiguration">
+                  </instanceof>
+               </iterate>
+            </with>
+         </activeWhen>
+      </handler>
+      <handler
+            class="org.lamport.tla.toolbox.tool.tlc.handlers.DeleteModelHandlerDelegate"
+            commandId="org.eclipse.ui.edit.delete">
+         <enabledWhen>
+            <not>
+               <count
+                     value="0">
+               </count>
+            </not>
+         </enabledWhen>
+         <activeWhen>
+            <with
+                  variable="selection">
+               <iterate
+                     ifEmpty="false"
+                     operator="or">
+                  <instanceof
+                        value="org.eclipse.debug.core.ILaunchConfiguration">
+                  </instanceof>
+               </iterate>
+            </with>
+         </activeWhen>
+      </handler>
+      <handler
+            class="org.lamport.tla.toolbox.tool.tlc.handlers.CloneModelHandlerDelegate"
+            commandId="toolbox.tool.tlc.commands.model.clone.delegate">
+         <enabledWhen>
+            <count
+                  value="1">
+            </count>
+         </enabledWhen>
+         <activeWhen>
+            <with
+                  variable="selection">
+               <iterate
+                     ifEmpty="false"
+                     operator="or">
+                  <instanceof
+                        value="org.eclipse.debug.core.ILaunchConfiguration">
+                  </instanceof>
+               </iterate>
+            </with>
+         </activeWhen>
+      </handler>
+   </extension>
 </plugin>

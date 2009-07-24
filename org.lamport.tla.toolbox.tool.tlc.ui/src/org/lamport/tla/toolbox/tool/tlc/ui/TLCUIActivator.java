@@ -1,6 +1,7 @@
 package org.lamport.tla.toolbox.tool.tlc.ui;
 
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
@@ -68,6 +69,18 @@ public class TLCUIActivator extends AbstractUIPlugin
         }
         return cFont;
     }
+    
+    /**
+     * Returns an image descriptor for the image file at the given
+     * plug-in relative path
+     *
+     * @param path the path
+     * @return the image descriptor
+     */
+    public static ImageDescriptor getImageDescriptor(String path) {
+        return imageDescriptorFromPlugin(PLUGIN_ID, path);
+    }
+
 
     /**
      * Logs an error
@@ -79,4 +92,6 @@ public class TLCUIActivator extends AbstractUIPlugin
         getDefault().getLog().log(new Status(Status.ERROR, TLCUIActivator.PLUGIN_ID, message, e));
         
     }
+    
+    
 }
