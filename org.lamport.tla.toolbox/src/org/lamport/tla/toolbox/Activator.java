@@ -20,7 +20,7 @@ import org.lamport.tla.toolbox.spec.manager.WorkspaceSpecManager;
 import org.lamport.tla.toolbox.spec.parser.ParserDependencyStorage;
 import org.lamport.tla.toolbox.ui.contribution.ParseStatusContributionItem;
 import org.lamport.tla.toolbox.ui.handler.SwichPerspectiveHandler;
-import org.lamport.tla.toolbox.ui.provider.SpecExplorer;
+import org.lamport.tla.toolbox.ui.provider.ToolboxExplorer;
 import org.lamport.tla.toolbox.ui.view.ProblemView;
 import org.lamport.tla.toolbox.util.TLAMarkerHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
@@ -107,7 +107,7 @@ public class Activator extends AbstractUIPlugin
                         IWorkbenchPage page = UIHelper.getActivePage();
                         if (page != null)
                         {
-                            IViewPart findView = UIHelper.getActivePage().findView(SpecExplorer.VIEW_ID);
+                            IViewPart findView = UIHelper.getActivePage().findView(ToolboxExplorer.VIEW_ID);
                             if (findView != null && findView instanceof CommonNavigator)
                             {
                                 ((CommonNavigator) findView).getCommonViewer().refresh();

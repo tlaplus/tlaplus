@@ -40,7 +40,7 @@
          </view>
          <view
                closeable="false"
-               id="toolbox.view.SpecView"
+               id="toolbox.view.ToolboxExplorer"
                minimized="false"
                moveable="false"
                ratio="0.25"
@@ -65,7 +65,7 @@
          </view>
          <view
                closeable="false"
-               id="toolbox.view.SpecView"
+               id="toolbox.view.ToolboxExplorer"
                minimized="false"
                moveable="false"
                ratio="0.25"
@@ -93,11 +93,11 @@
       <view
             allowMultiple="false"
             category="org.lamport.tla.toolbox.category"
-            class="org.lamport.tla.toolbox.ui.provider.SpecExplorer"
+            class="org.lamport.tla.toolbox.ui.provider.ToolboxExplorer"
             fastViewWidthRatio="0.75"
             icon="icons/full/etool16/new_project_wiz.gif"
-            id="toolbox.view.SpecView"
-            name="Specification Explorer"
+            id="toolbox.view.ToolboxExplorer"
+            name="Toolbox Explorer"
             restorable="true">
       </view>
       <category
@@ -184,7 +184,7 @@
       <category
             description="Speicification Commands"
             id="toolbox.command.category.spec"
-            name="Spec">
+            name="Speicification Commands">
       </category>
       <command
             categoryId="toolbox.command.category.spec"
@@ -279,7 +279,7 @@
       </category>
       <command
             categoryId="toolbox.command.category.ui"
-            description="Open the specified view"
+            description="Opens the view"
             id="toolbox.command.openview"
             name="Open View">
          <commandParameter
@@ -394,21 +394,6 @@
                   id="toolbox.menu.spec.open.dynamic">
             </dynamic>
          </menu>
-         <command
-               commandId="toolbox.command.openview"
-               icon="icons/full/etool16/new_project_wiz.gif"
-               id="toolbox.menu.open-specExplorer"
-               label="Specification Explorer"
-               mnemonic="E"
-               mode="FORCE_TEXT"
-               style="push"
-               tooltip="Opens the Specification Explorer">
-            <parameter
-                  name="toolbox.openview.name"
-                  value="toolbox.view.SpecView">
-            </parameter>
-         </command>
-         
          <command
                commandId="toolbox.command.module.parse.root"
                id="toolbox.menu.spec.parse"
@@ -607,7 +592,6 @@
             </command>
          </menu>
       </menuContribution>
-
       <menuContribution
             locationURI="menu:org.eclipse.ui.main.menu?after=additions">
          <command
@@ -658,9 +642,22 @@
             </parameter>
          </command>
       </menuContribution>
-      
       <menuContribution
             locationURI="menu:toolbox.window.menu?after=toolbox.window.view.separator">
+         <command
+               commandId="toolbox.command.openview"
+               icon="icons/full/etool16/new_project_wiz.gif"
+               id="toolbox.menu.open.explorer"
+               label="Toolbox Explorer"
+               mnemonic="E"
+               mode="FORCE_TEXT"
+               style="push"
+               tooltip="Opens the Toolbox Explorer">
+            <parameter
+                  name="toolbox.openview.name"
+                  value="toolbox.view.ToolboxExplorer">
+            </parameter>
+         </command>
          <command
                commandId="toolbox.command.openview"
                icon="icons/full/obj16/error_tsk.gif"
@@ -689,7 +686,7 @@
       </menuContribution>
       
       <menuContribution
-            locationURI="popup:toolbox.view.popup.spec?after=group.new">
+            locationURI="popup:toolbox.explorer.popup?after=group.new">
          <command
                commandId="toolbox.command.spec.new"
                icon="icons/full/newspec_wiz.gif"
@@ -701,12 +698,11 @@
       </menuContribution>
       
       <menuContribution
-            locationURI="popup:toolbox.view.popup.spec?after=group.open">
+            locationURI="popup:toolbox.explorer.popup?after=group.open">
          <command
                commandId="toolbox.command.cnf.open.delegate"
-               icon="icons/full/newspec_wiz.gif"
-               id="toolbox.popupmenu.spec.open.delegate"
-               label="Open Specification"
+               id="toolbox.popupmenu.open.delegate"
+               label="Open"
                mnemonic="O"
                style="push"
                >
@@ -714,17 +710,17 @@
       </menuContribution>
 
       <menuContribution
-            locationURI="popup:toolbox.view.popup.spec?after=group.edit">
+            locationURI="popup:toolbox.explorer.popup?after=group.edit">
          <command
                commandId="org.eclipse.ui.edit.delete"
-               id="toolbox.popupmenu.spec.delete"
+               id="toolbox.popupmenu.delete"
                label="Delete"
                mnemonic="D"
                style="push">
          </command>
          <command
                commandId="org.eclipse.ui.edit.rename"
-               id="toolbox.popupmenu.spec.rename"
+               id="toolbox.popupmenu.rename"
                label="Rename"
                mnemonic="R"
                style="push">
@@ -732,14 +728,13 @@
       </menuContribution>
 
       <menuContribution
-            locationURI="popup:toolbox.view.popup.spec?after=group.properties">
+            locationURI="popup:toolbox.explorer.popup?after=group.properties">
          <command
                commandId="org.eclipse.ui.file.properties"
-               id="toolbox.popupmenu.spec.props"
+               id="toolbox.popupmenu.props"
                label="Properties"
                mnemonic="I"
-               style="push"
-               tooltip="Shows properties of current specification">
+               style="push">
          </command>
       </menuContribution>
       
@@ -775,6 +770,20 @@
    <extension
          point="org.eclipse.ui.handlers">
       <handler
+            class="org.lamport.tla.toolbox.ui.handler.SwichPerspectiveHandler"
+            commandId="toolbox.command.switchperspective">
+         <activeWhen>
+            <with
+                  variable="activeWorkbenchWindow.activePerspective">
+               <not>
+                  <equals
+                        value="org.lamport.tla.toolbox.ui.perspective.initial">
+                  </equals>
+               </not>
+            </with>
+         </activeWhen>
+      </handler>
+      <handler
             class="org.lamport.tla.toolbox.ui.handler.NewSpecHandler"
             commandId="toolbox.command.spec.new">
       </handler>
@@ -791,20 +800,20 @@
             commandId="toolbox.command.spec.open">
       </handler>
       <handler
-            class="org.lamport.tla.toolbox.ui.handler.OpenSpecHandlerDelegate"
-            commandId="toolbox.command.cnf.open.delegate">
-		    <enabledWhen>
-		            <count value="1" />
-		    </enabledWhen>
-		    <activeWhen>
-		        <with variable="activePartId">
-		            <equals value="toolbox.view.SpecView" />
-		        </with>
-		    </activeWhen>
+            class="org.lamport.tla.toolbox.ui.handler.PCalTranslateModuleHandler"
+            commandId="toolbox.command.module.translate.active">
       </handler>
       <handler
-            class="org.lamport.tla.toolbox.ui.handler.SpecPropertiesHandler"
-            commandId="toolbox.command.spec.props">
+            class="org.lamport.tla.toolbox.ui.handler.ParseModuleHandler"
+            commandId="toolbox.command.module.parse.active">
+      </handler>
+      <handler
+            class="org.lamport.tla.toolbox.ui.handler.AddModuleHandler"
+            commandId="toolbox.command.module.add">
+      </handler>
+      <handler
+            class="org.lamport.tla.toolbox.ui.handler.HelpHandler"
+            commandId="toolbox.command.help">
       </handler>
       <handler
             class="org.lamport.tla.toolbox.ui.handler.OpenViewHandler"
@@ -814,19 +823,24 @@
             class="org.lamport.tla.toolbox.ui.handler.OpenModuleHandler"
             commandId="toolbox.command.module.open">
       </handler>
-	<handler commandId="org.eclipse.ui.edit.delete"
-	        class="org.lamport.tla.toolbox.ui.handler.DeleteSpecHandler">
-	    <enabledWhen>
-	        <not>
-	            <count value="0" />
-	        </not>
-	    </enabledWhen>
-	    <activeWhen>
-	        <with variable="activePartId">
-	            <equals value="toolbox.view.SpecView" />
-	        </with>
-	    </activeWhen>
-	</handler>
+      <handler
+            class="org.lamport.tla.toolbox.ui.handler.OpenSpecHandlerDelegate"
+            commandId="toolbox.command.cnf.open.delegate">
+		    <enabledWhen>
+		            <count value="1" />
+		    </enabledWhen>
+		    <activeWhen>
+         <with
+               variable="selection">
+            <iterate
+                  operator="or">
+               <instanceof
+                     value="org.lamport.tla.toolbox.spec.Spec">
+               </instanceof>
+            </iterate>
+         </with>
+		    </activeWhen>
+      </handler>
      <handler
            class="org.lamport.tla.toolbox.ui.handler.RenameSpecHandler"
            commandId="org.eclipse.ui.edit.rename">
@@ -837,78 +851,61 @@
         </enabledWhen>
         <activeWhen>
            <with
-                 variable="activePartId">
-              <equals
-                    value="toolbox.view.SpecView">
-              </equals>
+                 variable="selection">
+              <iterate
+                    operator="or">
+                 <instanceof
+                       value="org.lamport.tla.toolbox.spec.Spec">
+                 </instanceof>
+              </iterate>
            </with>
         </activeWhen>
      </handler>
-      <handler
-            class="org.lamport.tla.toolbox.ui.handler.PCalTranslateModuleHandler"
-            commandId="toolbox.command.module.translate.active">
-         <!-- activeWhen>
-            <with
-                  variable="org.eclipse.jface.viewers.ISelection">
-                 <test
-                    forcePluginActivation="true"
-                    property="toolbox.property.hasPCALAlgorithm"
-                 >
-                 </test>
-            </with>
-         </activeWhen -->
-        <!--activeWhen>
-           <iterate>
-              <adapt type="org.eclipse.core.resources.IResource">
-                 <test
-                       args="org.lamport.tla.toolbox.hasPcalAlgorithm, true"
-                       forcePluginActivation="true"
-                       property="org.eclipse.core.resources.sessionProperty"
-                       value="sessionProperty"/>
-              </adapt>
+	<handler commandId="org.eclipse.ui.edit.delete"
+	        class="org.lamport.tla.toolbox.ui.handler.DeleteSpecHandler">
+	    <enabledWhen>
+	        <not>
+	            <count value="0" />
+	        </not>
+	    </enabledWhen>
+	    <activeWhen>
+        <with
+              variable="selection">
+           <iterate
+                 operator="or">
+              <instanceof
+                    value="org.lamport.tla.toolbox.spec.Spec">
+              </instanceof>
            </iterate>
-        </activeWhen-->
-      </handler>
+        </with>
+	    </activeWhen>
+	</handler>
       <handler
-            class="org.lamport.tla.toolbox.ui.handler.ParseModuleHandler"
-            commandId="toolbox.command.module.parse.active">
-            <!-- activeWhen>
-                <with
-                      variable="activeEditorId">
-                      <test
-                            property="org.lamport.tla.toolbox.editor.basic.TLAEditor">
-                      </test>
-                </with>
-            </activeWhen -->
-      </handler>
-      <handler
-            class="org.lamport.tla.toolbox.ui.handler.AddModuleHandler"
-            commandId="toolbox.command.module.add">
-      </handler>
-      <handler
-            class="org.lamport.tla.toolbox.ui.handler.HelpHandler"
-            commandId="toolbox.command.help">
-      </handler>
-      <!-- Module properties disabled -->
-      <!-- handler
-            class="org.lamport.tla.toolbox.ui.handler.ModulePropertiesHandler"
-            commandId="toolbox.command.module.props">
-      </handler-->
-      <handler
-            class="org.lamport.tla.toolbox.ui.handler.SwichPerspectiveHandler"
-            commandId="toolbox.command.switchperspective">
+            class="org.lamport.tla.toolbox.ui.handler.PropertiesHandler"
+            commandId="toolbox.command.spec.props">
          <activeWhen>
             <with
-                  variable="activeWorkbenchWindow.activePerspective">
-               <not>
-                  <equals
-                        value="org.lamport.tla.toolbox.ui.perspective.initial">
-                  </equals>
-               </not>
+                  variable="selection">
+               <iterate
+                     operator="or">
+                  <instanceof
+                        value="org.lamport.tla.toolbox.spec.Spec">
+                  </instanceof>
+               </iterate>
             </with>
          </activeWhen>
+         <enabledWhen>
+            <with
+                  variable="selection">
+               <iterate
+                     operator="or">
+                  <instanceof
+                        value="org.lamport.tla.toolbox.spec.Spec">
+                  </instanceof>
+               </iterate>
+            </with>
+         </enabledWhen>
       </handler>
-
    </extension>
    
    <!-- Adapters -->
@@ -925,10 +922,10 @@
    <extension
          point="org.eclipse.ui.navigator.viewer">
       <viewer
-            viewerId="toolbox.view.SpecView">
+            viewerId="toolbox.view.ToolboxExplorer">
          <popupMenu
                allowsPlatformContributions="true"
-               id="toolbox.view.popup.spec">
+               id="toolbox.explorer.popup">
             <insertionPoint
                   name="group.new"
                   separator="false">
@@ -952,10 +949,10 @@
          </popupMenu>
       </viewer>
       <viewerContentBinding
-            viewerId="toolbox.view.SpecView">
+            viewerId="toolbox.view.ToolboxExplorer">
          <includes>
             <contentExtension
-                  isRoot="false"
+                  isRoot="true"
                   pattern="toolbox.content.SpecContent">
             </contentExtension>
             

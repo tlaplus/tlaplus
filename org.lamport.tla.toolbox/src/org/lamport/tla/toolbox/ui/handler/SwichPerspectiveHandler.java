@@ -60,6 +60,7 @@ public class SwichPerspectiveHandler extends AbstractHandler implements IHandler
         String parm = (String) parameters.get(PARAM_PERSPECTIVE_ID);
         if (parm != null)
         {
+            System.out.println("Current perspective:" + UIHelper.getActivePerspectiveId());
             if (UIHelper.getActivePerspectiveId().equals(parm))
             {
                 element.setChecked(true);

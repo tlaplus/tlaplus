@@ -3,6 +3,7 @@ package org.lamport.tla.toolbox.ui.provider;
 import java.util.HashMap;
 
 import org.eclipse.jface.viewers.DoubleClickEvent;
+import org.eclipse.ui.IPerspectiveListener;
 import org.eclipse.ui.navigator.CommonNavigator;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.ui.handler.OpenSpecHandlerDelegate;
@@ -13,9 +14,9 @@ import org.lamport.tla.toolbox.util.UIHelper;
  * @author Simon Zambrovski
  * @version $Id$
  */
-public class SpecExplorer extends CommonNavigator
+public class ToolboxExplorer extends CommonNavigator
 {
-    public final static String VIEW_ID = "toolbox.view.SpecView";
+    public final static String VIEW_ID = "toolbox.view.ToolboxExplorer";
 
     /**
      * Override the method to deliver the root object for the NCE activation
@@ -33,6 +34,10 @@ public class SpecExplorer extends CommonNavigator
         super.handleDoubleClick(anEvent);
         // open the model
         UIHelper.runCommand(OpenSpecHandlerDelegate.COMMAND_ID, new HashMap());
+        
+        IPerspectiveListener l;
     }
 
+    
+    
 }

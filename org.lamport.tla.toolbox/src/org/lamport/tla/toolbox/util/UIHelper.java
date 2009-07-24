@@ -26,18 +26,16 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IPerspectiveDescriptor;
+import org.eclipse.ui.IPerspectiveListener;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.WorkbenchException;
 import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.handlers.IHandlerService;
-import org.eclipse.ui.internal.WorkbenchWindow;
-import org.eclipse.ui.intro.IIntroPart;
 import org.eclipse.ui.part.FileEditorInput;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.ui.perspective.InitialPerspective;
@@ -61,11 +59,11 @@ public class UIHelper
     {
         IWorkbench workbench = Activator.getDefault().getWorkbench();
         // hide intro
-        if (InitialPerspective.ID.equals(perspectiveId)) 
+        if (InitialPerspective.ID.equals(perspectiveId))
         {
             workbench.getIntroManager().closeIntro(workbench.getIntroManager().getIntro());
         }
-        
+
         IWorkbenchWindow[] windows = workbench.getWorkbenchWindows();
 
         // closing the perspective opened in a window
@@ -85,6 +83,7 @@ public class UIHelper
      * @param input
      * @param width - width of new window
      * @return
+     * @deprecated
      */
     public static IWorkbenchWindow openPerspectiveInWindowRight(String perspectiveId, IAdaptable input, int width)
     {
@@ -94,32 +93,7 @@ public class UIHelper
         IWorkbenchWindow window = openPerspectiveInNewWindow(perspectiveId, input);
         window.getShell().setBounds(bounds.x + bounds.width, bounds.y, width, bounds.height);
 
-        activateRoorEditorOrView();
         return window;
-    }
-
-    /**
-     * Tries to activates an editor or a view in the root window
-     */
-    private static void activateRoorEditorOrView()
-    {
-        // activate the editor in the root window
-        IWorkbenchPage page = getRootApplicationWindow().getActivePage();
-        if (page != null)
-        {
-            IWorkbenchPart activepart = page.getActiveEditor();
-            if (activepart != null)
-            {
-                activepart.setFocus();
-            } else
-            {
-                activepart = page.getActivePart();
-                if (activepart != null)
-                {
-                    activepart.setFocus();
-                }
-            }
-        }
     }
 
     /**
@@ -142,9 +116,10 @@ public class UIHelper
             window = workbench.openWorkbenchWindow(perspectiveId, input);
 
             // show intro
-            if (InitialPerspective.ID.equals(perspectiveId) && workbench.getIntroManager().hasIntro()) 
+            if (InitialPerspective.ID.equals(perspectiveId) && workbench.getIntroManager().hasIntro())
             {
-                IIntroPart intro = workbench.getIntroManager().showIntro(window, false);
+                // IIntroPart intro =
+                workbench.getIntroManager().showIntro(window, true);
             }
 
         } catch (WorkbenchException e)
@@ -173,7 +148,7 @@ public class UIHelper
         }
         return view;
     }
-    
+
     /**
      * Checks weather the view is shown 
      * @param id view Id
@@ -191,7 +166,7 @@ public class UIHelper
     public static void hideView(String id)
     {
         IViewPart findView = getActivePage().findView(id);
-        if (findView != null) 
+        if (findView != null)
         {
             getActivePage().hideView(findView);
         }
@@ -209,6 +184,17 @@ public class UIHelper
     }
 
     /**
+     * Attaches the perspective listener to active window 
+     * 
+     * @param listener
+     */
+    public static void addPerspectiveListener(IPerspectiveListener listener) 
+    {
+        IWorkbench workbench = Activator.getDefault().getWorkbench();
+        IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
+        window.addPerspectiveListener(listener);
+    }
+    /**
      * Switch current perspective
      * 
      * @param perspectiveId
@@ -223,7 +209,7 @@ public class UIHelper
             IWorkbenchPage page = workbench.showPerspective(perspectiveId, window);
 
             // show intro
-            if (InitialPerspective.ID.equals(perspectiveId) && workbench.getIntroManager().hasIntro()) 
+            if (InitialPerspective.ID.equals(perspectiveId) && workbench.getIntroManager().hasIntro())
             {
                 page.resetPerspective();
                 workbench.getIntroManager().showIntro(window, false);
@@ -238,7 +224,7 @@ public class UIHelper
 
         return null;
     }
-    
+
     /**
      * Retrieves the id of currently selected perspective
      * @return
@@ -258,6 +244,7 @@ public class UIHelper
     {
         return openEditor(editorId, new FileEditorInput(file));
     }
+
     /**
      * Opens an editor in current workbench window
      * 
@@ -267,7 +254,7 @@ public class UIHelper
      */
     public static IEditorPart openEditor(String editorId, IEditorInput input)
     {
-        IWorkbenchWindow window = getRootApplicationWindow();
+        IWorkbenchWindow window = getActiveWindow();
         IEditorPart editorPart = null;
         try
         {
@@ -278,26 +265,6 @@ public class UIHelper
         }
 
         return editorPart;
-    }
-
-    /**
-     * Retrieves the primary root application window
-     * @return the window is considered to be a root window
-     */
-    public static IWorkbenchWindow getRootApplicationWindow()
-    {
-        IWorkbenchWindow[] windows = Activator.getDefault().getWorkbench().getWorkbenchWindows();
-        for (int i = 0; i < windows.length; i++)
-        {
-            // HACK: note this could change in future
-            // we should return the smallest id, not the 1
-            if (windows[i] instanceof WorkbenchWindow && ((WorkbenchWindow) windows[i]).getNumber() == 1)
-            {
-                return windows[i];
-            }
-
-        }
-        return null;
     }
 
     /**
@@ -322,9 +289,9 @@ public class UIHelper
         {
             // try to get an not null window
             IWorkbenchWindow[] workbenchWindows = PlatformUI.getWorkbench().getWorkbenchWindows();
-            for (int i=0; i < workbenchWindows.length; i++)
+            for (int i = 0; i < workbenchWindows.length; i++)
             {
-                if (workbenchWindows[i] !=null)
+                if (workbenchWindows[i] != null)
                 {
                     return workbenchWindows[i].getActivePage();
                 }
@@ -519,15 +486,14 @@ public class UIHelper
             }
         };
     }
-    
+
     /**
      * Retrieves the selection provider for files in the active editor 
      * @return
      */
     public static ISelectionProvider getActiveEditorFileSelectionProvider()
     {
-        return new GenericSelectionProvider()
-        {
+        return new GenericSelectionProvider() {
 
             public ISelection getSelection()
             {
@@ -544,7 +510,7 @@ public class UIHelper
             {
                 throw new UnsupportedOperationException("This selection provider is read-only");
             }
-           
+
         };
     }
 }

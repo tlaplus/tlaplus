@@ -10,10 +10,14 @@ import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 /**
+ * Opens the properties dialog, the underlying object is fetched by the passed ISelectionProvider
+ * Currently it only returns selected Specs
+ *  
+ *  
  * @author Simon Zambrovski
  * @version $Id$
  */
-public class SpecPropertiesHandler extends AbstractHandler implements IHandler
+public class PropertiesHandler extends AbstractHandler implements IHandler
 {
 
     /* (non-Javadoc)
@@ -22,7 +26,10 @@ public class SpecPropertiesHandler extends AbstractHandler implements IHandler
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
 
+        
+        // FIXME Fix the selection of specs only
         IAction action = new PropertyDialogAction(UIHelper.getShellProvider(), Activator.getSpecManager());
+        // IAction action = new PropertyDialogAction(UIHelper.getShellProvider(), HandlerUtil.getActivePart(event));
         action.run();
         
         return null;
