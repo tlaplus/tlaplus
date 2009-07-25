@@ -43,11 +43,13 @@ import tla2sany.semantic.SymbolNode;
 public class ModelHelper implements IModelConfigurationConstants, IModelConfigurationDefaults
 {
     /**
-     * 
+     * marker on .launch file with boolean attribute modelIsRunning 
      */
-    private static final String TLC_MODEL_IN_USE_MARKER = "org.lamport.tla.toolbox.tlc.modelMarker";
-
-    private static final String TLC_CRASHED_MARKER = "org.lamport.tla.toolbox.tlc.crashedModelMarker";
+    public static final String TLC_MODEL_IN_USE_MARKER = "org.lamport.tla.toolbox.tlc.modelMarker";
+    /**
+     * marker on .launch file, binary semantics
+     */
+    public static final String TLC_CRASHED_MARKER = "org.lamport.tla.toolbox.tlc.crashedModelMarker";
 
     /**
      * model is being run
@@ -726,7 +728,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
      * It deletes all temporary files on disk and restores the state to unlocked.
      * @param config
      */
-    public static void recoverModel(ILaunchConfigurationWorkingCopy config) throws CoreException
+    public static void recoverModel(ILaunchConfiguration config) throws CoreException
     {
         IFile resource = config.getFile();
         if (resource.exists())
@@ -757,7 +759,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
      * Cleans up the TLC working directory
      * @param config
      */
-    private static void cleanUp(ILaunchConfigurationWorkingCopy config) throws CoreException
+    private static void cleanUp(ILaunchConfiguration config) throws CoreException
     {
         // TODO
     }
