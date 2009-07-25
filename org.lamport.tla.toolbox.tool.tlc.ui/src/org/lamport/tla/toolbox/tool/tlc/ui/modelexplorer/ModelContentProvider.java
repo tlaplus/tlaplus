@@ -3,7 +3,6 @@ package org.lamport.tla.toolbox.tool.tlc.ui.modelexplorer;
 import java.util.Vector;
 
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunchConfiguration;
@@ -30,38 +29,40 @@ public class ModelContentProvider implements ITreeContentProvider
 
     public Object[] getChildren(Object parentElement)
     {
-        if (parentElement instanceof Spec) {
-        Assert.isTrue(parentElement instanceof Spec && ToolboxHandle.getCurrentSpec() == parentElement);
-
-        Spec currentSpec = (Spec) parentElement;
-        ILaunchManager launchManager = DebugPlugin.getDefault().getLaunchManager();
-
-        ILaunchConfigurationType configType = launchManager
-                .getLaunchConfigurationType(TLCModelLaunchDelegate.LAUNCH_CONFIGURATION_TYPE);
-
-        Vector models = new Vector();
-
-        IProject specProject = currentSpec.getProject();
-        try
+        if (parentElement instanceof Spec)
         {
-            ILaunchConfiguration[] configs = launchManager.getLaunchConfigurations(configType);
-            for (int i = 0; i < configs.length; i++)
+            Spec currentSpec = (Spec) parentElement;
+            ILaunchManager launchManager = DebugPlugin.getDefault().getLaunchManager();
+
+            ILaunchConfigurationType configType = launchManager
+                    .getLaunchConfigurationType(TLCModelLaunchDelegate.LAUNCH_CONFIGURATION_TYPE);
+
+            Vector models = new Vector();
+
+            IProject specProject = currentSpec.getProject();
+            try
             {
-                // skip launches from other specs (projects)
-                if (!specProject.equals(configs[i].getFile().getProject()) || !configs[i].exists())
+                ILaunchConfiguration[] configs = launchManager.getLaunchConfigurations(configType);
+                for (int i = 0; i < configs.length; i++)
                 {
-                    continue;
+                    // skip launches from other specs (projects)
+                    if (!specProject.equals(configs[i].getFile().getProject()) || !configs[i].exists())
+                    {
+                        continue;
+                    }
+                    models.add(configs[i]);
                 }
-                models.add(configs[i]);
+            } catch (CoreException e)
+            {
+                TLCUIActivator.logError("Error fetching the models", e);
             }
-        } catch (CoreException e)
-        {
-            TLCUIActivator.logError("Error fetching the models", e);
-        }
 
-        return models.toArray(new ILaunchConfiguration[models.size()]);
-        } 
-        
+            // only get models of the current spec
+            if (ToolboxHandle.getCurrentSpec() == parentElement)
+            {
+                return models.toArray(new ILaunchConfiguration[models.size()]);
+            } 
+        }
         return EMPTY_ARRAY;
     }
 
