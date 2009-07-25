@@ -178,7 +178,7 @@
          </command>
       </menuContribution>
       <menuContribution
-            locationURI="popup:toolbox.explorer.popup?after=group.edit">
+            locationURI="popup:toolbox.explorer.popup?before=additions">
          <command
                commandId="toolbox.tool.tlc.commands.model.clone.delegate"
                icon="icons/full/copy_edit.gif"
@@ -361,6 +361,12 @@ Console Facory
                      <instanceof
                            value="org.lamport.tla.toolbox.spec.Spec">
                      </instanceof>
+                     <adapt
+                           type="org.lamport.tla.toolbox.spec.Spec">
+                        <reference
+                              definitionId="toolbox.isCurrentSpec">
+                        </reference>
+                     </adapt>
                   </iterate>
                </with>
                <count
@@ -421,6 +427,14 @@ Console Facory
                   <instanceof
                         value="org.eclipse.debug.core.ILaunchConfiguration">
                   </instanceof>
+                  <adapt
+                        type="org.eclipse.debug.core.ILaunchConfiguration">
+                     <not>
+                        <reference
+                              definitionId="toolbox.tlc.hasModelRunningMarker">
+                        </reference>
+                     </not>
+                  </adapt>
                </iterate>
             </with>
          </activeWhen>
@@ -444,6 +458,14 @@ Console Facory
                   <instanceof
                         value="org.eclipse.debug.core.ILaunchConfiguration">
                   </instanceof>
+                  <adapt
+                        type="org.eclipse.debug.core.ILaunchConfiguration">
+                     <not>
+                        <reference
+                              definitionId="toolbox.tlc.hasModelRunningMarker">
+                        </reference>
+                     </not>
+                  </adapt>
                </iterate>
             </with>
          </activeWhen>
@@ -517,13 +539,32 @@ Console Facory
                      </instanceof>
                      <adapt
                            type="org.eclipse.debug.core.ILaunchConfiguration">
-                        <reference
-                              definitionId="toolbox.tlc.hasModelRunningMarker">
-                        </reference>
+                        <and>
+                           <reference
+                                 definitionId="toolbox.tlc.hasModelRunningMarker">
+                           </reference>
+                           <not>
+                              <reference
+                                    definitionId="toolbox.tlc.hasModelCrashedMarker">
+                              </reference>
+                           </not>
+                        </and>
                      </adapt>
                   </iterate>
             </with>
          </activeWhen>
+         <enabledWhen>
+            <with
+                  variable="selection">
+               <iterate
+                     ifEmpty="false"
+                     operator="or">
+                  <instanceof
+                        value="org.eclipse.debug.core.ILaunchConfiguration">
+                  </instanceof>
+               </iterate>
+            </with>
+         </enabledWhen>
       </handler>
       <handler
             class="org.lamport.tla.toolbox.tool.tlc.handlers.RepairLaunchHandler"
@@ -546,6 +587,18 @@ Console Facory
                   </iterate>
             </with>
          </activeWhen>
+         <enabledWhen>
+            <with
+                  variable="selection">
+               <iterate
+                     ifEmpty="false"
+                     operator="or">
+                  <instanceof
+                        value="org.eclipse.debug.core.ILaunchConfiguration">
+                  </instanceof>
+               </iterate>
+            </with>
+         </enabledWhen>
       </handler>
    </extension>
 </plugin>
