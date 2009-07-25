@@ -23,7 +23,7 @@
    </extension>
    <extension
          id="org.lamport.tla.toolbox.tlc.modelMarker"
-         name="Model Marker"
+         name="Model Is Running Marker"
          point="org.eclipse.core.resources.markers">
       <super
             type="org.eclipse.core.resources.marker">
@@ -57,6 +57,35 @@
       <participant
             class="org.lamport.tla.toolbox.tool.tlc.TLCSpecLifeCycleParticipant">
       </participant>
+   </extension>
+   <extension
+         point="org.eclipse.core.expressions.definitions">
+      <definition
+            id="toolbox.tlc.hasModelRunningMarker">
+         <test
+               args="org.lamport.tla.toolbox.tlc.modelMarker, modelIsRunning"
+               property="toolbox.property.hasMarker"
+               value="true">
+         </test>
+      </definition>
+      <definition
+            id="toolbox.tlc.hasModelCrashedMarker">
+         <test
+               args="org.lamport.tla.toolbox.tlc.crashedModelMarker"
+               property="toolbox.property.hasMarker"
+               value="true">
+         </test>
+      </definition>
+   </extension>
+   <extension
+         point="org.eclipse.core.expressions.propertyTesters">
+		<propertyTester
+            class="org.lamport.tla.toolbox.tool.tlc.expression.MarkerPropertyTester"
+            id="toolbox.propertyTester.MarkerTester"
+            namespace="toolbox.property"
+            properties="hasMarker"
+            type="org.eclipse.debug.core.ILaunchConfiguration">
+		</propertyTester>
    </extension>
 <!--
   NCE definition
