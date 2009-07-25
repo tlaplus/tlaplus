@@ -712,17 +712,17 @@
       <menuContribution
             locationURI="popup:toolbox.explorer.popup?after=group.edit">
          <command
-               commandId="org.eclipse.ui.edit.delete"
-               id="toolbox.popupmenu.delete"
-               label="Delete"
-               mnemonic="D"
-               style="push">
-         </command>
-         <command
                commandId="org.eclipse.ui.edit.rename"
                id="toolbox.popupmenu.rename"
                label="Rename"
                mnemonic="R"
+               style="push">
+         </command>
+         <command
+               commandId="org.eclipse.ui.edit.delete"
+               id="toolbox.popupmenu.delete"
+               label="Delete"
+               mnemonic="D"
                style="push">
          </command>
       </menuContribution>
@@ -915,6 +915,13 @@
             namespace="toolbox.property"
             properties="hasPCALAlgorithm"
             type="org.eclipse.jface.viewers.ISelection">
+      </propertyTester>
+      <propertyTester
+            class="org.lamport.tla.toolbox.ui.expression.CurrentSpecTester"
+            id="toolbox.propertyTester.isCurrentSpec"
+            namespace="toolbox.property"
+            properties="isCurrentSpec"
+            type="org.lamport.tla.toolbox.spec.Spec">
       </propertyTester>
    </extension>
    <extension
@@ -1162,6 +1169,15 @@
    		<!-- markerFieldReference id="org.eclipse.ui.ide.priorityField"/ -->
 		<!-- markerFieldReference id="org.eclipse.ui.ide.descriptionField"/ -->		          
       </markerContentGenerator>
+   </extension>
+   <extension
+         point="org.eclipse.core.expressions.definitions">
+      <definition
+            id="toolbox.isCurrentSpec">
+         <test
+               property="toolbox.property.isCurrentSpec">
+         </test>
+      </definition>
    </extension>
    
    <!--                       -->
