@@ -1,6 +1,7 @@
 package tlc2.tool;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 
 import tla2sany.modanalyzer.SpecObj;
 import tla2sany.semantic.SemanticNode;
@@ -19,6 +20,7 @@ import util.ToolIO;
  */
 public abstract class AbstractChecker implements Cancelable
 {
+    private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
 // SZ Mar 9, 2009: static modifier removed
     protected long nextLiveCheck;
     protected long numOfGenStates;
@@ -123,8 +125,9 @@ public abstract class AbstractChecker implements Cancelable
      */
     protected void reportCoverage(IWorker[] workers)
     {
-          if (TLCGlobals.coverageInterval >= 0) {
-              ToolIO.out.println("The coverage stats:");
+          if (TLCGlobals.coverageInterval >= 0) 
+          {
+              ToolIO.out.println("The coverage statistics :" /*+ sdf.format(new Date()) + ":"*/ );
               // First collecting all counts from all workers:
               ObjLongTable counts = this.tool.getPrimedLocs();
               for (int i = 0; i < workers.length; i++) {
@@ -142,6 +145,7 @@ public abstract class AbstractChecker implements Cancelable
                   long val = counts.get(skeys[i]);
                   ToolIO.out.println("  " + skeys[i] + ": " + val);
               }
+              ToolIO.out.println("End of statistics.");
           }
       }
 

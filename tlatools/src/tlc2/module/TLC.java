@@ -48,7 +48,7 @@ public class TLC implements ValueConstants
      */
     public static Value Print(Value v1, Value v2)
     {
-        ToolIO.err.println(Value.ppr(v1.toString()) + "  " + Value.ppr(v2.toString()));
+        ToolIO.out.println(Value.ppr(v1.toString()) + "  " + Value.ppr(v2.toString()));
         return v2;
     }
 
@@ -57,7 +57,7 @@ public class TLC implements ValueConstants
      */
     public static Value PrintT(Value v1)
     {
-        ToolIO.err.println(Value.ppr(v1.toString()));
+        ToolIO.out.println(Value.ppr(v1.toString()));
         return ValTrue;
     }
 

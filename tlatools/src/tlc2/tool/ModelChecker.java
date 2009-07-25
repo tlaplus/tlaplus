@@ -109,6 +109,7 @@ public class ModelChecker extends AbstractChecker
             try
             {
                 report("doInit(false)");
+                ToolIO.out.println("Computing initial states...");
                 // SZ Feb 23, 2009: do not ignore cancel on creation of the init states
                 if (!this.doInit(false))
                 {
@@ -185,7 +186,7 @@ public class ModelChecker extends AbstractChecker
                 // Always check liveness properties at the end:
                 if (this.checkLiveness)
                 {
-                    ToolIO.out.println("--Checking temporal properties for the complete state space...");
+                    ToolIO.out.println("Checking temporal properties for the complete state space...");
                     ToolIO.out.flush();
                     report("checking liveness");
                     success = LiveCheck.check();
@@ -610,14 +611,14 @@ public class ModelChecker extends AbstractChecker
             boolean doCheck = this.checkLiveness && (stateNum >= nextLiveCheck);
             if (doCheck)
             {
-                ToolIO.out.println("--Checking temporal properties for the current state space...");
+                ToolIO.out.println("Checking temporal properties for the current state space...");
                 if (!LiveCheck.check())
                     return false;
                 nextLiveCheck = (stateNum <= 640000) ? stateNum * 2 : stateNum + 640000;
             }
 
             // Checkpoint:
-            ToolIO.out.print("--Checkpointing of run " + this.metadir + " compl");
+            ToolIO.out.print("Checkpointing of run " + this.metadir);
             // start checkpointing:
             this.theStateQueue.beginChkpt();
             this.trace.beginChkpt();
@@ -634,7 +635,7 @@ public class ModelChecker extends AbstractChecker
             UniqueString.internTbl.commitChkpt(this.metadir);
             if (this.checkLiveness)
                 LiveCheck.commitChkpt();
-            ToolIO.out.println("eted.");
+            ToolIO.out.println("Checkpointing completed.");
         }
         return true;
     }
@@ -645,13 +646,13 @@ public class ModelChecker extends AbstractChecker
         if (this.fromChkpt != null)
         {
             // We recover from previous checkpoint.
-            ToolIO.out.println("--Starting recovery from checkpoint " + this.fromChkpt);
+            ToolIO.out.println("Starting recovery from checkpoint " + this.fromChkpt);
             this.trace.recover();
             this.theStateQueue.recover();
             this.theFPSet.recover();
             if (this.checkLiveness)
                 LiveCheck.recover();
-            ToolIO.out.println("--Recovery completed. " + this.recoveryStats());
+            ToolIO.out.println("Recovery completed. " + this.recoveryStats());
             recovered = true;
             this.numOfGenStates = this.theFPSet.size();
         }
@@ -697,9 +698,10 @@ public class ModelChecker extends AbstractChecker
         double prob2 = this.theFPSet.checkFPs();
 
         ToolIO.out.println("Model checking completed. No error has been found.\n"
-                + "  Estimates of the probability that TLC did not check "
-                + "all reachable states\n  because two distinct states had " + "the same fingerprint:\n"
-                + "    calculated (optimistic):  " + prob1 + "\n" + "    based on the actual fingerprints:  " + prob2);
+                + "  Estimates of the probability that TLC did not check all reachable states\n"
+                + "  because two distinct states had the same fingerprint:\n"
+                + "  calculated (optimistic):  " + prob1 + "\n" 
+                + "  based on the actual fingerprints:  " + prob2);
     }
 
     public final void setAllValues(int idx, Value val)

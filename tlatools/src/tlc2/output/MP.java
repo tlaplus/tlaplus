@@ -727,7 +727,7 @@ public class MP
     {
         // write the output
         DebugPrinter.print("entering printError(int, String[]) with errorCode " + errorCode);
-        ToolIO.err.println(getMessage(ERROR, errorCode, parameters));
+        ToolIO.out.println(getMessage(ERROR, errorCode, parameters));
         DebugPrinter.print("leaving printError(int, String[])");
     }
 
@@ -743,7 +743,7 @@ public class MP
         if (includeStackTrace)
         {
             DebugPrinter.print("printing stacktrace in printError(int, Throwable, boolean)");
-            cause.printStackTrace(ToolIO.err);
+            cause.printStackTrace(ToolIO.out);
         }
     }
 
@@ -786,7 +786,7 @@ public class MP
     {
         DebugPrinter.print("entering printMessage(int, String[]) with errorCode " + errorCode);
         // write the output
-        ToolIO.err.println(getMessage(NONE, errorCode, parameters));
+        ToolIO.out.println(getMessage(NONE, errorCode, parameters));
         DebugPrinter.print("leaving printError(int, String[]) with errorCode ");
     }
 
@@ -800,7 +800,7 @@ public class MP
     {
         DebugPrinter.print("entering printTLCBug(int, String[]) with errorCode " + errorCode);
         // write the output
-        ToolIO.err.println(getMessage(TLCBUG, errorCode, parameters));
+        ToolIO.out.println(getMessage(TLCBUG, errorCode, parameters));
         DebugPrinter.print("leaving printTLCBug(int, String[])");
     }
 
@@ -821,7 +821,7 @@ public class MP
             if (instance.warningHistory.put(message) == null)
             {
                 // print it
-                ToolIO.err.println(message);
+                ToolIO.out.println(message);
             }
         }
         DebugPrinter.print("leaving printWarning(int, String[])");

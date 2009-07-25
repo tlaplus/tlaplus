@@ -205,14 +205,14 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
     }
     catch (Throwable e) {
       // Assert.printStack(e);
-      ToolIO.err.println("Error: Failed to start worker at " + hostname +
+      ToolIO.out.println("Error: Failed to start worker at " + hostname +
 			 " for server " + serverName + ".\n" + e.getMessage());
     }
   }
 
   private static void printErrorMsg(String msg) {
-      ToolIO.err.println(msg);
-      ToolIO.err.println("Usage: java tlc2.tool.TLCWorker [-option] inputfile host");
+      ToolIO.out.println(msg);
+      ToolIO.out.println("Usage: java tlc2.tool.TLCWorker [-option] inputfile host");
   }
 
 }

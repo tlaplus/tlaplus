@@ -6,6 +6,7 @@ package tlc2.tool;
 import java.io.IOException;
 
 import tlc2.TLCGlobals;
+import tlc2.output.StatePrinter;
 import tlc2.tool.fp.DiskFPSet;
 import tlc2.tool.fp.FPSet;
 import tlc2.tool.queue.DiskStateQueue;
@@ -64,7 +65,7 @@ public abstract class CheckImpl extends ModelChecker {
     ToolIO.out.println("Creating a partial state space of depth " +
 		       this.depth + " ... ");
     if (!this.runTLC(this.depth)) {
-      ToolIO.err.println("\nExit: failed to create the partial state space.");
+      ToolIO.out.println("\nExit: failed to create the partial state space.");
       System.exit(1);
     }
     ToolIO.out.println("completed.");
@@ -104,18 +105,18 @@ public abstract class CheckImpl extends ModelChecker {
   public final boolean checkReachability(TLCState s0, TLCState s1) {
     Action next = this.tool.getNextStateSpec();    
     if (!this.tool.isValid(next, s0, s1)) {
-      ToolIO.err.println("The following transition is illegal: ");
-      ToolIO.err.println(s0);
-      ToolIO.err.println(s1);
+      ToolIO.out.println("The following transition is illegal: ");
+      StatePrinter.printState(s0);
+      StatePrinter.printState(s1);
       return false;
     }
     int cnt = this.impliedActions.length;
     for (int i = 0; i < cnt; i++) {
       if (!this.tool.isValid(this.impliedActions[i], s0, s1)) {
-	ToolIO.err.println("Error: Action property " + this.tool.getImpliedActNames()[i] +
+	ToolIO.out.println("Error: Action property " + this.tool.getImpliedActNames()[i] +
 			   " is violated.");
-	ToolIO.err.println(s0);
-	ToolIO.err.println(s1);
+	StatePrinter.printState(s0);
+	StatePrinter.printState(s1);
 	return false;
       }
     }
@@ -139,7 +140,7 @@ public abstract class CheckImpl extends ModelChecker {
 	for (int j = 0; j < cnt; j++) {
 	  if (!this.tool.isValid(this.invariants[j], state)) {
 	    // We get here because of invariant violation:
-	    ToolIO.err.println("Error: Invariant " + this.tool.getInvNames()[j] +
+	    ToolIO.out.println("Error: Invariant " + this.tool.getInvNames()[j] +
 			       " is violated. The behavior up to this point is:");
 	    return false;
 	  }

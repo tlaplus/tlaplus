@@ -14,6 +14,8 @@ import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
 import tlc2.TLCGlobals;
+import tlc2.output.EC;
+import tlc2.output.MP;
 import tlc2.tool.TLCState;
 import tlc2.tool.TLCTrace;
 import tlc2.tool.WorkerException;
@@ -280,10 +282,10 @@ implements TLCServerRMI, InternRMI {
       catch (Throwable e) {
 	// Assert.printStack(e);
 	server.done = true;      
-	ToolIO.err.println(e.getMessage());
+	ToolIO.out.println(e.getMessage());
 	if (server.errState != null) {
-	  ToolIO.err.println("While working on the initial state:");
-	  ToolIO.err.println(server.errState);
+	  ToolIO.out.println("While working on the initial state:");
+	  ToolIO.out.println(server.errState);
 	}
 	// We redo the work on the error state, recording the call stack.
 	server.work.setCallStack();
@@ -291,7 +293,7 @@ implements TLCServerRMI, InternRMI {
 	  server.doInit();
 	}
 	catch (Throwable e1) {
-	  ToolIO.err.println("The error occurred when TLC was evaluating the nested" +
+	  ToolIO.out.println("The error occurred when TLC was evaluating the nested" +
 			     "\nexpressions at the following positions:\n" +
 	  server.work.printCallStack());
 	}
@@ -349,7 +351,7 @@ implements TLCServerRMI, InternRMI {
 	// server.doNext();
       }
       catch (Exception e) {
-	ToolIO.err.println("The error occurred when TLC was evaluating the nested" +
+	ToolIO.out.println("The error occurred when TLC was evaluating the nested" +
 			   "\nexpressions at the following positions:");
 	server.work.printCallStack();
       }
@@ -372,20 +374,13 @@ implements TLCServerRMI, InternRMI {
       System.gc();
       // Assert.printStack(e);
       if (e instanceof StackOverflowError) {
-        ToolIO.err.println("Error: This was a Java StackOverflowError. It was probably\n" +
-                           "the result of an incorrect recursive function definition\n" +
-                           "that caused TLC to enter an infinite loop when trying to\n" +
-                           "compute the function or its application to an element in\n" +
-                           "its putative domain.");
+          MP.printError(EC.SYSTEM_STACK_OVERFLOW);
       }
       else if (e instanceof OutOfMemoryError) {
-	ToolIO.err.println("Error: Java ran out of memory.  Running Java with a larger memory\n" +
-			   "allocation pool (heap) may fix this.  But it won't help if some\n" +
-			   "state has an enormous number of successor states, or if TLC must\n" +
-			   "compute the value of a huge set.");
+          MP.printError(EC.SYSTEM_OUT_OF_MEMORY);
       }
       else {
-	ToolIO.err.println("Error: " + e.getMessage());
+          MP.printError(EC.GENERAL, e);
       }
       if (server != null) {
 	try { server.close(false); } catch (Exception e1) { /*SKIP*/ }

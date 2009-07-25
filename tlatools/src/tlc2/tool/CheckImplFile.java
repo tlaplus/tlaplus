@@ -93,9 +93,9 @@ public class CheckImplFile extends CheckImpl
         SpecObj spec = new SpecObj(rfname, null);
         try
         {
-            SANY.frontEndInitialize(spec, ToolIO.err);
-            SANY.frontEndParse(spec, ToolIO.err);
-            SANY.frontEndSemanticAnalysis(spec, ToolIO.err, true);
+            SANY.frontEndInitialize(spec, ToolIO.out);
+            SANY.frontEndParse(spec, ToolIO.out);
+            SANY.frontEndSemanticAnalysis(spec, ToolIO.out, true);
         } catch (Throwable e)
         {
             String msg = e.getMessage();
@@ -327,7 +327,7 @@ public class CheckImplFile extends CheckImpl
 
     private static void printErrorMsg(String msg)
     {
-        ToolIO.err.println(msg);
+        ToolIO.out.println(msg);
         MP.printError(EC.CHECK_PARAM_USAGE);
     }
 

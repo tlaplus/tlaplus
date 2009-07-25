@@ -331,8 +331,8 @@ public class TLCApp extends DistApp {
   }
 
   private static void printErrorMsg(String msg) {
-    ToolIO.err.println(msg);
-    ToolIO.err.println("Usage: java tlc2.tool.TLCServer [-option] inputfile");
+    ToolIO.out.println(msg);
+    ToolIO.out.println("Usage: java tlc2.tool.TLCServer [-option] inputfile");
   }
 
 }

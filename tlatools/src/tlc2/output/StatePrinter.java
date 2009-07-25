@@ -18,15 +18,15 @@ public class StatePrinter
      */
     public static void printState(TLCState currentState, TLCState lastState, int num)
     {
-        ToolIO.err.println("STATE " + num + ":");
+        ToolIO.out.println("STATE " + num + ":");
 
         /* Added by rjoshi. */
         if (lastState != null && TLCGlobals.printDiffsOnly)
         {
-            ToolIO.err.println(currentState.toString(lastState));
+            ToolIO.out.println(currentState.toString(lastState));
         } else
         {
-            ToolIO.err.println(currentState);
+            ToolIO.out.println(currentState);
         }
     }
 
@@ -36,15 +36,15 @@ public class StatePrinter
      */
     public static void printState(TLCStateInfo currentStateInfo, TLCState lastState, int num)
     {
-        ToolIO.err.println("STATE " + num + ": " + currentStateInfo.info);
+        ToolIO.out.println("STATE " + num + ": " + currentStateInfo.info);
 
         /* Added by rjoshi. */
         if (lastState != null && TLCGlobals.printDiffsOnly)
         {
-            ToolIO.err.println(currentStateInfo.state.toString(lastState));
+            ToolIO.out.println(currentStateInfo.state.toString(lastState));
         } else
         {
-            ToolIO.err.println(currentStateInfo.state);
+            ToolIO.out.println(currentStateInfo.state);
         }
     }
 
@@ -53,8 +53,8 @@ public class StatePrinter
      */
     public static void printState(TLCState currentState, int num)
     {
-        ToolIO.err.println("STATE " + num + ":");
-        ToolIO.err.println(currentState);
+        ToolIO.out.println("STATE " + num + ":");
+        ToolIO.out.println(currentState);
     }
 
     /**
@@ -62,8 +62,8 @@ public class StatePrinter
      */
     public static void printState(TLCState currentState)
     {
-        ToolIO.err.println("STATE :");
-        ToolIO.err.println(currentState);
+        ToolIO.out.println("STATE :");
+        ToolIO.out.println(currentState);
     }
 
     /**
@@ -71,7 +71,7 @@ public class StatePrinter
      */
     public static void printStutteringState(int num)
     {
-        ToolIO.err.println("STATE " + num + ": Stuttering");
+        ToolIO.out.println("STATE " + num + ": Stuttering");
     }
 
 }

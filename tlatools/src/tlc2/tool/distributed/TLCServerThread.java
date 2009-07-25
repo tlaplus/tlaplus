@@ -8,6 +8,8 @@ package tlc2.tool.distributed;
 import java.rmi.RemoteException;
 
 import tlc2.TLCGlobals;
+import tlc2.output.EC;
+import tlc2.output.MP;
 import tlc2.tool.TLCState;
 import tlc2.tool.TLCStateVec;
 import tlc2.tool.WorkerException;
@@ -74,13 +76,13 @@ public class TLCServerThread extends IdThread {
 	  }
 	  catch (RemoteException e) {
 	    if (!this.tlcServer.reassignWorker(this)) {
-	      ToolIO.err.println("Error: No TLC worker is available. Exit.");
+	      ToolIO.out.println("Error: No TLC worker is available. Exit.");
 	      System.exit(0);	      
 	    }
 	  }
 	  catch (NullPointerException e) {
 	    if (!this.tlcServer.reassignWorker(this)) {
-	      ToolIO.err.println("Error: No TLC worker is available. Exit.");
+	      ToolIO.out.println("Error: No TLC worker is available. Exit.");
 	      System.exit(0);
 	    }
 	  }
@@ -106,10 +108,10 @@ public class TLCServerThread extends IdThread {
 	state2 = ((WorkerException)e).state2;
       }
       if (this.tlcServer.setErrState(state1, true)) {
-	ToolIO.err.println(e.getMessage());
+          MP.printError(EC.GENERAL, e);
 	if (state1 != null) {
 	  try {
-	    ToolIO.err.println("\nThe behavior up to this point is:");
+	    ToolIO.out.println("\nThe behavior up to this point is:");
 	    this.tlcServer.trace.printTrace(state1.uid, state1, state2);
 	  }
 	  catch (Exception e1) { System.err.println(e1.getMessage()); }

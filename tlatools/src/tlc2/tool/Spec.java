@@ -151,7 +151,7 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable {
               // checked errors (init, parse, semantic). 
               // Only if something unexpected happens the 
               // exception is thrown
-              SANY.frontEndMain(spec, this.rootFile, ToolIO.err);
+              SANY.frontEndMain(spec, this.rootFile, ToolIO.out);
           } catch (FrontEndException e)
           {
               Assert.fail(EC.TLC_PARSING_FAILED2, e);

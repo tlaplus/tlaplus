@@ -254,7 +254,7 @@ public class FPSetManager implements Serializable {
 	}
       }
       catch (IOException e) {
-	ToolIO.err.println("Error: Failed to checkpoint the fingerprint server at " +
+	ToolIO.out.println("Error: Failed to checkpoint the fingerprint server at " +
 			   hosts[this.hostIndex] + ". This server might be down.");
       }
     }
