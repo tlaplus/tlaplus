@@ -42,36 +42,42 @@ public class MarkerPropertyTester extends PropertyTester
                         IMarker[] foundMarkers = ((ILaunchConfiguration) receiver).getFile().findMarkers(markerId,
                                 true, IResource.DEPTH_INFINITE);
 
+                        
+                        
                         // attribute name was not null, checking the value, if multiple markers are present,
                         // check the all of them
                         if (attributeName != null) 
                         {
+                            // if there are markers, check the attributes
                             for (int i = 0; i < foundMarkers.length; i++)
                             {
                                 Object value = foundMarkers[i].getAttribute(attributeName);
-                                if (!value.equals(expectedValue)) 
+                                if (value == null || !value.equals(expectedValue)) 
                                 {
                                     return false;
                                 }
                             }
-                            return true;
+                            // either no markers at all (false), or all values are valid (true)
+                            return foundMarkers.length > 0;
                         } else 
                         {
+                            boolean result;
                             // no attribute to check, just check the presence of the markers
-                            
-                            boolean isPresent = true;
-                            if (expectedValue != null && expectedValue instanceof Boolean)
+                            int expectedCount = -1;
+                            if (expectedValue != null && expectedValue instanceof Integer)
                             {
-                                isPresent = ((Boolean) expectedValue).booleanValue();
+                                expectedCount = ((Integer)expectedValue).intValue();
                             }
-
-                            if (isPresent)
+                            if (expectedCount == -1)
                             {
-                                return foundMarkers.length > 0;
+                                // just test if there are markers present
+                                result = foundMarkers.length > 0;
                             } else
                             {
-                                return foundMarkers.length == 0;
+                                // compare with the number 
+                                result = foundMarkers.length == expectedCount;
                             }
+                            return result;
                         }
 
                     } catch (CoreException e)
