@@ -9,7 +9,8 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.eclipse.debug.core,
  org.lamport.tla.toolbox,
- org.eclipse.jdt.launching;bundle-version="3.4.1"
+ org.eclipse.jdt.launching;bundle-version="3.4.1",
+ org.eclipse.core.expressions;bundle-version="3.4.100"
 Bundle-RequiredExecutionEnvironment: J2SE-1.4
 Bundle-ActivationPolicy: lazy
 Export-Package: org.lamport.tla.toolbox.tool.tlc.launch,
