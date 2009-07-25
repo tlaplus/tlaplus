@@ -93,7 +93,7 @@
       <view
             allowMultiple="false"
             category="org.lamport.tla.toolbox.category"
-            class="org.lamport.tla.toolbox.ui.provider.ToolboxExplorer"
+            class="org.lamport.tla.toolbox.ui.navigator.ToolboxExplorer"
             fastViewWidthRatio="0.75"
             icon="icons/full/etool16/new_project_wiz.gif"
             id="toolbox.view.ToolboxExplorer"
