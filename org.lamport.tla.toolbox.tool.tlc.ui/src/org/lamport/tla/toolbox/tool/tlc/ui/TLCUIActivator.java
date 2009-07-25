@@ -8,11 +8,9 @@ import org.eclipse.ui.IPerspectiveDescriptor;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PerspectiveAdapter;
-import org.eclipse.ui.navigator.INavigatorContentService;
-import org.eclipse.ui.navigator.NavigatorContentServiceFactory;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.tool.tlc.ui.modelexplorer.ModelContentProvider;
-import org.lamport.tla.toolbox.ui.provider.ToolboxExplorer;
 import org.lamport.tla.toolbox.util.UIHelper;
 import org.osgi.framework.BundleContext;
 
@@ -28,40 +26,24 @@ public class TLCUIActivator extends AbstractUIPlugin
     // The shared instance
     private static TLCUIActivator plugin;
     private Font courierFont;
-    private PerspectiveAdapter perspectiveAdapter = new PerspectiveAdapter() {
-
+    
+    // update the CNF content  
+    private PerspectiveAdapter perspectiveAdapter = new PerspectiveAdapter() 
+    {
         public void perspectiveActivated(IWorkbenchPage page, IPerspectiveDescriptor perspective)
         {
-            System.out.println("A" + perspective.getId());
-            INavigatorContentService contentService = NavigatorContentServiceFactory.INSTANCE
-                    .createContentService(ToolboxExplorer.VIEW_ID);
-
-            if (TLCPerspective.ID.equals(perspective.getId())
-                    && !contentService.getActivationService().isNavigatorExtensionActive(
-                            ModelContentProvider.TLC_NCE))
+            if (TLCPerspective.ID.equals(perspective.getId()))
             {
-                contentService.getActivationService().activateExtensions(
-                        new String[] { ModelContentProvider.TLC_NCE }, false);
-                contentService.getActivationService().persistExtensionActivations();
+                ToolboxHandle.setToolboxNCEActive(ModelContentProvider.TLC_NCE, true);
             }
         }
 
         public void perspectiveDeactivated(IWorkbenchPage page, IPerspectiveDescriptor perspective)
         {
-            System.out.println("D" + perspective.getId());
-            INavigatorContentService contentService = NavigatorContentServiceFactory.INSTANCE
-                    .createContentService(ToolboxExplorer.VIEW_ID);
-
-            if (TLCPerspective.ID.equals(perspective.getId())
-                    && contentService.getActivationService().isNavigatorExtensionActive(
-                            ModelContentProvider.TLC_NCE))
+            if (TLCPerspective.ID.equals(perspective.getId()))
             {
-                System.out.println("was active: deactivated");
-                contentService.getActivationService().deactivateExtensions(
-                        new String[] { ModelContentProvider.TLC_NCE }, false);
-                contentService.getActivationService().persistExtensionActivations();
+                ToolboxHandle.setToolboxNCEActive(ModelContentProvider.TLC_NCE, false);
             }
-
         }
     };
 
@@ -84,7 +66,7 @@ public class TLCUIActivator extends AbstractUIPlugin
         IWorkbenchWindow window = UIHelper.getActiveWindow();
         if (window != null)
         {
-            // window.addPerspectiveListener(perspectiveAdapter);
+            window.addPerspectiveListener(perspectiveAdapter);
         }
     }
 
