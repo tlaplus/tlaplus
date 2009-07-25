@@ -22,7 +22,7 @@ public class SwichPerspectiveHandler extends AbstractHandler implements IHandler
     public static final String COMMAND_ID = "toolbox.command.switchperspective";
     public static final String PARAM_PERSPECTIVE_ID = "toolbox.switchperspective.id";
 
-    public Object execute(ExecutionEvent event) throws ExecutionException
+    public Object execute(final ExecutionEvent event) throws ExecutionException
     {
         final String perspectiveId = event.getParameter(PARAM_PERSPECTIVE_ID);
         if (perspectiveId == null)
@@ -36,6 +36,9 @@ public class SwichPerspectiveHandler extends AbstractHandler implements IHandler
             return null;
         }
 
+        final ICommandService service = (ICommandService) HandlerUtil.getActiveWorkbenchWindowChecked(event).getService(
+                ICommandService.class);
+
         /**
          * opens a perspective by name
          */
@@ -43,25 +46,24 @@ public class SwichPerspectiveHandler extends AbstractHandler implements IHandler
             public void run()
             {
                 UIHelper.switchPerspective(perspectiveId);
+
+                // update our radio button states ... get the service from
+                // a place that's most appropriate
+                // but do it in the same thread, and AFTER the UI has been updated
+                service.refreshElements(event.getCommand().getId(), null);
             }
         });
 
-        // update our radio button states ... get the service from
-        // a place that's most appropriate
-        ICommandService service = (ICommandService) HandlerUtil.getActiveWorkbenchWindowChecked(event).getService(
-                ICommandService.class);
-        service.refreshElements(event.getCommand().getId(), null);
 
         return null;
     }
 
     public void updateElement(UIElement element, Map parameters)
     {
-        String parm = (String) parameters.get(PARAM_PERSPECTIVE_ID);
-        if (parm != null)
+        String parameter = (String) parameters.get(PARAM_PERSPECTIVE_ID);
+        if (parameter != null)
         {
-            System.out.println("Current perspective:" + UIHelper.getActivePerspectiveId());
-            if (UIHelper.getActivePerspectiveId().equals(parm))
+            if (UIHelper.getActivePerspectiveId().equals(parameter))
             {
                 element.setChecked(true);
             } else

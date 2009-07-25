@@ -12,6 +12,8 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.spec.Spec;
+import org.lamport.tla.toolbox.ui.navigator.ToolboxExplorer;
+import org.lamport.tla.toolbox.util.UIHelper;
 import org.lamport.tla.toolbox.util.pref.IPreferenceConstants;
 import org.lamport.tla.toolbox.util.pref.PreferenceStoreHelper;
 import org.osgi.framework.Bundle;
@@ -75,6 +77,7 @@ public class ToolboxHandle
     {
         return Activator.getSpecManager().getSpecByName(name);
     }
+
     /**
      * @return
      */
@@ -105,7 +108,7 @@ public class ToolboxHandle
     public static IPath getTLAToolsClasspath()
     {
         IPath bundleBase = getBundleLocation();
-        
+
         if (bundleBase != null)
         {
             IPath tlaToolsLocation = bundleBase.append("tla2tools.jar"); //$NON-NLS-1$
@@ -120,7 +123,7 @@ public class ToolboxHandle
     public static IPath getModulesClasspath()
     {
         IPath bundleBase = getBundleLocation();
-        
+
         if (bundleBase != null)
         {
             IPath tlaToolsLocation = bundleBase.append("StandardModules/"); //$NON-NLS-1$
@@ -139,8 +142,7 @@ public class ToolboxHandle
     {
         return Activator.getModuleDependencyStorage().getListOfExtendedModules(moduleName);
     }
-    
-    
+
     public static IPath getBundleLocation()
     {
         Bundle bundle = Activator.getDefault().getBundle();
@@ -159,4 +161,32 @@ public class ToolboxHandle
         return Path.fromOSString(fullPath);
     }
 
+    /**
+     * Updates the toolbox explorer
+     */
+    public static void refreshToolboxExplorer()
+    {
+        UIHelper.runUIAsync(new Runnable() {
+
+            public void run()
+            {
+                ToolboxExplorer.refresh();
+            }
+        });
+    }
+
+    /**
+     * Updates the toolbox explorer
+     */
+    public static void setToolboxNCEActive(final String extensionId, final boolean active)
+    {
+        UIHelper.runUIAsync(new Runnable() {
+
+            public void run()
+            {
+                ToolboxExplorer.setToolboxNCEActive(extensionId, active);
+                ToolboxExplorer.refresh();
+            }
+        });
+    }
 }
