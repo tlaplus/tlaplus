@@ -9,18 +9,15 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.ui.IViewPart;
-import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.commands.ICommandService;
-import org.eclipse.ui.navigator.CommonNavigator;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.eclipse.ui.progress.UIJob;
 import org.lamport.tla.toolbox.spec.manager.WorkspaceSpecManager;
 import org.lamport.tla.toolbox.spec.parser.ParserDependencyStorage;
+import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.ui.contribution.ParseStatusContributionItem;
 import org.lamport.tla.toolbox.ui.handler.SwichPerspectiveHandler;
-import org.lamport.tla.toolbox.ui.provider.ToolboxExplorer;
 import org.lamport.tla.toolbox.ui.view.ProblemView;
 import org.lamport.tla.toolbox.util.TLAMarkerHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
@@ -100,21 +97,7 @@ public class Activator extends AbstractUIPlugin
 
             public void resourceChanged(IResourceChangeEvent event)
             {
-                UIHelper.runUIAsync(new Runnable() {
-
-                    public void run()
-                    {
-                        IWorkbenchPage page = UIHelper.getActivePage();
-                        if (page != null)
-                        {
-                            IViewPart findView = UIHelper.getActivePage().findView(ToolboxExplorer.VIEW_ID);
-                            if (findView != null && findView instanceof CommonNavigator)
-                            {
-                                ((CommonNavigator) findView).getCommonViewer().refresh();
-                            }
-                        }
-                    }
-                });
+                ToolboxHandle.refreshToolboxExplorer();
             }
         });
 
