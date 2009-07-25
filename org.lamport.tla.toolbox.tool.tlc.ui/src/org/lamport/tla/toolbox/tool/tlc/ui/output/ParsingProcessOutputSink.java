@@ -22,6 +22,7 @@ public class ParsingProcessOutputSink implements IProcessOutputSink
     private IDocument document;
     private int lastPartitionEnd;
     private Vector typedRegions;
+    private Vector userRegions;
     private String processName;
 
     /* (non-Javadoc)
@@ -38,12 +39,10 @@ public class ParsingProcessOutputSink implements IProcessOutputSink
 
             System.out.println("Parsing from " + startOfUnpartitionedText + " to " + document.getLength());
             ITypedRegion[] regions = partitioner.computePartitioning(startOfUnpartitionedText, document.getLength());
-            // System.out.print("Found " + regions.length + " partitions\n");
 
-            // iterate partitions from the end to the front, and looking for the last non-default (user-output)
-            // partition
-            int j = 0;
-            StringBuffer buffer = new StringBuffer(">");
+            // iterate partitions from the end to the front, and looking for the last 
+            // non-default (user-output) partition
+            Vector userTempPartitions = new Vector();
             for (int i = 0; i < regions.length; i++)
             {
                 if (!LogPartitionTokenScanner.DEFAULT_CONTENT_TYPE.equals(regions[i].getType()))
@@ -55,47 +54,29 @@ public class ParsingProcessOutputSink implements IProcessOutputSink
                     }
                     typedRegions.add(regions[i]);
 
-                    int offset;
-                    if (j == 0)
+                    // user partitions found
+                    if (userTempPartitions.size() > 1)
                     {
-                        offset = 0;
-
-                    } else
-                    {
-                        offset = ((TypedRegion) typedRegions.get(j)).getOffset()
-                                + ((TypedRegion) typedRegions.get(j)).getLength();
-                    }
-                    int length = regions[i].getOffset();
-                    j++;
-
-                    if (buffer.length() > 1)
-                    {
-                        buffer.append("<");
-                        String location = "[" + offset + ":" + length + "]";
-                        System.out.println("User " + location + ":" + buffer.toString());
-                        buffer = new StringBuffer(">");
+                        int startLine = document.getLineOfOffset(((TypedRegion)userTempPartitions.elementAt(0)).getOffset());
+                        int endLine = document.getLineOfOffset(((TypedRegion)userTempPartitions.elementAt(userTempPartitions.size() - 1)).getOffset());
+                        ITypedRegion mergedPartition = mergePartitions((ITypedRegion[]) userTempPartitions
+                                .toArray(new TypedRegion[userTempPartitions.size()]));
+                        System.out.println("Merged " + userTempPartitions.size() + " user partitions. Lines from " + startLine + " to " + endLine + ".");
+                        this.userRegions.add(mergedPartition);
+                        printPartition(mergedPartition, document);
+                        userTempPartitions = new Vector();
                     }
 
-                    printPartition(regions[i], document);
+                    // don't print the detected typed partitions
+                    // printPartition(regions[i], document);
                 } else
                 {
-
-                    buffer.append(document.get(regions[i].getOffset(), regions[i].getLength()));
+                    userTempPartitions.add(regions[i]);
                 }
             }
 
-            if (regions.length > 9) 
-            {
-                TypedRegion[] merge = new TypedRegion[10];
-                System.arraycopy(regions, regions.length - 10, merge, 0, merge.length);
-                printPartition(mergePartitions(merge), document);
-            }
-
-            // System.out.print(" " + j + " of them non-user\n");
-
         } catch (BadLocationException e)
         {
-            // 
             e.printStackTrace();
         }
     }
@@ -109,6 +90,7 @@ public class ParsingProcessOutputSink implements IProcessOutputSink
         this.processName = processName;
         this.document = new Document();
         this.typedRegions = new Vector();
+        this.userRegions = new Vector();
 
         if (this.document != null)
         {
@@ -140,7 +122,6 @@ public class ParsingProcessOutputSink implements IProcessOutputSink
             TypedRegion region = (TypedRegion) typedRegions.get(i);
             printPartition(region, document);
         }
-
     }
 
     public static ITypedRegion mergePartitions(ITypedRegion[] regions)
@@ -154,7 +135,7 @@ public class ParsingProcessOutputSink implements IProcessOutputSink
         int offset = -1;
         int length = 0;
         int matcher = -1;
-        
+
         for (int i = 0; i < regions.length; i++)
         {
             if (type == null)
@@ -170,7 +151,7 @@ public class ParsingProcessOutputSink implements IProcessOutputSink
             if (offset == -1)
             {
                 offset = regions[i].getOffset();
-                
+
             } else
             {
                 if (regions[i].getOffset() != matcher)
@@ -181,47 +162,50 @@ public class ParsingProcessOutputSink implements IProcessOutputSink
 
             matcher = regions[i].getOffset() + regions[i].getLength();
             length += regions[i].getLength();
-            
+
         }
         return new TypedRegion(offset, length, type);
     }
 
     public static void printPartition(ITypedRegion region, IDocument document)
     {
-        if (region == null) 
+        if (region == null)
         {
             return;
         }
         try
         {
             int offset = region.getOffset();
-            int length = Math.min(region.getLength(), 50);
+            int printLength = Math.min(region.getLength(), 50);
             String type = region.getType();
-
+            StringBuffer messageBuffer = new StringBuffer();
             String location = "[" + region.getOffset() + ":" + region.getLength() + "]";
-            String text = document.get(offset, length);
+            String head = document.get(offset, printLength);
             if (LogPartitionTokenScanner.COVERAGE.equals(type))
             {
-                System.out.println("Coverage " + location + ":" + text);
+                messageBuffer.append("Coverage " + location + ": >" + head + "< ...");
             } else if (LogPartitionTokenScanner.PROGRESS.equals(type))
             {
-                System.out.println("Progress " + location + ":" + text);
+                messageBuffer.append("Progress " + location + ": >" + head + "< ...");
             } else if (LogPartitionTokenScanner.INIT_START.equals(type))
             {
-                System.out.println("Init start " + location + ":" + text);
+                messageBuffer.append("Init start " + location + ": >" + head + "< ...");
             } else if (LogPartitionTokenScanner.INIT_END.equals(type))
             {
-                System.out.println("Init end " + location + ":" + text);
+                messageBuffer.append("Init end " + location + ": >" + head + "< ...");
             } else if (LogPartitionTokenScanner.OUTPUT.equals(type))
             {
-                System.out.println("User " + location + ":" + text);
+                String tail = document.get(offset + region.getLength() - printLength, printLength);
+                messageBuffer.append("User " + location + ": >" + head + "< .. >" + tail + "<");
             } else
             {
-                System.out.println("UNKNOWN " + location + ":" + text);
+                messageBuffer.append("UNKNOWN " + location + ": >" + head + "< ...");
             }
+
+            System.out.println(messageBuffer.toString());
+
         } catch (BadLocationException e)
         {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
 

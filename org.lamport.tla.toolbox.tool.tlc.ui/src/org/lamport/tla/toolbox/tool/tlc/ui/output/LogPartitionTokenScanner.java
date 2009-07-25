@@ -23,6 +23,8 @@ public class LogPartitionTokenScanner extends RuleBasedPartitionScanner
     public static final String COVERAGE = "__tlc_coverage"; //$NON-NLS-1$
     public static final String INIT_END = "__tlc_init_end"; //$NON-NLS-1$
     public static final String INIT_START = "__tlc_init_start"; //$NON-NLS-1$
+    public static final String CHECKPOINT_START = "__tlc_checkpoint_start"; //$NON-NLS-1$
+    public static final String CHECKPOINT_END = "__tlc_checkpoint_end"; //$NON-NLS-1$
     public static final String OUTPUT = "__tlc_output"; //$NON-NLS-1$
     public static final String PROGRESS = "__tlc_progress"; //$NON-NLS-1$
     
@@ -36,21 +38,26 @@ public class LogPartitionTokenScanner extends RuleBasedPartitionScanner
         // coverage
         IToken coverage = new Token(COVERAGE);
 
-        // status of TLC, init stated computed
-        IToken init_end = new Token(INIT_END);
-        // status of TLC, computing init stated
-        IToken init_start = new Token(INIT_START);
-
+        // status of TLC, computing init states
+        IToken initStart = new Token(INIT_START);
+        // status of TLC, init states computed
+        IToken initEnd = new Token(INIT_END);
+        // status of TLC, starting chekpointing
+        IToken checkpointStart = new Token(CHECKPOINT_START);
+        // status of TLC, finished chekpointing
+        IToken checkpointEnd = new Token(CHECKPOINT_END);
         // intermediate progress
         IToken progress = new Token(PROGRESS);
         
         // output produced by the print statements
         // IToken output = new Token(OUTPUT);
 
-        rules.add(new MultiLineRule("The coverage statistics", "End of statistics", coverage, (char) 0, false));
-        rules.add(new SingleLineRule("Progress(", "", progress));
-        rules.add(new SingleLineRule("Finished computing initial states:", "", init_end));
-        rules.add(new SingleLineRule("Computing initial states...", "", init_start));
+        rules.add(new MultiLineRule("The coverage statistics :", "End of statistics.", coverage, (char) 0, false));
+        rules.add(new SingleLineRule("Progress(", " left on queue.", progress));
+        rules.add(new SingleLineRule("Finished computing initial states:", "state generated.", initEnd));
+        rules.add(new SingleLineRule("Computing initial states...", "", initStart));
+        rules.add(new SingleLineRule("Checkpointing of run ", "", checkpointStart));
+        rules.add(new SingleLineRule("Checkpointing completed.", "", checkpointEnd));
         
         
         setPredicateRules((IPredicateRule[]) rules.toArray(new IPredicateRule[rules.size()]));
