@@ -62,18 +62,18 @@
          point="org.eclipse.core.expressions.definitions">
       <definition
             id="toolbox.tlc.hasModelRunningMarker">
-         <test
-               args="org.lamport.tla.toolbox.tlc.modelMarker, modelIsRunning"
-               property="toolbox.property.hasMarker"
-               value="true">
-         </test>
+	         <test
+	               args="org.lamport.tla.toolbox.tlc.modelMarker, modelIsRunning"
+	               property="toolbox.property.hasMarker"
+	               value="true">
+	         </test>
       </definition>
       <definition
             id="toolbox.tlc.hasModelCrashedMarker">
          <test
                args="org.lamport.tla.toolbox.tlc.crashedModelMarker"
                property="toolbox.property.hasMarker"
-               value="true">
+               value="-1">
          </test>
       </definition>
    </extension>
