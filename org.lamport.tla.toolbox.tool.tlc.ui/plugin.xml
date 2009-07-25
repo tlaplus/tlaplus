@@ -80,6 +80,24 @@
             id="toolbox.tool.tlc.commands.model.clone.delegate"
             name="Clone Model">
       </command>
+      <command
+            categoryId="toolbox.tool.tlc.commands.category"
+            description="Runs the model checker."
+            id="toolbox.tool.tlc.commands.model.run"
+            name="Run model checking">
+      </command>
+      <command
+            categoryId="toolbox.tool.tlc.commands.category"
+            description="Stops the model checker execution."
+            id="toolbox.tool.tlc.commands.model.stop"
+            name="Stop model checking">
+      </command>
+      <command
+            categoryId="toolbox.tool.tlc.commands.category"
+            description="Repairs corrupted model."
+            id="toolbox.tool.tlc.commands.model.repair"
+            name="Repair corrupted model">
+      </command>
    </extension>
    <extension
          point="org.eclipse.ui.menus">
@@ -167,6 +185,30 @@
                id="toolbox.popupmenu.model.clone"
                label="Clone"
                mnemonic="C"
+               style="push">
+         </command>
+      </menuContribution>
+      <menuContribution
+            locationURI="popup:toolbox.explorer.popup?after=additions">
+         <command
+               commandId="toolbox.tool.tlc.commands.model.run"
+               icon="icons/full/lrun_obj.gif"
+               id="toolbox.popupmenu.model.run"
+               label="Run"
+               style="push">
+         </command>
+         <command
+               commandId="toolbox.tool.tlc.commands.model.stop"
+               icon="icons/full/progress_stop.gif"
+               id="toolbox.popupmenu.model.stop"
+               label="Stop"
+               style="push">
+         </command>
+         <command
+               commandId="toolbox.tool.tlc.commands.model.repair"
+               icon="icons/full/loop_obj.gif"
+               id="toolbox.popupmenu.model.repair"
+               label="Repair"
                style="push">
          </command>
       </menuContribution>
@@ -309,6 +351,23 @@ Console Facory
       <handler
             class="org.lamport.tla.toolbox.tool.tlc.handlers.NewModelHandler"
             commandId="toolbox.tool.tlc.commands.model.new">
+         <activeWhen>
+            <and>
+               <with
+                     variable="selection">
+                  <iterate
+                        ifEmpty="true"
+                        operator="and">
+                     <instanceof
+                           value="org.lamport.tla.toolbox.spec.Spec">
+                     </instanceof>
+                  </iterate>
+               </with>
+               <count
+                     value="1">
+               </count>
+            </and>
+         </activeWhen>
       </handler>
       <handler
             class="org.lamport.tla.toolbox.tool.tlc.handlers.OpenModelHandler"
@@ -407,6 +466,84 @@ Console Facory
                         value="org.eclipse.debug.core.ILaunchConfiguration">
                   </instanceof>
                </iterate>
+            </with>
+         </activeWhen>
+      </handler>
+      <handler
+            class="org.lamport.tla.toolbox.tool.tlc.handlers.StartLaunchHandler"
+            commandId="toolbox.tool.tlc.commands.model.run">
+         <enabledWhen>
+            <count
+                  value="1">
+            </count>
+         </enabledWhen>
+         <activeWhen>
+            <with
+                  variable="selection">
+                  <iterate
+                        ifEmpty="false"
+                        operator="and">
+                     <instanceof
+                           value="org.eclipse.debug.core.ILaunchConfiguration">
+                     </instanceof>
+	                   <adapt
+	                         type="org.eclipse.debug.core.ILaunchConfiguration">
+	                     <not>
+                        	<or>
+	                      <reference
+	                            definitionId="toolbox.tlc.hasModelCrashedMarker">
+	                      </reference>
+	                      <reference
+	                            definitionId="toolbox.tlc.hasModelRunningMarker">
+	                      </reference>
+                        </or>
+                     </not>
+	                   </adapt>
+                  </iterate>
+            </with>
+         </activeWhen>
+      </handler>
+      <handler
+            class="org.lamport.tla.toolbox.tool.tlc.handlers.StopLaunchHandler"
+            commandId="toolbox.tool.tlc.commands.model.stop">
+         <activeWhen>
+            <with
+                  variable="selection">
+                  <iterate
+                        ifEmpty="false"
+                        operator="and">
+                     <instanceof
+                           value="org.eclipse.debug.core.ILaunchConfiguration">
+                     </instanceof>
+                     <adapt
+                           type="org.eclipse.debug.core.ILaunchConfiguration">
+                        <reference
+                              definitionId="toolbox.tlc.hasModelRunningMarker">
+                        </reference>
+                     </adapt>
+                  </iterate>
+            </with>
+         </activeWhen>
+      </handler>
+      <handler
+            class="org.lamport.tla.toolbox.tool.tlc.handlers.RepairLaunchHandler"
+            commandId="toolbox.tool.tlc.commands.model.repair">
+         <activeWhen>
+            <with
+                  variable="selection">
+                  <iterate
+                        ifEmpty="false"
+                        operator="and">
+                     <instanceof
+                           value="org.eclipse.debug.core.ILaunchConfiguration">
+                     </instanceof>
+                     <adapt
+                           type="org.eclipse.debug.core.ILaunchConfiguration">
+                        <reference
+                              definitionId="toolbox.tlc.hasModelCrashedMarker">
+                        </reference>
+                     </adapt>
+                  </iterate>
             </with>
          </activeWhen>
       </handler>
