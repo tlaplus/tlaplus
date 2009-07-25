@@ -180,7 +180,10 @@ public abstract class TLCJob extends AbstractJob implements IModelConfigurationC
     {
         if (family != null)
         {
-            if (family instanceof Spec)
+            if (family instanceof ILaunchConfiguration) 
+            {
+                return (this.launch.getLaunchConfiguration().contentsEqual((ILaunchConfiguration) family)); 
+            } else if (family instanceof Spec)
             {
                 Spec spec = (Spec) family;
                 return (spec.getName().equals(this.specName));
