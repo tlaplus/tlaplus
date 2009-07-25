@@ -907,8 +907,6 @@
          </enabledWhen>
       </handler>
    </extension>
-   
-   <!-- Adapters -->
    <extension
          point="org.eclipse.core.expressions.propertyTesters">
       <propertyTester
