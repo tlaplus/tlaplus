@@ -49,7 +49,7 @@ public class PCalPropertyTester extends PropertyTester
                     boolean result = false;
                     Boolean sessionProperty = (Boolean) resource.getSessionProperty(key);
                     result = (sessionProperty != null && sessionProperty.booleanValue());
-                    System.out.println(resource.toString()+ " " + result);
+                    // System.out.println(resource.toString()+ " " + result);
                     return result;
                 } catch (CoreException e)
                 {
