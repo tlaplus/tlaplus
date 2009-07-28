@@ -108,8 +108,11 @@ public class TLCProcessJob extends TLCJob
                 monitor.subTask("Model checking...");
 
                 // register the broadcasting listener
-                process.getStreamsProxy().getOutputStreamMonitor().addListener(new BroadcastStreamListener(modelName, IProcessOutputSink.TYPE_OUT));
-                process.getStreamsProxy().getErrorStreamMonitor().addListener(new BroadcastStreamListener(modelName, IProcessOutputSink.TYPE_ERROR));
+                
+                BroadcastStreamListener listener = new BroadcastStreamListener(modelName, IProcessOutputSink.TYPE_OUT);
+                
+                process.getStreamsProxy().getOutputStreamMonitor().addListener(listener);
+                process.getStreamsProxy().getErrorStreamMonitor().addListener(listener);
 
                 // loop until the process is terminated
                 while (checkAndSleep())
