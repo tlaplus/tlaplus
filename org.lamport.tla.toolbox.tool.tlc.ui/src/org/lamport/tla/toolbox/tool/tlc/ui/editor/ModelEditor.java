@@ -130,12 +130,6 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
                 }
             });
 
-            /*
-             * Install a resource change listener on the output file
-             * Update the information from the file is the file changes
-             */
-            ResourcesPlugin.getWorkspace().addResourceChangeListener(resultPage, IResourceChangeEvent.POST_CHANGE);
-
             // setContentDescription(path.toString());
             this.setPartName(ModelHelper.getModelName(finput.getFile()));
             this.setTitleToolTip(finput.getFile().getProjectRelativePath().toString());
@@ -174,7 +168,6 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
         // remove the listeners
         ResourcesPlugin.getWorkspace().removeResourceChangeListener(rootFileListener);
         ResourcesPlugin.getWorkspace().removeResourceChangeListener(modelFileChangeListener);
-        ResourcesPlugin.getWorkspace().removeResourceChangeListener(resultPage);
         super.dispose();
     }
 

@@ -1,12 +1,10 @@
 package org.lamport.tla.toolbox.tool.tlc.ui.editor.page;
 
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IResourceChangeEvent;
-import org.eclipse.core.resources.IResourceChangeListener;
-import org.eclipse.core.resources.IResourceDelta;
+import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.IDocumentPartitioner;
+import org.eclipse.jface.text.ITypedRegion;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -18,16 +16,21 @@ import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.forms.widgets.TableWrapData;
+import org.lamport.tla.toolbox.tool.tlc.launch.IConfigurationConstants;
+import org.lamport.tla.toolbox.tool.tlc.output.ITLCOutputListener;
+import org.lamport.tla.toolbox.tool.tlc.output.PartitionToolkit;
+import org.lamport.tla.toolbox.tool.tlc.output.TLCOutputSourceRegistry;
+import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
-import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper.IFileProvider;
 import org.lamport.tla.toolbox.util.IHelpConstants;
+import org.lamport.tla.toolbox.util.UIHelper;
 
 /**
  * A page to display results of model checking
  * @author Simon Zambrovski
  * @version $Id$
  */
-public class ResultPage extends BasicFormPage implements IResourceChangeListener
+public class ResultPage extends BasicFormPage implements ITLCOutputListener
 {
     public static final String ID = "resultPage";
     // private Text startTimeText;
@@ -39,8 +42,6 @@ public class ResultPage extends BasicFormPage implements IResourceChangeListener
 
     private Text output;
     private Text progress;
-
-    private IDocument document = null;
 
     /**
      * @param editor
@@ -103,7 +104,7 @@ public class ResultPage extends BasicFormPage implements IResourceChangeListener
         currentTask = createTextLeft("Current task:", progressArea, toolkit);
         statesLeft = createTextRight("States left on queue:", progressArea, toolkit);
          */
-        progress = toolkit.createText(progressArea, "");
+        progress = toolkit.createText(progressArea, "", SWT.MULTI | SWT.V_SCROLL);
         gd = new GridData(SWT.FILL, SWT.LEFT, true, true);
         gd.minimumHeight = 300;
         gd.minimumWidth = 300;
@@ -124,7 +125,7 @@ public class ResultPage extends BasicFormPage implements IResourceChangeListener
         gd = new GridData(SWT.FILL, SWT.LEFT, true, true);
         outputArea.setLayoutData(gd);
 
-        output = toolkit.createText(outputArea, "");
+        output = toolkit.createText(outputArea, "", SWT.MULTI | SWT.V_SCROLL);
         gd = new GridData(SWT.FILL, SWT.LEFT, true, true);
         gd.minimumHeight = 300;
         gd.minimumWidth = 300;
@@ -133,38 +134,7 @@ public class ResultPage extends BasicFormPage implements IResourceChangeListener
 
     protected void loadData() throws CoreException
     {
-        // if (getEditor() instanceof ModelEditor)
-        // {
-        // editor = (ModelEditor) getEditor();
-        // IResource resource = editor.getResource(IFileProvider.TYPE_RESULT);
-        // if (resource.exists())
-        // {
-        // super.setInput(new ReadOnlyFileEditorInput((IFile) resource));
-        // }
-        // }
-        //
-        //        
-        // IEditorInput editorInput = getEditorInput();
-        // if (editorInput != null)
-        // {
-        // // there is something to display
-        // enableSection(SEC_PROGRESS, true);
-        // enableSection(SEC_OUTPUT, true);
-        //            
-        // output.setText("Text!");
-        //            
-        // } else
-        // {
-        // // disable the fields
-        // enableSection(SEC_PROGRESS, false);
-        // enableSection(SEC_OUTPUT, false);
-        // }
-
-        // startTimeText.setText(f.format(new Date()));
-        // elapsedTimeText.setText(f.format(new Date()));
-        // currentTask.setText("idle");
-
-        // setStates(100, 100, 23);
+        TLCOutputSourceRegistry.getStatusRegistry().connect(this);
     }
 
     // /**
@@ -212,109 +182,83 @@ public class ResultPage extends BasicFormPage implements IResourceChangeListener
         return text;
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.core.resources.IResourceChangeListener#resourceChanged(org.eclipse.core.resources.IResourceChangeEvent)
-     */
-    public void resourceChanged(IResourceChangeEvent event)
-    {
-        IFile logFile = ((IFileProvider) getEditor()).getResource(IFileProvider.TYPE_RESULT);
-        IResourceDelta logDelta = event.getDelta().findMember(logFile.getFullPath());
-        if (logDelta != null)
-        {
-            switch (logDelta.getKind()) {
-            case IResourceDelta.ADDED:
-                initDocument();
-                break;
-            case IResourceDelta.REMOVED:
-                document = null;
-                break;
-            case IResourceDelta.CHANGED:
-                refreshModel();
-                break;
-            }
-        }
-    }
-
-    /**
-     * 
-     */
-    private void refreshModel()
-    {
-        if (document == null)
-        {
-            return;
-        }
-
-        // System.out.println(">> change");
-        IDocumentPartitioner partitioner = document.getDocumentPartitioner();
-        if (partitioner == null) 
-        {
-            return;
-        }
-        
-        System.out.println("Length:" + document.getLength());
-        System.out.println(">" + document.get() + "<");
-        /*
-        ITypedRegion[] typedRegions = partitioner.computePartitioning(0, document.getLength());
-        try
-        {
-
-            for (int i = 0; i < typedRegions.length; i++)
-            {
-                int offset = typedRegions[i].getOffset();
-                int length = typedRegions[i].getLength();
-                String text = document.get(offset, length);
-                if (LogPartitionTokenScanner.COVERAGE.equals(typedRegions[i].getType()))
-                {
-                    System.out.println("Coverage: " + text);
-                } else if (LogPartitionTokenScanner.PROGRESS.equals(typedRegions[i].getType()))
-                {
-                    System.out.println("Progress: " + text);
-                } else if (LogPartitionTokenScanner.INIT_START.equals(typedRegions[i].getType()))
-                {
-                    System.out.println("Init start: " + text);
-                } else if (LogPartitionTokenScanner.INIT_END.equals(typedRegions[i].getType()))
-                {
-                    System.out.println("Init end: " + text);
-                }
-            }
-
-        } catch (BadLocationException e)
-        {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-         */
-    }
-
-    private void initDocument()
-    {
-//        IFile logFile = ((IFileProvider) getEditor()).getResource(IFileProvider.TYPE_RESULT);
-//        ReadOnlyFileEditorInput fInput = new ReadOnlyFileEditorInput(logFile);
-//        FileDocumentProvider fileDocumentProvider = new FileDocumentProvider();
-//
-//        try
-//        {
-//            fileDocumentProvider.connect(fInput);
-//            document = fileDocumentProvider.getDocument(fInput);
-//            if (document != null)
-//            {
-//                IDocumentPartitioner partitioner = new FastPartitioner(new LogPartitionTokenScanner(),
-//                        LogPartitionTokenScanner.CONTENT_TYPES);
-//                partitioner.connect(document);
-//                document.setDocumentPartitioner(partitioner);
-//            }
-//        } catch (CoreException e)
-//        {
-//            e.printStackTrace();
-//        }
-
-    }
-
+ 
     public void dispose()
     {
-        document = null;
+        TLCOutputSourceRegistry.getStatusRegistry().disconnect(this);
         super.dispose();
+    }
+
+    /* (non-Javadoc)
+     * @see org.lamport.tla.toolbox.tool.tlc.output.ITLCOutputListener#getProcessName()
+     */
+    public String getProcessName()
+    {
+        String modelName = null;
+        try
+        {
+            modelName = getConfig().getAttribute(IConfigurationConstants.MODEL_NAME, "");
+        } catch (CoreException e)
+        {
+            TLCUIActivator.logError("Error retrieveing the model name", e);
+        }
+        Assert.isTrue(modelName != null && !modelName.equals(""), "Bug, model name is not set properly"); 
+        return modelName;
+    }
+
+    /* (non-Javadoc)
+     * @see org.lamport.tla.toolbox.tool.tlc.output.ITLCOutputListener#onDone()
+     */
+    public void onDone()
+    {
+        System.out.println("Done");
+    }
+
+    /* (non-Javadoc)
+     * @see org.lamport.tla.toolbox.tool.tlc.output.ITLCOutputListener#onOutput(org.eclipse.jface.text.ITypedRegion, org.eclipse.jface.text.IDocument)
+     */
+    public void onOutput(ITypedRegion region, IDocument document)
+    {
+        try
+        {
+            final String outputMessage = document.get(region.getOffset(), region.getLength()) + "\n";
+
+            
+            switch (PartitionToolkit.getRegionTypeAsInt(region))
+            {
+            case PartitionToolkit.TYPE_USER_OUTPUT:
+                appendText(this.output, outputMessage);
+                break;
+            case PartitionToolkit.TYPE_COVERAGE:
+            case PartitionToolkit.TYPE_INIT_END:
+            case PartitionToolkit.TYPE_INIT_START:
+            case PartitionToolkit.TYPE_PROGRESS:            
+                appendText(this.progress, outputMessage);
+                break;
+            case PartitionToolkit.TYPE_UNKNOWN:            
+            default:
+                System.err.println("Unknown type detected: " + region.getType());
+                break;
+            }
+            
+            
+            
+        } catch (BadLocationException e)
+        {
+            TLCUIActivator.logError("Error retrieving a message for the process", e);
+        }
+    }
+    
+    public void appendText(final Text control, final String message) 
+    {
+        UIHelper.runUIAsync(new Runnable() {
+            
+            public void run()
+            {
+                control.append(message);
+                refresh();
+            }
+        });
     }
 
 }

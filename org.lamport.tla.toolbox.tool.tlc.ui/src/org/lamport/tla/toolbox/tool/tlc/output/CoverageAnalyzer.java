@@ -5,6 +5,7 @@ import org.eclipse.jface.text.ITypedRegion;
 import org.eclipse.jface.text.TypedRegion;
 
 /**
+ * Coverage information processor
  * @author Simon Zambrovski
  * @version $Id$
  */

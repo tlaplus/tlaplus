@@ -19,12 +19,12 @@ import org.osgi.framework.BundleContext;
  */
 public class TLCUIActivator extends AbstractUIPlugin
 {
-
     // The plug-in ID
     public static final String PLUGIN_ID = "org.lamport.tla.toolbox.tool.tlc.ui";
 
     // The shared instance
     private static TLCUIActivator plugin;
+
     private Font courierFont;
     
     // update the CNF content  
@@ -46,7 +46,6 @@ public class TLCUIActivator extends AbstractUIPlugin
             }
         }
     };
-
     /**
      * The constructor
      */
@@ -124,7 +123,7 @@ public class TLCUIActivator extends AbstractUIPlugin
     public static void logError(String message, Throwable e)
     {
         getDefault().getLog().log(new Status(Status.ERROR, TLCUIActivator.PLUGIN_ID, message, e));
-
     }
 
+    
 }

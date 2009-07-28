@@ -4,7 +4,6 @@ import java.util.Vector;
 
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.text.ITypedRegion;
-import org.eclipse.jface.text.TypedRegion;
 import org.eclipse.jface.text.rules.EndOfLineRule;
 import org.eclipse.jface.text.rules.IPredicateRule;
 import org.eclipse.jface.text.rules.IToken;
@@ -86,47 +85,6 @@ public class LogPartitionTokenScanner extends RuleBasedPartitionScanner
         return null;
     }
     
-    public static ITypedRegion mergePartitions(ITypedRegion[] regions)
-    {
-        Assert.isNotNull(regions);
-        if (regions.length == 0)
-        {
-            return null;
-        }
-        String type = null;
-        int offset = -1;
-        int length = 0;
-        int matcher = -1;
-
-        for (int i = 0; i < regions.length; i++)
-        {
-            if (type == null)
-            {
-                type = regions[i].getType();
-            } else
-            {
-                if (!type.equals(regions[i].getType()))
-                {
-                    return null;
-                }
-            }
-            if (offset == -1)
-            {
-                offset = regions[i].getOffset();
-
-            } else
-            {
-                if (regions[i].getOffset() != matcher)
-                {
-                    return null;
-                }
-            }
-
-            matcher = regions[i].getOffset() + regions[i].getLength();
-            length += regions[i].getLength();
-
-        }
-        return new TypedRegion(offset, length, type);
-    }
+    
 
 }
