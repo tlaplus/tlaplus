@@ -4,13 +4,13 @@
    <extension
          point="org.lamport.tla.toolbox.tlc.processOutputSink">
       <sink
-            class="org.lamport.tla.toolbox.tool.tlc.ui.output.ParsingProcessOutputSink">
+            class="org.lamport.tla.toolbox.tool.tlc.output.ParsingProcessOutputSink">
       </sink>
    </extension>
    <extension
          point="org.lamport.tla.toolbox.tlc.processOutputSink">
       <sink
-            class="org.lamport.tla.toolbox.tool.tlc.ui.output.ConsoleProcessOutputSink">
+            class="org.lamport.tla.toolbox.tool.tlc.output.ConsoleProcessOutputSink">
       </sink>
    </extension>
    <extension
@@ -32,8 +32,25 @@
       </category>
       <command
             categoryId="toolbox.tool.tlc.commands.category"
-            description="Creates a new model for current specification."
+            description="Creates a new model."
             id="toolbox.tool.tlc.commands.model.new"
+            name="New Model...">
+         <commandParameter
+               id="toolbox.tool.tlc.commands.model.new.param"
+               name="specName"
+               optional="false">
+         </commandParameter>
+      </command>
+      <command
+            categoryId="toolbox.tool.tlc.commands.category"
+            description="Creates a new model for current specification."
+            id="toolbox.tool.tlc.commands.model.new.delegate.current"
+            name="New Model...">
+      </command>
+      <command
+            categoryId="toolbox.tool.tlc.commands.category"
+            description="Creates a new model for selected specification."
+            id="toolbox.tool.tlc.commands.model.new.delegate.selected"
             name="New Model...">
       </command>
       <command
@@ -126,7 +143,7 @@
                mnemonic="M"
                tooltip="TLC Model Checker Actions">
             <command
-                  commandId="toolbox.tool.tlc.commands.model.new"
+                  commandId="toolbox.tool.tlc.commands.model.new.delegate.current"
                   id="toolbox.tool.tlc.modellaunch.new"
                   mnemonic="N">
                <visibleWhen
@@ -169,10 +186,10 @@
       <menuContribution
             locationURI="popup:toolbox.explorer.popup?after=group.new">
          <command
-               commandId="toolbox.tool.tlc.commands.model.new"
+               commandId="toolbox.tool.tlc.commands.model.new.delegate.selected"
                icon="icons/full/choice_sc_obj.gif"
                id="toolbox.popupmenu.model.new"
-               label="New Model"
+               label="New Model..."
                mnemonic="N"
                style="push">
          </command>
@@ -349,8 +366,8 @@ Console Facory
    <extension
          point="org.eclipse.ui.handlers">
       <handler
-            class="org.lamport.tla.toolbox.tool.tlc.handlers.NewModelHandler"
-            commandId="toolbox.tool.tlc.commands.model.new">
+            class="org.lamport.tla.toolbox.tool.tlc.handlers.NewModelHandlerSelectedDelegate"
+            commandId="toolbox.tool.tlc.commands.model.new.delegate.selected">
          <activeWhen>
             <and>
                <with
@@ -374,6 +391,14 @@ Console Facory
                </count>
             </and>
          </activeWhen>
+      </handler>
+      <handler
+            class="org.lamport.tla.toolbox.tool.tlc.handlers.NewModelHandlerCurrentDelegate"
+            commandId="toolbox.tool.tlc.commands.model.new.delegate.current">
+      </handler>
+      <handler
+            class="org.lamport.tla.toolbox.tool.tlc.handlers.NewModelHandler"
+            commandId="toolbox.tool.tlc.commands.model.new">
       </handler>
       <handler
             class="org.lamport.tla.toolbox.tool.tlc.handlers.OpenModelHandler"
