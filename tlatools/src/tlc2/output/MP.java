@@ -121,7 +121,7 @@ public class MP
         {
             // for the tool we always print the message class
             // and message code
-            b.append("<MSG level=\'").append(messageClass).append("\' code=\'").append(messageCode).append("\'>");
+            b.append("@@STARTMSG level=\'").append(messageClass).append("\' code=\'").append(messageCode).append("\'\n");
         } else
         {
             // depending on message class add different prefix
@@ -702,9 +702,8 @@ public class MP
 
         if (TLCGlobals.tool)
         {
-            // for the tool we always print the message class
-            // and message code
-            b.append("</ENDMSG code=\'").append(messageCode).append("\'>");
+            // for the tool we always print the message code
+            b.append("\n@@ENDMSG code=\'").append(messageCode).append("\'\n");
         } else
         {
 
