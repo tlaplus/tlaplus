@@ -4,7 +4,7 @@
    <extension
          point="org.lamport.tla.toolbox.tlc.processOutputSink">
       <sink
-            class="org.lamport.tla.toolbox.tool.tlc.output.ParsingProcessOutputSink">
+            class="org.lamport.tla.toolbox.tool.tlc.output.ParsingTLCOutputSink">
       </sink>
    </extension>
    <extension

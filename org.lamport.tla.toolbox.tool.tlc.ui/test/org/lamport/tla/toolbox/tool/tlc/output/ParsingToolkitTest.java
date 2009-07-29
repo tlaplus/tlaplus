@@ -22,7 +22,7 @@ public class ParsingToolkitTest extends TestCase
     }
 
     /**
-     * Test method for {@link org.lamport.tla.toolbox.tool.tlc.output.ParsingProcessOutputSink#mergePartitions(org.eclipse.jface.text.ITypedRegion[])}.
+     * Test method for {@link org.lamport.tla.toolbox.tool.tlc.output.ParsingTLCOutputSink#mergePartitions(org.eclipse.jface.text.ITypedRegion[])}.
      */
     public void testMergePartitions()
     {
