@@ -135,6 +135,7 @@ public abstract class TLCJob extends AbstractJob implements IModelConfigurationC
         arguments.add("-workers");
         arguments.add(String.valueOf(workers)); // number of workers
         // arguments.add("-debug"); // debugging only
+        arguments.add("-tool"); // run in tool mode
         arguments.add("-metadir");
         arguments.add(launchDir.getLocation().toOSString()); // running in directory
         arguments.add(ResourceHelper.getModuleName(rootModule)); // name of the module to check

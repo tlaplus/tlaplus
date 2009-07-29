@@ -29,7 +29,7 @@ import tlc2.TLC;
 public class TLCProcessJob extends TLCJob
 {
     private IProcess process = null;
-    
+    private BroadcastStreamListener listener = null;
     /**
      * Constructs a process job
      * @param name
@@ -108,8 +108,7 @@ public class TLCProcessJob extends TLCJob
                 monitor.subTask("Model checking...");
 
                 // register the broadcasting listener
-                
-                BroadcastStreamListener listener = new BroadcastStreamListener(modelName, IProcessOutputSink.TYPE_OUT);
+                listener = new BroadcastStreamListener(modelName, IProcessOutputSink.TYPE_OUT);
                 
                 process.getStreamsProxy().getOutputStreamMonitor().addListener(listener);
                 process.getStreamsProxy().getErrorStreamMonitor().addListener(listener);
@@ -162,6 +161,11 @@ public class TLCProcessJob extends TLCJob
             return new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID, "Error reading model parameters", e);
         } finally
         {
+            // send the notification about completion
+            if (listener != null) 
+            {
+                listener.streamClosed();
+            }
             // make sure to complete the monitor
             monitor.done();
         }

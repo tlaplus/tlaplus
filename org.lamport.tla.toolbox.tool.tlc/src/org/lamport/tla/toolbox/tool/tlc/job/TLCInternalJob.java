@@ -6,7 +6,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.debug.core.ILaunch;
-import org.eclipse.debug.core.IStreamListener;
 import org.lamport.tla.toolbox.tool.tlc.TLCActivator;
 import org.lamport.tla.toolbox.tool.tlc.output.IProcessOutputSink;
 import org.lamport.tla.toolbox.tool.tlc.output.internal.BroadcastStreamListener;
@@ -25,7 +24,7 @@ import util.ToolIO;
 public class TLCInternalJob extends TLCJob
 {
     private TLCThread tlcThread;
-    private IStreamListener outputListener;
+    private BroadcastStreamListener outputListener;
     int reported;
 
     /**
@@ -110,6 +109,9 @@ public class TLCInternalJob extends TLCJob
                 // report the messages created since last reporting
                 reportProgress();
 
+                // inform about completion
+                outputListener.streamClosed();
+                
                 // abnormal termination
                 return Status.CANCEL_STATUS;
             }
@@ -122,6 +124,9 @@ public class TLCInternalJob extends TLCJob
         // report progress
         reportProgress();
 
+        // inform about completion
+        outputListener.streamClosed();
+        
         // successful termination
         return Status.OK_STATUS;
     }
