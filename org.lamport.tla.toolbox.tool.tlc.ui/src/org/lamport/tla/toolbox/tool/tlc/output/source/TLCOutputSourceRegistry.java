@@ -24,7 +24,7 @@ public class TLCOutputSourceRegistry
     /**
      * Adds a source
      */
-    public void addTLCStatusSource(ITLCOutputSource source)
+    public synchronized void addTLCStatusSource(ITLCOutputSource source)
     {
         Assert.isNotNull(source);
         
@@ -50,7 +50,7 @@ public class TLCOutputSourceRegistry
     /**
      * Remove a source
      */
-    public void removeTLCStatusSource(String name)
+    public synchronized void removeTLCStatusSource(String name)
     {
         this.sources.remove(name);
     }
@@ -58,12 +58,9 @@ public class TLCOutputSourceRegistry
     /**
      * Connect the source to the listener
      */
-    public boolean connect(ITLCOutputListener listener)
+    public synchronized boolean connect(ITLCOutputListener listener)
     {
         Assert.isNotNull(listener);
-        
-        System.out.println("Connecting " + listener.toString());
-        
 
         ITLCOutputSource source = (ITLCOutputSource) this.sources.get(listener.getProcessName());
         if (source == null)
@@ -100,7 +97,7 @@ public class TLCOutputSourceRegistry
     /**
      * Disconnect the source from the listener
      */
-    public void disconnect(ITLCOutputListener listener)
+    public synchronized void disconnect(ITLCOutputListener listener)
     {
         Assert.isNotNull(listener);
 
