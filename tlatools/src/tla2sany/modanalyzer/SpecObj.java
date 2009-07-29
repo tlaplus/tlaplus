@@ -274,8 +274,8 @@ public class SpecObj
                 * produces this error.  Hopefully, we can use this to attach a     *
                 * location to the error message.                                   *
                 *******************************************************************/
-                errors.addAbort("Cannot find source file for module " + name + " imported in module "
-                        + nextExtenderOrInstancerModule.getName() + ".");
+                errors.addAbort("Cannot find source file for module " + name +
+                        ((nextExtenderOrInstancerModule == null) ? "" : " imported in module " + nextExtenderOrInstancerModule.getName()) + ".");
             }
         }
 
