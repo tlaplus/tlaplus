@@ -87,6 +87,12 @@
             type="org.eclipse.debug.core.ILaunchConfiguration">
 		</propertyTester>
    </extension>
+   <extension
+         point="org.lamport.tla.toolbox.tlc.processOutputSink">
+      <sink
+            class="org.lamport.tla.toolbox.tool.tlc.output.internal.FileProcessOutputSink">
+      </sink>
+   </extension>
 <!--
   NCE definition
  -->   

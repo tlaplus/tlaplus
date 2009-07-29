@@ -157,9 +157,9 @@ public class ModelCreationJob extends AbstractJob implements IModelConfiguration
             }
 
             // create the MC.tla, MC.cfg and MC.out
-            final IFile tlaFile = project.getFile(targetFolderPath.append("MC").addFileExtension("tla"));
-            final IFile cfgFile = project.getFile(targetFolderPath.append("MC").addFileExtension("cfg"));
-            final IFile outFile = project.getFile(targetFolderPath.append("MC").addFileExtension("out"));
+            final IFile tlaFile = project.getFile(targetFolderPath.append(ModelHelper.FILE_TLA));
+            final IFile cfgFile = project.getFile(targetFolderPath.append(ModelHelper.FILE_CFG));
+            final IFile outFile = project.getFile(targetFolderPath.append(ModelHelper.FILE_OUT));
 
             ISchedulingRule createRule = MultiRule.combine(ResourceHelper.getCreateRule(outFile), MultiRule.combine(
                     ResourceHelper.getCreateRule(tlaFile), ResourceHelper.getCreateRule(cfgFile)));

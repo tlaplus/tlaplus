@@ -4,22 +4,29 @@ import java.io.ByteArrayInputStream;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
+import org.eclipse.debug.core.ILaunchConfiguration;
+import org.lamport.tla.toolbox.tool.tlc.TLCActivator;
 import org.lamport.tla.toolbox.tool.tlc.output.IProcessOutputSink;
+import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
+import org.lamport.tla.toolbox.util.ResourceHelper;
 
 /**
+ * Sink writing the MC.out file
  * @author Simon Zambrovski
  * @version $Id$
  */
 public class FileProcessOutputSink implements IProcessOutputSink
 {
-    private ISchedulingRule rule = null;
-    private IFile outFile = null;
+    private ISchedulingRule rule;
+    private IFile outFile;
+    private String processName;
 
     public FileProcessOutputSink()
     {
@@ -40,12 +47,12 @@ public class FileProcessOutputSink implements IProcessOutputSink
                     outFile.appendContents(new ByteArrayInputStream(text.getBytes()), IResource.KEEP_HISTORY
                             | IResource.FORCE, monitor);
                 }
-            }, rule, IResource.NONE, new NullProgressMonitor());
+            }, rule, IWorkspace.AVOID_UPDATE, new NullProgressMonitor());
 
             // if the console output is active, print to it
         } catch (CoreException e)
         {
-            e.printStackTrace();
+            TLCActivator.logError("Error writing the TLC process output file for " + processName, e);
         }
 
     }
@@ -55,7 +62,10 @@ public class FileProcessOutputSink implements IProcessOutputSink
      */
     public void initializeSink(String processName, int sinkType)
     {
-
+        this.processName = processName;
+        ILaunchConfiguration config = ModelHelper.getModelByName(processName);
+        this.outFile = ModelHelper.getModelOutputLogFile(config);
+        this.rule = ResourceHelper.getModifyRule(outFile);
     }
 
     /* (non-Javadoc)
@@ -63,7 +73,13 @@ public class FileProcessOutputSink implements IProcessOutputSink
      */
     public void processFinished()
     {
-
+        try
+        {
+            ResourcesPlugin.getWorkspace().getRoot().refreshLocal(IResource.DEPTH_INFINITE, new NullProgressMonitor());
+        } catch (CoreException e)
+        {
+            TLCActivator.logError("Error synchronizing the workspace", e);
+        }
     }
 
 }

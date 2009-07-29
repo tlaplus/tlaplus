@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Vector;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IMarkerDelta;
 import org.eclipse.core.resources.IProject;
@@ -13,6 +14,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunchConfiguration;
@@ -50,15 +52,26 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
      * marker on .launch file, binary semantics
      */
     public static final String TLC_CRASHED_MARKER = "org.lamport.tla.toolbox.tlc.crashedModelMarker";
-
     /**
      * model is being run
      */
     private static final String MODEL_IS_RUNNING = "modelIsRunning";
-
+    /**
+     * Delimiter used to serialize lists  
+     */
     private static final String LIST_DELIMITER = ";";
+    /**
+     * Delimiter used to serialize parameter-value pair  
+     */
     private static final String PARAM_DELIMITER = ":";
+    /**
+     * Counter to be able to generate unique identifiers
+     */
     private static long globalCounter = 1;
+
+    public static final String FILE_TLA = "MC.tla";
+    public static final String FILE_CFG = "MC.cfg";
+    public static final String FILE_OUT = "MC.out";
 
     /**
      * Constructs the model called Foo___Model_1 from the SpecName Foo
@@ -126,7 +139,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
      * Retrieves the model name by name
      * @param specProject
      * @param modelName
-     * @return
+     * @return ILaunchConfiguration representing a model or null
      */
     public static ILaunchConfiguration getModelByName(IProject specProject, String modelName)
     {
@@ -613,6 +626,40 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
     public static IEditorPart getEditorWithModelOpened(ILaunchConfiguration model)
     {
         return UIHelper.getActivePage().findEditor(new FileEditorInput(model.getFile()));
+    }
+
+    /**
+     * Retrieves the working directory for the model
+     * <br>Note, this is a handle operation only, the resource returned may not exist
+     * @param config 
+     * @return the Folder.
+     */
+    public static IFolder getModelTargetDirectory(ILaunchConfiguration config)
+    {
+        Assert.isNotNull(config);
+        Assert.isTrue(config.getFile().exists());
+        return (IFolder) config.getFile().getProject().findMember(getModelName(config.getFile()));
+    }
+
+    /**
+     * Retrieves a file where the log of the TLC run is written
+     * @param config config representing the model
+     * @return the file handle, or null
+     */
+    public static IFile getModelOutputLogFile(ILaunchConfiguration config)
+    {
+        Assert.isNotNull(config);
+        IFolder targetFolder = ModelHelper.getModelTargetDirectory(config);
+        if (targetFolder.exists())
+        {
+            IFile logFile = (IFile) targetFolder.findMember(ModelHelper.FILE_OUT);
+            if (logFile.exists())
+            {
+                return logFile;
+            }
+        }
+        
+        return null;
     }
 
     /**
