@@ -126,6 +126,8 @@ public class TLC
      *  o -view: apply VIEW (if provided) when printing out states.
      *  o -gzip: control if gzip is applied to value input/output stream.
      *    Defaults to use gzip.
+     *  o -debug: debbuging information (non-production use)
+     *  o -tool: tool mode
      */
     public static void main(String[] args)
     {
@@ -415,6 +417,10 @@ public class TLC
             {
                 index++;
                 TLCGlobals.debug = true;
+            } else if (args[index].equals("-tool"))
+            {
+                index++;
+                TLCGlobals.tool = true;
             } else
             {
                 if (args[index].charAt(0) == '-')

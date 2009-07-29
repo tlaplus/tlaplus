@@ -77,6 +77,9 @@ public class TLCGlobals {
   // debugging field
   public static boolean debug = false;
 
+  // format messages easy for parsing
+  public static boolean tool = false;
+
   
   /**
    * Method added to support multiple invocation of TLC
@@ -94,5 +97,6 @@ public class TLCGlobals {
       useGZIP = true;
       useView = false;
       debug = false;
+      tool = false;
   } 
 }
