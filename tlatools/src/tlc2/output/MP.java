@@ -117,22 +117,29 @@ public class MP
 
         StringBuffer b = new StringBuffer();
 
-        // depending on message class add different prefix
-        switch (messageClass) {
-        case ERROR:
-            b.append("Error: ");
-            break;
-        case TLCBUG:
-            b.append("TLC Bug: ");
-            break;
-        case WARNING:
-            b.append("Warning: ");
-            break;
-        case NONE:
-        default:
-            break;
+        if (TLCGlobals.tool)
+        {
+            // for the tool we always print the message class
+            // and message code
+            b.append("<MSG level=\'").append(messageClass).append("\' code=\'").append(messageCode).append("\'>");
+        } else
+        {
+            // depending on message class add different prefix
+            switch (messageClass) {
+            case ERROR:
+                b.append("Error: ");
+                break;
+            case TLCBUG:
+                b.append("TLC Bug: ");
+                break;
+            case WARNING:
+                b.append("Warning: ");
+                break;
+            case NONE:
+            default:
+                break;
+            }
         }
-
         // fill with different message depending on the error code
         switch (messageCode) {
         case EC.UNIT_TEST:
@@ -692,37 +699,32 @@ public class MP
         }
 
         replaceString(b, parameters);
-        // // replace parameters, if any
-        // int placeHolderPosition = -1;
-        // String placeHolder = null;
-        // // replace all parameters
-        // for (int i = 0; i < parameters.length; i++)
-        // {
-        // placeHolder = "%" + (i + 1) + "%";
-        // placeHolderPosition = b.indexOf(placeHolder);
-        // if (placeHolderPosition != -1)
-        // {
-        // b.replace(placeHolderPosition, placeHolderPosition + placeHolder.length(), parameters[i]);
-        // } else
-        // {
-        // // the place holder is not found
-        // // stop processing
-        // break;
-        // }
-        // }
 
-        // post processing
-        switch (messageClass) {
-        case WARNING:
-            b.append("\n(Use the -nowarning option to disable this warning.)");
-            break;
-        case ERROR:
-        case TLCBUG:
-        case NONE:
-        default:
-            break;
+        if (TLCGlobals.tool)
+        {
+            // for the tool we always print the message class
+            // and message code
+            b.append("</ENDMSG code=\'").append(messageCode).append("\'>");
+        } else
+        {
+
+            // post processing
+            switch (messageClass) {
+            case WARNING:
+                b.append("\n(Use the -nowarning option to disable this warning.)");
+                break;
+            case ERROR:
+                if (TLCGlobals.tool)
+                {
+                    b.append("\n--End Error.");
+                }
+                break;
+            case TLCBUG:
+            case NONE:
+            default:
+                break;
+            }
         }
-
         DebugPrinter.print("Leaving getMessage()");
         return b.toString();
     }
