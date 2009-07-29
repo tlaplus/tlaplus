@@ -8,6 +8,8 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.ListenerList;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IToolBarManager;
@@ -148,6 +150,8 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
 
         // run button
         toolbarManager.add(new DynamicContributionItem(new RunAction()));
+        // stop button
+        toolbarManager.add(new DynamicContributionItem(new StopAction()));
 
         // refresh the tool-bar
         toolbarManager.update(true);
@@ -455,6 +459,16 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
     }
 
     /**
+     * Enables or disables the page
+     * @param enabled, if true the page controls are enabled, otherwise disabled
+     */
+    public void setEnabled(boolean enabled)
+    {
+        setAllSectionsEnabled(enabled);
+        getManagedForm().getForm().getBody().setEnabled(enabled);
+    }
+    
+    /**
      * Enables or disables all section on the current page
      * @param enabled 
      */
@@ -528,8 +542,7 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
 
             
             // refresh enablement status
-            setAllSectionsEnabled(!modelInUse);
-            mForm.getForm().getBody().setEnabled(!modelInUse);
+            setEnabled(!modelInUse);
             mForm.getForm().update();
         }
     }
@@ -575,6 +588,49 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
         }
     }
 
+    /**
+     * The stop action
+     */
+    class StopAction extends Action
+    {
+        StopAction()
+        {
+            super("Stop", TLCUIActivator.imageDescriptorFromPlugin(TLCUIActivator.PLUGIN_ID, "icons/full/progress_stop.gif"));
+            this.setDescription("Stop TLC");
+            this.setToolTipText("Stops the TLC model checker");
+        }
+
+        public void run()
+        {
+            ILaunchConfiguration config = ((ModelEditor) getEditor()).getConfig();
+            try
+            {
+                if (ModelHelper.isModelLocked(config) && !ModelHelper.isModelStale(config))
+                {
+                    Job[] runningSpecJobs = Job.getJobManager().find(config);
+                    for (int i = 0; i < runningSpecJobs.length; i++)
+                    {
+                        // send cancellations to all jobs...
+                        runningSpecJobs[i].cancel();
+                    }
+                } 
+            } catch (CoreException e)
+            {
+                TLCUIActivator.logError("Error stopping the model launch", e);
+            }
+            
+        }
+
+        /**
+         * Run is only enabled if the model is not in use
+         */
+        public boolean isEnabled()
+        {
+            return isModelInUse() && !isModelStale();
+        }
+    }
+
+    
     class ModelRecoveryAction extends Action
     {
         ModelRecoveryAction()

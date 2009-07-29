@@ -1,4 +1,4 @@
-package org.lamport.tla.toolbox.tool.tlc.output;
+package org.lamport.tla.toolbox.tool.tlc.output.source;
 
 import java.util.Vector;
 
@@ -15,7 +15,7 @@ import org.eclipse.jface.text.rules.Token;
  * @author Simon Zambrovski
  * @version $Id$
  */
-public class LogPartitionTokenScanner extends RuleBasedPartitionScanner
+public class TLCOutputTokenScanner extends RuleBasedPartitionScanner
 {
 
     public static final String TLA_PARTITIONING = "__tlc_output_partitioning"; //$NON-NLS-1$
@@ -49,7 +49,7 @@ public class LogPartitionTokenScanner extends RuleBasedPartitionScanner
     // intermediate progress
     private IToken progress = new Token(PROGRESS);
 
-    public LogPartitionTokenScanner()
+    public TLCOutputTokenScanner()
     {
         Vector rules = new Vector();
 

@@ -10,7 +10,6 @@ import org.eclipse.jface.text.ITypedRegion;
  */
 public interface ITLCOutputListener
 {
-
     /**
      * Retrieves the process name of TLC 
      * @return the name to identify the TLC instance
@@ -26,4 +25,9 @@ public interface ITLCOutputListener
      * Reports end of output
      */
     public void onDone();
+    
+    /**
+     * Informs the listener that the new source has appeared
+     */
+    public void onNewSource();
 }

@@ -19,7 +19,7 @@ import org.eclipse.ui.forms.widgets.TableWrapData;
 import org.lamport.tla.toolbox.tool.tlc.launch.IConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.output.ITLCOutputListener;
 import org.lamport.tla.toolbox.tool.tlc.output.PartitionToolkit;
-import org.lamport.tla.toolbox.tool.tlc.output.TLCOutputSourceRegistry;
+import org.lamport.tla.toolbox.tool.tlc.output.source.TLCOutputSourceRegistry;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
 import org.lamport.tla.toolbox.util.IHelpConstants;
@@ -33,6 +33,7 @@ import org.lamport.tla.toolbox.util.UIHelper;
 public class ResultPage extends BasicFormPage implements ITLCOutputListener
 {
     public static final String ID = "resultPage";
+    private static final String NO_OUTPUT_AVAILABLE = "No execution data is available";
     // private Text startTimeText;
     // private Text elapsedTimeText;
     // private Text currentTask;
@@ -53,9 +54,153 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
         this.imagePath = "icons/full/choice_sc_obj.gif";
     }
 
+
+    protected void loadData() throws CoreException
+    {
+        TLCOutputSourceRegistry.getStatusRegistry().disconnect(this);
+        boolean connected = TLCOutputSourceRegistry.getStatusRegistry().connect(this);
+        if (!connected)
+        {
+            setText(this.output, NO_OUTPUT_AVAILABLE, false);
+            setText(this.progress, NO_OUTPUT_AVAILABLE, false);
+        }
+    }
+
+    // /**
+    // * Updates the state fields
+    // * @param generated
+    // * @param distinct
+    // * @param left
+    // */
+    // private void setStates(int generated, int distinct, int left)
+    // {
+    // statesFound.setText(String.valueOf(distinct));
+    // statesGenerated.setText(String.valueOf(generated));
+    // statesLeft.setText(String.valueOf(left));
+    // }
+
+    /**
+     * reload the data on activation
+     */
+    public void setActive(boolean active)
+    {
+        super.setActive(active);
+        if (active)
+        {
+            // refresh
+            try
+            {
+                loadData();
+            } catch (CoreException e)
+            {
+                TLCUIActivator.logError("Error refreshing the page", e);
+            }
+        }
+    }
+
+
+    /* (non-Javadoc)
+     * @see org.lamport.tla.toolbox.tool.tlc.output.ITLCOutputListener#getProcessName()
+     */
+    public String getProcessName()
+    {
+        String modelName = null;
+        try
+        {
+            modelName = getConfig().getAttribute(IConfigurationConstants.MODEL_NAME, "");
+        } catch (CoreException e)
+        {
+            TLCUIActivator.logError("Error retrieveing the model name", e);
+        }
+        Assert.isTrue(modelName != null && !modelName.equals(""), "Bug, model name is not set properly");
+        return modelName;
+    }
+
+    /* (non-Javadoc)
+     * @see org.lamport.tla.toolbox.tool.tlc.output.ITLCOutputListener#onDone()
+     */
+    public synchronized void onDone()
+    {
+        System.out.println("Done");
+    }
+
+    /* (non-Javadoc)
+     * @see org.lamport.tla.toolbox.tool.tlc.output.ITLCOutputListener#newSourceOccured(int)
+     */
+    public synchronized void onNewSource()
+    {
+        System.out.println("Live stream for current model.");
+        setText(this.output, NO_OUTPUT_AVAILABLE, false);
+        setText(this.progress, NO_OUTPUT_AVAILABLE, false);
+    }
+
+    /* (non-Javadoc)
+     * @see org.lamport.tla.toolbox.tool.tlc.output.ITLCOutputListener#onOutput(org.eclipse.jface.text.ITypedRegion, org.eclipse.jface.text.IDocument)
+     */
+    public synchronized void onOutput(ITypedRegion region, IDocument document)
+    {
+        try
+        {
+            final String outputMessage = document.get(region.getOffset(), region.getLength()) + "\n";
+
+            switch (PartitionToolkit.getRegionTypeAsInt(region)) {
+            case PartitionToolkit.TYPE_USER_OUTPUT:
+                setText(this.output, outputMessage, true);
+                break;
+            case PartitionToolkit.TYPE_COVERAGE:
+            case PartitionToolkit.TYPE_INIT_END:
+            case PartitionToolkit.TYPE_INIT_START:
+            case PartitionToolkit.TYPE_PROGRESS:
+                setText(this.progress, outputMessage, true);
+                break;
+            case PartitionToolkit.TYPE_UNKNOWN:
+            default:
+                System.err.println("Unknown type detected: " + region.getType());
+                break;
+            }
+
+        } catch (BadLocationException e)
+        {
+            TLCUIActivator.logError("Error retrieving a message for the process", e);
+        }
+    }
+
+    /**
+     * Replaces or appends the text to the text control
+     * @param control
+     * @param message
+     * @param append
+     */
+    public void setText(final Text control, final String message, final boolean append)
+    {
+        UIHelper.runUIAsync(new Runnable() {
+
+            public void run()
+            {
+                if (append)
+                {
+                    if (NO_OUTPUT_AVAILABLE.equals(control.getText()))
+                    {
+                        control.setText("");
+                    }
+                    control.append(message);
+                } else
+                {
+                    control.setText(message);
+                }
+                control.update();
+            }
+        });
+    }
+
+    
+    /**
+     * Draw the fields
+     */
     protected void createBodyContent(IManagedForm managedForm)
     {
         int sectionFlags = Section.TITLE_BAR | Section.DESCRIPTION | Section.TREE_NODE | Section.EXPANDED;
+        int textFieldFlags = SWT.MULTI | SWT.V_SCROLL | SWT.WRAP | SWT.READ_ONLY | SWT.FULL_SELECTION;
 
         FormToolkit toolkit = managedForm.getToolkit();
         Composite body = managedForm.getForm().getBody();
@@ -104,9 +249,10 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
         currentTask = createTextLeft("Current task:", progressArea, toolkit);
         statesLeft = createTextRight("States left on queue:", progressArea, toolkit);
          */
-        progress = toolkit.createText(progressArea, "", SWT.MULTI | SWT.V_SCROLL);
+        progress = toolkit.createText(progressArea, "", textFieldFlags);
         gd = new GridData(SWT.FILL, SWT.LEFT, true, true);
         gd.minimumHeight = 300;
+        gd.heightHint = 300;
         gd.minimumWidth = 300;
         progress.setLayoutData(gd);
 
@@ -125,32 +271,38 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
         gd = new GridData(SWT.FILL, SWT.LEFT, true, true);
         outputArea.setLayoutData(gd);
 
-        output = toolkit.createText(outputArea, "", SWT.MULTI | SWT.V_SCROLL);
+        output = toolkit.createText(outputArea, "", textFieldFlags);
         gd = new GridData(SWT.FILL, SWT.LEFT, true, true);
         gd.minimumHeight = 300;
+        gd.heightHint = 300;
         gd.minimumWidth = 300;
         output.setLayoutData(gd);
     }
-
-    protected void loadData() throws CoreException
+    
+    /**
+     * Dispose the page
+     */
+    public void dispose()
     {
-        TLCOutputSourceRegistry.getStatusRegistry().connect(this);
+        TLCOutputSourceRegistry.getStatusRegistry().disconnect(this);
+        super.dispose();
+    }
+    
+    public void setEnabled(boolean enabled)
+    {
+        // do nothing here, since the result page is read-only per definition
     }
 
-    // /**
-    // * Updates the state fields
-    // * @param generated
-    // * @param distinct
-    // * @param left
-    // */
-    // private void setStates(int generated, int distinct, int left)
-    // {
-    // statesFound.setText(String.valueOf(distinct));
-    // statesGenerated.setText(String.valueOf(generated));
-    // statesLeft.setText(String.valueOf(left));
-    // }
-
-    private static Text createTextLeft(String title, Composite parent, FormToolkit toolkit)
+    
+    
+    /**
+     * Creates a text component with left-aligned text
+     * @param title
+     * @param parent
+     * @param toolkit
+     * @return
+     */
+    public static Text createTextLeft(String title, Composite parent, FormToolkit toolkit)
     {
         toolkit.createLabel(parent, title);
         Text text = toolkit.createText(parent, "");
@@ -164,7 +316,14 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
 
     }
 
-    private static Text createTextRight(String title, Composite parent, FormToolkit toolkit)
+    /**
+     * Creates a text component with right-aligned text
+     * @param title
+     * @param parent
+     * @param toolkit
+     * @return
+     */
+    public static Text createTextRight(String title, Composite parent, FormToolkit toolkit)
     {
         Label label = toolkit.createLabel(parent, title);
         GridData gd = new GridData();
@@ -180,85 +339,6 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
         text.setLayoutData(gd);
 
         return text;
-    }
-
- 
-    public void dispose()
-    {
-        TLCOutputSourceRegistry.getStatusRegistry().disconnect(this);
-        super.dispose();
-    }
-
-    /* (non-Javadoc)
-     * @see org.lamport.tla.toolbox.tool.tlc.output.ITLCOutputListener#getProcessName()
-     */
-    public String getProcessName()
-    {
-        String modelName = null;
-        try
-        {
-            modelName = getConfig().getAttribute(IConfigurationConstants.MODEL_NAME, "");
-        } catch (CoreException e)
-        {
-            TLCUIActivator.logError("Error retrieveing the model name", e);
-        }
-        Assert.isTrue(modelName != null && !modelName.equals(""), "Bug, model name is not set properly"); 
-        return modelName;
-    }
-
-    /* (non-Javadoc)
-     * @see org.lamport.tla.toolbox.tool.tlc.output.ITLCOutputListener#onDone()
-     */
-    public void onDone()
-    {
-        System.out.println("Done");
-    }
-
-    /* (non-Javadoc)
-     * @see org.lamport.tla.toolbox.tool.tlc.output.ITLCOutputListener#onOutput(org.eclipse.jface.text.ITypedRegion, org.eclipse.jface.text.IDocument)
-     */
-    public void onOutput(ITypedRegion region, IDocument document)
-    {
-        try
-        {
-            final String outputMessage = document.get(region.getOffset(), region.getLength()) + "\n";
-
-            
-            switch (PartitionToolkit.getRegionTypeAsInt(region))
-            {
-            case PartitionToolkit.TYPE_USER_OUTPUT:
-                appendText(this.output, outputMessage);
-                break;
-            case PartitionToolkit.TYPE_COVERAGE:
-            case PartitionToolkit.TYPE_INIT_END:
-            case PartitionToolkit.TYPE_INIT_START:
-            case PartitionToolkit.TYPE_PROGRESS:            
-                appendText(this.progress, outputMessage);
-                break;
-            case PartitionToolkit.TYPE_UNKNOWN:            
-            default:
-                System.err.println("Unknown type detected: " + region.getType());
-                break;
-            }
-            
-            
-            
-        } catch (BadLocationException e)
-        {
-            TLCUIActivator.logError("Error retrieving a message for the process", e);
-        }
-    }
-    
-    public void appendText(final Text control, final String message) 
-    {
-        UIHelper.runUIAsync(new Runnable() {
-            
-            public void run()
-            {
-                control.append(message);
-                refresh();
-            }
-        });
     }
 
 }

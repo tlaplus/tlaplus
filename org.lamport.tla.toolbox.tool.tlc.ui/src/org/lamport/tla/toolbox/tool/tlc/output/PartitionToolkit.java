@@ -5,6 +5,7 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITypedRegion;
 import org.eclipse.jface.text.TypedRegion;
+import org.lamport.tla.toolbox.tool.tlc.output.source.TLCOutputTokenScanner;
 
 /**
  * A toolkit with helper methods
@@ -91,19 +92,19 @@ public class PartitionToolkit
             StringBuffer messageBuffer = new StringBuffer();
             String location = "[" + region.getOffset() + ":" + region.getLength() + "]";
             String head = document.get(offset, printLength);
-            if (LogPartitionTokenScanner.COVERAGE.equals(type))
+            if (TLCOutputTokenScanner.COVERAGE.equals(type))
             {
                 messageBuffer.append("Coverage " + location + ": >" + head + "< ...");
-            } else if (LogPartitionTokenScanner.PROGRESS.equals(type))
+            } else if (TLCOutputTokenScanner.PROGRESS.equals(type))
             {
                 messageBuffer.append("Progress " + location + ": >" + head + "< ...");
-            } else if (LogPartitionTokenScanner.INIT_START.equals(type))
+            } else if (TLCOutputTokenScanner.INIT_START.equals(type))
             {
                 messageBuffer.append("Init start " + location + ": >" + head + "< ...");
-            } else if (LogPartitionTokenScanner.INIT_END.equals(type))
+            } else if (TLCOutputTokenScanner.INIT_END.equals(type))
             {
                 messageBuffer.append("Init end " + location + ": >" + head + "< ...");
-            } else if (LogPartitionTokenScanner.OUTPUT.equals(type))
+            } else if (TLCOutputTokenScanner.OUTPUT.equals(type))
             {
                 String tail = document.get(offset + region.getLength() - printLength, printLength);
                 messageBuffer.append("User " + location + ": >" + head + "< .. >" + tail + "<");
@@ -127,19 +128,19 @@ public class PartitionToolkit
     {
         Assert.isNotNull(region);
         String type = region.getType();
-        if (LogPartitionTokenScanner.COVERAGE.equals(type))
+        if (TLCOutputTokenScanner.COVERAGE.equals(type))
         {
             return TYPE_COVERAGE;
-        } else if (LogPartitionTokenScanner.PROGRESS.equals(type))
+        } else if (TLCOutputTokenScanner.PROGRESS.equals(type))
         {
             return TYPE_PROGRESS;
-        } else if (LogPartitionTokenScanner.INIT_START.equals(type))
+        } else if (TLCOutputTokenScanner.INIT_START.equals(type))
         {
             return TYPE_INIT_START;   
-        } else if (LogPartitionTokenScanner.INIT_END.equals(type))
+        } else if (TLCOutputTokenScanner.INIT_END.equals(type))
         {
             return TYPE_INIT_END;
-        } else if (LogPartitionTokenScanner.OUTPUT.equals(type))
+        } else if (TLCOutputTokenScanner.OUTPUT.equals(type))
         {
             return TYPE_USER_OUTPUT;
         } else

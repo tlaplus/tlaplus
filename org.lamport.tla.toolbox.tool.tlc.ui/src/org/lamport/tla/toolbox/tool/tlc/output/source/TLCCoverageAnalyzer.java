@@ -1,4 +1,4 @@
-package org.lamport.tla.toolbox.tool.tlc.output;
+package org.lamport.tla.toolbox.tool.tlc.output.source;
 
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.text.ITypedRegion;
@@ -9,9 +9,9 @@ import org.eclipse.jface.text.TypedRegion;
  * @author Simon Zambrovski
  * @version $Id$
  */
-public class CoverageAnalyzer
+public class TLCCoverageAnalyzer
 {
-    private static final String COVERAGE = LogPartitionTokenScanner.COVERAGE;
+    private static final String COVERAGE = TLCOutputTokenScanner.COVERAGE;
     private ITypedRegion start = null;
     private ITypedRegion end = null;
     private ITypedRegion coverage = null;
@@ -22,7 +22,7 @@ public class CoverageAnalyzer
      * @param failOnError a flag indicating that the analyzer will fail if the start and end 
      * are not set in the interleaving manner. 
      */
-    public CoverageAnalyzer(boolean failOnError)
+    public TLCCoverageAnalyzer(boolean failOnError)
     {
         this.failOnError = failOnError;
     }
@@ -62,7 +62,7 @@ public class CoverageAnalyzer
     protected void processCoverage()
     {
         int length = this.end.getOffset() + this.end.getLength() - this.start.getOffset();
-        this.coverage = new TypedRegion(this.start.getOffset(), length, CoverageAnalyzer.COVERAGE);
+        this.coverage = new TypedRegion(this.start.getOffset(), length, TLCCoverageAnalyzer.COVERAGE);
 
         // reseting the regions
         this.start = null;

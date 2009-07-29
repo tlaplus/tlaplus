@@ -133,7 +133,6 @@ public class NewModelHandler extends AbstractHandler implements IModelConfigurat
 
             launchCopy.setAttribute(SPEC_NAME, spec.getName());
             launchCopy.setAttribute(SPEC_ROOT_FILE, specRootModule.getLocation().toOSString());
-            // FIXME change the model name on rename!
             launchCopy.setAttribute(MODEL_NAME, modelName);
             
             if (constants.size() == 0)

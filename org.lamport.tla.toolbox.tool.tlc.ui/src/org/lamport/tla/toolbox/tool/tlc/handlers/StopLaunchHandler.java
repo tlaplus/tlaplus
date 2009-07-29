@@ -21,7 +21,8 @@ import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
  */
 public class StopLaunchHandler extends AbstractHandler
 {
-
+    public static final String ID = "toolbox.tool.tlc.commands.model.stop";
+    
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
         ISelection selection = HandlerUtil.getCurrentSelection(event);
