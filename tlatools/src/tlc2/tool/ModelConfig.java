@@ -125,6 +125,10 @@ public class ModelConfig implements ValueConstants, Serializable
         {
             // SZ 23.02.2009: separated file resolution from stream retrieval
             FileInputStream fis = FileUtil.newFIS(resolver.resolve(this.configFileName, false));
+            if (fis == null) 
+            {
+                throw new ConfigFileException(EC.CFG_ERROR_READING_FILE, new String[]{this.configFileName, "File not found."});
+            }
             SimpleCharStream scs = new SimpleCharStream(fis, 1, 1);
             TLAplusParserTokenManager tmgr = new TLAplusParserTokenManager(scs, 2);
 
