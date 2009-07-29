@@ -175,6 +175,13 @@ public interface EC
     public static final int TLC_LIVE_CANNOT_HANDLE_FORMULA = 2213;
     public static final int TLC_LIVE_WRONG_FORMULA_FORMAT = 2214;
     public static final int TLC_EXCEPTED_VALUE = 2215;
+    // state printing
+    public static final int TLC_STATE_PRINT1 = 2216;
+    public static final int TLC_STATE_PRINT2 = 2217;
+    public static final int TLC_STATE_PRINT3 = 2218;
+    public static final int TLC_SANY_END = 2219;
+    public static final int TLC_SANY_START = 2220;
+    public static final int TLC_COVERAGE_VALUE = 2221;
     
     
 

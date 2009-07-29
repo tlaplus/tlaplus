@@ -12,7 +12,6 @@ import tlc2.util.ObjLongTable;
 import tlc2.util.StateWriter;
 import util.FileUtil;
 import util.FilenameToStream;
-import util.ToolIO;
 
 /**
  * The abstract checker
@@ -146,8 +145,7 @@ public abstract class AbstractChecker implements Cancelable
               for (int i = 0; i < skeys.length; i++) 
               {
                   long val = counts.get(skeys[i]);
-                  // TODO
-                  ToolIO.out.println("  " + skeys[i] + ": " + val);
+                  MP.printMessage(EC.TLC_COVERAGE_VALUE, new String[]{skeys[i].toString(), String.valueOf(val)});
               }
               MP.printMessage(EC.TLC_COVERAGE_END);
           }

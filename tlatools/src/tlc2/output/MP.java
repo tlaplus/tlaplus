@@ -65,12 +65,15 @@ import util.ToolIO;
  */
 public class MP
 {
+    private static final String DELIM = "@@";
+    
     private static final String[] EMPTY_PARAMS = new String[0];
 
     private static final int NONE = 0;
     private static final int ERROR = 1;
     private static final int TLCBUG = 2;
     private static final int WARNING = 3;
+    private static final int STATE = 4;
     private static MP instance = null;
 
     private static final String CONFIG_FILE_ERROR = "TLC found an error in the configuration file at line %1%\n";
@@ -100,7 +103,7 @@ public class MP
      * @param parameters string of parameters to be replaced in the message
      * @return the formatted message
      */
-    private static String getMessage(int messageClass, int messageCode, String[] parameters)
+    private synchronized static String getMessage(int messageClass, int messageCode, String[] parameters)
     {
 
         if (parameters == null)
@@ -121,7 +124,7 @@ public class MP
         {
             // for the tool we always print the message class
             // and message code
-            b.append("@@STARTMSG level=\'").append(messageClass).append("\' code=\'").append(messageCode).append("\'\n");
+            b.append(DELIM).append("STARTMSG ").append(messageCode).append(":").append(messageClass).append(" ").append(DELIM).append("\n");
         } else
         {
             // depending on message class add different prefix
@@ -131,6 +134,9 @@ public class MP
                 break;
             case TLCBUG:
                 b.append("TLC Bug: ");
+                break;
+            case STATE:
+                b.append("State ");
                 break;
             case WARNING:
                 b.append("Warning: ");
@@ -164,7 +170,7 @@ public class MP
         case EC.WRONG_COMMANDLINE_PARAMS_SIMULATOR:
             b.append("%1%\nUsage: java tlc2.Simulator [-option] inputfile");
             break;
-
+            
         case EC.SYSTEM_OUT_OF_MEMORY_TOO_MANY_INIT:
             b.append("Out Of Memory. There are probably too many initial states.");
             break;
@@ -199,7 +205,12 @@ public class MP
         case EC.TLC_ASSUMPTION_FALSE:
             b.append("Assumption %1% is false.");
             break;
-
+        case EC.TLC_SANY_START:
+            b.append("Starting SANY...");
+            break;
+        case EC.TLC_SANY_END:
+            b.append("SANY finished.");
+            break;
         case EC.TLC_ASSUMPTION_EVALUATION_ERROR:
             b.append("Evaluating assumption %1% failed.\n%2%");
             break;
@@ -648,10 +659,26 @@ public class MP
         case EC.TLC_COVERAGE_START:
             b.append("The coverage statistics :");
             break;
+        case EC.TLC_COVERAGE_VALUE:
+            b.append("  %1%: %2%");
+            break;
+            
         case EC.TLC_COVERAGE_END:
             b.append("End of statistics.");
             break;
 
+        /* ************************************************************************ */
+        // state printing
+        case EC.TLC_STATE_PRINT1:
+            b.append("%1%:\n%2%");
+            break;
+        case EC.TLC_STATE_PRINT2:
+            b.append("%1%: %2%\n%3%");
+            break;
+        case EC.TLC_STATE_PRINT3:
+            b.append("%1%: Stuttering");
+            break;
+            
         /* ************************************************************************ */
         // configuration file errors
         case EC.CFG_MISSING_ID:
@@ -703,7 +730,7 @@ public class MP
         if (TLCGlobals.tool)
         {
             // for the tool we always print the message code
-            b.append("\n@@ENDMSG code=\'").append(messageCode).append("\'\n");
+            b.append("\n").append(DELIM).append("ENDMSG ").append(messageCode).append(" ").append(DELIM);
         } else
         {
 
@@ -890,6 +917,17 @@ public class MP
         DebugPrinter.print("leaving printError(int, String[]) with errorCode ");
     }
 
+    /** 
+     * Prints the state
+     * @param parameters
+     */
+    public static void printState(int code, String[] parameters)
+    {
+        DebugPrinter.print("entering printState(String[])");
+        ToolIO.out.println(getMessage(STATE, code, parameters));
+        DebugPrinter.print("leaving printState(String[])");
+    }
+    
     /**
      * Prints parameterized TLC BUG message
      * @param errorCode 

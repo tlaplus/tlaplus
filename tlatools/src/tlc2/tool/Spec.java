@@ -143,6 +143,10 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable {
 
           // We first call the SANY front-end to parse and semantic-analyze
           // the complete TLA+ spec starting with the main module rootFile.
+          if (TLCGlobals.tool) 
+          {
+              MP.printMessage(EC.TLC_SANY_START);
+          }
           try
           {
               // SZ Feb 20, 2009:
@@ -156,6 +160,12 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable {
           {
               Assert.fail(EC.TLC_PARSING_FAILED2, e);
           }
+
+          if (TLCGlobals.tool) 
+          {
+              MP.printMessage(EC.TLC_SANY_END);
+          }
+
       }
 
       // SZ Feb 20, 2009:

@@ -32,7 +32,7 @@ public class Generator {
    *                  Defaults to 0 if not specified
    */
   public static void main(String[] args) {
-    ToolIO.out.println("TLC trace generator, " + TLCGlobals.versionOfTLC);
+    System.out.println("TLC trace generator, " + TLCGlobals.versionOfTLC);
 
     String mainFile = null;
     String traceFile = null;

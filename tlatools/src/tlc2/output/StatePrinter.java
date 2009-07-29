@@ -3,7 +3,6 @@ package tlc2.output;
 import tlc2.TLCGlobals;
 import tlc2.tool.TLCState;
 import tlc2.tool.TLCStateInfo;
-import util.ToolIO;
 
 /**
  * Helper for printing states
@@ -18,16 +17,32 @@ public class StatePrinter
      */
     public static void printState(TLCState currentState, TLCState lastState, int num)
     {
-        ToolIO.out.println("STATE " + num + ":");
-
+        String stateString;
         /* Added by rjoshi. */
         if (lastState != null && TLCGlobals.printDiffsOnly)
         {
-            ToolIO.out.println(currentState.toString(lastState));
+            stateString = currentState.toString(lastState);
         } else
         {
-            ToolIO.out.println(currentState);
+            stateString = currentState.toString();
         }
+        MP.printState(EC.TLC_STATE_PRINT1, new String[] { String.valueOf(num), stateString });
+    }
+
+    /**
+     * Prints the state with number
+     */
+    public static void printState(TLCState currentState, int num)
+    {
+        MP.printState(EC.TLC_STATE_PRINT1, new String[] { String.valueOf(num), currentState.toString() });
+    }
+
+    /**
+     * Prints the state
+     */
+    public static void printState(TLCState currentState)
+    {
+        MP.printState(EC.TLC_STATE_PRINT1, new String[] { "", currentState.toString() });
     }
 
     /**
@@ -36,42 +51,26 @@ public class StatePrinter
      */
     public static void printState(TLCStateInfo currentStateInfo, TLCState lastState, int num)
     {
-        ToolIO.out.println("STATE " + num + ": " + currentStateInfo.info);
+        String stateString;
 
         /* Added by rjoshi. */
         if (lastState != null && TLCGlobals.printDiffsOnly)
         {
-            ToolIO.out.println(currentStateInfo.state.toString(lastState));
+            stateString = currentStateInfo.state.toString(lastState);
         } else
         {
-            ToolIO.out.println(currentStateInfo.state);
+            stateString = currentStateInfo.state.toString();
         }
+        MP.printState(EC.TLC_STATE_PRINT2, new String[] { String.valueOf(num), currentStateInfo.info.toString(),
+                stateString });
     }
 
     /**
-     * Prints the state
-     */
-    public static void printState(TLCState currentState, int num)
-    {
-        ToolIO.out.println("STATE " + num + ":");
-        ToolIO.out.println(currentState);
-    }
-
-    /**
-     * Prints the state
-     */
-    public static void printState(TLCState currentState)
-    {
-        ToolIO.out.println("STATE :");
-        ToolIO.out.println(currentState);
-    }
-
-    /**
-     * @param i
+     * Reports that the state with a given number is stuttering
      */
     public static void printStutteringState(int num)
     {
-        ToolIO.out.println("STATE " + num + ": Stuttering");
+        MP.printState(EC.TLC_STATE_PRINT3, new String[] { String.valueOf(num) });
     }
 
 }
