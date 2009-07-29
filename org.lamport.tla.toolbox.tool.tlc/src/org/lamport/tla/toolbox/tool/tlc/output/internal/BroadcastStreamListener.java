@@ -45,6 +45,23 @@ public class BroadcastStreamListener implements IStreamListener
     }
     
     /**
+     * Inform about completion
+     */
+    public void streamClosed()
+    {
+        // broadcast the message
+        for (int i=0; i < listeners.length; i++) 
+        {
+            if (listeners[i] != null) 
+            {
+                listeners[i].processFinished();
+            }
+        }
+    }
+    
+    
+    
+    /**
      * Retrieves all registered listener managers
      * @return 
      */
