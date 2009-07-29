@@ -545,7 +545,10 @@ public class TLC
                 MP.printError(EC.SYSTEM_OUT_OF_MEMORY, e);
             } else if (e instanceof RuntimeException) 
             {
-                e.printStackTrace();
+                // SZ 29.07.2009 
+                // printing the stack trace of the runtime exceptions
+                MP.printError(EC.GENERAL, e, false);
+                // e.printStackTrace();
             } else
             {
                 MP.printError(EC.GENERAL, e);
