@@ -5,8 +5,6 @@ import util.DebugPrinter;
 import util.Set;
 import util.ToolIO;
 
-
-
 /**
  * This class is used in the following way to support the replacements of the
  * strings inside of the code. Any kind of String used as a message reported to the user should be replaced with
@@ -386,6 +384,9 @@ public class MP
         case EC.TLC_FP_NOT_IN_SET:
             b.append("The fingerprint is not in set.");
             break;
+        case EC.TLC_FP_COMPLETED:
+            b.append("%1%, work completed. Thank you!");
+            break;
 
         case EC.SYSTEM_INDEX_ERROR:
             b.append("Index error.");
@@ -496,6 +497,18 @@ public class MP
         case EC.TLC_LIVE_BEGRAPH_FAILED_TO_CONSTRUCT:
             b.append("BEGraph.GetPath: Failed to construct a path.");
             break;
+        case EC.TLC_LIVE_IMPLIED:
+            b.append("Implied-temporal checking--satisfiability problem has %1% branches.");
+            break;
+        case EC.TLC_LIVE_CANNOT_HANDLE_FORMULA:
+            b.append("TLC cannot handle the temporal formula %1%");
+            break;
+        case EC.TLC_LIVE_WRONG_FORMULA_FORMAT:
+            b.append("Temporal formulas containing actions must be of forms <>[]A or []<>A.");
+            break;
+        case EC.TLC_EXCEPTED_VALUE:
+            b.append("TLC expected a %1% value, but did not find one. %2%");
+            break;
 
         case EC.SYSTEM_UNABLE_NOT_RENAME_FILE:
             b.append("Unable not rename file during the clean-up.");
@@ -546,8 +559,94 @@ public class MP
             b.append("Found a Java class for module %1%, but unable to read\n" + "it as a Java class object. %2%");
             break;
 
+        case EC.TLC_STARTING:
+            b.append("Starting...");
+            break;
+        case EC.TLC_FINISHED:
+            b.append("Finished.");
+            break;
+        case EC.TLC_MODE_MC:
+            b.append("Running in Model-Checking mode.");
+            break;
+        case EC.TLC_MODE_SIMU:
+            b.append("Running Random Simulation with seed %1%.");
+            break;
+        case EC.TLC_COMPUTING_INIT:
+            b.append("Computing initial states...");
+            break;
+        case EC.TLC_INIT_GENERATED1:
+            b.append("Finished computing initial states: %1% distinct state%2% generated.");
+            break;
+        case EC.TLC_INIT_GENERATED2:
+            b.append("Finished computing initial states: %1% states generated, with %2% of them distinct.");
+            break;
+        case EC.TLC_INIT_GENERATED3:
+            b.append("Finished computing initial states: %1% states generated.\n"
+                    + "Because TLC recovers from a previous checkpoint, only %2% of them require further exploration.");
+            break;
+        case EC.TLC_INIT_GENERATED4:
+            b.append("Finished computing initial states: %1% states generated, with %2% of them distinct.");
+            break;
+        case EC.TLC_CHECKING_TEMPORAL_PROPS:
+            b.append("Checking temporal properties for the %1% state space...");
+            break;
+
+        case EC.TLC_SUCCESS:
+            b.append("Model checking completed. No error has been found.\n"
+                    + "  Estimates of the probability that TLC did not check all reachable states\n"
+                    + "  because two distinct states had the same fingerprint:\n" + "  calculated (optimistic):  %1%\n"
+                    + "  based on the actual fingerprints:  %2%");
+            break;
+        case EC.TLC_SEARCH_DEPTH:
+            b.append("The depth of the complete state graph search is %1%.");
+            break;
+        case EC.TLC_CHECKPOINT_START:
+            b.append("Checkpointing of run %1%");
+            break;
+        case EC.TLC_CHECKPOINT_END:
+            b.append("Checkpointing completed.");
+            break;
+        case EC.TLC_CHECKPOINT_RECOVER_START:
+            b.append("Starting recovery from checkpoint %1%");
+            break;
+        case EC.TLC_CHECKPOINT_RECOVER_END:
+            b.append("Recovery completed. %1% states examined. %2% states on queue.");
+            break;
+        case EC.TLC_CHECKPOINT_RECOVER_END_DFID:
+            b.append("Recovery completed. %1% states examined.");
+            break;
+
+        case EC.TLC_STATS:
+            b.append("%1% states generated, %2% distinct states found, %3% states left on queue.");
+            break;
+        case EC.TLC_STATS_DFID:
+            b.append("%1% states generated, %2% distinct states found.");
+            break;
+        case EC.TLC_STATS_SIMU:
+            b.append("The number of states generated: %1%\nSimulation using seed %2% and aril %3%");
+            break;
+        case EC.TLC_PROGRESS_STATS:
+            b.append("Progress(%1%): %2% states generated, %3% distinct states found, %4% states left on queue.");
+            break;
+        case EC.TLC_PROGRESS_START_STATS_DFID:
+            b.append("Starting level %1%: %2% states generated, %3% distinct states found.");
+            break;
+        case EC.TLC_PROGRESS_STATS_DFID:
+            b.append("Progress: %1% states generated, %2% distinct states found.");
+            break;
+        case EC.TLC_PROGRESS_SIMU:
+            b.append("Progress: %1% states checked.");
+            break;
+
+        case EC.TLC_COVERAGE_START:
+            b.append("The coverage statistics :");
+            break;
+        case EC.TLC_COVERAGE_END:
+            b.append("End of statistics.");
+            break;
+
         /* ************************************************************************ */
-        // configuration file errors    
+        // configuration file errors
         case EC.CFG_MISSING_ID:
             b.append(CONFIG_FILE_ERROR);
             b.append("The keyword %2% was not followed by an identifier.");
@@ -576,7 +675,7 @@ public class MP
             break;
         // end configuration file errors
         /* ************************************************************************ */
-            
+
         case EC.GENERAL:
             // the general error adapts to the number of parameters that are passed
             for (int i = 0; i < parameters.length; i++)

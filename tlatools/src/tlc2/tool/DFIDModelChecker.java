@@ -18,7 +18,6 @@ import tlc2.util.LongVec;
 import tlc2.util.ObjLongTable;
 import util.FileUtil;
 import util.FilenameToStream;
-import util.ToolIO;
 import util.UniqueString;
 
 /** 
@@ -104,13 +103,10 @@ public class DFIDModelChecker extends AbstractChecker
 
         if (recovered)
         {
-            ToolIO.out.println("Finished computing initial states: " + this.numOfGenStates
-                    + " states generated.\nBecause TLC recovers from a previous" + " checkpoint, only "
-                    + this.theInitStates.length + " of them require further exploration.");
+            MP.printMessage(EC.TLC_INIT_GENERATED3, new String[]{String.valueOf(this.numOfGenStates), String.valueOf(this.theInitStates.length)});
         } else
         {
-            ToolIO.out.println("Finished computing initial states: " + this.numOfGenStates + " states generated, with "
-                    + this.theInitStates.length + " of them distinct.");
+            MP.printMessage(EC.TLC_INIT_GENERATED4, new String[]{String.valueOf(this.numOfGenStates), String.valueOf(this.theInitStates.length)});
         }
 
         // Return if there is no next state predicate:
@@ -136,7 +132,7 @@ public class DFIDModelChecker extends AbstractChecker
                         // Always check liveness properties at the end:
                         if (this.checkLiveness)
                         {
-                            ToolIO.out.println("--Checking temporal properties for the complete state space...");
+                            MP.printMessage(EC.TLC_CHECKING_TEMPORAL_PROPS, "complete");
                             // SZ Jul 10, 2009: what for?
                             // ToolIO.out.flush();
                             success = LiveCheck.check();
@@ -164,7 +160,8 @@ public class DFIDModelChecker extends AbstractChecker
                 }
 
                 // Start working on this level:
-                ToolIO.out.println("Starting level " + level + ": " + this.stats());
+                MP.printMessage(EC.TLC_PROGRESS_STATS_DFID, new String[]{String.valueOf(level), String.valueOf(this.numOfGenStates),String.valueOf(this.theFPSet.size())});
+                
                 FPIntSet.incLevel();
                 success = this.runTLC(level);
                 if (!success)
@@ -613,26 +610,32 @@ public class DFIDModelChecker extends AbstractChecker
             boolean doCheck = this.checkLiveness && (stateNum >= nextLiveCheck);
             if (doCheck)
             {
-                ToolIO.out.println("--Checking temporal properties for the current state space...");
-                if (!LiveCheck.check())
+                MP.printMessage(EC.TLC_CHECKING_TEMPORAL_PROPS, "current");
+                if (!LiveCheck.check()) 
+                {
                     return false;
+                }
                 nextLiveCheck = (stateNum < 600000) ? stateNum * 2 : stateNum + 200000;
             }
 
             // Checkpoint:
-            ToolIO.out.print("--Checkpointing of run " + this.metadir + " compl");
+            MP.printMessage(EC.TLC_CHECKPOINT_START, this.metadir);
             // start checkpointing:
             this.theFPSet.beginChkpt();
-            if (this.checkLiveness)
+            if (this.checkLiveness) 
+            {
                 LiveCheck.beginChkpt();
+            }
             UniqueString.internTbl.beginChkpt(this.metadir);
 
             // Commit checkpoint:
             this.theFPSet.commitChkpt();
             if (this.checkLiveness)
+            {
                 LiveCheck.commitChkpt();
+            }
             UniqueString.internTbl.commitChkpt(this.metadir);
-            ToolIO.out.println("eted.");
+            MP.printMessage(EC.TLC_CHECKPOINT_END);
         }
         return true;
     }
@@ -643,26 +646,19 @@ public class DFIDModelChecker extends AbstractChecker
         if (this.fromChkpt != null)
         {
             // We recover from previous checkpoint.
-            ToolIO.out.println("-- Starting recovery from checkpoint " + this.fromChkpt);
+            MP.printMessage(EC.TLC_CHECKPOINT_RECOVER_START, this.fromChkpt);
             this.theFPSet.recover();
             if (this.checkLiveness)
+            {
                 LiveCheck.recover();
-            ToolIO.out.println("-- Recovery completed. " + this.recoveryStats());
+            }
+            MP.printMessage(EC.TLC_CHECKPOINT_RECOVER_END_DFID, String.valueOf(this.theFPSet.size()));
             recovered = true;
             this.numOfGenStates = this.theFPSet.size();
         }
         return recovered;
     }
 
-    private final String recoveryStats()
-    {
-        return this.theFPSet.size() + " states examined.";
-    }
-
-    private final String stats()
-    {
-        return (this.numOfGenStates + " states generated, " + this.theFPSet.size() + " distinct states found.");
-    }
 
     protected final void cleanup(boolean success) throws IOException
     {
@@ -679,7 +675,7 @@ public class DFIDModelChecker extends AbstractChecker
     public final void printSummary(boolean success) throws IOException
     {
         this.reportCoverage(this.workers);
-        ToolIO.out.println(this.stats());
+        MP.printMessage(EC.TLC_STATS_DFID, new String[]{ String.valueOf(this.numOfGenStates),String.valueOf(this.theFPSet.size())});
     }
 
     public final void reportSuccess() throws IOException
@@ -688,10 +684,7 @@ public class DFIDModelChecker extends AbstractChecker
         double prob1 = (d * (this.numOfGenStates - d)) / Math.pow(2, 64);
         double prob2 = this.theFPSet.checkFPs();
 
-        ToolIO.out.println("Model checking completed. No error has been found.\n"
-                + "  Estimates of the probability that TLC did not check "
-                + "all reachable states\n  because two distinct states had " + "the same fingerprint:\n"
-                + "    calculated (optimistic):  " + prob1 + "\n" + "    based on the actual fingerprints:  " + prob2);
+        MP.printMessage(EC.TLC_SUCCESS, new String[]{String.valueOf(prob1), String.valueOf(prob2)});
     }
 
     /**
@@ -723,7 +716,7 @@ public class DFIDModelChecker extends AbstractChecker
      */
     protected void runTLCContinueDoing(int count, int depth) throws Exception
     {
-        ToolIO.out.println("Progress: " + this.stats());
+        MP.printMessage(EC.TLC_PROGRESS_STATS_DFID, new String[]{ String.valueOf(this.numOfGenStates),String.valueOf(this.theFPSet.size())});
         if (count == 0)
         {
             this.reportCoverage(this.workers);

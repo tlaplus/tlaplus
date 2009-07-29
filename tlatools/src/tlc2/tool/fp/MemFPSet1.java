@@ -17,7 +17,6 @@ import tlc2.output.MP;
 import tlc2.util.SetOfLong;
 import util.Assert;
 import util.FileUtil;
-import util.ToolIO;
 
 /**
  * Alternative implementation
@@ -65,7 +64,7 @@ public final class MemFPSet1 extends FPSet {
       FileUtil.deleteDir(file, true);
     }
     String hostname = InetAddress.getLocalHost().getHostName();    
-    ToolIO.out.println(hostname + ", work completed. Thank you!");
+    MP.printMessage(EC.TLC_FP_COMPLETED, hostname);
     System.exit(0);    
   }
 

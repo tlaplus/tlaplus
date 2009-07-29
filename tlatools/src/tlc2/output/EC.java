@@ -135,6 +135,8 @@ public interface EC
     public static final int TLC_MODULE_ARGUMENT_NOT_IN_DOMAIN = 2183;
     public static final int TLC_MODULE_APPLY_EMPTY_SEQ = 2184;
     
+    public static final int TLC_STARTING = 2185;
+    public static final int TLC_FINISHED = 2186;
     
     // errors during parsing of the model configuration
     
@@ -144,6 +146,36 @@ public interface EC
     public static final int CFG_TWICE_KEYWORD = 5004;
     public static final int CFG_EXPECT_ID = 5005;
     public static final int CFG_EXPECTED_SYMBOL = 5006;
+    public static final int TLC_MODE_MC = 2187;
+    public static final int TLC_MODE_SIMU = 2188;
+    public static final int TLC_COMPUTING_INIT = 2189;
+    public static final int TLC_INIT_GENERATED1 = 2190;
+    public static final int TLC_INIT_GENERATED2 = 2191;
+    public static final int TLC_INIT_GENERATED3 = 2207;
+    public static final int TLC_INIT_GENERATED4 = 2208;
+    public static final int TLC_CHECKING_TEMPORAL_PROPS = 2192;
+    public static final int TLC_SUCCESS = 2193;
+    public static final int TLC_SEARCH_DEPTH = 2194;
+    public static final int TLC_CHECKPOINT_START = 2195;
+    public static final int TLC_CHECKPOINT_END = 2196;
+    public static final int TLC_CHECKPOINT_RECOVER_START = 2197;
+    public static final int TLC_CHECKPOINT_RECOVER_END = 2198;
+    public static final int TLC_STATS = 2199;
+    public static final int TLC_STATS_DFID = 2204;
+    public static final int TLC_STATS_SIMU = 2210;
+    public static final int TLC_PROGRESS_STATS = 2200;
+    public static final int TLC_COVERAGE_START = 2201;
+    public static final int TLC_COVERAGE_END = 2202;
+    public static final int TLC_CHECKPOINT_RECOVER_END_DFID = 2203;
+    public static final int TLC_PROGRESS_START_STATS_DFID = 2205;
+    public static final int TLC_PROGRESS_STATS_DFID = 2206;
+    public static final int TLC_PROGRESS_SIMU = 2209;
+    public static final int TLC_FP_COMPLETED = 2211;
+    public static final int TLC_LIVE_IMPLIED = 2212;
+    public static final int TLC_LIVE_CANNOT_HANDLE_FORMULA = 2213;
+    public static final int TLC_LIVE_WRONG_FORMULA_FORMAT = 2214;
+    public static final int TLC_EXCEPTED_VALUE = 2215;
+    
     
 
 }

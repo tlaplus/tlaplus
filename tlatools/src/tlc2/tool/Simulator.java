@@ -337,8 +337,7 @@ public class Simulator implements Cancelable
   public final void printSummary() 
   {
       this.reportCoverage();
-      ToolIO.out.println("The number of states generated: " + this.numOfGenStates);
-      ToolIO.out.println("Simulation using seed " + seed + " and aril " + this.aril);
+      MP.printMessage(EC.TLC_STATS_SIMU, new String[]{String.valueOf(this.numOfGenStates), String.valueOf(this.seed), String.valueOf(this.aril)});
   }
 
   /**
@@ -348,7 +347,7 @@ public class Simulator implements Cancelable
   {
       if (TLCGlobals.coverageInterval >= 0) 
       {
-          ToolIO.out.println("The coverage stats:");
+          MP.printMessage(EC.TLC_COVERAGE_START);
           ObjLongTable counts = this.tool.getPrimedLocs();
           ObjLongTable.Enumerator keys = this.astCounts.keys();
           Object key;
@@ -360,8 +359,10 @@ public class Simulator implements Cancelable
           Object[] skeys = counts.sortStringKeys();
           for (int i = 0; i < skeys.length; i++) {
               long val = counts.get(skeys[i]);
+              // TODO
               ToolIO.out.println("  " + skeys[i] + ": " + val);
           }
+          MP.printMessage(EC.TLC_COVERAGE_END);
       }
   }
 
@@ -380,7 +381,8 @@ public class Simulator implements Cancelable
                   {
                       this.wait(TLCGlobals.progressInterval);
                   }
-                  ToolIO.out.println("Progress: " + numOfGenStates + " states checked.");
+                  MP.printMessage(EC.TLC_PROGRESS_SIMU, String.valueOf(numOfGenStates));
+                  
                   if (count > 1) 
                   {
                       count--;

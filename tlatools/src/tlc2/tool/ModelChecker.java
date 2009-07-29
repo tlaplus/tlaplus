@@ -24,7 +24,6 @@ import tlc2.value.Value;
 import util.DebugPrinter;
 import util.FileUtil;
 import util.FilenameToStream;
-import util.ToolIO;
 import util.UniqueString;
 
 /** 
@@ -109,7 +108,7 @@ public class ModelChecker extends AbstractChecker
             try
             {
                 report("doInit(false)");
-                ToolIO.out.println("Computing initial states...");
+                MP.printMessage(EC.TLC_COMPUTING_INIT);
                 // SZ Feb 23, 2009: do not ignore cancel on creation of the init states
                 if (!this.doInit(false))
                 {
@@ -151,12 +150,10 @@ public class ModelChecker extends AbstractChecker
             if (this.numOfGenStates == this.theFPSet.size())
             {
                 String plural = (this.numOfGenStates == 1) ? "" : "s";
-                ToolIO.out.println("Finished computing initial states: " + this.numOfGenStates + " distinct state"
-                        + plural + " generated.");
+                MP.printMessage(EC.TLC_INIT_GENERATED1, new String[]{String.valueOf(this.numOfGenStates), plural});
             } else
             {
-                ToolIO.out.println("Finished computing initial states: " + this.numOfGenStates
-                        + " states generated, with " + this.theFPSet.size() + " of them distinct.");
+                MP.printMessage(EC.TLC_INIT_GENERATED1, new String[]{String.valueOf(this.numOfGenStates), String.valueOf(this.theFPSet.size())});
             }
         }
 
@@ -186,8 +183,7 @@ public class ModelChecker extends AbstractChecker
                 // Always check liveness properties at the end:
                 if (this.checkLiveness)
                 {
-                    ToolIO.out.println("Checking temporal properties for the complete state space...");
-                    ToolIO.out.flush();
+                    MP.printMessage(EC.TLC_CHECKING_TEMPORAL_PROPS, "complete");
                     report("checking liveness");
                     success = LiveCheck.check();
                     report("liveness check complete");
@@ -611,31 +607,35 @@ public class ModelChecker extends AbstractChecker
             boolean doCheck = this.checkLiveness && (stateNum >= nextLiveCheck);
             if (doCheck)
             {
-                ToolIO.out.println("Checking temporal properties for the current state space...");
+                MP.printMessage(EC.TLC_CHECKING_TEMPORAL_PROPS, "current");
                 if (!LiveCheck.check())
                     return false;
                 nextLiveCheck = (stateNum <= 640000) ? stateNum * 2 : stateNum + 640000;
             }
 
             // Checkpoint:
-            ToolIO.out.print("Checkpointing of run " + this.metadir);
+            MP.printMessage(EC.TLC_CHECKPOINT_START, this.metadir);
+            
             // start checkpointing:
             this.theStateQueue.beginChkpt();
             this.trace.beginChkpt();
             this.theFPSet.beginChkpt();
             this.theStateQueue.resumeAll();
             UniqueString.internTbl.beginChkpt(this.metadir);
-            if (this.checkLiveness)
+            if (this.checkLiveness) 
+            {
                 LiveCheck.beginChkpt();
-
+            }
             // commit checkpoint:
             this.theStateQueue.commitChkpt();
             this.trace.commitChkpt();
             this.theFPSet.commitChkpt();
             UniqueString.internTbl.commitChkpt(this.metadir);
-            if (this.checkLiveness)
+            if (this.checkLiveness) 
+            {
                 LiveCheck.commitChkpt();
-            ToolIO.out.println("Checkpointing completed.");
+            }
+            MP.printMessage(EC.TLC_CHECKPOINT_END);
         }
         return true;
     }
@@ -646,29 +646,21 @@ public class ModelChecker extends AbstractChecker
         if (this.fromChkpt != null)
         {
             // We recover from previous checkpoint.
-            ToolIO.out.println("Starting recovery from checkpoint " + this.fromChkpt);
+            MP.printMessage(EC.TLC_CHECKPOINT_RECOVER_START, this.fromChkpt);
             this.trace.recover();
             this.theStateQueue.recover();
             this.theFPSet.recover();
-            if (this.checkLiveness)
+            if (this.checkLiveness) 
+            {
                 LiveCheck.recover();
-            ToolIO.out.println("Recovery completed. " + this.recoveryStats());
+            }
+            MP.printMessage(EC.TLC_CHECKPOINT_RECOVER_END, new String[]{String.valueOf(this.theFPSet.size()), String.valueOf(this.theStateQueue.size())});
             recovered = true;
             this.numOfGenStates = this.theFPSet.size();
         }
         return recovered;
     }
 
-    private final String recoveryStats()
-    {
-        return (this.theFPSet.size() + " states examined. " + this.theStateQueue.size() + " states on queue.");
-    }
-
-    private final String stats()
-    {
-        return (this.numOfGenStates + " states generated, " + this.theFPSet.size() + " distinct states found, "
-                + this.theStateQueue.size() + " states left on queue.");
-    }
 
     private final void cleanup(boolean success) throws IOException
     {
@@ -684,10 +676,11 @@ public class ModelChecker extends AbstractChecker
     public final void printSummary(boolean success) throws IOException
     {
         super.reportCoverage(this.workers);
-        ToolIO.out.println(this.stats());
+        
+        MP.printMessage(EC.TLC_STATS, new String[]{String.valueOf(this.numOfGenStates), String.valueOf(this.theFPSet.size()), String.valueOf(this.theStateQueue.size())});
         if (success)
         {
-            ToolIO.out.println("The depth of the complete state graph search is " + this.trace.getLevel() + ".");
+            MP.printMessage(EC.TLC_SEARCH_DEPTH, String.valueOf(this.trace.getLevel()));
         }
     }
 
@@ -696,12 +689,7 @@ public class ModelChecker extends AbstractChecker
         long d = this.theFPSet.size();
         double prob1 = (d * (this.numOfGenStates - d)) / Math.pow(2, 64);
         double prob2 = this.theFPSet.checkFPs();
-
-        ToolIO.out.println("Model checking completed. No error has been found.\n"
-                + "  Estimates of the probability that TLC did not check all reachable states\n"
-                + "  because two distinct states had the same fingerprint:\n"
-                + "  calculated (optimistic):  " + prob1 + "\n" 
-                + "  based on the actual fingerprints:  " + prob2);
+        MP.printMessage(EC.TLC_SUCCESS, new String[]{String.valueOf(prob1), String.valueOf(prob2)});
     }
 
     public final void setAllValues(int idx, Value val)
@@ -746,7 +734,7 @@ public class ModelChecker extends AbstractChecker
     protected void runTLCContinueDoing(int count, int depth) throws Exception
     {
         int level = this.trace.getLevel();
-        ToolIO.out.println("Progress(" + level + "): " + this.stats());
+        MP.printMessage(EC.TLC_PROGRESS_STATS, new String[]{String.valueOf(level), String.valueOf(this.numOfGenStates), String.valueOf(this.theFPSet.size()), String.valueOf(this.theStateQueue.size())});
         if (level > depth)
         {
             this.theStateQueue.finishAll();

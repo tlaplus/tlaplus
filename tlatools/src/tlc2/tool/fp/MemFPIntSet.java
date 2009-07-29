@@ -9,11 +9,11 @@ import java.net.InetAddress;
 import java.rmi.RemoteException;
 
 import tlc2.output.EC;
+import tlc2.output.MP;
 import util.Assert;
 import util.BufferedDataInputStream;
 import util.BufferedDataOutputStream;
 import util.FileUtil;
-import util.ToolIO;
 import util.WrongInvocationException;
 
 /**
@@ -258,7 +258,7 @@ public class MemFPIntSet extends FPIntSet {
       FileUtil.deleteDir(file, true);
     }
     String hostname = InetAddress.getLocalHost().getHostName();    
-    ToolIO.out.println(hostname + ", work completed. Thank you!");
+    MP.printMessage(EC.TLC_FP_COMPLETED, hostname);
     System.exit(0);    
   }
 

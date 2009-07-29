@@ -15,6 +15,8 @@ import tla2sany.semantic.OpDefNode;
 import tla2sany.semantic.Subst;
 import tla2sany.semantic.SubstInNode;
 import tla2sany.semantic.SymbolNode;
+import tlc2.output.EC;
+import tlc2.output.MP;
 import tlc2.tool.Action;
 import tlc2.tool.BuiltInOPs;
 import tlc2.tool.ContextEnumerator;
@@ -29,7 +31,6 @@ import tlc2.value.BoolValue;
 import tlc2.value.FcnLambdaValue;
 import tlc2.value.Value;
 import util.Assert;
-import util.ToolIO;
 
 public class Liveness implements ToolGlobals, ASTConstants {
 
@@ -38,7 +39,7 @@ public class Liveness implements ToolGlobals, ASTConstants {
     if (level == 0) {
       Value val = tool.eval(expr, con, TLCState.Empty);
       if (!(val instanceof BoolValue)) {
-	Assert.fail("TLC expected a boolean value, but did not find one." + expr);
+          Assert.fail(EC.TLC_EXCEPTED_VALUE, new String[]{"boolean", expr.toString()});
       }
       return (((BoolValue)val).val) ? LNBool.TRUE : LNBool.FALSE;
     }
@@ -88,7 +89,7 @@ public class Liveness implements ToolGlobals, ASTConstants {
       {
 	int level = Spec.getLevel(expr, con);
 	if (level > 2) {
-	  Assert.fail("TLC cannot handle this temporal formula " + expr);
+	    Assert.fail(EC.TLC_LIVE_CANNOT_HANDLE_FORMULA, expr.toString());
 	}
 	return astToLive(tool, expr, con, level);
       }
@@ -132,8 +133,9 @@ public class Liveness implements ToolGlobals, ASTConstants {
 
       if (opcode == 0) {
 	int level = Spec.getLevel(expr, con);
-	if (level > 2) {
-	  Assert.fail("TLC cannot handle the temporal formula " + expr);
+	if (level > 2) 
+	{
+	    Assert.fail(EC.TLC_LIVE_CANNOT_HANDLE_FORMULA, expr.toString());
 	}
 	return astToLive(tool, expr, con, level);
       }
@@ -160,7 +162,7 @@ public class Liveness implements ToolGlobals, ASTConstants {
 	  // Assert.printStack(e);
 	  int level = Spec.getLevel(expr, con);
 	  if (level > 2) {
-	    Assert.fail("TLC cannot handle this temporal formula " + expr);
+	      Assert.fail(EC.TLC_LIVE_CANNOT_HANDLE_FORMULA, expr.toString());;
 	  }
 	  return astToLive(tool, expr, con, level);
 	}	
@@ -185,7 +187,7 @@ public class Liveness implements ToolGlobals, ASTConstants {
 	  // Assert.printStack(e);
 	  int level = Spec.getLevel(expr, con);
 	  if (level > 2) {
-	    Assert.fail("TLC cannot handle this temporal formula " + expr);
+	      Assert.fail(EC.TLC_LIVE_CANNOT_HANDLE_FORMULA, expr.toString());;
 	  }
 	  return astToLive(tool, expr, con, level);
 	}
@@ -235,7 +237,7 @@ public class Liveness implements ToolGlobals, ASTConstants {
 	catch (Exception e) { /*SKIP*/ }
 	int level = expr.getLevel();
 	if (level > 2) {
-	  Assert.fail("TLC cannot handle the temporal formula " + expr);
+	    Assert.fail(EC.TLC_LIVE_CANNOT_HANDLE_FORMULA, expr.toString());
 	}
 	return astToLive(tool, expr, con, level);
       }
@@ -314,7 +316,7 @@ public class Liveness implements ToolGlobals, ASTConstants {
 	// We handle all the other built-in operators here.
 	int level = Spec.getLevel(expr, con);
 	if (level > 2) {
-	  Assert.fail("TLC cannot handle the temporal formula " + expr);
+	    Assert.fail(EC.TLC_LIVE_CANNOT_HANDLE_FORMULA, expr.toString());;
 	}
 	return astToLive(tool, expr, con, level);
       }
@@ -633,7 +635,7 @@ public class Liveness implements ToolGlobals, ASTConstants {
       for (int j = 0; j < tfPems.size(); j++) {
         OSExprPem pem = (OSExprPem)tfPems.elementAt(j);
         oss[i].pems[j] = new PossibleErrorModel();
-	oss[i].pems[j].AEAction = addToBin(pem.AEAction, actionBin);
+        oss[i].pems[j].AEAction = addToBin(pem.AEAction, actionBin);
         oss[i].pems[j].AEState = addToBin(pem.AEState, stateBin);
         oss[i].pems[j].EAAction = addToBin(pem.EAAction, actionBin);
       }
@@ -647,9 +649,9 @@ public class Liveness implements ToolGlobals, ASTConstants {
 	oss[i].checkAction[j] = (LiveExprNode)actionBin.elementAt(j);
       }
     }
-    ToolIO.out.println("Implied-temporal checking--satisfiability problem has " +
-		       oss.length + " branches.");
-    ToolIO.out.flush();
+    MP.printMessage(EC.TLC_LIVE_IMPLIED, String.valueOf(oss.length));
+    // SZ Jul 28, 2009: What for?
+    // ToolIO.out.flush();
 
     return oss;
   }
@@ -714,20 +716,25 @@ public class Liveness implements ToolGlobals, ASTConstants {
 	}
       }
     }
-    if (ln.containAction()) {
-      Assert.fail("Temporal formulas containing actions must be of forms <>[]A or []<>A.");
+    if (ln.containAction()) 
+    {
+        Assert.fail(EC.TLC_LIVE_WRONG_FORMULA_FORMAT);
     }
     pem.tfs.addElement(ln);
   }
 
-  public static void printTBGraph(TBGraph tableau) {
-    if (tableau == null) {
-        ToolIO.out.println("No tableau.");
-    }
-    else {
-        ToolIO.out.println(tableau.toString());
-    }
-  }
+// SZ Jul 28, 2009: not used
+//  /**
+//   * @deprecated not used
+//   */
+//  public static void printTBGraph(TBGraph tableau) {
+//      if (tableau == null) 
+//      {
+//          ToolIO.out.println("No tableau.");
+//      } else {
+//          ToolIO.out.println(tableau.toString());
+//      }
+//  }
 
   /**
    * OSExprPem is a temporary data structure for producing the

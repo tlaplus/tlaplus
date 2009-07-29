@@ -9,11 +9,11 @@ import java.net.InetAddress;
 import java.rmi.RemoteException;
 
 import tlc2.output.EC;
+import tlc2.output.MP;
 import util.Assert;
 import util.BufferedDataInputStream;
 import util.BufferedDataOutputStream;
 import util.FileUtil;
-import util.ToolIO;
 
 /**
  * A <code>MemFPSet</code> is a subclass of <code>FPSet</code> and a
@@ -208,7 +208,7 @@ public class MemFPSet extends FPSet {
       FileUtil.deleteDir(file, true);
     }
     String hostname = InetAddress.getLocalHost().getHostName();    
-    ToolIO.out.println(hostname + ", work completed. Thank you!");
+    MP.printMessage(EC.TLC_FP_COMPLETED, hostname);
     System.exit(0);    
   }
 

@@ -1,11 +1,12 @@
 package tlc2.tool;
 
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 
 import tla2sany.modanalyzer.SpecObj;
 import tla2sany.semantic.SemanticNode;
 import tlc2.TLCGlobals;
+import tlc2.output.EC;
+import tlc2.output.MP;
 import tlc2.util.IdThread;
 import tlc2.util.ObjLongTable;
 import tlc2.util.StateWriter;
@@ -20,7 +21,6 @@ import util.ToolIO;
  */
 public abstract class AbstractChecker implements Cancelable
 {
-    private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
 // SZ Mar 9, 2009: static modifier removed
     protected long nextLiveCheck;
     protected long numOfGenStates;
@@ -127,25 +127,29 @@ public abstract class AbstractChecker implements Cancelable
     {
           if (TLCGlobals.coverageInterval >= 0) 
           {
-              ToolIO.out.println("The coverage statistics :" /*+ sdf.format(new Date()) + ":"*/ );
+              MP.printMessage(EC.TLC_COVERAGE_START);
               // First collecting all counts from all workers:
               ObjLongTable counts = this.tool.getPrimedLocs();
-              for (int i = 0; i < workers.length; i++) {
+              for (int i = 0; i < workers.length; i++) 
+              {
                   ObjLongTable counts1 = workers[i].getCounts();
                   ObjLongTable.Enumerator keys = counts1.keys();
                   Object key;
-                  while ((key = keys.nextElement()) != null) {
+                  while ((key = keys.nextElement()) != null) 
+                  {
                       String loc = ((SemanticNode)key).getLocation().toString();
                       counts.add(loc, counts1.get(key));
                   }
               }
               // Reporting:
               Object[] skeys = counts.sortStringKeys();
-              for (int i = 0; i < skeys.length; i++) {
+              for (int i = 0; i < skeys.length; i++) 
+              {
                   long val = counts.get(skeys[i]);
+                  // TODO
                   ToolIO.out.println("  " + skeys[i] + ": " + val);
               }
-              ToolIO.out.println("End of statistics.");
+              MP.printMessage(EC.TLC_COVERAGE_END);
           }
       }
 
