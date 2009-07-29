@@ -73,13 +73,22 @@ public class FileProcessOutputSink implements IProcessOutputSink
      */
     public void processFinished()
     {
-        try
-        {
-            ResourcesPlugin.getWorkspace().getRoot().refreshLocal(IResource.DEPTH_INFINITE, new NullProgressMonitor());
-        } catch (CoreException e)
-        {
-            TLCActivator.logError("Error synchronizing the workspace", e);
-        }
-    }
+        /*
+                try
+                {
+                    ResourcesPlugin.getWorkspace().run(new IWorkspaceRunnable() {
 
+                        public void run(IProgressMonitor monitor) throws CoreException
+                        {
+                            ResourcesPlugin.getWorkspace().getRoot().refreshLocal(IResource.DEPTH_INFINITE,
+                                    new NullProgressMonitor());
+
+                        }
+                    }, ResourcesPlugin.getWorkspace().getRoot(), IResource.NONE, new NullProgressMonitor());
+                } catch (CoreException e)
+                {
+                    TLCActivator.logError("Error synchronizing the workspace", e);
+                }
+        */
+    }
 }
