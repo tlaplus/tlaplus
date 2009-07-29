@@ -500,15 +500,18 @@ public class TLC
                 {
                     rng.setSeed(seed, aril);
                 }
-                ToolIO.out.println("Running Random Simulation with seed " + seed + ".");
+                MP.printMessage(EC.TLC_MODE_SIMU, String.valueOf(seed));
                 Simulator simulator = new Simulator(mainFile, configFile, null, deadlock, traceDepth, 
                         Long.MAX_VALUE, rng, seed, true, resolver, specObj);
+                
+                MP.printMessage(EC.TLC_STARTING);
                 instance = simulator;
                 simulator.simulate();
+                MP.printMessage(EC.TLC_FINISHED);
             } else
             {
                 // model checking
-                ToolIO.out.println("Model-checking");
+                MP.printMessage(EC.TLC_MODE_MC);
                 
                 AbstractChecker mc = null;
                 if (TLCGlobals.DFIDMax == -1)
@@ -519,10 +522,10 @@ public class TLC
                 {
                     mc = new DFIDModelChecker(mainFile, configFile, dumpFile, deadlock, fromChkpt, true, resolver, specObj);
                 }
-                ToolIO.out.println("Starting...");
+                MP.printMessage(EC.TLC_STARTING);
                 instance = mc;
                 mc.modelCheck();
-                ToolIO.out.println("Finished.");
+                MP.printMessage(EC.TLC_FINISHED);
             }
         } catch (Throwable e)
         {
