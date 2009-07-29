@@ -43,6 +43,8 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
 
     private Text output;
     private Text progress;
+    // flag indicating that the job / file output is finished
+    private boolean isDone = false;
 
     /**
      * @param editor
@@ -121,6 +123,7 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
      */
     public synchronized void onDone()
     {
+        this.isDone = true;
         System.out.println("Done");
     }
 
@@ -129,7 +132,7 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
      */
     public synchronized void onNewSource()
     {
-        System.out.println("Live stream for current model.");
+        // System.out.println("Live stream for current model.");
         setText(this.output, NO_OUTPUT_AVAILABLE, false);
         setText(this.progress, NO_OUTPUT_AVAILABLE, false);
     }
@@ -139,6 +142,15 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
      */
     public synchronized void onOutput(ITypedRegion region, IDocument document)
     {
+
+        if (isDone) 
+        {
+            // the only reason for this is the restart of the MC, after the previous run completed.
+            // clean up the output
+            setText(this.output, "", false);
+            setText(this.progress, "", false);
+            isDone = false;
+        }
         try
         {
             final String outputMessage = document.get(region.getOffset(), region.getLength()) + "\n";
@@ -151,6 +163,7 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
             case PartitionToolkit.TYPE_INIT_END:
             case PartitionToolkit.TYPE_INIT_START:
             case PartitionToolkit.TYPE_PROGRESS:
+            case PartitionToolkit.TYPE_TAG:
                 setText(this.progress, outputMessage, true);
                 break;
             case PartitionToolkit.TYPE_UNKNOWN:
@@ -171,7 +184,7 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
      * @param message
      * @param append
      */
-    public void setText(final Text control, final String message, final boolean append)
+    public synchronized void setText(final Text control, final String message, final boolean append)
     {
         UIHelper.runUIAsync(new Runnable() {
 
