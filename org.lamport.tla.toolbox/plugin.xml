@@ -626,23 +626,6 @@
          </command>
       </menuContribution>
       <menuContribution
-            locationURI="menu:toolbox.window.menu?after=toolbox.window.tools.separator">
-         <command
-               commandId="toolbox.command.switchperspective"
-               icon="icons/full/obj16/ftr_mf_obj.gif"
-               id="toolbox.menu.switchperspective-specLoaded"
-               label="Specification"
-               mnemonic="S"
-               mode="FORCE_TEXT"
-               style="radio"
-               tooltip="Switches to default specification mode">
-            <parameter
-                  name="toolbox.switchperspective.id"
-                  value="org.lamport.tla.toolbox.ui.perspective.specLoaded">
-            </parameter>
-         </command>
-      </menuContribution>
-      <menuContribution
             locationURI="menu:toolbox.window.menu?after=toolbox.window.view.separator">
          <command
                commandId="toolbox.command.openview"

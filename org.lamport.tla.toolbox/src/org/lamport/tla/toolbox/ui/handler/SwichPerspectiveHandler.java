@@ -13,7 +13,34 @@ import org.eclipse.ui.menus.UIElement;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 /**
- * Switches perspective
+ Switches perspective
+ *    <code>
+ *      <command
+ *           categoryId="toolbox.command.category.ui"
+ *           description="Switches to the perspective"
+ *           id="toolbox.command.switchperspective"
+ *           name="Switches to the perspective">
+ *        <commandParameter
+ *              id="toolbox.switchperspective.id"
+ *              name="name"
+ *              optional="false">
+ *        </commandParameter>
+ *     </command>
+ *     <menuContribution
+ *           locationURI="menu:toolbox.window.menu?after=toolbox.window.tools.separator">
+ *        <command
+ *              commandId="toolbox.command.switchperspective"
+ *              id="toolbox.menu.switchperspective-specLoaded"
+ *              label="Specification"
+ *              mode="FORCE_TEXT"
+ *              style="radio">
+ *           <parameter
+ *                 name="toolbox.switchperspective.id"
+ *                 value="org.lamport.tla.toolbox.ui.perspective.specLoaded">
+ *           </parameter>
+ *        </command>
+ *     </menuContribution>
+ * </code>
  * @author Simon Zambrovski
  * @version $Id$ 
  */
