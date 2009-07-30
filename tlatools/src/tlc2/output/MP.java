@@ -65,7 +65,7 @@ import util.ToolIO;
  */
 public class MP
 {
-    private static final String DELIM = "@@";
+    private static final String DELIM = "@!@!@";
     
     private static final String[] EMPTY_PARAMS = new String[0];
 
