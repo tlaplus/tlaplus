@@ -119,23 +119,6 @@
    <extension
          point="org.eclipse.ui.menus">
       <menuContribution
-            locationURI="menu:toolbox.window.menu?after=toolbox.window.tools.separator">
-         <command
-               commandId="toolbox.command.switchperspective"
-               icon="icons/full/choice_sc_obj.gif"
-               id="toolbox.menu.switchperspective-tlc"
-               label="TLC Model Checker"
-               mnemonic="T"
-               mode="FORCE_TEXT"
-               style="radio"
-               tooltip="Switches to TLC mode">
-            <parameter
-                  name="toolbox.switchperspective.id"
-                  value="org.lamport.tla.toolbox.tool.perspective.tlc">
-            </parameter>
-         </command>
-      </menuContribution>
-      <menuContribution
             locationURI="menu:org.eclipse.ui.main.menu?after=toolbox.tools.separator">
          <menu
                id="toolbox.toolmenus.tlc"
@@ -144,15 +127,18 @@
                tooltip="TLC Model Checker Actions">
             <command
                   commandId="toolbox.tool.tlc.commands.model.new.delegate.current"
+                  icon="icons/full/choice_sc_obj.gif"
                   id="toolbox.tool.tlc.modellaunch.new"
                   mnemonic="N">
                <visibleWhen
                      checkEnabled="true">
                   <with
                         variable="activeWorkbenchWindow.activePerspective">
-                     <equals
-                           value="org.lamport.tla.toolbox.tool.perspective.tlc">
-                     </equals>
+                     <not>
+                        <equals
+                              value="org.lamport.tla.toolbox.ui.perspective.initial">
+                        </equals>
+                     </not>
                   </with>
                </visibleWhen>
             </command>
@@ -168,9 +154,11 @@
                      checkEnabled="true">
                   <with
                         variable="activeWorkbenchWindow.activePerspective">
-                     <equals
-                           value="org.lamport.tla.toolbox.tool.perspective.tlc">
-                     </equals>
+                     <not>
+                        <equals
+                              value="org.lamport.tla.toolbox.ui.perspective.initial">
+                        </equals>
+                     </not>
                   </with>
                </visibleWhen>
             </menu>
@@ -179,6 +167,34 @@
                   visible="true">
             </separator>
          </menu>
+      </menuContribution>
+      <menuContribution
+            locationURI="menu:toolbox.toolmenus.tlc?after=org.lamport.tla.toolbox.tool.tlc.separator">
+         <command
+               commandId="toolbox.command.openview"
+               icon="icons/full/console_view2.gif"
+               id="toolbox.menu.open-console"
+               label="TLC Console"
+               mnemonic="C"
+               mode="FORCE_TEXT"
+               style="push"
+               tooltip="Opens the view showing console">
+            <parameter
+                  name="toolbox.openview.name"
+                  value="org.eclipse.ui.console.ConsoleView">
+            </parameter>
+            <visibleWhen
+                  checkEnabled="true">
+               <with
+                     variable="activeWorkbenchWindow.activePerspective">
+                  <not>
+                     <equals
+                           value="org.lamport.tla.toolbox.ui.perspective.initial">
+                     </equals>
+                  </not>
+               </with>
+            </visibleWhen>
+         </command>
       </menuContribution>
    </extension>
    <extension
@@ -280,35 +296,6 @@
             label="TLC Console">
       </consoleFactory>
    </extension>
-   <extension
-         point="org.eclipse.ui.menus">
-      <menuContribution
-            locationURI="menu:toolbox.toolmenus.tlc?after=org.lamport.tla.toolbox.tool.tlc.separator">
-		<command
-		      commandId="toolbox.command.openview"
-		      icon="icons/full/console_view2.gif"
-		      id="toolbox.menu.open-console"
-		      label="Console"
-		      mnemonic="C"
-		      mode="FORCE_TEXT"
-		      style="push"
-		      tooltip="Opens the view showing console">
-		   <parameter
-		         name="toolbox.openview.name"
-		         value="org.eclipse.ui.console.ConsoleView">
-		   </parameter>
-		   <visibleWhen
-		         checkEnabled="true">
-		      <with
-		            variable="activeWorkbenchWindow.activePerspective">
-		         <equals
-		               value="org.lamport.tla.toolbox.tool.perspective.tlc">
-		         </equals>
-		      </with>
-		   </visibleWhen>
-		</command>
-		</menuContribution>
-	</extension>
    <extension
          point="org.eclipse.ui.perspectives">
       <perspective
