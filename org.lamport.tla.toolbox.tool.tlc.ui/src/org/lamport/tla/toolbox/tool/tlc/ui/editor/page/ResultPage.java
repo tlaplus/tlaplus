@@ -43,6 +43,8 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
 
     private Text output;
     private Text progress;
+    private Text coverage;    
+    private Text errors;
     // flag indicating that the job / file output is finished
     private boolean isDone = false;
 
@@ -269,8 +271,33 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
         gd.minimumWidth = 300;
         progress.setLayoutData(gd);
 
+        // -------------------------------------------------------------------
+        // errors
+        section = FormHelper.createSectionComposite(left, "Errors", "Detected errors",
+                toolkit, sectionFlags, getExpansionListener());
+        // only grab horizontal space
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        section.setLayoutData(gd);
+        addSection(SEC_ERRORS, section);
+
+        Composite errorsArea = (Composite) section.getClient();
+        layout = new GridLayout(4, false);
+        errorsArea.setLayout(layout);
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.grabExcessHorizontalSpace = true;
+        errorsArea.setLayoutData(gd);
+
+        errors = toolkit.createText(errorsArea, "", textFieldFlags);
+        gd = new GridData(SWT.FILL, SWT.LEFT, true, true);
+        gd.minimumHeight = 150;
+        gd.heightHint = 300;
+        gd.minimumWidth = 150;
+        errors.setLayoutData(gd);
+
+        
+        // -------------------------------------------------------------------
         // output
-        section = FormHelper.createSectionComposite(right, "Output", "Output created by TLC during the execution",
+        section = FormHelper.createSectionComposite(right, "User Output", "Output created by TLC during the execution",
                 toolkit, sectionFlags, getExpansionListener());
         // only grab horizontal space
         gd = new GridData(SWT.FILL, SWT.LEFT, true, false);
@@ -290,6 +317,30 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
         gd.heightHint = 300;
         gd.minimumWidth = 300;
         output.setLayoutData(gd);
+        
+        // -------------------------------------------------------------------
+        // coverage
+        section = FormHelper.createSectionComposite(right, "Coverage", "The coverage information",
+                toolkit, sectionFlags | Section.COMPACT, getExpansionListener());
+        // only grab horizontal space
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        section.setLayoutData(gd);
+        addSection(SEC_COVERAGE, section);
+
+        Composite coverageArea = (Composite) section.getClient();
+        layout = new GridLayout(4, false);
+        coverageArea.setLayout(layout);
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.grabExcessHorizontalSpace = true;
+        coverageArea.setLayoutData(gd);
+
+        coverage = toolkit.createText(coverageArea, "", textFieldFlags);
+        gd = new GridData(SWT.FILL, SWT.LEFT, true, true);
+        gd.minimumHeight = 150;
+        gd.heightHint = 300;
+        gd.minimumWidth = 150;
+        coverage.setLayoutData(gd);
+
     }
     
     /**

@@ -427,7 +427,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         // ------------------------------------------
         // what is the spec
         section = FormHelper.createSectionComposite(left, "What is the spec?", "The behavior specification:", toolkit,
-                sectionFlags, getExpansionListener());
+                sectionFlags | Section.EXPANDED, getExpansionListener());
         // only grab horizontal space
         gd = new GridData(GridData.FILL_HORIZONTAL);
         section.setLayoutData(gd);
@@ -536,7 +536,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
         // Constants
         ConstantSectionPart constantsPart = new ConstantSectionPart(right, "What is the model?",
-                "Specify the values of the model constants.", toolkit, sectionFlags, this);
+                "Specify the values of the model constants.", toolkit, sectionFlags | Section.EXPANDED, this);
         managedForm.addPart(constantsPart);
 
         Composite parametersArea = (Composite) constantsPart.getSection().getClient();

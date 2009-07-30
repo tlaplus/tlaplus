@@ -4,13 +4,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
-import org.eclipse.ui.IPerspectiveDescriptor;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.PerspectiveAdapter;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
-import org.lamport.tla.toolbox.tool.ToolboxHandle;
-import org.lamport.tla.toolbox.tool.tlc.ui.modelexplorer.ModelContentProvider;
 import org.lamport.tla.toolbox.util.UIHelper;
 import org.osgi.framework.BundleContext;
 
@@ -28,6 +22,7 @@ public class TLCUIActivator extends AbstractUIPlugin
     private Font courierFont;
     
     // update the CNF content  
+    /*
     private PerspectiveAdapter perspectiveAdapter = new PerspectiveAdapter() 
     {
         public void perspectiveActivated(IWorkbenchPage page, IPerspectiveDescriptor perspective)
@@ -46,6 +41,8 @@ public class TLCUIActivator extends AbstractUIPlugin
             }
         }
     };
+    */
+    
     /**
      * The constructor
      */
@@ -62,11 +59,12 @@ public class TLCUIActivator extends AbstractUIPlugin
         super.start(context);
         plugin = this;
 
+        /*
         IWorkbenchWindow window = UIHelper.getActiveWindow();
         if (window != null)
         {
             window.addPerspectiveListener(perspectiveAdapter);
-        }
+        }*/
     }
 
     /*
@@ -75,11 +73,12 @@ public class TLCUIActivator extends AbstractUIPlugin
      */
     public void stop(BundleContext context) throws Exception
     {
-        IWorkbenchWindow window = UIHelper.getActiveWindow();
+        // IWorkbenchWindow window = UIHelper.getActiveWindow();
+        /*
         if (window != null)
         {
             window.removePerspectiveListener(perspectiveAdapter);
-        }
+        }*/
         plugin = null;
         super.stop(context);
     }

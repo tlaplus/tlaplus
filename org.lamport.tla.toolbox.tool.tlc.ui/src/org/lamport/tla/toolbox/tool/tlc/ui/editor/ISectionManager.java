@@ -24,5 +24,7 @@ public interface ISectionManager
     // sections of the third page
     public final static String SEC_PROGRESS = "__progress";
     public final static String SEC_OUTPUT = "__output";
+    public static final String SEC_COVERAGE = "__coverage";
+    public static final String SEC_ERRORS = "__errors";
 
 }

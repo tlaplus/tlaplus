@@ -14,7 +14,7 @@ import org.eclipse.jface.text.rules.Token;
  */
 public class TagBasedTLCOutputTokenScanner extends RuleBasedPartitionScanner
 {
-    public final static String RULE_DELIM = "@@";
+    public final static String RULE_DELIM = "@!@!@";
     public final static String RULE_START = RULE_DELIM + "STARTMSG"; 
     public final static String RULE_END = RULE_DELIM + "ENDMSG";
     
