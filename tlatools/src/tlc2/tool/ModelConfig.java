@@ -232,11 +232,29 @@ public class ModelConfig implements ValueConstants, Serializable
                 {
                     while ((tt = getNextToken(tmgr)).kind != TLAplusParserConstants.EOF)
                     {
+                        /* Exit this while loop if the next token is something like "CONSTANT"
+                         * that starts a new section of the configuration file.
+                         */
                         if (this.configTbl.get(tt.image) != null)
                             break;
-                        Vect line = new Vect();
-                        line.addElement(tt.image);
+                        /* Token tt should be the first token in an expression of the form
+                         * id <- ...  or id = ... .  In the current implementation, id is the
+                         * token tt.  The following code was modified on 30 July 2009
+                         * to allow id to be something like foo!bar!glitch, fixing Bug44.
+                         */
+                        String lhs = tt.image;
                         tt = getNextToken(tmgr);
+                        while (tt.image.equals("!"))
+                        {
+                          tt = getNextToken(tmgr);
+                          lhs = lhs + "!" + tt.image;
+                          tt = getNextToken(tmgr);
+                        }
+                        Vect line = new Vect();
+                        line.addElement(lhs);
+// Following code replaced on 30 July 2009.                        
+//                        line.addElement(tt.image);
+//                        tt = getNextToken(tmgr);
                         if (tt.image.equals("<-"))
                         {
                             tt = getNextToken(tmgr);
