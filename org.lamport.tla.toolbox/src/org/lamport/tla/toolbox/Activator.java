@@ -38,6 +38,17 @@ public class Activator extends AbstractUIPlugin
     private static ParserDependencyStorage parserDependencyStorage;
     private ParseStatusContributionItem parseStatusContributionItem = null;
 
+    private final Runnable parseStatusUpdateRunable = new Runnable() {
+
+        public void run()
+        {
+            if (parseStatusContributionItem != null)
+            {
+                parseStatusContributionItem.updateStatus();
+            }
+        }
+    };
+
     /**
      * The constructor
      */
@@ -52,18 +63,6 @@ public class Activator extends AbstractUIPlugin
 
         // register the listeners
         IWorkspace workspace = ResourcesPlugin.getWorkspace();
-
-        final Runnable parseStatusUpdateRunable = new Runnable() {
-
-            public void run()
-            {
-                parseStatusContributionItem = getStatusBarContributionItem();
-                if (parseStatusContributionItem != null)
-                {
-                    parseStatusContributionItem.updateStatus();
-                }
-            }
-        };
 
         // activate handler to show the radio buttons in perspective selection 
         UIJob job = new UIJob("InitCommandsWorkaround") {
@@ -83,6 +82,10 @@ public class Activator extends AbstractUIPlugin
         // install the parse status widget
         UIHelper.runUIAsync(parseStatusUpdateRunable);
 
+        /*
+         * Since the any re-parsing will update the status inside of the spec and
+         * the status change is now a LifecycleEvent, there is no need of the IResourceChangeListener
+         * updating the UI
         // update widget on resource modifications
         workspace.addResourceChangeListener(new IResourceChangeListener() {
 
@@ -91,6 +94,7 @@ public class Activator extends AbstractUIPlugin
                 UIHelper.runUIAsync(parseStatusUpdateRunable);
             }
         }, IResourceChangeEvent.POST_BUILD);
+        */
 
         // update CNF viewers
         workspace.addResourceChangeListener(new IResourceChangeListener() {
@@ -204,14 +208,7 @@ public class Activator extends AbstractUIPlugin
     }
 
     /**
-     * Retrieve the ParseStatusContributionItem
-     */
-    public ParseStatusContributionItem getStatusBarContributionItem()
-    {
-        return this.parseStatusContributionItem;
-    }
-
-    /**
+     * Writes a string and a cause into the error category of the log
      * @param string
      * @param e
      */
@@ -221,11 +218,21 @@ public class Activator extends AbstractUIPlugin
     }
 
     /**
+     * Writes a string into the info category of the log
      * @param string
      */
     public static void logDebug(String message)
     {
         getDefault().getLog().log(new Status(IStatus.INFO, PLUGIN_ID, message));        
+    }
+
+    /**
+     * Retrieves the runnable to update the Spec Parse Status Widget
+     * @return
+     */
+    public final Runnable getParseStatusUpdateRunable()
+    {
+        return parseStatusUpdateRunable;
     }
 
 }

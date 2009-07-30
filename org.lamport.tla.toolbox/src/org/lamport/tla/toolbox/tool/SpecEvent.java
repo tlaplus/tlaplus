@@ -18,10 +18,11 @@ public class SpecEvent
     public static final int TYPE_RENAME = 4;
     public static final int TYPE_OPEN = 8;
     public static final int TYPE_CLOSE = 16;
+    public static final int TYPE_PARSE = 32;
     /**
      * All events
      */
-    public static final int TYPE_ALL = TYPE_CREATE | TYPE_DELETE | TYPE_RENAME | TYPE_OPEN | TYPE_CLOSE;
+    public static final int TYPE_ALL = TYPE_CREATE | TYPE_DELETE | TYPE_RENAME | TYPE_OPEN | TYPE_CLOSE | TYPE_PARSE;
     
     
     public static SpecEvent CLOSE(Spec spec) 

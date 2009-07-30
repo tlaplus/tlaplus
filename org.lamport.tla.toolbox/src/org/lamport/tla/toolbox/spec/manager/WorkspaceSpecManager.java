@@ -280,6 +280,17 @@ public class WorkspaceSpecManager extends GenericSelectionProvider implements IS
     }
 
     /**
+     * Is triggered when a spec has been parsed
+     * not intended to be called by clients
+     */
+    public void specParsed(Spec spec)
+    {
+        // inform the participants
+        this.lifecycleManager.sendEvent(new SpecEvent(spec, SpecEvent.TYPE_PARSE));
+    }
+
+    
+    /**
      * Constructs a specification name from the proposition string
      * @param proposition a string with spec name 
      * @param firstRun a flag for the first run
@@ -364,4 +375,5 @@ public class WorkspaceSpecManager extends GenericSelectionProvider implements IS
     {
         return null;
     }
+
 }

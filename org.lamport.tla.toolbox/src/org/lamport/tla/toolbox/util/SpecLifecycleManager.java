@@ -8,6 +8,7 @@ import org.lamport.tla.toolbox.tool.SpecEvent;
 import org.lamport.tla.toolbox.tool.SpecLifecycleParticipant;
 
 /**
+ * The spec life cycle manager is keeping track of the spec life cycle participants and is used to propagate events to them 
  * @author Simon Zambrovski
  * @version $Id$
  */

@@ -14,7 +14,9 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IAdapterManager;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Platform;
+import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.spec.parser.IParseConstants;
 import org.lamport.tla.toolbox.util.AdapterFactory;
 import org.lamport.tla.toolbox.util.ResourceHelper;
@@ -81,7 +83,7 @@ public class Spec implements IAdaptable
         this.rootFile = PreferenceStoreHelper.readProjectRootFile(project);
         this.specObj = null;
         this.status = IParseConstants.UNPARSED;
-        
+
         Assert.isNotNull(this.rootFile);
     }
 
@@ -104,11 +106,10 @@ public class Spec implements IAdaptable
     {
         try
         {
-            project.touch(null);
+            project.touch(new NullProgressMonitor());
         } catch (CoreException e)
         {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            Activator.logError("Error changing the timestamp of the spec", e);
         }
     }
 
@@ -150,7 +151,7 @@ public class Spec implements IAdaptable
     {
         return this.rootFile;
     }
-    
+
     /**
      * Retrieves parsing status
      * 
@@ -162,14 +163,15 @@ public class Spec implements IAdaptable
     }
 
     /**
-     * Sets parsing status
+     * Sets parsing status. As a side effect the {@link SpecLifecycleParticipant}s get informed  
      * 
-     * @param status
-     *            the status to set
+     * @param status the status to set
      */
     public void setStatus(int status)
     {
         this.status = status;
+        // informs
+        Activator.getSpecManager().specParsed(this);
     }
 
     /**
@@ -204,8 +206,7 @@ public class Spec implements IAdaptable
 
         } catch (CoreException e)
         {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            Activator.logError("Error retrieving the the spec modules", e);
             modules = new IResource[0];
         }
         return modules;
@@ -229,9 +230,9 @@ public class Spec implements IAdaptable
             return null;
         }
         return getRootModule();
-        
+
     }
-    
+
     /**
      * Sets the new spec object
      * @param specObj
@@ -241,5 +242,4 @@ public class Spec implements IAdaptable
         this.specObj = specObj;
     }
 
-    
 }

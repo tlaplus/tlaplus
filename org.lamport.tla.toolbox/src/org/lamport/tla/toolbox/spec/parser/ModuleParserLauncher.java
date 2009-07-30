@@ -269,35 +269,35 @@ public class ModuleParserLauncher
      * <br>
      * "Parsing module Naturals in file<br>
      * C:\\users\lamport ...\Naturals.tla"<br>
-         * <br>
-         * which is produced by a call to ToolIO.out.println in<br>
-         * ParseUnit.parseFile<br>
-         * <br>
-         * When such a message is produced, the parseErrors just contains<br>
-         * a single abort that is useless. However, the preceding kind of<br>
-         * error message isn't produced for the following kinds of errors:<br>
-         * <br>
-         * 1. A module's file can't be read.<br>
-         * 2. There's a circular EXTENDS/INSTANCES dependency.<br>
-         * 3. The module name is different from the file name.<br>
-         * <br>
-         * The abort is "Unknown location\n\n" + message, where message<br>
-         * is:<br>
-         * <br>
-         * 1. "Cannot find source file for module Foo"<br>
-         * 2. "Circular dependency among .tla files; dependency cycle..."<br>
-         * 3. "File name 'Foo' does not match the name 'Foobar"" of the<br>
-         * top level module it contains."<br>
-         * In the first two errors, the last "Parsing module" message does not contain the name of the module
-         * with the error, and there seems to be no way to figure out in what module the error is.<br>
-         * The first type of message also includes the following rare variants.<br>
-         * <br>
-         * - "Error: Failed to open output file Foo\n ..." which occurs if there's an IOException.<br>
-         * - "Error: source file 'Foo' has apparently been deleted." which occurs I have no idea when<br>
-         * There's also<br>
-         * - "Could not parse module Foo from file FooBar"<br>
-         * I have no idea when that is produced.
-         */
+     * <br>
+     * which is produced by a call to ToolIO.out.println in<br>
+     * ParseUnit.parseFile<br>
+     * <br>
+     * When such a message is produced, the parseErrors just contains<br>
+     * a single abort that is useless. However, the preceding kind of<br>
+     * error message isn't produced for the following kinds of errors:<br>
+     * <br>
+     * 1. A module's file can't be read.<br>
+     * 2. There's a circular EXTENDS/INSTANCES dependency.<br>
+     * 3. The module name is different from the file name.<br>
+     * <br>
+     * The abort is "Unknown location\n\n" + message, where message<br>
+     * is:<br>
+     * <br>
+     * 1. "Cannot find source file for module Foo"<br>
+     * 2. "Circular dependency among .tla files; dependency cycle..."<br>
+     * 3. "File name 'Foo' does not match the name 'Foobar"" of the<br>
+     * top level module it contains."<br>
+     * In the first two errors, the last "Parsing module" message does not contain the name of the module
+     * with the error, and there seems to be no way to figure out in what module the error is.<br>
+     * The first type of message also includes the following rare variants.<br>
+     * <br>
+     * - "Error: Failed to open output file Foo\n ..." which occurs if there's an IOException.<br>
+     * - "Error: source file 'Foo' has apparently been deleted." which occurs I have no idea when<br>
+     * There's also<br>
+     * - "Could not parse module Foo from file FooBar"<br>
+     * I have no idea when that is produced.
+     */
     private void processParsingErrors(IProject project, ParseResult result, IProgressMonitor monitor)
     {
 

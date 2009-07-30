@@ -11,6 +11,7 @@ import org.eclipse.core.resources.IResourceDeltaVisitor;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.SubProgressMonitor;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.util.ResourceHelper;
@@ -52,15 +53,14 @@ public class TLAParsingBuilder extends IncrementalProjectBuilder
         }
 
         System.out.println("----\n");
-        // TODO !!! look how the monitors should be treated !!!
-        // and then invoke monitor.begin
-
         if (IncrementalProjectBuilder.FULL_BUILD == kind)
         {
+            monitor.beginTask("Invoking the SANY to re-parse the spec", IProgressMonitor.UNKNOWN);
             // explicit full build
             // on workspace start
             // or after clean
-            ParserHelper.rebuildSpec(monitor);
+            ParserHelper.rebuildSpec(new SubProgressMonitor(monitor, IProgressMonitor.UNKNOWN));
+            monitor.done();
         } else
         {
             // an incremental build
@@ -68,9 +68,11 @@ public class TLAParsingBuilder extends IncrementalProjectBuilder
             IResourceDelta delta = getDelta(getProject());
             if (delta == null)
             {
+                monitor.beginTask("Invoking the SANY to re-parse the spec", IProgressMonitor.UNKNOWN);
                 // no increment found, run a full build
-                ParserHelper.rebuildSpec(monitor);
-                // runFullBuild(monitor);
+                ParserHelper.rebuildSpec(new SubProgressMonitor(monitor, IProgressMonitor.UNKNOWN));
+                
+                monitor.done();
             } else
             {
                 /*
@@ -102,7 +104,7 @@ public class TLAParsingBuilder extends IncrementalProjectBuilder
                     // call build on the changed resource
                     // if the file is a Root file it will call buildSpec
                     // otherwise buildModule is invoked
-                    build(changedModule.getProjectRelativePath().toString(), rootFile, monitor);
+                    build(changedModule.getProjectRelativePath().toString(), rootFile, new SubProgressMonitor(monitor, IProgressMonitor.UNKNOWN));
 
                     // get the modules to rebuild
                     List modulesToRebuild = Activator.getModuleDependencyStorage().getListOfModulesToReparse(changedModule.getProjectRelativePath().toString());
@@ -115,7 +117,7 @@ public class TLAParsingBuilder extends IncrementalProjectBuilder
                         // root module found
                         if (buildSpecOnly && rootFile != null && rootFile.getName().equals(moduleToBuild))
                         {
-                            build(moduleToBuild, rootFile, monitor);
+                            build(moduleToBuild, rootFile, new SubProgressMonitor(monitor, IProgressMonitor.UNKNOWN));
                             // for this build the root module is already found
                             // do not need to look for it again
                             buildSpecOnly = false;
@@ -131,7 +133,7 @@ public class TLAParsingBuilder extends IncrementalProjectBuilder
                             // call build on dependent resources
                             // if the file is a Root file it will call buildSpec
                             // otherwise buildModule is invoked
-                            build(moduleToBuild, rootFile, monitor);
+                            build(moduleToBuild, rootFile, new SubProgressMonitor(monitor, IProgressMonitor.UNKNOWN));
                         } else
                         {
                             System.out.println("There are dependent files, but the setting AUTO_BUILD_FILES is off.");
@@ -151,9 +153,12 @@ public class TLAParsingBuilder extends IncrementalProjectBuilder
         // if the changed file is a root file - run the spec build
         if (rootFile != null && (rootFile.getName().equals(moduleFileName)))
         {
+            monitor.beginTask("Invoking the SANY to re-parse the spec", IProgressMonitor.UNKNOWN);
             // this will rebuild the spec starting from root, and change the spec status
             // still, we want to continue and keep the dependency information about other files
-            ParserHelper.rebuildSpec(monitor);
+            ParserHelper.rebuildSpec(new SubProgressMonitor(monitor, IProgressMonitor.UNKNOWN));
+            
+            monitor.done();
         } else
         {
             // retrieve a resource
@@ -177,12 +182,16 @@ public class TLAParsingBuilder extends IncrementalProjectBuilder
             // never build derived resources
             if (!moduleFile.isDerived())
             {
+                monitor.beginTask("Invoking SANY to re-parse a module " + moduleFileName, IProgressMonitor.UNKNOWN);
                 // run the module build
-                ParserHelper.rebuildModule(moduleFile, monitor);
+                ParserHelper.rebuildModule(moduleFile, new SubProgressMonitor(monitor, IProgressMonitor.UNKNOWN));
+
+                monitor.done();
             } else {
                 System.out.println("Skipping resource: " + moduleFileName);    
             }
         }
+        
     }
 
     /**
