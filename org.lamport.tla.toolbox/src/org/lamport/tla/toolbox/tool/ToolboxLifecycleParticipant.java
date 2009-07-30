@@ -9,7 +9,7 @@ package org.lamport.tla.toolbox.tool;
 public abstract class ToolboxLifecycleParticipant
 {
     /**
-     * Is called during tool initialization
+     * Is called during toolbox initialization
      * The implementation is empty, subclasses may override
      * @throws ToolboxLifecycleException
      */
