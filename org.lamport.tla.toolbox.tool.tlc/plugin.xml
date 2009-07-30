@@ -47,7 +47,7 @@
       </persistent>
    </extension>
    <extension
-         point="org.lamport.tla.toolbox.participant">
+         point="org.lamport.tla.toolbox.tool">
       <participant
             class="org.lamport.tla.toolbox.tool.tlc.TLCLifecycleParticipant">
       </participant>
