@@ -3,10 +3,19 @@
 <schema targetNamespace="org.lamport.tla.toolbox" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
       <appInfo>
-         <meta.schema plugin="org.lamport.tla.toolbox" id="org.lamport.tla.toolbox.spec" name="Specification Life Cycle Participant"/>
+         <meta.schema plugin="org.lamport.tla.toolbox" id="spec" name="Specification Life Cycle Participant"/>
       </appInfo>
       <documentation>
-         The Specification Life Cycle Participant extension points allows the plug-ins to get notified on specification events. The plugin can subscribe to certain event classes.
+         The Specification Life Cycle Participant extension point allows the plug-ins to react on the specification events. The extension has to provide a classname, which points to a class extending the &lt;code&gt;org.lamport.tla.toolbox.tool.SpecificationLifecycleParticipant&lt;/code&gt;. During the start-up of the Toolbox on classes provided by extensions the parameter-less constructor will be called and one instance per extension used will be created. This instance will be initialized by the invocation of the &lt;code&gt;initialize()&lt;/code&gt; method. On occurence of specification events the &lt;code&gt;eventOccured(SpecEvent)&lt;/code&gt; is invoked. The SpecEvent has the type attribute for identifaction of the event type. Currently, the following events types are supported (defined as constants in the &lt;code&gt;SpecEvent&lt;/code&gt; class):
+&lt;ul&gt;
+&lt;li&gt;TYPE_CREATE&lt;/li&gt;
+&lt;li&gt;TYPE_DELETE&lt;/li&gt;
+&lt;li&gt;TYPE_RENAME&lt;/li&gt;
+&lt;li&gt;TYPE_PARSE&lt;/li&gt;
+&lt;li&gt;TYPE_OPEN&lt;/li&gt;
+&lt;li&gt;TYPE_CLOSE&lt;/li&gt;
+&lt;/ul&gt;
+After the invocation of the &lt;code&gt;terminate()&lt;/code&gt; method, the client should not receive any further events.
       </documentation>
    </annotation>
 
@@ -15,6 +24,9 @@
          <appInfo>
             <meta.element />
          </appInfo>
+         <documentation>
+            Consists of a list of participant objects.
+         </documentation>
       </annotation>
       <complexType>
          <sequence>
@@ -48,14 +60,19 @@
    </element>
 
    <element name="participant">
+      <annotation>
+         <documentation>
+            For any provided participant, the Toolbox will create one instance and invoke methods on it. The participant gets initialized with initialize() method and is terminated with terminate() method. Between those two methods it receives events about the specification life cycle.
+         </documentation>
+      </annotation>
       <complexType>
          <attribute name="class" type="string" use="required">
             <annotation>
                <documentation>
-                  
+                  A classname poitning to a class that extends &lt;code&gt;org.lamport.tla.toolbox.tool.SpecLifecycleParticipant&lt;/code&gt; class. The class must have a 0-argument constructor and override the eventOccured(SpecEvent) method.
                </documentation>
                <appInfo>
-                  <meta.attribute kind="java" basedOn="org.lamport.tla.toolbox.tool.SpecLifeCycleParticipant:"/>
+                  <meta.attribute kind="java" basedOn="org.lamport.tla.toolbox.tool.SpecLifecycleParticipant:"/>
                </appInfo>
             </annotation>
          </attribute>
@@ -76,27 +93,46 @@
          <meta.section type="examples"/>
       </appInfo>
       <documentation>
-         [Enter extension point usage example here.]
+         For example the Specification Parse Status is refreshed on any operation with the spec:
+&lt;br/&gt;&lt;code&gt;
+&amp;lt;extension point=&quot;org.lamport.tla.toolbox.spec&quot;&amp;gt;&lt;br/&gt;
+&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;lt;participant class=&quot;org.lamport.tla.toolbox.ui.contribution.StatusReflectingSpecLifecycleParticipant&quot;/&amp;gt;&lt;br/&gt;
+&amp;lt;/extension&amp;gt;
+&lt;/code&gt;
+The &lt;code&gt;StatusReflectingSpecLifecycleParticipant&lt;/code&gt; has the following implementation:
+&lt;code&gt;
+&lt;pre&gt;
+public class StatusReflectingSpecLifecycleParticipant extends SpecLifecycleParticipant
+{
+    private Runnable parseStatusUpdateRunable;
+
+    public void initialize()
+    {
+        parseStatusUpdateRunable = Activator.getDefault().getParseStatusUpdateRunable();
+    }
+
+    public void terminate()
+    {
+        parseStatusUpdateRunable = null;
+    }
+
+    /*
+     * Update the widget on spec operations
+     * @see org.lamport.tla.toolbox.tool.SpecLifecycleParticipant#eventOccured(org.lamport.tla.toolbox.tool.SpecEvent)
+     */
+    public boolean eventOccured(SpecEvent event)
+    {
+        UIHelper.runUIAsync(parseStatusUpdateRunable);
+        return true;
+    }
+}
+&lt;/pre&gt;
+&lt;/code&gt;
+	
       </documentation>
    </annotation>
 
-   <annotation>
-      <appInfo>
-         <meta.section type="apiinfo"/>
-      </appInfo>
-      <documentation>
-         [Enter API information here.]
-      </documentation>
-   </annotation>
 
-   <annotation>
-      <appInfo>
-         <meta.section type="implementation"/>
-      </appInfo>
-      <documentation>
-         [Enter information about supplied implementation of this extension point.]
-      </documentation>
-   </annotation>
 
 
 </schema>
