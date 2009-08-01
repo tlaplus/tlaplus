@@ -51,11 +51,6 @@ Export-Package: org.lamport.tla.toolbox.spec,
  tla2sany.utilities,
  tla2tex,
  tlc2;uses:="tlc2.tool",
- tlc2.module,
- tlc2.pprint,
- tlc2.tool,
- tlc2.tool.liveness,
- tlc2.util,
- tlc2.value,
+ tlc2.output,
  util
 
