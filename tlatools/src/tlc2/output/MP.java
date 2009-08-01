@@ -65,20 +65,36 @@ import util.ToolIO;
  */
 public class MP
 {
-    private static final String DELIM = "@!@!@";
+    public static final String DELIM = "@!@!@";
     
     private static final String[] EMPTY_PARAMS = new String[0];
 
-    private static final int NONE = 0;
-    private static final int ERROR = 1;
-    private static final int TLCBUG = 2;
-    private static final int WARNING = 3;
-    private static final int STATE = 4;
+    /**
+     * Severity - standard output
+     */
+    public static final int NONE = 0;
+    /**
+     * Severity - error
+     */
+    public static final int ERROR = 1;
+    /**
+     * Severity - bug
+     */
+    public static final int TLCBUG = 2;
+    /**
+     * Severity - warning
+     */
+    public static final int WARNING = 3;
+    /**
+     * Severity - state print
+     */
+    public static final int STATE = 4;
+    
+    
     private static MP instance = null;
-
+    private Set warningHistory;
     private static final String CONFIG_FILE_ERROR = "TLC found an error in the configuration file at line %1%\n";
 
-    private Set warningHistory;
 
     /**
      * The internal instance
