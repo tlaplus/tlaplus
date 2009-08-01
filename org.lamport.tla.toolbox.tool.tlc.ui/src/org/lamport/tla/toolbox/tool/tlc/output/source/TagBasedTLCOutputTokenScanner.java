@@ -32,8 +32,8 @@ public class TagBasedTLCOutputTokenScanner extends RuleBasedPartitionScanner
     {
         Vector rules = new Vector();
 
-        rules.add(new SingleLineRule(RULE_START, RULE_DELIM, new Token(TAG_OPEN)));
-        rules.add(new SingleLineRule(RULE_END, RULE_DELIM, new Token(TAG_CLOSED)));
+        rules.add(new SingleLineRule(RULE_START, RULE_DELIM + "\n", new Token(TAG_OPEN)));
+        rules.add(new SingleLineRule(RULE_END, RULE_DELIM + "\n", new Token(TAG_CLOSED)));
         
         // add the rules
         setPredicateRules((IPredicateRule[]) rules.toArray(new IPredicateRule[rules.size()]));

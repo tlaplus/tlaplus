@@ -66,7 +66,7 @@ public class PartitionToolkit
                     return null;
                 }
             }
-
+            
             matcher = regions[i].getOffset() + regions[i].getLength();
             length += regions[i].getLength();
 

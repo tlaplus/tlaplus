@@ -20,10 +20,14 @@ import org.lamport.tla.toolbox.tool.tlc.launch.IConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.output.ITLCOutputListener;
 import org.lamport.tla.toolbox.tool.tlc.output.PartitionToolkit;
 import org.lamport.tla.toolbox.tool.tlc.output.source.TLCOutputSourceRegistry;
+import org.lamport.tla.toolbox.tool.tlc.output.source.TLCRegion;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
 import org.lamport.tla.toolbox.util.IHelpConstants;
 import org.lamport.tla.toolbox.util.UIHelper;
+
+import tlc2.output.EC;
+import tlc2.output.MP;
 
 /**
  * A page to display results of model checking
@@ -43,7 +47,7 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
 
     private Text output;
     private Text progress;
-    private Text coverage;    
+    private Text coverage;
     private Text errors;
     // flag indicating that the job / file output is finished
     private boolean isDone = false;
@@ -57,7 +61,6 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
         this.helpId = IHelpConstants.RESULT_MODEL_PAGE;
         this.imagePath = "icons/full/choice_sc_obj.gif";
     }
-
 
     protected void loadData() throws CoreException
     {
@@ -102,7 +105,6 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
         }
     }
 
-
     /* (non-Javadoc)
      * @see org.lamport.tla.toolbox.tool.tlc.output.ITLCOutputListener#getProcessName()
      */
@@ -145,7 +147,7 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
     public synchronized void onOutput(ITypedRegion region, IDocument document)
     {
 
-        if (isDone) 
+        if (isDone)
         {
             // the only reason for this is the restart of the MC, after the previous run completed.
             // clean up the output
@@ -153,25 +155,81 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
             setText(this.progress, "", false);
             isDone = false;
         }
+
         try
         {
-            final String outputMessage = document.get(region.getOffset(), region.getLength()) + "\n";
+            final String outputMessage = document.get(region.getOffset(), region.getLength());
 
-            switch (PartitionToolkit.getRegionTypeAsInt(region)) {
-            case PartitionToolkit.TYPE_USER_OUTPUT:
-                setText(this.output, outputMessage, true);
-                break;
-            case PartitionToolkit.TYPE_COVERAGE:
-            case PartitionToolkit.TYPE_INIT_END:
-            case PartitionToolkit.TYPE_INIT_START:
-            case PartitionToolkit.TYPE_PROGRESS:
-            case PartitionToolkit.TYPE_TAG:
-                setText(this.progress, outputMessage, true);
-                break;
-            case PartitionToolkit.TYPE_UNKNOWN:
-            default:
-                System.err.println("Unknown type detected: " + region.getType());
-                break;
+            if (region instanceof TLCRegion)
+            {
+                TLCRegion tlcRegion = (TLCRegion) region;
+                int severity = tlcRegion.getSeverity();
+                int messageCode = tlcRegion.getMessageCode();
+
+                switch (severity) {
+                case MP.ERROR:
+                case MP.TLCBUG:
+                case MP.WARNING:
+                    setText(this.errors, outputMessage, true);
+                    break;
+                case MP.NONE:
+                    switch (messageCode) {
+                    // Progress information
+                    case EC.TLC_SANY_START:
+                    case EC.TLC_MODE_MC:
+                    case EC.TLC_MODE_SIMU:
+                    case EC.TLC_SANY_END:
+                    case EC.TLC_COMPUTING_INIT:
+                    case EC.TLC_CHECKING_TEMPORAL_PROPS:
+                    case EC.TLC_FINISHED:
+                    case EC.TLC_STARTING:
+                    case EC.TLC_SUCCESS:
+                    case EC.TLC_PROGRESS_SIMU:
+                    case EC.TLC_PROGRESS_START_STATS_DFID:
+                    case EC.TLC_PROGRESS_STATS:
+                    case EC.TLC_PROGRESS_STATS_DFID:
+                    case EC.TLC_INITIAL_STATE:
+                    case EC.TLC_INIT_GENERATED1:
+                    case EC.TLC_INIT_GENERATED2:
+                    case EC.TLC_INIT_GENERATED3:
+                    case EC.TLC_INIT_GENERATED4:
+                        setText(this.progress, outputMessage, true);
+                        break;
+                    // Coverage information
+                    case EC.TLC_COVERAGE_START:
+                        setText(this.coverage, outputMessage, false);
+                        break;
+                    case EC.TLC_COVERAGE_VALUE:
+                    case EC.TLC_COVERAGE_END:
+                        setText(this.coverage, outputMessage, true);
+                        break;
+                    default:
+                        setText(this.output, outputMessage, true);
+                        break;
+                    }
+                    break;
+                default:
+                    setText(this.output, outputMessage, true);
+                }
+
+            } else
+            {
+
+                switch (PartitionToolkit.getRegionTypeAsInt(region)) {
+                case PartitionToolkit.TYPE_USER_OUTPUT:
+                    setText(this.output, outputMessage, true);
+                    break;
+                case PartitionToolkit.TYPE_COVERAGE:
+                case PartitionToolkit.TYPE_INIT_END:
+                case PartitionToolkit.TYPE_INIT_START:
+                case PartitionToolkit.TYPE_PROGRESS:
+                    setText(this.progress, outputMessage, true);
+                    break;
+                case PartitionToolkit.TYPE_UNKNOWN:
+                default:
+                    System.err.println("Unknown type detected: " + region.getType());
+                    break;
+                }
             }
 
         } catch (BadLocationException e)
@@ -190,6 +248,9 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
     {
         UIHelper.runUIAsync(new Runnable() {
 
+            final String CR = "\n";
+            final String EMPTY = "";
+
             public void run()
             {
                 if (append)
@@ -199,6 +260,7 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
                         control.setText("");
                     }
                     control.append(message);
+                    control.append(message.endsWith(CR) ? EMPTY : CR);
                 } else
                 {
                     control.setText(message);
@@ -208,7 +270,6 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
         });
     }
 
-    
     /**
      * Draw the fields
      */
@@ -273,8 +334,8 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
 
         // -------------------------------------------------------------------
         // errors
-        section = FormHelper.createSectionComposite(left, "Errors", "Detected errors",
-                toolkit, sectionFlags, getExpansionListener());
+        section = FormHelper.createSectionComposite(left, "Errors", "Detected errors", toolkit, sectionFlags,
+                getExpansionListener());
         // only grab horizontal space
         gd = new GridData(GridData.FILL_HORIZONTAL);
         section.setLayoutData(gd);
@@ -294,7 +355,6 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
         gd.minimumWidth = 150;
         errors.setLayoutData(gd);
 
-        
         // -------------------------------------------------------------------
         // output
         section = FormHelper.createSectionComposite(right, "User Output", "Output created by TLC during the execution",
@@ -317,11 +377,11 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
         gd.heightHint = 300;
         gd.minimumWidth = 300;
         output.setLayoutData(gd);
-        
+
         // -------------------------------------------------------------------
         // coverage
-        section = FormHelper.createSectionComposite(right, "Coverage", "The coverage information",
-                toolkit, sectionFlags | Section.COMPACT, getExpansionListener());
+        section = FormHelper.createSectionComposite(right, "Coverage", "The coverage information", toolkit,
+                sectionFlags | Section.COMPACT, getExpansionListener());
         // only grab horizontal space
         gd = new GridData(GridData.FILL_HORIZONTAL);
         section.setLayoutData(gd);
@@ -342,7 +402,7 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
         coverage.setLayoutData(gd);
 
     }
-    
+
     /**
      * Dispose the page
      */
@@ -351,14 +411,12 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
         TLCOutputSourceRegistry.getStatusRegistry().disconnect(this);
         super.dispose();
     }
-    
+
     public void setEnabled(boolean enabled)
     {
         // do nothing here, since the result page is read-only per definition
     }
 
-    
-    
     /**
      * Creates a text component with left-aligned text
      * @param title

@@ -81,6 +81,11 @@ public class TagBasedTLCAnalyzer
         return this.taggedRegion;
     }
     
+    /**
+     * Retrieves the message type
+     * @param region
+     * @return
+     */
     private int getMessageCode(ITypedRegion region)
     {
         try
@@ -96,6 +101,11 @@ public class TagBasedTLCAnalyzer
         return -1;
     }
     
+    /**
+     * Retrieves the message severity
+     * @param region
+     * @return
+     */
     private int getSeverity(ITypedRegion region)
     {
         try

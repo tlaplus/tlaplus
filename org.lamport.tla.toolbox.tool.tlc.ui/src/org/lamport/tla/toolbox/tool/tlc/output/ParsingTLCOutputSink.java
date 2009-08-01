@@ -2,7 +2,6 @@ package org.lamport.tla.toolbox.tool.tlc.output;
 
 import org.eclipse.jface.text.BadLocationException;
 import org.lamport.tla.toolbox.tool.tlc.output.source.ITLCOutputSource;
-import org.lamport.tla.toolbox.tool.tlc.output.source.TLCOutputIncrementalParser;
 import org.lamport.tla.toolbox.tool.tlc.output.source.TagBasedTLCOutputIncrementalParser;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 
@@ -13,8 +12,8 @@ import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
  */
 public class ParsingTLCOutputSink implements IProcessOutputSink
 {
-    private TLCOutputIncrementalParser parser;    
-    // private TagBasedTLCOutputIncrementalParser parser;
+    // private TLCOutputIncrementalParser parser;    
+    private TagBasedTLCOutputIncrementalParser parser;
 
     /* (non-Javadoc)
      * @see org.lamport.tla.toolbox.tool.tlc.output.IProcessOutputSink#appendText(java.lang.String)
@@ -37,8 +36,8 @@ public class ParsingTLCOutputSink implements IProcessOutputSink
      */
     public void initializeSink(String processName, int sinkType)
     {
-        parser = new TLCOutputIncrementalParser(processName, ITLCOutputSource.PRIO_HIGH);
-        // parser = new TagBasedTLCOutputIncrementalParser(processName, ITLCOutputSource.PRIO_HIGH);
+        // parser = new TLCOutputIncrementalParser(processName, ITLCOutputSource.PRIO_HIGH);
+        parser = new TagBasedTLCOutputIncrementalParser(processName, ITLCOutputSource.PRIO_HIGH);
     }
 
     /* (non-Javadoc)
