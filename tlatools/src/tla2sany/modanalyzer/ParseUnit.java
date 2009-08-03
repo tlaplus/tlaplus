@@ -244,9 +244,10 @@ public class ParseUnit {
     // The root node of the parse tree is left in parseTree.
     boolean parseSuccess = parseTree.parse();
     if ( !parseSuccess ) { // if parsing the contents of "nis" failed...
-      errors.addAbort(Location.nullLoc,
+        // create the abort and throw the exception
+        errors.addAbort(Location.moduleLocation(nis.getModuleName()),
 		      "Could not parse module " + nis.getModuleName() + 
-                      " from file " + nis.getName(),true );
+                      " from file " + nis.getName(), true);
     }
 
     parseStamp = System.currentTimeMillis();
