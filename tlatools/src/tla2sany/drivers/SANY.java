@@ -195,40 +195,52 @@ public class SANY {
   // Parse all of the files referred to by the top-level file in specification
   public static void frontEndParse(SpecObj spec, PrintStream syserr) 
   throws ParseException {
-    /***********************************************************************
-    * Modified on 12 May 2008 by LL to remove "throws AbortExceptiion",    *
-    * since it catches all exceptions and turns them into                  *
-    * ParseExceptions.                                                     *
-    ***********************************************************************/
-    try {
-      // Actual parsing method called from inside loadSpec()
-      if (!spec.loadSpec(spec.getFileName(), spec.parseErrors)) {
+      /***********************************************************************
+       * Modified on 12 May 2008 by LL to remove "throws AbortExceptiion",    *
+       * since it catches all exceptions and turns them into                  *
+       * ParseExceptions.                                                     *
+       ***********************************************************************/
+      try 
+      {
+          // Actual parsing method called from inside loadSpec()
+          if (!spec.loadSpec(spec.getFileName(), spec.parseErrors)) 
+          {
+              // dead code SZ 02. Aug 2009
+              /*
         spec.parseErrors.addError(
             Location.nullLoc,
             "Parsing failed; semantic analysis not started");
-      }
-    
-      if (!spec.parseErrors.isSuccess()) {
-        if (syserr!= null) syserr.println( spec.parseErrors );
+               */
+          }
 
-        // indicate fatal error during parsing phase
-        spec.errorLevel = 2;
-        throw new ParseException(); 
+          if (!spec.parseErrors.isSuccess()) 
+          {
+              if (syserr!= null) syserr.println( spec.parseErrors );
+
+              // indicate fatal error during parsing phase
+              spec.errorLevel = 2;
+              throw new ParseException(); 
+          }
       }
-    }
-    catch (ParseException e) {
-      throw new ParseException();
-    }
-    catch (Exception e) {
-      // Assert.printStack(e);
-      syserr.println("\nFatal errors while parsing TLA+ spec in file " + 
-                     spec.getFileName() + "\n"); 
-      syserr.println(e.toString()); 
-      // syserr.println("Parsing errors detected before unexpected exception:\n");
-      syserr.print( spec.parseErrors );
-      throw new ParseException();
-    }
-    return;
+      // TODO
+      catch (ParseException e) 
+      {
+          // get here if either the TLAPlusParser.parse() threw a ParseException or spec.ParseErrors was not empty
+          throw new ParseException();
+      }
+      catch (Exception e) 
+      {
+          // Assert.printStack(e);
+          syserr.println("\nFatal errors while parsing TLA+ spec in file " + 
+                  spec.getFileName() + "\n"); 
+
+          syserr.println(e.toString()); 
+          // syserr.println("Parsing errors detected before unexpected exception:\n");
+          syserr.print( spec.parseErrors );
+
+          throw new ParseException();
+      }
+      return;
   } //
 
   public static void frontEndSemanticAnalysis(SpecObj spec,
