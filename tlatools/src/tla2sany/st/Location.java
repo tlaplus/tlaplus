@@ -34,6 +34,16 @@ public final class Location {
 
   public static final Location nullLoc = new Location(0,0,0,0);
 
+  /**
+   * Factory method to create unknown locations in a given module
+   * @param moduleName, string representation of the module name
+   * @return
+   */
+  public static final Location moduleLocation(String moduleName) 
+  {
+      return new Location(UniqueString.uniqueStringOf(moduleName), 0,0,0,0);
+  }
+  
   /** gets the begin line number of this location. */
   public final int beginLine() { return this.bLine; }
 
@@ -58,14 +68,18 @@ public final class Location {
    *                                                                    
    * where source() = "Foo".                                       
    */
-  public final String toString() {
-    if (this == nullLoc) {
-      return "Unknown location";
-    }
-    else {
-      return ("line " + bLine + ", col " + bColumn + " to line " + eLine + 
-	      ", col " + eColumn + " of module " + name);
-    }
+  public final String toString() 
+  {
+      if (this == nullLoc) 
+      {
+          return "Unknown location";
+      } else if (!this.name.equals(unknown) && (this.bColumn == 0 && this.eColumn == 0 && this.bLine == 0 && this.eLine == 0)) 
+      {
+          return "Unknown location in module " + name; 
+      } else 
+      {
+          return ("line " + bLine + ", col " + bColumn + " to line " + eLine + 
+                  ", col " + eColumn + " of module " + name);
+      }
   }
-
 }  
