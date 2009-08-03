@@ -85,6 +85,13 @@ public class Errors {
   }
   
 
+  /**
+   * 
+   * @param loc
+   * @param str
+   * @param abort throw an abort exception iff true 
+   * @throws AbortException
+   */
   public final void addAbort(Location loc, String str, boolean abort) throws AbortException {
     String errMsg = loc.toString() + "\n\n" + str;
     int i;
