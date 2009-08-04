@@ -7,6 +7,7 @@ package tlc2.tool;
 
 import java.io.IOException;
 
+import tlc2.tool.PrintfFormat;
 import tla2sany.modanalyzer.SpecObj;
 import tla2sany.semantic.ExprNode;
 import tlc2.TLCGlobals;
@@ -689,7 +690,13 @@ public class ModelChecker extends AbstractChecker
         long d = this.theFPSet.size();
         double prob1 = (d * (this.numOfGenStates - d)) / Math.pow(2, 64);
         double prob2 = this.theFPSet.checkFPs();
-        MP.printMessage(EC.TLC_SUCCESS, new String[]{String.valueOf(prob1), String.valueOf(prob2)});
+        /* The following code added by LL on 3 Aug 2009 to print probabilities
+         * to only one decimal point.
+         */
+        PrintfFormat fmt = new PrintfFormat("val = %.1G") ;
+        String prob1Str = fmt.sprintf(prob1);
+        String prob2Str = fmt.sprintf(prob2);
+        MP.printMessage(EC.TLC_SUCCESS, new String[]{prob1Str, prob2Str});
     }
 
     public final void setAllValues(int idx, Value val)
