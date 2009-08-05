@@ -75,7 +75,7 @@ public final class Location {
           return "Unknown location";
       } else if (!this.name.equals(unknown) && (this.bColumn == 0 && this.eColumn == 0 && this.bLine == 0 && this.eLine == 0)) 
       {
-          return "Unknown location in module " + name; 
+          return "In module " + name; // Changed from "Unknown location in module..." by LL on 4 Aug 2009
       } else 
       {
           return ("line " + bLine + ", col " + bColumn + " to line " + eLine + 
