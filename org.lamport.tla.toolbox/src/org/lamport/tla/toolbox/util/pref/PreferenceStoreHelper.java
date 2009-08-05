@@ -53,8 +53,9 @@ public class PreferenceStoreHelper
      * Store the information about opened editors in project preferences
      * @param project
      * @param openedModules
+     * @deprecated
      */
-    private static void storeOpenedEditors(IProject project, String[] openedModules)
+    public static void storeOpenedEditors(IProject project, String[] openedModules)
     {
         IEclipsePreferences projectPrefs = getProjectPreferences(project);
         Preferences opened = projectPrefs.node(IPreferenceConstants.P_PROJECT_OPENED_MODULES);
@@ -72,8 +73,9 @@ public class PreferenceStoreHelper
      * Retrieves the information about the opened editors from project preferences
      * @param project
      * @return
+     * @deprecated
      */
-    private static String[] getOpenedEditors(IProject project) 
+    public static String[] getOpenedEditors(IProject project) 
     {
         IEclipsePreferences projectPrefs = getProjectPreferences(project);
         Preferences opened = projectPrefs.node(IPreferenceConstants.P_PROJECT_OPENED_MODULES);

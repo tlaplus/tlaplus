@@ -4,7 +4,6 @@ import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
-import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.tool.ToolboxLifecycleException;
 import org.lamport.tla.toolbox.tool.ToolboxLifecycleParticipant;
 
