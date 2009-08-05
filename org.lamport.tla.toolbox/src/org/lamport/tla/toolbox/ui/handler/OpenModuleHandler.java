@@ -37,9 +37,7 @@ public class OpenModuleHandler extends AbstractHandler implements IHandler
         final IFile module = ResourceHelper.getLinkedFile(spec.getProject(), ResourceHelper.getModuleFileName(moduleName));
         if (module == null)
         {
-            // TODO return some error
             throw new RuntimeException("Module " + moduleName + " could not be found" );
-            // return null;
         }
 
         // open the editor
@@ -55,56 +53,6 @@ public class OpenModuleHandler extends AbstractHandler implements IHandler
                 } 
             }
         });
-        
-        
-        
-        IPartListener2 listener = new IPartListener2()
-        {
-
-            public void partActivated(IWorkbenchPartReference partRef)
-            {
-                
-            }
-
-            public void partBroughtToTop(IWorkbenchPartReference partRef)
-            {
-                
-            }
-
-            public void partClosed(IWorkbenchPartReference partRef)
-            {
-               System.out.println("Editor closed"); 
-                
-            }
-
-            public void partDeactivated(IWorkbenchPartReference partRef)
-            {
-                
-            }
-
-            public void partHidden(IWorkbenchPartReference partRef)
-            {
-                
-            }
-
-            public void partInputChanged(IWorkbenchPartReference partRef)
-            {
-                
-            }
-
-            public void partOpened(IWorkbenchPartReference partRef)
-            {
-                
-            }
-
-            public void partVisible(IWorkbenchPartReference partRef)
-            {
-                
-            }
-            
-        };
-        part.getSite().getPage().addPartListener(listener);
-        
         return null;
     }
 

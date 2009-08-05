@@ -218,10 +218,18 @@ public class Activator extends AbstractUIPlugin
     }
 
     /**
+     * Writes a string into some debugging place
+     */
+    public static void logDebug(String message)
+    {
+        System.out.println(message);        
+    }
+
+    /**
      * Writes a string into the info category of the log
      * @param string
      */
-    public static void logDebug(String message)
+    public static void logInfo(String message)
     {
         getDefault().getLog().log(new Status(IStatus.INFO, PLUGIN_ID, message));        
     }

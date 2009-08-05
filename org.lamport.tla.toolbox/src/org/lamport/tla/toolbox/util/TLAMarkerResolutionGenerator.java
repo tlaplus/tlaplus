@@ -5,6 +5,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IMarkerResolution;
 import org.eclipse.ui.IMarkerResolutionGenerator;
 import org.eclipse.ui.views.markers.WorkbenchMarkerResolution;
+import org.lamport.tla.toolbox.Activator;
 
 /**
  * Marker resolution generator is a factory of marker resoution (also known as quick fixes)
@@ -42,7 +43,7 @@ public class TLAMarkerResolutionGenerator implements IMarkerResolutionGenerator
          */
         public void run(IMarker marker)
         {
-            System.out.println("Marker on " + marker.getAttribute(IMarker.LOCATION, "") + " quick fixed.");
+            Activator.logDebug("Marker on " + marker.getAttribute(IMarker.LOCATION, "") + " quick fixed.");
         }
         
     }

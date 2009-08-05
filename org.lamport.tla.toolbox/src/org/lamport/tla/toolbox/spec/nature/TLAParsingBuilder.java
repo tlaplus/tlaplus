@@ -30,8 +30,7 @@ public class TLAParsingBuilder extends IncrementalProjectBuilder
 
     protected void clean(IProgressMonitor monitor) throws CoreException
     {
-        System.out.println("Clean has been invoked");
-
+        Activator.logDebug("Clean has been invoked");
         // clean removes all markers 
         Spec spec = Activator.getSpecManager().getSpecLoaded();
         TLAMarkerHelper.removeProblemMarkers(spec.getProject(), monitor);
@@ -52,7 +51,7 @@ public class TLAParsingBuilder extends IncrementalProjectBuilder
             return null;
         }
 
-        System.out.println("----\n");
+        Activator.logDebug("----\n");
         if (IncrementalProjectBuilder.FULL_BUILD == kind)
         {
             monitor.beginTask("Invoking the SANY to re-parse the spec", IProgressMonitor.UNKNOWN);
@@ -125,7 +124,7 @@ public class TLAParsingBuilder extends IncrementalProjectBuilder
 
                         } else
                         {
-                            System.out.println("There is a root file, but the setting AUTO_BUILD_SPEC is off.");
+                            Activator.logDebug("There is a root file, but the setting AUTO_BUILD_SPEC is off.");
                         }
 
                         if (buildFiles)
@@ -136,14 +135,14 @@ public class TLAParsingBuilder extends IncrementalProjectBuilder
                             build(moduleToBuild, rootFile, new SubProgressMonitor(monitor, IProgressMonitor.UNKNOWN));
                         } else
                         {
-                            System.out.println("There are dependent files, but the setting AUTO_BUILD_FILES is off.");
+                            Activator.logDebug("There are dependent files, but the setting AUTO_BUILD_FILES is off.");
                         }
                     }
                 }
             }
         }
 
-        System.out.println("----\n");
+        Activator.logDebug("----\n");
         // since every project is one spec and we do not want to touch other specs always return NULL!
         return null;
     }
@@ -187,8 +186,9 @@ public class TLAParsingBuilder extends IncrementalProjectBuilder
                 ParserHelper.rebuildModule(moduleFile, new SubProgressMonitor(monitor, IProgressMonitor.UNKNOWN));
 
                 monitor.done();
-            } else {
-                System.out.println("Skipping resource: " + moduleFileName);    
+            } else 
+            {
+                Activator.logDebug("Skipping resource: " + moduleFileName);    
             }
         }
         

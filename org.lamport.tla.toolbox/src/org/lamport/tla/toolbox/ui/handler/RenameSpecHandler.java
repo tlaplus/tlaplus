@@ -66,7 +66,7 @@ public class RenameSpecHandler extends AbstractHandler implements IHandler
                     // exit processing if no specName at place
                     return null;
                 }
-                System.out.println("Rename " + spec.getName() + " to " + specName);
+                Activator.logDebug("Rename " + spec.getName() + " to " + specName);
                 Activator.getSpecManager().renameSpec(spec, specName);
             } 
         }

@@ -49,7 +49,7 @@ public class DeleteSpecHandler extends AbstractHandler implements IHandler
                             "Do you really want to delete the specification " + spec.getName() + " ?");
                     if (answer)
                     {
-                        System.out.println("Delete " + spec.getName());
+                        Activator.logDebug("Delete " + spec.getName());
                         Activator.getSpecManager().removeSpec(spec);
                     }
                 }

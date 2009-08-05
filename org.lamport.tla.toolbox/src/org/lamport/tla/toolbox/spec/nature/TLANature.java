@@ -5,6 +5,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IProjectNature;
 import org.eclipse.core.runtime.CoreException;
+import org.lamport.tla.toolbox.Activator;
 
 /**
  * TLA Nature
@@ -70,7 +71,7 @@ public class TLANature implements IProjectNature
         
         desc.setBuildSpec(newCommands);
         project.setDescription(desc, null);
-        System.out.print("Nature added");
+        Activator.logDebug("Nature added");
     }
 
     /**
@@ -91,7 +92,7 @@ public class TLANature implements IProjectNature
                 description.setBuildSpec(newCommands);
             } 
         }
-        System.out.print("Nature removed");
+        Activator.logDebug("Nature removed");
     }
    
     public IProject getProject()

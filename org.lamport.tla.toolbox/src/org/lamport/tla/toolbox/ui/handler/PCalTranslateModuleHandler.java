@@ -17,6 +17,7 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.job.TranslatorJob;
 import org.lamport.tla.toolbox.util.UIHelper;
 
@@ -28,7 +29,7 @@ import org.lamport.tla.toolbox.util.UIHelper;
 public class PCalTranslateModuleHandler extends AbstractHandler implements IHandler, IHandler2
 {
     public final static String COMMAND_ID = "toolbox.command.module.translate.active";
-    
+
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
         // Getting progress monitor
@@ -40,15 +41,14 @@ public class PCalTranslateModuleHandler extends AbstractHandler implements IHand
         IEditorPart activeEditor = UIHelper.getActivePage().getActiveEditor();
 
         if (activeEditor.isDirty())
-        { 
+        {
             // editor is not saved
-            
+
             // just save it
-            // TODO 
-            
+            // TODO
+
             activeEditor.doSave(monitor);
         }
-        
 
         IEditorInput editorInput = activeEditor.getEditorInput();
         if (editorInput instanceof IFileEditorInput)
@@ -60,45 +60,41 @@ public class PCalTranslateModuleHandler extends AbstractHandler implements IHand
             {
                 progressDialog.run(true, false, translatorOperation);
                 fileToBuild.refreshLocal(IResource.DEPTH_ONE, monitor);
-                
+
             } catch (InvocationTargetException e)
             {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                Activator.logError("Error during PlusCal Trnaslation", e);
             } catch (InterruptedException e)
             {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                Activator.logError("Error during PlusCal Trnaslation", e);
             } catch (CoreException e)
             {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                Activator.logError("Error during PlusCal Trnaslation", e);
             }
 
-/*
-            TranslatorJob job = new TranslatorJob(fileToBuild);
-            job.setUser(true);
-            // TODO config file is also changed
-            job.setRule(getModifyRule(new IResource[]{fileToBuild}));
-            job.addJobChangeListener(new JobChangeAdapter(){
-                public void done(IJobChangeEvent event)
-                {
-                    if (Status.OK_STATUS.equals(event.getResult()))
-                    {
-                        try
-                        {
-                            fileToBuild.refreshLocal(IResource.DEPTH_ONE, null);
-                        } catch (CoreException e)
-                        {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-            });
-            job.schedule();
-*/        
-            
-        
+            /*
+                        TranslatorJob job = new TranslatorJob(fileToBuild);
+                        job.setUser(true);
+                        // TODO config file is also changed
+                        job.setRule(getModifyRule(new IResource[]{fileToBuild}));
+                        job.addJobChangeListener(new JobChangeAdapter(){
+                            public void done(IJobChangeEvent event)
+                            {
+                                if (Status.OK_STATUS.equals(event.getResult()))
+                                {
+                                    try
+                                    {
+                                        fileToBuild.refreshLocal(IResource.DEPTH_ONE, null);
+                                    } catch (CoreException e)
+                                    {
+                                        e.printStackTrace();
+                                    }
+                                }
+                            }
+                        });
+                        job.schedule();
+            */
+
         }
         return null;
     }

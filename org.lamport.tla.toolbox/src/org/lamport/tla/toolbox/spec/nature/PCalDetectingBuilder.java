@@ -91,16 +91,16 @@ public class PCalDetectingBuilder extends IncrementalProjectBuilder
                     if (matchRegion != null ) 
                     {
                         // found a algorithm definition
-                        System.out.println("Found algorithm definition in " + resource.getName());
+                        Activator.logDebug("Found algorithm definition in " + resource.getName());
                         resource.setSessionProperty(key, new Boolean(true));
                         
-                    } else {
+                    } else 
+                    {
                         resource.setSessionProperty(key, null);
                     }
                 } catch (BadLocationException e)
                 {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
+                    Activator.logError("Error trying to detect the algorithm", e);
                 }
             }
             return false;

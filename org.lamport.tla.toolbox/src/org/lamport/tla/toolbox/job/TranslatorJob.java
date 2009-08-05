@@ -12,6 +12,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.TLAMarkerHelper;
 import org.lamport.tla.toolbox.util.pref.IPreferenceConstants;
@@ -39,7 +40,7 @@ public class TranslatorJob extends WorkspaceJob
         this.fileToBuild = fileToBuild;
         this.callParams = new Vector();
         
-        System.out.println("Translating " + fileToBuild.getLocation().toOSString());
+        Activator.logDebug("Translating " + fileToBuild.getLocation().toOSString());
 
         boolean hasPcalAlg = false;
         String[] params;
@@ -68,9 +69,9 @@ public class TranslatorJob extends WorkspaceJob
         if (!hasPcalAlg)
         {
             // no algorithm detected
-            System.out.println("No algorithm found");
+            Activator.logDebug("No algorithm found");
         } else {
-            System.out.println("Algorithm found");
+            Activator.logDebug("Algorithm found");
         }
 
         // add params from the resource setting
@@ -102,7 +103,7 @@ public class TranslatorJob extends WorkspaceJob
         {
             buffer.append(" " + callParams.elementAt(i));
         }
-        System.out.println("Translator invoked with params: '" + buffer.toString()+ "'");
+        Activator.logDebug("Translator invoked with params: '" + buffer.toString()+ "'");
 
         
         translator.runTranslation((String[]) callParams.toArray(new String[callParams.size()]));

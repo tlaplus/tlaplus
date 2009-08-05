@@ -37,19 +37,17 @@ public class OpenSpecHandler extends AbstractHandler implements IHandler
         {
             return null;
         }
-        
-        
+
         // if another spec is currently loaded, close it
-        if (Activator.getSpecManager().getSpecLoaded() != null) 
+        if (Activator.getSpecManager().getSpecLoaded() != null)
         {
-            UIHelper.runCommand(CloseSpecHandler.COMMAND_ID, null);   
+            UIHelper.runCommand(CloseSpecHandler.COMMAND_ID, null);
         }
 
         final Spec spec = Activator.getSpecManager().getSpecByName(specName);
         if (spec == null)
         {
-            // TODO return some error
-            return null;
+            throw new RuntimeException("Specification " + specName + "not found");
         }
 
         // spec the perspective
