@@ -6,7 +6,6 @@
 package tlc2.tool.liveness;
 
 import tlc2.util.BitVector;
-import util.Assert;
 import util.WrongInvocationException;
 
 public class BEGraphNode {

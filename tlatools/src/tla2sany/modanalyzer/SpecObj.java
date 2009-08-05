@@ -12,8 +12,8 @@ import tla2sany.semantic.ExternalModuleTable;
 import tla2sany.st.TreeNode;
 import tla2sany.utilities.Vector;
 import util.FileUtil;
-import util.NamedInputStream;
 import util.FilenameToStream;
+import util.NamedInputStream;
 import util.ToolIO;
 
 /**

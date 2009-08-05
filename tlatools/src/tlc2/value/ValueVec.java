@@ -8,7 +8,6 @@ package tlc2.value;
 import java.io.Serializable;
 
 import tlc2.TLCGlobals;
-import util.Assert;
 import util.WrongInvocationException;
 
 public class ValueVec implements Cloneable, Serializable {

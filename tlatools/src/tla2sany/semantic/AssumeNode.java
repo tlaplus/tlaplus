@@ -5,7 +5,6 @@ package tla2sany.semantic;
 import java.util.HashSet;
 import java.util.Hashtable;
 
-import tla2sany.parser.SyntaxTreeNode;
 import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
 

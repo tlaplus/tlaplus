@@ -17,10 +17,6 @@ import pcal.exception.StringVectorToFileException;
 import pcal.exception.TLCTranslationException;
 import pcal.exception.UnrecoverableException;
 import util.ToolIO;
-  /*************************************************************************
-  * Contains dummy definitions of methods that are yet to be implemented.  *
-  *                                                                        *
-  *************************************************************************/
 
 /***************************************************************************
 * <pre>

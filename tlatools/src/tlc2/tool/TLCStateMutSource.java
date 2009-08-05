@@ -20,7 +20,6 @@ import tlc2.value.MVPerm;
 import tlc2.value.Value;
 import tlc2.value.ValueInputStream;
 import tlc2.value.ValueOutputStream;
-import util.Assert;
 import util.UniqueString;
 import util.WrongInvocationException;
 

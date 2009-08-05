@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import tlc2.output.EC;
-import tlc2.output.MP;
 
 /** A <code>BufferedDataInputStream</code> is an optimized
     combination of a <code>java.io.BufferedInputStream</code>

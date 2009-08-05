@@ -401,7 +401,6 @@ package pcal;
 import java.util.Vector;
 
 import pcal.exception.TokenizerException;
-
 import tla2tex.Misc;
 import tla2tex.Symbol;
 import tla2tex.Token;

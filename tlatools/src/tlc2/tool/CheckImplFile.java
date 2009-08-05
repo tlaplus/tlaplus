@@ -20,7 +20,6 @@ import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.util.FP64;
 import util.Assert;
-
 import util.FileUtil;
 import util.ToolIO;
 import util.UniqueString;

@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.rmi.RemoteException;
 
 import tlc2.output.EC;
-import tlc2.output.MP;
 import tlc2.tool.TLCTrace;
 import tlc2.util.BufferedRandomAccessFile;
 import util.Assert;

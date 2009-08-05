@@ -17,7 +17,6 @@ import tlc2.output.StatePrinter;
 import tlc2.util.BufferedRandomAccessFile;
 import tlc2.util.LongVec;
 import util.FileUtil;
-import util.ToolIO;
 
 public class TLCTrace {
 

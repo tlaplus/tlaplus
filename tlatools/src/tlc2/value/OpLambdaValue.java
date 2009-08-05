@@ -7,7 +7,6 @@ package tlc2.value;
 
 import tla2sany.semantic.FormalParamNode;
 import tla2sany.semantic.OpDefNode;
-import tlc2.output.EC;
 import tlc2.tool.TLCState;
 import tlc2.tool.Tool;
 import tlc2.util.Context;
