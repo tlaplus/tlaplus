@@ -68,6 +68,7 @@ public class ModelWriter
     {
         cfgBuffer.append("SPECIFICATION ");
         cfgBuffer.append(specDefinition[0]).append(CR);
+        
         tlaBuffer.append("\\* Specification formula").append(CR);
         tlaBuffer.append(specDefinition[1]).append(CR).append(SEP).append(CR);
 
