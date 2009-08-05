@@ -10,7 +10,6 @@ import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.spec.parser.ModuleParserLauncher;
 import org.lamport.tla.toolbox.spec.parser.ParseResult;
 import org.lamport.tla.toolbox.spec.parser.SpecificationParserLauncher;
-import org.lamport.tla.toolbox.util.AdapterFactory;
 
 /**
  * Encapsulates parser launching methods
@@ -35,7 +34,7 @@ public class ParserHelper
         {
             return;
         }
-        System.out.println("Module build invoked on " + resource.getProjectRelativePath().toString() + " ...");
+        // System.out.println("Module build invoked on " + resource.getProjectRelativePath().toString() + " ...");
         IWorkspaceRunnable run = new IWorkspaceRunnable() {
 
             public void run(IProgressMonitor monitor) throws CoreException
@@ -44,7 +43,7 @@ public class ParserHelper
                 // markers already removed in the parseModule
                 // TLAMarkerHelper.removeProblemMarkers(resource, monitor);
                 ParseResult result = moduleParser.parseModule(resource, monitor);
-                System.out.println("Resulting status is: " + AdapterFactory.getStatusAsString(result.getStatus()));
+                // System.out.println("Resulting status is: " + AdapterFactory.getStatusAsString(result.getStatus()));
             }
         };
         try
@@ -52,10 +51,9 @@ public class ParserHelper
             resource.getWorkspace().run(run, monitor);
         } catch (CoreException e)
         {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            Activator.logError("Error parsing a module", e);
         }
-        System.out.println("... build invocation finished.");
+        // System.out.println("... build invocation finished.");
     }
 
     /**
@@ -64,25 +62,20 @@ public class ParserHelper
      */
     public static void rebuildSpec(IProgressMonitor monitor)
     {
-        // TODO improve this...
-        // better: lookup in the project property for the spec name
-        // and search a spec by name
-
         final Spec spec = Activator.getSpecManager().getSpecLoaded();
         if (spec == null)
         {
             return;
         }
-        System.out.println("Spec build invoked on " + spec.getName() + " ...");
+        // System.out.println("Spec build invoked on " + spec.getName() + " ...");
         IWorkspaceRunnable run = new IWorkspaceRunnable() {
 
             public void run(IProgressMonitor monitor) throws CoreException
             {
 
                 // markers already removed in the parseSpecification 
-                // TLAMarkerHelper.removeProblemMarkers(spec.getProject(), monitor);
                 launcher.parseSpecification(spec, monitor);
-                System.out.println("Resulting status is: " + AdapterFactory.getStatusAsString(spec));
+                // System.out.println("Resulting status is: " + AdapterFactory.getStatusAsString(spec));
             }
         };
         try
@@ -90,8 +83,8 @@ public class ParserHelper
             ResourcesPlugin.getWorkspace().run(run, monitor);
         } catch (CoreException e)
         {
-            e.printStackTrace();
+            Activator.logError("Error parsing a module", e);
         }
-        System.out.println("... build invocation finished.");
+        // System.out.println("... build invocation finished.");
     }
 }
