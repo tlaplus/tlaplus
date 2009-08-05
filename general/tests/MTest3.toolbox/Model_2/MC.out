@@ -1,0 +1,31 @@
+TLC2 Version 2.02 of 3 August 2009
+@!@!@STARTMSG 2187:0 @!@!@
+Running in Model-Checking mode.
+@!@!@ENDMSG 2187 @!@!@
+@!@!@STARTMSG 2220:0 @!@!@
+Starting SANY...
+@!@!@ENDMSG 2220 @!@!@
+Parsing file MC.tla
+Parsing file MTest3.tla
+Parsing file C:\users\lamport\tla\tla2\org.lamport.tla.toolbox\StandardModules\TLC.tla
+Parsing file C:\users\lamport\tla\tla2\org.lamport.tla.toolbox\StandardModules\Naturals.tla
+Parsing file C:\users\lamport\tla\tla2\org.lamport.tla.toolbox\StandardModules\Sequences.tla
+Semantic processing of module MTest3
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module TLC
+Semantic processing of module MC
+@!@!@STARTMSG 2219:0 @!@!@
+SANY finished.
+@!@!@ENDMSG 2219 @!@!@
+@!@!@STARTMSG 2185:0 @!@!@
+Starting...
+@!@!@ENDMSG 2185 @!@!@
+@!@!@STARTMSG 2105:1 @!@!@
+Evaluating assumption line 11, col 8 to line 14, col 26 of module MTest3 failed.
+Attempted to check equality of integer 2 with non-integer:
+"b"
+@!@!@ENDMSG 2105 @!@!@
+@!@!@STARTMSG 2186:0 @!@!@
+Finished.
+@!@!@ENDMSG 2186 @!@!@

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<launchConfiguration type="org.lamport.tla.toolbox.tool.tlc.modelCheck">
+<stringAttribute key="configurationName" value="Model_7"/>
+<stringAttribute key="modelBehaviorFairness" value=""/>
+<stringAttribute key="modelBehaviorInit" value="(x=0) /\ (y=0)"/>
+<stringAttribute key="modelBehaviorNext" value="FALSE"/>
+<stringAttribute key="modelBehaviorSpec" value=""/>
+<intAttribute key="modelBehaviorSpecType" value="2"/>
+<stringAttribute key="modelBehaviorVars" value="x, y"/>
+<booleanAttribute key="modelCorrectnessCheckDeadlock" value="true"/>
+<listAttribute key="modelCorrectnessInvariants"/>
+<listAttribute key="modelCorrectnessProperties">
+<listEntry value="1x = 1"/>
+</listAttribute>
+<listAttribute key="modelParameterConstants"/>
+<intAttribute key="numberOfWorkers" value="2"/>
+<stringAttribute key="specName" value="MTest4"/>
+<stringAttribute key="specRootFile" value="C:\users\lamport\tla\tla2\general\tests\MTest4.tla"/>
+</launchConfiguration>

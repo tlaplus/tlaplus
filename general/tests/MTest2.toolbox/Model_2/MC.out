@@ -1,0 +1,26 @@
+TLC2 Version 2.02 of 3 August 2009
+@!@!@STARTMSG 2187:0 @!@!@
+Running in Model-Checking mode.
+@!@!@ENDMSG 2187 @!@!@
+@!@!@STARTMSG 2220:0 @!@!@
+Starting SANY...
+@!@!@ENDMSG 2220 @!@!@
+Parsing file MC.tla
+Parsing file MTest2.tla
+Parsing file C:\users\lamport\tla\tla2\org.lamport.tla.toolbox\StandardModules\TLC.tla
+Parsing file C:\users\lamport\tla\tla2\org.lamport.tla.toolbox\StandardModules\Naturals.tla
+Parsing file C:\users\lamport\tla\tla2\org.lamport.tla.toolbox\StandardModules\Sequences.tla
+Semantic processing of module MTest2
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module TLC
+Semantic processing of module MC
+@!@!@STARTMSG 2219:0 @!@!@
+SANY finished.
+@!@!@ENDMSG 2219 @!@!@
+@!@!@STARTMSG 1000:1 @!@!@
+@!@!@STARTMSG 2239:0 @!@!@
+TLC cannot handle this conjunct of the spec:
+line 6, col 8 to line 6, col 11 of module MC
+@!@!@ENDMSG 2239 @!@!@
+@!@!@ENDMSG 1000 @!@!@

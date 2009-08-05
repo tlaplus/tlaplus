@@ -1,9 +1,8 @@
 ------------------------------- MODULE MTest1 ------------------------------- 
 
 \* Generate parsing error in MC file
-\*  Put the following in the Model:
-\*   Spec:  (x=0) /\ [][x'=0]_
-
+\* Model 1: Malformed expression in spec
+\* Model_2: Multiply defined symbol
 CONSTANT a
 VARIABLE x
 
