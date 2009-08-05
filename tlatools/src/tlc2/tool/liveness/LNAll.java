@@ -5,29 +5,53 @@
 
 package tlc2.tool.liveness;
 
+import tlc2.output.EC;
 import tlc2.tool.TLCState;
 import tlc2.tool.Tool;
 import util.Assert;
 
-class LNAll extends LiveExprNode {
-  protected LiveExprNode body;
+/**
+ * Handles always ([])
+ * @author Leslie Lamport, Yuan Yu, Simon Zambrovski
+ * @version $Id$
+ */
+class LNAll extends LiveExprNode
+{
+    /**
+     * 
+     */
+    private static final String ALWAYS = "[]";
+    protected LiveExprNode body;
 
-  public LNAll(LiveExprNode body) { this.body = body;}
+    public LNAll(LiveExprNode body)
+    {
+        this.body = body;
+    }
 
-  public final LiveExprNode getBody() { return this.body; }
+    public final LiveExprNode getBody()
+    {
+        return this.body;
+    }
 
-  public final int getLevel() { return 3; }
+    public final int getLevel()
+    {
+        return 3;
+    }
 
-  public final boolean containAction() { return this.body.containAction(); }
+    public final boolean containAction()
+    {
+        return this.body.containAction();
+    }
 
-  public final boolean eval(Tool tool, TLCState s1, TLCState s2) {
-    Assert.fail("Can not evaluate a temporal formula []F.");
-    return false;    // make compiler happy
-  }
-  
-  public final void toString(StringBuffer sb, String padding) {
-    sb.append("[]");
-    this.getBody().toString(sb, padding + "  ");
-  }
+    public final boolean eval(Tool tool, TLCState s1, TLCState s2)
+    {
+        Assert.fail(EC.TLC_LIVE_CANNOT_EVAL_FORMULA, ALWAYS);
+        return false; // make compiler happy
+    }
+
+    public final void toString(StringBuffer sb, String padding)
+    {
+        sb.append(ALWAYS);
+        this.getBody().toString(sb, padding + "  ");
+    }
 }
-

@@ -171,10 +171,22 @@ public interface EC
     public static final int TLC_PROGRESS_STATS_DFID = 2206;
     public static final int TLC_PROGRESS_SIMU = 2209;
     public static final int TLC_FP_COMPLETED = 2211;
+    
     public static final int TLC_LIVE_IMPLIED = 2212;
     public static final int TLC_LIVE_CANNOT_HANDLE_FORMULA = 2213;
     public static final int TLC_LIVE_WRONG_FORMULA_FORMAT = 2214;
-    public static final int TLC_EXCEPTED_VALUE = 2215;
+    public static final int TLC_LIVE_ENCOUNTERED_ACTIONS = 2249;
+    public static final int TLC_LIVE_STATE_PREDICATE_NON_BOOL = 2250;
+    public static final int TLC_LIVE_CANNOT_EVAL_FORMULA = 2251;
+    public static final int TLC_LIVE_ENCOUNTERED_NONBOOL_PREDICATE = 2252;
+
+    
+    public static final int TLC_EXPECTED_VALUE = 2215;
+    public static final int TLC_EXPECTED_EXPRESSION = 2246;
+    public static final int TLC_EXPECTED_EXPRESSION_IN_COMPUTING = 2247;
+    public static final int TLC_EXPECTED_EXPRESSION_IN_COMPUTING2 = 2248;
+    
+    
     // state printing
     public static final int TLC_STATE_PRINT1 = 2216;
     public static final int TLC_STATE_PRINT2 = 2217;
@@ -182,6 +194,40 @@ public interface EC
     public static final int TLC_SANY_END = 2219;
     public static final int TLC_SANY_START = 2220;
     public static final int TLC_COVERAGE_VALUE = 2221;
+    
+    // config file errors
+    public static final int TLC_CONFIG_VALUE_NOT_ASSIGNED_TO_CONSTANT_PARAM = 2222;
+    public static final int TLC_CONFIG_RHS_ID_APPEARED_AFTER_LHS_ID = 2223;
+    public static final int TLC_CONFIG_WRONG_SUBSTITUTION = 2224;
+    public static final int TLC_CONFIG_WRONG_SUBSTITUTION_NUMBER_OF_ARGS = 2225;
+    public static final int TLC_CONFIG_ID_DOES_NOT_APPEAR_IN_SPEC = 2226;
+    public static final int TLC_CONFIG_NOT_BOTH_SPEC_AND_INIT = 2227;
+    public static final int TLC_CONFIG_ID_REQUIRES_NO_ARG = 2228;
+    public static final int TLC_CONFIG_SPECIFIED_NOT_DEFINED = 2229;
+    public static final int TLC_CONFIG_ID_HAS_VALUE = 2230;
+    public static final int TLC_CONFIG_MISSING_INIT = 2231;
+    public static final int TLC_CONFIG_MISSING_NEXT = 2232;
+    public static final int TLC_CONFIG_ID_MUST_NOT_BE_CONSTANT = 2233;
+    public static final int TLC_CONFIG_OP_NO_ARGS = 2234;
+    public static final int TLC_CONFIG_OP_NOT_IN_SPEC = 2235;
+    public static final int TLC_CONFIG_OP_IS_EQUAL = 2236;
+    public static final int TLC_CONFIG_SPEC_IS_TRIVIAL = 2237;
+    public static final int TLC_CANT_HANDLE_SUBSCRIPT = 2238;
+    public static final int TLC_CANT_HANDLE_CONJUNCT = 2239;
+    public static final int TLC_CANT_HANDLE_TOO_MANY_NEXT_STATE_RELS = 2240;
+    public static final int TLC_CONFIG_PROPERTY_NOT_CORRECTLY_DEFINED = 2241;
+    public static final int TLC_CONFIG_OP_ARITY_INCONSISTENT = 2242;
+    public static final int TLC_CONFIG_NO_STATE_TYPE = 2243;
+    public static final int TLC_CANT_HANDLE_REAL_NUMBERS = 2244;
+    public static final int TLC_NO_MODULES = 2245;
+    
+    public static final int TLC_ENABLED_WRONG_FORMULA = 2260;
+    public static final int TLC_ENCOUNTERED_FORMULA_IN_PREDICATE = 2261;
+
+    
+    
+    
+    
     
     
 

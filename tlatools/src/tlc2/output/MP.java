@@ -528,6 +528,8 @@ public class MP
             b.append("Attempted to apply the operator overridden by the Java method"
                     + "\n%1%,\nbut it produced the following error:\n%2%");
             break;
+            
+            /* Liveness errors */            
         case EC.TLC_LIVE_BEGRAPH_FAILED_TO_CONSTRUCT:
             b.append("BEGraph.GetPath: Failed to construct a path.");
             break;
@@ -540,10 +542,35 @@ public class MP
         case EC.TLC_LIVE_WRONG_FORMULA_FORMAT:
             b.append("Temporal formulas containing actions must be of forms <>[]A or []<>A.");
             break;
-        case EC.TLC_EXCEPTED_VALUE:
+        case EC.TLC_LIVE_ENCOUNTERED_ACTIONS:
+            b.append("TLC encountered actions when computing closure.");
+            break;
+        case EC.TLC_LIVE_STATE_PREDICATE_NON_BOOL:
+            b.append("A state predicate was evaluated to a non-boolean value.");
+            break;
+        case EC.TLC_LIVE_CANNOT_EVAL_FORMULA:
+            b.append("Can not evaluate a temporal formula %1%F.");
+            break;
+        case EC.TLC_LIVE_ENCOUNTERED_NONBOOL_PREDICATE:
+            b.append("Encountered an action predicate that's not a boolean.");
+            break;
+            
+            
+        case EC.TLC_EXPECTED_VALUE:
             b.append("TLC expected a %1% value, but did not find one. %2%");
             break;
-
+        case EC.TLC_EXPECTED_EXPRESSION:
+            b.append("TLC expected a %1% expression, but did not find one.\n%2%");
+            break;
+        case EC.TLC_EXPECTED_EXPRESSION_IN_COMPUTING:
+            b.append("In computing %1%, TLC expected a %2% expression," +
+                    "\nbut instead found %3%.\n%4%");
+            break;
+        case EC.TLC_EXPECTED_EXPRESSION_IN_COMPUTING2:
+            b.append("In computing %1%, TLC expected a %2% expression," +
+                    "\nbut didn't find one.\n%3%");
+            break;
+            
         case EC.SYSTEM_UNABLE_NOT_RENAME_FILE:
             b.append("Unable not rename file during the clean-up.");
             break;
@@ -683,6 +710,111 @@ public class MP
             b.append("End of statistics.");
             break;
 
+            
+        /* ************************************************************************ */
+        // errors evaluating the config file and the MC file
+        case EC.TLC_CONFIG_VALUE_NOT_ASSIGNED_TO_CONSTANT_PARAM:
+            b.append("The constant parameter %1% is not assigned a value by the configuration file.");
+            break;
+        case EC.TLC_CONFIG_RHS_ID_APPEARED_AFTER_LHS_ID:
+            b.append("In the configuration file, the identifier %1% appears\n" +
+                    "on the right-hand side of a <- after already appearing on the\n" +
+                    "left-hand side of one.");
+            break;
+        case EC.TLC_CONFIG_WRONG_SUBSTITUTION:
+            b.append("The configuration file substitutes for %1% with the undefined identifier %2%.");
+            break;
+        case EC.TLC_CONFIG_WRONG_SUBSTITUTION_NUMBER_OF_ARGS:
+            b.append("The configuration file substitutes for %1% with %2% of different number of arguments.");
+            break;
+        case EC.TLC_CONFIG_ID_DOES_NOT_APPEAR_IN_SPEC:
+            b.append("In the configuration file, the identifier %1% does not appear in the specification.");
+            break;
+        case EC.TLC_CONFIG_NOT_BOTH_SPEC_AND_INIT:
+            b.append("The configuration file cannot specify both INIT/NEXT and SPECIFICATION fields.");
+            break;
+        case EC.TLC_CONFIG_ID_REQUIRES_NO_ARG:
+            b.append("TLC requires %1% not to take any argument.");
+            break;
+        case EC.TLC_CONFIG_SPECIFIED_NOT_DEFINED:
+            b.append("The %1% %2% specified in the configuration file" +
+            		"\nis not defined in the specification.");
+            break;
+        case EC.TLC_CONFIG_ID_HAS_VALUE:
+            b.append("The %1% of %2% is equal to %3%");
+        case EC.TLC_CONFIG_MISSING_INIT:
+            b.append("The configuration file did not specify the initial state predicate.");
+            break;
+        case EC.TLC_CONFIG_MISSING_NEXT:
+            b.append("The configuration file did not specify the next state predicate.");
+            break;
+        case EC.TLC_CONFIG_ID_MUST_NOT_BE_CONSTANT:
+            b.append("The %1% %2% cannot be a constant.");
+            break;
+        case EC.TLC_CONFIG_OP_NO_ARGS:
+            b.append("The operator %1% cannot take any argument.");
+            break;
+        case EC.TLC_CONFIG_OP_NOT_IN_SPEC:
+            b.append("The operator %1% is not defined in the spec.");
+            break;
+        case EC.TLC_CONFIG_OP_IS_EQUAL:
+            b.append("The operator %1% is equal to %2%");
+            break;
+        case EC.TLC_CONFIG_SPEC_IS_TRIVIAL:
+            b.append("The spec is trivially false because %1% is false.");
+            break;
+        case EC.TLC_CANT_HANDLE_SUBSCRIPT:
+            b.append("TLC cannot handle subscript %1%");
+            break;
+        case EC.TLC_CANT_HANDLE_CONJUNCT:
+            b.append("TLC cannot handle this conjunct of the spec:\n%1%");
+            break;
+        case EC.TLC_CANT_HANDLE_TOO_MANY_NEXT_STATE_RELS:
+            b.append("The specification contains more than one conjunct of the form [][Next]_v," +
+            		"\nbut TLC can handle only specifications with one next-state relation.");
+            break;
+        case EC.TLC_CONFIG_PROPERTY_NOT_CORRECTLY_DEFINED:
+            b.append("The property %1% is not correctly defined.");
+            break;
+        case EC.TLC_CONFIG_OP_ARITY_INCONSISTENT:
+            b.append("The arity of the operator %1% is inconsistent in the configuration file.");
+            break;
+        case EC.TLC_CONFIG_NO_STATE_TYPE:
+            b.append("The configuration file did not specify types for state variables.");
+            break;
+        case EC.TLC_CANT_HANDLE_REAL_NUMBERS:
+            b.append("TLC can't handle real numbers.\n%1%");
+            break;
+        case EC.TLC_NO_MODULES:
+            b.append("In the configuration file, the module name %1% is not a module in the specification.");
+            break;
+            
+            
+            
+            
+        case EC.TLC_ENABLED_WRONG_FORMULA:
+            b.append("In computing ENABLED, TLC encountered a temporal formula (%1%).\n%2%");
+            break;
+        case EC.TLC_ENCOUNTERED_FORMULA_IN_PREDICATE:
+            b.append("TLC encountered a temporal formula (%1%) when evaluating" +
+                    " a predicate or action.\n%2%");
+            break;
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
         /* ************************************************************************ */
         // state printing
         case EC.TLC_STATE_PRINT1:
@@ -981,6 +1113,9 @@ public class MP
         DebugPrinter.print("leaving printWarning(int, String[])");
     }
 
+    /**
+     * Replaces the place holders by parameters 
+     */
     public static StringBuffer replaceString(StringBuffer buffer, String[] parameters)
     {
         // replace parameters, if any
@@ -989,6 +1124,10 @@ public class MP
         // replace all parameters
         for (int i = 0; i < parameters.length; i++)
         {
+            if (parameters[i] == null) 
+            {
+                break;
+            }
             placeHolder = "%" + (i + 1) + "%";
             placeHolderPosition = buffer.indexOf(placeHolder);
             if (placeHolderPosition != -1)

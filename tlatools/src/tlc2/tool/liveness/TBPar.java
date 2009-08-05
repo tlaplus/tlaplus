@@ -5,6 +5,7 @@
 
 package tlc2.tool.liveness;
 
+import tlc2.output.EC;
 import tlc2.util.Vect;
 import util.Assert;
 
@@ -194,8 +195,9 @@ public class TBPar extends Vect {
       else if (ln instanceof LNBool) {
 	res.addElement(ln);
       }
-      else {
-	Assert.fail("TLC encountered actions when computing closure.");
+      else 
+      {
+          Assert.fail(EC.TLC_LIVE_ENCOUNTERED_ACTIONS);
       }
     }
     return res;

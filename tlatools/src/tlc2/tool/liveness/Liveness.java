@@ -39,7 +39,7 @@ public class Liveness implements ToolGlobals, ASTConstants {
     if (level == 0) {
       Value val = tool.eval(expr, con, TLCState.Empty);
       if (!(val instanceof BoolValue)) {
-          Assert.fail(EC.TLC_EXCEPTED_VALUE, new String[]{"boolean", expr.toString()});
+          Assert.fail(EC.TLC_EXPECTED_VALUE, new String[]{"boolean", expr.toString()});
       }
       return (((BoolValue)val).val) ? LNBool.TRUE : LNBool.FALSE;
     }

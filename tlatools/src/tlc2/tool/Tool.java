@@ -65,6 +65,8 @@ import util.UniqueString;
  * and simulator.
  * 
  * It's instance serves as a spec handle
+ * This is one of two places in TLC, where not all messages are retrieved from the message printer,
+ * but constructed just here in the code. 
  * 
  * @version $Id$
  */
@@ -422,17 +424,20 @@ public class Tool
         }
       }
 
-      if (opcode == 0) {
-        if (!(bval instanceof BoolValue)) {
-          Assert.fail("In computing initial states, TLC expected a boolean expression," +
-                      "\nbut instead found " + bval + ".\n" + init);
+            if (opcode == 0)
+            {
+                if (!(bval instanceof BoolValue))
+                {
+                    Assert.fail(EC.TLC_EXPECTED_EXPRESSION_IN_COMPUTING, new String[] { "initial states", "boolean",
+                            bval.toString(), init.toString() });
+                }
+                if (((BoolValue) bval).val)
+                {
+                    this.getInitStates(acts, ps, states);
+                }
+                return;
+            }
         }
-        if (((BoolValue)bval).val) {
-          this.getInitStates(acts, ps, states);
-        }
-        return;
-      }
-    }
 
     switch (opcode) {
     case OPCODE_dl:     // DisjList
@@ -537,13 +542,14 @@ public class Tool
           Assert.fail("In computing initial states, a non-function (" +
                       fval.getKindString() + ") was applied as a function.\n" + init);
         }
-        Applicable fcn = (Applicable)fval;
-        Value argVal = this.eval(args[1], c, ps);
-        Value bval = fcn.apply(argVal, EvalControl.Clear);
-        if (!(bval instanceof BoolValue)) {
-          Assert.fail("In computing initial states, TLC expected a boolean" +
-                      " expression,\nbut did not find one.\n" + init);
-        }
+            Applicable fcn = (Applicable) fval;
+            Value argVal = this.eval(args[1], c, ps);
+            Value bval = fcn.apply(argVal, EvalControl.Clear);
+            if (!(bval instanceof BoolValue))
+            {
+                Assert.fail(EC.TLC_EXPECTED_EXPRESSION_IN_COMPUTING2, new String[] { "initial states", "boolean",
+                        init.toString() });
+            }
         if (((BoolValue)bval).val) {
           this.getInitStates(acts, ps, states);
         }
@@ -625,6 +631,7 @@ public class Tool
         // For all the other builtin operators, simply evaluate:
         Value bval = this.eval(init, c, ps);
         if (!(bval instanceof BoolValue)) {
+            
           Assert.fail("In computing initial states, TLC expected a boolean expression," +
                       "\nbut instead found " + bval + ".\n" + init);
         }
@@ -775,17 +782,20 @@ public class Tool
         }
       }
 
-      if (opcode == 0) {
-        if (!(bval instanceof BoolValue)) {
-          Assert.fail("In computing next states, TLC expected a boolean expression," +
-                      "\nbut instead found " + bval + ".\n" + pred);
+            if (opcode == 0)
+            {
+                if (!(bval instanceof BoolValue))
+                {
+                    Assert.fail(EC.TLC_EXPECTED_EXPRESSION_IN_COMPUTING, new String[] { "initial states", "boolean",
+                            bval.toString(), pred.toString() });
+                }
+                if (((BoolValue) bval).val)
+                {
+                    return this.getNextStates(acts, s0, s1, nss);
+                }
+                return s1;
+            }
         }
-        if (((BoolValue)bval).val) {
-          return this.getNextStates(acts, s0, s1, nss);
-        }
-        return s1;
-      }
-    }
 
     TLCState resState = s1;
     switch (opcode) {
@@ -858,8 +868,8 @@ public class Tool
         Value argVal = this.eval(args[1], c, s0, s1, EvalControl.Clear);
         Value bval = fcn.apply(argVal, EvalControl.Clear);
         if (!(bval instanceof BoolValue)) {
-          Assert.fail("In computing next states, TLC expected a boolean" +
-                      " expression,\nbut did not find one.\n" + pred);
+            Assert.fail(EC.TLC_EXPECTED_EXPRESSION_IN_COMPUTING2, new String[] { "next states", "boolean",
+                    pred.toString() });
         }
         if (((BoolValue)bval).val) {
           return this.getNextStates(acts, s0, s1, nss);
@@ -1022,8 +1032,8 @@ public class Tool
         // We handle all the other builtin operators here.
         Value bval = this.eval(pred, c, s0, s1, EvalControl.Clear);
         if (!(bval instanceof BoolValue)) {
-          Assert.fail("In computing next states, TLC expected a boolean expression," +
-                      "\nbut instead found " + bval + ".\n" + pred);
+            Assert.fail(EC.TLC_EXPECTED_EXPRESSION_IN_COMPUTING, new String[] { "next states", "boolean",
+                    bval.toString(), pred.toString() });
         }
         if (((BoolValue)bval).val) {
           resState = this.getNextStates(acts, s0, s1, nss);
@@ -1296,8 +1306,7 @@ public class Tool
             }
             Value bval = this.eval(pred, c1, s0, s1, control);
             if (!(bval instanceof BoolValue)) {
-              Assert.fail("Expected a boolean expression, but did not find one.\n" +
-                          expr);
+                Assert.fail(EC.TLC_EXPECTED_VALUE, new String[]{"boolean", expr.toString()});
             }
             if (((BoolValue)bval).val) return val;
           }
@@ -1310,8 +1319,7 @@ public class Tool
             Context c1 = c.cons(name, val);
             Value bval = this.eval(pred, c1, s0, s1, control);
             if (!(bval instanceof BoolValue)) {
-              Assert.fail("Expected a boolean expression, but did not find one.\n" +
-                          expr);
+                Assert.fail(EC.TLC_EXPECTED_VALUE, new String[]{"boolean", expr.toString()});
             }
             if (((BoolValue)bval).val) return val;
           }
@@ -1328,8 +1336,7 @@ public class Tool
         while ((c1 = Enum.nextElement()) != null) {
           Value bval = this.eval(body, c1, s0, s1, control);
           if (!(bval instanceof BoolValue)) {
-            Assert.fail("Expected a boolean expression, but did not find one.\n" +
-                        expr);
+              Assert.fail(EC.TLC_EXPECTED_VALUE, new String[]{"boolean", expr.toString()});
           }
           if (((BoolValue)bval).val) return ValTrue;
         }
@@ -1343,8 +1350,7 @@ public class Tool
         while ((c1 = Enum.nextElement()) != null) {
           Value bval = this.eval(body, c1, s0, s1, control);
           if (!(bval instanceof BoolValue)) {
-            Assert.fail("Expected a boolean expression, but did not find one.\n" +
-                        expr);
+              Assert.fail(EC.TLC_EXPECTED_VALUE, new String[]{"boolean", expr.toString()});
           }
           if (!((BoolValue)bval).val) return ValFalse;
         }
@@ -1910,50 +1916,42 @@ public class Tool
       }
     case OPCODE_sf:     // SF
       {
-        Assert.fail("TLC encountered a temporal formula (SF) when evaluating" +
-                    " a predicate or action.\n" + expr);
+          Assert.fail(EC.TLC_ENCOUNTERED_FORMULA_IN_PREDICATE, new String[]{"SF", expr.toString()});
         return null;    // make compiler happy
       }
     case OPCODE_wf:     // WF
       {
-        Assert.fail("TLC encountered a temporal formula (WF) when evaluating" +
-                    " a predicate or action.\n" + expr);
+          Assert.fail(EC.TLC_ENCOUNTERED_FORMULA_IN_PREDICATE, new String[]{"WF", expr.toString()});
         return null;    // make compiler happy
       }
     case OPCODE_te:     // TemporalExists
       {
-        Assert.fail("TLC encountered a temporal formula (\\EE) when evaluating" +
-                    " a predicate or action.\n" + expr);
+          Assert.fail(EC.TLC_ENCOUNTERED_FORMULA_IN_PREDICATE, new String[]{"\\EE", expr.toString()});
         return null;    // make compiler happy
       }
     case OPCODE_tf:     // TemporalForAll
       {
-        Assert.fail("TLC encountered a temporal formula (\\AA) when evaluating" +
-                    " a predicate or action.\n" + expr);
+          Assert.fail(EC.TLC_ENCOUNTERED_FORMULA_IN_PREDICATE, new String[]{"\\AA", expr.toString()});
         return null;    // make compiler happy
       }
     case OPCODE_leadto:
       {
-        Assert.fail("TLC encountered a temporal formula (a ~> b) when evaluating" +
-                    " a predicate or action.\n" + expr);
+          Assert.fail(EC.TLC_ENCOUNTERED_FORMULA_IN_PREDICATE, new String[]{"a ~> b", expr.toString()});
         return null;    // make compiler happy
       }
     case OPCODE_arrow:
       {
-        Assert.fail("TLC encountered a temporal formula (a -+-> formula)" +
-                    " when evaluating a predicate or action.\n" + expr);
+          Assert.fail(EC.TLC_ENCOUNTERED_FORMULA_IN_PREDICATE, new String[]{"a -+-> formula", expr.toString()});
         return null;    // make compiler happy
       }
     case OPCODE_box:
       {
-        Assert.fail("TLC encountered a temporal formula ([]A) when evaluating" +
-                    " a predicate or action.\n" + expr);
+          Assert.fail(EC.TLC_ENCOUNTERED_FORMULA_IN_PREDICATE, new String[]{"[]A", expr.toString()});
         return null;    // make compiler happy
       }
     case OPCODE_diamond:
       {
-        Assert.fail("TLC encountered a temporal formula (<>A) when evaluating" +
-                    " a predicate or action.\n" + expr);
+          Assert.fail(EC.TLC_ENCOUNTERED_FORMULA_IN_PREDICATE, new String[]{"<>A", expr.toString()});
         return null;    // make compiler happy
       }
 
@@ -1980,8 +1978,7 @@ public class Tool
     for (int i = 0; i < constrs.length; i++) {
       Value bval = this.eval(constrs[i], Context.Empty, state);
       if (!(bval instanceof BoolValue)) {
-        Assert.fail("TLC expected a boolean expression, but did not find one.\n" +
-                    constrs[i]);
+          Assert.fail(EC.TLC_EXPECTED_VALUE, new String[]{"boolean", constrs[i].toString()});
       }
       if (!((BoolValue)bval).val) return false;
     }
@@ -1994,8 +1991,7 @@ public class Tool
     for (int i = 0; i < constrs.length; i++) {
       Value bval = this.eval(constrs[i], Context.Empty, s1, s2, EvalControl.Clear);
       if (!(bval instanceof BoolValue)) {
-        Assert.fail("TLC expected a boolean expression, but did not find one.\n" +
-                    constrs[i]);
+          Assert.fail(EC.TLC_EXPECTED_VALUE, new String[]{"boolean", constrs[i].toString()});
       }
       if (!((BoolValue)bval).val) return false;
     }
@@ -2086,348 +2082,378 @@ public class Tool
     return this.enabled(acts1, s0, s1);
   }
 
-  private final TLCState enabledAppl(OpApplNode pred, ActionItemList acts,
-                                     Context c, TLCState s0, TLCState s1) {
-    ExprOrOpArgNode[] args = pred.getArgs();
-    int alen = args.length;
-    SymbolNode opNode = pred.getOperator();
-    int opcode = BuiltInOPs.getOpCode(opNode.getName());
+    private final TLCState enabledAppl(OpApplNode pred, ActionItemList acts, Context c, TLCState s0, TLCState s1)
+    {
+        ExprOrOpArgNode[] args = pred.getArgs();
+        int alen = args.length;
+        SymbolNode opNode = pred.getOperator();
+        int opcode = BuiltInOPs.getOpCode(opNode.getName());
 
-    if (opcode == 0) {
-      // This is a user-defined operator with one exception: it may
-      // be substed by a builtin operator. This special case occurs
-      // when the lookup returns an OpDef with opcode # 0.
-      Object val = this.lookup(opNode, c, s0, false);
+        if (opcode == 0)
+        {
+            // This is a user-defined operator with one exception: it may
+            // be substed by a builtin operator. This special case occurs
+            // when the lookup returns an OpDef with opcode # 0.
+            Object val = this.lookup(opNode, c, s0, false);
 
-      if (val instanceof OpDefNode) {
-        OpDefNode opDef = (OpDefNode)val;
-        opcode = BuiltInOPs.getOpCode(opDef.getName());
-        if (opcode == 0) {
-          // Context c1 = this.getOpContext(opDef, args, c, false);
-          Context c1 = this.getOpContext(opDef, args, c, true);
-          return this.enabled(opDef.getBody(), acts, c1, s0, s1);
-        }
-      }
-
-      if (val instanceof LazyValue) {
-        LazyValue lv = (LazyValue)val;
-        return this.enabled(lv.expr, acts, lv.con, s0, s1);
-      }
-
-      Object bval = val;
-      if (alen == 0) {
-        if (val instanceof MethodValue) {
-          bval = ((MethodValue)val).apply(EmptyArgs, EvalControl.Clear);
-        }
-      }
-      else {
-        if (val instanceof OpValue) {
-          Applicable op = (Applicable)val;
-          Value[] argVals = new Value[alen];
-          // evaluate the actuals:
-          for (int i = 0; i < alen; i++) {
-            argVals[i] = this.eval(args[i], c, s0, s1, EvalControl.Enabled);
-          }
-          // apply the operator:
-          bval = op.apply(argVals, EvalControl.Enabled);
-        }
-      }
-
-      if (opcode == 0) {
-        if (!(bval instanceof BoolValue)) {
-          Assert.fail("In computing ENABLED, TLC expected a boolean expression," +
-                      "\nbut instead found " + bval + ".\n" + pred);
-        }
-        if (((BoolValue)bval).val) {
-          return this.enabled(acts, s0, s1);
-        }
-        return null;
-      }
-    }
-
-    switch (opcode) {
-    case OPCODE_aa:     // AngleAct <A>_e
-      {
-        ActionItemList acts1 = acts.cons(args[1], c, -3);
-        return this.enabled(args[0], acts1, c, s0, s1);
-      }
-    case OPCODE_be:     // BoundedExists
-      {
-        SemanticNode body = args[0];
-        ContextEnumerator Enum = this.contexts(pred, c, s0, s1, EvalControl.Enabled);
-        Context c1;
-        while ((c1 = Enum.nextElement()) != null) {
-          TLCState s2 = this.enabled(body, acts, c1, s0, s1);
-          if (s2 != null) return s2;
-        }
-        return null;
-      }
-    case OPCODE_bf:     // BoundedForall
-      {
-        SemanticNode body = args[0];
-        ContextEnumerator Enum = this.contexts(pred, c, s0, s1, EvalControl.Enabled);   
-        Context c1 = Enum.nextElement();
-        if (c1 == null) {
-          return this.enabled(acts, s0, s1);
-        }
-        ActionItemList acts1 = acts;
-        Context c2;
-        while ((c2 = Enum.nextElement()) != null) {
-          acts1 = acts1.cons(body, c2, -1);
-        }
-        return this.enabled(body, acts1, c1, s0, s1);
-      }
-    case OPCODE_case:   // Case
-      {
-        SemanticNode other = null;
-        for (int i = 0; i < alen; i++) {
-          OpApplNode pair = (OpApplNode)args[i];
-          ExprOrOpArgNode[] pairArgs = pair.getArgs();
-          if (pairArgs[0] == null) {
-            other = pairArgs[1];
-          }
-          else {
-            Value bval = this.eval(pairArgs[0], c, s0, s1, EvalControl.Enabled);
-            if (!(bval instanceof BoolValue)) {
-              Assert.fail("In computing ENABLED, a non-boolean expression(" +
-                          bval.getKindString() + ") was used as a guard condition" +
-                          " of a CASE.\n" + pairArgs[1]);
+            if (val instanceof OpDefNode)
+            {
+                OpDefNode opDef = (OpDefNode) val;
+                opcode = BuiltInOPs.getOpCode(opDef.getName());
+                if (opcode == 0)
+                {
+                    // Context c1 = this.getOpContext(opDef, args, c, false);
+                    Context c1 = this.getOpContext(opDef, args, c, true);
+                    return this.enabled(opDef.getBody(), acts, c1, s0, s1);
+                }
             }
-            if (((BoolValue)bval).val) {
-              return this.enabled(pairArgs[1], acts, c, s0, s1);
+
+            if (val instanceof LazyValue)
+            {
+                LazyValue lv = (LazyValue) val;
+                return this.enabled(lv.expr, acts, lv.con, s0, s1);
             }
-          }
+
+            Object bval = val;
+            if (alen == 0)
+            {
+                if (val instanceof MethodValue)
+                {
+                    bval = ((MethodValue) val).apply(EmptyArgs, EvalControl.Clear);
+                }
+            } else
+            {
+                if (val instanceof OpValue)
+                {
+                    Applicable op = (Applicable) val;
+                    Value[] argVals = new Value[alen];
+                    // evaluate the actuals:
+                    for (int i = 0; i < alen; i++)
+                    {
+                        argVals[i] = this.eval(args[i], c, s0, s1, EvalControl.Enabled);
+                    }
+                    // apply the operator:
+                    bval = op.apply(argVals, EvalControl.Enabled);
+                }
+            }
+
+            if (opcode == 0)
+            {
+                if (!(bval instanceof BoolValue))
+                {
+                    Assert.fail(EC.TLC_EXPECTED_EXPRESSION_IN_COMPUTING, new String[] { "ENABLED", "boolean",
+                            bval.toString(), pred.toString() });
+                }
+                if (((BoolValue) bval).val)
+                {
+                    return this.enabled(acts, s0, s1);
+                }
+                return null;
+            }
         }
-        if (other == null) {
-          Assert.fail("In computing ENABLED, TLC encountered a CASE with no" +
-                      " conditions true.\n" + pred);
+
+        switch (opcode) {
+        case OPCODE_aa: // AngleAct <A>_e
+        {
+            ActionItemList acts1 = acts.cons(args[1], c, -3);
+            return this.enabled(args[0], acts1, c, s0, s1);
         }
-        return this.enabled(other, acts, c, s0, s1);
-      }
-    case OPCODE_cl:     // ConjList
-    case OPCODE_land:
-      {
-        ActionItemList acts1 = acts;
-        for (int i = alen-1; i > 0; i--) {
-          acts1 = acts1.cons(args[i], c, i);
-        }
-        if (this.callStack != null) this.callStack.push(args[0]);
-        TLCState res = this.enabled(args[0], acts1, c, s0, s1);
-        if (this.callStack != null) this.callStack.pop();
-        return res;
-      }
-    case OPCODE_dl:     // DisjList 
-    case OPCODE_lor:
-      {
-        for (int i = 0; i < alen; i++) {
-          if (this.callStack != null) this.callStack.push(args[i]);
-          TLCState s2 = this.enabled(args[i], acts, c, s0, s1);
-          if (this.callStack != null) this.callStack.pop();
-          if (s2 != null) return s2;
-        }
-        return null;
-      }
-    case OPCODE_fa:     // FcnApply
-      {
-        Value fval = this.eval(args[0], c, s0, s1, EvalControl.setKeepLazy(EvalControl.Enabled));
-        if (fval instanceof FcnLambdaValue) {
-          FcnLambdaValue fcn = (FcnLambdaValue)fval;
-          if (fcn.fcnRcd == null) {
-            Context c1 = this.getFcnContext(fcn, args, c, s0, s1, EvalControl.Enabled);
-            return this.enabled(fcn.body, acts, c1, s0, s1);
-          }
-          fval = fcn.fcnRcd;
-        }
-        if (fval instanceof Applicable) {
-          Applicable fcn = (Applicable)fval;
-          Value argVal = this.eval(args[1], c, s0, s1, EvalControl.Enabled);
-          Value bval = fcn.apply(argVal, EvalControl.Enabled);
-          if (!(bval instanceof BoolValue)) {
-            Assert.fail("In computing ENABLED, TLC expected a boolean" +
-                        " expression,\nbut did not find one.\n" + pred);
-          }
-          if (!((BoolValue)bval).val) return null;
-        }
-        else {
-          Assert.fail("In computing ENABLED, a non-function (" + fval.getKindString() +
-                      ") was applied as a function.\n" + pred);
-        }
-        return this.enabled(acts, s0, s1);
-      }
-    case OPCODE_ite:    // IfThenElse
-      {
-        Value guard = this.eval(args[0], c, s0, s1, EvalControl.Enabled);
-        if (!(guard instanceof BoolValue)) {
-          Assert.fail("In computing ENABLED, a non-boolean expression(" +
-                      guard.getKindString() + ") was used as the guard condition" +
-                      " of an IF.\n" + pred);
-        }
-        int idx = (((BoolValue)guard).val) ? 1 : 2;
-        return this.enabled(args[idx], acts, c, s0, s1);
-      }
-    case OPCODE_sa:     // SquareAct [A]_e
-      {
-        TLCState s2 = this.enabled(args[0], acts, c, s0, s1);
-        if (s2 != null) return s2;
-        return this.enabledUnchanged(args[1], acts, c, s0, s1);
-      }
-    case OPCODE_sf:     // SF
-      {
-        Assert.fail("In computing ENABLED, TLC encountered a temporal formula (SF).\n" + pred);
-        return null;    // make compiler happy
-      }
-    case OPCODE_te:     // TemporalExists
-    case OPCODE_tf:     // TemporalForAll
-      {
-        Assert.fail("In computing ENABLED, TLC encountered temporal quantifier.\n" + pred);
-        return null;    // make compiler happy
-      }
-    case OPCODE_uc:     // UnboundedChoose
-      {
-        Assert.fail("In computing ENABLED, TLC encountered unbounded CHOOSE. " +
-                    "Make sure that the expression is of form CHOOSE x \\in S: P(x).\n" +
-                    pred);
-        return null;    // make compiler happy
-      }
-    case OPCODE_ue:     // UnboundedExists
-      {
-        Assert.fail("In computing ENABLED, TLC encountered unbounded quantifier. " +
-                    "Make sure that the expression is of form \\E x \\in S: P(x).\n" +
-                    pred);
-        return null;    // make compiler happy
-      }
-    case OPCODE_uf:     // UnboundedForall
-      {
-        Assert.fail("In computing ENABLED, TLC encountered unbounded quantifier. " +
-                    "Make sure that the expression is of form \\A x \\in S: P(x).\n" +
-                    pred);
-        return null;    // make compiler happy
-      }
-    case OPCODE_wf:     // WF
-      {
-        Assert.fail("In computing ENABLED, TLC encountered a temporal formula (WF).\n" + pred);
-        return null;    // make compiler happy
-      }
-    case OPCODE_box:
-      {
-        Assert.fail("In computing ENABLED, TLC encountered a temporal formula ([]).\n" + pred);
-        return null;    // make compiler happy
-      }
-    case OPCODE_diamond:
-      {
-        Assert.fail("In computing ENABLED, TLC encountered a temporal formula (<>).\n" + pred);
-        return null;    // make compiler happy
-      }
-    case OPCODE_unchanged:
-      {
-        return this.enabledUnchanged(args[0], acts, c, s0, s1);
-      }
-    case OPCODE_eq:
-      {
-        SymbolNode var = this.getPrimedVar(args[0], c, true);
-        if (var == null) {
-          Value bval = this.eval(pred, c, s0, s1, EvalControl.Enabled);
-          if (!((BoolValue)bval).val) return null;
-        }
-        else {
-          UniqueString varName = var.getName();
-          Value lval = s1.lookup(varName);
-          Value rval = this.eval(args[1], c, s0, s1, EvalControl.Enabled);
-          if (lval == null) {
-            TLCState s2 = s1.bind(var, rval, pred);
-            return this.enabled(acts, s0, s2);
-          }
-          else {
-            if (!lval.equals(rval)) return null;
-          }
-        }
-        return this.enabled(acts, s0, s1);
-      }
-    case OPCODE_implies:
-      {
-        Value bval = this.eval(args[0], c, s0, s1, EvalControl.Enabled);
-        if (!(bval instanceof BoolValue)) {
-          Assert.fail("While computing ENABLED of an expression of the form" +
-                      " P => Q, P was " + bval.getKindString() + ".\n" + pred);
-        }
-        if (((BoolValue)bval).val) {
-          return this.enabled(args[1], acts, c, s0, s1);
-        }
-        return this.enabled(acts, s0, s1);
-      }
-    case OPCODE_cdot:
-      {
-        Assert.fail("The current version of TLC does not support action composition.");
-        /***
-        TLCState s01 = TLCStateFun.Empty;
-        StateVec iss = new StateVec(0);
-        this.getNextStates(args[0], ActionItemList.Empty, c, s0, s01, iss);
-        int sz = iss.size();
-        for (int i = 0; i < sz; i++) {
-          s01 = iss.elementAt(i);
-          TLCState s2 = this.enabled(args[1], acts, c, s01, s1);
-          if (s2 != null) return s2;
-        }
-        ***/
-        return null;   // make compiler happy
-      }
-    case OPCODE_leadto:
-      {
-        Assert.fail("In computing ENABLED, TLC encountered a temporal formula" +
-                    " (a ~> b).\n" + pred);
-        return null;   // make compiler happy
-      }
-    case OPCODE_arrow:
-      {
-        Assert.fail("In computing ENABLED, TLC encountered a temporal formula" +
-                    " (a -+-> formula).\n" + pred);
-        return null;   // make compiler happy
-      }
-    case OPCODE_in:
-      {
-        SymbolNode var = this.getPrimedVar(args[0], c, true);
-        if (var == null) {
-          Value bval = this.eval(pred, c, s0, s1, EvalControl.Enabled);
-          if (!((BoolValue)bval).val) return null;
-        }
-        else {
-          UniqueString varName = var.getName();
-          Value lval = s1.lookup(varName);
-          Value rval = this.eval(args[1], c, s0, s1, EvalControl.Enabled);
-          if (lval == null) {
-            if (!(rval instanceof Enumerable)) {
-              Assert.fail("The right side of \\IN is not enumerable.\n" + pred);
-            }         
-            ValueEnumeration Enum = ((Enumerable)rval).elements();
-            Value val;
-            while ((val = Enum.nextElement()) != null) {
-              TLCState s2 = s1.bind(var, val, pred);
-              s2 = this.enabled(acts, s0, s2);
-              if (s2 != null) return s2;
+        case OPCODE_be: // BoundedExists
+        {
+            SemanticNode body = args[0];
+            ContextEnumerator Enum = this.contexts(pred, c, s0, s1, EvalControl.Enabled);
+            Context c1;
+            while ((c1 = Enum.nextElement()) != null)
+            {
+                TLCState s2 = this.enabled(body, acts, c1, s0, s1);
+                if (s2 != null)
+                    return s2;
             }
             return null;
-          }
-          else {
-            if (!rval.member(lval)) return null;
-          }
         }
-        return this.enabled(acts, s0, s1);
-      }
-    default:
-      {
-        // We handle all the other builtin operators here.
-        Value bval = this.eval(pred, c, s0, s1, EvalControl.Enabled);
-        if (!(bval instanceof BoolValue)) {
-          Assert.fail("In computing ENABLED, TLC expected a boolean expression," +
-                      "\nbut instead found " + bval + ".\n" + pred);
+        case OPCODE_bf: // BoundedForall
+        {
+            SemanticNode body = args[0];
+            ContextEnumerator Enum = this.contexts(pred, c, s0, s1, EvalControl.Enabled);
+            Context c1 = Enum.nextElement();
+            if (c1 == null)
+            {
+                return this.enabled(acts, s0, s1);
+            }
+            ActionItemList acts1 = acts;
+            Context c2;
+            while ((c2 = Enum.nextElement()) != null)
+            {
+                acts1 = acts1.cons(body, c2, -1);
+            }
+            return this.enabled(body, acts1, c1, s0, s1);
         }
-        if (((BoolValue)bval).val) {
-          return this.enabled(acts, s0, s1);
+        case OPCODE_case: // Case
+        {
+            SemanticNode other = null;
+            for (int i = 0; i < alen; i++)
+            {
+                OpApplNode pair = (OpApplNode) args[i];
+                ExprOrOpArgNode[] pairArgs = pair.getArgs();
+                if (pairArgs[0] == null)
+                {
+                    other = pairArgs[1];
+                } else
+                {
+                    Value bval = this.eval(pairArgs[0], c, s0, s1, EvalControl.Enabled);
+                    if (!(bval instanceof BoolValue))
+                    {
+                        Assert.fail("In computing ENABLED, a non-boolean expression(" + bval.getKindString()
+                                + ") was used as a guard condition" + " of a CASE.\n" + pairArgs[1]);
+                    }
+                    if (((BoolValue) bval).val)
+                    {
+                        return this.enabled(pairArgs[1], acts, c, s0, s1);
+                    }
+                }
+            }
+            if (other == null)
+            {
+                Assert.fail("In computing ENABLED, TLC encountered a CASE with no" + " conditions true.\n" + pred);
+            }
+            return this.enabled(other, acts, c, s0, s1);
         }
-        return null;
-      }
+        case OPCODE_cl: // ConjList
+        case OPCODE_land: {
+            ActionItemList acts1 = acts;
+            for (int i = alen - 1; i > 0; i--)
+            {
+                acts1 = acts1.cons(args[i], c, i);
+            }
+            if (this.callStack != null)
+                this.callStack.push(args[0]);
+            TLCState res = this.enabled(args[0], acts1, c, s0, s1);
+            if (this.callStack != null)
+                this.callStack.pop();
+            return res;
+        }
+        case OPCODE_dl: // DisjList
+        case OPCODE_lor: {
+            for (int i = 0; i < alen; i++)
+            {
+                if (this.callStack != null)
+                    this.callStack.push(args[i]);
+                TLCState s2 = this.enabled(args[i], acts, c, s0, s1);
+                if (this.callStack != null)
+                    this.callStack.pop();
+                if (s2 != null)
+                    return s2;
+            }
+            return null;
+        }
+        case OPCODE_fa: // FcnApply
+        {
+            Value fval = this.eval(args[0], c, s0, s1, EvalControl.setKeepLazy(EvalControl.Enabled));
+            if (fval instanceof FcnLambdaValue)
+            {
+                FcnLambdaValue fcn = (FcnLambdaValue) fval;
+                if (fcn.fcnRcd == null)
+                {
+                    Context c1 = this.getFcnContext(fcn, args, c, s0, s1, EvalControl.Enabled);
+                    return this.enabled(fcn.body, acts, c1, s0, s1);
+                }
+                fval = fcn.fcnRcd;
+            }
+            if (fval instanceof Applicable)
+            {
+                Applicable fcn = (Applicable) fval;
+                Value argVal = this.eval(args[1], c, s0, s1, EvalControl.Enabled);
+                Value bval = fcn.apply(argVal, EvalControl.Enabled);
+                if (!(bval instanceof BoolValue))
+                {
+                    Assert.fail(EC.TLC_EXPECTED_EXPRESSION_IN_COMPUTING2, new String[] { "ENABLED", "boolean",
+                            pred.toString() });
+
+                }
+                if (!((BoolValue) bval).val)
+                    return null;
+            } else
+            {
+                Assert.fail("In computing ENABLED, a non-function (" + fval.getKindString()
+                        + ") was applied as a function.\n" + pred);
+            }
+            return this.enabled(acts, s0, s1);
+        }
+        case OPCODE_ite: // IfThenElse
+        {
+            Value guard = this.eval(args[0], c, s0, s1, EvalControl.Enabled);
+            if (!(guard instanceof BoolValue))
+            {
+                Assert.fail("In computing ENABLED, a non-boolean expression(" + guard.getKindString()
+                        + ") was used as the guard condition" + " of an IF.\n" + pred);
+            }
+            int idx = (((BoolValue) guard).val) ? 1 : 2;
+            return this.enabled(args[idx], acts, c, s0, s1);
+        }
+        case OPCODE_sa: // SquareAct [A]_e
+        {
+            TLCState s2 = this.enabled(args[0], acts, c, s0, s1);
+            if (s2 != null)
+                return s2;
+            return this.enabledUnchanged(args[1], acts, c, s0, s1);
+        }
+        case OPCODE_te: // TemporalExists
+        case OPCODE_tf: // TemporalForAll
+        {
+            Assert.fail("In computing ENABLED, TLC encountered temporal quantifier.\n" + pred);
+            return null; // make compiler happy
+        }
+        case OPCODE_uc: // UnboundedChoose
+        {
+            Assert.fail("In computing ENABLED, TLC encountered unbounded CHOOSE. "
+                    + "Make sure that the expression is of form CHOOSE x \\in S: P(x).\n" + pred);
+            return null; // make compiler happy
+        }
+        case OPCODE_ue: // UnboundedExists
+        {
+            Assert.fail("In computing ENABLED, TLC encountered unbounded quantifier. "
+                    + "Make sure that the expression is of form \\E x \\in S: P(x).\n" + pred);
+            return null; // make compiler happy
+        }
+        case OPCODE_uf: // UnboundedForall
+        {
+            Assert.fail("In computing ENABLED, TLC encountered unbounded quantifier. "
+                    + "Make sure that the expression is of form \\A x \\in S: P(x).\n" + pred);
+            return null; // make compiler happy
+        }
+        case OPCODE_sf: // SF
+        {
+            Assert.fail(EC.TLC_ENABLED_WRONG_FORMULA, new String[]{ "SF", pred.toString()});
+            return null; // make compiler happy
+        }
+        case OPCODE_wf: // WF
+        {
+            Assert.fail(EC.TLC_ENABLED_WRONG_FORMULA, new String[] { "WF", pred.toString() });
+            return null; // make compiler happy
+        }
+        case OPCODE_box: {
+            Assert.fail(EC.TLC_ENABLED_WRONG_FORMULA, new String[] { "[]", pred.toString() });
+            return null; // make compiler happy
+        }
+        case OPCODE_diamond: {
+            Assert.fail(EC.TLC_ENABLED_WRONG_FORMULA, new String[] { "<>", pred.toString() });
+            return null; // make compiler happy
+        }
+        case OPCODE_unchanged: {
+            return this.enabledUnchanged(args[0], acts, c, s0, s1);
+        }
+        case OPCODE_eq: {
+            SymbolNode var = this.getPrimedVar(args[0], c, true);
+            if (var == null)
+            {
+                Value bval = this.eval(pred, c, s0, s1, EvalControl.Enabled);
+                if (!((BoolValue) bval).val)
+                    return null;
+            } else
+            {
+                UniqueString varName = var.getName();
+                Value lval = s1.lookup(varName);
+                Value rval = this.eval(args[1], c, s0, s1, EvalControl.Enabled);
+                if (lval == null)
+                {
+                    TLCState s2 = s1.bind(var, rval, pred);
+                    return this.enabled(acts, s0, s2);
+                } else
+                {
+                    if (!lval.equals(rval))
+                        return null;
+                }
+            }
+            return this.enabled(acts, s0, s1);
+        }
+        case OPCODE_implies: {
+            Value bval = this.eval(args[0], c, s0, s1, EvalControl.Enabled);
+            if (!(bval instanceof BoolValue))
+            {
+                Assert.fail("While computing ENABLED of an expression of the form" + " P => Q, P was "
+                        + bval.getKindString() + ".\n" + pred);
+            }
+            if (((BoolValue) bval).val)
+            {
+                return this.enabled(args[1], acts, c, s0, s1);
+            }
+            return this.enabled(acts, s0, s1);
+        }
+        case OPCODE_cdot: {
+            Assert.fail("The current version of TLC does not support action composition.");
+            /***
+            TLCState s01 = TLCStateFun.Empty;
+            StateVec iss = new StateVec(0);
+            this.getNextStates(args[0], ActionItemList.Empty, c, s0, s01, iss);
+            int sz = iss.size();
+            for (int i = 0; i < sz; i++) {
+              s01 = iss.elementAt(i);
+              TLCState s2 = this.enabled(args[1], acts, c, s01, s1);
+              if (s2 != null) return s2;
+            }
+            ***/
+            return null; // make compiler happy
+        }
+        case OPCODE_leadto: {
+            Assert.fail("In computing ENABLED, TLC encountered a temporal formula" + " (a ~> b).\n" + pred);
+            return null; // make compiler happy
+        }
+        case OPCODE_arrow: {
+            Assert.fail("In computing ENABLED, TLC encountered a temporal formula" + " (a -+-> formula).\n" + pred);
+            return null; // make compiler happy
+        }
+        case OPCODE_in: {
+            SymbolNode var = this.getPrimedVar(args[0], c, true);
+            if (var == null)
+            {
+                Value bval = this.eval(pred, c, s0, s1, EvalControl.Enabled);
+                if (!((BoolValue) bval).val)
+                    return null;
+            } else
+            {
+                UniqueString varName = var.getName();
+                Value lval = s1.lookup(varName);
+                Value rval = this.eval(args[1], c, s0, s1, EvalControl.Enabled);
+                if (lval == null)
+                {
+                    if (!(rval instanceof Enumerable))
+                    {
+                        Assert.fail("The right side of \\IN is not enumerable.\n" + pred);
+                    }
+                    ValueEnumeration Enum = ((Enumerable) rval).elements();
+                    Value val;
+                    while ((val = Enum.nextElement()) != null)
+                    {
+                        TLCState s2 = s1.bind(var, val, pred);
+                        s2 = this.enabled(acts, s0, s2);
+                        if (s2 != null)
+                            return s2;
+                    }
+                    return null;
+                } else
+                {
+                    if (!rval.member(lval))
+                        return null;
+                }
+            }
+            return this.enabled(acts, s0, s1);
+        }
+        default: {
+            // We handle all the other builtin operators here.
+            Value bval = this.eval(pred, c, s0, s1, EvalControl.Enabled);
+            if (!(bval instanceof BoolValue))
+            {
+                Assert.fail(EC.TLC_EXPECTED_EXPRESSION_IN_COMPUTING, new String[] { "ENABLED", "boolean",
+                        bval.toString(), pred.toString() });
+            }
+            if (((BoolValue) bval).val)
+            {
+                return this.enabled(acts, s0, s1);
+            }
+            return null;
+        }
+        }
     }
-  }
 
   private final TLCState enabledUnchanged(SemanticNode expr, ActionItemList acts,
                                           Context c, TLCState s0, TLCState s1) {
@@ -2497,8 +2523,7 @@ public class Tool
   public final boolean isValid(Action act, TLCState s0, TLCState s1) {
     Value val = this.eval(act.pred, act.con, s0, s1, EvalControl.Clear);
     if (!(val instanceof BoolValue)) {
-      Assert.fail("TLC expected a boolean expression, but did not find one.\n" +
-                  act.pred);
+        Assert.fail(EC.TLC_EXPECTED_VALUE, new String[]{"boolean", act.pred.toString()});
     }
     return ((BoolValue)val).val;
   }
@@ -2516,8 +2541,7 @@ public class Tool
   public final boolean isValid(ExprNode expr) {
     Value val = this.eval(expr, Context.Empty, TLCState.Empty);
     if (!(val instanceof BoolValue)) {
-      Assert.fail("TLC expected a boolean expression, but did not find one.\n" +
-                  expr);
+        Assert.fail(EC.TLC_EXPECTED_VALUE, new String[]{"boolean", expr.toString()});
     }
     return ((BoolValue)val).val;
   }
@@ -2573,8 +2597,7 @@ public class Tool
     if (name.length() == 0) return null;
     Object symm = this.defns.get(name);
     if (symm == null) {
-      Assert.fail("The symmetry function " + name + " specified by the" +
-                  " configuration file\nis not defined in the specification.");
+        Assert.fail(EC.TLC_CONFIG_SPECIFIED_NOT_DEFINED, new String[] { "symmetry function", name});
     }
     if (!(symm instanceof OpDefNode)) {
       Assert.fail("The symmetry function " + name + " must specify a set of permutations.");

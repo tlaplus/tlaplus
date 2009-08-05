@@ -34,7 +34,7 @@ public class Assert
     {
         throw new RuntimeException(MP.getMessage(errorCode, parameters));
     }
-
+    
     /**
      * Unconditioned way to throw an exception
      * @param errorCode error code of explanation
