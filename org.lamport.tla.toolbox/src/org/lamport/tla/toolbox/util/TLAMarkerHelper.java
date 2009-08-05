@@ -1,5 +1,7 @@
 package org.lamport.tla.toolbox.util;
 
+import java.util.Vector;
+
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
@@ -70,8 +72,9 @@ public class TLAMarkerHelper
 
             public void run(IProgressMonitor monitor) throws CoreException
             {
-                System.out.println("Installing a marker on " + resource.getProjectRelativePath().toOSString() + " with error on module "
-                        + moduleName);
+                // System.out.println("Installing a marker on " + resource.getProjectRelativePath().toOSString() +
+                // " with error on module "
+                // + moduleName);
 
                 IMarker marker = resource.createMarker(type);
                 // Once we have a marker object, we can set its attributes
@@ -117,8 +120,7 @@ public class TLAMarkerHelper
 
                         } catch (BadLocationException e)
                         {
-                            // TODO Auto-generated catch block
-                            e.printStackTrace();
+                            Activator.logError("Error accessing the specified error location", e);
                         }
                     }
                 }
@@ -129,8 +131,7 @@ public class TLAMarkerHelper
             resource.getWorkspace().run(runnable, null, IWorkspace.AVOID_UPDATE, monitor);
         } catch (CoreException e)
         {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            Activator.logError("Error installing the problem markers", e);
         }
 
     }
@@ -162,7 +163,7 @@ public class TLAMarkerHelper
             resource.getWorkspace().run(runnable, monitor);
         } catch (CoreException e)
         {
-            e.printStackTrace();
+            Activator.logError("Error removing the problem markers", e);
         }
     }
 
@@ -189,8 +190,7 @@ public class TLAMarkerHelper
                     IResource.DEPTH_INFINITE);
         } catch (CoreException e)
         {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            Activator.logError("Error retrieving the problem markers", e);
             problems = new IMarker[0];
         }
         return problems;
@@ -256,7 +256,8 @@ public class TLAMarkerHelper
             {
                 gotoMarker.gotoMarker(problem);
             }
-        } else {
+        } else
+        {
             // nothing to open
         }
     }
@@ -286,9 +287,26 @@ public class TLAMarkerHelper
             return problem.getType();
         } catch (CoreException e)
         {
-            e.printStackTrace();
+            Activator.logError("Error retriving marker type", e);
         }
         return null;
     }
 
+    /**
+     * Installs the error markers from the vector of MarkerInformationHolders
+     * @param detectedErrors
+     */
+    public static void installProblemMarkers(Vector detectedErrors, IProgressMonitor monitor)
+    {
+        if (detectedErrors == null || detectedErrors.isEmpty())
+        {
+            return;
+        }
+
+        for (int i = 0; i < detectedErrors.size(); i++)
+        {
+            MarkerInformationHolder holder = (MarkerInformationHolder) detectedErrors.get(i);
+            installProblemMarker(holder.resource, holder.moduleName, holder.severityError, holder.coordinates, holder.message, monitor, holder.type);
+        }
+    }
 }
