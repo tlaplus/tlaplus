@@ -15,6 +15,7 @@ import org.lamport.tla.toolbox.spec.Module;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.ui.handler.ParseSpecHandler;
 import org.lamport.tla.toolbox.util.AdapterFactory;
+import org.lamport.tla.toolbox.util.MarkerInformationHolder;
 import org.lamport.tla.toolbox.util.RCPNameToFileIStream;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.TLAMarkerHelper;
@@ -40,35 +41,34 @@ import util.UniqueString;
  */
 public class ModuleParserLauncher
 {
-    private Errors parseErrors = null;
-    private Errors semanticErrors = null;
-
     /*
      * (non-Javadoc)
      * @see org.lamport.tla.toolbox.spec.parser.IParserLauncher#parseSpecification(toolbox.spec.Spec)
      */
     public ParseResult parseModule(IResource parseResource, IProgressMonitor monitor)
     {
-
+        // get the project
         IProject project = parseResource.getProject();
 
         // setup the directory of the file
         ToolIO.setUserDir(ResourceHelper.getParentDirName(parseResource.getLocation().toOSString()));
         
-
         // reset problems from previous run
         TLAMarkerHelper.removeProblemMarkers(parseResource, monitor, TLAMarkerHelper.TOOLBOX_MARKERS_TLAPARSER_MARKER_ID);
 
         // call the parsing
         ParseResult result = this.parseModule(parseResource, true);
 
+        // reset the module dependency storage
         if (AdapterFactory.isProblemStatus(result.getStatus()))
         {
             Activator.getModuleDependencyStorage().parseFailed(parseResource.getProjectRelativePath().toString());
         }
-
+        // get the errors
+        Vector detectedErrors = this.processParsingErrors(project, result);
+        
         // store errors inside the specification project
-        this.processParsingErrors(project, result, monitor);
+        TLAMarkerHelper.installProblemMarkers(detectedErrors, monitor);
 
         return result;
     }
@@ -89,11 +89,11 @@ public class ModuleParserLauncher
     {
         String moduleFilename = parseResource.getLocation().toOSString();
         
-        // clean the results of previos parsing
-        this.cleanUp();
-
         // one of the Spec constants
         int specStatus = 0;
+        
+        Errors parseErrors = null;
+        Errors semanticErrors = null;
 
         FilenameToStream resolver = new RCPNameToFileIStream(null);
 
@@ -121,7 +121,7 @@ public class ModuleParserLauncher
         {
             // set spec status
             specStatus = IParseConstants.UNKNOWN_ERROR;
-            return new ParseResult(specStatus, null, parseResource);
+            return new ParseResult(specStatus, null, parseResource, parseErrors, semanticErrors);
 
         } catch (ParseException e)
         {
@@ -240,7 +240,7 @@ public class ModuleParserLauncher
         Activator.getModuleDependencyStorage().put(parseResource.getName(),
                 AdapterFactory.adaptModules(parseResource.getName(), userModules));
 
-        return new ParseResult(specStatus, moduleSpec, parseResource);
+        return new ParseResult(specStatus, moduleSpec, parseResource, parseErrors, semanticErrors);
     }
 
     /**
@@ -298,9 +298,10 @@ public class ModuleParserLauncher
      * - "Could not parse module Foo from file FooBar"<br>
      * I have no idea when that is produced.
      */
-    private void processParsingErrors(IProject project, ParseResult result, IProgressMonitor monitor)
+    private Vector processParsingErrors(IProject project, ParseResult result)
     {
 
+        Vector detectedErrors = new Vector();
         switch (result.getStatus()) {
         /* ------------------ SYNTAX ERRORS --------------------- */
 
@@ -354,17 +355,17 @@ public class ModuleParserLauncher
                     // coordinates of the error
                     coordinates = new int[] { beginLine, beginColumn, endLine, endColumn };
 
-                    TLAMarkerHelper.installProblemMarker(module, module.getName(), IMarker.SEVERITY_ERROR, coordinates,
-                            message, monitor, TLAMarkerHelper.TOOLBOX_MARKERS_TLAPARSER_MARKER_ID);
+                    detectedErrors.add(new MarkerInformationHolder(module, module.getName(), IMarker.SEVERITY_ERROR, coordinates,
+                            message));
                 } // if
                 else
                 {
 
                     // This is not a meaningful error message; get the message from
                     // the abort in parseErrors
-                    if (parseErrors != null)
+                    if (result.getParseErrors() != null)
                     {
-                        String[] aborts = parseErrors.getAborts();
+                        String[] aborts = result.getParseErrors().getAborts();
                         if (aborts.length > 0)
                         {
                             // error message
@@ -376,19 +377,15 @@ public class ModuleParserLauncher
                     if (message != null && message.indexOf("does not match the name") == -1)
                     {
                         coordinates = new int[] { -1, -1, -1, -1 };
-                    } else
-                    {
-                        throw new RuntimeException("This should not happen");
-                    }
-
+                    } 
                     if (module == null)
                     {
-                        TLAMarkerHelper.installProblemMarker(project, project.getName(), IMarker.SEVERITY_ERROR,
-                                coordinates, message, monitor, TLAMarkerHelper.TOOLBOX_MARKERS_TLAPARSER_MARKER_ID);
+                        detectedErrors.add(new MarkerInformationHolder(project, project.getName(), IMarker.SEVERITY_ERROR,
+                                coordinates, message));
                     } else
                     {
-                        TLAMarkerHelper.installProblemMarker(module, module.getName(), IMarker.SEVERITY_ERROR,
-                                coordinates, message, monitor, TLAMarkerHelper.TOOLBOX_MARKERS_TLAPARSER_MARKER_ID);
+                        detectedErrors.add(new MarkerInformationHolder(module, module.getName(), IMarker.SEVERITY_ERROR,
+                                coordinates, message));
                     }
 
                 } // else
@@ -404,18 +401,59 @@ public class ModuleParserLauncher
         case IParseConstants.SEMANTIC_ERROR:
         case IParseConstants.SEMANTIC_WARNING:
             // There were semantic errors or warnings
-            if (semanticErrors != null)
+            if (result.getParseErrors() != null)
             {
 
-                String[][] errors = { semanticErrors.getAborts(), semanticErrors.getErrors(),
-                        semanticErrors.getWarnings() };
+                String[][] errors = { result.getParseErrors().getAborts(), result.getParseErrors().getErrors(),
+                        result.getParseErrors().getWarnings() };
                 int[] holderType = { IMarker.SEVERITY_ERROR, IMarker.SEVERITY_ERROR, IMarker.SEVERITY_WARNING };
 
                 for (int j = 0; j < 3; j++)
                 {
                     for (int i = 0; i < errors[j].length; i++)
                     {
-                        encodeSematicErrorFromString(project, result.getParsedResource(), errors[j][i], holderType[j], monitor);
+                        // encodeSematicErrorFromString(project, result.getParsedResource(), errors[j][i], holderType[j], monitor);
+                        IFile module = null;
+
+                        // Get pair of line, column numbers
+                        int[] val = findLineAndColumn(0, errors[j][i]);
+                        int beginLine = val[0];
+                        int beginColumn = val[1];
+                        int endLine = 0;
+                        int endColumn = 0;
+
+                        val = findLineAndColumn(val[2], errors[j][i]);
+                        if ((val[0] > beginLine) || ((val[0] == beginLine) && (val[1] >= beginColumn)))
+                        {
+                            endLine = val[0];
+                            endColumn = val[1];
+                        }
+
+                        // Get module name. We use the fact that errors and warnings are always generated with the
+                        // module, indicated by " module Name\n". *
+                        int beginModuleIdx = errors[j][i].indexOf(" module ");
+                        if (beginModuleIdx != -1)
+                        {
+                            beginModuleIdx = beginModuleIdx + " module ".length();
+                            int endModuleIdx = errors[j][i].indexOf("\n", beginModuleIdx);
+                            if (endModuleIdx != -1)
+                            {
+                                module = ResourceHelper.getLinkedFile(result.getParsedResource().getParent(), ResourceHelper.getModuleFileName(errors[j][i].substring(
+                                        beginModuleIdx, endModuleIdx)), false);
+                            }
+                        }
+
+                        int[] coordinates = new int[] { beginLine, beginColumn, endLine, endColumn };
+
+                        if (module == null)
+                        {
+                            detectedErrors.add(new MarkerInformationHolder(project, project.getName(), holderType[j], coordinates, errors[j][i]));
+
+                        } else
+                        {
+                            detectedErrors.add(new MarkerInformationHolder(module, module.getName(), holderType[j], coordinates, errors[j][i]));
+                        }
+                        
                     }
                 }// for i, for j
 
@@ -427,82 +465,16 @@ public class ModuleParserLauncher
             break;
         case IParseConstants.COULD_NOT_FIND_MODULE:
 
-            TLAMarkerHelper.installProblemMarker(project, project.getName(), IMarker.SEVERITY_ERROR, new int[] { -1,
-                    -1, -1, -1 }, "Could not find module", monitor, TLAMarkerHelper.TOOLBOX_MARKERS_TLAPARSER_MARKER_ID);
+            detectedErrors.add(new MarkerInformationHolder(project, project.getName(), IMarker.SEVERITY_ERROR, new int[] { -1,
+                    -1, -1, -1 }, "Could not find module" ));
             break;
         case IParseConstants.PARSED:
             break;
         default:
-
             throw new RuntimeException("No default expected. Still spec.getStatus() returned a value of " + result.getStatus());
         }
-        cleanUp();
+        return detectedErrors;
     } // ProcessParsingErrorMsgs
-
-    /**
-     * Encode semantic error and create the marker on the corresponding resource 
-     * @param spec
-     * @param message
-     * @param severityError
-     * @param monitor
-     */
-    private void encodeSematicErrorFromString(IProject project, IResource parsedResource, String message, int severityError,
-            IProgressMonitor monitor)
-    {
-
-        IFile module = null;
-
-        // Get pair of line, column numbers
-        int[] val = findLineAndColumn(0, message);
-        int beginLine = val[0];
-        int beginColumn = val[1];
-        int endLine = 0;
-        int endColumn = 0;
-
-        val = findLineAndColumn(val[2], message);
-        if ((val[0] > beginLine) || ((val[0] == beginLine) && (val[1] >= beginColumn)))
-        {
-            endLine = val[0];
-            endColumn = val[1];
-        }
-
-        // Get module name. We use the fact that errors and warnings are always generated with the
-        // module, indicated by " module Name\n". *
-        int beginModuleIdx = message.indexOf(" module ");
-        if (beginModuleIdx != -1)
-        {
-            beginModuleIdx = beginModuleIdx + " module ".length();
-            int endModuleIdx = message.indexOf("\n", beginModuleIdx);
-            if (endModuleIdx != -1)
-            {
-                module = ResourceHelper.getLinkedFile(parsedResource.getParent(), ResourceHelper.getModuleFileName(message.substring(
-                        beginModuleIdx, endModuleIdx)), false);
-            }
-        }
-
-        int[] coordinates = new int[] { beginLine, beginColumn, endLine, endColumn };
-
-        if (module == null)
-        {
-            TLAMarkerHelper.installProblemMarker(project, project.getName(), severityError, coordinates, message,
-                    monitor, TLAMarkerHelper.TOOLBOX_MARKERS_TLAPARSER_MARKER_ID);
-
-        } else
-        {
-            TLAMarkerHelper.installProblemMarker(module, module.getName(), severityError, coordinates, message,
-                    monitor, TLAMarkerHelper.TOOLBOX_MARKERS_TLAPARSER_MARKER_ID);
-        }
-    }
-
-    /**
-     * Preforms a clean-up of error variables
-     */
-    public void cleanUp()
-    {
-        // cleanup the
-        this.parseErrors = null;
-        this.semanticErrors = null;
-    }
 
     /**
      * Looks for line and column number in str starting at idx, and returns a 3-element array val with val[0] = the line

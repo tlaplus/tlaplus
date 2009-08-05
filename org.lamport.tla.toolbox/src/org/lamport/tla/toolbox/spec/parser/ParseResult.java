@@ -3,6 +3,7 @@ package org.lamport.tla.toolbox.spec.parser;
 import org.eclipse.core.resources.IResource;
 
 import tla2sany.modanalyzer.SpecObj;
+import tla2sany.semantic.Errors;
 
 /**
  * A holder for status specobj and the resource
@@ -14,17 +15,22 @@ public class ParseResult
     private int status = IParseConstants.UNPARSED;
     private SpecObj specObj;
     private IResource parsedResource;
+    private Errors parseErrors;
+    private Errors semanticErrors;
+
     
     /**
      * Constructs the parse status object 
      * @param status one of the {@link IParseConstants} values
      * @param specObj current specObject or null
      */
-    public ParseResult(int status, SpecObj specObj, IResource parsedResource)
+    public ParseResult(int status, SpecObj specObj, IResource parsedResource, Errors parseErrors, Errors semanticErrors)
     {
         this.status = status;
         this.specObj = specObj;
         this.parsedResource = parsedResource;
+        this.parseErrors = parseErrors;
+        this.semanticErrors = semanticErrors;
     }
     
     /**
@@ -65,4 +71,15 @@ public class ParseResult
     {
         this.parsedResource = parsedResource;
     }
+    
+    public Errors getParseErrors()
+    {
+        return parseErrors;
+    }
+
+    public Errors getSemanticErrors()
+    {
+        return semanticErrors;
+    }
+
 }
