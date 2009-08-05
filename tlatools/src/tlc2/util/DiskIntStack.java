@@ -134,9 +134,9 @@ public final class DiskIntStack {
 	  }
 	}
       }
-      catch (Exception e) {
-          Assert.fail("Error: when reading the disk (DiskIntStack.Reader.run):\n" +
-			   e.getMessage());
+      catch (Exception e) 
+      {
+          Assert.fail(EC.SYSTEM_DISK_IO_ERROR_FOR_FILE, e);
       }
     }
   }
@@ -161,9 +161,9 @@ public final class DiskIntStack {
 	  }
 	}
       }
-      catch (Exception e) {
-          Assert.fail("Error: when reading the disk (DiskIntStack.Writer.run):\n" +
-			   e.getMessage());
+      catch (Exception e) 
+      {
+          Assert.fail(EC.SYSTEM_DISK_IO_ERROR_FOR_FILE, e);
       }
     }
   }

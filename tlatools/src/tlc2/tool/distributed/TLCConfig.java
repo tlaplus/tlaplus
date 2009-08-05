@@ -16,11 +16,19 @@ import util.Assert;
 import util.FileUtil;
 import util.ToolIO;
 
+/**
+ * @deprecated
+ * @version $Id$
+ */
 public class TLCConfig {
 
   private static Hashtable ConfigTbl = null;
   private static int nextChar;
 
+  /**
+   * @deprecated
+   * @throws IOException
+   */
   private static void parse() throws IOException {
     ConfigTbl = new Hashtable();
     File cfgFile = new File("TLC2.cfg");
@@ -70,6 +78,10 @@ public class TLCConfig {
     }
   }
 
+  /**
+   * @deprecated
+   * @param token
+   */
   private static void checkString(String token) {
     if (token.equals("=") || token.equals(",")) {
       Assert.fail("The strings in TLC configuration cannot be \"=\" or \",\"");
