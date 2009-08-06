@@ -52,6 +52,23 @@
       </persistent>
    </extension>
    <extension
+         id="org.lamport.tla.toolbox.tlc.modelErrorMarker"
+         name="Model Error Marker"
+         point="org.eclipse.core.resources.markers">
+      <super
+            type="org.eclipse.core.resources.marker">
+      </super>
+      <persistent
+            value="true">
+      </persistent>
+      <attribute
+            name="attributeName">
+      </attribute>
+      <attribute
+            name="attributeIndex">
+      </attribute>
+   </extension>
+   <extension
          point="org.lamport.tla.toolbox.tool">
       <participant
             class="org.lamport.tla.toolbox.tool.tlc.TLCLifecycleParticipant">
