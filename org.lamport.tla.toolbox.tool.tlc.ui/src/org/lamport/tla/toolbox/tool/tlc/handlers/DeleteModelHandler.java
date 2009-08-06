@@ -11,6 +11,7 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationType;
 import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.ui.IEditorPart;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.TLCModelLaunchDelegate;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
@@ -65,6 +66,13 @@ public class DeleteModelHandler extends AbstractHandler implements IModelConfigu
                         couldNotDelete.add(launchConfigurations[i]);
                     } else
                     {
+                        // if the editor is opened
+                        IEditorPart editorWithModelOpened = ModelHelper.getEditorWithModelOpened(launchConfigurations[i]);
+                        if (editorWithModelOpened != null) 
+                        {
+                            // close it
+                            UIHelper.getActivePage().closeEditor(editorWithModelOpened, false);
+                        }
                         launchConfigurations[i].delete();
                     }
                 }
