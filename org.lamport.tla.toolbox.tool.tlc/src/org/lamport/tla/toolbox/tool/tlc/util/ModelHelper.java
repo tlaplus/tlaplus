@@ -45,6 +45,10 @@ import tla2sany.semantic.SymbolNode;
 public class ModelHelper implements IModelConfigurationConstants, IModelConfigurationDefaults
 {
     /**
+     * Marker indicating an error in the model
+     */
+    public static final String TLC_MODEL_ERROR_MARKER = "org.lamport.tla.toolbox.tlc.modelErrorMarker";
+    /**
      * marker on .launch file with boolean attribute modelIsRunning 
      */
     public static final String TLC_MODEL_IN_USE_MARKER = "org.lamport.tla.toolbox.tlc.modelMarker";
@@ -659,7 +663,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
                 return logFile;
             }
         }
-        
+
         return null;
     }
 
@@ -925,6 +929,54 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
         public static final int TYPE_RESULT = 2;
 
         public IFile getResource(int type);
+    }
+
+    /**
+     * Delete all model error markers from a resource
+     * @param configuration the model to remove markers from
+     */
+    public static void removeModelProblemMarkers(ILaunchConfiguration configuration)
+    {
+        try
+        {
+            IMarker[] foundMarkers = configuration.getFile().findMarkers(TLC_MODEL_ERROR_MARKER, false, IResource.DEPTH_ONE);
+            for (int i=0; i < foundMarkers.length; i++)
+            {
+                foundMarkers[i].delete();
+            }
+        } catch (CoreException e)
+        {
+            TLCActivator.logError("Error removing model markers", e);
+        }
+    }
+
+    /**
+     * Installs a marker on the model
+     * @param configuration the model to install markers on
+     * @param severity the level of severity
+     * @param attributeName
+     * @param index
+     * @param message
+     */
+    public static void installModelProblemMarker(ILaunchConfiguration configuration, final int severityError,
+            final String attributeName, final int index, final String message)
+    {
+        Assert.isNotNull(configuration);
+        Assert.isTrue(configuration.exists());
+
+        try
+        {
+            // create an empty marker
+            IMarker marker = configuration.getFile().createMarker(TLC_MODEL_ERROR_MARKER);
+            // Once we have a marker object, we can set its attributes
+            marker.setAttribute(IMarker.SEVERITY, severityError);
+            marker.setAttribute(IMarker.MESSAGE, message);
+            marker.setAttribute(IMarker.LOCATION, "");
+
+        } catch (CoreException e)
+        {
+            TLCActivator.logError("Error installing a model marker", e);
+        }
     }
 
 }

@@ -97,8 +97,8 @@ public class ModelWriter
                     // set model values
                     TypedSet setOfMVs = TypedSet.parseSet(constant.getRight());
                     addMVTypedSet(setOfMVs, "\\* MV CONSTANT declarations");
-                    cfgBuffer.append("\\* MV CONSTANT definitions").append(CR);
-                    tlaBuffer.append("\\* MV CONSTANT definitions").append(CR);
+                    cfgBuffer.append("\\* MV CONSTANT definitions" ).append(CR);
+                    tlaBuffer.append("\\* MV CONSTANT definitions: " + constant.getLeft()).append(CR);
                     
                     String id = addArrowAssignment(constant, "const");
                     if (constant.isSymmetricalSet())
@@ -112,13 +112,13 @@ public class ModelWriter
                     // model value assignment
                     // to .cfg : foo = foo
                     // to _MC.tla : <nothing>, since the constant is already defined in one of the spec modules
-                    cfgBuffer.append(constant.getLabel()).append(EQ).append(constant.getRight()).append(CR);
+                    cfgBuffer.append("CONSTANT ").append(constant.getLabel()).append(EQ).append(constant.getRight()).append(CR);
                 }
             } else
             {
                 // simple constant value assignment
                 cfgBuffer.append("\\* CONSTANT definitions").append(CR);
-                tlaBuffer.append("\\* CONSTANT definitions").append(CR);
+                tlaBuffer.append("\\* CONSTANT definitions: " + constant.getLeft()).append(CR);
                 addArrowAssignment(constant, "const");
                 tlaBuffer.append(SEP).append(CR).append(CR);
             }
