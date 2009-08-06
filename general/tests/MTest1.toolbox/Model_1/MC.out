@@ -1,6 +1,0 @@
-@!@!@STARTMSG 1000:1 @!@!@
-@!@!@STARTMSG 5006:0 @!@!@
-TLC found an error in the configuration file at line 2
-It was expecting a keyword, but did not find it.
-@!@!@ENDMSG 5006 @!@!@
-@!@!@ENDMSG 1000 @!@!@
