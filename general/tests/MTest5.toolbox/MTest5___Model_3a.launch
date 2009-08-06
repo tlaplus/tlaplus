@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <launchConfiguration type="org.lamport.tla.toolbox.tool.tlc.modelCheck">
-<stringAttribute key="configurationName" value="Model_3"/>
+<stringAttribute key="configurationName" value="Model_3a"/>
 <stringAttribute key="modelBehaviorFairness" value=""/>
 <stringAttribute key="modelBehaviorInit" value="Init"/>
 <stringAttribute key="modelBehaviorNext" value="(x'=x /\ y'=1-y)"/>
@@ -10,7 +10,7 @@
 <booleanAttribute key="modelCorrectnessCheckDeadlock" value="true"/>
 <listAttribute key="modelCorrectnessInvariants"/>
 <listAttribute key="modelCorrectnessProperties">
-<listEntry value="1[][y = 1 =&gt; y'=&quot;a&quot;]_y"/>
+<listEntry value="1[]&lt;&gt;&lt;&lt;y = 1 =&gt; y'=&quot;a&quot;&gt;&gt;_y"/>
 </listAttribute>
 <listAttribute key="modelParameterConstants"/>
 <intAttribute key="numberOfWorkers" value="2"/>
