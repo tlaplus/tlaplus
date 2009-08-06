@@ -22,6 +22,7 @@ package tla2sany.modanalyzer;
 // reparsed.  This can be tested with isLoaded(), and done with parseFile().
 
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintWriter;
 
 import tla2sany.semantic.AbortException;
@@ -204,81 +205,109 @@ public class ParseUnit {
     }
   }
 
-  /**
-   * This method parses the source in THIS.nis, if it has not been
-   * parsed already; It then proceeds to analyze the resulting parse
-   * tree to see what other external modules must be found and parsed.
-   * Finally, it writes result to a file if required by a command line
-   * switch.
-   */
-  public final void parseFile(Errors errors, boolean firstCall) throws AbortException {
-    // Has it already been parsed since last modified?  If yes, then no need to parse again
-    if ( parseStamp > nis.sourceFile().lastModified() ) return;
+    /**
+     * This method parses the source in THIS.nis, if it has not been
+     * parsed already; It then proceeds to analyze the resulting parse
+     * tree to see what other external modules must be found and parsed.
+     * Finally, it writes result to a file if required by a command line
+     * switch.
+     */
+    public final void parseFile(Errors errors, boolean firstCall) throws AbortException
+    {
+        // Has it already been parsed since last modified? If yes, then no need to parse again
+        if (parseStamp > nis.sourceFile().lastModified())
+            return;
 
-    // Does the file exist?  If not abort cleanly.  Of course the file could be deleted 
-    // during the next few lines, and execution would also abort, but not so cleanly.  
-    // We ignore that possibility.
-    if (! nis.sourceFile().exists() ) {
-      errors.addAbort("Error: source file '" + nis.getName() + 
-                      "' has apparently been deleted.");
+        // Does the file exist? If not abort cleanly. Of course the file could be deleted
+        // during the next few lines, and execution would also abort, but not so cleanly.
+        // We ignore that possibility.
+        if (!nis.sourceFile().exists())
+        {
+            errors.addAbort("Error: source file '" + nis.getName() + "' has apparently been deleted.");
+        }
+
+        // Print user feedback
+        /***********************************************************************
+        * This is a bug.  The higher-level parsing methods have a PrintStream  *
+        * argument to which such output gets written.  That argument should    *
+        * have been passed down to this method.  (LL: 11 Mar 08)               *
+        *                                                                      *
+        * The following statement modified by LL on 13 Mary 08 to produce      *
+        * more useful output for the GUI.                                      *
+        ***********************************************************************/
+        if (ToolIO.getMode() == ToolIO.SYSTEM)
+        {
+            ToolIO.out.println("Parsing file " + nis.sourceFile());
+        } else
+        {
+            ToolIO.out.println("Parsing module " + nis.getModuleName() + " in file " + nis.sourceFile());
+        }
+
+        boolean parseSuccess; 
+        try 
+        {
+            // create parser object
+            parseTree = new tla2sany.parser.TLAplusParser(nis);
+
+            // Here is the one true REAL call to the parseTree.parse() for a file;
+            // The root node of the parse tree is left in parseTree.
+            parseSuccess = parseTree.parse();
+
+            // set the parse time stamp
+            parseStamp = System.currentTimeMillis();
+        } finally 
+        {
+            try
+            {
+                // SZ Aug 6, 2009: close the stream and release the OS resources
+                // this is Ok, since the repeated call of the parse method will
+                // return due to the fact, that the parse time stamp is newer 
+                // then the file time stamp
+                nis.close();
+            } catch (IOException e)
+            {
+                // eventually it is a good place to inform the user that the resources are
+                // not released 
+            }
+        }
+        
+        if (!parseSuccess)
+        { // if parsing the contents of "nis" failed...
+            // create the abort and throw the exception
+            errors.addAbort(Location.moduleLocation(nis.getModuleName()), "Could not parse module "
+                    + nis.getModuleName() + " from file " + nis.getName(), true);
+        }
+
+        // if the is the very first time parseFile() is called
+        if (firstCall)
+        {
+            // We don't know the name of the specification until this moment!
+            spec.setName(getParseTree().heirs()[0].heirs()[1].getImage());
+        }
+
+        rootModule = new ModulePointer(spec, this, getParseTree());
+
+        // Determine which modules extend or include which others
+        determineModuleRelationships(rootModule, /* parent */null);
+
+        /*
+        // Debugging
+        ToolIO.err.println("ModuleRelationships for ParseUnit " + this.getName() + "\n" +  
+                           spec.getModuleRelationships().toString() ); 
+        */
+
+        // Make sure file contains module of the same name
+        verifyEquivalenceOfFileAndModuleNames(errors);
+
+        // Use system property to decide whether to "print" the parse tree to a file
+        if (System.getProperty("TLA-Print", "off").equals("file"))
+        {
+            writeParseTreeToFile(true, errors);
+        } else if (System.getProperty("TLA-Print", "off").equals("on"))
+        {
+            writeParseTreeToFile(false, errors);
+        }
     }
-
-    // Print user feedback
-    /***********************************************************************
-    * This is a bug.  The higher-level parsing methods have a PrintStream  *
-    * argument to which such output gets written.  That argument should    *
-    * have been passed down to this method.  (LL: 11 Mar 08)               *
-    *                                                                      *
-    * The following statement modified by LL on 13 Mary 08 to produce      *
-    * more useful output for the GUI.                                      *
-    ***********************************************************************/
-    if (ToolIO.getMode() == ToolIO.SYSTEM) {
-      ToolIO.out.println("Parsing file " + nis.sourceFile());}
-    else { ToolIO.out.println("Parsing module " + 
-                    nis.getModuleName() + " in file " + nis.sourceFile());
-         } ;
-    // create parser object
-    parseTree = new tla2sany.parser.TLAplusParser(nis);
-
-    // Here is the one true REAL call to the parseTree.parse() for a file; 
-    // The root node of the parse tree is left in parseTree.
-    boolean parseSuccess = parseTree.parse();
-    if ( !parseSuccess ) { // if parsing the contents of "nis" failed...
-        // create the abort and throw the exception
-        errors.addAbort(Location.moduleLocation(nis.getModuleName()),
-		      "Could not parse module " + nis.getModuleName() + 
-                      " from file " + nis.getName(), true);
-    }
-
-    parseStamp = System.currentTimeMillis();
-
-    // if the is the very first time parseFile() is called
-    if (firstCall) {
-    // We don't know the name of the specification until this moment!
-      spec.setName(getParseTree().heirs()[0].heirs()[1].getImage());
-    }
-
-    rootModule = new ModulePointer(spec, this, getParseTree());
-
-    // Determine which modules extend or include which others
-    determineModuleRelationships(rootModule, /* parent */ null); 
-
-    /*
-    // Debugging
-    ToolIO.err.println("ModuleRelationships for ParseUnit " + this.getName() + "\n" +  
-                       spec.getModuleRelationships().toString() ); 
-    */
-
-    // Make sure file contains module of the same name
-    verifyEquivalenceOfFileAndModuleNames(errors);
-
-    // Use system property to decide whether to "print" the parse tree to a file
-    if ( System.getProperty( "TLA-Print", "off").equals("file") ) {
-      writeParseTreeToFile(true, errors);  
-    } else if ( System.getProperty( "TLA-Print", "off").equals("on") ) {
-      writeParseTreeToFile(false, errors);
-    }
-  }
 
   private void handleExtensions(ModulePointer currentModule, ModulePointer otherModule) {
     /*

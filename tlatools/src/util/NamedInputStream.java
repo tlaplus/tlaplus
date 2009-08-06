@@ -5,6 +5,7 @@ package util;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 
 // SZ Feb 20, 2009: moved to util and reformatted
 
@@ -22,6 +23,8 @@ import java.io.FileNotFoundException;
  */
 public class NamedInputStream extends FileInputStream
 {
+    private static int numberOfReferences = 0;  
+    
     private String fileName;
     private String moduleName;
     private File inputFile;
@@ -32,6 +35,15 @@ public class NamedInputStream extends FileInputStream
         fileName = file;
         moduleName = module;
         inputFile = input;
+        synchronized (NamedInputStream.class) 
+        {
+            if (numberOfReferences < 0) 
+            {
+                numberOfReferences = 0;
+            }
+            numberOfReferences++;
+        }
+
     }
 
     public final String getName()
@@ -57,6 +69,29 @@ public class NamedInputStream extends FileInputStream
     public final String toString()
     {
         return "[ fileName: " + fileName + ", moduleName: " + moduleName + " ]";
+    }
+
+    
+    /**
+     * Sanity method
+     */
+    public void close() throws IOException
+    {
+        synchronized (NamedInputStream.class) 
+        {
+            numberOfReferences--;
+        }
+        super.close();
+    }
+    
+
+    /**
+     * Sanity check method
+     * @return
+     */
+    public synchronized static int getNumberOfreferences()
+    {
+        return numberOfReferences;
     }
 
 }
