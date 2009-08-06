@@ -29,6 +29,10 @@ public class Module
      */
     public String getAbsolutePath()
     {
+        if (file == null) 
+        {
+            return null;
+        }
         return file.getAbsolutePath();
     }
 
@@ -48,6 +52,10 @@ public class Module
      */
     public String getModuleName()
     {
+        if (file == null) 
+        {
+            return null;
+        }
         String filename = file.getName();
         if (filename.toLowerCase().indexOf(".tla") != -1)
         {
@@ -97,5 +105,12 @@ public class Module
     public void setRoot(boolean isRoot)
     {
         this.isRoot = isRoot;
+    }
+    
+    public void destroy()
+    {
+        this.file = null;
+        this.node = null;
+        this.isRoot = false;
     }
 }

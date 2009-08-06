@@ -14,10 +14,10 @@ import org.lamport.tla.toolbox.spec.Module;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.ui.handler.ParseSpecHandler;
 import org.lamport.tla.toolbox.util.AdapterFactory;
-import org.lamport.tla.toolbox.util.TLAMarkerInformationHolder;
 import org.lamport.tla.toolbox.util.RCPNameToFileIStream;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.TLAMarkerHelper;
+import org.lamport.tla.toolbox.util.TLAMarkerInformationHolder;
 
 import tla2sany.drivers.InitException;
 import tla2sany.drivers.SANY;
@@ -73,7 +73,7 @@ public class ModuleParserLauncher
         }
 
         // call the parsing
-        ParseResult result = parseModule(parseResource, true);
+        ParseResult result = parseModule(parseResource, updateStorage);
 
         if (updateStorage)
         {
@@ -83,7 +83,7 @@ public class ModuleParserLauncher
                 Activator.getModuleDependencyStorage().parseFailed(parseResource.getProjectRelativePath().toString());
             }
         }
-        
+
         // process the errors, the method perform changes on the parseResult
         processParsingErrors(project, result);
 
@@ -108,7 +108,7 @@ public class ModuleParserLauncher
      *            filename of the module to parse
      * @return status of parsing, one of the {@link IParseConstants} constants
      */
-    private ParseResult parseModule(IResource parseResource, boolean doSemanticAnalysis)
+    private ParseResult parseModule(IResource parseResource, boolean updateStorage)
     {
         String moduleFilename = parseResource.getLocation().toOSString();
 
@@ -130,16 +130,13 @@ public class ModuleParserLauncher
 
         // The parsing methods take a PrintStream on which they print out some (but hardly all) error messages.
         // They're called with this one.
-        PrintStream outputStr = ToolIO.err;
+        PrintStream outputStr = ToolIO.out;
 
         try
         {
             SANY.frontEndInitialize(moduleSpec, outputStr);
             SANY.frontEndParse(moduleSpec, outputStr);
-            if (doSemanticAnalysis)
-            {
-                SANY.frontEndSemanticAnalysis(moduleSpec, outputStr, true);
-            }
+            SANY.frontEndSemanticAnalysis(moduleSpec, outputStr, true);
         } catch (InitException e)
         {
             // set spec status
@@ -182,7 +179,7 @@ public class ModuleParserLauncher
         // Set the moduleNode components only if there were no parsing or semantic errors.
 
         Vector userModules = new Vector();
-        Vector standardModules = new Vector();
+        // Vector standardModules = new Vector();
         boolean rootModuleFound = false;
 
         // iterate over parse units
@@ -230,7 +227,7 @@ public class ModuleParserLauncher
 
             if (module.isStandardModule())
             {
-                standardModules.addElement(module);
+                // standardModules.addElement(module);
             } else
             {
                 // if the module is not a standard module
@@ -253,11 +250,21 @@ public class ModuleParserLauncher
             specStatus = IParseConstants.COULD_NOT_FIND_MODULE;
         }
 
-        // at this point the user modules are known
-        // store the dependencies
-        Activator.getModuleDependencyStorage().put(parseResource.getName(),
-                AdapterFactory.adaptModules(parseResource.getName(), userModules));
+        if (updateStorage)
+        {
+            // at this point the user modules are known
+            // store the dependencies
+            Activator.getModuleDependencyStorage().put(parseResource.getName(),
+                    AdapterFactory.adaptModules(parseResource.getName(), userModules));
+        }
 
+// remove the modules
+//        for (int i = userModules.size(); i > 0; i--)
+//        {
+//            ((Module)userModules.remove(i-1)).destroy();
+//        }
+//        userModules = null;
+        
         return new ParseResult(specStatus, moduleSpec, parseResource, parseErrors, semanticErrors);
     }
 
@@ -401,8 +408,8 @@ public class ModuleParserLauncher
                                 IMarker.SEVERITY_ERROR, coordinates, message));
                     } else
                     {
-                        result.addMarker(new TLAMarkerInformationHolder(module, module.getName(), IMarker.SEVERITY_ERROR,
-                                coordinates, message));
+                        result.addMarker(new TLAMarkerInformationHolder(module, module.getName(),
+                                IMarker.SEVERITY_ERROR, coordinates, message));
                     }
 
                 } // else
@@ -486,8 +493,8 @@ public class ModuleParserLauncher
             break;
         case IParseConstants.COULD_NOT_FIND_MODULE:
 
-            result.addMarker(new TLAMarkerInformationHolder(project, project.getName(), IMarker.SEVERITY_ERROR, new int[] {
-                    -1, -1, -1, -1 }, "Could not find module"));
+            result.addMarker(new TLAMarkerInformationHolder(project, project.getName(), IMarker.SEVERITY_ERROR,
+                    new int[] { -1, -1, -1, -1 }, "Could not find module"));
             break;
         case IParseConstants.PARSED:
             break;
