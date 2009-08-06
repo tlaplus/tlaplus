@@ -836,12 +836,12 @@ public class MP
 
         case EC.CFG_TWICE_KEYWORD:
             b.append(CONFIG_FILE_ERROR);
-            b.append("The keyword %2% appeared twice.");
+            b.append("The keyword %1% appeared twice.");
             break;
 
         case EC.CFG_EXPECT_ID:
             b.append(CONFIG_FILE_ERROR);
-            b.append("Expected an identifier after %2%.");
+            b.append("Expected an identifier after %1%.");
             break;
 
         case EC.CFG_GENERAL:
@@ -850,7 +850,7 @@ public class MP
 
         case EC.CFG_EXPECTED_SYMBOL:
             b.append(CONFIG_FILE_ERROR);
-            b.append("It was expecting %2%, but did not find it.");
+            b.append("It was expecting %1%, but did not find it.");
             break;
         case EC.CFG_ERROR_READING_FILE:
             b.append("TLC encountered the following error when trying to read the configuration file %1%:\n%2%");
