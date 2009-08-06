@@ -5,6 +5,7 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -37,7 +38,8 @@ public class StartLaunchHandler extends AbstractHandler
                         return null;
                     }
 
-                    config.launch(TLCModelLaunchDelegate.MODE_MODELCHECK, new NullProgressMonitor());
+                    ILaunch launch = config.launch(TLCModelLaunchDelegate.MODE_MODELCHECK, new NullProgressMonitor(), false);
+                    System.out.println("Launched " + launch + " is executed");
                 } catch (CoreException e)
                 {
                     TLCUIActivator.logError("Error launching the model", e);

@@ -8,6 +8,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.ListenerList;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
@@ -26,8 +27,6 @@ import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.editor.FormPage;
 import org.eclipse.ui.forms.events.ExpansionAdapter;
 import org.eclipse.ui.forms.events.ExpansionEvent;
-import org.eclipse.ui.forms.events.HyperlinkAdapter;
-import org.eclipse.ui.forms.events.HyperlinkEvent;
 import org.eclipse.ui.forms.events.IExpansionListener;
 import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.eclipse.ui.forms.widgets.FormToolkit;
@@ -55,7 +54,7 @@ import tla2sany.st.Location;
  * @version $Id$
  */
 public abstract class BasicFormPage extends FormPage implements IModelConfigurationConstants,
-        IModelConfigurationDefaults, ISectionManager, IDoRunContainer
+        IModelConfigurationDefaults, ISectionManager, IModelOperationContainer
 {
     public static final String CRASHED_TITLE = " ( model checking has crashed )";
     public static final String RUNNING_TITLE = " ( model checking is in progress )";
@@ -65,21 +64,13 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
     protected boolean initialized = false;
     protected IExpansionListener formRebuildingListener = null;
 
-    // adapter calling doRun() method
-    // is reacting on clicking of Run model
-    protected HyperlinkAdapter runDebugAdapter = new HyperlinkAdapter() {
-
-        public void linkActivated(HyperlinkEvent e)
-        {
-            doRun((String) e.getHref());
-        }
-    };
     // image registry
     private Hashtable images = new Hashtable();
     // the page completion status (true by default)
     private boolean isComplete = true;
 
     /**
+     * Creates the main editor page
      * @param editor
      * @param id
      * @param title
@@ -93,34 +84,41 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
      * Launch TLC
      * @param mode
      */
-    public void doRun(String mode)
+    private void launchModel(String mode) 
     {
         IProgressMonitor monitor = new NullProgressMonitor();
-
-        if (!((ModelEditor) getEditor()).isComplete())
-        {
-            MessageDialog.openError(getSite().getShell(), "TLC Launch not allowed",
-                    "The model contains errors, which should be corrected before the TLC launch");
-            return;
-        }
-
-        ILaunchConfigurationWorkingCopy config = getConfig();
 
         // save the editor if not saved
         if (getEditor().isDirty())
         {
-            getEditor().doSave(monitor);
+            getEditor().doSave(new SubProgressMonitor(monitor, 1));
+        }
+        
+        
+        if (!((ModelEditor) getEditor()).isComplete())
+        {
+            MessageDialog.openError(getSite().getShell(), "Model processing not allowed",
+                    "The model contains errors, which should be corrected before further processing");
+            return;
         }
 
         // launching the config
         try
         {
-            config.launch(TLCModelLaunchDelegate.MODE_MODELCHECK, monitor, false);
-
+            getConfig().launch(mode, new SubProgressMonitor(monitor, 1), true);
         } catch (CoreException e)
         {
-            TLCUIActivator.logError("Error launching the configuration " + config.getName(), e);
+            TLCUIActivator.logError("Error launching the configuration " + getConfig().getName(), e);
         }
+        
+    }
+    public void doRun()
+    {
+        launchModel(TLCModelLaunchDelegate.MODE_MODELCHECK);
+    }
+    public void doGenerate()
+    {
+        launchModel(TLCModelLaunchDelegate.MODE_GENERATE);
     }
 
     /**
@@ -150,6 +148,7 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
 
         // run button
         toolbarManager.add(new DynamicContributionItem(new RunAction()));
+        toolbarManager.add(new DynamicContributionItem(new GenerateAction()));
         // stop button
         toolbarManager.add(new DynamicContributionItem(new StopAction()));
 
@@ -572,13 +571,34 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
             this.setDescription("Run TLC");
             this.setToolTipText("Starts the TLC model checker");
         }
-
         public void run()
         {
-            // System.out.println("Run");
-            doRun(MODE_RUN);
+            doRun();
         }
+        /**
+         * Run is only enabled if the model is not in use
+         */
+        public boolean isEnabled()
+        {
+            return !isModelInUse();
+        }
+    }
 
+    /**
+     * The generate action
+     */
+    class GenerateAction extends Action
+    {
+        GenerateAction()
+        {
+            super("Generate", TLCUIActivator.imageDescriptorFromPlugin(TLCUIActivator.PLUGIN_ID, "icons/full/ldebug_obj.gif"));
+            this.setDescription("Generates and validas model files");
+            this.setToolTipText("Generates and validas model files");
+        }
+        public void run()
+        {
+            doGenerate();
+        }
         /**
          * Run is only enabled if the model is not in use
          */
@@ -618,7 +638,6 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
             {
                 TLCUIActivator.logError("Error stopping the model launch", e);
             }
-            
         }
 
         /**

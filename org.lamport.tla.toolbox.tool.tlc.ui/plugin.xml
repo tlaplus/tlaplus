@@ -504,7 +504,7 @@ Console Facory
          </activeWhen>
       </handler>
       <handler
-            class="org.lamport.tla.toolbox.tool.tlc.handlers.StartLaunchHandler"
+            class="org.lamport.tla.toolbox.tool.tlc.handlers.StartLaunchHandlerDelegate"
             commandId="toolbox.tool.tlc.commands.model.run">
          <enabledWhen>
             <count

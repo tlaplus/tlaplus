@@ -102,7 +102,6 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         }
     };
 
-    
     /**
      * constructs the main model page 
      * @param editor
@@ -546,11 +545,10 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         Composite linksPanelToAdvancedPage = toolkit.createComposite(parametersArea);
         gd = new GridData();
         gd.horizontalSpan = 2;
-        
+
         linksPanelToAdvancedPage.setLayoutData(gd);
         linksPanelToAdvancedPage.setLayout(new FillLayout(SWT.VERTICAL));
 
-        
         // first line with hyperlinks
         Composite elementLine = toolkit.createComposite(linksPanelToAdvancedPage);
         elementLine.setLayout(new FillLayout(SWT.HORIZONTAL));
@@ -559,9 +557,9 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         FormText labelText = toolkit.createFormText(elementLine, false);
         labelText.setText("Some advanced features:", false, false);
 
-        // the hyperlinks 
+        // the hyperlinks
         Hyperlink hyper;
-        
+
         hyper = toolkit.createHyperlink(elementLine, "Additional definitions,", SWT.NONE);
         hyper.setHref(SEC_ADDITIONAL_DEFINITION);
         hyper.addHyperlinkListener(sectionExpandingAapter);
@@ -581,7 +579,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         hyper = toolkit.createHyperlink(elementLine2, "Action constraints,", SWT.NONE);
         hyper.setHref(SEC_ACTION_CONSTRAINT);
         hyper.addHyperlinkListener(sectionExpandingAapter);
-        
+
         hyper = toolkit.createHyperlink(elementLine2, "Additional model values.", SWT.NONE);
         hyper.setHref(SEC_MODEL_VALUES);
         hyper.addHyperlinkListener(sectionExpandingAapter);
@@ -624,30 +622,38 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         // run link
         ImageHyperlink runLink = toolkit.createImageHyperlink(howToRunArea, SWT.NONE);
         runLink.setImage(createRegisteredImage("icons/full/lrun_obj.gif"));
-        runLink.addHyperlinkListener(runDebugAdapter);
+        runLink.addHyperlinkListener(new HyperlinkAdapter() {
+            public void linkActivated(HyperlinkEvent e)
+            {
+                doRun();
+            }
+        });
         runLink.setText("Run TLC");
-        runLink.setHref(MODE_RUN);
         gd = new GridData();
         gd.horizontalSpan = 2;
         gd.widthHint = 200;
         runLink.setLayoutData(gd);
+        group.add(runLink);
 
+        // TODO enable on debug support
         // debug link
+/*        
         ImageHyperlink debugLink = toolkit.createImageHyperlink(howToRunArea, SWT.NONE);
         debugLink.setImage(createRegisteredImage("icons/full/ldebug_obj.gif"));
-        debugLink.addHyperlinkListener(runDebugAdapter);
+        debugLink.addHyperlinkListener(new HyperlinkAdapter() {
+            public void linkActivated(HyperlinkEvent e)
+            {
+                // doDebug();
+            }
+        });
         debugLink.setText("Debug TLC");
-        debugLink.setHref(MODE_DEBUG);
-        // TODO enable on debug support
         debugLink.setEnabled(false);
         gd = new GridData();
         gd.horizontalSpan = 2;
         gd.widthHint = 200;
         debugLink.setLayoutData(gd);
-
-        group.add(runLink);
         group.add(debugLink);
-
+*/
         // add listeners propagating the changes of the elements to the changes of the
         // parts to the list to be activated after the values has been loaded
         dirtyPartListeners.add(whatIsTheSpecListener);
