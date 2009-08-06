@@ -6,6 +6,7 @@ Model 1a: Evaluation error in Next
 Model 1b: Evaluation error in Next
 Model 2: Evaluation error in invariant
 Model 3: Evaluation error in property.
+Model 3a: Evaluation error in property.
 Model 4: Too many states.
 Model 5: Variable value unspecified.
 Model 6: Invariant false.
