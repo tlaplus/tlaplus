@@ -2,13 +2,13 @@
 EXTENDS MTest3, TLC
 
 \* CONSTANT definitions
-const_124951154319217000 == 
+const_124951835738253000 == 
 2
 ----
 
 \* Specification formula
-spec_124951154319218000 ==
+spec_124951835739754000 ==
 x=0 /\[][ FALSE ]_<<x>> 
 ----
 ====
-\* Generated at Wed Aug 05 15:32:23 PDT 2009
+\* Generated at Wed Aug 05 17:25:57 PDT 2009
