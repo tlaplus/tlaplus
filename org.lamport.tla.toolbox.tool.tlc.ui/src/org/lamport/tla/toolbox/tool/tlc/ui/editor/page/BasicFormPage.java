@@ -591,9 +591,9 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
     {
         GenerateAction()
         {
-            super("Generate", TLCUIActivator.imageDescriptorFromPlugin(TLCUIActivator.PLUGIN_ID, "icons/full/ldebug_obj.gif"));
-            this.setDescription("Generates and validas model files");
-            this.setToolTipText("Generates and validas model files");
+            super("Generate", TLCUIActivator.imageDescriptorFromPlugin(TLCUIActivator.PLUGIN_ID, "icons/full/debugt_obj.gif"));
+            this.setDescription("Validate model");
+            this.setToolTipText("Generates the output files and validates it, reporting errors in the model");
         }
         public void run()
         {
