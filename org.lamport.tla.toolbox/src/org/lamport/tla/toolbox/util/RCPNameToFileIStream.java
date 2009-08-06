@@ -119,7 +119,7 @@ public class RCPNameToFileIStream implements FilenameToStream
         int idx = 0;
         while (true)
         {
-            // TODO improve this: ToolIO.getUserDir()
+            // improve this: ToolIO.getUserDir()
             if ((idx == 0) && (ToolIO.getUserDir() != null))
             {
                 sourceFile = new File(ToolIO.getUserDir(), name);

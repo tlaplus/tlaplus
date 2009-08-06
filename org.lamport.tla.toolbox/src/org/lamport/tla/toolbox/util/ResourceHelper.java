@@ -537,6 +537,28 @@ public class ResourceHelper
     }
 
     /**
+     * Retrieves a combined rule for creating resource
+     * @param resource
+     * @return
+     */
+    public static ISchedulingRule getCreateRule(IResource[] resources)
+    {
+        if (resources == null)
+        {
+            return null;
+        }
+        ISchedulingRule combinedRule = null;
+        IResourceRuleFactory ruleFactory = ResourcesPlugin.getWorkspace().getRuleFactory();
+        for (int i = 0; i < resources.length; i++)
+        {
+            ISchedulingRule rule = ruleFactory.createRule(resources[i]);
+            combinedRule = MultiRule.combine(rule, combinedRule);
+        }
+        return combinedRule;
+    }
+
+    
+    /**
      * Renames and moves the project
      * @param project
      * @param specName

@@ -62,9 +62,17 @@ public class TLAMarkerHelper
      */
     public static final String TOOLBOX_MARKERS_TRANSLATOR_MARKER_ID = "toolbox.markers.PCalTranslatorProblemMarker";
 
+    
     /**
-     * Installs a problem marker on a given resource
+     * Installs a SANY problem marker on a given resource
      * REFACTOR: remove runable....
+     * @param resource resource handle to put the marker on
+     * @param moduleName name of the module (usually the resource, but if module not found, the resource will be the project)
+     * @param severityError one of the marker severity constants
+     * @param coordinates 4 integer numbers (beginline, begincolumn, endline, endcolumn) 
+     * @param message message of the marker
+     * @param monitor monitor for progress 
+     * @param type marker type: {@link TLAMarkerHelper#TOOLBOX_MARKERS_TLAPARSER_MARKER_ID} or {@link TLAMarkerHelper#TOOLBOX_MARKERS_TRANSLATOR_MARKER_ID} 
      */
     public static void installProblemMarker(final IResource resource, final String moduleName, final int severityError,
             final int[] coordinates, final String message, IProgressMonitor monitor, final String type)

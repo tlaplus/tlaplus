@@ -33,4 +33,30 @@ public class TLAMarkerInformationHolder
         this.coordinates = coordinates;
         this.message = message;
     }
+    public final IResource getResource()
+    {
+        return resource;
+    }
+    public final String getModuleName()
+    {
+        return moduleName;
+    }
+    public final int getSeverityError()
+    {
+        return severityError;
+    }
+    public final int[] getCoordinates()
+    {
+        return coordinates;
+    }
+    public final String getMessage()
+    {
+        return message;
+    }
+    public final String getType()
+    {
+        return type;
+    }
+    
+    
 }
