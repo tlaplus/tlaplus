@@ -7,6 +7,7 @@ import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRunnable;
+import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.text.BadLocationException;
@@ -68,6 +69,11 @@ public class TLAMarkerHelper
     public static void installProblemMarker(final IResource resource, final String moduleName, final int severityError,
             final int[] coordinates, final String message, IProgressMonitor monitor, final String type)
     {
+        Assert.isNotNull(resource);
+        Assert.isNotNull(moduleName);
+        Assert.isNotNull(coordinates);
+        
+        
         IWorkspaceRunnable runnable = new IWorkspaceRunnable() {
 
             public void run(IProgressMonitor monitor) throws CoreException
@@ -305,7 +311,7 @@ public class TLAMarkerHelper
 
         for (int i = 0; i < detectedErrors.size(); i++)
         {
-            MarkerInformationHolder holder = (MarkerInformationHolder) detectedErrors.get(i);
+            TLAMarkerInformationHolder holder = (TLAMarkerInformationHolder) detectedErrors.get(i);
             installProblemMarker(holder.resource, holder.moduleName, holder.severityError, holder.coordinates, holder.message, monitor, holder.type);
         }
     }

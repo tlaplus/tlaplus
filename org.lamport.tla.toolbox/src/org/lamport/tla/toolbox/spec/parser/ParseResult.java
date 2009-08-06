@@ -1,24 +1,28 @@
 package org.lamport.tla.toolbox.spec.parser;
 
+import java.util.Vector;
+
 import org.eclipse.core.resources.IResource;
+import org.lamport.tla.toolbox.tool.IParseResult;
+import org.lamport.tla.toolbox.util.TLAMarkerInformationHolder;
 
 import tla2sany.modanalyzer.SpecObj;
 import tla2sany.semantic.Errors;
 
 /**
- * A holder for status specobj and the resource
+ * A holder for status SpecObj and the resource, and the parse status
  * @author Simon Zambrovski
  * @version $Id$
  */
-public class ParseResult
+public class ParseResult implements IParseResult
 {
     private int status = IParseConstants.UNPARSED;
     private SpecObj specObj;
     private IResource parsedResource;
     private Errors parseErrors;
     private Errors semanticErrors;
+    private Vector detectedErrors;
 
-    
     /**
      * Constructs the parse status object 
      * @param status one of the {@link IParseConstants} values
@@ -31,6 +35,7 @@ public class ParseResult
         this.parsedResource = parsedResource;
         this.parseErrors = parseErrors;
         this.semanticErrors = semanticErrors;
+        this.detectedErrors = new Vector();
     }
     
     /**
@@ -82,4 +87,17 @@ public class ParseResult
         return semanticErrors;
     }
 
+    public Vector getDetectedErrors()
+    {
+        return detectedErrors;
+    }
+
+    /**
+     * Add an error to the error list
+     * @param error marker information holder
+     */
+    public void addMarker(TLAMarkerInformationHolder error)
+    {
+        detectedErrors.add(error);
+    } 
 }

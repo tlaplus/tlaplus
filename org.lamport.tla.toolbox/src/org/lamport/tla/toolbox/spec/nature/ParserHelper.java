@@ -40,9 +40,6 @@ public class ParserHelper
 
             public void run(IProgressMonitor monitor) throws CoreException
             {
-
-                // markers already removed in the parseModule
-                // TLAMarkerHelper.removeProblemMarkers(resource, monitor);
                 ParseResult result = moduleParser.parseModule(resource, monitor);
                 Activator.logDebug("Resulting status is: " + AdapterFactory.getStatusAsString(result.getStatus()));
             }

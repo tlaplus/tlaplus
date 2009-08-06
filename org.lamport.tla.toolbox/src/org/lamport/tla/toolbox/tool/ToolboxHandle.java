@@ -6,12 +6,16 @@ import java.net.URL;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.spec.Spec;
+import org.lamport.tla.toolbox.spec.parser.ModuleParserLauncher;
+import org.lamport.tla.toolbox.spec.parser.ParseResult;
 import org.lamport.tla.toolbox.ui.navigator.ToolboxExplorer;
 import org.lamport.tla.toolbox.util.UIHelper;
 import org.lamport.tla.toolbox.util.pref.IPreferenceConstants;
@@ -188,5 +192,17 @@ public class ToolboxHandle
                 ToolboxExplorer.refresh();
             }
         });
+    }
+    
+    /**
+     * Parses the module
+     * @param resource
+     * @param monitor
+     */
+    public static IParseResult parseModule(IResource resource, IProgressMonitor monitor, boolean installMarkers, boolean updateDependencies)
+    {
+        ModuleParserLauncher moduleParser = new ModuleParserLauncher();
+        ParseResult result = moduleParser.parseModule(resource, monitor, installMarkers, updateDependencies);
+        return result;
     }
 }

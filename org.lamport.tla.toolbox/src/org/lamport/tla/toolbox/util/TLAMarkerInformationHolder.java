@@ -8,7 +8,7 @@ import org.eclipse.core.resources.IResource;
  * @author Simon Zambrovski
  * @version $Id$
  */
-public class MarkerInformationHolder
+public class TLAMarkerInformationHolder
 {
     final IResource resource;
     final String moduleName;
@@ -24,7 +24,7 @@ public class MarkerInformationHolder
      * @param message string message
      * @param type MarkerType (as defined in plugin.xml)
      */
-    public MarkerInformationHolder(IResource resource, String moduleName, int severityError, int[] coordinates,
+    public TLAMarkerInformationHolder(IResource resource, String moduleName, int severityError, int[] coordinates,
             String message)
     {
         this.resource = resource;
