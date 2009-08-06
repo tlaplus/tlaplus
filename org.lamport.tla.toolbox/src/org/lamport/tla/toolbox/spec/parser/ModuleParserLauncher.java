@@ -425,11 +425,11 @@ public class ModuleParserLauncher
         case IParseConstants.SEMANTIC_ERROR:
         case IParseConstants.SEMANTIC_WARNING:
             // There were semantic errors or warnings
-            if (result.getParseErrors() != null)
+            if (result.getSemanticErrors() != null)
             {
 
-                String[][] errors = { result.getParseErrors().getAborts(), result.getParseErrors().getErrors(),
-                        result.getParseErrors().getWarnings() };
+                String[][] errors = { result.getSemanticErrors().getAborts(), result.getSemanticErrors().getErrors(),
+                        result.getSemanticErrors().getWarnings() };
                 int[] holderType = { IMarker.SEVERITY_ERROR, IMarker.SEVERITY_ERROR, IMarker.SEVERITY_WARNING };
 
                 for (int j = 0; j < 3; j++)
