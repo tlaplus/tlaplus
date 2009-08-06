@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<launchConfiguration type="org.lamport.tla.toolbox.tool.tlc.modelCheck">
+<stringAttribute key="configurationName" value="Model_5"/>
+<stringAttribute key="modelBehaviorFairness" value=""/>
+<stringAttribute key="modelBehaviorInit" value="Init"/>
+<stringAttribute key="modelBehaviorNext" value="Next5"/>
+<stringAttribute key="modelBehaviorSpec" value=""/>
+<intAttribute key="modelBehaviorSpecType" value="2"/>
+<stringAttribute key="modelBehaviorVars" value="x, y"/>
+<booleanAttribute key="modelCorrectnessCheckDeadlock" value="true"/>
+<listAttribute key="modelCorrectnessInvariants"/>
+<listAttribute key="modelCorrectnessProperties"/>
+<listAttribute key="modelParameterConstants"/>
+<intAttribute key="numberOfWorkers" value="2"/>
+<stringAttribute key="specName" value="MTest5"/>
+<stringAttribute key="specRootFile" value="C:\users\lamport\tla\tla2\general\tests\MTest5.tla"/>
+</launchConfiguration>
