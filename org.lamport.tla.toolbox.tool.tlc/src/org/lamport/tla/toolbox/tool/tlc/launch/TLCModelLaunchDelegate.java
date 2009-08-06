@@ -35,6 +35,7 @@ import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelWriter;
 import org.lamport.tla.toolbox.util.AdapterFactory;
 import org.lamport.tla.toolbox.util.ResourceHelper;
+import org.lamport.tla.toolbox.util.TLAMarkerInformationHolder;
 
 /**
  * Represents a launch delegate for TLC<br>
@@ -99,10 +100,6 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
         // check the config existence
         if (!config.exists())
         {
-            /*
-            throw new CoreException(new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID,
-                    "Tried to start a model that does not exist."));
-             */
             return false;
         }
 
@@ -170,22 +167,56 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
 
             // retrieve the model folder
             IFolder modelFolder = project.getFolder(modelName);
+            IPath targetFolderPath = modelFolder.getProjectRelativePath().addTrailingSeparator();
+
+            // create the handles: MC.tla, MC.cfg and MC.out
+            IFile tlaFile = project.getFile(targetFolderPath.append(ModelHelper.FILE_TLA));
+            IFile cfgFile = project.getFile(targetFolderPath.append(ModelHelper.FILE_CFG));
+            IFile outFile = project.getFile(targetFolderPath.append(ModelHelper.FILE_OUT));
+
+            TLCActivator.logDebug("Model TLA file is: " + tlaFile.getProjectRelativePath().toString());
+            TLCActivator.logDebug("Model CFG file is: " + cfgFile.getProjectRelativePath().toString());
+            TLCActivator.logDebug("Model OUT file is: " + outFile.getProjectRelativePath().toString());
+
+            final IFile[] files = new IFile[] { tlaFile, cfgFile, outFile };
 
             if (modelFolder.exists())
             {
                 // erase everything inside
-                IResource[] members = modelFolder.members();
+                final IResource[] members = modelFolder.members();
                 if (members.length == 0)
                 {
                     monitor.worked(STEP);
                 } else
                 {
-                    // delete the members of the target directory
-                    // TODO here!
-                    for (int i = 0; i < members.length; i++)
-                    {
-                        members[i].delete(IResource.FORCE, new SubProgressMonitor(monitor, STEP / members.length));
-                    }
+                    ISchedulingRule deleteRule = ResourceHelper.getDeleteRule(members);
+
+                    // delete files
+                    ResourcesPlugin.getWorkspace().run(new IWorkspaceRunnable() {
+
+                        public void run(IProgressMonitor monitor) throws CoreException
+                        {
+
+                            monitor.beginTask("Deleting files", members.length);
+                            // delete the members of the target directory
+                            for (int i = 0; i < members.length; i++)
+                            {
+
+                                // TODO check if we delete the right files...
+                                try
+                                {
+                                    members[i].delete(IResource.FORCE, new SubProgressMonitor(monitor, 1));
+                                } catch (CoreException e)
+                                {
+                                    // FIXME catch the exception if deletion failed, and just ignore this fact
+                                    // this should be fixed at some later point in time
+                                    TLCActivator.logError("Error deleting a file " + members[i].getLocation(), e);
+                                }
+                            }
+
+                            monitor.done();
+                        }
+                    }, deleteRule, IWorkspace.AVOID_UPDATE, new SubProgressMonitor(monitor, STEP));
                 }
             } else
             {
@@ -194,7 +225,6 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
             }
 
             // step 2
-            IPath targetFolderPath = modelFolder.getProjectRelativePath().addTrailingSeparator();
             monitor.subTask("Copying files");
 
             // copy
@@ -230,34 +260,29 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
                 }
             }
 
-            // create the handles: MC.tla, MC.cfg and MC.out
-            final IFile tlaFile = project.getFile(targetFolderPath.append(ModelHelper.FILE_TLA));
-            final IFile cfgFile = project.getFile(targetFolderPath.append(ModelHelper.FILE_CFG));
-            final IFile outFile = project.getFile(targetFolderPath.append(ModelHelper.FILE_OUT));
-
             // get the scheduling rule
-            ISchedulingRule createRule = MultiRule.combine(ResourceHelper.getCreateRule(outFile), MultiRule.combine(
-                    ResourceHelper.getCreateRule(tlaFile), ResourceHelper.getCreateRule(cfgFile)));
+            ISchedulingRule fileRule = MultiRule.combine(ResourceHelper.getModifyRule(files), ResourceHelper
+                    .getCreateRule(files));
 
             // create files
             ResourcesPlugin.getWorkspace().run(new IWorkspaceRunnable() {
-
                 public void run(IProgressMonitor monitor) throws CoreException
                 {
-                    // create the files
-                    tlaFile.create(new ByteArrayInputStream("".getBytes()), IResource.DERIVED | IResource.FORCE,
-                            new SubProgressMonitor(monitor, 1));
-                    cfgFile.create(new ByteArrayInputStream("".getBytes()), IResource.DERIVED | IResource.FORCE,
-                            new SubProgressMonitor(monitor, 1));
-                    outFile.create(new ByteArrayInputStream("".getBytes()), IResource.DERIVED | IResource.FORCE,
-                            new SubProgressMonitor(monitor, 1));
+                    for (int i = 0; i < files.length; i++)
+                    {
+                        if (files[i].exists())
+                        {
+                            files[i].setContents(new ByteArrayInputStream("".getBytes()), IResource.DERIVED
+                                    | IResource.FORCE, new SubProgressMonitor(monitor, 1));
+                        } else
+                        {
+                            files[i].create(new ByteArrayInputStream("".getBytes()), IResource.DERIVED
+                                    | IResource.FORCE, new SubProgressMonitor(monitor, 1));
+                        }
+                    }
                 }
 
-            }, createRule, IWorkspace.AVOID_UPDATE, new SubProgressMonitor(monitor, STEP));
-
-            TLCActivator.logDebug("Model TLA file is: " + tlaFile.getProjectRelativePath().toString());
-            TLCActivator.logDebug("Model CFG file is: " + cfgFile.getProjectRelativePath().toString());
-            TLCActivator.logDebug("Model OUT file is: " + outFile.getProjectRelativePath().toString());
+            }, fileRule, IWorkspace.AVOID_UPDATE, new SubProgressMonitor(monitor, STEP));
 
             monitor.worked(STEP);
             monitor.subTask("Creating contents");
@@ -310,7 +335,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
             writer.writeFiles(tlaFile, cfgFile, monitor);
 
             // refresh the model folder
-            // modelFolder.refreshLocal(IResource.DEPTH_ONE, new SubProgressMonitor(monitor, STEP));
+            modelFolder.refreshLocal(IResource.DEPTH_ONE, new SubProgressMonitor(monitor, STEP));
 
         } finally
         {
@@ -323,27 +348,82 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
     }
 
     /**
-     * 4. method called on launch
+     * Launch the module parser on the root module and handle the errors
+     *   
      * 
+     * <br>4. method called on launch
      * @see org.eclipse.debug.core.model.ILaunchConfigurationDelegate2#finalLaunchCheck(org.eclipse.debug.core.ILaunchConfiguration, java.lang.String, org.eclipse.core.runtime.IProgressMonitor)
      */
     public boolean finalLaunchCheck(ILaunchConfiguration configuration, String mode, IProgressMonitor monitor)
             throws CoreException
     {
+        monitor.beginTask("Verifying model files", 4);
+
         IProject project = ResourceHelper.getProject(specName);
         IFolder launchDir = project.getFolder(modelName);
         IFile rootModule = launchDir.getFile(ModelHelper.FILE_TLA);
 
-        IParseResult parseResult = ToolboxHandle.parseModule(rootModule, monitor, false, false);
-
+        monitor.worked(1);
+        // parse the MC file
+        IParseResult parseResult = ToolboxHandle.parseModule(rootModule, new SubProgressMonitor(monitor, 1), false,
+                false);
         Vector detectedErrors = parseResult.getDetectedErrors();
+        boolean status = AdapterFactory.isProblemStatus(parseResult.getStatus());
+
+        monitor.worked(1);
+        // remove existing markers
+        ModelHelper.removeModelProblemMarkers(configuration);
+        monitor.worked(1);
+
         if (!detectedErrors.isEmpty())
         {
-            TLCActivator.logDebug("Errors in MC file found!!!!!!!!!!!!!!!!!!!");
+            TLCActivator.logDebug("Errors in model file found " + rootModule.getLocation());
+        }
+
+        try
+        {
+
             for (int i = 0; i < detectedErrors.size(); i++)
             {
+                // the holder has the information about the error in the MC file
+                TLAMarkerInformationHolder markerHolder = (TLAMarkerInformationHolder) detectedErrors.get(i);
+                String message = markerHolder.getMessage();
 
+                int severity = markerHolder.getSeverityError();
+
+                if (markerHolder.getModuleName() != null)
+                {
+                    if (markerHolder.getModuleName().equals(rootModule.getName()))
+                    {
+                        TLCActivator.logDebug(message);
+                    } else
+                    {
+                        // the reported error is not pointing to the MC file.
+                        throw new CoreException(new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID,
+                                "Fatal error during validation of the model. "
+                                        + "SANY discovered an error somewhere else than the MC file. "
+                                        + "This is a bug. The error message was " + message + " in the module "
+                                        + markerHolder.getModuleName()));
+                    }
+                } else
+                {
+                    throw new CoreException(new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID,
+                            "Fatal error during validation of the model. "
+                                    + "SANY discovered an error somewhere else than the MC file. "
+                                    + "This is a bug. The error message was " + message + "."));
+                }
+
+                String attributeName = "Attribute";
+                int index = 0;
+
+                // install the marker showing the information in the corresponding attribute (and index), at the given
+                // place
+                ModelHelper.installModelProblemMarker(configuration, severity, attributeName, index, message);
             }
+
+        } finally
+        {
+            monitor.done();
         }
 
         if (MODE_GENERATE.equals(mode))
@@ -354,7 +434,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
         } else
         {
             TLCActivator.logDebug("Final check for the " + mode + " mode");
-            return AdapterFactory.isProblemStatus(parseResult.getStatus());
+            return status;
         }
     }
 

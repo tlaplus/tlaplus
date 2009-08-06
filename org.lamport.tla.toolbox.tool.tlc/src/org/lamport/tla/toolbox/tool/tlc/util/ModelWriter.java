@@ -6,6 +6,7 @@ import java.util.Vector;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
 import org.lamport.tla.toolbox.tool.tlc.model.TypedSet;
 import org.lamport.tla.toolbox.util.ResourceHelper;
@@ -22,6 +23,7 @@ public class ModelWriter
     private static final String EQ = " = ";
     private static final String ARROW = " <- ";
     private static final String DEFINES = " == ";
+    private static final String COMMENT = "\\* ";
 
     private StringBuffer tlaBuffer;
     private StringBuffer cfgBuffer;
@@ -69,7 +71,7 @@ public class ModelWriter
         cfgBuffer.append("SPECIFICATION ");
         cfgBuffer.append(specDefinition[0]).append(CR);
         
-        tlaBuffer.append("\\* Specification formula").append(CR);
+        tlaBuffer.append(COMMENT).append(IModelConfigurationConstants.MODEL_BEHAVIOR_CLOSED_SPECIFICATION).append(CR);
         tlaBuffer.append(specDefinition[1]).append(CR).append(SEP).append(CR);
 
     }
@@ -82,7 +84,7 @@ public class ModelWriter
     public void addConstants(List constants, TypedSet modelValues)
     {
         // add model value declarations
-        addMVTypedSet(modelValues, "\\* MV CONSTANT declarations");
+        addMVTypedSet(modelValues, "MV CONSTANT declarations");
 
         Assignment constant;
         Vector symmetrySets = new Vector();
@@ -96,9 +98,9 @@ public class ModelWriter
                 {
                     // set model values
                     TypedSet setOfMVs = TypedSet.parseSet(constant.getRight());
-                    addMVTypedSet(setOfMVs, "\\* MV CONSTANT declarations");
-                    cfgBuffer.append("\\* MV CONSTANT definitions" ).append(CR);
-                    tlaBuffer.append("\\* MV CONSTANT definitions: " + constant.getLeft()).append(CR);
+                    addMVTypedSet(setOfMVs, "MV CONSTANT declarations");
+                    cfgBuffer.append(COMMENT).append("MV CONSTANT definitions" ).append(CR);
+                    tlaBuffer.append(COMMENT).append("MV CONSTANT definitions: " + constant.getLeft()).append(CR);
                     
                     String id = addArrowAssignment(constant, "const");
                     if (constant.isSymmetricalSet())
@@ -108,7 +110,7 @@ public class ModelWriter
                     tlaBuffer.append(SEP).append(CR).append(CR);
                 } else
                 {
-                    cfgBuffer.append("\\* CONSTANT declarations").append(CR);
+                    cfgBuffer.append(COMMENT).append("CONSTANT declarations").append(CR);
                     // model value assignment
                     // to .cfg : foo = foo
                     // to _MC.tla : <nothing>, since the constant is already defined in one of the spec modules
@@ -117,8 +119,8 @@ public class ModelWriter
             } else
             {
                 // simple constant value assignment
-                cfgBuffer.append("\\* CONSTANT definitions").append(CR);
-                tlaBuffer.append("\\* CONSTANT definitions: " + constant.getLeft()).append(CR);
+                cfgBuffer.append(COMMENT).append("CONSTANT definitions").append(CR);
+                tlaBuffer.append(COMMENT).append("CONSTANT definitions: " + constant.getLeft()).append(CR);
                 addArrowAssignment(constant, "const");
                 tlaBuffer.append(SEP).append(CR).append(CR);
             }
@@ -128,8 +130,8 @@ public class ModelWriter
         {
             String label = ModelHelper.getValidIdentifier("symm");
 
-            tlaBuffer.append("\\* SYMMETRY definition").append(CR);
-            cfgBuffer.append("\\* SYMMETRY definition").append(CR);
+            tlaBuffer.append(COMMENT).append("SYMMETRY definition").append(CR);
+            cfgBuffer.append(COMMENT).append("SYMMETRY definition").append(CR);
 
             tlaBuffer.append(label).append(DEFINES).append(CR);
             // symmetric model value sets added
@@ -182,7 +184,7 @@ public class ModelWriter
             // a, b, c
             if (comment != null && !comment.isEmpty())
             {
-                tlaBuffer.append(comment).append(CR);
+                tlaBuffer.append(COMMENT).append(comment).append(CR);
             }
             tlaBuffer.append("CONSTANTS").append(CR).append(mvSet.toStringWithoutBraces());
             tlaBuffer.append(CR).append(SEP).append(CR).append(CR);
@@ -193,7 +195,7 @@ public class ModelWriter
             // c = c
             if (comment != null && !comment.isEmpty())
             {
-                cfgBuffer.append(comment).append(CR);
+                cfgBuffer.append(COMMENT).append(comment).append(CR);
             }
             cfgBuffer.append("CONSTANTS").append(CR);
             String mv;
@@ -217,8 +219,8 @@ public class ModelWriter
         {
             return;
         }
-        cfgBuffer.append("\\* " + keyword + " definition").append(CR);
-        tlaBuffer.append("\\* " + keyword + " definition").append(CR);
+        cfgBuffer.append(COMMENT).append(keyword + " definition").append(CR);
+        tlaBuffer.append(COMMENT).append(keyword + " definition").append(CR);
         cfgBuffer.append(keyword).append(CR);
 
         for (int i = 0; i < elements.size(); i++)
@@ -239,7 +241,7 @@ public class ModelWriter
         {
             return;
         }
-        tlaBuffer.append("\\* New definitions").append(CR);
+        tlaBuffer.append(COMMENT).append("New definitions").append(CR);
         tlaBuffer.append(definitions).append(CR).append(SEP).append(CR);
     }
 
