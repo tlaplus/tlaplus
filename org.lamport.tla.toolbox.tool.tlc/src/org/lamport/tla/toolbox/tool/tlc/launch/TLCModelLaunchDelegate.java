@@ -1,10 +1,22 @@
 package org.lamport.tla.toolbox.tool.tlc.launch;
 
+import java.io.ByteArrayInputStream;
+import java.util.List;
+import java.util.Vector;
+
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IWorkspace;
+import org.eclipse.core.resources.IWorkspaceRunnable;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.core.runtime.jobs.Job;
@@ -12,63 +24,354 @@ import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.core.runtime.jobs.MultiRule;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
-import org.eclipse.debug.core.model.ILaunchConfigurationDelegate;
 import org.eclipse.debug.core.model.LaunchConfigurationDelegate;
+import org.lamport.tla.toolbox.tool.IParseResult;
+import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.tool.tlc.TLCActivator;
-import org.lamport.tla.toolbox.tool.tlc.job.ModelCreationJob;
 import org.lamport.tla.toolbox.tool.tlc.job.TLCJob;
 import org.lamport.tla.toolbox.tool.tlc.job.TLCProcessJob;
+import org.lamport.tla.toolbox.tool.tlc.model.TypedSet;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
+import org.lamport.tla.toolbox.tool.tlc.util.ModelWriter;
+import org.lamport.tla.toolbox.util.AdapterFactory;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 
 /**
- * Represents a launch delegate for TLC
+ * Represents a launch delegate for TLC<br>
+ * The methods in this class are called in the following order:
+ * <ol>
+ * <li>getLaunch()</li>
+ * <li>preLaunchCheck()</li>
+ * <li>buildForLaunch()</li>
+ * <li>finalLaunchCheck()</li>
+ * <li>launch()</li>
+ * </ol>
+ * Some of them run on any launch type, others only in the modelcheck mode
+ * 
  * @author Simon Zambrovski
  * @version $Id$
  */
-public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implements ILaunchConfigurationDelegate,
-        IModelConfigurationConstants, IModelConfigurationDefaults
+public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implements IModelConfigurationConstants,
+        IModelConfigurationDefaults
 {
-    public static final String LAUNCH_CONFIGURATION_TYPE = "org.lamport.tla.toolbox.tool.tlc.modelCheck";
-    public static final String MODE_MODELCHECK = "modelcheck";
+    // Mutex rule for the following jobs to run after each other
+    private MutexRule mutexRule = new MutexRule();
+
+    private String specName = null;
+    private String modelName = null;
+    private String specRootFilename = null;
 
     /**
-     * A simple mutex rule 
+     * Configuration type
      */
-    public class MutexRule implements ISchedulingRule
+    public static final String LAUNCH_CONFIGURATION_TYPE = "org.lamport.tla.toolbox.tool.tlc.modelCheck";
+    /**
+     * Mode for starting TLC
+     */
+    public static final String MODE_MODELCHECK = "modelcheck";
+    /**
+     * Only generate the models but do not run TLC
+     */
+    public static final String MODE_GENERATE = "generate";
+
+    /**
+     * 1. method called during the launch
+     */
+    public ILaunch getLaunch(ILaunchConfiguration configuration, String mode) throws CoreException
     {
-        public boolean isConflicting(ISchedulingRule rule)
+        // delegate to the super implementation
+        return super.getLaunch(configuration, mode);
+    }
+
+    /**
+     * Returns whether a launch should proceed. This method is called first
+     * in the launch sequence providing an opportunity for this launch delegate
+     * to abort the launch.
+     * 
+     * <br>2. method called on launch
+     * @return whether the launch should proceed
+     * @see org.eclipse.debug.core.model.ILaunchConfigurationDelegate2#preLaunchCheck(org.eclipse.debug.core.ILaunchConfiguration, java.lang.String, org.eclipse.core.runtime.IProgressMonitor)
+     */
+    public boolean preLaunchCheck(ILaunchConfiguration config, String mode, IProgressMonitor monitor)
+            throws CoreException
+    {
+
+        // check the config existence
+        if (!config.exists())
         {
-            return rule == this;
+            /*
+            throw new CoreException(new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID,
+                    "Tried to start a model that does not exist."));
+             */
+            return false;
         }
 
-        public boolean contains(ISchedulingRule rule)
+        try
         {
-            return rule == this;
+            monitor.beginTask("Reading model parameters", 1);
+
+            // name of the specification
+            specName = config.getAttribute(SPEC_NAME, EMPTY_STRING);
+
+            // model name
+            modelName = config.getAttribute(MODEL_NAME, EMPTY_STRING);
+
+            // root file name
+            specRootFilename = config.getAttribute(SPEC_ROOT_FILE, EMPTY_STRING);
+        } finally
+        {
+            // finish the monitor
+            monitor.done();
+        }
+
+        return true;
+    }
+
+    /**
+     * Instead of building, the model files are written to the disk. 
+     * The directory with the same name as the model is created as the sub-directory
+     * of the spec project. (if already present, the files inside will be deleted)
+     * Three new files are created: MC.tla, MC.cfg, MC.out
+     * All spec modules, including the root module are copied to this directory
+     *  
+     * <br>3. method called on launch
+     * 
+     * @see org.eclipse.debug.core.model.ILaunchConfigurationDelegate2#buildForLaunch(org.eclipse.debug.core.ILaunchConfiguration, java.lang.String, org.eclipse.core.runtime.IProgressMonitor)
+     */
+    public boolean buildForLaunch(ILaunchConfiguration config, String mode, IProgressMonitor monitor)
+            throws CoreException
+    {
+        // generate the model here
+        int STEP = 100;
+
+        try
+        {
+            monitor.beginTask("Creating model", 30);
+            // step 1
+            monitor.subTask("Creating directories");
+
+            // retrieve the project containing the specification
+            IProject project = ResourceHelper.getProject(specName);
+            if (project == null)
+            {
+                // project could not be found
+                throw new CoreException(new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID,
+                        "Error accessing the spec project " + specName));
+            }
+
+            // retrieve the root file
+            IFile specRootFile = ResourceHelper.getLinkedFile(project, specRootFilename, false);
+            if (specRootFile == null)
+            {
+                // root module file not found
+                throw new CoreException(new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID,
+                        "Error accessing the root module " + specRootFilename));
+            }
+
+            // retrieve the model folder
+            IFolder modelFolder = project.getFolder(modelName);
+
+            if (modelFolder.exists())
+            {
+                // erase everything inside
+                IResource[] members = modelFolder.members();
+                if (members.length == 0)
+                {
+                    monitor.worked(STEP);
+                } else
+                {
+                    // delete the members of the target directory
+                    // TODO here!
+                    for (int i = 0; i < members.length; i++)
+                    {
+                        members[i].delete(IResource.FORCE, new SubProgressMonitor(monitor, STEP / members.length));
+                    }
+                }
+            } else
+            {
+                // create it
+                modelFolder.create(IResource.DERIVED | IResource.FORCE, true, new SubProgressMonitor(monitor, STEP));
+            }
+
+            // step 2
+            IPath targetFolderPath = modelFolder.getProjectRelativePath().addTrailingSeparator();
+            monitor.subTask("Copying files");
+
+            // copy
+            specRootFile.copy(targetFolderPath.append(specRootFile.getProjectRelativePath()), IResource.DERIVED
+                    | IResource.FORCE, new SubProgressMonitor(monitor, 1));
+            // find the result
+            IResource specRootFileCopy = modelFolder.findMember(specRootFile.getProjectRelativePath());
+
+            // react if no result
+            if (specRootFileCopy == null)
+            {
+                throw new CoreException(new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID, "Error copying "
+                        + specRootFilename + " into " + targetFolderPath.toOSString()));
+            }
+
+            // get the list of dependent modules
+            List extendedModules = ToolboxHandle.getExtendedModules(specRootFile.getName());
+
+            // iterate and copy modules that are needed for the spec
+            IFile moduleFile = null;
+            for (int i = 0; i < extendedModules.size(); i++)
+            {
+                String module = (String) extendedModules.get(i);
+                // only take care of user modules
+                if (ToolboxHandle.isUserModule(module))
+                {
+                    moduleFile = ResourceHelper.getLinkedFile(project, module, false);
+                    if (moduleFile != null)
+                    {
+                        moduleFile.copy(targetFolderPath.append(moduleFile.getProjectRelativePath()), IResource.DERIVED
+                                | IResource.FORCE, new SubProgressMonitor(monitor, STEP / extendedModules.size()));
+                    }
+                }
+            }
+
+            // create the handles: MC.tla, MC.cfg and MC.out
+            final IFile tlaFile = project.getFile(targetFolderPath.append(ModelHelper.FILE_TLA));
+            final IFile cfgFile = project.getFile(targetFolderPath.append(ModelHelper.FILE_CFG));
+            final IFile outFile = project.getFile(targetFolderPath.append(ModelHelper.FILE_OUT));
+
+            // get the scheduling rule
+            ISchedulingRule createRule = MultiRule.combine(ResourceHelper.getCreateRule(outFile), MultiRule.combine(
+                    ResourceHelper.getCreateRule(tlaFile), ResourceHelper.getCreateRule(cfgFile)));
+
+            // create files
+            ResourcesPlugin.getWorkspace().run(new IWorkspaceRunnable() {
+
+                public void run(IProgressMonitor monitor) throws CoreException
+                {
+                    // create the files
+                    tlaFile.create(new ByteArrayInputStream("".getBytes()), IResource.DERIVED | IResource.FORCE,
+                            new SubProgressMonitor(monitor, 1));
+                    cfgFile.create(new ByteArrayInputStream("".getBytes()), IResource.DERIVED | IResource.FORCE,
+                            new SubProgressMonitor(monitor, 1));
+                    outFile.create(new ByteArrayInputStream("".getBytes()), IResource.DERIVED | IResource.FORCE,
+                            new SubProgressMonitor(monitor, 1));
+                }
+
+            }, createRule, IWorkspace.AVOID_UPDATE, new SubProgressMonitor(monitor, STEP));
+
+            TLCActivator.logDebug("Model TLA file is: " + tlaFile.getProjectRelativePath().toString());
+            TLCActivator.logDebug("Model CFG file is: " + cfgFile.getProjectRelativePath().toString());
+            TLCActivator.logDebug("Model OUT file is: " + outFile.getProjectRelativePath().toString());
+
+            monitor.worked(STEP);
+            monitor.subTask("Creating contents");
+
+            ModelWriter writer = new ModelWriter();
+
+            // add extend primer
+            writer.addPrimer(ModelHelper.MC_MODEL_NAME, ResourceHelper.getModuleName(specRootFilename));
+
+            // constants list
+            List constants = ModelHelper.deserializeAssignmentList(config.getAttribute(MODEL_PARAMETER_CONSTANTS,
+                    new Vector()));
+
+            // the advanced model values
+            TypedSet modelValues = TypedSet.parseSet(config.getAttribute(MODEL_PARAMETER_MODEL_VALUES, EMPTY_STRING));
+
+            // add constants and model values
+            writer.addConstants(constants, modelValues);
+
+            // new definitions
+            writer.addNewDefinitions(config.getAttribute(MODEL_PARAMETER_NEW_DEFINITIONS, EMPTY_STRING));
+
+            // definition overrides list
+            List overrides = ModelHelper.deserializeAssignmentList(config.getAttribute(MODEL_PARAMETER_DEFINITIONS,
+                    new Vector()));
+            writer.addFormulaList(ModelHelper.createOverridesContent(overrides, "def_ov"), "CONSTANT");
+
+            // constraint
+            writer.addFormulaList(ModelHelper.createSourceContent(MODEL_PARAMETER_CONSTRAINT, "constr", config),
+                    "CONSTRAINT");
+            // action constraint
+            writer.addFormulaList(ModelHelper.createSourceContent(MODEL_PARAMETER_ACTION_CONSTRAINT, "action_constr",
+                    config), "ACTION-CONSTRAINT");
+
+            // the specification name-formula pair
+            writer.addSpecDefinition(ModelHelper.createSpecificationContent(config));
+
+            // invariants
+            writer.addFormulaList(ModelHelper.createFormulaListContent(config.getAttribute(
+                    MODEL_CORRECTNESS_INVARIANTS, new Vector()), "inv"), "INVARIANT");
+
+            // properties
+            writer.addFormulaList(ModelHelper.createFormulaListContent(config.getAttribute(
+                    MODEL_CORRECTNESS_PROPERTIES, new Vector()), "prop"), "PROPERTY");
+
+            monitor.worked(STEP);
+            monitor.subTask("Writing contents");
+
+            // write down the files
+            writer.writeFiles(tlaFile, cfgFile, monitor);
+
+            // refresh the model folder
+            // modelFolder.refreshLocal(IResource.DEPTH_ONE, new SubProgressMonitor(monitor, STEP));
+
+        } finally
+        {
+            // make sure to complete the monitor
+            monitor.done();
+        }
+
+        // we don't want to rebuild the workspace
+        return false;
+    }
+
+    /**
+     * 4. method called on launch
+     * 
+     * @see org.eclipse.debug.core.model.ILaunchConfigurationDelegate2#finalLaunchCheck(org.eclipse.debug.core.ILaunchConfiguration, java.lang.String, org.eclipse.core.runtime.IProgressMonitor)
+     */
+    public boolean finalLaunchCheck(ILaunchConfiguration configuration, String mode, IProgressMonitor monitor)
+            throws CoreException
+    {
+        IProject project = ResourceHelper.getProject(specName);
+        IFolder launchDir = project.getFolder(modelName);
+        IFile rootModule = launchDir.getFile(ModelHelper.FILE_TLA);
+
+        IParseResult parseResult = ToolboxHandle.parseModule(rootModule, monitor, false, false);
+
+        Vector detectedErrors = parseResult.getDetectedErrors();
+        if (!detectedErrors.isEmpty())
+        {
+            TLCActivator.logDebug("Errors in MC file found!!!!!!!!!!!!!!!!!!!");
+            for (int i = 0; i < detectedErrors.size(); i++)
+            {
+
+            }
+        }
+
+        if (MODE_GENERATE.equals(mode))
+        {
+            // generation is done
+            // nothing to do more
+            return false;
+        } else
+        {
+            TLCActivator.logDebug("Final check for the " + mode + " mode");
+            return AdapterFactory.isProblemStatus(parseResult.getStatus());
         }
     }
 
+    /**
+     * 5. method called on launch
+     * Main launch method called by the platform on model launches
+     */
     public void launch(ILaunchConfiguration config, String mode, ILaunch launch, IProgressMonitor monitor)
             throws CoreException
     {
-        if (!config.exists()) 
+
+        // check the modes
+        if (!MODE_MODELCHECK.equals(mode))
         {
             throw new CoreException(
-                    new Status(
-                            IStatus.ERROR,
-                            TLCActivator.PLUGIN_ID,
-                            "Tried to start a model that does not exist."));
+                    new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID, "Unsupported launch mode " + mode));
         }
-
-        
-        // name of the specification
-        String specName = config.getAttribute(SPEC_NAME, EMPTY_STRING);
-
-        // model name
-        String modelName = config.getAttribute(MODEL_NAME, EMPTY_STRING);
-
-        // read out the running attribute
-        boolean isRunning = ModelHelper.isModelLocked(config);
 
         // retrieve the project containing the specification
         IProject project = ResourceHelper.getProject(specName);
@@ -79,40 +382,32 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
                     "Error accessing the spec project " + specName));
         }
 
-        if (isRunning)
+        // check and lock the model
+        synchronized (config)
         {
-            // previous run has not been completed
-            // exit
-            throw new CoreException(
-                    new Status(
-                            IStatus.ERROR,
-                            TLCActivator.PLUGIN_ID,
-                            "The lock for "
-                                    + modelName
-                                    + " has been found. Another TLC is possible running on the same model, or has been terminated non-gracefully"));
-        } else
-        {
+            // read out the running attribute
+            if (ModelHelper.isModelLocked(config))
+            {
+                // previous run has not been completed
+                // exit
+                throw new CoreException(
+                        new Status(
+                                IStatus.ERROR,
+                                TLCActivator.PLUGIN_ID,
+                                "The lock for "
+                                        + modelName
+                                        + " has been found. Another TLC is possible running on the same model, or has been terminated non-gracefully"));
+            } else
+            {
 
-            // setup the running flag
-            // from this point any termination of the run must reset the flag
-            ModelHelper.lockModel(config);
+                // setup the running flag
+                // from this point any termination of the run must reset the flag
+                ModelHelper.lockModel(config);
+            }
         }
-
-        // Mutex rule for the following jobs to run after each other
-        MutexRule mutexRule = new MutexRule();
 
         // number of workers
         int numberOfWorkers = config.getAttribute(LAUNCH_NUMBER_OF_WORKERS, LAUNCH_NUMBER_OF_WORKERS_DEFAULT);
-
-        // model job
-        ModelCreationJob modelJob = new ModelCreationJob(specName, modelName, config);
-        
-        modelJob.setPriority(Job.SHORT);
-        // the combination of two rules is used
-        // the mutexRule prevents TLCProcessJob from running during the files are being written
-        // the modify rule prevents modifications of the project during the creation of the model files
-        ISchedulingRule modelRule = MultiRule.combine(mutexRule, ResourceHelper.getModifyRule(project));
-        modelJob.setRule(modelRule);
 
         // TLC job
         // TLCJob tlcjob = new TLCInternalJob(tlaFile, cfgFile, project);
@@ -123,57 +418,10 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
         // The TLC job itself does not do any file IO
         tlcjob.setRule(mutexRule);
 
-        // setup the job listener. which reacts on termination and errors
-        ModelJobChangeListener modelJobListener = new ModelJobChangeListener(config, tlcjob);
-        modelJob.addJobChangeListener(modelJobListener);
-
         // setup the job change listener
         TLCJobChangeListener tlcJobListener = new TLCJobChangeListener(config);
         tlcjob.addJobChangeListener(tlcJobListener);
-
-        // launch the jobs
-        modelJob.schedule();
         tlcjob.schedule();
-    }
-
-    /**
-     * listens to the termination of the model creation job 
-     */
-    class ModelJobChangeListener extends SimpleJobChangeListener
-    {
-        private ILaunchConfiguration config;
-        private Job tlcJob;
-
-        /**
-         * Constructs the change listener
-         * @param config the config to modify after the job completion
-         * @param cancelJob a job to cancel on abnormal termination of the current one
-         */
-        public ModelJobChangeListener(ILaunchConfiguration config, Job cancelJob)
-        {
-            this.config = config;
-            this.tlcJob = cancelJob;
-        }
-
-        public void done(IJobChangeEvent event)
-        {
-            super.done(event);
-            if (!event.getResult().isOK())
-            {
-                // job is canceled by the user or terminated with an error
-                // at any rate, make sure to cancel the TLC job
-                this.tlcJob.cancel();
-
-                // make the model modification in order to make it runnable again
-                try
-                {
-                    ModelHelper.unlockModel(config);
-                } catch (CoreException e)
-                {
-                    e.printStackTrace();
-                }
-            }
-        }
     }
 
     /**
@@ -201,7 +449,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
                 ModelHelper.unlockModel(config);
             } catch (CoreException e)
             {
-                e.printStackTrace();
+                TLCActivator.logError("Error unlocking the model", e);
             }
         }
     }
@@ -237,5 +485,21 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
             System.out.println("Job '" + jobName + "' terminated with status: { " + status + " }");
         }
     };
+
+    /**
+     * A simple mutex rule 
+     */
+    class MutexRule implements ISchedulingRule
+    {
+        public boolean isConflicting(ISchedulingRule rule)
+        {
+            return rule == this;
+        }
+
+        public boolean contains(ISchedulingRule rule)
+        {
+            return rule == this;
+        }
+    }
 
 }

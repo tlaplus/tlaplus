@@ -9,7 +9,7 @@
       <launchConfigurationType
             id="org.lamport.tla.toolbox.tool.tlc.modelCheck"
             delegate="org.lamport.tla.toolbox.tool.tlc.launch.TLCModelLaunchDelegate"
-            modes="modelcheck"
+            modes="modelcheck, generate"
             name="TLC Modelcheck"
             public="true"
             delegateName="TLC ModelChecker"
@@ -20,6 +20,11 @@
    
    <extension point="org.eclipse.debug.core.launchModes">
       <launchMode mode="modelcheck" label="Model Check" launchAsLabel="Check As"></launchMode>
+      <launchMode
+            label="Generate Model"
+            launchAsLabel="Model Generation"
+            mode="generate">
+      </launchMode>
    </extension>
    <extension
          id="org.lamport.tla.toolbox.tlc.modelMarker"

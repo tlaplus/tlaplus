@@ -60,4 +60,13 @@ public class TLCActivator extends AbstractUIPlugin {
         
     }
 
+    /**
+     * Prints a debug message
+     * @param message to print
+     */
+    public static void logDebug(String message)
+    {
+        System.out.println(message);
+    }
+
 }

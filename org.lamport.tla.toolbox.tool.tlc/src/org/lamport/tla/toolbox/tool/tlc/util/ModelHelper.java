@@ -69,9 +69,10 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
      */
     private static long globalCounter = 1;
 
-    public static final String FILE_TLA = "MC.tla";
-    public static final String FILE_CFG = "MC.cfg";
-    public static final String FILE_OUT = "MC.out";
+    public static final String MC_MODEL_NAME = "MC";
+    public static final String FILE_TLA = MC_MODEL_NAME + ".tla";
+    public static final String FILE_CFG = MC_MODEL_NAME + ".cfg";
+    public static final String FILE_OUT = MC_MODEL_NAME + ".out";
 
     /**
      * Constructs the model called Foo___Model_1 from the SpecName Foo

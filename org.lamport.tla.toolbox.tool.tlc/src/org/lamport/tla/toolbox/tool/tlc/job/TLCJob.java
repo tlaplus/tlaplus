@@ -15,6 +15,7 @@ import org.eclipse.jface.action.Action;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationDefaults;
+import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 
 /**
@@ -61,9 +62,10 @@ public abstract class TLCJob extends AbstractJob implements IModelConfigurationC
         Assert.isNotNull(this.launchDir, "Error accessing the model folder " + modelName);
 
         this.launch = launch;
-        this.rootModule = this.launchDir.getFile("MC.tla");
-        this.cfgFile = this.launchDir.getFile("MC.cfg");
-        this.outFile = this.launchDir.getFile("MC.out");
+        
+        this.rootModule = this.launchDir.getFile(ModelHelper.FILE_TLA);
+        this.cfgFile = this.launchDir.getFile(ModelHelper.FILE_CFG);
+        this.outFile = this.launchDir.getFile(ModelHelper.FILE_OUT);
     }
 
     /**
