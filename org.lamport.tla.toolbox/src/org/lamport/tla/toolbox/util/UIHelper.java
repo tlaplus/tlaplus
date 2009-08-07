@@ -17,6 +17,7 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.window.IShellProvider;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Control;
@@ -513,4 +514,17 @@ public class UIHelper
 
         };
     }
+    
+    /**
+     * Retrieves the control from the viewer
+     */
+    public static Control getWidget(Object control)
+    {
+        if (control instanceof Viewer) 
+        {
+            return ((Viewer)control).getControl();
+        }
+        return null;
+    }
+
 }
