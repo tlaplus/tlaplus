@@ -36,10 +36,10 @@ import org.lamport.tla.toolbox.tool.tlc.launch.IConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.IConfigurationDefaults;
 import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
 import org.lamport.tla.toolbox.tool.tlc.model.TypedSet;
-import org.lamport.tla.toolbox.tool.tlc.ui.editor.SectionManager;
-import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.ConstantSectionPart;
-import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.TableSectionPart;
-import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.VSectionPart;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.DataBindingManager;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.ValidateableConstantSectionPart;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.ValidateableSectionPart;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.ValidateableTableSectionPart;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.DirtyMarkingListener;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.SemanticHelper;
@@ -89,9 +89,9 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
     };
     /**
      * section expanding adapter
-     * {@link Hyperlink#getHref()} must deliver the section id as described in {@link SectionManager#addSection(ExpandableComposite, String, String)}
+     * {@link Hyperlink#getHref()} must deliver the section id as described in {@link DataBindingManager#bindSection(ExpandableComposite, String, String)}
      */
-    protected HyperlinkAdapter sectionExpandingAapter = new HyperlinkAdapter() {
+    protected HyperlinkAdapter sectionExpandingAdapter = new HyperlinkAdapter() {
         public void linkActivated(HyperlinkEvent e)
         {
             String sectionId = (String) e.getHref();
@@ -181,7 +181,14 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
      */
     public void validate()
     {
+        if (getManagedForm() == null)
+        {
+            return;
+        }
         IMessageManager mm = getManagedForm().getMessageManager();
+        DataBindingManager dm = getDataBindingManager();
+
+        mm.setAutoUpdate(false);
         // clean old messages
         mm.removeAllMessages();
         // make the run possible
@@ -210,10 +217,9 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
             List values = Arrays.asList(constant.getParams());
             // check list of parameters
-            validateUsage(values, constantTable.getTable(), "param1_", "A parameter name", "Constant Assignment",
-                    SEC_WHAT_IS_THE_MODEL);
+            validateUsage(MODEL_PARAMETER_CONSTANTS, values, "param1_", "A parameter name", "Constant Assignment");
             // check parameters
-            validateId(values, constantTable.getTable(), "param1_", "A parameter name", SEC_WHAT_IS_THE_MODEL);
+            validateId(MODEL_PARAMETER_CONSTANTS, values, "param1_", "A parameter name");
 
             // the constant is still in the list
             if (constant.getRight() == null || EMPTY_STRING.equals(constant.getRight()))
@@ -222,7 +228,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
                 mm.addMessage(constant.getLabel(), "Provide a value for constant " + constant.getLabel(), constant,
                         IMessageProvider.ERROR, constantTable.getTable());
                 setComplete(false);
-                expandSection(SEC_WHAT_IS_THE_MODEL);
+                expandSection(dm.getSectionForAttribute(MODEL_PARAMETER_CONSTANTS));
 
             } else
             {
@@ -243,11 +249,10 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
                         List mvList = modelValuesSet.getValuesAsList();
                         // check list of model values
-                        validateUsage(mvList, constantTable.getTable(), "modelValues2_", "A model value",
-                                "Constant Assignment", SEC_WHAT_IS_THE_MODEL);
+                        validateUsage(MODEL_PARAMETER_CONSTANTS, mvList, "modelValues2_", "A model value",
+                                "Constant Assignment");
                         // check if the values are correct ids
-                        validateId(mvList, constantTable.getTable(), "modelValues2_", "A model value",
-                                SEC_WHAT_IS_THE_MODEL);
+                        validateId(MODEL_PARAMETER_CONSTANTS, mvList, "modelValues2_", "A model value");
                     }
                 }
             }
@@ -297,7 +302,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
                 mm.addMessage("noVariables", "There were no variables declared in the root module", null,
                         IMessageProvider.ERROR, selectedOption);
                 setComplete(false);
-                expandSection(SEC_HOW_TO_RUN);
+                expandSection(dm.getSectionForAttribute(MODEL_BEHAVIOR_CLOSED_SPECIFICATION));
             }
         }
 
@@ -307,7 +312,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
             mm.addMessage("noSpec", "The formula must be provided", null, IMessageProvider.ERROR, specSource
                     .getTextWidget());
             setComplete(false);
-            expandSection(SEC_WHAT_IS_THE_SPEC);
+            expandSection(dm.getSectionForAttribute(MODEL_BEHAVIOR_CLOSED_SPECIFICATION));
         } else if (initNextFairnessRadio.getSelection())
         {
             String init = initFormulaSource.getDocument().get().trim();
@@ -318,17 +323,18 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
                 mm.addMessage("noInit", "The init formula must be provided", null, IMessageProvider.ERROR,
                         initFormulaSource.getTextWidget());
                 setComplete(false);
-                expandSection(SEC_WHAT_IS_THE_SPEC);
+                expandSection(dm.getSectionForAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT));
             }
             if (next.equals(""))
             {
                 mm.addMessage("noNext", "The spec formula must be provided", null, IMessageProvider.ERROR,
                         nextFormulaSource.getTextWidget());
                 setComplete(false);
-                expandSection(SEC_WHAT_IS_THE_SPEC);
+                expandSection(dm.getSectionForAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT));
             }
         }
 
+        mm.setAutoUpdate(true);
         super.validate();
     }
 
@@ -395,9 +401,12 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
     /**
      * Creates the UI
+     * 
+     * 
      */
     protected void createBodyContent(IManagedForm managedForm)
     {
+        DataBindingManager dm = getDataBindingManager();
         int sectionFlags = Section.TITLE_BAR | Section.DESCRIPTION | Section.TREE_NODE;
 
         FormToolkit toolkit = managedForm.getToolkit();
@@ -430,14 +439,13 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         // only grab horizontal space
         gd = new GridData(GridData.FILL_HORIZONTAL);
         section.setLayoutData(gd);
-        addSection(SEC_WHAT_IS_THE_SPEC, section);
 
         Composite behaviorArea = (Composite) section.getClient();
         layout = new GridLayout();
         layout.numColumns = 2;
         behaviorArea.setLayout(layout);
 
-        VSectionPart behaviorPart = new VSectionPart(section, this);
+        ValidateableSectionPart behaviorPart = new ValidateableSectionPart(section, this, SEC_WHAT_IS_THE_SPEC);
         managedForm.addPart(behaviorPart);
         DirtyMarkingListener whatIsTheSpecListener = new DirtyMarkingListener(behaviorPart, true);
 
@@ -462,6 +470,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         specSource.getTextWidget().setLayoutData(gd);
         specSource.getTextWidget().addModifyListener(whatIsTheSpecListener);
         specSource.getTextWidget().addModifyListener(widgetActivatingListener);
+        dm.bindAttribute(MODEL_BEHAVIOR_CLOSED_SPECIFICATION, specSource, behaviorPart);
 
         // split formula option
         initNextFairnessRadio = toolkit.createButton(behaviorArea, "Init and Next", SWT.RADIO);
@@ -478,6 +487,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         initFormulaSource.getTextWidget().setLayoutData(gd);
         initFormulaSource.getTextWidget().addModifyListener(whatIsTheSpecListener);
         initFormulaSource.getTextWidget().addModifyListener(widgetActivatingListener);
+        dm.bindAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT, initFormulaSource, behaviorPart);
 
         // next
         toolkit.createLabel(behaviorArea, "Next:");
@@ -487,6 +497,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         nextFormulaSource.getTextWidget().setLayoutData(gd);
         nextFormulaSource.getTextWidget().addModifyListener(whatIsTheSpecListener);
         nextFormulaSource.getTextWidget().addModifyListener(widgetActivatingListener);
+        dm.bindAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT, nextFormulaSource, behaviorPart);
 
         // fairness
         toolkit.createLabel(behaviorArea, "Fairness:");
@@ -496,15 +507,15 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         fairnessFormulaSource.getTextWidget().setLayoutData(gd);
         fairnessFormulaSource.getTextWidget().addModifyListener(whatIsTheSpecListener);
         fairnessFormulaSource.getTextWidget().addModifyListener(widgetActivatingListener);
+        dm.bindAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_FAIRNESS, fairnessFormulaSource, behaviorPart);
 
         // ------------------------------------------
         // what to check
         section = FormHelper.createSectionComposite(left, "What to check?", "List of invariants and properties:",
-                toolkit, sectionFlags, getExpansionListener());
+                toolkit, sectionFlags | Section.EXPANDED, getExpansionListener());
         // only grab horizontal space
         gd = new GridData(GridData.FILL_HORIZONTAL);
         section.setLayoutData(gd);
-        addSection(SEC_WHAT_TO_CHECK, section);
 
         Composite toBeCheckedArea = (Composite) section.getClient();
         layout = new GridLayout();
@@ -513,30 +524,36 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
         checkDeadlockButton = toolkit.createButton(toBeCheckedArea, "Deadlock", SWT.CHECK);
 
-        VSectionPart toBeCheckedPart = new VSectionPart(section, this);
+        ValidateableSectionPart toBeCheckedPart = new ValidateableSectionPart(section, this, SEC_WHAT_TO_CHECK);
         managedForm.addPart(toBeCheckedPart);
         DirtyMarkingListener whatToCheckListener = new DirtyMarkingListener(toBeCheckedPart, true);
         checkDeadlockButton.addSelectionListener(whatToCheckListener);
 
         // invariants
-        TableSectionPart invariantsPart = new TableSectionPart(toBeCheckedArea, "Invariants",
-                "Specify invariants to be checked in every state of the specification.", toolkit, sectionFlags, this);
+        ValidateableTableSectionPart invariantsPart = new ValidateableTableSectionPart(toBeCheckedArea, "Invariants",
+                "Specify invariants to be checked in every state of the specification.", toolkit, sectionFlags, this,
+                SEC_WHAT_TO_CHECK_INVARIANTS);
         managedForm.addPart(invariantsPart);
         invariantsTable = invariantsPart.getTableViewer();
+        dm.bindAttribute(MODEL_CORRECTNESS_INVARIANTS, invariantsTable, invariantsPart);
 
         // properties
-        TableSectionPart propertiesPart = new TableSectionPart(toBeCheckedArea, "Properties",
-                "Specify properties to be checked.", toolkit, sectionFlags, this);
+        ValidateableTableSectionPart propertiesPart = new ValidateableTableSectionPart(toBeCheckedArea, "Properties",
+                "Specify properties to be checked.", toolkit, sectionFlags, this, SEC_WHAT_TO_CHECK_PROPERTIES);
         managedForm.addPart(propertiesPart);
         propertiesTable = propertiesPart.getTableViewer();
+        dm.bindAttribute(MODEL_CORRECTNESS_PROPERTIES, propertiesTable, propertiesPart);
 
         // ------------------------------------------
         // what is the model
 
         // Constants
-        ConstantSectionPart constantsPart = new ConstantSectionPart(right, "What is the model?",
-                "Specify the values of the model constants.", toolkit, sectionFlags | Section.EXPANDED, this);
+        ValidateableConstantSectionPart constantsPart = new ValidateableConstantSectionPart(right,
+                "What is the model?", "Specify the values of the model constants.", toolkit, sectionFlags
+                        | Section.EXPANDED, this, SEC_WHAT_IS_THE_MODEL);
         managedForm.addPart(constantsPart);
+        constantTable = constantsPart.getTableViewer();
+        dm.bindAttribute(MODEL_PARAMETER_CONSTANTS, constantTable, constantsPart);
 
         Composite parametersArea = (Composite) constantsPart.getSection().getClient();
         HyperlinkGroup group = new HyperlinkGroup(parametersArea.getDisplay());
@@ -561,12 +578,12 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         Hyperlink hyper;
 
         hyper = toolkit.createHyperlink(elementLine, "Additional definitions,", SWT.NONE);
-        hyper.setHref(SEC_ADDITIONAL_DEFINITION);
-        hyper.addHyperlinkListener(sectionExpandingAapter);
+        hyper.setHref(SEC_NEW_DEFINITION);
+        hyper.addHyperlinkListener(sectionExpandingAdapter);
 
         hyper = toolkit.createHyperlink(elementLine, "Definition override,", SWT.NONE);
         hyper.setHref(SEC_DEFINITION_OVERRIDE);
-        hyper.addHyperlinkListener(sectionExpandingAapter);
+        hyper.addHyperlinkListener(sectionExpandingAdapter);
 
         // second line with hyperlinks
         Composite elementLine2 = toolkit.createComposite(linksPanelToAdvancedPage);
@@ -574,19 +591,15 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
         hyper = toolkit.createHyperlink(elementLine2, "State constraints,", SWT.NONE);
         hyper.setHref(SEC_STATE_CONSTRAINT);
-        hyper.addHyperlinkListener(sectionExpandingAapter);
+        hyper.addHyperlinkListener(sectionExpandingAdapter);
 
         hyper = toolkit.createHyperlink(elementLine2, "Action constraints,", SWT.NONE);
         hyper.setHref(SEC_ACTION_CONSTRAINT);
-        hyper.addHyperlinkListener(sectionExpandingAapter);
+        hyper.addHyperlinkListener(sectionExpandingAdapter);
 
         hyper = toolkit.createHyperlink(elementLine2, "Additional model values.", SWT.NONE);
         hyper.setHref(SEC_MODEL_VALUES);
-        hyper.addHyperlinkListener(sectionExpandingAapter);
-
-        constantTable = constantsPart.getTableViewer();
-
-        addSection(SEC_WHAT_IS_THE_MODEL, constantsPart.getSection());
+        hyper.addHyperlinkListener(sectionExpandingAdapter);
 
         // ------------------------------------------
         // run tab
@@ -594,7 +607,6 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
                 sectionFlags, getExpansionListener());
         gd = new GridData(GridData.FILL_HORIZONTAL);
         section.setLayoutData(gd);
-        addSection(SEC_HOW_TO_RUN, section);
 
         final Composite howToRunArea = (Composite) section.getClient();
         group = new HyperlinkGroup(howToRunArea.getDisplay());
@@ -602,7 +614,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         layout.numColumns = 2;
         howToRunArea.setLayout(layout);
 
-        VSectionPart howToRunPart = new VSectionPart(section, this);
+        ValidateableSectionPart howToRunPart = new ValidateableSectionPart(section, this, SEC_HOW_TO_RUN);
         managedForm.addPart(howToRunPart);
 
         DirtyMarkingListener howToRunListener = new DirtyMarkingListener(howToRunPart, true);
@@ -637,23 +649,23 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
         // TODO enable on debug support
         // debug link
-/*        
-        ImageHyperlink debugLink = toolkit.createImageHyperlink(howToRunArea, SWT.NONE);
-        debugLink.setImage(createRegisteredImage("icons/full/ldebug_obj.gif"));
-        debugLink.addHyperlinkListener(new HyperlinkAdapter() {
-            public void linkActivated(HyperlinkEvent e)
-            {
-                // doDebug();
-            }
-        });
-        debugLink.setText("Debug TLC");
-        debugLink.setEnabled(false);
-        gd = new GridData();
-        gd.horizontalSpan = 2;
-        gd.widthHint = 200;
-        debugLink.setLayoutData(gd);
-        group.add(debugLink);
-*/
+        /*        
+                ImageHyperlink debugLink = toolkit.createImageHyperlink(howToRunArea, SWT.NONE);
+                debugLink.setImage(createRegisteredImage("icons/full/ldebug_obj.gif"));
+                debugLink.addHyperlinkListener(new HyperlinkAdapter() {
+                    public void linkActivated(HyperlinkEvent e)
+                    {
+                        // doDebug();
+                    }
+                });
+                debugLink.setText("Debug TLC");
+                debugLink.setEnabled(false);
+                gd = new GridData();
+                gd.horizontalSpan = 2;
+                gd.widthHint = 200;
+                debugLink.setLayoutData(gd);
+                group.add(debugLink);
+        */
         // add listeners propagating the changes of the elements to the changes of the
         // parts to the list to be activated after the values has been loaded
         dirtyPartListeners.add(whatIsTheSpecListener);

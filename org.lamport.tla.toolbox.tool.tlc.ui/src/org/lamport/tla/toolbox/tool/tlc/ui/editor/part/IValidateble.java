@@ -1,4 +1,4 @@
-package org.lamport.tla.toolbox.tool.tlc.ui.editor.validator;
+package org.lamport.tla.toolbox.tool.tlc.ui.editor.part;
 
 
 /**

@@ -308,7 +308,6 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
         // only grab horizontal space
         gd = new GridData(GridData.FILL_HORIZONTAL);
         section.setLayoutData(gd);
-        addSection(SEC_PROGRESS, section);
 
         Composite progressArea = (Composite) section.getClient();
         layout = new GridLayout(4, false);
@@ -339,7 +338,6 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
         // only grab horizontal space
         gd = new GridData(GridData.FILL_HORIZONTAL);
         section.setLayoutData(gd);
-        addSection(SEC_ERRORS, section);
 
         Composite errorsArea = (Composite) section.getClient();
         layout = new GridLayout(4, false);
@@ -362,7 +360,6 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
         // only grab horizontal space
         gd = new GridData(SWT.FILL, SWT.LEFT, true, false);
         section.setLayoutData(gd);
-        addSection(SEC_OUTPUT, section);
 
         Composite outputArea = (Composite) section.getClient();
         layout = new GridLayout();
@@ -385,7 +382,6 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
         // only grab horizontal space
         gd = new GridData(GridData.FILL_HORIZONTAL);
         section.setLayoutData(gd);
-        addSection(SEC_COVERAGE, section);
 
         Composite coverageArea = (Composite) section.getClient();
         layout = new GridLayout(4, false);

@@ -11,6 +11,7 @@ import org.eclipse.ui.forms.AbstractFormPart;
  * Empty part
  * @author Simon Zambrovski
  * @version $Id: EmptyPart.java 589 2009-03-18 16:53:13Z simonzam $
+ * @deprecated (not used)
  */
 public class EmptyPart extends AbstractFormPart
 {

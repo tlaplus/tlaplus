@@ -9,7 +9,7 @@ import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.ui.forms.AbstractFormPart;
-import org.lamport.tla.toolbox.tool.tlc.ui.editor.validator.IValidateble;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.IValidateble;
 
 /**
  * Mars parts dirty on input

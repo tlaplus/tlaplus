@@ -67,7 +67,7 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
     };
 
     // section manager
-    private SectionManager sectionManager = new SectionManager();
+    private DataBindingManager dataBindingManager = new DataBindingManager();
 
     private ResultPage resultPage;
 
@@ -261,11 +261,11 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
     }
 
     /**
-     * @return
+     * Retrieves the data binding manager for this editor
      */
-    public SectionManager getSectionManager()
+    public DataBindingManager getDataBindingManager()
     {
-        return this.sectionManager;
+        return this.dataBindingManager;
     }
 
     /**

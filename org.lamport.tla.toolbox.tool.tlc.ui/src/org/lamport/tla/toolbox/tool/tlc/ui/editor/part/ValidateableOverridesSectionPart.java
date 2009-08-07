@@ -7,6 +7,7 @@ import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
 import org.lamport.tla.toolbox.tool.tlc.ui.dialog.FilteredDefinitionSelectionDialog;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.DataBindingManager;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.BasicFormPage;
 import org.lamport.tla.toolbox.tool.tlc.ui.wizard.AssignmentWizard;
 
@@ -17,22 +18,12 @@ import tla2sany.semantic.OpDefNode;
  * @author Simon Zambrovski
  * @version $Id$
  */
-public class OverrideSectionPart extends ConstantSectionPart
+public class ValidateableOverridesSectionPart extends ValidateableConstantSectionPart
 {
-    /**
-     * @param composite
-     * @param title
-     * @param description
-     * @param toolkit
-     */
-    public OverrideSectionPart(Composite composite, String title, String description, FormToolkit toolkit, BasicFormPage page)
-    {
-        super(composite, title, description, toolkit, page);
-    }
 
-    public OverrideSectionPart(Composite composite, String title, String description, FormToolkit toolkit, int flags, BasicFormPage page)
+    public ValidateableOverridesSectionPart(Composite composite, String title, String description, FormToolkit toolkit, int flags, BasicFormPage page)
     {
-        super(composite, title, description, toolkit, flags, page);
+        super(composite, title, description, toolkit, flags, page, DataBindingManager.SEC_DEFINITION_OVERRIDE);
     }
 
     

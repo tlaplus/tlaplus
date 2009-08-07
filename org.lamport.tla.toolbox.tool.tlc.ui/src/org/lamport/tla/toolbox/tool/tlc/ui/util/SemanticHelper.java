@@ -26,6 +26,10 @@ public class SemanticHelper
      * A constant indicating that the value is a keyword
      */
     public static final String KEYWORD = "KEYWORD";
+    /**
+     * Constant indicating the origin of a built-in op
+     */
+    public static final String TLA_BUILTIN = "--TLA+ BUILTINS--";
 
     private Hashtable pageStorage;
     private Context specContext;

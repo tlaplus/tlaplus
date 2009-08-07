@@ -26,12 +26,12 @@ import org.lamport.tla.toolbox.tool.tlc.launch.IConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.IConfigurationDefaults;
 import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
 import org.lamport.tla.toolbox.tool.tlc.model.TypedSet;
-import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.OverrideSectionPart;
-import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.VSectionPart;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.DataBindingManager;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.ValidateableOverridesSectionPart;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.ValidateableSectionPart;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.DirtyMarkingListener;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
 import org.lamport.tla.toolbox.util.IHelpConstants;
-
 
 /**
  * Represent all advanced model elements
@@ -144,7 +144,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
     public void commit(boolean onSave)
     {
         System.out.println("Advanced page commit");
-        
+
         boolean isMCMode = mcOption.getSelection();
         getConfig().setAttribute(LAUNCH_MC_MODE, isMCMode);
 
@@ -205,16 +205,18 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
 
     public void validate()
     {
-        if (getManagedForm() == null) 
+        if (getManagedForm() == null)
         {
             return;
         }
         IMessageManager mm = getManagedForm().getMessageManager();
+        mm.setAutoUpdate(false);
+        
         // clean old messages
         mm.removeAllMessages();
         // make the run possible
         setComplete(true);
-        
+
         // setup the names from the current page
         getLookupHelper().resetModelNames(this);
 
@@ -289,7 +291,8 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         }
 
         // check the model values
-        TypedSet modelValuesSet = TypedSet.parseSet(FormHelper.trimTrailingSpaces(modelValuesSource.getDocument().get()));
+        TypedSet modelValuesSet = TypedSet.parseSet(FormHelper
+                .trimTrailingSpaces(modelValuesSource.getDocument().get()));
         if (modelValuesSet.getValueCount() > 0)
         {
             // there were values defined
@@ -304,9 +307,11 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
             }*/
             List values = modelValuesSet.getValuesAsList();
             // check list of model values if these are already used
-            validateUsage(values, modelValuesSource.getControl(), "modelValues2_", "A model value", "Advanced Model Values", SEC_MODEL_VALUES);
+            validateUsage(MODEL_PARAMETER_MODEL_VALUES, values, "modelValues2_", "A model value",
+                    "Advanced Model Values");
             // check whether the model values are valid ids
-            validateId(values, modelValuesSource.getControl(), "modelValues2_", "A model value", SEC_MODEL_VALUES);
+            validateId(MODEL_PARAMETER_MODEL_VALUES, values, "modelValues2_", "A model value");
+
         }
 
         // check the definition overrides
@@ -316,19 +321,22 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
             Assignment definition = (Assignment) definitions.get(i);
             List values = Arrays.asList(definition.getParams());
             // check list of parameters
-            validateUsage(values, definitionsTable.getTable(), "param1_", "A parameter name", "Definition Overrides", SEC_DEFINITION_OVERRIDE);
+            validateUsage(MODEL_PARAMETER_DEFINITIONS, values, "param1_", "A parameter name", "Definition Overrides");
             // check whether the parameters are valid ids
-            validateId(values, definitionsTable.getTable(), "param1_", "A parameter name", SEC_DEFINITION_OVERRIDE);
+            validateId(MODEL_PARAMETER_DEFINITIONS, values, "param1_", "A parameter name");
         }
 
+        mm.setAutoUpdate(true);
         super.validate();
     }
-    
+
     /**
      * Creates the UI
      */
     protected void createBodyContent(IManagedForm managedForm)
     {
+
+        DataBindingManager dm = getDataBindingManager();
         int sectionFlags = Section.TITLE_BAR | Section.DESCRIPTION | Section.TREE_NODE;
 
         FormToolkit toolkit = managedForm.getToolkit();
@@ -356,16 +364,19 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         // ---------------------------------------------------------------
         // new definitions
 
-        section = FormHelper.createSectionComposite(left, "Additional Definitions", "Definitions required for the model checking, in addition to the definitions in the specificatoin modules.", toolkit, sectionFlags,
-                getExpansionListener());
-        VSectionPart newDefinitionsPart = new VSectionPart(section, this);
+        section = FormHelper
+                .createSectionComposite(
+                        left,
+                        "Additional Definitions",
+                        "Definitions required for the model checking, in addition to the definitions in the specificatoin modules.",
+                        toolkit, sectionFlags, getExpansionListener());
+        ValidateableSectionPart newDefinitionsPart = new ValidateableSectionPart(section, this, SEC_NEW_DEFINITION);
         managedForm.addPart(newDefinitionsPart);
         DirtyMarkingListener newDefinitionsListener = new DirtyMarkingListener(newDefinitionsPart, true);
 
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalSpan = 3;
         section.setLayoutData(gd);
-        addSection(SEC_ADDITIONAL_DEFINITION, section);
 
         Composite newDefinitionsArea = (Composite) section.getClient();
         newDefinitionsSource = FormHelper.createSourceViewer(toolkit, newDefinitionsArea, SWT.V_SCROLL);
@@ -376,11 +387,14 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         newDefinitionsSource.getTextWidget().setLayoutData(twd);
         newDefinitionsSource.addTextListener(newDefinitionsListener);
 
+        dm.bindAttribute(MODEL_PARAMETER_NEW_DEFINITIONS, newDefinitionsSource, newDefinitionsPart);
+
         // ---------------------------------------------------------------
         // definition overwrite
 
-        OverrideSectionPart definitionsPart = new OverrideSectionPart(right, "Definition Override", "Replacement of operators and functions defined in specification modules.", toolkit,
-                sectionFlags, this);
+        ValidateableOverridesSectionPart definitionsPart = new ValidateableOverridesSectionPart(right,
+                "Definition Override", "Replacement of operators and functions defined in specification modules.",
+                toolkit, sectionFlags, this);
 
         managedForm.addPart(definitionsPart);
         // layout
@@ -391,20 +405,20 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         gd.verticalSpan = 3;
         definitionsPart.getTableViewer().getTable().setLayoutData(gd);
         definitionsTable = definitionsPart.getTableViewer();
-        addSection(SEC_DEFINITION_OVERRIDE, definitionsPart.getSection());
-        
+        dm.bindAttribute(MODEL_PARAMETER_DEFINITIONS, definitionsTable, definitionsPart);
+
         // ---------------------------------------------------------------
         // constraint
-        section = FormHelper.createSectionComposite(left, "State Constraint", "A state constraint is a formula restricting the possible states by a state predicate.",
-                toolkit, sectionFlags, getExpansionListener());
-        VSectionPart constraintPart = new VSectionPart(section, this);
+        section = FormHelper.createSectionComposite(left, "State Constraint",
+                "A state constraint is a formula restricting the possible states by a state predicate.", toolkit,
+                sectionFlags, getExpansionListener());
+        ValidateableSectionPart constraintPart = new ValidateableSectionPart(section, this, SEC_STATE_CONSTRAINT);
         managedForm.addPart(constraintPart);
         DirtyMarkingListener constraintListener = new DirtyMarkingListener(constraintPart, true);
 
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalSpan = 3;
         section.setLayoutData(gd);
-        addSection(SEC_STATE_CONSTRAINT, section);
 
         Composite constraintArea = (Composite) section.getClient();
         constraintSource = FormHelper.createSourceViewer(toolkit, constraintArea, SWT.V_SCROLL);
@@ -414,21 +428,21 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         twd.grabHorizontal = true;
         constraintSource.getTextWidget().setLayoutData(twd);
         constraintSource.addTextListener(constraintListener);
-        
+        dm.bindAttribute(MODEL_PARAMETER_CONSTRAINT, constraintSource, constraintPart);
 
         // ---------------------------------------------------------------
         // action constraint
-        section = FormHelper.createSectionComposite(right, "Action Constraint", "An action constraint is a formula restricting the possible transitions.", toolkit, sectionFlags,
+        section = FormHelper.createSectionComposite(right, "Action Constraint",
+                "An action constraint is a formula restricting the possible transitions.", toolkit, sectionFlags,
                 getExpansionListener());
-        VSectionPart actionConstraintPart = new VSectionPart(section, this);
+        ValidateableSectionPart actionConstraintPart = new ValidateableSectionPart(section, this, SEC_ACTION_CONSTRAINT);
         managedForm.addPart(actionConstraintPart);
         DirtyMarkingListener actionConstraintListener = new DirtyMarkingListener(actionConstraintPart, true);
 
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalSpan = 3;
         section.setLayoutData(gd);
-        addSection(SEC_ACTION_CONSTRAINT, section);
-        
+
         Composite actionConstraintArea = (Composite) section.getClient();
         actionConstraintSource = FormHelper.createSourceViewer(toolkit, actionConstraintArea, SWT.V_SCROLL);
         // layout of the source viewer
@@ -437,18 +451,18 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         twd.grabHorizontal = true;
         actionConstraintSource.getTextWidget().setLayoutData(twd);
         actionConstraintSource.addTextListener(actionConstraintListener);
+        dm.bindAttribute(MODEL_PARAMETER_ACTION_CONSTRAINT, actionConstraintSource, actionConstraintPart);
 
         // ---------------------------------------------------------------
         // modelValues
-        section = FormHelper.createSectionComposite(left, "Model Values", "An additional set of model values.", toolkit, sectionFlags,
-                getExpansionListener());
-        VSectionPart modelValuesPart = new VSectionPart(section, this);
+        section = FormHelper.createSectionComposite(left, "Model Values", "An additional set of model values.",
+                toolkit, sectionFlags, getExpansionListener());
+        ValidateableSectionPart modelValuesPart = new ValidateableSectionPart(section, this, SEC_MODEL_VALUES);
         managedForm.addPart(modelValuesPart);
         DirtyMarkingListener modelValuesListener = new DirtyMarkingListener(modelValuesPart, true);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalSpan = 3;
         section.setLayoutData(gd);
-        addSection(SEC_MODEL_VALUES, section);
 
         Composite modelValueArea = (Composite) section.getClient();
         modelValuesSource = FormHelper.createSourceViewer(toolkit, modelValueArea, SWT.V_SCROLL);
@@ -458,14 +472,14 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         twd.grabHorizontal = true;
         modelValuesSource.getTextWidget().setLayoutData(twd);
         modelValuesSource.addTextListener(modelValuesListener);
+        dm.bindAttribute(MODEL_PARAMETER_MODEL_VALUES, modelValuesSource, modelValuesPart);
 
         // ---------------------------------------------------------------
         // launch
         section = createAdvancedLaunchSection(toolkit, right, sectionFlags);
-        VSectionPart launchPart = new VSectionPart(section, this);
+        ValidateableSectionPart launchPart = new ValidateableSectionPart(section, this, SEC_LAUNCHING_SETUP);
         managedForm.addPart(launchPart);
         DirtyMarkingListener launchListener = new DirtyMarkingListener(launchPart, true);
-        addSection(SEC_LAUNCHING_SETUP, section);
 
         // dirty listeners
         simuArilText.addModifyListener(launchListener);
@@ -495,8 +509,8 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         GridData gd;
 
         // advanced section
-        Section advancedSection = FormHelper.createSectionComposite(parent, "Launching Setup", "Advanced settings of the TLC model checker", toolkit,
-                sectionFlags, getExpansionListener());
+        Section advancedSection = FormHelper.createSectionComposite(parent, "Launching Setup",
+                "Advanced settings of the TLC model checker", toolkit, sectionFlags, getExpansionListener());
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalSpan = 2;
         gd.grabExcessHorizontalSpace = true;

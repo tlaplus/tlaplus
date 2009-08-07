@@ -23,22 +23,11 @@ import org.lamport.tla.toolbox.tool.tlc.ui.wizard.AssignmentWizard;
  * @author Simon Zambrovski
  * @version $Id$
  */
-public class ConstantSectionPart extends TableSectionPart
+public class ValidateableConstantSectionPart extends ValidateableTableSectionPart
 {
-    /**
-     * @param composite
-     * @param title
-     * @param description
-     * @param toolkit
-     */
-    public ConstantSectionPart(Composite composite, String title, String description, FormToolkit toolkit, BasicFormPage page)
+    public ValidateableConstantSectionPart(Composite composite, String title, String description, FormToolkit toolkit, int flags, BasicFormPage page, String sectionName)
     {
-        super(composite, title, description, toolkit, page);
-    }
-
-    public ConstantSectionPart(Composite composite, String title, String description, FormToolkit toolkit, int flags, BasicFormPage page)
-    {
-        super(composite, title, description, toolkit, flags, page);
+        super(composite, title, description, toolkit, flags, page, sectionName);
     }
 
     

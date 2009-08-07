@@ -29,7 +29,6 @@ import org.eclipse.ui.forms.widgets.Section;
 import org.lamport.tla.toolbox.tool.tlc.model.Formula;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.BasicFormPage;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.provider.FormulaContentProvider;
-import org.lamport.tla.toolbox.tool.tlc.ui.editor.validator.IValidateble;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
 import org.lamport.tla.toolbox.tool.tlc.ui.wizard.FormulaWizard;
 
@@ -38,7 +37,7 @@ import org.lamport.tla.toolbox.tool.tlc.ui.wizard.FormulaWizard;
  * @author Simon Zambrovski
  * @version $Id: TableSectionPart.java 625 2009-04-07 04:04:58Z simonzam $
  */
-public class TableSectionPart extends SectionPart implements IValidateble
+public class ValidateableTableSectionPart extends SectionPart implements IValidateble
 {
     private BasicFormPage page;
     protected TableViewer tableViewer;
@@ -78,11 +77,12 @@ public class TableSectionPart extends SectionPart implements IValidateble
 
     /**
      * Constructor of the part without section flags
-     * @see TableSectionPart#TableSectionPart(Composite, String, String, FormToolkit, int)
+     * @see ValidateableTableSectionPart#TableSectionPart(Composite, String, String, FormToolkit, int)
      */
-    public TableSectionPart(Composite composite, String title, String description, FormToolkit toolkit, BasicFormPage page)
+    public ValidateableTableSectionPart(Composite composite, String title, String description, FormToolkit toolkit,
+            BasicFormPage page, String sectionName)
     {
-        this(composite, title, description, toolkit, Section.DESCRIPTION | Section.TITLE_BAR, page);
+        this(composite, title, description, toolkit, Section.DESCRIPTION | Section.TITLE_BAR, page, sectionName);
     }
 
     /**
@@ -92,11 +92,14 @@ public class TableSectionPart extends SectionPart implements IValidateble
      * @param description, part description
      * @param toolkit, a toolkit for building controls
      * @param sectionFlags, flags to be passed to the part during construction
+     * @param sectionName name of the section 
      */
-    public TableSectionPart(Composite composite, String title, String description, FormToolkit toolkit, int sectionFlags, BasicFormPage page)
+    public ValidateableTableSectionPart(Composite composite, String title, String description, FormToolkit toolkit,
+            int sectionFlags, BasicFormPage page, String sectionName)
     {
         super(FormHelper.createSectionComposite(composite, title, description, toolkit, sectionFlags, null));
         this.page = page;
+        page.getDataBindingManager().bindSection(this, sectionName, page.getId());
     }
 
     /**
@@ -182,23 +185,24 @@ public class TableSectionPart extends SectionPart implements IValidateble
      */
     protected Table createTable(Composite sectionArea, FormToolkit toolkit)
     {
-        Table table = toolkit.createTable(sectionArea, SWT.MULTI | SWT.CHECK | SWT.V_SCROLL | SWT.H_SCROLL | SWT.FULL_SELECTION);
+        Table table = toolkit.createTable(sectionArea, SWT.MULTI | SWT.CHECK | SWT.V_SCROLL | SWT.H_SCROLL
+                | SWT.FULL_SELECTION);
         table.setLinesVisible(false);
         table.setHeaderVisible(false);
         return table;
     }
 
-    
     /**
      * Creates buttons
      * <br>
      * Subclasses might override this method if they intend to change the buttons. For actual implementation see 
-     * {@link TableSectionPart#doCreateButtons(Composite, FormToolkit, boolean, boolean, boolean)} 
+     * {@link ValidateableTableSectionPart#doCreateButtons(Composite, FormToolkit, boolean, boolean, boolean)} 
      */
     protected void createButtons(Composite sectionArea, FormToolkit toolkit, boolean add, boolean edit, boolean remove)
     {
         doCreateButtons(sectionArea, toolkit, add, edit, remove);
     }
+
     /**
      * Create up to three buttons in the section area
      * @param sectionArea
@@ -246,16 +250,16 @@ public class TableSectionPart extends SectionPart implements IValidateble
             buttonRemove.setLayoutData(gd);
             added++;
         }
-        
-        if (added < 3) 
+
+        if (added < 3)
         {
             Composite span = toolkit.createComposite(sectionArea);
             gd = new GridData();
-            gd.verticalSpan = 3-added;
+            gd.verticalSpan = 3 - added;
             gd.verticalAlignment = SWT.TOP;
             gd.widthHint = 70;
             span.setLayoutData(gd);
-        } 
+        }
     }
 
     /**
@@ -379,7 +383,6 @@ public class TableSectionPart extends SectionPart implements IValidateble
         this.markDirty();
     }
 
-    
     /* (non-Javadoc)
      * @see org.lamport.tla.toolbox.tool.tlc.ui.editor.validator.IValidateble#validate(org.eclipse.jface.text.IDocument, org.eclipse.jface.text.IDocument)
      */
@@ -387,5 +390,4 @@ public class TableSectionPart extends SectionPart implements IValidateble
     {
         page.validate();
     }
-    
 }
