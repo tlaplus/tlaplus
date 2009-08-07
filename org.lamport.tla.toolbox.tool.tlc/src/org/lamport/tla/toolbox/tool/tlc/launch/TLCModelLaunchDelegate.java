@@ -25,6 +25,13 @@ import org.eclipse.core.runtime.jobs.MultiRule;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.model.LaunchConfigurationDelegate;
+import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.FindReplaceDocumentAdapter;
+import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IRegion;
+import org.eclipse.jface.text.Region;
+import org.eclipse.ui.editors.text.FileDocumentProvider;
+import org.eclipse.ui.part.FileEditorInput;
 import org.lamport.tla.toolbox.tool.IParseResult;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.tool.tlc.TLCActivator;
@@ -300,33 +307,36 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
             TypedSet modelValues = TypedSet.parseSet(config.getAttribute(MODEL_PARAMETER_MODEL_VALUES, EMPTY_STRING));
 
             // add constants and model values
-            writer.addConstants(constants, modelValues);
+            writer.addConstants(constants, modelValues, MODEL_PARAMETER_CONSTANTS, MODEL_PARAMETER_MODEL_VALUES);
 
             // new definitions
-            writer.addNewDefinitions(config.getAttribute(MODEL_PARAMETER_NEW_DEFINITIONS, EMPTY_STRING));
+            writer.addNewDefinitions(config.getAttribute(MODEL_PARAMETER_NEW_DEFINITIONS, EMPTY_STRING),
+                    MODEL_PARAMETER_NEW_DEFINITIONS);
 
             // definition overrides list
             List overrides = ModelHelper.deserializeAssignmentList(config.getAttribute(MODEL_PARAMETER_DEFINITIONS,
                     new Vector()));
-            writer.addFormulaList(ModelHelper.createOverridesContent(overrides, "def_ov"), "CONSTANT");
+            writer.addFormulaList(ModelHelper.createOverridesContent(overrides, "def_ov"), "CONSTANT",
+                    MODEL_PARAMETER_DEFINITIONS);
 
             // constraint
             writer.addFormulaList(ModelHelper.createSourceContent(MODEL_PARAMETER_CONSTRAINT, "constr", config),
-                    "CONSTRAINT");
+                    "CONSTRAINT", MODEL_PARAMETER_CONSTRAINT);
             // action constraint
             writer.addFormulaList(ModelHelper.createSourceContent(MODEL_PARAMETER_ACTION_CONSTRAINT, "action_constr",
-                    config), "ACTION-CONSTRAINT");
+                    config), "ACTION-CONSTRAINT", MODEL_PARAMETER_ACTION_CONSTRAINT);
 
             // the specification name-formula pair
-            writer.addSpecDefinition(ModelHelper.createSpecificationContent(config));
+            writer.addSpecDefinition(ModelHelper.createSpecificationContent(config),
+                    MODEL_BEHAVIOR_CLOSED_SPECIFICATION);
 
             // invariants
             writer.addFormulaList(ModelHelper.createFormulaListContent(config.getAttribute(
-                    MODEL_CORRECTNESS_INVARIANTS, new Vector()), "inv"), "INVARIANT");
+                    MODEL_CORRECTNESS_INVARIANTS, new Vector()), "inv"), "INVARIANT", MODEL_CORRECTNESS_INVARIANTS);
 
             // properties
             writer.addFormulaList(ModelHelper.createFormulaListContent(config.getAttribute(
-                    MODEL_CORRECTNESS_PROPERTIES, new Vector()), "prop"), "PROPERTY");
+                    MODEL_CORRECTNESS_PROPERTIES, new Vector()), "prop"), "PROPERTY", MODEL_CORRECTNESS_PROPERTIES);
 
             monitor.worked(STEP);
             monitor.subTask("Writing contents");
@@ -368,7 +378,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
         IParseResult parseResult = ToolboxHandle.parseModule(rootModule, new SubProgressMonitor(monitor, 1), false,
                 false);
         Vector detectedErrors = parseResult.getDetectedErrors();
-        boolean status = AdapterFactory.isProblemStatus(parseResult.getStatus());
+        boolean status = !AdapterFactory.isProblemStatus(parseResult.getStatus());
 
         monitor.worked(1);
         // remove existing markers
@@ -382,20 +392,168 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
 
         try
         {
+            FileEditorInput fileEditorInput = new FileEditorInput((IFile) rootModule);
+            FileDocumentProvider fileDocumentProvider = new FileDocumentProvider();
+            fileDocumentProvider.connect(fileEditorInput);
+            IDocument document = fileDocumentProvider.getDocument(fileEditorInput);
+
+            FindReplaceDocumentAdapter searchAdapter = new FindReplaceDocumentAdapter(document);
 
             for (int i = 0; i < detectedErrors.size(); i++)
             {
                 // the holder has the information about the error in the MC file
                 TLAMarkerInformationHolder markerHolder = (TLAMarkerInformationHolder) detectedErrors.get(i);
                 String message = markerHolder.getMessage();
-
-                int severity = markerHolder.getSeverityError();
-
                 if (markerHolder.getModuleName() != null)
                 {
                     if (markerHolder.getModuleName().equals(rootModule.getName()))
                     {
-                        TLCActivator.logDebug(message);
+                        try
+                        {
+                            int index = -1;
+                            int severity = markerHolder.getSeverityError();
+                            String attributeName;
+                            int[] coordinates = markerHolder.getCoordinates();
+
+                            // find the line in the document
+                            IRegion lineRegion = document.getLineInformation(coordinates[0] - 1);
+                            if (lineRegion != null)
+                            {
+                                int errorLineOffset = lineRegion.getOffset();
+
+                                // find the previous comment
+                                IRegion commentRegion = searchAdapter.find(errorLineOffset, ModelWriter.COMMENT, false, false,
+                                        false, false);
+
+                                // find the next separator
+                                IRegion separatorRegion = searchAdapter.find(errorLineOffset, ModelWriter.SEP, true, false,
+                                        false, false);
+                                if (separatorRegion != null && commentRegion != null)
+                                {
+                                    // find the first attribute inside of the comment
+                                    IRegion attributeRegion = searchAdapter.find(commentRegion.getOffset(),
+                                            ModelWriter.ATTRIBUTE + "[a-z]*[A-Z]*", true, false, false, true);
+                                    if (attributeRegion != null)
+                                    {
+                                        // get the attribute name without the attribute marker
+                                        attributeName = document.get(attributeRegion.getOffset(), attributeRegion
+                                                .getLength()).substring(ModelWriter.ATTRIBUTE.length());
+                                        
+                                        // find the index
+                                        IRegion indexRegion = searchAdapter.find(attributeRegion.getOffset()
+                                                + attributeRegion.getLength(), ModelWriter.INDEX + "[0-9]+", true,
+                                                false, false, true);
+                                        if (indexRegion != null
+                                                && indexRegion.getOffset() < separatorRegion.getOffset())
+                                        {
+                                            // index value found
+                                            String indexString = document.get(indexRegion.getOffset(), indexRegion
+                                                    .getLength());
+                                            if (indexString != null && indexString.length() > 1)
+                                            {
+                                                try
+                                                {
+                                                    index = Integer.parseInt(indexString.substring(1));
+                                                } catch (NumberFormatException e)
+                                                {
+                                                    throw new CoreException(new Status(IStatus.ERROR,
+                                                            TLCActivator.PLUGIN_ID,
+                                                            "Error during detection of the error position in MC.tla."
+                                                                    + "Error parsing the attribute index. " + message,
+                                                            e));
+                                                }
+                                            }
+                                        } else
+                                        {
+                                            // no index
+                                        }
+
+                                        
+                                        // the first character of the next line after the comment
+                                        
+                                        IRegion firstBlockLine = document.getLineInformation( document.getLineOfOffset(commentRegion.getOffset()) + 1);
+                                        int beginBlockOffset = firstBlockLine.getOffset();
+                                        // get the user input
+                                        if (attributeName.equals(MODEL_PARAMETER_NEW_DEFINITIONS)) 
+                                        {
+                                            // there is no identifier in this block
+                                            // the user input starts directly from the first character
+                                        } else 
+                                        {
+                                            // the id-line representing the identifier "id_number ==" comes first
+                                            // the user input starts only on the second line
+                                            // so adding the length of the id-line 
+                                            beginBlockOffset = beginBlockOffset + firstBlockLine.getLength() + 1;
+                                        }
+                                        
+                                        // calculate the error region
+                                        Region errorRegion = null;
+                                        // end line coordinate
+                                        if (coordinates[2] == 0)
+                                        {
+                                            // not set
+                                            // marc one char starting from the begin column
+                                            errorRegion = new Region(errorLineOffset + coordinates[1] - beginBlockOffset, 1);
+                                        } else if (coordinates[2] == coordinates[0])
+                                        {
+                                            // equals to the begin line
+                                            // mark the actual error region
+                                            int length = coordinates[3] - coordinates[1];
+                                            
+                                            errorRegion = new Region(errorLineOffset + coordinates[1] - beginBlockOffset, (length == 0) ? 1 : length );
+                                        } else
+                                        {
+                                            // the prat of the first line from the begin column to the end
+                                            int summedLength = lineRegion.getLength() - coordinates[1];
+
+                                            // iterate over all full lines
+                                            for (int l = coordinates[0] + 1; l < coordinates[2]; l++)
+                                            {
+                                                IRegion line = document.getLineInformation(l - 1);
+                                                summedLength = summedLength + line.getLength();
+                                            }
+                                            // the part of the last line to the end column
+                                            summedLength += coordinates[3];
+
+                                            errorRegion = new Region(errorLineOffset + coordinates[1] - beginBlockOffset, summedLength);
+                                        }
+
+                                        // install the marker showing the information in the corresponding attribute
+                                        // (and index), at the given
+                                        // place
+                                        ModelHelper.installModelProblemMarker(configuration, severity, attributeName,
+                                                index, errorRegion, message);
+
+                                    } else
+                                    {
+                                        // problem could not detect attribute
+                                        throw new CoreException(new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID,
+                                                "Error during detection of the error position in MC.tla."
+                                                        + "Could not detect the attribute. " + message));
+                                    }
+                                } else
+                                {
+                                    // problem could not detect block
+                                    throw new CoreException(new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID,
+                                            "Error during detection of the error position in MC.tla."
+                                                    + "Could not detect definition block. " + message));
+                                }
+                            } else
+                            {
+                                // problem could not detect line
+                                throw new CoreException(new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID,
+                                        "Error during detection of the error position in MC.tla."
+                                                + "Could not data on specified location. " + message));
+
+                            }
+
+                        } catch (BadLocationException e)
+                        {
+                            throw new CoreException(new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID,
+                                    "Error during detection of the error position in MC.tla."
+                                            + "Accessing MC.tla file failed. " + message, e));
+                        }
+
                     } else
                     {
                         // the reported error is not pointing to the MC file.
@@ -413,12 +571,6 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
                                     + "This is a bug. The error message was " + message + "."));
                 }
 
-                String attributeName = "Attribute";
-                int index = 0;
-
-                // install the marker showing the information in the corresponding attribute (and index), at the given
-                // place
-                ModelHelper.installModelProblemMarker(configuration, severity, attributeName, index, message);
             }
 
         } finally
@@ -433,7 +585,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
             return false;
         } else
         {
-            TLCActivator.logDebug("Final check for the " + mode + " mode");
+            TLCActivator.logDebug("Final check for the " + mode + " mode. The result of the check is " + status);
             return status;
         }
     }

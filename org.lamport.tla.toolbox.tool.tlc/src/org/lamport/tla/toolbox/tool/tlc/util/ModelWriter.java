@@ -6,7 +6,6 @@ import java.util.Vector;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
 import org.lamport.tla.toolbox.tool.tlc.model.TypedSet;
 import org.lamport.tla.toolbox.util.ResourceHelper;
@@ -18,12 +17,14 @@ import org.lamport.tla.toolbox.util.ResourceHelper;
  */
 public class ModelWriter
 {
-    private static final String CR = "\n";
-    private static final String SEP = "----";
-    private static final String EQ = " = ";
-    private static final String ARROW = " <- ";
-    private static final String DEFINES = " == ";
-    private static final String COMMENT = "\\* ";
+    public static final String CR = "\n";
+    public static final String SEP = "----";
+    public static final String EQ = " = ";
+    public static final String ARROW = " <- ";
+    public static final String DEFINES = " == ";
+    public static final String COMMENT = "\\* ";
+    public static final String ATTRIBUTE = "@";
+    public static final String INDEX = ":";
 
     private StringBuffer tlaBuffer;
     private StringBuffer cfgBuffer;
@@ -66,12 +67,12 @@ public class ModelWriter
      * Add spec definition
      * @param specDefinition
      */
-    public void addSpecDefinition(String[] specDefinition)
+    public void addSpecDefinition(String[] specDefinition, String attributeName)
     {
         cfgBuffer.append("SPECIFICATION ");
         cfgBuffer.append(specDefinition[0]).append(CR);
         
-        tlaBuffer.append(COMMENT).append(IModelConfigurationConstants.MODEL_BEHAVIOR_CLOSED_SPECIFICATION).append(CR);
+        tlaBuffer.append(COMMENT).append("Specification ").append(ATTRIBUTE).append(attributeName).append(CR);
         tlaBuffer.append(specDefinition[1]).append(CR).append(SEP).append(CR);
 
     }
@@ -81,10 +82,10 @@ public class ModelWriter
      * @param constants
      * @param modelValues
      */
-    public void addConstants(List constants, TypedSet modelValues)
+    public void addConstants(List constants, TypedSet modelValues, String attributeConstants, String attributeMVs)
     {
         // add model value declarations
-        addMVTypedSet(modelValues, "MV CONSTANT declarations");
+        addMVTypedSet(modelValues, "MV CONSTANT declarations ", attributeMVs);
 
         Assignment constant;
         Vector symmetrySets = new Vector();
@@ -98,9 +99,9 @@ public class ModelWriter
                 {
                     // set model values
                     TypedSet setOfMVs = TypedSet.parseSet(constant.getRight());
-                    addMVTypedSet(setOfMVs, "MV CONSTANT declarations");
+                    addMVTypedSet(setOfMVs, "MV CONSTANT declarations", attributeConstants);
                     cfgBuffer.append(COMMENT).append("MV CONSTANT definitions" ).append(CR);
-                    tlaBuffer.append(COMMENT).append("MV CONSTANT definitions: " + constant.getLeft()).append(CR);
+                    tlaBuffer.append(COMMENT).append("MV CONSTANT definitions " + constant.getLeft()).append(CR);
                     
                     String id = addArrowAssignment(constant, "const");
                     if (constant.isSymmetricalSet())
@@ -120,7 +121,8 @@ public class ModelWriter
             {
                 // simple constant value assignment
                 cfgBuffer.append(COMMENT).append("CONSTANT definitions").append(CR);
-                tlaBuffer.append(COMMENT).append("CONSTANT definitions: " + constant.getLeft()).append(CR);
+                
+                tlaBuffer.append(COMMENT).append("CONSTANT definitions ").append(ATTRIBUTE).append(attributeConstants).append(INDEX).append(i).append(constant.getLeft()).append(CR);
                 addArrowAssignment(constant, "const");
                 tlaBuffer.append(SEP).append(CR).append(CR);
             }
@@ -152,7 +154,7 @@ public class ModelWriter
 
     /**
      * Assigns a right side to a label using an id generated from given schema
-     * @param constant, constant containg the values
+     * @param constant, constant containing the values
      * @param schema schema to generate the Id
      * @return generated id
      */
@@ -175,7 +177,7 @@ public class ModelWriter
      * @param mvSet typed set containing the model values
      * @param comment a comment to put before the declarations, null and empty strings are OK
      */
-    public void addMVTypedSet(TypedSet mvSet, String comment)
+    public void addMVTypedSet(TypedSet mvSet, String comment, String attributeName)
     {
         if (mvSet.getValueCount() != 0)
         {
@@ -184,7 +186,7 @@ public class ModelWriter
             // a, b, c
             if (comment != null && !comment.isEmpty())
             {
-                tlaBuffer.append(COMMENT).append(comment).append(CR);
+                tlaBuffer.append(COMMENT).append(comment).append(ATTRIBUTE).append(attributeName).append(CR);
             }
             tlaBuffer.append("CONSTANTS").append(CR).append(mvSet.toStringWithoutBraces());
             tlaBuffer.append(CR).append(SEP).append(CR).append(CR);
@@ -212,19 +214,20 @@ public class ModelWriter
      * 
      * @param elements a list of String[] elements
      * @param keyword the keyword to be used in the CFG file
+     * @param attributeName the name of the attribute in the model file
      */
-    public void addFormulaList(List elements, String keyword)
+    public void addFormulaList(List elements, String keyword, String attributeName)
     {
         if (elements.isEmpty())
         {
             return;
         }
         cfgBuffer.append(COMMENT).append(keyword + " definition").append(CR);
-        tlaBuffer.append(COMMENT).append(keyword + " definition").append(CR);
         cfgBuffer.append(keyword).append(CR);
 
         for (int i = 0; i < elements.size(); i++)
         {
+            tlaBuffer.append(COMMENT).append(keyword + " definition ").append(ATTRIBUTE).append(attributeName).append(INDEX).append(i).append(CR);
             String[] element = (String[]) elements.get(i);
             cfgBuffer.append(element[0]).append(CR);
             tlaBuffer.append(element[1]).append(CR).append(SEP).append(CR);
@@ -235,13 +238,13 @@ public class ModelWriter
      * New definitions are added to the _MC.tla file only
      * @param elements
      */
-    public void addNewDefinitions(String definitions)
+    public void addNewDefinitions(String definitions, String attributeName)
     {
         if (definitions.isEmpty())
         {
             return;
         }
-        tlaBuffer.append(COMMENT).append("New definitions").append(CR);
+        tlaBuffer.append(COMMENT).append("New definitions ").append(ATTRIBUTE).append(attributeName).append(CR);
         tlaBuffer.append(definitions).append(CR).append(SEP).append(CR);
     }
 

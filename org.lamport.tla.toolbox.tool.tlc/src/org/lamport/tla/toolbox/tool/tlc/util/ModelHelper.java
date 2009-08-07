@@ -21,6 +21,7 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationType;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.core.ILaunchManager;
+import org.eclipse.jface.text.Region;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.part.FileEditorInput;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
@@ -48,6 +49,10 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
      * Marker indicating an error in the model
      */
     public static final String TLC_MODEL_ERROR_MARKER = "org.lamport.tla.toolbox.tlc.modelErrorMarker";
+    
+    public static final String TLC_MODEL_ERROR_MARKER_ATTRIBUTE_NAME = "attributeName";
+    public static final String TLC_MODEL_ERROR_MARKER_ATTRIBUTE_IDX = "attributeIndex";
+    
     /**
      * marker on .launch file with boolean attribute modelIsRunning 
      */
@@ -700,6 +705,8 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
         return listener;
     }
 
+
+
     /**
      * Checks whether the model is locked or not
      * @param config
@@ -959,7 +966,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
      * @param message
      */
     public static void installModelProblemMarker(ILaunchConfiguration configuration, final int severityError,
-            final String attributeName, final int index, final String message)
+            final String attributeName, final int attributeIndex, final Region errorRegion, final String message)
     {
         Assert.isNotNull(configuration);
         Assert.isTrue(configuration.exists());
@@ -971,7 +978,13 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
             // Once we have a marker object, we can set its attributes
             marker.setAttribute(IMarker.SEVERITY, severityError);
             marker.setAttribute(IMarker.MESSAGE, message);
+            marker.setAttribute(TLC_MODEL_ERROR_MARKER_ATTRIBUTE_NAME, attributeName);
+            marker.setAttribute(TLC_MODEL_ERROR_MARKER_ATTRIBUTE_IDX, attributeIndex);
             marker.setAttribute(IMarker.LOCATION, "");
+            marker.setAttribute(IMarker.CHAR_START, errorRegion.getOffset());
+            marker.setAttribute(IMarker.CHAR_END, errorRegion.getOffset() + errorRegion.getLength());
+            
+            TLCActivator.logDebug("Marker on " + attributeName + ((attributeIndex != -1) ? " index: " + attributeIndex : "") + " at " + errorRegion + " " + message);
 
         } catch (CoreException e)
         {
@@ -979,4 +992,21 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
         }
     }
 
+    /**
+     * Retrieves error markers of the model
+     * @param config
+     * @return
+     * @throws CoreException
+     */
+    public static IMarker[] getModelProblemMarker(ILaunchConfiguration config) throws CoreException
+    {
+        IFile resource = config.getFile();
+        if (resource.exists())
+        {
+            IMarker[] foundMarkers = resource.findMarkers(TLC_MODEL_ERROR_MARKER, false, IResource.DEPTH_ZERO);
+            return foundMarkers;
+        }
+        
+        return new IMarker[0];
+    }
 }
