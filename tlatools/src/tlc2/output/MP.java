@@ -1,5 +1,8 @@
 package tlc2.output;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import tlc2.TLCGlobals;
 import util.DebugPrinter;
 import util.Set;
@@ -66,7 +69,7 @@ import util.ToolIO;
 public class MP
 {
     public static final String DELIM = "@!@!@";
-    
+
     private static final String[] EMPTY_PARAMS = new String[0];
 
     /**
@@ -89,12 +92,11 @@ public class MP
      * Severity - state print
      */
     public static final int STATE = 4;
-    
-    
+
     private static MP instance = null;
     private Set warningHistory;
     private static final String CONFIG_FILE_ERROR = "TLC found an error in the configuration file at line %1%\n";
-
+    private static final SimpleDateFormat SDF = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
 
     /**
      * The internal instance
@@ -140,7 +142,8 @@ public class MP
         {
             // for the tool we always print the message class
             // and message code
-            b.append(DELIM).append("STARTMSG ").append(messageCode).append(":").append(messageClass).append(" ").append(DELIM).append("\n");
+            b.append(DELIM).append("STARTMSG ").append(messageCode).append(":").append(messageClass).append(" ")
+                    .append(DELIM).append("\n");
         } else
         {
             // depending on message class add different prefix
@@ -186,7 +189,7 @@ public class MP
         case EC.WRONG_COMMANDLINE_PARAMS_SIMULATOR:
             b.append("%1%\nUsage: java tlc2.Simulator [-option] inputfile");
             break;
-            
+
         case EC.SYSTEM_OUT_OF_MEMORY_TOO_MANY_INIT:
             b.append("Out Of Memory. There are probably too many initial states.");
             break;
@@ -528,8 +531,8 @@ public class MP
             b.append("Attempted to apply the operator overridden by the Java method"
                     + "\n%1%,\nbut it produced the following error:\n%2%");
             break;
-            
-            /* Liveness errors */            
+
+        /* Liveness errors */
         case EC.TLC_LIVE_BEGRAPH_FAILED_TO_CONSTRUCT:
             b.append("BEGraph.GetPath: Failed to construct a path.");
             break;
@@ -554,8 +557,7 @@ public class MP
         case EC.TLC_LIVE_ENCOUNTERED_NONBOOL_PREDICATE:
             b.append("Encountered an action predicate that's not a boolean.");
             break;
-            
-            
+
         case EC.TLC_EXPECTED_VALUE:
             b.append("TLC expected a %1% value, but did not find one. %2%");
             break;
@@ -563,14 +565,12 @@ public class MP
             b.append("TLC expected a %1% expression, but did not find one.\n%2%");
             break;
         case EC.TLC_EXPECTED_EXPRESSION_IN_COMPUTING:
-            b.append("In computing %1%, TLC expected a %2% expression," +
-                    "\nbut instead found %3%.\n%4%");
+            b.append("In computing %1%, TLC expected a %2% expression," + "\nbut instead found %3%.\n%4%");
             break;
         case EC.TLC_EXPECTED_EXPRESSION_IN_COMPUTING2:
-            b.append("In computing %1%, TLC expected a %2% expression," +
-                    "\nbut didn't find one.\n%3%");
+            b.append("In computing %1%, TLC expected a %2% expression," + "\nbut didn't find one.\n%3%");
             break;
-            
+
         case EC.SYSTEM_UNABLE_NOT_RENAME_FILE:
             b.append("Unable not rename file during the clean-up.");
             break;
@@ -621,10 +621,10 @@ public class MP
             break;
 
         case EC.TLC_STARTING:
-            b.append("Starting...");
+            b.append("Starting... (").append(SDF.format(new Date()) ).append(")");
             break;
         case EC.TLC_FINISHED:
-            b.append("Finished.");
+            b.append("Finished. (").append(SDF.format(new Date()) ).append(")");
             break;
         case EC.TLC_MODE_MC:
             b.append("Running in Model-Checking mode.");
@@ -687,7 +687,8 @@ public class MP
             b.append("The number of states generated: %1%\nSimulation using seed %2% and aril %3%");
             break;
         case EC.TLC_PROGRESS_STATS:
-            b.append("Progress(%1%): %2% states generated, %3% distinct states found, %4% states left on queue.");
+            b.append("Progress(%1%) at " + SDF.format(new Date())
+                    + ": %2% states generated, %3% distinct states found, %4% states left on queue.");
             break;
         case EC.TLC_PROGRESS_START_STATS_DFID:
             b.append("Starting level %1%: %2% states generated, %3% distinct states found.");
@@ -700,26 +701,24 @@ public class MP
             break;
 
         case EC.TLC_COVERAGE_START:
-            b.append("The coverage statistics :");
+            b.append("The coverage statistics at " + SDF.format(new Date()));
             break;
         case EC.TLC_COVERAGE_VALUE:
             b.append("  %1%: %2%");
             break;
-            
+
         case EC.TLC_COVERAGE_END:
             b.append("End of statistics.");
             break;
 
-            
         /* ************************************************************************ */
         // errors evaluating the config file and the MC file
         case EC.TLC_CONFIG_VALUE_NOT_ASSIGNED_TO_CONSTANT_PARAM:
             b.append("The constant parameter %1% is not assigned a value by the configuration file.");
             break;
         case EC.TLC_CONFIG_RHS_ID_APPEARED_AFTER_LHS_ID:
-            b.append("In the configuration file, the identifier %1% appears\n" +
-                    "on the right-hand side of a <- after already appearing on the\n" +
-                    "left-hand side of one.");
+            b.append("In the configuration file, the identifier %1% appears\n"
+                    + "on the right-hand side of a <- after already appearing on the\n" + "left-hand side of one.");
             break;
         case EC.TLC_CONFIG_WRONG_SUBSTITUTION:
             b.append("The configuration file substitutes for %1% with the undefined identifier %2%.");
@@ -737,8 +736,7 @@ public class MP
             b.append("TLC requires %1% not to take any argument.");
             break;
         case EC.TLC_CONFIG_SPECIFIED_NOT_DEFINED:
-            b.append("The %1% %2% specified in the configuration file" +
-            		"\nis not defined in the specification.");
+            b.append("The %1% %2% specified in the configuration file" + "\nis not defined in the specification.");
             break;
         case EC.TLC_CONFIG_ID_HAS_VALUE:
             b.append("The %1% of %2% is equal to %3%");
@@ -770,8 +768,8 @@ public class MP
             b.append("TLC cannot handle this conjunct of the spec:\n%1%");
             break;
         case EC.TLC_CANT_HANDLE_TOO_MANY_NEXT_STATE_RELS:
-            b.append("The specification contains more than one conjunct of the form [][Next]_v," +
-            		"\nbut TLC can handle only specifications with one next-state relation.");
+            b.append("The specification contains more than one conjunct of the form [][Next]_v,"
+                    + "\nbut TLC can handle only specifications with one next-state relation.");
             break;
         case EC.TLC_CONFIG_PROPERTY_NOT_CORRECTLY_DEFINED:
             b.append("The property %1% is not correctly defined.");
@@ -788,33 +786,14 @@ public class MP
         case EC.TLC_NO_MODULES:
             b.append("In the configuration file, the module name %1% is not a module in the specification.");
             break;
-            
-            
-            
-            
+
         case EC.TLC_ENABLED_WRONG_FORMULA:
             b.append("In computing ENABLED, TLC encountered a temporal formula (%1%).\n%2%");
             break;
         case EC.TLC_ENCOUNTERED_FORMULA_IN_PREDICATE:
-            b.append("TLC encountered a temporal formula (%1%) when evaluating" +
-                    " a predicate or action.\n%2%");
+            b.append("TLC encountered a temporal formula (%1%) when evaluating" + " a predicate or action.\n%2%");
             break;
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
+
         /* ************************************************************************ */
         // state printing
         case EC.TLC_STATE_PRINT1:
@@ -826,7 +805,7 @@ public class MP
         case EC.TLC_STATE_PRINT3:
             b.append("%1%: Stuttering");
             break;
-            
+
         /* ************************************************************************ */
         // configuration file errors
         case EC.CFG_MISSING_ID:
@@ -836,12 +815,12 @@ public class MP
 
         case EC.CFG_TWICE_KEYWORD:
             b.append(CONFIG_FILE_ERROR);
-            b.append("The keyword %1% appeared twice.");
+            b.append("The keyword %2% appeared twice.");
             break;
 
         case EC.CFG_EXPECT_ID:
             b.append(CONFIG_FILE_ERROR);
-            b.append("Expected an identifier after %1%.");
+            b.append("Expected an identifier after %2%.");
             break;
 
         case EC.CFG_GENERAL:
@@ -850,7 +829,7 @@ public class MP
 
         case EC.CFG_EXPECTED_SYMBOL:
             b.append(CONFIG_FILE_ERROR);
-            b.append("It was expecting %1%, but did not find it.");
+            b.append("It was expecting %2%, but did not find it.");
             break;
         case EC.CFG_ERROR_READING_FILE:
             b.append("TLC encountered the following error when trying to read the configuration file %1%:\n%2%");
@@ -1075,7 +1054,7 @@ public class MP
         ToolIO.out.println(getMessage(STATE, code, parameters));
         DebugPrinter.print("leaving printState(String[])");
     }
-    
+
     /**
      * Prints parameterized TLC BUG message
      * @param errorCode 
@@ -1124,7 +1103,7 @@ public class MP
         // replace all parameters
         for (int i = 0; i < parameters.length; i++)
         {
-            if (parameters[i] == null) 
+            if (parameters[i] == null)
             {
                 break;
             }
