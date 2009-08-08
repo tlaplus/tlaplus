@@ -326,6 +326,26 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
             writer.addFormulaList(ModelHelper.createSourceContent(MODEL_PARAMETER_ACTION_CONSTRAINT, "action_constr",
                     config), "ACTION-CONSTRAINT", MODEL_PARAMETER_ACTION_CONSTRAINT);
 
+/*            int specType = config.getAttribute(MODEL_BEHAVIOR_SPEC_TYPE, MODEL_BEHAVIOR_TYPE_DEFAULT);
+            switch (specType) {
+            case MODEL_BEHAVIOR_TYPE_NO_SPEC:
+                // no spec - nothing to do
+                break;
+            case MODEL_BEHAVIOR_TYPE_SPEC_CLOSED:
+                // the specification name-formula pair
+                writer.addSpecDefinition(ModelHelper.createSpecificationContent(config),
+                        MODEL_BEHAVIOR_CLOSED_SPECIFICATION);
+                break;
+            case MODEL_BEHAVIOR_TYPE_SPEC_INIT_NEXT:
+
+                // FIXME 
+                // the specification name-formula pair
+                writer.addSpecDefinition(ModelHelper.createSpecificationContent(config),
+                        MODEL_BEHAVIOR_CLOSED_SPECIFICATION);
+
+                break;
+            }
+*/
             // the specification name-formula pair
             writer.addSpecDefinition(ModelHelper.createSpecificationContent(config),
                     MODEL_BEHAVIOR_CLOSED_SPECIFICATION);
@@ -422,12 +442,12 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
                                 int errorLineOffset = lineRegion.getOffset();
 
                                 // find the previous comment
-                                IRegion commentRegion = searchAdapter.find(errorLineOffset, ModelWriter.COMMENT, false, false,
-                                        false, false);
+                                IRegion commentRegion = searchAdapter.find(errorLineOffset, ModelWriter.COMMENT, false,
+                                        false, false, false);
 
                                 // find the next separator
-                                IRegion separatorRegion = searchAdapter.find(errorLineOffset, ModelWriter.SEP, true, false,
-                                        false, false);
+                                IRegion separatorRegion = searchAdapter.find(errorLineOffset, ModelWriter.SEP, true,
+                                        false, false, false);
                                 if (separatorRegion != null && commentRegion != null)
                                 {
                                     // find the first attribute inside of the comment
@@ -436,9 +456,9 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
                                     if (attributeRegion != null)
                                     {
                                         // get the attribute name without the attribute marker
-                                        attributeName = document.get(attributeRegion.getOffset(), attributeRegion
-                                                .getLength()).substring(ModelWriter.ATTRIBUTE.length());
-                                        
+                                        attributeName = document.get(attributeRegion.getOffset(),
+                                                attributeRegion.getLength()).substring(ModelWriter.ATTRIBUTE.length());
+
                                         // find the index
                                         IRegion indexRegion = searchAdapter.find(attributeRegion.getOffset()
                                                 + attributeRegion.getLength(), ModelWriter.INDEX + "[0-9]+", true,
@@ -468,24 +488,24 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
                                             // no index
                                         }
 
-                                        
                                         // the first character of the next line after the comment
-                                        
-                                        IRegion firstBlockLine = document.getLineInformation( document.getLineOfOffset(commentRegion.getOffset()) + 1);
+
+                                        IRegion firstBlockLine = document.getLineInformation(document
+                                                .getLineOfOffset(commentRegion.getOffset()) + 1);
                                         int beginBlockOffset = firstBlockLine.getOffset();
                                         // get the user input
-                                        if (attributeName.equals(MODEL_PARAMETER_NEW_DEFINITIONS)) 
+                                        if (attributeName.equals(MODEL_PARAMETER_NEW_DEFINITIONS))
                                         {
                                             // there is no identifier in this block
                                             // the user input starts directly from the first character
-                                        } else 
+                                        } else
                                         {
                                             // the id-line representing the identifier "id_number ==" comes first
                                             // the user input starts only on the second line
-                                            // so adding the length of the id-line 
+                                            // so adding the length of the id-line
                                             beginBlockOffset = beginBlockOffset + firstBlockLine.getLength() + 1;
                                         }
-                                        
+
                                         // calculate the error region
                                         Region errorRegion = null;
                                         // end line coordinate
@@ -493,14 +513,16 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
                                         {
                                             // not set
                                             // marc one char starting from the begin column
-                                            errorRegion = new Region(errorLineOffset + coordinates[1] - beginBlockOffset, 1);
+                                            errorRegion = new Region(errorLineOffset + coordinates[1]
+                                                    - beginBlockOffset, 1);
                                         } else if (coordinates[2] == coordinates[0])
                                         {
                                             // equals to the begin line
                                             // mark the actual error region
                                             int length = coordinates[3] - coordinates[1];
-                                            
-                                            errorRegion = new Region(errorLineOffset + coordinates[1] - beginBlockOffset, (length == 0) ? 1 : length );
+
+                                            errorRegion = new Region(errorLineOffset + coordinates[1]
+                                                    - beginBlockOffset, (length == 0) ? 1 : length);
                                         } else
                                         {
                                             // the prat of the first line from the begin column to the end
@@ -515,7 +537,8 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
                                             // the part of the last line to the end column
                                             summedLength += coordinates[3];
 
-                                            errorRegion = new Region(errorLineOffset + coordinates[1] - beginBlockOffset, summedLength);
+                                            errorRegion = new Region(errorLineOffset + coordinates[1]
+                                                    - beginBlockOffset, summedLength);
                                         }
 
                                         // install the marker showing the information in the corresponding attribute
