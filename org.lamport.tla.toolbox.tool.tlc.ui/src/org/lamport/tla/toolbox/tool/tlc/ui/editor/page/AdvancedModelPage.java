@@ -379,7 +379,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         section.setLayoutData(gd);
 
         Composite newDefinitionsArea = (Composite) section.getClient();
-        newDefinitionsSource = FormHelper.createSourceViewer(toolkit, newDefinitionsArea, SWT.V_SCROLL);
+        newDefinitionsSource = FormHelper.createFormsSourceViewer(toolkit, newDefinitionsArea, SWT.V_SCROLL);
         // layout of the source viewer
         twd = new TableWrapData(TableWrapData.FILL);
         twd.heightHint = 60;
@@ -421,7 +421,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         section.setLayoutData(gd);
 
         Composite constraintArea = (Composite) section.getClient();
-        constraintSource = FormHelper.createSourceViewer(toolkit, constraintArea, SWT.V_SCROLL);
+        constraintSource = FormHelper.createFormsSourceViewer(toolkit, constraintArea, SWT.V_SCROLL);
         // layout of the source viewer
         twd = new TableWrapData(TableWrapData.FILL);
         twd.heightHint = 60;
@@ -444,7 +444,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         section.setLayoutData(gd);
 
         Composite actionConstraintArea = (Composite) section.getClient();
-        actionConstraintSource = FormHelper.createSourceViewer(toolkit, actionConstraintArea, SWT.V_SCROLL);
+        actionConstraintSource = FormHelper.createFormsSourceViewer(toolkit, actionConstraintArea, SWT.V_SCROLL);
         // layout of the source viewer
         twd = new TableWrapData(TableWrapData.FILL);
         twd.heightHint = 60;
@@ -465,7 +465,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         section.setLayoutData(gd);
 
         Composite modelValueArea = (Composite) section.getClient();
-        modelValuesSource = FormHelper.createSourceViewer(toolkit, modelValueArea, SWT.V_SCROLL);
+        modelValuesSource = FormHelper.createFormsSourceViewer(toolkit, modelValueArea, SWT.V_SCROLL);
         // layout of the source viewer
         twd = new TableWrapData(TableWrapData.FILL);
         twd.heightHint = 60;
@@ -532,7 +532,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         gd.horizontalIndent = 10;
         viewLabel.setLayoutData(gd);
         // field view
-        viewSource = FormHelper.createSourceViewer(toolkit, area, SWT.V_SCROLL);
+        viewSource = FormHelper.createFormsSourceViewer(toolkit, area, SWT.V_SCROLL);
         // layout of the source viewer
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.grabExcessHorizontalSpace = true;

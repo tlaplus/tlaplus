@@ -135,13 +135,13 @@ public class FormHelper
     }
 
     /**
-     * creates a source viewer with given parent, toolkit and flags
+     * creates a source viewer with given parent, toolkit and flags adopted to a form
      * @param toolkit
      * @param parent
      * @param flags
      * @return
      */
-    public static SourceViewer createSourceViewer(FormToolkit toolkit, Composite parent, int flags)
+    public static SourceViewer createFormsSourceViewer(FormToolkit toolkit, Composite parent, int flags)
     {
         SourceViewer sourceViewer = createSourceViewer(parent, flags);
         sourceViewer.setData(FormToolkit.KEY_DRAW_BORDER, FormToolkit.TREE_BORDER);
@@ -151,6 +151,45 @@ public class FormHelper
 
         return sourceViewer;
     }
+
+    /**
+     * creates a forms-adopted read-only source viewer
+     * @param toolkit
+     * @param parent
+     * @param flags
+     * @return
+     */
+    public static SourceViewer createFormsOutputViewer(FormToolkit toolkit, Composite parent, int flags)
+    {
+        SourceViewer sourceViewer = createOutputViewer(parent, flags);
+        sourceViewer.setData(FormToolkit.KEY_DRAW_BORDER, FormToolkit.TREE_BORDER);
+        
+        sourceViewer.getTextWidget().setData(FormToolkit.KEY_DRAW_BORDER, FormToolkit.TREE_BORDER);
+        toolkit.adapt(sourceViewer.getTextWidget(), true, true);
+
+        return sourceViewer;
+    }
+
+    
+    /**
+     * Creates the source viewer
+     * @param parent
+     * @param flags
+     * @return
+     */
+    public static SourceViewer createOutputViewer(Composite parent, int flags)
+    {
+        SourceViewer sourceViewer = new SourceViewer(parent, null, null, false, flags);
+        SourceViewerConfiguration configuration = new SourceViewerConfiguration();
+        sourceViewer.configure(configuration);
+        sourceViewer.setTabsToSpacesConverter(getTabToSpacesConverter());
+
+        StyledText control = sourceViewer.getTextWidget();
+        control.setFont(TLCUIActivator.getDefault().getOutputFont());
+        control.setEditable(false);
+        return sourceViewer;
+    }
+
     
     /**
      * Creates the source viewer

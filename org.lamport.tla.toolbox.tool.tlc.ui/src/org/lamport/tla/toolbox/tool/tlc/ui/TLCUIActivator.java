@@ -20,8 +20,9 @@ public class TLCUIActivator extends AbstractUIPlugin
     private static TLCUIActivator plugin;
 
     private Font courierFont;
-    
-    // update the CNF content  
+    private Font outputFont;
+
+    // update the CNF content
     /*
     private PerspectiveAdapter perspectiveAdapter = new PerspectiveAdapter() 
     {
@@ -42,7 +43,7 @@ public class TLCUIActivator extends AbstractUIPlugin
         }
     };
     */
-    
+
     /**
      * The constructor
      */
@@ -79,6 +80,14 @@ public class TLCUIActivator extends AbstractUIPlugin
         {
             window.removePerspectiveListener(perspectiveAdapter);
         }*/
+        if (courierFont != null)
+        {
+            courierFont.dispose();
+        }
+        if (outputFont != null)
+        {
+            outputFont.dispose();
+        }
         plugin = null;
         super.stop(context);
     }
@@ -103,6 +112,18 @@ public class TLCUIActivator extends AbstractUIPlugin
     }
 
     /**
+     * @return
+     */
+    public Font getOutputFont()
+    {
+        if (outputFont == null)
+        {
+            outputFont = new Font(UIHelper.getShellProvider().getShell().getDisplay(), "Courier New", 8, SWT.NORMAL);
+        }
+        return outputFont;
+    }
+
+    /**
      * Returns an image descriptor for the image file at the given
      * plug-in relative path
      *
@@ -124,5 +145,12 @@ public class TLCUIActivator extends AbstractUIPlugin
         getDefault().getLog().log(new Status(Status.ERROR, TLCUIActivator.PLUGIN_ID, message, e));
     }
 
-    
+    /**
+     * @param string
+     */
+    public static void logDebug(String string)
+    {
+        System.out.println(string);
+    }
+
 }

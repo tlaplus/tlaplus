@@ -7,6 +7,7 @@ import org.eclipse.core.runtime.Assert;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.lamport.tla.toolbox.tool.tlc.output.ITLCOutputListener;
 import org.lamport.tla.toolbox.tool.tlc.output.LogFileReader;
+import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 
 /**
@@ -28,7 +29,7 @@ public class TLCOutputSourceRegistry
     {
         Assert.isNotNull(source);
         
-        System.out.println("adding source " + source.getSourceName() + " " + source.getSourcePrio());
+        TLCUIActivator.logDebug("adding source " + source.getSourceName() + " " + source.getSourcePrio());
 
         ITLCOutputSource existingSource = (ITLCOutputSource) this.sources.get(source.getSourceName());
 
@@ -57,6 +58,7 @@ public class TLCOutputSourceRegistry
 
     /**
      * Connect the source to the listener
+     * @return 
      */
     public synchronized boolean connect(ITLCOutputListener listener)
     {
@@ -81,7 +83,7 @@ public class TLCOutputSourceRegistry
                 Assert.isTrue((ITLCOutputSource) this.sources.get(listener.getProcessName()) != null);
             } else
             {
-                System.out.println("No source for " + listener.getProcessName() + " found.");
+                TLCUIActivator.logDebug("No source for " + listener.getProcessName() + " found.");
                 return false;
             }
 
@@ -90,7 +92,7 @@ public class TLCOutputSourceRegistry
             source.addTLCStatusListener(listener);
         }
 
-        System.out.println("Connected " + source.getListeners().length);
+        TLCUIActivator.logDebug("Connected " + source.getListeners().length);
         return true;
     }
 

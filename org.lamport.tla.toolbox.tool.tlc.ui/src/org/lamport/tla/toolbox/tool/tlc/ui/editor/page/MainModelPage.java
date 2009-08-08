@@ -18,6 +18,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.forms.HyperlinkGroup;
 import org.eclipse.ui.forms.IManagedForm;
@@ -58,11 +59,12 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
     public static final String ID = "MainModelPage";
     public static final String TITLE = "Model Overview";
 
+    // private Button noSpecRadio;
     private Button closedFormulaRadio;
     private Button initNextFairnessRadio;
     private SourceViewer initFormulaSource;
     private SourceViewer nextFormulaSource;
-    private SourceViewer fairnessFormulaSource;
+    // private SourceViewer fairnessFormulaSource;
     private SourceViewer specSource;
     private Button checkDeadlockButton;
     private Text workers;
@@ -79,7 +81,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
                 closedFormulaRadio.setSelection(true);
                 initNextFairnessRadio.setSelection(false);
             } else if (e.widget == initFormulaSource.getControl() || e.widget == nextFormulaSource.getControl()
-                    || e.widget == fairnessFormulaSource.getControl())
+                    /* || e.widget == fairnessFormulaSource.getControl()*/ )
             {
                 // noSpecRadio.setSelection(false);
                 closedFormulaRadio.setSelection(false);
@@ -149,9 +151,9 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         this.nextFormulaSource.setDocument(nextDoc);
 
         // fairness
-        String modelFairness = getConfig().getAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_FAIRNESS, EMPTY_STRING);
-        Document fairnessDoc = new Document(modelFairness);
-        this.fairnessFormulaSource.setDocument(fairnessDoc);
+//        String modelFairness = getConfig().getAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_FAIRNESS, EMPTY_STRING);
+//        Document fairnessDoc = new Document(modelFairness);
+//        this.fairnessFormulaSource.setDocument(fairnessDoc);
 
         // number of workers
         workers.setText("" + getConfig().getAttribute(LAUNCH_NUMBER_OF_WORKERS, LAUNCH_NUMBER_OF_WORKERS_DEFAULT));
@@ -357,8 +359,8 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         getConfig().setAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT, nextFormula);
 
         // fairness formula
-        String fairnessFormula = FormHelper.trimTrailingSpaces(this.fairnessFormulaSource.getDocument().get());
-        getConfig().setAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_FAIRNESS, fairnessFormula);
+//        String fairnessFormula = FormHelper.trimTrailingSpaces(this.fairnessFormulaSource.getDocument().get());
+//        getConfig().setAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_FAIRNESS, fairnessFormula);
 
         // mode
         int specType = /* (this.noSpecRadio.getSelection()) ? MODEL_BEHAVIOR_TYPE_NO_SPEC :*/(this.closedFormulaRadio
@@ -463,10 +465,13 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         closedFormulaRadio.addSelectionListener(whatIsTheSpecListener);
 
         // spec
-        toolkit.createLabel(behaviorArea, "Spec:");
-        specSource = FormHelper.createSourceViewer(toolkit, behaviorArea, SWT.NONE | SWT.SINGLE);
+        Label specLabel = toolkit.createLabel(behaviorArea, "Spec:");
+        gd = new GridData();
+        gd.verticalAlignment = SWT.TOP;
+        specLabel.setLayoutData(gd);
+        specSource = FormHelper.createFormsSourceViewer(toolkit, behaviorArea, SWT.V_SCROLL);
         gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.heightHint = 18;
+        gd.heightHint = 55;
         specSource.getTextWidget().setLayoutData(gd);
         specSource.getTextWidget().addModifyListener(whatIsTheSpecListener);
         specSource.getTextWidget().addModifyListener(widgetActivatingListener);
@@ -481,7 +486,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
         // init
         toolkit.createLabel(behaviorArea, "Init:");
-        initFormulaSource = FormHelper.createSourceViewer(toolkit, behaviorArea, SWT.NONE | SWT.SINGLE);
+        initFormulaSource = FormHelper.createFormsSourceViewer(toolkit, behaviorArea, SWT.NONE | SWT.SINGLE);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.heightHint = 18;
         initFormulaSource.getTextWidget().setLayoutData(gd);
@@ -491,7 +496,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
         // next
         toolkit.createLabel(behaviorArea, "Next:");
-        nextFormulaSource = FormHelper.createSourceViewer(toolkit, behaviorArea, SWT.NONE | SWT.SINGLE);
+        nextFormulaSource = FormHelper.createFormsSourceViewer(toolkit, behaviorArea, SWT.NONE | SWT.SINGLE);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.heightHint = 18;
         nextFormulaSource.getTextWidget().setLayoutData(gd);
@@ -500,14 +505,14 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         dm.bindAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT, nextFormulaSource, behaviorPart);
 
         // fairness
-        toolkit.createLabel(behaviorArea, "Fairness:");
-        fairnessFormulaSource = FormHelper.createSourceViewer(toolkit, behaviorArea, SWT.NONE | SWT.SINGLE);
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.heightHint = 18;
-        fairnessFormulaSource.getTextWidget().setLayoutData(gd);
-        fairnessFormulaSource.getTextWidget().addModifyListener(whatIsTheSpecListener);
-        fairnessFormulaSource.getTextWidget().addModifyListener(widgetActivatingListener);
-        dm.bindAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_FAIRNESS, fairnessFormulaSource, behaviorPart);
+//        toolkit.createLabel(behaviorArea, "Fairness:");
+//        fairnessFormulaSource = FormHelper.createSourceViewer(toolkit, behaviorArea, SWT.NONE | SWT.SINGLE);
+//        gd = new GridData(GridData.FILL_HORIZONTAL);
+//        gd.heightHint = 18;
+//        fairnessFormulaSource.getTextWidget().setLayoutData(gd);
+//        fairnessFormulaSource.getTextWidget().addModifyListener(whatIsTheSpecListener);
+//        fairnessFormulaSource.getTextWidget().addModifyListener(widgetActivatingListener);
+//        dm.bindAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_FAIRNESS, fairnessFormulaSource, behaviorPart);
 
         // ------------------------------------------
         // what to check

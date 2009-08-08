@@ -613,4 +613,19 @@ Console Facory
          </enabledWhen>
       </handler>
    </extension>
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            category="toolbox.ui.preferences.GeneralPreferencePage"
+            class="org.lamport.tla.toolbox.tool.tlc.ui.preference.TLCPreferencePage"
+            id="toolbox.ui.preferences.TLCPreferencePage"
+            name="TLC Model Checker Preferences">
+      </page>
+   </extension>
+   <extension
+         point="org.eclipse.core.runtime.preferences">
+      <initializer
+            class="org.lamport.tla.toolbox.tool.tlc.ui.preference.TLCPreferenceInitializer">
+      </initializer>
+   </extension>
 </plugin>

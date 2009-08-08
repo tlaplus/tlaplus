@@ -6,18 +6,23 @@ import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.part.FileEditorInput;
+import org.lamport.tla.toolbox.tool.tlc.launch.TLCModelLaunchDelegate;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.AdvancedModelPage;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.BasicFormPage;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.MainModelPage;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.ResultPage;
+import org.lamport.tla.toolbox.tool.tlc.ui.preference.ITLCPreferenceConstants;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.SemanticHelper;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper.IFileProvider;
@@ -178,6 +183,14 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
     {
         this.commitPages(monitor, true);
         ModelHelper.doSaveConfigurationCopy(configurationCopy);
+        boolean revalidate = TLCUIActivator.getDefault().getPreferenceStore().getBoolean(
+                ITLCPreferenceConstants.I_TLC_REVALIDATE_ON_MODIFY);
+        if (revalidate) 
+        {
+            // run sany
+            launchModel(TLCModelLaunchDelegate.MODE_GENERATE);
+        }
+
         this.editorDirtyStateChanged();
     }
 
@@ -211,6 +224,39 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
         }
     }
 
+    /**
+     * Launch TLC
+     * @param mode
+     */
+    public void launchModel(String mode)
+    {
+        IProgressMonitor monitor = new NullProgressMonitor();
+
+        // save the editor if not saved
+        if (isDirty())
+        {
+            doSave(new SubProgressMonitor(monitor, 1));
+        }
+
+        if (!isComplete())
+        {
+            MessageDialog.openError(getSite().getShell(), "Model processing not allowed",
+                    "The model contains errors, which should be corrected before further processing");
+            return;
+        }
+
+        // launching the config
+        try
+        {
+            getConfig().launch(mode, new SubProgressMonitor(monitor, 1), true);
+        } catch (CoreException e)
+        {
+            TLCUIActivator.logError("Error launching the configuration " + getConfig().getName(), e);
+        }
+
+    }
+
+    
     /*
      * @see org.eclipse.ui.forms.editor.FormEditor#addPages()
      */

@@ -6,17 +6,13 @@ import java.util.List;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.ListenerList;
-import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.dialogs.IMessageProvider;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
@@ -82,45 +78,19 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
     }
 
     /**
-     * Launch TLC
-     * @param mode
+     * delegate to the editor
      */
-    private void launchModel(String mode)
-    {
-        IProgressMonitor monitor = new NullProgressMonitor();
-
-        // save the editor if not saved
-        if (getEditor().isDirty())
-        {
-            getEditor().doSave(new SubProgressMonitor(monitor, 1));
-        }
-
-        if (!((ModelEditor) getEditor()).isComplete())
-        {
-            MessageDialog.openError(getSite().getShell(), "Model processing not allowed",
-                    "The model contains errors, which should be corrected before further processing");
-            return;
-        }
-
-        // launching the config
-        try
-        {
-            getConfig().launch(mode, new SubProgressMonitor(monitor, 1), true);
-        } catch (CoreException e)
-        {
-            TLCUIActivator.logError("Error launching the configuration " + getConfig().getName(), e);
-        }
-
-    }
-
     public void doRun()
     {
-        launchModel(TLCModelLaunchDelegate.MODE_MODELCHECK);
+        ((ModelEditor) getEditor()).launchModel(TLCModelLaunchDelegate.MODE_MODELCHECK);
     }
 
+    /**
+     * delegate to the editor
+     */
     public void doGenerate()
     {
-        launchModel(TLCModelLaunchDelegate.MODE_GENERATE);
+        ((ModelEditor) getEditor()).launchModel(TLCModelLaunchDelegate.MODE_GENERATE);
     }
 
     /**
