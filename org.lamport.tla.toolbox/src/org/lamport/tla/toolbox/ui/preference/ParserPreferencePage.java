@@ -45,7 +45,7 @@ public class ParserPreferencePage extends FieldEditorPreferencePage implements I
     protected void createFieldEditors()
     {
 
-        addField(new BooleanFieldEditor(IPreferenceConstants.P_PARSER_POPUP_ERRORS,
+        addField(new BooleanFieldEditor(IPreferenceConstants.I_PARSER_POPUP_ERRORS,
                 "&Popup problem window on parse errors", getFieldEditorParent()));
 
         addField(new BooleanFieldEditor(IPreferenceConstants.I_PARSE_MODULE_ON_MODIFY,

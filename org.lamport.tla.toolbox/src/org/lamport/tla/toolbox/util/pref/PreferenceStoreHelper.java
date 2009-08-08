@@ -17,7 +17,6 @@ import org.osgi.service.prefs.Preferences;
  */
 public class PreferenceStoreHelper
 {
-
     /**
      * Stores root file name in project preferences
      * @param project
@@ -50,50 +49,6 @@ public class PreferenceStoreHelper
     }
 
     /**
-     * Store the information about opened editors in project preferences
-     * @param project
-     * @param openedModules
-     * @deprecated
-     */
-    public static void storeOpenedEditors(IProject project, String[] openedModules)
-    {
-        IEclipsePreferences projectPrefs = getProjectPreferences(project);
-        Preferences opened = projectPrefs.node(IPreferenceConstants.P_PROJECT_OPENED_MODULES);
-        
-        clearPreferenceNode(opened);
-        
-        for (int i =0; i < openedModules.length; i++) 
-        {
-            opened.put(openedModules[i], openedModules[i]);
-        }
-        storeProferences(opened);
-    }
-
-    /**
-     * Retrieves the information about the opened editors from project preferences
-     * @param project
-     * @return
-     * @deprecated
-     */
-    public static String[] getOpenedEditors(IProject project) 
-    {
-        IEclipsePreferences projectPrefs = getProjectPreferences(project);
-        Preferences opened = projectPrefs.node(IPreferenceConstants.P_PROJECT_OPENED_MODULES);
-        
-        String[] children = new String[0];
-        try
-        {
-            children = opened.childrenNames();
-        } catch (BackingStoreException e)
-        {
-            e.printStackTrace();
-        }
-        return children;
-    }
-
-    
-    
-    /**
      * Retrieves project preference node
      * @param project 
      * @return
@@ -123,8 +78,7 @@ public class PreferenceStoreHelper
             preferences.flush();
         } catch (BackingStoreException e)
         {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            Activator.logError("Error storing the preference node", e);
         }
     }
     
@@ -136,8 +90,7 @@ public class PreferenceStoreHelper
             preferenceNode.clear();
         } catch (BackingStoreException e)
         {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            Activator.logError("Error clearing the preference node", e);
         }
         
     }
@@ -162,5 +115,54 @@ public class PreferenceStoreHelper
         IPreferenceStore store = Activator.getDefault().getPreferenceStore();
         return store;
     }
+
     
+    /**
+     * @deprecated
+     */
+    public static final String P_PROJECT_OPENED_MODULES = "ProjectOpenedModules";
+
+    /**
+     * Store the information about opened editors in project preferences
+     * @param project
+     * @param openedModules
+     * @deprecated
+     */
+    public static void storeOpenedEditors(IProject project, String[] openedModules)
+    {
+        IEclipsePreferences projectPrefs = getProjectPreferences(project);
+        Preferences opened = projectPrefs.node(P_PROJECT_OPENED_MODULES);
+        
+        clearPreferenceNode(opened);
+        
+        for (int i =0; i < openedModules.length; i++) 
+        {
+            opened.put(openedModules[i], openedModules[i]);
+        }
+        storeProferences(opened);
+    }
+
+
+    /**
+     * Retrieves the information about the opened editors from project preferences
+     * @param project
+     * @return
+     * @deprecated
+     */
+    public static String[] getOpenedEditors(IProject project) 
+    {
+        IEclipsePreferences projectPrefs = getProjectPreferences(project);
+        Preferences opened = projectPrefs.node(P_PROJECT_OPENED_MODULES);
+        
+        String[] children = new String[0];
+        try
+        {
+            children = opened.childrenNames();
+        } catch (BackingStoreException e)
+        {
+            Activator.logError("Error reading preferences", e);
+        }
+        return children;
+    }
+
 }

@@ -21,6 +21,8 @@ import org.lamport.tla.toolbox.ui.handler.SwichPerspectiveHandler;
 import org.lamport.tla.toolbox.ui.view.ProblemView;
 import org.lamport.tla.toolbox.util.TLAMarkerHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
+import org.lamport.tla.toolbox.util.pref.IPreferenceConstants;
+import org.lamport.tla.toolbox.util.pref.PreferenceStoreHelper;
 import org.osgi.framework.BundleContext;
 
 /**
@@ -64,7 +66,7 @@ public class Activator extends AbstractUIPlugin
         // register the listeners
         IWorkspace workspace = ResourcesPlugin.getWorkspace();
 
-        // activate handler to show the radio buttons in perspective selection 
+        // activate handler to show the radio buttons in perspective selection
         UIJob job = new UIJob("InitCommandsWorkaround") {
             public IStatus runInUIThread(IProgressMonitor monitor)
             {
@@ -132,22 +134,27 @@ public class Activator extends AbstractUIPlugin
                 UIHelper.runUIAsync(new Runnable() {
                     public void run()
                     {
-                        if (TLAMarkerHelper.currentSpecHasProblems())
+                        boolean showProblems = PreferenceStoreHelper.getInstancePreferenceStore().getBoolean(
+                                IPreferenceConstants.I_PARSER_POPUP_ERRORS);
+                        if (showProblems)
                         {
-                            ProblemView view = (ProblemView) UIHelper.getActivePage().findView(ProblemView.ID);
-                            // show
-                            if (view != null)
+                            if (TLAMarkerHelper.currentSpecHasProblems())
                             {
-                                // already shown, hide
+                                ProblemView view = (ProblemView) UIHelper.getActivePage().findView(ProblemView.ID);
+                                // show
+                                if (view != null)
+                                {
+                                    // already shown, hide
+                                    UIHelper.hideView(ProblemView.ID);
+                                }
+
+                                // not shown, show
+                                UIHelper.openView(ProblemView.ID);
+                            } else
+                            {
+                                // hide
                                 UIHelper.hideView(ProblemView.ID);
                             }
-
-                            // not shown, show
-                            UIHelper.openView(ProblemView.ID);
-                        } else
-                        {
-                            // hide
-                            UIHelper.hideView(ProblemView.ID);
                         }
                     }
                 });
@@ -222,7 +229,7 @@ public class Activator extends AbstractUIPlugin
      */
     public static void logDebug(String message)
     {
-        System.out.println(message);        
+        System.out.println(message);
     }
 
     /**
@@ -231,7 +238,7 @@ public class Activator extends AbstractUIPlugin
      */
     public static void logInfo(String message)
     {
-        getDefault().getLog().log(new Status(IStatus.INFO, PLUGIN_ID, message));        
+        getDefault().getLog().log(new Status(IStatus.INFO, PLUGIN_ID, message));
     }
 
     /**

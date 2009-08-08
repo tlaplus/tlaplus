@@ -358,37 +358,12 @@
       <!-- file menu spec part -->
       <menuContribution
             locationURI="menu:toolbox.file.menu?after=toolbox.file.spec.separator">
-         <command
-               commandId="toolbox.command.spec.new"
-               icon="icons/full/newspec_wiz.gif"
-               id="toolbox.menu.spec.new"
-               label="New Spec..."
-               mnemonic="N">
-            <visibleWhen
-                  checkEnabled="true">
-               <with
-                     variable="activeWorkbenchWindow.activePerspective">
-                  <equals
-                        value="org.lamport.tla.toolbox.ui.perspective.initial">
-                  </equals>
-               </with>
-            </visibleWhen>
-         </command>
          <menu
                icon="icons/full/obj16/spec_obj.gif"
                id="toolbox.menu.spec.open"
                label="Open Spec"
                mnemonic="O"
                tooltip="Opens existing specification">
-            <visibleWhen
-                  checkEnabled="true">
-               <with
-                     variable="activeWorkbenchWindow.activePerspective">
-                  <equals
-                        value="org.lamport.tla.toolbox.ui.perspective.initial">
-                  </equals>
-               </with>
-            </visibleWhen>
             <dynamic
                   class="org.lamport.tla.toolbox.ui.contribution.SpecListContributionItem"
                   id="toolbox.menu.spec.open.dynamic">
@@ -455,7 +430,7 @@
             locationURI="menu:toolbox.file.menu?after=toolbox.file.module.separator">
          <menu
                id="toolbox.menu.module.open"
-               label="Open Module"
+               label="Open TLA+ Module"
                mnemonic="o"
                tooltip="Open a TLA+ Module">
             <visibleWhen
@@ -478,7 +453,7 @@
                commandId="toolbox.command.module.parse.active"
                icon="icons/full/obj16/complete_task.gif"
                id="toolbox.menu.module.parse"
-               label="Parse Module"
+               label="Parse TLA+ Module"
                mnemonic="p">
             <visibleWhen
                   checkEnabled="true">
@@ -496,7 +471,7 @@
                commandId="toolbox.command.module.translate.active"
                icon="icons/full/obj16/start_ccs_task.gif"
                id="toolbox.menu.run.translate"
-               label="PCal Translate Module"
+               label="Translate PlusCal to TLA+"
                mnemonic="t">
             <visibleWhen
                   checkEnabled="true">
@@ -1106,17 +1081,15 @@
             type="toolbox.markers.ToolboxProblemMarker">
       </super>
    </extension>
-
-   
-<!--
-  Marker resolution
--->
    <extension
          point="org.eclipse.core.runtime.preferences">
       <initializer
             class="org.lamport.tla.toolbox.util.pref.PreferenceInitializer">
       </initializer>
    </extension>
+<!--
+  Marker resolution
+-->
    <extension
          point="org.eclipse.ui.ide.markerResolution">
          <markerResolutionGenerator

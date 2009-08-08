@@ -37,7 +37,7 @@ public class TranslatorPreferencePage extends FieldEditorPreferencePage implemen
     protected void createFieldEditors()
     {
 
-        addField(new BooleanFieldEditor(IPreferenceConstants.P_TRANSLATE_POPUP_ERRORS,
+        addField(new BooleanFieldEditor(IPreferenceConstants.I_TRANSLATE_POPUP_ERRORS,
                 "&Popup problem window on translator errors", getFieldEditorParent()));
 
         addField(new BooleanFieldEditor(IPreferenceConstants.I_TRANSLATE_MODULE_ON_MODIFY,

@@ -10,15 +10,13 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer
 {
 
     /**
-     * 
-     * 
      * @see org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer#initializeDefaultPreferences()
      */
     public void initializeDefaultPreferences()
     {
 
         IPreferenceStore store = PreferenceStoreHelper.getInstancePreferenceStore();
-        store.setDefault(IPreferenceConstants.P_PARSER_POPUP_ERRORS, false);
+        store.setDefault(IPreferenceConstants.I_PARSER_POPUP_ERRORS, false);
 
         // instance based properties
         store.setDefault(IPreferenceConstants.I_RESTORE_LAST_SPEC, true);

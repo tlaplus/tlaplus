@@ -23,6 +23,8 @@ import org.lamport.tla.toolbox.util.UIHelper;
 public class NewSpecHandler extends AbstractHandler implements IHandler
 {
 
+    public static final String COMMAND_ID = "toolbox.command.spec.new";
+
     /**
      * @see org.eclipse.core.commands.AbstractHandler#execute(org.eclipse.core.commands.ExecutionEvent)
      */

@@ -6,27 +6,46 @@ package org.lamport.tla.toolbox.util.pref;
  */
 public interface IPreferenceConstants
 {
-    // TODO COMMENTS
-    public static final String P_PROJECT_ROOT_FILE      = "ProjectRootFile";
-    public static final String P_PROJECT_OPENED_MODULES = "ProjectOpenedModules";
     public static final String DEFAULT_NOT_SET                = "not set";
+
     
-    public static final String P_PARSER_POPUP_ERRORS        = "parserPopupErrors";
-    public static final String P_TRANSLATE_POPUP_ERRORS     = "translatorPopupErrors";
-    
+    /**
+     * Project preference storing the root file
+     */
+    public static final String P_PROJECT_ROOT_FILE      = "ProjectRootFile";
+    /**
+     * Popup parser errors
+     */
+    public static final String I_PARSER_POPUP_ERRORS        = "parserPopupErrors";
+    /**
+     * Popup PCal errors
+     */
+    public static final String I_TRANSLATE_POPUP_ERRORS     = "translatorPopupErrors";
     /** 
      * restore the same state of the specification after a restart
-     *  
      */
     public static final String I_RESTORE_LAST_SPEC          = "restoreLastSpec";
-    
+    /**
+     * Re-parse root on modify
+     */
     public static final String I_PARSE_FILES_ON_MODIFY      = "autoParseTopModules";
+    /**
+     * Re-parse dependent modules on modify 
+     */
     public static final String I_PARSE_MODULE_ON_MODIFY     = "autoParseModule";
+    /**
+     * Re-parse spec on modify
+     */
     public static final String I_PARSE_SPEC_ON_MODIFY       = "autoParseSpec";
+    /**
+     * Re-translate module on modify
+     */
     public static final String I_TRANSLATE_MODULE_ON_MODIFY = "autoTranslateModule";
-    
+    /**
+     * Name of the spec currently loaded
+     */
     public static final String I_SPEC_LOADED                = "specLoadedName";
-
+    
     /** Resource persistent property for sticking the pcal call params */
     public static final String PCAL_CAL_PARAMS              = "pCalCallParams";
     /** Session property indicating if the resource has Pcal algorithm */
