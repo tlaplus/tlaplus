@@ -54,6 +54,13 @@ public class ModelConfig implements ValueConstants, Serializable
     private static final String Type = "TYPE";
     private static final String TypeConstraint = "TYPE_CONSTRAINT";
 
+    /**
+     * All keywords used in the configuration file
+     */
+    public final static String[] ALL_KEYWORDS = { Constant, Constants, Constraint, Constraints, ActionConstraint,
+            ActionConstraints, Invariant, Invariants, Init, Next, View, Symmetry, Spec, Prop, Props, Type,
+            TypeConstraint };
+
     private Hashtable configTbl;
     private Hashtable overrides;
     private Hashtable modConstants;
@@ -125,9 +132,10 @@ public class ModelConfig implements ValueConstants, Serializable
         {
             // SZ 23.02.2009: separated file resolution from stream retrieval
             FileInputStream fis = FileUtil.newFIS(resolver.resolve(this.configFileName, false));
-            if (fis == null) 
+            if (fis == null)
             {
-                throw new ConfigFileException(EC.CFG_ERROR_READING_FILE, new String[]{this.configFileName, "File not found."});
+                throw new ConfigFileException(EC.CFG_ERROR_READING_FILE, new String[] { this.configFileName,
+                        "File not found." });
             }
             SimpleCharStream scs = new SimpleCharStream(fis, 1, 1);
             TLAplusParserTokenManager tmgr = new TLAplusParserTokenManager(scs, 2);
@@ -142,12 +150,12 @@ public class ModelConfig implements ValueConstants, Serializable
                     tt = getNextToken(tmgr);
                     if (tt.kind == TLAplusParserConstants.EOF)
                     {
-                        throw new ConfigFileException(EC.CFG_MISSING_ID, new String[]{Init, String.valueOf(loc)});
+                        throw new ConfigFileException(EC.CFG_MISSING_ID, new String[] { String.valueOf(loc), Init });
                     }
                     String old = (String) this.configTbl.put(Init, tt.image);
                     if (old.length() != 0)
                     {
-                        throw new ConfigFileException(EC.CFG_TWICE_KEYWORD, new String[]{Spec, String.valueOf(loc)});
+                        throw new ConfigFileException(EC.CFG_TWICE_KEYWORD, new String[] { String.valueOf(loc), Spec });
                     }
                     tt = getNextToken(tmgr);
                 } else if (tval.equals(Next))
@@ -155,12 +163,12 @@ public class ModelConfig implements ValueConstants, Serializable
                     tt = getNextToken(tmgr);
                     if (tt.kind == TLAplusParserConstants.EOF)
                     {
-                        throw new ConfigFileException(EC.CFG_MISSING_ID, new String[]{Next, String.valueOf(loc)});
+                        throw new ConfigFileException(EC.CFG_MISSING_ID, new String[] { String.valueOf(loc), Next });
                     }
                     String old = (String) this.configTbl.put(Next, tt.image);
                     if (old.length() != 0)
                     {
-                        throw new ConfigFileException(EC.CFG_TWICE_KEYWORD, new String[]{Next, String.valueOf(loc)});
+                        throw new ConfigFileException(EC.CFG_TWICE_KEYWORD, new String[] { String.valueOf(loc), Next });
                     }
                     tt = getNextToken(tmgr);
                 } else if (tval.equals(Spec))
@@ -168,12 +176,12 @@ public class ModelConfig implements ValueConstants, Serializable
                     tt = getNextToken(tmgr);
                     if (tt.kind == TLAplusParserConstants.EOF)
                     {
-                        throw new ConfigFileException(EC.CFG_MISSING_ID, new String[]{Spec, String.valueOf(loc)});
+                        throw new ConfigFileException(EC.CFG_MISSING_ID, new String[] { String.valueOf(loc), Spec });
                     }
                     String old = (String) this.configTbl.put(Spec, tt.image);
                     if (old.length() != 0)
                     {
-                        throw new ConfigFileException(EC.CFG_TWICE_KEYWORD, new String[]{Spec, String.valueOf(loc)});
+                        throw new ConfigFileException(EC.CFG_TWICE_KEYWORD, new String[] { String.valueOf(loc), Spec });
                     }
                     tt = getNextToken(tmgr);
                 } else if (tval.equals(View))
@@ -181,12 +189,12 @@ public class ModelConfig implements ValueConstants, Serializable
                     tt = getNextToken(tmgr);
                     if (tt.kind == TLAplusParserConstants.EOF)
                     {
-                        throw new ConfigFileException(EC.CFG_MISSING_ID, new String[]{View, String.valueOf(loc)});
+                        throw new ConfigFileException(EC.CFG_MISSING_ID, new String[] { String.valueOf(loc), View });
                     }
                     String old = (String) this.configTbl.put(View, tt.image);
                     if (old.length() != 0)
                     {
-                        throw new ConfigFileException(EC.CFG_TWICE_KEYWORD, new String[]{View, String.valueOf(loc)});
+                        throw new ConfigFileException(EC.CFG_TWICE_KEYWORD, new String[] { String.valueOf(loc), View });
                     }
                     tt = getNextToken(tmgr);
                 } else if (tval.equals(Symmetry))
@@ -194,12 +202,13 @@ public class ModelConfig implements ValueConstants, Serializable
                     tt = getNextToken(tmgr);
                     if (tt.kind == TLAplusParserConstants.EOF)
                     {
-                        throw new ConfigFileException(EC.CFG_MISSING_ID, new String[]{Symmetry, String.valueOf(loc)});
+                        throw new ConfigFileException(EC.CFG_MISSING_ID, new String[] { String.valueOf(loc), Symmetry });
                     }
                     String old = (String) this.configTbl.put(Symmetry, tt.image);
                     if (old.length() != 0)
                     {
-                        throw new ConfigFileException(EC.CFG_TWICE_KEYWORD, new String[]{Symmetry, String.valueOf(loc)});
+                        throw new ConfigFileException(EC.CFG_TWICE_KEYWORD, new String[] { String.valueOf(loc),
+                                Symmetry });
                     }
                     tt = getNextToken(tmgr);
                 } else if (tval.equals(Type))
@@ -207,12 +216,12 @@ public class ModelConfig implements ValueConstants, Serializable
                     tt = getNextToken(tmgr);
                     if (tt.kind == TLAplusParserConstants.EOF)
                     {
-                        throw new ConfigFileException(EC.CFG_MISSING_ID, new String[]{Type, String.valueOf(loc)});
+                        throw new ConfigFileException(EC.CFG_MISSING_ID, new String[] { String.valueOf(loc), Type });
                     }
                     String old = (String) this.configTbl.put(Type, tt.image);
                     if (old.length() != 0)
                     {
-                        throw new ConfigFileException(EC.CFG_TWICE_KEYWORD, new String[]{Type, String.valueOf(loc)});
+                        throw new ConfigFileException(EC.CFG_TWICE_KEYWORD, new String[] { String.valueOf(loc), Type });
                     }
                     tt = getNextToken(tmgr);
                 } else if (tval.equals(TypeConstraint))
@@ -220,12 +229,14 @@ public class ModelConfig implements ValueConstants, Serializable
                     tt = getNextToken(tmgr);
                     if (tt.kind == TLAplusParserConstants.EOF)
                     {
-                        throw new ConfigFileException(EC.CFG_MISSING_ID, new String[]{TypeConstraint, String.valueOf(loc)});
+                        throw new ConfigFileException(EC.CFG_MISSING_ID, new String[] { String.valueOf(loc),
+                                TypeConstraint });
                     }
                     String old = (String) this.configTbl.put(TypeConstraint, tt.image);
                     if (old.length() != 0)
                     {
-                        throw new ConfigFileException(EC.CFG_TWICE_KEYWORD, new String[]{TypeConstraint, String.valueOf(loc)});
+                        throw new ConfigFileException(EC.CFG_TWICE_KEYWORD, new String[] { String.valueOf(loc),
+                                TypeConstraint });
                     }
                     tt = getNextToken(tmgr);
                 } else if (tval.equals(Constant) || tval.equals(Constants))
@@ -246,15 +257,15 @@ public class ModelConfig implements ValueConstants, Serializable
                         tt = getNextToken(tmgr);
                         while (tt.image.equals("!"))
                         {
-                          tt = getNextToken(tmgr);
-                          lhs = lhs + "!" + tt.image;
-                          tt = getNextToken(tmgr);
+                            tt = getNextToken(tmgr);
+                            lhs = lhs + "!" + tt.image;
+                            tt = getNextToken(tmgr);
                         }
                         Vect line = new Vect();
                         line.addElement(lhs);
-// Following code replaced on 30 July 2009.                        
-//                        line.addElement(tt.image);
-//                        tt = getNextToken(tmgr);
+                        // Following code replaced on 30 July 2009.
+                        // line.addElement(tt.image);
+                        // tt = getNextToken(tmgr);
                         if (tt.image.equals("<-"))
                         {
                             tt = getNextToken(tmgr);
@@ -264,18 +275,21 @@ public class ModelConfig implements ValueConstants, Serializable
                                 tt = getNextToken(tmgr);
                                 if (tt.kind == TLAplusParserConstants.EOF)
                                 {
-                                    throw new ConfigFileException(EC.CFG_EXPECT_ID, new String[]{String.valueOf(scs.getBeginLine()), "<-["});
+                                    throw new ConfigFileException(EC.CFG_EXPECT_ID, new String[] {
+                                            String.valueOf(scs.getBeginLine()), "<-[" });
                                 }
                                 String modName = tt.image;
                                 tt = getNextToken(tmgr);
                                 if (!tt.image.equals("]"))
                                 {
-                                    throw new ConfigFileException(EC.CFG_EXPECTED_SYMBOL, new String[]{String.valueOf(scs.getBeginLine()), "]"});
+                                    throw new ConfigFileException(EC.CFG_EXPECTED_SYMBOL, new String[] {
+                                            String.valueOf(scs.getBeginLine()), "]" });
                                 }
                                 tt = getNextToken(tmgr);
                                 if (tt.kind == TLAplusParserConstants.EOF)
                                 {
-                                    throw new ConfigFileException(EC.CFG_EXPECT_ID, new String[]{String.valueOf(scs.getBeginLine()), "<-[mod]"});
+                                    throw new ConfigFileException(EC.CFG_EXPECT_ID, new String[] {
+                                            String.valueOf(scs.getBeginLine()), "<-[mod]" });
                                 }
                                 Hashtable defs = (Hashtable) this.modOverrides.get(modName);
                                 if (defs == null)
@@ -289,7 +303,8 @@ public class ModelConfig implements ValueConstants, Serializable
                                 // This is a main module override:
                                 if (tt.kind == TLAplusParserConstants.EOF)
                                 {
-                                    throw new ConfigFileException(EC.CFG_EXPECT_ID, new String[]{String.valueOf(scs.getBeginLine()), "<-"});
+                                    throw new ConfigFileException(EC.CFG_EXPECT_ID, new String[] {
+                                            String.valueOf(scs.getBeginLine()), "<-" });
                                 }
                                 this.overrides.put(line.elementAt(0), tt.image);
                             }
@@ -308,13 +323,14 @@ public class ModelConfig implements ValueConstants, Serializable
                                 }
                                 if (!tt.image.equals(")"))
                                 {
-                                    throw new ConfigFileException(EC.CFG_GENERAL, new String[]{ String.valueOf(loc)});
+                                    throw new ConfigFileException(EC.CFG_GENERAL, new String[] { String.valueOf(loc) });
                                 }
                                 tt = getNextToken(tmgr);
                             }
                             if (!tt.image.equals("="))
                             {
-                                throw new ConfigFileException(EC.CFG_EXPECTED_SYMBOL, new String[]{String.valueOf(scs.getBeginLine()), "= or <-"});
+                                throw new ConfigFileException(EC.CFG_EXPECTED_SYMBOL, new String[] {
+                                        String.valueOf(scs.getBeginLine()), "= or <-" });
                             }
                             tt = getNextToken(tmgr);
                             if (tt.image.equals("["))
@@ -323,13 +339,15 @@ public class ModelConfig implements ValueConstants, Serializable
                                 tt = getNextToken(tmgr);
                                 if (tt.kind == TLAplusParserConstants.EOF)
                                 {
-                                    throw new ConfigFileException(EC.CFG_EXPECT_ID, new String[]{String.valueOf(scs.getBeginLine()), "=["});
+                                    throw new ConfigFileException(EC.CFG_EXPECT_ID, new String[] {
+                                            String.valueOf(scs.getBeginLine()), "=[" });
                                 }
                                 String modName = tt.image;
                                 tt = getNextToken(tmgr);
                                 if (!tt.image.equals("]"))
                                 {
-                                    throw new ConfigFileException(EC.CFG_EXPECTED_SYMBOL, new String[]{String.valueOf(scs.getBeginLine()), "]"});
+                                    throw new ConfigFileException(EC.CFG_EXPECTED_SYMBOL, new String[] {
+                                            String.valueOf(scs.getBeginLine()), "]" });
                                 }
                                 tt = getNextToken(tmgr);
                                 line.addElement(this.parseValue(tt, scs, tmgr));
@@ -382,12 +400,14 @@ public class ModelConfig implements ValueConstants, Serializable
                     }
                 } else
                 {
-                    throw new ConfigFileException(EC.CFG_EXPECTED_SYMBOL, new String[]{String.valueOf(scs.getBeginLine()), "a keyword"});
+                    throw new ConfigFileException(EC.CFG_EXPECTED_SYMBOL, new String[] {
+                            String.valueOf(scs.getBeginLine()), "a keyword" });
                 }
             }
         } catch (IOException e)
         {
-            throw new ConfigFileException(EC.CFG_ERROR_READING_FILE, new String[] {this.configFileName, e.getMessage()}, e);
+            throw new ConfigFileException(EC.CFG_ERROR_READING_FILE,
+                    new String[] { this.configFileName, e.getMessage() }, e);
         }
     }
 
@@ -428,14 +448,16 @@ public class ModelConfig implements ValueConstants, Serializable
             }
             if (!tt.image.equals("}"))
             {
-                throw new ConfigFileException(EC.CFG_EXPECTED_SYMBOL, new String[]{String.valueOf(scs.getBeginLine()), "}"});
+                throw new ConfigFileException(EC.CFG_EXPECTED_SYMBOL, new String[] {
+                        String.valueOf(scs.getBeginLine()), "}" });
             }
             return new SetEnumValue(elems, false);
         } else if (tt.kind != TLAplusParserConstants.EOF)
         {
             return ModelValue.make(tt.image);
         }
-        throw new ConfigFileException(EC.CFG_EXPECTED_SYMBOL, new String[]{String.valueOf(scs.getBeginLine()), "a value"});
+        throw new ConfigFileException(EC.CFG_EXPECTED_SYMBOL, new String[] { String.valueOf(scs.getBeginLine()),
+                "a value" });
     }
 
     /**
