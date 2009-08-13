@@ -29,7 +29,7 @@ public class TLCOutputSourceRegistry
     {
         Assert.isNotNull(source);
         
-        TLCUIActivator.logDebug("adding source " + source.getSourceName() + " " + source.getSourcePrio());
+        // TLCUIActivator.logDebug("adding source " + source.getSourceName() + " " + source.getSourcePrio());
 
         ITLCOutputSource existingSource = (ITLCOutputSource) this.sources.get(source.getSourceName());
 
@@ -92,7 +92,7 @@ public class TLCOutputSourceRegistry
             source.addTLCStatusListener(listener);
         }
 
-        TLCUIActivator.logDebug("Connected " + source.getListeners().length);
+        // TLCUIActivator.logDebug("Connected " + source.getListeners().length + " listeners");
         return true;
     }
 

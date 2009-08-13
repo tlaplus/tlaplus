@@ -26,7 +26,7 @@ public class ConsoleProcessOutputSink implements IProcessOutputSink
         this.console.activate();
     }
 
-    public void appendText(String text)
+    public synchronized void appendText(String text)
     {
 
         try

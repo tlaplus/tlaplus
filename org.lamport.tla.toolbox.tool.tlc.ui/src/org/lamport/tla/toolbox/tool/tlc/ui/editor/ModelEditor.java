@@ -97,7 +97,7 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
         if (finput != null)
         {
             ILaunchConfiguration configuration = ModelHelper.getModelByFile(finput.getFile());
-            
+
             try
             {
                 configurationCopy = configuration.getWorkingCopy();
@@ -130,7 +130,7 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
                         setActivePage(ResultPage.ID);
                     }
                     // TODO evtl. add more graphical sugar here,
-                    // like changing the model icon, 
+                    // like changing the model icon,
                     // changing the editor title (part name)
                 }
             });
@@ -185,10 +185,10 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
         ModelHelper.doSaveConfigurationCopy(configurationCopy);
         boolean revalidate = TLCUIActivator.getDefault().getPreferenceStore().getBoolean(
                 ITLCPreferenceConstants.I_TLC_REVALIDATE_ON_MODIFY);
-        if (revalidate) 
+        if (revalidate)
         {
-            // run sany
-            launchModel(TLCModelLaunchDelegate.MODE_GENERATE);
+            // run SANY
+            launchModel(TLCModelLaunchDelegate.MODE_GENERATE, false /* the SANY will run only if the editor is valid */);
         }
 
         this.editorDirtyStateChanged();
@@ -225,10 +225,11 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
     }
 
     /**
-     * Launch TLC
+     * Launch TLC or SANY
      * @param mode
+     * @param userPased true, if the action is performed on behalf of the user action (explicit click on the launch button)
      */
-    public void launchModel(String mode)
+    public void launchModel(String mode, boolean userPased)
     {
         IProgressMonitor monitor = new NullProgressMonitor();
 
@@ -240,23 +241,28 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
 
         if (!isComplete())
         {
+            // user clicked launch
+            if (userPased) 
+            {
             MessageDialog.openError(getSite().getShell(), "Model processing not allowed",
                     "The model contains errors, which should be corrected before further processing");
             return;
-        }
+            }
+        } else
+        {
 
-        // launching the config
-        try
-        {
-            getConfig().launch(mode, new SubProgressMonitor(monitor, 1), true);
-        } catch (CoreException e)
-        {
-            TLCUIActivator.logError("Error launching the configuration " + getConfig().getName(), e);
+            // launching the config
+            try
+            {
+                getConfig().launch(mode, new SubProgressMonitor(monitor, 1), true);
+            } catch (CoreException e)
+            {
+                TLCUIActivator.logError("Error launching the configuration " + getConfig().getName(), e);
+            }
         }
 
     }
 
-    
     /*
      * @see org.eclipse.ui.forms.editor.FormEditor#addPages()
      */

@@ -60,7 +60,7 @@ public class CachingTLCOutputSource implements ITLCOutputSource
         }
     }
 
-    private void onOutput(ListenerProgressHolder holder, ITypedRegion region)
+    private synchronized void onOutput(ListenerProgressHolder holder, ITypedRegion region)
     {
         Assert.isNotNull(document, "The document must be initialized");
         holder.listener.onOutput(region, document);

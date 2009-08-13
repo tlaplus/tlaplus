@@ -7,7 +7,7 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.ui.editors.text.FileDocumentProvider;
 import org.eclipse.ui.part.FileEditorInput;
 import org.lamport.tla.toolbox.tool.tlc.output.source.ITLCOutputSource;
-import org.lamport.tla.toolbox.tool.tlc.output.source.TLCOutputIncrementalParser;
+import org.lamport.tla.toolbox.tool.tlc.output.source.TagBasedTLCOutputIncrementalParser;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 
 /**
@@ -17,14 +17,14 @@ import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
  */
 public class LogFileReader
 {
-    private TLCOutputIncrementalParser parser;
+    private TagBasedTLCOutputIncrementalParser parser;
     private IFile logFile;
     
     
     public LogFileReader(String name, IFile logFile)
     {
         this.logFile = logFile;
-        this.parser = new TLCOutputIncrementalParser(name, ITLCOutputSource.PRIO_LOW);
+        this.parser = new TagBasedTLCOutputIncrementalParser(name, ITLCOutputSource.PRIO_LOW);
     }
 
     

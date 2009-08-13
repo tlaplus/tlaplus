@@ -5,9 +5,9 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITypedRegion;
 import org.eclipse.jface.text.TypedRegion;
-import org.lamport.tla.toolbox.tool.tlc.output.source.TLCOutputTokenScanner;
 import org.lamport.tla.toolbox.tool.tlc.output.source.TLCRegion;
 import org.lamport.tla.toolbox.tool.tlc.output.source.TagBasedTLCOutputTokenScanner;
+import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 
 /**
  * A toolkit with helper methods
@@ -16,14 +16,6 @@ import org.lamport.tla.toolbox.tool.tlc.output.source.TagBasedTLCOutputTokenScan
  */
 public class PartitionToolkit
 {
-    public static final int TYPE_UNKNOWN = -1;
-    public static final int TYPE_USER_OUTPUT = 1;
-    public static final int TYPE_INIT_END = 2;
-    public static final int TYPE_INIT_START = 3;
-    public static final int TYPE_PROGRESS = 4;
-    public static final int TYPE_COVERAGE = 5;
-    public static final int TYPE_TAG = 6;
-
     /**
      * Merges an array of partitions of the same type to one partition of this type
      * @param regions array of partitions of the same type, which MUST be intervals of document following 
@@ -66,7 +58,7 @@ public class PartitionToolkit
                     return null;
                 }
             }
-            
+
             matcher = regions[i].getOffset() + regions[i].getLength();
             length += regions[i].getLength();
 
@@ -99,64 +91,20 @@ public class PartitionToolkit
             } else
             {
                 int offset = region.getOffset();
-                int printLength = Math.min(region.getLength(), 50);
+                int printLength = Math.min(region.getLength(), 255);
+
                 String type = region.getType();
+                Assert.isTrue(type.equals(TagBasedTLCOutputTokenScanner.DEFAULT_CONTENT_TYPE));
+                
                 String head = document.get(offset, printLength);
-                if (TLCOutputTokenScanner.COVERAGE.equals(type))
-                {
-                    messageBuffer.append("Coverage " + location + ": >" + head + "< ...");
-                } else if (TLCOutputTokenScanner.PROGRESS.equals(type))
-                {
-                    messageBuffer.append("Progress " + location + ": >" + head + "< ...");
-                } else if (TLCOutputTokenScanner.INIT_START.equals(type))
-                {
-                    messageBuffer.append("Init start " + location + ": >" + head + "< ...");
-                } else if (TLCOutputTokenScanner.INIT_END.equals(type))
-                {
-                    messageBuffer.append("Init end " + location + ": >" + head + "< ...");
-                } else if (TLCOutputTokenScanner.OUTPUT.equals(type))
-                {
-                    String tail = document.get(offset + region.getLength() - printLength, printLength);
-                    messageBuffer.append("User " + location + ": >" + head + "< .. >" + tail + "<");
-                } else
-                {
-                    messageBuffer.append("UNKNOWN " + location + ": >" + head + "< ...");
-                }
+                messageBuffer.append("OUTPUT:" + location + ": >" + head + "< ...");
             }
-            System.out.println(messageBuffer.toString());
+            
+            TLCUIActivator.logDebug(messageBuffer.toString());
 
         } catch (BadLocationException e)
         {
-            e.printStackTrace();
-        }
-
-    }
-
-    public static int getRegionTypeAsInt(ITypedRegion region)
-    {
-        Assert.isNotNull(region);
-        String type = region.getType();
-        if (TLCOutputTokenScanner.COVERAGE.equals(type))
-        {
-            return TYPE_COVERAGE;
-        } else if (TLCOutputTokenScanner.PROGRESS.equals(type))
-        {
-            return TYPE_PROGRESS;
-        } else if (TLCOutputTokenScanner.INIT_START.equals(type))
-        {
-            return TYPE_INIT_START;
-        } else if (TLCOutputTokenScanner.INIT_END.equals(type))
-        {
-            return TYPE_INIT_END;
-        } else if (TLCOutputTokenScanner.OUTPUT.equals(type))
-        {
-            return TYPE_USER_OUTPUT;
-        } else if (TagBasedTLCOutputTokenScanner.TAG.equals(type))
-        {
-            return TYPE_TAG;
-        }else
-        {
-            return TYPE_UNKNOWN;
+            TLCUIActivator.logError("Error printing partition", e);
         }
 
     }

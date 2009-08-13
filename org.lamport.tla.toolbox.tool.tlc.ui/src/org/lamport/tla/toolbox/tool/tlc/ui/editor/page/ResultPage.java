@@ -159,6 +159,15 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
      */
     public synchronized void onNewSource()
     {
+        UIHelper.runUIAsync(new Runnable() {
+
+            public void run()
+            {
+                ResultPage.this.coverage.setInput(new Vector());
+                ResultPage.this.stateSpace.setInput(new Vector());
+            }
+        });
+
         setText(this.output.getDocument(), NO_OUTPUT_AVAILABLE, false);
         setText(this.progress.getDocument(), NO_OUTPUT_AVAILABLE, false);
     }
@@ -186,6 +195,7 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
         } catch (BadLocationException e)
         {
             TLCUIActivator.logError("Error retrieving a message for the process", e);
+            TLCUIActivator.logDebug("R " + region);
             return;
         }
 
@@ -199,6 +209,7 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
             case MP.ERROR:
             case MP.TLCBUG:
             case MP.WARNING:
+
                 // setText(this.errors, outputMessage, true);
                 break;
             case MP.NONE:
@@ -219,10 +230,15 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
                 case EC.TLC_INIT_GENERATED2:
                 case EC.TLC_INIT_GENERATED3:
                 case EC.TLC_INIT_GENERATED4:
-                case EC.TLC_STATS:                    
+                case EC.TLC_STATS:
                 case EC.TLC_STATS_DFID:
                 case EC.TLC_STATS_SIMU:
                 case EC.TLC_SEARCH_DEPTH:
+                case EC.TLC_CHECKPOINT_START:
+                case EC.TLC_CHECKPOINT_END:
+                case EC.TLC_CHECKPOINT_RECOVER_START:
+                case EC.TLC_CHECKPOINT_RECOVER_END:
+                case EC.TLC_CHECKPOINT_RECOVER_END_DFID:                    
                     setText(this.progress.getDocument(), outputMessage, true);
                     break;
                 case EC.TLC_FINISHED:
@@ -262,9 +278,7 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
                     break;
                 // Coverage information
                 case EC.TLC_COVERAGE_START:
-                    // TODO insert checks
-                    final String coverageTimestamp = outputMessage.substring(outputMessage.lastIndexOf("at ")
-                            + "at ".length());
+                    final String coverageTimestamp = CoverageInformationItem.parseCoverageTimestamp(outputMessage);
                     UIHelper.runUIAsync(new Runnable() {
 
                         public void run()
@@ -409,14 +423,12 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
         gd.minimumHeight = 200;
         coverageStats.setData(gd);
 
-        
         // progress stats
         Composite stateStats = createAndSetupStateSpace("Statespace Statistics:", progressArea, toolkit);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.heightHint = 200;
         gd.minimumHeight = 200;
         stateStats.setData(gd);
-
 
         // ------------ second row ------------
 
@@ -445,8 +457,8 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
 
         output = FormHelper.createFormsOutputViewer(toolkit, outputArea, textFieldFlags);
         gd = new GridData(SWT.FILL, SWT.LEFT, true, true);
-        gd.minimumHeight = 300;
-        gd.heightHint = 300;
+        gd.minimumHeight = 280;
+        gd.heightHint = 280;
         gd.minimumWidth = 300;
         output.getControl().setLayoutData(gd);
     }

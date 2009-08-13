@@ -18,7 +18,7 @@ public class ParsingTLCOutputSink implements IProcessOutputSink
     /* (non-Javadoc)
      * @see org.lamport.tla.toolbox.tool.tlc.output.IProcessOutputSink#appendText(java.lang.String)
      */
-    public void appendText(String text)
+    public synchronized void appendText(String text)
     {
         try
         {
