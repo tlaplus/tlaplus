@@ -81,7 +81,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
                 closedFormulaRadio.setSelection(true);
                 initNextFairnessRadio.setSelection(false);
             } else if (e.widget == initFormulaSource.getControl() || e.widget == nextFormulaSource.getControl()
-                    /* || e.widget == fairnessFormulaSource.getControl()*/ )
+            /* || e.widget == fairnessFormulaSource.getControl()*/)
             {
                 // noSpecRadio.setSelection(false);
                 closedFormulaRadio.setSelection(false);
@@ -151,9 +151,10 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         this.nextFormulaSource.setDocument(nextDoc);
 
         // fairness
-//        String modelFairness = getConfig().getAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_FAIRNESS, EMPTY_STRING);
-//        Document fairnessDoc = new Document(modelFairness);
-//        this.fairnessFormulaSource.setDocument(fairnessDoc);
+        // String modelFairness = getConfig().getAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_FAIRNESS,
+        // EMPTY_STRING);
+        // Document fairnessDoc = new Document(modelFairness);
+        // this.fairnessFormulaSource.setDocument(fairnessDoc);
 
         // number of workers
         workers.setText("" + getConfig().getAttribute(LAUNCH_NUMBER_OF_WORKERS, LAUNCH_NUMBER_OF_WORKERS_DEFAULT));
@@ -212,6 +213,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
             constantTable.setInput(constants);
         }
 
+        boolean symmetryUsed = false;
         // iterate over the constants
         for (int i = 0; i < constants.size(); i++)
         {
@@ -236,6 +238,17 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
             {
                 if (constant.isSetOfModelValues())
                 {
+                    if (symmetryUsed)
+                    {
+                        // symmetry can be used for only one set of model values
+                        mm.addMessage(constant.getLabel(), "Only one symmetrical set of model values is allowed",
+                                constant, IMessageProvider.ERROR, constantTable.getTable());
+                        setComplete(false);
+                        expandSection(dm.getSectionForAttribute(MODEL_PARAMETER_CONSTANTS));
+                    } else
+                    {
+                        symmetryUsed = true;
+                    }
                     TypedSet modelValuesSet = TypedSet.parseSet(constant.getRight());
                     if (modelValuesSet.getValueCount() > 0)
                     {
@@ -359,8 +372,8 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         getConfig().setAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT, nextFormula);
 
         // fairness formula
-//        String fairnessFormula = FormHelper.trimTrailingSpaces(this.fairnessFormulaSource.getDocument().get());
-//        getConfig().setAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_FAIRNESS, fairnessFormula);
+        // String fairnessFormula = FormHelper.trimTrailingSpaces(this.fairnessFormulaSource.getDocument().get());
+        // getConfig().setAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_FAIRNESS, fairnessFormula);
 
         // mode
         int specType = /* (this.noSpecRadio.getSelection()) ? MODEL_BEHAVIOR_TYPE_NO_SPEC :*/(this.closedFormulaRadio
@@ -505,14 +518,14 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         dm.bindAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT, nextFormulaSource, behaviorPart);
 
         // fairness
-//        toolkit.createLabel(behaviorArea, "Fairness:");
-//        fairnessFormulaSource = FormHelper.createSourceViewer(toolkit, behaviorArea, SWT.NONE | SWT.SINGLE);
-//        gd = new GridData(GridData.FILL_HORIZONTAL);
-//        gd.heightHint = 18;
-//        fairnessFormulaSource.getTextWidget().setLayoutData(gd);
-//        fairnessFormulaSource.getTextWidget().addModifyListener(whatIsTheSpecListener);
-//        fairnessFormulaSource.getTextWidget().addModifyListener(widgetActivatingListener);
-//        dm.bindAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_FAIRNESS, fairnessFormulaSource, behaviorPart);
+        // toolkit.createLabel(behaviorArea, "Fairness:");
+        // fairnessFormulaSource = FormHelper.createSourceViewer(toolkit, behaviorArea, SWT.NONE | SWT.SINGLE);
+        // gd = new GridData(GridData.FILL_HORIZONTAL);
+        // gd.heightHint = 18;
+        // fairnessFormulaSource.getTextWidget().setLayoutData(gd);
+        // fairnessFormulaSource.getTextWidget().addModifyListener(whatIsTheSpecListener);
+        // fairnessFormulaSource.getTextWidget().addModifyListener(widgetActivatingListener);
+        // dm.bindAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_FAIRNESS, fairnessFormulaSource, behaviorPart);
 
         // ------------------------------------------
         // what to check
