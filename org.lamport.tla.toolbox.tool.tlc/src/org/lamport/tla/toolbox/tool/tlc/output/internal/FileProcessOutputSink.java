@@ -36,7 +36,7 @@ public class FileProcessOutputSink implements IProcessOutputSink
     /* (non-Javadoc)
      * @see org.lamport.tla.toolbox.tool.tlc.output.IProcessOutputSink#appendText(java.lang.String)
      */
-    public void appendText(final String text)
+    public synchronized void appendText(final String text)
     {
         try
         {

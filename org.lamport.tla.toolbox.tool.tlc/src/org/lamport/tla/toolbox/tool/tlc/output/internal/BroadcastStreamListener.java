@@ -18,7 +18,7 @@ import org.lamport.tla.toolbox.tool.tlc.output.IProcessOutputSink;
 public class BroadcastStreamListener implements IStreamListener
 {
     private IProcessOutputSink[] listeners = null;
-    
+
     /**
      * 
      * @param streamName
@@ -28,47 +28,59 @@ public class BroadcastStreamListener implements IStreamListener
     {
         this.listeners = getRegisteredStreamManagers(streamName, kind);
     }
-    
+
     /* (non-Javadoc)
      * @see org.eclipse.debug.core.IStreamListener#streamAppended(java.lang.String, org.eclipse.debug.core.model.IStreamMonitor)
      */
-    public void streamAppended(String text, IStreamMonitor monitor)
+    public synchronized void streamAppended(String text, IStreamMonitor monitor)
     {
         // broadcast the message
-        for (int i=0; i < listeners.length; i++) 
+        for (int i = 0; i < listeners.length; i++)
         {
-            if (listeners[i] != null) 
+            if (listeners[i] != null)
             {
-                listeners[i].appendText(text);
+                try
+                {
+                    listeners[i].appendText(text);
+                } catch (Exception e)
+                {
+                    TLCActivator.logError("Error broadcasting the message", e);
+                }
             }
         }
     }
-    
+
     /**
      * Inform about completion
      */
-    public void streamClosed()
+    public synchronized void streamClosed()
     {
         // broadcast the message
-        for (int i=0; i < listeners.length; i++) 
+        for (int i = 0; i < listeners.length; i++)
         {
-            if (listeners[i] != null) 
+            try
             {
-                listeners[i].processFinished();
+
+                if (listeners[i] != null)
+                {
+                    listeners[i].processFinished();
+                }
+            } catch (Exception e)
+            {
+                TLCActivator.logError("Error broadcasting the stream closed event", e);
             }
         }
     }
-    
-    
-    
+
     /**
      * Retrieves all registered listener managers
      * @return 
      */
     public static IProcessOutputSink[] getRegisteredStreamManagers(String name, int type)
     {
-        IConfigurationElement[] decls = Platform.getExtensionRegistry().getConfigurationElementsFor("org.lamport.tla.toolbox.tlc.processOutputSink");
-        
+        IConfigurationElement[] decls = Platform.getExtensionRegistry().getConfigurationElementsFor(
+                "org.lamport.tla.toolbox.tlc.processOutputSink");
+
         Vector validExtensions = new Vector();
         for (int i = 0; i < decls.length; i++)
         {
