@@ -1,9 +1,12 @@
 package org.lamport.tla.toolbox.tool.tlc.util;
 
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -49,10 +52,10 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
      * Marker indicating an error in the model
      */
     public static final String TLC_MODEL_ERROR_MARKER = "org.lamport.tla.toolbox.tlc.modelErrorMarker";
-    
+
     public static final String TLC_MODEL_ERROR_MARKER_ATTRIBUTE_NAME = "attributeName";
     public static final String TLC_MODEL_ERROR_MARKER_ATTRIBUTE_IDX = "attributeIndex";
-    
+
     /**
      * marker on .launch file with boolean attribute modelIsRunning 
      */
@@ -82,6 +85,10 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
     public static final String FILE_TLA = MC_MODEL_NAME + ".tla";
     public static final String FILE_CFG = MC_MODEL_NAME + ".cfg";
     public static final String FILE_OUT = MC_MODEL_NAME + ".out";
+
+    private static final String CHECKPOINT_STATES = MC_MODEL_NAME + ".st.chkpt";
+    private static final String CHECKPOINT_QUEUE =  "queue.chkpt";
+    private static final String CHECKPOINT_VARS = "vars.chkpt";
 
     /**
      * Constructs the model called Foo___Model_1 from the SpecName Foo
@@ -705,8 +712,6 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
         return listener;
     }
 
-
-
     /**
      * Checks whether the model is locked or not
      * @param config
@@ -946,8 +951,9 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
     {
         try
         {
-            IMarker[] foundMarkers = configuration.getFile().findMarkers(TLC_MODEL_ERROR_MARKER, false, IResource.DEPTH_ONE);
-            for (int i=0; i < foundMarkers.length; i++)
+            IMarker[] foundMarkers = configuration.getFile().findMarkers(TLC_MODEL_ERROR_MARKER, false,
+                    IResource.DEPTH_ONE);
+            for (int i = 0; i < foundMarkers.length; i++)
             {
                 foundMarkers[i].delete();
             }
@@ -983,8 +989,10 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
             marker.setAttribute(IMarker.LOCATION, "");
             marker.setAttribute(IMarker.CHAR_START, errorRegion.getOffset());
             marker.setAttribute(IMarker.CHAR_END, errorRegion.getOffset() + errorRegion.getLength());
-            
-            TLCActivator.logDebug("Marker on " + attributeName + ((attributeIndex != -1) ? " index: " + attributeIndex : "") + " at " + errorRegion + " " + message);
+
+            TLCActivator.logDebug("Marker on " + attributeName
+                    + ((attributeIndex != -1) ? " index: " + attributeIndex : "") + " at " + errorRegion + " "
+                    + message);
 
         } catch (CoreException e)
         {
@@ -1006,7 +1014,52 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
             IMarker[] foundMarkers = resource.findMarkers(TLC_MODEL_ERROR_MARKER, false, IResource.DEPTH_ZERO);
             return foundMarkers;
         }
-        
+
         return new IMarker[0];
     }
+
+    /**
+     * Checks whether the checkpoint files exist for a given model 
+     * @param launchConfig
+     * @return the array of checkpoint directories, sorted from last to first
+     */
+    public static IResource[] getCheckpoints(ILaunchConfiguration config) throws CoreException
+    {
+        // yy-MM-dd-HH-mm-ss
+        Pattern pattern = Pattern.compile("[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}");
+
+        Vector checkpoints = new Vector();
+        IFolder directory = getModelTargetDirectory(config);
+        if (directory.exists())
+        {
+            IResource[] members = directory.members();
+            for (int i = 0; i < members.length; i++)
+            {
+                if (members[i].getType() == IResource.FOLDER)
+                {
+                    Matcher matcher = pattern.matcher(members[i].getName());
+                    if (matcher.matches())
+                    {
+                        if (((IFolder) members[i]).findMember(CHECKPOINT_QUEUE) != null && 
+                                ((IFolder) members[i]).findMember(CHECKPOINT_VARS) != null && 
+                                ((IFolder) members[i]).findMember(CHECKPOINT_STATES) != null)
+                        {
+                            checkpoints.add(members[i]);
+                        }
+                    }
+                }
+            }
+        }
+        IResource[] result = (IResource[]) checkpoints.toArray(new IResource[checkpoints.size()]);
+        // sort the result
+        Arrays.sort(result, new Comparator() {
+            public int compare(Object arg0, Object arg1)
+            {
+                return ((IResource) arg0).getName().compareTo(((IResource) arg1).getName());
+            }
+        });
+
+        return result;
+    }
+
 }

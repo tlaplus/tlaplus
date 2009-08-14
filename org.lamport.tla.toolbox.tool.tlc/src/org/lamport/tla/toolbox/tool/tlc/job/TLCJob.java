@@ -5,6 +5,7 @@ import java.util.Vector;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -129,7 +130,20 @@ public abstract class TLCJob extends AbstractJob implements IModelConfigurationC
                 arguments.add(String.valueOf(seed));
             }
         }
-
+        
+        // recover from checkpoint
+        boolean recover = config.getAttribute(IModelConfigurationConstants.LAUNCH_RECOVER, IModelConfigurationDefaults.LAUNCH_RECOVER_DEFAULT);
+        if (recover) 
+        {
+            IResource[] checkpoints = ModelHelper.getCheckpoints(config);
+            if (checkpoints.length > 0) 
+            {
+                arguments.add("-recover");
+                arguments.add(checkpoints[0].getName());
+            }
+        } 
+        
+        
         arguments.add("-config");
         arguments.add(cfgFile.getName()); // configuration file
         arguments.add("-coverage");

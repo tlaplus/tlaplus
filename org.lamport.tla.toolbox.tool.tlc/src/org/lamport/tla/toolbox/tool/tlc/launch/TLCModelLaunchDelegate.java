@@ -181,21 +181,22 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
             IFile cfgFile = project.getFile(targetFolderPath.append(ModelHelper.FILE_CFG));
             IFile outFile = project.getFile(targetFolderPath.append(ModelHelper.FILE_OUT));
 
-            TLCActivator.logDebug("Model TLA file is: " + tlaFile.getProjectRelativePath().toString());
-            TLCActivator.logDebug("Model CFG file is: " + cfgFile.getProjectRelativePath().toString());
-            TLCActivator.logDebug("Model OUT file is: " + outFile.getProjectRelativePath().toString());
+            TLCActivator.logDebug("Writing files to: " + targetFolderPath);
 
             final IFile[] files = new IFile[] { tlaFile, cfgFile, outFile };
 
             if (modelFolder.exists())
             {
-                // erase everything inside
                 final IResource[] members = modelFolder.members();
+                // erase everything inside
                 if (members.length == 0)
                 {
                     monitor.worked(STEP);
                 } else
                 {
+                    final boolean recover = config.getAttribute(LAUNCH_RECOVER, LAUNCH_RECOVER_DEFAULT);
+                    final IResource[] checkpoints = ModelHelper.getCheckpoints(config);
+
                     ISchedulingRule deleteRule = ResourceHelper.getDeleteRule(members);
 
                     // delete files
@@ -203,24 +204,35 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
 
                         public void run(IProgressMonitor monitor) throws CoreException
                         {
-
+                            boolean checkFiles = recover;
                             monitor.beginTask("Deleting files", members.length);
                             // delete the members of the target directory
                             for (int i = 0; i < members.length; i++)
                             {
-
-                                // TODO check if we delete the right files...
-                                try
+                                if (checkFiles)
                                 {
-                                    members[i].delete(IResource.FORCE, new SubProgressMonitor(monitor, 1));
-                                } catch (CoreException e)
+                                    if (checkpoints.length > 0 && checkpoints[0].equals(members[i]))
+                                    {
+                                        // we found the recovery directory and didn't delete it
+                                        checkFiles = false;
+                                        continue;
+                                    }
+                                } else
                                 {
-                                    // FIXME catch the exception if deletion failed, and just ignore this fact
-                                    // this should be fixed at some later point in time
-                                    TLCActivator.logError("Error deleting a file " + members[i].getLocation(), e);
+                                    // delete file
+                                    // either non-recovery mode
+                                    // or the recovery directory already skipped
+                                    try
+                                    {
+                                        members[i].delete(IResource.FORCE, new SubProgressMonitor(monitor, 1));
+                                    } catch (CoreException e)
+                                    {
+                                        // catch the exception if deletion failed, and just ignore this fact
+                                        // FIXME this should be fixed at some later point in time
+                                        TLCActivator.logError("Error deleting a file " + members[i].getLocation(), e);
+                                    }
                                 }
                             }
-
                             monitor.done();
                         }
                     }, deleteRule, IWorkspace.AVOID_UPDATE, new SubProgressMonitor(monitor, STEP));
@@ -326,26 +338,26 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
             writer.addFormulaList(ModelHelper.createSourceContent(MODEL_PARAMETER_ACTION_CONSTRAINT, "action_constr",
                     config), "ACTION-CONSTRAINT", MODEL_PARAMETER_ACTION_CONSTRAINT);
 
-/*            int specType = config.getAttribute(MODEL_BEHAVIOR_SPEC_TYPE, MODEL_BEHAVIOR_TYPE_DEFAULT);
-            switch (specType) {
-            case MODEL_BEHAVIOR_TYPE_NO_SPEC:
-                // no spec - nothing to do
-                break;
-            case MODEL_BEHAVIOR_TYPE_SPEC_CLOSED:
-                // the specification name-formula pair
-                writer.addSpecDefinition(ModelHelper.createSpecificationContent(config),
-                        MODEL_BEHAVIOR_CLOSED_SPECIFICATION);
-                break;
-            case MODEL_BEHAVIOR_TYPE_SPEC_INIT_NEXT:
+            /*            int specType = config.getAttribute(MODEL_BEHAVIOR_SPEC_TYPE, MODEL_BEHAVIOR_TYPE_DEFAULT);
+                        switch (specType) {
+                        case MODEL_BEHAVIOR_TYPE_NO_SPEC:
+                            // no spec - nothing to do
+                            break;
+                        case MODEL_BEHAVIOR_TYPE_SPEC_CLOSED:
+                            // the specification name-formula pair
+                            writer.addSpecDefinition(ModelHelper.createSpecificationContent(config),
+                                    MODEL_BEHAVIOR_CLOSED_SPECIFICATION);
+                            break;
+                        case MODEL_BEHAVIOR_TYPE_SPEC_INIT_NEXT:
 
-                // FIXME 
-                // the specification name-formula pair
-                writer.addSpecDefinition(ModelHelper.createSpecificationContent(config),
-                        MODEL_BEHAVIOR_CLOSED_SPECIFICATION);
+                            // FIXME 
+                            // the specification name-formula pair
+                            writer.addSpecDefinition(ModelHelper.createSpecificationContent(config),
+                                    MODEL_BEHAVIOR_CLOSED_SPECIFICATION);
 
-                break;
-            }
-*/
+                            break;
+                        }
+            */
             // the specification name-formula pair
             writer.addSpecDefinition(ModelHelper.createSpecificationContent(config),
                     MODEL_BEHAVIOR_CLOSED_SPECIFICATION);

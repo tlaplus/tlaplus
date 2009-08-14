@@ -68,5 +68,4 @@ public interface IModelConfigurationConstants extends IConfigurationConstants
      * advanced model values not used in constant definitions
      */
     public static final String MODEL_PARAMETER_MODEL_VALUES = "modelParameterModelValues";
-
 }
