@@ -44,7 +44,10 @@ public class TLCPreferencePage extends FieldEditorPreferencePage implements IWor
                 "&Popup problem window on TLC errors", getFieldEditorParent()));
 
         addField(new BooleanFieldEditor(ITLCPreferenceConstants.I_TLC_REVALIDATE_ON_MODIFY,
-                "&Automatic re-validate TLC model", getFieldEditorParent()));
+                "&Automatically  re-validate TLC model", getFieldEditorParent()));
+//        addField(new BooleanFieldEditor(ITLCPreferenceConstants.I_TLC_DELETE_PREVIOUS_FILES,
+//                "&Automatically delete unused data from previous model run", getFieldEditorParent()));
+        
     }
 
     public void init(IWorkbench workbench)

@@ -124,7 +124,7 @@ public class StateSpaceInformationItem
         return null;
     }
 
-    public final static SimpleDateFormat SDF = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+    public final static SimpleDateFormat SDF = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     public final static String OB = "(";
     public final static String AT = ") at ";

@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
 
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.text.Document;
@@ -37,6 +38,7 @@ import org.lamport.tla.toolbox.tool.tlc.launch.IConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.IConfigurationDefaults;
 import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
 import org.lamport.tla.toolbox.tool.tlc.model.TypedSet;
+import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.DataBindingManager;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.ValidateableConstantSectionPart;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.ValidateableSectionPart;
@@ -103,6 +105,8 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
             expandSection(sectionId);
         }
     };
+    private Button checkpointButton;
+    private Text checkpointIdText;
 
     /**
      * constructs the main model page 
@@ -176,6 +180,10 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         List savedConstants = getConfig().getAttribute(MODEL_PARAMETER_CONSTANTS, new Vector());
         FormHelper.setSerializedInput(constantTable, savedConstants);
 
+        // recover from the checkpoint
+        boolean recover = getConfig().getAttribute(LAUNCH_RECOVER, LAUNCH_RECOVER_DEFAULT);
+        this.checkpointButton.setSelection(recover);
+
         validate();
     }
 
@@ -188,6 +196,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         {
             return;
         }
+
         IMessageManager mm = getManagedForm().getMessageManager();
         DataBindingManager dm = getDataBindingManager();
 
@@ -304,6 +313,20 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
             expandSection(SEC_HOW_TO_RUN);
         }
 
+        // fill the checkpoints
+        updateCheckpoints();
+
+        // recover from checkpoint
+        if (checkpointButton.getSelection())
+        {
+            if (EMPTY_STRING.equals(checkpointIdText.getText()))
+            {
+                mm.addMessage("noChckpoint", "No chekpoint data found", null, IMessageProvider.ERROR, checkpointButton);
+                setComplete(false);
+                expandSection(SEC_HOW_TO_RUN);
+            }
+        }
+
         // spec or no spec
         Control selectedOption = closedFormulaRadio.getSelection() ? closedFormulaRadio : (initNextFairnessRadio
                 .getSelection() ? initNextFairnessRadio : null);
@@ -358,7 +381,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
      */
     public void commit(boolean onSave)
     {
-        System.out.println("Main page commit");
+        // TLCUIActivator.logDebug("Main page commit");
         // closed formula
         String closedFormula = FormHelper.trimTrailingSpaces(this.specSource.getDocument().get());
         getConfig().setAttribute(MODEL_BEHAVIOR_CLOSED_SPECIFICATION, closedFormula);
@@ -391,6 +414,10 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         }
         getConfig().setAttribute(LAUNCH_NUMBER_OF_WORKERS, numberOfWorkers);
 
+        // recover from deadlock
+        boolean recover = this.checkpointButton.getSelection();
+        getConfig().setAttribute(LAUNCH_RECOVER, recover);
+
         // check deadlock
         boolean checkDeadlock = this.checkDeadlockButton.getSelection();
         getConfig().setAttribute(MODEL_CORRECTNESS_CHECK_DEADLOCK, checkDeadlock);
@@ -412,6 +439,31 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         getConfig().setAttribute(MODEL_BEHAVIOR_VARS, variables);
 
         super.commit(onSave);
+    }
+
+    /**
+     * Checks if checkpoint information changed 
+     * @throws CoreException
+     */
+    private void updateCheckpoints()
+    {
+        IResource[] checkpoints = null;
+        try
+        {
+            // checkpoint id
+            checkpoints = ModelHelper.getCheckpoints(getConfig());
+        } catch (CoreException e)
+        {
+            TLCUIActivator.logError("Error checking chekpoint data", e);
+        }
+
+        if (checkpoints != null && checkpoints.length > 0)
+        {
+            this.checkpointIdText.setText(checkpoints[0].getName());
+        } else
+        {
+            this.checkpointIdText.setText(EMPTY_STRING);
+        }
     }
 
     /**
@@ -628,8 +680,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
         final Composite howToRunArea = (Composite) section.getClient();
         group = new HyperlinkGroup(howToRunArea.getDisplay());
-        layout = new GridLayout();
-        layout.numColumns = 2;
+        layout = new GridLayout(2, false);
         howToRunArea.setLayout(layout);
 
         ValidateableSectionPart howToRunPart = new ValidateableSectionPart(section, this, SEC_HOW_TO_RUN);
@@ -646,8 +697,27 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         workers.addModifyListener(howToRunListener);
         gd = new GridData();
         gd.horizontalIndent = 10;
-        gd.widthHint = 100;
+        gd.widthHint = 15;
         workers.setLayoutData(gd);
+
+        // run from the checkpoint
+        checkpointButton = toolkit.createButton(howToRunArea, "Recover from checkpoint", SWT.CHECK);
+        gd = new GridData();
+        gd.horizontalSpan = 2;
+        gd.verticalIndent = 20;
+
+        checkpointButton.setLayoutData(gd);
+        checkpointButton.addSelectionListener(howToRunListener);
+
+        FormText chkpointIdLabel = toolkit.createFormText(howToRunArea, true);
+        chkpointIdLabel.setText("Checkpoint ID:", false, false);
+
+        checkpointIdText = toolkit.createText(howToRunArea, "");
+        checkpointIdText.setEditable(false);
+        gd = new GridData();
+        gd.horizontalIndent = 10;
+        gd.widthHint = 100;
+        checkpointIdText.setLayoutData(gd);
 
         // run link
         ImageHyperlink runLink = toolkit.createImageHyperlink(howToRunArea, SWT.NONE);
@@ -662,6 +732,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         gd = new GridData();
         gd.horizontalSpan = 2;
         gd.widthHint = 200;
+        gd.verticalIndent = 20;
         runLink.setLayoutData(gd);
         group.add(runLink);
 
@@ -690,4 +761,11 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         dirtyPartListeners.add(whatToCheckListener);
         dirtyPartListeners.add(howToRunListener);
     }
+
+    public void refresh()
+    {
+        updateCheckpoints();
+        super.refresh();
+    }
+
 }

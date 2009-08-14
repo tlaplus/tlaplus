@@ -101,6 +101,8 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
     {
         TLCOutputSourceRegistry.getStatusRegistry().disconnect(this);
 
+        this.startTimeText.setText("");
+        this.elapsedTimeText.setText("");
         this.coverage.setInput(new Vector());
         this.stateSpace.setInput(new Vector());
 
@@ -165,11 +167,13 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
             {
                 ResultPage.this.coverage.setInput(new Vector());
                 ResultPage.this.stateSpace.setInput(new Vector());
+                ResultPage.this.startTimeText.setText("");
+                ResultPage.this.elapsedTimeText.setText("");
             }
         });
 
-        setText(this.output.getDocument(), NO_OUTPUT_AVAILABLE, false);
-        setText(this.progress.getDocument(), NO_OUTPUT_AVAILABLE, false);
+        setDocumentText(this.output.getDocument(), NO_OUTPUT_AVAILABLE, false);
+        setDocumentText(this.progress.getDocument(), NO_OUTPUT_AVAILABLE, false);
     }
 
     /* (non-Javadoc)
@@ -182,8 +186,8 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
         {
             // the only reason for this is the restart of the MC, after the previous run completed.
             // clean up the output
-            setText(this.output.getDocument(), "", false);
-            setText(this.progress.getDocument(), "", false);
+            setDocumentText(this.output.getDocument(), "", false);
+            setDocumentText(this.progress.getDocument(), "", false);
             isDone = false;
         }
 
@@ -239,7 +243,7 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
                 case EC.TLC_CHECKPOINT_RECOVER_START:
                 case EC.TLC_CHECKPOINT_RECOVER_END:
                 case EC.TLC_CHECKPOINT_RECOVER_END_DFID:                    
-                    setText(this.progress.getDocument(), outputMessage, true);
+                    setDocumentText(this.progress.getDocument(), outputMessage, true);
                     break;
                 case EC.TLC_FINISHED:
                     final String finishedTimestamp = outputMessage.substring(outputMessage.indexOf("(") + 1,
@@ -303,17 +307,17 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
                 case EC.TLC_COVERAGE_END:
                     break;
                 default:
-                    setText(this.output.getDocument(), outputMessage, true);
+                    setDocumentText(this.output.getDocument(), outputMessage, true);
                     break;
                 }
                 break;
             default:
-                setText(this.output.getDocument(), outputMessage, true);
+                setDocumentText(this.output.getDocument(), outputMessage, true);
             }
 
         } else
         {
-            setText(this.output.getDocument(), outputMessage, true);
+            setDocumentText(this.output.getDocument(), outputMessage, true);
             // TLCUIActivator.logDebug("Unknown type detected: " + region.getType() + " message " + outputMessage);
         }
 
@@ -326,7 +330,7 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
      * @param append
      * @throws BadLocationException
      */
-    public synchronized void setText(final IDocument document, final String message, final boolean append)
+    public synchronized void setDocumentText(final IDocument document, final String message, final boolean append)
     {
         final String CR = "\n";
         final String EMPTY = "";
@@ -638,7 +642,7 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
         public final static int COL_DISTINCT = 3;
         public final static int COL_LEFT = 4;
 
-        private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+        private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
         /* (non-Javadoc)
          * @see org.eclipse.jface.viewers.ITableLabelProvider#getColumnImage(java.lang.Object, int)
