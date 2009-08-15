@@ -87,6 +87,10 @@ public abstract class TLCJob extends AbstractJob implements IModelConfigurationC
             arguments.add("-deadlock");
         }
 
+// adjust checkpointing
+//        arguments.add("-checkpoint");
+//        arguments.add("3");
+
         boolean runAsModelCheck = config.getAttribute(IModelConfigurationConstants.LAUNCH_MC_MODE,
                 IModelConfigurationDefaults.LAUNCH_MC_MODE_DEFAULT);
         if (runAsModelCheck)
