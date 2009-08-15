@@ -33,6 +33,8 @@ import util.UniqueString;
 public class TLC
 {
 
+    
+
     // SZ Feb 20, 2009: the class has been 
     // transformed from static to dynamic
     private boolean isSimulate; 
@@ -52,6 +54,9 @@ public class TLC
     private int traceDepth;
     private FilenameToStream resolver;
     private SpecObj specObj;
+
+    // flag if the welcome message is already printed
+    private boolean welcomePrinted;
     
     // handle to the cancellable instance (MC or Simulator)
     private Cancelable instance;
@@ -61,6 +66,7 @@ public class TLC
      */
     public TLC()
     {
+        welcomePrinted = false;
         
         isSimulate = false; // Default to model checking
         cleanup = false;
@@ -127,11 +133,12 @@ public class TLC
      *  o -gzip: control if gzip is applied to value input/output stream.
      *    Defaults to use gzip.
      *  o -debug: debbuging information (non-production use)
-     *  o -tool: tool mode
+     *  o -tool: tool mode (put output codes on console)
+     *  o -checkpoint num: interval for check pointing (in minutes)
+     *  Defaults to 30
      */
     public static void main(String[] args)
     {
-        System.out.println("TLC2 " + TLCGlobals.versionOfTLC);
         TLC tlc = new TLC();
 
         // handle parameters
@@ -155,6 +162,8 @@ public class TLC
     {
         // SZ Feb 20, 2009: extracted this method to separate the 
         // parameter handling from the actual processing
+        
+        
         int index = 0;
         while (index < args.length)
         {
@@ -166,23 +175,6 @@ public class TLC
             {
                 isSimulate = false;
                 index++;
-            } else if (args[index].equals("-config"))
-            {
-                index++;
-                if (index < args.length)
-                {
-                    configFile = args[index];
-                    int len = configFile.length();
-                    if (configFile.startsWith(".cfg", len - 4))
-                    {
-                        configFile = configFile.substring(0, len - 4);
-                    }
-                    index++;
-                } else
-                {
-                    printErrorMsg("Error: expect a file name for -config option.");
-                    return false;
-                }
             } else if (args[index].equals("-difftrace"))
             {
                 index++;
@@ -203,6 +195,47 @@ public class TLC
             {
                 index++;
                 TLCGlobals.useGZIP = false;
+            } else if (args[index].equals("-terse"))
+            {
+                index++;
+                Value.expand = false;
+            } else if (args[index].equals("-continue"))
+            {
+                index++;
+                TLCGlobals.continuation = true;
+            } else if (args[index].equals("-view"))
+            {
+                index++;
+                TLCGlobals.useView = true;
+            } else if (args[index].equals("-debug"))
+            {
+                index++;
+                TLCGlobals.debug = true;
+            } else if (args[index].equals("-tool"))
+            {
+                index++;
+                TLCGlobals.tool = true;
+            } else if (args[index].equals("-help"))
+            {
+                printUsage();
+                return false;
+            } else if (args[index].equals("-config"))
+            {
+                index++;
+                if (index < args.length)
+                {
+                    configFile = args[index];
+                    int len = configFile.length();
+                    if (configFile.startsWith(".cfg", len - 4))
+                    {
+                        configFile = configFile.substring(0, len - 4);
+                    }
+                    index++;
+                } else
+                {
+                    printErrorMsg("Error: expect a file name for -config option.");
+                    return false;
+                }
             } else if (args[index].equals("-dump"))
             {
                 index++;
@@ -218,6 +251,57 @@ public class TLC
                 } else
                 {
                     printErrorMsg("Error: A file name for dumping states required.");
+                    return false;
+                }
+            } else if (args[index].equals("-coverage"))
+            {
+                index++;
+                if (index < args.length)
+                {
+                    try
+                    {
+                        TLCGlobals.coverageInterval = (int) (Float.parseFloat(args[index]) * 60 * 1000);
+                        if (TLCGlobals.coverageInterval < 0)
+                        {
+                            printErrorMsg("Error: expect a nonnegative integer for -coverage option.");
+                            return false;
+                        }
+                        index++;
+                    } catch (NumberFormatException e)
+                    {
+                        
+                        printErrorMsg("Error: An integer for coverage report interval required." + " But encountered "
+                                + args[index]);
+                        return false;
+                    }
+                } else
+                {
+                    printErrorMsg("Error: coverage report interval required.");
+                    return false;
+                }
+            } else if (args[index].equals("-checkpoint"))
+            {
+                index++;
+                if (index < args.length)
+                {
+                    try
+                    {
+                        TLCGlobals.chkptDuration = Integer.parseInt(args[index]) * 1000 * 60;
+                        if (TLCGlobals.chkptDuration < 0)
+                        {
+                            printErrorMsg("Error: expect a nonnegative integer for -checkpoint option.");
+                            return false;
+                        }
+                        
+                        index++;
+                    } catch (Exception e)
+                    {
+                        printErrorMsg("Error: An integer for checkpoint interval is required. But encountered " + args[index]);
+                        return false;
+                    }
+                } else
+                {
+                    printErrorMsg("Error: checkpoint interval required.");
                     return false;
                 }
             } else if (args[index].equals("-depth"))
@@ -350,40 +434,6 @@ public class TLC
                     printErrorMsg("Error: expect a nonnegative integer for -dfid option.");
                     return false;
                 }
-            } else if (args[index].equals("-terse"))
-            {
-                index++;
-                Value.expand = false;
-            } else if (args[index].equals("-coverage"))
-            {
-                index++;
-                if (index < args.length)
-                {
-                    try
-                    {
-                        TLCGlobals.coverageInterval = (int) (Float.parseFloat(args[index]) * 60000);
-                        if (TLCGlobals.coverageInterval < 0)
-                        {
-                            printErrorMsg("Error: expect a nonnegative integer for -coverage option.");
-                            return false;
-                        }
-                        index++;
-                    } catch (NumberFormatException e)
-                    {
-                        
-                        printErrorMsg("Error: An integer for coverage report interval required." + " But encountered "
-                                + args[index]);
-                        return false;
-                    }
-                } else
-                {
-                    printErrorMsg("Error: coverage report interval required.");
-                    return false;
-                }
-            } else if (args[index].equals("-continue"))
-            {
-                index++;
-                TLCGlobals.continuation = true;
             } else if (args[index].equals("-fp"))
             {
                 index++;
@@ -409,18 +459,6 @@ public class TLC
                     printErrorMsg("Error: expect an integer for -workers option.");
                     return false;
                 }
-            } else if (args[index].equals("-view"))
-            {
-                index++;
-                TLCGlobals.useView = true;
-            } else if (args[index].equals("-debug"))
-            {
-                index++;
-                TLCGlobals.debug = true;
-            } else if (args[index].equals("-tool"))
-            {
-                index++;
-                TLCGlobals.tool = true;
             } else
             {
                 if (args[index].charAt(0) == '-')
@@ -465,6 +503,10 @@ public class TLC
             buffer.append("\n");
             DebugPrinter.print(buffer.toString());
         }
+        
+        // if no errors, print welcome message
+        printWelcome();
+        
         return true;
     }
     
@@ -597,8 +639,31 @@ public class TLC
      * @param msg, message to print
      * TODO remove this method and replace the calls
      */
-    private static void printErrorMsg(String msg)
+    private void printErrorMsg(String msg)
     {
+        printWelcome();
         MP.printError(EC.WRONG_COMMANDLINE_PARAMS_TLC, msg);
     }
+    
+    /**
+     * Prints the welcome message once per instance
+     */
+    private void printWelcome()
+    {
+        if (!this.welcomePrinted) 
+        {
+            this.welcomePrinted = true;
+            MP.printMessage(EC.TLC_VERSION, TLCGlobals.versionOfTLC);
+        }
+    }
+    
+    /**
+     * 
+     */
+    private void printUsage()
+    {
+        printWelcome();
+        MP.printMessage(EC.TLC_USAGE);
+    }
+
 }
