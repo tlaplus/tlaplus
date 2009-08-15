@@ -572,7 +572,7 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
         {
             super("Run", TLCUIActivator.imageDescriptorFromPlugin(TLCUIActivator.PLUGIN_ID, "icons/full/lrun_obj.gif"));
             this.setDescription("Run TLC");
-            this.setToolTipText("Starts the TLC model checker");
+            this.setToolTipText("Runs TLC on the model.");
         }
 
         public void run()
@@ -599,7 +599,7 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
             super("Generate", TLCUIActivator.imageDescriptorFromPlugin(TLCUIActivator.PLUGIN_ID,
                     "icons/full/debugt_obj.gif"));
             this.setDescription("Validate model");
-            this.setToolTipText("Generates the output files and validates it, reporting errors in the model");
+            this.setToolTipText("Checks the model for errors but does not run TLC on it.");
         }
 
         public void run()
@@ -626,7 +626,7 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
             super("Stop", TLCUIActivator.imageDescriptorFromPlugin(TLCUIActivator.PLUGIN_ID,
                     "icons/full/progress_stop.gif"));
             this.setDescription("Stop TLC");
-            this.setToolTipText("Stops the TLC model checker");
+            this.setToolTipText("Stops the current TLC model checker run.");
         }
 
         public void run()
@@ -665,7 +665,7 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
             super("Restore model", TLCUIActivator.imageDescriptorFromPlugin(TLCUIActivator.PLUGIN_ID,
                     "icons/full/loop_obj.gif"));
             this.setDescription("Restore model");
-            this.setToolTipText("Restore the model after the TLC crashed");
+            this.setToolTipText("Restores the model after the TLC crashed.");
         }
 
         public void run()
