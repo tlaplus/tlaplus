@@ -223,6 +223,8 @@ public interface EC
     
     public static final int TLC_ENABLED_WRONG_FORMULA = 2260;
     public static final int TLC_ENCOUNTERED_FORMULA_IN_PREDICATE = 2261;
+    public static final int TLC_VERSION = 2262;
+    public static final int TLC_USAGE = 2263;
 
     
     

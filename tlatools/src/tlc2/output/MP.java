@@ -68,7 +68,24 @@ import util.ToolIO;
  */
 public class MP
 {
-    public static final String DELIM = "@!@!@";
+    /**
+     * 
+     */
+    private static final String ENDMSG = "ENDMSG ";
+    /**
+     * 
+     */
+    private static final String CR = "\n";
+    /**
+     * 
+     */
+    private static final String SPACE = " ";
+    /**
+     * 
+     */
+    private static final String COLON = ":";
+    public static final String DELIM = "@!@!@"; //$NON-NLS-1$
+    public static final String STARTMSG = "STARTMSG "; //$NON-NLS-1$
 
     private static final String[] EMPTY_PARAMS = new String[0];
 
@@ -96,7 +113,7 @@ public class MP
     private static MP instance = null;
     private Set warningHistory;
     private static final String CONFIG_FILE_ERROR = "TLC found an error in the configuration file at line %1%\n";
-    private static final SimpleDateFormat SDF = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+    private static final SimpleDateFormat SDF = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); //$NON-NLS-1$ 
 
     /**
      * The internal instance
@@ -128,12 +145,12 @@ public class MP
         {
             parameters = EMPTY_PARAMS;
         }
-        DebugPrinter.print("entering MP.getMessage() with error code " + messageCode + " and " + parameters.length
-                + " parameters");
+        DebugPrinter.print("entering MP.getMessage() with error code " + messageCode + " and " + parameters.length //$NON-NLS-1$
+                + " parameters"); //$NON-NLS-1$
 
         for (int i = 0; i < parameters.length; i++)
         {
-            DebugPrinter.print("param " + i + ": '" + parameters[i] + "'");
+            DebugPrinter.print("param " + i + ": '" + parameters[i] + "'"); //$NON-NLS-1$
         }
 
         StringBuffer b = new StringBuffer();
@@ -142,8 +159,8 @@ public class MP
         {
             // for the tool we always print the message class
             // and message code
-            b.append(DELIM).append("STARTMSG ").append(messageCode).append(":").append(messageClass).append(" ")
-                    .append(DELIM).append("\n");
+            b.append(DELIM).append(STARTMSG).append(messageCode).append(COLON).append(messageClass).append(SPACE)
+                    .append(DELIM).append(CR);
         } else
         {
             // depending on message class add different prefix
@@ -176,22 +193,84 @@ public class MP
                     + "an infinite loop when trying to compute the function or its application\n"
                     + "to an element in its putative domain.");
             break;
-
         case EC.SYSTEM_OUT_OF_MEMORY:
             b.append("Java ran out of memory.  Running Java with a larger memory allocation\n"
                     + "pool (heap) may fix this.  But it won't help if some state has an enormous\n"
                     + "number of successor states, or if TLC must compute the value of a huge set.");
             break;
+        case EC.SYSTEM_OUT_OF_MEMORY_TOO_MANY_INIT:
+            b.append("Out Of Memory. There are probably too many initial states.");
+            break;
+        case EC.SYSTEM_ERROR_READING_POOL:
+            b.append("when reading the disk (StatePoolReader.run):\n%1%");
+            break;
 
+        case EC.SYSTEM_CHECKPOINT_RECOVERY_CORRUPT:
+            b.append("TLC encountered the following error while restarting from a "
+                    + "checkpoint;\n the checkpoint file is probably corrupted.\n%1%");
+            break;
+        case EC.SYSTEM_ERROR_READING_STATES:
+            b.append("TLC encountered the following error reading the %1% of unexplored states:\n%2%");
+            break;
+        case EC.SYSTEM_ERROR_WRITING_STATES:
+            b.append("TLC encountered the following error writing the %1% of unexplored states:\n%2%");
+            break;
+
+        case EC.SYSTEM_ERROR_WRITING_POOL:
+            b.append("when writing the disk (StatePoolWriter.run):\n%1%");
+            break;
+
+        case EC.SYSTEM_DISKGRAPH_ACCESS:
+            b.append("DiskGraph.toString()");
+            break;
+        case EC.SYSTEM_FILE_NULL:
+            b.append("File must be not null");
+            break;
+
+        case EC.SYSTEM_INTERRUPTED:
+            b.append("Thread has been interrupted.");
+            break;
+
+        case EC.SYSTEM_INDEX_ERROR:
+            b.append("Index error.");
+            break;
+
+        case EC.SYSTEM_STREAM_EMPTY:
+            b.append("The provided input stream was null, empty or could not be accessed.");
+            break;
+        case EC.SYSTEM_UNABLE_TO_OPEN_FILE:
+            b.append("Unable to open %1%.\n%2%");
+            break;
+        case EC.SYSTEM_UNABLE_NOT_RENAME_FILE:
+            b.append("Unable not rename file during the clean-up.");
+            break;
+
+        case EC.SYSTEM_DISK_IO_ERROR_FOR_FILE:
+            b.append("Disk I/O error accessing the file for %1%.");
+            break;
+
+        case EC.SYSTEM_METADIR_EXISTS:
+            b.append("TLC writes its files to a directory whose name is generated from the current "
+                    + "time.\nThis directory should be %1%, but that directory already exists.\n"
+                    + "Trying to run TLC again will probably fix this problem.");
+            break;
+
+        case EC.SYSTEM_METADIR_CREATION_ERROR:
+            b.append("TLC could not make a directory %1% for the disk files it needs to write.");
+            break;
+/* ----------------------------------------------------------------- */
         case EC.WRONG_COMMANDLINE_PARAMS_TLC:
             b.append("%1%\nUsage: java tlc2.TLC [-option] inputfile");
             break;
         case EC.WRONG_COMMANDLINE_PARAMS_SIMULATOR:
             b.append("%1%\nUsage: java tlc2.Simulator [-option] inputfile");
             break;
-
-        case EC.SYSTEM_OUT_OF_MEMORY_TOO_MANY_INIT:
-            b.append("Out Of Memory. There are probably too many initial states.");
+/* ----------------------------------------------------------------- */
+        case EC.TLC_USAGE:
+            b.append(Messages.getString("HelpMessage"));// $NON-NLS-1$            
+            break;
+        case EC.TLC_VERSION:
+            b.append("TLC2 %1%");
             break;
 
         case EC.TLC_PP_FORMATING_VALUE:
@@ -203,7 +282,7 @@ public class MP
             break;
 
         case EC.TLC_METADIR_EXISTS:
-            b.append("TLC writes its files to a directory whose name is generated"
+            b.append("TLC writes its files to a directory which name is generated"
                     + " from the current time.\nThis directory should be %1%"
                     + ", but that directory already exists.\n"
                     + "Trying to run TLC again will probably fix this problem.\n");
@@ -308,29 +387,6 @@ public class MP
             b.append("Progress report thread died.");
             break;
 
-        case EC.SYSTEM_ERROR_READING_POOL:
-            b.append("when reading the disk (StatePoolReader.run):\n%1%");
-            break;
-
-        case EC.SYSTEM_CHECKPOINT_RECOVERY_CORRUPT:
-            b.append("TLC encountered the following error while restarting from a "
-                    + "checkpoint;\n the checkpoint file is probably corrupted.\n%1%");
-            break;
-        case EC.SYSTEM_ERROR_READING_STATES:
-            b.append("TLC encountered the following error reading the %1% of unexplored states:\n%2%");
-            break;
-        case EC.SYSTEM_ERROR_WRITING_STATES:
-            b.append("TLC encountered the following error writing the %1% of unexplored states:\n%2%");
-            break;
-
-        case EC.SYSTEM_ERROR_WRITING_POOL:
-            b.append("when writing the disk (StatePoolWriter.run):\n%1%");
-            break;
-
-        case EC.SYSTEM_DISKGRAPH_ACCESS:
-            b.append("DiskGraph.toString()");
-            break;
-
         case EC.TLC_AAAAAAA:
             b.append("AAAAAA");
             break;
@@ -425,25 +481,10 @@ public class MP
             b.append("%1%, work completed. Thank you!");
             break;
 
-        case EC.SYSTEM_INDEX_ERROR:
-            b.append("Index error.");
-            break;
-
-        case EC.SYSTEM_STREAM_EMPTY:
-            b.append("The provided input stream was null, empty or could not be accessed.");
-            break;
-
         case EC.TLC_PARAMETER_MUST_BE_POSTFIX:
             b.append("Parameter must be a postfix operator");
             break;
 
-        case EC.SYSTEM_FILE_NULL:
-            b.append("File must be not null");
-            break;
-
-        case EC.SYSTEM_INTERRUPTED:
-            b.append("Thread has been interrupted.");
-            break;
 
         case EC.TLC_COULD_NOT_DETERMINE_SUBSCRIPT:
             b.append("TLC could not determine if the subscript of the next-state relation contains"
@@ -571,24 +612,6 @@ public class MP
             b.append("In computing %1%, TLC expected a %2% expression," + "\nbut didn't find one.\n%3%");
             break;
 
-        case EC.SYSTEM_UNABLE_NOT_RENAME_FILE:
-            b.append("Unable not rename file during the clean-up.");
-            break;
-
-        case EC.SYSTEM_DISK_IO_ERROR_FOR_FILE:
-            b.append("Disk I/O error accessing the file for %1%.");
-            break;
-
-        case EC.SYSTEM_METADIR_EXISTS:
-            b.append("TLC writes its files to a directory whose name is generated from the current "
-                    + "time.\nThis directory should be %1%, but that directory already exists.\n"
-                    + "Trying to run TLC again will probably fix this problem.");
-            break;
-
-        case EC.SYSTEM_METADIR_CREATION_ERROR:
-            b.append("TLC could not make a directory %1% for the disk files it needs to write.");
-            break;
-
         case EC.TLC_CHOOSE_ARGUMENTS_WRONG:
             b.append("The arguments to %1% are not appropriate.");
             break;
@@ -599,10 +622,6 @@ public class MP
 
         case EC.TLC_FP_VALUE_ALREADY_ON_DISK:
             b.append("DiskFPSet.mergeNewEntries: %1% is already on disk.\n");
-            break;
-
-        case EC.SYSTEM_UNABLE_TO_OPEN_FILE:
-            b.append("Unable to open %1%.\n%2%");
             break;
 
         case EC.SANY_PARSER_CHECK:
@@ -841,7 +860,7 @@ public class MP
             // the general error adapts to the number of parameters that are passed
             for (int i = 0; i < parameters.length; i++)
             {
-                b.append("%" + (i + 1) + "%");
+                b.append("%" + (i + 1) + "%"); //$NON-NLS-1$ //$NON-NLS-2$
             }
             break;
         /* 
@@ -857,7 +876,7 @@ public class MP
         if (TLCGlobals.tool)
         {
             // for the tool we always print the message code
-            b.append("\n").append(DELIM).append("ENDMSG ").append(messageCode).append(" ").append(DELIM);
+            b.append(CR).append(DELIM).append(ENDMSG).append(messageCode).append(SPACE).append(DELIM);
         } else
         {
 
@@ -878,7 +897,7 @@ public class MP
                 break;
             }
         }
-        DebugPrinter.print("Leaving getMessage()");
+        DebugPrinter.print("Leaving getMessage()"); //$NON-NLS-1$
         return b.toString();
     }
 
@@ -980,9 +999,9 @@ public class MP
     public static void printError(int errorCode, String[] parameters)
     {
         // write the output
-        DebugPrinter.print("entering printError(int, String[]) with errorCode " + errorCode);
+        DebugPrinter.print("entering printError(int, String[]) with errorCode " + errorCode); //$NON-NLS-1$
         ToolIO.out.println(getMessage(ERROR, errorCode, parameters));
-        DebugPrinter.print("leaving printError(int, String[])");
+        DebugPrinter.print("leaving printError(int, String[])"); //$NON-NLS-1$
     }
 
     /**
@@ -996,7 +1015,7 @@ public class MP
         printError(errorCode, cause.getMessage());
         if (includeStackTrace)
         {
-            DebugPrinter.print("printing stacktrace in printError(int, Throwable, boolean)");
+            DebugPrinter.print("printing stacktrace in printError(int, Throwable, boolean)"); //$NON-NLS-1$
             cause.printStackTrace(ToolIO.out);
         }
     }
@@ -1038,10 +1057,10 @@ public class MP
      */
     public static void printMessage(int errorCode, String[] parameters)
     {
-        DebugPrinter.print("entering printMessage(int, String[]) with errorCode " + errorCode);
+        DebugPrinter.print("entering printMessage(int, String[]) with errorCode " + errorCode); //$NON-NLS-1$
         // write the output
         ToolIO.out.println(getMessage(NONE, errorCode, parameters));
-        DebugPrinter.print("leaving printError(int, String[]) with errorCode ");
+        DebugPrinter.print("leaving printError(int, String[]) with errorCode "); //$NON-NLS-1$
     }
 
     /** 
@@ -1050,9 +1069,9 @@ public class MP
      */
     public static void printState(int code, String[] parameters)
     {
-        DebugPrinter.print("entering printState(String[])");
+        DebugPrinter.print("entering printState(String[])"); //$NON-NLS-1$
         ToolIO.out.println(getMessage(STATE, code, parameters));
-        DebugPrinter.print("leaving printState(String[])");
+        DebugPrinter.print("leaving printState(String[])"); //$NON-NLS-1$
     }
 
     /**
@@ -1063,10 +1082,10 @@ public class MP
      */
     public static void printTLCBug(int errorCode, String[] parameters)
     {
-        DebugPrinter.print("entering printTLCBug(int, String[]) with errorCode " + errorCode);
+        DebugPrinter.print("entering printTLCBug(int, String[]) with errorCode " + errorCode); //$NON-NLS-1$
         // write the output
         ToolIO.out.println(getMessage(TLCBUG, errorCode, parameters));
-        DebugPrinter.print("leaving printTLCBug(int, String[])");
+        DebugPrinter.print("leaving printTLCBug(int, String[])"); //$NON-NLS-1$
     }
 
     /**
@@ -1076,7 +1095,7 @@ public class MP
      */
     public static void printWarning(int errorCode, String[] parameters)
     {
-        DebugPrinter.print("entering printWarning(int, String[]) with errorCode " + errorCode);
+        DebugPrinter.print("entering printWarning(int, String[]) with errorCode " + errorCode); //$NON-NLS-1$
         // only print warnings if the global warning switch was enabled
         if (TLCGlobals.warn)
         {
@@ -1089,7 +1108,7 @@ public class MP
                 ToolIO.out.println(message);
             }
         }
-        DebugPrinter.print("leaving printWarning(int, String[])");
+        DebugPrinter.print("leaving printWarning(int, String[])"); //$NON-NLS-1$
     }
 
     /**
@@ -1107,7 +1126,7 @@ public class MP
             {
                 break;
             }
-            placeHolder = "%" + (i + 1) + "%";
+            placeHolder = "%" + (i + 1) + "%"; //$NON-NLS-1$ //$NON-NLS-2$
             placeHolderPosition = buffer.indexOf(placeHolder);
             if (placeHolderPosition != -1)
             {
