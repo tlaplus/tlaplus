@@ -61,7 +61,7 @@ public class TLCGlobals
     public static boolean warn = true;
 
     // The time interval to report progress (in milliseconds)
-    public static final int progressInterval = 5 * 60 * 1000;
+    public static final int progressInterval = 1 * 60 * 1000;
 
     // The time interval to checkpoint. (in milliseconds)
     public static long chkptDuration = 30 * 60 * 1000;
