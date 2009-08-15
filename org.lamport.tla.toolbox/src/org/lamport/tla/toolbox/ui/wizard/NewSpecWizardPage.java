@@ -10,6 +10,7 @@ import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -32,6 +33,7 @@ public class NewSpecWizardPage extends WizardPage
 {
     private Text                 specNameText;
     private Text                 fileText;
+    private Button               importExisting;
 
     // the flags show if the fields has been touched
     private boolean              specNameDirty       = false;
@@ -104,8 +106,30 @@ public class NewSpecWizardPage extends WizardPage
         });
 
         // just to align
-        Label dummy = new Label(container, SWT.NULL);
-        dummy.isVisible();
+        new Label(container, SWT.NULL);
+        
+        
+        new Label(container, SWT.NULL);
+        
+        importExisting = new Button(container, SWT.CHECK);
+        importExisting.setText("Import existing");
+        importExisting.setSelection(true);
+        importExisting.setEnabled(false);
+        
+        gd = new GridData();
+        gd.horizontalSpan = 2;
+        importExisting.setLayoutData(gd);
+        importExisting.addSelectionListener(new SelectionListener() {
+            public void widgetDefaultSelected(SelectionEvent e)
+            {
+            }
+
+            public void widgetSelected(SelectionEvent e)
+            {
+                dialogChanged();
+            }
+        });
+        
 
         // disable the next/finish button
         setPageComplete(false);
@@ -218,8 +242,16 @@ public class NewSpecWizardPage extends WizardPage
         // project directory exists
         if (ResourceHelper.peekProject(getSpecName(), rootfilePath)) 
         {
-            reportError("A toolbox directory for provided specification name already exist.\nPlease select a different specification name of root module.");
-            return;
+            if (!importExisting.getSelection()) 
+            {
+                reportError("The "+getSpecName()+".toolbox directory already exists at the provided location." +
+                		"\nPlease select a different specification name or the root module.");
+                return;
+            }
+            importExisting.setEnabled(true);
+        } else 
+        {
+            importExisting.setEnabled(false);
         }
 
         // every seems to be fine
@@ -298,6 +330,15 @@ public class NewSpecWizardPage extends WizardPage
     public String getRootFilename()
     {
         return this.fileText.getText();
+    }
+    
+    /**
+     * Returns the user choice if the existing project files should be imported
+     * @return
+     */
+    public boolean importExisting()
+    {
+        return importExisting.getSelection();
     }
 
 

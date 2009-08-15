@@ -3,6 +3,7 @@ package org.lamport.tla.toolbox.ui.wizard;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -47,10 +48,10 @@ public class NewSpecWizard extends Wizard implements INewWizard
             // create it
             try
             {
-                ResourcesPlugin.getWorkspace().run(ResourceHelper.createTLAModuleCreationOperation(rootNamePath), null);
+                ResourcesPlugin.getWorkspace().run(ResourceHelper.createTLAModuleCreationOperation(rootNamePath), new NullProgressMonitor());
             } catch (CoreException e)
             {
-                e.printStackTrace();
+                Activator.logError("Error creating module " + rootNamePath, e);
                 // exception, no chance to recover
                 return false;
             }

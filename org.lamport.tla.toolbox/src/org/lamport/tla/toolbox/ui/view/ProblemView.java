@@ -56,16 +56,6 @@ public class ProblemView extends ViewPart
         if (specLoaded == null)
         {
             hide();
-            /*
-             * perspective solution
-            UIHelper.runUIAsync(new Runnable() {
-
-                public void run()
-                {
-                    UIHelper.closeWindow(ProblemsPerspective.ID);
-                }
-            });
-            */
             return;
         } else
         {
@@ -142,6 +132,7 @@ public class ProblemView extends ViewPart
         {
             public void run()
             {
+                // UIHelper.closeWindow(ProblemsPerspective.ID);
                 getViewSite().getPage().hideView(ProblemView.this);
             }
         });
