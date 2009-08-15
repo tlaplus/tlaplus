@@ -14,6 +14,7 @@ import org.eclipse.core.resources.IResourceRuleFactory;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -22,6 +23,7 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.core.runtime.jobs.MultiRule;
 import org.lamport.tla.toolbox.Activator;
@@ -40,6 +42,15 @@ public class ResourceHelper
 {
 
     /**
+     * 
+     */
+    private static final String PROJECT_DESCRIPTION_FILE = ".project";
+    /**
+     * 
+     */
+    private static final String TOOLBOX_DIRECTORY_SUFFIX = ".toolbox";
+
+    /**
      * Look up if a project exist and return true if so
      * @param name name of the project
      * @return
@@ -47,7 +58,7 @@ public class ResourceHelper
     public static boolean peekProject(String name, String rootFilename)
     {
         String root = getParentDirName(rootFilename);
-        File projectDir = new File(root.concat("/").concat(name).concat(".toolbox"));
+        File projectDir = new File(root.concat("/").concat(name).concat(TOOLBOX_DIRECTORY_SUFFIX));
         return projectDir.exists();
     }
 
@@ -78,34 +89,11 @@ public class ResourceHelper
     }
 
     /**
-     * Retrieves a project by name or creates a new project
-     * <br><b>Note:</b> If the project does not exist in workspace it will be created, based
-     * on the specified name and the path of the rootFilename. <br>The location (directory) of 
-     * the project will be constructed as 
-     * the parent directory of the rootFile + specified name + ".toolbox". 
-     * <br>Eg. calling <tt>getProject("for", "c:/bar/bar.tla")</tt>
-     * will cause the creation of the project (iff this does not exist) with location
-     * <tt>"c:/bar/foo.toolbox"</tt>
-     * 
-     * 
-     * @param name
-     *            name of the project, should not be null
-     * @param rootFilename 
-     *            path to the root filename, should not be null 
-     * @return a working IProject instance
-     */
-    public static IProject getProject(String name, String rootFilename)
-    {
-        return getProject(name, rootFilename, true);
-    }
-
-
-    /**
      * Retrieves the project handle
      * @param name name of the project
      * @return a project handle
      */
-    public static IProject getProject(String name) 
+    public static IProject getProject(String name)
     {
         if (name == null)
         {
@@ -116,15 +104,24 @@ public class ResourceHelper
 
         return project;
     }
-    
+
     /**
      * Retrieves a project by name or creates a new project is <code>createMissing</code> is set to <code>true</code>
      * @param name name of the project, should not be null
      * @param rootFilename path to the root filename, should not be null
      * @param createMissing a boolean flag if a missing project should be created 
      * @return a working IProject instance or null if project not at place and createMissing was false
+     * 
+     * <br><b>Note:</b> If the project does not exist in workspace it will be created, based
+     * on the specified name and the path of the rootFilename. <br>The location (directory) of 
+     * the project will be constructed as 
+     * the parent directory of the rootFile + specified name + ".toolbox". 
+     * <br>Eg. calling <tt>getProject("for", "c:/bar/bar.tla")</tt>
+     * will cause the creation of the project (iff this does not exist) with location
+     * <tt>"c:/bar/foo.toolbox"</tt>
+     * 
      */
-    public static IProject getProject(String name, String rootFilename, boolean createMissing)
+    public static IProject getProject(String name, String rootFilename, boolean createMissing, boolean importExisting)
     {
         if (name == null)
         {
@@ -133,7 +130,7 @@ public class ResourceHelper
 
         IProgressMonitor monitor = new NullProgressMonitor();
         IProject project = getProject(name);
-        
+
         // create a project
         if (!project.exists() && createMissing)
         {
@@ -144,30 +141,111 @@ public class ResourceHelper
                     return null;
                 }
 
+                String parentDirectory = getParentDirName(rootFilename);
+                
+                Assert.isNotNull(parentDirectory);
+
+                // parent directory could be determined
+
+                IPath projectDescriptionPath = new Path(parentDirectory).removeTrailingSeparator()
+                        .append(name.concat(TOOLBOX_DIRECTORY_SUFFIX)).addTrailingSeparator();
+
                 // create a new description for the given name
-                IProjectDescription description = project.getWorkspace().newProjectDescription(name);
+                IProjectDescription description;
 
-                // set project location
-                if (getParentDirName(rootFilename) != null)
+                boolean performImport = importExisting
+                        && projectDescriptionPath.append(PROJECT_DESCRIPTION_FILE).toFile().exists();
+
+                // there exists a project description file
+                if (performImport)
                 {
-                    // parent directory could be determined
-                    IPath path = new Path(getParentDirName(rootFilename)).removeTrailingSeparator();
-                    path = path.append(name.concat(".toolbox")).addTrailingSeparator();
-                    description.setLocation(path);
+                    description = project.getWorkspace().loadProjectDescription(
+                            projectDescriptionPath.append(PROJECT_DESCRIPTION_FILE));
+
+                    // check the natures and install if missing
+                    String[] natureIds = description.getNatureIds();
+                    boolean natureFound = false;
+                    for (int i = 0; i < natureIds.length; i++)
+                    {
+                        if (TLANature.ID.equals(natureIds[i]))
+                        {
+                            natureFound = true;
+                            break;
+                        }
+                    }
+                    if (!natureFound)
+                    {
+                        String[] newNatureIds = new String[natureIds.length + 1];
+                        System.arraycopy(natureIds, 0, newNatureIds, 0, natureIds.length);
+                        newNatureIds[natureIds.length] = TLANature.ID;
+                        description.setNatureIds(newNatureIds);
+                    }
+
+                    // check builders and install if missing
+                    ICommand[] commands = description.getBuildSpec();
+                    boolean tlaBuilderFound = false;
+                    boolean pcalBuilderFound = false;
+                    int numberOfBuildersToInstall = 2;
+
+                    for (int i = 0; i < commands.length; ++i)
+                    {
+                        String builderName = commands[i].getBuilderName();
+                        if (builderName.equals(TLAParsingBuilder.BUILDER_ID))
+                        {
+                            tlaBuilderFound = true;
+                            numberOfBuildersToInstall--;
+                        } else if (builderName.equals(PCalDetectingBuilder.BUILDER_ID))
+                        {
+                            pcalBuilderFound = true;
+                            numberOfBuildersToInstall--;
+                        }
+
+                        if (tlaBuilderFound && pcalBuilderFound)
+                        {
+                            break;
+                        }
+                    }
+
+                    if (numberOfBuildersToInstall > 0)
+                    {
+                        ICommand[] newCommands = new ICommand[commands.length + numberOfBuildersToInstall];
+                        System.arraycopy(commands, 0, newCommands, 0, commands.length);
+
+                        int position = commands.length;
+
+                        if (!tlaBuilderFound)
+                        {
+                            ICommand command = description.newCommand();
+                            command.setBuilderName(TLAParsingBuilder.BUILDER_ID);
+                            newCommands[position] = command;
+                            position++;
+                        }
+                        if (!pcalBuilderFound)
+                        {
+                            ICommand command = description.newCommand();
+                            command.setBuilderName(PCalDetectingBuilder.BUILDER_ID);
+                            newCommands[position] = command;
+                        }
+                    }
+                } else
+                {
+                    // create new description
+                    description = project.getWorkspace().newProjectDescription(name);
+                    description.setLocation(projectDescriptionPath);
+
+                    // set TLA+ feature
+                    description.setNatureIds(new String[] { TLANature.ID });
+
+                    // set TLA+ Parsing Builder
+                    ICommand command = description.newCommand();
+                    command.setBuilderName(TLAParsingBuilder.BUILDER_ID);
+                    // set PCal detecting builder
+                    ICommand command2 = description.newCommand();
+                    command2.setBuilderName(PCalDetectingBuilder.BUILDER_ID);
+
+                    // setup the builders
+                    description.setBuildSpec(new ICommand[] { command, command2 });
                 }
-
-                // set TLA+ feature
-                description.setNatureIds(new String[] { TLANature.ID });
-
-                // set TLA+ Parsing Builder
-                ICommand command = description.newCommand();
-                command.setBuilderName(TLAParsingBuilder.BUILDER_ID);
-                // set PCal detecting builder
-                ICommand command2 = description.newCommand();
-                command2.setBuilderName(PCalDetectingBuilder.BUILDER_ID);
-
-                // setup the builders
-                description.setBuildSpec(new ICommand[] { command, command2 });
 
                 // create the project
                 project.create(description, monitor);
@@ -176,6 +254,12 @@ public class ResourceHelper
 
                 // open the project
                 project.open(monitor);
+
+                // relocate files (fix the links)
+                if (performImport)
+                {
+                    relocateFiles(project, new Path(parentDirectory), new NullProgressMonitor());
+                }
 
             } catch (CoreException e)
             {
@@ -209,24 +293,82 @@ public class ResourceHelper
             {
                 try
                 {
-                    // TODO add progress monitor
                     file.createLink(location, IResource.NONE, new NullProgressMonitor());
                     return file;
 
                 } catch (CoreException e)
                 {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
+                    Activator.logError("Error creating resource link to " + name, e);
                 }
             }
-            if (file.exists()) 
+            if (file.exists())
             {
                 return file;
-            } else {
+            } else
+            {
                 return null;
             }
-        } 
+        }
         return file;
+    }
+
+    /**
+     * On relocation, all linked files in the project become invalid. This method fixes this issue
+     * @param project project containing links to the nen-existing files
+     * @param newLocationParent the parent directory, where the files are located
+     */
+    public static void relocateFiles(IProject project, IPath newLocationParent, IProgressMonitor monitor)
+    {
+        Assert.isNotNull(project);
+        Assert.isNotNull(newLocationParent);
+
+        if (!newLocationParent.hasTrailingSeparator())
+        {
+            newLocationParent.addTrailingSeparator();
+        }
+
+        try
+        {
+            IResource[] members = project.members();
+
+            monitor.beginTask("Relocating Files", members.length * 2);
+
+            for (int i = 0; i < members.length; i++)
+            {
+                if (members[i].isLinked() && !members[i].getRawLocation().toFile().exists())
+                {
+                    // the linked file points to a file that does not exist.
+                    String name = members[i].getName();
+                    IPath newLocation = newLocationParent.append(name);
+                    if (newLocation.toFile().exists())
+                    {
+
+                        members[i].delete(true, new SubProgressMonitor(monitor, 1));
+
+                        getLinkedFile(project, newLocation.toOSString(), true);
+                        monitor.worked(1);
+                        
+                        Activator.logDebug("File found " + newLocation.toOSString());
+                    } else
+                    {
+                        throw new CoreException(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Error relocating file "
+                                + name + ". The specified location " + newLocation.toOSString()
+                                + " did not contain the file."));
+                    }
+                } else {
+                    monitor.worked(2);
+                }
+                
+            }
+
+        } catch (CoreException e)
+        {
+            Activator.logError("Error relocating files in " + project.getName(), e);
+        } finally
+        {
+            monitor.done();
+        }
+
     }
 
     /**
@@ -557,7 +699,6 @@ public class ResourceHelper
         return combinedRule;
     }
 
-    
     /**
      * Renames and moves the project
      * @param project
@@ -565,14 +706,14 @@ public class ResourceHelper
      */
     public static IProject projectRename(IProject project, String specName)
     {
-        IProgressMonitor monitor = null;
+        IProgressMonitor monitor = new NullProgressMonitor();
         try
         {
             IProjectDescription description = project.getDescription();
 
             // move the project location
             IPath path = description.getLocation().removeLastSegments(1).removeTrailingSeparator().append(
-                    specName.concat(".toolbox")).addTrailingSeparator();
+                    specName.concat(TOOLBOX_DIRECTORY_SUFFIX)).addTrailingSeparator();
             description.setLocation(path);
             description.setName(specName);
 
@@ -583,8 +724,7 @@ public class ResourceHelper
             return ResourcesPlugin.getWorkspace().getRoot().getProject(specName);
         } catch (CoreException e)
         {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            Activator.logError("Error renaming a specification", e);
         }
         return null;
     }
@@ -595,13 +735,13 @@ public class ResourceHelper
      */
     public static void deleteProject(IProject project)
     {
-        IProgressMonitor monitor = null;
+        IProgressMonitor monitor = new NullProgressMonitor();
         try
         {
             project.delete(true, monitor);
         } catch (CoreException e)
         {
-            e.printStackTrace();
+            Activator.logError("Error deleting a specification", e);
         }
     }
 

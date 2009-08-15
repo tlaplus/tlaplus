@@ -6,6 +6,7 @@ import java.net.URL;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IPath;
@@ -41,6 +42,15 @@ public class ToolboxHandle
         return ((Activator.getSpecManager().getSpecLoaded() == null) ? null : Activator.getSpecManager()
                 .getSpecLoaded().getRootFile());
     }
+    /**
+     * Retrieves the root file of the specification project
+     * @param project
+     * @return the resource
+     */
+    public static IResource getRootModule(IProject project) 
+    {
+        return PreferenceStoreHelper.readProjectRootFile(project);
+    }
 
     /**
      * Returns the instance preference store
@@ -49,6 +59,7 @@ public class ToolboxHandle
     {
         return PreferenceStoreHelper.getInstancePreferenceStore();
     }
+
 
     /**
      * Returns the SpecObj of the current loaded specification

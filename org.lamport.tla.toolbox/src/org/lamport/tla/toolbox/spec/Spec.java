@@ -63,11 +63,11 @@ public class Spec implements IAdaptable
      * 
      * @param name the name of the specification
      * @param rootFilename the path to the root file name
-     * @param modified
+     * @param importExisting
      */
-    public static Spec createNewSpec(String name, String rootFilename)
+    public static Spec createNewSpec(String name, String rootFilename, boolean importExisting)
     {
-        IProject project = ResourceHelper.getProject(name, rootFilename);
+        IProject project = ResourceHelper.getProject(name, rootFilename, true, importExisting);
         PreferenceStoreHelper.storeRootFilename(project, rootFilename);
 
         Spec spec = new Spec(project);

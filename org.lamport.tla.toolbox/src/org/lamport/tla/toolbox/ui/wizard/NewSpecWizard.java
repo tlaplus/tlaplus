@@ -59,7 +59,7 @@ public class NewSpecWizard extends Wizard implements INewWizard
         
         
         // create new spec
-        spec = Spec.createNewSpec(specName, rootFilename);
+        spec = Spec.createNewSpec(specName, rootFilename, page.importExisting());
         
         
         // add spec to the spec manager
