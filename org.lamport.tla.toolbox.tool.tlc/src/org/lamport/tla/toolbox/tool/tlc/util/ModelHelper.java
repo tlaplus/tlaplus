@@ -1030,7 +1030,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
 
         Vector checkpoints = new Vector();
         IFolder directory = getModelTargetDirectory(config);
-        if (directory.exists())
+        if (directory != null && directory.exists())
         {
             IResource[] members = directory.members();
             for (int i = 0; i < members.length; i++)
