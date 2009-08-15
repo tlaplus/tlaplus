@@ -252,7 +252,10 @@ public class TLAEditor extends TextEditor
 
         IFile file = ((FileEditorInput) getEditorInput()).getFile();
         Shell shell = UIHelper.getShellProvider().getShell();
+        
+        // TODO fix this?
         IPath specRootPrefix = new Path(ResourceHelper.getParentDirName(ToolboxHandle.getRootModule()));
+        
         FileDialog saveAsDialog = null;
         while (true)
         {
@@ -321,7 +324,7 @@ public class TLAEditor extends TextEditor
                 // new editor input
                 IEditorInput newInput = new FileEditorInput(newResource);
 
-                System.out.println("TODO: Save " + file.getLocation().toOSString() + " as " + newPath);
+                // System.out.println("TODO: Save " + file.getLocation().toOSString() + " as " + newPath);
 
                 // get the document provider
                 IDocumentProvider provider = getDocumentProvider();
