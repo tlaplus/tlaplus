@@ -219,6 +219,7 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
             case MP.NONE:
                 switch (messageCode) {
                 // Progress information
+                case EC.TLC_VERSION:
                 case EC.TLC_SANY_START:
                 case EC.TLC_MODE_MC:
                 case EC.TLC_MODE_SIMU:
@@ -633,7 +634,7 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
     {
         public final static String[] columnTitles = new String[] { "Time", "Diameter", "States Found",
                 "States Distinct", "States Left" };
-        public final static int[] columnWidths = { 150, 80, 80, 80, 80 };
+        public final static int[] columnWidths = { 120, 60, 80, 100, 80 };
         public static final int MIN_WIDTH = columnWidths[0] + columnWidths[1] + columnWidths[2] + columnWidths[3]
                 + columnWidths[4];
         public final static int COL_TIME = 0;
@@ -642,7 +643,7 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
         public final static int COL_DISTINCT = 3;
         public final static int COL_LEFT = 4;
 
-        private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); // $NON-NLS-1$
 
         /* (non-Javadoc)
          * @see org.eclipse.jface.viewers.ITableLabelProvider#getColumnImage(java.lang.Object, int)
