@@ -41,10 +41,13 @@ public class CloneModelHandlerDelegate extends AbstractHandler implements IHandl
         ISelection selection = HandlerUtil.getCurrentSelectionChecked(event);
         if (selection != null && selection instanceof IStructuredSelection)
         {
-            // root file
-            IResource specRootModule = ToolboxHandle.getRootModule();
+            // model
             ILaunchConfiguration model = (ILaunchConfiguration) ((IStructuredSelection) selection).getFirstElement();
 
+            // root file
+            IResource specRootModule = ToolboxHandle.getRootModule(model.getFile().getProject());
+
+            
             modelName = ModelHelper.getModelName(model.getFile()) + "_Copy";
 
             IInputValidator modelNameInputValidator = new ModelNameValidator(specRootModule.getProject());

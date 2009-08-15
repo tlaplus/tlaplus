@@ -121,7 +121,9 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
             modelName = config.getAttribute(MODEL_NAME, EMPTY_STRING);
 
             // root file name
-            specRootFilename = config.getAttribute(SPEC_ROOT_FILE, EMPTY_STRING);
+            specRootFilename = ToolboxHandle.getRootModule(config.getFile().getProject()).getLocation().toOSString();
+            // specRootFilename = config.getAttribute(SPEC_ROOT_FILE, EMPTY_STRING);
+            
         } finally
         {
             // finish the monitor
@@ -181,7 +183,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
             IFile cfgFile = project.getFile(targetFolderPath.append(ModelHelper.FILE_CFG));
             IFile outFile = project.getFile(targetFolderPath.append(ModelHelper.FILE_OUT));
 
-            TLCActivator.logDebug("Writing files to: " + targetFolderPath);
+            TLCActivator.logDebug("Writing files to: " + targetFolderPath.toOSString());
 
             final IFile[] files = new IFile[] { tlaFile, cfgFile, outFile };
 

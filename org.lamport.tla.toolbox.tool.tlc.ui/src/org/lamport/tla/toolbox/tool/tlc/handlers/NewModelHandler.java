@@ -7,7 +7,6 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunchConfiguration;
@@ -69,7 +68,7 @@ public class NewModelHandler extends AbstractHandler implements IModelConfigurat
         IProject specProject = spec.getProject();
         
         // root module
-        IResource specRootModule = spec.getRootFile();
+        // IResource specRootModule = spec.getRootFile();
 
         // spec object
         SpecObj specObject = spec.getRootModule();
@@ -132,7 +131,8 @@ public class NewModelHandler extends AbstractHandler implements IModelConfigurat
             ILaunchConfigurationWorkingCopy launchCopy = launchConfigurationType.newInstance(specProject, specProject.getName() + "___" + modelName);
 
             launchCopy.setAttribute(SPEC_NAME, spec.getName());
-            launchCopy.setAttribute(SPEC_ROOT_FILE, specRootModule.getLocation().toOSString());
+            // it is easier to do launchCopy.getProject().getPersistentProperty(SPEC_ROOT_FILE)
+            // launchCopy.setAttribute(SPEC_ROOT_FILE, specRootModule.getLocation().toOSString());
             launchCopy.setAttribute(MODEL_NAME, modelName);
             
             if (constants.size() == 0)

@@ -90,6 +90,8 @@ public class ModelWriter
         Assignment constant;
         Vector symmetrySets = new Vector();
 
+        
+        // first run for all the declarations
         for (int i = 0; i < constants.size(); i++)
         {
             constant = (Assignment) constants.get(i);
@@ -100,6 +102,19 @@ public class ModelWriter
                     // set model values
                     TypedSet setOfMVs = TypedSet.parseSet(constant.getRight());
                     addMVTypedSet(setOfMVs, "MV CONSTANT declarations", attributeConstants);
+                } 
+            } 
+        }
+        
+        // now all the definitions
+        for (int i = 0; i < constants.size(); i++)
+        {
+            constant = (Assignment) constants.get(i);
+            if (constant.isModelValue())
+            {
+                if (constant.isSetOfModelValues())
+                {
+                    // set model values
                     cfgBuffer.append(COMMENT).append("MV CONSTANT definitions" ).append(CR);
                     tlaBuffer.append(COMMENT).append("MV CONSTANT definitions " + constant.getLeft()).append(CR);
                     
@@ -128,6 +143,7 @@ public class ModelWriter
             }
         }
 
+        // symmetry
         if (!symmetrySets.isEmpty())
         {
             String label = ModelHelper.getValidIdentifier("symm");

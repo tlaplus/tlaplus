@@ -45,10 +45,12 @@ public class RenameModelHandlerDelegate extends AbstractHandler implements IHand
         ISelection selection = HandlerUtil.getCurrentSelectionChecked(event);
         if (selection != null && selection instanceof IStructuredSelection)
         {
-            // root file
-            IResource specRootModule = ToolboxHandle.getRootModule();
             // model file
             ILaunchConfiguration model = (ILaunchConfiguration) ((IStructuredSelection) selection).getFirstElement();
+
+            // root file
+            IResource specRootModule = ToolboxHandle.getRootModule(model.getFile().getProject());
+
             modelName = ModelHelper.getModelName(model.getFile()) + "_Copy";
 
             try
