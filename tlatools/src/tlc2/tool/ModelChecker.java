@@ -7,7 +7,6 @@ package tlc2.tool;
 
 import java.io.IOException;
 
-import tlc2.tool.PrintfFormat;
 import tla2sany.modanalyzer.SpecObj;
 import tla2sany.semantic.ExprNode;
 import tlc2.TLCGlobals;
@@ -21,6 +20,7 @@ import tlc2.tool.queue.StateQueue;
 import tlc2.util.IdThread;
 import tlc2.util.LongVec;
 import tlc2.util.ObjLongTable;
+import tlc2.util.PrintfFormat;
 import tlc2.value.Value;
 import util.DebugPrinter;
 import util.FileUtil;
