@@ -394,7 +394,7 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
         GridLayout layout;
 
         // -------------------------------------------------------------------
-        // progress
+        // progress area
         section = FormHelper.createSectionComposite(join, "Progress", "The current progress of model-checking",
                 toolkit, sectionFlags, getExpansionListener());
         // only grab horizontal space
@@ -421,6 +421,13 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
         // elapsed time
         elapsedTimeText = createTextLeft("Elapsed time:", timesComposite, toolkit);
 
+        // progress stats
+        Composite stateStats = createAndSetupStateSpace("Statespace Statistics:", progressArea, toolkit);
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.heightHint = 200;
+        gd.minimumHeight = 200;
+        stateStats.setData(gd);
+        
         // coverage
         Composite coverageStats = createAndSetupCoverage("Coverage:", progressArea, toolkit);
         gd = new GridData(GridData.FILL_HORIZONTAL);
@@ -428,15 +435,8 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
         gd.minimumHeight = 200;
         coverageStats.setData(gd);
 
-        // progress stats
-        Composite stateStats = createAndSetupStateSpace("Statespace Statistics:", progressArea, toolkit);
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.heightHint = 200;
-        gd.minimumHeight = 200;
-        stateStats.setData(gd);
 
         // ------------ second row ------------
-
         progress = FormHelper.createFormsOutputViewer(toolkit, progressArea, textFieldFlags);
         gd = new GridData(SWT.FILL, SWT.LEFT, true, true);
         gd.horizontalSpan = 3;

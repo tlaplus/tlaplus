@@ -126,8 +126,7 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
 
                     if (isModelInUse())
                     {
-                        // goto result page
-                        setActivePage(ResultPage.ID);
+                        showResultPage();
                     }
                     // TODO evtl. add more graphical sugar here,
                     // like changing the model icon,
@@ -183,6 +182,10 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
     {
         this.commitPages(monitor, true);
         ModelHelper.doSaveConfigurationCopy(configurationCopy);
+
+        // remove existing markers
+        ModelHelper.removeModelProblemMarkers(configurationCopy);
+
         boolean revalidate = TLCUIActivator.getDefault().getPreferenceStore().getBoolean(
                 ITLCPreferenceConstants.I_TLC_REVALIDATE_ON_MODIFY);
         if (revalidate)
@@ -242,11 +245,11 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
         if (!isComplete())
         {
             // user clicked launch
-            if (userPased) 
+            if (userPased)
             {
-            MessageDialog.openError(getSite().getShell(), "Model processing not allowed",
-                    "The model contains errors, which should be corrected before further processing");
-            return;
+                MessageDialog.openError(getSite().getShell(), "Model processing not allowed",
+                        "The model contains errors, which should be corrected before further processing");
+                return;
             }
         } else
         {
@@ -348,7 +351,7 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
             break;
         case IFileProvider.TYPE_RESULT:
             String modelName = ModelHelper.getModelName(result);
-            result = result.getProject().getFolder(modelName).getFile("MC.out");
+            result = result.getProject().getFolder(modelName).getFile(ModelHelper.FILE_OUT);
             break;
         default:
             result = null;
@@ -389,4 +392,12 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
         }
     }
 
+    /**
+     * Show the result page of the editor    
+     */
+    public void showResultPage()
+    {
+        // goto result page
+        setActivePage(ResultPage.ID);
+    }
 }

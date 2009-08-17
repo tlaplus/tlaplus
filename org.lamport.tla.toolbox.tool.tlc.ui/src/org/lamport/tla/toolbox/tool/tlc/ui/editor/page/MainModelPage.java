@@ -247,7 +247,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
             {
                 if (constant.isSetOfModelValues())
                 {
-                    if (symmetryUsed)
+                    if (symmetryUsed && constant.isSymmetricalSet())
                     {
                         // symmetry can be used for only one set of model values
                         mm.addMessage(constant.getLabel(), "Only one symmetrical set of model values is allowed",
@@ -256,7 +256,10 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
                         expandSection(dm.getSectionForAttribute(MODEL_PARAMETER_CONSTANTS));
                     } else
                     {
-                        symmetryUsed = true;
+                        if (constant.isSymmetricalSet()) 
+                        {
+                            symmetryUsed = true;
+                        }
                     }
                     TypedSet modelValuesSet = TypedSet.parseSet(constant.getRight());
                     if (modelValuesSet.getValueCount() > 0)

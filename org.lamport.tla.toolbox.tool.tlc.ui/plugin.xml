@@ -628,4 +628,10 @@ Console Facory
             class="org.lamport.tla.toolbox.tool.tlc.ui.preference.TLCPreferenceInitializer">
       </initializer>
    </extension>
+   <extension
+         point="org.lamport.tla.toolbox.tlc.processResultPresenter">
+      <presenter
+            class="org.lamport.tla.toolbox.tool.tlc.ui.ResultPresenter">
+      </presenter>
+   </extension>
 </plugin>
