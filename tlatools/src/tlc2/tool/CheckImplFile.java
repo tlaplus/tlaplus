@@ -251,7 +251,7 @@ public class CheckImplFile extends CheckImpl
             index++;
             if (index < args.length) {
                 try {
-                    TLCGlobals.coverageInterval = Integer.parseInt(args[index]) * 1000;
+                    TLCGlobals.coverageInterval = Integer.parseInt(args[index]) * 1000 * 60;
                     if (TLCGlobals.coverageInterval < 0) {
                         printErrorMsg(MP.getMessage(EC.CHECK_PARAM_COVREAGE_TOO_SMALL));
                         return;

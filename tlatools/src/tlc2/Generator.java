@@ -80,7 +80,7 @@ public class Generator {
  	index++;
  	if (index < args.length) {
  	  try {
- 	    TLCGlobals.coverageInterval = Integer.parseInt(args[index]) * 60000;
+ 	    TLCGlobals.coverageInterval = Integer.parseInt(args[index]) * 60 * 1000;
 	    if (TLCGlobals.coverageInterval < 0) {
 	      printErrorMsg("Error: expect a nonnegative integer for -coverage option.");
 	      return;
