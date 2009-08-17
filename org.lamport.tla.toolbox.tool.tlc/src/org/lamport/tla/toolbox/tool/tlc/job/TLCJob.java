@@ -8,14 +8,18 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.jface.action.Action;
 import org.lamport.tla.toolbox.spec.Spec;
+import org.lamport.tla.toolbox.tool.tlc.TLCActivator;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationDefaults;
+import org.lamport.tla.toolbox.tool.tlc.result.IResultPresenter;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 
@@ -33,6 +37,8 @@ public abstract class TLCJob extends AbstractJob implements IModelConfigurationC
 
     protected static final int STEP = 30;
     protected static final long TIMEOUT = 1000 * 1;
+    private static final int COVERAGE_INTERVAL = 3;
+    private static final int CHECKPOINT_INTERVAL = 3;
     protected IFile rootModule;
     protected IFile cfgFile;
     protected IFile outFile;
@@ -87,9 +93,9 @@ public abstract class TLCJob extends AbstractJob implements IModelConfigurationC
             arguments.add("-deadlock");
         }
 
-// adjust checkpointing
-//        arguments.add("-checkpoint");
-//        arguments.add("3");
+        // adjust checkpointing
+        arguments.add("-checkpoint");
+        arguments.add(String.valueOf(CHECKPOINT_INTERVAL));
 
         boolean runAsModelCheck = config.getAttribute(IModelConfigurationConstants.LAUNCH_MC_MODE,
                 IModelConfigurationDefaults.LAUNCH_MC_MODE_DEFAULT);
@@ -151,7 +157,7 @@ public abstract class TLCJob extends AbstractJob implements IModelConfigurationC
         arguments.add("-config");
         arguments.add(cfgFile.getName()); // configuration file
         arguments.add("-coverage");
-        arguments.add(String.valueOf(0.1)); // coverage 0.1 hour
+        arguments.add(String.valueOf(COVERAGE_INTERVAL)); // coverage 0.1 hour
         arguments.add("-workers");
         arguments.add(String.valueOf(workers)); // number of workers
         // arguments.add("-debug"); // debugging only
@@ -177,8 +183,11 @@ public abstract class TLCJob extends AbstractJob implements IModelConfigurationC
         return new Action("View job results") {
             public void run()
             {
-                // TODO
-                System.out.println("Results viewed");
+                IResultPresenter[] registeredResultPresenters = getRegisteredResultPresenters();
+                for (int i=0; i < registeredResultPresenters.length; i++) 
+                {
+                    registeredResultPresenters[i].showResults(launch.getLaunchConfiguration());
+                }
             }
         };
     }
@@ -214,6 +223,31 @@ public abstract class TLCJob extends AbstractJob implements IModelConfigurationC
             }
         }
         return false;
+    }
+
+    
+    /**
+     * Retrieves all presenter of TLC job results
+     * @return 
+     */
+    public static IResultPresenter[] getRegisteredResultPresenters()
+    {
+        IConfigurationElement[] decls = Platform.getExtensionRegistry().getConfigurationElementsFor(
+                IResultPresenter.EXTENSION_ID);
+
+        Vector validExtensions = new Vector();
+        for (int i = 0; i < decls.length; i++)
+        {
+            try
+            {
+                IResultPresenter extension = (IResultPresenter) decls[i].createExecutableExtension("class");
+                validExtensions.add(extension);
+            } catch (CoreException e)
+            {
+                TLCActivator.logError("Error instatiating the IResultPresenter extension", e);
+            }
+        }
+        return (IResultPresenter[]) validExtensions.toArray(new IResultPresenter[validExtensions.size()]);
     }
 
 }

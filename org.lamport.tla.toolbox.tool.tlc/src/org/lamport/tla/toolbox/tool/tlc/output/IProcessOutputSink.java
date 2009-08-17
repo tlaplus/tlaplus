@@ -19,6 +19,10 @@ public interface IProcessOutputSink
      * Error stream 
      */
     public final static int TYPE_ERROR = 2;
+    /**
+     * Extension point, the interface is used in
+     */
+    public static final String EXTENSION_ID = "org.lamport.tla.toolbox.tlc.processOutputSink";
 
     /**
      * Appends text to the sink

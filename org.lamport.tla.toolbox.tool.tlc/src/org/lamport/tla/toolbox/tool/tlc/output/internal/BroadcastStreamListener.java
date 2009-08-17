@@ -79,7 +79,7 @@ public class BroadcastStreamListener implements IStreamListener
     public static IProcessOutputSink[] getRegisteredStreamManagers(String name, int type)
     {
         IConfigurationElement[] decls = Platform.getExtensionRegistry().getConfigurationElementsFor(
-                "org.lamport.tla.toolbox.tlc.processOutputSink");
+                IProcessOutputSink.EXTENSION_ID);
 
         Vector validExtensions = new Vector();
         for (int i = 0; i < decls.length; i++)

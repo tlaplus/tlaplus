@@ -2,6 +2,7 @@
 <?eclipse version="3.2"?>
 <plugin>
    <extension-point id="org.lamport.tla.toolbox.tlc.processOutputSink" name="TLC Process Output Sink" schema="schema/org.lamport.tla.toolbox.tlc.processOutputSink.exsd"/>
+   <extension-point id="org.lamport.tla.toolbox.tlc.processResultPresenter" name="TLC Process Result Presenter" schema="schema/org.lamport.tla.toolbox.tlc.processResultPresenter.exsd"/>
    
    
    <extension

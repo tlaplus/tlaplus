@@ -123,7 +123,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
             // root file name
             specRootFilename = ToolboxHandle.getRootModule(config.getFile().getProject()).getLocation().toOSString();
             // specRootFilename = config.getAttribute(SPEC_ROOT_FILE, EMPTY_STRING);
-            
+
         } finally
         {
             // finish the monitor
@@ -340,29 +340,27 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
             writer.addFormulaList(ModelHelper.createSourceContent(MODEL_PARAMETER_ACTION_CONSTRAINT, "action_constr",
                     config), "ACTION-CONSTRAINT", MODEL_PARAMETER_ACTION_CONSTRAINT);
 
-            /*            int specType = config.getAttribute(MODEL_BEHAVIOR_SPEC_TYPE, MODEL_BEHAVIOR_TYPE_DEFAULT);
-                        switch (specType) {
-                        case MODEL_BEHAVIOR_TYPE_NO_SPEC:
-                            // no spec - nothing to do
-                            break;
-                        case MODEL_BEHAVIOR_TYPE_SPEC_CLOSED:
-                            // the specification name-formula pair
-                            writer.addSpecDefinition(ModelHelper.createSpecificationContent(config),
-                                    MODEL_BEHAVIOR_CLOSED_SPECIFICATION);
-                            break;
-                        case MODEL_BEHAVIOR_TYPE_SPEC_INIT_NEXT:
+            int specType = config.getAttribute(MODEL_BEHAVIOR_SPEC_TYPE, MODEL_BEHAVIOR_TYPE_DEFAULT);
+            switch (specType) {
+            case MODEL_BEHAVIOR_TYPE_NO_SPEC:
+                // no spec - nothing to do
+                break;
+            case MODEL_BEHAVIOR_TYPE_SPEC_CLOSED:
 
-                            // FIXME 
-                            // the specification name-formula pair
-                            writer.addSpecDefinition(ModelHelper.createSpecificationContent(config),
-                                    MODEL_BEHAVIOR_CLOSED_SPECIFICATION);
+                // the specification name-formula pair
+                writer.addFormulaList(ModelHelper.createSourceContent(MODEL_BEHAVIOR_CLOSED_SPECIFICATION, "spec", config), "SPECIFICATION", MODEL_BEHAVIOR_CLOSED_SPECIFICATION);
+                break;
+            case MODEL_BEHAVIOR_TYPE_SPEC_INIT_NEXT:
 
-                            break;
-                        }
-            */
-            // the specification name-formula pair
-            writer.addSpecDefinition(ModelHelper.createSpecificationContent(config),
-                    MODEL_BEHAVIOR_CLOSED_SPECIFICATION);
+                // the init and next formulas 
+                writer.addFormulaList(ModelHelper.createSourceContent(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT, "init", config), "INIT", MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT);
+                writer.addFormulaList(ModelHelper.createSourceContent(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT, "next", config), "NEXT", MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT);
+                break;
+            }
+
+//            // the specification name-formula pair
+//            writer.addSpecDefinition(ModelHelper.createSpecificationContent(config),
+//                    MODEL_BEHAVIOR_CLOSED_SPECIFICATION);
 
             // invariants
             writer.addFormulaList(ModelHelper.createFormulaListContent(config.getAttribute(

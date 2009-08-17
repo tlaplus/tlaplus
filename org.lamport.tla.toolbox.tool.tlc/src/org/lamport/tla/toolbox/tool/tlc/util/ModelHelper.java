@@ -400,8 +400,8 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
             throws CoreException
     {
         Vector result = new Vector();
-        String constraint = config.getAttribute(propertyName, EMPTY_STRING);
-        if (EMPTY_STRING.equals(constraint))
+        String value = config.getAttribute(propertyName, EMPTY_STRING);
+        if (EMPTY_STRING.equals(value))
         {
             return result;
         }
@@ -410,7 +410,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
 
         // the identifier
         buffer.append(identifier).append(" ==\n");
-        buffer.append(constraint);
+        buffer.append(value);
 
         result.add(new String[] { identifier, buffer.toString() });
         return result;

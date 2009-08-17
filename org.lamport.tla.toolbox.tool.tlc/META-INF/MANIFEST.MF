@@ -18,5 +18,6 @@ Bundle-ActivationPolicy: lazy
 Export-Package: org.lamport.tla.toolbox.tool.tlc.launch,
  org.lamport.tla.toolbox.tool.tlc.model,
  org.lamport.tla.toolbox.tool.tlc.output,
+ org.lamport.tla.toolbox.tool.tlc.result,
  org.lamport.tla.toolbox.tool.tlc.util
 Import-Package: org.eclipse.ui.part
