@@ -634,4 +634,14 @@ Console Facory
             class="org.lamport.tla.toolbox.tool.tlc.ui.ResultPresenter">
       </presenter>
    </extension>
+   <extension
+         point="org.eclipse.ui.views">
+      <view
+            allowMultiple="true"
+            class="org.lamport.tla.toolbox.tool.tlc.ui.view.TLCErrorView"
+            id="toolbox.tool.tlc.view.TLCErrorView"
+            name="TLC Errors"
+            restorable="true">
+      </view>
+   </extension>
 </plugin>

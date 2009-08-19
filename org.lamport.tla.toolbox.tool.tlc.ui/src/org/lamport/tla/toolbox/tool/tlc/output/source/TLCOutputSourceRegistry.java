@@ -12,6 +12,13 @@ import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 
 /**
  * A registry holding information about running processes and their status
+ * The usual life cycle to work for the consumer with the registry is:
+ * <ul>
+ *   <li>{@link TLCOutputSourceRegistry#connect(ITLCOutputListener)}</li> 
+ *   <li>The registry will call {@link ITLCOutputListener#getProcessName()} and eventually select one of the sources available</li>
+ *   <li>If the source is found, {@link ITLCOutputSource#addTLCStatusListener(ITLCOutputListener)} is called passing the consumer listener instance</li>
+ *   <li>After the end of the work the consumer calls {@link TLCOutputSourceRegistry#disconnect(ITLCOutputListener)}</li>
+ * </ul>
  * 
  * @author Simon Zambrovski
  * @version $Id$
@@ -64,15 +71,16 @@ public class TLCOutputSourceRegistry
     {
         Assert.isNotNull(listener);
 
-        ITLCOutputSource source = (ITLCOutputSource) this.sources.get(listener.getProcessName());
+        String processName = listener.getProcessName();
+        ITLCOutputSource source = (ITLCOutputSource) this.sources.get(processName);
         if (source == null)
         {
-            ILaunchConfiguration config = ModelHelper.getModelByName(listener.getProcessName());
+            ILaunchConfiguration config = ModelHelper.getModelByName(processName);
             IFile logFile = ModelHelper.getModelOutputLogFile(config);
             if (logFile != null && logFile.exists())
             {
                 // initialize the reader and read the content
-                LogFileReader logFileReader = new LogFileReader(listener.getProcessName(), logFile);
+                LogFileReader logFileReader = new LogFileReader(processName, logFile);
                 logFileReader.read();
 
                 source = logFileReader.getSource();
@@ -80,10 +88,10 @@ public class TLCOutputSourceRegistry
                 // the reader should have added a new source
                 // query for it
 
-                Assert.isTrue((ITLCOutputSource) this.sources.get(listener.getProcessName()) != null);
+                Assert.isTrue((ITLCOutputSource) this.sources.get(processName) != null);
             } else
             {
-                TLCUIActivator.logDebug("No source for " + listener.getProcessName() + " found.");
+                TLCUIActivator.logDebug("No source for " + processName + " found.");
                 return false;
             }
 

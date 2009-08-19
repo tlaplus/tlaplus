@@ -142,6 +142,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
         return name;
     }
 
+
     /**
      * Convenience method retrieving the model for the project of the current specification
      * @param modelName name of the model
@@ -160,7 +161,16 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
      */
     public static ILaunchConfiguration getModelByName(IProject specProject, String modelName)
     {
-        modelName = specProject.getName() + "___" + modelName;
+        // a model name can be "spec__modelname" or just "modelname" 
+        if (modelName.indexOf(specProject.getName()) != 0) 
+        {
+            modelName = specProject.getName() + "___" + modelName;
+        } 
+        
+        if (modelName.endsWith(".launch" ))
+        {
+            modelName = modelName.substring(0, modelName.length() - ".launch".length());
+        }
 
         ILaunchManager launchManager = DebugPlugin.getDefault().getLaunchManager();
         ILaunchConfigurationType launchConfigurationType = launchManager
@@ -667,7 +677,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
     {
         Assert.isNotNull(config);
         IFolder targetFolder = ModelHelper.getModelTargetDirectory(config);
-        if (targetFolder.exists())
+        if (targetFolder !=null && targetFolder.exists())
         {
             IFile logFile = (IFile) targetFolder.findMember(ModelHelper.FILE_OUT);
             if (logFile.exists())

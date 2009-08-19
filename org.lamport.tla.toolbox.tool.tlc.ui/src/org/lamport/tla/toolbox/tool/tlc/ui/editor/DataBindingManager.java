@@ -4,7 +4,6 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
 
-import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.ui.forms.SectionPart;
 
 /**
@@ -153,6 +152,8 @@ public class DataBindingManager implements ISectionConstants
         return (SectionPart) sectionParts.get(sectionId);
     }
 
+    
+    
     /**
      * Bind an attribute name <code>attributeName</code> to the viewer <code>attributeViewer</code> location in the section part <code>sectionPart</code>
      * This method should be called after the section is bound to the section id and page using {@link DataBindingManager#bindSection(SectionPart, String, String)} method
@@ -160,7 +161,7 @@ public class DataBindingManager implements ISectionConstants
      * @param attributeViewer
      * @param sectionPart
      */
-    public void bindAttribute(String attributeName, Viewer attributeViewer, SectionPart sectionPart)
+    public void bindAttribute(String attributeName, Object attributeViewer, SectionPart sectionPart)
     {
         // bind the viewer
         viewerForAttribute.put(attributeName, attributeViewer);
@@ -183,9 +184,9 @@ public class DataBindingManager implements ISectionConstants
      * @param attributeName
      * @return the Viewer
      */
-    public Viewer getAttributeControl(String attributeName)
+    public Object getAttributeControl(String attributeName)
     {
-        return (Viewer) viewerForAttribute.get(attributeName);
+        return viewerForAttribute.get(attributeName);
     }
 
 }

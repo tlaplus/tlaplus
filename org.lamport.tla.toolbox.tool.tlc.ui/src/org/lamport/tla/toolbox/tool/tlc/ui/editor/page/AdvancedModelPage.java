@@ -133,9 +133,6 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         {
             simuSeedText.setText("");
         }
-
-        // validate data from the model
-        validate();
     }
 
     /**
@@ -203,6 +200,9 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         super.commit(onSave);
     }
 
+    /**
+     * 
+     */
     public void validate()
     {
         if (getManagedForm() == null)
@@ -327,6 +327,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         }
 
         mm.setAutoUpdate(true);
+
         super.validate();
     }
 

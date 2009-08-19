@@ -2,6 +2,8 @@ package org.lamport.tla.toolbox.tool.tlc.output.source;
 
 import java.util.Vector;
 
+import org.eclipse.jface.text.ITypedRegion;
+
 /**
  * Container TLC region
  * @author Simon Zambrovski
@@ -9,9 +11,9 @@ import java.util.Vector;
  */
 public class TLCRegionContainer extends TLCRegion
 {
-    
+
     private Vector subRegions = new Vector();
-    
+
     /**
      * Constructs the container type
      * @param offset
@@ -21,13 +23,12 @@ public class TLCRegionContainer extends TLCRegion
     {
         super(offset, length);
     }
-    
-    public TLCRegion[] getSubRegions()
+
+    public ITypedRegion[] getSubRegions()
     {
-        return (TLCRegion[]) subRegions.toArray(new TLCRegion[subRegions.size()]);
+        return (ITypedRegion[]) subRegions.toArray(new ITypedRegion[subRegions.size()]);
     }
 
-    
     public void setSubRegions(Vector elements)
     {
         this.subRegions = elements;

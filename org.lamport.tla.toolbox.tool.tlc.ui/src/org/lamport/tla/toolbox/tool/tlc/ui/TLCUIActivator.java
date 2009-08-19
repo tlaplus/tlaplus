@@ -3,6 +3,7 @@ package org.lamport.tla.toolbox.tool.tlc.ui;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.lamport.tla.toolbox.util.UIHelper;
@@ -151,6 +152,15 @@ public class TLCUIActivator extends AbstractUIPlugin
     public static void logDebug(String string)
     {
         System.out.println(string);
+    }
+
+    /**
+     * @param colorRed
+     * @return
+     */
+    public static Color getColor(int color)
+    {
+        return UIHelper.getShellProvider().getShell().getDisplay().getSystemColor(color);
     }
 
 }

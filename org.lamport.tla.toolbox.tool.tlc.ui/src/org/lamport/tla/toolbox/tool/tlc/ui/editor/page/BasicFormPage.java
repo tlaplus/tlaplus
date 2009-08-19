@@ -4,11 +4,8 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.List;
 
-import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.ListenerList;
-import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IToolBarManager;
@@ -35,6 +32,7 @@ import org.lamport.tla.toolbox.tool.tlc.ui.contribution.DynamicContributionItem;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.DataBindingManager;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.ISectionConstants;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.IValidateble;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.IgnoringListener;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.SemanticHelper;
@@ -51,7 +49,7 @@ import tla2sany.st.Location;
  * @version $Id$
  */
 public abstract class BasicFormPage extends FormPage implements IModelConfigurationConstants,
-        IModelConfigurationDefaults, ISectionConstants, IModelOperationContainer
+        IModelConfigurationDefaults, ISectionConstants, IModelOperationContainer, IValidateble
 {
     public static final String CRASHED_TITLE = " ( model checking has crashed )";
     public static final String RUNNING_TITLE = " ( model checking is in progress )";
@@ -91,6 +89,11 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
     public void doGenerate()
     {
         ((ModelEditor) getEditor()).launchModel(TLCModelLaunchDelegate.MODE_GENERATE, true);
+    }
+    
+    public void doStop()
+    {
+        ((ModelEditor) getEditor()).stop();
     }
 
     /**
@@ -261,7 +264,6 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
      */
     public void validate()
     {
-        // handle problem markers
         handleProblemMarkers();
     }
 
@@ -292,14 +294,21 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
         return ((ModelEditor) this.getEditor()).getHelper();
     }
 
+    /**
+     * Handle the problem markers 
+     */
     public void handleProblemMarkers()
     {
+        ((ModelEditor)getEditor()).handleProblemMarkers();
+        
+        /*
+        
         if (getManagedForm() == null) 
         {
             return;
         }
         IMessageManager mm = getManagedForm().getMessageManager();
-        // mm.setAutoUpdate(false);
+        mm.setAutoUpdate(false);
         try
         {
             IMarker[] modelProblemMarkers = ModelHelper.getModelProblemMarker(getConfig());
@@ -309,6 +318,10 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
                 String attributeName = modelProblemMarkers[i].getAttribute(
                         ModelHelper.TLC_MODEL_ERROR_MARKER_ATTRIBUTE_NAME, EMPTY_STRING);
                 String sectionId = dm.getSectionForAttribute(attributeName);
+                if (sectionId == null) 
+                {
+                    continue;
+                }
                 String pageId = dm.getSectionPage(sectionId);
                 // relevant, since the attribute is displayed on the current page
                 if (getId().equals(pageId)) 
@@ -329,7 +342,8 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
         {
             TLCUIActivator.logError("Error retrieving model error markers", e);
         }
-        // mm.setAutoUpdate(true);
+        mm.setAutoUpdate(true);
+        */
     }
 
     /**
@@ -631,22 +645,7 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
 
         public void run()
         {
-            ILaunchConfiguration config = ((ModelEditor) getEditor()).getConfig();
-            try
-            {
-                if (ModelHelper.isModelLocked(config) && !ModelHelper.isModelStale(config))
-                {
-                    Job[] runningSpecJobs = Job.getJobManager().find(config);
-                    for (int i = 0; i < runningSpecJobs.length; i++)
-                    {
-                        // send cancellations to all jobs...
-                        runningSpecJobs[i].cancel();
-                    }
-                }
-            } catch (CoreException e)
-            {
-                TLCUIActivator.logError("Error stopping the model launch", e);
-            }
+            doStop();
         }
 
         /**

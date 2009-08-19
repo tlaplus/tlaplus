@@ -1,21 +1,28 @@
 package org.lamport.tla.toolbox.tool.tlc.ui.editor;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.SubProgressMonitor;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
+import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.forms.IMessageManager;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.part.FileEditorInput;
+import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationDefaults;
 import org.lamport.tla.toolbox.tool.tlc.launch.TLCModelLaunchDelegate;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.AdvancedModelPage;
@@ -49,6 +56,18 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
     // reacts on model changes
     private IResourceChangeListener modelFileChangeListener;
 
+    private Runnable validateRunable = new Runnable() {
+        public void run()
+        {
+            for (int i = 0; i < getPageCount(); i++)
+            {
+                BasicFormPage page = (BasicFormPage) pages.get(i);
+                // re-validate the model on changes of the spec
+                page.validate();
+            }
+        }
+    };
+
     // react on spec root file changes
     private IResourceChangeListener rootFileListener = new IResourceChangeListener() {
         public void resourceChanged(IResourceChangeEvent event)
@@ -57,24 +76,14 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
             helper.resetSpecNames();
 
             // re-validate the pages
-            UIHelper.runUIAsync(new Runnable() {
-                public void run()
-                {
-                    for (int i = 0; i < getPageCount(); i++)
-                    {
-                        BasicFormPage page = (BasicFormPage) pages.get(i);
-                        // re-validate the model on changes of the spec
-                        page.validate();
-                    }
-                }
-            });
+            UIHelper.runUIAsync(validateRunable);
         }
     };
 
     // section manager
     private DataBindingManager dataBindingManager = new DataBindingManager();
 
-    private ResultPage resultPage;
+    private BasicFormPage[] pagesToAdd;
 
     /**
      * Simple editor constructor
@@ -82,7 +91,7 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
     public ModelEditor()
     {
         helper = new SemanticHelper();
-        resultPage = new ResultPage(this);
+        pagesToAdd = new BasicFormPage[] { new MainModelPage(this), new AdvancedModelPage(this), new ResultPage(this) };
     }
 
     /**
@@ -90,6 +99,7 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
      */
     public void init(IEditorSite site, IEditorInput input) throws PartInitException
     {
+        // TLCUIActivator.logDebug("entering ModelEditor#init(IEditorSite site, IEditorInput input)");
         super.init(site, input);
 
         // grab the input
@@ -128,7 +138,7 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
                     {
                         showResultPage();
                     }
-                    // TODO evtl. add more graphical sugar here,
+                    // evtl. add more graphical sugar here,
                     // like changing the model icon,
                     // changing the editor title (part name)
                 }
@@ -148,20 +158,9 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
         // update the spec object of the helper
         helper.resetSpecNames();
 
-        // initial re-validate the pages
-        UIHelper.runUIAsync(new Runnable() {
-            public void run()
-            {
-                // since validation is cheap and we are interested in
-                for (int i = 0; i < getPageCount(); i++)
-                {
-                    BasicFormPage page = (BasicFormPage) pages.get(i);
-                    // re-validate the model on changes of the spec
-                    page.validate();
-                }
-            }
-        });
-
+        // initial re-validate the pages, which are already loaded
+        UIHelper.runUIAsync(validateRunable);
+        // TLCUIActivator.logDebug("leaving ModelEditor#init(IEditorSite site, IEditorInput input)");
     }
 
     /*
@@ -169,10 +168,12 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
      */
     public void dispose()
     {
+        // TLCUIActivator.logDebug("entering ModelEditor#dispose()");
         // remove the listeners
         ResourcesPlugin.getWorkspace().removeResourceChangeListener(rootFileListener);
         ResourcesPlugin.getWorkspace().removeResourceChangeListener(modelFileChangeListener);
         super.dispose();
+        // TLCUIActivator.logDebug("leaving ModelEditor#dispose()");
     }
 
     /* 
@@ -217,6 +218,7 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
      */
     protected void commitPages(IProgressMonitor monitor, boolean onSave)
     {
+        // TLCUIActivator.logDebug("entering ModelEditor#commitPages(IProgressMonitor monitor, boolean onSave)");
         for (int i = 0; i < getPageCount(); i++)
         {
             BasicFormPage page = (BasicFormPage) pages.get(i);
@@ -225,7 +227,47 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
                 page.commit(onSave);
             }
         }
+        // TLCUIActivator.logDebug("leaving ModelEditor#commitPages(IProgressMonitor monitor, boolean onSave)");
     }
+
+    /*
+     * @see org.eclipse.ui.forms.editor.FormEditor#addPages()
+     */
+    protected void addPages()
+    {
+        // TLCUIActivator.logDebug("entering ModelEditor#addPages()");
+        try
+        {
+            for (int i = 0; i < pagesToAdd.length; i++)
+            {
+                addPage(pagesToAdd[i]);
+                // initialize the page
+
+                // this means the content will be created
+                // the data will be loaded
+                // the refresh method will update the UI state
+                // the dirty listeners will be activated
+                if (pagesToAdd[i].getPartControl() == null)
+                {
+                    pagesToAdd[i].createPartControl(getContainer());
+                    setControl(i, pagesToAdd[i].getPartControl());
+                    pagesToAdd[i].getPartControl().setMenu(getContainer().getMenu());
+                }
+            }
+
+            // at this point everything is activated and initialized.
+            // run the validation
+            UIHelper.runUIAsync(validateRunable);
+
+        } catch (PartInitException e)
+        {
+            TLCUIActivator.logError("Error initializing editor", e);
+        }
+
+        // TLCUIActivator.logDebug("leaving ModelEditor#addPages()");
+    }
+
+    /* --------------------------------------------------------------------- */
 
     /**
      * Launch TLC or SANY
@@ -266,21 +308,27 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
 
     }
 
-    /*
-     * @see org.eclipse.ui.forms.editor.FormEditor#addPages()
+    /**
+     * Stops TLC
      */
-    protected void addPages()
+    public void stop()
     {
         try
         {
-            addPage(new MainModelPage(this));
-            addPage(new AdvancedModelPage(this));
-            addPage(resultPage);
-
-        } catch (PartInitException e)
+            if (ModelHelper.isModelLocked(getConfig()) && !ModelHelper.isModelStale(getConfig()))
+            {
+                Job[] runningSpecJobs = Job.getJobManager().find(getConfig());
+                for (int i = 0; i < runningSpecJobs.length; i++)
+                {
+                    // send cancellations to all jobs...
+                    runningSpecJobs[i].cancel();
+                }
+            }
+        } catch (CoreException e)
         {
-            TLCUIActivator.logError("Error initializing editor", e);
+            TLCUIActivator.logError("Error stopping the model launch", e);
         }
+
     }
 
     public ILaunchConfigurationWorkingCopy getConfig()
@@ -289,7 +337,7 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
     }
 
     /**
-     * Checks weather the pages are complete and goes to the first (in order of addition) incomplete page if any
+     * Checks whether the pages are complete and goes to the first (in order of addition) incomplete page if any
      * @return true if all pages are complete, false otherwise
      */
     public boolean isComplete()
@@ -304,6 +352,74 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
             }
         }
         return true;
+    }
+
+    /**
+     * Handles the problem markers
+     * 
+     */
+    public void handleProblemMarkers()
+    {
+        int errorPageIndex = -1;
+        int currentPageIndex = getActivePage();
+        try
+        {
+            IMarker[] modelProblemMarkers = ModelHelper.getModelProblemMarker(getConfig());
+            DataBindingManager dm = getDataBindingManager();
+
+            for (int j = 0; j < getPageCount(); j++)
+            {
+                // get the current page
+                BasicFormPage page = (BasicFormPage) pages.get(j);
+                Assert.isNotNull(page.getManagedForm(), "Page not initialized, this is a bug.");
+                
+                for (int i = 0; i < modelProblemMarkers.length; i++)
+                {
+                    String attributeName = modelProblemMarkers[i]
+                            .getAttribute(ModelHelper.TLC_MODEL_ERROR_MARKER_ATTRIBUTE_NAME,
+                                    IModelConfigurationDefaults.EMPTY_STRING);
+                    String sectionId = dm.getSectionForAttribute(attributeName);
+                    Assert.isNotNull(sectionId, "Page is either not initialized or attribute not bound, this is a bug.");
+
+                    String pageId = dm.getSectionPage(sectionId);
+                    
+                    // relevant, since the attribute is displayed on the current page
+                    if (page.getId().equals(pageId))
+                    {
+                        IMessageManager mm = page.getManagedForm().getMessageManager();
+                        mm.setAutoUpdate(false);
+                        String message = modelProblemMarkers[i].getAttribute(IMarker.MESSAGE,
+                                IModelConfigurationDefaults.EMPTY_STRING);
+
+                        Control widget = UIHelper.getWidget(dm.getAttributeControl(attributeName));
+                        if (widget != null)
+                        {
+                            mm.addMessage("modelProblem_" + i, message, null, IMessageProvider.ERROR, widget);
+                        }
+                        // expand the section with an error
+                        dm.expandSection(sectionId);
+                        mm.setAutoUpdate(true);
+                        
+                        if (errorPageIndex < j) 
+                        {
+                            errorPageIndex = j;
+                        }
+                    }
+                }
+            }
+            if (errorPageIndex != -1 && currentPageIndex != errorPageIndex) 
+            {
+                // the page has a marker
+                // make it active
+                setActivePage(errorPageIndex);
+            }
+            
+
+        } catch (CoreException e)
+        {
+            TLCUIActivator.logError("Error retrieving model error markers", e);
+        }
+
     }
 
     /**
@@ -400,4 +516,5 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
         // goto result page
         setActivePage(ResultPage.ID);
     }
+
 }

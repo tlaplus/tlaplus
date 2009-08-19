@@ -108,7 +108,9 @@ public class TLCProcessJob extends TLCJob
                 monitor.subTask("Model checking...");
 
                 // register the broadcasting listener
-                listener = new BroadcastStreamListener(modelName, IProcessOutputSink.TYPE_OUT);
+                
+                String modelFileName = launch.getLaunchConfiguration().getFile().getName();
+                listener = new BroadcastStreamListener(modelFileName, IProcessOutputSink.TYPE_OUT);
                 
                 process.getStreamsProxy().getOutputStreamMonitor().addListener(listener);
                 process.getStreamsProxy().getErrorStreamMonitor().addListener(listener);

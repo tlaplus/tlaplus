@@ -47,7 +47,7 @@ public class TagBasedTLCOutputIncrementalParser
 
             // iterate partitions and look for the last
             // non-default (user-output) partition
-            
+
             analyzer.resetUserPartitions();
             for (int i = 0; i < regions.length; i++)
             {
@@ -63,8 +63,8 @@ public class TagBasedTLCOutputIncrementalParser
 
                     if (TagBasedTLCOutputTokenScanner.TAG_OPEN.equals(regions[i].getType()))
                     {
-                        // user partitions found
-                        if (analyzer.hasUserPartitions())
+                        // user partitions found, which are not belonging to the tag.
+                        if (analyzer.hasUserPartitions() && !analyzer.inTag())
                         {
                             ITypedRegion mergedPartition = analyzer.getUserRegion();
                             source.onOutput(mergedPartition);
@@ -78,12 +78,18 @@ public class TagBasedTLCOutputIncrementalParser
                     {
                         // END TAG
                         // if the end is detected, everything between the start and
-                        // the end are merged to a single tag 
+                        // the end are merged to a single tag
                         analyzer.addTagEnd(regions[i]);
 
-                        ITypedRegion tag = analyzer.getTaggedRegion();
-                        // add the typed coverage region
-                        source.onOutput(tag);
+                        // only if there are no nested tags, retrieve the tag, else,
+                        // wait until the nesting tag is closed
+                        if (!analyzer.inTag())
+                        {
+                            ITypedRegion tag = analyzer.getTaggedRegion();
+
+                            // add the typed coverage region
+                            source.onOutput(tag);
+                        }
                     } else
                     {
                         // if the type is not default and neither START nor END, this is a bug

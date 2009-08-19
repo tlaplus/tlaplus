@@ -18,7 +18,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.forms.HyperlinkGroup;
@@ -48,6 +47,7 @@ import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.SemanticHelper;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.util.IHelpConstants;
+import org.lamport.tla.toolbox.util.UIHelper;
 
 import tla2sany.semantic.ModuleNode;
 
@@ -91,6 +91,10 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
             }
         }
     };
+    
+    private ImageHyperlink runLink;
+    private ImageHyperlink generateLink;
+
     /**
      * section expanding adapter
      * {@link Hyperlink#getHref()} must deliver the section id as described in {@link DataBindingManager#bindSection(ExpandableComposite, String, String)}
@@ -183,8 +187,6 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         // recover from the checkpoint
         boolean recover = getConfig().getAttribute(LAUNCH_RECOVER, LAUNCH_RECOVER_DEFAULT);
         this.checkpointButton.setSelection(recover);
-
-        validate();
     }
 
     /**
@@ -239,7 +241,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
             {
                 // right side of assignment undefined
                 mm.addMessage(constant.getLabel(), "Provide a value for constant " + constant.getLabel(), constant,
-                        IMessageProvider.ERROR, constantTable.getTable());
+                        IMessageProvider.ERROR, UIHelper.getWidget(dm.getAttributeControl(MODEL_PARAMETER_CONSTANTS)));
                 setComplete(false);
                 expandSection(dm.getSectionForAttribute(MODEL_PARAMETER_CONSTANTS));
 
@@ -251,12 +253,12 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
                     {
                         // symmetry can be used for only one set of model values
                         mm.addMessage(constant.getLabel(), "Only one symmetrical set of model values is allowed",
-                                constant, IMessageProvider.ERROR, constantTable.getTable());
+                                constant, IMessageProvider.ERROR, UIHelper.getWidget(dm.getAttributeControl(MODEL_PARAMETER_CONSTANTS)));
                         setComplete(false);
                         expandSection(dm.getSectionForAttribute(MODEL_PARAMETER_CONSTANTS));
                     } else
                     {
-                        if (constant.isSymmetricalSet()) 
+                        if (constant.isSymmetricalSet())
                         {
                             symmetryUsed = true;
                         }
@@ -293,7 +295,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
             if (number <= 0)
             {
                 mm.addMessage("wrongNumber1", "Number of workers must be a positive integer number", null,
-                        IMessageProvider.ERROR, workers);
+                        IMessageProvider.ERROR, UIHelper.getWidget(dm.getAttributeControl(LAUNCH_NUMBER_OF_WORKERS)));
                 setComplete(false);
                 expandSection(SEC_HOW_TO_RUN);
             } else
@@ -304,14 +306,14 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
                             + ". The number of CPU Cores available on the system is "
                             + Runtime.getRuntime().availableProcessors()
                             + ".\n It is not advisable that the number of workers exceeds the number of CPU Cores.",
-                            null, IMessageProvider.WARNING, workers);
+                            null, IMessageProvider.WARNING, UIHelper.getWidget(dm.getAttributeControl(LAUNCH_NUMBER_OF_WORKERS)));
                     expandSection(SEC_HOW_TO_RUN);
                 }
             }
         } catch (NumberFormatException e)
         {
             mm.addMessage("wrongNumber2", "Number of workers must be a positive integer number", null,
-                    IMessageProvider.ERROR, workers);
+                    IMessageProvider.ERROR, UIHelper.getWidget(dm.getAttributeControl(LAUNCH_NUMBER_OF_WORKERS)));
             setComplete(false);
             expandSection(SEC_HOW_TO_RUN);
         }
@@ -324,16 +326,16 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         {
             if (EMPTY_STRING.equals(checkpointIdText.getText()))
             {
-                mm.addMessage("noChckpoint", "No chekpoint data found", null, IMessageProvider.ERROR, checkpointButton);
+                mm.addMessage("noChckpoint", "No chekpoint data found", null, IMessageProvider.ERROR, UIHelper.getWidget(dm.getAttributeControl(LAUNCH_RECOVER)));
                 setComplete(false);
                 expandSection(SEC_HOW_TO_RUN);
             }
         }
 
+        String selectedAttribute = closedFormulaRadio.getSelection() ? MODEL_BEHAVIOR_CLOSED_SPECIFICATION : (initNextFairnessRadio
+                .getSelection() ? MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT : null);
         // spec or no spec
-        Control selectedOption = closedFormulaRadio.getSelection() ? closedFormulaRadio : (initNextFairnessRadio
-                .getSelection() ? initNextFairnessRadio : null);
-        if (selectedOption != null)
+        if (selectedAttribute != null)
         {
             // the user selected to use a spec
             // check if there are variables declared
@@ -341,17 +343,16 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
             {
                 // no variables => install an error
                 mm.addMessage("noVariables", "There were no variables declared in the root module", null,
-                        IMessageProvider.ERROR, selectedOption);
+                        IMessageProvider.ERROR, UIHelper.getWidget(dm.getAttributeControl(selectedAttribute)));
                 setComplete(false);
-                expandSection(dm.getSectionForAttribute(MODEL_BEHAVIOR_CLOSED_SPECIFICATION));
+                expandSection(dm.getSectionForAttribute(selectedAttribute));
             }
         }
 
         // check if the selected fields are filled
         if (closedFormulaRadio.getSelection() && specSource.getDocument().get().trim().equals(""))
         {
-            mm.addMessage("noSpec", "The formula must be provided", null, IMessageProvider.ERROR, specSource
-                    .getTextWidget());
+            mm.addMessage("noSpec", "The formula must be provided", null, IMessageProvider.ERROR, UIHelper.getWidget(dm.getAttributeControl(MODEL_BEHAVIOR_CLOSED_SPECIFICATION)));
             setComplete(false);
             expandSection(dm.getSectionForAttribute(MODEL_BEHAVIOR_CLOSED_SPECIFICATION));
         } else if (initNextFairnessRadio.getSelection())
@@ -361,21 +362,22 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
             if (init.equals(""))
             {
-                mm.addMessage("noInit", "The init formula must be provided", null, IMessageProvider.ERROR,
-                        initFormulaSource.getTextWidget());
+                mm.addMessage("noInit", "The Init formula must be provided", null, IMessageProvider.ERROR,
+                        UIHelper.getWidget(dm.getAttributeControl(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT)));
                 setComplete(false);
                 expandSection(dm.getSectionForAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT));
             }
             if (next.equals(""))
             {
-                mm.addMessage("noNext", "The spec formula must be provided", null, IMessageProvider.ERROR,
-                        nextFormulaSource.getTextWidget());
+                mm.addMessage("noNext", "The Next formula must be provided", null, IMessageProvider.ERROR,
+                        UIHelper.getWidget(dm.getAttributeControl(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT)));
                 setComplete(false);
                 expandSection(dm.getSectionForAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT));
             }
         }
-
+        
         mm.setAutoUpdate(true);
+
         super.validate();
     }
 
@@ -702,6 +704,9 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         gd.horizontalIndent = 10;
         gd.widthHint = 15;
         workers.setLayoutData(gd);
+        
+        dm.bindAttribute(LAUNCH_NUMBER_OF_WORKERS, workers, howToRunPart);
+        
 
         // run from the checkpoint
         checkpointButton = toolkit.createButton(howToRunArea, "Recover from checkpoint", SWT.CHECK);
@@ -721,9 +726,10 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         gd.horizontalIndent = 10;
         gd.widthHint = 100;
         checkpointIdText.setLayoutData(gd);
+        dm.bindAttribute(LAUNCH_RECOVER, checkpointButton, howToRunPart);
 
         // run link
-        ImageHyperlink runLink = toolkit.createImageHyperlink(howToRunArea, SWT.NONE);
+        runLink = toolkit.createImageHyperlink(howToRunArea, SWT.NONE);
         runLink.setImage(createRegisteredImage("icons/full/lrun_obj.gif"));
         runLink.addHyperlinkListener(new HyperlinkAdapter() {
             public void linkActivated(HyperlinkEvent e)
@@ -738,6 +744,22 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         gd.verticalIndent = 20;
         runLink.setLayoutData(gd);
         group.add(runLink);
+
+        
+        generateLink = toolkit.createImageHyperlink(howToRunArea, SWT.NONE);
+        generateLink.setImage(createRegisteredImage("icons/full/debugt_obj.gif"));
+        generateLink.addHyperlinkListener(new HyperlinkAdapter() {
+            public void linkActivated(HyperlinkEvent e)
+            {
+                doGenerate();
+            }
+        });
+        generateLink.setText("Validate model");
+        gd = new GridData();
+        gd.horizontalSpan = 2;
+        gd.widthHint = 200;
+        generateLink.setLayoutData(gd);
+        group.add(generateLink);
 
         // TODO enable on debug support
         // debug link
@@ -765,10 +787,13 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         dirtyPartListeners.add(howToRunListener);
     }
 
+    /**
+     * 
+     */
     public void refresh()
     {
-        updateCheckpoints();
         super.refresh();
+        updateCheckpoints();
     }
 
 }
