@@ -277,9 +277,8 @@ public class Simulator implements Cancelable
       {
           MP.printMessage(EC.TLC_ERROR_STATE);
           StatePrinter.printState(state);
-      }
-      else {
-          MP.printMessage(EC.TLC_BEHAVIOR_UP_TO_THIS_POINT);
+      } else {
+          MP.printError(EC.TLC_BEHAVIOR_UP_TO_THIS_POINT);
           TLCState lastState = null;
           for (int i = 0; i < traceIdx; i++) 
           {

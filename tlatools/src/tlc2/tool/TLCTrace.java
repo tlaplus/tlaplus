@@ -123,7 +123,7 @@ public class TLCTrace {
   public synchronized final void printTrace(long loc1, TLCState s1, TLCState s2)
   throws IOException, WorkerException 
   {
-      MP.printMessage(EC.TLC_BEHAVIOR_UP_TO_THIS_POINT);
+      MP.printError(EC.TLC_BEHAVIOR_UP_TO_THIS_POINT);
       // Print the prefix leading to s1:
       TLCState lastState = null;
       TLCStateInfo[] prefix = this.getTrace(loc1, false);

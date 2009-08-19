@@ -103,10 +103,12 @@ public class DFIDModelChecker extends AbstractChecker
 
         if (recovered)
         {
-            MP.printMessage(EC.TLC_INIT_GENERATED3, new String[]{String.valueOf(this.numOfGenStates), String.valueOf(this.theInitStates.length)});
+            MP.printMessage(EC.TLC_INIT_GENERATED3, new String[] { String.valueOf(this.numOfGenStates),
+                    String.valueOf(this.theInitStates.length) });
         } else
         {
-            MP.printMessage(EC.TLC_INIT_GENERATED4, new String[]{String.valueOf(this.numOfGenStates), String.valueOf(this.theInitStates.length)});
+            MP.printMessage(EC.TLC_INIT_GENERATED4, new String[] { String.valueOf(this.numOfGenStates),
+                    String.valueOf(this.theInitStates.length) });
         }
 
         // Return if there is no next state predicate:
@@ -160,8 +162,9 @@ public class DFIDModelChecker extends AbstractChecker
                 }
 
                 // Start working on this level:
-                MP.printMessage(EC.TLC_PROGRESS_STATS_DFID, new String[]{String.valueOf(level), String.valueOf(this.numOfGenStates),String.valueOf(this.theFPSet.size())});
-                
+                MP.printMessage(EC.TLC_PROGRESS_STATS_DFID, new String[] { String.valueOf(level),
+                        String.valueOf(this.numOfGenStates), String.valueOf(this.theFPSet.size()) });
+
                 FPIntSet.incLevel();
                 success = this.runTLC(level);
                 if (!success)
@@ -425,14 +428,15 @@ public class DFIDModelChecker extends AbstractChecker
                                         if (TLCGlobals.continuation)
                                         {
                                             this.printTrace(EC.TLC_INVARIANT_VIOLATED_BEHAVIOR,
-                                                    new String[]{this.tool.getInvNames()[k]}, curState, succState);
+                                                    new String[] { this.tool.getInvNames()[k] }, curState, succState);
                                             break;
                                         } else
                                         {
                                             if (this.setErrState(curState, succState, false))
                                             {
-                                                this.printTrace(EC.TLC_INVARIANT_VIOLATED_BEHAVIOR, new String[]{this.tool
-                                                        .getInvNames()[k]}, curState, succState);
+                                                this.printTrace(EC.TLC_INVARIANT_VIOLATED_BEHAVIOR,
+                                                        new String[] { this.tool.getInvNames()[k] }, curState,
+                                                        succState);
                                                 this.notify();
                                             }
                                             return allSuccNonLeaf;
@@ -446,7 +450,8 @@ public class DFIDModelChecker extends AbstractChecker
                         {
                             if (this.setErrState(curState, succState, true))
                             {
-                                this.printTrace(EC.TLC_INVARIANT_EVALUATION_FAILED, new String[]{this.tool.getInvNames()[k]}, curState, succState);
+                                this.printTrace(EC.TLC_INVARIANT_EVALUATION_FAILED, new String[] { this.tool
+                                        .getInvNames()[k] }, curState, succState);
                                 this.notify();
                             }
                             return allSuccNonLeaf;
@@ -466,16 +471,19 @@ public class DFIDModelChecker extends AbstractChecker
                                 {
                                     if (TLCGlobals.continuation)
                                     {
-                                        this.printTrace(EC.TLC_ACTION_PROPERTY_VIOLATED_BEHAVIOR, new String[]{this.tool
-                                                .getImpliedActNames()[k]}, curState, succState);
+                                        this
+                                                .printTrace(EC.TLC_ACTION_PROPERTY_VIOLATED_BEHAVIOR,
+                                                        new String[] { this.tool.getImpliedActNames()[k] }, curState,
+                                                        succState);
                                         break;
                                     } else
                                     {
                                         if (this.setErrState(curState, succState, false))
                                         {
 
-                                            this.printTrace(EC.TLC_ACTION_PROPERTY_VIOLATED_BEHAVIOR,new String[]{
-                                                    this.tool.getImpliedActNames()[k]}, curState, succState);
+                                            this.printTrace(EC.TLC_ACTION_PROPERTY_VIOLATED_BEHAVIOR,
+                                                    new String[] { this.tool.getImpliedActNames()[k] }, curState,
+                                                    succState);
                                             this.notify();
                                         }
                                         return allSuccNonLeaf;
@@ -489,8 +497,8 @@ public class DFIDModelChecker extends AbstractChecker
                     {
                         if (this.setErrState(curState, succState, true))
                         {
-                            this.printTrace(EC.TLC_ACTION_PROPERTY_EVALUATION_FAILED, new String[]{this.tool
-                                    .getImpliedActNames()[k]}, curState, succState);
+                            this.printTrace(EC.TLC_ACTION_PROPERTY_EVALUATION_FAILED, new String[] { this.tool
+                                    .getImpliedActNames()[k] }, curState, succState);
                             this.notify();
                         }
                         return allSuccNonLeaf;
@@ -543,17 +551,20 @@ public class DFIDModelChecker extends AbstractChecker
             {
                 if (this.setErrState(curState, succState, !keep))
                 {
+                    String[] parameters = null;
+                    int errorCode;
                     if (e instanceof StackOverflowError)
                     {
-                        MP.printError(EC.SYSTEM_STACK_OVERFLOW);
+                        errorCode = EC.SYSTEM_STACK_OVERFLOW;
                     } else if (e instanceof OutOfMemoryError)
                     {
-                        MP.printError(EC.SYSTEM_OUT_OF_MEMORY);
+                        errorCode = EC.SYSTEM_OUT_OF_MEMORY;
                     } else
                     {
-                        MP.printError(EC.GENERAL, e.getMessage());
+                        errorCode = EC.GENERAL;
+                        parameters = new String[] { e.getMessage() };
                     }
-                    this.printTrace(EC.TLC_BEHAVIOR_UP_TO_THIS_POINT, null, curState, succState);
+                    this.printTrace(errorCode, parameters, curState, succState);
                     this.notifyAll();
                 }
             }
@@ -611,7 +622,7 @@ public class DFIDModelChecker extends AbstractChecker
             if (doCheck)
             {
                 MP.printMessage(EC.TLC_CHECKING_TEMPORAL_PROPS, "current");
-                if (!LiveCheck.check()) 
+                if (!LiveCheck.check())
                 {
                     return false;
                 }
@@ -622,7 +633,7 @@ public class DFIDModelChecker extends AbstractChecker
             MP.printMessage(EC.TLC_CHECKPOINT_START, this.metadir);
             // start checkpointing:
             this.theFPSet.beginChkpt();
-            if (this.checkLiveness) 
+            if (this.checkLiveness)
             {
                 LiveCheck.beginChkpt();
             }
@@ -659,7 +670,6 @@ public class DFIDModelChecker extends AbstractChecker
         return recovered;
     }
 
-
     protected final void cleanup(boolean success) throws IOException
     {
         this.theFPSet.close();
@@ -675,7 +685,8 @@ public class DFIDModelChecker extends AbstractChecker
     public final void printSummary(boolean success) throws IOException
     {
         this.reportCoverage(this.workers);
-        MP.printMessage(EC.TLC_STATS_DFID, new String[]{ String.valueOf(this.numOfGenStates),String.valueOf(this.theFPSet.size())});
+        MP.printMessage(EC.TLC_STATS_DFID, new String[] { String.valueOf(this.numOfGenStates),
+                String.valueOf(this.theFPSet.size()) });
     }
 
     public final void reportSuccess() throws IOException
@@ -684,7 +695,7 @@ public class DFIDModelChecker extends AbstractChecker
         double prob1 = (d * (this.numOfGenStates - d)) / Math.pow(2, 64);
         double prob2 = this.theFPSet.checkFPs();
 
-        MP.printMessage(EC.TLC_SUCCESS, new String[]{String.valueOf(prob1), String.valueOf(prob2)});
+        MP.printMessage(EC.TLC_SUCCESS, new String[] { String.valueOf(prob1), String.valueOf(prob2) });
     }
 
     /**
@@ -716,7 +727,8 @@ public class DFIDModelChecker extends AbstractChecker
      */
     protected void runTLCContinueDoing(int count, int depth) throws Exception
     {
-        MP.printMessage(EC.TLC_PROGRESS_STATS_DFID, new String[]{ String.valueOf(this.numOfGenStates),String.valueOf(this.theFPSet.size())});
+        MP.printMessage(EC.TLC_PROGRESS_STATS_DFID, new String[] { String.valueOf(this.numOfGenStates),
+                String.valueOf(this.theFPSet.size()) });
         if (count == 0)
         {
             this.reportCoverage(this.workers);
