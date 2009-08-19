@@ -20,9 +20,11 @@ import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.window.IShellProvider;
 import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
@@ -144,8 +146,7 @@ public class UIHelper
             view = getActivePage().showView(viewId);
         } catch (PartInitException e)
         {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            Activator.logError("Error opening a view " + viewId, e);
         }
         return view;
     }
@@ -158,6 +159,9 @@ public class UIHelper
     public static boolean isViewShown(String id)
     {
         return (getActivePage().findView(id) == null);
+       
+        
+        
     }
 
     /**
@@ -523,7 +527,14 @@ public class UIHelper
         if (control instanceof Viewer) 
         {
             return ((Viewer)control).getControl();
+        } else if (control instanceof Text) 
+        {
+            return (Text) control;
+        } else if (control instanceof Button) 
+        {
+            return (Control) control;
         }
+        
         return null;
     }
 
