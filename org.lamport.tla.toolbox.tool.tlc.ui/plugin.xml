@@ -639,8 +639,17 @@ Console Facory
       <view
             allowMultiple="true"
             class="org.lamport.tla.toolbox.tool.tlc.ui.view.TLCErrorView"
+            icon="icons/full/errorwarning_tab.gif"
             id="toolbox.tool.tlc.view.TLCErrorView"
             name="TLC Errors"
+            restorable="true">
+      </view>
+      <view
+            allowMultiple="true"
+            class="org.lamport.tla.toolbox.tool.tlc.ui.view.TraceExplorer"
+            icon="icons/full/variable_view.gif"
+            id="toolbox.tool.tlc.view.TraceExplorer"
+            name="Trace Explorer"
             restorable="true">
       </view>
    </extension>
