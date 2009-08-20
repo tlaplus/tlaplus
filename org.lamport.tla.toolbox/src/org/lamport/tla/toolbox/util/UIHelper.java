@@ -143,10 +143,30 @@ public class UIHelper
         IViewPart view = null;
         try
         {
-            view = getActivePage().showView(viewId);
+            IWorkbenchPage activePage = getActivePage();
+            if (activePage != null)
+            {
+                view = activePage.showView(viewId);
+            }
         } catch (PartInitException e)
         {
             Activator.logError("Error opening a view " + viewId, e);
+        }
+        return view;
+    }
+
+    /**
+     * Find a view if on the page
+     * @param viewId
+     * @return
+     */
+    public static IViewPart findView(String viewId)
+    {
+        IViewPart view = null;
+        IWorkbenchPage activePage = getActivePage();
+        if (activePage != null)
+        {
+            view = activePage.findView(viewId);
         }
         return view;
     }
@@ -159,9 +179,7 @@ public class UIHelper
     public static boolean isViewShown(String id)
     {
         return (getActivePage().findView(id) == null);
-       
-        
-        
+
     }
 
     /**
@@ -193,12 +211,13 @@ public class UIHelper
      * 
      * @param listener
      */
-    public static void addPerspectiveListener(IPerspectiveListener listener) 
+    public static void addPerspectiveListener(IPerspectiveListener listener)
     {
         IWorkbench workbench = Activator.getDefault().getWorkbench();
         IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
         window.addPerspectiveListener(listener);
     }
+
     /**
      * Switch current perspective
      * 
@@ -518,23 +537,23 @@ public class UIHelper
 
         };
     }
-    
+
     /**
      * Retrieves the control from the viewer
      */
     public static Control getWidget(Object control)
     {
-        if (control instanceof Viewer) 
+        if (control instanceof Viewer)
         {
-            return ((Viewer)control).getControl();
-        } else if (control instanceof Text) 
+            return ((Viewer) control).getControl();
+        } else if (control instanceof Text)
         {
             return (Text) control;
-        } else if (control instanceof Button) 
+        } else if (control instanceof Button)
         {
             return (Control) control;
         }
-        
+
         return null;
     }
 
