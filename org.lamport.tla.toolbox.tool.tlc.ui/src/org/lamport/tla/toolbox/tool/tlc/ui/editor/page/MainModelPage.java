@@ -23,6 +23,7 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.forms.HyperlinkGroup;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.IMessageManager;
+import org.eclipse.ui.forms.SectionPart;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.events.HyperlinkAdapter;
 import org.eclipse.ui.forms.events.HyperlinkEvent;
@@ -91,7 +92,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
             }
         }
     };
-    
+
     private ImageHyperlink runLink;
     private ImageHyperlink generateLink;
 
@@ -220,7 +221,17 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         // merge constants with currently defined in the specobj, if any
         if (rootModuleNode != null)
         {
-            ModelHelper.mergeConstantLists(constants, ModelHelper.createConstantsList(rootModuleNode));
+            List toDelete = ModelHelper.mergeConstantLists(constants, ModelHelper.createConstantsList(rootModuleNode));
+            if (!toDelete.isEmpty())
+            {
+                // if constants have been removed, these should be deleted from the model too
+                SectionPart constantSection = dm.getSection(dm.getSectionForAttribute(MODEL_PARAMETER_CONSTANTS));
+                if (constantSection != null) 
+                {
+                    // mark the constants dirty
+                    constantSection.markDirty();
+                }
+            }
             constantTable.setInput(constants);
         }
 
@@ -253,7 +264,8 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
                     {
                         // symmetry can be used for only one set of model values
                         mm.addMessage(constant.getLabel(), "Only one symmetrical set of model values is allowed",
-                                constant, IMessageProvider.ERROR, UIHelper.getWidget(dm.getAttributeControl(MODEL_PARAMETER_CONSTANTS)));
+                                constant, IMessageProvider.ERROR, UIHelper.getWidget(dm
+                                        .getAttributeControl(MODEL_PARAMETER_CONSTANTS)));
                         setComplete(false);
                         expandSection(dm.getSectionForAttribute(MODEL_PARAMETER_CONSTANTS));
                     } else
@@ -306,7 +318,8 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
                             + ". The number of CPU Cores available on the system is "
                             + Runtime.getRuntime().availableProcessors()
                             + ".\n It is not advisable that the number of workers exceeds the number of CPU Cores.",
-                            null, IMessageProvider.WARNING, UIHelper.getWidget(dm.getAttributeControl(LAUNCH_NUMBER_OF_WORKERS)));
+                            null, IMessageProvider.WARNING, UIHelper.getWidget(dm
+                                    .getAttributeControl(LAUNCH_NUMBER_OF_WORKERS)));
                     expandSection(SEC_HOW_TO_RUN);
                 }
             }
@@ -326,14 +339,15 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         {
             if (EMPTY_STRING.equals(checkpointIdText.getText()))
             {
-                mm.addMessage("noChckpoint", "No chekpoint data found", null, IMessageProvider.ERROR, UIHelper.getWidget(dm.getAttributeControl(LAUNCH_RECOVER)));
+                mm.addMessage("noChckpoint", "No chekpoint data found", null, IMessageProvider.ERROR, UIHelper
+                        .getWidget(dm.getAttributeControl(LAUNCH_RECOVER)));
                 setComplete(false);
                 expandSection(SEC_HOW_TO_RUN);
             }
         }
 
-        String selectedAttribute = closedFormulaRadio.getSelection() ? MODEL_BEHAVIOR_CLOSED_SPECIFICATION : (initNextFairnessRadio
-                .getSelection() ? MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT : null);
+        String selectedAttribute = closedFormulaRadio.getSelection() ? MODEL_BEHAVIOR_CLOSED_SPECIFICATION
+                : (initNextFairnessRadio.getSelection() ? MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT : null);
         // spec or no spec
         if (selectedAttribute != null)
         {
@@ -352,7 +366,8 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         // check if the selected fields are filled
         if (closedFormulaRadio.getSelection() && specSource.getDocument().get().trim().equals(""))
         {
-            mm.addMessage("noSpec", "The formula must be provided", null, IMessageProvider.ERROR, UIHelper.getWidget(dm.getAttributeControl(MODEL_BEHAVIOR_CLOSED_SPECIFICATION)));
+            mm.addMessage("noSpec", "The formula must be provided", null, IMessageProvider.ERROR, UIHelper.getWidget(dm
+                    .getAttributeControl(MODEL_BEHAVIOR_CLOSED_SPECIFICATION)));
             setComplete(false);
             expandSection(dm.getSectionForAttribute(MODEL_BEHAVIOR_CLOSED_SPECIFICATION));
         } else if (initNextFairnessRadio.getSelection())
@@ -362,20 +377,20 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
             if (init.equals(""))
             {
-                mm.addMessage("noInit", "The Init formula must be provided", null, IMessageProvider.ERROR,
-                        UIHelper.getWidget(dm.getAttributeControl(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT)));
+                mm.addMessage("noInit", "The Init formula must be provided", null, IMessageProvider.ERROR, UIHelper
+                        .getWidget(dm.getAttributeControl(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT)));
                 setComplete(false);
                 expandSection(dm.getSectionForAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT));
             }
             if (next.equals(""))
             {
-                mm.addMessage("noNext", "The Next formula must be provided", null, IMessageProvider.ERROR,
-                        UIHelper.getWidget(dm.getAttributeControl(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT)));
+                mm.addMessage("noNext", "The Next formula must be provided", null, IMessageProvider.ERROR, UIHelper
+                        .getWidget(dm.getAttributeControl(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT)));
                 setComplete(false);
                 expandSection(dm.getSectionForAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT));
             }
         }
-        
+
         mm.setAutoUpdate(true);
 
         super.validate();
@@ -704,9 +719,8 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         gd.horizontalIndent = 10;
         gd.widthHint = 15;
         workers.setLayoutData(gd);
-        
+
         dm.bindAttribute(LAUNCH_NUMBER_OF_WORKERS, workers, howToRunPart);
-        
 
         // run from the checkpoint
         checkpointButton = toolkit.createButton(howToRunArea, "Recover from checkpoint", SWT.CHECK);
@@ -745,7 +759,6 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         runLink.setLayoutData(gd);
         group.add(runLink);
 
-        
         generateLink = toolkit.createImageHyperlink(howToRunArea, SWT.NONE);
         generateLink.setImage(createRegisteredImage("icons/full/debugt_obj.gif"));
         generateLink.addHyperlinkListener(new HyperlinkAdapter() {
