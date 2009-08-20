@@ -15,7 +15,8 @@
 <listAttribute key="modelCorrectnessProperties"/>
 <stringAttribute key="modelParameterActionConstraint" value=""/>
 <listAttribute key="modelParameterConstants">
-<listEntry value="a;;1;0;0"/>
+<listEntry value="a;;a;1;0"/>
+<listEntry value="INVARIANT;;INVARIANT;1;0"/>
 </listAttribute>
 <stringAttribute key="modelParameterContraint" value=""/>
 <listAttribute key="modelParameterDefinitions"/>
