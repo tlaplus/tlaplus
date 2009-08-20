@@ -1,6 +1,7 @@
 package org.lamport.tla.toolbox.tool.tlc.ui.editor.page.data;
 
 import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Representation of the TLC error
@@ -15,31 +16,26 @@ public class TLCError
     private LinkedList actions;
     private int errorCode;
 
-    
     public TLCError()
     {
-        
+
     }
-    
+
     public TLCError(String message)
     {
         this.message = message;
     }
 
-    
     public void addState(TLCState state)
     {
-        if (states == null) 
+        if (states == null)
         {
             states = new LinkedList();
         }
-        
+
         states.add(state);
     }
 
-    
-    
-    
     public final TLCError getCause()
     {
         return cause;
@@ -55,29 +51,25 @@ public class TLCError
         return message;
     }
 
-    public final LinkedList getStates()
+    public final List getStates()
     {
         return states;
     }
-
 
     public final LinkedList getActions()
     {
         return actions;
     }
 
-
     public final void setActions(LinkedList actions)
     {
         this.actions = actions;
     }
 
-
     public final int getErrorCode()
     {
         return errorCode;
     }
-
 
     public final void setErrorCode(int errorCode)
     {
@@ -89,5 +81,14 @@ public class TLCError
         this.message = message;
     }
 
+    public boolean hasActions()
+    {
+        return this.actions != null && !this.actions.isEmpty();
+    }
+
+    public boolean hasTrace()
+    {
+        return this.states != null && !this.states.isEmpty();
+    }
 
 }

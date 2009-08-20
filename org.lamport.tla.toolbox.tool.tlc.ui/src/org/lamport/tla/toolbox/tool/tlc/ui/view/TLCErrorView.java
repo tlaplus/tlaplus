@@ -2,123 +2,130 @@ package org.lamport.tla.toolbox.tool.tlc.ui.view;
 
 import java.util.List;
 
-import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.runtime.Assert;
+import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.Document;
+import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.StyledText;
-import org.eclipse.swt.layout.RowLayout;
+import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.ExpandBar;
-import org.eclipse.swt.widgets.ExpandItem;
 import org.eclipse.ui.part.ViewPart;
+import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.data.TLCError;
-import org.lamport.tla.toolbox.util.TLAMarkerHelper;
+import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 /**
+ * Error representation
  * @author Simon Zambrovski
  * @version $Id$
  */
 public class TLCErrorView extends ViewPart
 {
     public static final String ID = "toolbox.tool.tlc.view.TLCErrorView";
-    private ExpandBar bar = null;
+    private static final IDocument EMPTY_DOCUMENT = new Document("No error information");
 
-    
+    private SourceViewer detailViewer;
+    private List problems;
+
     /**
      * Creates the layout and fill it with data 
      */
     public void createPartControl(Composite parent)
     {
-        bar = new ExpandBar(parent, SWT.V_SCROLL | SWT.BORDER);
-        bar.setSpacing(8);
-        UIHelper.setHelp(bar, "TLCErrorView");
+        SashForm sashForm = new SashForm(parent, SWT.VERTICAL);
+
+        detailViewer = FormHelper.createOutputViewer(sashForm, SWT.V_SCROLL | SWT.MULTI | SWT.BORDER);
+        detailViewer.setDocument(EMPTY_DOCUMENT);
+
+        UIHelper.setHelp(parent, "TLCErrorView");
     }
 
-    /**
-     * Fill data
-     * @param specLoaded
-     */
-    public void fillData(List problems)
+    public void clear()
     {
-        if (problems == null || problems.isEmpty())
+        detailViewer.setDocument(EMPTY_DOCUMENT);
+        TraceExplorer traceExplorer = (TraceExplorer) UIHelper.findView(TraceExplorer.ID);
+        if (traceExplorer != null)
         {
-            hide();
-            return;
-        } else
-        {
-
-            for (int j = 0; j < problems.size(); j++)
-            {
-                final TLCError problem = (TLCError) problems.get(j);
-
-//                // listener
-//                Listener listener = new Listener() {
-//                    // goto marker on click
-//                    public void handleEvent(Event event)
-//                    {
-//                        TLAMarkerHelper.gotoMarker(problem);
-//                    }
-//                };
-
-                // contents of the item
-                Composite problemItem = new Composite(bar, SWT.LINE_SOLID);
-                problemItem.setLayout(new RowLayout(SWT.VERTICAL));
-                
-                // problemItem.addListener(SWT.MouseDown, listener);
-
-                String[] lines = problem.getMessage().split("\n");
-                for (int i = 0; i < lines.length; i++)
-                {
-                    StyledText styledText = new StyledText(problemItem, SWT.INHERIT_DEFAULT);
-                    styledText.setEditable(false);
-                    styledText.setCursor(styledText.getDisplay().getSystemCursor(SWT.CURSOR_HAND));
-                    styledText.setText(lines[i]);
-                    
-                    // styledText.addListener(SWT.MouseDown, listener);
-
-//                    if (isErrorLine(lines[i], problem))
-//                    {
-//                        StyleRange range = new StyleRange();
-//                        range.underline = true;
-//                        range.foreground = styledText.getDisplay().getSystemColor(SWT.COLOR_RED);
-//                        range.start = 0;
-//                        range.length = lines[i].length();
-//                        styledText.setStyleRange(range);
-//                    }
-                }
-
-                ExpandItem item = new ExpandItem(bar, SWT.NONE, 0);
-                item.setExpanded(true);
-                
-                // String markerType = TLAMarkerHelper.getType(problem);
-                item.setText("Error ");
-                item.setHeight(problemItem.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
-                item.setControl(problemItem);
-                
-                // item.addListener(SWT.MouseDown, listener);
-            }
+            traceExplorer.clear();
+            traceExplorer.hide();
         }
     }
 
     /**
-     * 
+     * Fill data
      */
+    public void fill(List problems)
+    {
+        if (problems == null || problems.isEmpty())
+        {
+            this.problems = null;
+            clear();
+            return;
+        } else
+        {
+            this.problems = problems;
+            updateView();
+        }
+    }
+
+    private void updateView()
+    {
+        IDocument document = detailViewer.getDocument();
+        StringBuffer buffer = new StringBuffer();
+        List states = null;
+        for (int i = 0; i < problems.size(); i++)
+        {
+            TLCError error = (TLCError) problems.get(i);
+            appendError(buffer, error);
+            if (error.hasTrace())
+            {
+                Assert.isTrue(states == null, "Two traces are provided. Unexpected. This is a bug");
+                states = error.getStates();
+            }
+        }
+
+        // update the trace information
+        TraceExplorer traceExplorer = (TraceExplorer) UIHelper.openView(TraceExplorer.ID);
+        if (traceExplorer != null)
+        {
+            if (states != null)
+            {
+                traceExplorer.fill(states);
+            } else
+            {
+                traceExplorer.clear();
+                traceExplorer.hide();
+            }
+        }
+
+        try
+        {
+            document.replace(0, document.getLength(), buffer.toString());
+        } catch (BadLocationException e)
+        {
+            TLCUIActivator.logError("Error reporting the error " + buffer.toString(), e);
+        }
+    }
+
+    private static void appendError(StringBuffer buffer, TLCError error)
+    {
+        buffer.append(error.getMessage()).append("\n");
+        if (error.getCause() != null)
+        {
+            appendError(buffer, error.getCause());
+        }
+    }
+
     public void hide()
     {
-        UIHelper.runUIAsync(new Runnable() 
-        {
+        UIHelper.runUIAsync(new Runnable() {
             public void run()
             {
-                // UIHelper.closeWindow(ProblemsPerspective.ID);
                 getViewSite().getPage().hideView(TLCErrorView.this);
             }
         });
-    }
-
-    private boolean isErrorLine(String line, IMarker marker)
-    {
-        return line.indexOf("module "
-                + marker.getAttribute(TLAMarkerHelper.LOCATION_MODULENAME, TLAMarkerHelper.LOCATION_MODULENAME)) != -1;
     }
 
     /*
@@ -127,7 +134,7 @@ public class TLCErrorView extends ViewPart
      */
     public void setFocus()
     {
-        bar.setFocus();
+        detailViewer.getControl().setFocus();
     }
 
 }

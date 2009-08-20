@@ -82,8 +82,7 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
         public void linkActivated(HyperlinkEvent e)
         {
             TLCErrorView errorView = (TLCErrorView) UIHelper.openView(TLCErrorView.ID);
-            errorView.fillData(errors);
-
+            errorView.fill(errors);
         }
     };
 
@@ -217,6 +216,7 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
                 case EC.TLC_CHECKPOINT_RECOVER_START:
                 case EC.TLC_CHECKPOINT_RECOVER_END:
                 case EC.TLC_CHECKPOINT_RECOVER_END_DFID:
+                case EC.TLC_LIVE_IMPLIED:
                     setDocumentText(this.progress.getDocument(), outputMessage, true);
                     break;
                 case EC.TLC_STARTING:
@@ -406,19 +406,37 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
                 {
                     ResultPage.this.errorStatusHyperLink.addHyperlinkListener(ResultPage.this.errorHyperLinkListener);
                     ResultPage.this.errorStatusHyperLink.setForeground(TLCUIActivator.getColor(SWT.COLOR_RED));
+
                 } else
                 {
                     ResultPage.this.errorStatusHyperLink
                             .removeHyperlinkListener(ResultPage.this.errorHyperLinkListener);
                     ResultPage.this.errorStatusHyperLink.setForeground(TLCUIActivator.getColor(SWT.COLOR_BLACK));
+                    
                 }
 
+                // update the error view
+                updateErrorView(ResultPage.this.errors);
             }
         });
 
         // TLCUIActivator.logDebug("Errors changed, now have " + errors.size() + ".");
     }
 
+    /**
+     * Display the errors in the view
+     * @param errors
+     */
+    private static void updateErrorView(List errors) 
+    {
+        TLCErrorView errorView = (TLCErrorView) UIHelper.openView(TLCErrorView.ID);
+        if (errorView != null) 
+        {
+            errorView.fill(errors);
+        }
+    }
+
+    
     /**
      * Reinitialize the fields
      */
