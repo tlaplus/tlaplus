@@ -24,7 +24,7 @@ import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.ui.part.ViewPart;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.data.TLCState;
-import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.data.TLCStateVariable;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.data.TLCVariable;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
@@ -126,7 +126,7 @@ public class TraceExplorer extends ViewPart
                 {
                     return state.getVariables();
                 }
-            } else if (parentElement instanceof TLCStateVariable)
+            } else if (parentElement instanceof TLCVariable)
             {
                 return null;
             }
@@ -187,7 +187,7 @@ public class TraceExplorer extends ViewPart
                 if (element instanceof TLCState)
                 {
                     return stateImage;
-                } else if (element instanceof TLCStateVariable)
+                } else if (element instanceof TLCVariable)
                 {
                     return varImage;
                 }
@@ -215,9 +215,9 @@ public class TraceExplorer extends ViewPart
                 default:
                     break;
                 }
-            } else if (element instanceof TLCStateVariable)
+            } else if (element instanceof TLCVariable)
             {
-                TLCStateVariable var = (TLCStateVariable) element;
+                TLCVariable var = (TLCVariable) element;
                 switch (columnIndex) {
                 case NAME:
                     return var.getName();
