@@ -51,31 +51,54 @@ public class TLCState
         }
     }
 
-    private static TLCStateVariable[] parseVariables(String variablesText)
+    /**
+     * Parse the state variables out of the state output
+     * @param variablesText
+     * @return
+     */
+    private static TLCVariable[] parseVariables(String variablesText)
     {
         String[] lines = variablesText.split(CR);
         Vector vars = new Vector();
         int index;
-        for (int i = 0; i < lines.length; i++)
+        String[] stateVarString = null;
+
+        for (int j = 0; j < lines.length; j++)
         {
-            index = lines[i].indexOf(AND);
+            index = lines[j].indexOf(AND);
             if (index != -1)
             {
-                String[] stateVarString = lines[i].substring(index + AND.length()).split(EQ);
+                if (stateVarString != null)
+                {
+                    TLCVariable var = new TLCVariable(stateVarString[0], TLCVariableValue
+                            .parseValue(stateVarString[1]));
+                    vars.add(var);
+                }
 
-                TLCStateVariable var = new TLCStateVariable(stateVarString[0], TLCVariableValue
-                        .parseValue(stateVarString[1]));
-                vars.add(var);
+                stateVarString = lines[j].substring(index + AND.length()).split(EQ);
+            } else
+            {
+                stateVarString[1] += CR;
+                stateVarString[1] += lines[j];
             }
         }
-        return (TLCStateVariable[]) vars.toArray(new TLCStateVariable[vars.size()]);
+
+        // write the last one
+        if (stateVarString != null)
+        {
+            TLCVariable var = new TLCVariable(stateVarString[0], TLCVariableValue
+                    .parseValue(stateVarString[1]));
+            vars.add(var);
+        }
+
+        return (TLCVariable[]) vars.toArray(new TLCVariable[vars.size()]);
     }
 
     private int number;
     private boolean stuttering = false;
     private String label;
     private String variablesAsString;
-    private TLCStateVariable[] variables = new TLCStateVariable[0];
+    private TLCVariable[] variables = new TLCVariable[0];
 
     public TLCState(int number)
     {
@@ -102,7 +125,7 @@ public class TLCState
         return Arrays.asList(variables);
     }
 
-    public final TLCStateVariable[] getVariables()
+    public final TLCVariable[] getVariables()
     {
         return variables;
     }
