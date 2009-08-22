@@ -1,5 +1,7 @@
 package org.lamport.tla.toolbox.tool.tlc.ui.editor.page.data;
 
+import java.util.List;
+
 /**
  * @author Simon Zambrovski
  * @version $Id$
@@ -7,4 +9,29 @@ package org.lamport.tla.toolbox.tool.tlc.ui.editor.page.data;
 public class TLCRecordVariableValue extends TLCVariableValue
 {
 
+    private static final String[] DELIMETERS = { "[", ",", "]" };
+
+    /**
+     * @param recordPairs
+     */
+    public TLCRecordVariableValue(List recordPairs)
+    {
+        this.value = recordPairs;
+    }
+
+    public TLCNamedVariableValue[] getPairs()
+    {
+        return (TLCNamedVariableValue[]) ((List) this.value).toArray(new TLCNamedVariableValue[((List) this.value)
+                .size()]);
+    }
+
+    public Object getValue()
+    {
+        return getPairs();
+    }
+
+    public String toString()
+    {
+        return arrayTosStringBuffer(getPairs(), DELIMETERS).toString();
+    }
 }

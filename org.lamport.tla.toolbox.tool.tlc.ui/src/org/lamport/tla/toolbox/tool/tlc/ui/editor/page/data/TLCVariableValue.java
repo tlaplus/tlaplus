@@ -111,6 +111,7 @@ public abstract class TLCVariableValue
         char nextCh;
 
         switch (ch) {
+        // sequence
         case LT:
             nextCh = getNextChar(input);
             if (nextCh != LT)
@@ -136,18 +137,92 @@ public abstract class TLCVariableValue
             }
             return new TLCSequenceVariableValue(sequenceValues);
 
-        case CCBRACE:
-            return null;
-
-        case OBRACKET:
-        case OBRACE:
+        // empty sequence
         case GT:
             nextCh = getNextChar(input);
             if (nextCh != GT)
             {
                 throw new VariableValueParseException();
             }
-            break;
+            return null;
+
+        case OBRACKET:
+            List recordPairs = new Vector();
+
+            TLCVariableValue innerValue2;
+
+            // fetch the first one
+            innerValue = innerParse(input);
+            if (innerValue != null)
+            {
+                if (! (innerValue instanceof TLCSimpleVariableValue)) 
+                {
+                    // left side should be a simple value (String)
+                    throw new VariableValueParseException();
+                }
+                
+                if (getNextChar(input) == PIPE && getNextChar(input) == MINUS && getNextChar(input) == GT) 
+                {
+                    innerValue2 = innerParse(input);
+                    if (innerValue2 == null) 
+                    {
+                        // no right side of |->
+                        throw new VariableValueParseException();
+                    }  
+                    
+                    recordPairs.add(new TLCNamedVariableValue( (String)innerValue.value, innerValue2));
+                } else 
+                {
+                    // no |->
+                    throw new VariableValueParseException();
+                }
+            }
+            
+            nextCh = getNextChar(input);
+            while (nextCh == COMMA)
+            {
+                innerValue = innerParse(input);
+                if (innerValue != null)
+                {
+                    if (! (innerValue instanceof TLCSimpleVariableValue)) 
+                    {
+                        // left side should be a simple value (String)
+                        throw new VariableValueParseException();
+                    }
+                    
+                    if (getNextChar(input) == PIPE && getNextChar(input) == MINUS && getNextChar(input) == GT) 
+                    {
+                        innerValue2 = innerParse(input);
+                        if (innerValue2 == null) 
+                        {
+                            // no right side of |->
+                            throw new VariableValueParseException();
+                        }  
+                        
+                        recordPairs.add(new TLCNamedVariableValue( (String)innerValue.value, innerValue2));
+                    } else 
+                    {
+                        // no |->
+                        throw new VariableValueParseException();
+                    }
+                }
+
+                
+                nextCh = getNextChar(input);
+            }
+            if (nextCh != CBRACKET)
+            {
+                throw new VariableValueParseException();
+            }
+
+            
+            
+            return new TLCRecordVariableValue(recordPairs); 
+        case CBRACKET:
+            return null;
+        case OBRACE:
+        case CBRACE:
+        // set 
         case OCBRACE:
             List setValues = new Vector();
             innerValue = innerParse(input);
@@ -167,6 +242,10 @@ public abstract class TLCVariableValue
             }
 
             return new TLCSetVariableValue(setValues);
+        // empty set
+        case CCBRACE:
+            return null;
+            
         default:
             if (ch != QUOTE)
             {

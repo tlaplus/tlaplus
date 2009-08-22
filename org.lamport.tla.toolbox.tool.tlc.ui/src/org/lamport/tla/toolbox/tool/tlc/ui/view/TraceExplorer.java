@@ -23,8 +23,9 @@ import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.ui.part.ViewPart;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.data.TLCNamedVariableValue;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.data.TLCRecordVariableValue;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.data.TLCSetOrSeqVariableValue;
-import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.data.TLCSetVariableValue;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.data.TLCSimpleVariableValue;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.data.TLCState;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.data.TLCVariable;
@@ -137,6 +138,9 @@ public class TraceExplorer extends ViewPart
                 if (value instanceof TLCSetOrSeqVariableValue) 
                 {
                     return ((TLCSetOrSeqVariableValue)value).getElements();
+                } else if (value instanceof TLCRecordVariableValue) 
+                {
+                    return ((TLCRecordVariableValue)value).getPairs();
                 }
                 return null;
             } else if (parentElement instanceof TLCVariableValue) 
@@ -145,9 +149,15 @@ public class TraceExplorer extends ViewPart
                 if (value instanceof TLCSetOrSeqVariableValue) 
                 {
                     return ((TLCSetOrSeqVariableValue)value).getElements();
+                } else if (value instanceof TLCRecordVariableValue) 
+                {
+                    return ((TLCRecordVariableValue)value).getPairs();
+                } else if (value instanceof TLCNamedVariableValue)
+                {
+                    return null;
                 }
                 return null;
-            }
+            } 
             return null;
         }
 
