@@ -23,8 +23,12 @@ import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.ui.part.ViewPart;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.data.TLCSetOrSeqVariableValue;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.data.TLCSetVariableValue;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.data.TLCSimpleVariableValue;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.data.TLCState;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.data.TLCVariable;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.data.TLCVariableValue;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
@@ -128,6 +132,20 @@ public class TraceExplorer extends ViewPart
                 }
             } else if (parentElement instanceof TLCVariable)
             {
+                TLCVariable variable = (TLCVariable) parentElement;
+                TLCVariableValue value = variable.getValue();
+                if (value instanceof TLCSetOrSeqVariableValue) 
+                {
+                    return ((TLCSetOrSeqVariableValue)value).getElements();
+                }
+                return null;
+            } else if (parentElement instanceof TLCVariableValue) 
+            {
+                TLCVariableValue value = (TLCVariableValue) parentElement;
+                if (value instanceof TLCSetOrSeqVariableValue) 
+                {
+                    return ((TLCSetOrSeqVariableValue)value).getElements();
+                }
                 return null;
             }
             return null;
@@ -223,6 +241,16 @@ public class TraceExplorer extends ViewPart
                     return var.getName();
                 case VALUE:
                     return var.getValue().toString();
+                default:
+                    break;
+                }
+            } else if (element instanceof TLCSetOrSeqVariableValue || element instanceof TLCSimpleVariableValue) 
+            {
+                TLCVariableValue varValue = (TLCVariableValue) element;
+                switch (columnIndex) {
+                case VALUE:
+                    return varValue.toString();
+                case NAME:
                 default:
                     break;
                 }

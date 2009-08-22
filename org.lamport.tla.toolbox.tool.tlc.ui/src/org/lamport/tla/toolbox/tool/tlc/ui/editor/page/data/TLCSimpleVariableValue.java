@@ -7,5 +7,8 @@ package org.lamport.tla.toolbox.tool.tlc.ui.editor.page.data;
  */
 public class TLCSimpleVariableValue extends TLCVariableValue
 {
-
+    protected TLCSimpleVariableValue(Object value)
+    {
+        this.value = value;
+    }
 }
