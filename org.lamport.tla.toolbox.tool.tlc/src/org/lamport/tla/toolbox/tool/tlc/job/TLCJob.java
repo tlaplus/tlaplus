@@ -88,7 +88,7 @@ public abstract class TLCJob extends AbstractJob implements IModelConfigurationC
         // deadlock
         boolean checkDeadlock = config.getAttribute(IModelConfigurationConstants.MODEL_CORRECTNESS_CHECK_DEADLOCK,
                 IModelConfigurationDefaults.MODEL_CORRECTNESS_CHECK_DEADLOCK_DEFAULT);
-        if (checkDeadlock)
+        if (! checkDeadlock) /* "!" added by LL on 22 Aug 2009 */
         {
             arguments.add("-deadlock");
         }
