@@ -102,7 +102,7 @@ public class TraceExplorer extends ViewPart
     {
         variableViewer.setInput(trace);
     }
-    
+
     public void clear()
     {
         variableViewer.setInput(new Vector());
@@ -135,29 +135,29 @@ public class TraceExplorer extends ViewPart
             {
                 TLCVariable variable = (TLCVariable) parentElement;
                 TLCVariableValue value = variable.getValue();
-                if (value instanceof TLCSetOrSeqVariableValue) 
+                if (value instanceof TLCSetOrSeqVariableValue)
                 {
-                    return ((TLCSetOrSeqVariableValue)value).getElements();
-                } else if (value instanceof TLCRecordVariableValue) 
+                    return ((TLCSetOrSeqVariableValue) value).getElements();
+                } else if (value instanceof TLCRecordVariableValue)
                 {
-                    return ((TLCRecordVariableValue)value).getPairs();
+                    return ((TLCRecordVariableValue) value).getPairs();
                 }
                 return null;
-            } else if (parentElement instanceof TLCVariableValue) 
+            } else if (parentElement instanceof TLCVariableValue)
             {
                 TLCVariableValue value = (TLCVariableValue) parentElement;
-                if (value instanceof TLCSetOrSeqVariableValue) 
+                if (value instanceof TLCSetOrSeqVariableValue)
                 {
-                    return ((TLCSetOrSeqVariableValue)value).getElements();
-                } else if (value instanceof TLCRecordVariableValue) 
+                    return ((TLCSetOrSeqVariableValue) value).getElements();
+                } else if (value instanceof TLCRecordVariableValue)
                 {
-                    return ((TLCRecordVariableValue)value).getPairs();
+                    return ((TLCRecordVariableValue) value).getPairs();
                 } else if (value instanceof TLCNamedVariableValue)
                 {
-                    return null;
+                    return getChildren( ((TLCNamedVariableValue)value).getValue() );
                 }
                 return null;
-            } 
+            }
             return null;
         }
 
@@ -201,11 +201,15 @@ public class TraceExplorer extends ViewPart
 
         private Image stateImage;
         private Image varImage;
+        private Image recordImage;
+        
 
         public StateLabelProvider()
         {
             stateImage = TLCUIActivator.getImageDescriptor("/icons/full/default_co.gif").createImage();
             varImage = TLCUIActivator.getImageDescriptor("/icons/full/private_co.gif").createImage();
+            recordImage = TLCUIActivator.getImageDescriptor("/icons/full/brkpi_obj.gif").createImage();
+            
         }
 
         public Image getColumnImage(Object element, int columnIndex)
@@ -218,6 +222,9 @@ public class TraceExplorer extends ViewPart
                 } else if (element instanceof TLCVariable)
                 {
                     return varImage;
+                } else if (element instanceof TLCNamedVariableValue) 
+                {
+                    return recordImage;
                 }
                 return null;
             }
@@ -232,7 +239,7 @@ public class TraceExplorer extends ViewPart
 
                 switch (columnIndex) {
                 case NAME:
-                    if (state.isStuttering()) 
+                    if (state.isStuttering())
                     {
                         return "<Stuttering>";
                     }
@@ -254,13 +261,24 @@ public class TraceExplorer extends ViewPart
                 default:
                     break;
                 }
-            } else if (element instanceof TLCSetOrSeqVariableValue || element instanceof TLCSimpleVariableValue) 
+            } else if (element instanceof TLCSetOrSeqVariableValue || element instanceof TLCSimpleVariableValue)
             {
                 TLCVariableValue varValue = (TLCVariableValue) element;
                 switch (columnIndex) {
                 case VALUE:
                     return varValue.toString();
                 case NAME:
+                default:
+                    break;
+                }
+            } else if (element instanceof TLCNamedVariableValue)
+            {
+                TLCNamedVariableValue namedValue = (TLCNamedVariableValue) element;
+                switch (columnIndex) {
+                case NAME:
+                    return namedValue.getName();
+                case VALUE:
+                    return namedValue.getValue().toString();
                 default:
                     break;
                 }
@@ -282,6 +300,7 @@ public class TraceExplorer extends ViewPart
         {
             stateImage.dispose();
             varImage.dispose();
+            recordImage.dispose();
             super.dispose();
         }
 
