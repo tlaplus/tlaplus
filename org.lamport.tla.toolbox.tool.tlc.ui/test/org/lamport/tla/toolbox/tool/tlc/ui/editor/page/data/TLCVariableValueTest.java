@@ -62,8 +62,8 @@ public class TLCVariableValueTest extends TestCase
 
     public void testParseValueSimple()
     {
-        String[] test = { "abc", "12", "   12", "  -12", "1212.212" };
-        String[] result = { "abc", "12", "12", "-12", "1212.212" };
+        String[] test = { "abc", "12", "   12", "  -12", "1212.212", "\"\\\"xyz\"" };
+        String[] result = { "abc", "12", "12", "-12", "1212.212", "\"\\\"xyz\"" };
         for (int i = 0; i < test.length; i++)
         {
             try

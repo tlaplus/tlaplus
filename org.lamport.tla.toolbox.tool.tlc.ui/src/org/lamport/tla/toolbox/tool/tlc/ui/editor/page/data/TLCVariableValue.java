@@ -264,9 +264,26 @@ public abstract class TLCVariableValue
 
                 throw new VariableValueParseException();
             } else
-            {
-
-                nextCh = getNextChar(input);
+            { /* ch equals QUOTE */
+                int startOfString = input.offset - 1;
+                if (input.offset >= input.input.length())
+                {
+                    throw new VariableValueParseException();
+                } ;
+                while (input.input.charAt(input.offset) != QUOTE)
+                {
+                    if (input.input.charAt(input.offset) == ESC) 
+                    {
+                        input.offset++;
+                    }
+                    input.offset++;
+                    if (input.offset >= input.input.length())
+                    {
+                       throw new VariableValueParseException();
+                    } ;
+                }
+                input.offset++;
+                result = new TLCSimpleVariableValue(input.input.substring(startOfString, input.offset));
             }
         }
 
