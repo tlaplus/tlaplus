@@ -27,9 +27,16 @@ public class TLCState
         return state;
     }
 
+    /**
+     * Parses the state information
+     * @param input
+     * @return
+     */
     public static TLCState parseState(String input)
     {
+        // state number
         int index = input.indexOf(COLON);
+        // multi line
         int index2 = input.indexOf(CR, index);
         if (index2 == -1)
         {
@@ -61,33 +68,49 @@ public class TLCState
         String[] lines = variablesText.split(CR);
         Vector vars = new Vector();
         int index;
+
+        // buffer for accumulating the state variable
         String[] stateVarString = null;
 
+        // iterate line-wise
         for (int j = 0; j < lines.length; j++)
         {
+            // find the index of the first /\ in the line
             index = lines[j].indexOf(AND);
+
+            // adding the current line to the previous lines
             if (index != -1)
             {
+                // there was something in the buffer for the state variable
+                // found an empty line, which means that this is the end of the current state
                 if (stateVarString != null)
                 {
-                    TLCVariable var = new TLCVariable(stateVarString[0], TLCVariableValue
-                            .parseValue(stateVarString[1]));
+                    TLCVariable var = new TLCVariable(stateVarString[0], TLCVariableValue.parseValue(stateVarString[1]));
                     vars.add(var);
                 }
 
                 stateVarString = lines[j].substring(index + AND.length()).split(EQ);
             } else
             {
-                stateVarString[1] += CR;
-                stateVarString[1] += lines[j];
+                // no index
+
+                if (stateVarString != null)
+                {
+                    // either an empty line
+                    stateVarString[1] += CR;
+                    stateVarString[1] += lines[j];
+                } else
+                {
+                    // the state has one variable only
+                    stateVarString = lines[j].split(EQ);
+                }
             }
         }
 
         // write the last one
         if (stateVarString != null)
         {
-            TLCVariable var = new TLCVariable(stateVarString[0], TLCVariableValue
-                    .parseValue(stateVarString[1]));
+            TLCVariable var = new TLCVariable(stateVarString[0], TLCVariableValue.parseValue(stateVarString[1]));
             vars.add(var);
         }
 
