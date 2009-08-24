@@ -11,7 +11,6 @@ import org.eclipse.jface.text.IDocumentPartitioningListenerExtension2;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITypedRegion;
 import org.eclipse.jface.text.rules.FastPartitioner;
-import org.lamport.tla.toolbox.tool.tlc.output.PartitionToolkit;
 
 /**
  * Incremental parser based on TLC output in tags
@@ -68,7 +67,8 @@ public class TagBasedTLCOutputIncrementalParser
                         {
                             ITypedRegion mergedPartition = analyzer.getUserRegion();
                             source.onOutput(mergedPartition);
-                            PartitionToolkit.printPartition(mergedPartition, document);
+                            // debugging 
+                            // PartitionToolkit.printPartition(mergedPartition, document);
                         }
 
                         // START_TAG

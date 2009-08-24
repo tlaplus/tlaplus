@@ -1,5 +1,6 @@
 package org.lamport.tla.toolbox.tool.tlc.output.source;
 
+import java.util.Enumeration;
 import java.util.Hashtable;
 
 import org.eclipse.core.resources.IFile;
@@ -25,6 +26,7 @@ import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
  */
 public class TLCOutputSourceRegistry
 {
+    private static final boolean DO_DEBUG = false;
     private static TLCOutputSourceRegistry instance;
     // container for sources, hashed by the source name
     private Hashtable sources;
@@ -35,7 +37,7 @@ public class TLCOutputSourceRegistry
     public synchronized void addTLCStatusSource(ITLCOutputSource source)
     {
         Assert.isNotNull(source);
-        
+
         // TLCUIActivator.logDebug("adding source " + source.getSourceName() + " " + source.getSourcePrio());
 
         ITLCOutputSource existingSource = (ITLCOutputSource) this.sources.get(source.getSourceName());
@@ -53,6 +55,7 @@ public class TLCOutputSourceRegistry
             }
         }
         this.sources.put(source.getSourceName(), source);
+        printStats();
     }
 
     /**
@@ -61,6 +64,7 @@ public class TLCOutputSourceRegistry
     public synchronized void removeTLCStatusSource(String name)
     {
         this.sources.remove(name);
+        printStats();
     }
 
     /**
@@ -101,6 +105,7 @@ public class TLCOutputSourceRegistry
         }
 
         // TLCUIActivator.logDebug("Connected " + source.getListeners().length + " listeners");
+        printStats();
         return true;
     }
 
@@ -116,6 +121,8 @@ public class TLCOutputSourceRegistry
         {
             source.removeTLCStatusListener(listener);
         }
+
+        printStats();
     }
 
     /**
@@ -139,4 +146,20 @@ public class TLCOutputSourceRegistry
         return instance;
     }
 
+    private void printStats()
+    {
+        if (DO_DEBUG)
+        {
+            TLCUIActivator.logDebug("TLCOutputSourceRegistry maintains " + sources.size() + " sources.");
+            Enumeration keys = sources.keys();
+            while (keys.hasMoreElements())
+            {
+                String sourceName = (String) keys.nextElement();
+                ITLCOutputSource source = (ITLCOutputSource) sources.get(sourceName);
+                TLCUIActivator.logDebug("The source " + sourceName + " has " + source.getSourcePrio() + " prio and "
+                        + source.getListeners().length + " listeners");
+
+            }
+        }
+    }
 }
