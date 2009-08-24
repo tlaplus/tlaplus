@@ -35,6 +35,7 @@ import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Hyperlink;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.forms.widgets.TableWrapData;
+import org.eclipse.ui.forms.widgets.TableWrapLayout;
 import org.lamport.tla.toolbox.tool.tlc.output.ITLCOutputListener;
 import org.lamport.tla.toolbox.tool.tlc.output.source.TLCOutputSourceRegistry;
 import org.lamport.tla.toolbox.tool.tlc.output.source.TLCRegion;
@@ -125,13 +126,13 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
      */
     public synchronized void onOutput(ITypedRegion region, IDocument document)
     {
+        System.out.println(">");
         // restarting
         if (isDone)
         {
             // the only reason for this is the restart of the MC, after the previous run completed.
             // clean up the output
-            setDocumentText(this.output.getDocument(), "", false);
-            setDocumentText(this.progress.getDocument(), "", false);
+
             isDone = false;
         }
 
@@ -163,18 +164,26 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
             case MP.TLCBUG:
             case MP.WARNING:
 
-                if (lastDetectedError != null)
-                {
-                    // something is detected which is not an error
-                    // and the error trace is not empty
-                    // add the trace to the error list
-                    this.errors.add(lastDetectedError);
-                    this.lastDetectedError = null;
+                switch (messageCode) {
+                // errors to skip
+                case EC.TLC_BEHAVIOR_UP_TO_THIS_POINT:
+                    break;
 
+                // usual errors
+                default:
+                    if (lastDetectedError != null)
+                    {
+                        // something is detected which is not an error
+                        // and the error trace is not empty
+                        // add the trace to the error list
+                        this.errors.add(lastDetectedError);
+                        this.lastDetectedError = null;
+                    }
                     updateErrorInformation();
-                }
 
-                this.lastDetectedError = createError(tlcRegion, document);
+                    this.lastDetectedError = createError(tlcRegion, document);
+                    break;
+                }
                 break;
             case MP.NONE:
 
@@ -324,12 +333,14 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
 
     protected void loadData() throws CoreException
     {
+        // TLCUIActivator.logDebug("Entering loadData()");
         TLCOutputSourceRegistry.getStatusRegistry().disconnect(this);
 
         // re-init the fields
         reinit();
 
         TLCOutputSourceRegistry.getStatusRegistry().connect(this);
+        // TLCUIActivator.logDebug("Exiting loadData()");
     }
 
     /**
@@ -374,8 +385,9 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
             this.errors.add(lastDetectedError);
             this.lastDetectedError = null;
 
-            updateErrorInformation();
         }
+        updateErrorInformation();
+        TLCUIActivator.logDebug("Done");
     }
 
     /**
@@ -412,7 +424,7 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
                     ResultPage.this.errorStatusHyperLink
                             .removeHyperlinkListener(ResultPage.this.errorHyperLinkListener);
                     ResultPage.this.errorStatusHyperLink.setForeground(TLCUIActivator.getColor(SWT.COLOR_BLACK));
-                    
+
                 }
 
                 // update the error view
@@ -427,16 +439,15 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
      * Display the errors in the view
      * @param errors
      */
-    private static void updateErrorView(List errors) 
+    private static void updateErrorView(List errors)
     {
         TLCErrorView errorView = (TLCErrorView) UIHelper.openView(TLCErrorView.ID);
-        if (errorView != null) 
+        if (errorView != null)
         {
             errorView.fill(errors);
         }
     }
 
-    
     /**
      * Reinitialize the fields
      */
@@ -450,6 +461,8 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
         this.progress.setDocument(new Document(NO_OUTPUT_AVAILABLE));
         this.output.setDocument(new Document(NO_OUTPUT_AVAILABLE));
         this.errors = new Vector();
+        // update the error window and the trace explorer
+        this.updateErrorInformation();
     }
 
     /**
@@ -532,47 +545,29 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
      */
     protected void createBodyContent(IManagedForm managedForm)
     {
-        int sectionFlags = Section.TITLE_BAR | Section.DESCRIPTION | Section.TREE_NODE | Section.EXPANDED;
-        int textFieldFlags = SWT.MULTI | SWT.V_SCROLL | SWT.WRAP | SWT.READ_ONLY | SWT.FULL_SELECTION;
+        int sectionFlags = Section.TITLE_BAR | Section.DESCRIPTION | Section.TREE_NODE | Section.EXPANDED | SWT.WRAP;
+        int textFieldFlags = SWT.MULTI | SWT.V_SCROLL | SWT.READ_ONLY | SWT.FULL_SELECTION | SWT.WRAP;
 
         FormToolkit toolkit = managedForm.getToolkit();
         Composite body = managedForm.getForm().getBody();
 
-        GridData gd;
         TableWrapData twd;
-
-        // join
-        Composite join = toolkit.createComposite(body);
-        twd = new TableWrapData(TableWrapData.FILL_GRAB);
-        twd.grabHorizontal = true;
-        twd.colspan = 2;
-        join.setLayout(new GridLayout(1, true));
-        join.setLayoutData(twd);
-
         Section section;
-        GridLayout layout;
+        GridData gd;
 
         // -------------------------------------------------------------------
-        // progress area
-        section = FormHelper.createSectionComposite(join, "Progress", "The current progress of model-checking",
-                toolkit, sectionFlags, getExpansionListener());
-        // only grab horizontal space
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        section.setLayoutData(gd);
+        // general section
+        section = FormHelper.createSectionComposite(body, "General", "The current progress of model-checking", toolkit,
+                sectionFlags, getExpansionListener());
+        twd = new TableWrapData();
+        twd.colspan = 2;
+        section.setLayoutData(twd);
 
-        Composite progressArea = (Composite) section.getClient();
-        layout = new GridLayout(3, false);
-        progressArea.setLayout(layout);
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.grabExcessHorizontalSpace = true;
-        progressArea.setLayoutData(gd);
+        Composite generalArea = (Composite) section.getClient();
+        generalArea.setLayout(new GridLayout());
 
-        // ------------ first row ------------
-
-        Composite statusComposite = toolkit.createComposite(progressArea);
-        gd = new GridData();
-        gd.verticalAlignment = SWT.TOP;
-        statusComposite.setLayoutData(gd);
+        // ------------ status composite ------------
+        Composite statusComposite = toolkit.createComposite(generalArea);
         statusComposite.setLayout(new GridLayout(2, false));
 
         // start
@@ -580,62 +575,55 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
         // elapsed time
         elapsedTimeText = createTextLeft("Elapsed time:", statusComposite, toolkit);
         // errors
+        // Label createLabel = 
+        toolkit.createLabel(statusComposite, "Errors detected:");
+        this.errorStatusHyperLink = toolkit.createHyperlink(statusComposite, "", SWT.RIGHT);
 
-        Label createLabel = toolkit.createLabel(statusComposite, "Errors detected:");
-        gd = new GridData();
-        createLabel.setLayoutData(gd);
-        gd.verticalAlignment = SWT.TOP;
-        this.errorStatusHyperLink = toolkit.createHyperlink(statusComposite, "", SWT.NONE);
-
-        gd = new GridData(SWT.FILL, SWT.LEFT, true, false);
-        gd.horizontalIndent = 30;
-        gd.verticalAlignment = SWT.TOP;
-        gd.horizontalAlignment = SWT.RIGHT;
-        gd.minimumWidth = 150;
-        this.errorStatusHyperLink.setLayoutData(gd);
+        // -------------------------------------------------------------------
+        // statistics section
+        section = FormHelper.createSectionComposite(body, "Statistics", "The current progress of model-checking",
+                toolkit, sectionFlags  | Section.COMPACT, getExpansionListener());
+        twd = new TableWrapData();
+        twd.colspan = 2;
+        section.setLayoutData(twd);
+        Composite statArea = (Composite) section.getClient();
+        statArea = (Composite) section.getClient();
+        TableWrapLayout layout = new TableWrapLayout();
+        layout.numColumns = 2;
+        statArea.setLayout(layout);
 
         // progress stats
-        Composite stateStats = createAndSetupStateSpace("Statespace Statistics:", progressArea, toolkit);
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.heightHint = 200;
-        gd.minimumHeight = 200;
-        stateStats.setData(gd);
+        // Composite stateStats =
+        createAndSetupStateSpace("State space progress statistics:", statArea, toolkit);
+        // coverage stats
+        // Composite coverageStats =
+        createAndSetupCoverage("Coverage statistics at", statArea, toolkit);
 
-        // coverage
-        Composite coverageStats = createAndSetupCoverage("Coverage:", progressArea, toolkit);
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.heightHint = 200;
-        gd.minimumHeight = 200;
-        coverageStats.setData(gd);
+        // -------------------------------------------------------------------
+        // progress section
+        section = FormHelper.createSectionComposite(body, "Progress Output", "The current progress of model-checking",
+                toolkit, sectionFlags, getExpansionListener());
+        Composite progressArea = (Composite) section.getClient();
+        progressArea = (Composite) section.getClient();
+        progressArea.setLayout(new GridLayout());
 
-        // ------------ second row ------------
         progress = FormHelper.createFormsOutputViewer(toolkit, progressArea, textFieldFlags);
         gd = new GridData(SWT.FILL, SWT.LEFT, true, true);
-        gd.horizontalSpan = 3;
         gd.minimumHeight = 300;
-        gd.heightHint = 250;
         gd.minimumWidth = 300;
         progress.getControl().setLayoutData(gd);
 
         // -------------------------------------------------------------------
-        // output
-        section = FormHelper.createSectionComposite(join, "User Output", "Output created by TLC during the execution",
+        // output section
+        section = FormHelper.createSectionComposite(body, "User Output", "Output created by TLC during the execution",
                 toolkit, sectionFlags, getExpansionListener());
-        // only grab horizontal space
-        gd = new GridData(SWT.FILL, SWT.LEFT, true, false);
-        section.setLayoutData(gd);
-
         Composite outputArea = (Composite) section.getClient();
-        layout = new GridLayout();
-        layout.numColumns = 1;
-        outputArea.setLayout(layout);
-        gd = new GridData(SWT.FILL, SWT.LEFT, true, true);
-        outputArea.setLayoutData(gd);
-
+        outputArea.setLayout(new GridLayout());
+        // output viewer
         output = FormHelper.createFormsOutputViewer(toolkit, outputArea, textFieldFlags);
+
         gd = new GridData(SWT.FILL, SWT.LEFT, true, true);
-        gd.minimumHeight = 280;
-        gd.heightHint = 280;
+        gd.minimumHeight = 300;
         gd.minimumWidth = 300;
         output.getControl().setLayoutData(gd);
     }
@@ -649,7 +637,7 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
      */
     private Composite createAndSetupStateSpace(String label, Composite parent, FormToolkit toolkit)
     {
-        Composite statespaceComposite = toolkit.createComposite(parent);
+        Composite statespaceComposite = toolkit.createComposite(parent, SWT.WRAP);
         statespaceComposite.setLayout(new GridLayout(1, false));
 
         toolkit.createLabel(statespaceComposite, label);
@@ -700,10 +688,10 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
      */
     private Composite createAndSetupCoverage(String label, Composite parent, FormToolkit toolkit)
     {
-        Composite coverageComposite = toolkit.createComposite(parent);
+        Composite coverageComposite = toolkit.createComposite(parent, SWT.WRAP);
         coverageComposite.setLayout(new GridLayout(2, false));
+        // coverageComposite.setLayoutData(gd);
         GridData gd = new GridData();
-        coverageComposite.setLayoutData(gd);
         toolkit.createLabel(coverageComposite, label);
 
         this.coverageTimestampText = toolkit.createText(coverageComposite, "", SWT.FLAT);
