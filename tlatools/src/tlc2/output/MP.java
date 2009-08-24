@@ -1141,4 +1141,13 @@ public class MP
 
         return buffer;
     }
+
+    /**
+     * Flushes the output buffers
+     */
+    public static void flush()
+    {
+        ToolIO.out.flush();
+        ToolIO.err.flush();
+    }
 }

@@ -555,7 +555,6 @@ public class TLC
                 MP.printMessage(EC.TLC_STARTING);
                 instance = simulator;
                 simulator.simulate();
-                MP.printMessage(EC.TLC_FINISHED);
             } else
             {
                 // model checking
@@ -573,7 +572,7 @@ public class TLC
                 MP.printMessage(EC.TLC_STARTING);
                 instance = mc;
                 mc.modelCheck();
-                MP.printMessage(EC.TLC_FINISHED);
+                
             }
         } catch (Throwable e)
         {
@@ -597,7 +596,8 @@ public class TLC
             }
         } finally 
         {
-            
+            MP.printMessage(EC.TLC_FINISHED);
+            MP.flush();
         }
     }
 
