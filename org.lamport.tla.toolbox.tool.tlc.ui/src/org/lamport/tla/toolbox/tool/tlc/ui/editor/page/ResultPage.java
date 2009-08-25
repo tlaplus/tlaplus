@@ -167,6 +167,8 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
                 switch (messageCode) {
                 // errors to skip
                 case EC.TLC_BEHAVIOR_UP_TO_THIS_POINT:
+                case EC.TLC_COUNTER_EXAMPLE:
+                    
                     break;
 
                 // usual errors
@@ -550,6 +552,9 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
 
         FormToolkit toolkit = managedForm.getToolkit();
         Composite body = managedForm.getForm().getBody();
+        TableWrapLayout layout = new TableWrapLayout();
+        layout.numColumns = 2;
+        body.setLayout(layout);
 
         TableWrapData twd;
         Section section;
@@ -561,6 +566,7 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
                 sectionFlags, getExpansionListener());
         twd = new TableWrapData();
         twd.colspan = 2;
+        
         section.setLayoutData(twd);
 
         Composite generalArea = (Composite) section.getClient();
@@ -588,7 +594,7 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
         section.setLayoutData(twd);
         Composite statArea = (Composite) section.getClient();
         statArea = (Composite) section.getClient();
-        TableWrapLayout layout = new TableWrapLayout();
+        layout = new TableWrapLayout();
         layout.numColumns = 2;
         statArea.setLayout(layout);
 
