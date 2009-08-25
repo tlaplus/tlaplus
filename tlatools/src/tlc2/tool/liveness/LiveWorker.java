@@ -320,6 +320,7 @@ public class LiveWorker extends IdThread {
   throws IOException {
       
       MP.printError(EC.TLC_TEMPORAL_PROPERTY_VIOLATED);
+      MP.printError(EC.TLC_COUNTER_EXAMPLE);
       
     // First, find a "bad" cycle from the "bad" scc.
     int slen = this.oos.checkState.length;

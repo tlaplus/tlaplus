@@ -564,7 +564,7 @@ public class LiveCheck1 {
   static void printErrorTrace(BEGraphNode node) throws IOException 
   {
       MP.printError(EC.TLC_TEMPORAL_PROPERTY_VIOLATED);
-      
+      MP.printError(EC.TLC_COUNTER_EXAMPLE);
     // First, find a "bad" cycle from the "bad" scc.
     ObjectStack cycleStack = new MemObjectStack(metadir, "cyclestack");
     int slen = currentOOS.checkState.length;

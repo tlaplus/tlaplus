@@ -334,7 +334,7 @@ public class MP
             break;
 
         case EC.TLC_ACTION_PROPERTY_VIOLATED_BEHAVIOR:
-            b.append("Error: Action property %1%" + " is violated.");
+            b.append("Action property %1%" + " is violated.");
             break;
 
         case EC.TLC_ACTION_PROPERTY_EVALUATION_FAILED:
@@ -344,10 +344,11 @@ public class MP
         case EC.TLC_DEADLOCK_REACHED:
             b.append("Deadlock reached.");
             break;
-
+        case EC.TLC_COUNTER_EXAMPLE:
+            b.append("The following behavior constitutes a counter-example:\n");
+            break;
         case EC.TLC_TEMPORAL_PROPERTY_VIOLATED:
-            b.append("Temporal properties were violated.\n"
-                    + "The following behaviour constitutes a counter-example:\n");
+            b.append("Temporal properties were violated.\n");
             break;
 
         // this is a TLC bug
