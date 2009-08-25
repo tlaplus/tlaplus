@@ -32,6 +32,6 @@ public class TLCRecordVariableValue extends TLCVariableValue
 
     public String toString()
     {
-        return arrayTosStringBuffer(getPairs(), DELIMETERS).toString();
+        return arrayToStringBuffer(getPairs(), DELIMETERS).toString();
     }
 }

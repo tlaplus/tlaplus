@@ -15,6 +15,6 @@ public class TLCSetVariableValue extends TLCSetOrSeqVariableValue {
     public String toString()
     {
         TLCVariableValue[] elements = getElements();
-        return arrayTosStringBuffer(elements, DELIMETERS).toString();
+        return arrayToStringBuffer(elements, DELIMETERS).toString();
     }
 }

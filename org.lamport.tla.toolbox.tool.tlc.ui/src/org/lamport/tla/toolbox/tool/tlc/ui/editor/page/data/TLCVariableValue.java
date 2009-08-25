@@ -45,8 +45,8 @@ public abstract class TLCVariableValue
 
     private static final char CBRACKET = ']';
     private static final char OBRACKET = '[';
-    private static final char OBRACE = '(';
-    private static final char CBRACE = ')';
+    private static final char OPAREN = '(';
+    private static final char CPAREN = ')';
     private static final char LT = '<';
     private static final char GT = '>';
     private static final char OCBRACE = '{';
@@ -54,7 +54,7 @@ public abstract class TLCVariableValue
     private static final char QUOTE = '"';
     private static final char ESC = '\\';
     private static final char COMMA = ',';
-    private static final char AD = '@';
+    private static final char ATSIGN = '@';
     private static final char COLON = ':';
     private static final char PIPE = '|';
     private static final char MINUS = '-';
@@ -70,7 +70,7 @@ public abstract class TLCVariableValue
      * @param delimeters three strings, opening, element separator, closing 
      * @return
      */
-    public static StringBuffer arrayTosStringBuffer(Object[] elements, String[] delimeters)
+    public static StringBuffer arrayToStringBuffer(Object[] elements, String[] delimeters)
     {
         Assert.isNotNull(delimeters);
 
@@ -220,8 +220,69 @@ public abstract class TLCVariableValue
             return new TLCRecordVariableValue(recordPairs); 
         case CBRACKET:
             return null;
-        case OBRACE:
-        case CBRACE:
+        case OPAREN:
+            List fcnElements = new Vector();
+
+            TLCVariableValue domElement;
+
+            // fetch the first one
+            domElement = innerParse(input);
+            if (domElement != null)
+            {  
+                if (getNextChar(input) == COLON && getNextChar(input) == GT) 
+                {
+                    innerValue = innerParse(input);
+                    if (innerValue == null) 
+                    {
+                        // no right side of |->
+                        throw new VariableValueParseException();
+                    }  
+                    
+                    fcnElements.add(new TLCFcnElementVariableValue(domElement, innerValue));
+                } else 
+                {
+                    // no :>
+                    throw new VariableValueParseException();
+                }
+            }
+            
+            nextCh = getNextChar(input);
+            while (nextCh == ATSIGN)
+            {   if (getNextChar(input) != ATSIGN) {
+                  // no second @
+                  throw new VariableValueParseException();
+                }
+                domElement = innerParse(input);
+                if (domElement != null)
+                {
+                    if (getNextChar(input) == COLON &&  getNextChar(input) == GT) 
+                    {
+                        innerValue = innerParse(input);
+                        if (innerValue == null) 
+                        {
+                            // no right side of |->
+                            throw new VariableValueParseException();
+                        }  
+                        
+                        fcnElements.add(new TLCFcnElementVariableValue( domElement, innerValue));
+                    } else 
+                    {
+                        // no |->
+                        throw new VariableValueParseException();
+                    }
+                }
+
+                
+                nextCh = getNextChar(input);
+            }
+            if (nextCh != CPAREN)
+            {
+                throw new VariableValueParseException();
+            }           
+            
+            return new TLCFunctionVariableValue(fcnElements); 
+
+        case CPAREN:
         // set 
         case OCBRACE:
             List setValues = new Vector();

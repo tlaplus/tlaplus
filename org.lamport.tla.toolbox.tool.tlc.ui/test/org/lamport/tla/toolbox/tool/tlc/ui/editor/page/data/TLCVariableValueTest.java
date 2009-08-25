@@ -126,7 +126,30 @@ public class TLCVariableValueTest extends TestCase
         }
     }
 
-    
+    public void testParseValueFcn()
+    {
+        String[] test = { "(1 :> a @@ 2 :> b)" };
+        String[][][] result = { {{"1", "a"}, {"2", "b"}} };
+        for (int i = 0; i < test.length; i++)
+        {
+            try
+            {
+                TLCVariableValue parseValue = TLCVariableValue.innerParse(new InputPair(test[i], 0));
+                Assert.assertTrue(parseValue instanceof TLCFunctionVariableValue);
+                TLCFunctionVariableValue value = (TLCFunctionVariableValue) parseValue;
+                TLCFcnElementVariableValue[] elements = value.getFcnElements();
+                for (int j = 0; j < elements.length; j++)
+                {
+                    Assert.assertEquals(result[i][j][0], elements[j].from.toString());
+                    Assert.assertEquals(result[i][j][1], elements[j].value.toString());
+                }
+            } catch (VariableValueParseException e)
+            {
+                Assert.fail("Error running the test " + i);
+            }
+        }
+    }
+
     public void testParseValueSet2()
     {
         String test = "{{12}}";
