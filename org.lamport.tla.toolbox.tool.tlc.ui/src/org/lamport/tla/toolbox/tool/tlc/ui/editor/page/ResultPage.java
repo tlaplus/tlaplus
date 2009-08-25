@@ -126,7 +126,6 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
      */
     public synchronized void onOutput(ITypedRegion region, IDocument document)
     {
-        System.out.println(">");
         // restarting
         if (isDone)
         {
@@ -389,7 +388,6 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
 
         }
         updateErrorInformation();
-        TLCUIActivator.logDebug("Done");
     }
 
     /**

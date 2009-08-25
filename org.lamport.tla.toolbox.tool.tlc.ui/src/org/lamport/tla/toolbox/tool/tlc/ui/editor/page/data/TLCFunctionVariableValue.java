@@ -5,8 +5,8 @@ import java.util.List;
 /*************************************************************
  * Represents a function as a list of TLCFcnElementVariable objects
  * 
- * @author lamport
- *
+ * @author Leslie Lamport
+ * @version $Id$
  */
 public class TLCFunctionVariableValue extends TLCVariableValue {
 
