@@ -55,7 +55,8 @@ import tlc2.output.EC;
 import tlc2.output.MP;
 
 /**
- * A page to display results of model checking
+ * A page to display results of model checking (the "third tab"
+ * of the model editor).
  * @author Simon Zambrovski
  * @version $Id$
  */
@@ -64,6 +65,9 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
     public static final String ID = "resultPage";
     private static final String NO_OUTPUT_AVAILABLE = "No execution data is available";
 
+    /**
+     * UI elements
+     */
     private SourceViewer output;
     private SourceViewer progress;
     private Text startTimeText;
@@ -72,23 +76,15 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
     private Hyperlink errorStatusHyperLink;
     private TableViewer coverage;
     private TableViewer stateSpace;
-
-    // list of all errors
-    private Vector errors;
-    // last detected error
-    private TLCError lastDetectedError = null;
     // hyper link listener activated in case of errors
     protected IHyperlinkListener errorHyperLinkListener = new HyperlinkAdapter() {
-
+        
         public void linkActivated(HyperlinkEvent e)
         {
             TLCErrorView errorView = (TLCErrorView) UIHelper.openView(TLCErrorView.ID);
             errorView.fill(errors);
         }
     };
-
-    // flag indicating that the job / file output is finished
-    private boolean isDone = false;
     /**
      * Content provider delivering list content
      */
@@ -110,6 +106,14 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
             return null;
         }
     };
+
+    
+    // list of all errors
+    private Vector errors;
+    // last detected error
+    private TLCError lastDetectedError = null;
+    // flag indicating that the job / file output is finished
+    private boolean isDone = false;
 
     /**
      * @param editor

@@ -6,16 +6,20 @@ import java.util.Vector;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.source.SourceViewer;
+import org.eclipse.jface.viewers.IColorProvider;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.jface.viewers.ITreeContentProvider;
+import org.eclipse.jface.viewers.ITreePathContentProvider;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
@@ -23,6 +27,8 @@ import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.ui.part.ViewPart;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.data.TLCFcnElementVariableValue;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.data.TLCFunctionVariableValue;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.data.TLCNamedVariableValue;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.data.TLCRecordVariableValue;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.data.TLCSetOrSeqVariableValue;
@@ -71,13 +77,18 @@ public class TraceExplorer extends ViewPart
 
         variableViewer = new TreeViewer(tree);
         variableViewer.setContentProvider(new StateContentProvider());
+        variableViewer.setFilters(new ViewerFilter[] { new StateFilter() });
         variableViewer.setLabelProvider(new StateLabelProvider());
         variableViewer.addSelectionChangedListener(new ISelectionChangedListener() {
 
             public void selectionChanged(SelectionChangedEvent event)
             {
                 if (!((IStructuredSelection) event.getSelection()).isEmpty())
-                {
+                { /* 
+                  Set selection to the selected element (or the first if there are multiple
+                  selections), and show its string representation in the value viewer 
+                  (the lower subwindow).
+                  */
                     Object selection = ((IStructuredSelection) event.getSelection()).getFirstElement();
                     valueViewer.setDocument(new Document(selection.toString()));
                 } else
@@ -88,8 +99,6 @@ public class TraceExplorer extends ViewPart
 
             }
         });
-
-        // sashForm.setMaximizedControl(tree);
 
         valueViewer = FormHelper.createSourceViewer(sashForm, SWT.V_SCROLL | SWT.MULTI | SWT.BORDER);
         valueViewer.setEditable(false);
@@ -117,6 +126,9 @@ public class TraceExplorer extends ViewPart
      * Content provider for the tree table  
      */
     static class StateContentProvider implements ITreeContentProvider
+    // 
+    // evtl. for path-based addressing in the tree
+    // , ITreePathContentProvider
     {
 
         public Object[] getChildren(Object parentElement)
@@ -138,6 +150,9 @@ public class TraceExplorer extends ViewPart
                 if (value instanceof TLCSetOrSeqVariableValue)
                 {
                     return ((TLCSetOrSeqVariableValue) value).getElements();
+                } else if (value instanceof TLCFunctionVariableValue)
+                {
+                    return ((TLCFunctionVariableValue) value).getFcnElements();
                 } else if (value instanceof TLCRecordVariableValue)
                 {
                     return ((TLCRecordVariableValue) value).getPairs();
@@ -149,12 +164,18 @@ public class TraceExplorer extends ViewPart
                 if (value instanceof TLCSetOrSeqVariableValue)
                 {
                     return ((TLCSetOrSeqVariableValue) value).getElements();
+                } else if (value instanceof TLCFunctionVariableValue)
+                {
+                    return ((TLCFunctionVariableValue) value).getFcnElements();
                 } else if (value instanceof TLCRecordVariableValue)
                 {
                     return ((TLCRecordVariableValue) value).getPairs();
                 } else if (value instanceof TLCNamedVariableValue)
                 {
-                    return getChildren( ((TLCNamedVariableValue)value).getValue() );
+                    return getChildren(((TLCNamedVariableValue) value).getValue());
+                } else if (value instanceof TLCFcnElementVariableValue)
+                {
+                    return getChildren(((TLCFcnElementVariableValue) value).getValue());
                 }
                 return null;
             }
@@ -188,10 +209,20 @@ public class TraceExplorer extends ViewPart
         }
     }
 
+    static class StateFilter extends ViewerFilter
+    {
+
+        public boolean select(Viewer viewer, Object parentElement, Object element)
+        {
+            return true;
+        }
+
+    }
+
     /**
      * Label provider for the tree table
      */
-    static class StateLabelProvider extends LabelProvider implements ITableLabelProvider
+    static class StateLabelProvider extends LabelProvider implements ITableLabelProvider, IColorProvider
     {
         public static final int NAME = 0;
         public static final int VALUE = 1;
@@ -202,14 +233,13 @@ public class TraceExplorer extends ViewPart
         private Image stateImage;
         private Image varImage;
         private Image recordImage;
-        
 
         public StateLabelProvider()
         {
             stateImage = TLCUIActivator.getImageDescriptor("/icons/full/default_co.gif").createImage();
             varImage = TLCUIActivator.getImageDescriptor("/icons/full/private_co.gif").createImage();
             recordImage = TLCUIActivator.getImageDescriptor("/icons/full/brkpi_obj.gif").createImage();
-            
+
         }
 
         public Image getColumnImage(Object element, int columnIndex)
@@ -222,7 +252,10 @@ public class TraceExplorer extends ViewPart
                 } else if (element instanceof TLCVariable)
                 {
                     return varImage;
-                } else if (element instanceof TLCNamedVariableValue) 
+                } else if (element instanceof TLCNamedVariableValue)
+                {
+                    return recordImage;
+                } else if (element instanceof TLCFcnElementVariableValue)
                 {
                     return recordImage;
                 }
@@ -282,7 +315,29 @@ public class TraceExplorer extends ViewPart
                 default:
                     break;
                 }
+            } else if (element instanceof TLCFcnElementVariableValue)
+            {
+                TLCFcnElementVariableValue fcnElementValue = (TLCFcnElementVariableValue) element;
+                switch (columnIndex) {
+                case NAME:
+                    return fcnElementValue.getFrom().toString();
+                case VALUE:
+                    return fcnElementValue.getValue().toString();
+                default:
+                    break;
+                }
             }
+            return null;
+        }
+
+        public Color getBackground(Object element)
+        {
+            // TODO Auto-generated method stub
+            return null;
+        }
+
+        public Color getForeground(Object element)
+        {
             return null;
         }
 

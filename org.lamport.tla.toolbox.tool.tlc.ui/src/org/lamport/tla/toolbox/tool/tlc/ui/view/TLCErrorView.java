@@ -20,7 +20,9 @@ import org.lamport.tla.toolbox.util.UIHelper;
  * Error representation
  * @author Simon Zambrovski
  * @version $Id$
+ * This is the view of the error description.  
  */
+
 public class TLCErrorView extends ViewPart
 {
     public static final String ID = "toolbox.tool.tlc.view.TLCErrorView";
@@ -87,19 +89,25 @@ public class TLCErrorView extends ViewPart
         }
 
         // update the trace information
-        TraceExplorer traceExplorer = (TraceExplorer) UIHelper.openView(TraceExplorer.ID);
-        if (traceExplorer != null)
+        TraceExplorer traceExplorer;
+        if (states != null)
         {
-            if (states != null)
+            traceExplorer = (TraceExplorer) UIHelper.openView(TraceExplorer.ID);
+            if (traceExplorer != null)
             {
                 traceExplorer.fill(states);
-            } else
+            }
+        } else
+        {
+            traceExplorer = (TraceExplorer) UIHelper.findView(TraceExplorer.ID);
+            if (traceExplorer != null) 
             {
                 traceExplorer.clear();
                 traceExplorer.hide();
             }
         }
 
+        // update the error information in the TLC Error View
         try
         {
             document.replace(0, document.getLength(), buffer.toString());

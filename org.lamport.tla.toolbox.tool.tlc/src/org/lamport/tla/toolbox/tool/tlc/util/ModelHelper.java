@@ -680,7 +680,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
         if (targetFolder !=null && targetFolder.exists())
         {
             IFile logFile = (IFile) targetFolder.findMember(ModelHelper.FILE_OUT);
-            if (logFile.exists())
+            if (logFile != null && logFile.exists())
             {
                 return logFile;
             }
