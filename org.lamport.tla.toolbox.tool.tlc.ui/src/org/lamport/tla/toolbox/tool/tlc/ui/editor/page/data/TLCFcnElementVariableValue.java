@@ -22,6 +22,6 @@ public class TLCFcnElementVariableValue extends TLCVariableValue {
     }
 
     public String toString() {
-        return from.toString() + " :> " + value.toString();
+        return from.toString() + " :>" + value.toString();
     }
 }

@@ -62,7 +62,7 @@ public class TLCVariableValueTest extends TestCase
 
     public void testParseValueSimple()
     {
-        String[] test = { "abc", "12", "   12", "  -12", "1212.212", "\"\\\"xyz\"" };
+        String[] test = { "abc", "12", "   12", "  -12", "1212.212"  , "\"\\\"xyz\"" };
         String[] result = { "abc", "12", "12", "-12", "1212.212", "\"\\\"xyz\"" };
         for (int i = 0; i < test.length; i++)
         {
@@ -117,7 +117,10 @@ public class TLCVariableValueTest extends TestCase
                 TLCVariableValue[] elements = value.getElements();
                 for (int j = 0; j < elements.length; j++)
                 {
-                    Assert.assertEquals(result[i][j], elements[j].value);
+                    Assert.assertEquals(result[i][j], (
+                            (TLCVariableValue) ((TLCFcnElementVariableValue) elements[j]).value).value);
+                    Assert.assertEquals(true,
+                            ((TLCFcnElementVariableValue) elements[j]).getFrom().value.equals(""+(j+1))) ;
                 }
             } catch (VariableValueParseException e)
             {

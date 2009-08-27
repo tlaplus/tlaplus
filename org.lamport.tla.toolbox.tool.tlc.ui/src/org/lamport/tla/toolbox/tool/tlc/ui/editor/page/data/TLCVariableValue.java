@@ -106,7 +106,8 @@ public abstract class TLCVariableValue
 
         TLCVariableValue result = null;
         TLCVariableValue innerValue;
-
+        int initialOffset = input.offset;
+        
         char ch = getNextChar(input);
         char nextCh;
 
@@ -135,7 +136,8 @@ public abstract class TLCVariableValue
                     throw new VariableValueParseException();
                 }
             }
-            return new TLCSequenceVariableValue(sequenceValues);
+            result = new TLCSequenceVariableValue(sequenceValues);
+            break;
 
         // empty sequence
         case GT:
@@ -217,7 +219,8 @@ public abstract class TLCVariableValue
 
             
             
-            return new TLCRecordVariableValue(recordPairs); 
+            result = new TLCRecordVariableValue(recordPairs); 
+            break ;
         case CBRACKET:
             return null;
         case OPAREN:
@@ -280,10 +283,12 @@ public abstract class TLCVariableValue
                 throw new VariableValueParseException();
             }           
             
-            return new TLCFunctionVariableValue(fcnElements); 
+            result = new TLCFunctionVariableValue(fcnElements); 
+            break ;
 
         case CPAREN:
-        // set 
+            throw new VariableValueParseException();
+            
         case OCBRACE:
             List setValues = new Vector();
             innerValue = innerParse(input);
@@ -302,7 +307,8 @@ public abstract class TLCVariableValue
                 }
             }
 
-            return new TLCSetVariableValue(setValues);
+            result = new TLCSetVariableValue(setValues);
+            break;
         // empty set
         case CCBRACE:
             return null;
@@ -319,6 +325,7 @@ public abstract class TLCVariableValue
                                 + matcher.end() - 1));
 
                         input.offset = input.offset + matcher.end() - 1;
+                        // break ; 
                         return result;
                     }
                 }
@@ -344,10 +351,10 @@ public abstract class TLCVariableValue
                     } ;
                 }
                 input.offset++;
-                result = new TLCSimpleVariableValue(input.input.substring(startOfString, input.offset));
+                return new TLCSimpleVariableValue(input.input.substring(startOfString, input.offset));
             }
         }
-
+        result.source = input.input.substring(initialOffset, input.offset).trim() ; 
         return result;
     }
 
@@ -376,6 +383,12 @@ public abstract class TLCVariableValue
 
     protected Object value;
 
+    /* The input string that produced this value, except it is null for 
+     * parts of a value--that is, for TLCFcnElementVariableValue and 
+     * TLCNamedVariableValue objects--and for TLCSimpleVariableValue 
+     * objects. */
+    protected String source = null;
+
     public Object getValue()
     {
         return value;
@@ -383,7 +396,7 @@ public abstract class TLCVariableValue
 
     public String toString()
     {
-        return value.toString();
+        return source ; // value.toString();
     }
 
     static class InputPair

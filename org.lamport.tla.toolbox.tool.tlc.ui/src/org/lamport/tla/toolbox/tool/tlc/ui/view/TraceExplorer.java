@@ -31,7 +31,9 @@ import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.data.TLCFcnElementVariabl
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.data.TLCFunctionVariableValue;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.data.TLCNamedVariableValue;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.data.TLCRecordVariableValue;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.data.TLCSequenceVariableValue;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.data.TLCSetOrSeqVariableValue;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.data.TLCSetVariableValue;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.data.TLCSimpleVariableValue;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.data.TLCState;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.data.TLCVariable;
@@ -100,7 +102,8 @@ public class TraceExplorer extends ViewPart
             }
         });
 
-        valueViewer = FormHelper.createSourceViewer(sashForm, SWT.V_SCROLL | SWT.MULTI | SWT.BORDER);
+        valueViewer = FormHelper.createSourceViewer(sashForm, SWT.V_SCROLL | SWT.H_SCROLL | SWT.MULTI | SWT.BORDER);
+        /* Horizontal scrollbar added by LL on 26 Aug 2009 */
         valueViewer.setEditable(false);
         gd = new GridData(SWT.LEFT, SWT.TOP, true, false);
         gd.grabExcessHorizontalSpace = true;
@@ -147,9 +150,12 @@ public class TraceExplorer extends ViewPart
             {
                 TLCVariable variable = (TLCVariable) parentElement;
                 TLCVariableValue value = variable.getValue();
-                if (value instanceof TLCSetOrSeqVariableValue)
+                if (value instanceof TLCSetVariableValue)
                 {
-                    return ((TLCSetOrSeqVariableValue) value).getElements();
+                    return ((TLCSetVariableValue) value).getElements();
+                } else if (value instanceof TLCSequenceVariableValue)
+                {
+                    return ((TLCSequenceVariableValue) value).getElements();
                 } else if (value instanceof TLCFunctionVariableValue)
                 {
                     return ((TLCFunctionVariableValue) value).getFcnElements();
@@ -161,9 +167,12 @@ public class TraceExplorer extends ViewPart
             } else if (parentElement instanceof TLCVariableValue)
             {
                 TLCVariableValue value = (TLCVariableValue) parentElement;
-                if (value instanceof TLCSetOrSeqVariableValue)
+                if (value instanceof TLCSetVariableValue)
                 {
-                    return ((TLCSetOrSeqVariableValue) value).getElements();
+                    return ((TLCSetVariableValue) value).getElements();
+                } else if (value instanceof TLCSequenceVariableValue)
+                {
+                    return ((TLCSequenceVariableValue) value).getElements();
                 } else if (value instanceof TLCFunctionVariableValue)
                 {
                     return ((TLCFunctionVariableValue) value).getFcnElements();
@@ -294,7 +303,8 @@ public class TraceExplorer extends ViewPart
                 default:
                     break;
                 }
-            } else if (element instanceof TLCSetOrSeqVariableValue || element instanceof TLCSimpleVariableValue)
+            } else if (element instanceof TLCSetVariableValue || element instanceof TLCSequenceVariableValue
+                    || element instanceof TLCSimpleVariableValue)
             {
                 TLCVariableValue varValue = (TLCVariableValue) element;
                 switch (columnIndex) {

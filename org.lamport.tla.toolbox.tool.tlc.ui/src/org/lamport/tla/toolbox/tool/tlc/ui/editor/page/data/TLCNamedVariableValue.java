@@ -23,6 +23,6 @@ public class TLCNamedVariableValue extends TLCVariableValue
 
     public String toString()
     {
-        return this.name + " |-> " + value.toString();
+        return this.name + " |->" + value.toString();
     }
 }

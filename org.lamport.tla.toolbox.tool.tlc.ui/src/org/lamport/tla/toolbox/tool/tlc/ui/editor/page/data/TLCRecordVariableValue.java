@@ -30,8 +30,8 @@ public class TLCRecordVariableValue extends TLCVariableValue
         return getPairs();
     }
 
-    public String toString()
-    {
-        return arrayToStringBuffer(getPairs(), DELIMETERS).toString();
-    }
+//    public String toString()
+//    {
+//        return arrayToStringBuffer(getPairs(), DELIMETERS).toString();
+//    }
 }

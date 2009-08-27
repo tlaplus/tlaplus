@@ -2,19 +2,36 @@ package org.lamport.tla.toolbox.tool.tlc.ui.editor.page.data;
 
 import java.util.List;
 
-public class TLCSequenceVariableValue extends TLCSetOrSeqVariableValue {
+public class TLCSequenceVariableValue extends TLCVariableValue {
 
     private static final String[] DELIMETERS = {"<<", ",", ">>"};
 
     TLCSequenceVariableValue(List values)
     {
-        super(values);
+        this.value = values;
     }
 
-    public String toString()
+    public Object getValue() 
     {
-        TLCVariableValue[] elements = getElements();
-        return arrayToStringBuffer(elements, DELIMETERS).toString();
+        return getElements();
     }
+
+    public TLCVariableValue[] getElements()
+    {
+        List list = (List)value; 
+        
+        TLCVariableValue[] result = new TLCVariableValue[list.size()] ;
+        for (int i = 0 ; i < result.length; i++) {
+            result[i] = new TLCFcnElementVariableValue(
+                    new TLCSimpleVariableValue("" + (i+1)), (TLCVariableValue) list.get(i)) ;
+        }                                        
+        return result ;
+    }
+
+//    public String toString()
+//    {
+//        TLCVariableValue[] elements = getElements();
+//        return arrayToStringBuffer(elements, DELIMETERS).toString();
+//    }
 
 }

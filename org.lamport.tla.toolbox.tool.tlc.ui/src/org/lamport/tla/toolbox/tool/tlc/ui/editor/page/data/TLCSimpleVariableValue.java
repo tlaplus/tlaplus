@@ -11,4 +11,10 @@ public class TLCSimpleVariableValue extends TLCVariableValue
     {
         this.value = value;
     }
+
+    public String toString()
+    {
+       return (String) this.value ;
+    }
+
 }
