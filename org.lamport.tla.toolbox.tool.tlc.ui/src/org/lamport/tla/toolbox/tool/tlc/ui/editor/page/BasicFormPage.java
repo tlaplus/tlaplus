@@ -300,50 +300,6 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
     public void handleProblemMarkers()
     {
         ((ModelEditor)getEditor()).handleProblemMarkers();
-        
-        /*
-        
-        if (getManagedForm() == null) 
-        {
-            return;
-        }
-        IMessageManager mm = getManagedForm().getMessageManager();
-        mm.setAutoUpdate(false);
-        try
-        {
-            IMarker[] modelProblemMarkers = ModelHelper.getModelProblemMarker(getConfig());
-            DataBindingManager dm = getDataBindingManager();
-            for (int i = 0; i < modelProblemMarkers.length; i++)
-            {
-                String attributeName = modelProblemMarkers[i].getAttribute(
-                        ModelHelper.TLC_MODEL_ERROR_MARKER_ATTRIBUTE_NAME, EMPTY_STRING);
-                String sectionId = dm.getSectionForAttribute(attributeName);
-                if (sectionId == null) 
-                {
-                    continue;
-                }
-                String pageId = dm.getSectionPage(sectionId);
-                // relevant, since the attribute is displayed on the current page
-                if (getId().equals(pageId)) 
-                {
-                    String message = modelProblemMarkers[i].getAttribute(IMarker.MESSAGE, EMPTY_STRING);
-
-                    Control widget = UIHelper.getWidget(dm.getAttributeControl(attributeName));
-                    if (widget != null)
-                    {
-                        mm.addMessage("modelProblem_" + i, message, null, IMessageProvider.ERROR, widget);
-                    }
-                    // expand the section with an error
-                    dm.expandSection(sectionId);
-                }
-            }
-
-        } catch (CoreException e)
-        {
-            TLCUIActivator.logError("Error retrieving model error markers", e);
-        }
-        mm.setAutoUpdate(true);
-        */
     }
 
     /**

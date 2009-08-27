@@ -11,7 +11,6 @@ import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITypedRegion;
 import org.eclipse.jface.text.source.SourceViewer;
-import org.eclipse.jface.viewers.IContentProvider;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.jface.viewers.LabelProvider;
@@ -37,6 +36,7 @@ import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.forms.widgets.TableWrapData;
 import org.eclipse.ui.forms.widgets.TableWrapLayout;
 import org.lamport.tla.toolbox.tool.tlc.output.ITLCOutputListener;
+import org.lamport.tla.toolbox.tool.tlc.output.data.TLCModelLaunchDataProvider;
 import org.lamport.tla.toolbox.tool.tlc.output.source.TLCOutputSourceRegistry;
 import org.lamport.tla.toolbox.tool.tlc.output.source.TLCRegion;
 import org.lamport.tla.toolbox.tool.tlc.output.source.TLCRegionContainer;
@@ -63,8 +63,7 @@ import tlc2.output.MP;
 public class ResultPage extends BasicFormPage implements ITLCOutputListener
 {
     public static final String ID = "resultPage";
-    private static final String NO_OUTPUT_AVAILABLE = "No execution data is available";
-
+    
     /**
      * UI elements
      */
@@ -78,36 +77,14 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
     private TableViewer stateSpace;
     // hyper link listener activated in case of errors
     protected IHyperlinkListener errorHyperLinkListener = new HyperlinkAdapter() {
-        
+
         public void linkActivated(HyperlinkEvent e)
         {
             TLCErrorView errorView = (TLCErrorView) UIHelper.openView(TLCErrorView.ID);
             errorView.fill(errors);
         }
     };
-    /**
-     * Content provider delivering list content
-     */
-    private IContentProvider listContentProvider = new IStructuredContentProvider() {
-        public void inputChanged(Viewer viewer, Object oldInput, Object newInput)
-        {
-        }
 
-        public void dispose()
-        {
-        }
-
-        public Object[] getElements(Object inputElement)
-        {
-            if (inputElement != null && inputElement instanceof List)
-            {
-                return ((List) inputElement).toArray(new Object[((List) inputElement).size()]);
-            }
-            return null;
-        }
-    };
-
-    
     // list of all errors
     private Vector errors;
     // last detected error
@@ -135,7 +112,17 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
         {
             // the only reason for this is the restart of the MC, after the previous run completed.
             // clean up the output
+            UIHelper.runUIAsync(new Runnable() {
 
+                public void run()
+                {
+                    // reinit();
+
+                    // update the error window and the trace explorer
+                    updateErrorInformation();
+
+                }
+            });
             isDone = false;
         }
 
@@ -171,7 +158,7 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
                 // errors to skip
                 case EC.TLC_BEHAVIOR_UP_TO_THIS_POINT:
                 case EC.TLC_COUNTER_EXAMPLE:
-                    
+
                     break;
 
                 // usual errors
@@ -182,10 +169,10 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
                         // and the error trace is not empty
                         // add the trace to the error list
                         this.errors.add(lastDetectedError);
+                        updateErrorInformation();
+
                         this.lastDetectedError = null;
                     }
-                    updateErrorInformation();
-
                     this.lastDetectedError = createError(tlcRegion, document);
                     break;
                 }
@@ -198,9 +185,9 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
                     // and the error trace is not empty
                     // add the trace to the error list
                     this.errors.add(lastDetectedError);
-                    this.lastDetectedError = null;
-
                     updateErrorInformation();
+
+                    this.lastDetectedError = null;
                 }
 
                 switch (messageCode) {
@@ -231,7 +218,7 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
                 case EC.TLC_CHECKPOINT_RECOVER_END:
                 case EC.TLC_CHECKPOINT_RECOVER_END_DFID:
                 case EC.TLC_LIVE_IMPLIED:
-                    setDocumentText(this.progress.getDocument(), outputMessage, true);
+                    TLCModelLaunchDataProvider.setDocumentText(this.progress.getDocument(), outputMessage, true);
                     break;
                 case EC.TLC_STARTING:
                     String startingTimestamp = GeneralOutputParsingHwelper.parseTLCTimestamp(outputMessage);
@@ -281,7 +268,7 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
                 case EC.TLC_COVERAGE_END:
                     break;
                 default:
-                    setDocumentText(this.output.getDocument(), outputMessage, true);
+                    TLCModelLaunchDataProvider.setDocumentText(this.output.getDocument(), outputMessage, true);
                     break;
                 }
                 break;
@@ -292,79 +279,21 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
 
         } else
         {
-            setDocumentText(this.output.getDocument(), outputMessage, true);
+            TLCModelLaunchDataProvider.setDocumentText(this.output.getDocument(), outputMessage, true);
             // TLCUIActivator.logDebug("Unknown type detected: " + region.getType() + " message " + outputMessage);
         }
 
     }
 
-    /**
-     * @param tlcRegion
-     * @param document
-     * @return
-     */
-    private TLCError createError(TLCRegion tlcRegion, IDocument document)
+    public void loadData() throws CoreException
     {
-        TLCError topError = new TLCError();
-        if (tlcRegion instanceof TLCRegionContainer)
-        {
-            TLCRegionContainer container = (TLCRegionContainer) tlcRegion;
-            ITypedRegion[] regions = container.getSubRegions();
-            Assert.isTrue(regions.length < 3, "Unexpected error region structure, this is a bug.");
-            for (int i = 0; i < regions.length; i++)
-            {
-                if (regions[i] instanceof TLCRegion)
-                {
-                    TLCError cause = createError((TLCRegion) regions[i], document);
-                    topError.setCause(cause);
-                } else
-                {
-                    String output;
-                    try
-                    {
-                        output = document.get(tlcRegion.getOffset(), tlcRegion.getLength());
-                        topError.setMessage(output);
-                        topError.setErrorCode(tlcRegion.getMessageCode());
-                    } catch (BadLocationException e)
-                    {
-                        TLCUIActivator.logError("Error parsing the error message", e);
-                    }
-                }
-            }
-        }
-
-        return topError;
-    }
-
-    protected void loadData() throws CoreException
-    {
-        // TLCUIActivator.logDebug("Entering loadData()");
-        TLCOutputSourceRegistry.getStatusRegistry().disconnect(this);
-
-        // re-init the fields
         reinit();
 
-        TLCOutputSourceRegistry.getStatusRegistry().connect(this);
-        // TLCUIActivator.logDebug("Exiting loadData()");
-    }
+        TLCUIActivator.logDebug("Entering loadData()");
+        TLCOutputSourceRegistry.getStatusRegistry().disconnect(this);
 
-    /**
-     * reload the data on activation
-     */
-    public void setActive(boolean active)
-    {
-        if (active)
-        {
-            // refresh
-            try
-            {
-                loadData();
-            } catch (CoreException e)
-            {
-                TLCUIActivator.logError("Error refreshing the page", e);
-            }
-        }
-        super.setActive(active);
+        TLCOutputSourceRegistry.getStatusRegistry().connect(this);
+        TLCUIActivator.logDebug("Exiting loadData()");
     }
 
     /**
@@ -381,6 +310,7 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
      */
     public synchronized void onDone()
     {
+        TLCUIActivator.logDebug("Entering onDone()");
         this.isDone = true;
         if (lastDetectedError != null)
         {
@@ -388,10 +318,11 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
             // and the error trace is not empty
             // add the trace to the error list
             this.errors.add(lastDetectedError);
-            this.lastDetectedError = null;
+            updateErrorInformation();
 
+            this.lastDetectedError = null;
         }
-        updateErrorInformation();
+        TLCUIActivator.logDebug("Exiting onDone()");
     }
 
     /**
@@ -399,13 +330,18 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
      */
     public synchronized void onNewSource()
     {
+        TLCUIActivator.logDebug("Entering onNewSource()");
         UIHelper.runUIAsync(new Runnable() {
 
             public void run()
             {
                 reinit();
+
+                // update the error window and the trace explorer
+                updateErrorInformation();
             }
         });
+        TLCUIActivator.logDebug("Exiting onNewSource()");
     }
 
     /**
@@ -430,104 +366,30 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
                     ResultPage.this.errorStatusHyperLink.setForeground(TLCUIActivator.getColor(SWT.COLOR_BLACK));
 
                 }
-
-                // update the error view
-                updateErrorView(ResultPage.this.errors);
             }
         });
 
-        // TLCUIActivator.logDebug("Errors changed, now have " + errors.size() + ".");
-    }
-
-    /**
-     * Display the errors in the view
-     * @param errors
-     */
-    private static void updateErrorView(List errors)
-    {
-        TLCErrorView errorView = (TLCErrorView) UIHelper.openView(TLCErrorView.ID);
-        if (errorView != null)
-        {
-            errorView.fill(errors);
-        }
+        // update the error view
+        TLCErrorView.updateErrorView(ResultPage.this.errors);
     }
 
     /**
      * Reinitialize the fields
+     * has to be run in the UI thread
+     * 
      */
     public synchronized void reinit()
     {
+        TLCUIActivator.logDebug("Entering reinit()");
         this.startTimeText.setText("");
         this.elapsedTimeText.setText("");
         this.errorStatusHyperLink.setText("");
         this.coverage.setInput(new Vector());
         this.stateSpace.setInput(new Vector());
-        this.progress.setDocument(new Document(NO_OUTPUT_AVAILABLE));
-        this.output.setDocument(new Document(NO_OUTPUT_AVAILABLE));
+        this.progress.setDocument(new Document(TLCModelLaunchDataProvider.NO_OUTPUT_AVAILABLE));
+        this.output.setDocument(new Document(TLCModelLaunchDataProvider.NO_OUTPUT_AVAILABLE));
         this.errors = new Vector();
-        // update the error window and the trace explorer
-        this.updateErrorInformation();
-    }
-
-    /**
-     * Sets the field text
-     * @param field
-     * @param text
-     */
-    public synchronized void setFieldText(final Text field, final String text)
-    {
-        UIHelper.runUIAsync(new Runnable() {
-
-            public void run()
-            {
-                field.setText(text);
-            }
-        });
-
-    }
-
-    /**
-     * Sets text to a document
-     * @param document
-     * @param message
-     * @param append
-     * @throws BadLocationException
-     */
-    public synchronized void setDocumentText(final IDocument document, final String message, final boolean append)
-    {
-        final String CR = "\n";
-        final String EMPTY = "";
-
-        UIHelper.runUIAsync(new Runnable() {
-
-            public void run()
-            {
-                try
-                {
-                    if (append)
-                    {
-                        if (document.getLength() == NO_OUTPUT_AVAILABLE.length())
-                        {
-                            String content = document.get(0, NO_OUTPUT_AVAILABLE.length());
-                            if (content != null && NO_OUTPUT_AVAILABLE.equals(content))
-                            {
-                                document.replace(0, document.getLength(), message
-                                        + ((message.endsWith(CR)) ? EMPTY : CR));
-                            }
-                        } else
-                        {
-                            document.replace(document.getLength(), 0, message + ((message.endsWith(CR)) ? EMPTY : CR));
-                        }
-                    } else
-                    {
-                        document.replace(0, document.getLength(), message + ((message.endsWith(CR)) ? EMPTY : CR));
-                    }
-                } catch (BadLocationException e)
-                {
-
-                }
-            }
-        });
+        TLCUIActivator.logDebug("Exiting reinit()");
     }
 
     /**
@@ -568,7 +430,7 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
                 sectionFlags, getExpansionListener());
         twd = new TableWrapData();
         twd.colspan = 2;
-        
+
         section.setLayoutData(twd);
 
         Composite generalArea = (Composite) section.getClient();
@@ -583,19 +445,18 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
         // elapsed time
         elapsedTimeText = createTextLeft("Elapsed time:", statusComposite, toolkit);
         // errors
-        // Label createLabel = 
+        // Label createLabel =
         toolkit.createLabel(statusComposite, "Errors detected:");
         this.errorStatusHyperLink = toolkit.createHyperlink(statusComposite, "", SWT.RIGHT);
 
         // -------------------------------------------------------------------
         // statistics section
         section = FormHelper.createSectionComposite(body, "Statistics", "The current progress of model-checking",
-                toolkit, sectionFlags  | Section.COMPACT, getExpansionListener());
+                toolkit, sectionFlags | Section.COMPACT, getExpansionListener());
         twd = new TableWrapData();
         twd.colspan = 2;
         section.setLayoutData(twd);
         Composite statArea = (Composite) section.getClient();
-        statArea = (Composite) section.getClient();
         layout = new TableWrapLayout();
         layout.numColumns = 2;
         statArea.setLayout(layout);
@@ -637,11 +498,11 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
     }
 
     /**
-     * Creates the state space table 
+     * Creates the state space table (initializes the {@link stateSpace} variable)
      * @param label
      * @param parent
      * @param toolkit
-     * @return
+     * @return the constructed composite
      */
     private Composite createAndSetupStateSpace(String label, Composite parent, FormToolkit toolkit)
     {
@@ -688,11 +549,11 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
     }
 
     /**
-     * Creates the state space table 
+     * Creates the coverage table (initializes the {@link coverageTimestamp} and {@link coverage} variables)  
      * @param label
      * @param parent
      * @param toolkit
-     * @return
+     * @return returns the containing composite
      */
     private Composite createAndSetupCoverage(String label, Composite parent, FormToolkit toolkit)
     {
@@ -724,10 +585,66 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
         this.coverage = new TableViewer(stateTable);
 
         // create list-based content provider
-        this.coverage.setContentProvider(listContentProvider);
+        this.coverage.setContentProvider(new IStructuredContentProvider() {
+            public void inputChanged(Viewer viewer, Object oldInput, Object newInput)
+            {
+            }
+
+            public void dispose()
+            {
+            }
+
+            public Object[] getElements(Object inputElement)
+            {
+                if (inputElement != null && inputElement instanceof List)
+                {
+                    return ((List) inputElement).toArray(new Object[((List) inputElement).size()]);
+                }
+                return null;
+            }
+        });
 
         this.coverage.setLabelProvider(new CoverageLabelProvider());
         return coverageComposite;
+    }
+
+    /**
+     * Creates an error object
+     * @param tlcRegion
+     * @param document
+     * @return
+     */
+    private static TLCError createError(TLCRegion tlcRegion, IDocument document)
+    {
+        TLCError topError = new TLCError();
+        if (tlcRegion instanceof TLCRegionContainer)
+        {
+            TLCRegionContainer container = (TLCRegionContainer) tlcRegion;
+            ITypedRegion[] regions = container.getSubRegions();
+            Assert.isTrue(regions.length < 3, "Unexpected error region structure, this is a bug.");
+            for (int i = 0; i < regions.length; i++)
+            {
+                if (regions[i] instanceof TLCRegion)
+                {
+                    TLCError cause = createError((TLCRegion) regions[i], document);
+                    topError.setCause(cause);
+                } else
+                {
+                    String output;
+                    try
+                    {
+                        output = document.get(tlcRegion.getOffset(), tlcRegion.getLength());
+                        topError.setMessage(output);
+                        topError.setErrorCode(tlcRegion.getMessageCode());
+                    } catch (BadLocationException e)
+                    {
+                        TLCUIActivator.logError("Error parsing the error message", e);
+                    }
+                }
+            }
+        }
+
+        return topError;
     }
 
     /**
@@ -753,6 +670,23 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
         text.setLayoutData(gd);
 
         return text;
+    }
+
+    /**
+     * Sets the field text
+     * @param field
+     * @param text
+     * Has to be run from non-UI thread
+     */
+    private static synchronized void setFieldText(final Text field, final String text)
+    {
+        UIHelper.runUIAsync(new Runnable() {
+
+            public void run()
+            {
+                field.setText(text);
+            }
+        });
 
     }
 

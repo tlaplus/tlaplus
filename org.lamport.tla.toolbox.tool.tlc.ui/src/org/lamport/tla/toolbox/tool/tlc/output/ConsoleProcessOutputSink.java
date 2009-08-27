@@ -23,7 +23,7 @@ public class ConsoleProcessOutputSink implements IProcessOutputSink
     {
         this.console = ConsoleFactory.getTLCConsole();
         this.outputStream = this.console.newOutputStream();
-        this.console.activate();
+        // this.console.activate();
     }
 
     public synchronized void appendText(String text)

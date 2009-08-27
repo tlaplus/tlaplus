@@ -21,9 +21,11 @@ import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.forms.IMessageManager;
 import org.eclipse.ui.forms.editor.FormEditor;
+import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.part.FileEditorInput;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationDefaults;
 import org.lamport.tla.toolbox.tool.tlc.launch.TLCModelLaunchDelegate;
+import org.lamport.tla.toolbox.tool.tlc.output.data.TLCModelLaunchDataProvider;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.AdvancedModelPage;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.BasicFormPage;
@@ -31,6 +33,7 @@ import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.MainModelPage;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.ResultPage;
 import org.lamport.tla.toolbox.tool.tlc.ui.preference.ITLCPreferenceConstants;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.SemanticHelper;
+import org.lamport.tla.toolbox.tool.tlc.ui.view.TLCErrorView;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper.IFileProvider;
 import org.lamport.tla.toolbox.util.UIHelper;
@@ -42,6 +45,7 @@ import org.lamport.tla.toolbox.util.UIHelper;
  */
 public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
 {
+
     /**
      * Editor ID
      */
@@ -55,6 +59,8 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
     private SemanticHelper helper;
     // reacts on model changes
     private IResourceChangeListener modelFileChangeListener;
+    // data provider is responsible for
+    private TLCModelLaunchDataProvider dataProvider;
 
     private Runnable validateRunable = new Runnable() {
         public void run()
@@ -203,6 +209,29 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
      */
     public void doSaveAs()
     {
+    }
+
+    public Object getAdapter(Class required)
+    {
+
+        if (TLCErrorView.class.equals(required))
+        {
+            TLCUIActivator.logDebug("Adapter request: " + required);
+            
+        }
+
+        return super.getAdapter(required);
+    }
+
+    public void setFocus()
+    {
+        TLCUIActivator.logDebug("Focusing " + getConfig().getName() + " editor");
+        TLCErrorView errorView = (TLCErrorView) UIHelper.findView(TLCErrorView.ID);
+        if (errorView != null)
+        {
+            // errorView.setModel()
+        }
+        super.setFocus();
     }
 
     /* 
@@ -372,17 +401,19 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
                 // get the current page
                 BasicFormPage page = (BasicFormPage) pages.get(j);
                 Assert.isNotNull(page.getManagedForm(), "Page not initialized, this is a bug.");
-                
+
                 for (int i = 0; i < modelProblemMarkers.length; i++)
                 {
                     String attributeName = modelProblemMarkers[i]
                             .getAttribute(ModelHelper.TLC_MODEL_ERROR_MARKER_ATTRIBUTE_NAME,
                                     IModelConfigurationDefaults.EMPTY_STRING);
                     String sectionId = dm.getSectionForAttribute(attributeName);
-                    Assert.isNotNull(sectionId, "Page is either not initialized or attribute not bound, this is a bug.");
+                    Assert
+                            .isNotNull(sectionId,
+                                    "Page is either not initialized or attribute not bound, this is a bug.");
 
                     String pageId = dm.getSectionPage(sectionId);
-                    
+
                     // relevant, since the attribute is displayed on the current page
                     if (page.getId().equals(pageId))
                     {
@@ -399,21 +430,20 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
                         // expand the section with an error
                         dm.expandSection(sectionId);
                         mm.setAutoUpdate(true);
-                        
-                        if (errorPageIndex < j) 
+
+                        if (errorPageIndex < j)
                         {
                             errorPageIndex = j;
                         }
                     }
                 }
             }
-            if (errorPageIndex != -1 && currentPageIndex != errorPageIndex) 
+            if (errorPageIndex != -1 && currentPageIndex != errorPageIndex)
             {
                 // the page has a marker
                 // make it active
                 setActivePage(errorPageIndex);
             }
-            
 
         } catch (CoreException e)
         {
@@ -514,7 +544,17 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
     public void showResultPage()
     {
         // goto result page
-        setActivePage(ResultPage.ID);
+        IFormPage resultPage = setActivePage(ResultPage.ID);
+        if (resultPage != null)
+        {
+            try
+            {
+                ((ResultPage) resultPage).loadData();
+            } catch (CoreException e)
+            {
+                TLCUIActivator.logError("Error refreshing the result page", e);
+            }
+        }
     }
 
 }

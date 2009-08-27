@@ -11,7 +11,7 @@ import org.lamport.tla.toolbox.tool.tlc.output.source.TagBasedTLCOutputIncrement
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 
 /**
- * 
+ * Reads the log file and parses the content
  * @author Simon Zambrovski
  * @version $Id$
  */

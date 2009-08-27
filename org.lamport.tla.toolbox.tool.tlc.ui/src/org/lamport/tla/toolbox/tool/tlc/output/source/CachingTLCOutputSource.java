@@ -9,7 +9,7 @@ import org.lamport.tla.toolbox.tool.tlc.output.ITLCOutputListener;
 
 /**
  * TLC output source, caching the output for listeners registered after the source 
- * has output 
+ * has received the output 
  *  
  * @author Simon Zambrovski
  * @version $Id$

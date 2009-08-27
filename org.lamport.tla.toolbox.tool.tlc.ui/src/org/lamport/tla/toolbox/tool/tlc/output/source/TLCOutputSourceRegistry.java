@@ -146,6 +146,9 @@ public class TLCOutputSourceRegistry
         return instance;
     }
 
+    /**
+     * Debugging
+     */
     private void printStats()
     {
         if (DO_DEBUG)
