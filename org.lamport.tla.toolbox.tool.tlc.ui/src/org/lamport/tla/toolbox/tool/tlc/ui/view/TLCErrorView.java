@@ -114,7 +114,10 @@ public class TLCErrorView extends ViewPart
             
             // update the trace information
             this.variableViewer.setInput(states);
-
+            if (states != null && !states.isEmpty())
+            {
+                variableViewer.expandToLevel(2);
+            }
         } else
         {
             clear();
