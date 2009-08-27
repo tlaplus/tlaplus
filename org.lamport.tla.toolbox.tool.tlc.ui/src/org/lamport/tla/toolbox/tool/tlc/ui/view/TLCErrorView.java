@@ -84,7 +84,7 @@ public class TLCErrorView extends ViewPart
         {
             List states = null;
             StringBuffer buffer = new StringBuffer();
-            
+
             for (int i = 0; i < problems.size(); i++)
             {
                 TLCError error = (TLCError) problems.get(i);
@@ -98,9 +98,8 @@ public class TLCErrorView extends ViewPart
             if (states == null)
             {
                 states = EMPTY_LIST;
-            } 
+            }
 
-            
             // update the error information in the TLC Error View
             IDocument document = errorViewer.getDocument();
             try
@@ -111,7 +110,6 @@ public class TLCErrorView extends ViewPart
                 TLCUIActivator.logError("Error reporting the error " + buffer.toString(), e);
             }
 
-            
             // update the trace information
             this.variableViewer.setInput(states);
             if (states != null && !states.isEmpty())
@@ -157,27 +155,25 @@ public class TLCErrorView extends ViewPart
         layout = new GridLayout();
         clientArea.setLayout(layout);
 
-        
         errorViewer = FormHelper.createFormsOutputViewer(toolkit, clientArea, SWT.V_SCROLL | SWT.MULTI);
         gd = new GridData(SWT.FILL, SWT.FILL, true, false);
         gd.heightHint = 100;
         errorViewer.getControl().setLayoutData(gd);
-              
+
         SashForm sashForm = new SashForm(body, SWT.VERTICAL);
         toolkit.adapt(sashForm);
         gd = new GridData(SWT.FILL, SWT.FILL, true, true);
         sashForm.setLayoutData(gd);
-        
-        
+
         Tree tree = toolkit.createTree(sashForm, SWT.V_SCROLL | SWT.BORDER | SWT.FULL_SELECTION | SWT.SINGLE);
         tree.setHeaderVisible(true);
         tree.setLinesVisible(true);
-        
+
         gd = new GridData(SWT.LEFT, SWT.TOP, true, false);
         gd.minimumHeight = 300;
         // gd.minimumWidth = 300;
         tree.setLayoutData(gd);
-        
+
         for (int i = 0; i < StateLabelProvider.COLUMN_TEXTS.length; i++)
         {
             TreeColumn column = new TreeColumn(tree, SWT.LEFT);
@@ -194,10 +190,10 @@ public class TLCErrorView extends ViewPart
             public void selectionChanged(SelectionChangedEvent event)
             {
                 if (!((IStructuredSelection) event.getSelection()).isEmpty())
-                { 
-                  // Set selection to the selected element (or the first if there are multiple
-                  // selections), and show its string representation in the value viewer 
-                  // (the lower sub-window).
+                {
+                    // Set selection to the selected element (or the first if there are multiple
+                    // selections), and show its string representation in the value viewer
+                    // (the lower sub-window).
                     Object selection = ((IStructuredSelection) event.getSelection()).getFirstElement();
                     valueViewer.setDocument(new Document(selection.toString()));
                 } else
@@ -209,19 +205,18 @@ public class TLCErrorView extends ViewPart
         });
 
         /* Horizontal scroll bar added by LL on 26 Aug 2009 */
-        valueViewer = FormHelper.createFormsSourceViewer(toolkit, sashForm, SWT.V_SCROLL | SWT.H_SCROLL | SWT.MULTI | SWT.BORDER);
+        valueViewer = FormHelper.createFormsSourceViewer(toolkit, sashForm, SWT.V_SCROLL | SWT.H_SCROLL | SWT.MULTI
+                | SWT.BORDER);
         valueViewer.setEditable(false);
-        
+
         gd = new GridData(SWT.LEFT, SWT.TOP, true, false);
         valueViewer.getControl().setLayoutData(gd);
 
-        
         // init
         clear();
 
         UIHelper.setHelp(parent, "TLCErrorView");
     }
-
 
     public void setFocus()
     {
@@ -280,7 +275,6 @@ public class TLCErrorView extends ViewPart
 
     }
 
-    
     /**
      * Content provider for the tree table  
      */
@@ -496,9 +490,13 @@ public class TLCErrorView extends ViewPart
             return null;
         }
 
+        /* 
+         * The following  method sets the object's background color. It should
+         * be used for highlighting changed values.
+        */
         public Color getBackground(Object element)
         {
-            return null;
+            return new Color(null, 255, 200, 200); // null;
         }
 
         public Color getForeground(Object element)
@@ -526,7 +524,4 @@ public class TLCErrorView extends ViewPart
 
     }
 
-    
-    
-    
 }
