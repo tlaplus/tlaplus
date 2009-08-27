@@ -28,10 +28,10 @@ public class TLCSequenceVariableValue extends TLCVariableValue {
         return result ;
     }
 
-//    public String toString()
-//    {
-//        TLCVariableValue[] elements = getElements();
-//        return arrayToStringBuffer(elements, DELIMETERS).toString();
-//    }
+    public String toSimpleString()
+    {
+        TLCVariableValue[] elements = getElements();
+        return arrayToSimpleStringBuffer(elements, DELIMETERS).toString();
+    }
 
 }

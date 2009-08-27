@@ -94,6 +94,36 @@ public abstract class TLCVariableValue
         return buffer;
     }
 
+    public static StringBuffer arrayToSimpleStringBuffer(Object[] elements, String[] delimeters)
+    {
+        Assert.isNotNull(delimeters);
+
+        StringBuffer buffer = new StringBuffer(delimeters[0]);
+        if (elements.length == 0)
+        {
+            buffer.append(SPACE);
+        } else
+        {
+            for (int i = 0; i < elements.length; i++)
+            {
+                if (elements[i] instanceof TLCVariableValue) {
+                    buffer.append(((TLCVariableValue) elements[i]).toSimpleString());
+                } else {
+                    buffer.append(elements[i].toString());    
+                }
+                
+                if (i != elements.length - 1)
+                {
+                    buffer.append(delimeters[1]);
+                    buffer.append(SPACE);
+                }
+            }
+        }
+        buffer.append(delimeters[2]);
+        return buffer;
+    }
+
+
     /**
      * Parses the string into a typed variable value
      * @param input
@@ -394,9 +424,23 @@ public abstract class TLCVariableValue
         return value;
     }
 
+    /* 
+     * For objects that represent a value, the toString method returns 
+     * the value as printed by TLC's pretty-printer.
+     */
     public String toString()
     {
         return source ; // value.toString();
+    }
+
+    /*
+     * The toSimpleString() method returns a single-line string
+     * representation of the object.  The following method should
+     * be overridden for complex values.
+     */
+    public String toSimpleString()
+    {
+        return value.toString();
     }
 
     static class InputPair

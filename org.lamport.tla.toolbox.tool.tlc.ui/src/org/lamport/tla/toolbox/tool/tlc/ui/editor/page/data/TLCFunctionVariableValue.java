@@ -31,8 +31,8 @@ public class TLCFunctionVariableValue extends TLCVariableValue {
                   ((List) this.value).toArray(new TLCFcnElementVariableValue[((List) this.value)
                     .size()]);
     }
-//    public String toString()
-//    {
-//        return arrayToStringBuffer(getFcnElements(), DELIMETERS).toString();
-//    }
+    public String toSimpleString()
+    {
+        return arrayToSimpleStringBuffer(getFcnElements(), DELIMETERS).toString();
+    }
 }

@@ -1,5 +1,12 @@
+/*
+ * This file contains test code that is a preliminary version of 
+ * stuff for highlighting changes in the error trace.  Search for
+ * lamport:test to find all instances.
+ */
+
 package org.lamport.tla.toolbox.tool.tlc.ui.view;
 
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -99,7 +106,11 @@ public class TLCErrorView extends ViewPart
             {
                 states = EMPTY_LIST;
             }
-
+            /*
+             * lamport:test this is test code added by LL on 27 Aug 2009
+             * Add code here to set trace diff highliter information
+             */
+            setDiffInfo(states);
             // update the error information in the TLC Error View
             IDocument document = errorViewer.getDocument();
             try
@@ -490,14 +501,67 @@ public class TLCErrorView extends ViewPart
             return null;
         }
 
+        /*
+         * begin lamport:test 
+         */
+
         /* 
-         * The following  method sets the object's background color. It should
-         * be used for highlighting changed values.
+         * The following  method sets the background color OF THE ENTIRE ROW
+         * of the table. It can be used for highlighting the entire row
+         * to show a changed value.  I don't know how to highlight just one
+         * column entry of the row.  Apparently, all that can be done is
+         * to change the text itself.
         */
         public Color getBackground(Object element)
         {
-            return new Color(null, 255, 200, 200); // null;
+            if (changedRows.contains(element))
+            {
+                return changedColor;
+            } else if (addedRows.contains(element))
+            {
+                return addedColor;
+            } else if (deletedRows.contains(element))
+            {
+                return deletedColor;
+            }
+            return null;
         }
+
+        /*
+         * Here are the three HashSet objects that contain the objects
+         * representing rows in the table displaying the trace that should
+         * be highlighted.  They have the following meanings:
+         * 
+         *  changedRows: Rows indicating values that have changed from
+         *    the last state.  Subobjects of the value column of such
+         *    a row could also be highlighted.
+         *    
+         *  addedRows: Rows that have been added to a value since the
+         *    last state.
+         *    
+         *  deletedRows: Rows that are deleted in the following state.
+         *  
+         *  The same row can appear in both the deletedRows set and 
+         *  the changedRows or addedRows set.  In that case, it should 
+         *  be displayed as a changed or added row--since we can't do
+         *  multicolored backgrounds to show that it is both.
+         */
+        protected HashSet changedRows = new HashSet();
+        protected HashSet addedRows = new HashSet();
+        protected HashSet deletedRows = new HashSet();
+
+        /*
+         * The colors used for trace row highlighting.  These should be
+         * in some central location containing all colors and fonts to
+         * make it easy to make them changable by preferences.
+         */
+        private Color changedColor = new Color(null, 255, 200, 200);
+        private Color addedColor = new Color(null, 255, 255, 200);
+        private Color deletedColor = new Color(null, 240, 240, 255);
+
+        /*
+         * end lamport:test 
+         */
 
         public Color getForeground(Object element)
         {
@@ -524,4 +588,193 @@ public class TLCErrorView extends ViewPart
 
     }
 
+    /*
+     * lamport:test
+     * From here to the end of the file is a test version of objects and
+     * methods used for highlighting changes in the error trace.
+     */
+
+    /*
+     * Sets the HashSet objects of StateLabelProvider object that stores
+     * the sets of objects to be highlighted to show state changes in the
+     * states contained in the parameter stateList.
+     */
+    private void setDiffInfo(List stateList)
+    {
+        if (stateList.size() < 2)
+        {
+            return;
+        }
+
+        /*
+         * Set states to the array of TLCState objects in stateList, and
+         * set changedRows, addedRows, and deletedRows to the HashSet into
+         * which all the appropriate row  objects are put, and initialize 
+         * each HashSet to empty.
+         */
+        TLCState[] states = new TLCState[stateList.size()];
+        for (int i = 0; i < states.length; i++)
+        {
+            states[i] = (TLCState) stateList.get(i);
+        }
+        StateLabelProvider labelProvider = (StateLabelProvider) variableViewer.getLabelProvider();
+        HashSet changedRows = labelProvider.changedRows;
+        HashSet addedRows = labelProvider.addedRows;
+        HashSet deletedRows = labelProvider.deletedRows;
+        changedRows.clear();
+        addedRows.clear();
+        deletedRows.clear();
+
+        /*
+         * As a test, put the changed variable values in changedObjects.
+         */
+        TLCState firstState = states[0];
+        TLCVariable[] firstVariables = firstState.getVariables();
+
+        for (int i = 1; i < states.length; i++)
+        {
+            TLCState secondState = states[i];
+            TLCVariable[] secondVariables = secondState.getVariables();
+            for (int j = 0; j < firstVariables.length; j++)
+            {
+                TLCVariableValue firstValue = firstVariables[j].getValue();
+                TLCVariableValue secondValue = secondVariables[j].getValue();
+                if (!firstValue.toString().equals(secondValue.toString()))
+                {
+                    changedRows.add(secondVariables[j]);
+                    setInnerDiffInfo(firstValue, secondValue, changedRows, addedRows, deletedRows);
+                }
+            }
+
+            firstState = secondState;
+            firstVariables = secondVariables;
+        }
+
+    }
+
+    /*
+     * The recursive method called by setDiffInfo that adds the subobjects 
+     * of the variable value objects to the HashSets that indicate which
+     * rows of the hierarchical trace table should be highlighted to show the
+     * parts of the state that have changed.
+     * 
+     * It is called with the objects in the Value columns of corresponding
+     * values that have changed.  It adds rows of these two objects' table
+     * representations to the appropriate HashSets to indicate that those
+     * rows should be appropriately highlighted.
+     * 
+     */
+    private void setInnerDiffInfo(TLCVariableValue first, TLCVariableValue second, HashSet changed, HashSet added,
+            HashSet deleted)
+    {
+        if (first instanceof TLCSimpleVariableValue)
+        {
+            return;
+        } else if (first instanceof TLCSetVariableValue)
+        { /*
+            * SETS
+            * For two sets, the only meaningful changes are additions and
+            * deletions.
+            */
+
+            if (!(second instanceof TLCSetVariableValue))
+            {
+                return;
+            }
+            TLCVariableValue[] firstElts = ((TLCSetVariableValue) first).getElements();
+            TLCVariableValue[] secondElts = ((TLCSetVariableValue) second).getElements();
+
+            for (int i = 0; i < firstElts.length; i++)
+            {
+                boolean notfound = true;
+                int j = 0;
+                while (notfound && j < secondElts.length)
+                {
+                    if (firstElts[i].toSimpleString().equals(secondElts[j].toSimpleString()))
+                    {
+                        notfound = false;
+                    }
+                    j++;
+                }
+                if (notfound)
+                {
+                    deleted.add(firstElts[i]);
+                }
+            }
+
+            for (int i = 0; i < secondElts.length; i++)
+            {
+                boolean notfound = true;
+                int j = 0;
+                while (notfound && j < firstElts.length)
+                {
+                    if (firstElts[j].toSimpleString().equals(secondElts[i].toSimpleString()))
+                    {
+                        notfound = false;
+                    }
+                    j++;
+                }
+                if (notfound)
+                {
+                    added.add(secondElts[i]);
+                }
+            }
+        } else if (false) // first instanceof TLCRecordVariableValue)
+        { /*
+             * RECORDS
+             * We mark a record element as added or deleted if its label
+             * does not appear in one of the elements of the other record.
+             * We mark the element as changed, and call setInnerDiffInfo on 
+             * the elements' values if elements with same label but different values
+             * appear in the two records.
+             */
+// THE FOLLOWING WAS COPIED FROM THE CASE OF SETS AND NEEDS TO BE CHANGED
+// FOR RECORDS.
+            if (!(second instanceof TLCSetVariableValue))
+            {
+                return;
+            }
+            TLCVariableValue[] firstElts = ((TLCSetVariableValue) first).getElements();
+            TLCVariableValue[] secondElts = ((TLCSetVariableValue) second).getElements();
+
+            for (int i = 0; i < firstElts.length; i++)
+            {
+                boolean notfound = true;
+                int j = 0;
+                while (notfound && j < secondElts.length)
+                {
+                    if (firstElts[i].toSimpleString().equals(secondElts[j].toSimpleString()))
+                    {
+                        notfound = false;
+                    }
+                    j++;
+                }
+                if (notfound)
+                {
+                    deleted.add(firstElts[i]);
+                }
+            }
+
+            for (int i = 0; i < secondElts.length; i++)
+            {
+                boolean notfound = true;
+                int j = 0;
+                while (notfound && j < firstElts.length)
+                {
+                    if (firstElts[j].toSimpleString().equals(secondElts[i].toSimpleString()))
+                    {
+                        notfound = false;
+                    }
+                    j++;
+                }
+                if (notfound)
+                {
+                    added.add(secondElts[i]);
+                }
+            }
+
+        }
+        return;
+
+    }
 }

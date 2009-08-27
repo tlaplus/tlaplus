@@ -24,9 +24,9 @@ public class TLCSetVariableValue extends TLCVariableValue {
         return (TLCVariableValue[])list.toArray(new TLCVariableValue[list.size()]);
     }
 
-//    public String toString()
-//    {
-//        TLCVariableValue[] elements = getElements();
-//        return arrayToStringBuffer(elements, DELIMETERS).toString();
-//    }
+    public String toSimpleString()
+    {
+        TLCVariableValue[] elements = getElements();
+        return arrayToSimpleStringBuffer(elements, DELIMETERS).toString();
+    }
 }
