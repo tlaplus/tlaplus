@@ -102,7 +102,7 @@ public class PreferenceStoreHelper
     public static IPreferenceStore getProjectPreferenceStore(IProject project)
     {
         ProjectScope scope = new ProjectScope(project);
-        ScopedPreferenceStore store = new ScopedPreferenceStore(scope, Activator.getDefault().getBundle().getSymbolicName());
+        ScopedPreferenceStore store = new ScopedPreferenceStore(scope, Activator.PLUGIN_ID /*Activator.getDefault().getBundle().getSymbolicName()*/);
         return store;
     }
 

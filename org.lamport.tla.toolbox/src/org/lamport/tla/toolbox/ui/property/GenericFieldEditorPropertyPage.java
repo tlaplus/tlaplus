@@ -108,6 +108,7 @@ public abstract class GenericFieldEditorPropertyPage extends PropertyPage implem
                 FieldEditor pe = (FieldEditor) e.next();
                 pe.store();
             }
+            
         }
         return true;
     }

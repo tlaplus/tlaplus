@@ -12,10 +12,12 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.TLAMarkerHelper;
 import org.lamport.tla.toolbox.util.pref.IPreferenceConstants;
+import org.lamport.tla.toolbox.util.pref.PreferenceStoreHelper;
 
 import pcal.Translator;
 
@@ -44,15 +46,21 @@ public class TranslatorJob extends WorkspaceJob
 
         boolean hasPcalAlg = false;
         String[] params;
+        Object prop;
 
         try
         {
-            hasPcalAlg = ((Boolean) fileToBuild.getSessionProperty(ResourceHelper
-                    .getQName(IPreferenceConstants.CONTAINS_PCAL_ALGORITHM))).booleanValue();
+            prop = fileToBuild.getSessionProperty(ResourceHelper
+                    .getQName(IPreferenceConstants.CONTAINS_PCAL_ALGORITHM)); 
+            if (prop != null) 
+            {
+                hasPcalAlg = ((Boolean)prop).booleanValue();
+            }
             
+            IPreferenceStore projectPreferenceStore = PreferenceStoreHelper.getProjectPreferenceStore(fileToBuild.getProject());
             
-            String paramString = ((String) fileToBuild.getProject().getPersistentProperty(ResourceHelper
-                    .getQName(IPreferenceConstants.PCAL_CAL_PARAMS)));
+            String paramString = projectPreferenceStore.getString(IPreferenceConstants.PCAL_CAL_PARAMS);
+                        
             if (paramString != null) 
             {
                 params = paramString.split(" ");
@@ -62,7 +70,7 @@ public class TranslatorJob extends WorkspaceJob
 
         } catch (CoreException e1)
         {
-            e1.printStackTrace();
+            Activator.logError("Error reading parameters", e1);
             params = new String[0];
         }
 
