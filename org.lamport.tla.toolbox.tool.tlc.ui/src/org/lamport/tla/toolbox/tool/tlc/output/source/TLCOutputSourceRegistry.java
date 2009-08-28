@@ -8,6 +8,8 @@ import org.eclipse.core.runtime.Assert;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.lamport.tla.toolbox.tool.tlc.output.ITLCOutputListener;
 import org.lamport.tla.toolbox.tool.tlc.output.LogFileReader;
+import org.lamport.tla.toolbox.tool.tlc.output.data.ITLCModelLaunchDataPresenter;
+import org.lamport.tla.toolbox.tool.tlc.output.data.TLCModelLaunchDataProvider;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 
@@ -30,6 +32,8 @@ public class TLCOutputSourceRegistry
     private static TLCOutputSourceRegistry instance;
     // container for sources, hashed by the source name
     private Hashtable sources;
+    // container for data providers, hashed by the process name
+    private Hashtable providers;
 
     /**
      * Adds a source
@@ -91,7 +95,7 @@ public class TLCOutputSourceRegistry
 
                 // the reader should have added a new source
                 // query for it
-
+                source.addTLCStatusListener(listener);
                 Assert.isTrue((ITLCOutputSource) this.sources.get(processName) != null);
             } else
             {
@@ -125,12 +129,35 @@ public class TLCOutputSourceRegistry
         printStats();
     }
 
+    public void startProcess(ILaunchConfiguration config)
+    {
+        TLCModelLaunchDataProvider provider = new TLCModelLaunchDataProvider(config);
+        providers.put(provider.getProcessName(), provider);
+    }
+
+    /**
+     * Retrieves the data provider for the given process
+     * @return
+     */
+    public synchronized TLCModelLaunchDataProvider getProvider(ITLCModelLaunchDataPresenter presenter)
+    {
+        Assert.isNotNull(presenter);
+        String processKey = presenter.getConfig().getFile().getName();
+        TLCModelLaunchDataProvider provider = (TLCModelLaunchDataProvider) providers.get(processKey);
+        if (provider != null)
+        {
+            provider.setPresenter(presenter);
+        }
+        return provider;
+    }
+
     /**
      * Clients should not invoke this constructor directly, but use {@link TLCOutputSourceRegistry#getStatusRegistry()} instead
      */
     private TLCOutputSourceRegistry()
     {
         this.sources = new Hashtable();
+        this.providers = new Hashtable();
     }
 
     /**

@@ -25,7 +25,9 @@ import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.part.FileEditorInput;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationDefaults;
 import org.lamport.tla.toolbox.tool.tlc.launch.TLCModelLaunchDelegate;
+import org.lamport.tla.toolbox.tool.tlc.output.data.ITLCModelLaunchDataPresenter;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCModelLaunchDataProvider;
+import org.lamport.tla.toolbox.tool.tlc.output.source.TLCOutputSourceRegistry;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.AdvancedModelPage;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.BasicFormPage;
@@ -59,8 +61,6 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
     private SemanticHelper helper;
     // reacts on model changes
     private IResourceChangeListener modelFileChangeListener;
-    // data provider is responsible for
-    private TLCModelLaunchDataProvider dataProvider;
 
     private Runnable validateRunable = new Runnable() {
         public void run()
@@ -214,10 +214,22 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
     public Object getAdapter(Class required)
     {
 
-        if (TLCErrorView.class.equals(required))
+        if (TLCModelLaunchDataProvider.class.equals(required))
         {
-            TLCUIActivator.logDebug("Adapter request: " + required);
-            
+            // TLCUIActivator.logDebug("Adapter request: " + required);
+            for (int i = 0; i < pagesToAdd.length; i++)
+            {
+                if (pagesToAdd[i] instanceof ITLCModelLaunchDataPresenter)
+                {
+                    TLCModelLaunchDataProvider provider = TLCOutputSourceRegistry.getStatusRegistry().getProvider(
+                            (ITLCModelLaunchDataPresenter) pagesToAdd[i]);
+                    if (provider != null)
+                    {
+                        return provider;
+                    }
+                }
+            }
+
         }
 
         return super.getAdapter(required);
@@ -229,7 +241,14 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
         TLCErrorView errorView = (TLCErrorView) UIHelper.findView(TLCErrorView.ID);
         if (errorView != null)
         {
-            // errorView.setModel()
+            UIHelper.runUIAsync(new Runnable() {
+
+                public void run()
+                {
+                    TLCErrorView.updateErrorView((TLCModelLaunchDataProvider) ModelEditor.this
+                            .getAdapter(TLCModelLaunchDataProvider.class));
+                }
+            });
         }
         super.setFocus();
     }
@@ -328,6 +347,7 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
             // launching the config
             try
             {
+                TLCOutputSourceRegistry.getStatusRegistry().startProcess(getConfig());
                 getConfig().launch(mode, new SubProgressMonitor(monitor, 1), true);
             } catch (CoreException e)
             {

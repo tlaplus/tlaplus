@@ -33,8 +33,8 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
 {
     public static final String NO_OUTPUT_AVAILABLE = "No execution data is available";
 
-    private ILaunchConfiguration config;
-    
+    // presenter for the current process
+    private ITLCModelLaunchDataPresenter presenter;
     // list of errors
     private List errors;
     // start time
@@ -56,12 +56,13 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
     private Document progressOutput;
     // user output
     private Document userOutput;
+    // the model, which is represented by the current launch data provider
+    private ILaunchConfiguration config;
 
     public TLCModelLaunchDataProvider(ILaunchConfiguration config)
     {
         this.config = config;
         initialize();
-
     }
 
     /**
@@ -80,8 +81,33 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
         userOutput = new Document(NO_OUTPUT_AVAILABLE);
         
         TLCOutputSourceRegistry.getStatusRegistry().connect(this);
+        informPresenter(ITLCModelLaunchDataPresenter.USER_OUTPUT);
+        informPresenter(ITLCModelLaunchDataPresenter.PROGRESS_OUTPUT);
     }
 
+    /**
+     * Inform the view, if any
+     * @param fieldId
+     */
+    private void informPresenter(int fieldId) 
+    {
+        if (presenter != null) 
+        {
+            presenter.modelChanged(this, fieldId);
+        }
+    }
+    
+    /**
+     * Populate data to the presenter 
+     */
+    public void populate()
+    {
+        for (int i=0; i < ITLCModelLaunchDataPresenter.ALL_FIELDS.length; i++) 
+        {
+            informPresenter(ITLCModelLaunchDataPresenter.ALL_FIELDS[i]);
+        }
+    }
+    
     /**
      * Name of the model
      */
@@ -100,6 +126,8 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
     {
         // everything that was saved should be erased
         initialize();
+        
+        populate();
     }
 
     public void onOutput(ITypedRegion region, IDocument document)
@@ -107,19 +135,6 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
         // restarting
         if (isDone)
         {
-            // the only reason for this is the restart of the MC, after the previous run completed.
-            // clean up the output
-            UIHelper.runUIAsync(new Runnable() {
-
-                public void run()
-                {
-                    // reinit();
-
-                    // update the error window and the trace explorer
-
-                    // FIXME update errors
-                }
-            });
             isDone = false;
         }
 
@@ -166,8 +181,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                         // add the trace to the error list
                         this.errors.add(lastDetectedError);
 
-                        // FIXME update errors
-
+                        informPresenter(ITLCModelLaunchDataPresenter.ERRORS);
                         this.lastDetectedError = null;
                     }
                     this.lastDetectedError = TLCModelLaunchDataProvider.createError(tlcRegion, document);
@@ -183,9 +197,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                     // add the trace to the error list
                     this.errors.add(lastDetectedError);
 
-
-                    // FIXME update errors
-
+                    informPresenter(ITLCModelLaunchDataPresenter.ERRORS);
                     this.lastDetectedError = null;
                 }
 
@@ -221,15 +233,11 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                     break;
                 case EC.TLC_STARTING:
                     this.startTimestamp = GeneralOutputParsingHwelper.parseTLCTimestamp(outputMessage);
-
-                    // FIXME
-
+                    informPresenter(ITLCModelLaunchDataPresenter.START_TIME);
                     break;
                 case EC.TLC_FINISHED:
                     this.finishTimestamp = GeneralOutputParsingHwelper.parseTLCTimestamp(outputMessage);
-
-                    // FIXME
-
+                    informPresenter(ITLCModelLaunchDataPresenter.END_TIME);
                     break;
 
                 case EC.TLC_PROGRESS_STATS:
@@ -240,11 +248,12 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                 case EC.TLC_COVERAGE_START:
                     this.coverageTimestamp = CoverageInformationItem.parseCoverageTimestamp(outputMessage);
                     this.coverageInfo = new Vector();
-                    
-                    // FIXME
+                    informPresenter(ITLCModelLaunchDataPresenter.COVERAGE_TIME);
+                    informPresenter(ITLCModelLaunchDataPresenter.COVERAGE);
                     break;
                 case EC.TLC_COVERAGE_VALUE:
                     this.coverageInfo.add(CoverageInformationItem.parse(outputMessage));
+                    informPresenter(ITLCModelLaunchDataPresenter.COVERAGE);
                     break;
                 case EC.TLC_COVERAGE_END:
                     break;
@@ -353,6 +362,21 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                 }
             }
         });
+    }
+
+    /**
+     * Retrieves the config
+     * @return config this launch data provider is representing
+     */
+    public ILaunchConfiguration getConfig()
+    {
+        return this.config;
+    }
+
+    
+    public void setPresenter(ITLCModelLaunchDataPresenter presenter)
+    {
+        this.presenter = presenter;
     }
 
     public List getErrors()

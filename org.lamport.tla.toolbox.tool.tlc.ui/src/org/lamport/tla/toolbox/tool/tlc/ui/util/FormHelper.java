@@ -10,9 +10,13 @@ import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.jface.text.source.SourceViewerConfiguration;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.forms.events.IExpansionListener;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
@@ -205,6 +209,7 @@ public class FormHelper
         sourceViewer.setTabsToSpacesConverter(getTabToSpacesConverter());
 
         StyledText control = sourceViewer.getTextWidget();
+        control.setWordWrap(true);
         control.setFont(TLCUIActivator.getDefault().getCourierFont());
         control.setEditable(true);
         return sourceViewer;
@@ -331,6 +336,32 @@ public class FormHelper
         }
         return string;
     }
+    
+    /**
+     * Creates a text component with left-aligned text
+     * @param title
+     * @param parent
+     * @param toolkit
+     * @return
+     */
+    public static Text createTextLeft(String title, Composite parent, FormToolkit toolkit)
+    {
+        Label createLabel = toolkit.createLabel(parent, title);
+        GridData gd = new GridData();
+        createLabel.setLayoutData(gd);
+        gd.verticalAlignment = SWT.TOP;
+        Text text = toolkit.createText(parent, "");
+
+        gd = new GridData(SWT.FILL, SWT.LEFT, true, false);
+        gd.horizontalIndent = 30;
+        gd.verticalAlignment = SWT.TOP;
+        gd.horizontalAlignment = SWT.RIGHT;
+        gd.minimumWidth = 150;
+        text.setLayoutData(gd);
+
+        return text;
+    }
+
     
     /**
      * Returns true, if the string matches [A-Za-z0-9_]*[A-Za-z]{1}[A-Za-z0-9_]*

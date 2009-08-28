@@ -4,12 +4,8 @@ import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Vector;
 
-import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.Document;
-import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.ITypedRegion;
 import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.ITableLabelProvider;
@@ -21,7 +17,6 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.Text;
@@ -35,24 +30,16 @@ import org.eclipse.ui.forms.widgets.Hyperlink;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.forms.widgets.TableWrapData;
 import org.eclipse.ui.forms.widgets.TableWrapLayout;
-import org.lamport.tla.toolbox.tool.tlc.output.ITLCOutputListener;
+import org.lamport.tla.toolbox.tool.tlc.output.data.ITLCModelLaunchDataPresenter;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCModelLaunchDataProvider;
 import org.lamport.tla.toolbox.tool.tlc.output.source.TLCOutputSourceRegistry;
-import org.lamport.tla.toolbox.tool.tlc.output.source.TLCRegion;
-import org.lamport.tla.toolbox.tool.tlc.output.source.TLCRegionContainer;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.data.CoverageInformationItem;
-import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.data.GeneralOutputParsingHwelper;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.data.StateSpaceInformationItem;
-import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.data.TLCError;
-import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.data.TLCState;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
 import org.lamport.tla.toolbox.tool.tlc.ui.view.TLCErrorView;
 import org.lamport.tla.toolbox.util.IHelpConstants;
 import org.lamport.tla.toolbox.util.UIHelper;
-
-import tlc2.output.EC;
-import tlc2.output.MP;
 
 /**
  * A page to display results of model checking (the "third tab"
@@ -60,39 +47,39 @@ import tlc2.output.MP;
  * @author Simon Zambrovski
  * @version $Id$
  */
-public class ResultPage extends BasicFormPage implements ITLCOutputListener
+public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPresenter
 {
     public static final String ID = "resultPage";
-    
+
     /**
      * UI elements
      */
-    private SourceViewer output;
-    private SourceViewer progress;
-    private Text startTimeText;
-    private Text elapsedTimeText;
+    private SourceViewer userOutput;
+    private SourceViewer progressOutput;
+    private Text startTimestampText;
+    private Text finishTimestampText;
     private Text coverageTimestampText;
     private Hyperlink errorStatusHyperLink;
     private TableViewer coverage;
     private TableViewer stateSpace;
+
+    // private TLCModelLaunchDataProvider dataProvider;
+
     // hyper link listener activated in case of errors
     protected IHyperlinkListener errorHyperLinkListener = new HyperlinkAdapter() {
 
         public void linkActivated(HyperlinkEvent e)
         {
-            TLCErrorView errorView = (TLCErrorView) UIHelper.openView(TLCErrorView.ID);
-            errorView.fill(errors);
+            TLCModelLaunchDataProvider dataProvider = TLCOutputSourceRegistry.getStatusRegistry().getProvider(ResultPage.this);
+            if (dataProvider != null)
+            {
+                TLCErrorView.updateErrorView(dataProvider);
+            }
         }
     };
 
-    // list of all errors
-    private Vector errors;
-    // last detected error
-    private TLCError lastDetectedError = null;
-    // flag indicating that the job / file output is finished
-    private boolean isDone = false;
-
     /**
+     * Constructor for the page
      * @param editor
      */
     public ResultPage(FormEditor editor)
@@ -102,294 +89,106 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
         this.imagePath = "icons/full/choice_sc_obj.gif";
     }
 
-    /* (non-Javadoc)
-     * @see org.lamport.tla.toolbox.tool.tlc.output.ITLCOutputListener#onOutput(org.eclipse.jface.text.ITypedRegion, org.eclipse.jface.text.IDocument)
-     */
-    public synchronized void onOutput(ITypedRegion region, IDocument document)
+    public void modelChanged(final TLCModelLaunchDataProvider dataProvider, final int fieldId)
     {
-        // restarting
-        if (isDone)
-        {
-            // the only reason for this is the restart of the MC, after the previous run completed.
-            // clean up the output
-            UIHelper.runUIAsync(new Runnable() {
-
-                public void run()
-                {
-                    // reinit();
-
-                    // update the error window and the trace explorer
-                    updateErrorInformation();
-
-                }
-            });
-            isDone = false;
-        }
-
-        String outputMessage;
-        try
-        {
-            outputMessage = document.get(region.getOffset(), region.getLength());
-
-        } catch (BadLocationException e)
-        {
-            TLCUIActivator.logError("Error retrieving a message for the process", e);
-            TLCUIActivator.logDebug("R " + region);
-            return;
-        }
-
-        if (region instanceof TLCRegion)
-        {
-            TLCRegion tlcRegion = (TLCRegion) region;
-            int severity = tlcRegion.getSeverity();
-            int messageCode = tlcRegion.getMessageCode();
-
-            switch (severity) {
-            case MP.STATE:
-                Assert.isNotNull(this.lastDetectedError,
-                        "The state encountered without the error describing the reason for it. This is a bug.");
-                this.lastDetectedError.addState(TLCState.parseState(outputMessage));
-                break;
-            case MP.ERROR:
-            case MP.TLCBUG:
-            case MP.WARNING:
-
-                switch (messageCode) {
-                // errors to skip
-                case EC.TLC_BEHAVIOR_UP_TO_THIS_POINT:
-                case EC.TLC_COUNTER_EXAMPLE:
-
+        UIHelper.runUIAsync(new Runnable() {
+            public void run()
+            {
+                switch (fieldId) {
+                case USER_OUTPUT:
+                    ResultPage.this.userOutput.setDocument(dataProvider.getUserOutput());
                     break;
+                case PROGRESS_OUTPUT:
+                    ResultPage.this.progressOutput.setDocument(dataProvider.getProgressOutput());
+                    break;
+                case START_TIME:
+                    ResultPage.this.startTimestampText.setText(dataProvider.getStartTimestamp());
+                    break;
+                case END_TIME:
+                    ResultPage.this.finishTimestampText.setText(dataProvider.getFinishTimestamp());
+                    break;
+                case COVERAGE_TIME:
+                    ResultPage.this.coverageTimestampText.setText(dataProvider.getCoverageTimestamp());
+                    break;
+                case COVERAGE:
+                    ResultPage.this.coverage.setInput(dataProvider.getCoverageInfo());
+                    break;
+                case PROGRESS:
+                    ResultPage.this.progressOutput.setInput(dataProvider.getProgressInformation());
+                    break;
+                case ERRORS:
+                    int size = dataProvider.getErrors().size();
+                    ResultPage.this.errorStatusHyperLink.setText(String.valueOf(size) + " Error"
+                            + ((size == 1) ? "" : "s"));
 
-                // usual errors
-                default:
-                    if (lastDetectedError != null)
+                    if (dataProvider.getErrors().size() > 0)
                     {
-                        // something is detected which is not an error
-                        // and the error trace is not empty
-                        // add the trace to the error list
-                        this.errors.add(lastDetectedError);
-                        updateErrorInformation();
-
-                        this.lastDetectedError = null;
+                        ResultPage.this.errorStatusHyperLink
+                                .addHyperlinkListener(ResultPage.this.errorHyperLinkListener);
+                        ResultPage.this.errorStatusHyperLink.setForeground(TLCUIActivator.getColor(SWT.COLOR_RED));
+                    } else
+                    {
+                        ResultPage.this.errorStatusHyperLink
+                                .removeHyperlinkListener(ResultPage.this.errorHyperLinkListener);
+                        ResultPage.this.errorStatusHyperLink.setForeground(TLCUIActivator.getColor(SWT.COLOR_BLACK));
                     }
-                    this.lastDetectedError = createError(tlcRegion, document);
-                    break;
-                }
-                break;
-            case MP.NONE:
 
-                if (lastDetectedError != null)
-                {
-                    // something is detected which is not an error
-                    // and the error trace is not empty
-                    // add the trace to the error list
-                    this.errors.add(lastDetectedError);
-                    updateErrorInformation();
-
-                    this.lastDetectedError = null;
-                }
-
-                switch (messageCode) {
-                // Progress information
-                case EC.TLC_VERSION:
-                case EC.TLC_SANY_START:
-                case EC.TLC_MODE_MC:
-                case EC.TLC_MODE_SIMU:
-                case EC.TLC_SANY_END:
-                case EC.TLC_COMPUTING_INIT:
-                case EC.TLC_CHECKING_TEMPORAL_PROPS:
-                case EC.TLC_SUCCESS:
-                case EC.TLC_PROGRESS_SIMU:
-                case EC.TLC_PROGRESS_START_STATS_DFID:
-                case EC.TLC_PROGRESS_STATS_DFID:
-                case EC.TLC_INITIAL_STATE:
-                case EC.TLC_INIT_GENERATED1:
-                case EC.TLC_INIT_GENERATED2:
-                case EC.TLC_INIT_GENERATED3:
-                case EC.TLC_INIT_GENERATED4:
-                case EC.TLC_STATS:
-                case EC.TLC_STATS_DFID:
-                case EC.TLC_STATS_SIMU:
-                case EC.TLC_SEARCH_DEPTH:
-                case EC.TLC_CHECKPOINT_START:
-                case EC.TLC_CHECKPOINT_END:
-                case EC.TLC_CHECKPOINT_RECOVER_START:
-                case EC.TLC_CHECKPOINT_RECOVER_END:
-                case EC.TLC_CHECKPOINT_RECOVER_END_DFID:
-                case EC.TLC_LIVE_IMPLIED:
-                    TLCModelLaunchDataProvider.setDocumentText(this.progress.getDocument(), outputMessage, true);
-                    break;
-                case EC.TLC_STARTING:
-                    String startingTimestamp = GeneralOutputParsingHwelper.parseTLCTimestamp(outputMessage);
-                    setFieldText(this.startTimeText, startingTimestamp);
-                    break;
-                case EC.TLC_FINISHED:
-                    String finishedTimestamp = GeneralOutputParsingHwelper.parseTLCTimestamp(outputMessage);
-                    setFieldText(this.elapsedTimeText, finishedTimestamp);
-                    break;
-
-                case EC.TLC_PROGRESS_STATS:
-                    final StateSpaceInformationItem stateSpaceInformationItem = StateSpaceInformationItem
-                            .parse(outputMessage);
-                    UIHelper.runUIAsync(new Runnable() {
-                        public void run()
-                        {
-                            // TODO add to the model
-                            ResultPage.this.stateSpace.add(stateSpaceInformationItem);
-                            ResultPage.this.stateSpace.refresh(stateSpaceInformationItem);
-                        }
-                    });
-                    break;
-                // Coverage information
-                case EC.TLC_COVERAGE_START:
-                    String coverageTimestamp = CoverageInformationItem.parseCoverageTimestamp(outputMessage);
-                    setFieldText(this.coverageTimestampText, coverageTimestamp);
-                    UIHelper.runUIAsync(new Runnable() {
-
-                        public void run()
-                        {
-                            ResultPage.this.coverage.setInput(new Vector());
-                        }
-                    });
-                    break;
-                case EC.TLC_COVERAGE_VALUE:
-                    final CoverageInformationItem coverageInformationItem = CoverageInformationItem
-                            .parse(outputMessage);
-                    UIHelper.runUIAsync(new Runnable() {
-                        public void run()
-                        {
-                            // TODO add to the model
-                            ResultPage.this.coverage.add(coverageInformationItem);
-                            ResultPage.this.coverage.refresh(coverageInformationItem);
-                        }
-                    });
-                    break;
-                case EC.TLC_COVERAGE_END:
+                    // update the error view
+                    TLCErrorView.updateErrorView(dataProvider);
                     break;
                 default:
-                    TLCModelLaunchDataProvider.setDocumentText(this.output.getDocument(), outputMessage, true);
                     break;
                 }
-                break;
-            default:
-                throw new IllegalArgumentException("This is a bug, the TLCToken with unexpected severity detected: "
-                        + severity);
-            }
 
-        } else
-        {
-            TLCModelLaunchDataProvider.setDocumentText(this.output.getDocument(), outputMessage, true);
-            // TLCUIActivator.logDebug("Unknown type detected: " + region.getType() + " message " + outputMessage);
-        }
+                ResultPage.this.refresh();
+            }
+        });
 
     }
 
+    /**
+     * Gets the data provider for the current page
+     */
     public void loadData() throws CoreException
     {
         reinit();
 
-        TLCUIActivator.logDebug("Entering loadData()");
-        TLCOutputSourceRegistry.getStatusRegistry().disconnect(this);
-
-        TLCOutputSourceRegistry.getStatusRegistry().connect(this);
-        TLCUIActivator.logDebug("Exiting loadData()");
-    }
-
-    /**
-     * @see org.lamport.tla.toolbox.tool.tlc.output.ITLCOutputListener#getProcessName()
-     */
-    public String getProcessName()
-    {
-        // the model file name is good because it is unique
-        return getConfig().getFile().getName();
-    }
-
-    /**
-     * @see org.lamport.tla.toolbox.tool.tlc.output.ITLCOutputListener#onDone()
-     */
-    public synchronized void onDone()
-    {
-        TLCUIActivator.logDebug("Entering onDone()");
-        this.isDone = true;
-        if (lastDetectedError != null)
+        TLCModelLaunchDataProvider provider = TLCOutputSourceRegistry.getStatusRegistry().getProvider(this);
+        if (provider != null) 
         {
-            // something is detected which is not an error
-            // and the error trace is not empty
-            // add the trace to the error list
-            this.errors.add(lastDetectedError);
-            updateErrorInformation();
+            provider.populate();
+            return;
+        } 
+        
+        // enforce the process start
+        // this is required only if the page is loaded and the provider
+        // is not available. e.G id there were no hitting start button
+        TLCOutputSourceRegistry.getStatusRegistry().startProcess(getConfig());
+        provider = TLCOutputSourceRegistry.getStatusRegistry().getProvider(this);
+        if (provider != null) 
+        {
+            provider.populate();
+            return;
+        } 
 
-            this.lastDetectedError = null;
-        }
-        TLCUIActivator.logDebug("Exiting onDone()");
-    }
-
-    /**
-     * @see org.lamport.tla.toolbox.tool.tlc.output.ITLCOutputListener#newSourceOccured(int)
-     */
-    public synchronized void onNewSource()
-    {
-        TLCUIActivator.logDebug("Entering onNewSource()");
-        UIHelper.runUIAsync(new Runnable() {
-
-            public void run()
-            {
-                reinit();
-
-                // update the error window and the trace explorer
-                updateErrorInformation();
-            }
-        });
-        TLCUIActivator.logDebug("Exiting onNewSource()");
-    }
-
-    /**
-     * Updates the view indicating the number of errors found
-     */
-    public synchronized void updateErrorInformation()
-    {
-        UIHelper.runUIAsync(new Runnable() {
-            public void run()
-            {
-                ResultPage.this.errorStatusHyperLink.setText(String.valueOf(errors.size() + " Errors"));
-
-                if (ResultPage.this.errors.size() > 0)
-                {
-                    ResultPage.this.errorStatusHyperLink.addHyperlinkListener(ResultPage.this.errorHyperLinkListener);
-                    ResultPage.this.errorStatusHyperLink.setForeground(TLCUIActivator.getColor(SWT.COLOR_RED));
-
-                } else
-                {
-                    ResultPage.this.errorStatusHyperLink
-                            .removeHyperlinkListener(ResultPage.this.errorHyperLinkListener);
-                    ResultPage.this.errorStatusHyperLink.setForeground(TLCUIActivator.getColor(SWT.COLOR_BLACK));
-
-                }
-            }
-        });
-
-        // update the error view
-        TLCErrorView.updateErrorView(ResultPage.this.errors);
+        
     }
 
     /**
      * Reinitialize the fields
      * has to be run in the UI thread
-     * 
      */
     public synchronized void reinit()
     {
-        TLCUIActivator.logDebug("Entering reinit()");
-        this.startTimeText.setText("");
-        this.elapsedTimeText.setText("");
+        // TLCUIActivator.logDebug("Entering reinit()");
+        this.startTimestampText.setText("");
+        this.finishTimestampText.setText("");
         this.errorStatusHyperLink.setText("");
         this.coverage.setInput(new Vector());
         this.stateSpace.setInput(new Vector());
-        this.progress.setDocument(new Document(TLCModelLaunchDataProvider.NO_OUTPUT_AVAILABLE));
-        this.output.setDocument(new Document(TLCModelLaunchDataProvider.NO_OUTPUT_AVAILABLE));
-        this.errors = new Vector();
-        TLCUIActivator.logDebug("Exiting reinit()");
+        this.progressOutput.setDocument(new Document(TLCModelLaunchDataProvider.NO_OUTPUT_AVAILABLE));
+        this.userOutput.setDocument(new Document(TLCModelLaunchDataProvider.NO_OUTPUT_AVAILABLE));
+        // TLCUIActivator.logDebug("Exiting reinit()");
     }
 
     /**
@@ -397,7 +196,11 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
      */
     public void dispose()
     {
-        TLCOutputSourceRegistry.getStatusRegistry().disconnect(this);
+        TLCModelLaunchDataProvider provider = TLCOutputSourceRegistry.getStatusRegistry().getProvider(this);
+        if (provider != null) 
+        {
+            provider.setPresenter(null);
+        }
         super.dispose();
     }
 
@@ -406,6 +209,8 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
         // do nothing here, since the result page is read-only per definition
     }
 
+
+    
     /**
      * Draw the fields
      */
@@ -441,9 +246,9 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
         statusComposite.setLayout(new GridLayout(2, false));
 
         // start
-        startTimeText = createTextLeft("Start time:", statusComposite, toolkit);
+        startTimestampText = FormHelper.createTextLeft("Start time:", statusComposite, toolkit);
         // elapsed time
-        elapsedTimeText = createTextLeft("Elapsed time:", statusComposite, toolkit);
+        finishTimestampText = FormHelper.createTextLeft("Elapsed time:", statusComposite, toolkit);
         // errors
         // Label createLabel =
         toolkit.createLabel(statusComposite, "Errors detected:");
@@ -462,10 +267,8 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
         statArea.setLayout(layout);
 
         // progress stats
-        // Composite stateStats =
         createAndSetupStateSpace("State space progress statistics:", statArea, toolkit);
         // coverage stats
-        // Composite coverageStats =
         createAndSetupCoverage("Coverage statistics at", statArea, toolkit);
 
         // -------------------------------------------------------------------
@@ -476,11 +279,11 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
         progressArea = (Composite) section.getClient();
         progressArea.setLayout(new GridLayout());
 
-        progress = FormHelper.createFormsOutputViewer(toolkit, progressArea, textFieldFlags);
+        progressOutput = FormHelper.createFormsOutputViewer(toolkit, progressArea, textFieldFlags);
         gd = new GridData(SWT.FILL, SWT.LEFT, true, true);
         gd.minimumHeight = 300;
         gd.minimumWidth = 300;
-        progress.getControl().setLayoutData(gd);
+        progressOutput.getControl().setLayoutData(gd);
 
         // -------------------------------------------------------------------
         // output section
@@ -489,12 +292,12 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
         Composite outputArea = (Composite) section.getClient();
         outputArea.setLayout(new GridLayout());
         // output viewer
-        output = FormHelper.createFormsOutputViewer(toolkit, outputArea, textFieldFlags);
+        userOutput = FormHelper.createFormsOutputViewer(toolkit, outputArea, textFieldFlags);
 
         gd = new GridData(SWT.FILL, SWT.LEFT, true, true);
         gd.minimumHeight = 300;
         gd.minimumWidth = 300;
-        output.getControl().setLayoutData(gd);
+        userOutput.getControl().setLayoutData(gd);
     }
 
     /**
@@ -559,7 +362,6 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
     {
         Composite coverageComposite = toolkit.createComposite(parent, SWT.WRAP);
         coverageComposite.setLayout(new GridLayout(2, false));
-        // coverageComposite.setLayoutData(gd);
         GridData gd = new GridData();
         toolkit.createLabel(coverageComposite, label);
 
@@ -609,89 +411,7 @@ public class ResultPage extends BasicFormPage implements ITLCOutputListener
     }
 
     /**
-     * Creates an error object
-     * @param tlcRegion
-     * @param document
-     * @return
-     */
-    private static TLCError createError(TLCRegion tlcRegion, IDocument document)
-    {
-        TLCError topError = new TLCError();
-        if (tlcRegion instanceof TLCRegionContainer)
-        {
-            TLCRegionContainer container = (TLCRegionContainer) tlcRegion;
-            ITypedRegion[] regions = container.getSubRegions();
-            Assert.isTrue(regions.length < 3, "Unexpected error region structure, this is a bug.");
-            for (int i = 0; i < regions.length; i++)
-            {
-                if (regions[i] instanceof TLCRegion)
-                {
-                    TLCError cause = createError((TLCRegion) regions[i], document);
-                    topError.setCause(cause);
-                } else
-                {
-                    String output;
-                    try
-                    {
-                        output = document.get(tlcRegion.getOffset(), tlcRegion.getLength());
-                        topError.setMessage(output);
-                        topError.setErrorCode(tlcRegion.getMessageCode());
-                    } catch (BadLocationException e)
-                    {
-                        TLCUIActivator.logError("Error parsing the error message", e);
-                    }
-                }
-            }
-        }
-
-        return topError;
-    }
-
-    /**
-     * Creates a text component with left-aligned text
-     * @param title
-     * @param parent
-     * @param toolkit
-     * @return
-     */
-    private static Text createTextLeft(String title, Composite parent, FormToolkit toolkit)
-    {
-        Label createLabel = toolkit.createLabel(parent, title);
-        GridData gd = new GridData();
-        createLabel.setLayoutData(gd);
-        gd.verticalAlignment = SWT.TOP;
-        Text text = toolkit.createText(parent, "");
-
-        gd = new GridData(SWT.FILL, SWT.LEFT, true, false);
-        gd.horizontalIndent = 30;
-        gd.verticalAlignment = SWT.TOP;
-        gd.horizontalAlignment = SWT.RIGHT;
-        gd.minimumWidth = 150;
-        text.setLayoutData(gd);
-
-        return text;
-    }
-
-    /**
-     * Sets the field text
-     * @param field
-     * @param text
-     * Has to be run from non-UI thread
-     */
-    private static synchronized void setFieldText(final Text field, final String text)
-    {
-        UIHelper.runUIAsync(new Runnable() {
-
-            public void run()
-            {
-                field.setText(text);
-            }
-        });
-
-    }
-
-    /**
-     * Provides labels for the statespace table 
+     * Provides labels for the state space table 
      */
     static class StateSpaceLabelProvider extends LabelProvider implements ITableLabelProvider
     {
