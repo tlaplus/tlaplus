@@ -13,12 +13,13 @@ import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
 public class AssignmentContentProvider implements IStructuredContentProvider
 {
     Object[] EMPTY = new Object[0];
+
     /* (non-Javadoc)
      * @see org.eclipse.jface.viewers.IStructuredContentProvider#getElements(java.lang.Object)
      */
     public Object[] getElements(Object inputElement)
     {
-        if (inputElement != null && inputElement instanceof Vector) 
+        if (inputElement != null && inputElement instanceof Vector)
         {
             Vector equationList = (Vector) inputElement;
             return equationList.toArray(new Assignment[equationList.size()]);
@@ -31,7 +32,7 @@ public class AssignmentContentProvider implements IStructuredContentProvider
      */
     public void dispose()
     {
-        
+
     }
 
     /* (non-Javadoc)
@@ -39,7 +40,7 @@ public class AssignmentContentProvider implements IStructuredContentProvider
      */
     public void inputChanged(Viewer viewer, Object oldInput, Object newInput)
     {
-        
+
     }
 
 }

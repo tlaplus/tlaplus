@@ -9,9 +9,9 @@ public class DataTests
     public static Test suite()
     {
         TestSuite suite = new TestSuite("Test for org.lamport.tla.toolbox.tool.tlc.output.data");
-        //$JUnit-BEGIN$
+        // $JUnit-BEGIN$
         suite.addTestSuite(TLCVariableValueTest.class);
-        //$JUnit-END$
+        // $JUnit-END$
         return suite;
     }
 

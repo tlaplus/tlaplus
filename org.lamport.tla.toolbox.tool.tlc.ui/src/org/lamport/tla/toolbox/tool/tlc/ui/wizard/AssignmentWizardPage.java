@@ -184,9 +184,9 @@ public class AssignmentWizardPage extends WizardPage
 
     public void dispose()
     {
-        
+
         String rightSide = FormHelper.trimTrailingSpaces(source.getDocument().get());
-        
+
         // if the model value(s) option exist
         if (optionModelValue != null && optionSetModelValues != null)
         {

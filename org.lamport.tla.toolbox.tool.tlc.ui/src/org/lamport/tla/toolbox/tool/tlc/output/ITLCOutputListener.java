@@ -15,7 +15,7 @@ public interface ITLCOutputListener
      * @return the name to identify the TLC instance
      */
     public String getProcessName();
-    
+
     /**
      * Reports new output
      */
@@ -25,7 +25,7 @@ public interface ITLCOutputListener
      * Reports end of output
      */
     public void onDone();
-    
+
     /**
      * Informs the listener that the new source has appeared
      */

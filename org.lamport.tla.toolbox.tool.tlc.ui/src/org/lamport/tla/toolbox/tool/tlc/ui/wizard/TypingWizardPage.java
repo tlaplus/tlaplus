@@ -34,8 +34,8 @@ public class TypingWizardPage extends WizardPage
         super("TypingWizardPage");
         setTitle(action);
         setDescription(description);
-        setMessage("The provided set of model values is untyped. It is recommended to use typed model values.\n" +
-        		"Do you want to type the set of model values?");
+        setMessage("The provided set of model values is untyped. It is recommended to use typed model values.\n"
+                + "Do you want to type the set of model values?");
     }
 
     /* (non-Javadoc)
@@ -59,8 +59,7 @@ public class TypingWizardPage extends WizardPage
         // typed option
         optionTyped = new Button(container, SWT.RADIO);
         optionTyped.setText("Make typed:");
-        optionTyped.addSelectionListener(new SelectionAdapter()
-        {
+        optionTyped.addSelectionListener(new SelectionAdapter() {
             public void widgetSelected(SelectionEvent e)
             {
                 typeCombo.setEnabled(optionTyped.getSelection());
@@ -70,14 +69,14 @@ public class TypingWizardPage extends WizardPage
         gd = new GridData(SWT.LEFT, SWT.TOP, false, false);
         gd.horizontalSpan = 2;
         optionTyped.setLayoutData(gd);
-        
+
         // label for type selection
         label = new Label(container, SWT.NONE);
         label.setText("Type:");
         gd = new GridData(SWT.LEFT, SWT.TOP, false, false);
         gd.horizontalIndent = 10;
         label.setLayoutData(gd);
-        
+
         // type combo box
         typeCombo = new Combo(container, SWT.BORDER);
 
@@ -91,25 +90,25 @@ public class TypingWizardPage extends WizardPage
         }
         gd = new GridData(SWT.LEFT, SWT.TOP, false, false);
         typeCombo.setLayoutData(gd);
-        
+
         // select the typed option
         optionTyped.setSelection(true);
         typeCombo.setText("A");
-        //setUntypedOption();
+        // setUntypedOption();
         setControl(container);
     }
 
     public void dispose()
     {
         // evaluate the selected option and change the MVs
-        // only if current page was selected 
+        // only if current page was selected
         // if the page is not selected, it is constructed but not shown
-        if (isCurrentPage() && optionTyped.getSelection()) 
+        if (isCurrentPage() && optionTyped.getSelection())
         {
             // retrieve the type letter
             String type = typeCombo.getText();
             // get the MV set
-            Assignment assignment = ((AssignmentWizard)getWizard()).getFormula();
+            Assignment assignment = ((AssignmentWizard) getWizard()).getFormula();
             // parse the set
             TypedSet set = TypedSet.parseSet(assignment.getRight());
             // set type

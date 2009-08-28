@@ -19,14 +19,14 @@ public class TagBasedTLCOutputTokenScanner extends RuleBasedPartitionScanner
 {
     private final static String HEAD_DELIM = "@!@!@";
     private final static String TAIL_DELIM = "";
-    private final static String RULE_START = HEAD_DELIM + "STARTMSG"; 
+    private final static String RULE_START = HEAD_DELIM + "STARTMSG";
     private final static String RULE_END = HEAD_DELIM + "ENDMSG";
-    
-    public static final String TAG_OPEN = "__tlc_tag_open"; 
-    public static final String TAG_CLOSED = "__tlc_tag_closed"; 
+
+    public static final String TAG_OPEN = "__tlc_tag_open";
+    public static final String TAG_CLOSED = "__tlc_tag_closed";
     public static final String DEFAULT_CONTENT_TYPE = "__tlc_output";
 
-    public static final String[] CONTENT_TYPES = new String[] {TAG_OPEN, TAG_CLOSED, DEFAULT_CONTENT_TYPE};
+    public static final String[] CONTENT_TYPES = new String[] { TAG_OPEN, TAG_CLOSED, DEFAULT_CONTENT_TYPE };
 
     public TagBasedTLCOutputTokenScanner()
     {
@@ -34,7 +34,7 @@ public class TagBasedTLCOutputTokenScanner extends RuleBasedPartitionScanner
 
         rules.add(new SingleLineRule(RULE_START, TAIL_DELIM + "\n", new Token(TAG_OPEN)));
         rules.add(new SingleLineRule(RULE_END, TAIL_DELIM + "\n", new Token(TAG_CLOSED)));
-        
+
         // add the rules
         setPredicateRules((IPredicateRule[]) rules.toArray(new IPredicateRule[rules.size()]));
 
@@ -50,7 +50,6 @@ public class TagBasedTLCOutputTokenScanner extends RuleBasedPartitionScanner
         return result;
     }
 
-
     public int getColumn()
     {
         reportEnter("getColumn");
@@ -62,8 +61,8 @@ public class TagBasedTLCOutputTokenScanner extends RuleBasedPartitionScanner
     public char[][] getLegalLineDelimiters()
     {
         reportEnter("getLegalLineDelimiters");
-        char[][] result =  super.getLegalLineDelimiters();
-        reportExit("getLegalLineDelimiters");   
+        char[][] result = super.getLegalLineDelimiters();
+        reportExit("getLegalLineDelimiters");
         return result;
     }
 
@@ -132,12 +131,10 @@ public class TagBasedTLCOutputTokenScanner extends RuleBasedPartitionScanner
         super.unread();
         reportExit("unread");
     }
-    
 
-    
     private void reportEnter(String string)
     {
-        // TLCUIActivator.logDebug(">>> Entering " + string);        
+        // TLCUIActivator.logDebug(">>> Entering " + string);
     }
 
     private void reportExit(String string)

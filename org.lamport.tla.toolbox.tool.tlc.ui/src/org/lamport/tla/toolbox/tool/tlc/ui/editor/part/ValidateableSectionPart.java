@@ -15,7 +15,6 @@ public class ValidateableSectionPart extends SectionPart implements IValidateble
 {
     private BasicFormPage page;
 
-    
     /**
      * Creates a wrapper around the section
      * @param section

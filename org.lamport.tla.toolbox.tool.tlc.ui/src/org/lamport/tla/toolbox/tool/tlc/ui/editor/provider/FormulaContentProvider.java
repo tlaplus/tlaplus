@@ -14,17 +14,17 @@ import org.lamport.tla.toolbox.tool.tlc.model.Formula;
 public class FormulaContentProvider implements IStructuredContentProvider
 {
     private static final Object[] EMPTY = new Object[0];
-    
+
     public FormulaContentProvider()
     {
     }
-    
+
     /* (non-Javadoc)
      * @see org.eclipse.jface.viewers.IContentProvider#dispose()
      */
     public void dispose()
     {
-       //  formulaList = null;
+        // formulaList = null;
     }
 
     /* (non-Javadoc)
@@ -40,7 +40,7 @@ public class FormulaContentProvider implements IStructuredContentProvider
      */
     public Object[] getElements(Object inputElement)
     {
-        if (inputElement != null && inputElement instanceof Vector) 
+        if (inputElement != null && inputElement instanceof Vector)
         {
             Vector formulaList = (Vector) inputElement;
             return formulaList.toArray(new Formula[formulaList.size()]);

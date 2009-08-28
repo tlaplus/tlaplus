@@ -1,6 +1,5 @@
 package org.lamport.tla.toolbox.tool.tlc.ui.editor;
 
-
 /**
  * Section definitions
  * @author Simon Zambrovski

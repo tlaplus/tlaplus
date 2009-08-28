@@ -44,7 +44,7 @@ public class FormulaWizard extends Wizard
     {
         return new Formula(FormHelper.trimTrailingSpaces(page.getDocument().get()));
     }
-    
+
     /**
      * Sets a formula to edit
      * @param initialContent
@@ -52,10 +52,11 @@ public class FormulaWizard extends Wizard
     public void setFormula(Formula initialContent)
     {
         Document doc;
-        if (initialContent == null) 
+        if (initialContent == null)
         {
             doc = new Document();
-        } else {
+        } else
+        {
             doc = new Document(initialContent.getFormula());
         }
         page.setDocument(doc);

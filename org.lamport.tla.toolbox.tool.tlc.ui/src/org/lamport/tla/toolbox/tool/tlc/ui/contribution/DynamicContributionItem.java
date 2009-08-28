@@ -14,6 +14,7 @@ public class DynamicContributionItem extends ActionContributionItem
     {
         super(action);
     }
+
     public boolean isDynamic()
     {
         return true;

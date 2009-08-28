@@ -38,7 +38,8 @@ public class StartLaunchHandler extends AbstractHandler
                         return null;
                     }
 
-                    ILaunch launch = config.launch(TLCModelLaunchDelegate.MODE_MODELCHECK, new NullProgressMonitor(), false);
+                    ILaunch launch = config.launch(TLCModelLaunchDelegate.MODE_MODELCHECK, new NullProgressMonitor(),
+                            false);
                     System.out.println("Launched " + launch + " is executed");
                 } catch (CoreException e)
                 {

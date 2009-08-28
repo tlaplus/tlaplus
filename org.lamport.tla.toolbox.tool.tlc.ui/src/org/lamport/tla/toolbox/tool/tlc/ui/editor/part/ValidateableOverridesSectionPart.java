@@ -21,34 +21,38 @@ import tla2sany.semantic.OpDefNode;
 public class ValidateableOverridesSectionPart extends ValidateableConstantSectionPart
 {
 
-    public ValidateableOverridesSectionPart(Composite composite, String title, String description, FormToolkit toolkit, int flags, BasicFormPage page)
+    public ValidateableOverridesSectionPart(Composite composite, String title, String description, FormToolkit toolkit,
+            int flags, BasicFormPage page)
     {
         super(composite, title, description, toolkit, flags, page, DataBindingManager.SEC_DEFINITION_OVERRIDE);
     }
 
-    
     protected Assignment doEditFormula(Assignment formula)
     {
         // add -> let the user select the definition to override
-        if (formula == null) 
+        if (formula == null)
         {
-            FilteredDefinitionSelectionDialog definitionSelection = new FilteredDefinitionSelectionDialog(this.getSection().getShell(), false, ToolboxHandle.getCurrentSpec().getValidRootModule());
+            FilteredDefinitionSelectionDialog definitionSelection = new FilteredDefinitionSelectionDialog(this
+                    .getSection().getShell(), false, ToolboxHandle.getCurrentSpec().getValidRootModule());
 
             definitionSelection.setTitle("Select Definition to Override");
-            definitionSelection.setMessage("Type definition to override or select from the list below\n(?= any character, *= any string)");
-            definitionSelection.setInitialPattern("?");   
-            if (Window.OK == definitionSelection.open()) 
+            definitionSelection
+                    .setMessage("Type definition to override or select from the list below\n(?= any character, *= any string)");
+            definitionSelection.setInitialPattern("?");
+            if (Window.OK == definitionSelection.open())
             {
                 OpDefNode result = (OpDefNode) (definitionSelection.getResult())[0];
-                formula = new Assignment(result.getName().toString(), Assignment.getArrayOfEmptyStrings(result.getNumberOfArgs()), "");
-            } else {
+                formula = new Assignment(result.getName().toString(), Assignment.getArrayOfEmptyStrings(result
+                        .getNumberOfArgs()), "");
+            } else
+            {
                 return null;
             }
         }
-        
-        
+
         // Create the wizard
-        AssignmentWizard wizard = new AssignmentWizard(getSection().getText(), getSection().getDescription(), (Assignment) formula, AssignmentWizard.NONE);
+        AssignmentWizard wizard = new AssignmentWizard(getSection().getText(), getSection().getDescription(),
+                (Assignment) formula, AssignmentWizard.NONE);
         // Create the wizard dialog
         WizardDialog dialog = new WizardDialog(getTableViewer().getTable().getShell(), wizard);
         dialog.setHelpAvailable(true);
@@ -61,9 +65,9 @@ public class ValidateableOverridesSectionPart extends ValidateableConstantSectio
         {
             return null;
         }
-        
+
     }
-    
+
     /**
      * create the buttons
      */

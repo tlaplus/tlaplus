@@ -36,11 +36,11 @@ public class NewModelHandlerSelectedDelegate extends AbstractHandler implements 
             {
                 HashMap parameters = new HashMap();
                 // fill the spec name for the handler
-                parameters.put(NewModelHandler.PARAM_SPEC_NAME, ((Spec)selected).getName());
+                parameters.put(NewModelHandler.PARAM_SPEC_NAME, ((Spec) selected).getName());
                 // delegate the call to the new model handler
                 UIHelper.runCommand(NewModelHandler.COMMAND_ID, parameters);
             }
-        } 
+        }
         return null;
     }
 

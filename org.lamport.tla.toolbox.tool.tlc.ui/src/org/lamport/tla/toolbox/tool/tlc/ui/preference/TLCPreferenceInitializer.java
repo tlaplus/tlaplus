@@ -19,6 +19,6 @@ public class TLCPreferenceInitializer extends AbstractPreferenceInitializer
         IPreferenceStore store = TLCUIActivator.getDefault().getPreferenceStore();
         store.setDefault(ITLCPreferenceConstants.I_TLC_POPUP_ERRORS, true);
         store.setDefault(ITLCPreferenceConstants.I_TLC_REVALIDATE_ON_MODIFY, true);
-//        store.setDefault(ITLCPreferenceConstants.I_TLC_DELETE_PREVIOUS_FILES, true);
+        // store.setDefault(ITLCPreferenceConstants.I_TLC_DELETE_PREVIOUS_FILES, true);
     }
 }

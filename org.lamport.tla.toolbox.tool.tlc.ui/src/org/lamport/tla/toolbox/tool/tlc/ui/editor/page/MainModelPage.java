@@ -226,7 +226,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
             {
                 // if constants have been removed, these should be deleted from the model too
                 SectionPart constantSection = dm.getSection(dm.getSectionForAttribute(MODEL_PARAMETER_CONSTANTS));
-                if (constantSection != null) 
+                if (constantSection != null)
                 {
                     // mark the constants dirty
                     constantSection.markDirty();

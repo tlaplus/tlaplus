@@ -25,11 +25,7 @@ public class TagBasedTLCAnalyzer
     public static final int OPEN_TAG_LENGTH = 28;
     // @!@!@ENDMSG 2219 @!@!@
     public static final int CLOSE_TAG_LENGTH = 24;
-    
-    
-    
-    
-    
+
     private static final int START = 1;
     private static final int END = 2;
 
@@ -167,7 +163,8 @@ public class TagBasedTLCAnalyzer
                             offset = offset + shift;
                             length = length - shift;
                         }
-                    } else if (offset + length - CLOSE_TAG_LENGTH == stackContent[i].getOffset() + stackContent[i].getLength())
+                    } else if (offset + length - CLOSE_TAG_LENGTH == stackContent[i].getOffset()
+                            + stackContent[i].getLength())
                     {
                         int shift = stackContent[i].getLength();
                         length = length - shift;

@@ -70,7 +70,8 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 
         public void linkActivated(HyperlinkEvent e)
         {
-            TLCModelLaunchDataProvider dataProvider = TLCOutputSourceRegistry.getStatusRegistry().getProvider(ResultPage.this);
+            TLCModelLaunchDataProvider dataProvider = TLCOutputSourceRegistry.getStatusRegistry().getProvider(
+                    ResultPage.this);
             if (dataProvider != null)
             {
                 TLCErrorView.updateErrorView(dataProvider);
@@ -154,24 +155,23 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         reinit();
 
         TLCModelLaunchDataProvider provider = TLCOutputSourceRegistry.getStatusRegistry().getProvider(this);
-        if (provider != null) 
+        if (provider != null)
         {
             provider.populate();
             return;
-        } 
-        
+        }
+
         // enforce the process start
         // this is required only if the page is loaded and the provider
         // is not available. e.G id there were no hitting start button
         TLCOutputSourceRegistry.getStatusRegistry().startProcess(getConfig());
         provider = TLCOutputSourceRegistry.getStatusRegistry().getProvider(this);
-        if (provider != null) 
+        if (provider != null)
         {
             provider.populate();
             return;
-        } 
+        }
 
-        
     }
 
     /**
@@ -197,7 +197,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
     public void dispose()
     {
         TLCModelLaunchDataProvider provider = TLCOutputSourceRegistry.getStatusRegistry().getProvider(this);
-        if (provider != null) 
+        if (provider != null)
         {
             provider.setPresenter(null);
         }
@@ -209,8 +209,6 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         // do nothing here, since the result page is read-only per definition
     }
 
-
-    
     /**
      * Draw the fields
      */

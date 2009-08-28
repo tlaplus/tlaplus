@@ -10,10 +10,9 @@ import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
  */
 public class AssignmentWizard extends Wizard
 {
-    public final static int NONE                 = 0;
-    public final static int SHOW_OPTION          = 1;
-    
-    
+    public final static int NONE = 0;
+    public final static int SHOW_OPTION = 1;
+
     private Assignment assignment;
     private AssignmentWizardPage assignmentPage;
     private TypingWizardPage typePage;
@@ -29,7 +28,7 @@ public class AssignmentWizard extends Wizard
         this.assignment = assignment;
         assignmentPage = new AssignmentWizardPage(action, description, fieldFlags);
         typePage = new TypingWizardPage(action, description);
-        
+
     }
 
     public void addPages()
@@ -44,13 +43,14 @@ public class AssignmentWizard extends Wizard
      */
     public Assignment getFormula()
     {
-        return this.assignment; 
+        return this.assignment;
     }
 
     public boolean canFinish()
     {
         // either on the first page, but no typing of MV set is possible, or on the second page
-        return (assignmentPage.isCurrentPage() && !assignmentPage.isTypeInputPossible()) || !assignmentPage.isCurrentPage();
+        return (assignmentPage.isCurrentPage() && !assignmentPage.isTypeInputPossible())
+                || !assignmentPage.isCurrentPage();
     }
 
     /* (non-Javadoc)

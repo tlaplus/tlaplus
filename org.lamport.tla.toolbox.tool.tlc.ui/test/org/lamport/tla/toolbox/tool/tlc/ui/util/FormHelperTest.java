@@ -17,16 +17,15 @@ public class FormHelperTest extends TestCase
         super.setUp();
     }
 
-    
     public void testIsIdetifier()
     {
-        
+
         assertFalse(FormHelper.isIdentifier(""));
         assertFalse(FormHelper.isIdentifier(null));
         assertTrue(FormHelper.isIdentifier("ksdhf"));
         assertTrue(FormHelper.isIdentifier("090a0909"));
         assertFalse(FormHelper.isIdentifier("ksd hf"));
-        
+
         assertFalse(FormHelper.isIdentifier("ksd hf"));
         assertFalse(FormHelper.isIdentifier("0000"));
         assertFalse(FormHelper.isIdentifier("000_111"));

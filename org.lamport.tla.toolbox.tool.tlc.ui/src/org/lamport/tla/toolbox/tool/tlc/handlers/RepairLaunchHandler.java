@@ -29,7 +29,7 @@ public class RepairLaunchHandler extends AbstractHandler
             IStructuredSelection structSelection = ((IStructuredSelection) selection);
 
             Iterator modelIterator = structSelection.iterator();
-            while (modelIterator.hasNext()) 
+            while (modelIterator.hasNext())
             {
                 Object element = modelIterator.next();
                 if (element instanceof ILaunchConfiguration)
@@ -40,7 +40,7 @@ public class RepairLaunchHandler extends AbstractHandler
                         if (ModelHelper.isModelLocked(config) && ModelHelper.isModelStale(config))
                         {
                             ModelHelper.recoverModel(config);
-                        } 
+                        }
                     } catch (CoreException e)
                     {
                         TLCUIActivator.logError("Error reparing the model launch", e);

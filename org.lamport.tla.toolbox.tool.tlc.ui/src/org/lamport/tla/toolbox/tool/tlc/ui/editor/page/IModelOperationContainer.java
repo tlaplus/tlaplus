@@ -13,13 +13,12 @@ public interface IModelOperationContainer
      * @param mode
      */
     public void doRun();
-    
+
     /**
      * Command for running the model checking in debug mode
      */
     // public void doDebug();
 
-    
     /**
      * Command for running the model generation only
      * @param mode

@@ -35,10 +35,10 @@ import tla2sany.semantic.ModuleNode;
  */
 public class NewModelHandler extends AbstractHandler implements IModelConfigurationConstants
 {
-    public static final String COMMAND_ID       = "toolbox.tool.tlc.commands.model.new";
-    public static final String PARAM_SPEC_NAME  = "toolbox.tool.tlc.commands.model.new.param";
-//    public static final String PARAM_SPEC_NAME  = "specName";
-    
+    public static final String COMMAND_ID = "toolbox.tool.tlc.commands.model.new";
+    public static final String PARAM_SPEC_NAME = "toolbox.tool.tlc.commands.model.new.param";
+    // public static final String PARAM_SPEC_NAME = "specName";
+
     private String modelName = null;
 
     /**
@@ -52,13 +52,14 @@ public class NewModelHandler extends AbstractHandler implements IModelConfigurat
     {
         String parameter = event.getParameter(PARAM_SPEC_NAME);
         Spec spec = null;
-        if (parameter != null) 
+        if (parameter != null)
         {
             spec = ToolboxHandle.getSpecByName(parameter);
-        } else {
+        } else
+        {
             spec = ToolboxHandle.getCurrentSpec();
         }
-        if (spec == null) 
+        if (spec == null)
         {
             // no spec
             System.out.println("BUG: no spec");
@@ -66,21 +67,18 @@ public class NewModelHandler extends AbstractHandler implements IModelConfigurat
         }
         // project
         IProject specProject = spec.getProject();
-        
+
         // root module
         // IResource specRootModule = spec.getRootFile();
 
         // spec object
         SpecObj specObject = spec.getRootModule();
-        if (specObject == null) 
+        if (specObject == null)
         {
             System.out.println("BUG: no specObject");
             return null;
         }
 
-        
-        
-        
         // get the launch manager
         ILaunchManager launchManager = DebugPlugin.getDefault().getLaunchManager();
 
@@ -116,8 +114,7 @@ public class NewModelHandler extends AbstractHandler implements IModelConfigurat
             // exit processing if no model name at place
             return null;
         }
-        
-        
+
         // get the root module
         ModuleNode moduleNode = specObject.getExternalModuleTable().getRootModule();
 
@@ -128,13 +125,15 @@ public class NewModelHandler extends AbstractHandler implements IModelConfigurat
         {
 
             // create new launch instance
-            ILaunchConfigurationWorkingCopy launchCopy = launchConfigurationType.newInstance(specProject, specProject.getName() + "___" + modelName);
+            ILaunchConfigurationWorkingCopy launchCopy = launchConfigurationType.newInstance(specProject, specProject
+                    .getName()
+                    + "___" + modelName);
 
             launchCopy.setAttribute(SPEC_NAME, spec.getName());
             // it is easier to do launchCopy.getProject().getPersistentProperty(SPEC_ROOT_FILE)
             // launchCopy.setAttribute(SPEC_ROOT_FILE, specRootModule.getLocation().toOSString());
             launchCopy.setAttribute(MODEL_NAME, modelName);
-            
+
             if (constants.size() == 0)
             {
                 launchCopy.setAttribute(MODEL_PARAMETER_CONSTANTS, (List) null);

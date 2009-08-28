@@ -90,7 +90,7 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
     {
         ((ModelEditor) getEditor()).launchModel(TLCModelLaunchDelegate.MODE_GENERATE, true);
     }
-    
+
     public void doStop()
     {
         ((ModelEditor) getEditor()).stop();
@@ -299,7 +299,7 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
      */
     public void handleProblemMarkers()
     {
-        ((ModelEditor)getEditor()).handleProblemMarkers();
+        ((ModelEditor) getEditor()).handleProblemMarkers();
     }
 
     /**

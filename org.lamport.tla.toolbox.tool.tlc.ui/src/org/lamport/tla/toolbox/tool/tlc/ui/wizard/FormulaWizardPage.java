@@ -19,7 +19,7 @@ public class FormulaWizardPage extends WizardPage
 {
     private SourceViewer sourceViewer;
     private Document document;
-    
+
     public FormulaWizardPage(String action, String description)
     {
         super("FormulaWizardPage");
@@ -36,20 +36,19 @@ public class FormulaWizardPage extends WizardPage
         GridLayout layout = new GridLayout(1, false);
         container.setLayout(layout);
 
-        
         sourceViewer = FormHelper.createSourceViewer(container, SWT.BORDER | SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
-       
+
         GridData gd = new GridData(SWT.CENTER, SWT.CENTER, true, true);
         gd.heightHint = 200;
         gd.widthHint = 400;
         gd.grabExcessHorizontalSpace = true;
         gd.grabExcessVerticalSpace = true;
-        
+
         StyledText control = sourceViewer.getTextWidget();
         control.setEditable(true);
         control.setLayoutData(gd);
-        
-        if (this.document == null) 
+
+        if (this.document == null)
         {
             this.document = new Document();
         }

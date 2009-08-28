@@ -15,9 +15,9 @@ public interface ITLCPreferenceConstants
      * Re-validate model on save
      */
     public static final String I_TLC_REVALIDATE_ON_MODIFY = "revalidateOnModify";
-//    /**
-//     * Delete data (.st files and unused checkpoints) from the previous run)
-//     */
-//    public static final String I_TLC_DELETE_PREVIOUS_FILES = "deleteUnusedMCData";
+    // /**
+    // * Delete data (.st files and unused checkpoints) from the previous run)
+    // */
+    // public static final String I_TLC_DELETE_PREVIOUS_FILES = "deleteUnusedMCData";
 
 }

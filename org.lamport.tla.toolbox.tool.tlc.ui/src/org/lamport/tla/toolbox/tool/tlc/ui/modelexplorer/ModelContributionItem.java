@@ -64,7 +64,6 @@ public class ModelContributionItem extends CompoundContributionItem
                 // fill the model name for the handler
                 parameters.put(OpenModelHandler.PARAM_MODEL_NAME, modelNameUser);
 
-                
                 // create the contribution item
                 CommandContributionItemParameter param = new CommandContributionItemParameter(UIHelper
                         .getActiveWindow(), "toolbox.command.model.open." + modelName, OpenModelHandler.COMMAND_ID,

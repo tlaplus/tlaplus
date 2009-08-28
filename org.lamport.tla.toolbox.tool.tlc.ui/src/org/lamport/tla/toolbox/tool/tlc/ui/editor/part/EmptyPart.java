@@ -16,7 +16,7 @@ import org.eclipse.ui.forms.AbstractFormPart;
 public class EmptyPart extends AbstractFormPart
 {
     private Vector controls = new Vector();
-    
+
     public boolean addControl(Control control)
     {
         Assert.isNotNull(control);
@@ -39,7 +39,7 @@ public class EmptyPart extends AbstractFormPart
     {
         Assert.isNotNull(control);
         boolean contains = controls.contains(control);
-        
+
         if (!contains && control instanceof Composite)
         {
             Control[] children = ((Composite) control).getChildren();
@@ -52,7 +52,7 @@ public class EmptyPart extends AbstractFormPart
                 }
             }
         }
-        
+
         return contains;
     }
 }

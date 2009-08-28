@@ -22,7 +22,7 @@ import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 public class StopLaunchHandler extends AbstractHandler
 {
     public static final String ID = "toolbox.tool.tlc.commands.model.stop";
-    
+
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
         ISelection selection = HandlerUtil.getCurrentSelection(event);
@@ -31,7 +31,7 @@ public class StopLaunchHandler extends AbstractHandler
             IStructuredSelection structSelection = ((IStructuredSelection) selection);
 
             Iterator modelIterator = structSelection.iterator();
-            while (modelIterator.hasNext()) 
+            while (modelIterator.hasNext())
             {
                 Object element = modelIterator.next();
                 if (element instanceof ILaunchConfiguration)
@@ -47,7 +47,7 @@ public class StopLaunchHandler extends AbstractHandler
                                 // send cancellations to all jobs...
                                 runningSpecJobs[i].cancel();
                             }
-                        } 
+                        }
                     } catch (CoreException e)
                     {
                         TLCUIActivator.logError("Error stopping the model launch", e);

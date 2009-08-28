@@ -67,8 +67,9 @@ public class DeleteModelHandler extends AbstractHandler implements IModelConfigu
                     } else
                     {
                         // if the editor is opened
-                        IEditorPart editorWithModelOpened = ModelHelper.getEditorWithModelOpened(launchConfigurations[i]);
-                        if (editorWithModelOpened != null) 
+                        IEditorPart editorWithModelOpened = ModelHelper
+                                .getEditorWithModelOpened(launchConfigurations[i]);
+                        if (editorWithModelOpened != null)
                         {
                             // close it
                             UIHelper.getActivePage().closeEditor(editorWithModelOpened, false);

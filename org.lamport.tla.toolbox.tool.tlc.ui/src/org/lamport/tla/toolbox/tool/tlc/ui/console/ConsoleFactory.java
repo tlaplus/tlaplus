@@ -19,11 +19,10 @@ public class ConsoleFactory implements IConsoleFactory
 {
     private static final String TLC_ID = "TLC-Console";
 
-
     public void openConsole()
     {
         IWorkbenchPage activePage = UIHelper.getActivePage();
-        if (activePage != null) 
+        if (activePage != null)
         {
             try
             {
@@ -35,14 +34,12 @@ public class ConsoleFactory implements IConsoleFactory
         }
     }
 
-    
     public static MessageConsole getTLCConsole()
     {
         MessageConsole console = findConsole(TLC_ID);
-        
+
         return console;
     }
-
 
     /**
      * Fins the console with a given name
@@ -51,12 +48,12 @@ public class ConsoleFactory implements IConsoleFactory
      */
     private static MessageConsole findConsole(String name)
     {
-        if (name == null) 
+        if (name == null)
         {
             throw new IllegalArgumentException("Console name must be not null");
         }
         IConsoleManager consoleManager = ConsolePlugin.getDefault().getConsoleManager();
-        
+
         IConsole[] existing = consoleManager.getConsoles();
         // try to find existing
         for (int i = 0; i < existing.length; i++)
@@ -66,13 +63,11 @@ public class ConsoleFactory implements IConsoleFactory
                 return (MessageConsole) existing[i];
             }
         }
-        
+
         // no console found, create a new one
         MessageConsole myConsole = new MessageConsole(name, null);
-        consoleManager.addConsoles(new IConsole[]{myConsole});
+        consoleManager.addConsoles(new IConsole[] { myConsole });
         return myConsole;
     }
-    
-    
-    
+
 }

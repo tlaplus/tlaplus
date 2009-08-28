@@ -14,11 +14,6 @@ import org.lamport.tla.toolbox.tool.tlc.output.source.TLCOutputSourceRegistry;
 import org.lamport.tla.toolbox.tool.tlc.output.source.TLCRegion;
 import org.lamport.tla.toolbox.tool.tlc.output.source.TLCRegionContainer;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
-import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.data.CoverageInformationItem;
-import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.data.GeneralOutputParsingHwelper;
-import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.data.StateSpaceInformationItem;
-import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.data.TLCError;
-import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.data.TLCState;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 import tlc2.output.EC;
@@ -79,7 +74,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
 
         progressOutput = new Document(NO_OUTPUT_AVAILABLE);
         userOutput = new Document(NO_OUTPUT_AVAILABLE);
-        
+
         TLCOutputSourceRegistry.getStatusRegistry().connect(this);
         informPresenter(ITLCModelLaunchDataPresenter.USER_OUTPUT);
         informPresenter(ITLCModelLaunchDataPresenter.PROGRESS_OUTPUT);
@@ -89,25 +84,25 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
      * Inform the view, if any
      * @param fieldId
      */
-    private void informPresenter(int fieldId) 
+    private void informPresenter(int fieldId)
     {
-        if (presenter != null) 
+        if (presenter != null)
         {
             presenter.modelChanged(this, fieldId);
         }
     }
-    
+
     /**
      * Populate data to the presenter 
      */
     public void populate()
     {
-        for (int i=0; i < ITLCModelLaunchDataPresenter.ALL_FIELDS.length; i++) 
+        for (int i = 0; i < ITLCModelLaunchDataPresenter.ALL_FIELDS.length; i++)
         {
             informPresenter(ITLCModelLaunchDataPresenter.ALL_FIELDS[i]);
         }
     }
-    
+
     /**
      * Name of the model
      */
@@ -126,7 +121,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
     {
         // everything that was saved should be erased
         initialize();
-        
+
         populate();
     }
 
@@ -232,11 +227,11 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                     setDocumentText(this.progressOutput, outputMessage, true);
                     break;
                 case EC.TLC_STARTING:
-                    this.startTimestamp = GeneralOutputParsingHwelper.parseTLCTimestamp(outputMessage);
+                    this.startTimestamp = GeneralOutputParsingHelper.parseTLCTimestamp(outputMessage);
                     informPresenter(ITLCModelLaunchDataPresenter.START_TIME);
                     break;
                 case EC.TLC_FINISHED:
-                    this.finishTimestamp = GeneralOutputParsingHwelper.parseTLCTimestamp(outputMessage);
+                    this.finishTimestamp = GeneralOutputParsingHelper.parseTLCTimestamp(outputMessage);
                     informPresenter(ITLCModelLaunchDataPresenter.END_TIME);
                     break;
 
@@ -278,7 +273,6 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
     {
         TLCOutputSourceRegistry.getStatusRegistry().disconnect(this);
     }
-    
 
     /**
      * Creates an error object
@@ -373,7 +367,6 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
         return this.config;
     }
 
-    
     public void setPresenter(ITLCModelLaunchDataPresenter presenter)
     {
         this.presenter = presenter;

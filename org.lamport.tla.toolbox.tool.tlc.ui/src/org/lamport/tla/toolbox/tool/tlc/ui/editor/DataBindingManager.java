@@ -49,7 +49,7 @@ public class DataBindingManager implements ISectionConstants
             part.getSection().setExpanded(true);
         }
     }
-    
+
     /**
      * Enables or disables all section on the current page
      * @param enabled 
@@ -152,8 +152,6 @@ public class DataBindingManager implements ISectionConstants
         return (SectionPart) sectionParts.get(sectionId);
     }
 
-    
-    
     /**
      * Bind an attribute name <code>attributeName</code> to the viewer <code>attributeViewer</code> location in the section part <code>sectionPart</code>
      * This method should be called after the section is bound to the section id and page using {@link DataBindingManager#bindSection(SectionPart, String, String)} method

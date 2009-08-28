@@ -16,11 +16,12 @@ import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.IValidateble;
  * @author Simon Zambrovski
  * @version $Id$
  */
-public class DirtyMarkingListener implements ITextInputListener, ITextListener, SelectionListener, ModifyListener, IgnoringListener 
+public class DirtyMarkingListener implements ITextInputListener, ITextListener, SelectionListener, ModifyListener,
+        IgnoringListener
 {
     private final AbstractFormPart part;
     private boolean ignoreInputChange;
-    
+
     public DirtyMarkingListener(AbstractFormPart part, boolean ignoreInputChange)
     {
         this.part = part;
@@ -36,7 +37,6 @@ public class DirtyMarkingListener implements ITextInputListener, ITextListener, 
         this.ignoreInputChange = ignoreInputChange;
     }
 
-    
     public void inputDocumentAboutToBeChanged(IDocument oldInput, IDocument newInput)
     {
     }
@@ -51,7 +51,6 @@ public class DirtyMarkingListener implements ITextInputListener, ITextListener, 
         perform();
     }
 
-    
     public void widgetDefaultSelected(SelectionEvent e)
     {
     }
@@ -68,15 +67,15 @@ public class DirtyMarkingListener implements ITextInputListener, ITextListener, 
     {
         perform();
     }
-    
+
     private void perform()
     {
-        if (!ignoreInputChange) 
+        if (!ignoreInputChange)
         {
             part.markDirty();
             if (part instanceof IValidateble)
             {
-                ((IValidateble)part).validate();
+                ((IValidateble) part).validate();
             }
         }
     }

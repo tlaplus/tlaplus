@@ -25,18 +25,19 @@ import org.lamport.tla.toolbox.tool.tlc.ui.wizard.AssignmentWizard;
  */
 public class ValidateableConstantSectionPart extends ValidateableTableSectionPart
 {
-    public ValidateableConstantSectionPart(Composite composite, String title, String description, FormToolkit toolkit, int flags, BasicFormPage page, String sectionName)
+    public ValidateableConstantSectionPart(Composite composite, String title, String description, FormToolkit toolkit,
+            int flags, BasicFormPage page, String sectionName)
     {
         super(composite, title, description, toolkit, flags, page, sectionName);
     }
 
-    
     protected Assignment doEditFormula(Assignment formula)
     {
         Assert.isNotNull(formula);
-        
+
         // Create the wizard
-        AssignmentWizard wizard = new AssignmentWizard(getSection().getText(), getSection().getDescription(), (Assignment) formula, AssignmentWizard.SHOW_OPTION);
+        AssignmentWizard wizard = new AssignmentWizard(getSection().getText(), getSection().getDescription(),
+                (Assignment) formula, AssignmentWizard.SHOW_OPTION);
         // Create the wizard dialog
         WizardDialog dialog = new WizardDialog(getTableViewer().getTable().getShell(), wizard);
         dialog.setHelpAvailable(true);
@@ -51,13 +52,12 @@ public class ValidateableConstantSectionPart extends ValidateableTableSectionPar
         }
     }
 
-    
     /**
      * Add assignment to the list
      */
     protected void doAdd()
     {
-        Assignment formula = doEditFormula((Assignment)null);
+        Assignment formula = doEditFormula((Assignment) null);
 
         // add a formula
         if (formula != null)
@@ -68,7 +68,7 @@ public class ValidateableConstantSectionPart extends ValidateableTableSectionPar
             this.doMakeDirty();
         }
     }
-    
+
     protected void doEdit()
     {
         IStructuredSelection selection = (IStructuredSelection) tableViewer.getSelection();
@@ -82,7 +82,7 @@ public class ValidateableConstantSectionPart extends ValidateableTableSectionPar
             tableViewer.refresh();
         }
     }
-    
+
     /**
      * create the viewer
      */

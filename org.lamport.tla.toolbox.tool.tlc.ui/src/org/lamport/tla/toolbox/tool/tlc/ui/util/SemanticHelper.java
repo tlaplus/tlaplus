@@ -44,7 +44,6 @@ public class SemanticHelper
         resetSpecNames();
     }
 
-    
     /**
      * Reset all names used in the model
      */
@@ -52,7 +51,7 @@ public class SemanticHelper
     {
         pageStorage = new Hashtable();
     }
-    
+
     /**
      * Resets the names used in the model defined on the certain page
      * @param pageKey the key representing the page 
@@ -111,6 +110,7 @@ public class SemanticHelper
         // finally check the reserved words and the spec
         return keywords.contains(name) || specContext.occurSymbol(UniqueString.uniqueStringOf(name));
     }
+
     /**
      * Get the hint where the field is used, or <code>null</code> if nowhere
      * <br><br><b>Note:</b> If the name is used on multiple pages, the method will return the first occurrence.
@@ -124,13 +124,13 @@ public class SemanticHelper
      */
     public Object getUsedHint(String name)
     {
-        // check the descriptions on all pages 
+        // check the descriptions on all pages
         Enumeration pages = pageStorage.keys();
         while (pages.hasMoreElements())
         {
             Hashtable pageNames = (Hashtable) pageStorage.get(pages.nextElement());
-            String description = (String) pageNames.get(name); 
-            if (description != null) 
+            String description = (String) pageNames.get(name);
+            if (description != null)
             {
                 return description;
             }
@@ -154,7 +154,7 @@ public class SemanticHelper
     public void addName(String name, Object pageKey, String usageDescription)
     {
         Hashtable pageNames = (Hashtable) pageStorage.get(pageKey);
-        if (pageNames == null) 
+        if (pageNames == null)
         {
             pageNames = new Hashtable();
             pageStorage.put(pageKey, pageNames);

@@ -13,15 +13,15 @@ public interface IAttributeBinding
      * @param control the control taking care of its display and editing
      */
     public void bindAttribute(String attributeName, Object control);
-    
+
     /**
      * Retrieves the control handling the current attribute name of the attribute 
      */
     public Object getAttributeControl(String attributeName);
-    
+
     /**
      * Retrieves the id of the binding 
      * @return String index representing the binding
      */
-    public String getBindingId(); 
+    public String getBindingId();
 }

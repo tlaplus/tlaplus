@@ -19,15 +19,13 @@ public class LogFileReader
 {
     private TagBasedTLCOutputIncrementalParser parser;
     private IFile logFile;
-    
-    
+
     public LogFileReader(String name, IFile logFile)
     {
         this.logFile = logFile;
         this.parser = new TagBasedTLCOutputIncrementalParser(name, ITLCOutputSource.PRIO_LOW);
     }
 
-    
     /**
      * Reads the contents
      */
@@ -50,10 +48,10 @@ public class LogFileReader
         }
 
     }
-    
+
     public ITLCOutputSource getSource()
     {
         return this.parser.getSource();
     }
-    
+
 }

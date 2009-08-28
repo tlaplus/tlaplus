@@ -17,7 +17,7 @@ import org.lamport.tla.toolbox.util.UIHelper;
  */
 public class TLCPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage
 {
-    
+
     /**
      * Constructor
      */
@@ -45,9 +45,9 @@ public class TLCPreferencePage extends FieldEditorPreferencePage implements IWor
 
         addField(new BooleanFieldEditor(ITLCPreferenceConstants.I_TLC_REVALIDATE_ON_MODIFY,
                 "&Automatically  re-validate TLC model", getFieldEditorParent()));
-//        addField(new BooleanFieldEditor(ITLCPreferenceConstants.I_TLC_DELETE_PREVIOUS_FILES,
-//                "&Automatically delete unused data from previous model run", getFieldEditorParent()));
-        
+        // addField(new BooleanFieldEditor(ITLCPreferenceConstants.I_TLC_DELETE_PREVIOUS_FILES,
+        // "&Automatically delete unused data from previous model run", getFieldEditorParent()));
+
     }
 
     public void init(IWorkbench workbench)

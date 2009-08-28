@@ -25,12 +25,11 @@ public interface ITLCOutputSource
      */
     public void removeTLCStatusListener(ITLCOutputListener listener);
 
-    
     /**
      * Retrieves the listeners registered by this source
      */
     public ITLCOutputListener[] getListeners();
-    
+
     /**
      * Retrieves the source name
      */

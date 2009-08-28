@@ -12,7 +12,7 @@ import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
  */
 public class ParsingTLCOutputSink implements IProcessOutputSink
 {
-    // private TLCOutputIncrementalParser parser;    
+    // private TLCOutputIncrementalParser parser;
     private TagBasedTLCOutputIncrementalParser parser;
 
     /* (non-Javadoc)

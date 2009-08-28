@@ -22,7 +22,7 @@ public class ResultPresenter implements IResultPresenter
     public void showResults(ILaunchConfiguration configuration)
     {
         ModelEditor editor = (ModelEditor) UIHelper.openEditor(ModelEditor.ID, configuration.getFile());
-        if (editor != null) 
+        if (editor != null)
         {
             editor.showResultPage();
         }

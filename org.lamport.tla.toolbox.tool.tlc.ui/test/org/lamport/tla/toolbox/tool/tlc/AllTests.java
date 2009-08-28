@@ -12,10 +12,10 @@ public class AllTests
     public static Test suite()
     {
         TestSuite suite = new TestSuite("Test for org.lamport.tla.toolbox.tool.tlc");
-        //$JUnit-BEGIN$
+        // $JUnit-BEGIN$
         suite.addTest(DataTests.suite());
         suite.addTest(UtilTests.suite());
-        //$JUnit-END$
+        // $JUnit-END$
         return suite;
     }
 

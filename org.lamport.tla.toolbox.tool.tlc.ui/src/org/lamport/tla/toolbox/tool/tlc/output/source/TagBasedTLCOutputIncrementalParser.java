@@ -67,7 +67,7 @@ public class TagBasedTLCOutputIncrementalParser
                         {
                             ITypedRegion mergedPartition = analyzer.getUserRegion();
                             source.onOutput(mergedPartition);
-                            // debugging 
+                            // debugging
                             // PartitionToolkit.printPartition(mergedPartition, document);
                         }
 

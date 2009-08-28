@@ -61,7 +61,7 @@ public class ModelContentProvider implements ITreeContentProvider
             if (ToolboxHandle.getCurrentSpec() == parentElement)
             {
                 return models.toArray(new ILaunchConfiguration[models.size()]);
-            } 
+            }
         }
         return EMPTY_ARRAY;
     }

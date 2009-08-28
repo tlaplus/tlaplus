@@ -60,7 +60,7 @@ public class FilteredDefinitionSelectionDialog extends FilteredItemsSelectionDia
                 if (element instanceof OpDefNode)
                 {
                     OpDefNode node = (OpDefNode) element;
-                    
+
                     return node.getName().toString()
                             + ((node.getOriginallyDefinedInModuleNode() != null) ? " : "
                                     + node.getOriginallyDefinedInModuleNode().getName().toString() : "");
@@ -87,7 +87,6 @@ public class FilteredDefinitionSelectionDialog extends FilteredItemsSelectionDia
             }
         };
     }
-
 
     /* (non-Javadoc)
      * @see org.eclipse.ui.dialogs.FilteredItemsSelectionDialog#createFilter()
@@ -129,50 +128,52 @@ public class FilteredDefinitionSelectionDialog extends FilteredItemsSelectionDia
      */
     protected Comparator getItemsComparator()
     {
-        return new Comparator() 
-        {
+        return new Comparator() {
             // group by modules, sort by user modules first, then by module name and then then by operator name
             public int compare(Object arg0, Object arg1)
             {
                 OpDefNode node0 = (OpDefNode) arg0;
                 OpDefNode node1 = (OpDefNode) arg1;
-                
+
                 ModuleNode module0 = node0.getOriginallyDefinedInModuleNode();
                 ModuleNode module1 = node1.getOriginallyDefinedInModuleNode();
 
                 boolean module0user = ToolboxHandle.isUserModule(module0.getName().toString());
                 boolean module1user = ToolboxHandle.isUserModule(module1.getName().toString());
-                
+
                 if (module0user)
                 {
                     // module 0 is a user module
-                    if (module1user) 
+                    if (module1user)
                     {
                         // both are user
-                    } else 
+                    } else
                     {
                         // module 1 is a standard module
                         return -1;
                     }
-                } else {
+                } else
+                {
                     // module 0 is not a user module
-                    if (module1user) 
+                    if (module1user)
                     {
                         // module 1 is a user module
                         return 1;
-                    } else {
+                    } else
+                    {
                         // none are user modules
                     }
                 }
 
                 // at this point both modules are user modules, or both are standard modules
                 // compare based on the name
-                
+
                 int moduleCompare = module0.getName().toString().compareToIgnoreCase(module1.getName().toString());
-                if (moduleCompare == 0) 
+                if (moduleCompare == 0)
                 {
                     return node0.getName().toString().compareToIgnoreCase(node1.getName().toString());
-                } else {
+                } else
+                {
                     return moduleCompare;
                 }
             }
@@ -209,7 +210,6 @@ public class FilteredDefinitionSelectionDialog extends FilteredItemsSelectionDia
         // TODO Auto-generated method stub
         return null;
     }
-
 
     /**
      * Filters definitions 

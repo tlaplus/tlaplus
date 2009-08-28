@@ -47,7 +47,6 @@ public class CloneModelHandlerDelegate extends AbstractHandler implements IHandl
             // root file
             IResource specRootModule = ToolboxHandle.getRootModule(model.getFile().getProject());
 
-            
             modelName = ModelHelper.getModelName(model.getFile()) + "_Copy";
 
             IInputValidator modelNameInputValidator = new ModelNameValidator(specRootModule.getProject());

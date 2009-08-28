@@ -149,7 +149,7 @@ public class FormHelper
     {
         SourceViewer sourceViewer = createSourceViewer(parent, flags);
         sourceViewer.setData(FormToolkit.KEY_DRAW_BORDER, FormToolkit.TREE_BORDER);
-        
+
         sourceViewer.getTextWidget().setData(FormToolkit.KEY_DRAW_BORDER, FormToolkit.TREE_BORDER);
         toolkit.adapt(sourceViewer.getTextWidget(), true, true);
 
@@ -167,14 +167,13 @@ public class FormHelper
     {
         SourceViewer sourceViewer = createOutputViewer(parent, flags);
         sourceViewer.setData(FormToolkit.KEY_DRAW_BORDER, FormToolkit.TREE_BORDER);
-        
+
         sourceViewer.getTextWidget().setData(FormToolkit.KEY_DRAW_BORDER, FormToolkit.TREE_BORDER);
         toolkit.adapt(sourceViewer.getTextWidget(), true, true);
 
         return sourceViewer;
     }
 
-    
     /**
      * Creates the source viewer
      * @param parent
@@ -194,7 +193,6 @@ public class FormHelper
         return sourceViewer;
     }
 
-    
     /**
      * Creates the source viewer
      * @param parent
@@ -320,23 +318,25 @@ public class FormHelper
      */
     public static String trimTrailingSpaces(String string)
     {
-        if (string == null) 
+        if (string == null)
         {
             return null;
-        } 
+        }
         for (int i = string.length() - 1; i >= 0; i--)
         {
-            if (string.charAt(i) == '\t' || string.charAt(i) == ' ' || string.charAt(i) == '\n' || string.charAt(i) == '\r') 
+            if (string.charAt(i) == '\t' || string.charAt(i) == ' ' || string.charAt(i) == '\n'
+                    || string.charAt(i) == '\r')
             {
                 continue;
-            } else {
+            } else
+            {
                 string = string.substring(0, i + 1);
                 return string;
             }
         }
         return string;
     }
-    
+
     /**
      * Creates a text component with left-aligned text
      * @param title
@@ -362,7 +362,6 @@ public class FormHelper
         return text;
     }
 
-    
     /**
      * Returns true, if the string matches [A-Za-z0-9_]*[A-Za-z]{1}[A-Za-z0-9_]*
      * @param string

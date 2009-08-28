@@ -95,11 +95,11 @@ public class PartitionToolkit
 
                 String type = region.getType();
                 Assert.isTrue(type.equals(TagBasedTLCOutputTokenScanner.DEFAULT_CONTENT_TYPE));
-                
+
                 String head = document.get(offset, printLength);
                 messageBuffer.append("OUTPUT:" + location + ": >" + head + "< ...");
             }
-            
+
             TLCUIActivator.logDebug(messageBuffer.toString());
 
         } catch (BadLocationException e)

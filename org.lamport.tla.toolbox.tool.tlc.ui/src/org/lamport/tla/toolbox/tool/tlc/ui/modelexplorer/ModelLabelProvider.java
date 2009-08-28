@@ -45,26 +45,26 @@ public class ModelLabelProvider extends LabelProvider implements IDescriptionPro
             String modelName = ModelHelper.getModelName(config.getFile());
             try
             {
-                if (ModelHelper.isModelStale(config)) 
+                if (ModelHelper.isModelStale(config))
                 {
                     return modelName + " [ crashed ]";
                 }
-                if (ModelHelper.isModelLocked(config)) 
+                if (ModelHelper.isModelLocked(config))
                 {
                     ILaunch[] launches = launchManager.getLaunches();
                     boolean found = false;
-                    for (int i=0; i <launches.length; i++) 
+                    for (int i = 0; i < launches.length; i++)
                     {
-                        if (launches[i].getLaunchConfiguration().contentsEqual(config)) 
+                        if (launches[i].getLaunchConfiguration().contentsEqual(config))
                         {
                             found = true;
                             break;
                         }
                     }
-                    if (found) 
+                    if (found)
                     {
                         return modelName + " [ modelchecking ]";
-                    } else 
+                    } else
                     {
                         // the MC crashed
                         // mark the error
@@ -76,7 +76,7 @@ public class ModelLabelProvider extends LabelProvider implements IDescriptionPro
             {
                 TLCUIActivator.logError("Error creating description for a model", e);
             }
-            return modelName; 
+            return modelName;
         }
         return null;
     }

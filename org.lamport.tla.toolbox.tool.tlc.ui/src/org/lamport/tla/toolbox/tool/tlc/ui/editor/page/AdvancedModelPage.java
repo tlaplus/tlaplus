@@ -211,7 +211,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         }
         IMessageManager mm = getManagedForm().getMessageManager();
         mm.setAutoUpdate(false);
-        
+
         // clean old messages
         mm.removeAllMessages();
         // make the run possible

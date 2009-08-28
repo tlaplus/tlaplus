@@ -62,7 +62,7 @@ public class TLCVariableValueTest extends TestCase
 
     public void testParseValueSimple()
     {
-        String[] test = { "abc", "12", "   12", "  -12", "1212.212"  , "\"\\\"xyz\"" };
+        String[] test = { "abc", "12", "   12", "  -12", "1212.212", "\"\\\"xyz\"" };
         String[] result = { "abc", "12", "12", "-12", "1212.212", "\"\\\"xyz\"" };
         for (int i = 0; i < test.length; i++)
         {
@@ -117,10 +117,10 @@ public class TLCVariableValueTest extends TestCase
                 TLCVariableValue[] elements = value.getElements();
                 for (int j = 0; j < elements.length; j++)
                 {
-                    Assert.assertEquals(result[i][j], (
-                            (TLCVariableValue) ((TLCFcnElementVariableValue) elements[j]).value).value);
-                    Assert.assertEquals(true,
-                            ((TLCFcnElementVariableValue) elements[j]).getFrom().value.equals(""+(j+1))) ;
+                    Assert.assertEquals(result[i][j],
+                            ((TLCVariableValue) ((TLCFcnElementVariableValue) elements[j]).value).value);
+                    Assert.assertEquals(true, ((TLCFcnElementVariableValue) elements[j]).getFrom().value.equals(""
+                            + (j + 1)));
                 }
             } catch (VariableValueParseException e)
             {
@@ -132,7 +132,7 @@ public class TLCVariableValueTest extends TestCase
     public void testParseValueFcn()
     {
         String[] test = { "(1 :> a @@ 2 :> b)" };
-        String[][][] result = { {{"1", "a"}, {"2", "b"}} };
+        String[][][] result = { { { "1", "a" }, { "2", "b" } } };
         for (int i = 0; i < test.length; i++)
         {
             try
@@ -156,29 +156,29 @@ public class TLCVariableValueTest extends TestCase
     public void testParseValueSet2()
     {
         String test = "{{12}}";
-        
-            try
+
+        try
+        {
+            TLCVariableValue parseValue = TLCVariableValue.innerParse(new InputPair(test, 0));
+            Assert.assertTrue(parseValue instanceof TLCSetVariableValue);
+
+            TLCSetVariableValue value = (TLCSetVariableValue) parseValue;
+            TLCVariableValue[] elements = value.getElements();
+
+            for (int j = 0; j < elements.length; j++)
             {
-                TLCVariableValue parseValue = TLCVariableValue.innerParse(new InputPair(test, 0));
-                Assert.assertTrue(parseValue instanceof TLCSetVariableValue);
-                
-                TLCSetVariableValue value = (TLCSetVariableValue) parseValue;
-                TLCVariableValue[] elements = value.getElements();
-                
-                for (int j = 0; j < elements.length; j++)
+                Assert.assertTrue(elements[j] instanceof TLCSetVariableValue);
+                TLCSetVariableValue child = (TLCSetVariableValue) elements[j];
+                TLCVariableValue[] elements2 = child.getElements();
+                for (int k = 0; k < elements2.length; k++)
                 {
-                    Assert.assertTrue(elements[j] instanceof TLCSetVariableValue);
-                    TLCSetVariableValue child = (TLCSetVariableValue) elements[j];
-                    TLCVariableValue[] elements2 = child.getElements();
-                    for (int k = 0; k < elements2.length; k++) 
-                    {
-                        Assert.assertEquals("12", elements2[k].value);
-                    } 
+                    Assert.assertEquals("12", elements2[k].value);
                 }
-            } catch (VariableValueParseException e)
-            {
-                Assert.fail();
             }
+        } catch (VariableValueParseException e)
+        {
+            Assert.fail();
+        }
     }
 
 }

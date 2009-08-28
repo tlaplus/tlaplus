@@ -16,7 +16,7 @@ public class LabeledListComposite
     Text[] fields;
     String[] values;
     Composite self;
-    
+
     public LabeledListComposite(Composite parent, String label, String[] values)
     {
         this.values = values;
@@ -32,6 +32,7 @@ public class LabeledListComposite
     {
         return this.values.length > 0;
     }
+
     /**
      * @param i 
      * @param parent 
@@ -42,12 +43,12 @@ public class LabeledListComposite
         self = new Composite(parent, SWT.NONE);
         self.setLayout(new RowLayout(SWT.HORIZONTAL));
         RowData rd;
-        
+
         Label l;
         l = new Label(self, SWT.NULL);
         l.setText(label);
-        
-        if (hasParameters()) 
+
+        if (hasParameters())
         {
             l = new Label(self, SWT.NULL);
             l.setText("(");
@@ -61,15 +62,15 @@ public class LabeledListComposite
             rd.width = 50;
             rd.height = 12;
             fields[i].setLayoutData(rd);
-            
-            if (i != fields.length - 1) 
+
+            if (i != fields.length - 1)
             {
                 l = new Label(self, SWT.NULL);
                 l.setText(", ");
             }
         }
 
-        if (hasParameters()) 
+        if (hasParameters())
         {
             l = new Label(self, SWT.NULL);
             l.setText(")");
@@ -77,18 +78,18 @@ public class LabeledListComposite
 
         l = new Label(self, SWT.NULL);
         l.setText(" <- ");
-        
+
     }
-    
+
     public String[] getValues()
     {
         String[] result = new String[fields.length];
-        
+
         for (int i = 0; i < fields.length; i++)
         {
             result[i] = fields[i].getText();
         }
-        
+
         return result;
     }
 
@@ -97,6 +98,6 @@ public class LabeledListComposite
      */
     public void setLayoutData(Object layoutData)
     {
-       self.setLayoutData(layoutData);
+        self.setLayoutData(layoutData);
     }
 }
