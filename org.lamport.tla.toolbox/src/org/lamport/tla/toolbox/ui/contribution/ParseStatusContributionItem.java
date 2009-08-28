@@ -52,7 +52,6 @@ public class ParseStatusContributionItem extends WorkbenchWindowControlContribut
 
         // Create label inside composite.   
         statusLabel = new Label(composite, SWT.BORDER | SWT.CENTER);
-        statusLabel.setForeground(parent.getDisplay().getSystemColor(SWT.COLOR_BLACK));
         statusLabel.setToolTipText("Specification Parse Status");
         statusLabel.setSize(100, 20);
 
