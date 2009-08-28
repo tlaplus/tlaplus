@@ -2,6 +2,7 @@ package org.lamport.tla.toolbox.util;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.tool.SpecEvent;
@@ -18,41 +19,42 @@ public class SpecLifecycleManager
     private static final String POINT = "org.lamport.tla.toolbox.spec";
     private static final String CLASS_ATTR_NAME = "class";
     private SpecLifecycleParticipant[] extensions = new SpecLifecycleParticipant[0];
-    
+
     /**
      * Simple strategy calling the method
      */
-    private ExtensionInvocationStrategy simpleInvocationStrategy = new ExtensionInvocationStrategy()
-    {
+    private ExtensionInvocationStrategy simpleInvocationStrategy = new ExtensionInvocationStrategy() {
         // simple strategy calling the method directly
         public boolean invoke(SpecLifecycleParticipant target, SpecEvent event)
         {
             return target.eventOccured(event);
         }
     };
-    
-    
+
     /**
      * Initializes the spec participants
      */
     public void initialize()
     {
-        IConfigurationElement[] decls = Platform.getExtensionRegistry().getConfigurationElementsFor(POINT);
-        extensions = new SpecLifecycleParticipant[decls.length];
-        for (int i = 0; i < decls.length; i++)
+        IExtensionRegistry extensionRegistry = Platform.getExtensionRegistry();
+        if (extensionRegistry != null)
         {
-            try
+            IConfigurationElement[] decls = extensionRegistry.getConfigurationElementsFor(POINT);
+            extensions = new SpecLifecycleParticipant[decls.length];
+            for (int i = 0; i < decls.length; i++)
             {
-                extensions[i] = (SpecLifecycleParticipant) decls[i].createExecutableExtension(CLASS_ATTR_NAME);
-                extensions[i].initialize();
-            } catch (CoreException e)
-            {
-                Activator.logError("Error retrieving the registered participants", e);
+                try
+                {
+                    extensions[i] = (SpecLifecycleParticipant) decls[i].createExecutableExtension(CLASS_ATTR_NAME);
+                    extensions[i].initialize();
+                } catch (CoreException e)
+                {
+                    Activator.logError("Error retrieving the registered participants", e);
+                }
             }
         }
     }
-    
-    
+
     /**
      * Sends events ignoring veto responses
      * Shortcut for {@link SpecLifecycleManager#sendEventWithVeto(SpecEvent, false)}
@@ -61,7 +63,7 @@ public class SpecLifecycleManager
     {
         return sendEventWithVeto(event, false);
     }
-    
+
     /**
      * Sends event to the registered participants
      * @param event
@@ -79,17 +81,15 @@ public class SpecLifecycleManager
 
             // global response
             responseAll = responseAll && response;
-            
+
             // veto answer received, stop
-            if (stopOnVeto && !response) 
+            if (stopOnVeto && !response)
             {
                 break;
             }
         }
         return responseAll;
     }
-    
-    
 
     /**
      * Distributes the terminate message  
@@ -102,7 +102,6 @@ public class SpecLifecycleManager
         }
     }
 
-    
     /**
      * Describers the invocation strategy
      * <br>This is the point where the indirection can be introduced for asynchronous invocation,
