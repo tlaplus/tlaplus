@@ -522,13 +522,13 @@ public class TLCErrorView extends ViewPart
         {
             if (changedRows.contains(element))
             {
-                return changedColor;
+                return TLCUIActivator.getDefault().getChangedColor();
             } else if (addedRows.contains(element))
             {
-                return addedColor;
+                return TLCUIActivator.getDefault().getAddedColor();
             } else if (deletedRows.contains(element))
             {
-                return deletedColor;
+                return TLCUIActivator.getDefault().getDeletedColor();
             }
             return null;
         }
@@ -555,14 +555,6 @@ public class TLCErrorView extends ViewPart
         protected HashSet addedRows = new HashSet();
         protected HashSet deletedRows = new HashSet();
 
-        /*
-         * The colors used for trace row highlighting. These should be in some
-         * central location containing all colors and fonts to make it easy to
-         * make them changeable by preferences.
-         */
-        private Color changedColor = new Color(null, 255, 200, 200);
-        private Color addedColor = new Color(null, 255, 255, 200);
-        private Color deletedColor = new Color(null, 240, 240, 255);
 
         /*
          * end lamport:test
@@ -591,13 +583,6 @@ public class TLCErrorView extends ViewPart
             stateImage.dispose();
             varImage.dispose();
             recordImage.dispose();
-
-            /*
-             * Remove the colors
-             */
-            addedColor.dispose();
-            changedColor.dispose();
-            deletedColor.dispose();
 
             super.dispose();
         }
@@ -639,10 +624,7 @@ public class TLCErrorView extends ViewPart
         changedRows.clear();
         addedRows.clear();
         deletedRows.clear();
-
-        /*
-         * As a test, put the changed variable values in changedObjects.
-         */
+        
         TLCState firstState = states[0];
         TLCVariable[] firstVariables = firstState.getVariables();
 
@@ -654,7 +636,7 @@ public class TLCErrorView extends ViewPart
             {
                 TLCVariableValue firstValue = firstVariables[j].getValue();
                 TLCVariableValue secondValue = secondVariables[j].getValue();
-                if (!firstValue.toString().equals(secondValue.toString()))
+                if (!firstValue.toSimpleString().equals(secondValue.toSimpleString()))
                 {
                     changedRows.add(secondVariables[j]);
                     setInnerDiffInfo(firstValue, secondValue, changedRows, addedRows, deletedRows);
@@ -764,21 +746,35 @@ public class TLCErrorView extends ViewPart
 
             setElementArrayDiffInfo(firstElts, firstLHStrings, secondElts, secondLHStrings, changed, added, deleted);
         }
-        else if (first instanceof TLCFunctionVariableValue)
+
+        else if (first instanceof TLCSequenceVariableValue)
         {
             /*
-             * RECORDS We mark a record element as added or deleted if its label
-             * does not appear in one of the elements of the other record. We
-             * mark the element as changed, and call setInnerDiffInfo on the
-             * elements' values if elements with same label but different values
-             * appear in the two records.
+             * SEQUENCES 
+             * In general, it's not clear how differences between two sequences should
+             * be highlighted.  We adopt the following preliminary approach:
+             *   If one sequence is a proper initial prefix or suffix of the other, then
+             *   the difference is interpreted as adding or deleting the appropriate
+             *   sequence elements.  Otherwise, the sequences are treated as functions.
              */
-            if (!(second instanceof TLCFunctionVariableValue))
+            if (!(second instanceof TLCSequenceVariableValue))
             {
                 return;
             }
-            TLCFcnElementVariableValue[] firstElts = ((TLCFunctionVariableValue) first).getFcnElements();
-            TLCFcnElementVariableValue[] secondElts = ((TLCFunctionVariableValue) second).getFcnElements();
+            TLCFcnElementVariableValue[] firstElts = ((TLCSequenceVariableValue) first).getElements();
+            TLCFcnElementVariableValue[] secondElts = ((TLCSequenceVariableValue) second).getElements();
+            if (firstElts.length == secondElts.length){
+                setFcnElementArrayDiffInfo(firstElts,  secondElts,  changed, added, deleted);
+                return;
+            }
+
+            TLCFcnElementVariableValue[] shorter = firstElts;
+            TLCFcnElementVariableValue[] longer = secondElts;
+            if (firstElts.length > secondElts.length){
+                longer = firstElts;
+                shorter = secondElts;
+            }
+            
             setFcnElementArrayDiffInfo(firstElts,  secondElts,  changed, added, deleted);
         }
         

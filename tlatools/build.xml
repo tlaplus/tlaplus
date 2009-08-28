@@ -36,7 +36,7 @@
 
 	<target name="default-release" depends="info" description="Produces a release">
 		<antcall target="compile" inheritall="true" inheritrefs="true" />
-		<antcall target="dist-mixed" inheritall="true" inheritrefs="true" />
+		<antcall target="dist-mixed-zip" inheritall="true" inheritrefs="true" />
 	</target>
 
 	
@@ -78,8 +78,31 @@
 		</jar>
 	</target>
 
+	<target name="dist-mixed-jar" description="Build a distribution">
+		<!-- create a JAR file for the users -->
+		<jar destfile="${dist-mixed.file.jar}">
+			<fileset dir="${class.dir}" includes="**/*" />
+			<zipfileset dir="${src.dir}" includes="**/*.java" />
+			<zipfileset dir="${doc.dir}">
+				<include name="README"/>
+				<include name="License.txt"/>
+			</zipfileset>
+			<zipfileset dir="${examples.dir}" includes="**/*" prefix="examples">
+				<include name="**/*"/>
+				<exclude name=".project"/>
+			</zipfileset>
+			
+			<manifest>
+				<attribute name="Built-By" value="${user.name}" />
+				<attribute name="Implementation-Title" value="TLA+ Tools" />
+				<attribute name="Implementation-Version" value="${version} ${TODAY}" />
+				<attribute name="Implementation-Vendor" value="Microsoft Corp." />
+			</manifest>
+		</jar>
+	</target>
 
-	<target name="dist-mixed" description="Build a distribution">
+
+	<target name="dist-mixed-zip" description="Build a distribution">
 		<!-- create a zip file for the users and developers-->
 		<zip destfile="${dist-mixed.file}">
 			<zipfileset dir="${src.dir}" includes="**/*.java" prefix="tla" />

@@ -23,6 +23,15 @@ public class TLCUIActivator extends AbstractUIPlugin
     private Font courierFont;
     private Font outputFont;
 
+    /*
+     * The colors used for trace row highlighting. These should be in some
+     * central location containing all colors and fonts to make it easy to
+     * make them changeable by preferences.
+     */
+    private Color changedColor;
+    private Color addedColor;
+    private Color deletedColor;
+
     // update the CNF content
     /*
     private PerspectiveAdapter perspectiveAdapter = new PerspectiveAdapter() 
@@ -61,12 +70,26 @@ public class TLCUIActivator extends AbstractUIPlugin
         super.start(context);
         plugin = this;
 
-        /*
-        IWorkbenchWindow window = UIHelper.getActiveWindow();
-        if (window != null)
-        {
-            window.addPerspectiveListener(perspectiveAdapter);
-        }*/
+        changedColor = new Color(null, 255, 200, 200);
+        addedColor = new Color(null, 255, 255, 200);
+        deletedColor = new Color(null, 240, 240, 255);
+    }
+
+    public Color getChangedColor()
+    {
+        return changedColor;
+    }
+
+
+    public Color getAddedColor()
+    {
+        return addedColor;
+    }
+
+
+    public Color getDeletedColor()
+    {
+        return deletedColor;
     }
 
     /*
@@ -89,6 +112,15 @@ public class TLCUIActivator extends AbstractUIPlugin
         {
             outputFont.dispose();
         }
+        
+        /*
+         * Remove the colors
+         */
+        addedColor.dispose();
+        changedColor.dispose();
+        deletedColor.dispose();
+
+        
         plugin = null;
         super.stop(context);
     }

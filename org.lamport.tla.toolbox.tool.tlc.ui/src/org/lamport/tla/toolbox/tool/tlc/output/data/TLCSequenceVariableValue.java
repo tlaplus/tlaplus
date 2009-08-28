@@ -17,11 +17,11 @@ public class TLCSequenceVariableValue extends TLCVariableValue
         return getElements();
     }
 
-    public TLCVariableValue[] getElements()
+    public TLCFcnElementVariableValue[] getElements()
     {
         List list = (List) value;
 
-        TLCVariableValue[] result = new TLCVariableValue[list.size()];
+        TLCFcnElementVariableValue[] result = new TLCFcnElementVariableValue[list.size()];
         for (int i = 0; i < result.length; i++)
         {
             result[i] = new TLCFcnElementVariableValue(new TLCSimpleVariableValue("" + (i + 1)),
