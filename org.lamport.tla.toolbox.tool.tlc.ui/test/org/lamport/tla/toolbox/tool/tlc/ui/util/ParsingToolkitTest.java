@@ -1,4 +1,4 @@
-package org.lamport.tla.toolbox.tool.tlc.output;
+package org.lamport.tla.toolbox.tool.tlc.ui.util;
 
 import junit.framework.TestCase;
 
@@ -7,6 +7,7 @@ import org.eclipse.jface.text.TypedRegion;
 import org.lamport.tla.toolbox.tool.tlc.output.PartitionToolkit;
 
 /**
+ * Tests of parsing toolkit
  * @author Simon Zambrovski
  * @version $Id$
  */

@@ -22,6 +22,11 @@ public class SemanticHelperTest extends TestCase
         helper = new SemanticHelper();
         helper.resetModelNames();
     }
+    
+    public void testTest()
+    {
+        assertTrue(true);
+    }
 
     /**
      * Testing the keywords
