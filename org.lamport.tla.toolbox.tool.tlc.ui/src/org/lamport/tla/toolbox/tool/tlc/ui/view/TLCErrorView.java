@@ -764,6 +764,24 @@ public class TLCErrorView extends ViewPart
 
             setElementArrayDiffInfo(firstElts, firstLHStrings, secondElts, secondLHStrings, changed, added, deleted);
         }
+        else if (first instanceof TLCFunctionVariableValue)
+        {
+            /*
+             * RECORDS We mark a record element as added or deleted if its label
+             * does not appear in one of the elements of the other record. We
+             * mark the element as changed, and call setInnerDiffInfo on the
+             * elements' values if elements with same label but different values
+             * appear in the two records.
+             */
+            if (!(second instanceof TLCFunctionVariableValue))
+            {
+                return;
+            }
+            TLCFcnElementVariableValue[] firstElts = ((TLCFunctionVariableValue) first).getFcnElements();
+            TLCFcnElementVariableValue[] secondElts = ((TLCFunctionVariableValue) second).getFcnElements();
+            setFcnElementArrayDiffInfo(firstElts,  secondElts,  changed, added, deleted);
+        }
+        
         return;
 
     }
@@ -837,5 +855,28 @@ public class TLCErrorView extends ViewPart
             }
         }
 
+    }
+
+    /**
+     * A method that sets the diff highlighting information for two arrays of
+     * TLCFcnElementVariableValue objects.  The parameters firstElts and secondElts
+     * are the two arrays.In plain math, this means that we are doing a diff on two
+     * functions (possibly  two sequences).  This method calls setElementArrayDiffInfo
+     * to do the work.
+    */
+    private void setFcnElementArrayDiffInfo(TLCFcnElementVariableValue[] firstElts,
+            TLCFcnElementVariableValue[] secondElts, HashSet changed, HashSet added, HashSet deleted)
+    {
+        String[] firstLHStrings = new String[firstElts.length];
+        for (int i = 0; i < firstElts.length; i++)
+        {
+            firstLHStrings[i] = firstElts[i].getFrom().toSimpleString();
+        }
+        String[] secondLHStrings = new String[secondElts.length];
+        for (int i = 0; i < secondElts.length; i++)
+        {
+            secondLHStrings[i] =  secondElts[i].getFrom().toSimpleString();
+        }
+        setElementArrayDiffInfo(firstElts, firstLHStrings, secondElts, secondLHStrings, changed, added, deleted);
     }
 }
