@@ -110,9 +110,10 @@ public class TLCErrorView extends ViewPart
             {
                 states = EMPTY_LIST();
             }
+            
             /*
-             * lamport:test this is test code added by LL on 27 Aug 2009 Add
-             * code here to set trace diff highliter information
+             * Set the data structures that cause  highlighting of changes in the
+             * error trace.
              */
             setDiffInfo(states);
 
@@ -466,7 +467,7 @@ public class TLCErrorView extends ViewPart
                 case NAME:
                     return var.getName();
                 case VALUE:
-                    return var.getValue().toString();
+                    return var.getValue().toSimpleString();  // Changed from toString by LL on 30 Aug 2009 
                 default:
                     break;
                 }
@@ -488,7 +489,7 @@ public class TLCErrorView extends ViewPart
                 case NAME:
                     return namedValue.getName();
                 case VALUE:
-                    return namedValue.getValue().toString();
+                    return ((TLCVariableValue) namedValue.getValue()).toSimpleString(); // Changed from toString by LL on 30 Aug 2009
                 default:
                     break;
                 }
@@ -497,19 +498,15 @@ public class TLCErrorView extends ViewPart
                 TLCFcnElementVariableValue fcnElementValue = (TLCFcnElementVariableValue) element;
                 switch (columnIndex) {
                 case NAME:
-                    return fcnElementValue.getFrom().toString();
+                    return fcnElementValue.getFrom().toSimpleString();  // Changed from toString by LL on 30 Aug 2009
                 case VALUE:
-                    return fcnElementValue.getValue().toString();
+                    return ((TLCVariableValue) fcnElementValue.getValue()).toSimpleString(); // Changed from toString by LL on 30 Aug 2009
                 default:
                     break;
                 }
             }
             return null;
         }
-
-        /*
-         * begin lamport:test
-         */
 
         /*
          * The following method sets the background color OF THE ENTIRE ROW of
@@ -556,10 +553,6 @@ public class TLCErrorView extends ViewPart
         protected HashSet deletedRows = new HashSet();
 
 
-        /*
-         * end lamport:test
-         */
-
         public Color getForeground(Object element)
         {
             return null;
@@ -589,10 +582,6 @@ public class TLCErrorView extends ViewPart
 
     }
 
-    /*
-     * lamport:test From here to the end of the file is a test version of
-     * objects and methods used for highlighting changes in the error trace.
-     */
 
     /*
      * Sets the HashSet objects of StateLabelProvider object that stores the
@@ -745,6 +734,24 @@ public class TLCErrorView extends ViewPart
             }
 
             setElementArrayDiffInfo(firstElts, firstLHStrings, secondElts, secondLHStrings, changed, added, deleted);
+        } else if (first instanceof TLCFunctionVariableValue)
+        {
+            /*
+             * FUNCTIONS We mark a record element as added or deleted if its label
+             * does not appear in one of the elements of the other record. We
+             * mark the element as changed, and call setInnerDiffInfo on the
+             * elements' values if elements with same label but different values
+             * appear in the two records.
+             */
+            if (!(second instanceof TLCFunctionVariableValue))
+            {
+                return;
+            }
+
+            setFcnElementArrayDiffInfo(((TLCFunctionVariableValue) first).getFcnElements(),  
+                    ((TLCFunctionVariableValue) second).getFcnElements(),  
+                    changed, added, deleted);
+            
         }
 
         else if (first instanceof TLCSequenceVariableValue)
@@ -756,6 +763,10 @@ public class TLCErrorView extends ViewPart
              *   If one sequence is a proper initial prefix or suffix of the other, then
              *   the difference is interpreted as adding or deleting the appropriate
              *   sequence elements.  Otherwise, the sequences are treated as functions.
+             *   
+             *   Note: If one sequence is both an initial prefix and a suffix of the other
+             *   then we give preference to interpreting the operation as adding to the
+             *   end or removing from the front.
              */
             if (!(second instanceof TLCSequenceVariableValue))
             {
@@ -770,12 +781,59 @@ public class TLCErrorView extends ViewPart
 
             TLCFcnElementVariableValue[] shorter = firstElts;
             TLCFcnElementVariableValue[] longer = secondElts;
+            boolean firstShorter = true;
             if (firstElts.length > secondElts.length){
                 longer = firstElts;
                 shorter = secondElts;
+                firstShorter = false;
             }
+            boolean isPrefix = true;
+            for (int i=0; i < shorter.length; i++){
+                if (!((TLCVariableValue)shorter[i].getValue()).toSimpleString().equals(
+                        ((TLCVariableValue) longer[i].getValue()).toSimpleString())) {
+                    isPrefix = false;
+                    break;
+                }
+            }
+            boolean isSuffix = true;
+            for (int i=0; i < shorter.length; i++){
+                if (!((TLCVariableValue)shorter[i].getValue()).toSimpleString().equals(
+                        ((TLCVariableValue) longer[i + longer.length - shorter.length].getValue())
+                        .toSimpleString())) {
+                
+                    isSuffix = false;
+                    break;
+                }
+            }
+            /*
+             * If it's both a prefix and a suffix, we interpret the change as either
+             * adding to the end or deleting from the front.
+             * If it's neither, we treat the sequences as functions.
+             */
+            if (isPrefix && isSuffix){
+                if (firstShorter){
+                    isSuffix = false;
+                } else {
+                    isPrefix = false;
+                }
+            } else if (! (isPrefix || isSuffix)){
+                setFcnElementArrayDiffInfo(firstElts,  secondElts,  changed, added, deleted);
+                return;
+            }
+            /*
+             * There are four cases:
+             *   isPrefix    and firstShorter  : we mark end of longer (= second) as added.
+             *   isPrefix    and !firstShorter : we mark end of longer (= first) as deleted.
+             *   isSuffix    and firstShorter  : we mark beginning of longer (=second) as added.
+             *   isSuffix    and !firstShorter : we mark beginning of longer (=first) as deleted.
+             */
+            int firstEltToMark = (isPrefix) ? shorter.length : 0 ;
+            HashSet howToMark = (firstShorter) ? added : deleted ;
             
-            setFcnElementArrayDiffInfo(firstElts,  secondElts,  changed, added, deleted);
+            for (int i = 0; i < longer.length - shorter.length; i++) {
+                howToMark.add(longer[i+firstEltToMark]) ;
+            }
+            // setFcnElementArrayDiffInfo(firstElts,  secondElts,  changed, added, deleted);
         }
         
         return;

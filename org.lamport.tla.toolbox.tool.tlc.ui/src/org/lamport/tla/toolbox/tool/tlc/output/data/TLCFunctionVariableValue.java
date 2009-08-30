@@ -12,21 +12,25 @@ public class TLCFunctionVariableValue extends TLCVariableValue
 {
 
     private static final String[] DELIMETERS = { "(", " @@", ")" };
-
+    private TLCFcnElementVariableValue[] elements;
     /**
      * @param fcnElements
      */
     public TLCFunctionVariableValue(List fcnElements)
     {
         this.value = fcnElements;
+        this.elements = innerGetFcnElements();
     }
 
     public Object getValue()
     {
-        return getFcnElements();
+        return elements;
     }
 
-    public TLCFcnElementVariableValue[] getFcnElements()
+    public TLCFcnElementVariableValue[] getFcnElements() {
+        return elements;
+    }
+    public TLCFcnElementVariableValue[] innerGetFcnElements()
     {
         return (TLCFcnElementVariableValue[]) ((List) this.value)
                 .toArray(new TLCFcnElementVariableValue[((List) this.value).size()]);
