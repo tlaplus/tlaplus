@@ -9,7 +9,7 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.source.SourceViewer;
-import org.eclipse.jface.viewers.IColorProvider;
+// import org.eclipse.jface.viewers.IColorProvider;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITableColorProvider;
@@ -31,7 +31,7 @@ import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.ui.forms.widgets.Form;
 import org.eclipse.ui.forms.widgets.FormToolkit;
-import org.eclipse.ui.forms.widgets.Section;
+// import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.part.ViewPart;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCError;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCFcnElementVariableValue;
@@ -146,8 +146,12 @@ public class TLCErrorView extends ViewPart {
      * Creates the layout and fill it with data 
      */
     public void createPartControl(Composite parent) {
-        int sectionFlags = Section.DESCRIPTION | Section.TITLE_BAR
-                | Section.EXPANDED | Section.TWISTIE;
+
+        // The following is not needed because the error viewer is no longer
+        // a section of anything as of 30 Aug 2009.
+        //
+        // int sectionFlags = Section.DESCRIPTION | Section.TITLE_BAR
+        // | Section.EXPANDED | Section.TWISTIE;
         toolkit = new FormToolkit(parent.getDisplay());
         form = toolkit.createForm(parent);
         form.setText("");
@@ -482,7 +486,7 @@ public class TLCErrorView extends ViewPart {
                 case NAME:
                     return var.getName();
                 case VALUE:
-                    return var.getValue().toSimpleString(); 
+                    return var.getValue().toSimpleString();
                     // Changed from toString by LL on 30 Aug 2009
                 default:
                     break;
@@ -507,7 +511,7 @@ public class TLCErrorView extends ViewPart {
                     return namedValue.getName();
                 case VALUE:
                     return ((TLCVariableValue) namedValue.getValue())
-                            .toSimpleString(); 
+                            .toSimpleString();
                     // Changed from toString by LL on 30 Aug 2009
                 default:
                     break;
