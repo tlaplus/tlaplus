@@ -27,7 +27,7 @@ public interface ITLCOutputListener
     public void onDone();
 
     /**
-     * Informs the listener that the new source has appeared
+     * Informs the listener that a new source has replaced an existing source.
      */
     public void onNewSource();
 }

@@ -15,11 +15,11 @@ import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 
 /**
  * A registry holding information about running processes and their status
- * The usual life cycle to work for the consumer with the registry is:
+ * The usual life cycle to work for the consumer of output from TLC or some other source with the registry is:
  * <ul>
- *   <li>{@link TLCOutputSourceRegistry#connect(ITLCOutputListener)}</li> 
+ *   <li>The consumer calls {@link TLCOutputSourceRegistry#connect(ITLCOutputListener)}</li> 
  *   <li>The registry will call {@link ITLCOutputListener#getProcessName()} and eventually select one of the sources available</li>
- *   <li>If the source is found, {@link ITLCOutputSource#addTLCStatusListener(ITLCOutputListener)} is called passing the consumer listener instance</li>
+ *   <li>If the source is found, {@link ITLCOutputSource#addTLCStatusListener(ITLCOutputListener)} is called by the registry, passing the consumer listener instance</li>
  *   <li>After the end of the work the consumer calls {@link TLCOutputSourceRegistry#disconnect(ITLCOutputListener)}</li>
  * </ul>
  * 
@@ -48,7 +48,7 @@ public class TLCOutputSourceRegistry
 
         // a new source for a given name arrives which has a higher priority
         // re-register the listeners
-        if (existingSource != null && source.getSourcePrio() > existingSource.getSourcePrio())
+        if (existingSource != null && source.getSourcePrio() >= existingSource.getSourcePrio())
         {
             ITLCOutputListener[] registered = existingSource.getListeners();
             for (int i = 0; i < registered.length; i++)
@@ -131,8 +131,21 @@ public class TLCOutputSourceRegistry
 
     public void startProcess(ILaunchConfiguration config)
     {
-        TLCModelLaunchDataProvider provider = new TLCModelLaunchDataProvider(config);
-        providers.put(provider.getProcessName(), provider);
+        // look if the provider for a given name already exists
+        TLCModelLaunchDataProvider provider = (TLCModelLaunchDataProvider) providers.get(config.getFile().getName());
+        if (provider == null) 
+        {
+            // create a new provider. This is the case if:
+            // - a launch is called for the first time for this model 
+            // after the toolbox start and no log file could be found 
+            // - a model editor is opened and there is no running TLC process for this model
+            provider = new TLCModelLaunchDataProvider(config);
+            providers.put(provider.getProcessName(), provider);
+        } else 
+        {
+            // reset the provider to default values
+            provider.reinitialize();
+        }
     }
 
     /**

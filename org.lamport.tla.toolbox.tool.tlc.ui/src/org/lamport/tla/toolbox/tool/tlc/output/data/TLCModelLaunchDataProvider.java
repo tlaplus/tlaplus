@@ -46,7 +46,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
     // last detected error
     private TLCError lastDetectedError;
     // flag indicating that the job / file output is finished
-    private boolean isDone = false;
+    private boolean isDone;
     // progress output
     private Document progressOutput;
     // user output
@@ -61,10 +61,21 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
     }
 
     /**
+     * Re-initializes the data provider
+     */
+    public void reinitialize()
+    {
+        destroy();
+        initialize();
+        populate();
+    }
+
+    /**
      * Resets the values to defaults
      */
     private void initialize()
     {
+        isDone = false;
         errors = new Vector();
         coverageInfo = new Vector();
         progressInformation = new Vector();
