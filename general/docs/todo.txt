@@ -1,0 +1,3 @@
+1. Add way to tell if spec on which a model was last run is the same as the current
+   spec.
+   
