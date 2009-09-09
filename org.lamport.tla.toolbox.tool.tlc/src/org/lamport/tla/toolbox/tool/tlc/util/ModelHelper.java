@@ -24,6 +24,7 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationType;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.core.ILaunchManager;
+import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.Region;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.part.FileEditorInput;
@@ -40,6 +41,7 @@ import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.OpDeclNode;
 import tla2sany.semantic.OpDefNode;
 import tla2sany.semantic.SymbolNode;
+import tla2sany.st.Location;
 
 /**
  * Provides utility methods for model manipulation
@@ -48,6 +50,7 @@ import tla2sany.semantic.SymbolNode;
  */
 public class ModelHelper implements IModelConfigurationConstants, IModelConfigurationDefaults
 {
+
     /**
      * Marker indicating an error in the model
      */
@@ -76,10 +79,6 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
      * Delimiter used to serialize parameter-value pair  
      */
     private static final String PARAM_DELIMITER = ":";
-    /**
-     * Counter to be able to generate unique identifiers
-     */
-    private static long globalCounter = 1;
 
     public static final String MC_MODEL_NAME = "MC";
     public static final String FILE_TLA = MC_MODEL_NAME + ".tla";
@@ -329,7 +328,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
      * The first character of the formula is used to determine if the formula is enabled in the model 
      * editor or not. This allows the user to persist formulas, which are not used in the current model 
      */
-    private static List deserializeFormulaList(List serializedList)
+    public static List deserializeFormulaList(List serializedList)
     {
         Vector result = new Vector(serializedList.size());
         Iterator serializedIterator = serializedList.iterator();
@@ -345,163 +344,6 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
         return result;
     }
 
-    /**
-     * Create a representation of the behavior formula
-     * @param config launch configuration
-     * @return a string array containing two strings: name of the formula, and the formula with the name
-     * @throws CoreException if something went wrong
-     */
-    public static String[] createSpecificationContent(ILaunchConfiguration config) throws CoreException
-    {
-        StringBuffer buffer = new StringBuffer();
-        String identifier = getValidIdentifier("spec");
-        String[] result = null;
-
-        // the identifier
-        buffer.append(identifier).append(" ==\n");
-
-        int specType = config.getAttribute(MODEL_BEHAVIOR_SPEC_TYPE, MODEL_BEHAVIOR_TYPE_DEFAULT);
-
-        switch (specType) {
-        case MODEL_BEHAVIOR_TYPE_NO_SPEC:
-            // no spec - nothing to do
-
-            break;
-        case MODEL_BEHAVIOR_TYPE_SPEC_CLOSED:
-            // append the closed formula
-            buffer.append(config.getAttribute(MODEL_BEHAVIOR_CLOSED_SPECIFICATION, EMPTY_STRING));
-            result = new String[] { identifier, buffer.toString() };
-            break;
-        case MODEL_BEHAVIOR_TYPE_SPEC_INIT_NEXT:
-            // init, next, fairness
-            String modelInit = config.getAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT, EMPTY_STRING);
-            String modelNext = config.getAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT, EMPTY_STRING);
-            String vars = config.getAttribute(MODEL_BEHAVIOR_VARS, EMPTY_STRING);
-
-            String modelFairness = config.getAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_FAIRNESS, EMPTY_STRING);
-            // append init. next, fairness
-            buffer.append(modelInit).append(" /\\[][ ").append(modelNext).append(" ]_").append("<<").append(vars)
-                    .append(">> ");
-            // add fairness condition, if any
-            if (!EMPTY_STRING.equals(modelFairness))
-            {
-                buffer.append(" /\\ ").append(modelFairness);
-            }
-
-            result = new String[] { identifier, buffer.toString() };
-            break;
-        default:
-            break;
-        }
-
-        // specification
-        // to .cfg : <id>
-        // to _MC.tla : <id> == <expression>
-        // : <id> == <init> /\[][<next>]_vars /\ <fairness>
-        return result;
-    }
-
-    /**
-     * Create the content for a single source element
-     * @return a list with at most one String[] element
-     * @throws CoreException 
-     */
-    public static List createSourceContent(String propertyName, String labelingScheme, ILaunchConfiguration config)
-            throws CoreException
-    {
-        Vector result = new Vector();
-        String value = config.getAttribute(propertyName, EMPTY_STRING);
-        if (EMPTY_STRING.equals(value))
-        {
-            return result;
-        }
-        String identifier = getValidIdentifier(labelingScheme);
-        StringBuffer buffer = new StringBuffer();
-
-        // the identifier
-        buffer.append(identifier).append(" ==\n");
-        buffer.append(value);
-
-        result.add(new String[] { identifier, buffer.toString() });
-        return result;
-    }
-
-    /**
-     * Converts formula list to a string representation
-     * @param serializedFormulaList, list of strings representing formulas (with enablement flag)
-     * @param labelingScheme
-     * @return
-     */
-    public static List createFormulaListContent(List serializedFormulaList, String labelingScheme)
-    {
-        List formulaList = ModelHelper.deserializeFormulaList(serializedFormulaList);
-        return (createListContent(formulaList, labelingScheme));
-    }
-
-    /**
-     * Create a list of overrides
-     * @param overrides
-     * @param string
-     * @return
-     */
-    public static List createOverridesContent(List overrides, String labelingScheme)
-    {
-        Vector resultContent = new Vector(overrides.size());
-        String[] content;
-        String id;
-        Assignment formula;
-        for (int i = 0; i < overrides.size(); i++)
-        {
-            id = getValidIdentifier(labelingScheme);
-            // formulas
-            // to .cfg : <id>
-            // to _MC.tla : <id> == <expression>
-            formula = ((Assignment) overrides.get(i));
-            content = new String[] { formula.getLabel() + " <- " + id,
-                    formula.getParametrizedLabel(id) + " ==\n" + formula.getRight() };
-            resultContent.add(content);
-        }
-        return resultContent;
-    }
-
-    /**
-     * Converts formula list to a string representation
-     * @param formulaList list of assignments
-     * @param labelingScheme 
-     * @return
-     */
-    public static List createListContent(List formulaList, String labelingScheme)
-    {
-        Vector resultContent = new Vector(formulaList.size());
-        String[] content;
-        String label;
-        for (int i = 0; i < formulaList.size(); i++)
-        {
-            label = getValidIdentifier(labelingScheme);
-            // formulas
-            // to .cfg : <id>
-            // to _MC.tla : <id> == <expression>
-            content = new String[] { label, label + " ==\n" + ((Formula) formulaList.get(i)).getFormula() };
-            resultContent.add(content);
-        }
-        return resultContent;
-    }
-
-    /**
-     * Retrieves new valid (not used) identifier from given schema
-     * @param schema a naming schema
-     * @return a valid identifier
-     */
-    public static synchronized String getValidIdentifier(String schema)
-    {
-        try
-        {
-            Thread.sleep(10);
-        } catch (InterruptedException e)
-        {
-        }
-        return schema + "_" + System.currentTimeMillis() + 1000 * (++globalCounter);
-    }
 
     /**
      * Extract the constants from module node
@@ -516,8 +358,8 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
         {
             String[] params = new String[constantDecls[i].getNumberOfArgs()];
             // pre-fill the empty array
-            Arrays.fill(params, "");
-            Assignment assign = new Assignment(constantDecls[i].getName().toString(), params, "");
+            Arrays.fill(params, EMPTY_STRING);
+            Assignment assign = new Assignment(constantDecls[i].getName().toString(), params, EMPTY_STRING);
             constants.add(assign);
         }
         return constants;
@@ -835,7 +677,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
      */
     private static void cleanUp(ILaunchConfiguration config) throws CoreException
     {
-        // TODO
+        
     }
 
     /**
@@ -1071,5 +913,41 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
 
         return result;
     }
+
+    /**
+     * Find the IDs in the given text and return the array of 
+     * regions pointing to those or an empty array, if no IDs were found.
+     * An ID is scheme_timestamp, created by {@link ModelWriter#getValidIdentifier(String)} e.G. next_125195338522638000
+     * @param text text containing IDs (error text)
+     * @return array of regions or empty array
+     */
+    public static IRegion[] findIds(String text)
+    {
+       return ModelWriter.findIds(text); 
+    }
+    
+    /**
+     * Finds the locations in the given text and return the array of 
+     * regions pointing to those or an empty array, if no location were found.
+     * A location is a pointer in the TLA file, e.G. "line 11, col 8 to line 14, col 26 of module Foo"
+     * @param text text containing locations (error text)
+     * @return array of regions or empty array
+     */
+    public static IRegion[] findLocations(String text)
+    {
+        if (text == null || text.isEmpty())
+        {
+            return new IRegion[0];
+        }
+
+        Matcher matcher = Location.LOCATION_MATCHER.matcher(text);
+        Vector regions = new Vector();
+        while (matcher.find())
+        {
+            regions.add(new Region(matcher.start(), matcher.end() - matcher.start()));
+        }
+        return (IRegion[]) regions.toArray(new IRegion[regions.size()]);
+    }
+
 
 }

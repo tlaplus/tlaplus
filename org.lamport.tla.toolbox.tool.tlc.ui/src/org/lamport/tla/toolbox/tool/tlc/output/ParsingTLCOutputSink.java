@@ -27,7 +27,7 @@ public class ParsingTLCOutputSink implements IProcessOutputSink
         } catch (BadLocationException e)
         {
             TLCUIActivator.logError("Error parsing the TLC output stream for "
-                    + this.parser.getSource().getSourceName(), e);
+                    + this.parser.getSource().getTLCOutputName(), e);
         }
     }
 

@@ -13,6 +13,7 @@ import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -51,6 +52,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 {
     public static final String ID = "resultPage";
 
+    private Hyperlink errorStatusHyperLink;
     /**
      * UI elements
      */
@@ -59,19 +61,16 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
     private Text startTimestampText;
     private Text finishTimestampText;
     private Text coverageTimestampText;
-    private Hyperlink errorStatusHyperLink;
     private TableViewer coverage;
     private TableViewer stateSpace;
-
-    // private TLCModelLaunchDataProvider dataProvider;
 
     // hyper link listener activated in case of errors
     protected IHyperlinkListener errorHyperLinkListener = new HyperlinkAdapter() {
 
         public void linkActivated(HyperlinkEvent e)
         {
-            TLCModelLaunchDataProvider dataProvider = TLCOutputSourceRegistry.getStatusRegistry().getProvider(
-                    ResultPage.this);
+            TLCModelLaunchDataProvider dataProvider = TLCOutputSourceRegistry.getSourceRegistry().getProvider(
+                    getConfig());
             if (dataProvider != null)
             {
                 TLCErrorView.updateErrorView(dataProvider);
@@ -90,6 +89,9 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         this.imagePath = "icons/full/choice_sc_obj.gif";
     }
 
+    /**
+     * Will be called by the provider on data changes
+     */
     public void modelChanged(final TLCModelLaunchDataProvider dataProvider, final int fieldId)
     {
         UIHelper.runUIAsync(new Runnable() {
@@ -118,21 +120,32 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
                     ResultPage.this.progressOutput.setInput(dataProvider.getProgressInformation());
                     break;
                 case ERRORS:
-                    int size = dataProvider.getErrors().size();
-                    ResultPage.this.errorStatusHyperLink.setText(String.valueOf(size) + " Error"
-                            + ((size == 1) ? "" : "s"));
-
-                    if (dataProvider.getErrors().size() > 0)
-                    {
-                        ResultPage.this.errorStatusHyperLink
-                                .addHyperlinkListener(ResultPage.this.errorHyperLinkListener);
-                        ResultPage.this.errorStatusHyperLink.setForeground(TLCUIActivator.getColor(SWT.COLOR_RED));
-                    } else
-                    {
+                    String text;
+                    Color color;
+                    int errorCount = dataProvider.getErrors().size();
+                    switch (errorCount) {
+                    case 0:
+                        text = TLCModelLaunchDataProvider.NO_ERRORS;
+                        color = TLCUIActivator.getColor(SWT.COLOR_BLACK);
                         ResultPage.this.errorStatusHyperLink
                                 .removeHyperlinkListener(ResultPage.this.errorHyperLinkListener);
-                        ResultPage.this.errorStatusHyperLink.setForeground(TLCUIActivator.getColor(SWT.COLOR_BLACK));
+                        break;
+                    case 1:
+                        text = "1 Error";
+                        ResultPage.this.errorStatusHyperLink
+                                .addHyperlinkListener(ResultPage.this.errorHyperLinkListener);
+                        color = TLCUIActivator.getColor(SWT.COLOR_RED);
+                        break;
+                    default:
+                        text = String.valueOf(errorCount) + " Errors";
+                        ResultPage.this.errorStatusHyperLink
+                                .addHyperlinkListener(ResultPage.this.errorHyperLinkListener);
+                        color = TLCUIActivator.getColor(SWT.COLOR_RED);
+                        break;
                     }
+                    
+                    ResultPage.this.errorStatusHyperLink.setText(text);
+                    ResultPage.this.errorStatusHyperLink.setForeground(color);
 
                     // update the error view
                     TLCErrorView.updateErrorView(dataProvider);
@@ -141,7 +154,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
                     break;
                 }
 
-                ResultPage.this.refresh();
+                // ResultPage.this.refresh();
             }
         });
 
@@ -152,38 +165,28 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
      */
     public void loadData() throws CoreException
     {
-        reinit();
 
-        TLCModelLaunchDataProvider provider = TLCOutputSourceRegistry.getStatusRegistry().getProvider(this);
+        TLCModelLaunchDataProvider provider = TLCOutputSourceRegistry.getSourceRegistry().getProvider(getConfig());
         if (provider != null)
         {
-            provider.populate();
-            return;
-        }
-
-        // enforce the process start
-        // this is required only if the page is loaded and the provider
-        // is not available. e.G id there were no hitting start button
-        TLCOutputSourceRegistry.getStatusRegistry().startProcess(getConfig());
-        provider = TLCOutputSourceRegistry.getStatusRegistry().getProvider(this);
-        if (provider != null)
+            provider.setPresenter(this);
+        } else
         {
-            provider.populate();
-            return;
+            // no data provider
+            reinit();
         }
-
     }
 
     /**
      * Reinitialize the fields
      * has to be run in the UI thread
      */
-    public synchronized void reinit()
+    private synchronized void reinit()
     {
         // TLCUIActivator.logDebug("Entering reinit()");
         this.startTimestampText.setText("");
         this.finishTimestampText.setText("");
-        this.errorStatusHyperLink.setText("");
+        this.errorStatusHyperLink.setText(TLCModelLaunchDataProvider.NO_ERRORS);
         this.coverage.setInput(new Vector());
         this.stateSpace.setInput(new Vector());
         this.progressOutput.setDocument(new Document(TLCModelLaunchDataProvider.NO_OUTPUT_AVAILABLE));
@@ -196,7 +199,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
      */
     public void dispose()
     {
-        TLCModelLaunchDataProvider provider = TLCOutputSourceRegistry.getStatusRegistry().getProvider(this);
+        TLCModelLaunchDataProvider provider = TLCOutputSourceRegistry.getSourceRegistry().getProvider(getConfig());
         if (provider != null)
         {
             provider.setPresenter(null);
@@ -244,13 +247,14 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         statusComposite.setLayout(new GridLayout(2, false));
 
         // start
-        startTimestampText = FormHelper.createTextLeft("Start time:", statusComposite, toolkit);
+        this.startTimestampText = FormHelper.createTextLeft("Start time:", statusComposite, toolkit);
         // elapsed time
-        finishTimestampText = FormHelper.createTextLeft("Elapsed time:", statusComposite, toolkit);
+        this.finishTimestampText = FormHelper.createTextLeft("Elapsed time:", statusComposite, toolkit);
         // errors
         // Label createLabel =
-        toolkit.createLabel(statusComposite, "Errors detected:");
-        this.errorStatusHyperLink = toolkit.createHyperlink(statusComposite, "", SWT.RIGHT);
+        // toolkit.createLabel(statusComposite, "Errors detected:");
+        // this.errorStatusHyperLink = toolkit.createHyperlink(statusComposite, "", SWT.RIGHT);
+        this.errorStatusHyperLink = FormHelper.createHyperlinkLeft("Errors detected:", statusComposite, toolkit);
 
         // -------------------------------------------------------------------
         // statistics section

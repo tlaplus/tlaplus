@@ -7,6 +7,7 @@ import junit.framework.Assert;
 import junit.framework.TestCase;
 
 /**
+ * Test for checkpoint pattern detection
  * @author Simon Zambrovski
  * @version $Id$
  */
@@ -36,8 +37,6 @@ public class ModelHelperTest extends TestCase
 
         Matcher matcher2 = pattern.matcher(input2);
         Assert.assertFalse(matcher2.matches());
-
-
     }
 
 }

@@ -14,6 +14,7 @@ import org.lamport.tla.toolbox.tool.tlc.output.source.TLCOutputSourceRegistry;
 import org.lamport.tla.toolbox.tool.tlc.output.source.TLCRegion;
 import org.lamport.tla.toolbox.tool.tlc.output.source.TLCRegionContainer;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
+import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 import tlc2.output.EC;
@@ -27,6 +28,8 @@ import tlc2.output.MP;
 public class TLCModelLaunchDataProvider implements ITLCOutputListener
 {
     public static final String NO_OUTPUT_AVAILABLE = "No execution data is available";
+
+    public static final String NO_ERRORS = "No errors";
 
     // presenter for the current process
     private ITLCModelLaunchDataPresenter presenter;
@@ -57,17 +60,11 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
     public TLCModelLaunchDataProvider(ILaunchConfiguration config)
     {
         this.config = config;
+        // init provider, but not connect it to the source!
         initialize();
-    }
-
-    /**
-     * Re-initializes the data provider
-     */
-    public void reinitialize()
-    {
-        destroy();
-        initialize();
-        populate();
+        
+        // interested in the output for the model
+        TLCOutputSourceRegistry.getSourceRegistry().connect(this);
     }
 
     /**
@@ -82,13 +79,8 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
         startTimestamp = "";
         finishTimestamp = "";
         coverageTimestamp = "";
-
         progressOutput = new Document(NO_OUTPUT_AVAILABLE);
         userOutput = new Document(NO_OUTPUT_AVAILABLE);
-
-        TLCOutputSourceRegistry.getStatusRegistry().connect(this);
-        informPresenter(ITLCModelLaunchDataPresenter.USER_OUTPUT);
-        informPresenter(ITLCModelLaunchDataPresenter.PROGRESS_OUTPUT);
     }
 
     /**
@@ -117,7 +109,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
     /**
      * Name of the model
      */
-    public String getProcessName()
+    public String getTLCOutputName()
     {
         // the model filename is good because it is unique
         return config.getFile().getName();
@@ -132,7 +124,6 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
     {
         // everything that was saved should be erased
         initialize();
-
         populate();
     }
 
@@ -258,8 +249,13 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                     informPresenter(ITLCModelLaunchDataPresenter.COVERAGE);
                     break;
                 case EC.TLC_COVERAGE_VALUE:
-                    this.coverageInfo.add(CoverageInformationItem.parse(outputMessage));
-                    informPresenter(ITLCModelLaunchDataPresenter.COVERAGE);
+                    CoverageInformationItem item = CoverageInformationItem.parse(outputMessage);
+                    if (!item.getModule().equals(ModelHelper.MC_MODEL_NAME)) 
+                    {
+                        // only add coverage of the spec files
+                        this.coverageInfo.add(item);
+                        informPresenter(ITLCModelLaunchDataPresenter.COVERAGE);
+                    }
                     break;
                 case EC.TLC_COVERAGE_END:
                     break;
@@ -280,9 +276,12 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
         }
     }
 
+    /**
+     * Destroy and disconnect
+     */
     public void destroy()
     {
-        TLCOutputSourceRegistry.getStatusRegistry().disconnect(this);
+        TLCOutputSourceRegistry.getSourceRegistry().disconnect(this);
     }
 
     /**
@@ -378,9 +377,14 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
         return this.config;
     }
 
+    /**
+     * Set the presenter.  
+     * @param presenter a presenter to update on data changes
+     */
     public void setPresenter(ITLCModelLaunchDataPresenter presenter)
     {
         this.presenter = presenter;
+        populate();
     }
 
     public List getErrors()

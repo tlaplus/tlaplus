@@ -105,9 +105,9 @@ public class CachingTLCOutputSource implements ITLCOutputSource
     }
 
     /**
-     * @see org.lamport.tla.toolbox.tool.tlc.output.source.ITLCOutputSource#getSourceName()
+     * @see org.lamport.tla.toolbox.tool.tlc.output.source.ITLCOutputSource#getTLCOutputName()
      */
-    public String getSourceName()
+    public String getTLCOutputName()
     {
         return sourceName;
     }

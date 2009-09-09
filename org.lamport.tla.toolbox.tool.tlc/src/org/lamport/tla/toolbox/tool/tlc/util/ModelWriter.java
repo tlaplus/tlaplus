@@ -2,11 +2,17 @@ package org.lamport.tla.toolbox.tool.tlc.util;
 
 import java.util.List;
 import java.util.Vector;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.debug.core.ILaunchConfiguration;
+import org.eclipse.jface.text.IRegion;
+import org.eclipse.jface.text.Region;
 import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
+import org.lamport.tla.toolbox.tool.tlc.model.Formula;
 import org.lamport.tla.toolbox.tool.tlc.model.TypedSet;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 
@@ -17,14 +23,33 @@ import org.lamport.tla.toolbox.util.ResourceHelper;
  */
 public class ModelWriter
 {
+    /**
+     * Counter to be able to generate unique identifiers
+     */
+    private static long globalCounter = 1;
+
+    public static final String SPEC_SCHEME = "spec";
+    public static final String INIT_SCHEME = "init";
+    public static final String NEXT_SCHEME = "next";
+    public static final String CONSTANT_SCHEME = "const";
+    public static final String SYMMETRY_SCHEME = "symm";
+    public static final String DEFOV_SCHEME = "def_ov";
+    public static final String CONSTRAINT_SCHEME = "constr";
+    public static final String ACTIONCONSTRAINT_SCHEME = "action_constr";
+    public static final String INVARIANT_SCHEME = "inv";
+    public static final String PROP_SCHEME = "prop";
+
+    public static final String SPACE = " ";
     public static final String CR = "\n";
     public static final String SEP = "----";
     public static final String EQ = " = ";
     public static final String ARROW = " <- ";
     public static final String DEFINES = " == ";
+    public static final String DEFINES_CR = " ==\n";
     public static final String COMMENT = "\\* ";
     public static final String ATTRIBUTE = "@";
     public static final String INDEX = ":";
+    public static final String EMPTY_STRING = "";
 
     private StringBuffer tlaBuffer;
     private StringBuffer cfgBuffer;
@@ -69,9 +94,9 @@ public class ModelWriter
      */
     public void addSpecDefinition(String[] specDefinition, String attributeName)
     {
-        cfgBuffer.append("SPECIFICATION ");
+        cfgBuffer.append("SPECIFICATION").append(SPACE);
         cfgBuffer.append(specDefinition[0]).append(CR);
-        
+
         tlaBuffer.append(COMMENT).append("Specification ").append(ATTRIBUTE).append(attributeName).append(CR);
         tlaBuffer.append(specDefinition[1]).append(CR).append(SEP).append(CR);
 
@@ -90,7 +115,6 @@ public class ModelWriter
         Assignment constant;
         Vector symmetrySets = new Vector();
 
-        
         // first run for all the declarations
         for (int i = 0; i < constants.size(); i++)
         {
@@ -102,10 +126,10 @@ public class ModelWriter
                     // set model values
                     TypedSet setOfMVs = TypedSet.parseSet(constant.getRight());
                     addMVTypedSet(setOfMVs, "MV CONSTANT declarations", attributeConstants);
-                } 
-            } 
+                }
+            }
         }
-        
+
         // now all the definitions
         for (int i = 0; i < constants.size(); i++)
         {
@@ -115,10 +139,10 @@ public class ModelWriter
                 if (constant.isSetOfModelValues())
                 {
                     // set model values
-                    cfgBuffer.append(COMMENT).append("MV CONSTANT definitions" ).append(CR);
+                    cfgBuffer.append(COMMENT).append("MV CONSTANT definitions").append(CR);
                     tlaBuffer.append(COMMENT).append("MV CONSTANT definitions " + constant.getLeft()).append(CR);
-                    
-                    String id = addArrowAssignment(constant, "const");
+
+                    String id = addArrowAssignment(constant, CONSTANT_SCHEME);
                     if (constant.isSymmetricalSet())
                     {
                         symmetrySets.add(id);
@@ -130,15 +154,17 @@ public class ModelWriter
                     // model value assignment
                     // to .cfg : foo = foo
                     // to _MC.tla : <nothing>, since the constant is already defined in one of the spec modules
-                    cfgBuffer.append("CONSTANT ").append(constant.getLabel()).append(EQ).append(constant.getRight()).append(CR);
+                    cfgBuffer.append("CONSTANT").append(SPACE).append(constant.getLabel()).append(EQ).append(
+                            constant.getRight()).append(CR);
                 }
             } else
             {
                 // simple constant value assignment
                 cfgBuffer.append(COMMENT).append("CONSTANT definitions").append(CR);
-                
-                tlaBuffer.append(COMMENT).append("CONSTANT definitions ").append(ATTRIBUTE).append(attributeConstants).append(INDEX).append(i).append(constant.getLeft()).append(CR);
-                addArrowAssignment(constant, "const");
+
+                tlaBuffer.append(COMMENT).append("CONSTANT definitions ").append(ATTRIBUTE).append(attributeConstants)
+                        .append(INDEX).append(i).append(constant.getLeft()).append(CR);
+                addArrowAssignment(constant, CONSTANT_SCHEME);
                 tlaBuffer.append(SEP).append(CR).append(CR);
             }
         }
@@ -146,7 +172,7 @@ public class ModelWriter
         // symmetry
         if (!symmetrySets.isEmpty())
         {
-            String label = ModelHelper.getValidIdentifier("symm");
+            String label = ModelWriter.getValidIdentifier(SYMMETRY_SCHEME);
 
             tlaBuffer.append(COMMENT).append("SYMMETRY definition").append(CR);
             cfgBuffer.append(COMMENT).append("SYMMETRY definition").append(CR);
@@ -156,14 +182,14 @@ public class ModelWriter
             for (int i = 0; i < symmetrySets.size(); i++)
             {
                 tlaBuffer.append("Permutations(").append((String) symmetrySets.get(i)).append(")");
-                if (i != symmetrySets.size() - 1) 
+                if (i != symmetrySets.size() - 1)
                 {
                     tlaBuffer.append(" \\union ");
                 }
             }
 
             tlaBuffer.append(CR).append(SEP).append(CR).append(CR);
-            cfgBuffer.append("SYMMETRY ").append(label).append(CR);
+            cfgBuffer.append("SYMMETRY").append(SPACE).append(label).append(CR);
         }
 
     }
@@ -180,7 +206,7 @@ public class ModelWriter
         // to .cfg : foo <- <id>
         // to _MC.tla : <id>(a, b, c)==
         // <expression>
-        String id = ModelHelper.getValidIdentifier(schema);
+        String id = ModelWriter.getValidIdentifier(schema);
         tlaBuffer.append(constant.getParametrizedLabel(id)).append(DEFINES).append(CR).append(constant.getRight())
                 .append(CR);
         cfgBuffer.append("CONSTANT").append(CR);
@@ -243,7 +269,8 @@ public class ModelWriter
 
         for (int i = 0; i < elements.size(); i++)
         {
-            tlaBuffer.append(COMMENT).append(keyword + " definition ").append(ATTRIBUTE).append(attributeName).append(INDEX).append(i).append(CR);
+            tlaBuffer.append(COMMENT).append(keyword + " definition ").append(ATTRIBUTE).append(attributeName).append(
+                    INDEX).append(i).append(CR);
             String[] element = (String[]) elements.get(i);
             cfgBuffer.append(element[0]).append(CR);
             tlaBuffer.append(element[1]).append(CR).append(SEP).append(CR);
@@ -262,6 +289,139 @@ public class ModelWriter
         }
         tlaBuffer.append(COMMENT).append("New definitions ").append(ATTRIBUTE).append(attributeName).append(CR);
         tlaBuffer.append(definitions).append(CR).append(SEP).append(CR);
+    }
+
+    /**
+     * Create the content for a single source element
+     * @return a list with at most one String[] element
+     * @throws CoreException 
+     */
+    public static List createSourceContent(String propertyName, String labelingScheme, ILaunchConfiguration config)
+            throws CoreException
+    {
+        Vector result = new Vector();
+        String value = config.getAttribute(propertyName, EMPTY_STRING);
+        if (EMPTY_STRING.equals(value))
+        {
+            return result;
+        }
+        String identifier = getValidIdentifier(labelingScheme);
+        StringBuffer buffer = new StringBuffer();
+
+        // the identifier
+        buffer.append(identifier).append(DEFINES_CR);
+        buffer.append(value);
+
+        result.add(new String[] { identifier, buffer.toString() });
+        return result;
+    }
+
+    /**
+     * Converts formula list to a string representation
+     * @param serializedFormulaList, list of strings representing formulas (with enablement flag)
+     * @param labelingScheme
+     * @return
+     */
+    public static List createFormulaListContent(List serializedFormulaList, String labelingScheme)
+    {
+        List formulaList = ModelHelper.deserializeFormulaList(serializedFormulaList);
+        return (createListContent(formulaList, labelingScheme));
+    }
+
+    /**
+     * Create a list of overrides
+     * @param overrides
+     * @param string
+     * @return
+     */
+    public static List createOverridesContent(List overrides, String labelingScheme)
+    {
+        Vector resultContent = new Vector(overrides.size());
+        String[] content;
+        String id;
+        Assignment formula;
+        for (int i = 0; i < overrides.size(); i++)
+        {
+            id = getValidIdentifier(labelingScheme);
+            // formulas
+            // to .cfg : <id>
+            // to _MC.tla : <id> == <expression>
+            formula = ((Assignment) overrides.get(i));
+            content = new String[] { formula.getLabel() + ARROW + id,
+                    formula.getParametrizedLabel(id) + DEFINES_CR + formula.getRight() };
+            resultContent.add(content);
+        }
+        return resultContent;
+    }
+
+    /**
+     * Converts formula list to a string representation
+     * @param formulaList list of assignments
+     * @param labelingScheme 
+     * @return
+     */
+    public static List createListContent(List formulaList, String labelingScheme)
+    {
+        Vector resultContent = new Vector(formulaList.size());
+        String[] content;
+        String label;
+        for (int i = 0; i < formulaList.size(); i++)
+        {
+            label = getValidIdentifier(labelingScheme);
+            // formulas
+            // to .cfg : <id>
+            // to _MC.tla : <id> == <expression>
+            content = new String[] { label, label + DEFINES_CR + ((Formula) formulaList.get(i)).getFormula() };
+            resultContent.add(content);
+        }
+        return resultContent;
+    }
+
+    /**
+     * A pattern to match IDs generated by the {@link ModelWriter#getValidIdentifier(String)} method
+     */
+    public static final Pattern ID_MATCHER = Pattern.compile("(" + SPEC_SCHEME + "|" + INIT_SCHEME + "|" + NEXT_SCHEME
+            + "|" + CONSTANT_SCHEME + "|" + SYMMETRY_SCHEME + "|" + DEFOV_SCHEME + "|" + CONSTRAINT_SCHEME + "|"
+            + ACTIONCONSTRAINT_SCHEME + "|" + INVARIANT_SCHEME + "|" + PROP_SCHEME + ")_[0-9]{17}");
+
+
+    /**
+     * Find the IDs in the given text and return the array of 
+     * regions pointing to those or an empty array, if no IDs were found.
+     * An ID is scheme_timestamp, created by {@link ModelWriter#getValidIdentifier(String)} e.G. next_125195338522638000
+     * @param text text containing IDs (error text)
+     * @return array of regions or empty array
+     */
+    static IRegion[] findIds(String text)
+    {
+        if (text == null || text.isEmpty())
+        {
+            return new IRegion[0];
+        }
+
+        Matcher matcher = ModelWriter.ID_MATCHER.matcher(text);
+        Vector regions = new Vector();
+        while (matcher.find())
+        {
+            regions.add(new Region(matcher.start(), matcher.end() - matcher.start()));
+        }
+        return (IRegion[]) regions.toArray(new IRegion[regions.size()]);
+    }
+
+    /**
+     * Retrieves new valid (not used) identifier from given schema
+     * @param schema a naming schema, one of the {@link ModelWriter} SCHEMA constants
+     * @return a valid identifier
+     */
+    public static synchronized String getValidIdentifier(String schema)
+    {
+        try
+        {
+            Thread.sleep(10);
+        } catch (InterruptedException e)
+        {
+        }
+        return schema + "_" + System.currentTimeMillis() + 1000 * (++globalCounter);
     }
 
 }

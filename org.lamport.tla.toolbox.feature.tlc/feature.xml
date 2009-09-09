@@ -3,10 +3,7 @@
       id="org.lamport.tla.toolbox.feature.tlc"
       label="TLC Tool Feature"
       version="1.0.0"
-      provider-name="Yuan Yu, Leslie Lamport, Simon Zambrovski"
-      os="macosx,win32"
-      ws="carbon,win32"
-      arch="ppc,x86">
+      provider-name="Yuan Yu, Leslie Lamport, Simon Zambrovski">
 
    <description url="http://www.example.com/description">
       [Enter Feature Description here.]

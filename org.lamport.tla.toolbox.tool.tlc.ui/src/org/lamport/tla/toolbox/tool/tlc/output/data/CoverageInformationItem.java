@@ -1,5 +1,7 @@
 package org.lamport.tla.toolbox.tool.tlc.output.data;
 
+import tla2sany.st.Location;
+
 /**
  * Coverage information item
  * @author Simon Zambrovski
@@ -7,30 +9,37 @@ package org.lamport.tla.toolbox.tool.tlc.output.data;
  */
 public class CoverageInformationItem
 {
-    private String module;
-    private String location;
+    private final static String MOD = " of module ";
+    private final static String COLON = ": ";
+    private final static String AT = "at ";
+
+    
+    private String locationString;
+    private Location location;
     private long count;
 
     /**
-     * @param module2
-     * @param location2
-     * @param count2
+     * Creates an simple item storing information about a coverage at a certain location
+     * @param module
+     * @param location
+     * @param count
      */
-    public CoverageInformationItem(String module, String location, long count)
+
+    public CoverageInformationItem(Location location, long count)
     {
-        this.module = module;
         this.location = location;
+        this.locationString = this.location.toString();
         this.count = count;
     }
 
     public final String getModule()
     {
-        return module;
+        return locationString.substring(locationString.indexOf(MOD) + MOD.length());
     }
 
     public final String getLocation()
     {
-        return location;
+        return locationString.substring(0, locationString.indexOf(MOD));
     }
 
     public final long getCount()
@@ -38,7 +47,9 @@ public class CoverageInformationItem
         return count;
     }
 
+
     /**
+     * Parses the coverage information item from a string
      * @param outputMessage
      * @return
      */
@@ -47,19 +58,17 @@ public class CoverageInformationItem
 
         // "  line 84, col 32 to line 85, col 73 of module AtomicBakery: 1012492"
         outputMessage = outputMessage.trim();
-        int[] index = { outputMessage.indexOf(LINE), outputMessage.indexOf(MOD), outputMessage.indexOf(COLON) };
-        return new CoverageInformationItem(outputMessage.substring(index[1] + MOD.length(), index[2]), outputMessage
-                .substring(index[0], index[1]), Long.parseLong(outputMessage.substring(index[2] + COLON.length())));
+        int index = outputMessage.indexOf(COLON);
+        return new CoverageInformationItem(Location.parseLocation(outputMessage.substring(0, index)), Long.parseLong(outputMessage.substring(index + COLON.length())));
     }
 
-    private final static String LINE = "line";
-    private final static String MOD = " of module ";
-    private final static String COLON = ": ";
-    private final static String AT = "at ";
-
+    /**
+     * Parses coverage timestamp from the string  
+     * @param outputMessage
+     * @return
+     */
     public static String parseCoverageTimestamp(String outputMessage)
     {
-
         return outputMessage.substring(outputMessage.lastIndexOf(AT) + AT.length());
     }
 

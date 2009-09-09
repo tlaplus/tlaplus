@@ -19,6 +19,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.forms.events.IExpansionListener;
 import org.eclipse.ui.forms.widgets.FormToolkit;
+import org.eclipse.ui.forms.widgets.Hyperlink;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.forms.widgets.TableWrapData;
 import org.eclipse.ui.forms.widgets.TableWrapLayout;
@@ -338,6 +339,31 @@ public class FormHelper
     }
 
     /**
+     * Creates a hyperlink with left aligned text
+     * @param title
+     * @param parent
+     * @param toolkit
+     * @return
+     */
+    public static Hyperlink createHyperlinkLeft(String title, Composite parent, FormToolkit toolkit)
+    {
+        Label createLabel = toolkit.createLabel(parent, title);
+        GridData gd = new GridData();
+        createLabel.setLayoutData(gd);
+        gd.verticalAlignment = SWT.TOP;
+
+        Hyperlink hyperlink = toolkit.createHyperlink(parent, "", SWT.RIGHT);
+        gd = new GridData(SWT.FILL, SWT.LEFT, true, false);
+        gd.horizontalIndent = 30;
+        gd.verticalAlignment = SWT.TOP;
+        gd.horizontalAlignment = SWT.RIGHT;
+        gd.minimumWidth = 150;
+        hyperlink.setLayoutData(gd);
+        
+        return hyperlink;
+    }
+    
+    /**
      * Creates a text component with left-aligned text
      * @param title
      * @param parent
@@ -350,8 +376,8 @@ public class FormHelper
         GridData gd = new GridData();
         createLabel.setLayoutData(gd);
         gd.verticalAlignment = SWT.TOP;
+        
         Text text = toolkit.createText(parent, "");
-
         gd = new GridData(SWT.FILL, SWT.LEFT, true, false);
         gd.horizontalIndent = 30;
         gd.verticalAlignment = SWT.TOP;

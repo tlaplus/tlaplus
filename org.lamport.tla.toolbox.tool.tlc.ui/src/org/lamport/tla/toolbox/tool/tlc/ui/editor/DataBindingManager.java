@@ -73,7 +73,7 @@ public class DataBindingManager implements ISectionConstants
         {
             throw new IllegalArgumentException("No section for id");
         }
-        part.getSection().setEnabled(true);
+        part.getSection().setEnabled(enabled);
     }
 
     /**

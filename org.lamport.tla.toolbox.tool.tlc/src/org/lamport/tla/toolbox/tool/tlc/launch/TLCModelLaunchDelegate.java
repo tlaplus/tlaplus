@@ -330,14 +330,14 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
             // definition overrides list
             List overrides = ModelHelper.deserializeAssignmentList(config.getAttribute(MODEL_PARAMETER_DEFINITIONS,
                     new Vector()));
-            writer.addFormulaList(ModelHelper.createOverridesContent(overrides, "def_ov"), "CONSTANT",
+            writer.addFormulaList(ModelWriter.createOverridesContent(overrides, ModelWriter.DEFOV_SCHEME), "CONSTANT",
                     MODEL_PARAMETER_DEFINITIONS);
 
             // constraint
-            writer.addFormulaList(ModelHelper.createSourceContent(MODEL_PARAMETER_CONSTRAINT, "constr", config),
+            writer.addFormulaList(ModelWriter.createSourceContent(MODEL_PARAMETER_CONSTRAINT, ModelWriter.CONSTRAINT_SCHEME, config),
                     "CONSTRAINT", MODEL_PARAMETER_CONSTRAINT);
             // action constraint
-            writer.addFormulaList(ModelHelper.createSourceContent(MODEL_PARAMETER_ACTION_CONSTRAINT, "action_constr",
+            writer.addFormulaList(ModelWriter.createSourceContent(MODEL_PARAMETER_ACTION_CONSTRAINT, ModelWriter.ACTIONCONSTRAINT_SCHEME,
                     config), "ACTION-CONSTRAINT", MODEL_PARAMETER_ACTION_CONSTRAINT);
 
             int specType = config.getAttribute(MODEL_BEHAVIOR_SPEC_TYPE, MODEL_BEHAVIOR_TYPE_DEFAULT);
@@ -348,13 +348,13 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
             case MODEL_BEHAVIOR_TYPE_SPEC_CLOSED:
 
                 // the specification name-formula pair
-                writer.addFormulaList(ModelHelper.createSourceContent(MODEL_BEHAVIOR_CLOSED_SPECIFICATION, "spec", config), "SPECIFICATION", MODEL_BEHAVIOR_CLOSED_SPECIFICATION);
+                writer.addFormulaList(ModelWriter.createSourceContent(MODEL_BEHAVIOR_CLOSED_SPECIFICATION, ModelWriter.SPEC_SCHEME, config), "SPECIFICATION", MODEL_BEHAVIOR_CLOSED_SPECIFICATION);
                 break;
             case MODEL_BEHAVIOR_TYPE_SPEC_INIT_NEXT:
 
                 // the init and next formulas 
-                writer.addFormulaList(ModelHelper.createSourceContent(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT, "init", config), "INIT", MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT);
-                writer.addFormulaList(ModelHelper.createSourceContent(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT, "next", config), "NEXT", MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT);
+                writer.addFormulaList(ModelWriter.createSourceContent(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT, ModelWriter.INIT_SCHEME, config), "INIT", MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT);
+                writer.addFormulaList(ModelWriter.createSourceContent(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT, ModelWriter.NEXT_SCHEME, config), "NEXT", MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT);
                 break;
             }
 
@@ -363,12 +363,12 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
 //                    MODEL_BEHAVIOR_CLOSED_SPECIFICATION);
 
             // invariants
-            writer.addFormulaList(ModelHelper.createFormulaListContent(config.getAttribute(
-                    MODEL_CORRECTNESS_INVARIANTS, new Vector()), "inv"), "INVARIANT", MODEL_CORRECTNESS_INVARIANTS);
+            writer.addFormulaList(ModelWriter.createFormulaListContent(config.getAttribute(
+                    MODEL_CORRECTNESS_INVARIANTS, new Vector()), ModelWriter.INVARIANT_SCHEME), "INVARIANT", MODEL_CORRECTNESS_INVARIANTS);
 
             // properties
-            writer.addFormulaList(ModelHelper.createFormulaListContent(config.getAttribute(
-                    MODEL_CORRECTNESS_PROPERTIES, new Vector()), "prop"), "PROPERTY", MODEL_CORRECTNESS_PROPERTIES);
+            writer.addFormulaList(ModelWriter.createFormulaListContent(config.getAttribute(
+                    MODEL_CORRECTNESS_PROPERTIES, new Vector()), ModelWriter.PROP_SCHEME), "PROPERTY", MODEL_CORRECTNESS_PROPERTIES);
 
             monitor.worked(STEP);
             monitor.subTask("Writing contents");

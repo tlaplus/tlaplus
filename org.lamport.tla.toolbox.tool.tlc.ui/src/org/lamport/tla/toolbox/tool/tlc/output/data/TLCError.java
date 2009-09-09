@@ -21,11 +21,10 @@ public class TLCError
 
     }
 
-    public TLCError(String message)
-    {
-        this.message = message;
-    }
-
+    /**
+     * Add a state to a trace
+     * @param state state to add
+     */
     public void addState(TLCState state)
     {
         if (states == null)
@@ -36,6 +35,10 @@ public class TLCError
         states.add(state);
     }
 
+    /**
+     * Retrieves a cause of this error (or null if not a chained error)
+     * @return the causing error
+     */
     public final TLCError getCause()
     {
         return cause;
@@ -90,5 +93,5 @@ public class TLCError
     {
         return this.states != null && !this.states.isEmpty();
     }
-
+    
 }

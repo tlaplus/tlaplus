@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?pde version="3.4"?>
+<?pde version="3.5"?>
 
-<product name="TLA+ Toolbox" id="org.lamport.tla.toolbox.product.standalone.product" application="org.lamport.tla.toolbox.application" version="0.0.1" useFeatures="true">
+<product name="TLA+ Toolbox" id="org.lamport.tla.toolbox.product.standalone.product" application="org.lamport.tla.toolbox.application" version="0.0.1" useFeatures="true" includeLaunchers="true">
 
    <aboutInfo>
       <image path="icons/full/product_lg.gif"/>
@@ -37,10 +37,12 @@ To report a bug or make a suggestion, please contact Leslie Lamport at http://ww
    <vm>
    </vm>
 
-
+   <plugins>
+   </plugins>
 
    <features>
       <feature id="org.lamport.tla.toolbox.feature.standalone" version="1.0.0"/>
    </features>
+
 
 </product>

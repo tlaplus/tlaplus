@@ -31,12 +31,13 @@ public interface ITLCOutputSource
     public ITLCOutputListener[] getListeners();
 
     /**
-     * Retrieves the source name
+     * Retrieves the source name, which is the id of the source
      */
-    public String getSourceName();
+    public String getTLCOutputName();
 
     /**
      * Retrieves the source priority
+     * one of the {@link ITLCOutputSource#PRIO_LOW}, {@link ITLCOutputSource#PRIO_MEDIUM}, {@link ITLCOutputSource#PRIO_HIGH}
      */
     public int getSourcePrio();
 

@@ -5,6 +5,10 @@ import org.eclipse.jface.text.ITypedRegion;
 
 /**
  * A listener interested in TLC Output status changes for a particular TLC process
+ * <br>
+ * This class is not intended to be implemented by the clients.<br>
+ * This class is not intended to be subclassed by the clients.<br>
+ * 
  * @author Simon Zambrovski
  * @version $Id$
  */
@@ -14,7 +18,7 @@ public interface ITLCOutputListener
      * Retrieves the process name of TLC 
      * @return the name to identify the TLC instance
      */
-    public String getProcessName();
+    public String getTLCOutputName();
 
     /**
      * Reports new output

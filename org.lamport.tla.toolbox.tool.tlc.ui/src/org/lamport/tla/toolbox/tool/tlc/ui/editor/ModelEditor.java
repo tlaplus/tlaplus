@@ -25,7 +25,6 @@ import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.part.FileEditorInput;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationDefaults;
 import org.lamport.tla.toolbox.tool.tlc.launch.TLCModelLaunchDelegate;
-import org.lamport.tla.toolbox.tool.tlc.output.data.ITLCModelLaunchDataPresenter;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCModelLaunchDataProvider;
 import org.lamport.tla.toolbox.tool.tlc.output.source.TLCOutputSourceRegistry;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
@@ -211,25 +210,21 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
     {
     }
 
+    /**
+     * Ask the view for an adapter for certain class
+     */
     public Object getAdapter(Class required)
     {
 
+        // ask for the launh data provider
         if (TLCModelLaunchDataProvider.class.equals(required))
         {
-            // TLCUIActivator.logDebug("Adapter request: " + required);
-            for (int i = 0; i < pagesToAdd.length; i++)
+            // return a provider, if this can be found
+            TLCModelLaunchDataProvider provider = TLCOutputSourceRegistry.getSourceRegistry().getProvider(getConfig());
+            if (provider != null)
             {
-                if (pagesToAdd[i] instanceof ITLCModelLaunchDataPresenter)
-                {
-                    TLCModelLaunchDataProvider provider = TLCOutputSourceRegistry.getStatusRegistry().getProvider(
-                            (ITLCModelLaunchDataPresenter) pagesToAdd[i]);
-                    if (provider != null)
-                    {
-                        return provider;
-                    }
-                }
+                return provider;
             }
-
         }
 
         return super.getAdapter(required);
@@ -237,19 +232,23 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
 
     public void setFocus()
     {
-        TLCUIActivator.logDebug("Focusing " + getConfig().getName() + " editor");
-        TLCErrorView errorView = (TLCErrorView) UIHelper.findView(TLCErrorView.ID);
-        if (errorView != null)
+        final TLCModelLaunchDataProvider provider = (TLCModelLaunchDataProvider) ModelEditor.this
+                .getAdapter(TLCModelLaunchDataProvider.class);
+        if (!provider.getErrors().isEmpty())
         {
-            UIHelper.runUIAsync(new Runnable() {
+            TLCErrorView errorView = (TLCErrorView) UIHelper.findView(TLCErrorView.ID);
+            if (errorView != null)
+            {
+                UIHelper.runUISync(new Runnable() {
 
-                public void run()
-                {
-                    TLCErrorView.updateErrorView((TLCModelLaunchDataProvider) ModelEditor.this
-                            .getAdapter(TLCModelLaunchDataProvider.class));
-                }
-            });
+                    public void run()
+                    {
+                        TLCErrorView.updateErrorView(provider);
+                    }
+                });
+            }
         }
+        // TLCUIActivator.logDebug("Focusing " + getConfig().getName() + " editor");
         super.setFocus();
     }
 
@@ -344,10 +343,9 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
         } else
         {
 
-            // launching the config
             try
             {
-                TLCOutputSourceRegistry.getStatusRegistry().startProcess(getConfig());
+                // launching the config
                 getConfig().launch(mode, new SubProgressMonitor(monitor, 1), true);
             } catch (CoreException e)
             {

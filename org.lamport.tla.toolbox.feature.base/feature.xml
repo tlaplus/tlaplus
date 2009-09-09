@@ -4,10 +4,7 @@
       label="TLA+ Toolbox Base Feature"
       version="1.0.0"
       provider-name="Simon Zambrovski, Leslie Lamport"
-      plugin="org.lamport.tla.toolbox"
-      os="macosx,win32"
-      ws="carbon,win32"
-      arch="ppc,x86">
+      plugin="org.lamport.tla.toolbox">
 
    <description>
       This feature defines the set of plug-ins that are required to run the base of the TLA+ Toolbox.
