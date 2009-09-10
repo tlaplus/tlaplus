@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Vector;
 
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.text.Document;
@@ -400,21 +401,47 @@ public class MainModelPage extends BasicFormPage implements
         if (rootModuleNode != null) {
             if (rootModuleNode.getVariableDecls().length == 0) {
                 this.noSpecRadio.setSelection(true);
+                closedFormulaRadio.setSelection(false);
+                initNextFairnessRadio.setSelection(false);
                 noSpecRadio.setEnabled(true);
                 closedFormulaRadio.setEnabled(false);
                 initNextFairnessRadio.setEnabled(false);
+                getConfig().setAttribute(MODEL_BEHAVIOR_SPEC_TYPE, MODEL_BEHAVIOR_TYPE_NO_SPEC); 
+                UIHelper
+                .getWidget(dm
+                        .getAttributeControl(MODEL_BEHAVIOR_CLOSED_SPECIFICATION)).setEnabled(false); 
+                UIHelper
+                .getWidget(dm
+                        .getAttributeControl(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT)).setEnabled(false);
+                UIHelper
+                .getWidget(dm
+                        .getAttributeControl(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT)).setEnabled(false);
             }
             else {
                 noSpecRadio.setEnabled(false);
                 closedFormulaRadio.setEnabled(true);
                 initNextFairnessRadio.setEnabled(true);
+                UIHelper
+                .getWidget(dm
+                        .getAttributeControl(MODEL_BEHAVIOR_CLOSED_SPECIFICATION)).setEnabled(true); 
+                UIHelper
+                .getWidget(dm
+                        .getAttributeControl(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT)).setEnabled(true);
+                UIHelper
+                .getWidget(dm
+                        .getAttributeControl(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT)).setEnabled(true);
                 if (noSpecRadio.getSelection()) {
+                    Assert.isTrue(!(closedFormulaRadio.getSelection() || initNextFairnessRadio.getSelection()));
                     noSpecRadio.setSelection(false);
                     if (MODEL_BEHAVIOR_TYPE_DEFAULT == MODEL_BEHAVIOR_TYPE_SPEC_CLOSED) {
                         closedFormulaRadio.setSelection(true);
+                        getConfig().setAttribute(MODEL_BEHAVIOR_SPEC_TYPE, MODEL_BEHAVIOR_TYPE_SPEC_CLOSED); 
+                        
                     }
                     else {
                         initNextFairnessRadio.setSelection(true);
+                        getConfig().setAttribute(MODEL_BEHAVIOR_SPEC_TYPE, MODEL_BEHAVIOR_TYPE_SPEC_INIT_NEXT); 
+                        
                     }
                 }
             }
@@ -522,11 +549,17 @@ public class MainModelPage extends BasicFormPage implements
         // fairnessFormula);
 
         // mode
-        int specType = /*
-                        * (this.noSpecRadio.getSelection()) ?
-                        * MODEL_BEHAVIOR_TYPE_NO_SPEC :
-                        */(this.closedFormulaRadio.getSelection() ? MODEL_BEHAVIOR_TYPE_SPEC_CLOSED
-                : MODEL_BEHAVIOR_TYPE_SPEC_INIT_NEXT);
+        int specType ;
+        if (this.closedFormulaRadio.getSelection()) {
+            specType = MODEL_BEHAVIOR_TYPE_SPEC_CLOSED ;
+        } else if (this.initNextFairnessRadio.getSelection()) {
+            specType = MODEL_BEHAVIOR_TYPE_SPEC_INIT_NEXT ;
+        } else if (this.noSpecRadio.getSelection()){
+            specType = MODEL_BEHAVIOR_TYPE_NO_SPEC;
+        } else {
+            specType = MODEL_BEHAVIOR_TYPE_DEFAULT ;
+        }
+  
 
         getConfig().setAttribute(MODEL_BEHAVIOR_SPEC_TYPE, specType);
 
