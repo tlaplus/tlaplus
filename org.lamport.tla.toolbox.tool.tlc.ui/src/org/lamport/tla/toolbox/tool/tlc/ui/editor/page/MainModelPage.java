@@ -57,12 +57,12 @@ import tla2sany.semantic.ModuleNode;
  * @author Simon Zambrovski
  * @version $Id$
  */
-public class MainModelPage extends BasicFormPage implements IConfigurationConstants, IConfigurationDefaults
-{
+public class MainModelPage extends BasicFormPage implements
+        IConfigurationConstants, IConfigurationDefaults {
     public static final String ID = "MainModelPage";
     public static final String TITLE = "Model Overview";
 
-    // private Button noSpecRadio;
+    private Button noSpecRadio; // re-added on 10 Sep 2009
     private Button closedFormulaRadio;
     private Button initNextFairnessRadio;
     private SourceViewer initFormulaSource;
@@ -76,16 +76,15 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
     private TableViewer constantTable;
     private ModifyListener widgetActivatingListener = new ModifyListener() {
         // select the section (radio button) the text field belong to
-        public void modifyText(ModifyEvent e)
-        {
-            if (e.widget == specSource.getControl())
-            {
+        public void modifyText(ModifyEvent e) {
+            if (e.widget == specSource.getControl()) {
                 // noSpecRadio.setSelection(false);
                 closedFormulaRadio.setSelection(true);
                 initNextFairnessRadio.setSelection(false);
-            } else if (e.widget == initFormulaSource.getControl() || e.widget == nextFormulaSource.getControl()
-            /* || e.widget == fairnessFormulaSource.getControl()*/)
-            {
+            }
+            else if (e.widget == initFormulaSource.getControl()
+                    || e.widget == nextFormulaSource.getControl()
+            /* || e.widget == fairnessFormulaSource.getControl() */) {
                 // noSpecRadio.setSelection(false);
                 closedFormulaRadio.setSelection(false);
                 initNextFairnessRadio.setSelection(true);
@@ -101,10 +100,10 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
      * {@link Hyperlink#getHref()} must deliver the section id as described in {@link DataBindingManager#bindSection(ExpandableComposite, String, String)}
      */
     protected HyperlinkAdapter sectionExpandingAdapter = new HyperlinkAdapter() {
-        public void linkActivated(HyperlinkEvent e)
-        {
+        public void linkActivated(HyperlinkEvent e) {
             String sectionId = (String) e.getHref();
-            // first switch to the page (and construct it if not yet constructed)
+            // first switch to the page (and construct it if not yet
+            // constructed)
             getEditor().setActivePage(AdvancedModelPage.ID);
             // then expand the section
             expandSection(sectionId);
@@ -117,24 +116,26 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
      * constructs the main model page 
      * @param editor
      */
-    public MainModelPage(FormEditor editor)
-    {
+    public MainModelPage(FormEditor editor) {
         super(editor, MainModelPage.ID, MainModelPage.TITLE);
         this.helpId = IHelpConstants.MAIN_MODEL_PAGE;
         this.imagePath = "icons/full/choice_sc_obj.gif";
     }
 
     /**
-     * Loads data from the model
+     * Loads data from the model when the main model page is being created--
+     * for example, when there is no model editor being shown and the user
+     * opens the model.  It is not called when the model needs to be
+     * re-checked because a module has changed.
      */
-    protected void loadData() throws CoreException
-    {
-        int specType = getConfig().getAttribute(MODEL_BEHAVIOR_SPEC_TYPE, MODEL_BEHAVIOR_TYPE_DEFAULT);
+    protected void loadData() throws CoreException {
+        int specType = getConfig().getAttribute(MODEL_BEHAVIOR_SPEC_TYPE,
+                MODEL_BEHAVIOR_TYPE_DEFAULT);
 
         // set up the radio buttons
         switch (specType) {
         case MODEL_BEHAVIOR_TYPE_NO_SPEC:
-            this.closedFormulaRadio.setSelection(true);
+            this.noSpecRadio.setSelection(true);
             break;
         case MODEL_BEHAVIOR_TYPE_SPEC_CLOSED:
             this.closedFormulaRadio.setSelection(true);
@@ -143,60 +144,70 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
             this.initNextFairnessRadio.setSelection(true);
             break;
         }
-
         // closed spec
-        String modelSpecification = getConfig().getAttribute(MODEL_BEHAVIOR_CLOSED_SPECIFICATION, EMPTY_STRING);
+        String modelSpecification = getConfig().getAttribute(
+                MODEL_BEHAVIOR_CLOSED_SPECIFICATION, EMPTY_STRING);
         Document closedDoc = new Document(modelSpecification);
         this.specSource.setDocument(closedDoc);
 
         // init
-        String modelInit = getConfig().getAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT, EMPTY_STRING);
+        String modelInit = getConfig().getAttribute(
+                MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT, EMPTY_STRING);
         Document initDoc = new Document(modelInit);
         this.initFormulaSource.setDocument(initDoc);
 
         // next
-        String modelNext = getConfig().getAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT, EMPTY_STRING);
+        String modelNext = getConfig().getAttribute(
+                MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT, EMPTY_STRING);
         Document nextDoc = new Document(modelNext);
         this.nextFormulaSource.setDocument(nextDoc);
 
         // fairness
-        // String modelFairness = getConfig().getAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_FAIRNESS,
+        // String modelFairness =
+        // getConfig().getAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_FAIRNESS,
         // EMPTY_STRING);
         // Document fairnessDoc = new Document(modelFairness);
         // this.fairnessFormulaSource.setDocument(fairnessDoc);
 
         // number of workers
-        workers.setText("" + getConfig().getAttribute(LAUNCH_NUMBER_OF_WORKERS, LAUNCH_NUMBER_OF_WORKERS_DEFAULT));
+        workers.setText(""
+                + getConfig().getAttribute(LAUNCH_NUMBER_OF_WORKERS,
+                        LAUNCH_NUMBER_OF_WORKERS_DEFAULT));
 
         // check deadlock
-        boolean checkDeadlock = getConfig().getAttribute(MODEL_CORRECTNESS_CHECK_DEADLOCK,
+        boolean checkDeadlock = getConfig().getAttribute(
+                MODEL_CORRECTNESS_CHECK_DEADLOCK,
                 MODEL_CORRECTNESS_CHECK_DEADLOCK_DEFAULT);
         this.checkDeadlockButton.setSelection(checkDeadlock);
 
         // invariants
-        List serializedList = getConfig().getAttribute(MODEL_CORRECTNESS_INVARIANTS, new Vector());
+        List serializedList = getConfig().getAttribute(
+                MODEL_CORRECTNESS_INVARIANTS, new Vector());
         FormHelper.setSerializedInput(invariantsTable, serializedList);
 
         // properties
-        serializedList = getConfig().getAttribute(MODEL_CORRECTNESS_PROPERTIES, new Vector());
+        serializedList = getConfig().getAttribute(MODEL_CORRECTNESS_PROPERTIES,
+                new Vector());
         FormHelper.setSerializedInput(propertiesTable, serializedList);
 
         // constants from the model
-        List savedConstants = getConfig().getAttribute(MODEL_PARAMETER_CONSTANTS, new Vector());
+        List savedConstants = getConfig().getAttribute(
+                MODEL_PARAMETER_CONSTANTS, new Vector());
         FormHelper.setSerializedInput(constantTable, savedConstants);
 
         // recover from the checkpoint
-        boolean recover = getConfig().getAttribute(LAUNCH_RECOVER, LAUNCH_RECOVER_DEFAULT);
+        boolean recover = getConfig().getAttribute(LAUNCH_RECOVER,
+                LAUNCH_RECOVER_DEFAULT);
         this.checkpointButton.setSelection(recover);
     }
 
     /**
-     * Validates the input in the fields
+     * Validates the input in the fields.  This is called when
+     * the spec is parsed, as well as (LL & DR believe) when a change
+     * has been made to the model in the model editor
      */
-    public void validate()
-    {
-        if (getManagedForm() == null)
-        {
+    public void validate() {
+        if (getManagedForm() == null) {
             return;
         }
 
@@ -219,15 +230,15 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         // constants in the table
         List constants = (List) constantTable.getInput();
         // merge constants with currently defined in the specobj, if any
-        if (rootModuleNode != null)
-        {
-            List toDelete = ModelHelper.mergeConstantLists(constants, ModelHelper.createConstantsList(rootModuleNode));
-            if (!toDelete.isEmpty())
-            {
-                // if constants have been removed, these should be deleted from the model too
-                SectionPart constantSection = dm.getSection(dm.getSectionForAttribute(MODEL_PARAMETER_CONSTANTS));
-                if (constantSection != null)
-                {
+        if (rootModuleNode != null) {
+            List toDelete = ModelHelper.mergeConstantLists(constants,
+                    ModelHelper.createConstantsList(rootModuleNode));
+            if (!toDelete.isEmpty()) {
+                // if constants have been removed, these should be deleted from
+                // the model too
+                SectionPart constantSection = dm.getSection(dm
+                        .getSectionForAttribute(MODEL_PARAMETER_CONSTANTS));
+                if (constantSection != null) {
                     // mark the constants dirty
                     constantSection.markDirty();
                 }
@@ -237,63 +248,79 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
         boolean symmetryUsed = false;
         // iterate over the constants
-        for (int i = 0; i < constants.size(); i++)
-        {
+        for (int i = 0; i < constants.size(); i++) {
             Assignment constant = (Assignment) constants.get(i);
 
             List values = Arrays.asList(constant.getParams());
             // check list of parameters
-            validateUsage(MODEL_PARAMETER_CONSTANTS, values, "param1_", "A parameter name", "Constant Assignment");
+            validateUsage(MODEL_PARAMETER_CONSTANTS, values, "param1_",
+                    "A parameter name", "Constant Assignment");
             // check parameters
-            validateId(MODEL_PARAMETER_CONSTANTS, values, "param1_", "A parameter name");
+            validateId(MODEL_PARAMETER_CONSTANTS, values, "param1_",
+                    "A parameter name");
 
             // the constant is still in the list
-            if (constant.getRight() == null || EMPTY_STRING.equals(constant.getRight()))
-            {
+            if (constant.getRight() == null
+                    || EMPTY_STRING.equals(constant.getRight())) {
                 // right side of assignment undefined
-                mm.addMessage(constant.getLabel(), "Provide a value for constant " + constant.getLabel(), constant,
-                        IMessageProvider.ERROR, UIHelper.getWidget(dm.getAttributeControl(MODEL_PARAMETER_CONSTANTS)));
+                mm
+                        .addMessage(
+                                constant.getLabel(),
+                                "Provide a value for constant "
+                                        + constant.getLabel(),
+                                constant,
+                                IMessageProvider.ERROR,
+                                UIHelper
+                                        .getWidget(dm
+                                                .getAttributeControl(MODEL_PARAMETER_CONSTANTS)));
                 setComplete(false);
-                expandSection(dm.getSectionForAttribute(MODEL_PARAMETER_CONSTANTS));
+                expandSection(dm
+                        .getSectionForAttribute(MODEL_PARAMETER_CONSTANTS));
 
-            } else
-            {
-                if (constant.isSetOfModelValues())
-                {
-                    if (symmetryUsed && constant.isSymmetricalSet())
-                    {
+            }
+            else {
+                if (constant.isSetOfModelValues()) {
+                    if (symmetryUsed && constant.isSymmetricalSet()) {
                         // symmetry can be used for only one set of model values
-                        mm.addMessage(constant.getLabel(), "Only one symmetrical set of model values is allowed",
-                                constant, IMessageProvider.ERROR, UIHelper.getWidget(dm
-                                        .getAttributeControl(MODEL_PARAMETER_CONSTANTS)));
+                        mm
+                                .addMessage(
+                                        constant.getLabel(),
+                                        "Only one symmetrical set of model values is allowed",
+                                        constant,
+                                        IMessageProvider.ERROR,
+                                        UIHelper
+                                                .getWidget(dm
+                                                        .getAttributeControl(MODEL_PARAMETER_CONSTANTS)));
                         setComplete(false);
-                        expandSection(dm.getSectionForAttribute(MODEL_PARAMETER_CONSTANTS));
-                    } else
-                    {
-                        if (constant.isSymmetricalSet())
-                        {
+                        expandSection(dm
+                                .getSectionForAttribute(MODEL_PARAMETER_CONSTANTS));
+                    }
+                    else {
+                        if (constant.isSymmetricalSet()) {
                             symmetryUsed = true;
                         }
                     }
-                    TypedSet modelValuesSet = TypedSet.parseSet(constant.getRight());
-                    if (modelValuesSet.getValueCount() > 0)
-                    {
+                    TypedSet modelValuesSet = TypedSet.parseSet(constant
+                            .getRight());
+                    if (modelValuesSet.getValueCount() > 0) {
                         // there were values defined
                         // check if those are numbers?
                         /*
-                        if (modelValuesSet.hasANumberOnlyValue())
-                        {
-                            mm.addMessage("modelValues1", "A model value can not be an number", modelValuesSet,
-                                    IMessageProvider.ERROR, constantTable.getTable());
-                            setComplete(false);
-                        }*/
+                         * if (modelValuesSet.hasANumberOnlyValue()) {
+                         * mm.addMessage("modelValues1",
+                         * "A model value can not be an number", modelValuesSet,
+                         * IMessageProvider.ERROR, constantTable.getTable());
+                         * setComplete(false); }
+                         */
 
                         List mvList = modelValuesSet.getValuesAsList();
                         // check list of model values
-                        validateUsage(MODEL_PARAMETER_CONSTANTS, mvList, "modelValues2_", "A model value",
+                        validateUsage(MODEL_PARAMETER_CONSTANTS, mvList,
+                                "modelValues2_", "A model value",
                                 "Constant Assignment");
                         // check if the values are correct ids
-                        validateId(MODEL_PARAMETER_CONSTANTS, mvList, "modelValues2_", "A model value");
+                        validateId(MODEL_PARAMETER_CONSTANTS, mvList,
+                                "modelValues2_", "A model value");
                     }
                 }
             }
@@ -301,32 +328,46 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
         // number of workers
         String numberOfworkers = workers.getText();
-        try
-        {
+        try {
             int number = Integer.parseInt(numberOfworkers);
-            if (number <= 0)
-            {
-                mm.addMessage("wrongNumber1", "Number of workers must be a positive integer number", null,
-                        IMessageProvider.ERROR, UIHelper.getWidget(dm.getAttributeControl(LAUNCH_NUMBER_OF_WORKERS)));
+            if (number <= 0) {
+                mm
+                        .addMessage(
+                                "wrongNumber1",
+                                "Number of workers must be a positive integer number",
+                                null,
+                                IMessageProvider.ERROR,
+                                UIHelper
+                                        .getWidget(dm
+                                                .getAttributeControl(LAUNCH_NUMBER_OF_WORKERS)));
                 setComplete(false);
                 expandSection(SEC_HOW_TO_RUN);
-            } else
-            {
-                if (number > Runtime.getRuntime().availableProcessors())
-                {
-                    mm.addMessage("strangeNumber1", "Specified number of workers is " + number
-                            + ". The number of CPU Cores available on the system is "
-                            + Runtime.getRuntime().availableProcessors()
-                            + ".\n It is not advisable that the number of workers exceeds the number of CPU Cores.",
-                            null, IMessageProvider.WARNING, UIHelper.getWidget(dm
-                                    .getAttributeControl(LAUNCH_NUMBER_OF_WORKERS)));
+            }
+            else {
+                if (number > Runtime.getRuntime().availableProcessors()) {
+                    mm
+                            .addMessage(
+                                    "strangeNumber1",
+                                    "Specified number of workers is "
+                                            + number
+                                            + ". The number of CPU Cores available on the system is "
+                                            + Runtime.getRuntime()
+                                                    .availableProcessors()
+                                            + ".\n It is not advisable that the number of workers exceeds the number of CPU Cores.",
+                                    null,
+                                    IMessageProvider.WARNING,
+                                    UIHelper
+                                            .getWidget(dm
+                                                    .getAttributeControl(LAUNCH_NUMBER_OF_WORKERS)));
                     expandSection(SEC_HOW_TO_RUN);
                 }
             }
-        } catch (NumberFormatException e)
-        {
-            mm.addMessage("wrongNumber2", "Number of workers must be a positive integer number", null,
-                    IMessageProvider.ERROR, UIHelper.getWidget(dm.getAttributeControl(LAUNCH_NUMBER_OF_WORKERS)));
+        }
+        catch (NumberFormatException e) {
+            mm.addMessage("wrongNumber2",
+                    "Number of workers must be a positive integer number",
+                    null, IMessageProvider.ERROR, UIHelper.getWidget(dm
+                            .getAttributeControl(LAUNCH_NUMBER_OF_WORKERS)));
             setComplete(false);
             expandSection(SEC_HOW_TO_RUN);
         }
@@ -335,59 +376,114 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         updateCheckpoints();
 
         // recover from checkpoint
-        if (checkpointButton.getSelection())
-        {
-            if (EMPTY_STRING.equals(checkpointIdText.getText()))
-            {
-                mm.addMessage("noChckpoint", "No chekpoint data found", null, IMessageProvider.ERROR, UIHelper
-                        .getWidget(dm.getAttributeControl(LAUNCH_RECOVER)));
+        if (checkpointButton.getSelection()) {
+            if (EMPTY_STRING.equals(checkpointIdText.getText())) {
+                mm.addMessage("noChckpoint", "No chekpoint data found", null,
+                        IMessageProvider.ERROR, UIHelper.getWidget(dm
+                                .getAttributeControl(LAUNCH_RECOVER)));
                 setComplete(false);
                 expandSection(SEC_HOW_TO_RUN);
             }
         }
 
         String selectedAttribute = closedFormulaRadio.getSelection() ? MODEL_BEHAVIOR_CLOSED_SPECIFICATION
-                : (initNextFairnessRadio.getSelection() ? MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT : null);
+                : (initNextFairnessRadio.getSelection() ? MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT
+                        : null);
         // spec or no spec
-        if (selectedAttribute != null)
-        {
-            // the user selected to use a spec
-            // check if there are variables declared
-            if (rootModuleNode != null && rootModuleNode.getVariableDecls().length == 0)
-            {
-                // no variables => install an error
-                mm.addMessage("noVariables", "There were no variables declared in the root module", null,
-                        IMessageProvider.ERROR, UIHelper.getWidget(dm.getAttributeControl(selectedAttribute)));
-                setComplete(false);
-                expandSection(dm.getSectionForAttribute(selectedAttribute));
+
+        // The following code added by LL and DR on 10 Sep 2009.
+        // Reset the enabling and selection of spec type if whether or not the
+        // number of variables is zero has changed.
+        // This code needs to be modified when we modify the model launcher
+        // to allow the No Spec option to be selected when there are variables.
+        //
+        if (rootModuleNode != null) {
+            if (rootModuleNode.getVariableDecls().length == 0) {
+                this.noSpecRadio.setSelection(true);
+                noSpecRadio.setEnabled(true);
+                closedFormulaRadio.setEnabled(false);
+                initNextFairnessRadio.setEnabled(false);
+            }
+            else {
+                noSpecRadio.setEnabled(false);
+                closedFormulaRadio.setEnabled(true);
+                initNextFairnessRadio.setEnabled(true);
+                if (noSpecRadio.getSelection()) {
+                    noSpecRadio.setSelection(false);
+                    if (MODEL_BEHAVIOR_TYPE_DEFAULT == MODEL_BEHAVIOR_TYPE_SPEC_CLOSED) {
+                        closedFormulaRadio.setSelection(true);
+                    }
+                    else {
+                        initNextFairnessRadio.setSelection(true);
+                    }
+                }
             }
         }
+        // The following code is not needed now because we automatically change
+        // the selection to No Spec if there are no variables.
+        //
+        // if (selectedAttribute != null) {
+        // // the user selected to use a spec
+        // // check if there are variables declared
+        // if (rootModuleNode != null
+        // && rootModuleNode.getVariableDecls().length == 0) {
+        // // no variables => install an error
+        // mm.addMessage("noVariables",
+        // "There were no variables declared in the root module",
+        // null, IMessageProvider.ERROR, UIHelper.getWidget(dm
+        // .getAttributeControl(selectedAttribute)));
+        // setComplete(false);
+        // expandSection(dm.getSectionForAttribute(selectedAttribute));
+        // }
+        // }
 
         // check if the selected fields are filled
-        if (closedFormulaRadio.getSelection() && specSource.getDocument().get().trim().equals(""))
-        {
-            mm.addMessage("noSpec", "The formula must be provided", null, IMessageProvider.ERROR, UIHelper.getWidget(dm
-                    .getAttributeControl(MODEL_BEHAVIOR_CLOSED_SPECIFICATION)));
+        if (closedFormulaRadio.getSelection()
+                && specSource.getDocument().get().trim().equals("")) {
+            mm
+                    .addMessage(
+                            "noSpec",
+                            "The formula must be provided",
+                            null,
+                            IMessageProvider.ERROR,
+                            UIHelper
+                                    .getWidget(dm
+                                            .getAttributeControl(MODEL_BEHAVIOR_CLOSED_SPECIFICATION)));
             setComplete(false);
-            expandSection(dm.getSectionForAttribute(MODEL_BEHAVIOR_CLOSED_SPECIFICATION));
-        } else if (initNextFairnessRadio.getSelection())
-        {
+            expandSection(dm
+                    .getSectionForAttribute(MODEL_BEHAVIOR_CLOSED_SPECIFICATION));
+        }
+        else if (initNextFairnessRadio.getSelection()) {
             String init = initFormulaSource.getDocument().get().trim();
             String next = nextFormulaSource.getDocument().get().trim();
 
-            if (init.equals(""))
-            {
-                mm.addMessage("noInit", "The Init formula must be provided", null, IMessageProvider.ERROR, UIHelper
-                        .getWidget(dm.getAttributeControl(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT)));
+            if (init.equals("")) {
+                mm
+                        .addMessage(
+                                "noInit",
+                                "The Init formula must be provided",
+                                null,
+                                IMessageProvider.ERROR,
+                                UIHelper
+                                        .getWidget(dm
+                                                .getAttributeControl(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT)));
                 setComplete(false);
-                expandSection(dm.getSectionForAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT));
+                expandSection(dm
+                        .getSectionForAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT));
             }
-            if (next.equals(""))
-            {
-                mm.addMessage("noNext", "The Next formula must be provided", null, IMessageProvider.ERROR, UIHelper
-                        .getWidget(dm.getAttributeControl(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT)));
+            if (next.equals("")) {
+                mm
+                        .addMessage(
+                                "noNext",
+                                "The Next formula must be provided",
+                                null,
+                                IMessageProvider.ERROR,
+                                UIHelper
+                                        .getWidget(dm
+                                                .getAttributeControl(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT)));
                 setComplete(false);
-                expandSection(dm.getSectionForAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT));
+                expandSection(dm
+                        .getSectionForAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT));
             }
         }
 
@@ -399,38 +495,47 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
     /**
      * Save data back to config
      */
-    public void commit(boolean onSave)
-    {
+    public void commit(boolean onSave) {
         // TLCUIActivator.logDebug("Main page commit");
         // closed formula
-        String closedFormula = FormHelper.trimTrailingSpaces(this.specSource.getDocument().get());
-        getConfig().setAttribute(MODEL_BEHAVIOR_CLOSED_SPECIFICATION, closedFormula);
+        String closedFormula = FormHelper.trimTrailingSpaces(this.specSource
+                .getDocument().get());
+        getConfig().setAttribute(MODEL_BEHAVIOR_CLOSED_SPECIFICATION,
+                closedFormula);
 
         // init formula
-        String initFormula = FormHelper.trimTrailingSpaces(this.initFormulaSource.getDocument().get());
-        getConfig().setAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT, initFormula);
+        String initFormula = FormHelper
+                .trimTrailingSpaces(this.initFormulaSource.getDocument().get());
+        getConfig().setAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT,
+                initFormula);
 
         // next formula
-        String nextFormula = FormHelper.trimTrailingSpaces(this.nextFormulaSource.getDocument().get());
-        getConfig().setAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT, nextFormula);
+        String nextFormula = FormHelper
+                .trimTrailingSpaces(this.nextFormulaSource.getDocument().get());
+        getConfig().setAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT,
+                nextFormula);
 
         // fairness formula
-        // String fairnessFormula = FormHelper.trimTrailingSpaces(this.fairnessFormulaSource.getDocument().get());
-        // getConfig().setAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_FAIRNESS, fairnessFormula);
+        // String fairnessFormula =
+        // FormHelper.trimTrailingSpaces(this.fairnessFormulaSource.getDocument().get());
+        // getConfig().setAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_FAIRNESS,
+        // fairnessFormula);
 
         // mode
-        int specType = /* (this.noSpecRadio.getSelection()) ? MODEL_BEHAVIOR_TYPE_NO_SPEC :*/(this.closedFormulaRadio
-                .getSelection() ? MODEL_BEHAVIOR_TYPE_SPEC_CLOSED : MODEL_BEHAVIOR_TYPE_SPEC_INIT_NEXT);
+        int specType = /*
+                        * (this.noSpecRadio.getSelection()) ?
+                        * MODEL_BEHAVIOR_TYPE_NO_SPEC :
+                        */(this.closedFormulaRadio.getSelection() ? MODEL_BEHAVIOR_TYPE_SPEC_CLOSED
+                : MODEL_BEHAVIOR_TYPE_SPEC_INIT_NEXT);
 
         getConfig().setAttribute(MODEL_BEHAVIOR_SPEC_TYPE, specType);
 
         // number of workers
         int numberOfWorkers = LAUNCH_NUMBER_OF_WORKERS_DEFAULT;
-        try
-        {
+        try {
             numberOfWorkers = Integer.parseInt(workers.getText());
-        } catch (NumberFormatException e)
-        { /* does not matter */
+        }
+        catch (NumberFormatException e) { /* does not matter */
         }
         getConfig().setAttribute(LAUNCH_NUMBER_OF_WORKERS, numberOfWorkers);
 
@@ -440,7 +545,8 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
         // check deadlock
         boolean checkDeadlock = this.checkDeadlockButton.getSelection();
-        getConfig().setAttribute(MODEL_CORRECTNESS_CHECK_DEADLOCK, checkDeadlock);
+        getConfig().setAttribute(MODEL_CORRECTNESS_CHECK_DEADLOCK,
+                checkDeadlock);
 
         // invariants
         List serializedList = FormHelper.getSerializedInput(invariantsTable);
@@ -455,7 +561,8 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         getConfig().setAttribute(MODEL_PARAMETER_CONSTANTS, constants);
 
         // variables
-        String variables = ModelHelper.createVariableList(SemanticHelper.getRootModuleNode());
+        String variables = ModelHelper.createVariableList(SemanticHelper
+                .getRootModuleNode());
         getConfig().setAttribute(MODEL_BEHAVIOR_VARS, variables);
 
         super.commit(onSave);
@@ -465,23 +572,20 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
      * Checks if checkpoint information changed 
      * @throws CoreException
      */
-    private void updateCheckpoints()
-    {
+    private void updateCheckpoints() {
         IResource[] checkpoints = null;
-        try
-        {
+        try {
             // checkpoint id
             checkpoints = ModelHelper.getCheckpoints(getConfig());
-        } catch (CoreException e)
-        {
+        }
+        catch (CoreException e) {
             TLCUIActivator.logError("Error checking chekpoint data", e);
         }
 
-        if (checkpoints != null && checkpoints.length > 0)
-        {
+        if (checkpoints != null && checkpoints.length > 0) {
             this.checkpointIdText.setText(checkpoints[0].getName());
-        } else
-        {
+        }
+        else {
             this.checkpointIdText.setText(EMPTY_STRING);
         }
     }
@@ -491,10 +595,10 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
      * 
      * 
      */
-    protected void createBodyContent(IManagedForm managedForm)
-    {
+    protected void createBodyContent(IManagedForm managedForm) {
         DataBindingManager dm = getDataBindingManager();
-        int sectionFlags = Section.TITLE_BAR | Section.DESCRIPTION | Section.TREE_NODE;
+        int sectionFlags = Section.TITLE_BAR | Section.DESCRIPTION
+                | Section.TREE_NODE;
 
         FormToolkit toolkit = managedForm.getToolkit();
         Composite body = managedForm.getForm().getBody();
@@ -502,6 +606,10 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         GridData gd;
         TableWrapData twd;
 
+        /*
+         * Because the two Composite objects `left' and `right' are added to the
+         * object `body' in this order, `left' is displayed the left of `right'.
+         */
         // left
         Composite left = toolkit.createComposite(body);
         twd = new TableWrapData(TableWrapData.FILL_GRAB);
@@ -521,8 +629,10 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
         // ------------------------------------------
         // what is the spec
-        section = FormHelper.createSectionComposite(left, "What is the spec?", "The behavior specification:", toolkit,
-                sectionFlags | Section.EXPANDED, getExpansionListener());
+        section = FormHelper.createSectionComposite(left,
+                "What is the behavior spec?", "The behavior specification:",
+                toolkit, sectionFlags | Section.EXPANDED,
+                getExpansionListener());
         // only grab horizontal space
         gd = new GridData(GridData.FILL_HORIZONTAL);
         section.setLayoutData(gd);
@@ -532,38 +642,20 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         layout.numColumns = 2;
         behaviorArea.setLayout(layout);
 
-        ValidateableSectionPart behaviorPart = new ValidateableSectionPart(section, this, SEC_WHAT_IS_THE_SPEC);
+        ValidateableSectionPart behaviorPart = new ValidateableSectionPart(
+                section, this, SEC_WHAT_IS_THE_SPEC);
         managedForm.addPart(behaviorPart);
-        DirtyMarkingListener whatIsTheSpecListener = new DirtyMarkingListener(behaviorPart, true);
+        DirtyMarkingListener whatIsTheSpecListener = new DirtyMarkingListener(
+                behaviorPart, true);
 
-        // noSpecRadio = toolkit.createButton(behaviorArea, "No Spec (Calculator mode)", SWT.RADIO);
-        // gd = new GridData(GridData.FILL_HORIZONTAL);
-        // gd.horizontalSpan = 2;
-        // noSpecRadio.setLayoutData(gd);
-        // noSpecRadio.addSelectionListener(whatIsTheSpecListener);
-
-        // closed formula option
-        closedFormulaRadio = toolkit.createButton(behaviorArea, "Single formula", SWT.RADIO);
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.horizontalSpan = 2;
-        closedFormulaRadio.setLayoutData(gd);
-        closedFormulaRadio.addSelectionListener(whatIsTheSpecListener);
-
-        // spec
-        Label specLabel = toolkit.createLabel(behaviorArea, "Spec:");
-        gd = new GridData();
-        gd.verticalAlignment = SWT.TOP;
-        specLabel.setLayoutData(gd);
-        specSource = FormHelper.createFormsSourceViewer(toolkit, behaviorArea, SWT.V_SCROLL);
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.heightHint = 55;
-        specSource.getTextWidget().setLayoutData(gd);
-        specSource.getTextWidget().addModifyListener(whatIsTheSpecListener);
-        specSource.getTextWidget().addModifyListener(widgetActivatingListener);
-        dm.bindAttribute(MODEL_BEHAVIOR_CLOSED_SPECIFICATION, specSource, behaviorPart);
+        // DR & LL changed the order of the two ways of giving the spec and
+        // re-added
+        // the no-spec option on 10 Sep 2009.
 
         // split formula option
-        initNextFairnessRadio = toolkit.createButton(behaviorArea, "Init and Next", SWT.RADIO);
+        initNextFairnessRadio = toolkit.createButton(behaviorArea,
+                "Init and Next", SWT.RADIO);
+
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalSpan = 2;
         initNextFairnessRadio.setLayoutData(gd);
@@ -571,38 +663,81 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
         // init
         toolkit.createLabel(behaviorArea, "Init:");
-        initFormulaSource = FormHelper.createFormsSourceViewer(toolkit, behaviorArea, SWT.NONE | SWT.SINGLE);
+        initFormulaSource = FormHelper.createFormsSourceViewer(toolkit,
+                behaviorArea, SWT.NONE | SWT.SINGLE);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.heightHint = 18;
         initFormulaSource.getTextWidget().setLayoutData(gd);
-        initFormulaSource.getTextWidget().addModifyListener(whatIsTheSpecListener);
-        initFormulaSource.getTextWidget().addModifyListener(widgetActivatingListener);
-        dm.bindAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT, initFormulaSource, behaviorPart);
+        initFormulaSource.getTextWidget().addModifyListener(
+                whatIsTheSpecListener);
+        initFormulaSource.getTextWidget().addModifyListener(
+                widgetActivatingListener);
+        dm.bindAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT,
+                initFormulaSource, behaviorPart);
 
         // next
         toolkit.createLabel(behaviorArea, "Next:");
-        nextFormulaSource = FormHelper.createFormsSourceViewer(toolkit, behaviorArea, SWT.NONE | SWT.SINGLE);
+        nextFormulaSource = FormHelper.createFormsSourceViewer(toolkit,
+                behaviorArea, SWT.NONE | SWT.SINGLE);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.heightHint = 18;
         nextFormulaSource.getTextWidget().setLayoutData(gd);
-        nextFormulaSource.getTextWidget().addModifyListener(whatIsTheSpecListener);
-        nextFormulaSource.getTextWidget().addModifyListener(widgetActivatingListener);
-        dm.bindAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT, nextFormulaSource, behaviorPart);
+        nextFormulaSource.getTextWidget().addModifyListener(
+                whatIsTheSpecListener);
+        nextFormulaSource.getTextWidget().addModifyListener(
+                widgetActivatingListener);
+        dm.bindAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT,
+                nextFormulaSource, behaviorPart);
 
         // fairness
         // toolkit.createLabel(behaviorArea, "Fairness:");
-        // fairnessFormulaSource = FormHelper.createSourceViewer(toolkit, behaviorArea, SWT.NONE | SWT.SINGLE);
+        // fairnessFormulaSource = FormHelper.createSourceViewer(toolkit,
+        // behaviorArea, SWT.NONE | SWT.SINGLE);
         // gd = new GridData(GridData.FILL_HORIZONTAL);
         // gd.heightHint = 18;
         // fairnessFormulaSource.getTextWidget().setLayoutData(gd);
         // fairnessFormulaSource.getTextWidget().addModifyListener(whatIsTheSpecListener);
         // fairnessFormulaSource.getTextWidget().addModifyListener(widgetActivatingListener);
-        // dm.bindAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_FAIRNESS, fairnessFormulaSource, behaviorPart);
+        // dm.bindAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_FAIRNESS,
+        // fairnessFormulaSource, behaviorPart);
+
+        // closed formula option
+        closedFormulaRadio = toolkit.createButton(behaviorArea,
+                "Single formula", SWT.RADIO);
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.horizontalSpan = 2;
+        closedFormulaRadio.setLayoutData(gd);
+        closedFormulaRadio.addSelectionListener(whatIsTheSpecListener);
+
+        // spec
+        Label specLabel = toolkit.createLabel(behaviorArea, ""); // changed from
+        // "Spec:" 10
+        // Sep 09
+        gd = new GridData();
+        gd.verticalAlignment = SWT.TOP;
+        specLabel.setLayoutData(gd);
+        specSource = FormHelper.createFormsSourceViewer(toolkit, behaviorArea,
+                SWT.V_SCROLL);
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.heightHint = 55;
+        specSource.getTextWidget().setLayoutData(gd);
+        specSource.getTextWidget().addModifyListener(whatIsTheSpecListener);
+        specSource.getTextWidget().addModifyListener(widgetActivatingListener);
+        dm.bindAttribute(MODEL_BEHAVIOR_CLOSED_SPECIFICATION, specSource,
+                behaviorPart);
+
+        noSpecRadio = toolkit.createButton(behaviorArea, "No Behavior Spec",
+                SWT.RADIO);
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.horizontalSpan = 2;
+        noSpecRadio.setLayoutData(gd);
+        noSpecRadio.addSelectionListener(whatIsTheSpecListener);
 
         // ------------------------------------------
         // what to check
-        section = FormHelper.createSectionComposite(left, "What to check?", "List of invariants and properties:",
-                toolkit, sectionFlags | Section.EXPANDED, getExpansionListener());
+        section = FormHelper.createSectionComposite(left, "What to check?",
+                "List of invariants and properties:", toolkit, sectionFlags
+                        | Section.EXPANDED, getExpansionListener());
         // only grab horizontal space
         gd = new GridData(GridData.FILL_HORIZONTAL);
         section.setLayoutData(gd);
@@ -612,44 +747,57 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         layout.numColumns = 1;
         toBeCheckedArea.setLayout(layout);
 
-        checkDeadlockButton = toolkit.createButton(toBeCheckedArea, "Deadlock", SWT.CHECK);
+        checkDeadlockButton = toolkit.createButton(toBeCheckedArea, "Deadlock",
+                SWT.CHECK);
 
-        ValidateableSectionPart toBeCheckedPart = new ValidateableSectionPart(section, this, SEC_WHAT_TO_CHECK);
+        ValidateableSectionPart toBeCheckedPart = new ValidateableSectionPart(
+                section, this, SEC_WHAT_TO_CHECK);
         managedForm.addPart(toBeCheckedPart);
-        DirtyMarkingListener whatToCheckListener = new DirtyMarkingListener(toBeCheckedPart, true);
+        DirtyMarkingListener whatToCheckListener = new DirtyMarkingListener(
+                toBeCheckedPart, true);
         checkDeadlockButton.addSelectionListener(whatToCheckListener);
 
         // invariants
-        ValidateableTableSectionPart invariantsPart = new ValidateableTableSectionPart(toBeCheckedArea, "Invariants",
-                "Specify invariants to be checked in every state of the specification.", toolkit, sectionFlags, this,
-                SEC_WHAT_TO_CHECK_INVARIANTS);
+        ValidateableTableSectionPart invariantsPart = new ValidateableTableSectionPart(
+                toBeCheckedArea,
+                "Invariants",
+                "Specify invariants to be checked in every state of the specification.",
+                toolkit, sectionFlags, this, SEC_WHAT_TO_CHECK_INVARIANTS);
         managedForm.addPart(invariantsPart);
         invariantsTable = invariantsPart.getTableViewer();
-        dm.bindAttribute(MODEL_CORRECTNESS_INVARIANTS, invariantsTable, invariantsPart);
+        dm.bindAttribute(MODEL_CORRECTNESS_INVARIANTS, invariantsTable,
+                invariantsPart);
 
         // properties
-        ValidateableTableSectionPart propertiesPart = new ValidateableTableSectionPart(toBeCheckedArea, "Properties",
-                "Specify properties to be checked.", toolkit, sectionFlags, this, SEC_WHAT_TO_CHECK_PROPERTIES);
+        ValidateableTableSectionPart propertiesPart = new ValidateableTableSectionPart(
+                toBeCheckedArea, "Properties",
+                "Specify properties to be checked.", toolkit, sectionFlags,
+                this, SEC_WHAT_TO_CHECK_PROPERTIES);
         managedForm.addPart(propertiesPart);
         propertiesTable = propertiesPart.getTableViewer();
-        dm.bindAttribute(MODEL_CORRECTNESS_PROPERTIES, propertiesTable, propertiesPart);
+        dm.bindAttribute(MODEL_CORRECTNESS_PROPERTIES, propertiesTable,
+                propertiesPart);
 
         // ------------------------------------------
         // what is the model
 
         // Constants
-        ValidateableConstantSectionPart constantsPart = new ValidateableConstantSectionPart(right,
-                "What is the model?", "Specify the values of the model constants.", toolkit, sectionFlags
-                        | Section.EXPANDED, this, SEC_WHAT_IS_THE_MODEL);
+        ValidateableConstantSectionPart constantsPart = new ValidateableConstantSectionPart(
+                right, "What is the model?",
+                "Specify the values of the model constants.", toolkit,
+                sectionFlags | Section.EXPANDED, this, SEC_WHAT_IS_THE_MODEL);
         managedForm.addPart(constantsPart);
         constantTable = constantsPart.getTableViewer();
-        dm.bindAttribute(MODEL_PARAMETER_CONSTANTS, constantTable, constantsPart);
+        dm.bindAttribute(MODEL_PARAMETER_CONSTANTS, constantTable,
+                constantsPart);
 
-        Composite parametersArea = (Composite) constantsPart.getSection().getClient();
+        Composite parametersArea = (Composite) constantsPart.getSection()
+                .getClient();
         HyperlinkGroup group = new HyperlinkGroup(parametersArea.getDisplay());
 
         // create a composite to put the text into
-        Composite linksPanelToAdvancedPage = toolkit.createComposite(parametersArea);
+        Composite linksPanelToAdvancedPage = toolkit
+                .createComposite(parametersArea);
         gd = new GridData();
         gd.horizontalSpan = 2;
 
@@ -657,7 +805,8 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         linksPanelToAdvancedPage.setLayout(new FillLayout(SWT.VERTICAL));
 
         // first line with hyperlinks
-        Composite elementLine = toolkit.createComposite(linksPanelToAdvancedPage);
+        Composite elementLine = toolkit
+                .createComposite(linksPanelToAdvancedPage);
         elementLine.setLayout(new FillLayout(SWT.HORIZONTAL));
 
         // the text
@@ -667,34 +816,41 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         // the hyperlinks
         Hyperlink hyper;
 
-        hyper = toolkit.createHyperlink(elementLine, "Additional definitions,", SWT.NONE);
+        hyper = toolkit.createHyperlink(elementLine, "Additional definitions,",
+                SWT.NONE);
         hyper.setHref(SEC_NEW_DEFINITION);
         hyper.addHyperlinkListener(sectionExpandingAdapter);
 
-        hyper = toolkit.createHyperlink(elementLine, "Definition override,", SWT.NONE);
+        hyper = toolkit.createHyperlink(elementLine, "Definition override,",
+                SWT.NONE);
         hyper.setHref(SEC_DEFINITION_OVERRIDE);
         hyper.addHyperlinkListener(sectionExpandingAdapter);
 
         // second line with hyperlinks
-        Composite elementLine2 = toolkit.createComposite(linksPanelToAdvancedPage);
+        Composite elementLine2 = toolkit
+                .createComposite(linksPanelToAdvancedPage);
         elementLine2.setLayout(new FillLayout(SWT.HORIZONTAL));
 
-        hyper = toolkit.createHyperlink(elementLine2, "State constraints,", SWT.NONE);
+        hyper = toolkit.createHyperlink(elementLine2, "State constraints,",
+                SWT.NONE);
         hyper.setHref(SEC_STATE_CONSTRAINT);
         hyper.addHyperlinkListener(sectionExpandingAdapter);
 
-        hyper = toolkit.createHyperlink(elementLine2, "Action constraints,", SWT.NONE);
+        hyper = toolkit.createHyperlink(elementLine2, "Action constraints,",
+                SWT.NONE);
         hyper.setHref(SEC_ACTION_CONSTRAINT);
         hyper.addHyperlinkListener(sectionExpandingAdapter);
 
-        hyper = toolkit.createHyperlink(elementLine2, "Additional model values.", SWT.NONE);
+        hyper = toolkit.createHyperlink(elementLine2,
+                "Additional model values.", SWT.NONE);
         hyper.setHref(SEC_MODEL_VALUES);
         hyper.addHyperlinkListener(sectionExpandingAdapter);
 
         // ------------------------------------------
         // run tab
-        section = FormHelper.createSectionComposite(right, "How to run?", "Parameters of the TLC launch.", toolkit,
-                sectionFlags, getExpansionListener());
+        section = FormHelper.createSectionComposite(right, "How to run?",
+                "Parameters of the TLC launch.", toolkit, sectionFlags,
+                getExpansionListener());
         gd = new GridData(GridData.FILL_HORIZONTAL);
         section.setLayoutData(gd);
 
@@ -703,10 +859,12 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         layout = new GridLayout(2, false);
         howToRunArea.setLayout(layout);
 
-        ValidateableSectionPart howToRunPart = new ValidateableSectionPart(section, this, SEC_HOW_TO_RUN);
+        ValidateableSectionPart howToRunPart = new ValidateableSectionPart(
+                section, this, SEC_HOW_TO_RUN);
         managedForm.addPart(howToRunPart);
 
-        DirtyMarkingListener howToRunListener = new DirtyMarkingListener(howToRunPart, true);
+        DirtyMarkingListener howToRunListener = new DirtyMarkingListener(
+                howToRunPart, true);
 
         // label workers
         FormText workersLabel = toolkit.createFormText(howToRunArea, true);
@@ -723,7 +881,8 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         dm.bindAttribute(LAUNCH_NUMBER_OF_WORKERS, workers, howToRunPart);
 
         // run from the checkpoint
-        checkpointButton = toolkit.createButton(howToRunArea, "Recover from checkpoint", SWT.CHECK);
+        checkpointButton = toolkit.createButton(howToRunArea,
+                "Recover from checkpoint", SWT.CHECK);
         gd = new GridData();
         gd.horizontalSpan = 2;
         gd.verticalIndent = 20;
@@ -746,8 +905,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         runLink = toolkit.createImageHyperlink(howToRunArea, SWT.NONE);
         runLink.setImage(createRegisteredImage("icons/full/lrun_obj.gif"));
         runLink.addHyperlinkListener(new HyperlinkAdapter() {
-            public void linkActivated(HyperlinkEvent e)
-            {
+            public void linkActivated(HyperlinkEvent e) {
                 doRun();
             }
         });
@@ -760,10 +918,10 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         group.add(runLink);
 
         generateLink = toolkit.createImageHyperlink(howToRunArea, SWT.NONE);
-        generateLink.setImage(createRegisteredImage("icons/full/debugt_obj.gif"));
+        generateLink
+                .setImage(createRegisteredImage("icons/full/debugt_obj.gif"));
         generateLink.addHyperlinkListener(new HyperlinkAdapter() {
-            public void linkActivated(HyperlinkEvent e)
-            {
+            public void linkActivated(HyperlinkEvent e) {
                 doGenerate();
             }
         });
@@ -776,24 +934,18 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
         // TODO enable on debug support
         // debug link
-        /*        
-                ImageHyperlink debugLink = toolkit.createImageHyperlink(howToRunArea, SWT.NONE);
-                debugLink.setImage(createRegisteredImage("icons/full/ldebug_obj.gif"));
-                debugLink.addHyperlinkListener(new HyperlinkAdapter() {
-                    public void linkActivated(HyperlinkEvent e)
-                    {
-                        // doDebug();
-                    }
-                });
-                debugLink.setText("Debug TLC");
-                debugLink.setEnabled(false);
-                gd = new GridData();
-                gd.horizontalSpan = 2;
-                gd.widthHint = 200;
-                debugLink.setLayoutData(gd);
-                group.add(debugLink);
-        */
-        // add listeners propagating the changes of the elements to the changes of the
+        /*
+         * ImageHyperlink debugLink = toolkit.createImageHyperlink(howToRunArea,
+         * SWT.NONE);
+         * debugLink.setImage(createRegisteredImage("icons/full/ldebug_obj.gif"
+         * )); debugLink.addHyperlinkListener(new HyperlinkAdapter() { public
+         * void linkActivated(HyperlinkEvent e) { // doDebug(); } });
+         * debugLink.setText("Debug TLC"); debugLink.setEnabled(false); gd = new
+         * GridData(); gd.horizontalSpan = 2; gd.widthHint = 200;
+         * debugLink.setLayoutData(gd); group.add(debugLink);
+         */
+        // add listeners propagating the changes of the elements to the changes
+        // of the
         // parts to the list to be activated after the values has been loaded
         dirtyPartListeners.add(whatIsTheSpecListener);
         dirtyPartListeners.add(whatToCheckListener);
@@ -803,8 +955,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
     /**
      * 
      */
-    public void refresh()
-    {
+    public void refresh() {
         super.refresh();
         updateCheckpoints();
     }

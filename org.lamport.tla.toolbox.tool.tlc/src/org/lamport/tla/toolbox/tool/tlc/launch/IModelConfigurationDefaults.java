@@ -24,7 +24,7 @@ public interface IModelConfigurationDefaults extends IConfigurationDefaults
     /**
      * Default if the closed specification is used
      */
-    public static final int MODEL_BEHAVIOR_TYPE_DEFAULT = MODEL_BEHAVIOR_TYPE_NO_SPEC;
+    public static final int MODEL_BEHAVIOR_TYPE_DEFAULT = MODEL_BEHAVIOR_TYPE_SPEC_INIT_NEXT ; 
     
     
     

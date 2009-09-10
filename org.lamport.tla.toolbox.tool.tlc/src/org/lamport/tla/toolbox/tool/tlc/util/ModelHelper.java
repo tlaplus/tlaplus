@@ -405,6 +405,31 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
         return buffer.toString();
     }
 
+    /*
+     * Returns an array of Strings containing the variables declared
+     * in the module.  Added 10 Sep 2009 by LL & DR
+     */
+    public static String[] createVariableArray(ModuleNode moduleNode)
+    {
+        OpDeclNode[] variableDecls = moduleNode.getVariableDecls();
+        String[] returnVal = new String[variableDecls.length] ;
+        for (int i = 0; i < variableDecls.length; i++)
+        {
+            returnVal[i] = variableDecls[i].getName().toString();
+        }
+        return returnVal;
+    }
+
+    /*
+     * Returns true iff the specified module declares
+     * at least one variable.  Added 10 Sep 2009 by LL & DR
+     */
+    public static boolean hasVariables(ModuleNode moduleNode)
+    {
+        OpDeclNode[] variableDecls = moduleNode.getVariableDecls();
+        return variableDecls.length > 0 ;
+    }
+
     public static SymbolNode getSymbol(String name, ModuleNode moduleNode)
     {
         return moduleNode.getContext().getSymbol(name);
