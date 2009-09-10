@@ -1,6 +1,6 @@
 org.lamport.tla.toolbox.tool.tlc.ui
  ui/editor
-  ModelEditor
+  ModelEditor 
     Sets up the Model Editor, including its pages.  The individual
     pages are set up by the  
       MainModelPage, AdvancedModelPage, and ResultPage;
@@ -20,7 +20,7 @@ should permit one to find every place that gets notified when the spec
 is opened, closed, or parsed.  However, this is all done by so many 
 levels of indirection that we have not succeeded in doing this.
 For example, ModelEditor.validate() is called when the module is parsed,
-and this must be through that extension point.  But we have not discovred
+and this must be through that extension point.  But we have not discovered
 the path from the extension point to that method.
 
 
