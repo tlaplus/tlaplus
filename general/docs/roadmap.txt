@@ -1,0 +1,26 @@
+org.lamport.tla.toolbox.tool.tlc.ui
+ ui/editor
+  ModelEditor
+    Sets up the Model Editor, including its pages.  The individual
+    pages are set up by the  
+      MainModelPage, AdvancedModelPage, and ResultPage;
+
+   loadData() initializes the editor.  
+   validate() is called through some plug-in magic whenever 
+     the spec is parsed (but probably only if the parse is correct)
+     and probably when the user has made some change in the model editor.
+     It is also run when the model editor is initialized.
+
+Various pieces of code are notified when the spec is opened, parsed,
+and closed by listeners registered to the extension point
+org.lamport.tla.toolbox.spec of the plugin org.lamport.tla.toolbox.
+This extension point interacts via a class that extends the class
+SpecLifecycleParticipant.  So, finding all classes that extend this
+should permit one to find every place that gets notified when the spec
+is opened, closed, or parsed.  However, this is all done by so many 
+levels of indirection that we have not succeeded in doing this.
+For example, ModelEditor.validate() is called when the module is parsed,
+and this must be through that extension point.  But we have not discovred
+the path from the extension point to that method.
+
+
