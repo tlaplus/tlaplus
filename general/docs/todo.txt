@@ -1,3 +1,13 @@
 1. Add way to tell if spec on which a model was last run is the same as the current
    spec.
    
+2. For some reason, the toolbox didn't seem to notice when the Additional Definitions 
+   fields was changed.  Even though the editor's tab had a star next to it, trying to
+   save the model did nothing, and hitting the launch button produced an MC.tla file 
+   with an obsolete version of the field.  I had to type something into the field
+   to make the toolbox notice the change and allow me to save the model.
+   
+3. The toolbox doesn't parse the TLC output correctly in simulation mode.  In particular,
+   it didn't notice that an invariant had been violated and didn't raise the error
+   window.
+   
