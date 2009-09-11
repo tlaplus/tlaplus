@@ -379,7 +379,8 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate
             writer.addFormulaList(ModelWriter.createSourceContent(
                     MODEL_PARAMETER_ACTION_CONSTRAINT,
                     ModelWriter.ACTIONCONSTRAINT_SCHEME, config),
-                    "ACTION-CONSTRAINT", MODEL_PARAMETER_ACTION_CONSTRAINT);
+                    "ACTION_CONSTRAINT", MODEL_PARAMETER_ACTION_CONSTRAINT);
+                    // Changed from incorrect "ACTION-CONSTRAINT" on 11 Sep 2009
 
             int specType = config.getAttribute(MODEL_BEHAVIOR_SPEC_TYPE,
                     MODEL_BEHAVIOR_TYPE_DEFAULT);

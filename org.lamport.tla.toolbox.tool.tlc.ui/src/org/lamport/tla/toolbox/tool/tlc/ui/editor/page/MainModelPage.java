@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
@@ -19,8 +20,11 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.forms.HyperlinkGroup;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.IMessageManager;
@@ -35,12 +39,15 @@ import org.eclipse.ui.forms.widgets.Hyperlink;
 import org.eclipse.ui.forms.widgets.ImageHyperlink;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.forms.widgets.TableWrapData;
+import org.eclipse.ui.part.FileEditorInput;
+import org.lamport.tla.toolbox.tool.tlc.handlers.OpenModelHandler;
 import org.lamport.tla.toolbox.tool.tlc.launch.IConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.IConfigurationDefaults;
 import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
 import org.lamport.tla.toolbox.tool.tlc.model.TypedSet;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.DataBindingManager;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.ValidateableConstantSectionPart;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.ValidateableSectionPart;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.ValidateableTableSectionPart;
@@ -48,6 +55,7 @@ import org.lamport.tla.toolbox.tool.tlc.ui.util.DirtyMarkingListener;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.SemanticHelper;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
+import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper.IFileProvider;
 import org.lamport.tla.toolbox.util.IHelpConstants;
 import org.lamport.tla.toolbox.util.UIHelper;
 
@@ -92,6 +100,11 @@ public class MainModelPage extends BasicFormPage implements
             }
         }
     };
+
+    // Test code
+    // remembers if the spec had variables the last time the page was validated.
+    private boolean hasVariables = false;
+    // private boolean lastSeenHasVariables = false;
 
     private ImageHyperlink runLink;
     private ImageHyperlink generateLink;
@@ -207,10 +220,70 @@ public class MainModelPage extends BasicFormPage implements
      * the spec is parsed, as well as (LL & DR believe) when a change
      * has been made to the model in the model editor
      */
+    private int countXX = 0;
+
     public void validate() {
         if (getManagedForm() == null) {
             return;
         }
+        // The following approach has the potential problem that it loses
+        // some of the data in the model. If we want to use this approach
+        // to control the display of the get-constants area, we have to
+        // be careful and check things carefully because weird things
+        // seem to happen.
+        countXX++;
+        System.out.println("countXX = " + countXX);
+        if (countXX == 6) {
+            countXX++;
+            ModelEditor ourFavoriteEditor = (ModelEditor) this.getEditor();
+            ourFavoriteEditor.removePage(0);
+            System.out.println("Page removed");
+            MainModelPage newPage = new MainModelPage(ourFavoriteEditor);
+            try {
+                ourFavoriteEditor.addPage(0, newPage);
+                ourFavoriteEditor.setUpPage(newPage, 0);
+            }
+            catch (PartInitException e) {
+                // TODO Auto-generated catch block
+                TLCUIActivator.logError("Error initializing editor", e);
+                e.printStackTrace();
+            }
+            // newPage.validate(); // Dan: I thought t needed to be added,
+            // but now I think that it's harmful.
+            
+            
+            // both the following statements are needed to give make newPage
+            // the one that's shown.
+            ourFavoriteEditor.setActivePage(newPage.getId());
+            newPage.setFocus();
+            System.out.println("Page re-added");
+            // System.out.println("Here goes.  Closing editor.");
+            // ModelEditor ourFavoriteEditor = (ModelEditor) this.getEditor();
+            // IFile launchFile =
+            // ourFavoriteEditor.getResource(IFileProvider.TYPE_MODEL);
+            // ourFavoriteEditor.close(false);
+            // System.out.println("launchFile.getName = " +
+            // launchFile.getName());
+            // // UIHelper.openEditor(OpenModelHandler.EDITOR_ID, launchFile);
+            // try {
+            // UIHelper.getActiveWindow().getActivePage().openEditor(new
+            // FileEditorInput(launchFile),
+            // OpenModelHandler.EDITOR_ID, true);
+            // }
+            // catch (PartInitException e) {
+            // // TODO Auto-generated catch block
+            // e.printStackTrace();
+            // }
+            // System.out.println("Relaunched the editor");
+        }
+        // SOME RANDOM TEST
+        // if (hasVariables !=
+        // (SemanticHelper.getRootModuleNode().getVariableDecls().length != 0))
+        // {
+        // hasVariables = !hasVariables;
+        // createBodyContent(getManagedForm());
+        // System.out.println("We got here in our random test." + count++);
+        // }
 
         IMessageManager mm = getManagedForm().getMessageManager();
         DataBindingManager dm = getDataBindingManager();
@@ -398,7 +471,10 @@ public class MainModelPage extends BasicFormPage implements
         // This code needs to be modified when we modify the model launcher
         // to allow the No Spec option to be selected when there are variables.
         //
+        // System.out.println("testing if rootModuleNode is non-null" +
+        // count++);
         if (rootModuleNode != null) {
+            // System.out.println("rootModuleNode is non-null" + count++);
             if (rootModuleNode.getVariableDecls().length == 0) {
                 this.noSpecRadio.setSelection(true);
                 closedFormulaRadio.setSelection(false);
@@ -406,42 +482,61 @@ public class MainModelPage extends BasicFormPage implements
                 noSpecRadio.setEnabled(true);
                 closedFormulaRadio.setEnabled(false);
                 initNextFairnessRadio.setEnabled(false);
-                getConfig().setAttribute(MODEL_BEHAVIOR_SPEC_TYPE, MODEL_BEHAVIOR_TYPE_NO_SPEC); 
+                getConfig().setAttribute(MODEL_BEHAVIOR_SPEC_TYPE,
+                        MODEL_BEHAVIOR_TYPE_NO_SPEC);
                 UIHelper
-                .getWidget(dm
-                        .getAttributeControl(MODEL_BEHAVIOR_CLOSED_SPECIFICATION)).setEnabled(false); 
+                        .getWidget(
+                                dm
+                                        .getAttributeControl(MODEL_BEHAVIOR_CLOSED_SPECIFICATION))
+                        .setEnabled(false);
                 UIHelper
-                .getWidget(dm
-                        .getAttributeControl(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT)).setEnabled(false);
+                        .getWidget(
+                                dm
+                                        .getAttributeControl(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT))
+                        .setEnabled(false);
                 UIHelper
-                .getWidget(dm
-                        .getAttributeControl(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT)).setEnabled(false);
+                        .getWidget(
+                                dm
+                                        .getAttributeControl(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT))
+                        .setEnabled(false);
             }
             else {
+                // System.out.println("Should be setting buttons to closed form spec "
+                // + count++);
                 noSpecRadio.setEnabled(false);
                 closedFormulaRadio.setEnabled(true);
                 initNextFairnessRadio.setEnabled(true);
                 UIHelper
-                .getWidget(dm
-                        .getAttributeControl(MODEL_BEHAVIOR_CLOSED_SPECIFICATION)).setEnabled(true); 
+                        .getWidget(
+                                dm
+                                        .getAttributeControl(MODEL_BEHAVIOR_CLOSED_SPECIFICATION))
+                        .setEnabled(true);
                 UIHelper
-                .getWidget(dm
-                        .getAttributeControl(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT)).setEnabled(true);
+                        .getWidget(
+                                dm
+                                        .getAttributeControl(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT))
+                        .setEnabled(true);
                 UIHelper
-                .getWidget(dm
-                        .getAttributeControl(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT)).setEnabled(true);
+                        .getWidget(
+                                dm
+                                        .getAttributeControl(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT))
+                        .setEnabled(true);
                 if (noSpecRadio.getSelection()) {
-                    Assert.isTrue(!(closedFormulaRadio.getSelection() || initNextFairnessRadio.getSelection()));
+                    Assert
+                            .isTrue(!(closedFormulaRadio.getSelection() || initNextFairnessRadio
+                                    .getSelection()));
                     noSpecRadio.setSelection(false);
                     if (MODEL_BEHAVIOR_TYPE_DEFAULT == MODEL_BEHAVIOR_TYPE_SPEC_CLOSED) {
                         closedFormulaRadio.setSelection(true);
-                        getConfig().setAttribute(MODEL_BEHAVIOR_SPEC_TYPE, MODEL_BEHAVIOR_TYPE_SPEC_CLOSED); 
-                        
+                        getConfig().setAttribute(MODEL_BEHAVIOR_SPEC_TYPE,
+                                MODEL_BEHAVIOR_TYPE_SPEC_CLOSED);
+
                     }
                     else {
                         initNextFairnessRadio.setSelection(true);
-                        getConfig().setAttribute(MODEL_BEHAVIOR_SPEC_TYPE, MODEL_BEHAVIOR_TYPE_SPEC_INIT_NEXT); 
-                        
+                        getConfig().setAttribute(MODEL_BEHAVIOR_SPEC_TYPE,
+                                MODEL_BEHAVIOR_TYPE_SPEC_INIT_NEXT);
+
                     }
                 }
             }
@@ -549,17 +644,19 @@ public class MainModelPage extends BasicFormPage implements
         // fairnessFormula);
 
         // mode
-        int specType ;
+        int specType;
         if (this.closedFormulaRadio.getSelection()) {
-            specType = MODEL_BEHAVIOR_TYPE_SPEC_CLOSED ;
-        } else if (this.initNextFairnessRadio.getSelection()) {
-            specType = MODEL_BEHAVIOR_TYPE_SPEC_INIT_NEXT ;
-        } else if (this.noSpecRadio.getSelection()){
-            specType = MODEL_BEHAVIOR_TYPE_NO_SPEC;
-        } else {
-            specType = MODEL_BEHAVIOR_TYPE_DEFAULT ;
+            specType = MODEL_BEHAVIOR_TYPE_SPEC_CLOSED;
         }
-  
+        else if (this.initNextFairnessRadio.getSelection()) {
+            specType = MODEL_BEHAVIOR_TYPE_SPEC_INIT_NEXT;
+        }
+        else if (this.noSpecRadio.getSelection()) {
+            specType = MODEL_BEHAVIOR_TYPE_NO_SPEC;
+        }
+        else {
+            specType = MODEL_BEHAVIOR_TYPE_DEFAULT;
+        }
 
         getConfig().setAttribute(MODEL_BEHAVIOR_SPEC_TYPE, specType);
 
@@ -628,11 +725,14 @@ public class MainModelPage extends BasicFormPage implements
      * 
      * 
      */
+    private int ccount = 0;
+
     protected void createBodyContent(IManagedForm managedForm) {
         DataBindingManager dm = getDataBindingManager();
         int sectionFlags = Section.TITLE_BAR | Section.DESCRIPTION
                 | Section.TREE_NODE;
-
+        System.out.println("Call of createBodyContent number " + ccount++
+                + ", Model editor count = ");
         FormToolkit toolkit = managedForm.getToolkit();
         Composite body = managedForm.getForm().getBody();
 
@@ -766,6 +866,11 @@ public class MainModelPage extends BasicFormPage implements
         noSpecRadio.setLayoutData(gd);
         noSpecRadio.addSelectionListener(whatIsTheSpecListener);
 
+        // RANDOM TEST CODE THAT DOESN"T SEEM TO DO ANYTHING
+        // left.getChildren()[0].setBounds(0, 0, 0, 0);
+        // left.getChildren()[0].setVisible(hasVariables);
+        // System.out.println("setVisible(...) " + count++);
+
         // ------------------------------------------
         // what to check
         section = FormHelper.createSectionComposite(left, "What to check?",
@@ -823,10 +928,20 @@ public class MainModelPage extends BasicFormPage implements
         constantTable = constantsPart.getTableViewer();
         dm.bindAttribute(MODEL_PARAMETER_CONSTANTS, constantTable,
                 constantsPart);
-
         Composite parametersArea = (Composite) constantsPart.getSection()
                 .getClient();
         HyperlinkGroup group = new HyperlinkGroup(parametersArea.getDisplay());
+
+        // TESTING XXXXXX
+        // managedForm.removePart(constantsPart);
+        // Control saved = right.getChildren()[0] ;
+        // constantTable.getTable().setSize(1000, 1000);
+        // constantTable.getTable().setVisible(false);
+        //        
+        // System.out.println("GetSize returns " +
+        // constantTable.getTable().getSize().x);
+        // right.getChildren()[0].setVisible(false);
+        // parametersArea.setVisible(false);
 
         // create a composite to put the text into
         Composite linksPanelToAdvancedPage = toolkit
