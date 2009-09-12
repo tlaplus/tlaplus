@@ -30,3 +30,8 @@
    Should the user have to explicitly unlock it?  I suggest that it be unlocked when
    the run completes if and only if that run did not take too long--where "too long" is
    a user-settable preference. 
+   
+6. Checkpoint restoration is not implemented.
+
+7. The -coverage argument seems to be being set to such a large value that TLC produces
+   coverage statistics only after a run completes, even for a run of 1/2 hour or so.
