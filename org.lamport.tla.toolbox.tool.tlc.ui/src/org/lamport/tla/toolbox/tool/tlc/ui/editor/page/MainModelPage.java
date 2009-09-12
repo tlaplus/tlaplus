@@ -233,7 +233,7 @@ public class MainModelPage extends BasicFormPage implements
         // seem to happen.
         countXX++;
         System.out.println("countXX = " + countXX);
-        if (countXX == 6) {
+        if (countXX == 60000) {
             countXX++;
             ModelEditor ourFavoriteEditor = (ModelEditor) this.getEditor();
             ourFavoriteEditor.removePage(0);
@@ -248,7 +248,7 @@ public class MainModelPage extends BasicFormPage implements
                 TLCUIActivator.logError("Error initializing editor", e);
                 e.printStackTrace();
             }
-            // newPage.validate(); // Dan: I thought t needed to be added,
+            // newPage.validate(); // Dan: I thought this needed to be added,
             // but now I think that it's harmful.
             
             
