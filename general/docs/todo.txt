@@ -11,3 +11,22 @@
    it didn't notice that an invariant had been violated and didn't raise the error
    window.
    
+4. The progress information is not being displayed.
+   
+5. If the user adds or removes a declared CONSTANT from the spec while a model is
+   being run by TLC, that changes the model.  For example, if the spec is run with
+   a constant N instantiated with 42 and N is removed from the spec, then the N <- 42
+   disappears from the model and the user has no way of telling what N was instantiated
+   with during the current run.
+   
+   Here is a possible solution:  Add the notion of a model being LOCKED, meaning that
+   it cannot be changed in any way, meaning that it is read only and it doesn't 
+   change to conform to the current spec.  In particular, it conforms to the copy of
+   the spec that's salted away with the model.  Running the spec locks the model.
+   There will also be a menu item that the use can select to lock the spec himself.
+   (This will allow the user to protect himself from accidentally modifying or re-running
+   a spec by mistake--perhaps losing a trace that took weeks for TLC to produce.)
+   We must decide what should happen to the lock state when a TLC run completes.
+   Should the user have to explicitly unlock it?  I suggest that it be unlocked when
+   the run completes if and only if that run did not take too long--where "too long" is
+   a user-settable preference. 
