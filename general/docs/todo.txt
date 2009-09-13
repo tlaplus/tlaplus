@@ -33,6 +33,5 @@
    
 6. Checkpoint restoration is not implemented.
 
-7. The -coverage argument seems to be being set to such a large value that TLC produces
-   coverage statistics only after a run completes, even for a run of 1/2 hour or so.  This
-   is bizarre, because it looks like TLC is being called with "-coverage 3"
+7. Coverage is not working, coverage information being displayed only after a run 
+   completes.  The bug is in TLC, which isn't printing the coverage information. 
