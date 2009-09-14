@@ -46,3 +46,8 @@
    definition override.  This is not a show-stopper because it now works
    if the user uses all but one instance of the model value as an ordinary value.
    
+10. If I close the TLC Error window, there is no way to re-open it.  This is
+    a major problem.  Imagine someone accidentally doing that on an error window
+    produced by a 2-week run.
+       
+   
