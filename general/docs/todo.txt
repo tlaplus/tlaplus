@@ -48,6 +48,7 @@
    
 10. If I close the TLC Error window, there is no way to re-open it.  This is
     a major problem.  Imagine someone accidentally doing that on an error window
-    produced by a 2-week run.
+    produced by a 2-week run.  (This may be an error added in testing by Dan R
+    and LL.)
        
    
