@@ -35,3 +35,14 @@
 
 7. Coverage is not working, coverage information being displayed only after a run 
    completes.  The bug is in TLC, which isn't printing the coverage information. 
+   
+8. A definition override of an operator with no arguments should include the
+   option of making it a model value.  (This is not a show-stopper because the
+   user can replace it by a model value that he declares in the model-value
+   section.)
+   
+9. There is no reason why the user cannot use the same model value in two
+   different constant instantiations or in a constant instantiation and a 
+   definition override.  This is not a show-stopper because it now works
+   if the user uses all but one instance of the model value as an ordinary value.
+   
