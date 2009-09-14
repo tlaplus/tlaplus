@@ -51,5 +51,9 @@
     The data isn't lost because it's regenerated if the model is closed and reopened,
     but the user is unlikely to realize that and will probably just curse the
     toolbox and relaunch TLC.
+    
+11. The Parsing Error item on the Window menu should be disabled when there is not parsing
+    error.
+       
        
    
