@@ -54,6 +54,16 @@
     
 11. The Parsing Error item on the Window menu should be disabled when there is not parsing
     error.
+    
+12. When the spec is reparsed after a parsing error when the Parsing Error window
+    is displayed, and no errors are found, the Parsing Error Window continues to
+    contain the previous error.  It has to be closed to make that error disappear.
+    
+13. Minor feature problem.  Suppose the user starts to write a PlusCal algorithm,
+    translates it and gets a PlusCal error, and then decides to delete the PlusCal
+    code and just write the spec in TLA+.  There's no way for him to get rid of
+    the PlusCal 
+    
        
        
    
