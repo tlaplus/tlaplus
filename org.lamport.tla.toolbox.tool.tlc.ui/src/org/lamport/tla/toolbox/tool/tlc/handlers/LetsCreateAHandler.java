@@ -22,6 +22,7 @@ System.out.println("Let's create a command class handler blah.");
 //    
     public boolean isEnabled() {
 //        super.setEnabled(this); 
+        System.out.println("LetsCreateAHandler.isEnabled() called.");
         return false;
     }
 }
