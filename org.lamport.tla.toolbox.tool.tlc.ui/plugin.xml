@@ -115,6 +115,10 @@
             id="toolbox.tool.tlc.commands.model.repair"
             name="Repair corrupted model">
       </command>
+      <command
+            id="org.lamport.tla.toolbox.tool.tlc.ui.command1"
+            name="lets-create-a-command">
+      </command>
    </extension>
    <extension
          point="org.eclipse.ui.menus">
@@ -183,6 +187,52 @@
                   name="toolbox.openview.name"
                   value="org.eclipse.ui.console.ConsoleView">
             </parameter>
+            <visibleWhen
+                  checkEnabled="true">
+               <with
+                     variable="activeWorkbenchWindow.activePerspective">
+                  <not>
+                     <equals
+                           value="org.lamport.tla.toolbox.ui.perspective.initial">
+                     </equals>
+                  </not>
+               </with>
+            </visibleWhen>
+         </command>
+         <command
+               commandId="toolbox.command.openview"
+               icon="icons/full/errorwarning_tab.gif"
+               id="toolbox.menu.open-tlc-errors"
+               label="TLC Errors"
+               mnemonic="E"
+               mode="FORCE_TEXT"
+               style="push"
+               tooltip="Opens the view showing TLC errors">
+            <parameter
+                  name="toolbox.openview.name"
+                  value="toolbox.tool.tlc.view.TLCErrorView">
+            </parameter>
+            <visibleWhen
+                  checkEnabled="true">
+               <with
+                     variable="activeWorkbenchWindow.activePerspective">
+                  <not>
+                     <equals
+                           value="org.lamport.tla.toolbox.ui.perspective.initial">
+                     </equals>
+                  </not>
+               </with>
+            </visibleWhen>
+         </command>
+         <command
+               commandId="org.lamport.tla.toolbox.tool.tlc.ui.command1"
+               icon="icons/full/errorwarning_tab.gif"
+               id="toolbox.menu.open-tlc-errors"
+               label="LetsCreateAMenuItem"
+               mnemonic="E"
+               mode="FORCE_TEXT"
+               style="push"
+               tooltip="Opens the view showing TLC errors">
             <visibleWhen
                   checkEnabled="true">
                <with
@@ -611,6 +661,11 @@ Console Facory
                </iterate>
             </with>
          </enabledWhen>
+      </handler>
+      <handler
+            class="org.lamport.tla.toolbox.tool.tlc.handlers.LetsCreateAHandler"
+            commandId="org.lamport.tla.toolbox.tool.tlc.ui.command1">
+         <activeWhen></activeWhen>
       </handler>
    </extension>
    <extension
