@@ -23,4 +23,7 @@ For example, ModelEditor.validate() is called when the module is parsed,
 and this must be through that extension point.  But we have not discovered
 the path from the extension point to that method.
 
+-------
 
+The spec status indicator in the lower-right corner is apparently
+set by  ParseStatusContributionItem . update().
