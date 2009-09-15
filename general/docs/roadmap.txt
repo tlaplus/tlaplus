@@ -27,3 +27,53 @@ the path from the extension point to that method.
 
 The spec status indicator in the lower-right corner is apparently
 set by  ParseStatusContributionItem . update().
+
+
+----------
+How to create a distribution.
+
+Go to org....product.standalone
+   This contains no functionality, but "builds application stuff".
+   
+The following stuff needs to be done just once for each computer.
+   
+Open standalone.product / Overview tab
+  Need to specify target platform.
+  By default, Eclipse uses itself as the target
+     platform.
+  Need to define a separate copy of the distribution
+    as the target platform.
+ 
+ 
+ 1. Unzip Eclipse platform from eclipse-rcp-galileo-win32.zip into somewhere as the
+     the target platform.  I've put it in tla/target-platform
+ 
+ 2. Go to Eclipse download page, download 
+     Eclipse delta pack.  Usually in
+     "Other Downloads".  (search for "delta")
+     Extract it to a new directory.  I've put it in tla/delta-pack, merging
+     with the stuff extracted above. 
+     
+ 3. Go to Window/ preferences/Plug-in Development/Target Platform
+    
+   Hit Add.
+   Choose "nothing" & hit next
+   In Target Contact
+     Enter name, like "Galileo 3.5"
+     Location hit add:
+        select Installation & hit next
+        Select target-platform directory .../tla/target-platform/eclipse 
+          and hit finish [included 487 of 487]
+     Hit add again
+       select Directory and hit next
+       select .../delta-pack/eclipse directory and hit
+          finish [61 of 61]
+     Hit finish.
+  Check "Galileo 3.5" in Target Platform to make it active.
+  Hit OK, and watch it rebuild.
+       
+The following stuff needs to be done for each release.
+
+  1. Open standalone product / overview page
+  2. Hit on Eclipse Product Export Wizard
+      
