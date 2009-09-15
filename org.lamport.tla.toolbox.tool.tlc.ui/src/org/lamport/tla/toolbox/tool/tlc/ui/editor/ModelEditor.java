@@ -44,8 +44,8 @@ import org.lamport.tla.toolbox.util.UIHelper;
  * @author Simon Zambrovski
  * @version $Id$
  */
-public class ModelEditor extends FormEditor implements
-        ModelHelper.IFileProvider {
+public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
+{
 
     /**
      * Editor ID
@@ -61,9 +61,16 @@ public class ModelEditor extends FormEditor implements
     // reacts on model changes
     private IResourceChangeListener modelFileChangeListener;
 
+    /*
+     *  This method is called via the UIHelper.runUIAsync method in addPages,
+     *  which is called by the Eclipse infrastructure after the ModelEditor
+     *  constructor has been called to create the ModelEditor object.
+     */
     private Runnable validateRunable = new Runnable() {
-        public void run() {
-            for (int i = 0; i < getPageCount(); i++) {
+        public void run()
+        {
+            for (int i = 0; i < getPageCount(); i++)
+            {
                 BasicFormPage page = (BasicFormPage) pages.get(i);
                 // re-validate the model on changes of the spec
                 page.validate();
@@ -73,7 +80,8 @@ public class ModelEditor extends FormEditor implements
 
     // react on spec root file changes
     private IResourceChangeListener rootFileListener = new IResourceChangeListener() {
-        public void resourceChanged(IResourceChangeEvent event) {
+        public void resourceChanged(IResourceChangeEvent event)
+        {
             // update the specObject of the helper
             helper.resetSpecNames();
 
@@ -90,76 +98,74 @@ public class ModelEditor extends FormEditor implements
     /**
      * Simple editor constructor
      */
-    public ModelEditor() {
+    public ModelEditor()
+    {
         helper = new SemanticHelper();
-        pagesToAdd = new BasicFormPage[] { new MainModelPage(this),
-                new AdvancedModelPage(this), new ResultPage(this) };
-System.out.println("Model editor being constructed");
+        pagesToAdd = new BasicFormPage[] { new MainModelPage(this), new AdvancedModelPage(this), new ResultPage(this) };
+        System.out.println("Model editor being constructed");
     }
 
     /**
      * Initialize the editor
      */
-    public void init(IEditorSite site, IEditorInput input)
-            throws PartInitException {
+    public void init(IEditorSite site, IEditorInput input) throws PartInitException
+    {
         // TLCUIActivator.logDebug("entering ModelEditor#init(IEditorSite site, IEditorInput input)");
         super.init(site, input);
 
-
         // grab the input
         FileEditorInput finput = getFileEditorInput();
-        if (finput != null) {
-            ILaunchConfiguration configuration = ModelHelper
-                    .getModelByFile(finput.getFile());
+        if (finput != null)
+        {
+            ILaunchConfiguration configuration = ModelHelper.getModelByFile(finput.getFile());
 
-            try {
+            try
+            {
                 configurationCopy = configuration.getWorkingCopy();
-            }
-            catch (CoreException e) {
-                TLCUIActivator.logError("Could not load model content for "
-                        + finput.getName(), e);
+            } catch (CoreException e)
+            {
+                TLCUIActivator.logError("Could not load model content for " + finput.getName(), e);
             }
 
             /*
              * Install a resource change listener on the file opened which react
              * on marker changes
              */
-            modelFileChangeListener = ModelHelper
-                    .installModelModificationResourceChangeListener(this,
-                    /*
-                     * If the model file is changed, refresh the changes in the
-                     * editor if the model is in use, activate the third page
-                     */
-                    new Runnable() {
-                        public void run() {
-                            // update the pages
-                            for (int i = 0; i < getPageCount(); i++) {
-                                BasicFormPage page = (BasicFormPage) pages
-                                        .get(i);
-                                ((BasicFormPage) page).refresh();
-                            }
+            modelFileChangeListener = ModelHelper.installModelModificationResourceChangeListener(this,
+            /*
+             * If the model file is changed, refresh the changes in the
+             * editor if the model is in use, activate the third page
+             */
+            new Runnable() {
+                public void run()
+                {
+                    // update the pages
+                    for (int i = 0; i < getPageCount(); i++)
+                    {
+                        BasicFormPage page = (BasicFormPage) pages.get(i);
+                        ((BasicFormPage) page).refresh();
+                    }
 
-                            if (isModelInUse()) {
-                                showResultPage();
-                            }
-                            // evtl. add more graphical sugar here,
-                            // like changing the model icon,
-                            // changing the editor title (part name)
-                        }
-                    });
+                    if (isModelInUse())
+                    {
+                        showResultPage();
+                    }
+                    // evtl. add more graphical sugar here,
+                    // like changing the model icon,
+                    // changing the editor title (part name)
+                }
+            });
 
             // setContentDescription(path.toString());
             this.setPartName(ModelHelper.getModelName(finput.getFile()));
-            this.setTitleToolTip(finput.getFile().getProjectRelativePath()
-                    .toString());
+            this.setTitleToolTip(finput.getFile().getProjectRelativePath().toString());
         }
 
         /*
          * Install resource change listener on the root file of the
          * specification react on changes of the root file
          */
-        ResourcesPlugin.getWorkspace().addResourceChangeListener(
-                rootFileListener, IResourceChangeEvent.POST_BUILD);
+        ResourcesPlugin.getWorkspace().addResourceChangeListener(rootFileListener, IResourceChangeEvent.POST_BUILD);
 
         // update the spec object of the helper
         helper.resetSpecNames();
@@ -172,31 +178,32 @@ System.out.println("Model editor being constructed");
     /*
      * @see org.eclipse.ui.forms.editor.FormEditor#dispose()
      */
-    public void dispose() {
+    public void dispose()
+    {
         // TLCUIActivator.logDebug("entering ModelEditor#dispose()");
         // remove the listeners
-        ResourcesPlugin.getWorkspace().removeResourceChangeListener(
-                rootFileListener);
-        ResourcesPlugin.getWorkspace().removeResourceChangeListener(
-                modelFileChangeListener);
+        ResourcesPlugin.getWorkspace().removeResourceChangeListener(rootFileListener);
+        ResourcesPlugin.getWorkspace().removeResourceChangeListener(modelFileChangeListener);
         super.dispose();
         // TLCUIActivator.logDebug("leaving ModelEditor#dispose()");
     }
 
     /*
-     * @seeorg.eclipse.ui.part.EditorPart#doSave(org.eclipse.core.runtime.
+     * @see org.eclipse.ui.part.EditorPart#doSave(org.eclipse.core.runtime.
      * IProgressMonitor)
      */
-    public void doSave(IProgressMonitor monitor) {
+    public void doSave(IProgressMonitor monitor)
+    {
         this.commitPages(monitor, true);
         ModelHelper.doSaveConfigurationCopy(configurationCopy);
 
         // remove existing markers
         ModelHelper.removeModelProblemMarkers(configurationCopy);
 
-        boolean revalidate = TLCUIActivator.getDefault().getPreferenceStore()
-                .getBoolean(ITLCPreferenceConstants.I_TLC_REVALIDATE_ON_MODIFY);
-        if (revalidate) {
+        boolean revalidate = TLCUIActivator.getDefault().getPreferenceStore().getBoolean(
+                ITLCPreferenceConstants.I_TLC_REVALIDATE_ON_MODIFY);
+        if (revalidate)
+        {
             // run SANY
             launchModel(TLCModelLaunchDelegate.MODE_GENERATE, false /*
                                                                      * the SANY
@@ -214,20 +221,23 @@ System.out.println("Model editor being constructed");
     /*
      * @see org.eclipse.ui.part.EditorPart#doSaveAs()
      */
-    public void doSaveAs() {
+    public void doSaveAs()
+    {
     }
 
     /**
      * Ask the view for an adapter for certain class
      */
-    public Object getAdapter(Class required) {
+    public Object getAdapter(Class required)
+    {
 
         // ask for the launh data provider
-        if (TLCModelLaunchDataProvider.class.equals(required)) {
+        if (TLCModelLaunchDataProvider.class.equals(required))
+        {
             // return a provider, if this can be found
-            TLCModelLaunchDataProvider provider = TLCOutputSourceRegistry
-                    .getSourceRegistry().getProvider(getConfig());
-            if (provider != null) {
+            TLCModelLaunchDataProvider provider = TLCOutputSourceRegistry.getSourceRegistry().getProvider(getConfig());
+            if (provider != null)
+            {
                 return provider;
             }
         }
@@ -235,16 +245,19 @@ System.out.println("Model editor being constructed");
         return super.getAdapter(required);
     }
 
-    public void setFocus() {
+    public void setFocus()
+    {
         final TLCModelLaunchDataProvider provider = (TLCModelLaunchDataProvider) ModelEditor.this
                 .getAdapter(TLCModelLaunchDataProvider.class);
-        if (!provider.getErrors().isEmpty()) {
-            TLCErrorView errorView = (TLCErrorView) UIHelper
-                    .findView(TLCErrorView.ID);
-            if (errorView != null) {
+        if (!provider.getErrors().isEmpty())
+        {
+            TLCErrorView errorView = (TLCErrorView) UIHelper.findView(TLCErrorView.ID);
+            if (errorView != null)
+            {
                 UIHelper.runUISync(new Runnable() {
 
-                    public void run() {
+                    public void run()
+                    {
                         TLCErrorView.updateErrorView(provider);
                     }
                 });
@@ -258,18 +271,22 @@ System.out.println("Model editor being constructed");
     /*
      * @see org.eclipse.ui.part.EditorPart#isSaveAsAllowed()
      */
-    public boolean isSaveAsAllowed() {
+    public boolean isSaveAsAllowed()
+    {
         return false;
     }
 
     /**
      * Instead of committing pages, forms and form-parts, we just commit pages 
      */
-    protected void commitPages(IProgressMonitor monitor, boolean onSave) {
+    protected void commitPages(IProgressMonitor monitor, boolean onSave)
+    {
         // TLCUIActivator.logDebug("entering ModelEditor#commitPages(IProgressMonitor monitor, boolean onSave)");
-        for (int i = 0; i < getPageCount(); i++) {
+        for (int i = 0; i < getPageCount(); i++)
+        {
             BasicFormPage page = (BasicFormPage) pages.get(i);
-            if (page.isInitialized()) {
+            if (page.isInitialized())
+            {
                 page.commit(onSave);
             }
         }
@@ -279,10 +296,13 @@ System.out.println("Model editor being constructed");
     /*
      * @see org.eclipse.ui.forms.editor.FormEditor#addPages()
      */
-    protected void addPages() {
+    protected void addPages()
+    {
         // TLCUIActivator.logDebug("entering ModelEditor#addPages()");
-        try {
-            for (int i = 0; i < pagesToAdd.length; i++) {
+        try
+        {
+            for (int i = 0; i < pagesToAdd.length; i++)
+            {
                 addPage(pagesToAdd[i]);
                 // initialize the page
 
@@ -290,11 +310,11 @@ System.out.println("Model editor being constructed");
                 // the data will be loaded
                 // the refresh method will update the UI state
                 // the dirty listeners will be activated
-                if (pagesToAdd[i].getPartControl() == null) {
+                if (pagesToAdd[i].getPartControl() == null)
+                {
                     pagesToAdd[i].createPartControl(getContainer());
                     setControl(i, pagesToAdd[i].getPartControl());
-                    pagesToAdd[i].getPartControl().setMenu(
-                            getContainer().getMenu());
+                    pagesToAdd[i].getPartControl().setMenu(getContainer().getMenu());
                 }
             }
 
@@ -302,8 +322,8 @@ System.out.println("Model editor being constructed");
             // run the validation
             UIHelper.runUIAsync(validateRunable);
 
-        }
-        catch (PartInitException e) {
+        } catch (PartInitException e)
+        {
             TLCUIActivator.logError("Error initializing editor", e);
         }
 
@@ -317,35 +337,35 @@ System.out.println("Model editor being constructed");
      * @param mode
      * @param userPased true, if the action is performed on behalf of the user action (explicit click on the launch button)
      */
-    public void launchModel(String mode, boolean userPased) {
+    public void launchModel(String mode, boolean userPased)
+    {
         IProgressMonitor monitor = new NullProgressMonitor();
 
         // save the editor if not saved
-        if (isDirty()) {
+        if (isDirty())
+        {
             doSave(new SubProgressMonitor(monitor, 1));
         }
 
-        if (!isComplete()) {
+        if (!isComplete())
+        {
             // user clicked launch
-            if (userPased) {
-                MessageDialog
-                        .openError(
-                                getSite().getShell(),
-                                "Model processing not allowed",
-                                "The model contains errors, which should be corrected before further processing");
+            if (userPased)
+            {
+                MessageDialog.openError(getSite().getShell(), "Model processing not allowed",
+                        "The model contains errors, which should be corrected before further processing");
                 return;
             }
-        }
-        else {
+        } else
+        {
 
-            try {
+            try
+            {
                 // launching the config
-                getConfig().launch(mode, new SubProgressMonitor(monitor, 1),
-                        true);
-            }
-            catch (CoreException e) {
-                TLCUIActivator.logError("Error launching the configuration "
-                        + getConfig().getName(), e);
+                getConfig().launch(mode, new SubProgressMonitor(monitor, 1), true);
+            } catch (CoreException e)
+            {
+                TLCUIActivator.logError("Error launching the configuration " + getConfig().getName(), e);
             }
         }
 
@@ -354,24 +374,28 @@ System.out.println("Model editor being constructed");
     /**
      * Stops TLC
      */
-    public void stop() {
-        try {
-            if (ModelHelper.isModelLocked(getConfig())
-                    && !ModelHelper.isModelStale(getConfig())) {
+    public void stop()
+    {
+        try
+        {
+            if (ModelHelper.isModelLocked(getConfig()) && !ModelHelper.isModelStale(getConfig()))
+            {
                 Job[] runningSpecJobs = Job.getJobManager().find(getConfig());
-                for (int i = 0; i < runningSpecJobs.length; i++) {
+                for (int i = 0; i < runningSpecJobs.length; i++)
+                {
                     // send cancellations to all jobs...
                     runningSpecJobs[i].cancel();
                 }
             }
-        }
-        catch (CoreException e) {
+        } catch (CoreException e)
+        {
             TLCUIActivator.logError("Error stopping the model launch", e);
         }
 
     }
 
-    public ILaunchConfigurationWorkingCopy getConfig() {
+    public ILaunchConfigurationWorkingCopy getConfig()
+    {
         return configurationCopy;
     }
 
@@ -379,10 +403,13 @@ System.out.println("Model editor being constructed");
      * Checks whether the pages are complete and goes to the first (in order of addition) incomplete page if any
      * @return true if all pages are complete, false otherwise
      */
-    public boolean isComplete() {
-        for (int i = 0; i < getPageCount(); i++) {
+    public boolean isComplete()
+    {
+        for (int i = 0; i < getPageCount(); i++)
+        {
             BasicFormPage page = (BasicFormPage) pages.get(i);
-            if (!page.isComplete()) {
+            if (!page.isComplete())
+            {
                 setActivePage(page.getId());
                 return false;
             }
@@ -394,24 +421,26 @@ System.out.println("Model editor being constructed");
      * Handles the problem markers
      * 
      */
-    public void handleProblemMarkers() {
+    public void handleProblemMarkers()
+    {
         int errorPageIndex = -1;
         int currentPageIndex = getActivePage();
-        try {
-            IMarker[] modelProblemMarkers = ModelHelper
-                    .getModelProblemMarker(getConfig());
+        try
+        {
+            IMarker[] modelProblemMarkers = ModelHelper.getModelProblemMarker(getConfig());
             DataBindingManager dm = getDataBindingManager();
 
-            for (int j = 0; j < getPageCount(); j++) {
+            for (int j = 0; j < getPageCount(); j++)
+            {
                 // get the current page
                 BasicFormPage page = (BasicFormPage) pages.get(j);
-                Assert.isNotNull(page.getManagedForm(),
-                        "Page not initialized, this is a bug.");
+                Assert.isNotNull(page.getManagedForm(), "Page not initialized, this is a bug.");
 
-                for (int i = 0; i < modelProblemMarkers.length; i++) {
-                    String attributeName = modelProblemMarkers[i].getAttribute(
-                            ModelHelper.TLC_MODEL_ERROR_MARKER_ATTRIBUTE_NAME,
-                            IModelConfigurationDefaults.EMPTY_STRING);
+                for (int i = 0; i < modelProblemMarkers.length; i++)
+                {
+                    String attributeName = modelProblemMarkers[i]
+                            .getAttribute(ModelHelper.TLC_MODEL_ERROR_MARKER_ATTRIBUTE_NAME,
+                                    IModelConfigurationDefaults.EMPTY_STRING);
                     String sectionId = dm.getSectionForAttribute(attributeName);
                     Assert
                             .isNotNull(sectionId,
@@ -421,38 +450,38 @@ System.out.println("Model editor being constructed");
 
                     // relevant, since the attribute is displayed on the current
                     // page
-                    if (page.getId().equals(pageId)) {
-                        IMessageManager mm = page.getManagedForm()
-                                .getMessageManager();
+                    if (page.getId().equals(pageId))
+                    {
+                        IMessageManager mm = page.getManagedForm().getMessageManager();
                         mm.setAutoUpdate(false);
-                        String message = modelProblemMarkers[i].getAttribute(
-                                IMarker.MESSAGE,
+                        String message = modelProblemMarkers[i].getAttribute(IMarker.MESSAGE,
                                 IModelConfigurationDefaults.EMPTY_STRING);
 
-                        Control widget = UIHelper.getWidget(dm
-                                .getAttributeControl(attributeName));
-                        if (widget != null) {
-                            mm.addMessage("modelProblem_" + i, message, null,
-                                    IMessageProvider.ERROR, widget);
+                        Control widget = UIHelper.getWidget(dm.getAttributeControl(attributeName));
+                        if (widget != null)
+                        {
+                            mm.addMessage("modelProblem_" + i, message, null, IMessageProvider.ERROR, widget);
                         }
                         // expand the section with an error
                         dm.expandSection(sectionId);
                         mm.setAutoUpdate(true);
 
-                        if (errorPageIndex < j) {
+                        if (errorPageIndex < j)
+                        {
                             errorPageIndex = j;
                         }
                     }
                 }
             }
-            if (errorPageIndex != -1 && currentPageIndex != errorPageIndex) {
+            if (errorPageIndex != -1 && currentPageIndex != errorPageIndex)
+            {
                 // the page has a marker
                 // make it active
                 setActivePage(errorPageIndex);
             }
 
-        }
-        catch (CoreException e) {
+        } catch (CoreException e)
+        {
             TLCUIActivator.logError("Error retrieving model error markers", e);
         }
 
@@ -462,14 +491,16 @@ System.out.println("Model editor being constructed");
      * Current helper instance
      * @return
      */
-    public SemanticHelper getHelper() {
+    public SemanticHelper getHelper()
+    {
         return this.helper;
     }
 
     /**
      * Retrieves the data binding manager for this editor
      */
-    public DataBindingManager getDataBindingManager() {
+    public DataBindingManager getDataBindingManager()
+    {
         return this.dataBindingManager;
     }
 
@@ -477,24 +508,26 @@ System.out.println("Model editor being constructed");
      * Retrieve the file editor input
      * @return
      */
-    public FileEditorInput getFileEditorInput() {
+    public FileEditorInput getFileEditorInput()
+    {
         IEditorInput input = getEditorInput();
-        if (input instanceof FileEditorInput) {
+        if (input instanceof FileEditorInput)
+        {
             return (FileEditorInput) input;
-        }
-        else {
-            throw new IllegalStateException(
-                    "Something weird. The editor is designed for FileEditorInputOnly");
+        } else
+        {
+            throw new IllegalStateException("Something weird. The editor is designed for FileEditorInputOnly");
         }
     }
 
     /*
      * (non-Javadoc)
      * 
-     * @seeorg.lamport.tla.toolbox.tool.tlc.util.ModelHelper.IResourceProvider#
+     * @see org.lamport.tla.toolbox.tool.tlc.util.ModelHelper.IResourceProvider#
      * getResource()
      */
-    public IFile getResource(int type) {
+    public IFile getResource(int type)
+    {
         IFile result = getFileEditorInput().getFile();
 
         switch (type) {
@@ -502,8 +535,7 @@ System.out.println("Model editor being constructed");
             break;
         case IFileProvider.TYPE_RESULT:
             String modelName = ModelHelper.getModelName(result);
-            result = result.getProject().getFolder(modelName).getFile(
-                    ModelHelper.FILE_OUT);
+            result = result.getProject().getFolder(modelName).getFile(ModelHelper.FILE_OUT);
             break;
         default:
             result = null;
@@ -516,11 +548,13 @@ System.out.println("Model editor being constructed");
      * Retrieves if the working copy of the model is in use
      * @return true, if the model is locked 
      */
-    public boolean isModelInUse() {
-        try {
+    public boolean isModelInUse()
+    {
+        try
+        {
             return ModelHelper.isModelLocked(getConfig());
-        }
-        catch (CoreException e) {
+        } catch (CoreException e)
+        {
             TLCUIActivator.logError("Error determining model status", e);
             return true;
         }
@@ -530,11 +564,13 @@ System.out.println("Model editor being constructed");
      * Retrieves if the working copy of the model is still left 
      * in in-use status, even if no process is running on it anymore
      */
-    public boolean isModelStale() {
-        try {
+    public boolean isModelStale()
+    {
+        try
+        {
             return ModelHelper.isModelStale(getConfig());
-        }
-        catch (CoreException e) {
+        } catch (CoreException e)
+        {
             TLCUIActivator.logError("Error determining model status", e);
             return true;
         }
@@ -543,25 +579,29 @@ System.out.println("Model editor being constructed");
     /**
      * Show the result page of the editor    
      */
-    public void showResultPage() {
+    public void showResultPage()
+    {
         // goto result page
         IFormPage resultPage = setActivePage(ResultPage.ID);
-        if (resultPage != null) {
-            try {
+        if (resultPage != null)
+        {
+            try
+            {
                 ((ResultPage) resultPage).loadData();
-            }
-            catch (CoreException e) {
+            } catch (CoreException e)
+            {
                 TLCUIActivator.logError("Error refreshing the result page", e);
             }
         }
     }
 
-    public void setUpPage(BasicFormPage newPage, int index) {
-        if (newPage.getPartControl() == null) {
+    public void setUpPage(BasicFormPage newPage, int index)
+    {
+        if (newPage.getPartControl() == null)
+        {
             newPage.createPartControl(this.getContainer());
             setControl(index, newPage.getPartControl());
-            newPage.getPartControl().setMenu(
-                    getContainer().getMenu());
-    }
+            newPage.getPartControl().setMenu(getContainer().getMenu());
+        }
     }
 }
