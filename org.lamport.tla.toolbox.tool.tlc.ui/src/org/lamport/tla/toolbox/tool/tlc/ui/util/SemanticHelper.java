@@ -23,7 +23,7 @@ import util.UniqueString;
 public class SemanticHelper
 {
 
-    /**
+    /** 
      * A constant indicating that the value is a keyword
      */
     public static final String KEYWORD = "KEYWORD";
