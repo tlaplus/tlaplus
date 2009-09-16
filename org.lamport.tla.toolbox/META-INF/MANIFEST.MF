@@ -78,5 +78,6 @@ Export-Package: org.lamport.tla.toolbox.spec;
  tla2sany.utilities,
  tlc2;uses:="tlc2.tool,tla2sany.modanalyzer,util",
  tlc2.output;uses:="tlc2.tool",
+ tlc2.tool,
  util;uses:="tla2sany.semantic"
 
