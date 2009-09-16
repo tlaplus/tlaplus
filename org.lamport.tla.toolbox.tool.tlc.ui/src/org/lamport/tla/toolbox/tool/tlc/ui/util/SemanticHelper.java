@@ -1,5 +1,6 @@
 package org.lamport.tla.toolbox.tool.tlc.ui.util;
 
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -30,6 +31,8 @@ public class SemanticHelper
      * Constant indicating the origin of a built-in op
      */
     public static final String TLA_BUILTIN = "--TLA+ BUILTINS--";
+    
+    private static HashSet CONFIG_KEYWORDS = new HashSet(Arrays.asList(tlc2.tool.ModelConfig.ALL_KEYWORDS));
 
     private Hashtable pageStorage;
     private Context specContext;
@@ -160,6 +163,15 @@ public class SemanticHelper
             pageStorage.put(pageKey, pageNames);
         }
         pageNames.put(name, usageDescription);
+    }
+    
+    /**
+     * Checks if name is a configuration file keyword
+     * @return true if the name is a configuration file keyword
+     */
+    
+    public static boolean isConfigFileKeyword(String name) {
+    	return CONFIG_KEYWORDS.contains(name);
     }
 
     /**
