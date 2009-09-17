@@ -1164,9 +1164,14 @@ public class OpDefNode extends OpDefOrDeclNode
                   ((source == null) ? "this" : 
                        (source.getName().toString() + 
                             " (uid: " + source.myUID + ")"))
+                + "\n  originallyDefinedInModule: " + 
+                     ((originallyDefinedInModule == null) ? "null" :
+                       (originallyDefinedInModule.getName().toString() +
+                          " (uid: " + originallyDefinedInModule.myUID + ")"))
                 + ((stepNode == null) ? "" : 
                         ("\n  stepNode: " + 
-                          Strings.indent(4,stepNode.toString(depth-3)))) ;
+                          Strings.indent(4,stepNode.toString(depth-3)))) 
+                                                   ;
 
 //  nextDependency has been removed.
 //                + "\n  nextDependency: " ;  
