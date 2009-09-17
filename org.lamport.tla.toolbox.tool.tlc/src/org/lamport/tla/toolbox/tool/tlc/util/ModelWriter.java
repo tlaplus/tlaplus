@@ -1,5 +1,6 @@
 package org.lamport.tla.toolbox.tool.tlc.util;
 
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Vector;
 import java.util.regex.Matcher;
@@ -11,10 +12,15 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.Region;
+import org.lamport.tla.toolbox.tool.ToolboxHandle;
+import org.lamport.tla.toolbox.tool.tlc.TLCActivator;
 import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
 import org.lamport.tla.toolbox.tool.tlc.model.Formula;
 import org.lamport.tla.toolbox.tool.tlc.model.TypedSet;
 import org.lamport.tla.toolbox.util.ResourceHelper;
+
+import tla2sany.modanalyzer.SpecObj;
+import tla2sany.semantic.OpDefNode;
 
 /**
  * Encapsulates two buffers and provides semantic methods to add content to the _MC file and the CFG file of the model 
@@ -329,7 +335,45 @@ public class ModelWriter
     }
 
     /**
-     * Create a list of overrides
+     * Create a list of overrides. If the override is not in the spec's root module, then
+     * the config file will have     A <- [M] id . This means that A is defined in module M,
+     * and its definition is being overriden in the spec root module which is dependent upon M.
+     * The following is an example from Leslie Lamport that explains the code.
+     * Let's suppose we have
+    
+    ------ MODULE MA ----
+    IB == INSTANCE MB ...
+    =================
+    
+    ------ MODULE MB ----
+    IC == INSTANCE MC ...
+    =================
+    
+    ----- MODULE MC ------
+    Foo == ...
+    ======================
+    
+    where MA is the spec's root module.  The user will see in the override
+    menu and override
+    
+    IB!IC!Foo
+    
+    Let OD be the OpDefNode for IB!IC!Foo in the semantic tree for module
+    MA.  Then OD.getSource() is the OpDefNode for Foo in the semantic tree
+    of module MC.  So we have
+    
+    OD.getSource().getOriginallyDefinedInModuleNode() 
+    
+    is the module node for MC, and
+    
+    OD.getSource().getOriginallyDefinedInModuleNode().getName().toString() = "MC"
+    
+    OD.getName().toString() = "Foo"
+    
+    and the config file should contain
+    
+    Foo <-[MC] ...
+    
      * @param overrides
      * @param string
      * @return
@@ -340,6 +384,18 @@ public class ModelWriter
         String[] content;
         String id;
         Assignment formula;
+
+        // opDefNodes are necessary when the user overrides a definition that is not in the root module
+        SpecObj specObj = ToolboxHandle.getCurrentSpec().getValidRootModule();
+        OpDefNode[] opDefNodes = specObj.getExternalModuleTable().getRootModule().getOpDefs();
+        Hashtable nodeTable = new Hashtable(opDefNodes.length);
+
+        for (int j = 0; j < opDefNodes.length; j++)
+        {
+            String key = opDefNodes[j].getName().toString();
+            nodeTable.put(key, opDefNodes[j]);
+        }
+
         for (int i = 0; i < overrides.size(); i++)
         {
             id = getValidIdentifier(labelingScheme);
@@ -347,8 +403,38 @@ public class ModelWriter
             // to .cfg : <id>
             // to _MC.tla : <id> == <expression>
             formula = ((Assignment) overrides.get(i));
-            content = new String[] { formula.getLabel() + ARROW + id,
-                    formula.getParametrizedLabel(id) + DEFINES_CR + formula.getRight() };
+            OpDefNode defNode = null;
+            if (nodeTable.containsKey(formula.getLabel()))
+            {
+                defNode = (OpDefNode) nodeTable.get(formula.getLabel());
+            }
+
+            if (defNode == null)
+            {
+                // should raise an error
+                content = null;
+            } else
+            {
+                OpDefNode source = defNode.getSource();
+                if (source == null)
+                {
+                    // user is overriding a definition in the root module
+                    content = new String[] { formula.getLabel() + ARROW + id,
+                            formula.getParametrizedLabel(id) + DEFINES_CR + formula.getRight() };
+                } else if (source.getSource() == source)
+                {
+                    // user is overriding a definition that is not in the root module
+                    content = new String[] {
+                            source.getName().toString() + ARROW + "["
+                                    + source.getOriginallyDefinedInModuleNode().getName().toString() + "]" + id,
+                            formula.getParametrizedLabel(id) + DEFINES_CR + formula.getRight() };
+                } else
+                {
+                    // should raise an error window
+                    content = null;
+                }
+            }
+
             resultContent.add(content);
         }
         return resultContent;
@@ -383,7 +469,6 @@ public class ModelWriter
     public static final Pattern ID_MATCHER = Pattern.compile("(" + SPEC_SCHEME + "|" + INIT_SCHEME + "|" + NEXT_SCHEME
             + "|" + CONSTANT_SCHEME + "|" + SYMMETRY_SCHEME + "|" + DEFOV_SCHEME + "|" + CONSTRAINT_SCHEME + "|"
             + ACTIONCONSTRAINT_SCHEME + "|" + INVARIANT_SCHEME + "|" + PROP_SCHEME + ")_[0-9]{17}");
-
 
     /**
      * Find the IDs in the given text and return the array of 
