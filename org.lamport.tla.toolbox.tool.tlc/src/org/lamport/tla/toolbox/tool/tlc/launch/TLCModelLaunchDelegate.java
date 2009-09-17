@@ -60,8 +60,9 @@ import org.lamport.tla.toolbox.util.TLAMarkerInformationHolder;
  * @version $Id$
  * Modified on 10 Sep 2009 to add No Spec TLC launch option.
  */
-public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate
-        implements IModelConfigurationConstants, IModelConfigurationDefaults {
+public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implements IModelConfigurationConstants,
+        IModelConfigurationDefaults
+{
     // Mutex rule for the following jobs to run after each other
     private MutexRule mutexRule = new MutexRule();
 
@@ -85,8 +86,8 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate
     /**
      * 1. method called during the launch
      */
-    public ILaunch getLaunch(ILaunchConfiguration configuration, String mode)
-            throws CoreException {
+    public ILaunch getLaunch(ILaunchConfiguration configuration, String mode) throws CoreException
+    {
         // delegate to the super implementation
         return super.getLaunch(configuration, mode);
     }
@@ -100,15 +101,18 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate
      * @return whether the launch should proceed
      * @see org.eclipse.debug.core.model.ILaunchConfigurationDelegate2#preLaunchCheck(org.eclipse.debug.core.ILaunchConfiguration, java.lang.String, org.eclipse.core.runtime.IProgressMonitor)
      */
-    public boolean preLaunchCheck(ILaunchConfiguration config, String mode,
-            IProgressMonitor monitor) throws CoreException {
+    public boolean preLaunchCheck(ILaunchConfiguration config, String mode, IProgressMonitor monitor)
+            throws CoreException
+    {
 
         // check the config existence
-        if (!config.exists()) {
+        if (!config.exists())
+        {
             return false;
         }
 
-        try {
+        try
+        {
             monitor.beginTask("Reading model parameters", 1);
 
             // name of the specification
@@ -118,13 +122,12 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate
             modelName = config.getAttribute(MODEL_NAME, EMPTY_STRING);
 
             // root file name
-            specRootFilename = ToolboxHandle.getRootModule(
-                    config.getFile().getProject()).getLocation().toOSString();
+            specRootFilename = ToolboxHandle.getRootModule(config.getFile().getProject()).getLocation().toOSString();
             // specRootFilename = config.getAttribute(SPEC_ROOT_FILE,
             // EMPTY_STRING);
 
-        }
-        finally {
+        } finally
+        {
             // finish the monitor
             monitor.done();
         }
@@ -143,200 +146,173 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate
      * 
      * @see org.eclipse.debug.core.model.ILaunchConfigurationDelegate2#buildForLaunch(org.eclipse.debug.core.ILaunchConfiguration, java.lang.String, org.eclipse.core.runtime.IProgressMonitor)
      */
-    public boolean buildForLaunch(ILaunchConfiguration config, String mode,
-            IProgressMonitor monitor) throws CoreException {
+    public boolean buildForLaunch(ILaunchConfiguration config, String mode, IProgressMonitor monitor)
+            throws CoreException
+    {
         // generate the model here
         int STEP = 100;
 
-        try {
+        try
+        {
             monitor.beginTask("Creating model", 30);
             // step 1
             monitor.subTask("Creating directories");
 
             // retrieve the project containing the specification
             IProject project = ResourceHelper.getProject(specName);
-            if (project == null) {
+            if (project == null)
+            {
                 // project could not be found
-                throw new CoreException(new Status(IStatus.ERROR,
-                        TLCActivator.PLUGIN_ID,
+                throw new CoreException(new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID,
                         "Error accessing the spec project " + specName));
             }
 
             // retrieve the root file
-            IFile specRootFile = ResourceHelper.getLinkedFile(project,
-                    specRootFilename, false);
-            if (specRootFile == null) {
+            IFile specRootFile = ResourceHelper.getLinkedFile(project, specRootFilename, false);
+            if (specRootFile == null)
+            {
                 // root module file not found
-                throw new CoreException(new Status(IStatus.ERROR,
-                        TLCActivator.PLUGIN_ID,
+                throw new CoreException(new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID,
                         "Error accessing the root module " + specRootFilename));
             }
 
             // retrieve the model folder
             IFolder modelFolder = project.getFolder(modelName);
-            IPath targetFolderPath = modelFolder.getProjectRelativePath()
-                    .addTrailingSeparator();
+            IPath targetFolderPath = modelFolder.getProjectRelativePath().addTrailingSeparator();
 
             // create the handles: MC.tla, MC.cfg and MC.out
-            IFile tlaFile = project.getFile(targetFolderPath
-                    .append(ModelHelper.FILE_TLA));
-            IFile cfgFile = project.getFile(targetFolderPath
-                    .append(ModelHelper.FILE_CFG));
-            IFile outFile = project.getFile(targetFolderPath
-                    .append(ModelHelper.FILE_OUT));
+            IFile tlaFile = project.getFile(targetFolderPath.append(ModelHelper.FILE_TLA));
+            IFile cfgFile = project.getFile(targetFolderPath.append(ModelHelper.FILE_CFG));
+            IFile outFile = project.getFile(targetFolderPath.append(ModelHelper.FILE_OUT));
 
-            TLCActivator.logDebug("Writing files to: "
-                    + targetFolderPath.toOSString());
+            TLCActivator.logDebug("Writing files to: " + targetFolderPath.toOSString());
 
             final IFile[] files = new IFile[] { tlaFile, cfgFile, outFile };
 
-            if (modelFolder.exists()) {
+            if (modelFolder.exists())
+            {
                 final IResource[] members = modelFolder.members();
                 // erase everything inside
-                if (members.length == 0) {
+                if (members.length == 0)
+                {
                     monitor.worked(STEP);
-                }
-                else {
-                    final boolean recover = config.getAttribute(LAUNCH_RECOVER,
-                            LAUNCH_RECOVER_DEFAULT);
-                    final IResource[] checkpoints = ModelHelper
-                            .getCheckpoints(config);
+                } else
+                {
+                    final boolean recover = config.getAttribute(LAUNCH_RECOVER, LAUNCH_RECOVER_DEFAULT);
+                    final IResource[] checkpoints = ModelHelper.getCheckpoints(config);
 
-                    ISchedulingRule deleteRule = ResourceHelper
-                            .getDeleteRule(members);
+                    ISchedulingRule deleteRule = ResourceHelper.getDeleteRule(members);
 
                     // delete files
-                    ResourcesPlugin.getWorkspace().run(
-                            new IWorkspaceRunnable() {
+                    ResourcesPlugin.getWorkspace().run(new IWorkspaceRunnable() {
 
-                                public void run(IProgressMonitor monitor)
-                                        throws CoreException {
-                                    boolean checkFiles = recover;
-                                    monitor.beginTask("Deleting files",
-                                            members.length);
-                                    // delete the members of the target
-                                    // directory
-                                    for (int i = 0; i < members.length; i++) {
-                                        if (checkFiles) {
-                                            if (checkpoints.length > 0
-                                                    && checkpoints[0]
-                                                            .equals(members[i])) {
-                                                // we found the recovery
-                                                // directory and didn't delete
-                                                // it
-                                                checkFiles = false;
-                                                continue;
-                                            }
-                                        }
-                                        else {
-                                            // delete file
-                                            // either non-recovery mode
-                                            // or the recovery directory already
-                                            // skipped
-                                            try {
-                                                members[i].delete(
-                                                        IResource.FORCE,
-                                                        new SubProgressMonitor(
-                                                                monitor, 1));
-                                            }
-                                            catch (CoreException e) {
-                                                // catch the exception if
-                                                // deletion failed, and just
-                                                // ignore this fact
-                                                // FIXME this should be fixed at
-                                                // some later point in time
-                                                TLCActivator
-                                                        .logError(
-                                                                "Error deleting a file "
-                                                                        + members[i]
-                                                                                .getLocation(),
-                                                                e);
-                                            }
-                                        }
+                        public void run(IProgressMonitor monitor) throws CoreException
+                        {
+                            boolean checkFiles = recover;
+                            monitor.beginTask("Deleting files", members.length);
+                            // delete the members of the target
+                            // directory
+                            for (int i = 0; i < members.length; i++)
+                            {
+                                if (checkFiles)
+                                {
+                                    if (checkpoints.length > 0 && checkpoints[0].equals(members[i]))
+                                    {
+                                        // we found the recovery
+                                        // directory and didn't delete
+                                        // it
+                                        checkFiles = false;
+                                        continue;
                                     }
-                                    monitor.done();
+                                } else
+                                {
+                                    // delete file
+                                    // either non-recovery mode
+                                    // or the recovery directory already
+                                    // skipped
+                                    try
+                                    {
+                                        members[i].delete(IResource.FORCE, new SubProgressMonitor(monitor, 1));
+                                    } catch (CoreException e)
+                                    {
+                                        // catch the exception if
+                                        // deletion failed, and just
+                                        // ignore this fact
+                                        // FIXME this should be fixed at
+                                        // some later point in time
+                                        TLCActivator.logError("Error deleting a file " + members[i].getLocation(), e);
+                                    }
                                 }
-                            }, deleteRule, IWorkspace.AVOID_UPDATE,
-                            new SubProgressMonitor(monitor, STEP));
+                            }
+                            monitor.done();
+                        }
+                    }, deleteRule, IWorkspace.AVOID_UPDATE, new SubProgressMonitor(monitor, STEP));
                 }
-            }
-            else {
+            } else
+            {
                 // create it
-                modelFolder.create(IResource.DERIVED | IResource.FORCE, true,
-                        new SubProgressMonitor(monitor, STEP));
+                modelFolder.create(IResource.DERIVED | IResource.FORCE, true, new SubProgressMonitor(monitor, STEP));
             }
 
             // step 2
             monitor.subTask("Copying files");
 
             // copy
-            specRootFile.copy(targetFolderPath.append(specRootFile
-                    .getProjectRelativePath()), IResource.DERIVED
+            specRootFile.copy(targetFolderPath.append(specRootFile.getProjectRelativePath()), IResource.DERIVED
                     | IResource.FORCE, new SubProgressMonitor(monitor, 1));
             // find the result
-            IResource specRootFileCopy = modelFolder.findMember(specRootFile
-                    .getProjectRelativePath());
+            IResource specRootFileCopy = modelFolder.findMember(specRootFile.getProjectRelativePath());
 
             // react if no result
-            if (specRootFileCopy == null) {
-                throw new CoreException(new Status(IStatus.ERROR,
-                        TLCActivator.PLUGIN_ID, "Error copying "
-                                + specRootFilename + " into "
-                                + targetFolderPath.toOSString()));
+            if (specRootFileCopy == null)
+            {
+                throw new CoreException(new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID, "Error copying "
+                        + specRootFilename + " into " + targetFolderPath.toOSString()));
             }
 
             // get the list of dependent modules
-            List extendedModules = ToolboxHandle
-                    .getExtendedModules(specRootFile.getName());
+            List extendedModules = ToolboxHandle.getExtendedModules(specRootFile.getName());
 
             // iterate and copy modules that are needed for the spec
             IFile moduleFile = null;
-            for (int i = 0; i < extendedModules.size(); i++) {
+            for (int i = 0; i < extendedModules.size(); i++)
+            {
                 String module = (String) extendedModules.get(i);
                 // only take care of user modules
-                if (ToolboxHandle.isUserModule(module)) {
-                    moduleFile = ResourceHelper.getLinkedFile(project, module,
-                            false);
-                    if (moduleFile != null) {
-                        moduleFile.copy(targetFolderPath.append(moduleFile
-                                .getProjectRelativePath()), IResource.DERIVED
-                                | IResource.FORCE, new SubProgressMonitor(
-                                monitor, STEP / extendedModules.size()));
+                if (ToolboxHandle.isUserModule(module))
+                {
+                    moduleFile = ResourceHelper.getLinkedFile(project, module, false);
+                    if (moduleFile != null)
+                    {
+                        moduleFile.copy(targetFolderPath.append(moduleFile.getProjectRelativePath()), IResource.DERIVED
+                                | IResource.FORCE, new SubProgressMonitor(monitor, STEP / extendedModules.size()));
                     }
                 }
             }
 
             // get the scheduling rule
-            ISchedulingRule fileRule = MultiRule.combine(ResourceHelper
-                    .getModifyRule(files), ResourceHelper.getCreateRule(files));
+            ISchedulingRule fileRule = MultiRule.combine(ResourceHelper.getModifyRule(files), ResourceHelper
+                    .getCreateRule(files));
 
             // create files
-            ResourcesPlugin.getWorkspace().run(
-                    new IWorkspaceRunnable() {
-                        public void run(IProgressMonitor monitor)
-                                throws CoreException {
-                            for (int i = 0; i < files.length; i++) {
-                                if (files[i].exists()) {
-                                    files[i]
-                                            .setContents(
-                                                    new ByteArrayInputStream(""
-                                                            .getBytes()),
-                                                    IResource.DERIVED
-                                                            | IResource.FORCE,
-                                                    new SubProgressMonitor(
-                                                            monitor, 1));
-                                }
-                                else {
-                                    files[i].create(new ByteArrayInputStream(""
-                                            .getBytes()), IResource.DERIVED
-                                            | IResource.FORCE,
-                                            new SubProgressMonitor(monitor, 1));
-                                }
-                            }
+            ResourcesPlugin.getWorkspace().run(new IWorkspaceRunnable() {
+                public void run(IProgressMonitor monitor) throws CoreException
+                {
+                    for (int i = 0; i < files.length; i++)
+                    {
+                        if (files[i].exists())
+                        {
+                            files[i].setContents(new ByteArrayInputStream("".getBytes()), IResource.DERIVED
+                                    | IResource.FORCE, new SubProgressMonitor(monitor, 1));
+                        } else
+                        {
+                            files[i].create(new ByteArrayInputStream("".getBytes()), IResource.DERIVED
+                                    | IResource.FORCE, new SubProgressMonitor(monitor, 1));
                         }
+                    }
+                }
 
-                    }, fileRule, IWorkspace.AVOID_UPDATE,
-                    new SubProgressMonitor(monitor, STEP));
+            }, fileRule, IWorkspace.AVOID_UPDATE, new SubProgressMonitor(monitor, STEP));
 
             monitor.worked(STEP);
             monitor.subTask("Creating contents");
@@ -344,46 +320,38 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate
             ModelWriter writer = new ModelWriter();
 
             // add extend primer
-            writer.addPrimer(ModelHelper.MC_MODEL_NAME, ResourceHelper
-                    .getModuleName(specRootFilename));
+            writer.addPrimer(ModelHelper.MC_MODEL_NAME, ResourceHelper.getModuleName(specRootFilename));
 
             // constants list
-            List constants = ModelHelper.deserializeAssignmentList(config
-                    .getAttribute(MODEL_PARAMETER_CONSTANTS, new Vector()));
+            List constants = ModelHelper.deserializeAssignmentList(config.getAttribute(MODEL_PARAMETER_CONSTANTS,
+                    new Vector()));
 
             // the advanced model values
-            TypedSet modelValues = TypedSet.parseSet(config.getAttribute(
-                    MODEL_PARAMETER_MODEL_VALUES, EMPTY_STRING));
+            TypedSet modelValues = TypedSet.parseSet(config.getAttribute(MODEL_PARAMETER_MODEL_VALUES, EMPTY_STRING));
 
             // add constants and model values
-            writer.addConstants(constants, modelValues,
-                    MODEL_PARAMETER_CONSTANTS, MODEL_PARAMETER_MODEL_VALUES);
+            writer.addConstants(constants, modelValues, MODEL_PARAMETER_CONSTANTS, MODEL_PARAMETER_MODEL_VALUES);
 
             // new definitions
-            writer.addNewDefinitions(config.getAttribute(
-                    MODEL_PARAMETER_NEW_DEFINITIONS, EMPTY_STRING),
+            writer.addNewDefinitions(config.getAttribute(MODEL_PARAMETER_NEW_DEFINITIONS, EMPTY_STRING),
                     MODEL_PARAMETER_NEW_DEFINITIONS);
 
             // definition overrides list
-            List overrides = ModelHelper.deserializeAssignmentList(config
-                    .getAttribute(MODEL_PARAMETER_DEFINITIONS, new Vector()));
-            writer.addFormulaList(ModelWriter.createOverridesContent(overrides,
-                    ModelWriter.DEFOV_SCHEME), "CONSTANT",
+            List overrides = ModelHelper.deserializeAssignmentList(config.getAttribute(MODEL_PARAMETER_DEFINITIONS,
+                    new Vector()));
+            writer.addFormulaList(ModelWriter.createOverridesContent(overrides, ModelWriter.DEFOV_SCHEME), "CONSTANT",
                     MODEL_PARAMETER_DEFINITIONS);
 
             // constraint
-            writer.addFormulaList(ModelWriter.createSourceContent(
-                    MODEL_PARAMETER_CONSTRAINT, ModelWriter.CONSTRAINT_SCHEME,
-                    config), "CONSTRAINT", MODEL_PARAMETER_CONSTRAINT);
+            writer.addFormulaList(ModelWriter.createSourceContent(MODEL_PARAMETER_CONSTRAINT,
+                    ModelWriter.CONSTRAINT_SCHEME, config), "CONSTRAINT", MODEL_PARAMETER_CONSTRAINT);
             // action constraint
-            writer.addFormulaList(ModelWriter.createSourceContent(
-                    MODEL_PARAMETER_ACTION_CONSTRAINT,
-                    ModelWriter.ACTIONCONSTRAINT_SCHEME, config),
-                    "ACTION_CONSTRAINT", MODEL_PARAMETER_ACTION_CONSTRAINT);
-                    // Changed from incorrect "ACTION-CONSTRAINT" on 11 Sep 2009
+            writer.addFormulaList(ModelWriter.createSourceContent(MODEL_PARAMETER_ACTION_CONSTRAINT,
+                    ModelWriter.ACTIONCONSTRAINT_SCHEME, config), "ACTION_CONSTRAINT",
+                    MODEL_PARAMETER_ACTION_CONSTRAINT);
+            // Changed from incorrect "ACTION-CONSTRAINT" on 11 Sep 2009
 
-            int specType = config.getAttribute(MODEL_BEHAVIOR_SPEC_TYPE,
-                    MODEL_BEHAVIOR_TYPE_DEFAULT);
+            int specType = config.getAttribute(MODEL_BEHAVIOR_SPEC_TYPE, MODEL_BEHAVIOR_TYPE_DEFAULT);
             switch (specType) {
             case MODEL_BEHAVIOR_TYPE_NO_SPEC:
                 // no spec - nothing to do
@@ -391,22 +359,16 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate
             case MODEL_BEHAVIOR_TYPE_SPEC_CLOSED:
 
                 // the specification name-formula pair
-                writer.addFormulaList(ModelWriter.createSourceContent(
-                        MODEL_BEHAVIOR_CLOSED_SPECIFICATION,
-                        ModelWriter.SPEC_SCHEME, config), "SPECIFICATION",
-                        MODEL_BEHAVIOR_CLOSED_SPECIFICATION);
+                writer.addFormulaList(ModelWriter.createSourceContent(MODEL_BEHAVIOR_CLOSED_SPECIFICATION,
+                        ModelWriter.SPEC_SCHEME, config), "SPECIFICATION", MODEL_BEHAVIOR_CLOSED_SPECIFICATION);
                 break;
             case MODEL_BEHAVIOR_TYPE_SPEC_INIT_NEXT:
 
                 // the init and next formulas
-                writer.addFormulaList(ModelWriter.createSourceContent(
-                        MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT,
-                        ModelWriter.INIT_SCHEME, config), "INIT",
-                        MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT);
-                writer.addFormulaList(ModelWriter.createSourceContent(
-                        MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT,
-                        ModelWriter.NEXT_SCHEME, config), "NEXT",
-                        MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT);
+                writer.addFormulaList(ModelWriter.createSourceContent(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT,
+                        ModelWriter.INIT_SCHEME, config), "INIT", MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT);
+                writer.addFormulaList(ModelWriter.createSourceContent(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT,
+                        ModelWriter.NEXT_SCHEME, config), "NEXT", MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT);
                 break;
             }
 
@@ -415,15 +377,13 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate
             // MODEL_BEHAVIOR_CLOSED_SPECIFICATION);
 
             // invariants
-            writer.addFormulaList(ModelWriter.createFormulaListContent(config
-                    .getAttribute(MODEL_CORRECTNESS_INVARIANTS, new Vector()),
-                    ModelWriter.INVARIANT_SCHEME), "INVARIANT",
+            writer.addFormulaList(ModelWriter.createFormulaListContent(config.getAttribute(
+                    MODEL_CORRECTNESS_INVARIANTS, new Vector()), ModelWriter.INVARIANT_SCHEME), "INVARIANT",
                     MODEL_CORRECTNESS_INVARIANTS);
 
             // properties
-            writer.addFormulaList(ModelWriter.createFormulaListContent(config
-                    .getAttribute(MODEL_CORRECTNESS_PROPERTIES, new Vector()),
-                    ModelWriter.PROP_SCHEME), "PROPERTY",
+            writer.addFormulaList(ModelWriter.createFormulaListContent(config.getAttribute(
+                    MODEL_CORRECTNESS_PROPERTIES, new Vector()), ModelWriter.PROP_SCHEME), "PROPERTY",
                     MODEL_CORRECTNESS_PROPERTIES);
 
             monitor.worked(STEP);
@@ -433,11 +393,10 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate
             writer.writeFiles(tlaFile, cfgFile, monitor);
 
             // refresh the model folder
-            modelFolder.refreshLocal(IResource.DEPTH_ONE,
-                    new SubProgressMonitor(monitor, STEP));
+            modelFolder.refreshLocal(IResource.DEPTH_ONE, new SubProgressMonitor(monitor, STEP));
 
-        }
-        finally {
+        } finally
+        {
             // make sure to complete the monitor
             monitor.done();
         }
@@ -453,8 +412,9 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate
      * <br>4. method called on launch
      * @see org.eclipse.debug.core.model.ILaunchConfigurationDelegate2#finalLaunchCheck(org.eclipse.debug.core.ILaunchConfiguration, java.lang.String, org.eclipse.core.runtime.IProgressMonitor)
      */
-    public boolean finalLaunchCheck(ILaunchConfiguration configuration,
-            String mode, IProgressMonitor monitor) throws CoreException {
+    public boolean finalLaunchCheck(ILaunchConfiguration configuration, String mode, IProgressMonitor monitor)
+            throws CoreException
+    {
         monitor.beginTask("Verifying model files", 4);
 
         IProject project = ResourceHelper.getProject(specName);
@@ -463,295 +423,78 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate
 
         monitor.worked(1);
         // parse the MC file
-        IParseResult parseResult = ToolboxHandle.parseModule(rootModule,
-                new SubProgressMonitor(monitor, 1), false, false);
+        IParseResult parseResult = ToolboxHandle.parseModule(rootModule, new SubProgressMonitor(monitor, 1), false,
+                false);
         Vector detectedErrors = parseResult.getDetectedErrors();
-        boolean status = !AdapterFactory.isProblemStatus(parseResult
-                .getStatus());
+        boolean status = !AdapterFactory.isProblemStatus(parseResult.getStatus());
 
         monitor.worked(1);
         // remove existing markers
         ModelHelper.removeModelProblemMarkers(configuration);
         monitor.worked(1);
 
-        if (!detectedErrors.isEmpty()) {
-            TLCActivator.logDebug("Errors in model file found "
-                    + rootModule.getLocation());
+        if (!detectedErrors.isEmpty())
+        {
+            TLCActivator.logDebug("Errors in model file found " + rootModule.getLocation());
         }
 
-        try {
-            FileEditorInput fileEditorInput = new FileEditorInput(
-                    (IFile) rootModule);
+        try
+        {
+            FileEditorInput fileEditorInput = new FileEditorInput((IFile) rootModule);
             FileDocumentProvider fileDocumentProvider = new FileDocumentProvider();
             fileDocumentProvider.connect(fileEditorInput);
-            IDocument document = fileDocumentProvider
-                    .getDocument(fileEditorInput);
+            IDocument document = fileDocumentProvider.getDocument(fileEditorInput);
 
-            FindReplaceDocumentAdapter searchAdapter = new FindReplaceDocumentAdapter(
-                    document);
+            FindReplaceDocumentAdapter searchAdapter = new FindReplaceDocumentAdapter(document);
 
-            for (int i = 0; i < detectedErrors.size(); i++) {
+            for (int i = 0; i < detectedErrors.size(); i++)
+            {
                 // the holder has the information about the error in the MC file
-                TLAMarkerInformationHolder markerHolder = (TLAMarkerInformationHolder) detectedErrors
-                        .get(i);
+                TLAMarkerInformationHolder markerHolder = (TLAMarkerInformationHolder) detectedErrors.get(i);
                 String message = markerHolder.getMessage();
-                if (markerHolder.getModuleName() != null) {
-                    if (markerHolder.getModuleName().equals(
-                            rootModule.getName())) {
-                        try {
-                            int index = -1;
-                            int severity = markerHolder.getSeverityError();
-                            String attributeName;
-                            int[] coordinates = markerHolder.getCoordinates();
+                if (markerHolder.getModuleName() != null)
+                {
+                    if (markerHolder.getModuleName().equals(rootModule.getName()))
+                    {
+                        int severity = markerHolder.getSeverityError();
+                        int[] coordinates = markerHolder.getCoordinates();
 
-                            // find the line in the document
-                            IRegion lineRegion = document
-                                    .getLineInformation(coordinates[0] - 1);
-                            if (lineRegion != null) {
-                                int errorLineOffset = lineRegion.getOffset();
+                        // find the error cause and install the error marker on the corresponding
+                        // field
+                        ModelHelper.findAndInstallMarker(configuration, document, searchAdapter, message, severity, coordinates);
 
-                                // find the previous comment
-                                IRegion commentRegion = searchAdapter.find(
-                                        errorLineOffset, ModelWriter.COMMENT,
-                                        false, false, false, false);
-
-                                // find the next separator
-                                IRegion separatorRegion = searchAdapter.find(
-                                        errorLineOffset, ModelWriter.SEP, true,
-                                        false, false, false);
-                                if (separatorRegion != null
-                                        && commentRegion != null) {
-                                    // find the first attribute inside of the
-                                    // comment
-                                    IRegion attributeRegion = searchAdapter
-                                            .find(commentRegion.getOffset(),
-                                                    ModelWriter.ATTRIBUTE
-                                                            + "[a-z]*[A-Z]*",
-                                                    true, false, false, true);
-                                    if (attributeRegion != null) {
-                                        // get the attribute name without the
-                                        // attribute marker
-                                        attributeName = document.get(
-                                                attributeRegion.getOffset(),
-                                                attributeRegion.getLength())
-                                                .substring(
-                                                        ModelWriter.ATTRIBUTE
-                                                                .length());
-
-                                        // find the index
-                                        IRegion indexRegion = searchAdapter
-                                                .find(attributeRegion
-                                                        .getOffset()
-                                                        + attributeRegion
-                                                                .getLength(),
-                                                        ModelWriter.INDEX
-                                                                + "[0-9]+",
-                                                        true, false, false,
-                                                        true);
-                                        if (indexRegion != null
-                                                && indexRegion.getOffset() < separatorRegion
-                                                        .getOffset()) {
-                                            // index value found
-                                            String indexString = document.get(
-                                                    indexRegion.getOffset(),
-                                                    indexRegion.getLength());
-                                            if (indexString != null
-                                                    && indexString.length() > 1) {
-                                                try {
-                                                    index = Integer
-                                                            .parseInt(indexString
-                                                                    .substring(1));
-                                                }
-                                                catch (NumberFormatException e) {
-                                                    throw new CoreException(
-                                                            new Status(
-                                                                    IStatus.ERROR,
-                                                                    TLCActivator.PLUGIN_ID,
-                                                                    "Error during detection of the error position in MC.tla."
-                                                                            + "Error parsing the attribute index. "
-                                                                            + message,
-                                                                    e));
-                                                }
-                                            }
-                                        }
-                                        else {
-                                            // no index
-                                        }
-
-                                        // the first character of the next line
-                                        // after the comment
-
-                                        IRegion firstBlockLine = document
-                                                .getLineInformation(document
-                                                        .getLineOfOffset(commentRegion
-                                                                .getOffset()) + 1);
-                                        int beginBlockOffset = firstBlockLine
-                                                .getOffset();
-                                        // get the user input
-                                        if (attributeName
-                                                .equals(MODEL_PARAMETER_NEW_DEFINITIONS)) {
-                                            // there is no identifier in this
-                                            // block
-                                            // the user input starts directly
-                                            // from the first character
-                                        }
-                                        else {
-                                            // the id-line representing the
-                                            // identifier "id_number ==" comes
-                                            // first
-                                            // the user input starts only on the
-                                            // second line
-                                            // so adding the length of the
-                                            // id-line
-                                            beginBlockOffset = beginBlockOffset
-                                                    + firstBlockLine
-                                                            .getLength() + 1;
-                                        }
-
-                                        // calculate the error region
-                                        Region errorRegion = null;
-                                        // end line coordinate
-                                        if (coordinates[2] == 0) {
-                                            // not set
-                                            // marc one char starting from the
-                                            // begin column
-                                            errorRegion = new Region(
-                                                    errorLineOffset
-                                                            + coordinates[1]
-                                                            - beginBlockOffset,
-                                                    1);
-                                        }
-                                        else if (coordinates[2] == coordinates[0]) {
-                                            // equals to the begin line
-                                            // mark the actual error region
-                                            int length = coordinates[3]
-                                                    - coordinates[1];
-
-                                            errorRegion = new Region(
-                                                    errorLineOffset
-                                                            + coordinates[1]
-                                                            - beginBlockOffset,
-                                                    (length == 0) ? 1 : length);
-                                        }
-                                        else {
-                                            // the prat of the first line from
-                                            // the begin column to the end
-                                            int summedLength = lineRegion
-                                                    .getLength()
-                                                    - coordinates[1];
-
-                                            // iterate over all full lines
-                                            for (int l = coordinates[0] + 1; l < coordinates[2]; l++) {
-                                                IRegion line = document
-                                                        .getLineInformation(l - 1);
-                                                summedLength = summedLength
-                                                        + line.getLength();
-                                            }
-                                            // the part of the last line to the
-                                            // end column
-                                            summedLength += coordinates[3];
-
-                                            errorRegion = new Region(
-                                                    errorLineOffset
-                                                            + coordinates[1]
-                                                            - beginBlockOffset,
-                                                    summedLength);
-                                        }
-
-                                        // install the marker showing the
-                                        // information in the corresponding
-                                        // attribute
-                                        // (and index), at the given
-                                        // place
-                                        ModelHelper.installModelProblemMarker(
-                                                configuration, severity,
-                                                attributeName, index,
-                                                errorRegion, message);
-
-                                    }
-                                    else {
-                                        // problem could not detect attribute
-                                        throw new CoreException(
-                                                new Status(
-                                                        IStatus.ERROR,
-                                                        TLCActivator.PLUGIN_ID,
-                                                        "Error during detection of the error position in MC.tla."
-                                                                + "Could not detect the attribute. "
-                                                                + message));
-                                    }
-                                }
-                                else {
-                                    // problem could not detect block
-                                    throw new CoreException(
-                                            new Status(
-                                                    IStatus.ERROR,
-                                                    TLCActivator.PLUGIN_ID,
-                                                    "Error during detection of the error position in MC.tla."
-                                                            + "Could not detect definition block. "
-                                                            + message));
-                                }
-                            }
-                            else {
-                                // problem could not detect line
-                                throw new CoreException(
-                                        new Status(
-                                                IStatus.ERROR,
-                                                TLCActivator.PLUGIN_ID,
-                                                "Error during detection of the error position in MC.tla."
-                                                        + "Could not data on specified location. "
-                                                        + message));
-
-                            }
-
-                        }
-                        catch (BadLocationException e) {
-                            throw new CoreException(new Status(IStatus.ERROR,
-                                    TLCActivator.PLUGIN_ID,
-                                    "Error during detection of the error position in MC.tla."
-                                            + "Accessing MC.tla file failed. "
-                                            + message, e));
-                        }
-
-                    }
-                    else {
+                    } else
+                    {
                         // the reported error is not pointing to the MC file.
-                        throw new CoreException(
-                                new Status(
-                                        IStatus.ERROR,
-                                        TLCActivator.PLUGIN_ID,
-                                        "Fatal error during validation of the model. "
-                                                + "SANY discovered an error somewhere else than the MC file. "
-                                                + "This is a bug. The error message was "
-                                                + message + " in the module "
-                                                + markerHolder.getModuleName()));
+                        throw new CoreException(new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID,
+                                "Fatal error during validation of the model. "
+                                        + "SANY discovered an error somewhere else than the MC file. "
+                                        + "This is a bug. The error message was " + message + " in the module "
+                                        + markerHolder.getModuleName()));
                     }
-                }
-                else {
-                    throw new CoreException(
-                            new Status(
-                                    IStatus.ERROR,
-                                    TLCActivator.PLUGIN_ID,
-                                    "Fatal error during validation of the model. "
-                                            + "SANY discovered an error somewhere else than the MC file. "
-                                            + "This is a bug. The error message was "
-                                            + message + "."));
+                } else
+                {
+                    throw new CoreException(new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID,
+                            "Fatal error during validation of the model. "
+                                    + "SANY discovered an error somewhere else than the MC file. "
+                                    + "This is a bug. The error message was " + message + "."));
                 }
 
             }
 
-        }
-        finally {
+        } finally
+        {
             monitor.done();
         }
 
-        if (MODE_GENERATE.equals(mode)) {
+        if (MODE_GENERATE.equals(mode))
+        {
             // generation is done
             // nothing to do more
             return false;
-        }
-        else {
-            TLCActivator.logDebug("Final check for the " + mode
-                    + " mode. The result of the check is " + status);
+        } else
+        {
+            TLCActivator.logDebug("Final check for the " + mode + " mode. The result of the check is " + status);
             return status;
         }
     }
@@ -760,28 +503,32 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate
      * 5. method called on launch
      * Main launch method called by the platform on model launches
      */
-    public void launch(ILaunchConfiguration config, String mode,
-            ILaunch launch, IProgressMonitor monitor) throws CoreException {
+    public void launch(ILaunchConfiguration config, String mode, ILaunch launch, IProgressMonitor monitor)
+            throws CoreException
+    {
 
         // check the modes
-        if (!MODE_MODELCHECK.equals(mode)) {
-            throw new CoreException(new Status(IStatus.ERROR,
-                    TLCActivator.PLUGIN_ID, "Unsupported launch mode " + mode));
+        if (!MODE_MODELCHECK.equals(mode))
+        {
+            throw new CoreException(
+                    new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID, "Unsupported launch mode " + mode));
         }
 
         // retrieve the project containing the specification
         IProject project = ResourceHelper.getProject(specName);
-        if (project == null) {
+        if (project == null)
+        {
             // project could not be found
-            throw new CoreException(new Status(IStatus.ERROR,
-                    TLCActivator.PLUGIN_ID, "Error accessing the spec project "
-                            + specName));
+            throw new CoreException(new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID,
+                    "Error accessing the spec project " + specName));
         }
 
         // check and lock the model
-        synchronized (config) {
+        synchronized (config)
+        {
             // read out the running attribute
-            if (ModelHelper.isModelLocked(config)) {
+            if (ModelHelper.isModelLocked(config))
+            {
                 // previous run has not been completed
                 // exit
                 throw new CoreException(
@@ -791,8 +538,8 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate
                                 "The lock for "
                                         + modelName
                                         + " has been found. Another TLC is possible running on the same model, or has been terminated non-gracefully"));
-            }
-            else {
+            } else
+            {
 
                 // setup the running flag
                 // from this point any termination of the run must reset the
@@ -802,8 +549,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate
         }
 
         // number of workers
-        int numberOfWorkers = config.getAttribute(LAUNCH_NUMBER_OF_WORKERS,
-                LAUNCH_NUMBER_OF_WORKERS_DEFAULT);
+        int numberOfWorkers = config.getAttribute(LAUNCH_NUMBER_OF_WORKERS, LAUNCH_NUMBER_OF_WORKERS_DEFAULT);
 
         // TLC job
         // TLCJob tlcjob = new TLCInternalJob(tlaFile, cfgFile, project);
@@ -823,24 +569,28 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate
     /**
      * listens to the termination of the TLC run 
      */
-    class TLCJobChangeListener extends SimpleJobChangeListener {
+    class TLCJobChangeListener extends SimpleJobChangeListener
+    {
         private ILaunchConfiguration config;
 
         /**
          * Constructs the change listener
          * @param config the config to modify after the job completion
          */
-        public TLCJobChangeListener(ILaunchConfiguration config) {
+        public TLCJobChangeListener(ILaunchConfiguration config)
+        {
             this.config = config;
         }
 
-        public void done(IJobChangeEvent event) {
+        public void done(IJobChangeEvent event)
+        {
             super.done(event);
             // make the model modification in order to make it runnable again
-            try {
+            try
+            {
                 ModelHelper.unlockModel(config);
-            }
-            catch (CoreException e) {
+            } catch (CoreException e)
+            {
                 TLCActivator.logError("Error unlocking the model", e);
             }
         }
@@ -849,15 +599,18 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate
     /**
      * A listener writing the  
      */
-    class SimpleJobChangeListener extends JobChangeAdapter {
+    class SimpleJobChangeListener extends JobChangeAdapter
+    {
 
-        public void done(IJobChangeEvent event) {
+        public void done(IJobChangeEvent event)
+        {
             String jobName = event.getJob().getName();
             String status = null;
-            if (event.getResult().isOK()) {
+            if (event.getResult().isOK())
+            {
                 status = "Done";
-            }
-            else {
+            } else
+            {
                 // analyze the cause
                 switch (event.getResult().getSeverity()) {
                 case IStatus.CANCEL:
@@ -871,20 +624,22 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate
                     break;
                 }
             }
-            System.out.println("Job '" + jobName
-                    + "' terminated with status: { " + status + " }");
+            System.out.println("Job '" + jobName + "' terminated with status: { " + status + " }");
         }
     };
 
     /**
      * A simple mutex rule 
      */
-    class MutexRule implements ISchedulingRule {
-        public boolean isConflicting(ISchedulingRule rule) {
+    class MutexRule implements ISchedulingRule
+    {
+        public boolean isConflicting(ISchedulingRule rule)
+        {
             return rule == this;
         }
 
-        public boolean contains(ISchedulingRule rule) {
+        public boolean contains(ISchedulingRule rule)
+        {
             return rule == this;
         }
     }
