@@ -9686,6 +9686,12 @@ macro Error(msg) begin print msg ;
           (*****************************************************************)
           Error("Need an operator or label name or step number here")
    end if;
+
+\* BUG!  This produces a bogus error on a reference to an identifier M!N
+\* that is imported by an unnamed INSTANCE of a module containing the
+\* statement M == INSTANCE ...
+\* Found by LL on 17 Sep 2009
+\* XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX  
    newNode := IF newName # null THEN LookUp(newName, curContext) ELSE null ;
    if newNode =  null 
      then Error ("Unknown operator")
