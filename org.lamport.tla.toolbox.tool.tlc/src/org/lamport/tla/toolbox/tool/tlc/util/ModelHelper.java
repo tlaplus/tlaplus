@@ -19,11 +19,16 @@ import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationType;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.core.ILaunchManager;
+import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.FindReplaceDocumentAdapter;
+import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.Region;
 import org.eclipse.ui.IEditorPart;
@@ -86,7 +91,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
     public static final String FILE_OUT = MC_MODEL_NAME + ".out";
 
     private static final String CHECKPOINT_STATES = MC_MODEL_NAME + ".st.chkpt";
-    private static final String CHECKPOINT_QUEUE =  "queue.chkpt";
+    private static final String CHECKPOINT_QUEUE = "queue.chkpt";
     private static final String CHECKPOINT_VARS = "vars.chkpt";
 
     /**
@@ -141,7 +146,6 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
         return name;
     }
 
-
     /**
      * Convenience method retrieving the model for the project of the current specification
      * @param modelName name of the model
@@ -160,13 +164,13 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
      */
     public static ILaunchConfiguration getModelByName(IProject specProject, String modelName)
     {
-        // a model name can be "spec__modelname" or just "modelname" 
-        if (modelName.indexOf(specProject.getName()) != 0) 
+        // a model name can be "spec__modelname" or just "modelname"
+        if (modelName.indexOf(specProject.getName()) != 0)
         {
             modelName = specProject.getName() + "___" + modelName;
-        } 
-        
-        if (modelName.endsWith(".launch" ))
+        }
+
+        if (modelName.endsWith(".launch"))
         {
             modelName = modelName.substring(0, modelName.length() - ".launch".length());
         }
@@ -344,7 +348,6 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
         return result;
     }
 
-
     /**
      * Extract the constants from module node
      * @param moduleNode
@@ -412,7 +415,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
     public static String[] createVariableArray(ModuleNode moduleNode)
     {
         OpDeclNode[] variableDecls = moduleNode.getVariableDecls();
-        String[] returnVal = new String[variableDecls.length] ;
+        String[] returnVal = new String[variableDecls.length];
         for (int i = 0; i < variableDecls.length; i++)
         {
             returnVal[i] = variableDecls[i].getName().toString();
@@ -427,7 +430,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
     public static boolean hasVariables(ModuleNode moduleNode)
     {
         OpDeclNode[] variableDecls = moduleNode.getVariableDecls();
-        return variableDecls.length > 0 ;
+        return variableDecls.length > 0;
     }
 
     public static SymbolNode getSymbol(String name, ModuleNode moduleNode)
@@ -544,7 +547,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
     {
         Assert.isNotNull(config);
         IFolder targetFolder = ModelHelper.getModelTargetDirectory(config);
-        if (targetFolder !=null && targetFolder.exists())
+        if (targetFolder != null && targetFolder.exists())
         {
             IFile logFile = (IFile) targetFolder.findMember(ModelHelper.FILE_OUT);
             if (logFile != null && logFile.exists())
@@ -702,7 +705,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
      */
     private static void cleanUp(ILaunchConfiguration config) throws CoreException
     {
-        
+
     }
 
     /**
@@ -878,6 +881,173 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
     }
 
     /**
+     * Using the supplied findReplaceAdapter find the name of the attribute 
+     * (saved in the comment, previous to the region in which the error has been detected) 
+     * and install the marker on the model 
+     * @param configuration the configuration of the launch
+     * @param document the document of the file containing the generated model .tla file
+     * @param searchAdapter the search adapter on the document
+     * @param message the error message
+     * @param severity the error severity
+     * @param coordinates coordinates in the 
+     * @throws CoreException if something goes wrong
+     */
+    public static void findAndInstallMarker(ILaunchConfiguration configuration, IDocument document,
+            FindReplaceDocumentAdapter searchAdapter, String message, int severity, int[] coordinates)
+            throws CoreException
+    {
+        String attributeName;
+        Region errorRegion = null;
+        int index = -1;
+        try
+        {
+            // find the line in the document
+            IRegion lineRegion = document.getLineInformation(coordinates[0] - 1);
+            if (lineRegion != null)
+            {
+                int errorLineOffset = lineRegion.getOffset();
+
+                // find the previous comment
+                IRegion commentRegion = searchAdapter.find(errorLineOffset, ModelWriter.COMMENT, false, false, false,
+                        false);
+
+                // find the next separator
+                IRegion separatorRegion = searchAdapter.find(errorLineOffset, ModelWriter.SEP, true, false, false,
+                        false);
+                if (separatorRegion != null && commentRegion != null)
+                {
+                    // find the first attribute inside of the
+                    // comment
+                    IRegion attributeRegion = searchAdapter.find(commentRegion.getOffset(), ModelWriter.ATTRIBUTE
+                            + "[a-z]*[A-Z]*", true, false, false, true);
+                    if (attributeRegion != null)
+                    {
+                        // get the attribute name without the
+                        // attribute marker
+                        attributeName = document.get(attributeRegion.getOffset(), attributeRegion.getLength())
+                                .substring(ModelWriter.ATTRIBUTE.length());
+
+                        // find the index
+                        IRegion indexRegion = searchAdapter.find(attributeRegion.getOffset()
+                                + attributeRegion.getLength(), ModelWriter.INDEX + "[0-9]+", true, false, false, true);
+                        if (indexRegion != null && indexRegion.getOffset() < separatorRegion.getOffset())
+                        {
+                            // index value found
+                            String indexString = document.get(indexRegion.getOffset(), indexRegion.getLength());
+                            if (indexString != null && indexString.length() > 1)
+                            {
+                                try
+                                {
+                                    index = Integer.parseInt(indexString.substring(1));
+                                } catch (NumberFormatException e)
+                                {
+                                    throw new CoreException(new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID,
+                                            "Error during detection of the error position in MC.tla."
+                                                    + "Error parsing the attribute index. " + message, e));
+                                }
+                            }
+                        } else
+                        {
+                            // no index
+                        }
+
+                        // the first character of the next line
+                        // after the comment
+
+                        IRegion firstBlockLine = document.getLineInformation(document.getLineOfOffset(commentRegion
+                                .getOffset()) + 1);
+                        int beginBlockOffset = firstBlockLine.getOffset();
+                        // get the user input
+                        if (attributeName.equals(MODEL_PARAMETER_NEW_DEFINITIONS))
+                        {
+                            // there is no identifier in this
+                            // block
+                            // the user input starts directly
+                            // from the first character
+                        } else
+                        {
+                            // the id-line representing the
+                            // identifier "id_number ==" comes
+                            // first
+                            // the user input starts only on the
+                            // second line
+                            // so adding the length of the
+                            // id-line
+                            beginBlockOffset = beginBlockOffset + firstBlockLine.getLength() + 1;
+                        }
+
+                        // calculate the error region
+
+                        // end line coordinate
+                        if (coordinates[2] == 0)
+                        {
+                            // not set
+                            // marc one char starting from the
+                            // begin column
+                            errorRegion = new Region(errorLineOffset + coordinates[1] - beginBlockOffset, 1);
+                        } else if (coordinates[2] == coordinates[0])
+                        {
+                            // equals to the begin line
+                            // mark the actual error region
+                            int length = coordinates[3] - coordinates[1];
+
+                            errorRegion = new Region(errorLineOffset + coordinates[1] - beginBlockOffset,
+                                    (length == 0) ? 1 : length);
+                        } else
+                        {
+                            // the prat of the first line from
+                            // the begin column to the end
+                            int summedLength = lineRegion.getLength() - coordinates[1];
+
+                            // iterate over all full lines
+                            for (int l = coordinates[0] + 1; l < coordinates[2]; l++)
+                            {
+                                IRegion line = document.getLineInformation(l - 1);
+                                summedLength = summedLength + line.getLength();
+                            }
+                            // the part of the last line to the
+                            // end column
+                            summedLength += coordinates[3];
+
+                            errorRegion = new Region(errorLineOffset + coordinates[1] - beginBlockOffset, summedLength);
+                        }
+
+                        // install the marker showing the
+                        // information in the corresponding
+                        // attribute (and index), at the given place
+
+                    } else
+                    {
+                        // problem could not detect attribute
+                        throw new CoreException(new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID,
+                                "Error during detection of the error position in MC.tla."
+                                        + "Could not detect the attribute. " + message));
+                    }
+                } else
+                {
+                    // problem could not detect block
+                    throw new CoreException(new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID,
+                            "Error during detection of the error position in MC.tla."
+                                    + "Could not detect definition block. " + message));
+                }
+            } else
+            {
+                // problem could not detect line
+                throw new CoreException(new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID,
+                        "Error during detection of the error position in MC.tla."
+                                + "Could not data on specified location. " + message));
+            }
+        } catch (BadLocationException e)
+        {
+            throw new CoreException(new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID,
+                    "Error during detection of the error position in MC.tla." + "Accessing MC.tla file failed. "
+                            + message, e));
+        }
+
+        ModelHelper.installModelProblemMarker(configuration, severity, attributeName, index, errorRegion, message);
+    }
+
+    /**
      * Retrieves error markers of the model
      * @param config
      * @return
@@ -917,9 +1087,9 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
                     Matcher matcher = pattern.matcher(members[i].getName());
                     if (matcher.matches())
                     {
-                        if (((IFolder) members[i]).findMember(CHECKPOINT_QUEUE) != null && 
-                                ((IFolder) members[i]).findMember(CHECKPOINT_VARS) != null && 
-                                ((IFolder) members[i]).findMember(CHECKPOINT_STATES) != null)
+                        if (((IFolder) members[i]).findMember(CHECKPOINT_QUEUE) != null
+                                && ((IFolder) members[i]).findMember(CHECKPOINT_VARS) != null
+                                && ((IFolder) members[i]).findMember(CHECKPOINT_STATES) != null)
                         {
                             checkpoints.add(members[i]);
                         }
@@ -948,9 +1118,9 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
      */
     public static IRegion[] findIds(String text)
     {
-       return ModelWriter.findIds(text); 
+        return ModelWriter.findIds(text);
     }
-    
+
     /**
      * Finds the locations in the given text and return the array of 
      * regions pointing to those or an empty array, if no location were found.
@@ -973,6 +1143,5 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
         }
         return (IRegion[]) regions.toArray(new IRegion[regions.size()]);
     }
-
 
 }
