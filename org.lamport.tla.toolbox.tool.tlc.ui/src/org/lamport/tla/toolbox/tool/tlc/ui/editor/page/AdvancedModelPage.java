@@ -14,6 +14,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.IMessageManager;
@@ -31,7 +32,9 @@ import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.ValidateableOverridesSect
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.ValidateableSectionPart;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.DirtyMarkingListener;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
+import org.lamport.tla.toolbox.tool.tlc.ui.util.SemanticHelper;
 import org.lamport.tla.toolbox.util.IHelpConstants;
+import org.lamport.tla.toolbox.util.UIHelper;
 
 /**
  * Represent all advanced model elements
@@ -311,6 +314,24 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
                     "Advanced Model Values");
             // check whether the model values are valid ids
             validateId(MODEL_PARAMETER_MODEL_VALUES, values, "modelValues2_", "A model value");
+            
+            //get data binding manager and widget for model values
+            DataBindingManager dm = getDataBindingManager();
+            Control widget = UIHelper.getWidget(dm.getAttributeControl(MODEL_PARAMETER_MODEL_VALUES));
+                    
+            //check if model values are config file keywords
+            for(int j=0 ; j < values.size(); j++) {
+                String value = (String) values.get(j);
+                if (SemanticHelper.isConfigFileKeyword(value)) {
+                    mm.
+                        addMessage(value,
+                                    "The toolbox cannot handle the identifier "
+                                            + value + ".",
+                                    null,
+                                    IMessageProvider.ERROR,
+                                    widget);
+                }
+            }
 
         }
 

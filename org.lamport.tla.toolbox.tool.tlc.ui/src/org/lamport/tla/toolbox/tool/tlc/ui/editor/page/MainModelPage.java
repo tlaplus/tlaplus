@@ -387,6 +387,22 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
                         // check if the values are correct ids
                         validateId(MODEL_PARAMETER_CONSTANTS, mvList,
                                 "modelValues2_", "A model value");
+                        
+                        //get widget for model values assigned to constant
+                        Control widget = UIHelper.getWidget(dm.getAttributeControl(MODEL_PARAMETER_CONSTANTS));
+                        //check if model values are config file keywords
+                        for(int j=0 ; j < mvList.size(); j++) {
+                            String value = (String) mvList.get(j);
+                            if (SemanticHelper.isConfigFileKeyword(value)) {
+                                mm.
+                                    addMessage(value,
+                                                "The toolbox cannot handle the identifier "
+                                                        + value + ".",
+                                                constant,
+                                                IMessageProvider.ERROR,
+                                                widget);
+                            }
+                        }
                     }
                 }
             }
