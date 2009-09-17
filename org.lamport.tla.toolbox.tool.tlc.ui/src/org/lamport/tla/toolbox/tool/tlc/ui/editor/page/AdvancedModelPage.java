@@ -293,6 +293,9 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
             }
         }
 
+        // get data binding manager
+        DataBindingManager dm = getDataBindingManager();
+
         // check the model values
         TypedSet modelValuesSet = TypedSet.parseSet(FormHelper
                 .trimTrailingSpaces(modelValuesSource.getDocument().get()));
@@ -315,8 +318,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
             // check whether the model values are valid ids
             validateId(MODEL_PARAMETER_MODEL_VALUES, values, "modelValues2_", "A model value");
 
-            // get data binding manager and widget for model values
-            DataBindingManager dm = getDataBindingManager();
+            // get widget for model values
             Control widget = UIHelper.getWidget(dm.getAttributeControl(MODEL_PARAMETER_MODEL_VALUES));
 
             // check if model values are config file keywords
@@ -325,7 +327,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
                 String value = (String) values.get(j);
                 if (SemanticHelper.isConfigFileKeyword(value))
                 {
-                    mm.addMessage(value, "The toolbox cannot handle the identifier " + value + ".", null,
+                    mm.addMessage(value, "The toolbox cannot handle the model value " + value + ".", null,
                             IMessageProvider.ERROR, widget);
                 }
             }
@@ -342,6 +344,19 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
             validateUsage(MODEL_PARAMETER_DEFINITIONS, values, "param1_", "A parameter name", "Definition Overrides");
             // check whether the parameters are valid ids
             validateId(MODEL_PARAMETER_DEFINITIONS, values, "param1_", "A parameter name");
+        }
+
+        // get widget for definition overrides
+        Control widget = UIHelper.getWidget(dm.getAttributeControl(MODEL_PARAMETER_DEFINITIONS));
+        for (int j = 0; j < definitions.size(); j++)
+        {
+            Assignment definition = (Assignment) definitions.get(j);
+            String label = definition.getLabel();
+            if (SemanticHelper.isConfigFileKeyword(label))
+            {
+                mm.addMessage(label, "The toolbox cannot override the definition of " + label
+                        + " because it is a configuration file keyword.", null, IMessageProvider.ERROR, widget);
+            }
         }
 
         mm.setAutoUpdate(true);

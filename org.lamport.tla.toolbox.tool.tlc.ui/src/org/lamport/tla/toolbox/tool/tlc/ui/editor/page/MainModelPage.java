@@ -385,7 +385,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
                             String value = (String) mvList.get(j);
                             if (SemanticHelper.isConfigFileKeyword(value))
                             {
-                                mm.addMessage(value, "The toolbox cannot handle the identifier " + value + ".",
+                                mm.addMessage(value, "The toolbox cannot handle the model value " + value + ".",
                                         constant, IMessageProvider.ERROR, widget);
                             }
                         }
@@ -396,7 +396,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
             // the constant identifier is a config file keyword
             if (SemanticHelper.isConfigFileKeyword(constant.getLabel()))
             {
-                mm.addMessage(constant.getLabel(), "The toolbox cannot handle the identifier " + constant.getLabel()
+                mm.addMessage(constant.getLabel(), "The toolbox cannot handle the constant identifier " + constant.getLabel()
                         + ".", constant, IMessageProvider.ERROR, UIHelper.getWidget(dm
                         .getAttributeControl(MODEL_PARAMETER_CONSTANTS)));
             }
