@@ -416,7 +416,7 @@ public class ModelWriter
             } else
             {
                 OpDefNode source = defNode.getSource();
-                if (source == null)
+                if (source == defNode)
                 {
                     // user is overriding a definition in the root module
                     content = new String[] { formula.getLabel() + ARROW + id,
