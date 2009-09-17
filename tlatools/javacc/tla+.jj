@@ -1,4 +1,4 @@
-// last modified on Sat 20 June 2009 at  4:55:32 PST by lamport
+// last modified on Wed 16 September 2009 at 23:25:55 PST by lamport
 
 
 
@@ -1367,6 +1367,11 @@ OR : "\\/" > | <  //  op_5 : "\/" > | <
 <SPEC,PRAGMA> TOKEN : /* IDENTIFIERS */ {
   < IDENTIFIER : <CASE0> | <CASE1> | <CASE2> | <CASE3> |  <CASE6> | <CASEN> | "@" >
 }
+
+// The following code has this bug: When parsing the expression "3 <4",
+//  the "<4" vanishes.  It looks like the lexer
+// is interpreting "<4" to be a <ProofLevelLexeme>, and then throwing
+// it away when it can't complete it to a TOKEN.
 
 /***************************************************************************
 * The real production here was supposed to be                              *
