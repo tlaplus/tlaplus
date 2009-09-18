@@ -11,6 +11,7 @@ import tla2sany.modanalyzer.SpecObj;
 import tla2sany.semantic.Context;
 import tla2sany.semantic.ExternalModuleTable;
 import tla2sany.semantic.ModuleNode;
+import tlc2.tool.ModelConfig;
 import util.UniqueString;
 
 /**
@@ -32,7 +33,7 @@ public class SemanticHelper
      */
     public static final String TLA_BUILTIN = "--TLA+ BUILTINS--";
     
-    private static HashSet CONFIG_KEYWORDS = new HashSet(Arrays.asList(tlc2.tool.ModelConfig.ALL_KEYWORDS));
+    private static HashSet CONFIG_KEYWORDS = new HashSet(Arrays.asList(ModelConfig.ALL_KEYWORDS));
 
     private Hashtable pageStorage;
     private Context specContext;
@@ -169,7 +170,6 @@ public class SemanticHelper
      * Checks if name is a configuration file keyword
      * @return true if the name is a configuration file keyword
      */
-    
     public static boolean isConfigFileKeyword(String name) {
     	return CONFIG_KEYWORDS.contains(name);
     }
