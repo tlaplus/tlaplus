@@ -43,7 +43,7 @@ Open standalone.product / Overview tab
      platform.
   Need to define a separate copy of the distribution
     as the target platform.
- 
+  
  
  1. Unzip Eclipse platform from eclipse-rcp-galileo-win32.zip into somewhere as the
      the target platform.  I've put it in tla/target-platform
@@ -76,4 +76,18 @@ The following stuff needs to be done for each release.
 
   1. Open standalone product / overview page
   2. Hit on Eclipse Product Export Wizard
+  
+-----------------------------------------------------------------------------
+HELP
+
+INTRO
+Intro page in : org.lamport.tla.toolbox.product.standalone / intro/root.xhtml.
+   Source page for each topic is in org.lamport.tla.toolbox.product.standalone /intro/*.xhtml
+   Each such topic page has an href link whose id field must be registered (linking
+       it to the page) by adding the appropriate stuff to 
+       org.lamport.tla.toolbox.product.standalone /intro/introContent.xml
+       
+ATTACHING A PAGE TO THE HELP BUTTON
+
+
       
