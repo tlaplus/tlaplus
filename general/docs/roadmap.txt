@@ -156,3 +156,12 @@ The help button on the Eclipse plug.xml editor uses lines 82-91 of
 PDEFormPage class in package org.eclipse.pde.internal.ui.editor to attach the button.
 This was found by trying  Shift-Alt-F1 on the page in the Eclipse editor and going to
 the ExtensionsPage, which extends PDEFormPage.
+
+--------------------------------------------------------------
+GETTING NOTIFIED WHEN A MODULE IS SAVED
+
+When a module is saved, the performSave() of the org.tla.toolbox.editor.basic.TLAEditor object
+is called.  There's a default method in a superclass, but one can override it to
+do whatever else you want to do on a save.  There's also a performSaveAs() method.
+
+
