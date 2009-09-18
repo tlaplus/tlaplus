@@ -17,4 +17,7 @@
  <context id="ParserPreferencePage">
     <description>Parser Preference Page</description>
  </context>
+ <context id="mainModelPage" title="title of mainModelPage">
+    <description>description of mainModelPage</description>
+ </context>
 </contexts>

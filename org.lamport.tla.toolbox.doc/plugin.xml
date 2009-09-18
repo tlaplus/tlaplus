@@ -20,6 +20,9 @@
       <toc
             file="toctasks.xml">
       </toc>
-   </extension>
+      <toc
+            file="tocsamples.xml">
+      </toc>
+    </extension>
 
 </plugin>
