@@ -49,6 +49,11 @@ public class ResourceHelper
      * 
      */
     private static final String TOOLBOX_DIRECTORY_SUFFIX = ".toolbox";
+    
+    /**
+     * TLA extension
+     */
+    public static final String TLA_EXTENSION = "tla";
 
     /**
      * Look up if a project exist and return true if so
@@ -468,7 +473,7 @@ public class ResourceHelper
             return null;
         } else
         {
-            return moduleName.concat(".tla");
+            return moduleName.concat(".").concat(TLA_EXTENSION);
         }
     }
 
@@ -479,7 +484,7 @@ public class ResourceHelper
      */
     public static boolean isModule(IResource resource)
     {
-        return (resource != null && "tla".equals(resource.getFileExtension()));
+        return (resource != null && TLA_EXTENSION.equals(resource.getFileExtension()));
 
     }
 
