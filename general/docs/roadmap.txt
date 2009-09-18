@@ -89,7 +89,70 @@ Intro page in : org.lamport.tla.toolbox.product.standalone / intro/root.xhtml.
        
 ATTACHING A PAGE TO THE HELP BUTTON
 
-org.lamport.tla.toolbox.editor.basic/helpContexts/html
-The preceding file contains the id "main_editor_window" which appears in the setHelpContextId()
-method call in the constructor of TLAEditor
-      
+org.lamport.tla.toolbox.editor.basic/helpContexts.xml contains a <context> entry with
+ id "main_editor_window" : 
+   	<context id="main_editor_window">
+		<description>This is a the basic editor. It is used to edit the TLA+ module files.</description>
+		<topic label="Understanding Problems" href="../org.lamport.tla.toolbox.doc/html/reference/maintopic.html" />
+	</context>
+   
+The constructor of TLAEditor contains
+  setHelpContextId("org.lamport.tla.toolbox.editor.basic.main_editor_window");
+  
+ org.lamport.tla.toolbox.editor.basic/plugin.xml contains this relevant extensions:
+ 
+   <extension
+         point="org.eclipse.help.contexts">
+      <contexts
+            file="helpContexts.xml"
+            plugin="org.lamport.tla.toolbox.editor.basic">
+      </contexts>
+   </extension>
+ 
+PUTTING A PAGE IN THE TABLE OF CONTENTS
+ 
+To add a top-level section in the toc, add something like
+
+   <topic label="Concepts">
+      <anchor id="concepts"/>
+   </topic>
+   
+to  org.lamport.tla.toolbox.doc/toc.xml .  The label is the toc entry.  The anchor
+is used to attach things to that entry.  Also, add to 
+org.lamport.tla.toolbox.doc/plugin.xml  the indicated <toc> ... </toc> entry:
+
+  <plugin>
+   <extension
+         point="org.eclipse.help.toc">
+      ...
+      <toc
+            file="tocconcepts.xml">
+      </toc>
+      ...
+   </extension>
+  </plugin>
+
+Subtopics are attached in
+    org.lamport.tla.toolbox.doc/tocconcepts.xml, which contains
+    
+    <toc label="Concepts" link_to="toc.xml#concepts"> 
+	<topic label="Model"  href="html/concepts/model.html"> 
+	</topic>
+	<topic href="html/concepts/specification.html" label="Specification">
+	</topic>
+    <topic href="html/concepts/module.html" label="Module">
+    </topic> 
+   </toc>
+
+The toc label seems to be irrelevant.  The topic labels specify the TOC subtopics.
+
+To get a subtopic, put a <topic label=... href=... /> inside a topic
+
+
+
+ATTACHING A HELP BUTTON TO AN EDITOR/PAGE/DIALOGUE    
+
+The help button on the Eclipse plug.xml editor uses lines 82-91 of
+PDEFormPage class in package org.eclipse.pde.internal.ui.editor to attach the button.
+This was found by trying  Shift-Alt-F1 on the page in the Eclipse editor and going to
+the ExtensionsPage, which extends PDEFormPage.
