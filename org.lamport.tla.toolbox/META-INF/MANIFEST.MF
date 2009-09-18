@@ -20,11 +20,14 @@ Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: tla2tools.jar,
  .,
  StandardModules/
-Export-Package: org.lamport.tla.toolbox.spec;
+Export-Package: org.lamport.tla.toolbox,
+ org.lamport.tla.toolbox.spec;
   uses:="org.eclipse.core.runtime,
    org.eclipse.core.resources,
    tla2sany.modanalyzer,
    tla2sany.semantic",
+ org.lamport.tla.toolbox.spec.manager,
+ org.lamport.tla.toolbox.spec.parser,
  org.lamport.tla.toolbox.tool;
   uses:="org.eclipse.core.runtime,
    org.eclipse.jface.preference,

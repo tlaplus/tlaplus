@@ -138,9 +138,9 @@ public class AdapterFactory implements IAdapterFactory
             case IParseConstants.SEMANTIC_ERROR:
             case IParseConstants.SYNTAX_ERROR:
             case IParseConstants.UNKNOWN_ERROR:
-                return SWT.COLOR_YELLOW;
-            case IParseConstants.UNPARSED:
                 return SWT.COLOR_DARK_RED;
+            case IParseConstants.UNPARSED:
+                return SWT.COLOR_YELLOW;
             case IParseConstants.UNKNOWN:
             default:
                 return SWT.COLOR_GRAY;
@@ -168,9 +168,9 @@ public class AdapterFactory implements IAdapterFactory
             case IParseConstants.SEMANTIC_ERROR:
             case IParseConstants.SYNTAX_ERROR:
             case IParseConstants.UNKNOWN_ERROR:
-                return SWT.COLOR_BLACK;
-            case IParseConstants.UNPARSED:
                 return SWT.COLOR_WHITE;
+            case IParseConstants.UNPARSED:
+                return SWT.COLOR_BLACK;
             case IParseConstants.UNKNOWN:
             default:
                 return SWT.COLOR_BLACK;
