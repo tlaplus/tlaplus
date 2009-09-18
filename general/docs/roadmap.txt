@@ -89,5 +89,7 @@ Intro page in : org.lamport.tla.toolbox.product.standalone / intro/root.xhtml.
        
 ATTACHING A PAGE TO THE HELP BUTTON
 
-
+org.lamport.tla.toolbox.editor.basic/helpContexts/html
+The preceding file contains the id "main_editor_window" which appears in the setHelpContextId()
+method call in the constructor of TLAEditor
       
