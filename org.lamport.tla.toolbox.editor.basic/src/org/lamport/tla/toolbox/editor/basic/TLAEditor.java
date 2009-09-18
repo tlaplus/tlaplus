@@ -50,6 +50,10 @@ import org.lamport.tla.toolbox.editor.basic.util.ElementStateAdapter;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
+import org.lamport.tla.toolbox.spec.Spec;
+import org.lamport.tla.toolbox.spec.manager.WorkspaceSpecManager;
+import org.lamport.tla.toolbox.spec.parser.IParseConstants;
+import org.lamport.tla.toolbox.Activator;
 
 /**
  * Basic editor for TLA+
@@ -69,7 +73,7 @@ public class TLAEditor extends TextEditor
     private Image rootImage = TLAEditorActivator.imageDescriptorFromPlugin(TLAEditorActivator.PLUGIN_ID,
             "/icons/root_file.gif").createImage();
 
-    // currently installed annotations 
+    // currently installed annotations
     private Annotation[] oldAnnotations;
     // annotation model
     private ProjectionAnnotationModel annotationModel;
@@ -172,8 +176,8 @@ public class TLAEditor extends TextEditor
         projectionSupport.addSummarizableAnnotationType("org.eclipse.ui.workbench.texteditor.warning"); //$NON-NLS-1$
         projectionSupport.install();
         viewer.doOperation(ProjectionViewer.TOGGLE);
-        
-        this.annotationModel = viewer.getProjectionAnnotationModel(); 
+
+        this.annotationModel = viewer.getProjectionAnnotationModel();
     }
 
     /**
@@ -196,12 +200,12 @@ public class TLAEditor extends TextEditor
         setAction("ContentAssistTip", a); //$NON-NLS-1$
 
         // define folding region action
-/*      a = new DefineFoldingRegionAction(TLAEditorMessages.getResourceBundle(), "DefineFoldingRegion.", this); //$NON-NLS-1$
-        setAction("DefineFoldingRegion", a); //$NON-NLS-1$
-        markAsStateDependentAction("DefineFoldingRegion", true); //$NON-NLS-1$
-        markAsSelectionDependentAction("DefineFoldingRegion", true); //$NON-NLS-1$
-*/
-        
+        /*      a = new DefineFoldingRegionAction(TLAEditorMessages.getResourceBundle(), "DefineFoldingRegion.", this); //$NON-NLS-1$
+                setAction("DefineFoldingRegion", a); //$NON-NLS-1$
+                markAsStateDependentAction("DefineFoldingRegion", true); //$NON-NLS-1$
+                markAsSelectionDependentAction("DefineFoldingRegion", true); //$NON-NLS-1$
+        */
+
         // toggle comment
         a = new ToggleCommentAction(TLAEditorMessages.getResourceBundle(), "ToggleComment.", this); //$NON-NLS-1$
         a.setActionDefinitionId(TLAEditorActivator.PLUGIN_ID + ".ToggleCommentAction");
@@ -249,13 +253,19 @@ public class TLAEditor extends TextEditor
      */
     protected void performSaveAs(IProgressMonitor progressMonitor)
     {
+        // This sets the parse status of the spec to unparsed when a spec is saved.
+        // If the auto-reparse on save is disabled, then the parse status will remain unparsed.
+        // If auto-reparse is enabled, then the parsing of the module will reset the
+        // parse status appropriately after this.
+        Spec spec = Activator.getSpecManager().getSpecLoaded();
+        spec.setStatus(IParseConstants.UNPARSED);
 
         IFile file = ((FileEditorInput) getEditorInput()).getFile();
         Shell shell = UIHelper.getShellProvider().getShell();
-        
+
         // TODO fix this?
         IPath specRootPrefix = new Path(ResourceHelper.getParentDirName(ToolboxHandle.getRootModule()));
-        
+
         FileDialog saveAsDialog = null;
         while (true)
         {
@@ -358,6 +368,19 @@ public class TLAEditor extends TextEditor
                 break;
             }
         }
+    }
+
+    /**
+     * This overrides the method in AbstractTextEditor. It sets the parse status of the spec
+     * to unparsed when a spec is saved. If the auto-reparse on save is disabled, then
+     * the parse status will remain unparsed. If auto-reparse is enabled, then the parsing
+     * of the module will reset the parse status appropriately after this.
+     */
+    public void performSave(boolean overwrite, IProgressMonitor progressMonitor)
+    {
+        Spec spec = Activator.getSpecManager().getSpecLoaded();
+        spec.setStatus(IParseConstants.UNPARSED);
+        super.performSave(overwrite, progressMonitor);
     }
 
     public Object getAdapter(Class required)
