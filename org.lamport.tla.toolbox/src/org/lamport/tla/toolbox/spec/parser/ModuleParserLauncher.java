@@ -1,11 +1,9 @@
 package org.lamport.tla.toolbox.spec.parser;
 
-
 import java.io.PrintStream;
 import java.util.Enumeration;
 import java.util.Vector;
 
-import org.eclipse.core.internal.resources.File;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
@@ -41,13 +39,14 @@ import util.UniqueString;
  * @author Leslie Lamport, Simon Zambrovski
  * @version $Id$
  */
-public class ModuleParserLauncher {
+public class ModuleParserLauncher
+{
     /**
      * A shortcut for parseModule(parseResource, monitor, true, true)
      * This parses the module, update the dependencies and handles markers  
      */
-    public ParseResult parseModule(IResource parseResource,
-            IProgressMonitor monitor) {
+    public ParseResult parseModule(IResource parseResource, IProgressMonitor monitor)
+    {
         return parseModule(parseResource, monitor, true, true);
     }
 
@@ -58,18 +57,18 @@ public class ModuleParserLauncher {
      * @param installMarker a boolean flag indicating if the markers on the resource should be handled
      * @return
      */
-    public ParseResult parseModule(IResource parseResource,
-            IProgressMonitor monitor, boolean installMarkers,
-            boolean updateStorage) {
+    public ParseResult parseModule(IResource parseResource, IProgressMonitor monitor, boolean installMarkers,
+            boolean updateStorage)
+    {
         // get the project
         IProject project = parseResource.getProject();
 
         // setup the directory of the file
-        ToolIO.setUserDir(ResourceHelper.getParentDirName(parseResource
-                .getLocation().toOSString()));
+        ToolIO.setUserDir(ResourceHelper.getParentDirName(parseResource.getLocation().toOSString()));
 
         // reset problems from previous run
-        if (installMarkers) {
+        if (installMarkers)
+        {
             TLAMarkerHelper.removeProblemMarkers(parseResource, monitor,
                     TLAMarkerHelper.TOOLBOX_MARKERS_TLAPARSER_MARKER_ID);
         }
@@ -77,11 +76,12 @@ public class ModuleParserLauncher {
         // call the parsing
         ParseResult result = parseModule(parseResource, updateStorage);
 
-        if (updateStorage) {
+        if (updateStorage)
+        {
             // reset the module dependency storage
-            if (AdapterFactory.isProblemStatus(result.getStatus())) {
-                Activator.getModuleDependencyStorage().parseFailed(
-                        parseResource.getProjectRelativePath().toString());
+            if (AdapterFactory.isProblemStatus(result.getStatus()))
+            {
+                Activator.getModuleDependencyStorage().parseFailed(parseResource.getProjectRelativePath().toString());
             }
         }
 
@@ -89,9 +89,9 @@ public class ModuleParserLauncher {
         processParsingErrors(project, result);
 
         // store errors inside the specification project
-        if (installMarkers) {
-            TLAMarkerHelper.installProblemMarkers(result.getDetectedErrors(),
-                    monitor);
+        if (installMarkers)
+        {
+            TLAMarkerHelper.installProblemMarkers(result.getDetectedErrors(), monitor);
         }
 
         return result;
@@ -109,8 +109,8 @@ public class ModuleParserLauncher {
      *            filename of the module to parse
      * @return status of parsing, one of the {@link IParseConstants} constants
      */
-    private ParseResult parseModule(IResource parseResource,
-            boolean updateStorage) {
+    private ParseResult parseModule(IResource parseResource, boolean updateStorage)
+    {
         String moduleFilename = parseResource.getLocation().toOSString();
 
         // one of the Spec constants
@@ -127,33 +127,32 @@ public class ModuleParserLauncher {
         ToolIO.setMode(ToolIO.TOOL);
 
         // Initialize the module variables
-        SpecObj moduleSpec = new SpecObj(ResourceHelper
-                .getModuleName(moduleFilename), resolver);
+        SpecObj moduleSpec = new SpecObj(ResourceHelper.getModuleName(moduleFilename), resolver);
 
         // The parsing methods take a PrintStream on which they print out some
         // (but hardly all) error messages.
         // They're called with this one.
         PrintStream outputStr = ToolIO.out;
 
-        try {
+        try
+        {
             SANY.frontEndInitialize(moduleSpec, outputStr);
             SANY.frontEndParse(moduleSpec, outputStr);
             SANY.frontEndSemanticAnalysis(moduleSpec, outputStr, true);
-        }
-        catch (InitException e) {
+        } catch (InitException e)
+        {
             // set spec status
             specStatus = IParseConstants.UNKNOWN_ERROR;
-            return new ParseResult(specStatus, null, parseResource,
-                    parseErrors, semanticErrors);
+            return new ParseResult(specStatus, null, parseResource, parseErrors, semanticErrors);
 
-        }
-        catch (ParseException e) {
+        } catch (ParseException e)
+        {
             // I believe that this exception is thrown iff there is a parsing
             // error.
             specStatus = IParseConstants.SYNTAX_ERROR;
             parseErrors = moduleSpec.getParseErrors();
-        }
-        catch (SemanticException e) {
+        } catch (SemanticException e)
+        {
 
             // This exception is apparently thrown only by
             // frontEndSemanticAnalysis if the semantic analysis throws an
@@ -162,14 +161,18 @@ public class ModuleParserLauncher {
         }
 
         // Compute the return value and set semanticErrors.
-        if (specStatus > IParseConstants.SYNTAX_ERROR) {
+        if (specStatus > IParseConstants.SYNTAX_ERROR)
+        {
             semanticErrors = moduleSpec.semanticErrors;
-            if (semanticErrors != null) {
-                if (semanticErrors.getNumMessages() > 0) {
-                    if (semanticErrors.isSuccess()) {
+            if (semanticErrors != null)
+            {
+                if (semanticErrors.getNumMessages() > 0)
+                {
+                    if (semanticErrors.isSuccess())
+                    {
                         specStatus = IParseConstants.SEMANTIC_WARNING;
-                    }
-                    else {
+                    } else
+                    {
                         specStatus = IParseConstants.SEMANTIC_ERROR;
                     }
                 } // if (semanticErrors.getNumMessages() > 0)
@@ -186,49 +189,52 @@ public class ModuleParserLauncher {
 
         // iterate over parse units
         Enumeration enumerate = moduleSpec.parseUnitContext.keys();
-        while (enumerate.hasMoreElements()) {
+        while (enumerate.hasMoreElements())
+        {
             // This enumeration finds all non-inner modules in the spec.
             String moduleName = (String) enumerate.nextElement();
-            ParseUnit parseUnit = (ParseUnit) moduleSpec.parseUnitContext
-                    .get(moduleName);
+            ParseUnit parseUnit = (ParseUnit) moduleSpec.parseUnitContext.get(moduleName);
 
             String absoluteFileName = null;
-            if (parseUnit.getNis() != null
-                    && parseUnit.getNis().sourceFile() != null) {
-                absoluteFileName = parseUnit.getNis().sourceFile()
-                        .getAbsolutePath();
+            if (parseUnit.getNis() != null && parseUnit.getNis().sourceFile() != null)
+            {
+                absoluteFileName = parseUnit.getNis().sourceFile().getAbsolutePath();
             }
-            if (absoluteFileName == null) {
+            if (absoluteFileName == null)
+            {
                 throw new RuntimeException("Bug: Spec.ParseMainModule:1730");
             }
 
             // create module holder
             Module module = new Module(absoluteFileName);
 
-            if (!module.isStandardModule()) {
+            if (!module.isStandardModule())
+            {
             }
 
             // semantic module only available if no semantic errors found
-            if (specStatus > IParseConstants.SEMANTIC_ERROR) {
+            if (specStatus > IParseConstants.SEMANTIC_ERROR)
+            {
                 ExternalModuleTable.ExternalModuleTableEntry emt = (ExternalModuleTable.ExternalModuleTableEntry) moduleSpec
-                        .getExternalModuleTable().moduleHashTable
-                        .get(UniqueString
-                                .uniqueStringOf(module.getModuleName()));
-                if (emt != null) {
+                        .getExternalModuleTable().moduleHashTable.get(UniqueString.uniqueStringOf(module
+                        .getModuleName()));
+                if (emt != null)
+                {
                     module.setNode(emt.getModuleNode());
                 }
             }
 
-            if (module.getModuleName().equals(
-                    ResourceHelper.getModuleName(moduleFilename))) {
+            if (module.getModuleName().equals(ResourceHelper.getModuleName(moduleFilename)))
+            {
                 rootModuleFound = true;
                 module.setRoot(true);
             }
 
-            if (module.isStandardModule()) {
+            if (module.isStandardModule())
+            {
                 // standardModules.addElement(module);
-            }
-            else {
+            } else
+            {
                 // if the module is not a standard module
                 userModules.addElement(module);
 
@@ -237,27 +243,26 @@ public class ModuleParserLauncher {
                 // if yes, that means that the module is resides (in the FS)
                 // inside of the project directory
                 // and no linking is required
-                if (module.getAbsolutePath().indexOf(
-                        parseResource.getProject().getLocation().toOSString()) != 0) {
+                if (module.getAbsolutePath().indexOf(parseResource.getProject().getLocation().toOSString()) != 0)
+                {
                     // create a link to the module, so we could open it
-                    ResourceHelper.getLinkedFile(parseResource.getProject(),
-                            module.getAbsolutePath(), true);
+                    ResourceHelper.getLinkedFile(parseResource.getProject(), module.getAbsolutePath(), true);
                 }
             }
 
         } // while
 
-        if (!rootModuleFound) {
+        if (!rootModuleFound)
+        {
             specStatus = IParseConstants.COULD_NOT_FIND_MODULE;
         }
 
-        if (updateStorage) {
+        if (updateStorage)
+        {
             // at this point the user modules are known
             // store the dependencies
-            Activator.getModuleDependencyStorage().put(
-                    parseResource.getName(),
-                    AdapterFactory.adaptModules(parseResource.getName(),
-                            userModules));
+            Activator.getModuleDependencyStorage().put(parseResource.getName(),
+                    AdapterFactory.adaptModules(parseResource.getName(), userModules));
         }
 
         // remove the modules
@@ -267,8 +272,7 @@ public class ModuleParserLauncher {
         // }
         // userModules = null;
 
-        return new ParseResult(specStatus, moduleSpec, parseResource,
-                parseErrors, semanticErrors);
+        return new ParseResult(specStatus, moduleSpec, parseResource, parseErrors, semanticErrors);
     }
 
     /**
@@ -326,7 +330,8 @@ public class ModuleParserLauncher {
      * - "Could not parse module Foo from file FooBar"<br>
      * I have no idea when that is produced.
      */
-    private void processParsingErrors(IProject project, ParseResult result) {
+    private void processParsingErrors(IProject project, ParseResult result)
+    {
 
         switch (result.getStatus()) {
         /* ------------------ SYNTAX ERRORS --------------------- */
@@ -348,36 +353,32 @@ public class ModuleParserLauncher {
             // We do this by first finding the last module name Foo for which
             // SANY output
             // "Parsing module foo".
-            while ((nextMsg < output.length)
-                    && (output[nextMsg].indexOf("Parsing module") != -1)) {
+            while ((nextMsg < output.length) && (output[nextMsg].indexOf("Parsing module") != -1))
+            {
                 nextMsg++;
             }
 
-            if ((nextMsg != 0) && (nextMsg != output.length)) {
+            if ((nextMsg != 0) && (nextMsg != output.length))
+            {
                 // find out the module name
-                int parsingModuleIndex = output[nextMsg - 1]
-                        .indexOf("Parsing module") + 15;
-                String nameToFind = output[nextMsg - 1].substring(
-                        parsingModuleIndex, output[nextMsg - 1].indexOf(" ",
-                                parsingModuleIndex + 1));
+                int parsingModuleIndex = output[nextMsg - 1].indexOf("Parsing module") + 15;
+                String nameToFind = output[nextMsg - 1].substring(parsingModuleIndex, output[nextMsg - 1].indexOf(" ",
+                        parsingModuleIndex + 1));
 
                 // Test for special case of importing unknown module. (added 5
                 // Sep 2009 by lamport)
                 String[] abortMsgs = result.getParseErrors().getAborts();
-                if ((abortMsgs.length > 0)
-                        && (abortMsgs[0]
-                                .indexOf("Cannot find source file for module") != -1)) {
-                    parsingModuleIndex = abortMsgs[0]
-                            .indexOf("imported in module ") + 19;
-                    nameToFind = abortMsgs[0].substring(parsingModuleIndex,
-                            abortMsgs[0].indexOf(".", parsingModuleIndex + 1));
+                if ((abortMsgs.length > 0) && (abortMsgs[0].indexOf("Cannot find source file for module") != -1))
+                {
+                    parsingModuleIndex = abortMsgs[0].indexOf("imported in module ") + 19;
+                    nameToFind = abortMsgs[0].substring(parsingModuleIndex, abortMsgs[0].indexOf(".",
+                            parsingModuleIndex + 1));
                 }
 
                 // Correct the capitalization of nameToFind, if necessary.
                 // See description of the correctModuleNameCapitalization method.
-                nameToFind = correctModuleNameCapitalization(nameToFind, result);               
-                IFile module = ResourceHelper.getLinkedFile(result
-                        .getParsedResource().getParent(), ResourceHelper
+                nameToFind = correctModuleNameCapitalization(nameToFind, result);
+                IFile module = ResourceHelper.getLinkedFile(result.getParsedResource().getParent(), ResourceHelper
                         .getModuleFileName(nameToFind), false);
 
                 // coordinates of the error
@@ -385,8 +386,8 @@ public class ModuleParserLauncher {
                 // The error message
                 String message = output[nextMsg];
 
-                if ((message.indexOf("Lexical error") != -1)
-                        || (message.indexOf("***Parse Error***") != -1)) {
+                if ((message.indexOf("Lexical error") != -1) || (message.indexOf("***Parse Error***") != -1))
+                {
                     // This is a meaningful error message and should have at
                     // least
                     // one line, column number.
@@ -400,39 +401,39 @@ public class ModuleParserLauncher {
 
                     // Set endLine, endColumn if position val[0], val[1] is
                     // after beginLine, beginColumn.
-                    if ((val[0] > beginLine)
-                            || ((val[0] == beginLine) && (val[1] >= beginColumn))) {
+                    if ((val[0] > beginLine) || ((val[0] == beginLine) && (val[1] >= beginColumn)))
+                    {
                         endLine = val[0];
                         endColumn = val[1];
                     }
 
                     // coordinates of the error
-                    coordinates = new int[] { beginLine, beginColumn, endLine,
-                            endColumn };
+                    coordinates = new int[] { beginLine, beginColumn, endLine, endColumn };
 
                     // If the message doesn't contain the module name, we
                     // should add it.
-                    
-                    //Added by Ricketts on Sept 7 2009
-                    //This adds the module name which is not in the error message returned by sany in syntactic errors.
+
+                    // Added by Ricketts on Sept 7 2009
+                    // This adds the module name which is not in the error message returned by sany in syntactic errors.
                     String beforeModuleName = message.substring(0, findLineAndColumn(0, message)[2]);
                     String afterModuleName = message.substring(findLineAndColumn(0, message)[2]);
-                    message = beforeModuleName + " in module " +
-                        module.getName().substring(0, module.getName().length() -4)
-                        + afterModuleName;
+                    message = beforeModuleName + " in module "
+                            + module.getName().substring(0, module.getName().length() - 4) + afterModuleName;
 
-                    result.addMarker(new TLAMarkerInformationHolder(module,
-                            module.getName(), IMarker.SEVERITY_ERROR,
+                    result.addMarker(new TLAMarkerInformationHolder(module, module.getName(), IMarker.SEVERITY_ERROR,
                             coordinates, message));
                 } // if
-                else {
+                else
+                {
 
                     // This is not a meaningful error message; get the message
                     // from
                     // the abort in parseErrors
-                    if (result.getParseErrors() != null) {
+                    if (result.getParseErrors() != null)
+                    {
                         String[] aborts = result.getParseErrors().getAborts();
-                        if (aborts.length > 0) {
+                        if (aborts.length > 0)
+                        {
                             // error message
                             message = aborts[0];
                         }
@@ -440,31 +441,29 @@ public class ModuleParserLauncher {
                     // Unless this is the one abort in which err.moduleName can
                     // be
                     // computed from the error messages, reset it to "".
-                    if (message != null
-                            && message.indexOf("does not match the name") == -1) {
+                    if (message != null && message.indexOf("does not match the name") == -1)
+                    {
                         coordinates = new int[] { -1, -1, -1, -1 };
                         // coordinates[0] = 1 ; coordinates[1] = 1 ;
                         // coordinates[2] = 1 ; coordinates[3] = 1;
 
                     }
-                    if (module == null) {
-                        result.addMarker(new TLAMarkerInformationHolder(
-                                project, project.getName(),
+                    if (module == null)
+                    {
+                        result.addMarker(new TLAMarkerInformationHolder(project, project.getName(),
                                 IMarker.SEVERITY_ERROR, coordinates, message));
-                    }
-                    else {
-                        result.addMarker(new TLAMarkerInformationHolder(module,
-                                module.getName(), IMarker.SEVERITY_ERROR,
-                                coordinates, message));
+                    } else
+                    {
+                        result.addMarker(new TLAMarkerInformationHolder(module, module.getName(),
+                                IMarker.SEVERITY_ERROR, coordinates, message));
                     }
 
                 } // else
 
             } // if
-            else {
-                throw new RuntimeException(
-                        "Bug Spec.ProcessParsingErrorMessages:1869.\n"
-                                + "Can't find module name");
+            else
+            {
+                throw new RuntimeException("Bug Spec.ProcessParsingErrorMessages:1869.\n" + "Can't find module name");
             } // else
             break;
 
@@ -472,16 +471,17 @@ public class ModuleParserLauncher {
         case IParseConstants.SEMANTIC_ERROR:
         case IParseConstants.SEMANTIC_WARNING:
             // There were semantic errors or warnings
-            if (result.getSemanticErrors() != null) {
+            if (result.getSemanticErrors() != null)
+            {
 
-                String[][] errors = { result.getSemanticErrors().getAborts(),
-                        result.getSemanticErrors().getErrors(),
+                String[][] errors = { result.getSemanticErrors().getAborts(), result.getSemanticErrors().getErrors(),
                         result.getSemanticErrors().getWarnings() };
-                int[] holderType = { IMarker.SEVERITY_ERROR,
-                        IMarker.SEVERITY_ERROR, IMarker.SEVERITY_WARNING };
+                int[] holderType = { IMarker.SEVERITY_ERROR, IMarker.SEVERITY_ERROR, IMarker.SEVERITY_WARNING };
 
-                for (int j = 0; j < 3; j++) {
-                    for (int i = 0; i < errors[j].length; i++) {
+                for (int j = 0; j < 3; j++)
+                {
+                    for (int i = 0; i < errors[j].length; i++)
+                    {
                         // encodeSematicErrorFromString(project,
                         // result.getParsedResource(), errors[j][i],
                         // holderType[j], monitor);
@@ -495,8 +495,8 @@ public class ModuleParserLauncher {
                         int endColumn = 0;
 
                         val = findLineAndColumn(val[2], errors[j][i]);
-                        if ((val[0] > beginLine)
-                                || ((val[0] == beginLine) && (val[1] >= beginColumn))) {
+                        if ((val[0] > beginLine) || ((val[0] == beginLine) && (val[1] >= beginColumn)))
+                        {
                             endLine = val[0];
                             endColumn = val[1];
                         }
@@ -505,68 +505,59 @@ public class ModuleParserLauncher {
                         // warnings are always generated with the
                         // module, indicated by " module Name\n". *
                         int beginModuleIdx = errors[j][i].indexOf(" module ");
-                        if (beginModuleIdx != -1) {
-                            beginModuleIdx = beginModuleIdx
-                                    + " module ".length();
-                            int endModuleIdx = errors[j][i].indexOf("\n",
-                                    beginModuleIdx);
-                            if (endModuleIdx != -1) {
+                        if (beginModuleIdx != -1)
+                        {
+                            beginModuleIdx = beginModuleIdx + " module ".length();
+                            int endModuleIdx = errors[j][i].indexOf("\n", beginModuleIdx);
+                            if (endModuleIdx != -1)
+                            {
                                 // Correct the capitalization of the name in the error message.
                                 // See description of the correctModuleNameCapitalization method.
-                                String nameToFind = correctModuleNameCapitalization(
-                                        errors[j][i].substring(beginModuleIdx,
-                                                               endModuleIdx),
-                                        result );
- 
-                                module = ResourceHelper.getLinkedFile(result
-                                           .getParsedResource().getParent(),
- 
-                                           ResourceHelper.getModuleFileName(nameToFind),
-                                           false);
+                                String nameToFind = correctModuleNameCapitalization(errors[j][i].substring(
+                                        beginModuleIdx, endModuleIdx), result);
+
+                                module = ResourceHelper.getLinkedFile(result.getParsedResource().getParent(),
+
+                                ResourceHelper.getModuleFileName(nameToFind), false);
                             }
                         }
 
-                        int[] coordinates = new int[] { beginLine, beginColumn,
-                                endLine, endColumn };
+                        int[] coordinates = new int[] { beginLine, beginColumn, endLine, endColumn };
 
-                        if (module == null) {
-                            result.addMarker(new TLAMarkerInformationHolder(
-                                    project, project.getName(), holderType[j],
+                        if (module == null)
+                        {
+                            result.addMarker(new TLAMarkerInformationHolder(project, project.getName(), holderType[j],
                                     coordinates, errors[j][i]));
 
-                        }
-                        else {
-                            result.addMarker(new TLAMarkerInformationHolder(
-                                    module, module.getName(), holderType[j],
+                        } else
+                        {
+                            result.addMarker(new TLAMarkerInformationHolder(module, module.getName(), holderType[j],
                                     coordinates, errors[j][i]));
                         }
 
                     }
                 }// for i, for j
 
-            }
-            else {
-                throw new RuntimeException(
-                        "Bug Spec.ProcessParsingErrorMsgs.1418:\n"
-                                + "Semantic error detected but no error message found.");
+            } else
+            {
+                throw new RuntimeException("Bug Spec.ProcessParsingErrorMsgs.1418:\n"
+                        + "Semantic error detected but no error message found.");
             }
             break;
         case IParseConstants.COULD_NOT_FIND_MODULE:
 
-            result.addMarker(new TLAMarkerInformationHolder(project, project
-                    .getName(), IMarker.SEVERITY_ERROR, new int[] { -1, -1, -1,
-                    -1 }, "Could not find module"));
+            result.addMarker(new TLAMarkerInformationHolder(project, project.getName(), IMarker.SEVERITY_ERROR,
+                    new int[] { -1, -1, -1, -1 }, "Could not find module"));
             break;
         case IParseConstants.PARSED:
             break;
         default:
-            throw new RuntimeException(
-                    "No default expected. Still spec.getStatus() returned a value of "
-                            + result.getStatus());
+            throw new RuntimeException("No default expected. Still spec.getStatus() returned a value of "
+                    + result.getStatus());
         }
     } // ProcessParsingErrorMsgs
-    
-    /*
+
+    /**
      * Hack added by lamport on 5 & 7 Sep 2009
      This method is called in two places above to provide a file
      name argument to ResourceHelper.getLinkedFile.
@@ -585,23 +576,28 @@ public class ModuleParserLauncher {
      to the resources, but it seems to happen early enough in the game
      for this to work.)
      */
-
-    private static final String correctModuleNameCapitalization(String nameToFind, ParseResult result) {
-       try {
-            IResource[] resources = result.getParsedResource()
-                    .getParent().members();
-            for (int i = 0; i < resources.length; i++) {
-                if (resources[i].getType() == IResource.FILE) {
-                   String resourceName = resources[i].getName().substring(0,resources[i].getName().length()-4);
-                  if ((nameToFind.toLowerCase()).equals(resourceName.toLowerCase())) {
-                      nameToFind = resourceName ;
-                      break;
-                  }
+    private static final String correctModuleNameCapitalization(String nameToFind, ParseResult result)
+    {
+        try
+        {
+            IResource[] resources = result.getParsedResource().getParent().members();
+            for (int i = 0; i < resources.length; i++)
+            {
+                if (resources[i].getType() == IResource.FILE)
+                {
+                    String resourceName = resources[i].getName().substring(0, resources[i].getName().length() - 4);
+                    if ((nameToFind.toLowerCase()).equals(resourceName.toLowerCase()))
+                    {
+                        nameToFind = resourceName;
+                        break;
+                    }
                 }
             }
+        } catch (CoreException e)
+        {
+            Activator.logError("Error finding modules", e);
         }
-        catch (CoreException e) {   }
-        return nameToFind ;
+        return nameToFind;
     }
 
     /**
@@ -611,8 +607,8 @@ public class ModuleParserLauncher {
      * idx >= str.length(). This is a kludge that assumes that the line number is preceded either by " line " or by
      * "line " that begins the error message, and that the column number is preceded by either " column " or " col ".
      */
-    private static final int[] findLineAndColumn(final int idx,
-            final String message) {
+    private static final int[] findLineAndColumn(final int idx, final String message)
+    {
         int[] val = /* new int[3] */{ -1, -1, message.length() };
 
         /***********************************************************************
@@ -621,49 +617,54 @@ public class ModuleParserLauncher {
          ***********************************************************************/
         int beginIndex = message.indexOf("line ", idx);
         int offset = 5;
-        if (beginIndex != idx) {
+        if (beginIndex != idx)
+        {
             beginIndex = -1;
         }
-        if (beginIndex == -1) {
+        if (beginIndex == -1)
+        {
             beginIndex = message.indexOf(" line ", idx);
             offset = 6;
         }
-        if (beginIndex != -1) {
+        if (beginIndex != -1)
+        {
             /***************************************************************
              * Found " line ". Set beginIndex, endLineIndex to the 
              * beginning and past the end of the line number. 
              *
              ***************************************************************/
             beginIndex = beginIndex + offset;
-            while ((beginIndex < message.length())
-                    && !Character.isDigit(message.charAt(beginIndex))) {
+            while ((beginIndex < message.length()) && !Character.isDigit(message.charAt(beginIndex)))
+            {
                 beginIndex++;
             }
             int endIndex = beginIndex + 1;
-            while ((endIndex < message.length())
-                    && Character.isDigit(message.charAt(endIndex))) {
+            while ((endIndex < message.length()) && Character.isDigit(message.charAt(endIndex)))
+            {
                 endIndex++;
             }
-            if (beginIndex < message.length()) {
+            if (beginIndex < message.length())
+            {
                 /*******************************************************************
                  * Valid values of beginIndex and endIndex, so set val[0] and look 
                  * for the column number. 
                  *
                  *******************************************************************/
-                val[0] = Integer.parseInt(message.substring(beginIndex,
-                        endIndex));
+                val[0] = Integer.parseInt(message.substring(beginIndex, endIndex));
                 beginIndex = message.indexOf(" column ", endIndex);
                 int colOffset = 0; // to keep compiler happy.
-                if (beginIndex != -1) {
+                if (beginIndex != -1)
+                {
                     colOffset = 8;
                 }
                 int otherIndex = message.indexOf(" col ", endIndex);
-                if ((otherIndex != -1)
-                        && ((beginIndex == -1) || (otherIndex < beginIndex))) {
+                if ((otherIndex != -1) && ((beginIndex == -1) || (otherIndex < beginIndex)))
+                {
                     beginIndex = otherIndex;
                     colOffset = 5;
                 } // else
-                if (beginIndex != -1) {
+                if (beginIndex != -1)
+                {
                     /*****************************************************************
                      * Found either " column " or " col ". Set beginIndex, endIndex 
                      * to the beginning and past the end
@@ -671,21 +672,21 @@ public class ModuleParserLauncher {
                      *
                      *****************************************************************/
                     beginIndex = beginIndex + colOffset;
-                    while ((beginIndex < message.length())
-                            && !Character.isDigit(message.charAt(beginIndex))) {
+                    while ((beginIndex < message.length()) && !Character.isDigit(message.charAt(beginIndex)))
+                    {
                         beginIndex++;
                     } // while
                     endIndex = beginIndex + 1;
-                    while ((endIndex < message.length())
-                            && Character.isDigit(message.charAt(endIndex))) {
+                    while ((endIndex < message.length()) && Character.isDigit(message.charAt(endIndex)))
+                    {
                         endIndex++;
                     }
-                    if (beginIndex < message.length()) {
+                    if (beginIndex < message.length())
+                    {
                         /***************************************************************
                          * Valid values of beginIndex and endIndex, so set val[1] and val[2].
                          ***************************************************************/
-                        val[1] = Integer.parseInt(message.substring(beginIndex,
-                                endIndex));
+                        val[1] = Integer.parseInt(message.substring(beginIndex, endIndex));
                         val[2] = endIndex;
                     } // if (beginIndex < str.length())
                 } // if (beginIndex != -1)
