@@ -17,6 +17,7 @@ To report a bug or make a suggestion, please contact Leslie Lamport at http://ww
    </configIni>
 
    <launcherArgs>
+      <vmArgs>-Xmx1000m</vmArgs>
       <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts</vmArgsMac>
    </launcherArgs>
 
