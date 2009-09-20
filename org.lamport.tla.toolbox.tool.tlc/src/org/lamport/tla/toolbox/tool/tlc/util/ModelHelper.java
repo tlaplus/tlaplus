@@ -392,9 +392,17 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
      * Extract the variables from module node
      * @param moduleNode
      * @return a string representation of the variables
+     * 
+     * This method is being called with moduleNode = null when the model is
+     * saved when the spec is unparsed.  I added a hack to handle that case,
+     * but I'm not positive that there are no further problems that this can
+     * cause.  LL. 20 Sep 2009
      */
     public static String createVariableList(ModuleNode moduleNode)
     {
+        if (moduleNode == null) {
+            return "";
+        }
         StringBuffer buffer = new StringBuffer();
         OpDeclNode[] variableDecls = moduleNode.getVariableDecls();
         for (int i = 0; i < variableDecls.length; i++)

@@ -377,6 +377,9 @@ public class ModelWriter
      * @param overrides
      * @param string
      * @return
+     * 
+     * Was throwing null-pointer exception when called with spec unparsed.
+     * Hacked a fix to handle this case.  LL 20 Sep 2009
      */
     public static List createOverridesContent(List overrides, String labelingScheme)
     {
@@ -387,6 +390,9 @@ public class ModelWriter
 
         // opDefNodes are necessary when the user overrides a definition that is not in the root module
         SpecObj specObj = ToolboxHandle.getCurrentSpec().getValidRootModule();
+        if (specObj == null) {
+            return resultContent;
+        }
         OpDefNode[] opDefNodes = specObj.getExternalModuleTable().getRootModule().getOpDefs();
         Hashtable nodeTable = new Hashtable(opDefNodes.length);
 

@@ -25,6 +25,9 @@ import tla2sany.semantic.OpDefNode;
  * Filter dialog for selection of definitions 
  * @author Simon Zambrovski
  * @version $Id$
+ * 
+ * This seems to be implementing the Definition Override section of the Advanced Options model 
+ * page.
  */
 public class FilteredDefinitionSelectionDialog extends FilteredItemsSelectionDialog
 {
@@ -97,12 +100,21 @@ public class FilteredDefinitionSelectionDialog extends FilteredItemsSelectionDia
     }
 
     /* (non-Javadoc)
-     * @see org.eclipse.ui.dialogs.FilteredItemsSelectionDialog#fillContentProvider(org.eclipse.ui.dialogs.FilteredItemsSelectionDialog.AbstractContentProvider, org.eclipse.ui.dialogs.FilteredItemsSelectionDialog.ItemsFilter, org.eclipse.core.runtime.IProgressMonitor)
+     * @see org.eclipse.ui.dialogs.FilteredItemsSelectionDialog#fillContentProvider(org.eclipse.ui.dialogs.FilteredItemsSelectionDialog.AbstractContentProvider, 
+     *   org.eclipse.ui.dialogs.FilteredItemsSelectionDialog.ItemsFilter, 
+     *    org.eclipse.core.runtime.IProgressMonitor)
+     *    
+     * This raised a null-pointer exception if it was called when the spec is unparsed,
+     * because then specObj is null.  I hacked a fix to this, but I think
+     * there are more bugs lurking because the user can edit the model when the spec
+     * is unparsed.  LL 20 Sep 2009   
      */
     protected void fillContentProvider(AbstractContentProvider contentProvider, ItemsFilter itemsFilter,
             IProgressMonitor progressMonitor) throws CoreException
     {
-
+        if (specObj == null) {
+            return;
+        }
         OpDefNode[] opDefs = specObj.getExternalModuleTable().getRootModule().getOpDefs();
         progressMonitor.beginTask("Looking up for definitions...", opDefs.length);
 
