@@ -69,4 +69,15 @@
     by a number.  This is undoubtedly a lexing error, the lexer thinking that
     it is finding the beginning of a proof-step number.
        
-   
+15. LL fixed some null-pointer exceptions that were getting thrown when the user tried to
+    edit or save a model when the spec was unparsed.  This left it in a state in which
+    trying to save the model when the spec is unparsed does nothing.  This is probably
+    not good because the user might want to save changes he's made to the model before
+    he tries to correct errors he's made in the spec.  We need to re-think what the user 
+    should be able to do to the model when the spec is unparsed; and see that anything he
+    shouldn't be able to do is disabled and that anything he should be able to do works.
+    
+16. There is no Save Model menu item.  There should be one on the TLC Model Checker menu.
+
+17. The Definitions Override menu allows the user to override the same definition multiple
+    times.
