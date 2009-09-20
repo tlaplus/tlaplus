@@ -14,7 +14,7 @@ import org.lamport.tla.toolbox.tool.tlc.ui.wizard.AssignmentWizard;
 import tla2sany.semantic.OpDefNode;
 
 /**
- * Section part for the overrides
+ * Section part for the DefinitionOverride section of the Advanced Options page
  * @author Simon Zambrovski
  * @version $Id$
  */
