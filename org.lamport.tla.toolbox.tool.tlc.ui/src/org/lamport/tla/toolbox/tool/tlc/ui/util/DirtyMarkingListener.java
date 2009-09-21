@@ -12,7 +12,9 @@ import org.eclipse.ui.forms.AbstractFormPart;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.IValidateble;
 
 /**
- * Mars parts dirty on input
+ * Implementation of a bunch of listener interfaces. All the methods call the perform method, which will cause the part to become
+ * "dirty" and if the part is validateable to re-validate the part. The ignore input change is a flag which causes to ignore the input
+ * change, and is used to switch on and off the listener. This listener is used on the model editor pages. 
  * @author Simon Zambrovski
  * @version $Id$
  */
