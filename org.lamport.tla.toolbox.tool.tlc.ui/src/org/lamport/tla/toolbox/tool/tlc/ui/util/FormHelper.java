@@ -15,8 +15,10 @@ import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.forms.events.IExpansionListener;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Hyperlink;
@@ -28,6 +30,7 @@ import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 
 /**
+ * A utility class containing a bunch of static methods used in the form editor
  * @author Simon Zambrovski
  * @version $Id$
  */
@@ -400,5 +403,18 @@ public class FormHelper
             return false;
         }
         return string.matches("[A-Za-z0-9_]*[A-Za-z]{1}[A-Za-z0-9_]*");
+    }
+    
+    
+    /**
+     * Registers a control to the context
+     * @param control control to register 
+     * @param localContext the context id relative to plug-in ID 
+     * <br>
+     * Note: there should be a corresponding context ID defined in the helpContexts.xml defining the context for current ID. 
+     */
+    public static void setHelp(Control control, String localContext)
+    {
+        PlatformUI.getWorkbench().getHelpSystem().setHelp(control, TLCUIActivator.PLUGIN_ID + "." + localContext);
     }
 }
