@@ -7,7 +7,7 @@
 	</context>
 	<context id="ProblemView">
 		<description>This is a problem view. It is used to display problems reported by the TLA+ parser and other tools.</description>
-		<topic label="Understanding Problems" href="../org.lamport.tla.toolbox.doc/html/tasks/maintopic.html" />
+		<topic label="Understanding Problems" href="../org.lamport.tla.toolbox.doc/html/tasks/close_spec.html" />
 	</context>
 	<context id="NewSpecWizard">
 		<description>A wizard to create a new specification</description>
