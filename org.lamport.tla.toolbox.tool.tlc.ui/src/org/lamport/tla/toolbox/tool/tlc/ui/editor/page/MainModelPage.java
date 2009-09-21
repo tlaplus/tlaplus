@@ -451,8 +451,13 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
             } else
             {
                 setHasVariables(true);
-                // set selection to the default
-                setSpecSelection(MODEL_BEHAVIOR_TYPE_DEFAULT);
+
+                // no spec has been selected, set the selection to the default
+                if (noSpecRadio.getSelection()) 
+                {
+                    // set selection to the default
+                    setSpecSelection(MODEL_BEHAVIOR_TYPE_DEFAULT);
+                }
             }
         }
         // The following code is not needed now because we automatically change
@@ -714,8 +719,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         DirtyMarkingListener whatIsTheSpecListener = new DirtyMarkingListener(behaviorPart, true);
 
         // DR & LL changed the order of the two ways of giving the spec and
-        // re-added
-        // the no-spec option on 10 Sep 2009.
+        // re-added the no-spec option on 10 Sep 2009.
 
         // split formula option
         initNextFairnessRadio = toolkit.createButton(behaviorArea, "Init and Next", SWT.RADIO);
@@ -765,9 +769,8 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         closedFormulaRadio.addSelectionListener(whatIsTheSpecListener);
 
         // spec
-        Label specLabel = toolkit.createLabel(behaviorArea, ""); // changed from
-        // "Spec:" 10
-        // Sep 09
+        Label specLabel = toolkit.createLabel(behaviorArea, ""); 
+        // changed from "Spec:" 10 Sep 09
         gd = new GridData();
         gd.verticalAlignment = SWT.TOP;
         specLabel.setLayoutData(gd);
