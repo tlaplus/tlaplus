@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<contexts>
+	<context id="main_editor_window" title="The model editor">
+		<description>Welcome to the model editor help...</description>
+	</context>
+</contexts>
