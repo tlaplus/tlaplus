@@ -1,31 +1,19 @@
 package org.lamport.tla.toolbox.tool.tlc.ui.editor;
 
-import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.ValidateableConstantSectionPart;
-import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 
 /**
- * Section definitions
+ * Section definition constants
+ * <br>
+ * This interface contains identifiers given to sections of the three
+ * Model Editor pages. An identifier is used in order to uniquely identify
+ * the section. The DataBindingManager facility, provided by the editor is 
+ * storing the information about "what section is located on what page" and "what 
+ * attribute is displayed in what section". Using the ids the section can be expanded or collapsed.
+ * This is used in case if an error is detected and the error marker is installed on the corresponding field.
+ * 
  * @author Simon Zambrovski
  * @version $Id$
- * 
- * This seems to be a list of identifiers given to sections of the three
- * Model Editor pages.  Here's how the constant SEC_WHAT_IS_THE_MODEL is
- * used.  I presume the others are used in a similar fashion:
- * 
- * The constant is given as an argument to the ValidateableConstantSectionPart
- * constructor in the createBodyContent method of MainModelPage, which gives it 
- * to its super, the ValidateableTableSectionPart constructor, which calls
- * page.getDataBindingManager().bindSection that puts it in the hash table
- * sectionsForPage with key the id of the page and value a vector of
- * all section ids that were registered with bindSection.  That value is
- * read only by DataBindingManager.setAllSectionsEnabled which is called
- * in BasicFormPage.setEnabled, which is called by BasicFormPage.refresh,
- * which is called by:
- *  - BasicFormPage.createFormContent
- *  - a listener installed in ModelEditor by a ModelHelper.installModelModificationResourceChangeListener
- *  - MainModelPage.refresh() 
  */
-
 public interface ISectionConstants
 {
     // sections of the first page
