@@ -65,6 +65,9 @@ import tla2sany.semantic.ModuleNode;
  * Main model page represents information for most users
  * @author Simon Zambrovski
  * @version $Id$
+ * 
+ * This is the FormPage class for the Model Overview tabbed page of
+ * the model editor.
  */
 public class MainModelPage extends BasicFormPage implements IConfigurationConstants, IConfigurationDefaults
 {
@@ -681,7 +684,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
         /*
          * Because the two Composite objects `left' and `right' are added to the
-         * object `body' in this order, `left' is displayed the left of `right'.
+         * object `body' in this order, `left' is displayed to the left of `right'.
          */
         // left
         Composite left = toolkit.createComposite(body);
