@@ -43,7 +43,28 @@ import tla2sany.semantic.SymbolNode;
 import tla2sany.st.Location;
 
 /**
- * Basic form page for the multi-page editor
+ * This is a base class for all pages used in the model editor. The model editor is a multi-page (tab) editor, and the
+ * pages the subclasses of this class are pages, represented as individual tabs. 
+ * The life cycle of the page is the following: the constructor of the page is called by the editor 
+ * and then the added using the {@link ModelEditor#addPages}. The {@link FormPage#createPartControl} is called, which causes 
+ * the method {@link BasicFormPage#createFormContent(IManagedForm)} to be called. This method creates the main UI stub of the page,
+ * then calls {@link BasicFormPage#createBodyContent(IManagedForm)}, which should be overwritten by the subclasses to create the 
+ * page specific UI components, then calls {@link BasicFormPage#loadData()} which should be overwritten by the subclasses in order to
+ * load the data into the UI components. The initialization is finished after the execution of the {@link BasicFormPage#pageInitializationComplete()}
+ * method. On changes triggered by the user, the special listeners (so called dirty part listeners) are 
+ * marking the parts, containing the UI widgets as dirty and cause the page validation. This is done by calling the {@link BasicFormPage#validate()} method.
+ * Finally, if the user triggers the editor to save the content, the {@link BasicFormPage#commit(boolean)} is called. If the editor 
+ * is closed the {@link BasicFormEditor#dispose()} method is called.  
+ * <br>
+ * The abstract {@link BasicFormPage} class provides several facilities for the concrete implementations for different purposes:
+ * <ul>
+ *   <li>dirty part listeners: the dirty listener is a typed listener (e.G selection or text listener) that is triggered by a widget
+ *   by some user activity and marks the part, the widget is contained in as "dirty". The "dirty" property is propagated further 
+ *   to the page and the editor. During the construction of the page the dirty listeners installed on different widgets should be 
+ *   added to the dirtyPartListeners list. The listeners are activated only after the data has been loaded, so any changes on the UI
+ *   made during the execution load() will not affect the "dirty" state of the editor.</li>
+ *   <li>images: a list of images used in the page, which will be disposed, after the page is disposed</li>
+ * </ul>
  * 
  * @author Simon Zambrovski
  * @version $Id$
@@ -53,10 +74,26 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
 {
     public static final String CRASHED_TITLE = " ( model checking has crashed )";
     public static final String RUNNING_TITLE = " ( model checking is in progress )";
+
+    /** 
+     * a list of dirty part listeners, which marks parts as dirty on input and cause the re-validation of the input
+     */
     protected ListenerList dirtyPartListeners = new ListenerList();
-    protected String helpId = null;
-    protected String imagePath = null;
+    /** 
+     * the initialization status. Becomes true, after the {@link BasicFormPage#pageInitializationComplete()} method is executed
+     */
     protected boolean initialized = false;
+    /**
+     * The local context id accociated with this page
+     */
+    protected String helpId = null;
+    /**
+     * Image used in the heading of the page
+     */
+    protected String imagePath = null;
+    /**
+     * Fomr rebuilding listener responsible for page reflow
+     */
     protected IExpansionListener formRebuildingListener = null;
 
     // image registry
@@ -76,34 +113,12 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
     }
 
     /**
-     * delegate to the editor
-     */
-    public void doRun()
-    {
-        ((ModelEditor) getEditor()).launchModel(TLCModelLaunchDelegate.MODE_MODELCHECK, true);
-    }
-
-    /**
-     * delegate to the editor
-     */
-    public void doGenerate()
-    {
-        ((ModelEditor) getEditor()).launchModel(TLCModelLaunchDelegate.MODE_GENERATE, true);
-    }
-
-    public void doStop()
-    {
-        ((ModelEditor) getEditor()).stop();
-    }
-
-    /**
      * Called during FormPage life cycle and delegates the form creation
      * to three methods {@link BasicFormPage#createBodyContent(IManagedForm)}, 
      * {@link BasicFormPage#loadData()}, {@link BasicFormPage#pageInitializationComplete()}
      */
     protected void createFormContent(IManagedForm managedForm)
     {
-        super.createFormContent(managedForm);
 
         ScrolledForm formWidget = managedForm.getForm();
         formWidget.setText(getTitle());
@@ -113,7 +128,6 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
         }
 
         Composite body = formWidget.getBody();
-        UIHelper.setHelp(body, helpId);
 
         FormToolkit toolkit = managedForm.getToolkit();
         toolkit.decorateFormHeading(formWidget.getForm());
@@ -136,6 +150,7 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
         // create the body of the page
         createBodyContent(managedForm);
 
+        super.createFormContent(managedForm);
         try
         {
             // load data from the model
@@ -151,13 +166,16 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
         // finalizes the page construction
         // activates the change listeners
         pageInitializationComplete();
+        UIHelper.setHelp(body, helpId);
     }
 
     /**
-     * Method to fill data in to the form
-     * Subclasses should override this method and fill the 
-     * data in to the input elements
-     * @throws CoreException
+     * Method to fill data in to the page from the model. This method is called as a part 
+     * of the page life cycle. It is called after all the UI elements have been constructed but
+     * before the completion of the page initialization.
+     * 
+     * Subclasses should override this method and fill the data in to the widgets
+     * @throws CoreException thrown on any error during loading 
      */
     protected void loadData() throws CoreException
     {
@@ -166,8 +184,7 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
 
     /**
      * Method finalizing the page initialization
-     * Subclasses should override this method in order to activate
-     * listeners  
+     * This method activates the dirty part listeners  
      */
     protected void pageInitializationComplete()
     {
@@ -260,13 +277,31 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
     }
 
     /**
-     * Validation hook
+     * Validates the data entries entered in the input fields. The validate method is called 
+     * on any change in the fields. For this to work, the corresponding listeners are registered 
+     * on the widgets. These listeners make the parts/pages "dirty" on input and call validate on 
+     * the pages. In addition, the validate is called if the relevant parts of the model are changed 
+     * (that is changing the TLA files and the model file)
+     * <br>
+     * Subclasses should override this method and add some page specific validation code. In doing so, it is
+     * important to call <code>super.validate()</code>, since the implementation is responsible for handling
+     * errors, supplied as persistent error markers on the model file. 
      */
     public void validate()
     {
         handleProblemMarkers();
     }
 
+    /**
+     * Handle the problem markers 
+     */
+    public void handleProblemMarkers()
+    {
+        // delegate to the editor
+        ((ModelEditor) getEditor()).handleProblemMarkers();
+    }
+
+    
     /**
      * Returns if the input is complete and the page contains no errors
      * @return
@@ -292,14 +327,6 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
     public SemanticHelper getLookupHelper()
     {
         return ((ModelEditor) this.getEditor()).getHelper();
-    }
-
-    /**
-     * Handle the problem markers 
-     */
-    public void handleProblemMarkers()
-    {
-        ((ModelEditor) getEditor()).handleProblemMarkers();
     }
 
     /**
@@ -534,6 +561,30 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
     }
 
     /**
+     * delegate to the editor
+     */
+    public void doRun()
+    {
+        ((ModelEditor) getEditor()).launchModel(TLCModelLaunchDelegate.MODE_MODELCHECK, true);
+    }
+
+    /**
+     * delegate to the editor
+     */
+    public void doGenerate()
+    {
+        ((ModelEditor) getEditor()).launchModel(TLCModelLaunchDelegate.MODE_GENERATE, true);
+    }
+
+    /**
+     * delegate to the editor
+     */
+    public void doStop()
+    {
+        ((ModelEditor) getEditor()).stop();
+    }
+
+    /**
      * The run action
      */
     class RunAction extends Action
@@ -613,6 +664,9 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
         }
     }
 
+    /**
+     * Recovery action added to the model editor (top right corner) if the model is crashed 
+     */
     class ModelRecoveryAction extends Action
     {
         ModelRecoveryAction()
