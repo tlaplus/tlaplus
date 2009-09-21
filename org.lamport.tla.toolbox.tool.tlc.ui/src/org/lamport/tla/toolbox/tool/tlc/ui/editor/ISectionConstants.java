@@ -1,10 +1,31 @@
 package org.lamport.tla.toolbox.tool.tlc.ui.editor;
 
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.ValidateableConstantSectionPart;
+import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
+
 /**
  * Section definitions
  * @author Simon Zambrovski
  * @version $Id$
+ * 
+ * This seems to be a list of identifiers given to sections of the three
+ * Model Editor pages.  Here's how the constant SEC_WHAT_IS_THE_MODEL is
+ * used.  I presume the others are used in a similar fashion:
+ * 
+ * The constant is given as an argument to the ValidateableConstantSectionPart
+ * constructor in the createBodyContent method of MainModelPage, which gives it 
+ * to its super, the ValidateableTableSectionPart constructor, which calls
+ * page.getDataBindingManager().bindSection that puts it in the hash table
+ * sectionsForPage with key the id of the page and value a vector of
+ * all section ids that were registered with bindSection.  That value is
+ * read only by DataBindingManager.setAllSectionsEnabled which is called
+ * in BasicFormPage.setEnabled, which is called by BasicFormPage.refresh,
+ * which is called by:
+ *  - BasicFormPage.createFormContent
+ *  - a listener installed in ModelEditor by a ModelHelper.installModelModificationResourceChangeListener
+ *  - MainModelPage.refresh() 
  */
+
 public interface ISectionConstants
 {
     // sections of the first page
@@ -12,6 +33,7 @@ public interface ISectionConstants
     public final static String SEC_WHAT_TO_CHECK = "__what_to_check";
     public final static String SEC_WHAT_TO_CHECK_INVARIANTS = "__what_to_check_invariants";
     public final static String SEC_WHAT_TO_CHECK_PROPERTIES = "__what_to_check_properties";
+    
     public final static String SEC_WHAT_IS_THE_MODEL = "__what_is_the_model";
     public final static String SEC_HOW_TO_RUN = "__how_to_run";
     // section on the second page
