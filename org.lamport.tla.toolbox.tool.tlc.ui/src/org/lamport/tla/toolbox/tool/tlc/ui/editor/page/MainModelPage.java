@@ -4,9 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
 
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.text.Document;
@@ -23,7 +21,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.forms.HyperlinkGroup;
 import org.eclipse.ui.forms.IManagedForm;
@@ -39,8 +36,6 @@ import org.eclipse.ui.forms.widgets.Hyperlink;
 import org.eclipse.ui.forms.widgets.ImageHyperlink;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.forms.widgets.TableWrapData;
-import org.eclipse.ui.part.FileEditorInput;
-import org.lamport.tla.toolbox.tool.tlc.handlers.OpenModelHandler;
 import org.lamport.tla.toolbox.tool.tlc.launch.IConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.IConfigurationDefaults;
 import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
@@ -55,7 +50,6 @@ import org.lamport.tla.toolbox.tool.tlc.ui.util.DirtyMarkingListener;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.SemanticHelper;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
-import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper.IFileProvider;
 import org.lamport.tla.toolbox.util.IHelpConstants;
 import org.lamport.tla.toolbox.util.UIHelper;
 
@@ -63,9 +57,13 @@ import tla2sany.semantic.ModuleNode;
 
 /**
  * Main model page represents information for most users
+ * <br>
+ * This class is a a sub-class of the BasicFormPage and is used to represent the first tab of the
+ * multi-page-editor which is used to edit the model files.  
+ * 
+ * 
  * @author Simon Zambrovski
  * @version $Id$
- * 
  * This is the FormPage class for the Model Overview tabbed page of
  * the model editor.
  */
@@ -92,13 +90,13 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         {
             if (e.widget == specSource.getControl())
             {
-                // noSpecRadio.setSelection(false);
+                noSpecRadio.setSelection(false);
                 closedFormulaRadio.setSelection(true);
                 initNextFairnessRadio.setSelection(false);
             } else if (e.widget == initFormulaSource.getControl() || e.widget == nextFormulaSource.getControl()
             /* || e.widget == fairnessFormulaSource.getControl() */)
             {
-                // noSpecRadio.setSelection(false);
+                noSpecRadio.setSelection(false);
                 closedFormulaRadio.setSelection(false);
                 initNextFairnessRadio.setSelection(true);
             }
@@ -107,7 +105,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
     // Test code
     // remembers if the spec had variables the last time the page was validated.
-    private boolean hasVariables = false;
+    // private boolean hasVariables = false;
     // private boolean lastSeenHasVariables = false;
 
     private ImageHyperlink runLink;
@@ -143,27 +141,15 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
     }
 
     /**
-     * Loads data from the model when the main model page is being created--
-     * for example, when there is no model editor being shown and the user
-     * opens the model.  It is not called when the model needs to be
-     * re-checked because a module has changed.
+     * @see BasicFormPage#loadData()
      */
     protected void loadData() throws CoreException
     {
         int specType = getConfig().getAttribute(MODEL_BEHAVIOR_SPEC_TYPE, MODEL_BEHAVIOR_TYPE_DEFAULT);
 
         // set up the radio buttons
-        switch (specType) {
-        case MODEL_BEHAVIOR_TYPE_NO_SPEC:
-            this.noSpecRadio.setSelection(true);
-            break;
-        case MODEL_BEHAVIOR_TYPE_SPEC_CLOSED:
-            this.closedFormulaRadio.setSelection(true);
-            break;
-        case MODEL_BEHAVIOR_TYPE_SPEC_INIT_NEXT:
-            this.initNextFairnessRadio.setSelection(true);
-            break;
-        }
+        setSpecSelection(specType);
+
         // closed spec
         String modelSpecification = getConfig().getAttribute(MODEL_BEHAVIOR_CLOSED_SPECIFICATION, EMPTY_STRING);
         Document closedDoc = new Document(modelSpecification);
@@ -211,11 +197,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         this.checkpointButton.setSelection(recover);
     }
 
-    /**
-     * Validates the input in the fields.  This is called when
-     * the spec is parsed, as well as (LL & DR believe) when a change
-     * has been made to the model in the model editor
-     */
+    // TODO remove
     private int countXX = 0;
 
     public void validate()
@@ -224,6 +206,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         {
             return;
         }
+        // TODO remove
         // The following approach has the potential problem that it loses
         // some of the data in the model. If we want to use this approach
         // to control the display of the get-constants area, we have to
@@ -399,8 +382,8 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
             // the constant identifier is a config file keyword
             if (SemanticHelper.isConfigFileKeyword(constant.getLabel()))
             {
-                mm.addMessage(constant.getLabel(), "The toolbox cannot handle the constant identifier " + constant.getLabel()
-                        + ".", constant, IMessageProvider.ERROR, UIHelper.getWidget(dm
+                mm.addMessage(constant.getLabel(), "The toolbox cannot handle the constant identifier "
+                        + constant.getLabel() + ".", constant, IMessageProvider.ERROR, UIHelper.getWidget(dm
                         .getAttributeControl(MODEL_PARAMETER_CONSTANTS)));
             }
         }
@@ -452,61 +435,24 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
             }
         }
 
-        String selectedAttribute = closedFormulaRadio.getSelection() ? MODEL_BEHAVIOR_CLOSED_SPECIFICATION
-                : (initNextFairnessRadio.getSelection() ? MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT : null);
-        // spec or no spec
-
         // The following code added by LL and DR on 10 Sep 2009.
-        // Reset the enabling and selection of spec type if whether or not the
-        // number of variables is zero has changed.
+        // Reset the enabling and selection of spec type depending on the number number
+        // of variables in the spec.
         // This code needs to be modified when we modify the model launcher
         // to allow the No Spec option to be selected when there are variables.
         //
-        // System.out.println("testing if rootModuleNode is non-null" +
-        // count++);
         if (rootModuleNode != null)
         {
-            // System.out.println("rootModuleNode is non-null" + count++);
             if (rootModuleNode.getVariableDecls().length == 0)
             {
-                this.noSpecRadio.setSelection(true);
-                closedFormulaRadio.setSelection(false);
-                initNextFairnessRadio.setSelection(false);
-                noSpecRadio.setEnabled(true);
-                closedFormulaRadio.setEnabled(false);
-                initNextFairnessRadio.setEnabled(false);
-                getConfig().setAttribute(MODEL_BEHAVIOR_SPEC_TYPE, MODEL_BEHAVIOR_TYPE_NO_SPEC);
-                UIHelper.getWidget(dm.getAttributeControl(MODEL_BEHAVIOR_CLOSED_SPECIFICATION)).setEnabled(false);
-                UIHelper.getWidget(dm.getAttributeControl(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT))
-                        .setEnabled(false);
-                UIHelper.getWidget(dm.getAttributeControl(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT))
-                        .setEnabled(false);
+                setHasVariables(false);
+                // set selection to the NO SPEC field
+                setSpecSelection(MODEL_BEHAVIOR_TYPE_NO_SPEC);
             } else
             {
-                // System.out.println("Should be setting buttons to closed form spec "
-                // + count++);
-                noSpecRadio.setEnabled(false);
-                closedFormulaRadio.setEnabled(true);
-                initNextFairnessRadio.setEnabled(true);
-                UIHelper.getWidget(dm.getAttributeControl(MODEL_BEHAVIOR_CLOSED_SPECIFICATION)).setEnabled(true);
-                UIHelper.getWidget(dm.getAttributeControl(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT)).setEnabled(true);
-                UIHelper.getWidget(dm.getAttributeControl(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT)).setEnabled(true);
-                if (noSpecRadio.getSelection())
-                {
-                    Assert.isTrue(!(closedFormulaRadio.getSelection() || initNextFairnessRadio.getSelection()));
-                    noSpecRadio.setSelection(false);
-                    if (MODEL_BEHAVIOR_TYPE_DEFAULT == MODEL_BEHAVIOR_TYPE_SPEC_CLOSED)
-                    {
-                        closedFormulaRadio.setSelection(true);
-                        getConfig().setAttribute(MODEL_BEHAVIOR_SPEC_TYPE, MODEL_BEHAVIOR_TYPE_SPEC_CLOSED);
-
-                    } else
-                    {
-                        initNextFairnessRadio.setSelection(true);
-                        getConfig().setAttribute(MODEL_BEHAVIOR_SPEC_TYPE, MODEL_BEHAVIOR_TYPE_SPEC_INIT_NEXT);
-
-                    }
-                }
+                setHasVariables(true);
+                // set selection to the default
+                setSpecSelection(MODEL_BEHAVIOR_TYPE_DEFAULT);
             }
         }
         // The following code is not needed now because we automatically change
@@ -561,7 +507,54 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
     }
 
     /**
-     * Save data back to config
+     * This method is used to enable and disable UI widgets depending on the fact if the specification 
+     * has variables. 
+     * @param hasVariables true if the spec contains variables
+     */
+    private void setHasVariables(boolean hasVariables)
+    {
+
+        // no variables = no spec
+        this.noSpecRadio.setEnabled(!hasVariables);
+        // if there are variables, the spec must be provided
+        this.closedFormulaRadio.setEnabled(hasVariables);
+        this.initNextFairnessRadio.setEnabled(hasVariables);
+
+        // the input fields are eneabled only if there are variables
+        this.initFormulaSource.getControl().setEnabled(hasVariables);
+        this.nextFormulaSource.getControl().setEnabled(hasVariables);
+        this.specSource.getControl().setEnabled(hasVariables);
+    }
+
+    /**
+     * This method sets the selection on the 
+     * @param selectedFormula
+     */
+    private void setSpecSelection(int specType)
+    {
+        switch (specType) {
+        case MODEL_BEHAVIOR_TYPE_NO_SPEC:
+            this.noSpecRadio.setSelection(true);
+            this.initNextFairnessRadio.setSelection(false);
+            this.closedFormulaRadio.setSelection(false);
+            break;
+        case MODEL_BEHAVIOR_TYPE_SPEC_CLOSED:
+            this.noSpecRadio.setSelection(false);
+            this.initNextFairnessRadio.setSelection(false);
+            this.closedFormulaRadio.setSelection(true);
+            break;
+        case MODEL_BEHAVIOR_TYPE_SPEC_INIT_NEXT:
+            this.noSpecRadio.setSelection(false);
+            this.initNextFairnessRadio.setSelection(true);
+            this.closedFormulaRadio.setSelection(false);
+            break;
+        default:
+            throw new IllegalArgumentException("Wrong spec type, this is a bug");
+        }
+    }
+
+    /**
+     * Save data back to model
      */
     public void commit(boolean onSave)
     {
@@ -641,7 +634,6 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
     /**
      * Checks if checkpoint information changed 
-     * @throws CoreException
      */
     private void updateCheckpoints()
     {
@@ -664,17 +656,18 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         }
     }
 
-    /**
-     * Creates the UI
-     * 
-     * 
-     */
+    // TODO remove
     private int ccount = 0;
 
+    /**
+     * Creates the UI
+     * This method is called to create the widgets and arrange them on the page
+     */
     protected void createBodyContent(IManagedForm managedForm)
     {
         DataBindingManager dm = getDataBindingManager();
         int sectionFlags = Section.TITLE_BAR | Section.DESCRIPTION | Section.TREE_NODE;
+        // TODO remove
         System.out.println("Call of createBodyContent number " + ccount++ + ", Model editor count = ");
         FormToolkit toolkit = managedForm.getToolkit();
         Composite body = managedForm.getForm().getBody();
@@ -1003,7 +996,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
     }
 
     /**
-     * 
+     * On a refresh, the checkpoint information is re-read 
      */
     public void refresh()
     {
