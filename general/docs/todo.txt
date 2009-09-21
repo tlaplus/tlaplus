@@ -81,3 +81,7 @@
 
 17. The Definitions Override menu allows the user to override the same definition multiple
     times.
+    
+18. Performance problem: Run separately, it takes SANY 4 seconds to parse the farsite
+    spec.  It takes the toolbox 20 seconds.  What's it doing for those extra 16 seconds?
+    
