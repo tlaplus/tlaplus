@@ -164,4 +164,37 @@ When a module is saved, the performSave() of the org.tla.toolbox.editor.basic.TL
 is called.  There's a default method in a superclass, but one can override it to
 do whatever else you want to do on a save.  There's also a performSaveAs() method.
 
+------------------------------------------------------------
+ASSIGNMENT OBJECTS AND WIZARDS
+
+An assignment object:
+ - Is used for constant assignments and for definition overrides.
+ - For the constant assignments, it is constructed by the loadData
+   method of MainModlePage in the call of
+   FormHelper.setSerializedInput, which puts it into the TableViewer
+   MainModelPage.constantTable
+
+The user can edit an Assignment object with an AssignmentWizard.  When
+he clicks on the Add or Edit button of the Constant Assignments
+section, it will create an AssignmentWizard.
+
+The button is added in the ValidateableTableSectionPart object (the
+super for Validateable...), and fSelectionListener is added to it.
+Note that the doAdd and doEdit methods are overridden by the methods
+in the subclass ValidateableConstant.  These methods call
+doEditFormula, which creates the AssignmentWizard.
+
+(See www.eclipse.org about dialogs and wizards)
+
+The AssignmentWizard has two AssignmentWizardPages that are created in
+the addPages() method.  In AssignmentWizardPages there is the
+createControl method, which is called when the page is added to the
+Wizard.  Note: createControl is constructing the widgets that form the
+wizard page.  They are children of container, which is a child of the
+parent argument.  The last line, setControl(container), sets the
+container as the control associated with the wizard page.
+
+To implement the help button on the dialog, we need to set the help on
+the container.
+
 
