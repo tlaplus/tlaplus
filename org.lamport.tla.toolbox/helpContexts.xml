@@ -20,4 +20,18 @@
  <context id="mainModelPage" title="title of mainModelPage">
     <description>description of mainModelPage</description>
  </context>
+ 	<context id="constant_assignment_wizard" title="Assigning values to constants">
+		<description>Welcome to the constant assignment dialog help...</description>
+	    <topic label="Assigning values to constants" href="../org.lamport.tla.toolbox.tool.tlc.ui/html/constant_dialog.html" />
+		
+	</context>
+ 	<context id="definition_override_wizard" title="Overriding Definitions">
+		<description>
+		This dialog allows you to override a definition, meaning that you provide a definition that TLC should use in place of the actual definition.
+		NOTE HOW STUPID THIS WHOLE WAY OF ADDING HELP IS SINCE IT REQUIRES THAT I TYPE AN ENTIRE PARAGRAPH AS A SINGLE LINE IN helpContexts.xml.	
+		</description>
+	    <topic label="Hints on definition overriding" href="../org.lamport.tla.toolbox.tool.tlc.ui/html/constant_dialog.html" />
+		
+	</context>
+ 
 </contexts>

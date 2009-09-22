@@ -19,6 +19,7 @@ import org.eclipse.swt.widgets.Display;
 import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
 import org.lamport.tla.toolbox.tool.tlc.model.TypedSet;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
+import org.lamport.tla.toolbox.util.UIHelper;
 
 /**
  * @author Simon Zambrovski
@@ -26,10 +27,13 @@ import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
  */
 public class AssignmentWizardPage extends WizardPage
 {
+    public static final String CONSTANT_WIZARD_ID = "constant_assignment_wizard";
+    public static final String DEF_OVERRIDE_WIZARD_ID = "definition_override_wizard";
     private LabeledListComposite paramComposite;
     private SourceViewer source;
     private Button optionModelValue;
     private final int fieldFlags;
+    private final String helpId;  // The id of the help context for this wizard page
     private Button optionSetModelValues;
     private Button flagSymmetricalSet;
     private Button optionOrdinaryValue;
@@ -55,10 +59,11 @@ public class AssignmentWizardPage extends WizardPage
         }
     };
 
-    public AssignmentWizardPage(String action, String description, int fieldFlags)
+    public AssignmentWizardPage(String action, String description, int fieldFlags, String helpId)
     {
         super("AssignmentWizardPage");
         this.fieldFlags = fieldFlags;
+        this.helpId = helpId;
         setTitle(action);
         setDescription(description);
     }
@@ -164,7 +169,12 @@ public class AssignmentWizardPage extends WizardPage
 
             }
         }
-
+// here we need to add UIHelper.setHelp(container, "assignmentHelp");
+        // except Simon says that it won't work because this is also used 
+        // overriding definitions.  Therefore, we need to add a field to the
+        // class that contains the help string, and set it with the constructor.
+        UIHelper.setHelp(container, helpId);
+        
         setControl(container);
     }
 

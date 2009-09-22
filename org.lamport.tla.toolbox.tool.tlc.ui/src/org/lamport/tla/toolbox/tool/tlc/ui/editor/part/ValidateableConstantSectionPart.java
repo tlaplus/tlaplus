@@ -17,6 +17,7 @@ import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.BasicFormPage;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.provider.AssignmentContentProvider;
 import org.lamport.tla.toolbox.tool.tlc.ui.wizard.AssignmentWizard;
+import org.lamport.tla.toolbox.tool.tlc.ui.wizard.AssignmentWizardPage;
 
 /**
  * Section part for the constants 
@@ -37,7 +38,7 @@ public class ValidateableConstantSectionPart extends ValidateableTableSectionPar
 
         // Create the wizard
         AssignmentWizard wizard = new AssignmentWizard(getSection().getText(), getSection().getDescription(),
-                (Assignment) formula, AssignmentWizard.SHOW_OPTION);
+                (Assignment) formula, AssignmentWizard.SHOW_OPTION, AssignmentWizardPage.CONSTANT_WIZARD_ID);
         // Create the wizard dialog
         WizardDialog dialog = new WizardDialog(getTableViewer().getTable().getShell(), wizard);
         dialog.setHelpAvailable(true);

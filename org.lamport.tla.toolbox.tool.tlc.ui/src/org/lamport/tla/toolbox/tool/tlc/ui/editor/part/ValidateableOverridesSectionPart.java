@@ -10,6 +10,8 @@ import org.lamport.tla.toolbox.tool.tlc.ui.dialog.FilteredDefinitionSelectionDia
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.DataBindingManager;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.BasicFormPage;
 import org.lamport.tla.toolbox.tool.tlc.ui.wizard.AssignmentWizard;
+import org.lamport.tla.toolbox.tool.tlc.ui.wizard.AssignmentWizardPage;
+import org.lamport.tla.toolbox.util.UIHelper;
 
 import tla2sany.semantic.OpDefNode;
 
@@ -36,6 +38,12 @@ public class ValidateableOverridesSectionPart extends ValidateableConstantSectio
                     .getSection().getShell(), false, ToolboxHandle.getCurrentSpec().getValidRootModule());
 
             definitionSelection.setTitle("Select Definition to Override");
+            // It would be nice to add help to this dialog.  The following command will
+            // add a help button.  However, I have no idea how to attach an help
+            // to that button.
+            //
+            // definitionSelection.setHelpAvailable(true);
+            
             definitionSelection
                     .setMessage("Type definition to override or select from the list below\n(?= any character, *= any string)");
             definitionSelection.setInitialPattern("?");
@@ -52,7 +60,7 @@ public class ValidateableOverridesSectionPart extends ValidateableConstantSectio
 
         // Create the wizard
         AssignmentWizard wizard = new AssignmentWizard(getSection().getText(), getSection().getDescription(),
-                (Assignment) formula, AssignmentWizard.NONE);
+                (Assignment) formula, AssignmentWizard.NONE, AssignmentWizardPage.DEF_OVERRIDE_WIZARD_ID);
         // Create the wizard dialog
         WizardDialog dialog = new WizardDialog(getTableViewer().getTable().getShell(), wizard);
         dialog.setHelpAvailable(true);
