@@ -16,7 +16,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer
     {
 
         IPreferenceStore store = PreferenceStoreHelper.getInstancePreferenceStore();
-        store.setDefault(IPreferenceConstants.I_PARSER_POPUP_ERRORS, false);
+        store.setDefault(IPreferenceConstants.I_PARSER_POPUP_ERRORS, true);  // set to true by LL on 22 Sep 2009
 
         // instance based properties
         store.setDefault(IPreferenceConstants.I_RESTORE_LAST_SPEC, true);
