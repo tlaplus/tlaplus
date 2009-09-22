@@ -18,7 +18,7 @@ public class AssignmentWizard extends Wizard
     private TypingWizardPage typePage;
 
     /**
-     * Constructs the assignment wizard
+     * Constructs the wizard that assigns values to constants, 
      * @param fieldFlags bit mask determining fields that are visible
      * @see {@link AssignmentWizard} constants 
      */

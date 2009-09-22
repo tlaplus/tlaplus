@@ -11,6 +11,23 @@ package org.lamport.tla.toolbox.tool.tlc.ui.editor;
  * attribute is displayed in what section". Using the ids the section can be expanded or collapsed.
  * This is used in case if an error is detected and the error marker is installed on the corresponding field.
  * 
+ * Note: The following was deleted by Simon Z, but re-added by LL because
+ * there is no reason to throw away a comment that provides information--no
+ * matter how useless that information might seem to be.
+ * 
+ * As an example, here is how the constant SEC_WHAT_IS_THE_MODEL is used. 
+ * The constant is given as an argument to the ValidateableConstantSectionPart
+ * constructor in the createBodyContent method of MainModelPage, which gives it 
+ * to its super, the ValidateableTableSectionPart constructor, which calls
+ * page.getDataBindingManager().bindSection that puts it in the hash table
+ * sectionsForPage with key the id of the page and value a vector of
+ * all section ids that were registered with bindSection.  That value is
+ * read only by DataBindingManager.setAllSectionsEnabled which is called
+ * in BasicFormPage.setEnabled, which is called by BasicFormPage.refresh,
+ * which is called by:
+ *  - BasicFormPage.createFormContent
+ *  - a listener installed in ModelEditor by a ModelHelper.installModelModificationResourceChangeListener
+ *  - MainModelPage.refresh() 
  * @author Simon Zambrovski
  * @version $Id$
  */
