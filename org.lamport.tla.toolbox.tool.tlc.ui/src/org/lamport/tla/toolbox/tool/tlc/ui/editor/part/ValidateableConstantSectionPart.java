@@ -6,6 +6,7 @@ import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.WizardDialog;
@@ -18,6 +19,9 @@ import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.BasicFormPage;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.provider.AssignmentContentProvider;
 import org.lamport.tla.toolbox.tool.tlc.ui.wizard.AssignmentWizard;
 import org.lamport.tla.toolbox.tool.tlc.ui.wizard.AssignmentWizardPage;
+import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
+
+import tla2sany.semantic.OpDefNode;
 
 /**
  * Section part for the constants 
@@ -100,6 +104,24 @@ public class ValidateableConstantSectionPart extends ValidateableTableSectionPar
             public void doubleClick(DoubleClickEvent event)
             {
                 doEdit();
+            }
+        });
+
+        // this is necessary for correctly displaying definition overrides
+        // if the label is M!N!Foo, this will return Foo. If ! is not used,
+        // it will do nothing.
+        tableViewer.setLabelProvider(new LabelProvider() {
+            public String getText(Object element)
+            {
+                if (element instanceof Assignment)
+                {
+                    Assignment assign = (Assignment) element;
+                    String label = assign.getLabel();
+                    String noBangLabel = label.substring(label.lastIndexOf("!") + 1);
+                    Assignment assignNoBang = new Assignment(noBangLabel, assign.getParams(), assign.getRight());
+                    return assignNoBang.toString();
+                }
+                return super.getText(element);
             }
         });
 

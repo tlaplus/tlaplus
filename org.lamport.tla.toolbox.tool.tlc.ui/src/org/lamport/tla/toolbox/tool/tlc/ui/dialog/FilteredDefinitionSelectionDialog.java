@@ -64,9 +64,9 @@ public class FilteredDefinitionSelectionDialog extends FilteredItemsSelectionDia
                 {
                     OpDefNode node = (OpDefNode) element;
 
-                    return node.getName().toString()
-                            + ((node.getOriginallyDefinedInModuleNode() != null) ? " : "
-                                    + node.getOriginallyDefinedInModuleNode().getName().toString() : "");
+                    return node.getSource().getName().toString()
+                            + ((node.getSource().getOriginallyDefinedInModuleNode() != null) ? " : "
+                                    + node.getSource().getOriginallyDefinedInModuleNode().getName().toString() : "");
                 }
                 return super.getText(element);
             }
@@ -84,7 +84,14 @@ public class FilteredDefinitionSelectionDialog extends FilteredItemsSelectionDia
                 if (element instanceof OpDefNode)
                 {
                     OpDefNode node = (OpDefNode) element;
-                    return node.getName().toString();
+                    if (node.getSource() == node)
+                    {
+                        return node.getName().toString();
+                    } else
+                    {
+                        return node.getSource().getName().toString() + " ["
+                                + node.getSource().getOriginallyDefinedInModuleNode().getName().toString() + "]";
+                    }
                 }
                 return super.getText(element);
             }

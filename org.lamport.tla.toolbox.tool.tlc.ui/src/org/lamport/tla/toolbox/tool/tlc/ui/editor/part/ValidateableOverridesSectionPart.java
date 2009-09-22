@@ -38,12 +38,12 @@ public class ValidateableOverridesSectionPart extends ValidateableConstantSectio
                     .getSection().getShell(), false, ToolboxHandle.getCurrentSpec().getValidRootModule());
 
             definitionSelection.setTitle("Select Definition to Override");
-            // It would be nice to add help to this dialog.  The following command will
-            // add a help button.  However, I have no idea how to attach an help
+            // It would be nice to add help to this dialog. The following command will
+            // add a help button. However, I have no idea how to attach an help
             // to that button.
             //
             // definitionSelection.setHelpAvailable(true);
-            
+
             definitionSelection
                     .setMessage("Type definition to override or select from the list below\n(?= any character, *= any string)");
             definitionSelection.setInitialPattern("?");
@@ -51,7 +51,7 @@ public class ValidateableOverridesSectionPart extends ValidateableConstantSectio
             {
                 OpDefNode result = (OpDefNode) (definitionSelection.getResult())[0];
                 formula = new Assignment(result.getName().toString(), Assignment.getArrayOfEmptyStrings(result
-                        .getNumberOfArgs()), "");
+                        .getSource().getNumberOfArgs()), "");
             } else
             {
                 return null;

@@ -42,6 +42,7 @@ import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
 import org.lamport.tla.toolbox.tool.tlc.model.Formula;
 import org.lamport.tla.toolbox.util.UIHelper;
 
+import tla2sany.modanalyzer.SpecObj;
 import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.OpDeclNode;
 import tla2sany.semantic.OpDefNode;
@@ -400,7 +401,8 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
      */
     public static String createVariableList(ModuleNode moduleNode)
     {
-        if (moduleNode == null) {
+        if (moduleNode == null)
+        {
             return "";
         }
         StringBuffer buffer = new StringBuffer();
@@ -1150,6 +1152,26 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
             regions.add(new Region(matcher.start(), matcher.end() - matcher.start()));
         }
         return (IRegion[]) regions.toArray(new IRegion[regions.size()]);
+    }
+
+    /**
+     * Returns the OpDefNode with name equal to input string
+     * Returns null if there is no such OpDefNode
+     * @param name
+     * @return
+     */
+    public static OpDefNode getOpDefNode(String name)
+    {
+        SpecObj specObj = ToolboxHandle.getCurrentSpec().getValidRootModule();
+        OpDefNode[] opDefNodes = specObj.getExternalModuleTable().getRootModule().getOpDefs();
+        for (int j = 0; j < opDefNodes.length; j++)
+        {
+            if (opDefNodes[j].getName().toString().equals(name))
+            {
+                return opDefNodes[j];
+            }
+        }
+        return null;
     }
 
 }

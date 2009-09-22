@@ -16,10 +16,14 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Label;
 import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
 import org.lamport.tla.toolbox.tool.tlc.model.TypedSet;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
+import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
+
+import tla2sany.semantic.OpDefNode;
 
 /**
  * @author Simon Zambrovski
@@ -33,7 +37,7 @@ public class AssignmentWizardPage extends WizardPage
     private SourceViewer source;
     private Button optionModelValue;
     private final int fieldFlags;
-    private final String helpId;  // The id of the help context for this wizard page
+    private final String helpId; // The id of the help context for this wizard page
     private Button optionSetModelValues;
     private Button flagSymmetricalSet;
     private Button optionOrdinaryValue;
@@ -79,7 +83,8 @@ public class AssignmentWizardPage extends WizardPage
         container.setLayout(layout);
         GridData gd;
 
-        paramComposite = new LabeledListComposite(container, getAssignment().getLabel(), getAssignment().getParams());
+        paramComposite = new LabeledListComposite(container, getAssignment().getLabel().substring(
+                getAssignment().getLabel().lastIndexOf("!") + 1), getAssignment().getParams());
         gd = new GridData(SWT.LEFT, SWT.TOP, false, true);
         paramComposite.setLayoutData(gd);
 
@@ -104,6 +109,18 @@ public class AssignmentWizardPage extends WizardPage
         gd.minimumWidth = 500;
         gd.minimumHeight = 100;
         styledText.setLayoutData(gd);
+
+        // display source name and originally defined in module
+        OpDefNode node = ModelHelper.getOpDefNode(getAssignment().getLabel());
+        if (node != null && node.getSource() != node)
+        {
+            GridData labelGridData = new GridData();
+            labelGridData.horizontalSpan = 2;
+            Label moduleNameLabel = new Label(container, SWT.NONE);
+            moduleNameLabel.setText("From module "
+                    + node.getSource().getOriginallyDefinedInModuleNode().getName().toString());
+            moduleNameLabel.setLayoutData(labelGridData);
+        }
 
         // constant, no parameters
         if (!paramComposite.hasParameters())
@@ -169,12 +186,12 @@ public class AssignmentWizardPage extends WizardPage
 
             }
         }
-// here we need to add UIHelper.setHelp(container, "assignmentHelp");
-        // except Simon says that it won't work because this is also used 
-        // overriding definitions.  Therefore, we need to add a field to the
+        // here we need to add UIHelper.setHelp(container, "assignmentHelp");
+        // except Simon says that it won't work because this is also used
+        // overriding definitions. Therefore, we need to add a field to the
         // class that contains the help string, and set it with the constructor.
         UIHelper.setHelp(container, helpId);
-        
+
         setControl(container);
     }
 

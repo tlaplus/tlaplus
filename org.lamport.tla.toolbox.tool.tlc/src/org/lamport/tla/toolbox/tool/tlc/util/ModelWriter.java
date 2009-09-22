@@ -338,41 +338,50 @@ public class ModelWriter
      * Create a list of overrides. If the override is not in the spec's root module, then
      * the config file will have     A <- [M] id . This means that A is defined in module M,
      * and its definition is being overriden in the spec root module which is dependent upon M.
-     * The following is an example from Leslie Lamport that explains the code.
-     * Let's suppose we have
-    
-    ------ MODULE MA ----
-    IB == INSTANCE MB ...
-    =================
-    
-    ------ MODULE MB ----
-    IC == INSTANCE MC ...
-    =================
-    
-    ----- MODULE MC ------
-    Foo == ...
-    ======================
-    
-    where MA is the spec's root module.  The user will see in the override
-    menu and override
-    
-    IB!IC!Foo
-    
-    Let OD be the OpDefNode for IB!IC!Foo in the semantic tree for module
-    MA.  Then OD.getSource() is the OpDefNode for Foo in the semantic tree
-    of module MC.  So we have
-    
-    OD.getSource().getOriginallyDefinedInModuleNode() 
-    
-    is the module node for MC, and
-    
-    OD.getSource().getOriginallyDefinedInModuleNode().getName().toString() = "MC"
-    
-    OD.getName().toString() = "Foo"
-    
-    and the config file should contain
-    
-    Foo <-[MC] ...
+     * The following is an example from Leslie Lamport that explains what occured before changing
+     * the code and what occurs now.
+     * Consider the root module
+
+    ----------------- MODULE TestA --------------------
+    M(a,b) == INSTANCE TestB WITH CB <- a, CD <- b
+    ==================================================
+
+    which imports the module
+
+    ----------------- MODULE TestB --------------------
+    CONSTANTS CB, CD
+
+    Foo(x) == <<x, CB, CD>>
+    ==================================================
+
+    If you go to definition overrides, you'll find the option of
+    overriding M!Foo.  Selecting it, the toolbox asks you to define an operator
+    M!Foo of 3 arguments.  If you do it and run TLC, you get the error
+
+    The configuration file substitutes for Foo with
+    def_ov_12533499062845000 of different number of arguments.
+
+    Here's what's going on.  The INSTANCE statement imports the operator
+    M!Foo into module TestA.  As you may recall, you use that operator
+    in an expression by writing something like
+
+    M(42, "a")!F(-13)
+
+    but in the semantic tree, it looks just as if M!F were any other
+    operator with three arguments.  When TLC sees the override instruction
+
+    Foo <- [TestB]def_ov_12533495599614000
+
+    in the .cfg file, it tries to substitute an operator def_ov_...  with
+    3 arguments for the operator Foo of module TestB that has only a
+    single argument.  Hence, the error.
+
+    ------
+
+    Here's the fix.  Instead of giving the user the option of overriding
+    M!Foo, in the menu, he should simply see Foo and, if he clicks once
+    it, he should see that it's in module TestB. If he chooses to override
+    Foo, he should be asked to define an operator of one argument.
     
      * @param overrides
      * @param string
@@ -388,7 +397,8 @@ public class ModelWriter
         String id;
         Assignment formula;
 
-        // opDefNodes are necessary when the user overrides a definition that is not in the root module
+        // getting the opdefnodes is necessary for retrieving the correct label
+        // go appear in the cfg file as explained in the documentation for this method
         SpecObj specObj = ToolboxHandle.getCurrentSpec().getValidRootModule();
         if (specObj == null) {
             return resultContent;
@@ -409,11 +419,8 @@ public class ModelWriter
             // to .cfg : <id>
             // to _MC.tla : <id> == <expression>
             formula = ((Assignment) overrides.get(i));
-            OpDefNode defNode = null;
-            if (nodeTable.containsKey(formula.getLabel()))
-            {
-                defNode = (OpDefNode) nodeTable.get(formula.getLabel());
-            }
+
+            OpDefNode defNode = (OpDefNode) nodeTable.get(formula.getLabel());
 
             if (defNode == null)
             {
