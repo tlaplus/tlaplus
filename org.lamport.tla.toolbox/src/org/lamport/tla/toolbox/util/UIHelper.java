@@ -11,7 +11,9 @@ import org.eclipse.core.commands.NotHandledException;
 import org.eclipse.core.commands.ParameterizedCommand;
 import org.eclipse.core.commands.common.NotDefinedException;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ISelection;
@@ -226,8 +228,11 @@ public class UIHelper
      */
     public static IWorkbenchPage switchPerspective(String perspectiveId)
     {
-        IWorkbench workbench = Activator.getDefault().getWorkbench();
-        IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
+        Assert.isNotNull(perspectiveId, "PerspectiveId is null");
+        IWorkbench workbench = PlatformUI.getWorkbench();
+        IWorkbenchWindow window = getActiveWindow();
+        Assert.isNotNull(workbench, "Workbench is null");
+        Assert.isNotNull(window, "Window is null");
         try
         {
             IWorkbenchPage page = workbench.showPerspective(perspectiveId, window);
@@ -242,8 +247,7 @@ public class UIHelper
             return page;
         } catch (WorkbenchException e)
         {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            Activator.logError("Error switching a perspective to " + perspectiveId, e);
         }
 
         return null;
