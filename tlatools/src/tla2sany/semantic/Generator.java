@@ -1,7 +1,7 @@
 // Copyright (c) 2003 Compaq Corporation.  All rights reserved.
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
 //
-// last modified on Fri  3 July 2009 at 12:43:32 PST by lamport
+// last modified on Wed 23 September 2009 at  8:04:12 PST by lamport
 
 //
 //  4/9/2006 Added a check in RecordConstructor for duplicate fields
@@ -664,7 +664,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants,
     * Local algorithm variables.                                           *
     ***********************************************************************/
     UniqueString curName = null ;
-    UniqueString newName ;
+    UniqueString newName = null ; // Initial value set to make Eclipse happy.
     SemanticNode curNode = null ;
     SemanticNode newNode ;
 
@@ -735,6 +735,10 @@ public class Generator implements ASTConstants, SyntaxTreeConstants,
 
       switch (mode) {
        case FindingOpName :
+         // Following code changed on 23 Sep 2009 to fix bug.  See description
+         // in Subexpression.tla.
+         SymbolNode newSymbolNode = null;
+         while (newSymbolNode == null && idx < sel.args.length) {
          /******************************************************************
          * +cal: newName := IF IsName(ops[idx]) ... ELSE null ;            *
          ******************************************************************/
@@ -765,23 +769,29 @@ public class Generator implements ASTConstants, SyntaxTreeConstants,
                          "Internal error: should have name here.") ;
             } ;
            } ; // if (curName == null) ...  ;
-         SymbolNode newSymbolNode = null;
-         if (newName != null) {
-          if (letInContext == null) {
-            /***************************************************************
-            * See the comments for the declaration of letInContext.        *
-            ***************************************************************/
-            newSymbolNode = symbolTable.resolveSymbol(newName) ;
-           }
-          else {
-            newSymbolNode = letInContext.getSymbol(newName) ;
-           } ;
-          } ; // if (newName != null) 
+           if (newName != null) {
+               if (letInContext == null) {
+                 /***************************************************************
+                 * See the comments for the declaration of letInContext.        *
+                 ***************************************************************/
+                 newSymbolNode = symbolTable.resolveSymbol(newName) ;
+                }
+               else {
+                 newSymbolNode = letInContext.getSymbol(newName) ;
+                } ;
+               } ; // if (newName != null) 
+          if (newSymbolNode == null) {
+              curName = newName;
+              idx++;
+          }
+         } // while (newNode == null)
 
          if (newSymbolNode == null) {
+           int eidx = (idx < sel.args.length) ? idx : (sel.args.length-1);
            errors.addError(
-               sel.opsSTN[idx].getLocation(),
-               "Unknown operator: `" + selectorItemToString(sel, idx) + "'.") ;
+               sel.opsSTN[eidx].getLocation(),
+               "Unknown operator: `" + 
+               selectorItemToString(sel, eidx) + "'.") ;
            return nullOAN ; 
           } ; 
         
@@ -832,6 +842,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants,
            * deliberately no break here, so this case "joins" the          *
            * following case.                                               *
            ****************************************************************/
+           //$FALL-THROUGH$
            case UserDefinedOpKind:
            case ThmOrAssumpDefKind:
            case ModuleInstanceKind:
@@ -7754,9 +7765,8 @@ Nbrs == <<           \* 1, 3, 4, 5 and 6
 ************************** end file Tarjan.tla ******************************/
 
 /************************* file Subexpression.tla  **********************
-Version of 1 August 2007
-
 ------------------------  MODULE Subexpression --------------------------- 
+
 
 (***************************************************************************)
 (*                        NAMING                                           *)
@@ -9672,30 +9682,36 @@ macro Error(msg) begin print msg ;
   (*************************************************************************)
   while idx <= Len(ops) do
   if mode = "FindingOpName" then
-   newName := IF IsName(ops[idx])
-                 THEN IF curName = "" THEN ops[idx] 
-                                      ELSE curName \o "!" \o ops[idx]
-                 ELSE null ;
-   if /\ curName = ""
-      /\ ~ IsName(ops[idx])
-     then (*****************************************************************)
-          (* I think that this error can only happen for idx = 1, and      *)
-          (* should never happen in the implementation because the parser  *)
-          (* should not allow a compound name that doesn't begin with a    *)
-          (* name.                                                         *)
-          (*****************************************************************)
-          Error("Need an operator or label name or step number here")
-   end if;
 
-\* BUG!  This produces a bogus error on a reference to an identifier M!N
-\* that is imported by an unnamed INSTANCE of a module containing the
-\* statement M == INSTANCE ...
-\* Found by LL on 17 Sep 2009
-\* XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX  
-   newNode := IF newName # null THEN LookUp(newName, curContext) ELSE null ;
-   if newNode =  null 
-     then Error ("Unknown operator")
-   end if;     
+\* The following code was modified by LL on 23 Sep 2009 to fix the following
+\* bug.  The parser produced a bogus error on a reference to an identifier 
+\* M!N that is imported by an unnamed INSTANCE of a module containing the
+\* statement M == INSTANCE ... .  The original code essentially just 
+\* contained the first iteration of the following while loop, and would
+\* report an error if it found newNode = null.  Thus, it would report
+\* an error in the identifier M!N when it found M to be undefined.
+\*   
+   newNode := null ;
+   while newNode = null do
+     if idx \geq Len(ops)
+       then Error ("Unknown operator");
+     end if;
+     newName := IF IsName(ops[idx])
+                  THEN IF curName = "" THEN ops[idx] 
+                                       ELSE curName \o "!" \o ops[idx]
+                  ELSE null ;
+     if /\ curName = ""
+        /\ ~ IsName(ops[idx])
+       then (***************************************************************)
+            (* I think that this error can only happen for idx = 1, and    *)
+            (* should never happen in the implementation because the       *)
+            (* parser should not allow a compound name that doesn't begi   *)
+            (* with a name.                                                *)
+            (***************************************************************)
+            Error("Need an operator or label name or step number here")
+       end if;
+     newNode := IF newName # null THEN LookUp(newName, curContext) ELSE null ;
+   end while ;     
    curNode := newNode ;
    curName := newName ;
    if curNode.kind \in 
@@ -10216,6 +10232,7 @@ Finished:
 end algorithm
 *********************************************************************)
 \* BEGIN TRANSLATION
+CONSTANT defaultInitValue
 VARIABLES ops, args, expectedArity, substInPrefix, params, allArgs, curNode, 
           subExprOf, result, idx, mode, prevMode, curContext, curName, 
           opDefArityFound, opDefArgs, firstFindingOpName, opNode, newName, 
@@ -10244,11 +10261,11 @@ Init == (* Global variables *)
         /\ opDefArityFound = 0
         /\ opDefArgs = << >>
         /\ firstFindingOpName = TRUE
-        /\ opNode = {}
-        /\ newName = {}
-        /\ newNode = {}
-        /\ nodeArity = {}
-        /\ temp = {}
+        /\ opNode = defaultInitValue
+        /\ newName = defaultInitValue
+        /\ newNode = defaultInitValue
+        /\ nodeArity = defaultInitValue
+        /\ temp = defaultInitValue
         /\ pc = "Lbl_1"
 
 Lbl_1 == /\ pc = "Lbl_1"
@@ -10261,7 +10278,7 @@ Lbl_1 == /\ pc = "Lbl_1"
                            \/ expectedArity # 0
                            => args[i] = << >>
                         /\ (ops[i] = "null") => (Len(args[i]) > 0), 
-                   "Failure of assertion at line line 1901, column 3.")
+                   "Failure of assertion at line line 1904, column 3.")
          /\ pc' = "Lbl_2"
          /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
                          allArgs, curNode, subExprOf, result, idx, mode, 
@@ -10272,38 +10289,26 @@ Lbl_1 == /\ pc = "Lbl_1"
 Lbl_2 == /\ pc = "Lbl_2"
          /\ IF idx <= Len(ops)
                THEN /\ IF mode = "FindingOpName"
-                          THEN /\ newName' = IF IsName(ops[idx])
-                                                THEN IF curName = "" THEN ops[idx]
-                                                                     ELSE curName \o "!" \o ops[idx]
-                                                ELSE null
-                               /\ IF /\ curName = ""
-                                     /\ ~ IsName(ops[idx])
-                                     THEN /\ PrintT("Need an operator or label name or step number here")
-                                          /\ IF debug
-                                                THEN /\ idx' = idx
-                                                     /\ pc' = "Lbl_3"
-                                                ELSE /\ pc' = "Done"
-                                                     /\ UNCHANGED idx
-                                     ELSE /\ pc' = "Lbl_4"
-                                          /\ UNCHANGED idx
-                               /\ UNCHANGED << params, allArgs, curNode, 
-                                               opNode, newNode, temp >>
+                          THEN /\ newNode' = null
+                               /\ pc' = "Lbl_3"
+                               /\ UNCHANGED << params, allArgs, curNode, idx, 
+                                               opNode, temp >>
                           ELSE /\ IF mode = "FollowingLabels"
                                      THEN /\ IF prevMode = "FindingOpName"
                                                 THEN /\ Assert(curNode.kind \in {UserDefinedOpKind, ThmOrAssumpDefKind}, 
-                                                               "Failure of assertion at line line 2022, column 13.")
+                                                               "Failure of assertion at line line 2034, column 13.")
                                                      /\ newNode' = LookUp(ops[idx], curNode.labels)
                                                 ELSE /\ Assert(curNode.kind = LabelKind, 
-                                                               "Failure of assertion at line line 2024, column 13.")
+                                                               "Failure of assertion at line line 2036, column 13.")
                                                      /\ newNode' = LookUp(ops[idx], curNode.labels)
                                           /\ IF newNode' =  null
                                                 THEN /\ PrintT("Label not found")
                                                      /\ IF debug
                                                            THEN /\ idx' = idx
-                                                                /\ pc' = "Lbl_21"
+                                                                /\ pc' = "Lbl_22"
                                                            ELSE /\ pc' = "Done"
                                                                 /\ UNCHANGED idx
-                                                ELSE /\ pc' = "Lbl_22"
+                                                ELSE /\ pc' = "Lbl_23"
                                                      /\ UNCHANGED idx
                                           /\ UNCHANGED << params, allArgs, 
                                                           curNode, opNode, 
@@ -10315,14 +10320,14 @@ Lbl_2 == /\ pc = "Lbl_2"
                                                                               /\ prevMode = "FindingOpName"
                                                                            \/ /\ idx < Len(ops)
                                                                               /\ IsName(ops[idx+1])
-                                                                      THEN /\ PrintT("!: can occur only after a name and either " \o
-                                                                                            "at the end or before a name")
+                                                                      THEN /\ PrintT("`!:' can be used only after a name and either at the " \o
+                                                                                     "end after an operator name or before an operator name.")
                                                                            /\ IF debug
                                                                                  THEN /\ idx' = idx
-                                                                                      /\ pc' = "Lbl_28"
+                                                                                      /\ pc' = "Lbl_29"
                                                                                  ELSE /\ pc' = "Done"
                                                                                       /\ UNCHANGED idx
-                                                                      ELSE /\ pc' = "Lbl_62"
+                                                                      ELSE /\ pc' = "Lbl_63"
                                                                            /\ UNCHANGED idx
                                                                 /\ UNCHANGED << params, 
                                                                                 allArgs, 
@@ -10332,12 +10337,12 @@ Lbl_2 == /\ pc = "Lbl_2"
                                                            ELSE /\ IF curNode.kind = LetInKind
                                                                       THEN /\ IF ArgNum(ops[idx], 1) = 1
                                                                                  THEN /\ curNode' = Node[curNode.body]
-                                                                                      /\ pc' = "Lbl_62"
+                                                                                      /\ pc' = "Lbl_63"
                                                                                       /\ UNCHANGED idx
                                                                                  ELSE /\ PrintT("A Let/In has only a single operand")
                                                                                       /\ IF debug
                                                                                             THEN /\ idx' = idx
-                                                                                                 /\ pc' = "Lbl_29"
+                                                                                                 /\ pc' = "Lbl_30"
                                                                                             ELSE /\ pc' = "Done"
                                                                                                  /\ UNCHANGED idx
                                                                                       /\ UNCHANGED curNode
@@ -10354,12 +10359,12 @@ Lbl_2 == /\ pc = "Lbl_2"
                                                                                                        THEN /\ PrintT("Nonexistent operand specified")
                                                                                                             /\ IF debug
                                                                                                                   THEN /\ idx' = idx
-                                                                                                                       /\ pc' = "Lbl_30"
+                                                                                                                       /\ pc' = "Lbl_31"
                                                                                                                   ELSE /\ pc' = "Done"
                                                                                                                        /\ UNCHANGED idx
                                                                                                             /\ UNCHANGED curNode
                                                                                                        ELSE /\ curNode' = Node[curNode.operands[temp']]
-                                                                                                            /\ pc' = "Lbl_62"
+                                                                                                            /\ pc' = "Lbl_63"
                                                                                                             /\ UNCHANGED idx
                                                                                                  /\ UNCHANGED << params, 
                                                                                                                  allArgs >>
@@ -10370,10 +10375,10 @@ Lbl_2 == /\ pc = "Lbl_2"
                                                                                                                              THEN /\ PrintT("Incorrect subexpression number")
                                                                                                                                   /\ IF debug
                                                                                                                                         THEN /\ idx' = idx
-                                                                                                                                             /\ pc' = "Lbl_31"
+                                                                                                                                             /\ pc' = "Lbl_32"
                                                                                                                                         ELSE /\ pc' = "Done"
                                                                                                                                              /\ UNCHANGED idx
-                                                                                                                             ELSE /\ pc' = "Lbl_32"
+                                                                                                                             ELSE /\ pc' = "Lbl_33"
                                                                                                                                   /\ UNCHANGED idx
                                                                                                                        /\ UNCHANGED << params, 
                                                                                                                                        allArgs, 
@@ -10383,10 +10388,10 @@ Lbl_2 == /\ pc = "Lbl_2"
                                                                                                                                         THEN /\ PrintT("CASE subexpression must be of form !i!j")
                                                                                                                                              /\ IF debug
                                                                                                                                                    THEN /\ idx' = idx
-                                                                                                                                                        /\ pc' = "Lbl_35"
+                                                                                                                                                        /\ pc' = "Lbl_36"
                                                                                                                                                    ELSE /\ pc' = "Done"
                                                                                                                                                         /\ UNCHANGED idx
-                                                                                                                                        ELSE /\ pc' = "Lbl_36"
+                                                                                                                                        ELSE /\ pc' = "Lbl_37"
                                                                                                                                              /\ UNCHANGED idx
                                                                                                                                   /\ UNCHANGED << params, 
                                                                                                                                                   allArgs, 
@@ -10398,10 +10403,10 @@ Lbl_2 == /\ pc = "Lbl_2"
                                                                                                                                                    THEN /\ PrintT("Bad argument selector.")
                                                                                                                                                         /\ IF debug
                                                                                                                                                               THEN /\ idx' = idx
-                                                                                                                                                                   /\ pc' = "Lbl_45"
+                                                                                                                                                                   /\ pc' = "Lbl_46"
                                                                                                                                                               ELSE /\ pc' = "Done"
                                                                                                                                                                    /\ UNCHANGED idx
-                                                                                                                                                   ELSE /\ pc' = "Lbl_46"
+                                                                                                                                                   ELSE /\ pc' = "Lbl_47"
                                                                                                                                                         /\ UNCHANGED idx
                                                                                                                                              /\ UNCHANGED << params, 
                                                                                                                                                              allArgs, 
@@ -10413,19 +10418,19 @@ Lbl_2 == /\ pc = "Lbl_2"
                                                                                                                                                               THEN /\ PrintT("Incorrect subexpression selector")
                                                                                                                                                                    /\ IF debug
                                                                                                                                                                          THEN /\ idx' = idx
-                                                                                                                                                                              /\ pc' = "Lbl_49"
+                                                                                                                                                                              /\ pc' = "Lbl_50"
                                                                                                                                                                          ELSE /\ pc' = "Done"
                                                                                                                                                                               /\ UNCHANGED idx
-                                                                                                                                                              ELSE /\ pc' = "Lbl_50"
+                                                                                                                                                              ELSE /\ pc' = "Lbl_51"
                                                                                                                                                                    /\ UNCHANGED idx
                                                                                                                                                         /\ UNCHANGED << params, 
                                                                                                                                                                         allArgs, 
                                                                                                                                                                         curNode >>
                                                                                                                                                    ELSE /\ IF ops[idx] \in {"null", "@"}
-                                                                                                                                                              THEN /\ temp' = IF Len(curNode.unboundedBoundSymbols) > 0
-                                                                                                                                                                                THEN curNode.unboundedBoundSymbols
-                                                                                                                                                                                ELSE SeqSeqToSeq(
-                                                                                                                                                                                        curNode.boundedBoundSymbols)
+                                                                                                                                                              THEN /\ temp' = (IF Len(curNode.unboundedBoundSymbols) > 0
+                                                                                                                                                                                 THEN curNode.unboundedBoundSymbols
+                                                                                                                                                                                 ELSE SeqSeqToSeq(
+                                                                                                                                                                                         curNode.boundedBoundSymbols))
                                                                                                                                                                    /\ params' = params \o
                                                                                                                                                                                  [i \in 1.. Len(temp') |->
                                                                                                                                                                                    [name |-> temp'[i], arity |-> 0]]
@@ -10435,10 +10440,10 @@ Lbl_2 == /\ pc = "Lbl_2"
                                                                                                                                                                          THEN /\ PrintT("Wrong number of selector arguments")
                                                                                                                                                                               /\ IF debug
                                                                                                                                                                                     THEN /\ idx' = idx
-                                                                                                                                                                                         /\ pc' = "Lbl_51"
+                                                                                                                                                                                         /\ pc' = "Lbl_52"
                                                                                                                                                                                     ELSE /\ pc' = "Done"
                                                                                                                                                                                          /\ UNCHANGED idx
-                                                                                                                                                                         ELSE /\ pc' = "Lbl_52"
+                                                                                                                                                                         ELSE /\ pc' = "Lbl_53"
                                                                                                                                                                               /\ UNCHANGED idx
                                                                                                                                                                    /\ UNCHANGED curNode
                                                                                                                                                               ELSE /\ temp' = ArgNum(ops[idx], Len(curNode.ranges))
@@ -10446,12 +10451,12 @@ Lbl_2 == /\ pc = "Lbl_2"
                                                                                                                                                                          THEN /\ PrintT("Selecting non-existent range")
                                                                                                                                                                               /\ IF debug
                                                                                                                                                                                     THEN /\ idx' = idx
-                                                                                                                                                                                         /\ pc' = "Lbl_53"
+                                                                                                                                                                                         /\ pc' = "Lbl_54"
                                                                                                                                                                                     ELSE /\ pc' = "Done"
                                                                                                                                                                                          /\ UNCHANGED idx
                                                                                                                                                                               /\ UNCHANGED curNode
                                                                                                                                                                          ELSE /\ curNode' = Node[curNode.ranges[temp']]
-                                                                                                                                                                              /\ pc' = "Lbl_62"
+                                                                                                                                                                              /\ pc' = "Lbl_63"
                                                                                                                                                                               /\ UNCHANGED idx
                                                                                                                                                                    /\ UNCHANGED << params, 
                                                                                                                                                                                    allArgs >>
@@ -10459,7 +10464,7 @@ Lbl_2 == /\ pc = "Lbl_2"
                                                                                                                        " with no choosable subexpressions")
                                                                                                             /\ IF debug
                                                                                                                   THEN /\ idx' = idx
-                                                                                                                       /\ pc' = "Lbl_54"
+                                                                                                                       /\ pc' = "Lbl_55"
                                                                                                                   ELSE /\ pc' = "Done"
                                                                                                                        /\ UNCHANGED idx
                                                                                                             /\ UNCHANGED << params, 
@@ -10472,14 +10477,14 @@ Lbl_2 == /\ pc = "Lbl_2"
                                                                                                        THEN /\ PrintT("Illegal argument number")
                                                                                                             /\ IF debug
                                                                                                                   THEN /\ idx' = idx
-                                                                                                                       /\ pc' = "Lbl_55"
+                                                                                                                       /\ pc' = "Lbl_56"
                                                                                                                   ELSE /\ pc' = "Done"
                                                                                                                        /\ UNCHANGED idx
                                                                                                             /\ UNCHANGED curNode
                                                                                                        ELSE /\ IF temp' <= Len(curNode.assumes)
                                                                                                                   THEN /\ curNode' = Node[curNode.assumes[temp']]
                                                                                                                   ELSE /\ curNode' = Node[curNode.prove]
-                                                                                                            /\ pc' = "Lbl_62"
+                                                                                                            /\ pc' = "Lbl_63"
                                                                                                             /\ UNCHANGED idx
                                                                                                  /\ UNCHANGED << params, 
                                                                                                                  allArgs, 
@@ -10491,7 +10496,7 @@ Lbl_2 == /\ pc = "Lbl_2"
                                                                                                                   THEN /\ PrintT("Selecting from operator argument that has no sub-part")
                                                                                                                        /\ IF debug
                                                                                                                              THEN /\ idx' = idx
-                                                                                                                                  /\ pc' = "Lbl_56"
+                                                                                                                                  /\ pc' = "Lbl_57"
                                                                                                                              ELSE /\ pc' = "Done"
                                                                                                                                   /\ UNCHANGED idx
                                                                                                                        /\ UNCHANGED << params, 
@@ -10501,7 +10506,7 @@ Lbl_2 == /\ pc = "Lbl_2"
                                                                                                                              THEN /\ PrintT("Incorrect selection from LAMBDA")
                                                                                                                                   /\ IF debug
                                                                                                                                         THEN /\ idx' = idx
-                                                                                                                                             /\ pc' = "Lbl_57"
+                                                                                                                                             /\ pc' = "Lbl_58"
                                                                                                                                         ELSE /\ pc' = "Done"
                                                                                                                                              /\ UNCHANGED idx
                                                                                                                                   /\ UNCHANGED << params, 
@@ -10512,7 +10517,7 @@ Lbl_2 == /\ pc = "Lbl_2"
                                                                                                                                         THEN /\ PrintT("Incorrect number of arguments for LAMBDA")
                                                                                                                                              /\ IF debug
                                                                                                                                                    THEN /\ idx' = idx
-                                                                                                                                                        /\ pc' = "Lbl_58"
+                                                                                                                                                        /\ pc' = "Lbl_59"
                                                                                                                                                    ELSE /\ pc' = "Done"
                                                                                                                                                         /\ UNCHANGED idx
                                                                                                                                              /\ UNCHANGED << params, 
@@ -10521,13 +10526,13 @@ Lbl_2 == /\ pc = "Lbl_2"
                                                                                                                                         ELSE /\ params' = params \o opNode'.params
                                                                                                                                              /\ allArgs' = allArgs \o args[idx]
                                                                                                                                              /\ curNode' = Node[opNode'.body]
-                                                                                                                                             /\ pc' = "Lbl_62"
+                                                                                                                                             /\ pc' = "Lbl_63"
                                                                                                                                              /\ UNCHANGED idx
                                                                                                        ELSE /\ IF curNode.kind \in {UserDefinedOpKind, BuiltInKind}
                                                                                                                   THEN /\ PrintT("Abort: should not have been able to choose this node.")
                                                                                                                        /\ IF debug
                                                                                                                              THEN /\ idx' = idx
-                                                                                                                                  /\ pc' = "Lbl_59"
+                                                                                                                                  /\ pc' = "Lbl_60"
                                                                                                                              ELSE /\ pc' = "Done"
                                                                                                                                   /\ UNCHANGED idx
                                                                                                                        /\ UNCHANGED curNode
@@ -10537,18 +10542,18 @@ Lbl_2 == /\ pc = "Lbl_2"
                                                                                                                              THEN /\ PrintT("Selected part has no subexpression")
                                                                                                                                   /\ IF debug
                                                                                                                                         THEN /\ idx' = idx
-                                                                                                                                             /\ pc' = "Lbl_60"
+                                                                                                                                             /\ pc' = "Lbl_61"
                                                                                                                                         ELSE /\ pc' = "Done"
                                                                                                                                              /\ UNCHANGED idx
                                                                                                                                   /\ UNCHANGED curNode
                                                                                                                              ELSE /\ IF curNode.kind = LabelKind
                                                                                                                                         THEN /\ curNode' = Node[curNode.body]
                                                                                                                                              /\ idx' = idx - 1
-                                                                                                                                             /\ pc' = "Lbl_62"
+                                                                                                                                             /\ pc' = "Lbl_63"
                                                                                                                                         ELSE /\ PrintT("Unexpected node kind found in expression")
                                                                                                                                              /\ IF debug
                                                                                                                                                    THEN /\ idx' = idx
-                                                                                                                                                        /\ pc' = "Lbl_61"
+                                                                                                                                                        /\ pc' = "Lbl_62"
                                                                                                                                                    ELSE /\ pc' = "Done"
                                                                                                                                                         /\ UNCHANGED idx
                                                                                                                                              /\ UNCHANGED curNode
@@ -10559,7 +10564,7 @@ Lbl_2 == /\ pc = "Lbl_2"
                                                 ELSE /\ PrintT("Bad value of mode")
                                                      /\ IF debug
                                                            THEN /\ idx' = idx
-                                                                /\ pc' = "Lbl_67"
+                                                                /\ pc' = "Lbl_68"
                                                            ELSE /\ pc' = "Done"
                                                                 /\ UNCHANGED idx
                                                      /\ UNCHANGED << params, 
@@ -10568,24 +10573,23 @@ Lbl_2 == /\ pc = "Lbl_2"
                                                                      opNode, 
                                                                      temp >>
                                           /\ UNCHANGED newNode
-                               /\ UNCHANGED newName
                ELSE /\ IF curNode.kind = AssumeProveKind
                           THEN /\ PrintT("Selecting ASSUME/PROVE instead of expression")
                                /\ IF debug
                                      THEN /\ idx' = idx
-                                          /\ pc' = "Lbl_69"
+                                          /\ pc' = "Lbl_70"
                                      ELSE /\ pc' = "Done"
                                           /\ UNCHANGED idx
-                          ELSE /\ pc' = "Lbl_70"
+                          ELSE /\ pc' = "Lbl_71"
                                /\ UNCHANGED idx
-                    /\ UNCHANGED << params, allArgs, curNode, opNode, newName, 
-                                    newNode, temp >>
+                    /\ UNCHANGED << params, allArgs, curNode, opNode, newNode, 
+                                    temp >>
          /\ UNCHANGED << ops, args, expectedArity, substInPrefix, subExprOf, 
                          result, mode, prevMode, curContext, curName, 
                          opDefArityFound, opDefArgs, firstFindingOpName, 
-                         nodeArity >>
+                         newName, nodeArity >>
 
-Lbl_68 == /\ pc = "Lbl_68"
+Lbl_69 == /\ pc = "Lbl_69"
           /\ idx' = idx + 1
           /\ pc' = "Lbl_2"
           /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
@@ -10594,118 +10598,153 @@ Lbl_68 == /\ pc = "Lbl_68"
                           firstFindingOpName, opNode, newName, newNode, 
                           nodeArity, temp >>
 
-Lbl_4 == /\ pc = "Lbl_4"
-         /\ newNode' = IF newName # null THEN LookUp(newName, curContext) ELSE null
-         /\ IF newNode' =  null
-               THEN /\ PrintT("Unknown operator")
-                    /\ IF debug
-                          THEN /\ idx' = idx
-                               /\ pc' = "Lbl_5"
-                          ELSE /\ pc' = "Done"
+Lbl_3 == /\ pc = "Lbl_3"
+         /\ IF newNode = null
+               THEN /\ IF idx \geq Len(ops)
+                          THEN /\ PrintT("Unknown operator")
+                               /\ IF debug
+                                     THEN /\ idx' = idx
+                                          /\ pc' = "Lbl_4"
+                                     ELSE /\ pc' = "Done"
+                                          /\ UNCHANGED idx
+                          ELSE /\ pc' = "Lbl_5"
                                /\ UNCHANGED idx
-               ELSE /\ pc' = "Lbl_6"
-                    /\ UNCHANGED idx
-         /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
-                         allArgs, curNode, subExprOf, result, mode, prevMode, 
-                         curContext, curName, opDefArityFound, opDefArgs, 
-                         firstFindingOpName, opNode, newName, nodeArity, temp >>
-
-Lbl_5 == /\ pc = "Lbl_5"
-         /\ idx' = idx
-         /\ Assert(FALSE, 
-                   "Failure of assertion at line line 1887, column 38 of macro called at line 1932, column 11.")
-         /\ pc' = "Lbl_6"
-         /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
-                         allArgs, curNode, subExprOf, result, mode, prevMode, 
-                         curContext, curName, opDefArityFound, opDefArgs, 
-                         firstFindingOpName, opNode, newName, newNode, 
-                         nodeArity, temp >>
-
-Lbl_6 == /\ pc = "Lbl_6"
-         /\ curNode' = newNode
-         /\ curName' = newName
-         /\ IF curNode'.kind \in
-                   {UserDefinedOpKind, ThmOrAssumpDefKind,
-                      ModuleInstanceKind, ConstantDeclKind, VariableDeclKind,
-                      FormalParamKind, BuiltInKind, BoundSymbolKind}
-               THEN /\ IF curNode'.kind \in
-                               {ConstantDeclKind, VariableDeclKind, FormalParamKind,
-                                BuiltInKind, BoundSymbolKind}
-                          THEN /\ IF idx # 1
-                                     THEN /\ PrintT("Abort: Impossible naming of declaration "
-                                                     \o "or built-in operator.")
-                                          /\ IF debug
-                                                THEN /\ idx' = idx
-                                                     /\ pc' = "Lbl_7"
-                                                ELSE /\ pc' = "Done"
-                                                     /\ UNCHANGED idx
-                                     ELSE /\ IF Len(ops) # 1
-                                                THEN /\ PrintT("Can't take subexpression of this")
+                    /\ UNCHANGED << curNode, curName >>
+               ELSE /\ curNode' = newNode
+                    /\ curName' = newName
+                    /\ IF curNode'.kind \in
+                              {UserDefinedOpKind, ThmOrAssumpDefKind,
+                                 ModuleInstanceKind, ConstantDeclKind, VariableDeclKind,
+                                 FormalParamKind, BuiltInKind, BoundSymbolKind}
+                          THEN /\ IF curNode'.kind \in
+                                          {ConstantDeclKind, VariableDeclKind, FormalParamKind,
+                                           BuiltInKind, BoundSymbolKind}
+                                     THEN /\ IF idx # 1
+                                                THEN /\ PrintT("Abort: Impossible naming of declaration "
+                                                                \o "or built-in operator.")
                                                      /\ IF debug
                                                            THEN /\ idx' = idx
                                                                 /\ pc' = "Lbl_8"
                                                            ELSE /\ pc' = "Done"
                                                                 /\ UNCHANGED idx
-                                                ELSE /\ pc' = "Lbl_9"
-                                                     /\ UNCHANGED idx
-                          ELSE /\ pc' = "Lbl_9"
-                               /\ UNCHANGED idx
-               ELSE /\ PrintT("Unexpected node kind")
-                    /\ IF debug
-                          THEN /\ idx' = idx
-                               /\ pc' = "Lbl_19"
-                          ELSE /\ pc' = "Done"
-                               /\ UNCHANGED idx
+                                                ELSE /\ IF Len(ops) # 1
+                                                           THEN /\ PrintT("Can't take subexpression of this")
+                                                                /\ IF debug
+                                                                      THEN /\ idx' = idx
+                                                                           /\ pc' = "Lbl_9"
+                                                                      ELSE /\ pc' = "Done"
+                                                                           /\ UNCHANGED idx
+                                                           ELSE /\ pc' = "Lbl_10"
+                                                                /\ UNCHANGED idx
+                                     ELSE /\ pc' = "Lbl_10"
+                                          /\ UNCHANGED idx
+                          ELSE /\ PrintT("Unexpected node kind")
+                               /\ IF debug
+                                     THEN /\ idx' = idx
+                                          /\ pc' = "Lbl_20"
+                                     ELSE /\ pc' = "Done"
+                                          /\ UNCHANGED idx
          /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
                          allArgs, subExprOf, result, mode, prevMode, 
                          curContext, opDefArityFound, opDefArgs, 
                          firstFindingOpName, opNode, newName, newNode, 
                          nodeArity, temp >>
 
-Lbl_9 == /\ pc = "Lbl_9"
-         /\ nodeArity' = Arity(curNode)
-         /\ IF expectedArity = 0
-               THEN /\ IF opDefArityFound + Len(args[idx]) # nodeArity'
-                          THEN /\ PrintT("Wrong number of arguments")
-                               /\ IF debug
-                                     THEN /\ idx' = idx
-                                          /\ pc' = "Lbl_10"
-                                     ELSE /\ pc' = "Done"
-                                          /\ UNCHANGED idx
-                          ELSE /\ pc' = "Lbl_11"
+Lbl_5 == /\ pc = "Lbl_5"
+         /\ newName' = IF IsName(ops[idx])
+                         THEN IF curName = "" THEN ops[idx]
+                                              ELSE curName \o "!" \o ops[idx]
+                         ELSE null
+         /\ IF /\ curName = ""
+               /\ ~ IsName(ops[idx])
+               THEN /\ PrintT("Need an operator or label name or step number here")
+                    /\ IF debug
+                          THEN /\ idx' = idx
+                               /\ pc' = "Lbl_6"
+                          ELSE /\ pc' = "Done"
                                /\ UNCHANGED idx
-               ELSE /\ IF expectedArity > 0
-                          THEN /\ IF \E i \in 1..Len(curNode.params) :
-                                        curNode.params[i].arity > 0
-                                     THEN /\ PrintT("Higher-order operator selected "
-                                                      \o "as operator argument")
-                                          /\ IF debug
-                                                THEN /\ idx' = idx
-                                                     /\ pc' = "Lbl_13"
-                                                ELSE /\ pc' = "Done"
-                                                     /\ UNCHANGED idx
-                                     ELSE /\ pc' = "Lbl_14"
-                                          /\ UNCHANGED idx
-                          ELSE /\ pc' = "Lbl_14"
-                               /\ UNCHANGED idx
+               ELSE /\ pc' = "Lbl_7"
+                    /\ UNCHANGED idx
          /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
                          allArgs, curNode, subExprOf, result, mode, prevMode, 
                          curContext, curName, opDefArityFound, opDefArgs, 
-                         firstFindingOpName, opNode, newName, newNode, temp >>
+                         firstFindingOpName, opNode, newNode, nodeArity, temp >>
 
-Lbl_11 == /\ pc = "Lbl_11"
+Lbl_6 == /\ pc = "Lbl_6"
+         /\ idx' = idx
+         /\ Assert(FALSE, 
+                   "Failure of assertion at line line 1890, column 38 of macro called at line 1942, column 13.")
+         /\ pc' = "Lbl_7"
+         /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
+                         allArgs, curNode, subExprOf, result, mode, prevMode, 
+                         curContext, curName, opDefArityFound, opDefArgs, 
+                         firstFindingOpName, opNode, newName, newNode, 
+                         nodeArity, temp >>
+
+Lbl_7 == /\ pc = "Lbl_7"
+         /\ newNode' = (IF newName # null THEN LookUp(newName, curContext) ELSE null)
+         /\ pc' = "Lbl_3"
+         /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
+                         allArgs, curNode, subExprOf, result, idx, mode, 
+                         prevMode, curContext, curName, opDefArityFound, 
+                         opDefArgs, firstFindingOpName, opNode, newName, 
+                         nodeArity, temp >>
+
+Lbl_4 == /\ pc = "Lbl_4"
+         /\ idx' = idx
+         /\ Assert(FALSE, 
+                   "Failure of assertion at line line 1890, column 38 of macro called at line 1928, column 13.")
+         /\ pc' = "Lbl_5"
+         /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
+                         allArgs, curNode, subExprOf, result, mode, prevMode, 
+                         curContext, curName, opDefArityFound, opDefArgs, 
+                         firstFindingOpName, opNode, newName, newNode, 
+                         nodeArity, temp >>
+
+Lbl_10 == /\ pc = "Lbl_10"
+          /\ nodeArity' = Arity(curNode)
+          /\ IF expectedArity = 0
+                THEN /\ IF opDefArityFound + Len(args[idx]) # nodeArity'
+                           THEN /\ PrintT("Wrong number of arguments")
+                                /\ IF debug
+                                      THEN /\ idx' = idx
+                                           /\ pc' = "Lbl_11"
+                                      ELSE /\ pc' = "Done"
+                                           /\ UNCHANGED idx
+                           ELSE /\ pc' = "Lbl_12"
+                                /\ UNCHANGED idx
+                ELSE /\ IF expectedArity > 0
+                           THEN /\ IF \E i \in 1..Len(curNode.params) :
+                                         curNode.params[i].arity > 0
+                                      THEN /\ PrintT("Higher-order operator selected "
+                                                       \o "as operator argument")
+                                           /\ IF debug
+                                                 THEN /\ idx' = idx
+                                                      /\ pc' = "Lbl_14"
+                                                 ELSE /\ pc' = "Done"
+                                                      /\ UNCHANGED idx
+                                      ELSE /\ pc' = "Lbl_15"
+                                           /\ UNCHANGED idx
+                           ELSE /\ pc' = "Lbl_15"
+                                /\ UNCHANGED idx
+          /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
+                          allArgs, curNode, subExprOf, result, mode, prevMode, 
+                          curContext, curName, opDefArityFound, opDefArgs, 
+                          firstFindingOpName, opNode, newName, newNode, temp >>
+
+Lbl_12 == /\ pc = "Lbl_12"
           /\ IF \E i \in 1..Len(args[idx]) :
                       Arity(Node[args[idx][i]]) #
                         ParamArity(curNode, i + opDefArityFound)
                 THEN /\ PrintT("Argument has wrong arity")
                      /\ IF debug
                            THEN /\ idx' = idx
-                                /\ pc' = "Lbl_12"
+                                /\ pc' = "Lbl_13"
                            ELSE /\ pc' = "Done"
                                 /\ UNCHANGED idx
                      /\ UNCHANGED opDefArgs
                 ELSE /\ opDefArgs' = opDefArgs \o args[idx]
-                     /\ pc' = "Lbl_14"
+                     /\ pc' = "Lbl_15"
                      /\ UNCHANGED idx
           /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
                           allArgs, curNode, subExprOf, result, mode, prevMode, 
@@ -10713,33 +10752,22 @@ Lbl_11 == /\ pc = "Lbl_11"
                           firstFindingOpName, opNode, newName, newNode, 
                           nodeArity, temp >>
 
-Lbl_12 == /\ pc = "Lbl_12"
-          /\ idx' = idx
-          /\ Assert(FALSE, 
-                    "Failure of assertion at line line 1887, column 38 of macro called at line 1959, column 26.")
-          /\ pc' = "Lbl_14"
-          /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
-                          allArgs, curNode, subExprOf, result, mode, prevMode, 
-                          curContext, curName, opDefArityFound, opDefArgs, 
-                          firstFindingOpName, opNode, newName, newNode, 
-                          nodeArity, temp >>
-
-Lbl_10 == /\ pc = "Lbl_10"
-          /\ idx' = idx
-          /\ Assert(FALSE, 
-                    "Failure of assertion at line line 1887, column 38 of macro called at line 1954, column 25.")
-          /\ pc' = "Lbl_11"
-          /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
-                          allArgs, curNode, subExprOf, result, mode, prevMode, 
-                          curContext, curName, opDefArityFound, opDefArgs, 
-                          firstFindingOpName, opNode, newName, newNode, 
-                          nodeArity, temp >>
-
 Lbl_13 == /\ pc = "Lbl_13"
           /\ idx' = idx
           /\ Assert(FALSE, 
-                    "Failure of assertion at line line 1887, column 38 of macro called at line 1965, column 32.")
-          /\ pc' = "Lbl_14"
+                    "Failure of assertion at line line 1890, column 38 of macro called at line 1971, column 26.")
+          /\ pc' = "Lbl_15"
+          /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
+                          allArgs, curNode, subExprOf, result, mode, prevMode, 
+                          curContext, curName, opDefArityFound, opDefArgs, 
+                          firstFindingOpName, opNode, newName, newNode, 
+                          nodeArity, temp >>
+
+Lbl_11 == /\ pc = "Lbl_11"
+          /\ idx' = idx
+          /\ Assert(FALSE, 
+                    "Failure of assertion at line line 1890, column 38 of macro called at line 1966, column 25.")
+          /\ pc' = "Lbl_12"
           /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
                           allArgs, curNode, subExprOf, result, mode, prevMode, 
                           curContext, curName, opDefArityFound, opDefArgs, 
@@ -10747,6 +10775,17 @@ Lbl_13 == /\ pc = "Lbl_13"
                           nodeArity, temp >>
 
 Lbl_14 == /\ pc = "Lbl_14"
+          /\ idx' = idx
+          /\ Assert(FALSE, 
+                    "Failure of assertion at line line 1890, column 38 of macro called at line 1977, column 32.")
+          /\ pc' = "Lbl_15"
+          /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
+                          allArgs, curNode, subExprOf, result, mode, prevMode, 
+                          curContext, curName, opDefArityFound, opDefArgs, 
+                          firstFindingOpName, opNode, newName, newNode, 
+                          nodeArity, temp >>
+
+Lbl_15 == /\ pc = "Lbl_15"
           /\ opDefArityFound' = nodeArity
           /\ IF curNode.kind \in {UserDefinedOpKind, ThmOrAssumpDefKind,
                                   ConstantDeclKind, VariableDeclKind,
@@ -10758,26 +10797,26 @@ Lbl_14 == /\ pc = "Lbl_14"
                                            \o "operator inside its definition")
                                 /\ IF debug
                                       THEN /\ idx' = idx
-                                           /\ pc' = "Lbl_15"
+                                           /\ pc' = "Lbl_16"
                                       ELSE /\ pc' = "Done"
                                            /\ UNCHANGED idx
-                           ELSE /\ pc' = "Lbl_16"
+                           ELSE /\ pc' = "Lbl_17"
                                 /\ UNCHANGED idx
                 ELSE /\ IF (idx = Len(ops))
                            THEN /\ PrintT("Operator name incomplete")
                                 /\ IF debug
                                       THEN /\ idx' = idx
-                                           /\ pc' = "Lbl_18"
+                                           /\ pc' = "Lbl_19"
                                       ELSE /\ pc' = "Done"
                                            /\ UNCHANGED idx
-                           ELSE /\ pc' = "Lbl_20"
+                           ELSE /\ pc' = "Lbl_21"
                                 /\ UNCHANGED idx
           /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
                           allArgs, curNode, subExprOf, result, mode, prevMode, 
                           curContext, curName, opDefArgs, firstFindingOpName, 
                           opNode, newName, newNode, nodeArity, temp >>
 
-Lbl_16 == /\ pc = "Lbl_16"
+Lbl_17 == /\ pc = "Lbl_17"
           /\ IF /\ firstFindingOpName
                 /\ curNode.kind \in {UserDefinedOpKind, ThmOrAssumpDefKind}
                 THEN /\ subExprOf' = curNode
@@ -10793,119 +10832,108 @@ Lbl_16 == /\ pc = "Lbl_16"
                      /\ opDefArityFound' = 0
                      /\ opDefArgs' = << >>
                      /\ newNode' = Node[curNode.body]
-                     /\ pc' = "Lbl_17"
-                ELSE /\ pc' = "Lbl_20"
+                     /\ pc' = "Lbl_18"
+                ELSE /\ pc' = "Lbl_21"
                      /\ UNCHANGED << params, allArgs, mode, curName, 
                                      opDefArityFound, opDefArgs, newNode >>
           /\ UNCHANGED << ops, args, expectedArity, substInPrefix, curNode, 
                           result, idx, prevMode, curContext, 
                           firstFindingOpName, opNode, newName, nodeArity, temp >>
 
-Lbl_17 == /\ pc = "Lbl_17"
+Lbl_18 == /\ pc = "Lbl_18"
           /\ IF newNode.kind = SubstInKind
                 THEN /\ substInPrefix' = substInPrefix \o <<newNode>>
                      /\ newNode' = Node[newNode.body]
-                     /\ pc' = "Lbl_17"
+                     /\ pc' = "Lbl_18"
                      /\ UNCHANGED curNode
                 ELSE /\ IF mode = "FindingSubExpr"
                            THEN /\ curNode' = newNode
                            ELSE /\ TRUE
                                 /\ UNCHANGED curNode
-                     /\ pc' = "Lbl_20"
+                     /\ pc' = "Lbl_21"
                      /\ UNCHANGED << substInPrefix, newNode >>
           /\ UNCHANGED << ops, args, expectedArity, params, allArgs, subExprOf, 
                           result, idx, mode, prevMode, curContext, curName, 
                           opDefArityFound, opDefArgs, firstFindingOpName, 
                           opNode, newName, nodeArity, temp >>
 
-Lbl_15 == /\ pc = "Lbl_15"
+Lbl_16 == /\ pc = "Lbl_16"
           /\ idx' = idx
           /\ Assert(FALSE, 
-                    "Failure of assertion at line line 1887, column 38 of macro called at line 1979, column 25.")
-          /\ pc' = "Lbl_16"
+                    "Failure of assertion at line line 1890, column 38 of macro called at line 1991, column 25.")
+          /\ pc' = "Lbl_17"
           /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
                           allArgs, curNode, subExprOf, result, mode, prevMode, 
                           curContext, curName, opDefArityFound, opDefArgs, 
                           firstFindingOpName, opNode, newName, newNode, 
                           nodeArity, temp >>
-
-Lbl_18 == /\ pc = "Lbl_18"
-          /\ idx' = idx
-          /\ Assert(FALSE, 
-                    "Failure of assertion at line line 1887, column 38 of macro called at line 2012, column 25.")
-          /\ pc' = "Lbl_20"
-          /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
-                          allArgs, curNode, subExprOf, result, mode, prevMode, 
-                          curContext, curName, opDefArityFound, opDefArgs, 
-                          firstFindingOpName, opNode, newName, newNode, 
-                          nodeArity, temp >>
-
-Lbl_7 == /\ pc = "Lbl_7"
-         /\ idx' = idx
-         /\ Assert(FALSE, 
-                   "Failure of assertion at line line 1887, column 38 of macro called at line 1944, column 26.")
-         /\ pc' = "Lbl_9"
-         /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
-                         allArgs, curNode, subExprOf, result, mode, prevMode, 
-                         curContext, curName, opDefArityFound, opDefArgs, 
-                         firstFindingOpName, opNode, newName, newNode, 
-                         nodeArity, temp >>
-
-Lbl_8 == /\ pc = "Lbl_8"
-         /\ idx' = idx
-         /\ Assert(FALSE, 
-                   "Failure of assertion at line line 1887, column 38 of macro called at line 1947, column 33.")
-         /\ pc' = "Lbl_9"
-         /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
-                         allArgs, curNode, subExprOf, result, mode, prevMode, 
-                         curContext, curName, opDefArityFound, opDefArgs, 
-                         firstFindingOpName, opNode, newName, newNode, 
-                         nodeArity, temp >>
 
 Lbl_19 == /\ pc = "Lbl_19"
           /\ idx' = idx
           /\ Assert(FALSE, 
-                    "Failure of assertion at line line 1887, column 38 of macro called at line 2015, column 9.")
-          /\ pc' = "Lbl_20"
+                    "Failure of assertion at line line 1890, column 38 of macro called at line 2024, column 25.")
+          /\ pc' = "Lbl_21"
           /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
                           allArgs, curNode, subExprOf, result, mode, prevMode, 
                           curContext, curName, opDefArityFound, opDefArgs, 
                           firstFindingOpName, opNode, newName, newNode, 
                           nodeArity, temp >>
 
+Lbl_8 == /\ pc = "Lbl_8"
+         /\ idx' = idx
+         /\ Assert(FALSE, 
+                   "Failure of assertion at line line 1890, column 38 of macro called at line 1956, column 26.")
+         /\ pc' = "Lbl_10"
+         /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
+                         allArgs, curNode, subExprOf, result, mode, prevMode, 
+                         curContext, curName, opDefArityFound, opDefArgs, 
+                         firstFindingOpName, opNode, newName, newNode, 
+                         nodeArity, temp >>
+
+Lbl_9 == /\ pc = "Lbl_9"
+         /\ idx' = idx
+         /\ Assert(FALSE, 
+                   "Failure of assertion at line line 1890, column 38 of macro called at line 1959, column 33.")
+         /\ pc' = "Lbl_10"
+         /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
+                         allArgs, curNode, subExprOf, result, mode, prevMode, 
+                         curContext, curName, opDefArityFound, opDefArgs, 
+                         firstFindingOpName, opNode, newName, newNode, 
+                         nodeArity, temp >>
+
 Lbl_20 == /\ pc = "Lbl_20"
+          /\ idx' = idx
+          /\ Assert(FALSE, 
+                    "Failure of assertion at line line 1890, column 38 of macro called at line 2027, column 9.")
+          /\ pc' = "Lbl_21"
+          /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
+                          allArgs, curNode, subExprOf, result, mode, prevMode, 
+                          curContext, curName, opDefArityFound, opDefArgs, 
+                          firstFindingOpName, opNode, newName, newNode, 
+                          nodeArity, temp >>
+
+Lbl_21 == /\ pc = "Lbl_21"
           /\ prevMode' = "FindingOpName"
-          /\ pc' = "Lbl_68"
+          /\ pc' = "Lbl_69"
           /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
                           allArgs, curNode, subExprOf, result, idx, mode, 
                           curContext, curName, opDefArityFound, opDefArgs, 
                           firstFindingOpName, opNode, newName, newNode, 
                           nodeArity, temp >>
 
-Lbl_3 == /\ pc = "Lbl_3"
-         /\ idx' = idx
-         /\ Assert(FALSE, 
-                   "Failure of assertion at line line 1887, column 38 of macro called at line 1928, column 11.")
-         /\ pc' = "Lbl_4"
-         /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
-                         allArgs, curNode, subExprOf, result, mode, prevMode, 
-                         curContext, curName, opDefArityFound, opDefArgs, 
-                         firstFindingOpName, opNode, newName, newNode, 
-                         nodeArity, temp >>
-
-Lbl_22 == /\ pc = "Lbl_22"
+Lbl_23 == /\ pc = "Lbl_23"
           /\ curNode' = newNode
           /\ IF expectedArity = 0
                 THEN /\ IF Len(args[idx]) # curNode'.arity
                            THEN /\ PrintT("bad arity")
                                 /\ IF debug
                                       THEN /\ idx' = idx
-                                           /\ pc' = "Lbl_23"
+                                           /\ pc' = "Lbl_24"
                                       ELSE /\ pc' = "Done"
                                            /\ UNCHANGED idx
-                           ELSE /\ pc' = "Lbl_24"
+                           ELSE /\ pc' = "Lbl_25"
                                 /\ UNCHANGED idx
-                ELSE /\ pc' = "Lbl_27"
+                ELSE /\ pc' = "Lbl_28"
                      /\ UNCHANGED idx
           /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
                           allArgs, subExprOf, result, mode, prevMode, 
@@ -10913,16 +10941,16 @@ Lbl_22 == /\ pc = "Lbl_22"
                           firstFindingOpName, opNode, newName, newNode, 
                           nodeArity, temp >>
 
-Lbl_24 == /\ pc = "Lbl_24"
+Lbl_25 == /\ pc = "Lbl_25"
           /\ IF \E i \in 1..Len(args[idx]) :
                     Arity(Node[args[idx][i]]) # 0
                 THEN /\ PrintT("Operator argument given to label")
                      /\ IF debug
                            THEN /\ idx' = idx
-                                /\ pc' = "Lbl_25"
+                                /\ pc' = "Lbl_26"
                            ELSE /\ pc' = "Done"
                                 /\ UNCHANGED idx
-                ELSE /\ pc' = "Lbl_26"
+                ELSE /\ pc' = "Lbl_27"
                      /\ UNCHANGED idx
           /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
                           allArgs, curNode, subExprOf, result, mode, prevMode, 
@@ -10930,31 +10958,11 @@ Lbl_24 == /\ pc = "Lbl_24"
                           firstFindingOpName, opNode, newName, newNode, 
                           nodeArity, temp >>
 
-Lbl_25 == /\ pc = "Lbl_25"
-          /\ idx' = idx
-          /\ Assert(FALSE, 
-                    "Failure of assertion at line line 1887, column 38 of macro called at line 2037, column 20.")
-          /\ pc' = "Lbl_26"
-          /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
-                          allArgs, curNode, subExprOf, result, mode, prevMode, 
-                          curContext, curName, opDefArityFound, opDefArgs, 
-                          firstFindingOpName, opNode, newName, newNode, 
-                          nodeArity, temp >>
-
 Lbl_26 == /\ pc = "Lbl_26"
-          /\ allArgs' = allArgs \o args[idx]
-          /\ pc' = "Lbl_27"
-          /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
-                          curNode, subExprOf, result, idx, mode, prevMode, 
-                          curContext, curName, opDefArityFound, opDefArgs, 
-                          firstFindingOpName, opNode, newName, newNode, 
-                          nodeArity, temp >>
-
-Lbl_23 == /\ pc = "Lbl_23"
           /\ idx' = idx
           /\ Assert(FALSE, 
-                    "Failure of assertion at line line 1887, column 38 of macro called at line 2033, column 20.")
-          /\ pc' = "Lbl_24"
+                    "Failure of assertion at line line 1890, column 38 of macro called at line 2049, column 20.")
+          /\ pc' = "Lbl_27"
           /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
                           allArgs, curNode, subExprOf, result, mode, prevMode, 
                           curContext, curName, opDefArityFound, opDefArgs, 
@@ -10962,6 +10970,26 @@ Lbl_23 == /\ pc = "Lbl_23"
                           nodeArity, temp >>
 
 Lbl_27 == /\ pc = "Lbl_27"
+          /\ allArgs' = allArgs \o args[idx]
+          /\ pc' = "Lbl_28"
+          /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
+                          curNode, subExprOf, result, idx, mode, prevMode, 
+                          curContext, curName, opDefArityFound, opDefArgs, 
+                          firstFindingOpName, opNode, newName, newNode, 
+                          nodeArity, temp >>
+
+Lbl_24 == /\ pc = "Lbl_24"
+          /\ idx' = idx
+          /\ Assert(FALSE, 
+                    "Failure of assertion at line line 1890, column 38 of macro called at line 2045, column 20.")
+          /\ pc' = "Lbl_25"
+          /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
+                          allArgs, curNode, subExprOf, result, mode, prevMode, 
+                          curContext, curName, opDefArityFound, opDefArgs, 
+                          firstFindingOpName, opNode, newName, newNode, 
+                          nodeArity, temp >>
+
+Lbl_28 == /\ pc = "Lbl_28"
           /\ params' = params \o curNode.params
           /\ IF /\ idx < Len(ops)
                 /\ ~IsName(ops[idx+1])
@@ -10974,39 +11002,17 @@ Lbl_27 == /\ pc = "Lbl_27"
                 ELSE /\ TRUE
                      /\ UNCHANGED curNode
           /\ prevMode' = "FollowingLabels"
-          /\ pc' = "Lbl_68"
+          /\ pc' = "Lbl_69"
           /\ UNCHANGED << ops, args, expectedArity, substInPrefix, allArgs, 
                           subExprOf, result, idx, curContext, curName, 
                           opDefArityFound, opDefArgs, firstFindingOpName, 
                           opNode, newName, newNode, nodeArity, temp >>
 
-Lbl_21 == /\ pc = "Lbl_21"
+Lbl_22 == /\ pc = "Lbl_22"
           /\ idx' = idx
           /\ Assert(FALSE, 
-                    "Failure of assertion at line line 1887, column 38 of macro called at line 2028, column 13.")
-          /\ pc' = "Lbl_22"
-          /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
-                          allArgs, curNode, subExprOf, result, mode, prevMode, 
-                          curContext, curName, opDefArityFound, opDefArgs, 
-                          firstFindingOpName, opNode, newName, newNode, 
-                          nodeArity, temp >>
-
-Lbl_62 == /\ pc = "Lbl_62"
-          /\ IF idx # Len(ops)
-                THEN /\ IF IsName(ops[idx+1])
-                           THEN /\ pc' = "Lbl_63"
-                                /\ UNCHANGED idx
-                           ELSE /\ IF ops[idx+1] = ":"
-                                      THEN /\ PrintT("!: should not follow an operand selector")
-                                           /\ IF debug
-                                                 THEN /\ idx' = idx
-                                                      /\ pc' = "Lbl_65"
-                                                 ELSE /\ pc' = "Done"
-                                                      /\ UNCHANGED idx
-                                      ELSE /\ pc' = "Lbl_66"
-                                           /\ UNCHANGED idx
-                ELSE /\ pc' = "Lbl_66"
-                     /\ UNCHANGED idx
+                    "Failure of assertion at line line 1890, column 38 of macro called at line 2040, column 13.")
+          /\ pc' = "Lbl_23"
           /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
                           allArgs, curNode, subExprOf, result, mode, prevMode, 
                           curContext, curName, opDefArityFound, opDefArgs, 
@@ -11014,20 +11020,42 @@ Lbl_62 == /\ pc = "Lbl_62"
                           nodeArity, temp >>
 
 Lbl_63 == /\ pc = "Lbl_63"
+          /\ IF idx # Len(ops)
+                THEN /\ IF IsName(ops[idx+1])
+                           THEN /\ pc' = "Lbl_64"
+                                /\ UNCHANGED idx
+                           ELSE /\ IF ops[idx+1] = ":"
+                                      THEN /\ PrintT("!: should not follow an operand selector")
+                                           /\ IF debug
+                                                 THEN /\ idx' = idx
+                                                      /\ pc' = "Lbl_66"
+                                                 ELSE /\ pc' = "Done"
+                                                      /\ UNCHANGED idx
+                                      ELSE /\ pc' = "Lbl_67"
+                                           /\ UNCHANGED idx
+                ELSE /\ pc' = "Lbl_67"
+                     /\ UNCHANGED idx
+          /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
+                          allArgs, curNode, subExprOf, result, mode, prevMode, 
+                          curContext, curName, opDefArityFound, opDefArgs, 
+                          firstFindingOpName, opNode, newName, newNode, 
+                          nodeArity, temp >>
+
+Lbl_64 == /\ pc = "Lbl_64"
           /\ IF curNode.kind = LabelKind
                 THEN /\ curNode' = Node[curNode.body]
-                     /\ pc' = "Lbl_63"
+                     /\ pc' = "Lbl_64"
                      /\ UNCHANGED << idx, mode, curContext, firstFindingOpName >>
                 ELSE /\ IF curNode.kind = LetInKind
                            THEN /\ curContext' = curNode.context
                                 /\ mode' = "FindingOpName"
                                 /\ firstFindingOpName' = FALSE
-                                /\ pc' = "Lbl_66"
+                                /\ pc' = "Lbl_67"
                                 /\ UNCHANGED idx
                            ELSE /\ PrintT("A name not following the selector of a LET")
                                 /\ IF debug
                                       THEN /\ idx' = idx
-                                           /\ pc' = "Lbl_64"
+                                           /\ pc' = "Lbl_65"
                                       ELSE /\ pc' = "Done"
                                            /\ UNCHANGED idx
                                 /\ UNCHANGED << mode, curContext, 
@@ -11038,22 +11066,11 @@ Lbl_63 == /\ pc = "Lbl_63"
                           opDefArityFound, opDefArgs, opNode, newName, newNode, 
                           nodeArity, temp >>
 
-Lbl_64 == /\ pc = "Lbl_64"
-          /\ idx' = idx
-          /\ Assert(FALSE, 
-                    "Failure of assertion at line line 1887, column 38 of macro called at line 2263, column 26.")
-          /\ pc' = "Lbl_66"
-          /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
-                          allArgs, curNode, subExprOf, result, mode, prevMode, 
-                          curContext, curName, opDefArityFound, opDefArgs, 
-                          firstFindingOpName, opNode, newName, newNode, 
-                          nodeArity, temp >>
-
 Lbl_65 == /\ pc = "Lbl_65"
           /\ idx' = idx
           /\ Assert(FALSE, 
-                    "Failure of assertion at line line 1887, column 38 of macro called at line 2266, column 26.")
-          /\ pc' = "Lbl_66"
+                    "Failure of assertion at line line 1890, column 38 of macro called at line 2275, column 26.")
+          /\ pc' = "Lbl_67"
           /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
                           allArgs, curNode, subExprOf, result, mode, prevMode, 
                           curContext, curName, opDefArityFound, opDefArgs, 
@@ -11061,21 +11078,21 @@ Lbl_65 == /\ pc = "Lbl_65"
                           nodeArity, temp >>
 
 Lbl_66 == /\ pc = "Lbl_66"
-          /\ prevMode' = "FindingSubExpr"
-          /\ pc' = "Lbl_68"
+          /\ idx' = idx
+          /\ Assert(FALSE, 
+                    "Failure of assertion at line line 1890, column 38 of macro called at line 2278, column 26.")
+          /\ pc' = "Lbl_67"
           /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
-                          allArgs, curNode, subExprOf, result, idx, mode, 
+                          allArgs, curNode, subExprOf, result, mode, prevMode, 
                           curContext, curName, opDefArityFound, opDefArgs, 
                           firstFindingOpName, opNode, newName, newNode, 
                           nodeArity, temp >>
 
-Lbl_28 == /\ pc = "Lbl_28"
-          /\ idx' = idx
-          /\ Assert(FALSE, 
-                    "Failure of assertion at line line 1887, column 38 of macro called at line 2060, column 14.")
-          /\ pc' = "Lbl_62"
+Lbl_67 == /\ pc = "Lbl_67"
+          /\ prevMode' = "FindingSubExpr"
+          /\ pc' = "Lbl_69"
           /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
-                          allArgs, curNode, subExprOf, result, mode, prevMode, 
+                          allArgs, curNode, subExprOf, result, idx, mode, 
                           curContext, curName, opDefArityFound, opDefArgs, 
                           firstFindingOpName, opNode, newName, newNode, 
                           nodeArity, temp >>
@@ -11083,8 +11100,8 @@ Lbl_28 == /\ pc = "Lbl_28"
 Lbl_29 == /\ pc = "Lbl_29"
           /\ idx' = idx
           /\ Assert(FALSE, 
-                    "Failure of assertion at line line 1887, column 38 of macro called at line 2067, column 14.")
-          /\ pc' = "Lbl_62"
+                    "Failure of assertion at line line 1890, column 38 of macro called at line 2072, column 14.")
+          /\ pc' = "Lbl_63"
           /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
                           allArgs, curNode, subExprOf, result, mode, prevMode, 
                           curContext, curName, opDefArityFound, opDefArgs, 
@@ -11094,47 +11111,8 @@ Lbl_29 == /\ pc = "Lbl_29"
 Lbl_30 == /\ pc = "Lbl_30"
           /\ idx' = idx
           /\ Assert(FALSE, 
-                    "Failure of assertion at line line 1887, column 38 of macro called at line 2079, column 17.")
-          /\ pc' = "Lbl_62"
-          /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
-                          allArgs, curNode, subExprOf, result, mode, prevMode, 
-                          curContext, curName, opDefArityFound, opDefArgs, 
-                          firstFindingOpName, opNode, newName, newNode, 
-                          nodeArity, temp >>
-
-Lbl_32 == /\ pc = "Lbl_32"
-          /\ curNode' = Node[curNode.operands[temp]]
-          /\ IF \/ curNode'.kind # OpApplKind
-                \/ Node[curNode'.operator].kind # BuiltInKind
-                \/ Node[curNode'.operator].name # "$Pair"
-                THEN /\ PrintT("Expecting $Pair(...)")
-                     /\ IF debug
-                           THEN /\ idx' = idx
-                                /\ pc' = "Lbl_33"
-                           ELSE /\ pc' = "Done"
-                                /\ UNCHANGED idx
-                ELSE /\ pc' = "Lbl_34"
-                     /\ UNCHANGED idx
-          /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
-                          allArgs, subExprOf, result, mode, prevMode, 
-                          curContext, curName, opDefArityFound, opDefArgs, 
-                          firstFindingOpName, opNode, newName, newNode, 
-                          nodeArity, temp >>
-
-Lbl_34 == /\ pc = "Lbl_34"
-          /\ curNode' = Node[curNode.operands[2]]
-          /\ pc' = "Lbl_62"
-          /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
-                          allArgs, subExprOf, result, idx, mode, prevMode, 
-                          curContext, curName, opDefArityFound, opDefArgs, 
-                          firstFindingOpName, opNode, newName, newNode, 
-                          nodeArity, temp >>
-
-Lbl_33 == /\ pc = "Lbl_33"
-          /\ idx' = idx
-          /\ Assert(FALSE, 
-                    "Failure of assertion at line line 1887, column 38 of macro called at line 2100, column 18.")
-          /\ pc' = "Lbl_62"
+                    "Failure of assertion at line line 1890, column 38 of macro called at line 2079, column 14.")
+          /\ pc' = "Lbl_63"
           /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
                           allArgs, curNode, subExprOf, result, mode, prevMode, 
                           curContext, curName, opDefArityFound, opDefArgs, 
@@ -11144,43 +11122,15 @@ Lbl_33 == /\ pc = "Lbl_33"
 Lbl_31 == /\ pc = "Lbl_31"
           /\ idx' = idx
           /\ Assert(FALSE, 
-                    "Failure of assertion at line line 1887, column 38 of macro called at line 2094, column 18.")
-          /\ pc' = "Lbl_32"
+                    "Failure of assertion at line line 1890, column 38 of macro called at line 2091, column 17.")
+          /\ pc' = "Lbl_63"
           /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
                           allArgs, curNode, subExprOf, result, mode, prevMode, 
                           curContext, curName, opDefArityFound, opDefArgs, 
                           firstFindingOpName, opNode, newName, newNode, 
                           nodeArity, temp >>
 
-Lbl_36 == /\ pc = "Lbl_36"
-          /\ temp' = ArgNum( ops[idx], Len(curNode.operands))
-          /\ IF temp' = -1
-                THEN /\ PrintT("Incorrect subexpression name")
-                     /\ IF debug
-                           THEN /\ idx' = idx
-                                /\ pc' = "Lbl_37"
-                           ELSE /\ pc' = "Done"
-                                /\ UNCHANGED idx
-                ELSE /\ pc' = "Lbl_38"
-                     /\ UNCHANGED idx
-          /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
-                          allArgs, curNode, subExprOf, result, mode, prevMode, 
-                          curContext, curName, opDefArityFound, opDefArgs, 
-                          firstFindingOpName, opNode, newName, newNode, 
-                          nodeArity >>
-
-Lbl_37 == /\ pc = "Lbl_37"
-          /\ idx' = idx
-          /\ Assert(FALSE, 
-                    "Failure of assertion at line line 1887, column 38 of macro called at line 2114, column 18.")
-          /\ pc' = "Lbl_38"
-          /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
-                          allArgs, curNode, subExprOf, result, mode, prevMode, 
-                          curContext, curName, opDefArityFound, opDefArgs, 
-                          firstFindingOpName, opNode, newName, newNode, 
-                          nodeArity, temp >>
-
-Lbl_38 == /\ pc = "Lbl_38"
+Lbl_33 == /\ pc = "Lbl_33"
           /\ curNode' = Node[curNode.operands[temp]]
           /\ IF \/ curNode'.kind # OpApplKind
                 \/ Node[curNode'.operator].kind # BuiltInKind
@@ -11188,10 +11138,10 @@ Lbl_38 == /\ pc = "Lbl_38"
                 THEN /\ PrintT("Expecting $Pair(...)")
                      /\ IF debug
                            THEN /\ idx' = idx
-                                /\ pc' = "Lbl_39"
+                                /\ pc' = "Lbl_34"
                            ELSE /\ pc' = "Done"
                                 /\ UNCHANGED idx
-                ELSE /\ pc' = "Lbl_40"
+                ELSE /\ pc' = "Lbl_35"
                      /\ UNCHANGED idx
           /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
                           allArgs, subExprOf, result, mode, prevMode, 
@@ -11199,45 +11149,112 @@ Lbl_38 == /\ pc = "Lbl_38"
                           firstFindingOpName, opNode, newName, newNode, 
                           nodeArity, temp >>
 
-Lbl_39 == /\ pc = "Lbl_39"
+Lbl_35 == /\ pc = "Lbl_35"
+          /\ curNode' = Node[curNode.operands[2]]
+          /\ pc' = "Lbl_63"
+          /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
+                          allArgs, subExprOf, result, idx, mode, prevMode, 
+                          curContext, curName, opDefArityFound, opDefArgs, 
+                          firstFindingOpName, opNode, newName, newNode, 
+                          nodeArity, temp >>
+
+Lbl_34 == /\ pc = "Lbl_34"
           /\ idx' = idx
           /\ Assert(FALSE, 
-                    "Failure of assertion at line line 1887, column 38 of macro called at line 2120, column 18.")
-          /\ pc' = "Lbl_40"
+                    "Failure of assertion at line line 1890, column 38 of macro called at line 2112, column 18.")
+          /\ pc' = "Lbl_63"
           /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
                           allArgs, curNode, subExprOf, result, mode, prevMode, 
                           curContext, curName, opDefArityFound, opDefArgs, 
                           firstFindingOpName, opNode, newName, newNode, 
                           nodeArity, temp >>
 
-Lbl_40 == /\ pc = "Lbl_40"
-          /\ idx' = idx+1
-          /\ temp' = ArgNum(ops[idx'], 2)
+Lbl_32 == /\ pc = "Lbl_32"
+          /\ idx' = idx
+          /\ Assert(FALSE, 
+                    "Failure of assertion at line line 1890, column 38 of macro called at line 2106, column 18.")
+          /\ pc' = "Lbl_33"
+          /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
+                          allArgs, curNode, subExprOf, result, mode, prevMode, 
+                          curContext, curName, opDefArityFound, opDefArgs, 
+                          firstFindingOpName, opNode, newName, newNode, 
+                          nodeArity, temp >>
+
+Lbl_37 == /\ pc = "Lbl_37"
+          /\ temp' = ArgNum( ops[idx], Len(curNode.operands))
           /\ IF temp' = -1
                 THEN /\ PrintT("Incorrect subexpression name")
                      /\ IF debug
-                           THEN /\ pc' = "Lbl_41"
+                           THEN /\ idx' = idx
+                                /\ pc' = "Lbl_38"
                            ELSE /\ pc' = "Done"
-                ELSE /\ pc' = "Lbl_43"
+                                /\ UNCHANGED idx
+                ELSE /\ pc' = "Lbl_39"
+                     /\ UNCHANGED idx
           /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
                           allArgs, curNode, subExprOf, result, mode, prevMode, 
                           curContext, curName, opDefArityFound, opDefArgs, 
                           firstFindingOpName, opNode, newName, newNode, 
                           nodeArity >>
 
-Lbl_41 == /\ pc = "Lbl_41"
+Lbl_38 == /\ pc = "Lbl_38"
           /\ idx' = idx
-          /\ pc' = "Lbl_42"
+          /\ Assert(FALSE, 
+                    "Failure of assertion at line line 1890, column 38 of macro called at line 2126, column 18.")
+          /\ pc' = "Lbl_39"
           /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
                           allArgs, curNode, subExprOf, result, mode, prevMode, 
                           curContext, curName, opDefArityFound, opDefArgs, 
                           firstFindingOpName, opNode, newName, newNode, 
                           nodeArity, temp >>
 
-Lbl_42 == /\ pc = "Lbl_42"
+Lbl_39 == /\ pc = "Lbl_39"
+          /\ curNode' = Node[curNode.operands[temp]]
+          /\ IF \/ curNode'.kind # OpApplKind
+                \/ Node[curNode'.operator].kind # BuiltInKind
+                \/ Node[curNode'.operator].name # "$Pair"
+                THEN /\ PrintT("Expecting $Pair(...)")
+                     /\ IF debug
+                           THEN /\ idx' = idx
+                                /\ pc' = "Lbl_40"
+                           ELSE /\ pc' = "Done"
+                                /\ UNCHANGED idx
+                ELSE /\ pc' = "Lbl_41"
+                     /\ UNCHANGED idx
+          /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
+                          allArgs, subExprOf, result, mode, prevMode, 
+                          curContext, curName, opDefArityFound, opDefArgs, 
+                          firstFindingOpName, opNode, newName, newNode, 
+                          nodeArity, temp >>
+
+Lbl_40 == /\ pc = "Lbl_40"
           /\ idx' = idx
           /\ Assert(FALSE, 
-                    "Failure of assertion at line line 1887, column 38 of macro called at line 2125, column 18.")
+                    "Failure of assertion at line line 1890, column 38 of macro called at line 2132, column 18.")
+          /\ pc' = "Lbl_41"
+          /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
+                          allArgs, curNode, subExprOf, result, mode, prevMode, 
+                          curContext, curName, opDefArityFound, opDefArgs, 
+                          firstFindingOpName, opNode, newName, newNode, 
+                          nodeArity, temp >>
+
+Lbl_41 == /\ pc = "Lbl_41"
+          /\ idx' = idx+1
+          /\ temp' = ArgNum(ops[idx'], 2)
+          /\ IF temp' = -1
+                THEN /\ PrintT("Incorrect subexpression name")
+                     /\ IF debug
+                           THEN /\ pc' = "Lbl_42"
+                           ELSE /\ pc' = "Done"
+                ELSE /\ pc' = "Lbl_44"
+          /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
+                          allArgs, curNode, subExprOf, result, mode, prevMode, 
+                          curContext, curName, opDefArityFound, opDefArgs, 
+                          firstFindingOpName, opNode, newName, newNode, 
+                          nodeArity >>
+
+Lbl_42 == /\ pc = "Lbl_42"
+          /\ idx' = idx
           /\ pc' = "Lbl_43"
           /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
                           allArgs, curNode, subExprOf, result, mode, prevMode, 
@@ -11246,15 +11263,26 @@ Lbl_42 == /\ pc = "Lbl_42"
                           nodeArity, temp >>
 
 Lbl_43 == /\ pc = "Lbl_43"
+          /\ idx' = idx
+          /\ Assert(FALSE, 
+                    "Failure of assertion at line line 1890, column 38 of macro called at line 2137, column 18.")
+          /\ pc' = "Lbl_44"
+          /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
+                          allArgs, curNode, subExprOf, result, mode, prevMode, 
+                          curContext, curName, opDefArityFound, opDefArgs, 
+                          firstFindingOpName, opNode, newName, newNode, 
+                          nodeArity, temp >>
+
+Lbl_44 == /\ pc = "Lbl_44"
           /\ curNode' = Node[curNode.operands[temp]]
           /\ IF curNode' = null
                 THEN /\ PrintT("Selecting OTHER")
                      /\ IF debug
                            THEN /\ idx' = idx
-                                /\ pc' = "Lbl_44"
+                                /\ pc' = "Lbl_45"
                            ELSE /\ pc' = "Done"
                                 /\ UNCHANGED idx
-                ELSE /\ pc' = "Lbl_62"
+                ELSE /\ pc' = "Lbl_63"
                      /\ UNCHANGED idx
           /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
                           allArgs, subExprOf, result, mode, prevMode, 
@@ -11262,29 +11290,29 @@ Lbl_43 == /\ pc = "Lbl_43"
                           firstFindingOpName, opNode, newName, newNode, 
                           nodeArity, temp >>
 
-Lbl_44 == /\ pc = "Lbl_44"
+Lbl_45 == /\ pc = "Lbl_45"
           /\ idx' = idx
           /\ Assert(FALSE, 
-                    "Failure of assertion at line line 1887, column 38 of macro called at line 2129, column 18.")
-          /\ pc' = "Lbl_62"
+                    "Failure of assertion at line line 1890, column 38 of macro called at line 2141, column 18.")
+          /\ pc' = "Lbl_63"
           /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
                           allArgs, curNode, subExprOf, result, mode, prevMode, 
                           curContext, curName, opDefArityFound, opDefArgs, 
                           firstFindingOpName, opNode, newName, newNode, 
                           nodeArity, temp >>
 
-Lbl_35 == /\ pc = "Lbl_35"
+Lbl_36 == /\ pc = "Lbl_36"
           /\ idx' = idx
           /\ Assert(FALSE, 
-                    "Failure of assertion at line line 1887, column 38 of macro called at line 2110, column 18.")
-          /\ pc' = "Lbl_36"
+                    "Failure of assertion at line line 1890, column 38 of macro called at line 2122, column 18.")
+          /\ pc' = "Lbl_37"
           /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
                           allArgs, curNode, subExprOf, result, mode, prevMode, 
                           curContext, curName, opDefArityFound, opDefArgs, 
                           firstFindingOpName, opNode, newName, newNode, 
                           nodeArity, temp >>
 
-Lbl_46 == /\ pc = "Lbl_46"
+Lbl_47 == /\ pc = "Lbl_47"
           /\ curNode' = Node[curNode.operands[temp]]
           /\ IF temp > 1
                 THEN /\ IF \/ curNode'.kind # OpApplKind
@@ -11293,12 +11321,12 @@ Lbl_46 == /\ pc = "Lbl_46"
                            THEN /\ PrintT("Unexpected expression node found.")
                                 /\ IF debug
                                       THEN /\ idx' = idx
-                                           /\ pc' = "Lbl_47"
+                                           /\ pc' = "Lbl_48"
                                       ELSE /\ pc' = "Done"
                                            /\ UNCHANGED idx
-                           ELSE /\ pc' = "Lbl_48"
+                           ELSE /\ pc' = "Lbl_49"
                                 /\ UNCHANGED idx
-                ELSE /\ pc' = "Lbl_62"
+                ELSE /\ pc' = "Lbl_63"
                      /\ UNCHANGED idx
           /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
                           allArgs, subExprOf, result, mode, prevMode, 
@@ -11306,71 +11334,51 @@ Lbl_46 == /\ pc = "Lbl_46"
                           firstFindingOpName, opNode, newName, newNode, 
                           nodeArity, temp >>
 
-Lbl_48 == /\ pc = "Lbl_48"
-          /\ curNode' = Node[curNode.operands[2]]
-          /\ pc' = "Lbl_62"
-          /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
-                          allArgs, subExprOf, result, idx, mode, prevMode, 
-                          curContext, curName, opDefArityFound, opDefArgs, 
-                          firstFindingOpName, opNode, newName, newNode, 
-                          nodeArity, temp >>
-
-Lbl_47 == /\ pc = "Lbl_47"
-          /\ idx' = idx
-          /\ Assert(FALSE, 
-                    "Failure of assertion at line line 1887, column 38 of macro called at line 2148, column 26.")
-          /\ pc' = "Lbl_62"
-          /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
-                          allArgs, curNode, subExprOf, result, mode, prevMode, 
-                          curContext, curName, opDefArityFound, opDefArgs, 
-                          firstFindingOpName, opNode, newName, newNode, 
-                          nodeArity, temp >>
-
-Lbl_45 == /\ pc = "Lbl_45"
-          /\ idx' = idx
-          /\ Assert(FALSE, 
-                    "Failure of assertion at line line 1887, column 38 of macro called at line 2141, column 19.")
-          /\ pc' = "Lbl_46"
-          /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
-                          allArgs, curNode, subExprOf, result, mode, prevMode, 
-                          curContext, curName, opDefArityFound, opDefArgs, 
-                          firstFindingOpName, opNode, newName, newNode, 
-                          nodeArity, temp >>
-
-Lbl_50 == /\ pc = "Lbl_50"
-          /\ curNode' = Node[curNode.operands[temp]]
-          /\ pc' = "Lbl_62"
-          /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
-                          allArgs, subExprOf, result, idx, mode, prevMode, 
-                          curContext, curName, opDefArityFound, opDefArgs, 
-                          firstFindingOpName, opNode, newName, newNode, 
-                          nodeArity, temp >>
-
 Lbl_49 == /\ pc = "Lbl_49"
+          /\ curNode' = Node[curNode.operands[2]]
+          /\ pc' = "Lbl_63"
+          /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
+                          allArgs, subExprOf, result, idx, mode, prevMode, 
+                          curContext, curName, opDefArityFound, opDefArgs, 
+                          firstFindingOpName, opNode, newName, newNode, 
+                          nodeArity, temp >>
+
+Lbl_48 == /\ pc = "Lbl_48"
           /\ idx' = idx
           /\ Assert(FALSE, 
-                    "Failure of assertion at line line 1887, column 38 of macro called at line 2164, column 25.")
-          /\ pc' = "Lbl_50"
+                    "Failure of assertion at line line 1890, column 38 of macro called at line 2160, column 26.")
+          /\ pc' = "Lbl_63"
           /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
                           allArgs, curNode, subExprOf, result, mode, prevMode, 
                           curContext, curName, opDefArityFound, opDefArgs, 
                           firstFindingOpName, opNode, newName, newNode, 
                           nodeArity, temp >>
 
-Lbl_52 == /\ pc = "Lbl_52"
-          /\ curNode' = Node[curNode.operands[1]]
-          /\ pc' = "Lbl_62"
+Lbl_46 == /\ pc = "Lbl_46"
+          /\ idx' = idx
+          /\ Assert(FALSE, 
+                    "Failure of assertion at line line 1890, column 38 of macro called at line 2153, column 19.")
+          /\ pc' = "Lbl_47"
           /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
-                          allArgs, subExprOf, result, idx, mode, prevMode, 
+                          allArgs, curNode, subExprOf, result, mode, prevMode, 
                           curContext, curName, opDefArityFound, opDefArgs, 
                           firstFindingOpName, opNode, newName, newNode, 
                           nodeArity, temp >>
 
 Lbl_51 == /\ pc = "Lbl_51"
+          /\ curNode' = Node[curNode.operands[temp]]
+          /\ pc' = "Lbl_63"
+          /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
+                          allArgs, subExprOf, result, idx, mode, prevMode, 
+                          curContext, curName, opDefArityFound, opDefArgs, 
+                          firstFindingOpName, opNode, newName, newNode, 
+                          nodeArity, temp >>
+
+Lbl_50 == /\ pc = "Lbl_50"
           /\ idx' = idx
           /\ Assert(FALSE, 
-                    "Failure of assertion at line line 1887, column 38 of macro called at line 2189, column 32.")
-          /\ pc' = "Lbl_52"
+                    "Failure of assertion at line line 1890, column 38 of macro called at line 2176, column 25.")
+          /\ pc' = "Lbl_51"
           /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
                           allArgs, curNode, subExprOf, result, mode, prevMode, 
                           curContext, curName, opDefArityFound, opDefArgs, 
@@ -11378,10 +11386,19 @@ Lbl_51 == /\ pc = "Lbl_51"
                           nodeArity, temp >>
 
 Lbl_53 == /\ pc = "Lbl_53"
+          /\ curNode' = Node[curNode.operands[1]]
+          /\ pc' = "Lbl_63"
+          /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
+                          allArgs, subExprOf, result, idx, mode, prevMode, 
+                          curContext, curName, opDefArityFound, opDefArgs, 
+                          firstFindingOpName, opNode, newName, newNode, 
+                          nodeArity, temp >>
+
+Lbl_52 == /\ pc = "Lbl_52"
           /\ idx' = idx
           /\ Assert(FALSE, 
-                    "Failure of assertion at line line 1887, column 38 of macro called at line 2194, column 32.")
-          /\ pc' = "Lbl_62"
+                    "Failure of assertion at line line 1890, column 38 of macro called at line 2201, column 32.")
+          /\ pc' = "Lbl_53"
           /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
                           allArgs, curNode, subExprOf, result, mode, prevMode, 
                           curContext, curName, opDefArityFound, opDefArgs, 
@@ -11391,8 +11408,8 @@ Lbl_53 == /\ pc = "Lbl_53"
 Lbl_54 == /\ pc = "Lbl_54"
           /\ idx' = idx
           /\ Assert(FALSE, 
-                    "Failure of assertion at line line 1887, column 38 of macro called at line 2201, column 12.")
-          /\ pc' = "Lbl_62"
+                    "Failure of assertion at line line 1890, column 38 of macro called at line 2206, column 32.")
+          /\ pc' = "Lbl_63"
           /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
                           allArgs, curNode, subExprOf, result, mode, prevMode, 
                           curContext, curName, opDefArityFound, opDefArgs, 
@@ -11402,8 +11419,8 @@ Lbl_54 == /\ pc = "Lbl_54"
 Lbl_55 == /\ pc = "Lbl_55"
           /\ idx' = idx
           /\ Assert(FALSE, 
-                    "Failure of assertion at line line 1887, column 38 of macro called at line 2209, column 18.")
-          /\ pc' = "Lbl_62"
+                    "Failure of assertion at line line 1890, column 38 of macro called at line 2213, column 12.")
+          /\ pc' = "Lbl_63"
           /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
                           allArgs, curNode, subExprOf, result, mode, prevMode, 
                           curContext, curName, opDefArityFound, opDefArgs, 
@@ -11413,8 +11430,8 @@ Lbl_55 == /\ pc = "Lbl_55"
 Lbl_56 == /\ pc = "Lbl_56"
           /\ idx' = idx
           /\ Assert(FALSE, 
-                    "Failure of assertion at line line 1887, column 38 of macro called at line 2224, column 9.")
-          /\ pc' = "Lbl_62"
+                    "Failure of assertion at line line 1890, column 38 of macro called at line 2221, column 18.")
+          /\ pc' = "Lbl_63"
           /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
                           allArgs, curNode, subExprOf, result, mode, prevMode, 
                           curContext, curName, opDefArityFound, opDefArgs, 
@@ -11424,8 +11441,8 @@ Lbl_56 == /\ pc = "Lbl_56"
 Lbl_57 == /\ pc = "Lbl_57"
           /\ idx' = idx
           /\ Assert(FALSE, 
-                    "Failure of assertion at line line 1887, column 38 of macro called at line 2226, column 9.")
-          /\ pc' = "Lbl_62"
+                    "Failure of assertion at line line 1890, column 38 of macro called at line 2236, column 9.")
+          /\ pc' = "Lbl_63"
           /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
                           allArgs, curNode, subExprOf, result, mode, prevMode, 
                           curContext, curName, opDefArityFound, opDefArgs, 
@@ -11435,8 +11452,8 @@ Lbl_57 == /\ pc = "Lbl_57"
 Lbl_58 == /\ pc = "Lbl_58"
           /\ idx' = idx
           /\ Assert(FALSE, 
-                    "Failure of assertion at line line 1887, column 38 of macro called at line 2229, column 9.")
-          /\ pc' = "Lbl_62"
+                    "Failure of assertion at line line 1890, column 38 of macro called at line 2238, column 9.")
+          /\ pc' = "Lbl_63"
           /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
                           allArgs, curNode, subExprOf, result, mode, prevMode, 
                           curContext, curName, opDefArityFound, opDefArgs, 
@@ -11446,8 +11463,8 @@ Lbl_58 == /\ pc = "Lbl_58"
 Lbl_59 == /\ pc = "Lbl_59"
           /\ idx' = idx
           /\ Assert(FALSE, 
-                    "Failure of assertion at line line 1887, column 38 of macro called at line 2236, column 7.")
-          /\ pc' = "Lbl_62"
+                    "Failure of assertion at line line 1890, column 38 of macro called at line 2241, column 9.")
+          /\ pc' = "Lbl_63"
           /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
                           allArgs, curNode, subExprOf, result, mode, prevMode, 
                           curContext, curName, opDefArityFound, opDefArgs, 
@@ -11457,8 +11474,8 @@ Lbl_59 == /\ pc = "Lbl_59"
 Lbl_60 == /\ pc = "Lbl_60"
           /\ idx' = idx
           /\ Assert(FALSE, 
-                    "Failure of assertion at line line 1887, column 38 of macro called at line 2241, column 10.")
-          /\ pc' = "Lbl_62"
+                    "Failure of assertion at line line 1890, column 38 of macro called at line 2248, column 7.")
+          /\ pc' = "Lbl_63"
           /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
                           allArgs, curNode, subExprOf, result, mode, prevMode, 
                           curContext, curName, opDefArityFound, opDefArgs, 
@@ -11468,30 +11485,30 @@ Lbl_60 == /\ pc = "Lbl_60"
 Lbl_61 == /\ pc = "Lbl_61"
           /\ idx' = idx
           /\ Assert(FALSE, 
-                    "Failure of assertion at line line 1887, column 38 of macro called at line 2250, column 8.")
-          /\ pc' = "Lbl_62"
+                    "Failure of assertion at line line 1890, column 38 of macro called at line 2253, column 10.")
+          /\ pc' = "Lbl_63"
           /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
                           allArgs, curNode, subExprOf, result, mode, prevMode, 
                           curContext, curName, opDefArityFound, opDefArgs, 
                           firstFindingOpName, opNode, newName, newNode, 
                           nodeArity, temp >>
 
-Lbl_67 == /\ pc = "Lbl_67"
+Lbl_62 == /\ pc = "Lbl_62"
           /\ idx' = idx
           /\ Assert(FALSE, 
-                    "Failure of assertion at line line 1887, column 38 of macro called at line 2272, column 8.")
-          /\ pc' = "Lbl_68"
+                    "Failure of assertion at line line 1890, column 38 of macro called at line 2262, column 8.")
+          /\ pc' = "Lbl_63"
           /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
                           allArgs, curNode, subExprOf, result, mode, prevMode, 
                           curContext, curName, opDefArityFound, opDefArgs, 
                           firstFindingOpName, opNode, newName, newNode, 
                           nodeArity, temp >>
 
-Lbl_69 == /\ pc = "Lbl_69"
+Lbl_68 == /\ pc = "Lbl_68"
           /\ idx' = idx
           /\ Assert(FALSE, 
-                    "Failure of assertion at line line 1887, column 38 of macro called at line 2280, column 10.")
-          /\ pc' = "Lbl_70"
+                    "Failure of assertion at line line 1890, column 38 of macro called at line 2284, column 8.")
+          /\ pc' = "Lbl_69"
           /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
                           allArgs, curNode, subExprOf, result, mode, prevMode, 
                           curContext, curName, opDefArityFound, opDefArgs, 
@@ -11499,18 +11516,29 @@ Lbl_69 == /\ pc = "Lbl_69"
                           nodeArity, temp >>
 
 Lbl_70 == /\ pc = "Lbl_70"
+          /\ idx' = idx
+          /\ Assert(FALSE, 
+                    "Failure of assertion at line line 1890, column 38 of macro called at line 2292, column 10.")
+          /\ pc' = "Lbl_71"
+          /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
+                          allArgs, curNode, subExprOf, result, mode, prevMode, 
+                          curContext, curName, opDefArityFound, opDefArgs, 
+                          firstFindingOpName, opNode, newName, newNode, 
+                          nodeArity, temp >>
+
+Lbl_71 == /\ pc = "Lbl_71"
           /\ IF expectedArity < 0
                 THEN /\ IF \/ prevMode # "FindingOpName"
                            \/ curNode.kind \notin {UserDefinedOpKind, ThmOrAssumpDefKind}
                            THEN /\ PrintT("Should have selected a definition, but didn't.")
                                 /\ IF debug
                                       THEN /\ idx' = idx
-                                           /\ pc' = "Lbl_71"
+                                           /\ pc' = "Lbl_72"
                                       ELSE /\ pc' = "Done"
                                            /\ UNCHANGED idx
-                           ELSE /\ pc' = "Lbl_72"
+                           ELSE /\ pc' = "Lbl_73"
                                 /\ UNCHANGED idx
-                ELSE /\ pc' = "Lbl_73"
+                ELSE /\ pc' = "Lbl_74"
                      /\ UNCHANGED idx
           /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
                           allArgs, curNode, subExprOf, result, mode, prevMode, 
@@ -11518,7 +11546,7 @@ Lbl_70 == /\ pc = "Lbl_70"
                           firstFindingOpName, opNode, newName, newNode, 
                           nodeArity, temp >>
 
-Lbl_72 == /\ pc = "Lbl_72"
+Lbl_73 == /\ pc = "Lbl_73"
           /\ result' = curNode
           /\ pc' = "Finished"
           /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
@@ -11527,34 +11555,34 @@ Lbl_72 == /\ pc = "Lbl_72"
                           firstFindingOpName, opNode, newName, newNode, 
                           nodeArity, temp >>
 
-Lbl_71 == /\ pc = "Lbl_71"
+Lbl_72 == /\ pc = "Lbl_72"
           /\ idx' = idx
           /\ Assert(FALSE, 
-                    "Failure of assertion at line line 1887, column 38 of macro called at line 2286, column 17.")
-          /\ pc' = "Lbl_72"
+                    "Failure of assertion at line line 1890, column 38 of macro called at line 2298, column 17.")
+          /\ pc' = "Lbl_73"
           /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
                           allArgs, curNode, subExprOf, result, mode, prevMode, 
                           curContext, curName, opDefArityFound, opDefArgs, 
                           firstFindingOpName, opNode, newName, newNode, 
                           nodeArity, temp >>
 
-Lbl_73 == /\ pc = "Lbl_73"
+Lbl_74 == /\ pc = "Lbl_74"
           /\ IF expectedArity > 0
-                THEN /\ temp' = Len(params) + IF \/ prevMode = "FindingOpName"
-                                                 \/ curNode.kind = OpArgKind
-                                                THEN Arity(curNode)
-                                                ELSE 0
+                THEN /\ temp' = (Len(params) + IF \/ prevMode = "FindingOpName"
+                                                  \/ curNode.kind = OpArgKind
+                                                 THEN Arity(curNode)
+                                                 ELSE 0)
                      /\ IF expectedArity # temp'
                            THEN /\ PrintT("Expect arity = " \o ToString(expectedArity)
                                               \o ", but found arity = " \o ToString(temp'))
                                 /\ IF debug
                                       THEN /\ idx' = idx
-                                           /\ pc' = "Lbl_74"
+                                           /\ pc' = "Lbl_75"
                                       ELSE /\ pc' = "Done"
                                            /\ UNCHANGED idx
-                           ELSE /\ pc' = "Lbl_75"
+                           ELSE /\ pc' = "Lbl_76"
                                 /\ UNCHANGED idx
-                ELSE /\ pc' = "Lbl_75"
+                ELSE /\ pc' = "Lbl_76"
                      /\ UNCHANGED << idx, temp >>
           /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
                           allArgs, curNode, subExprOf, result, mode, prevMode, 
@@ -11562,18 +11590,18 @@ Lbl_73 == /\ pc = "Lbl_73"
                           firstFindingOpName, opNode, newName, newNode, 
                           nodeArity >>
 
-Lbl_74 == /\ pc = "Lbl_74"
+Lbl_75 == /\ pc = "Lbl_75"
           /\ idx' = idx
           /\ Assert(FALSE, 
-                    "Failure of assertion at line line 1887, column 38 of macro called at line 2298, column 18.")
-          /\ pc' = "Lbl_75"
+                    "Failure of assertion at line line 1890, column 38 of macro called at line 2310, column 18.")
+          /\ pc' = "Lbl_76"
           /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
                           allArgs, curNode, subExprOf, result, mode, prevMode, 
                           curContext, curName, opDefArityFound, opDefArgs, 
                           firstFindingOpName, opNode, newName, newNode, 
                           nodeArity, temp >>
 
-Lbl_75 == /\ pc = "Lbl_75"
+Lbl_76 == /\ pc = "Lbl_76"
           /\ IF /\ prevMode = "FindingOpName"
                 /\ Len(params) + Len(substInPrefix) > 0
                 THEN /\ temp' = [i \in 1..Len(curNode.params) |->
@@ -11593,43 +11621,32 @@ Lbl_75 == /\ pc = "Lbl_75"
                            THEN /\ PrintT("Selected Operator Argument when expression expected.")
                                 /\ IF debug
                                       THEN /\ idx' = idx
-                                           /\ pc' = "Lbl_76"
+                                           /\ pc' = "Lbl_77"
                                       ELSE /\ pc' = "Done"
                                            /\ UNCHANGED idx
                            ELSE /\ IF expectedArity # Len(params') + curNode'.arity
                                       THEN /\ PrintT("Selected operator has wrong arity.")
                                            /\ IF debug
                                                  THEN /\ idx' = idx
-                                                      /\ pc' = "Lbl_77"
+                                                      /\ pc' = "Lbl_78"
                                                  ELSE /\ pc' = "Done"
                                                       /\ UNCHANGED idx
                                       ELSE /\ IF Len(params') + Len(substInPrefix) > 0
-                                                 THEN /\ pc' = "Lbl_78"
-                                                 ELSE /\ pc' = "Lbl_79"
+                                                 THEN /\ pc' = "Lbl_79"
+                                                 ELSE /\ pc' = "Lbl_80"
                                            /\ UNCHANGED idx
-                ELSE /\ pc' = "Lbl_79"
+                ELSE /\ pc' = "Lbl_80"
                      /\ UNCHANGED idx
           /\ UNCHANGED << ops, args, expectedArity, substInPrefix, subExprOf, 
                           result, mode, prevMode, curContext, curName, 
                           opDefArityFound, opDefArgs, firstFindingOpName, 
                           opNode, newName, newNode, nodeArity >>
 
-Lbl_76 == /\ pc = "Lbl_76"
-          /\ idx' = idx
-          /\ Assert(FALSE, 
-                    "Failure of assertion at line line 1887, column 38 of macro called at line 2332, column 12.")
-          /\ pc' = "Lbl_79"
-          /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
-                          allArgs, curNode, subExprOf, result, mode, prevMode, 
-                          curContext, curName, opDefArityFound, opDefArgs, 
-                          firstFindingOpName, opNode, newName, newNode, 
-                          nodeArity, temp >>
-
 Lbl_77 == /\ pc = "Lbl_77"
           /\ idx' = idx
           /\ Assert(FALSE, 
-                    "Failure of assertion at line line 1887, column 38 of macro called at line 2334, column 12.")
-          /\ pc' = "Lbl_79"
+                    "Failure of assertion at line line 1890, column 38 of macro called at line 2344, column 12.")
+          /\ pc' = "Lbl_80"
           /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
                           allArgs, curNode, subExprOf, result, mode, prevMode, 
                           curContext, curName, opDefArityFound, opDefArgs, 
@@ -11637,6 +11654,17 @@ Lbl_77 == /\ pc = "Lbl_77"
                           nodeArity, temp >>
 
 Lbl_78 == /\ pc = "Lbl_78"
+          /\ idx' = idx
+          /\ Assert(FALSE, 
+                    "Failure of assertion at line line 1890, column 38 of macro called at line 2346, column 12.")
+          /\ pc' = "Lbl_80"
+          /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
+                          allArgs, curNode, subExprOf, result, mode, prevMode, 
+                          curContext, curName, opDefArityFound, opDefArgs, 
+                          firstFindingOpName, opNode, newName, newNode, 
+                          nodeArity, temp >>
+
+Lbl_79 == /\ pc = "Lbl_79"
           /\ temp' = [i \in 1..curNode.arity |->
                        [name |-> "NewParam" \o NumToString(i),
                         arity |-> 0]]
@@ -11647,14 +11675,14 @@ Lbl_78 == /\ pc = "Lbl_78"
                          boundedBoundSymbols |-> << >>,
                          ranges |-> << >>]
           /\ params' = params \o temp'
-          /\ pc' = "Lbl_79"
+          /\ pc' = "Lbl_80"
           /\ UNCHANGED << ops, args, expectedArity, substInPrefix, allArgs, 
                           subExprOf, result, idx, mode, prevMode, curContext, 
                           curName, opDefArityFound, opDefArgs, 
                           firstFindingOpName, opNode, newName, newNode, 
                           nodeArity >>
 
-Lbl_79 == /\ pc = "Lbl_79"
+Lbl_80 == /\ pc = "Lbl_80"
           /\ IF curNode.kind \in {UserDefinedOpKind, ConstantDeclKind, VariableDeclKind,
                                   FormalParamKind, BuiltInKind, BoundSymbolKind,
                                   ThmOrAssumpDefKind}
@@ -11680,7 +11708,7 @@ Lbl_79 == /\ pc = "Lbl_79"
                                 /\ pc' = "Finished"
                                 /\ UNCHANGED temp
                            ELSE /\ temp' = Len(substInPrefix)
-                                /\ pc' = "Lbl_80"
+                                /\ pc' = "Lbl_81"
                                 /\ UNCHANGED result
           /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
                           allArgs, curNode, subExprOf, idx, mode, prevMode, 
@@ -11688,32 +11716,32 @@ Lbl_79 == /\ pc = "Lbl_79"
                           firstFindingOpName, opNode, newName, newNode, 
                           nodeArity >>
 
-Lbl_80 == /\ pc = "Lbl_80"
+Lbl_81 == /\ pc = "Lbl_81"
           /\ IF temp > 0
                 THEN /\ curNode' = [kind  |-> SubstInKind,
                                     body  |-> curNode ,
                                     subst |-> substInPrefix[temp].subst ]
                      /\ temp' = temp - 1
-                     /\ pc' = "Lbl_80"
+                     /\ pc' = "Lbl_81"
                      /\ UNCHANGED idx
                 ELSE /\ IF expectedArity > 0
                            THEN /\ IF Len(params) # expectedArity
                                       THEN /\ PrintT("Selection has wrong arity")
                                            /\ IF debug
                                                  THEN /\ idx' = idx
-                                                      /\ pc' = "Lbl_81"
+                                                      /\ pc' = "Lbl_82"
                                                  ELSE /\ pc' = "Done"
                                                       /\ UNCHANGED idx
-                                      ELSE /\ pc' = "Lbl_82"
+                                      ELSE /\ pc' = "Lbl_83"
                                            /\ UNCHANGED idx
                            ELSE /\ IF Len(params) # Len(allArgs)
                                       THEN /\ PrintT("Abort: number of params # num of args")
                                            /\ IF debug
                                                  THEN /\ idx' = idx
-                                                      /\ pc' = "Lbl_83"
+                                                      /\ pc' = "Lbl_84"
                                                  ELSE /\ pc' = "Done"
                                                       /\ UNCHANGED idx
-                                      ELSE /\ pc' = "Lbl_84"
+                                      ELSE /\ pc' = "Lbl_85"
                                            /\ UNCHANGED idx
                      /\ UNCHANGED << curNode, temp >>
           /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
@@ -11722,7 +11750,7 @@ Lbl_80 == /\ pc = "Lbl_80"
                           firstFindingOpName, opNode, newName, newNode, 
                           nodeArity >>
 
-Lbl_82 == /\ pc = "Lbl_82"
+Lbl_83 == /\ pc = "Lbl_83"
           /\ result' = [kind |-> OpArgKind,
                         op   |-> [kind    |-> UserDefinedOpKind,
                                   name    |-> "LAMBDA",
@@ -11739,7 +11767,7 @@ Lbl_82 == /\ pc = "Lbl_82"
                           firstFindingOpName, opNode, newName, newNode, 
                           nodeArity, temp >>
 
-Lbl_84 == /\ pc = "Lbl_84"
+Lbl_85 == /\ pc = "Lbl_85"
           /\ IF Len(params) = 0
                 THEN /\ result' = [kind  |-> LabelKind,
                                    name  |-> "$Subexpression",
@@ -11767,22 +11795,22 @@ Lbl_84 == /\ pc = "Lbl_84"
                           firstFindingOpName, opNode, newName, newNode, 
                           nodeArity, temp >>
 
-Lbl_81 == /\ pc = "Lbl_81"
+Lbl_82 == /\ pc = "Lbl_82"
           /\ idx' = idx
           /\ Assert(FALSE, 
-                    "Failure of assertion at line line 1887, column 38 of macro called at line 2400, column 22.")
-          /\ pc' = "Lbl_82"
+                    "Failure of assertion at line line 1890, column 38 of macro called at line 2412, column 22.")
+          /\ pc' = "Lbl_83"
           /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
                           allArgs, curNode, subExprOf, result, mode, prevMode, 
                           curContext, curName, opDefArityFound, opDefArgs, 
                           firstFindingOpName, opNode, newName, newNode, 
                           nodeArity, temp >>
 
-Lbl_83 == /\ pc = "Lbl_83"
+Lbl_84 == /\ pc = "Lbl_84"
           /\ idx' = idx
           /\ Assert(FALSE, 
-                    "Failure of assertion at line line 1887, column 38 of macro called at line 2412, column 22.")
-          /\ pc' = "Lbl_84"
+                    "Failure of assertion at line line 1890, column 38 of macro called at line 2424, column 22.")
+          /\ pc' = "Lbl_85"
           /\ UNCHANGED << ops, args, expectedArity, substInPrefix, params, 
                           allArgs, curNode, subExprOf, result, mode, prevMode, 
                           curContext, curName, opDefArityFound, opDefArgs, 
@@ -11799,19 +11827,19 @@ Finished == /\ pc = "Finished"
                             opDefArgs, firstFindingOpName, opNode, newName, 
                             newNode, nodeArity, temp >>
 
-Next == Lbl_1 \/ Lbl_2 \/ Lbl_68 \/ Lbl_4 \/ Lbl_5 \/ Lbl_6 \/ Lbl_9
-           \/ Lbl_11 \/ Lbl_12 \/ Lbl_10 \/ Lbl_13 \/ Lbl_14 \/ Lbl_16 \/ Lbl_17
-           \/ Lbl_15 \/ Lbl_18 \/ Lbl_7 \/ Lbl_8 \/ Lbl_19 \/ Lbl_20 \/ Lbl_3
-           \/ Lbl_22 \/ Lbl_24 \/ Lbl_25 \/ Lbl_26 \/ Lbl_23 \/ Lbl_27 \/ Lbl_21
-           \/ Lbl_62 \/ Lbl_63 \/ Lbl_64 \/ Lbl_65 \/ Lbl_66 \/ Lbl_28 \/ Lbl_29
-           \/ Lbl_30 \/ Lbl_32 \/ Lbl_34 \/ Lbl_33 \/ Lbl_31 \/ Lbl_36 \/ Lbl_37
+Next == Lbl_1 \/ Lbl_2 \/ Lbl_69 \/ Lbl_3 \/ Lbl_5 \/ Lbl_6 \/ Lbl_7
+           \/ Lbl_4 \/ Lbl_10 \/ Lbl_12 \/ Lbl_13 \/ Lbl_11 \/ Lbl_14 \/ Lbl_15
+           \/ Lbl_17 \/ Lbl_18 \/ Lbl_16 \/ Lbl_19 \/ Lbl_8 \/ Lbl_9 \/ Lbl_20
+           \/ Lbl_21 \/ Lbl_23 \/ Lbl_25 \/ Lbl_26 \/ Lbl_27 \/ Lbl_24 \/ Lbl_28
+           \/ Lbl_22 \/ Lbl_63 \/ Lbl_64 \/ Lbl_65 \/ Lbl_66 \/ Lbl_67 \/ Lbl_29
+           \/ Lbl_30 \/ Lbl_31 \/ Lbl_33 \/ Lbl_35 \/ Lbl_34 \/ Lbl_32 \/ Lbl_37
            \/ Lbl_38 \/ Lbl_39 \/ Lbl_40 \/ Lbl_41 \/ Lbl_42 \/ Lbl_43 \/ Lbl_44
-           \/ Lbl_35 \/ Lbl_46 \/ Lbl_48 \/ Lbl_47 \/ Lbl_45 \/ Lbl_50 \/ Lbl_49
-           \/ Lbl_52 \/ Lbl_51 \/ Lbl_53 \/ Lbl_54 \/ Lbl_55 \/ Lbl_56 \/ Lbl_57
-           \/ Lbl_58 \/ Lbl_59 \/ Lbl_60 \/ Lbl_61 \/ Lbl_67 \/ Lbl_69 \/ Lbl_70
-           \/ Lbl_72 \/ Lbl_71 \/ Lbl_73 \/ Lbl_74 \/ Lbl_75 \/ Lbl_76 \/ Lbl_77
-           \/ Lbl_78 \/ Lbl_79 \/ Lbl_80 \/ Lbl_82 \/ Lbl_84 \/ Lbl_81 \/ Lbl_83
-           \/ Finished
+           \/ Lbl_45 \/ Lbl_36 \/ Lbl_47 \/ Lbl_49 \/ Lbl_48 \/ Lbl_46 \/ Lbl_51
+           \/ Lbl_50 \/ Lbl_53 \/ Lbl_52 \/ Lbl_54 \/ Lbl_55 \/ Lbl_56 \/ Lbl_57
+           \/ Lbl_58 \/ Lbl_59 \/ Lbl_60 \/ Lbl_61 \/ Lbl_62 \/ Lbl_68 \/ Lbl_70
+           \/ Lbl_71 \/ Lbl_73 \/ Lbl_72 \/ Lbl_74 \/ Lbl_75 \/ Lbl_76 \/ Lbl_77
+           \/ Lbl_78 \/ Lbl_79 \/ Lbl_80 \/ Lbl_81 \/ Lbl_83 \/ Lbl_85 \/ Lbl_82
+           \/ Lbl_84 \/ Finished
            \/ (* Disjunct to prevent deadlock on termination *)
               (pc = "Done" /\ UNCHANGED vars)
 
@@ -11827,7 +11855,6 @@ NotDone == pc # "Done"
   (* "INVARIANT NotDone" to Subexpression.cfg .                            *)
   (*************************************************************************)
 =============================================================================
-
 
 
 ************************* end file Subexpression.tla ****************************/
