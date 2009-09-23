@@ -119,7 +119,8 @@ public class FilteredDefinitionSelectionDialog extends FilteredItemsSelectionDia
     protected void fillContentProvider(AbstractContentProvider contentProvider, ItemsFilter itemsFilter,
             IProgressMonitor progressMonitor) throws CoreException
     {
-        if (specObj == null) {
+        if (specObj == null)
+        {
             return;
         }
         OpDefNode[] opDefs = specObj.getExternalModuleTable().getRootModule().getOpDefs();
@@ -136,10 +137,12 @@ public class FilteredDefinitionSelectionDialog extends FilteredItemsSelectionDia
     /* (non-Javadoc)
      * @see org.eclipse.ui.dialogs.FilteredItemsSelectionDialog#getElementName(java.lang.Object)
      */
+    // This is used to check for duplicates. Currently, duplicates still appear for some reason.
     public String getElementName(Object item)
     {
         OpDefNode node = (OpDefNode) item;
-        return node.getName().toString();
+        return node.getSource().getName().toString()
+                + node.getSource().getOriginallyDefinedInModuleNode().getName().toString();
     }
 
     /* (non-Javadoc)
@@ -241,6 +244,8 @@ public class FilteredDefinitionSelectionDialog extends FilteredItemsSelectionDia
             return true;
         }
 
+        // matches item based on name of the source of the definition node
+        // because this is what appears in the selection dialog
         public boolean matchItem(Object item)
         {
 
@@ -248,7 +253,7 @@ public class FilteredDefinitionSelectionDialog extends FilteredItemsSelectionDia
             {
                 return true;
             }
-            return matches(((OpDefNode) item).getName().toString());
+            return matches(((OpDefNode) item).getSource().getName().toString());
         }
     }
 
