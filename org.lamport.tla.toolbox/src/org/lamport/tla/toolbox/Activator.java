@@ -1,11 +1,15 @@
 package org.lamport.tla.toolbox;
 
+import java.util.List;
+
 import org.eclipse.core.commands.Command;
 import org.eclipse.core.resources.IMarkerDelta;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
+import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -14,6 +18,7 @@ import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.eclipse.ui.progress.UIJob;
 import org.lamport.tla.toolbox.spec.manager.WorkspaceSpecManager;
+import org.lamport.tla.toolbox.spec.nature.TLAParsingBuilder.ChangedModulesGatheringDeltaVisitor;
 import org.lamport.tla.toolbox.spec.parser.ParserDependencyStorage;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.ui.contribution.ParseStatusContributionItem;
@@ -160,6 +165,29 @@ public class Activator extends AbstractUIPlugin
                 });
             }
         }, IResourceChangeEvent.POST_BUILD);
+
+        workspace.addResourceChangeListener(new IResourceChangeListener() {
+
+            public void resourceChanged(IResourceChangeEvent event)
+            {
+                IResourceDelta delta = event.getDelta();
+                if (delta != null)
+                {
+
+                    ChangedModulesGatheringDeltaVisitor moduleFinder = new ChangedModulesGatheringDeltaVisitor();
+                    try
+                    {
+                        delta.accept(moduleFinder);
+                        List modules = moduleFinder.getModules();
+                    } catch (CoreException e)
+                    {
+                        Activator.logError("Error during post save status update", e);
+                    }
+                }
+
+            }
+
+        }, IResourceChangeEvent.POST_CHANGE);
     }
 
     public void stop(BundleContext context) throws Exception
