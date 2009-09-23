@@ -196,10 +196,8 @@ public class TLAParsingBuilder extends IncrementalProjectBuilder
 
     /**
      * Visitor to find out what files changed
-     * @author Simon Zambrovski
-     * @version $Id$
      */
-    public class ChangedModulesGatheringDeltaVisitor implements IResourceDeltaVisitor
+    public static class ChangedModulesGatheringDeltaVisitor implements IResourceDeltaVisitor
     {
         Vector modules = new Vector();
 
@@ -223,6 +221,15 @@ public class TLAParsingBuilder extends IncrementalProjectBuilder
             }
             // we want the visitor to visit the whole tree
             return true;
+        }
+        
+        /**
+         * Retrieves found modules, or an empty list, if nothing found
+         * @return a list with found modules
+         */
+        public List getModules()
+        {
+            return modules;
         }
     }
 
