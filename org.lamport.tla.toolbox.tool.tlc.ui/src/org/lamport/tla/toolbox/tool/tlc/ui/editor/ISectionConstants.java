@@ -6,7 +6,7 @@ package org.lamport.tla.toolbox.tool.tlc.ui.editor;
  * <br>
  * This interface contains identifiers given to sections of the three
  * Model Editor pages. An identifier is used in order to uniquely identify
- * the section. The DataBindingManager facility, provided by the editor is 
+ * the section. The {@link DataBindingManager} facility, provided by the editor is 
  * storing the information about "what section is located on what page" and "what 
  * attribute is displayed in what section". Using the ids the section can be expanded or collapsed.
  * This is used in case if an error is detected and the error marker is installed on the corresponding field.
