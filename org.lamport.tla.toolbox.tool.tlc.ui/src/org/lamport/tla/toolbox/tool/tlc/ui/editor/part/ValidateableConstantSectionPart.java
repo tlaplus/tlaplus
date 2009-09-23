@@ -19,9 +19,6 @@ import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.BasicFormPage;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.provider.AssignmentContentProvider;
 import org.lamport.tla.toolbox.tool.tlc.ui.wizard.AssignmentWizard;
 import org.lamport.tla.toolbox.tool.tlc.ui.wizard.AssignmentWizardPage;
-import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
-
-import tla2sany.semantic.OpDefNode;
 
 /**
  * Section part for the constants 
