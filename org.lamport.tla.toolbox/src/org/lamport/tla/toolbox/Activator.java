@@ -18,7 +18,8 @@ import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.eclipse.ui.progress.UIJob;
 import org.lamport.tla.toolbox.spec.manager.WorkspaceSpecManager;
-import org.lamport.tla.toolbox.spec.nature.TLAParsingBuilder.ChangedModulesGatheringDeltaVisitor;
+import org.lamport.tla.toolbox.spec.nature.TLAParsingBuilder.OutOfBuildRelevantModulesGatheringDeltaVisitor;
+import org.lamport.tla.toolbox.spec.parser.IParseConstants;
 import org.lamport.tla.toolbox.spec.parser.ParserDependencyStorage;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.ui.contribution.ParseStatusContributionItem;
@@ -174,11 +175,15 @@ public class Activator extends AbstractUIPlugin
                 if (delta != null)
                 {
 
-                    ChangedModulesGatheringDeltaVisitor moduleFinder = new ChangedModulesGatheringDeltaVisitor();
+                    OutOfBuildRelevantModulesGatheringDeltaVisitor moduleFinder = new OutOfBuildRelevantModulesGatheringDeltaVisitor();
                     try
                     {
                         delta.accept(moduleFinder);
                         List modules = moduleFinder.getModules();
+                        if (!modules.isEmpty())
+                        {
+                            getSpecManager().getSpecLoaded().setStatus(IParseConstants.UNPARSED);
+                        }
                     } catch (CoreException e)
                     {
                         Activator.logError("Error during post save status update", e);

@@ -13,6 +13,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.spec.Module;
 import org.lamport.tla.toolbox.spec.Spec;
+import org.lamport.tla.toolbox.spec.nature.TLAParsingBuilderConstants;
 import org.lamport.tla.toolbox.ui.handler.ParseSpecHandler;
 import org.lamport.tla.toolbox.util.AdapterFactory;
 import org.lamport.tla.toolbox.util.RCPNameToFileIStream;
@@ -194,6 +195,17 @@ public class ModuleParserLauncher
             // This enumeration finds all non-inner modules in the spec.
             String moduleName = (String) enumerate.nextElement();
             ParseUnit parseUnit = (ParseUnit) moduleSpec.parseUnitContext.get(moduleName);
+
+            // This is used to properly update the spec parse status on resource modifications
+            IResource moduleResource = ResourceHelper.getResourceByModuleName(moduleName);
+            try
+            {
+                moduleResource.setPersistentProperty(TLAParsingBuilderConstants.LAST_BUILT, String.valueOf(System
+                        .currentTimeMillis()));
+            } catch (CoreException e)
+            {
+                Activator.logError("Error while setting build timestamp on resource.", e);
+            }
 
             String absoluteFileName = null;
             if (parseUnit.getNis() != null && parseUnit.getNis().sourceFile() != null)

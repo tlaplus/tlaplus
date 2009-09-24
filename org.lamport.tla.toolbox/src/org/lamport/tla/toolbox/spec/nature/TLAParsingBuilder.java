@@ -14,6 +14,8 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubProgressMonitor;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.spec.Spec;
+import org.lamport.tla.toolbox.spec.parser.IParseConstants;
+import org.lamport.tla.toolbox.spec.parser.ParserDependencyStorage;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.TLAMarkerHelper;
 import org.lamport.tla.toolbox.util.pref.IPreferenceConstants;
@@ -31,7 +33,7 @@ public class TLAParsingBuilder extends IncrementalProjectBuilder
     protected void clean(IProgressMonitor monitor) throws CoreException
     {
         Activator.logDebug("Clean has been invoked");
-        // clean removes all markers 
+        // clean removes all markers
         Spec spec = Activator.getSpecManager().getSpecLoaded();
         TLAMarkerHelper.removeProblemMarkers(spec.getProject(), monitor);
 
@@ -70,7 +72,7 @@ public class TLAParsingBuilder extends IncrementalProjectBuilder
                 monitor.beginTask("Invoking the SANY to re-parse the spec", IProgressMonitor.UNKNOWN);
                 // no increment found, run a full build
                 ParserHelper.rebuildSpec(new SubProgressMonitor(monitor, IProgressMonitor.UNKNOWN));
-                
+
                 monitor.done();
             } else
             {
@@ -97,16 +99,18 @@ public class TLAParsingBuilder extends IncrementalProjectBuilder
 
                 for (int i = 0; i < moduleFinder.modules.size(); i++)
                 {
-                    
+
                     IResource changedModule = (IResource) moduleFinder.modules.get(i);
 
                     // call build on the changed resource
                     // if the file is a Root file it will call buildSpec
                     // otherwise buildModule is invoked
-                    build(changedModule.getProjectRelativePath().toString(), rootFile, new SubProgressMonitor(monitor, IProgressMonitor.UNKNOWN));
+                    build(changedModule.getProjectRelativePath().toString(), rootFile, new SubProgressMonitor(monitor,
+                            IProgressMonitor.UNKNOWN));
 
                     // get the modules to rebuild
-                    List modulesToRebuild = Activator.getModuleDependencyStorage().getListOfModulesToReparse(changedModule.getProjectRelativePath().toString());
+                    List modulesToRebuild = Activator.getModuleDependencyStorage().getListOfModulesToReparse(
+                            changedModule.getProjectRelativePath().toString());
 
                     // iterate over modules and rebuild them
                     for (int j = 0; j < modulesToRebuild.size(); j++)
@@ -156,28 +160,27 @@ public class TLAParsingBuilder extends IncrementalProjectBuilder
             // this will rebuild the spec starting from root, and change the spec status
             // still, we want to continue and keep the dependency information about other files
             ParserHelper.rebuildSpec(new SubProgressMonitor(monitor, IProgressMonitor.UNKNOWN));
-            
+
             monitor.done();
         } else
         {
             // retrieve a resource
             IProject project = getProject();
-            // get the file 
+            // get the file
             IResource moduleFile = project.getFile(moduleFileName);
-            
+
             /*
              * At this point of time, all modules should have been linked
             if (!moduleFile.exists()) 
             {
                 moduleFile = ResourceHelper.getLinkedFile(project, moduleFileName, false);
             }*/
-            
+
             if (moduleFile == null || !moduleFile.exists())
             {
                 throw new IllegalStateException("Resource not found during build");
             }
 
-            
             // never build derived resources
             if (!moduleFile.isDerived())
             {
@@ -186,12 +189,12 @@ public class TLAParsingBuilder extends IncrementalProjectBuilder
                 ParserHelper.rebuildModule(moduleFile, new SubProgressMonitor(monitor, IProgressMonitor.UNKNOWN));
 
                 monitor.done();
-            } else 
+            } else
             {
-                Activator.logDebug("Skipping resource: " + moduleFileName);    
+                Activator.logDebug("Skipping resource: " + moduleFileName);
             }
         }
-        
+
     }
 
     /**
@@ -222,7 +225,53 @@ public class TLAParsingBuilder extends IncrementalProjectBuilder
             // we want the visitor to visit the whole tree
             return true;
         }
-        
+
+        /**
+         * Retrieves found modules, or an empty list, if nothing found
+         * @return a list with found modules
+         */
+        public List getModules()
+        {
+            return modules;
+        }
+    }
+
+    public static class OutOfBuildRelevantModulesGatheringDeltaVisitor implements IResourceDeltaVisitor
+    {
+        Vector modules = new Vector();
+        ParserDependencyStorage dependancyStorage = Activator.getModuleDependencyStorage();
+        Spec spec = Activator.getSpecManager().getSpecLoaded();
+
+        public OutOfBuildRelevantModulesGatheringDeltaVisitor()
+        {
+        }
+
+        /**
+         * @see org.eclipse.core.resources.IResourceDeltaVisitor#visit(org.eclipse.core.resources.IResourceDelta)
+         */
+        public boolean visit(IResourceDelta delta) throws CoreException
+        {
+            final IResource resource = delta.getResource();
+            if (IResource.FILE == resource.getType())
+            {
+                // a file found
+                if (ResourceHelper.isModule(resource))
+                {
+                    // If there current spec status is error, then it is not known whether a given resource is
+                    // relevant so all resources are considered relevant. Any resource that is out of build
+                    // when the parse status is error added to the list of modules.
+                    if (Long.parseLong(resource.getPersistentProperty(TLAParsingBuilderConstants.LAST_BUILT)) < resource
+                            .getLocalTimeStamp()
+                            && (dependancyStorage.hasModule(resource.getName()) || spec.getStatus() < IParseConstants.SEMANTIC_WARNING))
+                    {
+                        modules.add(resource);
+                    }
+                }
+            }
+            // we want the visitor to visit the whole tree
+            return true;
+        }
+
         /**
          * Retrieves found modules, or an empty list, if nothing found
          * @return a list with found modules
