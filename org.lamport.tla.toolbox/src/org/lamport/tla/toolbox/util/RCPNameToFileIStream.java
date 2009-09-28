@@ -13,7 +13,7 @@ import util.FilenameToStream;
 import util.ToolIO;
 
 /**
- * RCP version of the name resolver for localization of the TLA modules
+ * RCP version of the name resolver for locating the TLA modules
  * 
  * @author zambrovski
  */
