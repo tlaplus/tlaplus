@@ -4,7 +4,6 @@ import java.util.Hashtable;
 import java.util.Vector;
 
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 import org.lamport.tla.toolbox.Activator;
@@ -57,9 +56,10 @@ public class SpecContentProvider implements ITreeContentProvider
         {
             if (element instanceof Spec)
             {
-                return ResourcesPlugin.getWorkspace().getRoot();
+                return Activator.getSpecManager(); //ResourcesPlugin.getWorkspace().getRoot();
             } else if (element instanceof Module)
             {
+                /*
                 Spec spec = (Spec) reverseLookup.get(element);
                 // cheaty hack
                 if (spec == null) 
@@ -67,6 +67,7 @@ public class SpecContentProvider implements ITreeContentProvider
                     spec = Activator.getSpecManager().getSpecLoaded();
                 }
                 return spec;
+                */
             }
             return null;
         }
