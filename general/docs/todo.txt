@@ -85,3 +85,7 @@
 18. Performance problem: Run separately, it takes SANY 4 seconds to parse the farsite
     spec.  It takes the toolbox 20 seconds.  What's it doing for those extra 16 seconds?
     
+19. Closing the toolbox simply kills any running TLC.  Instead, it should
+    it should warn the user that this will kill TLC and give him
+    the option of canceling.
+        
