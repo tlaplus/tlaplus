@@ -88,7 +88,8 @@ public class ParserDependencyStorage
     }
     
     /**
-     * Retrieves the list of modules that are EXTEND-ed by current module
+     * Retrieves the list of modules that are imported (directly
+     * or indirectly) by current module
      * @param rootModule, name of the module
      * @return list of modules it depends (EXTEND) on
      */
