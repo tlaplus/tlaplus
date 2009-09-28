@@ -38,7 +38,8 @@ public class ParserDependencyStorage
     }
     
     /**
-     * After the parse has been invoked on the parsed module, the list of modules has been delivered
+     * Saves the new module dependency list, returns the old
+     * list. 
      *  
      * @param parsedModule the module on which the parse has been invoked 
      * @param listOfParsedModules a list of modules, found during the parse operation, excluding the standard modules
