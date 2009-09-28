@@ -268,7 +268,14 @@ public class AdapterFactory implements IAdapterFactory
     }
 
     /**
-     * Adapts a list of modules including all dependent modules and the resource itself to the form, accepted by the dependency storage
+     * Adapts a list of modules including all dependent modules and the
+     *  resource itself to the form, accepted by the dependency storage.
+     *  
+     *  As of the current implementation, this means that its arguments
+     *  are a module name and a list of modules; it returns the list of
+     *  names of those modules, minus the first argument if it is the
+     *  name of one of those modules.
+     *  
      * @param name
      * @param userModules
      * @return
