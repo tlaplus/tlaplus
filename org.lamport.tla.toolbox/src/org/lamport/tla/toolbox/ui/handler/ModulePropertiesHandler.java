@@ -11,6 +11,10 @@ import org.lamport.tla.toolbox.util.UIHelper;
 /**
  * @author Simon Zambrovski
  * @version $Id$
+ * @deprecated is not used for two reasons: because there
+ *             are no module properties, and it doesn't
+ *             need to be used if we add some because we're
+ *             using the default handler.
  */
 public class ModulePropertiesHandler extends AbstractHandler implements IHandler
 {

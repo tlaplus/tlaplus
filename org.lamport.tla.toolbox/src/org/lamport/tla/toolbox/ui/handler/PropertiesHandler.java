@@ -16,6 +16,7 @@ import org.lamport.tla.toolbox.util.UIHelper;
  *  
  * @author Simon Zambrovski
  * @version $Id$
+ * @deprecated  is not used any more; we're using the default handler.
  */
 public class PropertiesHandler extends AbstractHandler implements IHandler
 {
