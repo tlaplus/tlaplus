@@ -87,5 +87,14 @@
     
 19. Closing the toolbox simply kills any running TLC.  Instead, it should
     it should warn the user that this will kill TLC and give him
-    the option of canceling.
+    the option of canceling.  To do this, need to modify to 
+    CloseSpecHandler.execute() so it checks if editors have been closed
+    successfully before exiting.  The model editor's method that
+    gets called by the closeAllEditors method should return false.
+    Another approach is to register another handler in place of
+    this one when TLC is running, and having that handler call the 
+    current one only if the user says it's OK to stop TLC.
+    
+20. PlusCal translation needs to be examined.  For example, preferences are currently no-ops.
+    
         
