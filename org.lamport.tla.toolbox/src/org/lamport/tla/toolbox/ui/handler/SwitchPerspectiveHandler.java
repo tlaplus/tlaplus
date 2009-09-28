@@ -43,6 +43,7 @@ import org.lamport.tla.toolbox.util.UIHelper;
  * </code>
  * @author Simon Zambrovski
  * @version $Id$ 
+ * @deprecated Simon says it is not used now.
  */
 public class SwitchPerspectiveHandler extends AbstractHandler implements IHandler, IElementUpdater
 {
