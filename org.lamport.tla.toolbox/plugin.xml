@@ -728,7 +728,7 @@
    <extension
          point="org.eclipse.ui.handlers">
       <handler
-            class="org.lamport.tla.toolbox.ui.handler.SwichPerspectiveHandler"
+            class="org.lamport.tla.toolbox.ui.handler.SwitchPerspectiveHandler"
             commandId="toolbox.command.switchperspective">
          <activeWhen>
             <with

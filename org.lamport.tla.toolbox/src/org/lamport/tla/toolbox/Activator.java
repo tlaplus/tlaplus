@@ -23,7 +23,7 @@ import org.lamport.tla.toolbox.spec.parser.IParseConstants;
 import org.lamport.tla.toolbox.spec.parser.ParserDependencyStorage;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.ui.contribution.ParseStatusContributionItem;
-import org.lamport.tla.toolbox.ui.handler.SwichPerspectiveHandler;
+import org.lamport.tla.toolbox.ui.handler.SwitchPerspectiveHandler;
 import org.lamport.tla.toolbox.ui.view.ProblemView;
 import org.lamport.tla.toolbox.util.TLAMarkerHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
@@ -79,7 +79,7 @@ public class Activator extends AbstractUIPlugin
 
                 ICommandService commandService = (ICommandService) PlatformUI.getWorkbench().getActiveWorkbenchWindow()
                         .getService(ICommandService.class);
-                Command switchPerspectiveCommand = commandService.getCommand(SwichPerspectiveHandler.COMMAND_ID);
+                Command switchPerspectiveCommand = commandService.getCommand(SwitchPerspectiveHandler.COMMAND_ID);
                 switchPerspectiveCommand.isEnabled();
                 return new Status(IStatus.OK, PLUGIN_ID, "Init commands workaround performed succesfully");
             }

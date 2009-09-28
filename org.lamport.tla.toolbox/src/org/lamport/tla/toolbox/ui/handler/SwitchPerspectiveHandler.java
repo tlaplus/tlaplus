@@ -44,7 +44,7 @@ import org.lamport.tla.toolbox.util.UIHelper;
  * @author Simon Zambrovski
  * @version $Id$ 
  */
-public class SwichPerspectiveHandler extends AbstractHandler implements IHandler, IElementUpdater
+public class SwitchPerspectiveHandler extends AbstractHandler implements IHandler, IElementUpdater
 {
     public static final String COMMAND_ID = "toolbox.command.switchperspective";
     public static final String PARAM_PERSPECTIVE_ID = "toolbox.switchperspective.id";
