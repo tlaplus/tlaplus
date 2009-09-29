@@ -8,7 +8,7 @@ import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.source.SourceViewer; // import org.eclipse.jface.viewers.IColorProvider;
+import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITableColorProvider;
@@ -22,9 +22,7 @@ import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.ControlAdapter;
-import org.eclipse.swt.events.ControlEvent; //import org.eclipse.swt.events.DragDetectEvent;
-//import org.eclipse.swt.events.DragDetectListener;
-//import org.eclipse.swt.events.TreeListener;
+import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
@@ -39,7 +37,7 @@ import org.eclipse.swt.widgets.Scrollable;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.ui.forms.widgets.Form;
-import org.eclipse.ui.forms.widgets.FormToolkit; // import org.eclipse.ui.forms.widgets.Section;
+import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.part.ViewPart;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCError;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCFcnElementVariableValue;
@@ -59,10 +57,10 @@ import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 /**
- * Error representation
+ * Error representation view containing the error description and the trace explorer.
+ * This is the view of the error description.  
  * @author Simon Zambrovski
  * @version $Id$
- * This is the view of the error description.  
  */
 
 public class TLCErrorView extends ViewPart {
@@ -92,24 +90,35 @@ public class TLCErrorView extends ViewPart {
     }
 
     /**
-     * Fill data
+     * Fill data into the view
+     * @param modelName name of the model displayed in the view title section
+     * @param problems a list of {@link TLCError} objects representing the errors.
      */
-    protected void fill(String modelName, List problems) {
-        if (problems != null && !problems.isEmpty()) {
+    protected void fill(String modelName, List problems) 
+    {
+        // if there are errors
+        if (problems != null && !problems.isEmpty()) 
+        {
             List states = null;
             StringBuffer buffer = new StringBuffer();
-
-            for (int i = 0; i < problems.size(); i++) {
+            // iterate over the errors
+            for (int i = 0; i < problems.size(); i++) 
+            {
                 TLCError error = (TLCError) problems.get(i);
+                
+                
+                // append error text to the buffer
                 appendError(buffer, error);
-                if (error.hasTrace()) {
-                    Assert
-                            .isTrue(states == null,
-                                    "Two traces are provided. Unexpected. This is a bug");
+
+                // read out the trace if any
+                if (error.hasTrace()) 
+                {
+                    Assert.isTrue(states == null, "Two traces are provided. Unexpected. This is a bug");
                     states = error.getStates();
                 }
             }
-            if (states == null) {
+            if (states == null) 
+            {
                 states = EMPTY_LIST();
             }
 
@@ -121,24 +130,26 @@ public class TLCErrorView extends ViewPart {
 
             // update the error information in the TLC Error View
             IDocument document = errorViewer.getDocument();
-            try {
+            try 
+            {
                 document.replace(0, document.getLength(), buffer.toString());
             }
-            catch (BadLocationException e) {
-                TLCUIActivator.logError("Error reporting the error "
-                        + buffer.toString(), e);
+            catch (BadLocationException e) 
+            {
+                TLCUIActivator.logError("Error reporting the error " + buffer.toString(), e);
             }
 
             // update the trace information
             this.variableViewer.setInput(states);
-            if (states != null && !states.isEmpty()) {
+            if (states != null && !states.isEmpty()) 
+            {
                 variableViewer.expandToLevel(2);
             }
 
             this.form.setText(modelName);
 
-        }
-        else {
+        } else 
+        {
             clear();
         }
     }
@@ -312,12 +323,15 @@ public class TLCErrorView extends ViewPart {
 
     /**
      * Appends the error description to the buffer
-     * @param buffer
-     * @param error
+     * @param buffer string buffer to append the error description to
+     * @param error error object
      */
-    private static void appendError(StringBuffer buffer, TLCError error) {
-        buffer.append(error.getMessage()).append("\n");
-        if (error.getCause() != null) {
+    private static void appendError(StringBuffer buffer, TLCError error) 
+    {
+        String message = error.getMessage();
+        buffer.append(message).append("\n");
+        if (error.getCause() != null) 
+        {
             appendError(buffer, error.getCause());
         }
     }
@@ -349,7 +363,7 @@ public class TLCErrorView extends ViewPart {
 
     }
 
-    /*
+    /**
      * A control listener for the Provides method for resizing the columns of
      * the error trace viewer. This is to solve the problem of a bogus
      * "third column" being displayed when the window is made wider than the two
@@ -771,7 +785,7 @@ public class TLCErrorView extends ViewPart {
             return null;
         }
 
-        /*
+        /**
          * The following method sets the background color of a row or column of
          * the table. It highlights the entire row for an added or deleted item.
          * For a changed value, only the value is highlighted.
