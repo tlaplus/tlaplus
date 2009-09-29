@@ -589,7 +589,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
         {
             this.config = config;
         }
-
+        
         public void done(IJobChangeEvent event)
         {
             super.done(event);
@@ -605,7 +605,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
     }
 
     /**
-     * A listener writing the  
+     * A listener writing the job state to the System.out
      */
     class SimpleJobChangeListener extends JobChangeAdapter
     {
@@ -651,5 +651,4 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
             return rule == this;
         }
     }
-
 }
