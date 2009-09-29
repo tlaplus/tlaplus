@@ -17,13 +17,13 @@ public interface ITLCOutputSource
      * Adds a listener
      * @param listener
      */
-    public void addTLCStatusListener(ITLCOutputListener listener);
+    public void addTLCOutputListener(ITLCOutputListener listener);
 
     /**
      * Removes a listener
      * @param listener
      */
-    public void removeTLCStatusListener(ITLCOutputListener listener);
+    public void removeTLCOutputListener(ITLCOutputListener listener);
 
     /**
      * Retrieves the listeners registered by this source

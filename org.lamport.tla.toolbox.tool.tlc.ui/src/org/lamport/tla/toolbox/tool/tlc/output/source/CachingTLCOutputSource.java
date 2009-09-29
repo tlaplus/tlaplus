@@ -67,13 +67,13 @@ public class CachingTLCOutputSource implements ITLCOutputSource
         holder.reported++;
     }
 
-    public void addTLCStatusListener(ITLCOutputListener listener)
+    public void addTLCOutputListener(ITLCOutputListener listener)
     {
         ListenerProgressHolder holder = new ListenerProgressHolder(listener, 0);
         // remove the existing
         if (this.listenerHolders.contains(holder))
         {
-            removeTLCStatusListener(listener);
+            removeTLCOutputListener(listener);
         }
         // add the new one
         this.listenerHolders.add(holder);
@@ -89,7 +89,7 @@ public class CachingTLCOutputSource implements ITLCOutputSource
 
     }
 
-    public void removeTLCStatusListener(ITLCOutputListener listener)
+    public void removeTLCOutputListener(ITLCOutputListener listener)
     {
         this.listenerHolders.remove(new ListenerProgressHolder(listener, 0));
     }

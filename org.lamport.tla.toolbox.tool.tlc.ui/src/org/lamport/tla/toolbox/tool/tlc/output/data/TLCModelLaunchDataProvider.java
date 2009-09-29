@@ -1,14 +1,24 @@
 package org.lamport.tla.toolbox.tool.tlc.output.data;
 
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Vector;
 
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.Assert;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.Document;
+import org.eclipse.jface.text.FindReplaceDocumentAdapter;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITypedRegion;
+import org.eclipse.ui.editors.text.FileDocumentProvider;
+import org.eclipse.ui.part.FileEditorInput;
 import org.lamport.tla.toolbox.tool.tlc.output.ITLCOutputListener;
 import org.lamport.tla.toolbox.tool.tlc.output.source.TLCOutputSourceRegistry;
 import org.lamport.tla.toolbox.tool.tlc.output.source.TLCRegion;
@@ -17,6 +27,7 @@ import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
+import tla2sany.st.Location;
 import tlc2.output.EC;
 import tlc2.output.MP;
 
@@ -62,7 +73,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
         this.config = config;
         // init provider, but not connect it to the source!
         initialize();
-        
+
         // interested in the output for the model
         TLCOutputSourceRegistry.getSourceRegistry().connect(this);
     }
@@ -181,7 +192,8 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                         informPresenter(ITLCModelLaunchDataPresenter.ERRORS);
                         this.lastDetectedError = null;
                     }
-                    this.lastDetectedError = TLCModelLaunchDataProvider.createError(tlcRegion, document);
+                    // create an error
+                    this.lastDetectedError = createError(tlcRegion, document);
                     break;
                 }
                 break;
@@ -250,7 +262,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                     break;
                 case EC.TLC_COVERAGE_VALUE:
                     CoverageInformationItem item = CoverageInformationItem.parse(outputMessage);
-                    if (!item.getModule().equals(ModelHelper.MC_MODEL_NAME)) 
+                    if (!item.getModule().equals(ModelHelper.MC_MODEL_NAME))
                     {
                         // only add coverage of the spec files
                         this.coverageInfo.add(item);
@@ -286,36 +298,135 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
 
     /**
      * Creates an error object
-     * @param tlcRegion
-     * @param document
-     * @return
+     * <br>This is a factory method
+     * 
+     * @param tlcRegion a region marking the error information in the document
+     * @param tlcOutputDocument the document containing the error description
+     * @return the TLC Error representing the error
      */
-    private static TLCError createError(TLCRegion tlcRegion, IDocument document)
+    private TLCError createError(TLCRegion tlcRegion, IDocument tlcOutputDocument)
     {
+        // the root of the error trace
         TLCError topError = new TLCError();
+
         if (tlcRegion instanceof TLCRegionContainer)
         {
             TLCRegionContainer container = (TLCRegionContainer) tlcRegion;
+            // read out the subordinated regions
             ITypedRegion[] regions = container.getSubRegions();
+            
+            // currently, there can be at most three regions
             Assert.isTrue(regions.length < 3, "Unexpected error region structure, this is a bug.");
+            
+            // iterate over regions
             for (int i = 0; i < regions.length; i++)
             {
+                // the region itself is a TLC region, detect the child error
                 if (regions[i] instanceof TLCRegion)
                 {
-                    TLCError cause = createError((TLCRegion) regions[i], document);
+                    TLCError cause = createError((TLCRegion) regions[i], tlcOutputDocument);
                     topError.setCause(cause);
                 } else
                 {
-                    String output;
+                    // read the error from message
+                    String errorMessage;
                     try
                     {
-                        output = document.get(tlcRegion.getOffset(), tlcRegion.getLength());
-                        topError.setMessage(output);
+                        // this is the error text
+                        errorMessage = tlcOutputDocument.get(tlcRegion.getOffset(), tlcRegion.getLength());
+
+                        // create the error document
+                        Document errorDocument = new Document();
+                        errorDocument.set(errorMessage);
+
+                        // retrieve the MC file
+                        // create a document provider, in order to create a document and the 
+                        // search adapter
+                        IFile mcFile = ModelHelper.getModelTLAFile(config);
+                        FileEditorInput mcFileEditorInput = new FileEditorInput((IFile) mcFile);
+                        FileDocumentProvider mcFileDocumentProvider = new FileDocumentProvider();
+                        mcFileDocumentProvider.connect(mcFileEditorInput);
+
+                        // the document connected to the MC file
+                        IDocument mcDocument = mcFileDocumentProvider.getDocument(mcFileEditorInput);
+                        // the search adapter on the MC file
+                        FindReplaceDocumentAdapter mcSearcher = new FindReplaceDocumentAdapter(mcDocument);
+
+                        
+                        // find the ids generated from the ModelWriter (in MC.tla file) in the error message
+                        IRegion[] ids = ModelHelper.findIds(errorMessage);
+                        // generate property object for every id
+                        // initialize the variable here, which will hold the properties
+                        Hashtable[] props = new Hashtable[ids.length];
+
+                        // search in the MC file for the ids
+                        for (int j = 0; j < ids.length; j++)
+                        {
+                            // isolate id's from the TLC output
+                            String id = errorDocument.get(ids[j].getOffset(), ids[j].getLength());
+                            // retrieve coordinates of the id in the MC file
+                            int[] coordinates = ModelHelper.calculateCoordinates(mcDocument, mcSearcher, id);
+                            // report the error case
+                            if (ModelHelper.EMPTY_LOCATION.equals(coordinates))
+                            {
+                                throw new CoreException(new Status(IStatus.ERROR, TLCUIActivator.PLUGIN_ID,
+                                        "Provided id " + id + " not found in the model file."));
+                            }
+
+                            // create the error properties for this id 
+                            props[j] = ModelHelper.findErrorAttribute(config, mcDocument, mcSearcher,
+                                    errorMessage, IMarker.SEVERITY_ERROR, coordinates);
+                        }
+
+                        // find the locations inside the text
+                        IRegion[] locations = ModelHelper.findLocations(errorMessage);
+                        // the content on given location, or null, if location not in MC file
+                        String[] regionContent = new String[locations.length];
+                        
+                        // iterate over locations
+                        for (int j = 0; j < locations.length; j++) 
+                        {
+                            // restore the location from the region
+                            String locationString = errorDocument.get(locations[j].getOffset(), locations[j].getLength());
+                            Location location = Location.parseLocation(locationString);
+                            // look only for location in the MC file
+                            if (location.source().equals(mcFile.getName())) 
+                            {
+                                IRegion region = ModelHelper.locationToRegion(mcDocument, location);
+                                regionContent[j] = mcDocument.get(region.getOffset(), region.getLength());
+                            }
+                        }
+
+                        /* ----------------------------------------------------
+                         * At this point the message string contains generated ids and
+                         * locations, some of those pointing to MC file
+                         * The following code will replace them 
+                         * 
+                         */
+                        
+                        
+                        
+                        // TODO!!!
+                        
+                        
+                        
+                        // set error text
+                        topError.setMessage(errorMessage);
+                        // set error code
                         topError.setErrorCode(tlcRegion.getMessageCode());
+                        
+                        // install error marker 
+                        ModelHelper.installModelProblemMarker(config.getFile(), props[0]);
+
+                        
                     } catch (BadLocationException e)
                     {
                         TLCUIActivator.logError("Error parsing the error message", e);
+                    } catch (CoreException e)
+                    {
+                        TLCUIActivator.logError("Error parsing the error message", e);
                     }
+
                 }
             }
         }

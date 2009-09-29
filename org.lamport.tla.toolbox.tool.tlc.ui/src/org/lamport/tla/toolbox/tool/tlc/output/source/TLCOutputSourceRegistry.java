@@ -23,7 +23,7 @@ import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
  * <ul>
  *   <li>The consumer is passed as to the registry during the call of {@link TLCOutputSourceRegistry#connect(ITLCOutputListener)}</li> 
  *   <li>The registry will call {@link ITLCOutputListener#getTLCOutputName()} and eventually select among one of the sources available</li>
- *   <li>If the source is selected, {@link ITLCOutputSource#addTLCStatusListener(ITLCOutputListener)} is called by the registry on it, 
+ *   <li>If the source is selected, {@link ITLCOutputSource#addTLCOutputListener(ITLCOutputListener)} is called by the registry on it, 
  *   passing the consumer listener instance</li>
  *   <li>After the end of the with the source, the consumer is disconnected by calling {@link TLCOutputSourceRegistry#disconnect(ITLCOutputListener)}</li>
  * </ul>
@@ -72,8 +72,8 @@ public class TLCOutputSourceRegistry
             ITLCOutputListener[] registered = existingSource.getListeners();
             for (int i = 0; i < registered.length; i++)
             {
-                existingSource.removeTLCStatusListener(registered[i]);
-                source.addTLCStatusListener(registered[i]);
+                existingSource.removeTLCOutputListener(registered[i]);
+                source.addTLCOutputListener(registered[i]);
                 registered[i].onNewSource();
             }
         } else 
@@ -84,7 +84,7 @@ public class TLCOutputSourceRegistry
                 TLCModelLaunchDataProvider provider = (TLCModelLaunchDataProvider) providers.get(source.getTLCOutputName());
                 if (provider != null) 
                 {
-                    source.addTLCStatusListener(provider);
+                    source.addTLCOutputListener(provider);
                 }
             }
         }
@@ -132,7 +132,7 @@ public class TLCOutputSourceRegistry
 
                 // retrieve the source
                 source = logFileReader.getSource();
-                source.addTLCStatusListener(listener);
+                source.addTLCOutputListener(listener);
 
                 // read in the data
                 logFileReader.read();
@@ -151,7 +151,7 @@ public class TLCOutputSourceRegistry
 
         } else
         {
-            source.addTLCStatusListener(listener);
+            source.addTLCOutputListener(listener);
         }
 
         printStats();
@@ -168,7 +168,7 @@ public class TLCOutputSourceRegistry
         ITLCOutputSource source = (ITLCOutputSource) this.sources.get(listener.getTLCOutputName());
         if (source != null)
         {
-            source.removeTLCStatusListener(listener);
+            source.removeTLCOutputListener(listener);
         }
 
         printStats();
