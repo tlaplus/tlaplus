@@ -8,7 +8,6 @@ import org.eclipse.core.runtime.Assert;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.lamport.tla.toolbox.tool.tlc.output.ITLCOutputListener;
 import org.lamport.tla.toolbox.tool.tlc.output.LogFileReader;
-import org.lamport.tla.toolbox.tool.tlc.output.data.ITLCModelLaunchDataPresenter;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCModelLaunchDataProvider;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
@@ -29,7 +28,12 @@ import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
  *   <li>After the end of the with the source, the consumer is disconnected by calling {@link TLCOutputSourceRegistry#disconnect(ITLCOutputListener)}</li>
  * </ul>
  * <br><br>
- * A new source of the TLC output is added by calling {@link TLCOutputSourceRegistry#addTLCStatusSource(ITLCOutputSource)} method. The source
+ * A new source of the TLC output is added by calling {@link TLCOutputSourceRegistry#addTLCOutputSource(ITLCOutputSource)} method. The source 
+ * is identified by the name and priority. The methods {@link ITLCOutputSource#getTLCOutputName()} and {@link ITLCOutputSource#getSourcePrio()}
+ * are used to obtain this information. If any listener have been registered, which are interested in the certain TLC Output (the values of 
+ * {@link ITLCOutputListener#getTLCOutputName()} and {@link ITLCOutputSource#getTLCOutputName()}) are equal, then these will be registered by the
+ * new source. The priority resolves the case if a new source for the same name arrives. Currently, high priority is used for the source attached
+ * to the running process, low priority is used for the file source. 
  * 
  * 
  * 
@@ -53,7 +57,7 @@ public class TLCOutputSourceRegistry
      * @see ITLCOutputSource#getTLCOutputName()
      * @see ITLCOutputSource#getSourcePrio()
      */
-    public synchronized void addTLCStatusSource(ITLCOutputSource source)
+    public synchronized void addTLCOutputSource(ITLCOutputSource source)
     {
         Assert.isNotNull(source);
 
