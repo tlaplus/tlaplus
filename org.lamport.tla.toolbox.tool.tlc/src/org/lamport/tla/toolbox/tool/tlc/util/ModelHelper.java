@@ -2,8 +2,10 @@ package org.lamport.tla.toolbox.tool.tlc.util;
 
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -56,6 +58,11 @@ import tla2sany.st.Location;
  */
 public class ModelHelper implements IModelConfigurationConstants, IModelConfigurationDefaults
 {
+
+    /**
+     * Empty location
+     */
+    public static final int[] EMPTY_LOCATION = new int[] { 0, 0, 0, 0 };
 
     /**
      * Marker indicating an error in the model
@@ -550,7 +557,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
 
     /**
      * Retrieves a file where the log of the TLC run is written
-     * @param config config representing the model
+     * @param config configuration representing the model
      * @return the file handle, or null
      */
     public static IFile getModelOutputLogFile(ILaunchConfiguration config)
@@ -566,6 +573,26 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
             }
         }
 
+        return null;
+    }
+
+    /**
+     * Retrieves the TLA file that is being model checked on the model run
+     * @param config configuration representing the model
+     * @return a file handle or <code>null</code>
+     */
+    public static IFile getModelTLAFile(ILaunchConfiguration config)
+    {
+        Assert.isNotNull(config);
+        IFolder targetFolder = ModelHelper.getModelTargetDirectory(config);
+        if (targetFolder != null && targetFolder.exists())
+        {
+            IFile mcFile = (IFile) targetFolder.findMember(ModelHelper.FILE_TLA);
+            if (mcFile != null && mcFile.exists())
+            {
+                return mcFile;
+            }
+        }
         return null;
     }
 
@@ -855,60 +882,131 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
 
     /**
      * Installs a marker on the model
-     * @param configuration the model to install markers on
-     * @param severity the level of severity
-     * @param attributeName
-     * @param index
-     * @param message
+     * @param resource the model file to install markers on
+     * @param map a map with attributes
      */
-    public static void installModelProblemMarker(ILaunchConfiguration configuration, final int severityError,
-            final String attributeName, final int attributeIndex, final Region errorRegion, final String message)
+    public static IMarker installModelProblemMarker(IResource resource, Map properties)
     {
-        Assert.isNotNull(configuration);
-        Assert.isTrue(configuration.exists());
+        Assert.isNotNull(resource);
+        Assert.isTrue(resource.exists());
 
         try
         {
             // create an empty marker
-            IMarker marker = configuration.getFile().createMarker(TLC_MODEL_ERROR_MARKER);
-            // Once we have a marker object, we can set its attributes
-            marker.setAttribute(IMarker.SEVERITY, severityError);
-            marker.setAttribute(IMarker.MESSAGE, message);
-            marker.setAttribute(TLC_MODEL_ERROR_MARKER_ATTRIBUTE_NAME, attributeName);
-            marker.setAttribute(TLC_MODEL_ERROR_MARKER_ATTRIBUTE_IDX, attributeIndex);
-            marker.setAttribute(IMarker.LOCATION, "");
-            marker.setAttribute(IMarker.CHAR_START, errorRegion.getOffset());
-            marker.setAttribute(IMarker.CHAR_END, errorRegion.getOffset() + errorRegion.getLength());
-
-            TLCActivator.logDebug("Marker on " + attributeName
-                    + ((attributeIndex != -1) ? " index: " + attributeIndex : "") + " at " + errorRegion + " "
-                    + message);
-
+            IMarker marker = resource.createMarker(TLC_MODEL_ERROR_MARKER);
+            marker.setAttributes(properties);
+            return marker;
         } catch (CoreException e)
         {
             TLCActivator.logError("Error installing a model marker", e);
         }
+
+        return null;
     }
 
     /**
-     * Using the supplied findReplaceAdapter find the name of the attribute 
+     * For an given id that is used in the document retrieves the four coordinates of it's first occurrence.
+     * @param document
+     * @param searchAdapter
+     * @param idRegion
+     * @return location coordinates in the sense of {@link Location} class (bl, bc, el, ec).
+     * @throws CoreException on errors
+     */
+    public static int[] calculateCoordinates(IDocument document, FindReplaceDocumentAdapter searchAdapter, String id)
+            throws CoreException
+    {
+        try
+        {
+            IRegion foundId = searchAdapter.find(0, id, true, true, false, false);
+            if (foundId == null)
+            {
+                return EMPTY_LOCATION;
+            } else
+            {
+                // return the coordinates
+                return regionToLocation(document, foundId, true);
+            }
+        } catch (BadLocationException e)
+        {
+            throw new CoreException(new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID,
+                    "Error during detection of the id position in MC.tla.", e));
+        }
+    }
+
+    /**
+     * Converts four-int-location to a region
+     * TODO: unit test!
+     * @param document
+     * @param location
+     * @return
+     * @throws BadLocationException 
+     */
+    public static IRegion locationToRegion(IDocument document, Location location) throws BadLocationException
+    {
+        int offset = document.getLineOffset(location.beginLine()) + location.beginColumn();
+        int length = location.endColumn() - location.beginColumn();
+
+        for (int i = location.beginLine(); i < location.endLine(); i++)
+        {
+            length += document.getLineOffset(i);
+        }
+        return new Region(offset, length);
+    }
+
+    /**
+     * Recalculate region in a document to four-int-coordinates
+     * @param document
+     * @param region
+     * @param singleLine true, if the region covers one line only
+     * @return four ints: begin line, begin column, end line, end column
+     * @throws BadLocationException
+     */
+    public static int[] regionToLocation(IDocument document, IRegion region, boolean singleLine)
+            throws BadLocationException
+    {
+        if (!singleLine)
+        {
+            throw new IllegalArgumentException("Not implemented");
+        }
+
+        int[] coordinates = new int[4];
+        // location of the id found in the provided document
+        int offset = region.getOffset();
+        int length = region.getLength();
+        // since the id is written as one word, we are in the same line
+        coordinates[0] = document.getLineOfOffset(offset) + 1; // begin line
+        coordinates[2] = document.getLineOfOffset(offset) + 1; // end line
+
+        // the columns are relative to the offset of the line
+        IRegion line = document.getLineInformationOfOffset(offset);
+        coordinates[1] = offset - line.getOffset(); // begin column
+        coordinates[3] = coordinates[1] + length; // end column
+
+        // return the coordinates
+        return coordinates;
+    }
+
+    /**
+     * Using the supplied findReplaceAdapter finds the name of the attribute 
      * (saved in the comment, previous to the region in which the error has been detected) 
-     * and install the marker on the model 
+     * 
      * @param configuration the configuration of the launch
      * @param document the document of the file containing the generated model .tla file
      * @param searchAdapter the search adapter on the document
      * @param message the error message
      * @param severity the error severity
-     * @param coordinates coordinates in the 
+     * @param coordinates coordinates in the document describing the area that is the id
+     * 
+     * @return a properties object containing the information required for the marker installation 
      * @throws CoreException if something goes wrong
      */
-    public static void findAndInstallMarker(ILaunchConfiguration configuration, IDocument document,
+    public static Hashtable findErrorAttribute(ILaunchConfiguration configuration, IDocument document,
             FindReplaceDocumentAdapter searchAdapter, String message, int severity, int[] coordinates)
             throws CoreException
     {
         String attributeName;
         Region errorRegion = null;
-        int index = -1;
+        int attributeIndex = -1;
         try
         {
             // find the line in the document
@@ -948,7 +1046,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
                             {
                                 try
                                 {
-                                    index = Integer.parseInt(indexString.substring(1));
+                                    attributeIndex = Integer.parseInt(indexString.substring(1));
                                 } catch (NumberFormatException e)
                                 {
                                     throw new CoreException(new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID,
@@ -992,7 +1090,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
                         if (coordinates[2] == 0)
                         {
                             // not set
-                            // marc one char starting from the
+                            // mark one char starting from the
                             // begin column
                             errorRegion = new Region(errorLineOffset + coordinates[1] - beginBlockOffset, 1);
                         } else if (coordinates[2] == coordinates[0])
@@ -1005,7 +1103,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
                                     (length == 0) ? 1 : length);
                         } else
                         {
-                            // the prat of the first line from
+                            // the part of the first line from
                             // the begin column to the end
                             int summedLength = lineRegion.getLength() - coordinates[1];
 
@@ -1054,7 +1152,17 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
                             + message, e));
         }
 
-        ModelHelper.installModelProblemMarker(configuration, severity, attributeName, index, errorRegion, message);
+        // create the return object
+        Hashtable props = new Hashtable();
+        props.put(IMarker.SEVERITY, new Integer(severity));
+        props.put(IMarker.MESSAGE, message);
+        props.put(TLC_MODEL_ERROR_MARKER_ATTRIBUTE_NAME, attributeName);
+        props.put(TLC_MODEL_ERROR_MARKER_ATTRIBUTE_IDX, new Integer(attributeIndex));
+        props.put(IMarker.LOCATION, "");
+        props.put(IMarker.CHAR_START, new Integer(errorRegion.getOffset()));
+        props.put(IMarker.CHAR_END, new Integer(errorRegion.getOffset() + errorRegion.getLength()));
+
+        return props;
     }
 
     /**

@@ -13,7 +13,6 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.Region;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
-import org.lamport.tla.toolbox.tool.tlc.TLCActivator;
 import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
 import org.lamport.tla.toolbox.tool.tlc.model.Formula;
 import org.lamport.tla.toolbox.tool.tlc.model.TypedSet;
