@@ -114,6 +114,10 @@ public class TagBasedTLCAnalyzer
 
     /**
      * Process the calculation of the coverage region
+     * 
+     * The task of this method is to produce TLCRegion or TLCRegionContainer 
+     * instances based on the regions stored on the stack. 
+     * 
      */
     private void processTag(ITypedRegion end)
     {
@@ -171,7 +175,8 @@ public class TagBasedTLCAnalyzer
                     } else
                     {
                         // NOT SUPPORTED
-                        System.out.println("JJ");
+                        // System.out.println("JJ");
+                        throw new IllegalArgumentException("Bug parsing the regions");
                     }
                 }
             }

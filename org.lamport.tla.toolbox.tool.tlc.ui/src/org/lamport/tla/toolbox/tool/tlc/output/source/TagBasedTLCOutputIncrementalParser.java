@@ -128,7 +128,7 @@ public class TagBasedTLCOutputIncrementalParser
         document.addDocumentPartitioningListener(new TLCOutputPartitionChangeListener());
 
         // register the process source
-        TLCOutputSourceRegistry.getSourceRegistry().addTLCStatusSource(this.source);
+        TLCOutputSourceRegistry.getSourceRegistry().addTLCOutputSource(this.source);
     }
 
     /**
