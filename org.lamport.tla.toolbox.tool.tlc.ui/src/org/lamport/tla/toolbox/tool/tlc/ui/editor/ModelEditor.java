@@ -61,10 +61,13 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
     // reacts on model changes
     private IResourceChangeListener modelFileChangeListener;
 
-    /*
-     *  This method is called via the UIHelper.runUIAsync method in addPages,
-     *  which is called by the Eclipse infrastructure after the ModelEditor
-     *  constructor has been called to create the ModelEditor object.
+    /**
+     * This runnable is responsible for the validation of the pages.
+     * It iterates over the pages and calls run on them. At this point it assumes,
+     * that every page is a subclass of the BasicFormPage.
+     * This runnable must be called in the UI thread (using UIHelper.runUIAsync() method).
+     * It is used in the workspace root listener and is called once after the input is set and after the pages 
+     * are added.
      */
     private Runnable validateRunable = new Runnable() {
         public void run()
@@ -78,8 +81,8 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
         }
     };
 
-    // react on spec root file changes
-    private IResourceChangeListener rootFileListener = new IResourceChangeListener() {
+    // react on spec file changes
+    private IResourceChangeListener workspaceResourceChangeListner = new IResourceChangeListener() {
         public void resourceChanged(IResourceChangeEvent event)
         {
             // update the specObject of the helper
@@ -90,9 +93,10 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
         }
     };
 
-    // section manager
+    // data binding manager
     private DataBindingManager dataBindingManager = new DataBindingManager();
 
+    // array of pages to add
     private BasicFormPage[] pagesToAdd;
 
     /**
@@ -162,10 +166,9 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
         }
 
         /*
-         * Install resource change listener on the root file of the
-         * specification react on changes of the root file
+         * Install resource change listener on the workspace root to react on any changes in th current spec
          */
-        ResourcesPlugin.getWorkspace().addResourceChangeListener(rootFileListener, IResourceChangeEvent.POST_BUILD);
+        ResourcesPlugin.getWorkspace().addResourceChangeListener(workspaceResourceChangeListner, IResourceChangeEvent.POST_BUILD);
 
         // update the spec object of the helper
         helper.resetSpecNames();
@@ -175,28 +178,26 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
         // TLCUIActivator.logDebug("leaving ModelEditor#init(IEditorSite site, IEditorInput input)");
     }
 
-    /*
+    /**
      * @see org.eclipse.ui.forms.editor.FormEditor#dispose()
      */
     public void dispose()
     {
         // TLCUIActivator.logDebug("entering ModelEditor#dispose()");
         // remove the listeners
-        ResourcesPlugin.getWorkspace().removeResourceChangeListener(rootFileListener);
+        ResourcesPlugin.getWorkspace().removeResourceChangeListener(workspaceResourceChangeListner);
         ResourcesPlugin.getWorkspace().removeResourceChangeListener(modelFileChangeListener);
         super.dispose();
         // TLCUIActivator.logDebug("leaving ModelEditor#dispose()");
     }
 
-    /*
+    /**
      * @see org.eclipse.ui.part.EditorPart#doSave(org.eclipse.core.runtime.
      * IProgressMonitor)
      * 
      * This method saves the model even if the spec is not parsed.  This is probably
      * a good idea, since the user may want to quit in the middle of his work without
-     * losing what he's done to the model.  However, this is dangerous and has resulted
-     * in one NullPointerException corrected by LL on 20 Sep 2009.  Who knows what other
-     * problems are lurking?
+     * losing what he's done to the model.
      */
     public void doSave(IProgressMonitor monitor)
     {
@@ -224,7 +225,7 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
         this.editorDirtyStateChanged();
     }
 
-    /*
+    /**
      * @see org.eclipse.ui.part.EditorPart#doSaveAs()
      */
     public void doSaveAs()
@@ -601,6 +602,7 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
         }
     }
 
+    // TODO remove
     public void setUpPage(BasicFormPage newPage, int index)
     {
         if (newPage.getPartControl() == null)
