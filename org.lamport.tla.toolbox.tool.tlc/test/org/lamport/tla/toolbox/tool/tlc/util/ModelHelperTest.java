@@ -7,7 +7,7 @@ import junit.framework.Assert;
 import junit.framework.TestCase;
 
 /**
- * Test for checkpoint pattern detection
+ * Test for toolkit methods
  * @author Simon Zambrovski
  * @version $Id$
  */
@@ -39,4 +39,9 @@ public class ModelHelperTest extends TestCase
         Assert.assertFalse(matcher2.matches());
     }
 
+    
+    public void testLocationToRegion()
+    {
+        fail("Not implemented");
+    }
 }
