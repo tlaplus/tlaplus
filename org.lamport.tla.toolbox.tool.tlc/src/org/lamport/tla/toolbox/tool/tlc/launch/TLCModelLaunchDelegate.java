@@ -1,6 +1,7 @@
 package org.lamport.tla.toolbox.tool.tlc.launch;
 
 import java.io.ByteArrayInputStream;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Vector;
 
@@ -284,6 +285,8 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
                         moduleFile.copy(targetFolderPath.append(moduleFile.getProjectRelativePath()), IResource.DERIVED
                                 | IResource.FORCE, new SubProgressMonitor(monitor, STEP / extendedModules.size()));
                     }
+                    
+                    // TODO check the existence of copied files
                 }
             }
 
@@ -440,8 +443,11 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
             FileEditorInput fileEditorInput = new FileEditorInput((IFile) rootModule);
             FileDocumentProvider fileDocumentProvider = new FileDocumentProvider();
             fileDocumentProvider.connect(fileEditorInput);
+            
+            // The document for manipulation of the MC.tla file 
             IDocument document = fileDocumentProvider.getDocument(fileEditorInput);
-
+            
+            // the find/replace adapter to find texts in the document
             FindReplaceDocumentAdapter searchAdapter = new FindReplaceDocumentAdapter(document);
 
             for (int i = 0; i < detectedErrors.size(); i++)
@@ -458,8 +464,12 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
 
                         // find the error cause and install the error marker on the corresponding
                         // field
-                        ModelHelper.findAndInstallMarker(configuration, document, searchAdapter, message, severity,
+                        Hashtable props = ModelHelper.findErrorAttribute(configuration, document, searchAdapter, message, severity,
                                 coordinates);
+                        if (props  != null) 
+                        {
+                            ModelHelper.installModelProblemMarker(configuration.getFile(), props);
+                        }
 
                     } else
                     {
