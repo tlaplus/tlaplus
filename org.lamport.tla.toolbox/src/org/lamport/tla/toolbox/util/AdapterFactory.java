@@ -269,30 +269,34 @@ public class AdapterFactory implements IAdapterFactory
 
     /**
      * Adapts a list of modules including all dependent modules and the
-     *  resource itself to the form, accepted by the dependency storage.
+     * module itself to the form, accepted by the dependency storage.<br>
      *  
-     *  As of the current implementation, this means that its arguments
-     *  are a module name and a list of modules; it returns the list of
-     *  names of those modules, minus the first argument if it is the
-     *  name of one of those modules.
-     *  
-     * @param name
-     * @param userModules
-     * @return
+     * As of the current implementation, this means that its arguments
+     * are a module name and a list of modules; it returns the list of
+     * names of those modules, minus the first argument if it is the
+     * name of one of those modules.<br>
+     * 
      * TODO improve the storage
+     *  
+     * @param name A name of the module that has been parsed
+     * @param userModules a list of {@link Module} objects representing the depending modules, which eventually include
+     *                    one module representing the parsed module itself
+     * @return a list of module names (Strings) containing all modules from the <code>userModule</code> argument, 
+     *         excluding the module specified by the <code>name</code> argument    
      */
-    public static List adaptModules(String name, Vector userModules)
+    public static List adaptModules(String name, List userModules)
     {
         Vector dependents = new Vector(userModules.size());
+        // iterate over all modules
         for (int i = 0; i < userModules.size(); i++)
         {
             Module module = (Module) userModules.get(i);
             if (!module.getFile().getName().equals(name))
             {
+                // add the module name iff the name is not matching the one provided in the name argument
                 dependents.add(module.getFile().getName());
             }
         }
-
         return dependents;
     }
 
