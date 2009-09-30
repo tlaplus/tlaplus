@@ -196,17 +196,6 @@ public class ModuleParserLauncher
             String moduleName = (String) enumerate.nextElement();
             ParseUnit parseUnit = (ParseUnit) moduleSpec.parseUnitContext.get(moduleName);
 
-            // This is used to properly update the spec parse status on resource modifications
-            IResource moduleResource = ResourceHelper.getResourceByModuleName(moduleName);
-            try
-            {
-                moduleResource.setPersistentProperty(TLAParsingBuilderConstants.LAST_BUILT, String.valueOf(System
-                        .currentTimeMillis()));
-            } catch (CoreException e)
-            {
-                Activator.logError("Error while setting build timestamp on resource.", e);
-            }
-
             String absoluteFileName = null;
             if (parseUnit.getNis() != null && parseUnit.getNis().sourceFile() != null)
             {
@@ -222,6 +211,17 @@ public class ModuleParserLauncher
 
             if (!module.isStandardModule())
             {
+                // This is used to properly update the spec parse status on resource modifications
+                // by setting the last build time stamp
+                IResource moduleResource = ResourceHelper.getResourceByModuleName(moduleName);
+                try
+                {
+                    moduleResource.setPersistentProperty(TLAParsingBuilderConstants.LAST_BUILT, String.valueOf(System
+                            .currentTimeMillis()));
+                } catch (CoreException e)
+                {
+                    Activator.logError("Error while setting build timestamp on resource.", e);
+                }
             }
 
             // semantic module only available if no semantic errors found
