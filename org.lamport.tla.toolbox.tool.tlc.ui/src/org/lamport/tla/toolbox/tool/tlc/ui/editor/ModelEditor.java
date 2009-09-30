@@ -1,9 +1,13 @@
 package org.lamport.tla.toolbox.tool.tlc.ui.editor;
 
+import java.util.List;
+
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
+import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
@@ -37,6 +41,7 @@ import org.lamport.tla.toolbox.tool.tlc.ui.util.SemanticHelper;
 import org.lamport.tla.toolbox.tool.tlc.ui.view.TLCErrorView;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper.IFileProvider;
+import org.lamport.tla.toolbox.util.ChangedSpecModulesGatheringDeltaVisitor;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 /**
@@ -63,7 +68,7 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
 
     /**
      * This runnable is responsible for the validation of the pages.
-     * It iterates over the pages and calls run on them. At this point it assumes,
+     * It iterates over the pages and calls validate on them. At this point it assumes,
      * that every page is a subclass of the BasicFormPage.
      * This runnable must be called in the UI thread (using UIHelper.runUIAsync() method).
      * It is used in the workspace root listener and is called once after the input is set and after the pages 
@@ -85,11 +90,69 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
     private IResourceChangeListener workspaceResourceChangeListner = new IResourceChangeListener() {
         public void resourceChanged(IResourceChangeEvent event)
         {
-            // update the specObject of the helper
-            helper.resetSpecNames();
+            IResourceDelta delta = event.getDelta();
 
-            // re-validate the pages
-            UIHelper.runUIAsync(validateRunable);
+            /**
+             * This is a helper method that returns a new instance of ChangedModulesGatheringDeltaVisitor,
+             * which gathers the changed TLA modules from a resource delta tree.
+             */
+            ChangedSpecModulesGatheringDeltaVisitor visitor = new ChangedSpecModulesGatheringDeltaVisitor()
+            {
+                public IResource getModel()
+                {
+                    return ModelEditor.this.getConfig().getFile();
+                }
+                
+            };
+            
+            try
+            {
+//System.out.println("trying here");
+                delta.accept(visitor);
+                List modules = visitor.getModules();
+                // one of the modules in the specification has changed
+                // this means that identifiers defined in a spec might have changed
+                // re-validate the editor
+                if (!modules.isEmpty()) 
+                {
+                    // update the specObject of the helper
+                    helper.resetSpecNames();
+
+                    // re-validate the pages
+                    UIHelper.runUIAsync(validateRunable);
+                    
+                    return;
+                }
+                
+                // SANY changed the existing markers on the model file
+                // repaint the errors if any
+//                System.out.println("isModelChanged = " + visitor.isModelChanged());
+                if (visitor.isModelChanged()) 
+                {
+ 
+                    UIHelper.runUIAsync(new Runnable() {
+                        
+                        public void run()
+                        {
+                            for (int i = 0; i < getPageCount(); i++)
+                            {
+                                BasicFormPage page = (BasicFormPage) pages.get(i);
+                                // reset the messages
+                                page.resetAllMessages(true);
+                            }
+                            
+                            handleProblemMarkers(true);
+                        }
+                    });
+                }
+                
+
+            } catch (CoreException e)
+            {
+                TLCUIActivator.logError("Error visiting changed resource", e);
+                return;
+            }
+
         }
     };
 
@@ -168,7 +231,8 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
         /*
          * Install resource change listener on the workspace root to react on any changes in th current spec
          */
-        ResourcesPlugin.getWorkspace().addResourceChangeListener(workspaceResourceChangeListner, IResourceChangeEvent.POST_BUILD);
+        ResourcesPlugin.getWorkspace().addResourceChangeListener(workspaceResourceChangeListner,
+                IResourceChangeEvent.POST_BUILD);
 
         // update the spec object of the helper
         helper.resetSpecNames();
@@ -426,9 +490,10 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
 
     /**
      * Handles the problem markers
+     * <br><b>Note</b>: has to be called from UI thread
      * 
      */
-    public void handleProblemMarkers()
+    public void handleProblemMarkers(boolean switchToErrorPage)
     {
         int errorPageIndex = -1;
         int currentPageIndex = getActivePage();
@@ -480,7 +545,7 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
                     }
                 }
             }
-            if (errorPageIndex != -1 && currentPageIndex != errorPageIndex)
+            if (switchToErrorPage && errorPageIndex != -1 && currentPageIndex != errorPageIndex)
             {
                 // the page has a marker
                 // make it active

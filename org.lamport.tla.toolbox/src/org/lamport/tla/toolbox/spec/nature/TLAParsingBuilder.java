@@ -225,40 +225,42 @@ public class TLAParsingBuilder extends IncrementalProjectBuilder
          * @see org.eclipse.core.resources.IResourceDeltaVisitor#visit(org.eclipse.core.resources.IResourceDelta)
          */
         public boolean visit(IResourceDelta delta) throws CoreException
-        {
-            final IResource resource = delta.getResource();
-            if (IResource.FILE == resource.getType())
-            {
-                // a file found
-                if (ResourceHelper.isModule(resource))
-                {
-                    // If the property has never been set, the resource has never been built. If the
-                    // current status is parsed, then it cannot be relevant because it would have been built
-                    // if it were relevant. If the status is unknown, it should remain unknown. In all other
-                    // cases, it is possible that the resource is relevant but it is not known because there
-                    // was not a successful parse. Conservatively we should consider it relevant.
-                    if (resource.getPersistentProperty(TLAParsingBuilderConstants.LAST_BUILT) == null)
-                    {
-                        if (spec.getStatus() < IParseConstants.PARSED && spec.getStatus() > IParseConstants.UNKNOWN)
-                        {
-                            modules.add(resource);
-                        }
-                    }
-                    // If there current spec status is a problem status (see AdaptorFactory.isProblemStatus),
-                    // then it is not known whether a given resource is relevant so all resources are considered
-                    // relevant. Relevant resources are not necessarily in dependancy storage. Any resource that is
-                    // out of build when the parse status is error added to the list of modules.
-                    else if (Long.parseLong(resource.getPersistentProperty(TLAParsingBuilderConstants.LAST_BUILT)) < resource
-                            .getLocalTimeStamp()
-                            && (dependancyTable.containsKey(resource.getName()) || (spec
-                                    .getStatus() < IParseConstants.PARSED && spec.getStatus() > IParseConstants.UNPARSED)))
-                    {
-                        modules.add(resource);
-                    }
-                }
-            }
-            // we want the visitor to visit the whole tree
-            return true;
+        {  
+            return false;  // For testing, while Dan fixes a bug here.
+            
+//            final IResource resource = delta.getResource();
+//            if (IResource.FILE == resource.getType())
+//            {
+//                // a file found
+//                if (ResourceHelper.isModule(resource))
+//                {
+//                    // If the property has never been set, the resource has never been built. If the
+//                    // current status is parsed, then it cannot be relevant because it would have been built
+//                    // if it were relevant. If the status is unknown, it should remain unknown. In all other
+//                    // cases, it is possible that the resource is relevant but it is not known because there
+//                    // was not a successful parse. Conservatively we should consider it relevant.
+//                    if (resource.getPersistentProperty(TLAParsingBuilderConstants.LAST_BUILT) == null)
+//                    {
+//                        if (spec.getStatus() < IParseConstants.PARSED && spec.getStatus() > IParseConstants.UNKNOWN)
+//                        {
+//                            modules.add(resource);
+//                        }
+//                    }
+//                    // If there current spec status is a problem status (see AdaptorFactory.isProblemStatus),
+//                    // then it is not known whether a given resource is relevant so all resources are considered
+//                    // relevant. Relevant resources are not necessarily in dependancy storage. Any resource that is
+//                    // out of build when the parse status is error added to the list of modules.
+//                    else if (Long.parseLong(resource.getPersistentProperty(TLAParsingBuilderConstants.LAST_BUILT)) < resource
+//                            .getLocalTimeStamp()
+//                            && (dependancyTable.containsKey(resource.getName()) || (spec
+//                                    .getStatus() < IParseConstants.PARSED && spec.getStatus() > IParseConstants.UNPARSED)))
+//                    {
+//                        modules.add(resource);
+//                    }
+//                }
+//            }
+//            // we want the visitor to visit the whole tree
+//            return true;
         }
 
         /**

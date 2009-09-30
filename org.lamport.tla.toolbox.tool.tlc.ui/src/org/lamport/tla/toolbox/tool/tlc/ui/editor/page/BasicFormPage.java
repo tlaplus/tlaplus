@@ -289,16 +289,18 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
      */
     public void validate()
     {
-        handleProblemMarkers();
+        // We don't want to switch to the error page just because the user
+        // typed a character into some field.
+        handleProblemMarkers(false);
     }
 
     /**
      * Handle the problem markers 
      */
-    public void handleProblemMarkers()
+    public void handleProblemMarkers(boolean switchToErrorPage)
     {
         // delegate to the editor
-        ((ModelEditor) getEditor()).handleProblemMarkers();
+        ((ModelEditor) getEditor()).handleProblemMarkers(switchToErrorPage);
     }
 
     
@@ -582,6 +584,22 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
     public void doStop()
     {
         ((ModelEditor) getEditor()).stop();
+    }
+
+    /**
+     * Deletes messages (with bubbles) from the current page
+     * @param applyChange iff set to <code>true</code> makes the changes visible
+     */
+    public void resetAllMessages(boolean applyChange)
+    {
+        getManagedForm().getMessageManager().setAutoUpdate(false);
+        // clean old messages
+        getManagedForm().getMessageManager().removeAllMessages();
+        // make the run possible
+        setComplete(true);
+        // make the change visible
+        getManagedForm().getMessageManager().setAutoUpdate(applyChange);
+        System.out.println("Removed message : ");
     }
 
     /**

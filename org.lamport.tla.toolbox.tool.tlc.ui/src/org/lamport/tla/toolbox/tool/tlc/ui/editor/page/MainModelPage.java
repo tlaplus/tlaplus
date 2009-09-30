@@ -220,7 +220,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
             ModelEditor ourFavoriteEditor = (ModelEditor) this.getEditor();
             ourFavoriteEditor.removePage(0);
             System.out.println("Page removed");
-            MainModelPage newPage = new MainModelPage(ourFavoriteEditor);
+            BasicFormPage newPage = new MainModelPage(ourFavoriteEditor);
             try
             {
                 ourFavoriteEditor.addPage(0, newPage);
@@ -267,14 +267,11 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         // System.out.println("We got here in our random test." + count++);
         // }
 
-        IMessageManager mm = getManagedForm().getMessageManager();
         DataBindingManager dm = getDataBindingManager();
+        IMessageManager mm = getManagedForm().getMessageManager();
 
-        mm.setAutoUpdate(false);
-        // clean old messages
-        mm.removeAllMessages();
-        // make the run possible
-        setComplete(true);
+        // delete the messages
+        resetAllMessages(false);
 
         // getting the root module node of the spec
         // this can be null!
