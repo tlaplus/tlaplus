@@ -67,19 +67,19 @@ public class Activator extends AbstractUIPlugin
         IWorkspace workspace = ResourcesPlugin.getWorkspace();
 
         // activate handler to show the radio buttons in perspective selection
-//        UIJob job = new UIJob("InitCommandsWorkaround") {
-//            public IStatus runInUIThread(IProgressMonitor monitor)
-//            {
-//
-//                ICommandService commandService = (ICommandService) PlatformUI.getWorkbench().getActiveWorkbenchWindow()
-//                        .getService(ICommandService.class);
-//                Command switchPerspectiveCommand = commandService.getCommand(SwitchPerspectiveHandler.COMMAND_ID);
-//                switchPerspectiveCommand.isEnabled();
-//                return new Status(IStatus.OK, PLUGIN_ID, "Init commands workaround performed succesfully");
-//            }
-//
-//        };
-//        job.schedule();
+        // UIJob job = new UIJob("InitCommandsWorkaround") {
+        // public IStatus runInUIThread(IProgressMonitor monitor)
+        // {
+        //
+        // ICommandService commandService = (ICommandService) PlatformUI.getWorkbench().getActiveWorkbenchWindow()
+        // .getService(ICommandService.class);
+        // Command switchPerspectiveCommand = commandService.getCommand(SwitchPerspectiveHandler.COMMAND_ID);
+        // switchPerspectiveCommand.isEnabled();
+        // return new Status(IStatus.OK, PLUGIN_ID, "Init commands workaround performed succesfully");
+        // }
+        //
+        // };
+        // job.schedule();
 
         // install the parse status widget
         UIHelper.runUIAsync(parseStatusUpdateRunable);
@@ -275,6 +275,11 @@ public class Activator extends AbstractUIPlugin
     public final Runnable getParseStatusUpdateRunable()
     {
         return parseStatusUpdateRunable;
+    }
+
+    public static boolean isSpecManagerInstantiated()
+    {
+        return specManager != null;
     }
 
 }

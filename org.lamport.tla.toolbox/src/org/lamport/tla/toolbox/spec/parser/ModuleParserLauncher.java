@@ -2,14 +2,18 @@ package org.lamport.tla.toolbox.spec.parser;
 
 import java.io.PrintStream;
 import java.util.Enumeration;
+import java.util.Iterator;
 import java.util.Vector;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IWorkspaceRunnable;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.spec.Module;
 import org.lamport.tla.toolbox.spec.Spec;
@@ -188,6 +192,8 @@ public class ModuleParserLauncher
         // Vector standardModules = new Vector();
         boolean rootModuleFound = false;
 
+        final Vector resourcesToTimeStamp = new Vector();
+
         // iterate over parse units
         Enumeration enumerate = moduleSpec.parseUnitContext.keys();
         while (enumerate.hasMoreElements())
@@ -211,19 +217,11 @@ public class ModuleParserLauncher
 
             if (!module.isStandardModule() && updateStorage)
             {
-                // This is used to properly update the spec parse status on resource modifications
-                // by setting the last build time stamp
+
                 IResource moduleResource = ResourceHelper.getResourceByModuleName(moduleName);
-                try
+                if (moduleResource != null && moduleResource.exists())
                 {
-                    if (moduleResource != null)
-                    {
-                        moduleResource.setPersistentProperty(TLAParsingBuilderConstants.LAST_BUILT, String
-                                .valueOf(System.currentTimeMillis()));
-                    }
-                } catch (CoreException e)
-                {
-                    Activator.logError("Error while setting build timestamp on resource.", e);
+                    resourcesToTimeStamp.add(moduleResource);
                 }
             }
 
@@ -266,6 +264,28 @@ public class ModuleParserLauncher
             }
 
         } // while
+
+        // This is used to properly update the spec parse status on resource modifications
+        // by setting the last build time stamp
+        try
+        {
+            ResourcesPlugin.getWorkspace().run(new IWorkspaceRunnable() {
+
+                public void run(IProgressMonitor monitor) throws CoreException
+                {
+                    Iterator iterator = resourcesToTimeStamp.iterator();
+                    while (iterator.hasNext())
+                    {
+                        IResource resource = (IResource) iterator.next();
+                        resource.setPersistentProperty(TLAParsingBuilderConstants.LAST_BUILT, String.valueOf(System
+                                .currentTimeMillis()));
+                    }
+                }
+            }, new NullProgressMonitor());
+        } catch (CoreException e)
+        {
+            Activator.logError("Error while setting build timestamp on resource.", e);
+        }
 
         if (!rootModuleFound)
         {
