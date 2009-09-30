@@ -209,15 +209,18 @@ public class ModuleParserLauncher
             // create module holder
             Module module = new Module(absoluteFileName);
 
-            if (!module.isStandardModule())
+            if (!module.isStandardModule() && updateStorage)
             {
                 // This is used to properly update the spec parse status on resource modifications
                 // by setting the last build time stamp
                 IResource moduleResource = ResourceHelper.getResourceByModuleName(moduleName);
                 try
                 {
-                    moduleResource.setPersistentProperty(TLAParsingBuilderConstants.LAST_BUILT, String.valueOf(System
-                            .currentTimeMillis()));
+                    if (moduleResource != null)
+                    {
+                        moduleResource.setPersistentProperty(TLAParsingBuilderConstants.LAST_BUILT, String
+                                .valueOf(System.currentTimeMillis()));
+                    }
                 } catch (CoreException e)
                 {
                     Activator.logError("Error while setting build timestamp on resource.", e);
