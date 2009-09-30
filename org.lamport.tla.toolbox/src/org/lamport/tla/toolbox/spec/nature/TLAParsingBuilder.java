@@ -1,5 +1,7 @@
 package org.lamport.tla.toolbox.spec.nature;
 
+import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
@@ -15,7 +17,6 @@ import org.eclipse.core.runtime.SubProgressMonitor;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.spec.parser.IParseConstants;
-import org.lamport.tla.toolbox.spec.parser.ParserDependencyStorage;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.TLAMarkerHelper;
 import org.lamport.tla.toolbox.util.pref.IPreferenceConstants;
@@ -236,14 +237,24 @@ public class TLAParsingBuilder extends IncrementalProjectBuilder
         }
     }
 
-    public static class OutOfBuildRelevantModulesGatheringDeltaVisitor implements IResourceDeltaVisitor
+    public static class OutOfBuildSpecModulesGatheringDeltaVisitor implements IResourceDeltaVisitor
     {
         Vector modules = new Vector();
-        ParserDependencyStorage dependancyStorage = Activator.getModuleDependencyStorage();
+        Hashtable dependancyTable = null;
         Spec spec = Activator.getSpecManager().getSpecLoaded();
 
-        public OutOfBuildRelevantModulesGatheringDeltaVisitor()
+        public OutOfBuildSpecModulesGatheringDeltaVisitor()
         {
+            String specRootFileName = spec.getRootFile().getName();
+            List dependancyList = Activator.getModuleDependencyStorage().getListOfExtendedModules(specRootFileName);
+            dependancyTable = new Hashtable(dependancyList.size());
+            dependancyTable.put(specRootFileName, specRootFileName);
+            Iterator iterator = dependancyList.iterator();
+            while (iterator.hasNext())
+            {
+                String moduleName = (String) iterator.next();
+                dependancyTable.put(moduleName, moduleName);
+            }
         }
 
         /**
@@ -275,8 +286,8 @@ public class TLAParsingBuilder extends IncrementalProjectBuilder
                     // out of build when the parse status is error added to the list of modules.
                     else if (Long.parseLong(resource.getPersistentProperty(TLAParsingBuilderConstants.LAST_BUILT)) < resource
                             .getLocalTimeStamp()
-                            && (dependancyStorage.hasModule(resource.getName()) || (spec.getStatus() < IParseConstants.PARSED && spec
-                                    .getStatus() > IParseConstants.UNPARSED)))
+                            && (dependancyTable.containsKey(resource.getName()) || (spec
+                                    .getStatus() < IParseConstants.PARSED && spec.getStatus() > IParseConstants.UNPARSED)))
                     {
                         modules.add(resource);
                     }

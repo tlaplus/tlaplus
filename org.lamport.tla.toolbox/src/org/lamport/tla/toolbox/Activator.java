@@ -13,7 +13,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.lamport.tla.toolbox.spec.manager.WorkspaceSpecManager;
-import org.lamport.tla.toolbox.spec.nature.TLAParsingBuilder.OutOfBuildRelevantModulesGatheringDeltaVisitor;
+import org.lamport.tla.toolbox.spec.nature.TLAParsingBuilder.OutOfBuildSpecModulesGatheringDeltaVisitor;
 import org.lamport.tla.toolbox.spec.parser.IParseConstants;
 import org.lamport.tla.toolbox.spec.parser.ParserDependencyStorage;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
@@ -169,7 +169,7 @@ public class Activator extends AbstractUIPlugin
                 if (delta != null)
                 {
 
-                    OutOfBuildRelevantModulesGatheringDeltaVisitor moduleFinder = new OutOfBuildRelevantModulesGatheringDeltaVisitor();
+                    OutOfBuildSpecModulesGatheringDeltaVisitor moduleFinder = new OutOfBuildSpecModulesGatheringDeltaVisitor();
                     try
                     {
                         delta.accept(moduleFinder);
