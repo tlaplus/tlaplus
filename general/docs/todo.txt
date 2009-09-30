@@ -103,5 +103,11 @@
 22. The rename spec command doesn't do the right thing if a spec by
     that name already exists.
     
+23. Need to reverse the order of "additional definitions" and definitions of constant replacements in
+    the MC file.  This requires reversing the order of the "add constants and model values"
+    and the "new definitions" code around line 330 of TLCModelLaunchDelegate.java.  This will allow
+    the new definitions to be used in the constant replacement formulas.
+        
+    
         
         
