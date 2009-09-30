@@ -17,6 +17,8 @@ import org.eclipse.core.runtime.SubProgressMonitor;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.spec.parser.IParseConstants;
+import org.lamport.tla.toolbox.spec.parser.ParserDependencyStorage;
+import org.lamport.tla.toolbox.util.ChangedModulesGatheringDeltaVisitor;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.TLAMarkerHelper;
 import org.lamport.tla.toolbox.util.pref.IPreferenceConstants;
@@ -98,10 +100,10 @@ public class TLAParsingBuilder extends IncrementalProjectBuilder
                 boolean buildFiles = PreferenceStoreHelper.getInstancePreferenceStore().getBoolean(
                         IPreferenceConstants.I_PARSE_FILES_ON_MODIFY);
 
-                for (int i = 0; i < moduleFinder.modules.size(); i++)
+                for (int i = 0; i < moduleFinder.getModules().size(); i++)
                 {
 
-                    IResource changedModule = (IResource) moduleFinder.modules.get(i);
+                    IResource changedModule = (IResource) moduleFinder.getModules().get(i);
 
                     // call build on the changed resource
                     // if the file is a Root file it will call buildSpec
@@ -198,44 +200,6 @@ public class TLAParsingBuilder extends IncrementalProjectBuilder
 
     }
 
-    /**
-     * Visitor to find out what files changed
-     */
-    public static class ChangedModulesGatheringDeltaVisitor implements IResourceDeltaVisitor
-    {
-        Vector modules = new Vector();
-
-        public ChangedModulesGatheringDeltaVisitor()
-        {
-        }
-
-        /**
-         * @see org.eclipse.core.resources.IResourceDeltaVisitor#visit(org.eclipse.core.resources.IResourceDelta)
-         */
-        public boolean visit(IResourceDelta delta) throws CoreException
-        {
-            final IResource resource = delta.getResource();
-            if (IResource.FILE == resource.getType())
-            {
-                // a file found
-                if (ResourceHelper.isModule(resource))
-                {
-                    modules.add(resource);
-                }
-            }
-            // we want the visitor to visit the whole tree
-            return true;
-        }
-
-        /**
-         * Retrieves found modules, or an empty list, if nothing found
-         * @return a list with found modules
-         */
-        public List getModules()
-        {
-            return modules;
-        }
-    }
 
     public static class OutOfBuildSpecModulesGatheringDeltaVisitor implements IResourceDeltaVisitor
     {
