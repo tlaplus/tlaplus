@@ -100,6 +100,13 @@
 18. Performance problem: Run separately, it takes SANY 4 seconds to parse the farsite
     spec.  It takes the toolbox 20 seconds.  What's it doing for those extra 16 seconds?
     
+    This turned out not to be a performance problem.  For a big spec, after Parse the parse spec
+    command gets disabled.  But parse module file still works.  Simon thinks it may be that
+    the build infrastructure of Eclipse is deactivating builders under some conditions--for example,
+    if a builder dies with an exception, it is deactivated.  Perhaps it's also deactivated on a time-out.
+    The list of builders is attached to the project, so one can query the project or the project
+    nature to find this out.  So, Simon assumes that for some reason, the builder is deactivated.
+    
 19. Closing the toolbox simply kills any running TLC.  Instead, 
     it should warn the user that this will kill TLC and give him
     the option of canceling.  To do this, need to modify to 
