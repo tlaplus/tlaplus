@@ -53,9 +53,10 @@
    
    The correct order in which things should be written in the MC file are:
        - Declaration of advanced model values and sets of model values that
-         instantiate constants
-       - New User Definitions
-       - Everything Else, which is all of the form newId_1234567 == some expression
+         instantiate constants.
+       - New User Definitions.
+       - Everything Else, which is all of the form 
+         newId_1234567 == some expression.
    but it's not worth much effort to fix this.
    
 10. If I close the TLC Error window, there is no way to re-open it.  Imagine someone 
