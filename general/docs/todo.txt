@@ -19,9 +19,14 @@
    disappears from the model and the user has no way of telling what N was instantiated
    with during the current run.
    
+   This particular problem was solved on 1 Oct 2009 by Simon with LL looking on.  
+   However, we still have the problem that TLC might be running for weeks, and the
+   user in the meantime changed the spec.  When TLC stops running, the model gets
+   revalidated and stuff that was in the model configuration gets lost.
    Here is a possible solution:  Add the notion of a model being LOCKED, meaning that
    it cannot be changed in any way, meaning that it is read only and it doesn't 
-   change to conform to the current spec.  In particular, it conforms to the copy of
+   change to conform to the current spec.  (This state actually exists in the
+   toolbox now: it is called "model in use".)  In particular, it conforms to the copy of
    the spec that's salted away with the model.  Running the spec locks the model.
    There will also be a menu item that the use can select to lock the spec himself.
    (This will allow the user to protect himself from accidentally modifying or re-running
@@ -85,7 +90,7 @@
 18. Performance problem: Run separately, it takes SANY 4 seconds to parse the farsite
     spec.  It takes the toolbox 20 seconds.  What's it doing for those extra 16 seconds?
     
-19. Closing the toolbox simply kills any running TLC.  Instead, it should
+19. Closing the toolbox simply kills any running TLC.  Instead, 
     it should warn the user that this will kill TLC and give him
     the option of canceling.  To do this, need to modify to 
     CloseSpecHandler.execute() so it checks if editors have been closed
