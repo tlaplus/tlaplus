@@ -180,7 +180,7 @@ public class TLAParsingBuilder extends IncrementalProjectBuilder
 
             if (moduleFile == null || !moduleFile.exists())
             {
-                throw new IllegalStateException("Resource not found during build");
+                throw new IllegalStateException("Resource not found during build: " + moduleFileName);
             }
 
             // never build derived resources
@@ -214,15 +214,18 @@ public class TLAParsingBuilder extends IncrementalProjectBuilder
             if (Activator.isSpecManagerInstantiated())
             {
                 spec = Activator.getSpecManager().getSpecLoaded();
-                String specRootFileName = spec.getRootFile().getName();
-                List dependancyList = Activator.getModuleDependencyStorage().getListOfExtendedModules(specRootFileName);
-                dependancyTable = new Hashtable(dependancyList.size());
-                dependancyTable.put(specRootFileName, specRootFileName);
-                Iterator iterator = dependancyList.iterator();
-                while (iterator.hasNext())
+                if (spec != null) 
                 {
-                    String moduleName = (String) iterator.next();
-                    dependancyTable.put(moduleName, moduleName);
+                    String specRootFileName = spec.getRootFile().getName();
+                    List dependancyList = Activator.getModuleDependencyStorage().getListOfExtendedModules(specRootFileName);
+                    dependancyTable = new Hashtable(dependancyList.size());
+                    dependancyTable.put(specRootFileName, specRootFileName);
+                    Iterator iterator = dependancyList.iterator();
+                    while (iterator.hasNext())
+                    {
+                        String moduleName = (String) iterator.next();
+                        dependancyTable.put(moduleName, moduleName);
+                    }
                 }
             }
         }
