@@ -23,7 +23,7 @@
 		<link>
 			<name>MTest4.tla</name>
 			<type>1</type>
-			<location>C:/users/lamport/tla/tla2/general/tests/MTest4.tla</location>
+			<location>C:/lamport/tla/newtools/tla2-inria/general/tests/MTest4.tla</location>
 		</link>
 	</linkedResources>
 </projectDescription>
