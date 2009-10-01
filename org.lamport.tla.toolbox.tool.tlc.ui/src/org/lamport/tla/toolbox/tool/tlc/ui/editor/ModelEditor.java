@@ -83,15 +83,15 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
         public void run()
         {
             // re-validate the pages, iff the model is not in use
-//            if (!isModelInUse()) 
-//            {
+            if (!isModelInUse()) 
+            {
                 for (int i = 0; i < getPageCount(); i++)
                 {
                     BasicFormPage page = (BasicFormPage) pages.get(i);
                     // re-validate the model on changes of the spec
                     page.validatePage(switchToErrorPage);
                 }
-//            }
+            }
         }
     };
 
