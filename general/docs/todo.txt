@@ -116,3 +116,6 @@
      
      the validator complains about the use of the parameter a in the definition of bar.  It shouldn't.
         
+25. Mode toolbox gets into when you have to open a spec twice to get something other
+    than a blank editor window.
+        
