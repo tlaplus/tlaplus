@@ -57,7 +57,9 @@
        - New User Definitions.
        - Everything Else, which is all of the form 
          newId_1234567 == some expression.
-   but it's not worth much effort to fix this.
+   However, the current structure of the toolbox makes it a nuisance to do
+   this, and the current validator will disallow the models that this order
+   is designed to allow.  
    
 10. If I close the TLC Error window, there is no way to re-open it.  Imagine someone 
     accidentally doing that on an error window with a trace produced by a 2-week run.  
@@ -65,7 +67,7 @@
     but the user is unlikely to realize that and will probably just curse the
     toolbox and relaunch TLC.
     
-11. The Parsing Error item on the Window menu should be disabled when there is not parsing
+11. The Parsing Error item on the Window menu should be disabled when there is no parsing
     error.
     
 12. When the spec is reparsed after a parsing error when the Parsing Error window
@@ -128,6 +130,7 @@
         bar(a) <- {a}
      
      the validator complains about the use of the parameter a in the definition of bar.  It shouldn't.
+     FIXED ON 1 OCT 2009 by Simon
         
 25. Mode toolbox gets into when you have to open a spec twice to get something other
     than a blank editor window.
