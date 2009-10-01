@@ -108,6 +108,11 @@
     and the "new definitions" code around line 330 of TLCModelLaunchDelegate.java.  This will allow
     the new definitions to be used in the constant replacement formulas.
         
+24. Definition override validator is not allowing the re-use of definition parameters.  For example, if
+    you override
     
-        
+        foo(a) <- <<a>>
+        bar(a) <- {a}
+     
+     the validator complains about the use of the parameter a in the definition of bar.  It shouldn't.
         
