@@ -106,6 +106,8 @@
     if a builder dies with an exception, it is deactivated.  Perhaps it's also deactivated on a time-out.
     The list of builders is attached to the project, so one can query the project or the project
     nature to find this out.  So, Simon assumes that for some reason, the builder is deactivated.
+    The parser is being launched in a separate thread, but Simon thinks that perhaps he's not doing
+    it in the right way.
     
 19. Closing the toolbox simply kills any running TLC.  Instead, 
     it should warn the user that this will kill TLC and give him
