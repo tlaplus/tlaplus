@@ -172,11 +172,18 @@ public class Activator extends AbstractUIPlugin
                     OutOfBuildSpecModulesGatheringDeltaVisitor moduleFinder = new OutOfBuildSpecModulesGatheringDeltaVisitor();
                     try
                     {
-                        delta.accept(moduleFinder);
-                        List modules = moduleFinder.getModules();
-                        if (!modules.isEmpty())
+                        // We cannot get the spec manager if it has not been instantiated
+                        // because this would trigger a resource change event, and this code
+                        // is being called within a resourceChanged method. Such an
+                        // infinite loop is not allowed.
+                        if (Activator.isSpecManagerInstantiated())
                         {
-                            getSpecManager().getSpecLoaded().setStatus(IParseConstants.UNPARSED);
+                            delta.accept(moduleFinder);
+                            List modules = moduleFinder.getModules();
+                            if (!modules.isEmpty())
+                            {
+                                getSpecManager().getSpecLoaded().setStatus(IParseConstants.UNPARSED);
+                            }
                         }
                     } catch (CoreException e)
                     {
