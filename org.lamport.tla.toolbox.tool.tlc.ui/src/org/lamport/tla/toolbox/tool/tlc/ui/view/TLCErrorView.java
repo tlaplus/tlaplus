@@ -89,6 +89,9 @@ public class TLCErrorView extends ViewPart {
         variableViewer.setInput(EMPTY_LIST());
     }
 
+    
+    
+    
     /**
      * Fill data into the view
      * @param modelName name of the model displayed in the view title section
@@ -110,6 +113,8 @@ public class TLCErrorView extends ViewPart {
                 // append error text to the buffer
                 appendError(buffer, error);
 
+                System.out.println("");
+                
                 // read out the trace if any
                 if (error.hasTrace()) 
                 {
@@ -329,7 +334,10 @@ public class TLCErrorView extends ViewPart {
     private static void appendError(StringBuffer buffer, TLCError error) 
     {
         String message = error.getMessage();
-        buffer.append(message).append("\n");
+        if (message != null && !message.equals("")) 
+        {
+            buffer.append(message).append("\n");
+        }
         if (error.getCause() != null) 
         {
             appendError(buffer, error.getCause());

@@ -416,7 +416,10 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                         topError.setErrorCode(tlcRegion.getMessageCode());
                         
                         // install error marker 
-                        ModelHelper.installModelProblemMarker(config.getFile(), props[0]);
+                        if (props.length != 0) 
+                        {
+                            ModelHelper.installModelProblemMarker(config.getFile(), props[0]);
+                        }
 
                         
                     } catch (BadLocationException e)
