@@ -314,7 +314,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
             List values = modelValuesSet.getValuesAsList();
             // check list of model values if these are already used
             validateUsage(MODEL_PARAMETER_MODEL_VALUES, values, "modelValues2_", "A model value",
-                    "Advanced Model Values");
+                    "Advanced Model Values", true);
             // check whether the model values are valid ids
             validateId(MODEL_PARAMETER_MODEL_VALUES, values, "modelValues2_", "A model value");
 
@@ -341,7 +341,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
             Assignment definition = (Assignment) definitions.get(i);
             List values = Arrays.asList(definition.getParams());
             // check list of parameters
-            validateUsage(MODEL_PARAMETER_DEFINITIONS, values, "param1_", "A parameter name", "Definition Overrides");
+            validateUsage(MODEL_PARAMETER_DEFINITIONS, values, "param1_", "A parameter name", "Definition Overrides", false);
             // check whether the parameters are valid ids
             validateId(MODEL_PARAMETER_DEFINITIONS, values, "param1_", "A parameter name");
         }

@@ -307,8 +307,6 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
             Assignment constant = (Assignment) constants.get(i);
 
             List values = Arrays.asList(constant.getParams());
-            // check list of parameters
-            validateUsage(MODEL_PARAMETER_CONSTANTS, values, "param1_", "A parameter name", "Constant Assignment");
             // check parameters
             validateId(MODEL_PARAMETER_CONSTANTS, values, "param1_", "A parameter name");
 
@@ -356,7 +354,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
                         List mvList = modelValuesSet.getValuesAsList();
                         // check list of model values
                         validateUsage(MODEL_PARAMETER_CONSTANTS, mvList, "modelValues2_", "A model value",
-                                "Constant Assignment");
+                                "Constant Assignment", true);
                         // check if the values are correct ids
                         validateId(MODEL_PARAMETER_CONSTANTS, mvList, "modelValues2_", "A model value");
 
@@ -385,6 +383,17 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
             }
         }
 
+        
+        // iterate over the constants again, and check if the parameters are used as Model Values 
+        for (int i = 0; i < constants.size(); i++)
+        {
+            Assignment constant = (Assignment) constants.get(i);
+            List values = Arrays.asList(constant.getParams());
+            // check list of parameters
+            validateUsage(MODEL_PARAMETER_CONSTANTS, values, "param1_", "A parameter name", "Constant Assignment", false);
+        }
+        
+        
         // number of workers
         String numberOfworkers = workers.getText();
         try

@@ -307,7 +307,6 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
         ((ModelEditor) getEditor()).handleProblemMarkers(switchToErrorPage);
     }
 
-    
     /**
      * Returns if the input is complete and the page contains no errors
      * @return
@@ -452,10 +451,11 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
      * @param errorMessagePrefix the prefix of the error messages to be used
      * @param elementType the type of the element, used in the error message
      * @param listSourceDescription the description of the list source, used in error reporting
-     * @param sectionIndex index of the section to expand 
+     * @param sectionIndex index of the section to expand
+     * @param addToContext iff true, the values will be added to the context of the current model 
      */
     public void validateUsage(String attributeName, List values, String errorMessagePrefix, String elementType,
-            String listSourceDescription)
+            String listSourceDescription, boolean addToContext)
     {
         if (values == null)
         {
@@ -513,7 +513,10 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
             } else
             {
                 // just adding the name
-                helper.addName(value, this, listSourceDescription);
+                if (addToContext)
+                {
+                    helper.addName(value, this, listSourceDescription);
+                }
             }
         }
     }
