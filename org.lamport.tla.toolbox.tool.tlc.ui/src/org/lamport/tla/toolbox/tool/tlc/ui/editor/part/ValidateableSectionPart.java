@@ -32,7 +32,7 @@ public class ValidateableSectionPart extends SectionPart implements IValidateble
      */
     public void validate()
     {
-        page.validate();
+        page.validatePage(false);
     }
 
     public void commit(boolean onSave)

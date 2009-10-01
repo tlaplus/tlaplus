@@ -32,7 +32,6 @@ import org.lamport.tla.toolbox.tool.tlc.ui.contribution.DynamicContributionItem;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.DataBindingManager;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.ISectionConstants;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor;
-import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.IValidateble;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.IgnoringListener;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.SemanticHelper;
@@ -70,7 +69,7 @@ import tla2sany.st.Location;
  * @version $Id$
  */
 public abstract class BasicFormPage extends FormPage implements IModelConfigurationConstants,
-        IModelConfigurationDefaults, ISectionConstants, IModelOperationContainer, IValidateble
+        IModelConfigurationDefaults, ISectionConstants, IModelOperationContainer
 {
     public static final String CRASHED_TITLE = " ( model checking has crashed )";
     public static final String RUNNING_TITLE = " ( model checking is in progress )";
@@ -281,13 +280,18 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
      * on any change in the fields. For this to work, the corresponding listeners are registered 
      * on the widgets. These listeners make the parts/pages "dirty" on input and call validate on 
      * the pages. In addition, the validate is called if the relevant parts of the model are changed 
-     * (that is changing the TLA files and the model file)
+     * (that is changing the TLA files and the model file).
+     * <br>
+     * Another case, when this method is called, is on model change, by the validateRunnable of the ModelEditor.
+     * 
      * <br>
      * Subclasses should override this method and add some page specific validation code. In doing so, it is
      * important to call <code>super.validate()</code>, since the implementation is responsible for handling
-     * errors, supplied as persistent error markers on the model file. 
+     * errors, supplied as persistent error markers on the model file.
+     * 
+     * @param switchToErrorPage control if on errors switching to the error page is done
      */
-    public void validate()
+    public void validatePage(boolean switchToErrorPage)
     {
         // We don't want to switch to the error page just because the user
         // typed a character into some field.
@@ -599,7 +603,6 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
         setComplete(true);
         // make the change visible
         getManagedForm().getMessageManager().setAutoUpdate(applyChange);
-        System.out.println("Removed message : ");
     }
 
     /**

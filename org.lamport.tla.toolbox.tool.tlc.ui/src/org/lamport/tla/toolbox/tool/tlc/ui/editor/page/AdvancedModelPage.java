@@ -206,7 +206,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
     /**
      * 
      */
-    public void validate()
+    public void validatePage(boolean switchToErrorPage)
     {
         if (getManagedForm() == null)
         {
@@ -361,7 +361,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
 
         mm.setAutoUpdate(true);
 
-        super.validate();
+        super.validatePage(switchToErrorPage);
     }
 
     /**

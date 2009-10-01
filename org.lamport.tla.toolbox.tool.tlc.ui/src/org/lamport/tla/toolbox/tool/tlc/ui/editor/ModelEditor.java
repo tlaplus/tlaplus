@@ -74,15 +74,24 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
      * It is used in the workspace root listener and is called once after the input is set and after the pages 
      * are added.
      */
-    private Runnable validateRunable = new Runnable() {
+    private ValidateRunnable validateRunable = new ValidateRunnable();
+    
+    private class ValidateRunnable implements Runnable {
+        
+        private boolean switchToErrorPage = false;
+        
         public void run()
         {
-            for (int i = 0; i < getPageCount(); i++)
-            {
-                BasicFormPage page = (BasicFormPage) pages.get(i);
-                // re-validate the model on changes of the spec
-                page.validate();
-            }
+            // re-validate the pages, iff the model is not in use
+//            if (!isModelInUse()) 
+//            {
+                for (int i = 0; i < getPageCount(); i++)
+                {
+                    BasicFormPage page = (BasicFormPage) pages.get(i);
+                    // re-validate the model on changes of the spec
+                    page.validatePage(switchToErrorPage);
+                }
+//            }
         }
     };
 
@@ -102,7 +111,6 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
                 {
                     return ModelEditor.this.getConfig().getFile();
                 }
-                
             };
             
             try
@@ -112,39 +120,19 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
                 // one of the modules in the specification has changed
                 // this means that identifiers defined in a spec might have changed
                 // re-validate the editor
-                if (!modules.isEmpty()) 
+                if (!modules.isEmpty() || visitor.isModelChanged()) 
                 {
                     // update the specObject of the helper
                     helper.resetSpecNames();
 
+                    // iff the model has changed, switch to the error page after the validation
+                    validateRunable.switchToErrorPage = visitor.isModelChanged();
+                    
                     // re-validate the pages
                     UIHelper.runUIAsync(validateRunable);
                     
                     return;
                 }
-                
-                // SANY changed the existing markers on the model file
-                // repaint the errors if any
-                if (visitor.isModelChanged()) 
-                {
- 
-                    UIHelper.runUIAsync(new Runnable() {
-                        
-                        public void run()
-                        {
-                            for (int i = 0; i < getPageCount(); i++)
-                            {
-                                BasicFormPage page = (BasicFormPage) pages.get(i);
-                                // reset the messages
-                                page.resetAllMessages(true);
-                            }
-                            
-                            handleProblemMarkers(true);
-                        }
-                    });
-                }
-                
-
             } catch (CoreException e)
             {
                 TLCUIActivator.logError("Error visiting changed resource", e);

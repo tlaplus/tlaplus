@@ -397,6 +397,6 @@ public class ValidateableTableSectionPart extends SectionPart implements IValida
      */
     public void validate()
     {
-        page.validate();
+        page.validatePage(false);
     }
 }

@@ -200,7 +200,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
     // TODO remove
     private int countXX = 0;
 
-    public void validate()
+    public void validatePage(boolean switchToErrorPage)
     {
         if (getManagedForm() == null)
         {
@@ -505,7 +505,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
         mm.setAutoUpdate(true);
 
-        super.validate();
+        super.validatePage(switchToErrorPage);
     }
 
     /**
