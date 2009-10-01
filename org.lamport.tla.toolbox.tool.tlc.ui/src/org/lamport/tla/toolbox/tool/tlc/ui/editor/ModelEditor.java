@@ -107,7 +107,6 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
             
             try
             {
-//System.out.println("trying here");
                 delta.accept(visitor);
                 List modules = visitor.getModules();
                 // one of the modules in the specification has changed
@@ -126,7 +125,6 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
                 
                 // SANY changed the existing markers on the model file
                 // repaint the errors if any
-//                System.out.println("isModelChanged = " + visitor.isModelChanged());
                 if (visitor.isModelChanged()) 
                 {
  
@@ -169,7 +167,6 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
     {
         helper = new SemanticHelper();
         pagesToAdd = new BasicFormPage[] { new MainModelPage(this), new AdvancedModelPage(this), new ResultPage(this) };
-        System.out.println("Model editor being constructed");
     }
 
     /**
@@ -256,12 +253,11 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
     }
 
     /**
-     * @see org.eclipse.ui.part.EditorPart#doSave(org.eclipse.core.runtime.
-     * IProgressMonitor)
-     * 
      * This method saves the model even if the spec is not parsed.  This is probably
      * a good idea, since the user may want to quit in the middle of his work without
      * losing what he's done to the model.
+     * @see org.eclipse.ui.part.EditorPart#doSave(org.eclipse.core.runtime.
+     * IProgressMonitor)
      */
     public void doSave(IProgressMonitor monitor)
     {

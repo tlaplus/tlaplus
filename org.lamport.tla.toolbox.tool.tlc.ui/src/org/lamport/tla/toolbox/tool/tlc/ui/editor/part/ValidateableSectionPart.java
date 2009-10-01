@@ -35,4 +35,21 @@ public class ValidateableSectionPart extends SectionPart implements IValidateble
         page.validate();
     }
 
+    public void commit(boolean onSave)
+    {
+        // commit the part on save, but not on other events
+        if (onSave) 
+        {
+            // System.out.println("commit() of the SectionPart " + getSection().getText() + " has value of " + isDirty());
+            super.commit(onSave);
+        }
+    }
+    
+    
+    
+    
+    
+    
+    
+
 }

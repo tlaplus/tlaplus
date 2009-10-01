@@ -220,7 +220,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
             ModelEditor ourFavoriteEditor = (ModelEditor) this.getEditor();
             ourFavoriteEditor.removePage(0);
             System.out.println("Page removed");
-            BasicFormPage newPage = new MainModelPage(ourFavoriteEditor);
+            MainModelPage newPage = new MainModelPage(ourFavoriteEditor);
             try
             {
                 ourFavoriteEditor.addPage(0, newPage);

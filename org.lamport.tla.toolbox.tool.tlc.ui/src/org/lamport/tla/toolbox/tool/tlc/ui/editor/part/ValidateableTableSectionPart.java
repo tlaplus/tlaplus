@@ -111,6 +111,15 @@ public class ValidateableTableSectionPart extends SectionPart implements IValida
         sectionInitialize(form.getToolkit());
     }
 
+    public void commit(boolean onSave)
+    {
+        // commit the part on save, but not on other events
+        if (onSave)
+        {
+            super.commit(onSave);
+        }
+    }
+
     /**
      * Constructs the section content
      * @param toolkit
