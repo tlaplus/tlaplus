@@ -1,5 +1,6 @@
 package org.lamport.tla.toolbox.tool.tlc.output.data;
 
+import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Vector;
@@ -19,6 +20,8 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITypedRegion;
 import org.eclipse.ui.editors.text.FileDocumentProvider;
 import org.eclipse.ui.part.FileEditorInput;
+import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
+import org.lamport.tla.toolbox.tool.tlc.model.Formula;
 import org.lamport.tla.toolbox.tool.tlc.output.ITLCOutputListener;
 import org.lamport.tla.toolbox.tool.tlc.output.source.TLCOutputSourceRegistry;
 import org.lamport.tla.toolbox.tool.tlc.output.source.TLCRegion;
@@ -85,6 +88,8 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
     {
         isDone = false;
         errors = new Vector();
+        ModelHelper.removeModelProblemMarkers(this.config, ModelHelper.TLC_MODEL_ERROR_MARKER_TLC);
+
         coverageInfo = new Vector();
         progressInformation = new Vector();
         startTimestamp = "";
@@ -92,6 +97,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
         coverageTimestamp = "";
         progressOutput = new Document(NO_OUTPUT_AVAILABLE);
         userOutput = new Document(NO_OUTPUT_AVAILABLE);
+
     }
 
     /**
@@ -314,10 +320,10 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
             TLCRegionContainer container = (TLCRegionContainer) tlcRegion;
             // read out the subordinated regions
             ITypedRegion[] regions = container.getSubRegions();
-            
+
             // currently, there can be at most three regions
             Assert.isTrue(regions.length < 3, "Unexpected error region structure, this is a bug.");
-            
+
             // iterate over regions
             for (int i = 0; i < regions.length; i++)
             {
@@ -339,8 +345,10 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                         Document errorDocument = new Document();
                         errorDocument.set(errorMessage);
 
+                        boolean markerInstalled = false;
+
                         // retrieve the MC file
-                        // create a document provider, in order to create a document and the 
+                        // create a document provider, in order to create a document and the
                         // search adapter
                         IFile mcFile = ModelHelper.getModelTLAFile(config);
                         FileEditorInput mcFileEditorInput = new FileEditorInput((IFile) mcFile);
@@ -352,9 +360,9 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                         // the search adapter on the MC file
                         FindReplaceDocumentAdapter mcSearcher = new FindReplaceDocumentAdapter(mcDocument);
 
-                        
                         // find the ids generated from the ModelWriter (in MC.tla file) in the error message
                         IRegion[] ids = ModelHelper.findIds(errorMessage);
+
                         // generate property object for every id
                         // initialize the variable here, which will hold the properties
                         Hashtable[] props = new Hashtable[ids.length];
@@ -372,25 +380,72 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                                 throw new CoreException(new Status(IStatus.ERROR, TLCUIActivator.PLUGIN_ID,
                                         "Provided id " + id + " not found in the model file."));
                             }
+                            // create the error properties for this id
+                            // this method find the corresponding attribute and
+                            // create the map with attributes, required to create a marker
+                            props[j] = ModelHelper.createMarkerDescription(config, mcDocument, mcSearcher, errorMessage,
+                                    IMarker.SEVERITY_ERROR, coordinates);
+                            
+                            // read the attribute name
+                            String attributeName = (String) props[j]
+                                    .get(ModelHelper.TLC_MODEL_ERROR_MARKER_ATTRIBUTE_NAME);
+                            
+                            // read the attribute index
+                            Integer attributeIndex = (Integer) props[j]
+                                    .get(ModelHelper.TLC_MODEL_ERROR_MARKER_ATTRIBUTE_IDX);
 
-                            // create the error properties for this id 
-                            props[j] = ModelHelper.findErrorAttribute(config, mcDocument, mcSearcher,
-                                    errorMessage, IMarker.SEVERITY_ERROR, coordinates);
+                            if (attributeName != null)
+                            {
+                                String idReplacement = null;
+                                // some attributes are lists
+                                if (ModelHelper.isListAttribute(attributeName))
+                                {
+                                    List attributeValue = (ArrayList) config.getAttribute(attributeName,
+                                            new ArrayList());
+                                    int attributeNumber = (attributeIndex != null) ? attributeIndex.intValue() : 0;
+
+                                    if (IModelConfigurationConstants.MODEL_PARAMETER_CONSTANTS.equals(attributeName)
+                                            || IModelConfigurationConstants.MODEL_PARAMETER_CONSTANTS
+                                                    .equals(attributeName))
+                                    {
+                                        // List valueList = ModelHelper.deserializeAssignmentList(attributeValue);
+                                        idReplacement = "'LL claims this should not happen. See Bug in TLCModelLaunchDataProvider.'";
+                                    } else
+                                    {
+                                        // invariants and properties
+                                        List valueList = ModelHelper.deserializeFormulaList(attributeValue);
+                                        Formula value = (Formula) valueList.get(attributeNumber);
+                                        idReplacement = value.getFormula();
+                                    }
+                                } else
+                                {
+                                    // others are just strings
+                                    idReplacement = config.getAttribute(attributeName, ModelHelper.EMPTY_STRING);
+                                }
+                                // patch the message
+                                
+                                errorMessage = errorMessage.substring(0, errorMessage.indexOf(id)) + idReplacement + errorMessage.substring(errorMessage.indexOf(id) + id.length());
+//                                errorMessage = errorMessage.replaceAll(id, idReplacement);
+                            } else 
+                            {
+                                throw new CoreException(new Status(IStatus.ERROR, TLCUIActivator.PLUGIN_ID,
+                                        "Provided id " + id + " maps to an attribute that was not found in the model. This is a bug."));
+                            }
                         }
-
                         // find the locations inside the text
                         IRegion[] locations = ModelHelper.findLocations(errorMessage);
                         // the content on given location, or null, if location not in MC file
                         String[] regionContent = new String[locations.length];
-                        
+
                         // iterate over locations
-                        for (int j = 0; j < locations.length; j++) 
+                        for (int j = 0; j < locations.length; j++)
                         {
                             // restore the location from the region
-                            String locationString = errorDocument.get(locations[j].getOffset(), locations[j].getLength());
+                            String locationString = errorDocument.get(locations[j].getOffset(), locations[j]
+                                    .getLength());
                             Location location = Location.parseLocation(locationString);
                             // look only for location in the MC file
-                            if (location.source().equals(mcFile.getName())) 
+                            if (location.source().equals(mcFile.getName()))
                             {
                                 IRegion region = ModelHelper.locationToRegion(mcDocument, location);
                                 regionContent[j] = mcDocument.get(region.getOffset(), region.getLength());
@@ -398,30 +453,33 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                         }
 
                         /* ----------------------------------------------------
-                         * At this point the message string contains generated ids and
-                         * locations, some of those pointing to MC file
-                         * The following code will replace them 
-                         * 
+                         * At this point the error message string does not contain any generated ids and
+                         * locations. Set it as a message inside of all marker property maps  
                          */
-                        
-                        
-                        
-                        // TODO!!!
-                        
-                        
-                        
+                        for (int j = 0; j < props.length; j++)
+                        {
+                            // patch the error marker
+                            props[j].put(IMarker.MESSAGE, errorMessage);
+                            // install error marker
+                            ModelHelper.installModelProblemMarker(config.getFile(), props[j],
+                                    ModelHelper.TLC_MODEL_ERROR_MARKER_TLC);
+                            markerInstalled = true;
+                        }
+
+                        // there were no ids and no locations
+                        // the error is just a generic error in the model
+                        if (!markerInstalled)
+                        {
+                            Hashtable prop = ModelHelper.createMarkerDescription(errorMessage, IMarker.SEVERITY_ERROR);
+                            ModelHelper.installModelProblemMarker(config.getFile(), prop,
+                                    ModelHelper.TLC_MODEL_ERROR_MARKER_TLC);
+                        }
+
                         // set error text
                         topError.setMessage(errorMessage);
                         // set error code
                         topError.setErrorCode(tlcRegion.getMessageCode());
-                        
-                        // install error marker 
-                        if (props.length != 0) 
-                        {
-                            ModelHelper.installModelProblemMarker(config.getFile(), props[0]);
-                        }
 
-                        
                     } catch (BadLocationException e)
                     {
                         TLCUIActivator.logError("Error parsing the error message", e);

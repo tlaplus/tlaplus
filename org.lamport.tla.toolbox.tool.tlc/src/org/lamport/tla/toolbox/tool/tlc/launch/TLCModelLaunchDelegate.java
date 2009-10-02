@@ -430,7 +430,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
 
         monitor.worked(1);
         // remove existing markers
-        ModelHelper.removeModelProblemMarkers(configuration);
+        ModelHelper.removeModelProblemMarkers(configuration, ModelHelper.TLC_MODEL_ERROR_MARKER_SANY);
         monitor.worked(1);
 
         if (!detectedErrors.isEmpty())
@@ -464,11 +464,11 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
 
                         // find the error cause and install the error marker on the corresponding
                         // field
-                        Hashtable props = ModelHelper.findErrorAttribute(configuration, document, searchAdapter, message, severity,
+                        Hashtable props = ModelHelper.createMarkerDescription(configuration, document, searchAdapter, message, severity,
                                 coordinates);
                         if (props  != null) 
                         {
-                            ModelHelper.installModelProblemMarker(configuration.getFile(), props);
+                            ModelHelper.installModelProblemMarker(configuration.getFile(), props, ModelHelper.TLC_MODEL_ERROR_MARKER_SANY);
                         }
 
                     } else

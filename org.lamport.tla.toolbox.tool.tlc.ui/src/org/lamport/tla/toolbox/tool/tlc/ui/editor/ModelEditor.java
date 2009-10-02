@@ -75,15 +75,16 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
      * are added.
      */
     private ValidateRunnable validateRunable = new ValidateRunnable();
-    
-    private class ValidateRunnable implements Runnable {
-        
+
+    private class ValidateRunnable implements Runnable
+    {
+
         private boolean switchToErrorPage = false;
-        
+
         public void run()
         {
             // re-validate the pages, iff the model is not in use
-            if (!isModelInUse()) 
+            if (!isModelInUse())
             {
                 for (int i = 0; i < getPageCount(); i++)
                 {
@@ -105,14 +106,13 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
              * This is a helper method that returns a new instance of ChangedModulesGatheringDeltaVisitor,
              * which gathers the changed TLA modules from a resource delta tree.
              */
-            ChangedSpecModulesGatheringDeltaVisitor visitor = new ChangedSpecModulesGatheringDeltaVisitor()
-            {
+            ChangedSpecModulesGatheringDeltaVisitor visitor = new ChangedSpecModulesGatheringDeltaVisitor() {
                 public IResource getModel()
                 {
                     return ModelEditor.this.getConfig().getFile();
                 }
             };
-            
+
             try
             {
                 delta.accept(visitor);
@@ -120,17 +120,17 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
                 // one of the modules in the specification has changed
                 // this means that identifiers defined in a spec might have changed
                 // re-validate the editor
-                if (!modules.isEmpty() || visitor.isModelChanged()) 
+                if (!modules.isEmpty() || visitor.isModelChanged())
                 {
                     // update the specObject of the helper
                     helper.resetSpecNames();
 
                     // iff the model has changed, switch to the error page after the validation
                     validateRunable.switchToErrorPage = visitor.isModelChanged();
-                    
+
                     // re-validate the pages
                     UIHelper.runUIAsync(validateRunable);
-                    
+
                     return;
                 }
             } catch (CoreException e)
@@ -253,7 +253,7 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
         ModelHelper.doSaveConfigurationCopy(configurationCopy);
 
         // remove existing markers
-        ModelHelper.removeModelProblemMarkers(configurationCopy);
+        ModelHelper.removeModelProblemMarkers(configurationCopy, ModelHelper.TLC_MODEL_ERROR_MARKER_SANY);
 
         boolean revalidate = TLCUIActivator.getDefault().getPreferenceStore().getBoolean(
                 ITLCPreferenceConstants.I_TLC_REVALIDATE_ON_MODIFY);
@@ -473,17 +473,21 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
     }
 
     /**
-     * Handles the problem markers
-     * <br><b>Note</b>: has to be called from UI thread
+     * Handles the problem markers attached to the model file. For those of them having the 
+     * attribute set, the error bubbles will be attached to the corresponding field 
      * 
+     * <br><b>Note</b>: has to be called from UI thread
      */
     public void handleProblemMarkers(boolean switchToErrorPage)
     {
+        // System.out.println("Entering ModelEditor.handleProblemMarkers()");
+        
         int errorPageIndex = -1;
         int currentPageIndex = getActivePage();
         try
         {
             IMarker[] modelProblemMarkers = ModelHelper.getModelProblemMarker(getConfig());
+            // System.out.println("Found " + modelProblemMarkers.length + " markers for " + getConfig().getName());
             DataBindingManager dm = getDataBindingManager();
 
             for (int j = 0; j < getPageCount(); j++)
@@ -497,34 +501,63 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
                     String attributeName = modelProblemMarkers[i]
                             .getAttribute(ModelHelper.TLC_MODEL_ERROR_MARKER_ATTRIBUTE_NAME,
                                     IModelConfigurationDefaults.EMPTY_STRING);
-                    String sectionId = dm.getSectionForAttribute(attributeName);
-                    Assert
-                            .isNotNull(sectionId,
-                                    "Page is either not initialized or attribute not bound, this is a bug.");
-
-                    String pageId = dm.getSectionPage(sectionId);
-
-                    // relevant, since the attribute is displayed on the current
-                    // page
-                    if (page.getId().equals(pageId))
+                    
+                    int bubbleType = -1;
+                    if (modelProblemMarkers[i].getType().equals(ModelHelper.TLC_MODEL_ERROR_MARKER_SANY)) 
                     {
-                        IMessageManager mm = page.getManagedForm().getMessageManager();
+                        // SANY markers are errors
+                        bubbleType = IMessageProvider.ERROR;                        
+                    } else if (modelProblemMarkers[i].getType().equals(ModelHelper.TLC_MODEL_ERROR_MARKER_TLC)) 
+                    {
+                        // TLC markers are warnings
+                        bubbleType = IMessageProvider.WARNING;
+                    } else 
+                    {
+                        bubbleType = IMessageProvider.INFORMATION;
+                    }
+                    
+                    if (ModelHelper.EMPTY_STRING.equals(attributeName))
+                    {
+                        // no attribute, this is a global error, not bound to a particular attribute
+                        // install it on the first page
+                        IMessageManager mm  = this.pagesToAdd[0].getManagedForm().getMessageManager();
                         mm.setAutoUpdate(false);
                         String message = modelProblemMarkers[i].getAttribute(IMarker.MESSAGE,
                                 IModelConfigurationDefaults.EMPTY_STRING);
-
-                        Control widget = UIHelper.getWidget(dm.getAttributeControl(attributeName));
-                        if (widget != null)
-                        {
-                            mm.addMessage("modelProblem_" + i, message, null, IMessageProvider.ERROR, widget);
-                        }
-                        // expand the section with an error
-                        dm.expandSection(sectionId);
+                        mm.addMessage("modelProblem_" + i, message, null, bubbleType);
                         mm.setAutoUpdate(true);
 
-                        if (errorPageIndex < j)
+                    } else
+                    {
+                        // attribute found
+                        String sectionId = dm.getSectionForAttribute(attributeName);
+                        Assert.isNotNull(sectionId,
+                                "Page is either not initialized or attribute not bound, this is a bug.");
+
+                        String pageId = dm.getSectionPage(sectionId);
+
+                        // relevant, since the attribute is displayed on the current
+                        // page
+                        if (page.getId().equals(pageId))
                         {
-                            errorPageIndex = j;
+                            IMessageManager mm = page.getManagedForm().getMessageManager();
+                            mm.setAutoUpdate(false);
+                            String message = modelProblemMarkers[i].getAttribute(IMarker.MESSAGE,
+                                    IModelConfigurationDefaults.EMPTY_STRING);
+
+                            Control widget = UIHelper.getWidget(dm.getAttributeControl(attributeName));
+                            if (widget != null)
+                            {
+                                mm.addMessage("modelProblem_" + i, message, null, bubbleType, widget);
+                            }
+                            // expand the section with an error
+                            dm.expandSection(sectionId);
+                            mm.setAutoUpdate(true);
+
+                            if (errorPageIndex < j)
+                            {
+                                errorPageIndex = j;
+                            }
                         }
                     }
                 }
@@ -540,7 +573,7 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
         {
             TLCUIActivator.logError("Error retrieving model error markers", e);
         }
-
+        // System.out.println("leaving ModelEditor.handleProblemMarkers()");
     }
 
     /**

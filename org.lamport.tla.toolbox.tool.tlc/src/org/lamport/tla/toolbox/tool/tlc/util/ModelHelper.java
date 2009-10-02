@@ -68,6 +68,15 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
      * Marker indicating an error in the model
      */
     public static final String TLC_MODEL_ERROR_MARKER = "org.lamport.tla.toolbox.tlc.modelErrorMarker";
+    /**
+     * Marker indicating the TLC Errors
+     */
+    public static final String TLC_MODEL_ERROR_MARKER_TLC = "org.lamport.tla.toolbox.tlc.modelErrorTLC";
+    /**
+     * Marker indicating the SANY Errors
+     */
+    public static final String TLC_MODEL_ERROR_MARKER_SANY = "org.lamport.tla.toolbox.tlc.modelErrorSANY";
+    
 
     public static final String TLC_MODEL_ERROR_MARKER_ATTRIBUTE_NAME = "attributeName";
     public static final String TLC_MODEL_ERROR_MARKER_ATTRIBUTE_IDX = "attributeIndex";
@@ -861,15 +870,17 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
     }
 
     /**
-     * Delete all model error markers from a resource
+     * Remove a model marker of a particular type
      * @param configuration the model to remove markers from
+     * @param type the marker type
      */
-    public static void removeModelProblemMarkers(ILaunchConfiguration configuration)
+    public static void removeModelProblemMarkers(ILaunchConfiguration configuration, String type)
     {
+        System.out.println("entering removeModelProblemMarkers() on " + configuration.getName()
+                + " with markerType set to " + type);
         try
         {
-            IMarker[] foundMarkers = configuration.getFile().findMarkers(TLC_MODEL_ERROR_MARKER, false,
-                    IResource.DEPTH_ONE);
+            IMarker[] foundMarkers = configuration.getFile().findMarkers(type, true, IResource.DEPTH_ONE);
             for (int i = 0; i < foundMarkers.length; i++)
             {
                 foundMarkers[i].delete();
@@ -881,11 +892,20 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
     }
 
     /**
+     * Delete all model error markers from a resource
+     * @param configuration the model to remove markers from
+     */
+    public static void removeModelProblemMarkers(ILaunchConfiguration configuration)
+    {
+        removeModelProblemMarkers(configuration, TLC_MODEL_ERROR_MARKER);
+    }
+
+    /**
      * Installs a marker on the model
      * @param resource the model file to install markers on
      * @param map a map with attributes
      */
-    public static IMarker installModelProblemMarker(IResource resource, Map properties)
+    public static IMarker installModelProblemMarker(IResource resource, Map properties, String markerType)
     {
         Assert.isNotNull(resource);
         Assert.isTrue(resource.exists());
@@ -893,7 +913,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
         try
         {
             // create an empty marker
-            IMarker marker = resource.createMarker(TLC_MODEL_ERROR_MARKER);
+            IMarker marker = resource.createMarker(markerType);
             marker.setAttributes(properties);
             return marker;
         } catch (CoreException e)
@@ -987,6 +1007,27 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
     }
 
     /**
+     * Create a map with marker parameters
+     * @param config 
+     * @param errorMessage
+     * @param severityError
+     * @return
+     */
+    public static Hashtable createMarkerDescription(String errorMessage, int severity)
+    {
+        Hashtable prop = new Hashtable();
+
+        prop.put(IMarker.SEVERITY, new Integer(severity));
+        prop.put(IMarker.MESSAGE, errorMessage);
+        prop.put(TLC_MODEL_ERROR_MARKER_ATTRIBUTE_NAME, EMPTY_STRING);
+        prop.put(TLC_MODEL_ERROR_MARKER_ATTRIBUTE_IDX, new Integer(0));
+        prop.put(IMarker.LOCATION, EMPTY_STRING);
+        prop.put(IMarker.CHAR_START, new Integer(0));
+        prop.put(IMarker.CHAR_END, new Integer(0));
+        return prop;
+    }
+
+    /**
      * Using the supplied findReplaceAdapter finds the name of the attribute 
      * (saved in the comment, previous to the region in which the error has been detected) 
      * 
@@ -997,10 +1038,19 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
      * @param severity the error severity
      * @param coordinates coordinates in the document describing the area that is the id
      * 
-     * @return a properties object containing the information required for the marker installation 
+     * @return a map object containing the information required for the marker installation:
+     * <ul>
+     *  <li>IMarker.SEVERITY</li>
+     *  <li>IMarker.MESSAGE</li>
+     *  <li>TLC_MODEL_ERROR_MARKER_ATTRIBUTE_NAME</li>
+     *  <li>TLC_MODEL_ERROR_MARKER_ATTRIBUTE_IDX</li>
+     *  <li>IMarker.LOCATION</li>
+     *  <li>IMarker.CHAR_START</li>
+     *  <li>IMarker.CHAR_END</li>
+     * </ul> 
      * @throws CoreException if something goes wrong
      */
-    public static Hashtable findErrorAttribute(ILaunchConfiguration configuration, IDocument document,
+    public static Hashtable createMarkerDescription(ILaunchConfiguration configuration, IDocument document,
             FindReplaceDocumentAdapter searchAdapter, String message, int severity, int[] coordinates)
             throws CoreException
     {
@@ -1176,7 +1226,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
         IFile resource = config.getFile();
         if (resource.exists())
         {
-            IMarker[] foundMarkers = resource.findMarkers(TLC_MODEL_ERROR_MARKER, false, IResource.DEPTH_ZERO);
+            IMarker[] foundMarkers = resource.findMarkers(TLC_MODEL_ERROR_MARKER, true, IResource.DEPTH_ZERO);
             return foundMarkers;
         }
 
@@ -1282,4 +1332,21 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
         return null;
     }
 
+    /**
+     * Checks, whether a model attribute is a list 
+     * @param attributeName name of the attribute, see {@link IModelConfigurationConstants}
+     * @return true for invariants, properties, constants and definition overriders
+     */
+    public static boolean isListAttribute(String attributeName)
+    {
+        if (attributeName != null
+                && (attributeName.equals(IModelConfigurationConstants.MODEL_CORRECTNESS_INVARIANTS)
+                        || attributeName.equals(IModelConfigurationConstants.MODEL_CORRECTNESS_PROPERTIES)
+                        || attributeName.equals(IModelConfigurationConstants.MODEL_PARAMETER_CONSTANTS) || attributeName
+                        .equals(IModelConfigurationConstants.MODEL_PARAMETER_DEFINITIONS)))
+        {
+            return true;
+        }
+        return false;
+    }
 }

@@ -32,7 +32,7 @@ import tla2sany.semantic.OpDefNode;
 public class FilteredDefinitionSelectionDialog extends FilteredItemsSelectionDialog
 {
     // setting id
-    private static final String SETTINGS = FilteredDefinitionSelectionDialog.class.getCanonicalName();
+    private static final String SETTINGS = "org.lamport.tla.toolbox.tool.tlc.ui.dialog.FilteredDefinitionSelectionDialog";
     // specification handle
     private SpecObj specObj;
 

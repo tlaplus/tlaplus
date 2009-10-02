@@ -59,15 +59,34 @@
       <super
             type="org.eclipse.core.resources.marker">
       </super>
-      <persistent
-            value="true">
-      </persistent>
       <attribute
             name="attributeName">
       </attribute>
       <attribute
             name="attributeIndex">
       </attribute>
+   </extension>
+   <extension
+         id="org.lamport.tla.toolbox.tlc.modelErrorSANY"
+         name="SANY Error in model"
+         point="org.eclipse.core.resources.markers">
+      <super
+            type="org.lamport.tla.toolbox.tlc.modelErrorMarker">
+      </super>
+      <persistent
+            value="true">
+      </persistent>
+   </extension>
+   <extension
+         id="org.lamport.tla.toolbox.tlc.modelErrorTLC"
+         name="TLC Error in model"
+         point="org.eclipse.core.resources.markers">
+      <super
+            type="org.lamport.tla.toolbox.tlc.modelErrorMarker">
+      </super>
+      <persistent
+            value="true">
+      </persistent>
    </extension>
    <extension
          point="org.lamport.tla.toolbox.tool">

@@ -113,8 +113,6 @@ public class TLCErrorView extends ViewPart {
                 // append error text to the buffer
                 appendError(buffer, error);
 
-                System.out.println("");
-                
                 // read out the trace if any
                 if (error.hasTrace()) 
                 {

@@ -2,6 +2,8 @@ package org.lamport.tla.toolbox.tool.tlc.util;
 
 import java.util.regex.Matcher;
 
+import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IRegion;
 
 import tla2sany.st.Location;
@@ -71,9 +73,29 @@ public class OutputRegexTest extends TestCase
         assertEquals(2, regions.length);
         // start points to the beginning
         assertEquals(random.length(), regions[0].getOffset());
+
+        // make sure the id has correct length 
+        assertEquals(id.length(), regions[0].getLength());
+        
         // start points to the beginning
         assertEquals(random.length() + id.length() + random2.length(), regions[1].getOffset());
     }
+    
+    public void testFindIds2()
+    {
+        IRegion[] regions = ModelWriter.findIds(random + id + random2 + id + random);
+        Document doc = new Document(random + id + random2 + id + random);
+        
+        try
+        {
+            assertEquals(id, doc.get(regions[0].getOffset(), regions[0].getLength()));
+        } catch (BadLocationException e)
+        {
+            fail("Error reading document");
+        }
+    }
+    
+    
 
     public void testRegexMatchLocation()
     {
