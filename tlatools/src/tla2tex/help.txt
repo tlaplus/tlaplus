@@ -28,11 +28,19 @@ Options:
      is -ps if the -shade option specified, otherwise -nops.
 
    -psCommand cmd
-     The command run to produce the Postscript file output.  
+     The command run to produce a Postscript or PDF or
+     whatever file from LaTeX's dvi output.  Should be 
+     used only if LaTeX is producing a pdf file.  
      Default is "dvips".
 
    -latexCommand cmd
      The command used to run LaTeX.  The default is "latex".
+     
+   -latexOutputExt ext
+     The extension of the final output--e.g., dvi or pdf.
+     Needed only if -metadir is specified, so the output
+     will be copied to the directory from which tla2tex is
+     called.
 
    -out file
      The root name of the main LaTeX input file and its output 
@@ -75,3 +83,8 @@ Options:
    -voffset  num
      Specifies TeX's \hoffset and \voffset values, in points, for 
      the LaTeX output.  (Used to center output on the page.)
+     
+   -metadir directory
+     Specifies the directory in which LaTeX files are written and
+     from which LaTeX is run.  (Primarily for use by the toolbox.)
+     

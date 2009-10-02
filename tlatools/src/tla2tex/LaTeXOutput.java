@@ -36,6 +36,7 @@
 ***************************************************************************/
 package tla2tex;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -363,9 +364,10 @@ private static void InnerWriteAlignmentFile(Token[][] spec,
   *************************************************************************/
   { 
     /***********************************************************************
-    * Open the OutpuFileWriter.                                            *
+    * Open the OutputFileWriter.                                           *
     ***********************************************************************/
-    OutputFileWriter writer = new OutputFileWriter(fileName + ".tex");
+    OutputFileWriter writer = 
+        new OutputFileWriter(prependMetaDirToFileName(fileName) + ".tex");
 
     /***********************************************************************
     * Write \batchmode and \documentclass commands.  (We use \batchmode    *
@@ -460,7 +462,7 @@ private static void InnerWriteAlignmentFile(Token[][] spec,
     * Modified on 11 November 2001 to call ExecuteCommand.                 *
     ***********************************************************************/
     { String latexCmd = Parameters.LaTeXCommand + " " + fileName + ".tex";
-      ExecuteCommand.ExecuteCommand(latexCmd);
+      ExecuteCommand.executeCommand(latexCmd);
     }    
 
 
@@ -477,7 +479,7 @@ private static void InnerWriteAlignmentFile(Token[][] spec,
     try 
      { bufferedReader = 
          new BufferedReader(new InputStreamReader(
-           new FileInputStream(Parameters.LaTeXAlignmentFile + ".log"))) ;
+           new FileInputStream(prependMetaDirToFileName(Parameters.LaTeXAlignmentFile + ".log")))) ;
      }
     catch (FileNotFoundException e)
      { /**************************************************************
@@ -1222,7 +1224,6 @@ private static void InnerWriteLaTeXFile(Token[][] spec,
                     /*******************************************************
                     * Write out the comment.                               *
                     *******************************************************/
-                    int i = 0 ;
                     if (parMulti)
                       { /***************************************************
                         * There's nothing to the left of this comment.     *
@@ -1445,6 +1446,15 @@ private static void InnerWriteLaTeXFile(Token[][] spec,
     
    };                // END while (line < spec.length)
 } ;
+
+protected static String prependMetaDirToFileName(String fileName) {
+    String outputFileName = fileName;
+    if (! Parameters.MetaDir.equals("")) {
+        outputFileName = Parameters.MetaDir + File.separator + outputFileName;
+    }
+System.out.println("looking for file: " + outputFileName);
+    return outputFileName;
+}
 	
 }
 

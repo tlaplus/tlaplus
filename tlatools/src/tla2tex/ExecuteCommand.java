@@ -13,11 +13,15 @@
 package tla2tex ;
 
 public class ExecuteCommand
-{ public static void ExecuteCommand(String cmd)
+{ public static void executeCommand(String cmd)
    {  int errorCode = -99;
       try { Runtime rt = Runtime.getRuntime() ;
             Process proc = null ;
-            proc = rt.exec(cmd);
+            if (Parameters.MetaDir.equals("")) {
+                proc = rt.exec(cmd);
+            } else {
+                proc = rt.exec(cmd, null, Parameters.ParentDir);                
+            }
             GobbleOutput outThread = new GobbleOutput(true, proc, cmd);
             outThread.start() ;
             GobbleOutput errThread = new GobbleOutput(false, proc, cmd);

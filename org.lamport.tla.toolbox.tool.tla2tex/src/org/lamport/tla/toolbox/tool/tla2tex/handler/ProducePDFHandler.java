@@ -39,7 +39,9 @@ public class ProducePDFHandler extends AbstractHandler
             if (fileToTranslate != null && ResourceHelper.isModule(fileToTranslate))
             {
                 System.out.println(fileToTranslate.getLocation().toOSString());
-                TLA.runTranslation(new String[] {fileToTranslate.getLocation().toOSString()});
+                TLA.runTranslation(new String[] { "-latexCommand", "pdflatex", "-latexOutputExt", "pdf", "-metadir",
+                        fileToTranslate.getProject().getLocation().toOSString(),
+                        fileToTranslate.getLocation().toOSString() });
             }
         }
 

@@ -104,6 +104,11 @@
 ***************************************************************************/
 package tla2tex;
 
+import java.io.File;
+import java.io.IOException;
+
+import util.FileUtil;
+
 public class TLA
 {
     static final String lastModified =
@@ -219,8 +224,11 @@ public class TLA
         LaTeXOutput.RunLaTeX(Parameters.LaTeXOutputFile);
         Finished("LaTeXOutput.RunLaTeX");
 
-        System.out.println("TLATeX dvi output written on " + Parameters.LaTeXOutputFile + ".dvi.");
-
+        System.out.println("TLATeX " + Parameters.LatexOutputExt + " output written on " + 
+                Parameters.LaTeXOutputFile + "." +
+                Parameters.LatexOutputExt +             
+                ((Parameters.MetaDir.equals("")) ? "" : ", from " + Parameters.MetaDir) + ".");
+        
         if (Parameters.PSOutput)
         {
             /******************************************************************
@@ -231,6 +239,21 @@ public class TLA
             Finished("MakePSFile");
             System.out.println("TLATeX Postscript (or pdf) output written on " + Parameters.LaTeXOutputFile
                     + ".ps (or " + Parameters.LaTeXOutputFile + ".pdf).");
+        }
+        if (! Parameters.MetaDir.equals("")) 
+        {
+            try
+            {
+                FileUtil.copyFile(LaTeXOutput.prependMetaDirToFileName(Parameters.LaTeXOutputFile + "."
+                        + Parameters.LatexOutputExt), Parameters.TLAInputFile.substring(0, Parameters.TLAInputFile
+                        .length()
+                        - "tla".length())
+                        + Parameters.LatexOutputExt);
+            } catch (IOException e)
+            {
+                Debug.ReportError("Trying to copy output from metadir produced the error:\n" + e.getMessage());
+            }
+
         }
         Debug.printElapsedTime(startTime, "Total execution time:");
     } // END main
@@ -518,6 +541,29 @@ public class TLA
                     CommandLineError("-voffset value of " + Parameters.LaTeXvoffset + " points is implausible");
                 }
                 ;
+            } else if (option.equals("-metadir"))
+            {
+                nextArg = nextArg + 1;
+                if (nextArg >= args.length)
+                {
+                    CommandLineError("No input file specified");
+                }
+                ;
+                Parameters.MetaDir = args[nextArg];
+                Parameters.ParentDir = new File(Parameters.MetaDir);
+                if (! Parameters.ParentDir.exists()) {
+                  CommandLineError("Specified metdir " + Parameters.MetaDir + 
+                          " does not exist.");
+                }
+            } else if (option.equals("-latexOutputExt"))
+            {
+                nextArg = nextArg + 1;
+                if (nextArg >= args.length)
+                {
+                    CommandLineError("No input file specified");
+                }
+                
+                Parameters.LatexOutputExt = args[nextArg];
             } else
             {
                 CommandLineError("Unknown option: " + option);
@@ -706,7 +752,7 @@ public class TLA
     private static void MakePSFile()
     {
         String Command = Parameters.PSCommand + " " + Parameters.LaTeXOutputFile + ".dvi";
-        ExecuteCommand.ExecuteCommand(Command);
+        ExecuteCommand.executeCommand(Command);
         /*******************************************************************
         * Modified on 11 November 2001 to call ExecuteCommand.             *
         *******************************************************************/

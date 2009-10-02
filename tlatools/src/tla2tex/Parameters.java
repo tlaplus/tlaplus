@@ -8,6 +8,8 @@
 ***************************************************************************/
 package tla2tex;
 
+import java.io.File;
+
 public final class Parameters
 { 
 
@@ -143,11 +145,16 @@ public final class Parameters
     * TLA.GetArguments.                                                    *
     ***********************************************************************/
 
+  public static String MetaDir = "" ;
+
+  public static String LatexOutputExt = "dvi" ;
 
   /*************************************************************************
   * Parameters Related to TLATeX's LaTeX-Source Input                      *
   *************************************************************************/
 
+  public static File ParentDir = null ;
+  
   public final static int MaxOutputLineLength = 78  ;
     /***********************************************************************
     * The maximum number of characters in a line of the LaTeX input files  *
