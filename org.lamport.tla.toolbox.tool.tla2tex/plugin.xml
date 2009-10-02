@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            locationURI="menu:toolbox.file.menu?after=toolbox.file.module.separator">
+         <command
+               commandId="toolbox.command.tla2tex.producePDF"
+               label="Produce PDF Version"
+               style="push">
+         </command>
+      </menuContribution>
+   </extension>
+   <extension
+         point="org.eclipse.ui.commands">
+      <command
+            categoryId="toolbox.command.category.module"
+            description="Produce PDF Version of selected module"
+            id="toolbox.command.tla2tex.producePDF"
+            name="Produce PDF Version">
+      </command>
+   </extension>
+   <extension
+         point="org.eclipse.ui.handlers">
+      <handler
+            class="org.lamport.tla.toolbox.tool.tla2tex.handler.ProducePDFHandler"
+            commandId="toolbox.command.tla2tex.producePDF">
+      </handler>
+   </extension>
+
+</plugin>

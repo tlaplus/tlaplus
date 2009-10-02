@@ -1,0 +1,11 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: TLA+ Toolbox TLA2TeX
+Bundle-SymbolicName: org.lamport.tla.toolbox.tool.tla2tex;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Bundle-Activator: org.lamport.tla.toolbox.tool.tla2tex.Activator
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.core.runtime
+Bundle-ActivationPolicy: lazy
+Bundle-RequiredExecutionEnvironment: J2SE-1.4
+Bundle-Vendor: Daniel Ricketts
