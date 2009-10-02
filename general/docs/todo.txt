@@ -143,4 +143,7 @@
         
 25. Mode toolbox gets into when you have to open a spec twice to get something other
     than a blank editor window.
+    
+26. Each time the user closes and reopens the toolbox when there are errors from TLC, the number of errors increases
+    each time by the number of actual TLC errors on the model.
         
