@@ -95,6 +95,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.util.Vector;
 
+import util.ToolIO;
+
 class TeX
  {                                            // BEGIN class
 
@@ -118,7 +120,7 @@ class TeX
       * Get the command-line arguments.                                    *
       *********************************************************************/
       long startTime = Debug.now();
-      System.out.println(version) ;
+      ToolIO.out.println(version) ;
       GetArguments(args);
 
       /*********************************************************************
@@ -315,7 +317,7 @@ class TeX
              }
             else
              { if (envNum == lineWidths.length)
-                 { System.out.println(
+                 { ToolIO.out.println(
                       "More tla environments than the last time file\n"
                     + "    run through LaTeX");
                  }
@@ -354,7 +356,7 @@ class TeX
             }
           }                                  // END while (line != null)
         if (envNum < lineWidths.length)
-           { System.out.println(
+           { ToolIO.out.println(
                "Fewer tla environments than the last time file\n"
                     + "    run through LaTeX");
            };
@@ -520,7 +522,7 @@ class TeX
          { Parameters.LaTeXOutputFile = 
              RemoveExtension(RemovePathPrefix(Parameters.TLAInputFile));
            if (HasPathPrefix(Parameters.TLAInputFile))
-             System.out.println(
+             ToolIO.out.println(
               "Warning: Output file being written to a different directory\n"
             + "         than input file.");
          } ;
@@ -595,10 +597,10 @@ class TeX
       * Announce a command line error with the string indicating the       *
       * explanation, write the help message, and halt.                     *
       *********************************************************************/
-      { System.out.println("TLATeX command-line error: " + msg + ".");
-        System.out.println("Use -help option for more information.");
+      { ToolIO.out.println("TLATeX command-line error: " + msg + ".");
+        ToolIO.out.println("Use -help option for more information.");
         // OutputMessageFile(Parameters.HelpFile) ;
-        System.exit(-1);
+        throw new TLA2TexException();
       }
 
     private static void OutputMessageFile(String fileName)
@@ -608,7 +610,7 @@ class TeX
      { ResourceFileReader input = new ResourceFileReader(fileName) ;
        String line = input.getLine();
        while (line != null)
-         { System.out.println(line) ;
+         { ToolIO.out.println(line) ;
            line = input.getLine() ;
          } ;
       input.close();
@@ -622,7 +624,7 @@ class TeX
     private static void Starting(String name)
      { if (Parameters.Debug)
          { start = Debug.now() ;
-           System.out.println("Starting " + name);
+           ToolIO.out.println("Starting " + name);
          }
      }
     private static void Finished(String name)
@@ -667,7 +669,7 @@ class TeX
                     new FileReader(Parameters.LaTeXOutputFile + ".log"));
        }
       catch (Exception e)
-       { System.out.println(
+       { ToolIO.out.println(
                "No file " + Parameters.LaTeXOutputFile + ".log");
          return new float[0];
        }

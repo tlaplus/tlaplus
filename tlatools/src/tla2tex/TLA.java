@@ -108,6 +108,7 @@ import java.io.File;
 import java.io.IOException;
 
 import util.FileUtil;
+import util.ToolIO;
 
 public class TLA
 {
@@ -136,7 +137,7 @@ public class TLA
         * Get the command-line arguments.                                    *
         *********************************************************************/
         long startTime = Debug.now();
-        System.out.println(version);
+        ToolIO.out.println(version);
         GetArguments(args);
 
         /*********************************************************************
@@ -191,7 +192,7 @@ public class TLA
         if (Parameters.TLAOut)
         {
             WriteTLAFile.Write(spec, Parameters.TLAOutFile);
-            System.out.println("Wrote -tlaOut file " + Parameters.TLAOutFile);
+            ToolIO.out.println("Wrote -tlaOut file " + Parameters.TLAOutFile);
         }
         ;
 
@@ -224,7 +225,7 @@ public class TLA
         LaTeXOutput.RunLaTeX(Parameters.LaTeXOutputFile);
         Finished("LaTeXOutput.RunLaTeX");
 
-        System.out.println("TLATeX " + Parameters.LatexOutputExt + " output written on " + 
+        ToolIO.out.println("TLATeX " + Parameters.LatexOutputExt + " output written on " + 
                 Parameters.LaTeXOutputFile + "." +
                 Parameters.LatexOutputExt +             
                 ((Parameters.MetaDir.equals("")) ? "" : ", from " + Parameters.MetaDir) + ".");
@@ -237,7 +238,7 @@ public class TLA
             Starting("MakePSFile");
             MakePSFile();
             Finished("MakePSFile");
-            System.out.println("TLATeX Postscript (or pdf) output written on " + Parameters.LaTeXOutputFile
+            ToolIO.out.println("TLATeX Postscript (or pdf) output written on " + Parameters.LaTeXOutputFile
                     + ".ps (or " + Parameters.LaTeXOutputFile + ".pdf).");
         }
         if (! Parameters.MetaDir.equals("")) 
@@ -705,10 +706,10 @@ public class TLA
     * explanation, write the help message, and halt.                     *
     *********************************************************************/
     {
-        System.out.println("TLATeX command-line error: " + msg + ".");
-        System.out.println("Use -help option for more information.");
+        ToolIO.out.println("TLATeX command-line error: " + msg + ".");
+        ToolIO.out.println("Use -help option for more information.");
         // OutputMessageFile(Parameters.HelpFile) ;
-        System.exit(-1);
+        throw new TLA2TexException();
     }
 
     private static void OutputMessageFile(String fileName)
@@ -720,7 +721,7 @@ public class TLA
         String line = input.getLine();
         while (line != null)
         {
-            System.out.println(line);
+            ToolIO.out.println(line);
             line = input.getLine();
         }
         ;
@@ -737,7 +738,7 @@ public class TLA
         if (Parameters.Debug)
         {
             start = Debug.now();
-            System.out.println("Starting " + name);
+            ToolIO.out.println("Starting " + name);
         }
     }
 

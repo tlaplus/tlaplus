@@ -11,17 +11,19 @@ package tla2tex;
 import java.util.Date;
 import java.util.Vector;
 
+import util.ToolIO;
+
 public class Debug
   { public static void ReportError(String msg)
       /*********************************************************************
       * This method is called to report an error and abort.                *
       *********************************************************************/
-      { System.out.println("");
-        System.out.println("TLATeX unrecoverable error:");
-        System.out.println("");
-        System.out.println(" -- " + msg + ".");
-        System.out.println("");
-        System.exit(-1);
+      { ToolIO.out.println("");
+        ToolIO.out.println("TLATeX unrecoverable error:");
+        ToolIO.out.println("");
+        ToolIO.out.println(" -- " + msg + ".");
+        ToolIO.out.println("");
+        throw new TLA2TexException();
       };
 
     public static void Assert(boolean val) 
@@ -42,13 +44,13 @@ public class Debug
       /*********************************************************************
       * This method is called to report a bug in the program and abort.    *
       *********************************************************************/
-      { System.out.println("");
-        System.out.println("You have discovered a bug in TLATeX.");
-        System.out.println("Send the following information and the");
-        System.out.println("input file to the current maintainer(s).");
-        System.out.println("");
-        System.out.println(" -- " + msg + ".");
-        System.out.println("");
+      { ToolIO.out.println("");
+        ToolIO.out.println("You have discovered a bug in TLATeX.");
+        ToolIO.out.println("Send the following information and the");
+        ToolIO.out.println("input file to the current maintainer(s).");
+        ToolIO.out.println("");
+        ToolIO.out.println(" -- " + msg + ".");
+        ToolIO.out.println("");
         throw new Error() ;
       };
 
@@ -59,19 +61,19 @@ public class Debug
       * argument, where name is the name of the array.                     *
       *********************************************************************/
       { if (array == null)
-          {System.out.println(name + " == null");
+          {ToolIO.out.println(name + " == null");
            return ;} ;
         int i = 0 ;
         while (i < array.length)
           { if (array[i] == null)
-              { System.out.println(name + "[" + i + "] = null") ;}
+              { ToolIO.out.println(name + "[" + i + "] = null") ;}
             else
-              { System.out.println(name + "[" + i + "] = " 
+              { ToolIO.out.println(name + "[" + i + "] = " 
                                         + array[i].toString()) ; }
             i = i+1;
           } ;
         if (array.length == 0)
-          {System.out.println(name + " = zero-length array" ); } ;
+          {ToolIO.out.println(name + " = zero-length array" ); } ;
       } ;
 
     public static void print2DArray(Object[][] array, String name)
@@ -80,22 +82,22 @@ public class Debug
       * argument, where name is the name of the array.                     *
       *********************************************************************/
       { if (array == null)
-          {System.out.println(name + " == null");
+          {ToolIO.out.println(name + " == null");
            return ;} ;
         int i = 0 ;
         while (i < array.length)
           { int j = 0 ;
             while (j < array[i].length)
-             { System.out.println(name + "[" + i + "][" + j + "] = " 
+             { ToolIO.out.println(name + "[" + i + "][" + j + "] = " 
                                      + array[i][j].toString()) ;
                j = j+1;
              };
             if (array[i].length == 0)
-              {System.out.println(name + "[" + i + "] = null" ); } ;
+              {ToolIO.out.println(name + "[" + i + "] = null" ); } ;
             i = i+1;
           } ;
         if (array.length == 0)
-          {System.out.println(name + " = zero-length array" ); } ;
+          {ToolIO.out.println(name + " = zero-length array" ); } ;
       } ;
 
     public static void printVector(Vector vec, String name)
@@ -104,19 +106,19 @@ public class Debug
       * argument, where name is the name of the vector.                    *
       *********************************************************************/
       { if (vec == null)
-          {System.out.println(name + " == null");
+          {ToolIO.out.println(name + " == null");
            return ;} ;
         int i = 0 ;
         while (i < vec.size())
           { if (vec.elementAt(i) == null)
-              { System.out.println(name + "[" + i + "] = null") ;}
+              { ToolIO.out.println(name + "[" + i + "] = null") ;}
             else
-              { System.out.println(name + "[" + i + "] = " 
+              { ToolIO.out.println(name + "[" + i + "] = " 
                                         + vec.elementAt(i).toString()) ; }
             i = i+1;
           } ;
         if (vec.size() == 0)
-          {System.out.println(name + " = zero-length vec" ); } ;
+          {ToolIO.out.println(name + " = zero-length vec" ); } ;
       } ;
 
     public static String pair(int i, int j)
@@ -129,7 +131,7 @@ public class Debug
       /*********************************************************************
       * Just prints "(i, j)".                                              *
       *********************************************************************/
-      { System.out.println(pair(i,j)); };
+      { ToolIO.out.println(pair(i,j)); };
 
     public static long now()
       /*********************************************************************
@@ -153,7 +155,7 @@ public class Debug
       * Print to stdout `msg' followed by the time interval diff, which    *
       * is assumed to be in milliseconds                                   *
       *********************************************************************/
-      { System.out.println(msg + " " + 
+      { ToolIO.out.println(msg + " " + 
           Misc.floatToString(((float)diff)/1000 , 2) + " seconds");
       } ;
   }

@@ -43,6 +43,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Vector;
 
+import util.ToolIO;
+
 
 public final class LaTeXOutput
 {   
@@ -1452,7 +1454,7 @@ protected static String prependMetaDirToFileName(String fileName) {
     if (! Parameters.MetaDir.equals("")) {
         outputFileName = Parameters.MetaDir + File.separator + outputFileName;
     }
-System.out.println("looking for file: " + outputFileName);
+ToolIO.out.println("looking for file: " + outputFileName);
     return outputFileName;
 }
 	
