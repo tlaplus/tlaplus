@@ -69,7 +69,7 @@ public class TLAEditor extends TextEditor
     private Image rootImage = TLAEditorActivator.imageDescriptorFromPlugin(TLAEditorActivator.PLUGIN_ID,
             "/icons/root_file.gif").createImage();
 
-    // currently installed annotations 
+    // currently installed annotations
     private Annotation[] oldAnnotations;
     // annotation model
     private ProjectionAnnotationModel annotationModel;
@@ -79,7 +79,10 @@ public class TLAEditor extends TextEditor
      */
     public TLAEditor()
     {
+
         super();
+        this.setPartName("Module Editor");
+
         // help id
         setHelpContextId("org.lamport.tla.toolbox.editor.basic.main_editor_window");
     }
@@ -115,6 +118,7 @@ public class TLAEditor extends TextEditor
      */
     public void init(IEditorSite site, IEditorInput input) throws PartInitException
     {
+
         super.init(site, input);
 
         // chain preference stores (our own, and the one for standard editor settings)
@@ -145,6 +149,7 @@ public class TLAEditor extends TextEditor
         // grab context service and activate the context on editor load
         this.contextService = (IContextService) getSite().getService(IContextService.class);
         this.contextActivation = contextService.activateContext("toolbox.contexts.cleaneditor");
+
     }
 
     /*
@@ -172,8 +177,9 @@ public class TLAEditor extends TextEditor
         projectionSupport.addSummarizableAnnotationType("org.eclipse.ui.workbench.texteditor.warning"); //$NON-NLS-1$
         projectionSupport.install();
         viewer.doOperation(ProjectionViewer.TOGGLE);
-        
-        this.annotationModel = viewer.getProjectionAnnotationModel(); 
+
+        this.annotationModel = viewer.getProjectionAnnotationModel();
+
     }
 
     /**
@@ -196,12 +202,12 @@ public class TLAEditor extends TextEditor
         setAction("ContentAssistTip", a); //$NON-NLS-1$
 
         // define folding region action
-/*      a = new DefineFoldingRegionAction(TLAEditorMessages.getResourceBundle(), "DefineFoldingRegion.", this); //$NON-NLS-1$
-        setAction("DefineFoldingRegion", a); //$NON-NLS-1$
-        markAsStateDependentAction("DefineFoldingRegion", true); //$NON-NLS-1$
-        markAsSelectionDependentAction("DefineFoldingRegion", true); //$NON-NLS-1$
-*/
-        
+        /*      a = new DefineFoldingRegionAction(TLAEditorMessages.getResourceBundle(), "DefineFoldingRegion.", this); //$NON-NLS-1$
+                setAction("DefineFoldingRegion", a); //$NON-NLS-1$
+                markAsStateDependentAction("DefineFoldingRegion", true); //$NON-NLS-1$
+                markAsSelectionDependentAction("DefineFoldingRegion", true); //$NON-NLS-1$
+        */
+
         // toggle comment
         a = new ToggleCommentAction(TLAEditorMessages.getResourceBundle(), "ToggleComment.", this); //$NON-NLS-1$
         a.setActionDefinitionId(TLAEditorActivator.PLUGIN_ID + ".ToggleCommentAction");
@@ -252,10 +258,10 @@ public class TLAEditor extends TextEditor
 
         IFile file = ((FileEditorInput) getEditorInput()).getFile();
         Shell shell = UIHelper.getShellProvider().getShell();
-        
+
         // TODO fix this?
         IPath specRootPrefix = new Path(ResourceHelper.getParentDirName(ToolboxHandle.getRootModule()));
-        
+
         FileDialog saveAsDialog = null;
         while (true)
         {

@@ -20,7 +20,7 @@ import org.lamport.tla.toolbox.util.UIHelper;
  */
 public class OpenSpecHandler extends AbstractHandler implements IHandler
 {
-    public static final String TLA_EDITOR_CURRENT = "org.lamport.tla.toolbox.editor.basic.TLAEditor";
+    public static final String TLA_EDITOR_CURRENT = "org.lamport.tla.toolbox.editor.basic.TLAEditorAndPDFViewer";
 
     public static final String TLA_EDITOR = TLA_EDITOR_CURRENT;
     public static final String COMMAND_ID = "toolbox.command.spec.open";
@@ -54,7 +54,7 @@ public class OpenSpecHandler extends AbstractHandler implements IHandler
 
         // store information about opened spec in the spec manager
         Activator.getSpecManager().setSpecLoaded(spec);
-        
+
         // open the editor
         UIHelper.openEditor(TLA_EDITOR, new FileEditorInput(spec.getRootFile()));
 

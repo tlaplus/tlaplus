@@ -26,6 +26,14 @@
       <handler
             class="org.lamport.tla.toolbox.tool.tla2tex.handler.ProducePDFHandler"
             commandId="toolbox.command.tla2tex.producePDF">
+         <activeWhen>
+            <with
+                  variable="activeEditorId">
+               <equals
+                     value="org.lamport.tla.toolbox.editor.basic.TLAEditorAndPDFViewer">
+               </equals>
+            </with>
+         </activeWhen>
       </handler>
    </extension>
 

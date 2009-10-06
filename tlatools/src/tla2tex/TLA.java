@@ -709,7 +709,7 @@ public class TLA
         ToolIO.out.println("TLATeX command-line error: " + msg + ".");
         ToolIO.out.println("Use -help option for more information.");
         // OutputMessageFile(Parameters.HelpFile) ;
-        throw new TLA2TexException();
+        throw new TLA2TexException("TLATeX command-line error: " + msg + "." + "Use -help option for more information.");
     }
 
     private static void OutputMessageFile(String fileName)

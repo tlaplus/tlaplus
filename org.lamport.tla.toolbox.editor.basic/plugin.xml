@@ -11,6 +11,13 @@
             contributorClass="org.lamport.tla.toolbox.editor.basic.TLAEditorActionContributor"
             class="org.lamport.tla.toolbox.editor.basic.TLAEditor">
       </editor>
+      <editor
+            class="org.lamport.tla.toolbox.editor.basic.TLAEditorAndPDFViewer"
+            default="false"
+            extensions="pdf, tla"
+            id="org.lamport.tla.toolbox.editor.basic.TLAEditorAndPDFViewer"
+            name="TLA Editor And PDF Viewer">
+      </editor>
    </extension>
  <extension
        id="org.lamport.tla.toolbox.editor.basic.DocumentSetup"

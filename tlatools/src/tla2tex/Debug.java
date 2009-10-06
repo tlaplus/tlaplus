@@ -23,7 +23,7 @@ public class Debug
         ToolIO.out.println("");
         ToolIO.out.println(" -- " + msg + ".");
         ToolIO.out.println("");
-        throw new TLA2TexException();
+        throw new TLA2TexException("TLATeX unrecoverable error:" + " -- " + msg + ".");
       };
 
     public static void Assert(boolean val) 

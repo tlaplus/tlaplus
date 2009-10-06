@@ -6,9 +6,11 @@ Bundle-Version: 1.0.0.qualifier
 Bundle-Activator: org.lamport.tla.toolbox.tool.tla2tex.Activator
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
- org.lamport.tla.toolbox;bundle-version="1.0.0"
+ org.lamport.tla.toolbox;bundle-version="1.0.0",
+ org.lamport.tla.toolbox.editor.basic;bundle-version="1.0.0"
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: J2SE-1.4
 Bundle-Vendor: Daniel Ricketts
 Import-Package: org.eclipse.core.resources,
- org.eclipse.ui
+ org.eclipse.ui,
+ org.eclipse.ui.forms.editor
