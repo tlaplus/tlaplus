@@ -40,7 +40,11 @@ public class TLAEditorAndPDFViewer extends FormEditor
         try
         {
             tlaEditor = new TLAEditor();
-            addPage(tlaEditor, tlaEditorInput);
+
+            int tlaEditorIndex = 0;
+
+            addPage(tlaEditorIndex, tlaEditor, tlaEditorInput);
+            setPageText(tlaEditorIndex, "TLA Module");
 
             setContentDescription(tlaEditor.getContentDescription());
 

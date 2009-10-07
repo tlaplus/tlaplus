@@ -467,24 +467,6 @@
                </with>
             </visibleWhen>
          </command>
-         <command
-               commandId="toolbox.command.module.translate.active"
-               icon="icons/full/obj16/start_ccs_task.gif"
-               id="toolbox.menu.run.translate"
-               label="Translate PlusCal to TLA+"
-               mnemonic="t">
-            <visibleWhen
-                  checkEnabled="true">
-               <with
-                     variable="activeWorkbenchWindow.activePerspective">
-                  <not>
-                     <equals
-                           value="org.lamport.tla.toolbox.ui.perspective.initial">
-                     </equals>
-                  </not>
-               </with>
-            </visibleWhen>
-         </command>
          <!-- disable module properties -->
          <!-- command
                commandId="toolbox.command.module.props"
@@ -719,6 +701,27 @@
                </visibleWhen>
             </control>
          </toolbar>
+      </menuContribution>
+      <menuContribution
+            locationURI="menu:toolbox.file.menu?after=toolbox.file.translation.separator">
+         <command
+               commandId="toolbox.command.module.translate.active"
+               icon="icons/full/obj16/start_ccs_task.gif"
+               id="toolbox.menu.run.translate"
+               label="Translate PlusCal to TLA+"
+               mnemonic="t">
+            <visibleWhen
+                  checkEnabled="true">
+               <with
+                     variable="activeWorkbenchWindow.activePerspective">
+                  <not>
+                     <equals
+                           value="org.lamport.tla.toolbox.ui.perspective.initial">
+                     </equals>
+                  </not>
+               </with>
+            </visibleWhen>
+         </command>
       </menuContribution>
    </extension>
    

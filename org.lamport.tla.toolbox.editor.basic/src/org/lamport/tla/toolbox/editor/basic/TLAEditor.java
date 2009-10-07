@@ -81,7 +81,6 @@ public class TLAEditor extends TextEditor
     {
 
         super();
-        this.setPartName("Module Editor");
 
         // help id
         setHelpContextId("org.lamport.tla.toolbox.editor.basic.main_editor_window");

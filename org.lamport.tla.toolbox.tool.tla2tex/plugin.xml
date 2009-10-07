@@ -4,7 +4,7 @@
    <extension
          point="org.eclipse.ui.menus">
       <menuContribution
-            locationURI="menu:toolbox.file.menu?after=toolbox.file.module.separator">
+            locationURI="menu:toolbox.file.menu?after=toolbox.file.translation.separator">
          <command
                commandId="toolbox.command.tla2tex.producePDF"
                label="Produce PDF Version"
@@ -35,6 +35,21 @@
             </with>
          </activeWhen>
       </handler>
+   </extension>
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            category="toolbox.ui.preferences.GeneralPreferencePage"
+            class="org.lamport.tla.toolbox.tool.tla2tex.preference.TLA2TeXPreferencePage"
+            id="toolbox.tool.tla2tex.preference.TLA2TeXPreferencePage"
+            name="TLA2TeX Preferences">
+      </page>
+   </extension>
+   <extension
+         point="org.eclipse.core.runtime.preferences">
+      <initializer
+            class="org.lamport.tla.toolbox.tool.tla2tex.preference.TLA2TeXPreferenceInitializer">
+      </initializer>
    </extension>
 
 </plugin>

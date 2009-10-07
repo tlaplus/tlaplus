@@ -62,13 +62,13 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
 
         saveAction = ActionFactory.SAVE.create(window);
         register(saveAction);
-        
+
         saveAsAction = ActionFactory.SAVE_AS.create(window);
         register(saveAsAction);
-        
+
         preferencesAction = ActionFactory.PREFERENCES.create(window);
         register(preferencesAction);
-        
+
         /*
         newEditorAction = ActionFactory.NEW_EDITOR.create(window);
         register(newEditorAction);
@@ -78,10 +78,10 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         newWindowAction.setText("New Toolbox window");
         register(newWindowAction);
         */
-        
+
         resetPerspectiveAction = ActionFactory.RESET_PERSPECTIVE.create(window);
         register(resetPerspectiveAction);
-        
+
     }
 
     /* (non-Javadoc)
@@ -94,11 +94,13 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         fileMenu.add(new Separator("toolbox.file.spec.separator"));
         // place holder for module actions
         fileMenu.add(new Separator("toolbox.file.module.separator"));
-        
+        // place holder for translation items
+        fileMenu.add(new Separator("toolbox.file.translation.separator"));
+
+        fileMenu.add(new Separator("toolbox.file.save.separator"));
         fileMenu.add(saveAction);
         fileMenu.add(saveAsAction);
         // place all save actions here
-        fileMenu.add(new Separator("toolbox.file.save.separator"));
 
         // place holder for other actions
         fileMenu.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
@@ -107,18 +109,17 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         fileMenu.add(quitAction);
 
         MenuManager windowMenu = new MenuManager("&Window", "toolbox.window.menu");
-        
+
         windowMenu.add(new Separator("toolbox.window.open.separator"));
 
         // don't need to add
         // windowMenu.add(resetPerspectiveAction);
-        
+
         windowMenu.add(new Separator());
         windowMenu.add(new Separator("toolbox.window.tools.separator"));
         windowMenu.add(new Separator());
         windowMenu.add(new Separator("toolbox.window.view.separator"));
         windowMenu.add(new Separator());
-        
 
         /*
         MenuManager helpMenu = new MenuManager("&Help", IWorkbenchActionConstants.M_HELP);

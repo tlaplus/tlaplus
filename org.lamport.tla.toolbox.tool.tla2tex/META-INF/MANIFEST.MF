@@ -3,7 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: TLA+ Toolbox TLA2TeX
 Bundle-SymbolicName: org.lamport.tla.toolbox.tool.tla2tex;singleton:=true
 Bundle-Version: 1.0.0.qualifier
-Bundle-Activator: org.lamport.tla.toolbox.tool.tla2tex.Activator
+Bundle-Activator: org.lamport.tla.toolbox.tool.tla2tex.TLA2TeXActivator
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.lamport.tla.toolbox;bundle-version="1.0.0",
