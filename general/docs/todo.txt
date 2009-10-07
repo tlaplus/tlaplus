@@ -41,7 +41,7 @@
    the run completes if and only if that run did not take too long--where "too long" is
    a user-settable preference. 
    
-6. IMPORTANT MISSING FEATURE
+6. MISSING FEATURE -- SEEMS NOW TO BE IMPLEMENTED (7 Oct 2009)
    Checkpoint restoration is not implemented.
 
 7. TLC BUG
