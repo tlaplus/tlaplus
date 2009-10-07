@@ -1,19 +1,24 @@
-1. Add way to tell if spec on which a model was last run is the same as the current
+1. NEW FEATURE
+   Add way to tell if spec on which a model was last run is the same as the current
    spec.
    
-2. For some reason, the toolbox didn't seem to notice when the Additional Definitions 
+2. BUG - SEEMS TO HAVE BEEN FIXED (7 Oct 2009)
+   For some reason, the toolbox didn't seem to notice when the Additional Definitions 
    fields was changed.  Even though the editor's tab had a star next to it, trying to
    save the model did nothing, and hitting the launch button produced an MC.tla file 
    with an obsolete version of the field.  I had to type something into the field
    to make the toolbox notice the change and allow me to save the model.
    
-3. The toolbox doesn't parse the TLC output correctly in simulation mode.  In particular,
+3. BUG
+   The toolbox doesn't parse the TLC output correctly in simulation mode.  In particular,
    it didn't notice that an invariant had been violated and didn't raise the error
    window.
    
-4. The progress information is not being displayed.
+4. BUG
+   The progress information is not being displayed.
    
-5. If the user adds or removes a declared CONSTANT from the spec while a model is
+5. NEW FEATURE
+   If the user adds or removes a declared CONSTANT from the spec while a model is
    being run by TLC, that changes the model.  For example, if the spec is run with
    a constant N instantiated with 42 and N is removed from the spec, then the N <- 42
    disappears from the model and the user has no way of telling what N was instantiated
@@ -36,24 +41,30 @@
    the run completes if and only if that run did not take too long--where "too long" is
    a user-settable preference. 
    
-6. Checkpoint restoration is not implemented.
+6. IMPORTANT MISSING FEATURE
+   Checkpoint restoration is not implemented.
 
-7. Coverage is not working, coverage information being displayed only after a run 
+7. TLC BUG
+   Coverage is not working, coverage information being displayed only after a run 
    completes.  The bug is in TLC, which isn't printing the coverage information. 
    
-8. A definition override of an operator with no arguments should include the
+8. IMPORTANT MISSING FEATURE
+   A definition override of an operator with no arguments should include the
    option of making it a model value.  (This is not a show-stopper because the
    user can replace it by a model value that he declares in the model-value
    section.)
    
-9. There is no reason why the user cannot use the same model value in two
+9. MINOR MISSING FEATURES
+   a. There is no reason why the user cannot use the same model value in two
    different constant instantiations or in a constant instantiation and a 
-   definition override.  This is not a show-stopper because it now works
-   if the user uses all but one instance of the model value as an ordinary value.
+   definition override.  Or uses a model value declared on the advanced
+   page as a model value in a constant instantiation.  This requires
+   checking that a model value is declared elsewhere before adding a
+   CONSTANT declaration for it.  
    
-   The correct order in which things should be written in the MC file are:
-       - Declaration of advanced model values and sets of model values that
-         instantiate constants.
+   b. The correct order in which things should be written in the MC file are:
+       - Declaration of advanced model values.
+       - Declaration of the sets of model values that instantiate constants.
        - New User Definitions.
        - Everything Else, which is all of the form 
          newId_1234567 == some expression.
@@ -61,30 +72,35 @@
    this, and the current validator will disallow the models that this order
    is designed to allow.  
    
-10. If I close the TLC Error window, there is no way to re-open it.  Imagine someone 
+10. NOT A PROBLEM
+    If I close the TLC Error window, there is no way to re-open it.  Imagine someone 
     accidentally doing that on an error window with a trace produced by a 2-week run.  
     The data isn't lost because it's regenerated if the model is closed and reopened,
     but the user is unlikely to realize that and will probably just curse the
     toolbox and relaunch TLC.
     
-11. The Parsing Error item on the Window menu should be disabled when there is no parsing
-    error.
+11. MINOR BUG
+    The Parsing Error item on the Window menu should be disabled when there is no 
+    parsing error.
     
-12. When the spec is reparsed after a parsing error when the Parsing Error window
+12. MINOR BUG
+    When the spec is reparsed after a parsing error, the Parsing Error window
     is displayed, and no errors are found, the Parsing Error Window continues to
     contain the previous error.  It has to be closed to make that error disappear.
     
-13. Minor feature problem.  Suppose the user starts to write a PlusCal algorithm,
+13. I DON'T KNOW WHAT THIS WAS SUPPOSED TO MEAN
+    Suppose the user starts to write a PlusCal algorithm,
     translates it and gets a PlusCal error, and then decides to delete the PlusCal
     code and just write the spec in TLA+.  There's no way for him to get rid of
     the PlusCal 
     
-14. ***** MUST FIX BEFORE RELEASE *****
+14. SHOW-STOPPER SANY BUG
     SANY2 does not correctly parse an expression containing a "<" immediately followed
     by a number.  This is undoubtedly a lexing error, the lexer thinking that
     it is finding the beginning of a proof-step number.
        
-15. LL fixed some null-pointer exceptions that were getting thrown when the user tried to
+15. SEEMS TO HAVE BEEN FIXED, BUT NEEDS SOME FURTHER THOUGHT (7 Oct 2009)
+    LL fixed some null-pointer exceptions that were getting thrown when the user tried to
     edit or save a model when the spec was unparsed.  This left it in a state in which
     trying to save the model when the spec is unparsed does nothing.  This is probably
     not good because the user might want to save changes he's made to the model before
@@ -92,24 +108,27 @@
     should be able to do to the model when the spec is unparsed; and see that anything he
     shouldn't be able to do is disabled and that anything he should be able to do works.
     
-16. There is no Save Model menu item.  There should be one on the TLC Model Checker menu.
+16. NOT A PROBLEM
+    There is no Save Model menu item.  There should be one on the TLC Model Checker menu.
 
-17. The Definitions Override menu allows the user to override the same definition multiple
+17. MINOR BUG
+    The Definitions Override menu allows the user to override the same definition multiple
     times.
     
-18. Performance problem: Run separately, it takes SANY 4 seconds to parse the farsite
-    spec.  It takes the toolbox 20 seconds.  What's it doing for those extra 16 seconds?
+18. BUG
+    For a big spec--in particular, for the farsite spec, after Parse the parse spec
+    command gets disabled.  But parse module file still works.  Simon thinks it may be
+    that the build infrastructure of Eclipse is deactivating builders under some
+    conditions--for example, if a builder dies with an exception, it is deactivated.
+    Perhaps it's also deactivated on a time-out.  The list of builders is attached to the
+    project, so one can query the project or the project nature to find this out.  So,
+    Simon assumes that for some reason, the builder is deactivated.
+
+    The parser is being launched in a separate thread, but Simon thinks
+    that perhaps he's not doing it in the right way.
     
-    This turned out not to be a performance problem.  For a big spec, after Parse the parse spec
-    command gets disabled.  But parse module file still works.  Simon thinks it may be that
-    the build infrastructure of Eclipse is deactivating builders under some conditions--for example,
-    if a builder dies with an exception, it is deactivated.  Perhaps it's also deactivated on a time-out.
-    The list of builders is attached to the project, so one can query the project or the project
-    nature to find this out.  So, Simon assumes that for some reason, the builder is deactivated.
-    The parser is being launched in a separate thread, but Simon thinks that perhaps he's not doing
-    it in the right way.
-    
-19. Closing the toolbox simply kills any running TLC.  Instead, 
+19. MINOR MISSING FEATURE
+    Closing the toolbox simply kills any running TLC.  Instead, 
     it should warn the user that this will kill TLC and give him
     the option of canceling.  To do this, need to modify to 
     CloseSpecHandler.execute() so it checks if editors have been closed
@@ -119,31 +138,41 @@
     this one when TLC is running, and having that handler call the 
     current one only if the user says it's OK to stop TLC.
     
-20. PlusCal translation needs to be examined.  For example, preferences are currently no-ops.
+20. BUG 
+    PlusCal translation needs to be examined.  For example, preferences are currently
+    no-ops.
     
-21. Need to filter Preferences to eliminate things the user doesn't want
+21. TUNING NEEDED BEFORE RELEASE
+    Need to filter Preferences to eliminate things the user doesn't want
     to see.
     
-22. The rename spec command doesn't do the right thing if a spec by
+22. BUG
+    The rename spec command doesn't do the right thing if a spec by
     that name already exists.
     
-23. Need to reverse the order of "additional definitions" and definitions of constant replacements in
-    the MC file.  This requires reversing the order of the "add constants and model values"
-    and the "new definitions" code around line 330 of TLCModelLaunchDelegate.java.  This will allow
-    the new definitions to be used in the constant replacement formulas.
+23. SAME AS 9
         
-24. Definition override validator is not allowing the re-use of definition parameters.  For example, if
-    you override
+24. BUG FIXED ON 1 OCT 2009 by Simon
+    Definition override validator is not allowing the re-use of definition parameters.  
+    For example, if you override
     
         foo(a) <- <<a>>
         bar(a) <- {a}
      
-     the validator complains about the use of the parameter a in the definition of bar.  It shouldn't.
-     FIXED ON 1 OCT 2009 by Simon
+    the validator complains about the use of the parameter a in the definition of 
+    bar.  It shouldn't.
+     
         
-25. Mode toolbox gets into when you have to open a spec twice to get something other
-    than a blank editor window.
+25. BUG THAT MAY HAVE DISAPPEARED 
+    The toolbox would get into a mode such that you have to open a spec twice to get 
+    something other than a blank editor window.  As of 7 Oct 2009, this hadn't 
+    happened in a couple of weeks, so some other change may have fixed it.
     
-26. Each time the user closes and reopens the toolbox when there are errors from TLC, the number of errors increases
-    each time by the number of actual TLC errors on the model.
-        
+26. BUG (not sure if this is still present)
+    Each time the user closes and reopens the toolbox when there are errors from TLC, 
+    the number of errors increases each time by the number of actual TLC errors on 
+    the model.
+    
+27. SHOW-STOPPER BUG  (7 Oct 2009)
+    The toolbox no longer detects that TLC has reported an error.
+    
