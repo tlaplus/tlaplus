@@ -94,7 +94,7 @@
     code and just write the spec in TLA+.  There's no way for him to get rid of
     the PlusCal 
     
-14. SHOW-STOPPER SANY BUG
+14. SHOW-STOPPER SANY BUG - FIXED 7 October 2009
     SANY2 does not correctly parse an expression containing a "<" immediately followed
     by a number.  This is undoubtedly a lexing error, the lexer thinking that
     it is finding the beginning of a proof-step number.
