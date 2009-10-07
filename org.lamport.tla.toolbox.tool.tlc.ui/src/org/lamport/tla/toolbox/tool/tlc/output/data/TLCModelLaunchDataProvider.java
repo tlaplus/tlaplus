@@ -400,7 +400,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                                 // some attributes are lists
                                 if (ModelHelper.isListAttribute(attributeName))
                                 {
-                                    List attributeValue = (ArrayList) config.getAttribute(attributeName,
+                                    List attributeValue = (List) config.getAttribute(attributeName,
                                             new ArrayList());
                                     int attributeNumber = (attributeIndex != null) ? attributeIndex.intValue() : 0;
 
