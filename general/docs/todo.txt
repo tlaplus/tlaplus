@@ -163,7 +163,7 @@
     bar.  It shouldn't.
      
         
-25. BUG THAT MAY HAVE DISAPPEARED 
+25. SIGNIFICANT BUG 
     The toolbox would get into a mode such that you have to open a spec twice to get 
     something other than a blank editor window.  As of 7 Oct 2009, this hadn't 
     happened in a couple of weeks, so some other change may have fixed it.

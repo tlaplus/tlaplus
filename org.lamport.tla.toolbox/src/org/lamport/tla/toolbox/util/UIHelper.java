@@ -241,7 +241,9 @@ public class UIHelper
             if (InitialPerspective.ID.equals(perspectiveId) && workbench.getIntroManager().hasIntro())
             {
                 page.resetPerspective();
-                workbench.getIntroManager().showIntro(window, false);
+                // We are no longer showing the Intro view.  The following will probably
+                // be replaced by something that shows the view we want.  09 Oct 2009
+                //workbench.getIntroManager().showIntro(window, false);
             }
 
             return page;
