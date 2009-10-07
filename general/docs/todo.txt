@@ -172,7 +172,3 @@
     Each time the user closes and reopens the toolbox when there are errors from TLC, 
     the number of errors increases each time by the number of actual TLC errors on 
     the model.
-    
-27. SHOW-STOPPER BUG  (7 Oct 2009)
-    The toolbox no longer detects that TLC has reported an error.
-    
