@@ -30,7 +30,9 @@ public interface EC
     public static final int CHECK_PARAM_TOO_MANY_INPUT_FILES = 3114;
 
     
-    public final static int SANY_PARSER_CHECK = 4000;
+    public final static int SANY_PARSER_CHECK_1 = 4000;
+    public final static int SANY_PARSER_CHECK_2 = 4001;
+    public final static int SANY_PARSER_CHECK_3 = 4002;
 
     public static final int UNKNOWN = -1;  // TODO remove all these
     public final static int UNIT_TEST = -123456;

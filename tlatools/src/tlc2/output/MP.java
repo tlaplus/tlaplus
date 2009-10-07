@@ -625,8 +625,16 @@ public class MP
             b.append("DiskFPSet.mergeNewEntries: %1% is already on disk.\n");
             break;
 
-        case EC.SANY_PARSER_CHECK:
-            b.append("TLA+ Parser sanity check");
+        case EC.SANY_PARSER_CHECK_1:
+            b.append("TLA+ Parser sanity check.");
+            break;
+
+        case EC.SANY_PARSER_CHECK_2:
+            b.append("TLA+ Parser check: Assertion error in epa().");
+            break;
+
+        case EC.SANY_PARSER_CHECK_3:
+            b.append("TLA+ Parser check: Assertion error in SBracketCases().");
             break;
 
         case EC.TLC_ARGUMENT_MISMATCH:
