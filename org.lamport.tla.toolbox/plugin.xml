@@ -51,7 +51,7 @@
       </perspectiveExtension>
       <perspectiveExtension
             targetID="org.lamport.tla.toolbox.ui.perspective.initial">
-         <view
+         <!-- view  We are no longer showing the intro view
                closeable="false"
                id="org.eclipse.ui.internal.introview"
                minimized="false"
@@ -62,7 +62,7 @@
                showTitle="true"
                standalone="true"
                visible="true">
-         </view>
+         </view -->
          <view
                closeable="false"
                id="toolbox.view.ToolboxExplorer"
