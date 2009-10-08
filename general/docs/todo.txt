@@ -138,7 +138,7 @@
     this one when TLC is running, and having that handler call the 
     current one only if the user says it's OK to stop TLC.
     
-20. BUG 
+20. BUG  -- THIS SEEMS TO BE FIXED NOW (8 Oct 2009)
     PlusCal translation needs to be examined.  For example, preferences are currently
     no-ops.
     
@@ -172,3 +172,24 @@
     Each time the user closes and reopens the toolbox when there are errors from TLC, 
     the number of errors increases each time by the number of actual TLC errors on 
     the model.
+
+27. MINOR BUG
+    If I select Parse spec from the file menu when the file is dirty,
+    a popup asks me if I want to save the resource.  If I say yes, it 
+    doesn't save the file and parses the spec that's on disk.  If I 
+    select Parse Module from the file menu when the module is dirty,
+    it doesn't ask me if I want to save it.  I expect it should.
+     
+28. MINOR BUG
+    If I select window / reset window layout in the Welcome Perspective,
+    it produces a blank window instead of the Welcome View.
+    
+29. FEATURE
+    Here are some thoughts on enhancements to the Module Editor.
+    - Add a preference to choose an Emacs-like keybinding.  This requires
+      adding new commands that appear in the General/Editors/Keys, and
+      options that choose from among sets of bindings.
+    - Add editing commands (and invent bindings) for comments.  Perhaps
+      copy the commands I use for boxing comments.
+    Note that Simon has bound toggle comments to Control-/, but
+        

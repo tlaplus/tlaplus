@@ -2,8 +2,17 @@
 <?NLS TYPE="org.eclipse.help.toc"?>
 
 <toc label="TLA+ Toolbox User Guide" topic="html/toc.html">
-   <topic label="Getting Started">
-      <anchor id="gettingstarted"/>
+   <topic href="html/gettingstarted/main.html" label="Getting Started">
+ <!--     <anchor id="gettingstarted"/> -->
+     <topic label="Using Help" 
+            href = "html/gettingstarted/help.html">
+        <topic label="A Subtopic" 
+               href = "html/gettingstarted/subtopic.html">
+        </topic>
+     </topic>
+      <topic label="ManagingViews" 
+            href = "html/gettingstarted/views.html">
+     </topic>
    </topic>
    <topic label="Concepts">
       <anchor id="concepts"/>
