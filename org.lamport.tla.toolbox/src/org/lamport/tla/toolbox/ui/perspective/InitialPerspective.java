@@ -16,5 +16,6 @@ public class InitialPerspective implements IPerspectiveFactory
 
     public void createInitialLayout(IPageLayout layout)
     {
+        layout.setEditorAreaVisible(false);
     }
 }

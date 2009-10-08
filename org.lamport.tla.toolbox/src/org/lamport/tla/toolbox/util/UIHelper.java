@@ -13,7 +13,6 @@ import org.eclipse.core.commands.common.NotDefinedException;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ISelection;
@@ -45,6 +44,7 @@ import org.eclipse.ui.part.FileEditorInput;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.ui.perspective.InitialPerspective;
 import org.lamport.tla.toolbox.ui.property.GenericSelectionProvider;
+import org.lamport.tla.toolbox.ui.view.ToolboxWelcomeView;
 
 /**
  * A Helper for handling the RCP Objects like windows, editors and views
@@ -241,9 +241,11 @@ public class UIHelper
             if (InitialPerspective.ID.equals(perspectiveId) && workbench.getIntroManager().hasIntro())
             {
                 page.resetPerspective();
-                // We are no longer showing the Intro view.  The following will probably
-                // be replaced by something that shows the view we want.  09 Oct 2009
-                //workbench.getIntroManager().showIntro(window, false);
+                // We are no longer showing the Intro view. The following will probably
+                // be replaced by something that shows the view we want. 09 Oct 2009
+                // workbench.getIntroManager().showIntro(window, false);
+                openView(ToolboxWelcomeView.ID);
+
             }
 
             return page;

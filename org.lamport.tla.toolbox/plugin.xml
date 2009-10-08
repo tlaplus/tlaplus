@@ -73,6 +73,17 @@
                showTitle="true"
                visible="false">
          </view>
+         <view
+               closeable="false"
+               id="toolbox.view.ToolboxWelcomeView"
+               minimized="false"
+               moveable="false"
+               ratio="1.0"
+               relationship="left"
+               showTitle="true"
+               standalone="true"
+               visible="true">
+         </view>
       </perspectiveExtension>
    </extension>
    
@@ -104,6 +115,12 @@
             id="org.lamport.tla.toolbox.category"
             name="TLA+ Toolbox">
       </category>
+      <view
+            class="org.lamport.tla.toolbox.ui.view.ToolboxWelcomeView"
+            id="toolbox.view.ToolboxWelcomeView"
+            name="Welcome View"
+            restorable="true">
+      </view>
    </extension>
       
 <!--                                   -->
