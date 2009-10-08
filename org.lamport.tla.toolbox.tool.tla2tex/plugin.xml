@@ -9,6 +9,17 @@
                commandId="toolbox.command.tla2tex.producePDF"
                label="Produce PDF Version"
                style="push">
+            <visibleWhen
+                  checkEnabled="true">
+               <with
+                     variable="activeWorkbenchWindow.activePerspective">
+                  <not>
+                     <equals
+                           value="org.lamport.tla.toolbox.ui.perspective.initial">
+                     </equals>
+                  </not>
+               </with>
+            </visibleWhen>
          </command>
       </menuContribution>
    </extension>
