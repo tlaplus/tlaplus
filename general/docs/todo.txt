@@ -233,6 +233,11 @@
     be re-examined and specified precisely, and then we need to make sure that
     the implementation does what it's supposed to.
 
-
+33. FEATURE (TLC error reporting)
+    When TLC returns an error stack trace, make clicking on the locations
+    highlight and go to those locations in the module.
+    
+34. FEATURE (Stack trace)
+    Make clicking on the action location highlight and go to that location.
         
         
