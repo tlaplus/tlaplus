@@ -322,6 +322,10 @@
                optional="false">
          </commandParameter>
       </command>
+      <command
+            id="toolbox.command.openParseErrorView"
+            name="Open Parse Errors view">
+      </command>
    </extension>
 <!-- 
  Key bindings
@@ -616,7 +620,7 @@
             </parameter>
          </command>
          <command
-               commandId="toolbox.command.openview"
+               commandId="toolbox.command.openParseErrorView"
                icon="icons/full/obj16/error_tsk.gif"
                id="toolbox.menu.open-problems"
                label="Parse Errors"
@@ -624,12 +628,8 @@
                mode="FORCE_TEXT"
                style="push"
                tooltip="Opens the view showing problems">
-            <parameter
-                  name="toolbox.openview.name"
-                  value="toolbox.view.ProblemView">
-            </parameter>
             <visibleWhen
-                  checkEnabled="true">
+                  checkEnabled="false">
                <with
                      variable="activeWorkbenchWindow.activePerspective">
                   <not>
@@ -884,6 +884,16 @@
             </with>
          </enabledWhen>
       </handler>
+      <handler
+            class="org.lamport.tla.toolbox.ui.handler.OpenParseErrorViewHandler"
+            commandId="toolbox.command.openParseErrorView">
+         <activeWhen>
+            <test
+                  forcePluginActivation="false"
+                  property="toolbox.property.hasParseErrors">
+            </test>
+         </activeWhen>
+      </handler>
    </extension>
    <extension
          point="org.eclipse.core.expressions.propertyTesters">
@@ -900,6 +910,13 @@
             namespace="toolbox.property"
             properties="isCurrentSpec"
             type="org.lamport.tla.toolbox.spec.Spec">
+      </propertyTester>
+      <propertyTester
+            class="org.lamport.tla.toolbox.ui.expression.ParseErrorTester"
+            id="toolbox.propertyTester.hasParseErrors"
+            namespace="toolbox.property"
+            properties="hasParseErrors"
+            type="java.lang.Object">
       </propertyTester>
    </extension>
    <extension

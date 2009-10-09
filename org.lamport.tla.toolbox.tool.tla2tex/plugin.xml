@@ -10,7 +10,7 @@
                label="Produce PDF Version"
                style="push">
             <visibleWhen
-                  checkEnabled="true">
+                  checkEnabled="false">
                <with
                      variable="activeWorkbenchWindow.activePerspective">
                   <not>

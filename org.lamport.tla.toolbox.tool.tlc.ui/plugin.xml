@@ -119,6 +119,10 @@
             id="org.lamport.tla.toolbox.tool.tlc.ui.command1"
             name="lets-create-a-command">
       </command>
+      <command
+            id="toolbox.tool.tlc.commands.open.tlc.errors"
+            name="Open TLC Error View">
+      </command>
    </extension>
    <extension
          point="org.eclipse.ui.menus">
@@ -200,7 +204,7 @@
             </visibleWhen>
          </command>
          <command
-               commandId="toolbox.command.openview"
+               commandId="toolbox.tool.tlc.commands.open.tlc.errors"
                icon="icons/full/errorwarning_tab.gif"
                id="toolbox.menu.open-tlc-errors"
                label="TLC Errors"
@@ -208,12 +212,8 @@
                mode="FORCE_TEXT"
                style="push"
                tooltip="Opens the view showing TLC errors">
-            <parameter
-                  name="toolbox.openview.name"
-                  value="toolbox.tool.tlc.view.TLCErrorView">
-            </parameter>
             <visibleWhen
-                  checkEnabled="true">
+                  checkEnabled="false">
                <with
                      variable="activeWorkbenchWindow.activePerspective">
                   <not>
@@ -224,7 +224,7 @@
                </with>
             </visibleWhen>
          </command>
-         <command
+         <!-- command
                commandId="org.lamport.tla.toolbox.tool.tlc.ui.command1"
                icon="icons/full/errorwarning_tab.gif"
                id="toolbox.menu.open-tlc-errors"
@@ -244,7 +244,7 @@
                   </not>
                </with>
             </visibleWhen>
-         </command>
+         </command -->
       </menuContribution>
    </extension>
    <extension
@@ -593,26 +593,26 @@ Console Facory
          <activeWhen>
             <with
                   variable="selection">
-                  <iterate
-                        ifEmpty="false"
-                        operator="and">
-                     <instanceof
-                           value="org.eclipse.debug.core.ILaunchConfiguration">
-                     </instanceof>
-                     <adapt
-                           type="org.eclipse.debug.core.ILaunchConfiguration">
-                        <and>
+               <iterate
+                     ifEmpty="false"
+                     operator="and">
+                  <instanceof
+                        value="org.eclipse.debug.core.ILaunchConfiguration">
+                  </instanceof>
+                  <adapt
+                        type="org.eclipse.debug.core.ILaunchConfiguration">
+                     <and>
+                        <reference
+                              definitionId="toolbox.tlc.hasModelRunningMarker">
+                        </reference>
+                        <not>
                            <reference
-                                 definitionId="toolbox.tlc.hasModelRunningMarker">
+                                 definitionId="toolbox.tlc.hasModelCrashedMarker">
                            </reference>
-                           <not>
-                              <reference
-                                    definitionId="toolbox.tlc.hasModelCrashedMarker">
-                              </reference>
-                           </not>
-                        </and>
-                     </adapt>
-                  </iterate>
+                        </not>
+                     </and>
+                  </adapt>
+               </iterate>
             </with>
          </activeWhen>
          <enabledWhen>
@@ -667,6 +667,24 @@ Console Facory
             commandId="org.lamport.tla.toolbox.tool.tlc.ui.command1">
          <activeWhen></activeWhen>
       </handler>
+      <handler
+            class="org.lamport.tla.toolbox.tool.tlc.handlers.OpenTLCErrorViewHandler"
+            commandId="toolbox.tool.tlc.commands.open.tlc.errors">
+         <activeWhen>
+            <and>
+               <with
+                     variable="activeEditorId">
+                  <equals
+                        value="org.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor">
+                  </equals>
+               </with>
+               <test
+                     forcePluginActivation="false"
+                     property="toolbox.property.hasActiveModelErrors">
+               </test>
+            </and>
+         </activeWhen>
+      </handler>
    </extension>
    <extension
          point="org.eclipse.ui.preferencePages">
@@ -706,5 +724,15 @@ Console Facory
       <contexts
             file="helpContexts.xml">
       </contexts>
+   </extension>
+   <extension
+         point="org.eclipse.core.expressions.propertyTesters">
+      <propertyTester
+            class="org.lamport.tla.toolbox.tool.tlc.ui.expression.ModelErrorsTester"
+            id="toolbox.tool.tlc.ui.propertyTester.modelErrorsTester"
+            namespace="toolbox.property"
+            properties="hasActiveModelErrors"
+            type="java.lang.Object">
+      </propertyTester>
    </extension>
 </plugin>

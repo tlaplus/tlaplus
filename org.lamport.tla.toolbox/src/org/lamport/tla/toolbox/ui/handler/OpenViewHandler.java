@@ -14,7 +14,8 @@ import org.lamport.tla.toolbox.util.UIHelper;
 public class OpenViewHandler extends AbstractHandler implements IHandler
 {
 
-    private static final String PARAM_VIEW_NAME = "toolbox.openview.name";
+    public static final String COMMAND_ID = "toolbox.command.openview";
+    public static final String PARAM_VIEW_NAME = "toolbox.openview.name";
 
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
