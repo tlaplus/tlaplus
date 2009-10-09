@@ -23,7 +23,7 @@ import org.osgi.framework.Bundle;
 public class ToolboxWelcomeView extends ViewPart
 {
 
-    private Composite parentControl;
+    private Composite parentComposite;
 
     public static final String ID = "toolbox.view.ToolboxWelcomeView";
 
@@ -33,7 +33,7 @@ public class ToolboxWelcomeView extends ViewPart
 
     public void createPartControl(Composite parent)
     {
-        parentControl = parent;
+        parentComposite = parent;
         Browser browser = null;
         try
         {
@@ -62,9 +62,9 @@ public class ToolboxWelcomeView extends ViewPart
 
     public void setFocus()
     {
-        if (parentControl != null)
+        if (parentComposite != null)
         {
-            parentControl.setFocus();
+            parentComposite.setFocus();
         }
     }
 
