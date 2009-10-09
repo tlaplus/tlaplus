@@ -189,14 +189,14 @@
     the number of errors increases each time by the number of actual TLC errors on 
     the model.
 
-27. MINOR BUG
+27. MINOR BUG  (Parse Spec/Module Commands)
     If I select Parse spec from the file menu when the file is dirty,
     a popup asks me if I want to save the resource.  If I say yes, it 
     doesn't save the file and parses the spec that's on disk.  If I 
     select Parse Module from the file menu when the module is dirty,
     it doesn't ask me if I want to save it.  I expect it should.
      
-28. MINOR BUG
+28. MINOR BUG  (Reset Window Layout)
     If I select window / reset window layout in the Welcome Perspective,
     it produces a blank window instead of the Welcome View.
     
@@ -217,4 +217,15 @@
     shows an error, then it shows the same error when the new spec is
     opened.
     
+31. BUG (Definition Override)
+    If a model contains a definition override and the defined symbol is
+    removed from the spec, the override is not removed.  Moreover, in that
+    case trying to run TLC on the model does nothing--it just logs "Skipping
+    resource" messages for the MC file and the spec's root file.  I expect
+    that we just have to add to the validate method a check that every defined 
+    symbol is still defined with the same number of arguments.  If it's no
+    longer defined, we should just remove the override.  If the number of
+    arguments has changed, we should report an error.
+  
+        
         
