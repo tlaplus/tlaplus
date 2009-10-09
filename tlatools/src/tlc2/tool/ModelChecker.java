@@ -748,14 +748,20 @@ public class ModelChecker extends AbstractChecker
             this.done = true;
         } else
         {
+            // The following modification sof count are obviously bogus and
+            // resulted from Simon's modification of Yuan's original code.
+            // Yuan's original code assumes coverageInterval >= progressInterval,
+            // and this should eventually be changed.  But for now,
+            // the caller of this method is responsible for updating
+            // count.  LL 9 Oct 2009
             if (count == 0)
             {
                 super.reportCoverage(this.workers);
-                count = TLCGlobals.coverageInterval / TLCGlobals.progressInterval;
-            } else
-            {
-                count--;
-            }
+               // count = TLCGlobals.coverageInterval / TLCGlobals.progressInterval;
+            } // else
+            // {
+            //    count--;
+            // }
             this.wait(TLCGlobals.progressInterval);
         }
     }

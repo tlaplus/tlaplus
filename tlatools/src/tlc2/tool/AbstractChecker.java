@@ -20,7 +20,7 @@ import util.FilenameToStream;
  */
 public abstract class AbstractChecker implements Cancelable
 {
-// SZ Mar 9, 2009: static modifier removed
+    // SZ Mar 9, 2009: static modifier removed
     protected long nextLiveCheck;
     protected long numOfGenStates;
     protected TLCState predErrState;
@@ -55,7 +55,7 @@ public abstract class AbstractChecker implements Cancelable
             boolean preprocess, FilenameToStream resolver, SpecObj spec) throws EvalException, IOException
     {
         this.cancellationFlag = false;
-        
+
         this.checkDeadlock = deadlock;
 
         int lastSep = specFile.lastIndexOf(FileUtil.separatorChar);
@@ -63,7 +63,7 @@ public abstract class AbstractChecker implements Cancelable
         specFile = specFile.substring(lastSep + 1);
 
         this.tool = new Tool(specDir, specFile, configFile, resolver);
-        
+
         this.tool.init(preprocess, spec);
         this.checkLiveness = !this.tool.livenessIsTrue();
 
@@ -124,32 +124,32 @@ public abstract class AbstractChecker implements Cancelable
      */
     protected void reportCoverage(IWorker[] workers)
     {
-          if (TLCGlobals.coverageInterval >= 0) 
-          {
-              MP.printMessage(EC.TLC_COVERAGE_START);
-              // First collecting all counts from all workers:
-              ObjLongTable counts = this.tool.getPrimedLocs();
-              for (int i = 0; i < workers.length; i++) 
-              {
-                  ObjLongTable counts1 = workers[i].getCounts();
-                  ObjLongTable.Enumerator keys = counts1.keys();
-                  Object key;
-                  while ((key = keys.nextElement()) != null) 
-                  {
-                      String loc = ((SemanticNode)key).getLocation().toString();
-                      counts.add(loc, counts1.get(key));
-                  }
-              }
-              // Reporting:
-              Object[] skeys = counts.sortStringKeys();
-              for (int i = 0; i < skeys.length; i++) 
-              {
-                  long val = counts.get(skeys[i]);
-                  MP.printMessage(EC.TLC_COVERAGE_VALUE, new String[]{skeys[i].toString(), String.valueOf(val)});
-              }
-              MP.printMessage(EC.TLC_COVERAGE_END);
-          }
-      }
+        if (TLCGlobals.coverageInterval >= 0)
+        {
+            MP.printMessage(EC.TLC_COVERAGE_START);
+            // First collecting all counts from all workers:
+            ObjLongTable counts = this.tool.getPrimedLocs();
+            for (int i = 0; i < workers.length; i++)
+            {
+                ObjLongTable counts1 = workers[i].getCounts();
+                ObjLongTable.Enumerator keys = counts1.keys();
+                Object key;
+                while ((key = keys.nextElement()) != null)
+                {
+                    String loc = ((SemanticNode) key).getLocation().toString();
+                    counts.add(loc, counts1.get(key));
+                }
+            }
+            // Reporting:
+            Object[] skeys = counts.sortStringKeys();
+            for (int i = 0; i < skeys.length; i++)
+            {
+                long val = counts.get(skeys[i]);
+                MP.printMessage(EC.TLC_COVERAGE_VALUE, new String[] { skeys[i].toString(), String.valueOf(val) });
+            }
+            MP.printMessage(EC.TLC_COVERAGE_END);
+        }
+    }
 
     /**
      * Initialize the model checker
@@ -157,7 +157,7 @@ public abstract class AbstractChecker implements Cancelable
      * @throws Throwable
      */
     public abstract boolean doInit(boolean ignoreCancel) throws Throwable;
-    
+
     /**
      * Create the partial state space for given starting state up
      * to the given depth or the number of states.
@@ -165,64 +165,78 @@ public abstract class AbstractChecker implements Cancelable
     public final boolean runTLC(int depth) throws Exception
     {
         // SZ Feb 23, 2009: exit if canceled
-        if (this.cancellationFlag) 
+        if (this.cancellationFlag)
         {
             return false;
         }
-        
-          if (depth < 2) 
-          {
-              return true;
-          }
-          
-          // Start all the workers:
-          IdThread[] workers = startWorkers(this, depth);
-    
-          // Check progress periodically:
-          int count = TLCGlobals.coverageInterval/TLCGlobals.progressInterval;
-          
-          // work to be done prior loop entry
-          runTLCPreLoop();
-          
-          synchronized(this) 
-          {
-              // sleep 30 seconds
-              this.wait(30000); 
-          }
-          
-          // SZ Feb 23, 2009: exit if canceled
-          // added condition to run in the cycle
-          // while (true) {
-          while (!this.cancellationFlag) {
-              long now = System.currentTimeMillis();
-              if (now - this.lastChkpt >= TLCGlobals.chkptDuration) {
-                  if (!this.doPeriodicWork()) 
-                  { 
-                      return false; 
-                  }
-                  this.lastChkpt = now;
-              }
-              synchronized(this) {
-                  if (!this.done) {
-                      runTLCContinueDoing(count, depth);
-                  }
-                  if (this.done) break;
-              }
-          }
-    
-          // Wait for all the workers to terminate:
-          for (int i = 0; i < workers.length; i++) {
-              workers[i].join();
-          }
-          return true;
-      }
+
+        if (depth < 2)
+        {
+            return true;
+        }
+
+        // Start all the workers:
+        IdThread[] workers = startWorkers(this, depth);
+
+        // Check progress periodically:
+        int count = TLCGlobals.coverageInterval / TLCGlobals.progressInterval;
+
+        // work to be done prior loop entry
+        runTLCPreLoop();
+
+        synchronized (this)
+        {
+            // sleep 30 seconds
+            this.wait(30000);
+        }
+
+        // SZ Feb 23, 2009: exit if canceled
+        // added condition to run in the cycle
+        // while (true) {
+        while (!this.cancellationFlag)
+        {
+            long now = System.currentTimeMillis();
+            if (now - this.lastChkpt >= TLCGlobals.chkptDuration)
+            {
+                if (!this.doPeriodicWork())
+                {
+                    return false;
+                }
+                this.lastChkpt = now;
+            }
+            synchronized (this)
+            {
+                if (!this.done)
+                {
+                    runTLCContinueDoing(count, depth);
+                    // Changes made to runTLCContinueDoing require
+                    // that the caller change count. LL 9 Oct 2009
+                    if (count == 0)
+                    {
+                        count = TLCGlobals.coverageInterval / TLCGlobals.progressInterval;
+                    } else
+                    {
+                        count--;
+                    }
+                }
+                if (this.done)
+                    break;
+            }
+        }
+
+        // Wait for all the workers to terminate:
+        for (int i = 0; i < workers.length; i++)
+        {
+            workers[i].join();
+        }
+        return true;
+    }
 
     public void setCancelFlag(boolean flag)
     {
         this.cancellationFlag = flag;
     }
 
-    
     /**
      * The method for worker initialization and start
      * @param checker the checker instance
@@ -230,14 +244,14 @@ public abstract class AbstractChecker implements Cancelable
      * @return the array of initialized worker threads
      */
     protected abstract IdThread[] startWorkers(AbstractChecker checker, int checkIndex);
-    
+
     /**
      * Hook to run some work before entering the worker loop
      */
     protected void runTLCPreLoop()
     {
     }
-    
+
     /**
      * Usually
      * Check liveness: check liveness properties on the partial state graph.
@@ -247,8 +261,7 @@ public abstract class AbstractChecker implements Cancelable
      * @throws Exception
      */
     public abstract boolean doPeriodicWork() throws Exception;
-    
-    
+
     /**
      * Method called from the main worker loop
      * @param count
@@ -256,11 +269,10 @@ public abstract class AbstractChecker implements Cancelable
      * @throws Exception
      */
     protected abstract void runTLCContinueDoing(int count, int depth) throws Exception;
-    
-    
+
     /**
      * Main method of the model checker
      * @throws Exception
      */
-    public abstract void modelCheck() throws Exception; 
+    public abstract void modelCheck() throws Exception;
 }
