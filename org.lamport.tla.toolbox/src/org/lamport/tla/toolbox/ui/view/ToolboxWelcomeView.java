@@ -56,7 +56,7 @@ public class ToolboxWelcomeView extends ViewPart
             Activator.logError("Error opening toolbox welcome view file.", e);
         }
 
-        UIHelper.setHelp(parent, "org.lamport.tla.toolbox.WelcomeView");
+        UIHelper.setHelp(parent, "WelcomeView");
 
     }
 
