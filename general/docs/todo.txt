@@ -9,15 +9,15 @@
    with an obsolete version of the field.  I had to type something into the field
    to make the toolbox notice the change and allow me to save the model.
    
-3. BUG
+3. BUG (Running TLC in Simulation mode)
    The toolbox doesn't parse the TLC output correctly in simulation mode.  In particular,
    it didn't notice that an invariant had been violated and didn't raise the error
    window.
    
-4. BUG
+4. BUG (Progress Information)
    The progress information is not being displayed.
    
-5. NEW FEATURE
+5. NEW FEATURE (Locking Models)
    If the user adds or removes a declared CONSTANT from the spec while a model is
    being run by TLC, that changes the model.  For example, if the spec is run with
    a constant N instantiated with 42 and N is removed from the spec, then the N <- 42
@@ -44,17 +44,17 @@
 6. MISSING FEATURE -- SEEMS NOW TO BE IMPLEMENTED (7 Oct 2009)
    Checkpoint restoration is not implemented.
 
-7. TLC BUG
+7. TLC BUG (Coverage)
    Coverage is not working, coverage information being displayed only after a run 
    completes.  The bug is in TLC, which isn't printing the coverage information. 
    
-8. IMPORTANT MISSING FEATURE
+8. IMPORTANT MISSING FEATURE  (Definition Override)
    A definition override of an operator with no arguments should include the
    option of making it a model value.  (This is not a show-stopper because the
    user can replace it by a model value that he declares in the model-value
    section.)
    
-9. MINOR MISSING FEATURES
+9. MINOR MISSING FEATURES (TLC Model)
    a. There is no reason why the user cannot use the same model value in two
    different constant instantiations or in a constant instantiation and a 
    definition override.  Or uses a model value declared on the advanced
@@ -72,50 +72,55 @@
    this, and the current validator will disallow the models that this order
    is designed to allow.  
    
-10. NOT A PROBLEM
-    If I close the TLC Error window, there is no way to re-open it.  Imagine someone 
-    accidentally doing that on an error window with a trace produced by a 2-week run.  
-    The data isn't lost because it's regenerated if the model is closed and reopened,
-    but the user is unlikely to realize that and will probably just curse the
-    toolbox and relaunch TLC.
+10. BUG (TLC Error View)
+    If I get a TLC error and close the TLC Error view, reopening it with
+    the TLC Model Checker/ TLC Errors menu option produces a blank error
+    window.  I have to click on the Errors Detected field to get
+    the right TLC Errors view.
     
-11. MINOR BUG
+11. MINOR BUG (Parsing Error View)
     The Parsing Error item on the Window menu should be disabled when there is no 
     parsing error.
     
-12. MINOR BUG
-    When the spec is reparsed after a parsing error, the Parsing Error window
-    is displayed, and no errors are found, the Parsing Error Window continues to
-    contain the previous error.  It has to be closed to make that error disappear.
+12. MINOR BUG (Parsing Error View)
+    When the spec is reparsed after a parsing error, the Parsing Error view
+    is displayed, and no errors are found, the Parsing Error view continues to
+    contain the previous error.  The view has to be closed to make that error disappear.
     
-13. I DON'T KNOW WHAT THIS WAS SUPPOSED TO MEAN
+13. BUG (PlusCal Translator Errors)
     Suppose the user starts to write a PlusCal algorithm,
     translates it and gets a PlusCal error, and then decides to delete the PlusCal
     code and just write the spec in TLA+.  There's no way for him to get rid of
-    the PlusCal 
+    the PlusCal error message in the Parse Errors window.  In fact, even if I
+    run the translator on another module, the PlusCal
+    error remains in the Parse Error window--whether or not the other
+    translation produces an error. (The only way to get rid of it is to go
+    back to the original module, correct the PlusCall error, and re-run the
+    translator.)  The best thing to do 
+    is probably to create a separate PlusCal Error Window.  Running the
+    translator should first clear this window and remove all PlusCal
+    error markers in the module on which the translator is run.  (I believe that
+    if running the PlusCal translator creates a PlusCal error, then the file is
+    not re-parsed, so only the PlusCal error window would need to be popped up.)
     
 14. SHOW-STOPPER SANY BUG - FIXED 7 October 2009
     SANY2 does not correctly parse an expression containing a "<" immediately followed
     by a number.  This is undoubtedly a lexing error, the lexer thinking that
     it is finding the beginning of a proof-step number.
        
-15. SEEMS TO HAVE BEEN FIXED, BUT NEEDS SOME FURTHER THOUGHT (7 Oct 2009)
-    LL fixed some null-pointer exceptions that were getting thrown when the user tried to
-    edit or save a model when the spec was unparsed.  This left it in a state in which
-    trying to save the model when the spec is unparsed does nothing.  This is probably
-    not good because the user might want to save changes he's made to the model before
-    he tries to correct errors he's made in the spec.  We need to re-think what the user 
+15. POSSIBLE CHANGE (Handling Unparsed Spec)
+    We need to re-think what the user 
     should be able to do to the model when the spec is unparsed; and see that anything he
     shouldn't be able to do is disabled and that anything he should be able to do works.
     
 16. NOT A PROBLEM
-    There is no Save Model menu item.  There should be one on the TLC Model Checker menu.
+    My Stupidity
 
-17. MINOR BUG
+17. MINOR BUG (Definition Override)
     The Definitions Override menu allows the user to override the same definition multiple
     times.
     
-18. BUG
+18. SIGNIFICANT BUG (parsing large specs)
     For a big spec--in particular, for the farsite spec, after Parse the parse spec
     command gets disabled.  But parse module file still works.  Simon thinks it may be
     that the build infrastructure of Eclipse is deactivating builders under some
@@ -127,7 +132,7 @@
     The parser is being launched in a separate thread, but Simon thinks
     that perhaps he's not doing it in the right way.
     
-19. MINOR MISSING FEATURE
+19. MINOR MISSING FEATURE (Exit)
     Closing the toolbox simply kills any running TLC.  Instead, 
     it should warn the user that this will kill TLC and give him
     the option of canceling.  To do this, need to modify to 
@@ -138,15 +143,26 @@
     this one when TLC is running, and having that handler call the 
     current one only if the user says it's OK to stop TLC.
     
-20. BUG  -- THIS SEEMS TO BE FIXED NOW (8 Oct 2009)
-    PlusCal translation needs to be examined.  For example, preferences are currently
-    no-ops.
+20. MISSING FEATURE (PlusCal)
+    PlusCal translation needs to be examined.  Here are some things
+    that need to be fixed: 
+     - There should be a more user-friendly way to specify translation
+       options.  This involves:
+       (a) Providing check-boxes or radio buttons for the common options.
+       (b) Finding a more convenient way to add them than the current
+           one (right-clicking in the Toolbox Explorer) and selecting
+           properties.
+     - Translation options are now attached to the spec; they should
+       be attached to an individual module.  (It's possible for a
+       single spec to have PlusCal algorithms in two different 
+       modules.)
+       
     
-21. TUNING NEEDED BEFORE RELEASE
+21. TUNING NEEDED BEFORE RELEASE (Preferences)
     Need to filter Preferences to eliminate things the user doesn't want
     to see.
     
-22. BUG
+22. BUG  (rename spec)
     The rename spec command doesn't do the right thing if a spec by
     that name already exists.
     
@@ -163,12 +179,12 @@
     bar.  It shouldn't.
      
         
-25. SIGNIFICANT BUG 
+25. SIGNIFICANT BUG -- FIXED 8 October 2009
     The toolbox would get into a mode such that you have to open a spec twice to get 
     something other than a blank editor window.  As of 7 Oct 2009, this hadn't 
     happened in a couple of weeks, so some other change may have fixed it.
     
-26. BUG (not sure if this is still present)
+26. MINOR BUG -- APPEARS TO HAVE BEEN FIXED (8 October 2009)
     Each time the user closes and reopens the toolbox when there are errors from TLC, 
     the number of errors increases each time by the number of actual TLC errors on 
     the model.
@@ -184,12 +200,21 @@
     If I select window / reset window layout in the Welcome Perspective,
     it produces a blank window instead of the Welcome View.
     
-29. FEATURE
+29. FEATURE (Module Editor Keybindings)
     Here are some thoughts on enhancements to the Module Editor.
     - Add a preference to choose an Emacs-like keybinding.  This requires
       adding new commands that appear in the General/Editors/Keys, and
       options that choose from among sets of bindings.
     - Add editing commands (and invent bindings) for comments.  Perhaps
       copy the commands I use for boxing comments.
-    Note that Simon has bound toggle comments to Control-/, but
+    Note that Simon has bound toggle comments to Control-/, but that command
+    doesn't appear either when I type Ctl-Shift-L or in tthe preferences
+    keybinding options.
+    
+30. MINOR BUG (TLC Error View)
+    When I close a spec that has the TLC Error window raised and then
+    open a new spec, the TLC Error window is raised again.  If that window
+    shows an error, then it shows the same error when the new spec is
+    opened.
+    
         
