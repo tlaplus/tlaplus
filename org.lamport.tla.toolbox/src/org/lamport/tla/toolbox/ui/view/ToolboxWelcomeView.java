@@ -10,6 +10,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.SWTError;
 import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 import org.lamport.tla.toolbox.Activator;
 import org.osgi.framework.Bundle;
@@ -22,6 +23,8 @@ import org.osgi.framework.Bundle;
 public class ToolboxWelcomeView extends ViewPart
 {
 
+    private Composite parentControl;
+
     public static final String ID = "toolbox.view.ToolboxWelcomeView";
 
     public ToolboxWelcomeView()
@@ -30,6 +33,7 @@ public class ToolboxWelcomeView extends ViewPart
 
     public void createPartControl(Composite parent)
     {
+        parentControl = parent;
         Browser browser = null;
         try
         {
@@ -52,10 +56,16 @@ public class ToolboxWelcomeView extends ViewPart
             Activator.logError("Error opening toolbox welcome view file.", e);
         }
 
+        PlatformUI.getWorkbench().getHelpSystem().setHelp(parent, "org.lamport.tla.toolbox.WelcomeView");
+
     }
 
     public void setFocus()
     {
+        if (parentControl != null)
+        {
+            parentControl.setFocus();
+        }
     }
 
 }
