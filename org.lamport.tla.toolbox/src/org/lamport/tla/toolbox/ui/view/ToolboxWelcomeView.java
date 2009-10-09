@@ -10,9 +10,9 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.SWTError;
 import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 import org.lamport.tla.toolbox.Activator;
+import org.lamport.tla.toolbox.util.UIHelper;
 import org.osgi.framework.Bundle;
 
 /**
@@ -56,7 +56,7 @@ public class ToolboxWelcomeView extends ViewPart
             Activator.logError("Error opening toolbox welcome view file.", e);
         }
 
-        PlatformUI.getWorkbench().getHelpSystem().setHelp(parent, "org.lamport.tla.toolbox.WelcomeView");
+        UIHelper.setHelp(parent, "org.lamport.tla.toolbox.WelcomeView");
 
     }
 
