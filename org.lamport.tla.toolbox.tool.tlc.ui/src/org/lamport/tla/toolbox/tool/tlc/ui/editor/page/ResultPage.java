@@ -117,7 +117,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
                     ResultPage.this.coverage.setInput(dataProvider.getCoverageInfo());
                     break;
                 case PROGRESS:
-                    ResultPage.this.progressOutput.setInput(dataProvider.getProgressInformation());
+                    ResultPage.this.stateSpace.setInput(dataProvider.getProgressInformation());
                     break;
                 case ERRORS:
                     String text;

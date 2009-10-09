@@ -256,8 +256,8 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                     break;
 
                 case EC.TLC_PROGRESS_STATS:
-                    this.progressInformation.add(StateSpaceInformationItem.parse(outputMessage));
-
+                    this.progressInformation.add(0,StateSpaceInformationItem.parse(outputMessage));
+                    informPresenter(ITLCModelLaunchDataPresenter.PROGRESS);
                     break;
                 // Coverage information
                 case EC.TLC_COVERAGE_START:
