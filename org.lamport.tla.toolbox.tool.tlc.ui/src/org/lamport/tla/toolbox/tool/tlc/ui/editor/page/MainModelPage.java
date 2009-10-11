@@ -198,7 +198,11 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
     }
 
     // TODO remove
-    private int countXX = 0;
+    // The field countXX and the commented-out code in which it appears in the following method
+    // were a test that Dan and LL did in September 2009 to try out a method for dynamically
+    // modifying the number of pages that are shown in order to provide a more sensible interface
+    // when the spec has no variables.
+//    private int countXX = 0;
 
     public void validatePage(boolean switchToErrorPage)
     {
@@ -212,60 +216,60 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         // to control the display of the get-constants area, we have to
         // be careful and check things carefully because weird things
         // seem to happen.
-        countXX++;
-        System.out.println("countXX = " + countXX);
-        if (countXX == 60000)
-        {
-            countXX++;
-            ModelEditor ourFavoriteEditor = (ModelEditor) this.getEditor();
-            ourFavoriteEditor.removePage(0);
-            System.out.println("Page removed");
-            MainModelPage newPage = new MainModelPage(ourFavoriteEditor);
-            try
-            {
-                ourFavoriteEditor.addPage(0, newPage);
-                ourFavoriteEditor.setUpPage(newPage, 0);
-            } catch (PartInitException e)
-            {
-                // TODO Auto-generated catch block
-                TLCUIActivator.logError("Error initializing editor", e);
-                e.printStackTrace();
-            }
-            // newPage.validate(); // Dan: I thought this needed to be added,
-            // but now I think that it's harmful.
-
-            // both the following statements are needed to give make newPage
-            // the one that's shown.
-            ourFavoriteEditor.setActivePage(newPage.getId());
-            newPage.setFocus();
-            System.out.println("Page re-added");
-            // System.out.println("Here goes.  Closing editor.");
-            // ModelEditor ourFavoriteEditor = (ModelEditor) this.getEditor();
-            // IFile launchFile =
-            // ourFavoriteEditor.getResource(IFileProvider.TYPE_MODEL);
-            // ourFavoriteEditor.close(false);
-            // System.out.println("launchFile.getName = " +
-            // launchFile.getName());
-            // // UIHelper.openEditor(OpenModelHandler.EDITOR_ID, launchFile);
-            // try {
-            // UIHelper.getActiveWindow().getActivePage().openEditor(new
-            // FileEditorInput(launchFile),
-            // OpenModelHandler.EDITOR_ID, true);
-            // }
-            // catch (PartInitException e) {
-            // // TODO Auto-generated catch block
-            // e.printStackTrace();
-            // }
-            // System.out.println("Relaunched the editor");
-        }
-        // SOME RANDOM TEST
-        // if (hasVariables !=
-        // (SemanticHelper.getRootModuleNode().getVariableDecls().length != 0))
-        // {
-        // hasVariables = !hasVariables;
-        // createBodyContent(getManagedForm());
-        // System.out.println("We got here in our random test." + count++);
-        // }
+//        countXX++;
+//        System.out.println("countXX = " + countXX);
+//        if (countXX == 60000)
+//        {
+//            countXX++;
+//            ModelEditor ourFavoriteEditor = (ModelEditor) this.getEditor();
+//            ourFavoriteEditor.removePage(0);
+//            System.out.println("Page removed");
+//            MainModelPage newPage = new MainModelPage(ourFavoriteEditor);
+//            try
+//            {
+//                ourFavoriteEditor.addPage(0, newPage);
+//                ourFavoriteEditor.setUpPage(newPage, 0);
+//            } catch (PartInitException e)
+//            {
+//                // TODO Auto-generated catch block
+//                TLCUIActivator.logError("Error initializing editor", e);
+//                e.printStackTrace();
+//            }
+//            // newPage.validate(); // Dan: I thought this needed to be added,
+//            // but now I think that it's harmful.
+//
+//            // both the following statements are needed to give make newPage
+//            // the one that's shown.
+//            ourFavoriteEditor.setActivePage(newPage.getId());
+//            newPage.setFocus();
+//            System.out.println("Page re-added");
+//            // System.out.println("Here goes.  Closing editor.");
+//            // ModelEditor ourFavoriteEditor = (ModelEditor) this.getEditor();
+//            // IFile launchFile =
+//            // ourFavoriteEditor.getResource(IFileProvider.TYPE_MODEL);
+//            // ourFavoriteEditor.close(false);
+//            // System.out.println("launchFile.getName = " +
+//            // launchFile.getName());
+//            // // UIHelper.openEditor(OpenModelHandler.EDITOR_ID, launchFile);
+//            // try {
+//            // UIHelper.getActiveWindow().getActivePage().openEditor(new
+//            // FileEditorInput(launchFile),
+//            // OpenModelHandler.EDITOR_ID, true);
+//            // }
+//            // catch (PartInitException e) {
+//            // // TODO Auto-generated catch block
+//            // e.printStackTrace();
+//            // }
+//            // System.out.println("Relaunched the editor");
+//        }
+//        // SOME RANDOM TEST
+//        // if (hasVariables !=
+//        // (SemanticHelper.getRootModuleNode().getVariableDecls().length != 0))
+//        // {
+//        // hasVariables = !hasVariables;
+//        // createBodyContent(getManagedForm());
+//        // System.out.println("We got here in our random test." + count++);
+//        // }
 
         DataBindingManager dm = getDataBindingManager();
         IMessageManager mm = getManagedForm().getMessageManager();

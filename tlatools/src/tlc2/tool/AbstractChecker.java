@@ -184,12 +184,34 @@ public abstract class AbstractChecker implements Cancelable
         // work to be done prior loop entry
         runTLCPreLoop();
 
-        synchronized (this)
+        // sleep 30 seconds.  I have no idea what this wait is for, but
+        // because of changes made by Simon, it causes TLC to wait for
+        // 30 seconds before exiting if it finds an error right away if
+        // the waiting is done inside a synchronized statement.  However,
+        // not having a synchronized statement at all in this case causes
+        // the error trace not to be printed.  Puting the wait statement
+        // inside if (!this.done) seems to fix the problem.  However,
+        // there are probably specs that take a little longer to produce
+        // the error that would trigger the 30-second delay before 
+        // terminating.  I am therefore trying the following.  It seems
+        // to work, but has not been tested.  This whole code is buggy
+        // because preceding this code by a this.wait(0) statement
+        // causes TLC to terminate with an Error: null condition.
+        //  LL 10 October 2009
+        for (int i = 0; i < 10; i++)
         {
-            // sleep 30 seconds
-            this.wait(30000);
-        }
+            synchronized (this)
+            {
+                if (this.done)
+                {
 
+                    break;
+                }
+                this.wait(3000);
+            }
+            
+        }
+      
         // SZ Feb 23, 2009: exit if canceled
         // added condition to run in the cycle
         // while (true) {

@@ -13,9 +13,10 @@ public interface IConfigurationDefaults
     public static final String EMPTY_STRING = "";
 
     /**
-     * Number of workers is 2 by default
+     * Default number of workers.  Was set by Simon to be is 2.
+     * Modified by LL on 11 October 2009 to be half the number of available processors.
      */
-    public static final int LAUNCH_NUMBER_OF_WORKERS_DEFAULT = 2;
+    public static final int LAUNCH_NUMBER_OF_WORKERS_DEFAULT = Runtime.getRuntime().availableProcessors() / 2;
 
     /**
      * Default is the model-checking mode
