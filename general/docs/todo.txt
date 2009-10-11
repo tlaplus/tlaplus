@@ -259,7 +259,7 @@
     time, the model overview page puts the TLC error report at the top of
     the page, where it should say something like "1 error".
     
-38. BUG (Validation of model)
+38. BUG (Validation of model) -- FIXED BY LL on 11 October 2009
     The code to validate the use of symmetry in MainModelPage.validatePage
     was bogus.  I therefore commented out the test.  (See line 330, or look for
     the dead code in the if(false).)  Here's what should actually be checked.
@@ -273,4 +273,14 @@
     symmetric, and one include A_c and the other include B_d.  This is what
     the validatePage method should check for.
 
-
+39. MINOR FEATURE (Constant Assignment)
+    When the user has chosen assigned a set of model values to a constant
+    and specified symmetry, the default on the next page of the wizard should
+    be to make the values untyped.  This may be hard to do because the
+    second wizard page is created before the first page of the wizard is
+    raised.  If it's hard, perhaps we should change the default to
+    be to make the values untyped.  This is done in TypingWizardPage.createControl.
+    
+    
+    
+     

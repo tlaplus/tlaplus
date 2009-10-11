@@ -44,7 +44,7 @@ public class TypingWizardPage extends WizardPage
         setDescription(description);
         setMessage("The set of model values you chose are untyped."
                 + "  Do you want to assign types to these values?\n" 
-                + "Hit the ? button for help.");
+                + "Hit the  ?  button for help (especially if you chose the `symmetrical' option)");
         this.helpId = helpId;
     }
 
