@@ -25,6 +25,11 @@
 	    <topic label="Assigning values to constants" href="../org.lamport.tla.toolbox.tool.tlc.ui/html/constant_dialog.html" />
 		
 	</context>
+	<context id="constant_assignment_typing_wizard" title="To type or not to type?">
+		<description>Do you want to assign a type to the model values?</description>
+	    <topic label="Typed model values" href="../org.lamport.tla.toolbox.tool.tlc.ui/html/constant_dialog.html" />
+	</context>
+	
  	<context id="definition_override_wizard" title="Overriding Definitions">
 		<description>
 		This dialog allows you to override a definition, meaning that you provide a definition that TLC should use in place of the actual definition.

@@ -39,7 +39,8 @@ public class ValidateableConstantSectionPart extends ValidateableTableSectionPar
 
         // Create the wizard
         AssignmentWizard wizard = new AssignmentWizard(getSection().getText(), getSection().getDescription(),
-                (Assignment) formula, AssignmentWizard.SHOW_OPTION, AssignmentWizardPage.CONSTANT_WIZARD_ID);
+                (Assignment) formula, AssignmentWizard.SHOW_OPTION, AssignmentWizardPage.CONSTANT_WIZARD_ID,
+                AssignmentWizardPage.CONSTANT_TYPING_WIZARD_ID);
         // Create the wizard dialog
         WizardDialog dialog = new WizardDialog(getTableViewer().getTable().getShell(), wizard);
         dialog.setHelpAvailable(true);

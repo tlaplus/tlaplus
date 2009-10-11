@@ -20,15 +20,18 @@ public class AssignmentWizard extends Wizard
     /**
      * Constructs the wizard that assigns values to constants, 
      * I believe it also constructs the wizard that overrides definitions. (LL)
+     * The last argument is meaningful only for the wizard that assigns values
+     * to constants.
      * @param fieldFlags bit mask determining fields that are visible
      * @see {@link AssignmentWizard} constants 
      */
-    public AssignmentWizard(String action, String description, Assignment assignment, int fieldFlags, String helpId)
+    public AssignmentWizard(String action, String description, Assignment assignment, int fieldFlags, String helpId,
+            String pageTwoHelpId)
     {
         super();
         this.assignment = assignment;
         assignmentPage = new AssignmentWizardPage(action, description, fieldFlags, helpId);
-        typePage = new TypingWizardPage(action, description);
+        typePage = new TypingWizardPage(action, description, pageTwoHelpId);
 
     }
 

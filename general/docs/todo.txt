@@ -258,4 +258,19 @@
     looks fine.  Now change the invariant to x = "a" and run it again.  This
     time, the model overview page puts the TLC error report at the top of
     the page, where it should say something like "1 error".
+    
+38. BUG (Validation of model)
+    The code to validate the use of symmetry in MainModelPage.validatePage
+    was bogus.  I therefore commented out the test.  (See line 330, or look for
+    the dead code in the if(false).)  Here's what should actually be checked.
+    Define the symmetry model values to be the set of all model values that
+    appear in sets of model values that are declared to be symmetric in the
+    constant instantiatiions.  TLC will produce an error if there are two
+    symmetry model values having different types--that is, both typed and having
+    different types.  This will occur if the user instantiates a constant
+    with a set of model values including A_c and B_d that is declared to
+    be symmetric, or if he declares two different sets of model values to be
+    symmetric, and one include A_c and the other include B_d.  This is what
+    the validatePage method should check for.
+
 

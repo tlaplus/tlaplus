@@ -303,8 +303,12 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
             }
             constantTable.setInput(constants);
         }
-
-        boolean symmetryUsed = false;
+        
+        // The following string is used to test whether two differently-typed model
+        // values appear in symmetry sets (sets of model values declared to be symmetric).
+        // It is set to the type of the first typed model value found in a symmetry set.
+        String symmetryType = null; 
+//        boolean symmetryUsed = false;
         // iterate over the constants
         for (int i = 0; i < constants.size(); i++)
         {
@@ -327,22 +331,42 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
             {
                 if (constant.isSetOfModelValues())
                 {
-                    if (symmetryUsed && constant.isSymmetricalSet())
-                    {
-                        // symmetry can be used for only one set of model values
-                        mm.addMessage(constant.getLabel(), "Only one symmetrical set of model values is allowed",
-                                constant, IMessageProvider.ERROR, UIHelper.getWidget(dm
-                                        .getAttributeControl(MODEL_PARAMETER_CONSTANTS)));
-                        setComplete(false);
-                        expandSection(dm.getSectionForAttribute(MODEL_PARAMETER_CONSTANTS));
-                    } else
-                    {
-                        if (constant.isSymmetricalSet())
-                        {
-                            symmetryUsed = true;
-                        }
-                    }
                     TypedSet modelValuesSet = TypedSet.parseSet(constant.getRight());
+
+                    if (constant.isSymmetricalSet())
+                    { boolean hasTwoTypes = false; // set true if this symmetry set has two differently-typed model values.
+                      String typeString = null; // set to the type of the first typed model value in this symmetry set.
+                      if (modelValuesSet.hasType()) {
+                          typeString = modelValuesSet.getType();
+                      } else {
+                          for (int j = 0; j < modelValuesSet.getValues().length; j++) {
+                            String thisTypeString = TypedSet.getTypeOfId(modelValuesSet.getValues()[j]);
+                            if (thisTypeString != null) {
+                                if (typeString != null && !typeString.equals(thisTypeString)) {
+                                    hasTwoTypes = true;
+                                } else {
+                                    typeString = thisTypeString;
+                                }
+                            }
+                          }
+                      }
+                      if (hasTwoTypes ||
+                            (symmetryType != null && typeString != null 
+                                    && !typeString.equals(symmetryType))) {
+                          mm.addMessage(constant.getLabel(), "Two differently typed model values used in symmetry sets.",
+                                  constant, IMessageProvider.ERROR, UIHelper.getWidget(dm
+                                          .getAttributeControl(MODEL_PARAMETER_CONSTANTS)));
+                          setComplete(false);
+                          expandSection(dm.getSectionForAttribute(MODEL_PARAMETER_CONSTANTS));
+                      } else {
+                          if (typeString != null) {
+                              symmetryType = typeString;
+                          }
+                      }
+                      
+                        // symmetry can be used for only one set of model values
+    
+                    } 
                     if (modelValuesSet.getValueCount() > 0)
                     {
                         // there were values defined

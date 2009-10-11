@@ -12,6 +12,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
 import org.lamport.tla.toolbox.tool.tlc.model.TypedSet;
+import org.lamport.tla.toolbox.util.UIHelper;
 
 /**
  * A wizard page for typing sets of model values
@@ -25,17 +26,26 @@ public class TypingWizardPage extends WizardPage
     private Button optionUntyped;
     private Button optionTyped;
     private Label label;
+    // The addition of a helpId field parallels its use in the AssignmentWizardPage
+    // class.  However, this really isn't necessary because this wizard page
+    // class is used only once, for the second screen of the constant-assignment
+    // wizard, so helpId is only set to a single value which we could therefore
+    // build into the code.  But some day, we may have some use for another
+    // such page, so...   Added 11 Oct 2009 by LL
+    private final String helpId; // The id of the help context for this wizard page
 
     /**
      * Constructor of the page 
      */
-    protected TypingWizardPage(String action, String description)
+    protected TypingWizardPage(String action, String description, String helpId)
     {
         super("TypingWizardPage");
         setTitle(action);
         setDescription(description);
-        setMessage("The provided set of model values is untyped. It is recommended to use typed model values.\n"
-                + "Do you want to type the set of model values?");
+        setMessage("The set of model values you chose are untyped."
+                + "  Do you want to assign types to these values?\n" 
+                + "Hit the ? button for help.");
+        this.helpId = helpId;
     }
 
     /* (non-Javadoc)
@@ -95,6 +105,7 @@ public class TypingWizardPage extends WizardPage
         optionTyped.setSelection(true);
         typeCombo.setText("A");
         // setUntypedOption();
+        UIHelper.setHelp(container, helpId);
         setControl(container);
     }
 

@@ -59,7 +59,7 @@ public class ValidateableOverridesSectionPart extends ValidateableConstantSectio
 
         // Create the wizard
         AssignmentWizard wizard = new AssignmentWizard(getSection().getText(), getSection().getDescription(),
-                (Assignment) formula, AssignmentWizard.NONE, AssignmentWizardPage.DEF_OVERRIDE_WIZARD_ID);
+                (Assignment) formula, AssignmentWizard.NONE, AssignmentWizardPage.DEF_OVERRIDE_WIZARD_ID, "");
         // Create the wizard dialog
         WizardDialog dialog = new WizardDialog(getTableViewer().getTable().getShell(), wizard);
         dialog.setHelpAvailable(true);

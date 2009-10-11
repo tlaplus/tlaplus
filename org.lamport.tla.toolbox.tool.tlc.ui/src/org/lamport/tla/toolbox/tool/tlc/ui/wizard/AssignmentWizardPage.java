@@ -32,6 +32,7 @@ import tla2sany.semantic.OpDefNode;
 public class AssignmentWizardPage extends WizardPage
 {
     public static final String CONSTANT_WIZARD_ID = "constant_assignment_wizard";
+    public static final String CONSTANT_TYPING_WIZARD_ID = "constant_assignment_typing_wizard";
     public static final String DEF_OVERRIDE_WIZARD_ID = "definition_override_wizard";
     private LabeledListComposite paramComposite;
     private SourceViewer source;

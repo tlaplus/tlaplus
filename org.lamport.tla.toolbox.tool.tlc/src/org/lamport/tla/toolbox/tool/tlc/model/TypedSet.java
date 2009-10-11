@@ -10,6 +10,15 @@ import java.util.List;
  * This class is used for typed model values. To create an instance of this class
  * you probably want to parse it out of a string, using {@link TypedSet#parseSet(String)} method.
  * 
+ * A TypedSet object appears to be used to represent a TLA+ set of the form
+ * 
+ *   { a1 , a2, ... , aN }
+ *   
+ * for N >= 0, where each ai is a TLA+ identifier.  If each of the ai begins with "C_"
+ * for the same character C, then it is represented by an object having type = "C_" and
+ * values[i] equal to ai with the prefix "C_" removed, for each i.  Otherwise, it is represented
+ * by an object having type = null and values[i] = ai, for each i.
+ * 
  * @author Simon Zambrovski
  * @version $Id$
  */
@@ -116,6 +125,17 @@ public class TypedSet
     public String getType()
     {
         return type;
+    }
+    
+    // If id is a "typed" identifier, then it returns
+    // the (one-character) type as a string.  Else, it
+    // returns null.  Note that getTypeOfId("1_xyz") = "1",
+    // and getTypteOfId("__z") = "z".  
+    public static String getTypeOfId(String id) {
+       if (id == null || id.length() < 2 || !id.substring(1, 2).equals("_")) {
+           return null;
+       }
+       return id.substring(0,1);
     }
 
     public void setType(String type)
