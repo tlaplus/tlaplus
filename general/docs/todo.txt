@@ -240,4 +240,22 @@
 34. FEATURE (Stack trace)
     Make clicking on the action location highlight and go to that location.
         
+35. MINOR BUG (TLC Error report)
+    Remove the @START... and @END... lines from the error message shown to the
+    user in the TLC Error window.  Simon says that one can do that by adding a 
+    filter to that view, but it seems easy enough to write code to do it
+    directly.
+    
+36. FEATURE (Action Fairness)
+    Enhance the Init/Next method of writing the spec to add lists of weakly
+    and strongly fair actions.
         
+37. MINOR BUG (TLC Error report)
+    Here's how to produce the bug:
+    Create a new spec that just declares a single variable x.  Create a
+    model with the spec defined by letting Init be x=0 and Next be x’=x.  Add
+    the invariant x=1 and run the model.  Look at the model overview page.  It
+    looks fine.  Now change the invariant to x = "a" and run it again.  This
+    time, the model overview page puts the TLC error report at the top of
+    the page, where it should say something like "1 error".
+
