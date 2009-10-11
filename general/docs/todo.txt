@@ -14,7 +14,7 @@
    it didn't notice that an invariant had been violated and didn't raise the error
    window.
    
-4. BUG (Progress Information)
+4. BUG (Progress Information) - FIXED by Dan (9 October 2009)
    The progress information is not being displayed.
    
 5. NEW FEATURE (Locking Models)
@@ -44,7 +44,7 @@
 6. MISSING FEATURE -- SEEMS NOW TO BE IMPLEMENTED (7 Oct 2009)
    Checkpoint restoration is not implemented.
 
-7. TLC BUG (Coverage)
+7. TLC BUG (Coverage) -- FIXED (9 Oct 2009)
    Coverage is not working, coverage information being displayed only after a run 
    completes.  The bug is in TLC, which isn't printing the coverage information. 
    
