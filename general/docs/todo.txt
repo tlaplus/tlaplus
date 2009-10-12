@@ -281,6 +281,17 @@
     raised.  If it's hard, perhaps we should change the default to
     be to make the values untyped.  This is done in TypingWizardPage.createControl.
     
+40. BUG (Help)
+    The help menu is not getting the focus if it doesn't already have the focus
+    and it either is in or is being opened into a folder that has the focus.
+    
+41. BUG (View option)
+    This option is not implemented.
+
+42. IMPORTANT MISSING FEATURE (Specifying Java heap size)
+    The user should be able to specify the number N of megabytes of storage
+    alloted to the Java heap when running TLC.  TLC should be run with
+    Java getting the argument -XmxNm.
     
     
      

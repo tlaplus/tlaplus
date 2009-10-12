@@ -20,7 +20,7 @@ public class TLA2TeXPreferencePage extends FieldEditorPreferencePage implements 
     {
         super(GRID);
         setPreferenceStore(TLA2TeXActivator.getDefault().getPreferenceStore());
-        setDescription("TLA2TeX Preferences");
+        setDescription("PDF Viewer Preferences");
     }
 
     public TLA2TeXPreferencePage(int style)
