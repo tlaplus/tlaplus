@@ -481,7 +481,7 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
     public void handleProblemMarkers(boolean switchToErrorPage)
     {
         // System.out.println("Entering ModelEditor.handleProblemMarkers()");
-        
+
         int errorPageIndex = -1;
         int currentPageIndex = getActivePage();
         try
@@ -501,32 +501,41 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
                     String attributeName = modelProblemMarkers[i]
                             .getAttribute(ModelHelper.TLC_MODEL_ERROR_MARKER_ATTRIBUTE_NAME,
                                     IModelConfigurationDefaults.EMPTY_STRING);
-                    
+
                     int bubbleType = -1;
-                    if (modelProblemMarkers[i].getType().equals(ModelHelper.TLC_MODEL_ERROR_MARKER_SANY)) 
+                    if (modelProblemMarkers[i].getType().equals(ModelHelper.TLC_MODEL_ERROR_MARKER_SANY))
                     {
                         // SANY markers are errors
-                        bubbleType = IMessageProvider.ERROR;                        
-                    } else if (modelProblemMarkers[i].getType().equals(ModelHelper.TLC_MODEL_ERROR_MARKER_TLC)) 
+                        bubbleType = IMessageProvider.ERROR;
+                    } else if (modelProblemMarkers[i].getType().equals(ModelHelper.TLC_MODEL_ERROR_MARKER_TLC))
                     {
                         // TLC markers are warnings
                         bubbleType = IMessageProvider.WARNING;
-                    } else 
+                    } else
                     {
                         bubbleType = IMessageProvider.INFORMATION;
                     }
-                    
+
                     if (ModelHelper.EMPTY_STRING.equals(attributeName))
                     {
-                        // no attribute, this is a global error, not bound to a particular attribute
-                        // install it on the first page
-                        IMessageManager mm  = this.pagesToAdd[0].getManagedForm().getMessageManager();
-                        mm.setAutoUpdate(false);
                         String message = modelProblemMarkers[i].getAttribute(IMarker.MESSAGE,
                                 IModelConfigurationDefaults.EMPTY_STRING);
-                        mm.addMessage("modelProblem_" + i, message, null, bubbleType);
-                        mm.setAutoUpdate(true);
-
+                        // no attribute, this is a global error, not bound to a particular attribute
+                        // install it on the first page
+                        // if it is a global TLC error, then we call addGlobalTLCErrorMessage()
+                        // to add a hyperlink to the TLC Error view
+                        if (bubbleType == IMessageProvider.WARNING)
+                        {
+                            this.pagesToAdd[0].addGlobalTLCErrorMessage("modelProblem_" + i);
+                            this.pagesToAdd[1].addGlobalTLCErrorMessage("modelProblem_" + i);
+                        } else
+                        {
+                            // else install as with other messages
+                            IMessageManager mm = this.pagesToAdd[0].getManagedForm().getMessageManager();
+                            mm.setAutoUpdate(false);
+                            mm.addMessage("modelProblem_" + i, message, null, bubbleType);
+                            mm.setAutoUpdate(true);
+                        }
                     } else
                     {
                         // attribute found

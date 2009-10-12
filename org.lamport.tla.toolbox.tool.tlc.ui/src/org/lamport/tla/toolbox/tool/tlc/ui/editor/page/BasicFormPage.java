@@ -16,17 +16,23 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Layout;
 import org.eclipse.ui.forms.IManagedForm;
+import org.eclipse.ui.forms.IMessage;
 import org.eclipse.ui.forms.IMessageManager;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.editor.FormPage;
 import org.eclipse.ui.forms.events.ExpansionAdapter;
 import org.eclipse.ui.forms.events.ExpansionEvent;
+import org.eclipse.ui.forms.events.HyperlinkAdapter;
+import org.eclipse.ui.forms.events.HyperlinkEvent;
 import org.eclipse.ui.forms.events.IExpansionListener;
+import org.eclipse.ui.forms.events.IHyperlinkListener;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationDefaults;
 import org.lamport.tla.toolbox.tool.tlc.launch.TLCModelLaunchDelegate;
+import org.lamport.tla.toolbox.tool.tlc.output.data.TLCModelLaunchDataProvider;
+import org.lamport.tla.toolbox.tool.tlc.output.source.TLCOutputSourceRegistry;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.ui.contribution.DynamicContributionItem;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.DataBindingManager;
@@ -35,6 +41,7 @@ import org.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.IgnoringListener;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.SemanticHelper;
+import org.lamport.tla.toolbox.tool.tlc.ui.view.TLCErrorView;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
@@ -73,6 +80,7 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
 {
     public static final String CRASHED_TITLE = " ( model checking has crashed )";
     public static final String RUNNING_TITLE = " ( model checking is in progress )";
+    private static final String TLC_ERROR_STRING = "TLC Error";
 
     /** 
      * a list of dirty part listeners, which marks parts as dirty on input and cause the re-validation of the input
@@ -100,6 +108,38 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
     // the page completion status (true by default)
     private boolean isComplete = true;
 
+    // hyper link listener activated in case of errors
+    protected IHyperlinkListener errorMessageHyperLinkListener = new HyperlinkAdapter() {
+
+        public void linkActivated(HyperlinkEvent e)
+        {
+            IMessage[] messages = (IMessage[]) e.getHref();
+            // if it is a global TLC error, it will shift focus to the error view
+            if (messages.length > 0 && messages[0].getMessage().equals(TLC_ERROR_STRING))
+            {
+                TLCModelLaunchDataProvider dataProvider = TLCOutputSourceRegistry.getSourceRegistry().getProvider(
+                        getConfig());
+                if (dataProvider != null)
+                {
+                    TLCErrorView.updateErrorView(dataProvider);
+                }
+            } else
+            {
+                // for all other error messages, it will attempt to shift
+                // focus to the control associated with the message
+                // if there is one
+                for (int i = 0; i < messages.length; i++)
+                {
+                    Control control = messages[i].getControl();
+                    if (control != null)
+                    {
+                        control.setFocus();
+                    }
+                }
+            }
+        }
+    };
+
     /**
      * Creates the main editor page
      * @param editor
@@ -118,7 +158,6 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
      */
     protected void createFormContent(IManagedForm managedForm)
     {
-
         ScrolledForm formWidget = managedForm.getForm();
         formWidget.setText(getTitle());
         if (imagePath != null)
@@ -166,6 +205,8 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
         // activates the change listeners
         pageInitializationComplete();
         UIHelper.setHelp(body, helpId);
+
+        getManagedForm().getForm().getForm().addMessageHyperlinkListener(errorMessageHyperLinkListener);
     }
 
     /**
@@ -606,6 +647,27 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
         setComplete(true);
         // make the change visible
         getManagedForm().getMessageManager().setAutoUpdate(applyChange);
+    }
+
+    /**
+     * This method adds the text "TLC Error" next to the title of the page.
+     * The text will appear as a hyperlink. Clicking on the link will give
+     * focus to the TLC Errors view.
+     * This should be called when there is a TLC error that is not bound
+     * to a particular widget in the model editor. Currently it is called
+     * from the method {@link ModelEditor#handleProblemMarkers(boolean)}.
+     * This should not be called on the result page because there is already
+     * an errors hyperlink there.
+     * @param tooltipText the tooltip text to appear when the mouse is on the hyperlink
+     */
+    public void addGlobalTLCErrorMessage(String key)
+    {
+        IMessageManager mm = getManagedForm().getMessageManager();
+        mm.addMessage(key, TLC_ERROR_STRING, null, IMessageProvider.WARNING);
+        /*globalTLCErrorHyperLink.setText(TLC_ERROR_STRING);
+        globalTLCErrorHyperLink.setToolTipText(tooltipText);
+        globalTLCErrorHyperLink.setForeground(TLCUIActivator.getColor(SWT.COLOR_DARK_YELLOW));
+        globalTLCErrorHyperLink.addHyperlinkListener(globalTLCErrorHyperLinkListener);*/
     }
 
     /**
