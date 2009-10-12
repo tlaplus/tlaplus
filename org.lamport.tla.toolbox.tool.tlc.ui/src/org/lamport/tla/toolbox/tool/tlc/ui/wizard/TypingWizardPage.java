@@ -27,11 +27,11 @@ public class TypingWizardPage extends WizardPage
     private Button optionTyped;
     private Label label;
     // The addition of a helpId field parallels its use in the AssignmentWizardPage
-    // class.  However, this really isn't necessary because this wizard page
+    // class. However, this really isn't necessary because this wizard page
     // class is used only once, for the second screen of the constant-assignment
     // wizard, so helpId is only set to a single value which we could therefore
-    // build into the code.  But some day, we may have some use for another
-    // such page, so...   Added 11 Oct 2009 by LL
+    // build into the code. But some day, we may have some use for another
+    // such page, so... Added 11 Oct 2009 by LL
     private final String helpId; // The id of the help context for this wizard page
 
     /**
@@ -43,7 +43,7 @@ public class TypingWizardPage extends WizardPage
         setTitle(action);
         setDescription(description);
         setMessage("The set of model values you chose are untyped."
-                + "  Do you want to assign types to these values?\n" 
+                + "  Do you want to assign types to these values?\n"
                 + "Hit the  ?  button for help (especially if you chose the `symmetrical' option)");
         this.helpId = helpId;
     }

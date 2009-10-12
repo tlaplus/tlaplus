@@ -184,34 +184,25 @@ public abstract class AbstractChecker implements Cancelable
         // work to be done prior loop entry
         runTLCPreLoop();
 
-        // sleep 30 seconds.  I have no idea what this wait is for, but
-        // because of changes made by Simon, it causes TLC to wait for
-        // 30 seconds before exiting if it finds an error right away if
-        // the waiting is done inside a synchronized statement.  However,
-        // not having a synchronized statement at all in this case causes
-        // the error trace not to be printed.  Puting the wait statement
-        // inside if (!this.done) seems to fix the problem.  However,
-        // there are probably specs that take a little longer to produce
-        // the error that would trigger the 30-second delay before 
-        // terminating.  I am therefore trying the following.  It seems
-        // to work, but has not been tested.  This whole code is buggy
-        // because preceding this code by a this.wait(0) statement
-        // causes TLC to terminate with an Error: null condition.
-        //  LL 10 October 2009
-        for (int i = 0; i < 10; i++)
+        // I added the `if (!this.done)' to the following statement.
+        // I have no idea what this wait is for, but apparently
+        // because of changes made by Simon, it caused TLC to wait for
+        // 30 seconds before exiting if it found an error right away.
+        // It seems that the notify that's supposed to wake up the thread
+        // in this case is being executed too soon. It also seems that
+        // the thread doing the notify also sets this.done to true.
+        // Thus, this fix should work. It would be nice to better understand
+        // what's going on to be sure that this really does the trick.
+        // LL 11 October 2009
+        synchronized (this)
         {
-            synchronized (this)
+            if (!this.done)
             {
-                if (this.done)
-                {
 
-                    break;
-                }
                 this.wait(3000);
             }
-            
         }
-      
+
         // SZ Feb 23, 2009: exit if canceled
         // added condition to run in the cycle
         // while (true) {

@@ -151,10 +151,11 @@ public class ModelChecker extends AbstractChecker
             if (this.numOfGenStates == this.theFPSet.size())
             {
                 String plural = (this.numOfGenStates == 1) ? "" : "s";
-                MP.printMessage(EC.TLC_INIT_GENERATED1, new String[]{String.valueOf(this.numOfGenStates), plural});
+                MP.printMessage(EC.TLC_INIT_GENERATED1, new String[] { String.valueOf(this.numOfGenStates), plural });
             } else
             {
-                MP.printMessage(EC.TLC_INIT_GENERATED1, new String[]{String.valueOf(this.numOfGenStates), String.valueOf(this.theFPSet.size())});
+                MP.printMessage(EC.TLC_INIT_GENERATED1, new String[] { String.valueOf(this.numOfGenStates),
+                        String.valueOf(this.theFPSet.size()) });
             }
         }
 
@@ -311,7 +312,8 @@ public class ModelChecker extends AbstractChecker
                         if (!this.tool.isValid(this.invariants[j], curState))
                         {
                             // We get here because of invariant violation:
-                            MP.printError(EC.TLC_INVARIANT_VIOLATED_INITIAL, new String[] {this.tool.getInvNames()[j].toString(), curState.toString()});
+                            MP.printError(EC.TLC_INVARIANT_VIOLATED_INITIAL, new String[] {
+                                    this.tool.getInvNames()[j].toString(), curState.toString() });
                             if (!TLCGlobals.continuation)
                                 return false;
                         }
@@ -321,7 +323,8 @@ public class ModelChecker extends AbstractChecker
                         if (!this.tool.isValid(this.impliedInits[j], curState))
                         {
                             // We get here because of implied-inits violation:
-                            MP.printError(EC.TLC_PROPERTY_VIOLATED_INITIAL, new String[] {this.tool.getImpliedInitNames()[j], curState.toString()});
+                            MP.printError(EC.TLC_PROPERTY_VIOLATED_INITIAL, new String[] {
+                                    this.tool.getImpliedInitNames()[j], curState.toString() });
                             return false;
                         }
                     }
@@ -456,14 +459,16 @@ public class ModelChecker extends AbstractChecker
                                     {
                                         if (TLCGlobals.continuation)
                                         {
-                                            MP.printError(EC.TLC_INVARIANT_VIOLATED_BEHAVIOR, this.tool.getInvNames()[k]);
+                                            MP.printError(EC.TLC_INVARIANT_VIOLATED_BEHAVIOR,
+                                                    this.tool.getInvNames()[k]);
                                             this.trace.printTrace(curState.uid, curState, succState);
                                             break;
                                         } else
                                         {
                                             if (this.setErrState(curState, succState, false))
                                             {
-                                                MP.printError(EC.TLC_INVARIANT_VIOLATED_BEHAVIOR, this.tool.getInvNames()[k]);
+                                                MP.printError(EC.TLC_INVARIANT_VIOLATED_BEHAVIOR, this.tool
+                                                        .getInvNames()[k]);
                                                 this.trace.printTrace(curState.uid, curState, succState);
                                                 this.theStateQueue.finishAll();
                                                 this.notify();
@@ -479,7 +484,8 @@ public class ModelChecker extends AbstractChecker
                         {
                             if (this.setErrState(curState, succState, true))
                             {
-                                MP.printError(EC.TLC_INVARIANT_EVALUATION_FAILED, new String[]{this.tool.getInvNames()[k], e.getMessage()});
+                                MP.printError(EC.TLC_INVARIANT_EVALUATION_FAILED, new String[] {
+                                        this.tool.getInvNames()[k], e.getMessage() });
                                 this.trace.printTrace(curState.uid, curState, succState);
                                 this.theStateQueue.finishAll();
                                 this.notify();
@@ -507,14 +513,16 @@ public class ModelChecker extends AbstractChecker
                                 {
                                     if (TLCGlobals.continuation)
                                     {
-                                        MP.printError(EC.TLC_ACTION_PROPERTY_VIOLATED_BEHAVIOR, this.tool.getImpliedActNames()[k]);
+                                        MP.printError(EC.TLC_ACTION_PROPERTY_VIOLATED_BEHAVIOR, this.tool
+                                                .getImpliedActNames()[k]);
                                         this.trace.printTrace(curState.uid, curState, succState);
                                         break;
                                     } else
                                     {
                                         if (this.setErrState(curState, succState, false))
                                         {
-                                            MP.printError(EC.TLC_ACTION_PROPERTY_VIOLATED_BEHAVIOR, this.tool.getImpliedActNames()[k]);
+                                            MP.printError(EC.TLC_ACTION_PROPERTY_VIOLATED_BEHAVIOR, this.tool
+                                                    .getImpliedActNames()[k]);
                                             this.trace.printTrace(curState.uid, curState, succState);
                                             this.theStateQueue.finishAll();
                                             this.notify();
@@ -530,7 +538,8 @@ public class ModelChecker extends AbstractChecker
                     {
                         if (this.setErrState(curState, succState, true))
                         {
-                            MP.printError(EC.TLC_ACTION_PROPERTY_EVALUATION_FAILED, new String[]{this.tool.getImpliedActNames()[k], e.getMessage()});
+                            MP.printError(EC.TLC_ACTION_PROPERTY_EVALUATION_FAILED, new String[] {
+                                    this.tool.getImpliedActNames()[k], e.getMessage() });
                             this.trace.printTrace(curState.uid, curState, succState);
                             this.theStateQueue.finishAll();
                             this.notify();
@@ -616,14 +625,14 @@ public class ModelChecker extends AbstractChecker
 
             // Checkpoint:
             MP.printMessage(EC.TLC_CHECKPOINT_START, this.metadir);
-            
+
             // start checkpointing:
             this.theStateQueue.beginChkpt();
             this.trace.beginChkpt();
             this.theFPSet.beginChkpt();
             this.theStateQueue.resumeAll();
             UniqueString.internTbl.beginChkpt(this.metadir);
-            if (this.checkLiveness) 
+            if (this.checkLiveness)
             {
                 LiveCheck.beginChkpt();
             }
@@ -632,7 +641,7 @@ public class ModelChecker extends AbstractChecker
             this.trace.commitChkpt();
             this.theFPSet.commitChkpt();
             UniqueString.internTbl.commitChkpt(this.metadir);
-            if (this.checkLiveness) 
+            if (this.checkLiveness)
             {
                 LiveCheck.commitChkpt();
             }
@@ -651,17 +660,17 @@ public class ModelChecker extends AbstractChecker
             this.trace.recover();
             this.theStateQueue.recover();
             this.theFPSet.recover();
-            if (this.checkLiveness) 
+            if (this.checkLiveness)
             {
                 LiveCheck.recover();
             }
-            MP.printMessage(EC.TLC_CHECKPOINT_RECOVER_END, new String[]{String.valueOf(this.theFPSet.size()), String.valueOf(this.theStateQueue.size())});
+            MP.printMessage(EC.TLC_CHECKPOINT_RECOVER_END, new String[] { String.valueOf(this.theFPSet.size()),
+                    String.valueOf(this.theStateQueue.size()) });
             recovered = true;
             this.numOfGenStates = this.theFPSet.size();
         }
         return recovered;
     }
-
 
     private final void cleanup(boolean success) throws IOException
     {
@@ -677,8 +686,9 @@ public class ModelChecker extends AbstractChecker
     public final void printSummary(boolean success) throws IOException
     {
         super.reportCoverage(this.workers);
-        
-        MP.printMessage(EC.TLC_STATS, new String[]{String.valueOf(this.numOfGenStates), String.valueOf(this.theFPSet.size()), String.valueOf(this.theStateQueue.size())});
+
+        MP.printMessage(EC.TLC_STATS, new String[] { String.valueOf(this.numOfGenStates),
+                String.valueOf(this.theFPSet.size()), String.valueOf(this.theStateQueue.size()) });
         if (success)
         {
             MP.printMessage(EC.TLC_SEARCH_DEPTH, String.valueOf(this.trace.getLevel()));
@@ -693,10 +703,10 @@ public class ModelChecker extends AbstractChecker
         /* The following code added by LL on 3 Aug 2009 to print probabilities
          * to only one decimal point.
          */
-        PrintfFormat fmt = new PrintfFormat("val = %.1G") ;
+        PrintfFormat fmt = new PrintfFormat("val = %.1G");
         String prob1Str = fmt.sprintf(prob1);
         String prob2Str = fmt.sprintf(prob2);
-        MP.printMessage(EC.TLC_SUCCESS, new String[]{prob1Str, prob2Str});
+        MP.printMessage(EC.TLC_SUCCESS, new String[] { prob1Str, prob2Str });
     }
 
     public final void setAllValues(int idx, Value val)
@@ -741,7 +751,9 @@ public class ModelChecker extends AbstractChecker
     protected void runTLCContinueDoing(int count, int depth) throws Exception
     {
         int level = this.trace.getLevel();
-        MP.printMessage(EC.TLC_PROGRESS_STATS, new String[]{String.valueOf(level), String.valueOf(this.numOfGenStates), String.valueOf(this.theFPSet.size()), String.valueOf(this.theStateQueue.size())});
+        MP.printMessage(EC.TLC_PROGRESS_STATS, new String[] { String.valueOf(level),
+                String.valueOf(this.numOfGenStates), String.valueOf(this.theFPSet.size()),
+                String.valueOf(this.theStateQueue.size()) });
         if (level > depth)
         {
             this.theStateQueue.finishAll();
@@ -751,16 +763,16 @@ public class ModelChecker extends AbstractChecker
             // The following modification sof count are obviously bogus and
             // resulted from Simon's modification of Yuan's original code.
             // Yuan's original code assumes coverageInterval >= progressInterval,
-            // and this should eventually be changed.  But for now,
+            // and this should eventually be changed. But for now,
             // the caller of this method is responsible for updating
-            // count.  LL 9 Oct 2009
+            // count. LL 9 Oct 2009
             if (count == 0)
             {
                 super.reportCoverage(this.workers);
-               // count = TLCGlobals.coverageInterval / TLCGlobals.progressInterval;
+                // count = TLCGlobals.coverageInterval / TLCGlobals.progressInterval;
             } // else
             // {
-            //    count--;
+            // count--;
             // }
             this.wait(TLCGlobals.progressInterval);
         }

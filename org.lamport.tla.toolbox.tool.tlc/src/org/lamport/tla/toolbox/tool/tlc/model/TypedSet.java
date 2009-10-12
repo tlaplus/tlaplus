@@ -126,16 +126,18 @@ public class TypedSet
     {
         return type;
     }
-    
+
     // If id is a "typed" identifier, then it returns
-    // the (one-character) type as a string.  Else, it
-    // returns null.  Note that getTypeOfId("1_xyz") = "1",
-    // and getTypteOfId("__z") = "z".  
-    public static String getTypeOfId(String id) {
-       if (id == null || id.length() < 2 || !id.substring(1, 2).equals("_")) {
-           return null;
-       }
-       return id.substring(0,1);
+    // the (one-character) type as a string. Else, it
+    // returns null. Note that getTypeOfId("1_xyz") = "1",
+    // and getTypteOfId("__z") = "z".
+    public static String getTypeOfId(String id)
+    {
+        if (id == null || id.length() < 2 || !id.substring(1, 2).equals("_"))
+        {
+            return null;
+        }
+        return id.substring(0, 1);
     }
 
     public void setType(String type)
@@ -147,7 +149,7 @@ public class TypedSet
     {
         return values;
     }
-    
+
     /**
      * Convenience interface for iteration over the values
      * This method disconnects the actual typed set from the collection of values
@@ -155,10 +157,10 @@ public class TypedSet
      */
     public List getValuesAsList()
     {
-        if (!hasType()) 
+        if (!hasType())
         {
             return Arrays.asList(values);
-        } else 
+        } else
         {
             List typedList = new ArrayList(values.length);
             // add type to the list
@@ -204,10 +206,11 @@ public class TypedSet
 
     public void setValues(String[] values)
     {
-        if (values == null) 
+        if (values == null)
         {
             this.values = new String[0];
-        } else {
+        } else
+        {
             this.values = values;
         }
     }
@@ -294,7 +297,6 @@ public class TypedSet
         return set.substring(1, set.length() - 1);
     }
 
-    
     /**
      * This test functions checks whether the type has at least one value
      * that contain only of digits
@@ -303,11 +305,12 @@ public class TypedSet
      */
     public boolean hasANumberOnlyValue()
     {
-        if (hasType()) 
+        if (hasType())
         {
             return !hasValidType();
-        } else {
-            for (int i=0; i < values.length; i++)
+        } else
+        {
+            for (int i = 0; i < values.length; i++)
             {
                 if (values[i].matches("[0-9]*"))
                 {
@@ -318,12 +321,12 @@ public class TypedSet
             return false;
         }
     }
-    
+
     public boolean hasValidType()
     {
         if (type != null)
         {
-            if (!type.matches("[A-Za-z]{1}[A-Za-z0-9]*")) 
+            if (!type.matches("[A-Za-z]{1}[A-Za-z0-9]*"))
             {
                 // the type must be a valid identifier
                 return false;

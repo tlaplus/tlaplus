@@ -21,7 +21,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.forms.HyperlinkGroup;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.IMessageManager;
@@ -42,7 +41,6 @@ import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
 import org.lamport.tla.toolbox.tool.tlc.model.TypedSet;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.DataBindingManager;
-import org.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.ValidateableConstantSectionPart;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.ValidateableSectionPart;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.ValidateableTableSectionPart;
@@ -202,7 +200,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
     // were a test that Dan and LL did in September 2009 to try out a method for dynamically
     // modifying the number of pages that are shown in order to provide a more sensible interface
     // when the spec has no variables.
-//    private int countXX = 0;
+    // private int countXX = 0;
 
     public void validatePage(boolean switchToErrorPage)
     {
@@ -216,60 +214,60 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         // to control the display of the get-constants area, we have to
         // be careful and check things carefully because weird things
         // seem to happen.
-//        countXX++;
-//        System.out.println("countXX = " + countXX);
-//        if (countXX == 60000)
-//        {
-//            countXX++;
-//            ModelEditor ourFavoriteEditor = (ModelEditor) this.getEditor();
-//            ourFavoriteEditor.removePage(0);
-//            System.out.println("Page removed");
-//            MainModelPage newPage = new MainModelPage(ourFavoriteEditor);
-//            try
-//            {
-//                ourFavoriteEditor.addPage(0, newPage);
-//                ourFavoriteEditor.setUpPage(newPage, 0);
-//            } catch (PartInitException e)
-//            {
-//                // TODO Auto-generated catch block
-//                TLCUIActivator.logError("Error initializing editor", e);
-//                e.printStackTrace();
-//            }
-//            // newPage.validate(); // Dan: I thought this needed to be added,
-//            // but now I think that it's harmful.
-//
-//            // both the following statements are needed to give make newPage
-//            // the one that's shown.
-//            ourFavoriteEditor.setActivePage(newPage.getId());
-//            newPage.setFocus();
-//            System.out.println("Page re-added");
-//            // System.out.println("Here goes.  Closing editor.");
-//            // ModelEditor ourFavoriteEditor = (ModelEditor) this.getEditor();
-//            // IFile launchFile =
-//            // ourFavoriteEditor.getResource(IFileProvider.TYPE_MODEL);
-//            // ourFavoriteEditor.close(false);
-//            // System.out.println("launchFile.getName = " +
-//            // launchFile.getName());
-//            // // UIHelper.openEditor(OpenModelHandler.EDITOR_ID, launchFile);
-//            // try {
-//            // UIHelper.getActiveWindow().getActivePage().openEditor(new
-//            // FileEditorInput(launchFile),
-//            // OpenModelHandler.EDITOR_ID, true);
-//            // }
-//            // catch (PartInitException e) {
-//            // // TODO Auto-generated catch block
-//            // e.printStackTrace();
-//            // }
-//            // System.out.println("Relaunched the editor");
-//        }
-//        // SOME RANDOM TEST
-//        // if (hasVariables !=
-//        // (SemanticHelper.getRootModuleNode().getVariableDecls().length != 0))
-//        // {
-//        // hasVariables = !hasVariables;
-//        // createBodyContent(getManagedForm());
-//        // System.out.println("We got here in our random test." + count++);
-//        // }
+        // countXX++;
+        // System.out.println("countXX = " + countXX);
+        // if (countXX == 60000)
+        // {
+        // countXX++;
+        // ModelEditor ourFavoriteEditor = (ModelEditor) this.getEditor();
+        // ourFavoriteEditor.removePage(0);
+        // System.out.println("Page removed");
+        // MainModelPage newPage = new MainModelPage(ourFavoriteEditor);
+        // try
+        // {
+        // ourFavoriteEditor.addPage(0, newPage);
+        // ourFavoriteEditor.setUpPage(newPage, 0);
+        // } catch (PartInitException e)
+        // {
+        // // TODO Auto-generated catch block
+        // TLCUIActivator.logError("Error initializing editor", e);
+        // e.printStackTrace();
+        // }
+        // // newPage.validate(); // Dan: I thought this needed to be added,
+        // // but now I think that it's harmful.
+        //
+        // // both the following statements are needed to give make newPage
+        // // the one that's shown.
+        // ourFavoriteEditor.setActivePage(newPage.getId());
+        // newPage.setFocus();
+        // System.out.println("Page re-added");
+        // // System.out.println("Here goes.  Closing editor.");
+        // // ModelEditor ourFavoriteEditor = (ModelEditor) this.getEditor();
+        // // IFile launchFile =
+        // // ourFavoriteEditor.getResource(IFileProvider.TYPE_MODEL);
+        // // ourFavoriteEditor.close(false);
+        // // System.out.println("launchFile.getName = " +
+        // // launchFile.getName());
+        // // // UIHelper.openEditor(OpenModelHandler.EDITOR_ID, launchFile);
+        // // try {
+        // // UIHelper.getActiveWindow().getActivePage().openEditor(new
+        // // FileEditorInput(launchFile),
+        // // OpenModelHandler.EDITOR_ID, true);
+        // // }
+        // // catch (PartInitException e) {
+        // // // TODO Auto-generated catch block
+        // // e.printStackTrace();
+        // // }
+        // // System.out.println("Relaunched the editor");
+        // }
+        // // SOME RANDOM TEST
+        // // if (hasVariables !=
+        // // (SemanticHelper.getRootModuleNode().getVariableDecls().length != 0))
+        // // {
+        // // hasVariables = !hasVariables;
+        // // createBodyContent(getManagedForm());
+        // // System.out.println("We got here in our random test." + count++);
+        // // }
 
         DataBindingManager dm = getDataBindingManager();
         IMessageManager mm = getManagedForm().getMessageManager();
@@ -303,12 +301,12 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
             }
             constantTable.setInput(constants);
         }
-        
+
         // The following string is used to test whether two differently-typed model
         // values appear in symmetry sets (sets of model values declared to be symmetric).
         // It is set to the type of the first typed model value found in a symmetry set.
-        String symmetryType = null; 
-//        boolean symmetryUsed = false;
+        String symmetryType = null;
+        // boolean symmetryUsed = false;
         // iterate over the constants
         for (int i = 0; i < constants.size(); i++)
         {
@@ -334,39 +332,51 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
                     TypedSet modelValuesSet = TypedSet.parseSet(constant.getRight());
 
                     if (constant.isSymmetricalSet())
-                    { boolean hasTwoTypes = false; // set true if this symmetry set has two differently-typed model values.
-                      String typeString = null; // set to the type of the first typed model value in this symmetry set.
-                      if (modelValuesSet.hasType()) {
-                          typeString = modelValuesSet.getType();
-                      } else {
-                          for (int j = 0; j < modelValuesSet.getValues().length; j++) {
-                            String thisTypeString = TypedSet.getTypeOfId(modelValuesSet.getValues()[j]);
-                            if (thisTypeString != null) {
-                                if (typeString != null && !typeString.equals(thisTypeString)) {
-                                    hasTwoTypes = true;
-                                } else {
-                                    typeString = thisTypeString;
+                    {
+                        boolean hasTwoTypes = false; // set true if this symmetry set has two differently-typed model
+                                                     // values.
+                        String typeString = null; // set to the type of the first typed model value in this symmetry
+                                                  // set.
+                        if (modelValuesSet.hasType())
+                        {
+                            typeString = modelValuesSet.getType();
+                        } else
+                        {
+                            for (int j = 0; j < modelValuesSet.getValues().length; j++)
+                            {
+                                String thisTypeString = TypedSet.getTypeOfId(modelValuesSet.getValues()[j]);
+                                if (thisTypeString != null)
+                                {
+                                    if (typeString != null && !typeString.equals(thisTypeString))
+                                    {
+                                        hasTwoTypes = true;
+                                    } else
+                                    {
+                                        typeString = thisTypeString;
+                                    }
                                 }
                             }
-                          }
-                      }
-                      if (hasTwoTypes ||
-                            (symmetryType != null && typeString != null 
-                                    && !typeString.equals(symmetryType))) {
-                          mm.addMessage(constant.getLabel(), "Two differently typed model values used in symmetry sets.",
-                                  constant, IMessageProvider.ERROR, UIHelper.getWidget(dm
-                                          .getAttributeControl(MODEL_PARAMETER_CONSTANTS)));
-                          setComplete(false);
-                          expandSection(dm.getSectionForAttribute(MODEL_PARAMETER_CONSTANTS));
-                      } else {
-                          if (typeString != null) {
-                              symmetryType = typeString;
-                          }
-                      }
-                      
+                        }
+                        if (hasTwoTypes
+                                || (symmetryType != null && typeString != null && !typeString.equals(symmetryType)))
+                        {
+                            mm.addMessage(constant.getLabel(),
+                                    "Two differently typed model values used in symmetry sets.", constant,
+                                    IMessageProvider.ERROR, UIHelper.getWidget(dm
+                                            .getAttributeControl(MODEL_PARAMETER_CONSTANTS)));
+                            setComplete(false);
+                            expandSection(dm.getSectionForAttribute(MODEL_PARAMETER_CONSTANTS));
+                        } else
+                        {
+                            if (typeString != null)
+                            {
+                                symmetryType = typeString;
+                            }
+                        }
+
                         // symmetry can be used for only one set of model values
-    
-                    } 
+
+                    }
                     if (modelValuesSet.getValueCount() > 0)
                     {
                         // there were values defined
@@ -411,17 +421,16 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
             }
         }
 
-        
-        // iterate over the constants again, and check if the parameters are used as Model Values 
+        // iterate over the constants again, and check if the parameters are used as Model Values
         for (int i = 0; i < constants.size(); i++)
         {
             Assignment constant = (Assignment) constants.get(i);
             List values = Arrays.asList(constant.getParams());
             // check list of parameters
-            validateUsage(MODEL_PARAMETER_CONSTANTS, values, "param1_", "A parameter name", "Constant Assignment", false);
+            validateUsage(MODEL_PARAMETER_CONSTANTS, values, "param1_", "A parameter name", "Constant Assignment",
+                    false);
         }
-        
-        
+
         // number of workers
         String numberOfworkers = workers.getText();
         try
@@ -487,7 +496,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
                 setHasVariables(true);
 
                 // no spec has been selected, set the selection to the default
-                if (noSpecRadio.getSelection()) 
+                if (noSpecRadio.getSelection())
                 {
                     // set selection to the default
                     setSpecSelection(MODEL_BEHAVIOR_TYPE_DEFAULT);
@@ -803,7 +812,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         closedFormulaRadio.addSelectionListener(whatIsTheSpecListener);
 
         // spec
-        Label specLabel = toolkit.createLabel(behaviorArea, ""); 
+        Label specLabel = toolkit.createLabel(behaviorArea, "");
         // changed from "Spec:" 10 Sep 09
         gd = new GridData();
         gd.verticalAlignment = SWT.TOP;
