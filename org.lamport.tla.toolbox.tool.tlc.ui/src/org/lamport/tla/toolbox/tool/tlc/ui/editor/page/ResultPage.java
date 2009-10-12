@@ -143,7 +143,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
                         color = TLCUIActivator.getColor(SWT.COLOR_RED);
                         break;
                     }
-                    
+
                     ResultPage.this.errorStatusHyperLink.setText(text);
                     ResultPage.this.errorStatusHyperLink.setForeground(color);
 
@@ -459,23 +459,42 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         {
             if (element instanceof StateSpaceInformationItem)
             {
+                // the "N/A" values are used for simulation mode
                 StateSpaceInformationItem item = (StateSpaceInformationItem) element;
                 switch (columnIndex) {
                 case COL_TIME:
                     return sdf.format(item.getTime());
                 case COL_DIAMETER:
-                    return String.valueOf(item.getDiameter());
+                    if (item.getDiameter() >= 0)
+                    {
+                        return String.valueOf(item.getDiameter());
+                    } else
+                    {
+                        return "--";
+                    }
                 case COL_FOUND:
                     return String.valueOf(item.getFoundStates());
                 case COL_DISTINCT:
-                    return String.valueOf(item.getDistinctStates());
+                    if (item.getDistinctStates() >= 0)
+                    {
+                        return String.valueOf(item.getDistinctStates());
+                    } else
+                    {
+                        return "--";
+                    }
+
                 case COL_LEFT:
-                    return String.valueOf(item.getLeftStates());
+                    if (item.getLeftStates() >= 0)
+                    {
+                        return String.valueOf(item.getLeftStates());
+                    } else
+                    {
+                        return "--";
+                    }
                 }
             }
             return null;
         }
-
     }
 
     /**

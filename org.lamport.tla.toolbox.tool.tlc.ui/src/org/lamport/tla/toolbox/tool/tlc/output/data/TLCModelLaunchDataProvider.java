@@ -226,7 +226,6 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                 case EC.TLC_COMPUTING_INIT:
                 case EC.TLC_CHECKING_TEMPORAL_PROPS:
                 case EC.TLC_SUCCESS:
-                case EC.TLC_PROGRESS_SIMU:
                 case EC.TLC_PROGRESS_START_STATS_DFID:
                 case EC.TLC_PROGRESS_STATS_DFID:
                 case EC.TLC_INITIAL_STATE:
@@ -254,9 +253,9 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                     this.finishTimestamp = GeneralOutputParsingHelper.parseTLCTimestamp(outputMessage);
                     informPresenter(ITLCModelLaunchDataPresenter.END_TIME);
                     break;
-
+                case EC.TLC_PROGRESS_SIMU:
                 case EC.TLC_PROGRESS_STATS:
-                    this.progressInformation.add(0,StateSpaceInformationItem.parse(outputMessage));
+                    this.progressInformation.add(0, StateSpaceInformationItem.parse(outputMessage));
                     informPresenter(ITLCModelLaunchDataPresenter.PROGRESS);
                     break;
                 // Coverage information
@@ -383,13 +382,13 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                             // create the error properties for this id
                             // this method find the corresponding attribute and
                             // create the map with attributes, required to create a marker
-                            props[j] = ModelHelper.createMarkerDescription(config, mcDocument, mcSearcher, errorMessage,
-                                    IMarker.SEVERITY_ERROR, coordinates);
-                            
+                            props[j] = ModelHelper.createMarkerDescription(config, mcDocument, mcSearcher,
+                                    errorMessage, IMarker.SEVERITY_ERROR, coordinates);
+
                             // read the attribute name
                             String attributeName = (String) props[j]
                                     .get(ModelHelper.TLC_MODEL_ERROR_MARKER_ATTRIBUTE_NAME);
-                            
+
                             // read the attribute index
                             Integer attributeIndex = (Integer) props[j]
                                     .get(ModelHelper.TLC_MODEL_ERROR_MARKER_ATTRIBUTE_IDX);
@@ -400,8 +399,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                                 // some attributes are lists
                                 if (ModelHelper.isListAttribute(attributeName))
                                 {
-                                    List attributeValue = (List) config.getAttribute(attributeName,
-                                            new ArrayList());
+                                    List attributeValue = (List) config.getAttribute(attributeName, new ArrayList());
                                     int attributeNumber = (attributeIndex != null) ? attributeIndex.intValue() : 0;
 
                                     if (IModelConfigurationConstants.MODEL_PARAMETER_CONSTANTS.equals(attributeName)
@@ -423,13 +421,19 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                                     idReplacement = config.getAttribute(attributeName, ModelHelper.EMPTY_STRING);
                                 }
                                 // patch the message
-                                
-                                errorMessage = errorMessage.substring(0, errorMessage.indexOf(id)) + idReplacement + errorMessage.substring(errorMessage.indexOf(id) + id.length());
-//                                errorMessage = errorMessage.replaceAll(id, idReplacement);
-                            } else 
+
+                                errorMessage = errorMessage.substring(0, errorMessage.indexOf(id)) + idReplacement
+                                        + errorMessage.substring(errorMessage.indexOf(id) + id.length());
+                                // errorMessage = errorMessage.replaceAll(id, idReplacement);
+                            } else
                             {
-                                throw new CoreException(new Status(IStatus.ERROR, TLCUIActivator.PLUGIN_ID,
-                                        "Provided id " + id + " maps to an attribute that was not found in the model. This is a bug."));
+                                throw new CoreException(
+                                        new Status(
+                                                IStatus.ERROR,
+                                                TLCUIActivator.PLUGIN_ID,
+                                                "Provided id "
+                                                        + id
+                                                        + " maps to an attribute that was not found in the model. This is a bug."));
                             }
                         }
                         // find the locations inside the text

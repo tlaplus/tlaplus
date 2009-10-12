@@ -110,6 +110,14 @@ public class MP
      */
     public static final int STATE = 4;
 
+    /**
+     * This value is used for printing progress in simulation
+     * mode in the same format as in model checking mode to allow
+     * for easier parsing. This value appears in the output string
+     * whereever there is not an applicable value for simulation mode.
+     */
+    public static final String NOT_APPLICABLE_VAL = "-1";
+
     private static MP instance = null;
     private Set warningHistory;
     private static final String CONFIG_FILE_ERROR = "TLC found an error in the configuration file at line %1%\n";
@@ -258,16 +266,16 @@ public class MP
         case EC.SYSTEM_METADIR_CREATION_ERROR:
             b.append("TLC could not make a directory %1% for the disk files it needs to write.");
             break;
-/* ----------------------------------------------------------------- */
+        /* ----------------------------------------------------------------- */
         case EC.WRONG_COMMANDLINE_PARAMS_TLC:
             b.append("%1%\nUsage: java tlc2.TLC [-option] inputfile");
             break;
         case EC.WRONG_COMMANDLINE_PARAMS_SIMULATOR:
             b.append("%1%\nUsage: java tlc2.Simulator [-option] inputfile");
             break;
-/* ----------------------------------------------------------------- */
+        /* ----------------------------------------------------------------- */
         case EC.TLC_USAGE:
-            b.append(Messages.getString("HelpMessage"));// $NON-NLS-1$            
+            b.append(Messages.getString("HelpMessage"));// $NON-NLS-1$
             break;
         case EC.TLC_VERSION:
             b.append("TLC2 %1%");
@@ -486,7 +494,6 @@ public class MP
             b.append("Parameter must be a postfix operator");
             break;
 
-
         case EC.TLC_COULD_NOT_DETERMINE_SUBSCRIPT:
             b.append("TLC could not determine if the subscript of the next-state relation contains"
                     + "\nall state variables. Proceed with fingers crossed.");
@@ -649,10 +656,10 @@ public class MP
             break;
 
         case EC.TLC_STARTING:
-            b.append("Starting... (").append(SDF.format(new Date()) ).append(")");
+            b.append("Starting... (").append(SDF.format(new Date())).append(")");
             break;
         case EC.TLC_FINISHED:
-            b.append("Finished. (").append(SDF.format(new Date()) ).append(")");
+            b.append("Finished. (").append(SDF.format(new Date())).append(")");
             break;
         case EC.TLC_MODE_MC:
             b.append("Running in Model-Checking mode.");
@@ -725,7 +732,16 @@ public class MP
             b.append("Progress: %1% states generated, %2% distinct states found.");
             break;
         case EC.TLC_PROGRESS_SIMU:
-            b.append("Progress: %1% states checked.");
+            if (TLCGlobals.tool)
+            {
+                // same format as model checking progress reporting for easier parsing by the toolbox
+                b.append("Progress(" + NOT_APPLICABLE_VAL + ") at " + SDF.format(new Date())
+                        + ": %1% states generated, " + NOT_APPLICABLE_VAL + " distinct states found, "
+                        + NOT_APPLICABLE_VAL + " states left on queue.");
+            } else
+            {
+                b.append("Progress: %1% states checked.");
+            }
             break;
 
         case EC.TLC_COVERAGE_START:
