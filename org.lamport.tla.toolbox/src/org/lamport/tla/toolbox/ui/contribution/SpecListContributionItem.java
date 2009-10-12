@@ -1,5 +1,6 @@
 package org.lamport.tla.toolbox.ui.contribution;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Vector;
 
@@ -15,6 +16,7 @@ import org.lamport.tla.toolbox.ui.handler.NewSpecHandler;
 import org.lamport.tla.toolbox.ui.handler.OpenSpecHandler;
 import org.lamport.tla.toolbox.util.IHelpConstants;
 import org.lamport.tla.toolbox.util.UIHelper;
+import org.lamport.tla.toolbox.util.compare.SpecComparator;
 
 /**
  * A contribution item, that displays a list of specs, recently loaded by the spec manager
@@ -46,8 +48,11 @@ public class SpecListContributionItem extends CompoundContributionItem
         specContributions.add(new CommandContributionItem(param));
         specContributions.add(new Separator());
 
-
+        Arrays.sort(specs, new SpecComparator()) ;
         // iterate over recently opened specs
+        // TODO: Need to sort the array specs using SpecComparator.compare
+        // Or perhaps change SpecContentProvider.getRecentlyOpened() to
+        // return the array sorted.
         for (int i = 0; i < specs.length; i++)
         {
             parameters = new HashMap();

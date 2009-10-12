@@ -4,6 +4,8 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IHandler;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.QualifiedName;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.ui.perspective.InitialPerspective;
 import org.lamport.tla.toolbox.ui.view.ProblemView;
@@ -18,9 +20,23 @@ public class CloseSpecHandler extends AbstractHandler implements IHandler
 {
     public final static String COMMAND_ID = "toolbox.command.spec.close";
     
+    // A QualifiedName for the project's last closed time persistent property.
+    public static final QualifiedName LAST_CLOSED_DATE = 
+        new QualifiedName(COMMAND_ID, "lastClosedTime");
 
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
+        // Set the project's last closed time to the current time.
+        try
+        {
+            Activator.getSpecManager().getSpecLoaded().getProject().setPersistentProperty(
+               LAST_CLOSED_DATE, "" + System.currentTimeMillis());
+        } catch (CoreException e)
+        {
+            // TODO Auto-generated catch block
+            Activator.logDebug(
+             "Exception thrown when setting project LAST_CLOSED time.");
+        }
         // close all editors
         UIHelper.getActivePage().closeAllEditors(true);
         // hide errors

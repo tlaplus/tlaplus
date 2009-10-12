@@ -160,7 +160,7 @@
             category="toolbox.ui.preferences.GeneralPreferencePage"
             class="org.lamport.tla.toolbox.ui.preference.TranslatorPreferencePage"
             id="toolbox.ui.preferences.ParserPreferencePage"
-            name="PCal Translator Preferences">
+            name="PlusCal Translator Preferences">
       </page>
       
    </extension>
