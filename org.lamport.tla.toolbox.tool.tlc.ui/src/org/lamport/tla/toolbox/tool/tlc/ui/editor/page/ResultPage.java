@@ -249,7 +249,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         // start
         this.startTimestampText = FormHelper.createTextLeft("Start time:", statusComposite, toolkit);
         // elapsed time
-        this.finishTimestampText = FormHelper.createTextLeft("Elapsed time:", statusComposite, toolkit);
+        this.finishTimestampText = FormHelper.createTextLeft("End time:", statusComposite, toolkit);
         // errors
         // Label createLabel =
         // toolkit.createLabel(statusComposite, "Errors detected:");
@@ -418,7 +418,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
     static class StateSpaceLabelProvider extends LabelProvider implements ITableLabelProvider
     {
         public final static String[] columnTitles = new String[] { "Time", "Diameter", "States Found",
-                "States Distinct", "States Left" };
+                "Distinct States", "Queue Size" };
         public final static int[] columnWidths = { 120, 60, 80, 100, 80 };
         public static final int MIN_WIDTH = columnWidths[0] + columnWidths[1] + columnWidths[2] + columnWidths[3]
                 + columnWidths[4];

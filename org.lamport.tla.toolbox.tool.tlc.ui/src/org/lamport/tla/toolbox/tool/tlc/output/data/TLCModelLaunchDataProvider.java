@@ -227,7 +227,6 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                 case EC.TLC_CHECKING_TEMPORAL_PROPS:
                 case EC.TLC_SUCCESS:
                 case EC.TLC_PROGRESS_START_STATS_DFID:
-                case EC.TLC_PROGRESS_STATS_DFID:
                 case EC.TLC_INITIAL_STATE:
                 case EC.TLC_INIT_GENERATED1:
                 case EC.TLC_INIT_GENERATED2:
@@ -253,6 +252,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                     this.finishTimestamp = GeneralOutputParsingHelper.parseTLCTimestamp(outputMessage);
                     informPresenter(ITLCModelLaunchDataPresenter.END_TIME);
                     break;
+                case EC.TLC_PROGRESS_STATS_DFID:
                 case EC.TLC_PROGRESS_SIMU:
                 case EC.TLC_PROGRESS_STATS:
                     this.progressInformation.add(0, StateSpaceInformationItem.parse(outputMessage));

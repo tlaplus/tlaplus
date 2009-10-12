@@ -111,7 +111,7 @@ public class MP
     public static final int STATE = 4;
 
     /**
-     * This value is used for printing progress in simulation
+     * This value is used for printing progress in simulation and depth first search
      * mode in the same format as in model checking mode to allow
      * for easier parsing. This value appears in the output string
      * whereever there is not an applicable value for simulation mode.
@@ -729,7 +729,16 @@ public class MP
             b.append("Starting level %1%: %2% states generated, %3% distinct states found.");
             break;
         case EC.TLC_PROGRESS_STATS_DFID:
-            b.append("Progress: %1% states generated, %2% distinct states found.");
+            if (TLCGlobals.tool)
+            {
+                // same format as model checking progress reporting for easier parsing by the toolbox
+                b.append("Progress(" + NOT_APPLICABLE_VAL + ") at " + SDF.format(new Date())
+                        + ": %1% states generated, %2% distinct states found, " + NOT_APPLICABLE_VAL
+                        + " states left on queue.");
+            } else
+            {
+                b.append("Progress: %1% states generated, %2% distinct states found.");
+            }
             break;
         case EC.TLC_PROGRESS_SIMU:
             if (TLCGlobals.tool)
