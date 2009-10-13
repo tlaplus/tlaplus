@@ -293,5 +293,16 @@
     alloted to the Java heap when running TLC.  TLC should be run with
     Java getting the argument -XmxNm.
     
+43. MINOR BUG (Model Checking Results page display)
+    The layout/spacing of the statistics / progress output / user output fields
+    sucks.  It might be better to make a two-column view like in the 
+    other two pages, splitting the progress output into two separate fields,
+    one in each column.  
+    
+44. MINOR BUG (User Output field of Model Check Results page)
+    The output of the parsing phase should not be put
+    under "User Output".   It should go under Progress output.  Let's try
+    to put only output created by Print commands in the User Output section.
+    
     
      
