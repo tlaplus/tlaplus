@@ -51,10 +51,15 @@ public interface IConfigurationConstants
      * the seed of simulation run 
      */
     public static final String LAUNCH_SIMU_SEED = "simuSeed";
-    
+
     /**
      * Run from the checkpoint
      */
     public static final String LAUNCH_RECOVER = "recover";
+
+    /**
+     * JVM maximum heap size
+     */
+    public static final String LAUNCH_MAX_HEAP_SIZE = "maxHeapSize";
 
 }

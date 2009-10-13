@@ -19,6 +19,11 @@ public interface IConfigurationDefaults
     public static final int LAUNCH_NUMBER_OF_WORKERS_DEFAULT = Runtime.getRuntime().availableProcessors() / 2;
 
     /**
+     * Default max heap size
+     */
+    public static final int LAUNCH_MAX_HEAP_SIZE_DEFAULT = 500;
+
+    /**
      * Default is the model-checking mode
      */
     public static final boolean LAUNCH_MC_MODE_DEFAULT = true;
@@ -44,7 +49,7 @@ public interface IConfigurationDefaults
      * Default seed is -1 
      */
     public static final int LAUNCH_SIMU_SEED_DEFAULT = -1;
-    
+
     /**
      * Do not recover from checkpoints by defualt
      */

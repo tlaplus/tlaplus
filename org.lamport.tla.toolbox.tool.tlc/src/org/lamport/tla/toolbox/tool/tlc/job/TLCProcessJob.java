@@ -30,6 +30,7 @@ public class TLCProcessJob extends TLCJob
 {
     private IProcess process = null;
     private BroadcastStreamListener listener = null;
+
     /**
      * Constructs a process job
      * @param name
@@ -54,7 +55,6 @@ public class TLCProcessJob extends TLCJob
             monitor.worked(STEP);
             monitor.subTask("Preparing the TLC Launch");
 
-
             // classpath
             String[] classPath = new String[] { ToolboxHandle.getTLAToolsClasspath().toOSString() };
 
@@ -65,8 +65,14 @@ public class TLCProcessJob extends TLCJob
             // arguments
             String[] arguments = constructProgramArguments();
 
+            // get max heap size
+            int maxHeapSize = launch.getLaunchConfiguration().getAttribute(LAUNCH_MAX_HEAP_SIZE,
+                    LAUNCH_MAX_HEAP_SIZE_DEFAULT);
+            System.out.println(maxHeapSize);
+
             // using -D to pass the System property of the location of standard modules
-            String[] vmArgs = new String[] { "-DTLA-Library=" + ToolboxHandle.getModulesClasspath().toOSString() };
+            String[] vmArgs = new String[] { "-DTLA-Library=" + ToolboxHandle.getModulesClasspath().toOSString(),
+                    "-Xmx" + maxHeapSize + "m" };
 
             // assemble the config
             VMRunnerConfiguration tlcConfig = new VMRunnerConfiguration(mainClassFQCN, classPath);
@@ -108,10 +114,10 @@ public class TLCProcessJob extends TLCJob
                 monitor.subTask("Model checking...");
 
                 // register the broadcasting listener
-                
+
                 String modelFileName = launch.getLaunchConfiguration().getFile().getName();
                 listener = new BroadcastStreamListener(modelFileName, IProcessOutputSink.TYPE_OUT);
-                
+
                 process.getStreamsProxy().getOutputStreamMonitor().addListener(listener);
                 process.getStreamsProxy().getErrorStreamMonitor().addListener(listener);
 
@@ -164,7 +170,7 @@ public class TLCProcessJob extends TLCJob
         } finally
         {
             // send the notification about completion
-            if (listener != null) 
+            if (listener != null)
             {
                 listener.streamClosed();
             }
@@ -210,5 +216,5 @@ public class TLCProcessJob extends TLCJob
         }
         return null;
     }
-    
+
 }

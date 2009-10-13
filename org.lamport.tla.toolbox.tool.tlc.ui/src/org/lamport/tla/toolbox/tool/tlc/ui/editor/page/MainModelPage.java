@@ -79,6 +79,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
     private SourceViewer specSource;
     private Button checkDeadlockButton;
     private Text workers;
+    private Text maxHeapSize;
     private TableViewer invariantsTable;
     private TableViewer propertiesTable;
     private TableViewer constantTable;
@@ -172,6 +173,9 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
         // number of workers
         workers.setText("" + getConfig().getAttribute(LAUNCH_NUMBER_OF_WORKERS, LAUNCH_NUMBER_OF_WORKERS_DEFAULT));
+
+        // max JVM heap size
+        maxHeapSize.setText("" + getConfig().getAttribute(LAUNCH_MAX_HEAP_SIZE, LAUNCH_MAX_HEAP_SIZE_DEFAULT));
 
         // check deadlock
         boolean checkDeadlock = getConfig().getAttribute(MODEL_CORRECTNESS_CHECK_DEADLOCK,
@@ -334,9 +338,9 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
                     if (constant.isSymmetricalSet())
                     {
                         boolean hasTwoTypes = false; // set true if this symmetry set has two differently-typed model
-                                                     // values.
+                        // values.
                         String typeString = null; // set to the type of the first typed model value in this symmetry
-                                                  // set.
+                        // set.
                         if (modelValuesSet.hasType())
                         {
                             typeString = modelValuesSet.getType();
@@ -459,6 +463,26 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         {
             mm.addMessage("wrongNumber2", "Number of workers must be a positive integer number", null,
                     IMessageProvider.ERROR, UIHelper.getWidget(dm.getAttributeControl(LAUNCH_NUMBER_OF_WORKERS)));
+            setComplete(false);
+            expandSection(SEC_HOW_TO_RUN);
+        }
+
+        // max heap size
+        String maxHeapSizeString = maxHeapSize.getText();
+        try
+        {
+            int maxHeapSizeNum = Integer.parseInt(maxHeapSizeString);
+            if (maxHeapSizeNum <= 0)
+            {
+                mm.addMessage("wrongNumber1", "Maximum heap size must be a positive integer number", null,
+                        IMessageProvider.ERROR, UIHelper.getWidget(dm.getAttributeControl(LAUNCH_MAX_HEAP_SIZE)));
+                setComplete(false);
+                expandSection(SEC_HOW_TO_RUN);
+            }
+        } catch (NumberFormatException e)
+        {
+            mm.addMessage("wrongNumber2", "Maximum heap size must be a positive integer number", null,
+                    IMessageProvider.ERROR, UIHelper.getWidget(dm.getAttributeControl(LAUNCH_MAX_HEAP_SIZE)));
             setComplete(false);
             expandSection(SEC_HOW_TO_RUN);
         }
@@ -652,6 +676,15 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         { /* does not matter */
         }
         getConfig().setAttribute(LAUNCH_NUMBER_OF_WORKERS, numberOfWorkers);
+
+        int maxHeapSizeInt = LAUNCH_MAX_HEAP_SIZE_DEFAULT;
+        try
+        {
+            maxHeapSizeInt = Integer.parseInt(maxHeapSize.getText());
+        } catch (NumberFormatException e)
+        { /* does not matter */
+        }
+        getConfig().setAttribute(LAUNCH_MAX_HEAP_SIZE, maxHeapSizeInt);
 
         // recover from deadlock
         boolean recover = this.checkpointButton.getSelection();
@@ -955,6 +988,20 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
         DirtyMarkingListener howToRunListener = new DirtyMarkingListener(howToRunPart, true);
 
+        // max heap size label
+        FormText maxHeapLabel = toolkit.createFormText(howToRunArea, true);
+        maxHeapLabel.setText("Maximum JVM heap size in MB:", false, false);
+
+        // field max heap size
+        maxHeapSize = toolkit.createText(howToRunArea, "500");
+        maxHeapSize.addModifyListener(howToRunListener);
+        gd = new GridData();
+        gd.horizontalIndent = 10;
+        gd.widthHint = 60;
+        maxHeapSize.setLayoutData(gd);
+
+        dm.bindAttribute(LAUNCH_MAX_HEAP_SIZE, maxHeapSize, howToRunPart);
+
         // label workers
         FormText workersLabel = toolkit.createFormText(howToRunArea, true);
         workersLabel.setText("Number of workers:", false, false);
@@ -964,7 +1011,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         workers.addModifyListener(howToRunListener);
         gd = new GridData();
         gd.horizontalIndent = 10;
-        gd.widthHint = 15;
+        gd.widthHint = 40;
         workers.setLayoutData(gd);
 
         dm.bindAttribute(LAUNCH_NUMBER_OF_WORKERS, workers, howToRunPart);
