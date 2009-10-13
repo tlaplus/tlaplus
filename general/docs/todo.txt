@@ -9,7 +9,7 @@
    with an obsolete version of the field.  I had to type something into the field
    to make the toolbox notice the change and allow me to save the model.
    
-3. BUG (Running TLC in Simulation mode)
+3. BUG (Running TLC in Simulation mode) - FIXED by Dan 13 Oct 2009
    The toolbox doesn't parse the TLC output correctly in simulation mode.  In particular,
    it didn't notice that an invariant had been violated and didn't raise the error
    window.
@@ -72,13 +72,13 @@
    this, and the current validator will disallow the models that this order
    is designed to allow.  
    
-10. BUG (TLC Error View)
+10. BUG (TLC Error View) -- FIXED BY DAN Oct 2009
     If I get a TLC error and close the TLC Error view, reopening it with
     the TLC Model Checker/ TLC Errors menu option produces a blank error
     window.  I have to click on the Errors Detected field to get
     the right TLC Errors view.
     
-11. MINOR BUG (Parsing Error View)
+11. MINOR BUG (Parsing Error View) - MOSTLY FIXED BY DAN 10 Oct 2009
     The Parsing Error item on the Window menu should be disabled when there is no 
     parsing error.
     
@@ -250,7 +250,7 @@
     Enhance the Init/Next method of writing the spec to add lists of weakly
     and strongly fair actions.
         
-37. MINOR BUG (TLC Error report)
+37. MINOR BUG (TLC Error report) - DONE DR 10/12/09
     Here's how to produce the bug:
     Create a new spec that just declares a single variable x.  Create a
     model with the spec defined by letting Init be x=0 and Next be x’=x.  Add
@@ -288,7 +288,7 @@
 41. BUG (View option)
     This option is not implemented.
 
-42. IMPORTANT MISSING FEATURE (Specifying Java heap size)
+42. IMPORTANT MISSING FEATURE (Specifying Java heap size) - DONE DR 10/12/09
     The user should be able to specify the number N of megabytes of storage
     alloted to the Java heap when running TLC.  TLC should be run with
     Java getting the argument -XmxNm.

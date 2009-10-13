@@ -272,7 +272,7 @@ public class Simulator implements Cancelable
   public final void printBehavior(int errorCode, String[] parameters, TLCState state, int traceIdx) 
   {
       
-      MP.printMessage(errorCode, parameters);
+      MP.printError(errorCode, parameters);
       if (this.traceDepth == Long.MAX_VALUE) 
       {
           MP.printMessage(EC.TLC_ERROR_STATE);
