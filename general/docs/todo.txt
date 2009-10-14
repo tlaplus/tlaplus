@@ -1,11 +1,37 @@
 1. NEW FEATURE
+5. NEW FEATURE (Locking Models)
+8. IMPORTANT MISSING FEATURE  (Definition Override)
+9. MINOR MISSING FEATURES (TLC Model)
+12. MINOR BUG (Parsing Error View)
+13. BUG (PlusCal Translator Errors)
+15. POSSIBLE CHANGE (Handling Unparsed Spec)
+17. MINOR BUG (Definition Override)
+18. SIGNIFICANT BUG (parsing large specs)
+19. MINOR MISSING FEATURE (Exit)
+20. MISSING FEATURE (PlusCal)
+21. TUNING NEEDED BEFORE RELEASE (Preferences)
+22. BUG  (rename spec)
+27. MINOR BUG  (Parse Spec/Module Commands)
+28. MINOR BUG  (Reset Window Layout)
+29. FEATURE (Module Editor Keybindings)
+30. MINOR BUG (TLC Error View)
+31. BUG (Definition Override)
+32. MINOR BUG (What to parse when)
+33. FEATURE (TLC error reporting)
+34. FEATURE (Stack trace)
+35. MINOR BUG (TLC Error report)
+36. FEATURE (Action Fairness)
+39. MINOR FEATURE (Constant Assignment)
+40. BUG (Help)
+41. BUG (View option)
+43. MINOR BUG (Model Checking Results page display)
+44. MINOR BUG (User Output field of Model Check Results page)
+45. MINOR PARSING BUG (Naming in nested ASSUME/PROVEs)
+46. BUG (Model reports bogus "TLC still running")
+-----------------------------------------------------------------------------------------
+1. NEW FEATURE
    Add way to tell if spec on which a model was last run is the same as the current
    spec.
-   
-3. BUG (Running TLC in Simulation mode) - FIXED by Dan 13 Oct 2009
-   The toolbox doesn't parse the TLC output correctly in simulation mode.  In particular,
-   it didn't notice that an invariant had been violated and didn't raise the error
-   window.
    
 5. NEW FEATURE (Locking Models)
    If the user adds or removes a declared CONSTANT from the spec while a model is
@@ -81,9 +107,6 @@
     should be able to do to the model when the spec is unparsed; and see that anything he
     shouldn't be able to do is disabled and that anything he should be able to do works.
     
-16. NOT A PROBLEM
-    My Stupidity
-
 17. MINOR BUG (Definition Override)
     The Definitions Override menu allows the user to override the same definition multiple
     times.
@@ -133,17 +156,7 @@
 22. BUG  (rename spec)
     The rename spec command doesn't do the right thing if a spec by
     that name already exists.
-      
-25. SIGNIFICANT BUG -- FIXED 8 October 2009
-    The toolbox would get into a mode such that you have to open a spec twice to get 
-    something other than a blank editor window.  As of 7 Oct 2009, this hadn't 
-    happened in a couple of weeks, so some other change may have fixed it.
-    
-26. MINOR BUG -- APPEARS TO HAVE BEEN FIXED (8 October 2009)
-    Each time the user closes and reopens the toolbox when there are errors from TLC, 
-    the number of errors increases each time by the number of actual TLC errors on 
-    the model.
-
+          
 27. MINOR BUG  (Parse Spec/Module Commands)
     If I select Parse spec from the file menu when the file is dirty,
     a popup asks me if I want to save the resource.  If I say yes, it 
@@ -220,11 +233,6 @@
 41. BUG (View option)
     This option is not implemented.
 
-42. IMPORTANT MISSING FEATURE (Specifying Java heap size) - DONE DR 10/12/09
-    The user should be able to specify the number N of megabytes of storage
-    alloted to the Java heap when running TLC.  TLC should be run with
-    Java getting the argument -XmxNm.
-    
 43. MINOR BUG (Model Checking Results page display)
     The layout/spacing of the statistics / progress output / user output fields
     sucks.  It might be better to make a two-column view like in the 

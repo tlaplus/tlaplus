@@ -5,6 +5,11 @@
    with an obsolete version of the field.  I had to type something into the field
    to make the toolbox notice the change and allow me to save the model.
    
+3. BUG (Running TLC in Simulation mode) - FIXED by Dan 13 Oct 2009
+   The toolbox doesn't parse the TLC output correctly in simulation mode.  In particular,
+   it didn't notice that an invariant had been violated and didn't raise the error
+   window.
+   
 4. BUG (Progress Information) - FIXED by Dan (9 October 2009)
    The progress information is not being displayed.
    
@@ -30,6 +35,9 @@
     by a number.  This is undoubtedly a lexing error, the lexer thinking that
     it is finding the beginning of a proof-step number.
        
+16. NOT A PROBLEM
+    My Stupidity
+
 23. SAME AS 9
         
 24. BUG FIXED ON 1 OCT 2009 by Simon
@@ -41,7 +49,17 @@
      
     the validator complains about the use of the parameter a in the definition of 
     bar.  It shouldn't.
+
+25. SIGNIFICANT BUG -- FIXED 8 October 2009
+    The toolbox would get into a mode such that you have to open a spec twice to get 
+    something other than a blank editor window.  As of 7 Oct 2009, this hadn't 
+    happened in a couple of weeks, so some other change may have fixed it.
      
+26. MINOR BUG -- APPEARS TO HAVE BEEN FIXED (8 October 2009)
+    Each time the user closes and reopens the toolbox when there are errors from TLC, 
+    the number of errors increases each time by the number of actual TLC errors on 
+    the model.
+
 37. MINOR BUG (TLC Error report) - DONE DR 10/12/09
     Here's how to produce the bug:
     Create a new spec that just declares a single variable x.  Create a
@@ -65,3 +83,8 @@
     symmetric, and one include A_c and the other include B_d.  This is what
     the validatePage method should check for.
 
+42. IMPORTANT MISSING FEATURE (Specifying Java heap size) - DONE DR 10/12/09
+    The user should be able to specify the number N of megabytes of storage
+    alloted to the Java heap when running TLC.  TLC should be run with
+    Java getting the argument -XmxNm.
+    
