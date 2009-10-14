@@ -1,0 +1,67 @@
+2. BUG - SEEMS TO HAVE BEEN FIXED (7 Oct 2009)
+   For some reason, the toolbox didn't seem to notice when the Additional Definitions 
+   fields was changed.  Even though the editor's tab had a star next to it, trying to
+   save the model did nothing, and hitting the launch button produced an MC.tla file 
+   with an obsolete version of the field.  I had to type something into the field
+   to make the toolbox notice the change and allow me to save the model.
+   
+4. BUG (Progress Information) - FIXED by Dan (9 October 2009)
+   The progress information is not being displayed.
+   
+6. MISSING FEATURE -- SEEMS NOW TO BE IMPLEMENTED (7 Oct 2009)
+   Checkpoint restoration is not implemented.
+
+7. TLC BUG (Coverage) -- FIXED (9 Oct 2009)
+   Coverage is not working, coverage information being displayed only after a run 
+   completes.  The bug is in TLC, which isn't printing the coverage information. 
+   
+10. BUG (TLC Error View) -- FIXED BY DAN Oct 2009
+    If I get a TLC error and close the TLC Error view, reopening it with
+    the TLC Model Checker/ TLC Errors menu option produces a blank error
+    window.  I have to click on the Errors Detected field to get
+    the right TLC Errors view.
+    
+11. MINOR BUG (Parsing Error View) - MOSTLY FIXED BY DAN 10 Oct 2009
+    The Parsing Error item on the Window menu should be disabled when there is no 
+    parsing error.
+    
+14. SHOW-STOPPER SANY BUG - FIXED 7 October 2009
+    SANY2 does not correctly parse an expression containing a "<" immediately followed
+    by a number.  This is undoubtedly a lexing error, the lexer thinking that
+    it is finding the beginning of a proof-step number.
+       
+23. SAME AS 9
+        
+24. BUG FIXED ON 1 OCT 2009 by Simon
+    Definition override validator is not allowing the re-use of definition parameters.  
+    For example, if you override
+    
+        foo(a) <- <<a>>
+        bar(a) <- {a}
+     
+    the validator complains about the use of the parameter a in the definition of 
+    bar.  It shouldn't.
+     
+37. MINOR BUG (TLC Error report) - DONE DR 10/12/09
+    Here's how to produce the bug:
+    Create a new spec that just declares a single variable x.  Create a
+    model with the spec defined by letting Init be x=0 and Next be x’=x.  Add
+    the invariant x=1 and run the model.  Look at the model overview page.  It
+    looks fine.  Now change the invariant to x = "a" and run it again.  This
+    time, the model overview page puts the TLC error report at the top of
+    the page, where it should say something like "1 error".
+    
+38. BUG (Validation of model) -- FIXED BY LL on 11 October 2009
+    The code to validate the use of symmetry in MainModelPage.validatePage
+    was bogus.  I therefore commented out the test.  (See line 330, or look for
+    the dead code in the if(false).)  Here's what should actually be checked.
+    Define the symmetry model values to be the set of all model values that
+    appear in sets of model values that are declared to be symmetric in the
+    constant instantiatiions.  TLC will produce an error if there are two
+    symmetry model values having different types--that is, both typed and having
+    different types.  This will occur if the user instantiates a constant
+    with a set of model values including A_c and B_d that is declared to
+    be symmetric, or if he declares two different sets of model values to be
+    symmetric, and one include A_c and the other include B_d.  This is what
+    the validatePage method should check for.
+
