@@ -260,3 +260,7 @@
     in the upper right is red, but clicking it does nothing.  The Toolbox
     The last time this happened, the Toolbox Explorer said that the model
     has crashed, and clicking on repair solved the problem.
+
+47. MINOR FEATURE (Default JVM heap size)
+    Add a TLC Model Checker Preference that specifies the default JVM
+    heap size for a new model.
