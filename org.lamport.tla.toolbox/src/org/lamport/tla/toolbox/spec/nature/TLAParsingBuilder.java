@@ -250,8 +250,6 @@ public class TLAParsingBuilder extends IncrementalProjectBuilder {
 					// it would trigger a resource change
 					// event which is not allowed
 					if (spec == null) {
-						System.out.println("1: " + resource.getName()
-								+ resource.getParent().getName());
 						modules.add(resource);
 
 					} else if (spec.getRootFile().getParent().equals(
@@ -273,9 +271,6 @@ public class TLAParsingBuilder extends IncrementalProjectBuilder {
 								// is relevant but it is not known because there
 								// was not a successful parse. Conservatively we
 								// should consider it relevant.
-								System.out.println("2: " + resource.getName()
-										+ " - "
-										+ resource.getParent().getName());
 								modules.add(resource);
 							}
 						}
@@ -294,8 +289,6 @@ public class TLAParsingBuilder extends IncrementalProjectBuilder {
 								&& (dependancyTable.containsKey(resource
 										.getName()) || (spec.getStatus() < IParseConstants.PARSED && spec
 										.getStatus() > IParseConstants.UNPARSED))) {
-							System.out.println("3: " + resource.getName()
-									+ resource.getParent().getName());
 							modules.add(resource);
 						}
 					}
