@@ -280,7 +280,7 @@ public class TLAParsingBuilder extends IncrementalProjectBuilder {
 						// relevant so all resources are considered
 						// relevant. Relevant resources are not necessarily in
 						// dependancy storage. Any resource that is
-						// out of build when the parse status is error added to
+						// out of build when the parse status is error is added to
 						// the list of modules.
 						else if (Long
 								.parseLong(resource
