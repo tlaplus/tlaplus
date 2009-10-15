@@ -66,8 +66,6 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
     private Text simuArilText;
     private TableViewer definitionsTable;
 
-    private final static String DEF_OVERRIDES_PART = "defOverridesPart";
-
     /**
      * Constructs the page
      * 
@@ -486,7 +484,6 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         gd.verticalSpan = 3;
         definitionsPart.getTableViewer().getTable().setLayoutData(gd);
         definitionsTable = definitionsPart.getTableViewer();
-        dm.bindSection(definitionsPart, DEF_OVERRIDES_PART, this.getId());
         dm.bindAttribute(MODEL_PARAMETER_DEFINITIONS, definitionsTable, definitionsPart);
 
         // ---------------------------------------------------------------
