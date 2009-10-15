@@ -1,6 +1,7 @@
 package org.lamport.tla.toolbox.tool.tlc.ui.editor.page;
 
 import java.util.Arrays;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Vector;
 
@@ -23,6 +24,7 @@ import org.eclipse.ui.forms.widgets.FormText;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.forms.widgets.TableWrapData;
+import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.tool.tlc.launch.IConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.IConfigurationDefaults;
 import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
@@ -36,8 +38,12 @@ import org.lamport.tla.toolbox.tool.tlc.ui.util.SemanticHelper;
 import org.lamport.tla.toolbox.util.IHelpConstants;
 import org.lamport.tla.toolbox.util.UIHelper;
 
+import tla2sany.modanalyzer.SpecObj;
+import tla2sany.semantic.OpDefNode;
+
 /**
  * Represent all advanced model elements
+ * 
  * @author Simon Zambrovski
  * @version $Id$
  */
@@ -60,8 +66,11 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
     private Text simuArilText;
     private TableViewer definitionsTable;
 
+    private final static String DEF_OVERRIDES_PART = "defOverridesPart";
+
     /**
      * Constructs the page
+     * 
      * @param editor
      */
     public AdvancedModelPage(FormEditor editor)
@@ -305,12 +314,12 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
 
             // check if those are numbers?
             /*
-            if (modelValuesSet.hasANumberOnlyValue())
-            {
-                mm.addMessage("modelValues1", "A model value can not be an number", modelValuesSet,
-                        IMessageProvider.ERROR, modelValuesSource.getControl());
-                setComplete(false);
-            }*/
+             * if (modelValuesSet.hasANumberOnlyValue()) {
+             * mm.addMessage("modelValues1",
+             * "A model value can not be an number", modelValuesSet,
+             * IMessageProvider.ERROR, modelValuesSource.getControl());
+             * setComplete(false); }
+             */
             List values = modelValuesSet.getValuesAsList();
             // check list of model values if these are already used
             validateUsage(MODEL_PARAMETER_MODEL_VALUES, values, "modelValues2_", "A model value",
@@ -334,6 +343,20 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
 
         }
 
+        // opDefNodes necessary for determining if a definition in definition
+        // overrides is still in the specification
+        SpecObj specObj = ToolboxHandle.getCurrentSpec().getValidRootModule();
+        OpDefNode[] opDefNodes = specObj.getExternalModuleTable().getRootModule().getOpDefs();
+        Hashtable nodeTable = new Hashtable(opDefNodes.length);
+
+        for (int j = 0; j < opDefNodes.length; j++)
+        {
+            String key = opDefNodes[j].getName().toString();
+            nodeTable.put(key, opDefNodes[j]);
+        }
+
+        // get widget for definition overrides
+        Control widget = UIHelper.getWidget(dm.getAttributeControl(MODEL_PARAMETER_DEFINITIONS));
         // check the definition overrides
         List definitions = (List) definitionsTable.getInput();
         for (int i = 0; i < definitions.size(); i++)
@@ -341,13 +364,37 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
             Assignment definition = (Assignment) definitions.get(i);
             List values = Arrays.asList(definition.getParams());
             // check list of parameters
-            validateUsage(MODEL_PARAMETER_DEFINITIONS, values, "param1_", "A parameter name", "Definition Overrides", false);
+            validateUsage(MODEL_PARAMETER_DEFINITIONS, values, "param1_", "A parameter name", "Definition Overrides",
+                    false);
             // check whether the parameters are valid ids
             validateId(MODEL_PARAMETER_DEFINITIONS, values, "param1_", "A parameter name");
+            // check if definition still appears in root module
+            if (!nodeTable.containsKey(definition.getLabel()))
+            {
+                // the following would remove
+                // the definition override from the table
+                // right now, an error message appears instead
+                // definitions.remove(i);
+                // definitionsTable.setInput(definitions);
+                // dm.getSection(DEF_OVERRIDES_PART).markDirty();
+                mm.addMessage(definition.getLabel(), "The defined symbol "
+                        + definition.getLabel().substring(definition.getLabel().lastIndexOf("!") + 1)
+                        + " has been removed from the specification."
+                        + " It must be removed from the list of definition overrides.", null, IMessageProvider.ERROR,
+                        widget);
+            } else
+            {
+                // add error message if the number of parameters has changed
+                OpDefNode opDefNode = (OpDefNode) nodeTable.get(definition.getLabel());
+                if (opDefNode.getSource().getNumberOfArgs() != definition.getParams().length)
+                {
+                    mm.addMessage(definition.getLabel(), "Edit the definition override for "
+                            + opDefNode.getSource().getName() + " to match the correct number of arguments.", null,
+                            IMessageProvider.ERROR, widget);
+                }
+            }
         }
 
-        // get widget for definition overrides
-        Control widget = UIHelper.getWidget(dm.getAttributeControl(MODEL_PARAMETER_DEFINITIONS));
         for (int j = 0; j < definitions.size(); j++)
         {
             Assignment definition = (Assignment) definitions.get(j);
@@ -439,6 +486,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         gd.verticalSpan = 3;
         definitionsPart.getTableViewer().getTable().setLayoutData(gd);
         definitionsTable = definitionsPart.getTableViewer();
+        dm.bindSection(definitionsPart, DEF_OVERRIDES_PART, this.getId());
         dm.bindAttribute(MODEL_PARAMETER_DEFINITIONS, definitionsTable, definitionsPart);
 
         // ---------------------------------------------------------------

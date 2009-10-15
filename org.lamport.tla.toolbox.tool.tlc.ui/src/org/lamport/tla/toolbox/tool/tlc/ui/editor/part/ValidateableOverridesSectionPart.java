@@ -11,6 +11,7 @@ import org.lamport.tla.toolbox.tool.tlc.ui.editor.DataBindingManager;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.BasicFormPage;
 import org.lamport.tla.toolbox.tool.tlc.ui.wizard.AssignmentWizard;
 import org.lamport.tla.toolbox.tool.tlc.ui.wizard.AssignmentWizardPage;
+import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 
 import tla2sany.semantic.OpDefNode;
 
@@ -57,6 +58,19 @@ public class ValidateableOverridesSectionPart extends ValidateableConstantSectio
             }
         }
 
+        // check if number of params defined in modules still matches number of
+        // params in definition override
+        // if it does not, change number of params to match
+        OpDefNode opDefNode = (OpDefNode) ModelHelper.getOpDefNode(formula.getLabel());
+        if (opDefNode.getSource().getNumberOfArgs() != formula.getParams().length)
+        {
+            String[] newParams = new String[opDefNode.getSource().getNumberOfArgs()];
+            for (int i = 0; i < newParams.length; i++)
+            {
+                newParams[i] = "";
+            }
+            formula.setParams(newParams);
+        }
         // Create the wizard
         AssignmentWizard wizard = new AssignmentWizard(getSection().getText(), getSection().getDescription(),
                 (Assignment) formula, AssignmentWizard.NONE, AssignmentWizardPage.DEF_OVERRIDE_WIZARD_ID, "");
