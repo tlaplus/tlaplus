@@ -68,7 +68,6 @@ public class TLCProcessJob extends TLCJob
             // get max heap size
             int maxHeapSize = launch.getLaunchConfiguration().getAttribute(LAUNCH_MAX_HEAP_SIZE,
                     LAUNCH_MAX_HEAP_SIZE_DEFAULT);
-            System.out.println(maxHeapSize);
 
             // using -D to pass the System property of the location of standard modules
             String[] vmArgs = new String[] { "-DTLA-Library=" + ToolboxHandle.getModulesClasspath().toOSString(),
