@@ -264,3 +264,9 @@
 47. MINOR FEATURE (Default JVM heap size)
     Add a TLC Model Checker Preference that specifies the default JVM
     heap size for a new model.
+    
+48. MINOR BUG (Generating MC files)
+    Create a spec with a variable and some specification Spec.  Run it, specifying
+    Spec as the specification formula. Now delete the variable from the spec (but don't
+    delete the Spec from where you typed it) and verify the model.  The toolbox is still
+    generating putting the specification Spec into the MC files.
