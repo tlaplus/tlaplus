@@ -447,7 +447,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
                 .createSectionComposite(
                         left,
                         "Additional Definitions",
-                        "Definitions required for the model checking, in addition to the definitions in the specificatoin modules.",
+                        "Definitions required for the model checking, in addition to the definitions in the specification modules.",
                         toolkit, sectionFlags, getExpansionListener());
         ValidateableSectionPart newDefinitionsPart = new ValidateableSectionPart(section, this, SEC_NEW_DEFINITION);
         managedForm.addPart(newDefinitionsPart);
