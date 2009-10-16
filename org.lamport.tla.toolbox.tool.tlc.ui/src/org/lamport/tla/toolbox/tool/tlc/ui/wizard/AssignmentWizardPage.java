@@ -47,7 +47,6 @@ public class AssignmentWizardPage extends WizardPage
         public void widgetSelected(SelectionEvent e)
         {
             boolean modelValueSelected = optionModelValue.getSelection();
-            boolean modelValueSetSelected = optionSetModelValues.getSelection();
 
             if (modelValueSelected)
             {
@@ -58,8 +57,11 @@ public class AssignmentWizardPage extends WizardPage
             }
             source.getControl().setEnabled(!modelValueSelected);
 
-            flagSymmetricalSet.setEnabled(modelValueSetSelected);
-
+            if (fieldFlags == AssignmentWizard.SHOW_OPTION)
+            {
+                boolean modelValueSetSelected = optionSetModelValues.getSelection();
+                flagSymmetricalSet.setEnabled(modelValueSetSelected);
+            }
             getContainer().updateButtons();
         }
     };
@@ -185,6 +187,41 @@ public class AssignmentWizardPage extends WizardPage
                     optionOrdinaryValue.setSelection(true);
                 }
 
+            } else if (fieldFlags == AssignmentWizard.SHOW_MODEL_VALUE_OPTION)
+            {
+                // ordinary value option
+                optionOrdinaryValue = new Button(container, SWT.RADIO);
+                optionOrdinaryValue.setText("Ordinary assignment");
+                gd = new GridData(SWT.LEFT, SWT.TOP, false, false);
+                gd.horizontalSpan = 2;
+                optionOrdinaryValue.setLayoutData(gd);
+
+                // make a model value
+                optionModelValue = new Button(container, SWT.RADIO);
+                optionModelValue.setText("Model value");
+
+                gd = new GridData(SWT.LEFT, SWT.TOP, false, false);
+                gd.horizontalSpan = 2;
+                optionModelValue.setLayoutData(gd);
+
+                // install listeners
+                optionOrdinaryValue.addSelectionListener(optionSelectionAdapter);
+                optionModelValue.addSelectionListener(optionSelectionAdapter);
+
+                // set the value from the assignment object
+                if (getAssignment().isModelValue())
+                {
+                    // single model value
+                    if (!getAssignment().isSetOfModelValues())
+                    {
+                        optionModelValue.setSelection(getAssignment().isModelValue());
+                        source.getTextWidget().setBackground(container.getBackground());
+                        // set of model values
+                    }
+                } else
+                {
+                    optionOrdinaryValue.setSelection(true);
+                }
             }
         }
         // here we need to add UIHelper.setHelp(container, "assignmentHelp");
@@ -238,9 +275,22 @@ public class AssignmentWizardPage extends WizardPage
                 this.getAssignment().setRight(rightSide);
             }
 
+        } else if (optionModelValue != null)
+        {
+            // definition override with no parameters
+            this.getAssignment().setModelValue(optionModelValue.getSelection());
+            if (optionModelValue.getSelection())
+            {
+                // model value
+                this.getAssignment().setRight(this.getAssignment().getLabel());
+            } else
+            {
+                // ordinary assignment (with no parameters)
+                this.getAssignment().setRight(rightSide);
+            }
         } else
         {
-            // no options - e.G. definition override, or constant with multiple parameters
+            // no options - e.G. definition override or constant with multiple parameters
             this.getAssignment().setRight(rightSide);
         }
 

@@ -1,8 +1,11 @@
 package org.lamport.tla.toolbox.tool.tlc.ui.editor.part;
 
+import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Table;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
@@ -73,7 +76,8 @@ public class ValidateableOverridesSectionPart extends ValidateableConstantSectio
         }
         // Create the wizard
         AssignmentWizard wizard = new AssignmentWizard(getSection().getText(), getSection().getDescription(),
-                (Assignment) formula, AssignmentWizard.NONE, AssignmentWizardPage.DEF_OVERRIDE_WIZARD_ID, "");
+                (Assignment) formula, AssignmentWizard.SHOW_MODEL_VALUE_OPTION,
+                AssignmentWizardPage.DEF_OVERRIDE_WIZARD_ID, "");
         // Create the wizard dialog
         WizardDialog dialog = new WizardDialog(getTableViewer().getTable().getShell(), wizard);
         dialog.setHelpAvailable(true);
@@ -95,5 +99,47 @@ public class ValidateableOverridesSectionPart extends ValidateableConstantSectio
     protected void createButtons(Composite sectionArea, FormToolkit toolkit, boolean add, boolean edit, boolean remove)
     {
         doCreateButtons(sectionArea, toolkit, true, true, true);
+    }
+
+    /**
+     * Overrides the method in ValidateableConstantSectionPart in order
+     * to add a label provider for displaying definition overrides properly.
+     */
+    protected TableViewer createTableViewer(Table table)
+    {
+        TableViewer tableViewer = super.createTableViewer(table);
+
+        // this is necessary for correctly displaying definition overrides
+        // if the label is M!N!Foo, this will return Foo as the label. If ! is not used,
+        // it will do nothing. If the definition override is a model value
+        // then the right side will be equal to the label without any !.
+        // For example if M!N!Foo is overriden as a model value,
+        // the right side of the assignment used to generate the string
+        // in this method will be Foo.
+        tableViewer.setLabelProvider(new LabelProvider() {
+            public String getText(Object element)
+            {
+                if (element instanceof Assignment)
+                {
+                    Assignment assign = (Assignment) element;
+                    String label = assign.getLabel();
+                    String noBangLabel = label.substring(label.lastIndexOf("!") + 1);
+                    String rightSide = null;
+                    if (assign.isModelValue())
+                    {
+                        rightSide = noBangLabel;
+                    } else
+                    {
+                        rightSide = assign.getRight();
+                    }
+                    Assignment assignNoBang = new Assignment(noBangLabel, assign.getParams(), rightSide);
+                    return assignNoBang.toString();
+                }
+                return super.getText(element);
+            }
+        });
+
+        return tableViewer;
+
     }
 }

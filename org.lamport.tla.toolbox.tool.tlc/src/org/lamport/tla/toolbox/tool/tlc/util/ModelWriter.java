@@ -274,11 +274,16 @@ public class ModelWriter
 
         for (int i = 0; i < elements.size(); i++)
         {
-            tlaBuffer.append(COMMENT).append(keyword + " definition ").append(ATTRIBUTE).append(attributeName).append(
-                    INDEX).append(i).append(CR);
             String[] element = (String[]) elements.get(i);
             cfgBuffer.append(element[0]).append(CR);
-            tlaBuffer.append(element[1]).append(CR).append(SEP).append(CR);
+            // when a definition in the root module is overriden as a model value
+            // there is nothing to add to the MC.tla file so, we do not do the following
+            if (!element[1].equals(EMPTY_STRING))
+            {
+                tlaBuffer.append(COMMENT).append(keyword + " definition ").append(ATTRIBUTE).append(attributeName)
+                        .append(INDEX).append(i).append(CR);
+                tlaBuffer.append(element[1]).append(CR).append(SEP).append(CR);
+            }
         }
     }
 
@@ -397,9 +402,10 @@ public class ModelWriter
         Assignment formula;
 
         // getting the opdefnodes is necessary for retrieving the correct label
-        // go appear in the cfg file as explained in the documentation for this method
+        // to appear in the cfg file as explained in the documentation for this method
         SpecObj specObj = ToolboxHandle.getCurrentSpec().getValidRootModule();
-        if (specObj == null) {
+        if (specObj == null)
+        {
             return resultContent;
         }
         OpDefNode[] opDefNodes = specObj.getExternalModuleTable().getRootModule().getOpDefs();
@@ -431,15 +437,34 @@ public class ModelWriter
                 if (source == defNode)
                 {
                     // user is overriding a definition in the root module
-                    content = new String[] { formula.getLabel() + ARROW + id,
-                            formula.getParametrizedLabel(id) + DEFINES_CR + formula.getRight() };
+                    if (formula.isModelValue() && !formula.isSetOfModelValues())
+                    {
+                        // model value
+                        content = new String[] { formula.getLabel() + EQ + formula.getLabel(), EMPTY_STRING };
+                    } else
+                    {
+                        // not a model value
+                        content = new String[] { formula.getLabel() + ARROW + id,
+                                formula.getParametrizedLabel(id) + DEFINES_CR + formula.getRight() };
+                    }
                 } else if (source.getSource() == source)
                 {
                     // user is overriding a definition that is not in the root module
-                    content = new String[] {
-                            source.getName().toString() + ARROW + "["
-                                    + source.getOriginallyDefinedInModuleNode().getName().toString() + "]" + id,
-                            formula.getParametrizedLabel(id) + DEFINES_CR + formula.getRight() };
+                    if (formula.isModelValue() && !formula.isSetOfModelValues())
+                    {
+                        // model value
+                        content = new String[] {
+                                source.getName().toString() + ARROW + "["
+                                        + source.getOriginallyDefinedInModuleNode().getName().toString() + "]" + id
+                                        + " " + id + EQ + source.getName().toString(), "CONSTANT " + id };
+                    } else
+                    {
+                        // not a model value
+                        content = new String[] {
+                                source.getName().toString() + ARROW + "["
+                                        + source.getOriginallyDefinedInModuleNode().getName().toString() + "]" + id,
+                                formula.getParametrizedLabel(id) + DEFINES_CR + formula.getRight() };
+                    }
                 } else
                 {
                     // should raise an error window

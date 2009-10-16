@@ -10,8 +10,23 @@ import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
  */
 public class AssignmentWizard extends Wizard
 {
+    /**
+     * Currently, this flag is not used.
+     */
     public final static int NONE = 0;
+    /**
+     * This is a flag for showing the model value,
+     * ordinary assignment, set of model values,
+     * and symmetric options.
+     * This is currently only used by constant assignments.
+     */
     public final static int SHOW_OPTION = 1;
+    /**
+     *  This is a flag for showing the model value
+     *  and ordinary assignment options.
+     *  This is currently only used by definition overrides.
+     */
+    public final static int SHOW_MODEL_VALUE_OPTION = 2;
 
     private Assignment assignment;
     private AssignmentWizardPage assignmentPage;
