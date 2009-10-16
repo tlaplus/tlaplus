@@ -9,7 +9,7 @@ public interface IModelConfigurationConstants extends IConfigurationConstants
     /**
      * number showing if one closed formula is used
      */
-    public static final String MODEL_BEHAVIOR_SPEC_TYPE = "modelBehaviorSpecType"; 
+    public static final String MODEL_BEHAVIOR_SPEC_TYPE = "modelBehaviorSpecType";
     /**
      * formula which points behavior specification
      */
@@ -27,6 +27,10 @@ public interface IModelConfigurationConstants extends IConfigurationConstants
      */
     public static final String MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_FAIRNESS = "modelBehaviorFairness";
     /**
+     * no specification option
+     */
+    public static final String MODEL_BEHAVIOR_NO_SPEC = "modelBehaviorNoSpec";
+    /**
      * Variables
      */
     public static final String MODEL_BEHAVIOR_VARS = "modelBehaviorVars";
@@ -43,7 +47,7 @@ public interface IModelConfigurationConstants extends IConfigurationConstants
      * property lists
      */
     public static final String MODEL_CORRECTNESS_PROPERTIES = "modelCorrectnessProperties";
-    
+
     /**
      * action constraints list
      */

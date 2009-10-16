@@ -514,7 +514,12 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
             {
                 setHasVariables(false);
                 // set selection to the NO SPEC field
-                setSpecSelection(MODEL_BEHAVIOR_TYPE_NO_SPEC);
+                if (!noSpecRadio.getSelection())
+                {
+                    // mark dirty so that changes must be written to config file
+                    dm.getSection(dm.getSectionForAttribute(MODEL_BEHAVIOR_NO_SPEC)).markDirty();
+                    setSpecSelection(MODEL_BEHAVIOR_TYPE_NO_SPEC);
+                }
             } else
             {
                 setHasVariables(true);
@@ -522,6 +527,8 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
                 // no spec has been selected, set the selection to the default
                 if (noSpecRadio.getSelection())
                 {
+                    // mark dirty so that changes must be written to config file
+                    dm.getSection(dm.getSectionForAttribute(MODEL_BEHAVIOR_CLOSED_SPECIFICATION)).markDirty();
                     // set selection to the default
                     setSpecSelection(MODEL_BEHAVIOR_TYPE_DEFAULT);
                 }
@@ -863,6 +870,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         gd.horizontalSpan = 2;
         noSpecRadio.setLayoutData(gd);
         noSpecRadio.addSelectionListener(whatIsTheSpecListener);
+        dm.bindAttribute(MODEL_BEHAVIOR_NO_SPEC, noSpecRadio, behaviorPart);
 
         // RANDOM TEST CODE THAT DOESN"T SEEM TO DO ANYTHING
         // left.getChildren()[0].setBounds(0, 0, 0, 0);
