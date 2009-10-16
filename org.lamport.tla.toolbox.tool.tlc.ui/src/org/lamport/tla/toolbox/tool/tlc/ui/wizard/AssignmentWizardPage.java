@@ -247,6 +247,8 @@ public class AssignmentWizardPage extends WizardPage
         return false;
     }
 
+    // this method sets up the Assignment object when the user
+    // clicks Finish
     public void dispose()
     {
 
