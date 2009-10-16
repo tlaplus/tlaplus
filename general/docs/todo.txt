@@ -1,6 +1,5 @@
 1. NEW FEATURE
 5. NEW FEATURE (Locking Models)
-8. IMPORTANT MISSING FEATURE  (Definition Override)
 9. MINOR MISSING FEATURES (TLC Model)
 12. MINOR BUG (Parsing Error View)
 13. BUG (PlusCal Translator Errors)
@@ -56,12 +55,6 @@
    Should the user have to explicitly unlock it?  I suggest that it be unlocked when
    the run completes if and only if that run did not take too long--where "too long" is
    a user-settable preference. 
-   
-8. IMPORTANT MISSING FEATURE  (Definition Override)
-   A definition override of an operator with no arguments should include the
-   option of making it a model value.  (This is not a show-stopper because the
-   user can replace it by a model value that he declares in the model-value
-   section.)
    
 9. MINOR MISSING FEATURES (TLC Model)
    a. There is no reason why the user cannot use the same model value in two
