@@ -2,28 +2,60 @@
 <?NLS TYPE="org.eclipse.help.toc"?>
 
 <toc label="TLA+ Toolbox User Guide" topic="html/toc.html">
-   <topic href="html/gettingstarted/main.html" label="Getting Started">
+   <topic href="html/gettingstarted/gettingstarted.html" label="Getting Started">
  <!--     <anchor id="gettingstarted"/> -->
      <topic label="Using Help" 
             href = "html/gettingstarted/help.html">
+    <!-- Notice how a subtopic gets attached in this nested fashion
         <topic label="A Subtopic" 
                href = "html/gettingstarted/subtopic.html">
         </topic>
+    -->
      </topic>
-      <topic label="ManagingViews" 
+      <topic label="Managing Views" 
             href = "html/gettingstarted/views.html">
      </topic>
+      <topic label="Preferences" 
+            href = "html/gettingstarted/preferences.html">
+     </topic>
+     <topic label="TLA+ Resources" 
+            href = "html/gettingstarted/resources.html">
+     </topic>
+     
    </topic>
-   <topic label="Concepts">
-      <anchor id="concepts"/>
+ 
+   <topic label="Managing Your Specifications"
+           href = "html/spec/spec.html">
+     <topic label = "What is a Spec"
+            href  = "html/spec/what-is.html">
+     </topic>
+
+     <topic label = "Opening and Closing Specs"
+            href  = "html/spec/opening-closing.html">
+     </topic>
+
+     <topic label = " Parsing"
+            href  = "html/spec/parsing.html">
+     </topic>
+
+     <topic label = "Editing Modules"
+            href  = "html/spec/editing-modules.html">
+     </topic>
+
+     <topic label = "Pretty-Printing Modules"
+            href  = "html/spec/pretty-printing.html">
+     </topic>
+
+     <topic label = "Parser Preferences"
+            href  = "html/spec/parser-preferences.html">
+     </topic>
    </topic>
-   <topic label="Tasks">
-      <anchor id="tasks"/>
+    <topic label="Model Checking"
+           href = "html/spec/html/model/model.html">
    </topic>
-   <topic label="Reference">
-      <anchor id="reference"/>
+ 
+    <topic label="The PlusCal Translator"
+           href = "html/spec/html/pluscal/pluscal.html">
    </topic>
-   <topic label="Samples">
-      <anchor id="samples"/>
-   </topic>
+ 
 </toc>
