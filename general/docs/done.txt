@@ -65,6 +65,16 @@
     Each time the user closes and reopens the toolbox when there are errors from TLC, 
     the number of errors increases each time by the number of actual TLC errors on 
     the model.
+    
+31. BUG (Definition Override) - FIXED by Dan 15 Oct 2009
+    If a model contains a definition override and the defined symbol is
+    removed from the spec, the override is not removed.  Moreover, in that
+    case trying to run TLC on the model does nothing--it just logs "Skipping
+    resource" messages for the MC file and the spec's root file.  I expect
+    that we just have to add to the validate method a check that every defined 
+    symbol is still defined with the same number of arguments.  If it's no
+    longer defined, we should just remove the override.  If the number of
+    arguments has changed, we should report an error.
 
 37. MINOR BUG (TLC Error report) - DONE DR 10/12/09
     Here's how to produce the bug:
@@ -94,3 +104,8 @@
     alloted to the Java heap when running TLC.  TLC should be run with
     Java getting the argument -XmxNm.
     
+48. MINOR BUG (Generating MC files) - FIXED by Dan 16 Oct 2009
+    Create a spec with a variable and some specification Spec.  Run it, specifying
+    Spec as the specification formula. Now delete the variable from the spec (but don't
+    delete the Spec from where you typed it) and verify the model.  The toolbox is still
+    generating putting the specification Spec into the MC files.
