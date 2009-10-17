@@ -65,7 +65,7 @@ public class NewSpecWizardPage extends WizardPage
 
         // root file label
         Label label = new Label(container, SWT.NULL);
-        label.setText("&Root file:");
+        label.setText("&Root-module file:");
 
         // root file text
         fileText = new Text(container, SWT.BORDER | SWT.SINGLE);
