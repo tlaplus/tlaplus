@@ -29,7 +29,8 @@
 47. MINOR FEATURE (Default JVM heap size)
 49. BUG (Displaying Parser errors) 
 50. MINOR BUG (Deleting a Spec)   
-51. MINOR BUG (Re-creating a spec)
+51. VERY MINOR BUG (Re-creating a spec)
+52. BUG (Parsing Preferences)
 -----------------------------------------------------------------------------------------
 1. NEW FEATURE
    Add way to tell if spec on which a model was last run is the same as the current
@@ -280,15 +281,23 @@
     bug.  (If it's benign, the exception should be caught and dealt
     with.)
 
-51. MINOR BUG (Re-creating a spec)
+51. VERY MINOR BUG (Re-creating a spec)
     When creating a new spec, the Import Existing spec option is always
     checked and disabled.  It should be unchecked and disabled if the
-    .toolbox directory does not already exist.  It should be checked but
-    enabled if the .toobox directory already exists.  If the user unchecks
-    it, the contents of the directory should be deleted.  If this is
-    not easy to implement, then eliminate the checkbox and, if the 
-    .toolbox directory exists, then warn the user that a previous
-    spec will be re-opened.  (This is best done by just printing the
-    warning on the dialog, but a pop-up dialog can be used if that's
-    easier to implement.)
+    .toolbox directory does not already exist.  However, if the .toolbox 
+    directory does exist, its present behavior of checking and enabling
+    the box is the correct one.  If it's hard to have both behaviors,
+    forget about this.
+    
+52. BUG (Parsing Preferences)
+    There are three re-parsing preferences.  The "Automatic re-parse module",
+    which should be renamed to "Re-parse module on save", seems to call
+    the parser on the current module, resetting the parse status if it
+    is the root module.  I have no idea what, if anything, the other
+    two do.  They should be replaced by one: "Re-parse spec (and module) on 
+    module save".  It should do the following.
+        1. If the spec status is not "correctly-parsed", then parse the spec.
+        2. If the the spec status is "correctly-parsed" and the
+           selected module is not in the spec, then parse that module.
+
     
