@@ -108,7 +108,7 @@
             fastViewWidthRatio="0.75"
             icon="icons/full/etool16/new_project_wiz.gif"
             id="toolbox.view.ToolboxExplorer"
-            name="Toolbox Explorer"
+            name="Spec Explorer"
             restorable="true">
       </view>
       <category
@@ -609,11 +609,11 @@
                commandId="toolbox.command.openview"
                icon="icons/full/etool16/new_project_wiz.gif"
                id="toolbox.menu.open.explorer"
-               label="Toolbox Explorer"
+               label="Spec Explorer"
                mnemonic="E"
                mode="FORCE_TEXT"
                style="push"
-               tooltip="Opens the Toolbox Explorer">
+               tooltip="Opens the Spec Explorer">
             <parameter
                   name="toolbox.openview.name"
                   value="toolbox.view.ToolboxExplorer">
