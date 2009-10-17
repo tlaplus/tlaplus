@@ -46,7 +46,7 @@ public class ParserPreferencePage extends FieldEditorPreferencePage implements I
     {
 
         addField(new BooleanFieldEditor(IPreferenceConstants.I_PARSER_POPUP_ERRORS,
-                "&Popup problem window on parse errors", getFieldEditorParent()));
+                "&Always pop up Parsing Errors view", getFieldEditorParent()));
 
         addField(new BooleanFieldEditor(IPreferenceConstants.I_PARSE_MODULE_ON_MODIFY,
                 "&Automatic re-parse module", getFieldEditorParent()));

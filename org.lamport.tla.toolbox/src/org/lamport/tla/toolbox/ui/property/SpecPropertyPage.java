@@ -38,7 +38,7 @@ public class SpecPropertyPage extends GenericFieldEditorPropertyPage
         addEditor(rootFileEditor);
         rootFileEditor.getTextControl(composite).setEditable(false);
         
-        pcalParamEditor = new StringFieldEditor(IPreferenceConstants.PCAL_CAL_PARAMS, "PCal call arguments", composite);
+        pcalParamEditor = new StringFieldEditor(IPreferenceConstants.PCAL_CAL_PARAMS, "PlusCal call arguments", composite);
         addEditor(pcalParamEditor);
         
     }

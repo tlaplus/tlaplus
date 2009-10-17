@@ -35,7 +35,7 @@ public class ModulePropertyPage extends GenericFieldEditorPropertyPage
      */
     public void createFieldEditors(Composite composite)
     {
-        pcalParamEditor = new StringFieldEditor(IPreferenceConstants.PCAL_CAL_PARAMS, "PCal call arguments", composite);
+        pcalParamEditor = new StringFieldEditor(IPreferenceConstants.PCAL_CAL_PARAMS, "PlusCal call arguments", composite);
         addEditor(pcalParamEditor);
     }
 

@@ -5,25 +5,79 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
  <LINK href="../style.css" rel="stylesheet" type="text/css">
 
-<title>Opening and Closing Specs</title>
+<title>Manipulating Specs</title>
 </head>
 <!-- a comment -->
 
 <body>
-<h1>Opening and Closing Specs</h1>
+<h1>Manipulating Specs</h1>
 
- <P> 
-Insert text here.
+A specification has a <em>name</em> and a <em>root module</em>, which
+is in a file whose extension is <code>.tla</code>.  You will probably
+give your spec the same name as its root module, but you need not.
+You can create two different specifications with the same root module, but there's
+little reason to do that.  Two different specs cannot have the same name.
+Here are the Toolbox's spec operations.
+
+<h3>Create</h3>
+
+You can create a new spec with the&nbsp;
+<samp>File/Open Spec/Add New Spec...&nbsp;</samp> menu item.  
+It raises a dialog asking you to choose the root file (which must have
+the extension <code>.tla</code> and the 
+specification name.  
+
+
+<h3>Open</h3>
+
+You can open an existing spec by choosing it from the&nbsp;
+<samp>File/Open Spec</samp> menu.  You can also use the 
+<em>Spec Explorer</em>, which is opened by clicking on the
+<IMG SRC=spec-explorer-icon.gif Align=bottom> icon on the left side of the Toolbox, near the top.
+Right-click on the desired spec and select <samp>Open</samp>.  If you open a spec when another spec
+is open, the other spec will automatically be closed.
+
+
+<h3>Close</h3>
+
+You can close a spec with the&nbsp; <samp>File/Close Spec</samp> menu.  This returns you to the Welcome View.
+However, remember that the toolbox will close the current spec if you open another one.
+
+<h3>Delete and Rename</h3>
+
+You can delete or rename an existing spec by opening the Spec Explorer (described above), right-clicking on
+the desired spec, and making the appropriate choice.  Deleting a spec does not delete any of the specification's
+files.  However, it will delete all its <a href = "../model/about-models.html">TLC models</a>.
+
+<h3>Finding Your Spec</h3>
+
+It's easy to forget where in your file system a spec's module files are.  To find them, open the
+Spec Explorer view, right-click
+on the spec's name, and select&nbsp;<samp>Properties</samp>.  This will bring
+up a dialog that shows you the root-module file's complete path name.  (The rest of the spec's
+module files are in the same folder.)
+
+<h3>Moving a Spec from Elsewhere</h3>
+
+<P> Here is how to move an existing spec named&nbsp; <samp>SName&nbsp;</samp> to a 
+different folder (directory) on the
+same computer, or to a different computer.  Copy all the spec's module files
+(the root-module file and its imported module files)
+and the folder (directory) named&nbsp; <samp>SName.toolbox&nbsp;</samp> to the new
+location.  If there is already a spec named&nbsp; <samp>SName&nbsp;</samp> (which
+will be the case if you're moving the spec to a different place on the same computer),
+delete it from the Toolbox.  Open a new specification named &nbsp; <samp>SName&nbsp;</samp>
+using the new copy of the root-module file.
  </P>
 
 <hr> 
-<!-- delete rest of line to comment out --> 
+<!-- delete rest of line to comment out 
 <dl>
 <dt><b><font color=#0000c0>Subtopics</font></b></dt>
 <dd> <A href=""> TOPIC </A></dd>
 <dd> <A href=""> TOPIC </A></dd>
 </dl>
-<!-- --> 
+ --> 
 <!-- delete rest of line to comment out -->  
 <a href = "spec.html">&uarr; Managing Your Specifications</a>
 <!-- --> 

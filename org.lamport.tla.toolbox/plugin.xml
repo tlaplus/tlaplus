@@ -98,7 +98,7 @@
             class="org.lamport.tla.toolbox.ui.view.ProblemView"
             icon="icons/full/obj16/error_tsk.gif"
             id="toolbox.view.ProblemView"
-            name="Parse Errors"
+            name="Parsing Errors"
             restorable="true">
       </view>
       <view
@@ -324,7 +324,7 @@
       </command>
       <command
             id="toolbox.command.openParseErrorView"
-            name="Open Parse Errors view">
+            name="Open Parsing Errors view">
       </command>
    </extension>
 <!-- 
@@ -623,7 +623,7 @@
                commandId="toolbox.command.openParseErrorView"
                icon="icons/full/obj16/error_tsk.gif"
                id="toolbox.menu.open-problems"
-               label="Parse Errors"
+               label="Parsing Errors"
                mnemonic="P"
                mode="FORCE_TEXT"
                style="push"

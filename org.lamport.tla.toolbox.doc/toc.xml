@@ -26,15 +26,15 @@
  
    <topic label="Managing Your Specifications"
            href = "html/spec/spec.html">
-     <topic label = "What is a Spec"
+     <topic label = "What is a Spec?"
             href  = "html/spec/what-is.html">
      </topic>
 
-     <topic label = "Opening and Closing Specs"
+     <topic label = "Manipulating Specs"
             href  = "html/spec/opening-closing.html">
      </topic>
 
-     <topic label = " Parsing"
+     <topic label = "Parsing"
             href  = "html/spec/parsing.html">
      </topic>
 
@@ -46,9 +46,11 @@
             href  = "html/spec/pretty-printing.html">
      </topic>
 
-     <topic label = "Parser Preferences"
-            href  = "html/spec/parser-preferences.html">
-     </topic>
+    <!--  <topic label = "Parser Preferences"
+            href  = "html/spec/parser-preferences.html"> 
+          </topic>
+     -->
+ 
    </topic>
     <topic label="Model Checking"
            href = "html/spec/html/model/model.html">

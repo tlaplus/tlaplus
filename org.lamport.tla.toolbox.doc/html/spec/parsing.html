@@ -12,18 +12,62 @@
 <body>
 <h1>Parsing</h1>
 
- <P> 
-Insert text here.
- </P>
+<p>
+The Toolbox parses a spec upon opening it.  The parse status of the currently open spec is shown in the lower right-hand
+corner of the Toolbox window.  The status is either:&nbsp; <samp>Parsed</samp>, meaning it has no parsing
+errors;&nbsp; <samp>Unparsed</samp>, meaning that the spec had no errors the last time it was parsed, but that
+one of its files has since been modified and saved;&nbsp; or <samp>Error</samp>, meaning that an error
+was found the last time it was parsed.
+</p>
+
+<p>
+Clicking&nbsp; <samp>File/Parse Spec</samp>&nbsp;  parses the 
+spec.  Clicking&nbsp; <samp>File/Parse Module</samp>&nbsp; parses the currently selected module, which 
+is the one in the most recently selected module-editor.   Parsing the spec is equivalent to parsing its root module. 
+ 
+ Unless your spec is <font size=+1>VERY BIG</font>, you will want to parse whenever a module is saved.
+ See the parsing preferences listed below for how to do this.</p>
+
+<p>
+If there is a parsing error, the Toolbox pops up a Parsing Errors view.  For most errors, clicking on
+the error takes you to its location in a module editor.  The Toolbox also marks the locations of the 
+errors in the module editor (or editors).  There is a preference, described below, that controls
+whether or not the Parsing Errors view 
+automatically pops up.  If you set it not to pop up, you can open the view from the 
+Toolbox's&nbsp; <samp>Window</samp>&nbsp; menu.
+</p>
+
+<h2>Parsing Preferences</h2>
+
+<h3>Re-parse module on save</h3>
+
+<p>
+Causes a module to be reparsed when you save it from the module editor.  It is the default.
+</p>
+
+<h3>Re-parse spec (and module) on module save</h3>
+
+<p>
+
+Causes the entire spec to be reparsed when you save any module.  (If the module is not part of
+the spec, it will be reparsed if the spec parses correctly.)
+It is the default.
+</p>
+
+<h3>Always pop up Parsing Errors view</h3>
+
+<p>
+It is the default.  
+</p>
 
 <hr> 
-<!-- delete rest of line to comment out --> 
+<!-- delete rest of line to comment out 
 <dl>
 <dt><b><font color=#0000c0>Subtopics</font></b></dt>
 <dd> <A href=""> TOPIC </A></dd>
 <dd> <A href=""> TOPIC </A></dd>
 </dl>
-<!-- --> 
+ --> 
 <!-- delete rest of line to comment out -->  
 <a href = "spec.html">&uarr; Managing Your Specifications</a>
 <!-- --> 
