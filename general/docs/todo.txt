@@ -26,6 +26,8 @@
 44. MINOR BUG (User Output field of Model Check Results page)
 45. MINOR PARSING BUG (Naming in nested ASSUME/PROVEs)
 46. BUG (Model reports bogus "TLC still running")
+47. MINOR FEATURE (Default JVM heap size)
+49. BUG (Displaying Parser errors)    
 -----------------------------------------------------------------------------------------
 1. NEW FEATURE
    Add way to tell if spec on which a model was last run is the same as the current
@@ -246,3 +248,27 @@
 47. MINOR FEATURE (Default JVM heap size)
     Add a TLC Model Checker Preference that specifies the default JVM
     heap size for a new model.
+    
+49. BUG (Displaying Parser errors)    
+    I stupidly thought it was impossible for there to be a parser error
+    in a standard module.  Here are two ways it can happen
+  
+           a + b == ...
+           INSTANCE Naturals
+           
+    and
+    
+           EXTENDS Foo, Naturals
+           
+    where Foo defines + .  When it encounters such an error, the Toolbox
+    throws an exception because it can't find the resource corresponding
+    to the Naturals.tla file.  The solution is for the Toolbox to to check
+    if a parsing error is in a standard module and, if it is, it should
+    not produce an error marker nor should it link the error message in
+    the Parse Error view to the module.  It should just display the error
+    in the Parse Error view.  Also, since there is no error marker, in
+    that case it should raise the Parse Error view even if the preference
+    says that it shouldn't.  (If this is not easy to implement, don't bother
+    with it.)
+      
+  
