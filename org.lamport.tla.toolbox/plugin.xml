@@ -451,7 +451,7 @@
             locationURI="menu:toolbox.file.menu?after=toolbox.file.module.separator">
          <menu
                id="toolbox.menu.module.open"
-               label="Open TLA+ Module"
+               label="Open Module"
                mnemonic="o"
                tooltip="Open a TLA+ Module">
             <visibleWhen
@@ -474,7 +474,7 @@
                commandId="toolbox.command.module.parse.active"
                icon="icons/full/obj16/complete_task.gif"
                id="toolbox.menu.module.parse"
-               label="Parse TLA+ Module"
+               label="Parse Module"
                mnemonic="p">
             <visibleWhen
                   checkEnabled="true">
