@@ -245,7 +245,7 @@ public class NewSpecWizardPage extends WizardPage
             if (!importExisting.getSelection()) 
             {
                 reportError("The "+getSpecName()+".toolbox directory already exists at the provided location." +
-                		"\nPlease select a different specification name or the root module.");
+                		"\nPlease select a different specification name or  root-module file.");
                 return;
             }
             importExisting.setEnabled(true);
