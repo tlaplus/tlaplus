@@ -27,7 +27,9 @@
 45. MINOR PARSING BUG (Naming in nested ASSUME/PROVEs)
 46. BUG (Model reports bogus "TLC still running")
 47. MINOR FEATURE (Default JVM heap size)
-49. BUG (Displaying Parser errors)    
+49. BUG (Displaying Parser errors) 
+50. MINOR BUG (Deleting a Spec)   
+51. MINOR BUG (Re-creating a spec)
 -----------------------------------------------------------------------------------------
 1. NEW FEATURE
    Add way to tell if spec on which a model was last run is the same as the current
@@ -271,4 +273,22 @@
     says that it shouldn't.  (If this is not easy to implement, don't bother
     with it.)
       
-  
+50. MINOR BUG (Deleting a Spec)
+    Deleting a spec throws a null pointer exception deep inside the call
+    of createLink at ResourceHelper.java, line 301.  It would be a good
+    idea to find out why, since this may be a symptom of an undiscovered
+    bug.  (If it's benign, the exception should be caught and dealt
+    with.)
+
+51. MINOR BUG (Re-creating a spec)
+    When creating a new spec, the Import Existing spec option is always
+    checked and disabled.  It should be unchecked and disabled if the
+    .toolbox directory does not already exist.  It should be checked but
+    enabled if the .toobox directory already exists.  If the user unchecks
+    it, the contents of the directory should be deleted.  If this is
+    not easy to implement, then eliminate the checkbox and, if the 
+    .toolbox directory exists, then warn the user that a previous
+    spec will be re-opened.  (This is best done by just printing the
+    warning on the dialog, but a pop-up dialog can be used if that's
+    easier to implement.)
+    
