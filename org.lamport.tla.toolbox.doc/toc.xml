@@ -53,11 +53,11 @@
  
    </topic>
     <topic label="Model Checking"
-           href = "html/spec/html/model/model.html">
+           href = "html/model/model.html">
    </topic>
  
     <topic label="The PlusCal Translator"
-           href = "html/spec/html/pluscal/pluscal.html">
+           href = "html/pluscal/pluscal.html">
    </topic>
  
 </toc>

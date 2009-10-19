@@ -41,7 +41,7 @@ public class TranslatorPreferencePage extends FieldEditorPreferencePage implemen
                 "&Popup problem window on translator errors", getFieldEditorParent()));
 
         addField(new BooleanFieldEditor(IPreferenceConstants.I_TRANSLATE_MODULE_ON_MODIFY,
-                "&Automatic re-translate module", getFieldEditorParent()));
+                "&Re-translate on module save", getFieldEditorParent()));
     }
 
     public void init(IWorkbench workbench)

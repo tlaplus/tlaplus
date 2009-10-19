@@ -725,7 +725,7 @@
                commandId="toolbox.command.module.translate.active"
                icon="icons/full/obj16/start_ccs_task.gif"
                id="toolbox.menu.run.translate"
-               label="Translate PlusCal to TLA+"
+               label="Translate PlusCal Algorithm"
                mnemonic="t">
             <visibleWhen
                   checkEnabled="true">

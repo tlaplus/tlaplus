@@ -58,12 +58,18 @@ Insert, Delete, and Move Text</font></TH>
 
 <TR> <TD><CODE>Shift+Enter</CODE></TD> <TD> Insert line below current line</TD></TR>
 
-<TR> <TD><CODE>Ctl+Shift+Del</CODE></TD> <TD> Delete to end of current line.</TD></TR>
+<TR> <TD><CODE>Ctl+Shift+Del</CODE></TD> <TD> Delete to end of current line</TD></TR>
 
-<TR> <TD><CODE>Ctl+Backspace</CODE></TD> <TD> Delete to beginning of current or previous word.</TD></TR>
-<TR> <TD><CODE>Alt+UpArrow</CODE></TD> <TD> Move current line up.</TD></TR>
+<TR> <TD><CODE>Ctl+Backspace</CODE></TD> <TD> Delete to beginning of current or previous word</TD></TR>
 
-<TR> <TD><CODE>Alt+DownArrow</CODE></TD> <TD> Move current line Down.</TD></TR>
+<TR> <TD><CODE>Ctl+Del</CODE></TD> <TD> Delete to end of current word</TD></TR>
+
+<TR> <TD><CODE>Alt+Up/DownArrow</CODE></TD> <TD> Move current line up/down</TD></TR>
+
+<TR> <TD><CODE>Shift+Tab</CODE></TD> <TD>If there are (at least) 4 spaces at beginning of line,
+                                         delete them</TD></TR>
+
+<TR> <TD><CODE>Ctl+/</CODE></TD> <TD>Comment out or uncomment selected lines</TD></TR>
 
 <TR> <TD><CODE>Ctl+Alt+J</CODE></TD> <TD> Join next line to current line</TD></TR>
 
@@ -73,49 +79,79 @@ Insert, Delete, and Move Text</font></TH>
 
 <TR><TD><CODE>Ctl+Z</CODE></TD> <TD> Undo</TD></TR>
 
+<TR><TD><CODE>Ctl+A</CODE></TD> <TD> Select all</TD></TR>
+
 
 
 <TR> <TD colspan=2> <BR> </TD></TR>
 <TR> <TH colspan=2 align=left> <font color=000000>Moving Around</font></TH>
+<TR> <TD colspan=2 align=left>For most of these commands, holding Shift down also selects the text.</TD>
+
+<TR> <TD><CODE>Home/End</CODE></TD> <TD> Go to beginning/end of current line</TD></TR>
+
+<TR> <TD><CODE>Ctl+Home/End</CODE></TD> <TD> Go to beginning/end of module</TD></TR>
+
+<!-- 
+<TR> <TD><CODE>Home</CODE></TD> <TD> Go to beginning of current line</TD></TR>
+<TR> <TD><CODE>Ctl+Home</CODE></TD> <TD> Go to beginning of module</TD></TR>
+ -->
+ 
+<TR> <TD><CODE>Ctl+RightArrow</CODE></TD> <TD> Go to beginning of next word</TD></TR>
+
+<TR> <TD><CODE>Ctl+LeftArrow</CODE></TD> <TD> Go to beginning of current or previous word</TD></TR>
+
+<TR> <TD><CODE>Ctl+L</CODE></TD> <TD> Go to line [asks for line number]</TD></TR>
 
 <TR> <TD><CODE>Ctl+Q</CODE></TD> <TD> Go to last edit location</TD></TR>
 
-<TR> <TD><CODE>End</CODE></TD> <TD> Go to end of current line</TD></TR>
+<TR> <TD><CODE>Ctl+Up/DownArrow</CODE></TD> <TD> Scroll up/down one line</TD></TR>
+<TR> <TD colspan=2 align=left>The arrow and page-up/down keys behave as usual.</TD>
 
-<TR> <TD><CODE>Home</CODE></TD> <TD> Go to beginning of current line</TD></TR>
-
-<TR> <TD><CODE>Ctl+RightArrow</CODE></TD> <TD> Go to beginning of next word.</TD></TR>
-
-<TR> <TD><CODE>Ctl+LeftArrow</CODE></TD> <TD> Go to beginning of current or previous word.</TD></TR>
-
-<TR> <TD><CODE>Ctl+L</CODE></TD> <TD> Go to line [asks for line number]</TD></TR>
+<!-- 
+<TR> <TD colspan=2> <BR> </TD></TR>
+<TR> <TH colspan=2 align=left> <font color=000000>Selecting Text</font></TH>
+-->
 
 <TR> <TD colspan=2> <BR> </TD></TR>
 <TR> <TH colspan=2 align=left> <font color=000000>Find and Replace</font></TH>
 <TR> <TD><CODE>Ctl+F</CODE></TD> <TD> Raise Find/Replace dialog</TD></TR>
 
-<TR> <TD><CODE>Ctl+K</CODE></TD> <TD> Find next (in forward direction) instance of last search item.</TD></TR>
+<TR> <TD><CODE>Ctl+K</CODE></TD> <TD> Find next (in forward direction) instance of last search item</TD></TR>
 
-<TR> <TD><CODE>Ctl+Shift+K</CODE></TD> <TD> Find previous (in backwards direction) instance of last search item.</TD></TR>
+<TR> <TD><CODE>Ctl+Shift+K</CODE></TD> <TD> Find previous (in backwards direction) instance of last search item</TD></TR>
 
-<TR> <TD><CODE>Ctl+J</CODE></TD> <TD> Incremental forward find.</TD></TR>
+<TR> <TD><CODE>Ctl+J</CODE></TD> <TD> Incremental forward find</TD></TR>
 
-<TR> <TD><CODE>Ctl+Shift+J</CODE></TD> <TD> Incremental backwards find.</TD></TR>
+<TR> <TD><CODE>Ctl+Shift+J</CODE></TD> <TD> Incremental backwards find</TD></TR>
 
 <TR> <TD colspan=2> <BR> </TD></TR>
-<TR> <TH colspan=2 align=left> <font color=000000>Other</font></TH>
+<TR> <TH colspan=2 align=left> <font color=000000>Other</font></TH></TR>
 
-<TR> <TD><CODE>Ctl+S</CODE></TD> <TD> Save module.</TD></TR>
+<TR> <TD><CODE>Ctl+S</CODE></TD> <TD> Save module</TD></TR>
 
 <TR> <TD><CODE>Alt+X</CODE></TD> <TD> Exit toolbox</TD></TR>
 
-<TR> <TD><CODE>Ctl+M</CODE></TD> <TD> Maximize or unmaximize current editor or view.</TD></TR>
+<TR> <TD><CODE>Ctl+M</CODE></TD> <TD> Maximize or unmaximize current editor or view</TD></TR>
 
 <TR> <TD><CODE>Ctl+R</CODE></TD> <TD> Parse module</TD></TR>
 
 <TR> <TD><CODE>Ctl+Alt+R</CODE></TD> <TD> Parse spec</TD></TR>
 
-</TD></TR>
+<TR> <TD><CODE>F1</CODE></TD> <TD> Raise Help view</TD></TR>
+
+<TR> <TD><CODE>Ctl+PageUp/Down</CODE></TD> <TD> Go to next/previous editor view </TD></TR>
+
+<TR> <TD><CODE>Ctl+F6</CODE></TD> <TD> Go to another editor view  (Use up/down arrow to select view, 
+  then type Enter.)</TD></TR>
+
+<TR> <TD><CODE>Ctl+F7</CODE></TD> <TD> Go to another view  (Use up/down arrow to select view, 
+  then type Enter.)</TD></TR>
+  
+  <TR> <TD><CODE>Ctl+F10</CODE></TD> <TD>Can use to set line-numbering preference or go to&nbsp; 
+     <samp>Preferences /General/Editors/Text Editors</samp></TD></TR>
+  
+  
+
 
 <!-- 
 <TR> <TD><CODE>Ctl+Shift+R</CODE></TD> <TD> Open Resource.  <BR>
@@ -143,6 +179,7 @@ Insert, Delete, and Move Text</font></TH>
 <TR> <TD><CODE>Alt+PageUp  </CODE></TD> <TD> Previous SubTab DOES NOTHING</TD></TR>
 <TR> <TD><CODE>Ctl+N</CODE></TD> <TD> Raises a "New" menu that allows user to do weird things. Probably best to disable this.</TD></TR>
 
+<TR> <TD><CODE>Alt+F4</CODE></TD> <TD> Windows command to kill program.</TD></TR>
 -->
 </TBODY>
 </TABLE>
