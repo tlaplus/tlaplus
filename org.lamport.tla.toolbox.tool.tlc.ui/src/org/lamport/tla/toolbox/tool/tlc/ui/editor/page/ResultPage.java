@@ -17,6 +17,7 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
@@ -223,7 +224,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         FormToolkit toolkit = managedForm.getToolkit();
         Composite body = managedForm.getForm().getBody();
         TableWrapLayout layout = new TableWrapLayout();
-        layout.numColumns = 2;
+        layout.numColumns = 1;
         body.setLayout(layout);
 
         TableWrapData twd;
@@ -235,7 +236,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         section = FormHelper.createSectionComposite(body, "General", "The current progress of model-checking", toolkit,
                 sectionFlags, getExpansionListener());
         twd = new TableWrapData();
-        twd.colspan = 2;
+        twd.colspan = 1;
 
         section.setLayoutData(twd);
 
@@ -261,31 +262,17 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         section = FormHelper.createSectionComposite(body, "Statistics", "The current progress of model-checking",
                 toolkit, sectionFlags | Section.COMPACT, getExpansionListener());
         twd = new TableWrapData();
-        twd.colspan = 2;
+        twd.colspan = 1;
         section.setLayoutData(twd);
         Composite statArea = (Composite) section.getClient();
-        layout = new TableWrapLayout();
-        layout.numColumns = 2;
-        statArea.setLayout(layout);
+        RowLayout rowLayout = new RowLayout(SWT.HORIZONTAL);
+        // rowLayout.numColumns = 2;
+        statArea.setLayout(rowLayout);
 
         // progress stats
         createAndSetupStateSpace("State space progress statistics:", statArea, toolkit);
         // coverage stats
         createAndSetupCoverage("Coverage statistics at", statArea, toolkit);
-
-        // -------------------------------------------------------------------
-        // progress section
-        section = FormHelper.createSectionComposite(body, "Progress Output", "The current progress of model-checking",
-                toolkit, sectionFlags, getExpansionListener());
-        Composite progressArea = (Composite) section.getClient();
-        progressArea = (Composite) section.getClient();
-        progressArea.setLayout(new GridLayout());
-
-        progressOutput = FormHelper.createFormsOutputViewer(toolkit, progressArea, textFieldFlags);
-        gd = new GridData(SWT.FILL, SWT.LEFT, true, true);
-        gd.minimumHeight = 300;
-        gd.minimumWidth = 300;
-        progressOutput.getControl().setLayoutData(gd);
 
         // -------------------------------------------------------------------
         // output section
@@ -300,6 +287,22 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         gd.minimumHeight = 300;
         gd.minimumWidth = 300;
         userOutput.getControl().setLayoutData(gd);
+
+        // -------------------------------------------------------------------
+        // progress section
+        section = FormHelper.createSectionComposite(body, "Progress Output", "The current progress of model-checking",
+                toolkit, sectionFlags, getExpansionListener());
+        section.setExpanded(false);
+        Composite progressArea = (Composite) section.getClient();
+        progressArea = (Composite) section.getClient();
+        progressArea.setLayout(new GridLayout());
+
+        progressOutput = FormHelper.createFormsOutputViewer(toolkit, progressArea, textFieldFlags);
+        gd = new GridData(SWT.FILL, SWT.LEFT, true, true);
+        gd.minimumHeight = 300;
+        gd.minimumWidth = 300;
+        progressOutput.getControl().setLayoutData(gd);
+
     }
 
     /**

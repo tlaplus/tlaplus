@@ -70,6 +70,11 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
     private Document userOutput;
     // the model, which is represented by the current launch data provider
     private ILaunchConfiguration config;
+    // flag indicating that TLC has started
+    // currently this is used to indicate
+    // that tlc output not surrounded by message tags
+    // should be put in the user output widget
+    private boolean isTLCStarted = false;
 
     public TLCModelLaunchDataProvider(ILaunchConfiguration config)
     {
@@ -87,6 +92,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
     private void initialize()
     {
         isDone = false;
+        isTLCStarted = false;
         errors = new Vector();
         ModelHelper.removeModelProblemMarkers(this.config, ModelHelper.TLC_MODEL_ERROR_MARKER_TLC);
 
@@ -149,6 +155,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
         // restarting
         if (isDone)
         {
+            isTLCStarted = false;
             isDone = false;
         }
 
@@ -245,6 +252,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                     setDocumentText(this.progressOutput, outputMessage, true);
                     break;
                 case EC.TLC_STARTING:
+                    isTLCStarted = true;
                     this.startTimestamp = GeneralOutputParsingHelper.parseTLCTimestamp(outputMessage);
                     informPresenter(ITLCModelLaunchDataPresenter.START_TIME);
                     break;
@@ -288,8 +296,19 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
 
         } else
         {
-            setDocumentText(this.userOutput, outputMessage, true);
-            // TLCUIActivator.logDebug("Unknown type detected: " + region.getType() + " message " + outputMessage);
+            if (isTLCStarted)
+            {
+                // SANY output is finished
+                // remaining output from TLC without message
+                // tags can be put in the user output widget
+                setDocumentText(this.userOutput, outputMessage, true);
+                // TLCUIActivator.logDebug("Unknown type detected: " + region.getType() + " message " + outputMessage);
+            } else
+            {
+                // SANY output
+                // should be put in progress output widget
+                setDocumentText(this.progressOutput, outputMessage, true);
+            }
         }
     }
 
