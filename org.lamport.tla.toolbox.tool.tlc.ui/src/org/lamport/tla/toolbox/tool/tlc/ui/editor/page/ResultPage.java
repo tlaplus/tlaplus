@@ -61,6 +61,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
     private SourceViewer progressOutput;
     private Text startTimestampText;
     private Text finishTimestampText;
+    private Text lastCheckpointTimeText;
     private Text coverageTimestampText;
     private TableViewer coverage;
     private TableViewer stateSpace;
@@ -110,6 +111,9 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
                     break;
                 case END_TIME:
                     ResultPage.this.finishTimestampText.setText(dataProvider.getFinishTimestamp());
+                    break;
+                case LAST_CHECKPOINT_TIME:
+                    ResultPage.this.lastCheckpointTimeText.setText(dataProvider.getLastCheckpointTimeStamp());
                     break;
                 case COVERAGE_TIME:
                     ResultPage.this.coverageTimestampText.setText(dataProvider.getCoverageTimestamp());
@@ -249,8 +253,13 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 
         // start
         this.startTimestampText = FormHelper.createTextLeft("Start time:", statusComposite, toolkit);
+        this.startTimestampText.setEditable(false);
         // elapsed time
         this.finishTimestampText = FormHelper.createTextLeft("End time:", statusComposite, toolkit);
+        this.finishTimestampText.setEditable(false);
+        // last checkpoint time
+        this.lastCheckpointTimeText = FormHelper.createTextLeft("Last checkpoint time:", statusComposite, toolkit);
+        this.lastCheckpointTimeText.setEditable(false);
         // errors
         // Label createLabel =
         // toolkit.createLabel(statusComposite, "Errors detected:");

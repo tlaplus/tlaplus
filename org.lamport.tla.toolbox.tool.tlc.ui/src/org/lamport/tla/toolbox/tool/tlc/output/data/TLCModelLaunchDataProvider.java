@@ -53,6 +53,8 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
     private String startTimestamp;
     // end time
     private String finishTimestamp;
+    // last checkpoint time
+    private String lastCheckpointTimeStamp;
     // coverage at
     private String coverageTimestamp;
     // coverage items
@@ -244,11 +246,15 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                 case EC.TLC_STATS_SIMU:
                 case EC.TLC_SEARCH_DEPTH:
                 case EC.TLC_CHECKPOINT_START:
-                case EC.TLC_CHECKPOINT_END:
                 case EC.TLC_CHECKPOINT_RECOVER_START:
                 case EC.TLC_CHECKPOINT_RECOVER_END:
                 case EC.TLC_CHECKPOINT_RECOVER_END_DFID:
                 case EC.TLC_LIVE_IMPLIED:
+                    setDocumentText(this.progressOutput, outputMessage, true);
+                    break;
+                case EC.TLC_CHECKPOINT_END:
+                    this.lastCheckpointTimeStamp = GeneralOutputParsingHelper.parseTLCTimestamp(outputMessage);
+                    informPresenter(ITLCModelLaunchDataPresenter.LAST_CHECKPOINT_TIME);
                     setDocumentText(this.progressOutput, outputMessage, true);
                     break;
                 case EC.TLC_STARTING:
@@ -660,6 +666,16 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
     public void setProgressOutput(Document progressOutput)
     {
         this.progressOutput = progressOutput;
+    }
+
+    public void setLastCheckpointTimeStamp(String lastCheckpointTimeStamp)
+    {
+        this.lastCheckpointTimeStamp = lastCheckpointTimeStamp;
+    }
+
+    public String getLastCheckpointTimeStamp()
+    {
+        return lastCheckpointTimeStamp;
     }
 
 }

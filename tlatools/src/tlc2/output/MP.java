@@ -700,7 +700,7 @@ public class MP
             b.append("Checkpointing of run %1%");
             break;
         case EC.TLC_CHECKPOINT_END:
-            b.append("Checkpointing completed.");
+            b.append("Checkpointing completed at (").append(SDF.format(new Date())).append(")");
             break;
         case EC.TLC_CHECKPOINT_RECOVER_START:
             b.append("Starting recovery from checkpoint %1%");
