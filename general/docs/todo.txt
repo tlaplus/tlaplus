@@ -290,19 +290,13 @@
     the box is the correct one.  If it's hard to have both behaviors,
     forget about this.
     
-52. BUG (Parsing Preferences and Module Parsing)
-    There are three re-parsing preferences.  The "Automatic re-parse module",
-    which should be renamed to "Re-parse module on save", seems to call
-    the parser on the current module, resetting the parse status if it
-    is the root module.  I have no idea what, if anything, the other
-    two do.  They should be replaced by one: "Re-parse spec (and module) on 
-    module save".  It should do the following.
-        1. If the spec status is not "correctly-parsed", then parse the spec.
-        2. If the the spec status is "correctly-parsed" and the
-           selected module is not in the spec, then parse that module.
-    This may be difficult to implement, since the parser is called asynchronously.
-    If it is, then we need to reconsider what should be done.
-
+52. FEATURE CHANGE (Parser preferences)
+    - Comment out the "Automatic re-parse all module dependent 
+      files (experimental)" TLA+ Parser preference.
+    - Disable the "Re-parse specification on spec module save"
+      parser preference unless the "Re-parse module on save"
+      option is selected.
+ 
 53. MINOR BUG (Eclipse resource saving?)
     If I have automatic parse turned off, modify a file, and then try
     to parse it, the Toolbox pops up a dialog saying I have a modified
