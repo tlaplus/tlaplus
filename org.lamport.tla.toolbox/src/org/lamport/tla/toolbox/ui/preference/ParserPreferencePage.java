@@ -49,13 +49,13 @@ public class ParserPreferencePage extends FieldEditorPreferencePage implements I
                 "&Always pop up Parsing Errors view", getFieldEditorParent()));
 
         addField(new BooleanFieldEditor(IPreferenceConstants.I_PARSE_MODULE_ON_MODIFY,
-                "&Automatic re-parse module", getFieldEditorParent()));
+                "&Re-parse module on save", getFieldEditorParent()));
 
         addField(new BooleanFieldEditor(IPreferenceConstants.I_PARSE_FILES_ON_MODIFY,
                 "&Automatic re-parse all module dependent files (experimental)", getFieldEditorParent()));
 
         addField(new BooleanFieldEditor(IPreferenceConstants.I_PARSE_SPEC_ON_MODIFY,
-                "&Automatic re-parse specification if depends on module", getFieldEditorParent()));
+                "&Re-parse specification on spec module save", getFieldEditorParent()));
         
     }
 
