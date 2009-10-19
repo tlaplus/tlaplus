@@ -162,7 +162,7 @@ consider a sequence of non-blank lines to be a single paragraph, in
 which case it will typeset them as one paragraph and ignore the line
 breaks in the input.
 
-TLaTeX does its best to do a sensible job of typesetting comments.
+TLATeX does its best to do a sensible job of typesetting comments.
 You can help it by ending each sentence with a period (".") and by
 adding blank lines to indicate logical separation of items.
 
