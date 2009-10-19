@@ -44,12 +44,12 @@ public class TLA2TeXPreferencePage extends FieldEditorPreferencePage implements 
     protected void createFieldEditors()
     {
         addField(new BooleanFieldEditor(ITLA2TeXPreferenceConstants.SHADE_COMMENTS,
-                "&Shade comments in TLA2TeX output file", getFieldEditorParent()));
+                "&Shade comments", getFieldEditorParent()));
         addField(new BooleanFieldEditor(ITLA2TeXPreferenceConstants.NUMBER_LINES,
-                "&Number lines in TLA2TeX output file", getFieldEditorParent()));
-        addField(new StringFieldEditor(ITLA2TeXPreferenceConstants.LATEX_COMMAND, "&Specify latex command to be used",
+                "&Number lines", getFieldEditorParent()));
+        addField(new StringFieldEditor(ITLA2TeXPreferenceConstants.LATEX_COMMAND, "&Specify pdflatex command",
                 getFieldEditorParent()));
-        addField(new DoubleFieldEditor(ITLA2TeXPreferenceConstants.GRAY_LEVEL, "&Specify gray level between 0 and 1",
+        addField(new DoubleFieldEditor(ITLA2TeXPreferenceConstants.GRAY_LEVEL, "&Specify gray level (between 0.0 and 1.0)",
                 getFieldEditorParent(), 0, 1));
     }
 
