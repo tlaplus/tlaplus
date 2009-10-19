@@ -33,6 +33,7 @@
 52. FEATURE CHANGE (Parser preferences)
 53. MINOR BUG (Eclipse resource saving?)
 54. MINOR BUG (Open Module)
+55. BUG (Checkpoint recovery)
 -----------------------------------------------------------------------------------------
 1. NEW FEATURE
    Add way to tell if spec on which a model was last run is the same as the current
@@ -309,4 +310,12 @@
     When the user clicks on File/Open Module/Choose TLA+ Module, the
     file browser that pops up should show the specification's directory.
 
-    
+55. BUG (Checkpoint recovery)
+    When the user runs a model long enough to have checkpointing occur
+    and then cancels the model checking before it terminates on its
+    own, it is not possible to recover from the last checkpoint. The last
+    checkpoint is being accessed through the method ModelHelper.getCheckpoints().
+    There may be an issue with synchronizing eclipse's representation of the
+    workspace with the actual file system, because that method is not finding
+    the checkpoint files even though they exist. Once the user closes the toolbox
+    and re-opens, the last checkpoint ID appears.
