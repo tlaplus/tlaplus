@@ -41,7 +41,7 @@ import tlc2.output.MP;
  */
 public class TLCModelLaunchDataProvider implements ITLCOutputListener
 {
-    public static final String NO_OUTPUT_AVAILABLE = "No execution data is available";
+    public static final String NO_OUTPUT_AVAILABLE = "No user output is available";
 
     public static final String NO_ERRORS = "No errors";
 
