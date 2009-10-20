@@ -1,5 +1,7 @@
 package org.lamport.tla.toolbox.tool.tlc.output.data;
 
+import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
+
 /**
  * A set of parsing methods 
  * @author Simon Zambrovski
@@ -18,7 +20,14 @@ public class GeneralOutputParsingHelper
      */
     public static String parseTLCTimestamp(String message)
     {
-        // TODO handle errors
-        return message.substring(message.indexOf(OB) + 1, message.indexOf(CB));
+        // handle errors
+        if (message.indexOf(OB) != -1 && message.indexOf(CB) != -1)
+        {
+            return message.substring(message.indexOf(OB) + 1, message.indexOf(CB));
+        } else
+        {
+            TLCUIActivator.logDebug("Error parsing TLC Timestamp.");
+            return "";
+        }
     }
 }
