@@ -729,7 +729,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         try
         {
             // checkpoint id
-            checkpoints = ModelHelper.getCheckpoints(getConfig());
+            checkpoints = ModelHelper.getCheckpoints(getConfig(), true);
         } catch (CoreException e)
         {
             TLCUIActivator.logError("Error checking chekpoint data", e);

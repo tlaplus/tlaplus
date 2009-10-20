@@ -28,10 +28,11 @@ import org.lamport.tla.toolbox.util.ResourceHelper;
  * @author Simon Zambrovski
  * @version $Id$
  */
-public abstract class TLCJob extends AbstractJob implements
-        IModelConfigurationConstants, IModelConfigurationDefaults {
+public abstract class TLCJob extends AbstractJob implements IModelConfigurationConstants, IModelConfigurationDefaults
+{
 
-    public static class AllJobMatcher {
+    public static class AllJobMatcher
+    {
     }
 
     protected static final int STEP = 30;
@@ -55,18 +56,17 @@ public abstract class TLCJob extends AbstractJob implements
      * @param cfgFile
      * @param launchDir
      */
-    public TLCJob(String specName, String modelName, ILaunch launch) {
+    public TLCJob(String specName, String modelName, ILaunch launch)
+    {
         super("TLC run for " + modelName);
         this.specName = specName;
         this.modelName = modelName;
 
         IProject project = ResourceHelper.getProject(specName);
-        Assert.isNotNull(project, "Error accessing the spec project "
-                + specName);
+        Assert.isNotNull(project, "Error accessing the spec project " + specName);
 
         this.launchDir = project.getFolder(modelName);
-        Assert.isNotNull(this.launchDir, "Error accessing the model folder "
-                + modelName);
+        Assert.isNotNull(this.launchDir, "Error accessing the model folder " + modelName);
 
         this.launch = launch;
 
@@ -80,15 +80,14 @@ public abstract class TLCJob extends AbstractJob implements
      * @return string array with arguments
      * @throws CoreException
      */
-    public String[] constructProgramArguments() throws CoreException {
+    public String[] constructProgramArguments() throws CoreException
+    {
         Vector arguments = new Vector();
         ILaunchConfiguration config = launch.getLaunchConfiguration();
 
         // deadlock
-        boolean checkDeadlock = config
-                .getAttribute(
-                        IModelConfigurationConstants.MODEL_CORRECTNESS_CHECK_DEADLOCK,
-                        IModelConfigurationDefaults.MODEL_CORRECTNESS_CHECK_DEADLOCK_DEFAULT);
+        boolean checkDeadlock = config.getAttribute(IModelConfigurationConstants.MODEL_CORRECTNESS_CHECK_DEADLOCK,
+                IModelConfigurationDefaults.MODEL_CORRECTNESS_CHECK_DEADLOCK_DEFAULT);
         if (!checkDeadlock) /* "!" added by LL on 22 Aug 2009 */
         {
             arguments.add("-deadlock");
@@ -98,58 +97,58 @@ public abstract class TLCJob extends AbstractJob implements
         arguments.add("-checkpoint");
         arguments.add(String.valueOf(CHECKPOINT_INTERVAL));
 
-        boolean runAsModelCheck = config.getAttribute(
-                IModelConfigurationConstants.LAUNCH_MC_MODE,
+        boolean runAsModelCheck = config.getAttribute(IModelConfigurationConstants.LAUNCH_MC_MODE,
                 IModelConfigurationDefaults.LAUNCH_MC_MODE_DEFAULT);
-        if (runAsModelCheck) {
+        if (runAsModelCheck)
+        {
             // look for advanced model checking parameters
-            boolean isDepthFirst = config.getAttribute(
-                    IModelConfigurationConstants.LAUNCH_DFID_MODE,
+            boolean isDepthFirst = config.getAttribute(IModelConfigurationConstants.LAUNCH_DFID_MODE,
                     IModelConfigurationDefaults.LAUNCH_DFID_MODE_DEFAULT);
-            if (isDepthFirst) {
+            if (isDepthFirst)
+            {
                 // for depth-first run, look for the depth
-                int dfidDepth = config.getAttribute(
-                        IModelConfigurationConstants.LAUNCH_DFID_DEPTH,
+                int dfidDepth = config.getAttribute(IModelConfigurationConstants.LAUNCH_DFID_DEPTH,
                         IModelConfigurationDefaults.LAUNCH_DFID_DEPTH_DEFAULT);
                 arguments.add("-dfid");
                 arguments.add(String.valueOf(dfidDepth));
             }
-        }
-        else {
+        } else
+        {
             arguments.add("-simulate");
 
             // look for advanced simulation parameters
-            int traceDepth = config.getAttribute(
-                    IModelConfigurationConstants.LAUNCH_SIMU_DEPTH,
+            int traceDepth = config.getAttribute(IModelConfigurationConstants.LAUNCH_SIMU_DEPTH,
                     IModelConfigurationDefaults.LAUNCH_SIMU_DEPTH_DEFAULT);
-            if (traceDepth != IModelConfigurationDefaults.LAUNCH_SIMU_DEPTH_DEFAULT) {
+            if (traceDepth != IModelConfigurationDefaults.LAUNCH_SIMU_DEPTH_DEFAULT)
+            {
                 arguments.add("-depth");
                 arguments.add(String.valueOf(traceDepth));
             }
 
-            int aril = config.getAttribute(
-                    IModelConfigurationConstants.LAUNCH_SIMU_ARIL,
+            int aril = config.getAttribute(IModelConfigurationConstants.LAUNCH_SIMU_ARIL,
                     IModelConfigurationDefaults.LAUNCH_SIMU_ARIL_DEFAULT);
-            int seed = config.getAttribute(
-                    IModelConfigurationConstants.LAUNCH_SIMU_SEED,
+            int seed = config.getAttribute(IModelConfigurationConstants.LAUNCH_SIMU_SEED,
                     IModelConfigurationDefaults.LAUNCH_SIMU_SEED_DEFAULT);
-            if (aril != IModelConfigurationDefaults.LAUNCH_SIMU_ARIL_DEFAULT) {
+            if (aril != IModelConfigurationDefaults.LAUNCH_SIMU_ARIL_DEFAULT)
+            {
                 arguments.add("-aril");
                 arguments.add(String.valueOf(aril));
             }
-            if (seed != IModelConfigurationDefaults.LAUNCH_SIMU_SEED_DEFAULT) {
+            if (seed != IModelConfigurationDefaults.LAUNCH_SIMU_SEED_DEFAULT)
+            {
                 arguments.add("-seed");
                 arguments.add(String.valueOf(seed));
             }
         }
 
         // recover from checkpoint
-        boolean recover = config.getAttribute(
-                IModelConfigurationConstants.LAUNCH_RECOVER,
+        boolean recover = config.getAttribute(IModelConfigurationConstants.LAUNCH_RECOVER,
                 IModelConfigurationDefaults.LAUNCH_RECOVER_DEFAULT);
-        if (recover) {
-            IResource[] checkpoints = ModelHelper.getCheckpoints(config);
-            if (checkpoints.length > 0) {
+        if (recover)
+        {
+            IResource[] checkpoints = ModelHelper.getCheckpoints(config, false);
+            if (checkpoints.length > 0)
+            {
                 arguments.add("-recover");
                 arguments.add(checkpoints[0].getName());
             }
@@ -159,12 +158,12 @@ public abstract class TLCJob extends AbstractJob implements
         arguments.add(cfgFile.getName()); // configuration file
 
         // Should not add a coverage option only if TLC is being run
-        // without a spec.  This change added 10 Sep 2009 by LL & DR
-        if (config.getAttribute(MODEL_BEHAVIOR_SPEC_TYPE,
-                MODEL_BEHAVIOR_TYPE_DEFAULT) != MODEL_BEHAVIOR_TYPE_NO_SPEC) {
+        // without a spec. This change added 10 Sep 2009 by LL & DR
+        if (config.getAttribute(MODEL_BEHAVIOR_SPEC_TYPE, MODEL_BEHAVIOR_TYPE_DEFAULT) != MODEL_BEHAVIOR_TYPE_NO_SPEC)
+        {
             arguments.add("-coverage");
             arguments.add(String.valueOf(COVERAGE_INTERVAL)); // coverage 0.1
-                                                              // hour
+            // hour
         }
         arguments.add("-workers");
         arguments.add(String.valueOf(workers)); // number of workers
@@ -172,10 +171,10 @@ public abstract class TLCJob extends AbstractJob implements
         arguments.add("-tool"); // run in tool mode
         arguments.add("-metadir");
         arguments.add(launchDir.getLocation().toOSString()); // running in
-                                                             // directory
+        // directory
         arguments.add(ResourceHelper.getModuleName(rootModule)); // name of the
-                                                                 // module to
-                                                                 // check
+        // module to
+        // check
 
         return (String[]) arguments.toArray(new String[arguments.size()]);
     }
@@ -184,17 +183,20 @@ public abstract class TLCJob extends AbstractJob implements
      * Sets the number of workers
      * @param workers number of threads to be run in parallel
      */
-    public void setWorkers(int workers) {
+    public void setWorkers(int workers)
+    {
         this.workers = workers;
     }
 
-    protected Action getJobCompletedAction() {
+    protected Action getJobCompletedAction()
+    {
         return new Action("View job results") {
-            public void run() {
+            public void run()
+            {
                 IResultPresenter[] registeredResultPresenters = getRegisteredResultPresenters();
-                for (int i = 0; i < registeredResultPresenters.length; i++) {
-                    registeredResultPresenters[i].showResults(launch
-                            .getLaunchConfiguration());
+                for (int i = 0; i < registeredResultPresenters.length; i++)
+                {
+                    registeredResultPresenters[i].showResults(launch.getLaunchConfiguration());
                 }
             }
         };
@@ -214,17 +216,19 @@ public abstract class TLCJob extends AbstractJob implements
     /**
      * Matches the spec (by name) or generic to the AllJobMatcher
      */
-    public boolean belongsTo(Object family) {
-        if (family != null) {
-            if (family instanceof ILaunchConfiguration) {
-                return (this.launch.getLaunchConfiguration()
-                        .contentsEqual((ILaunchConfiguration) family));
-            }
-            else if (family instanceof Spec) {
+    public boolean belongsTo(Object family)
+    {
+        if (family != null)
+        {
+            if (family instanceof ILaunchConfiguration)
+            {
+                return (this.launch.getLaunchConfiguration().contentsEqual((ILaunchConfiguration) family));
+            } else if (family instanceof Spec)
+            {
                 Spec spec = (Spec) family;
                 return (spec.getName().equals(this.specName));
-            }
-            else if (family instanceof AllJobMatcher) {
+            } else if (family instanceof AllJobMatcher)
+            {
                 return true;
             }
         }
@@ -235,24 +239,24 @@ public abstract class TLCJob extends AbstractJob implements
      * Retrieves all presenter of TLC job results
      * @return 
      */
-    public static IResultPresenter[] getRegisteredResultPresenters() {
-        IConfigurationElement[] decls = Platform.getExtensionRegistry()
-                .getConfigurationElementsFor(IResultPresenter.EXTENSION_ID);
+    public static IResultPresenter[] getRegisteredResultPresenters()
+    {
+        IConfigurationElement[] decls = Platform.getExtensionRegistry().getConfigurationElementsFor(
+                IResultPresenter.EXTENSION_ID);
 
         Vector validExtensions = new Vector();
-        for (int i = 0; i < decls.length; i++) {
-            try {
-                IResultPresenter extension = (IResultPresenter) decls[i]
-                        .createExecutableExtension("class");
+        for (int i = 0; i < decls.length; i++)
+        {
+            try
+            {
+                IResultPresenter extension = (IResultPresenter) decls[i].createExecutableExtension("class");
                 validExtensions.add(extension);
-            }
-            catch (CoreException e) {
-                TLCActivator.logError(
-                        "Error instatiating the IResultPresenter extension", e);
+            } catch (CoreException e)
+            {
+                TLCActivator.logError("Error instatiating the IResultPresenter extension", e);
             }
         }
-        return (IResultPresenter[]) validExtensions
-                .toArray(new IResultPresenter[validExtensions.size()]);
+        return (IResultPresenter[]) validExtensions.toArray(new IResultPresenter[validExtensions.size()]);
     }
 
 }

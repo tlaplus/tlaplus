@@ -1233,11 +1233,21 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
     }
 
     /**
-     * Checks whether the checkpoint files exist for a given model 
-     * @param launchConfig
+     * Checks whether the checkpoint files exist for a given model
+     * If doRefresh is set to true, this method will refresh the model directory,
+     * and if a checkpoint folder is found, it will refresh the contents of that folder.
+     * This means that the eclipse workspace representation of that directory will
+     * synch with the file system. This is a long running job, so this method should not
+     * be called within the run method of another job unless the scheduling rule for
+     * refreshing the model directory is included in the scheduling rule of the job which
+     * is calling this method. This scheduling rule can be found by calling
+     * {@link IResourceRuleFactory#refreshRule(IResource)}
+     * @param config
+     * @param doRefresh whether the model directory's contents and any checkpoint
+     * folders contents should be refreshed
      * @return the array of checkpoint directories, sorted from last to first
      */
-    public static IResource[] getCheckpoints(ILaunchConfiguration config) throws CoreException
+    public static IResource[] getCheckpoints(ILaunchConfiguration config, boolean doRefresh) throws CoreException
     {
         // yy-MM-dd-HH-mm-ss
         Pattern pattern = Pattern.compile("[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}");
@@ -1252,7 +1262,10 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
             // been incorporated into the toolbox workspace
             // yet
             // the depth is one to find any checkpoint folders
-            directory.refreshLocal(IResource.DEPTH_ONE, null);
+            if (doRefresh)
+            {
+                directory.refreshLocal(IResource.DEPTH_ONE, null);
+            }
             IResource[] members = directory.members();
             for (int i = 0; i < members.length; i++)
             {
@@ -1264,7 +1277,10 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
                         // if there is a checkpoint folder, it is necessary
                         // to refresh its contents because they may not
                         // be part of the workspace yet
-                        members[i].refreshLocal(IResource.DEPTH_ONE, null);
+                        if (doRefresh)
+                        {
+                            members[i].refreshLocal(IResource.DEPTH_ONE, null);
+                        }
                         if (((IFolder) members[i]).findMember(CHECKPOINT_QUEUE) != null
                                 && ((IFolder) members[i]).findMember(CHECKPOINT_VARS) != null
                                 && ((IFolder) members[i]).findMember(CHECKPOINT_STATES) != null)

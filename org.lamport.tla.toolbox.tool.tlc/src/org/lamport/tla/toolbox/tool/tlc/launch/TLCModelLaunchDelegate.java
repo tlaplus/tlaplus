@@ -197,7 +197,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
                 } else
                 {
                     final boolean recover = config.getAttribute(LAUNCH_RECOVER, LAUNCH_RECOVER_DEFAULT);
-                    final IResource[] checkpoints = ModelHelper.getCheckpoints(config);
+                    final IResource[] checkpoints = ModelHelper.getCheckpoints(config, true);
 
                     ISchedulingRule deleteRule = ResourceHelper.getDeleteRule(members);
 
