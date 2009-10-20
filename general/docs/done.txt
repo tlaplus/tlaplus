@@ -109,3 +109,13 @@
     Spec as the specification formula. Now delete the variable from the spec (but don't
     delete the Spec from where you typed it) and verify the model.  The toolbox is still
     generating putting the specification Spec into the MC files.
+    
+55. BUG (Checkpoint recovery) - FIXED by Dan 20 Oct 2009
+    When the user runs a model long enough to have checkpointing occur
+    and then cancels the model checking before it terminates on its
+    own, it is not possible to recover from the last checkpoint. The last
+    checkpoint is being accessed through the method ModelHelper.getCheckpoints().
+    There may be an issue with synchronizing eclipse's representation of the
+    workspace with the actual file system, because that method is not finding
+    the checkpoint files even though they exist. Once the user closes the toolbox
+    and re-opens, the last checkpoint ID appears.
