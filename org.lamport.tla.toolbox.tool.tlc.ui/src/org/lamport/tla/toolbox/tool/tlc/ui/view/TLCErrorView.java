@@ -63,14 +63,17 @@ import org.lamport.tla.toolbox.util.UIHelper;
  * @version $Id$
  */
 
-public class TLCErrorView extends ViewPart {
+public class TLCErrorView extends ViewPart
+{
     public static final String ID = "toolbox.tool.tlc.view.TLCErrorView";
 
-    private static final IDocument EMPTY_DOCUMENT() {
+    private static final IDocument EMPTY_DOCUMENT()
+    {
         return new Document("No error information");
     }
 
-    private static final List EMPTY_LIST() {
+    private static final List EMPTY_LIST()
+    {
         return new LinkedList();
     }
 
@@ -84,43 +87,40 @@ public class TLCErrorView extends ViewPart {
     /**
      * Clears the view
      */
-    public void clear() {
+    public void clear()
+    {
         errorViewer.setDocument(EMPTY_DOCUMENT());
         variableViewer.setInput(EMPTY_LIST());
     }
 
-    
-    
-    
     /**
      * Fill data into the view
      * @param modelName name of the model displayed in the view title section
      * @param problems a list of {@link TLCError} objects representing the errors.
      */
-    protected void fill(String modelName, List problems) 
+    protected void fill(String modelName, List problems)
     {
         // if there are errors
-        if (problems != null && !problems.isEmpty()) 
+        if (problems != null && !problems.isEmpty())
         {
             List states = null;
             StringBuffer buffer = new StringBuffer();
             // iterate over the errors
-            for (int i = 0; i < problems.size(); i++) 
+            for (int i = 0; i < problems.size(); i++)
             {
                 TLCError error = (TLCError) problems.get(i);
-                
-                
+
                 // append error text to the buffer
                 appendError(buffer, error);
 
                 // read out the trace if any
-                if (error.hasTrace()) 
+                if (error.hasTrace())
                 {
                     Assert.isTrue(states == null, "Two traces are provided. Unexpected. This is a bug");
                     states = error.getStates();
                 }
             }
-            if (states == null) 
+            if (states == null)
             {
                 states = EMPTY_LIST();
             }
@@ -133,25 +133,24 @@ public class TLCErrorView extends ViewPart {
 
             // update the error information in the TLC Error View
             IDocument document = errorViewer.getDocument();
-            try 
+            try
             {
                 document.replace(0, document.getLength(), buffer.toString());
-            }
-            catch (BadLocationException e) 
+            } catch (BadLocationException e)
             {
                 TLCUIActivator.logError("Error reporting the error " + buffer.toString(), e);
             }
 
             // update the trace information
             this.variableViewer.setInput(states);
-            if (states != null && !states.isEmpty()) 
+            if (states != null && !states.isEmpty())
             {
                 variableViewer.expandToLevel(2);
             }
 
             this.form.setText(modelName);
 
-        } else 
+        } else
         {
             clear();
         }
@@ -160,14 +159,16 @@ public class TLCErrorView extends ViewPart {
     /**
      * Hides the current view
      */
-    public void hide() {
+    public void hide()
+    {
         getViewSite().getPage().hideView(TLCErrorView.this);
     }
 
     /**
      * Creates the layout and fill it with data 
      */
-    public void createPartControl(Composite parent) {
+    public void createPartControl(Composite parent)
+    {
 
         // The following is not needed because the error viewer is no longer
         // a section of anything as of 30 Aug 2009.
@@ -212,9 +213,8 @@ public class TLCErrorView extends ViewPart {
         //
         // errorViewer = FormHelper.createFormsOutputViewer(toolkit, clientArea,
         // SWT.V_SCROLL | SWT.MULTI);
-        errorViewer = FormHelper.createFormsOutputViewer(toolkit,
-                outerSashForm, SWT.V_SCROLL | SWT.H_SCROLL | SWT.MULTI
-                        | SWT.BORDER);
+        errorViewer = FormHelper.createFormsOutputViewer(toolkit, outerSashForm, SWT.V_SCROLL | SWT.H_SCROLL
+                | SWT.MULTI | SWT.BORDER);
         gd = new GridData(SWT.FILL, SWT.FILL, true, false);
         gd.heightHint = 100;
         errorViewer.getControl().setLayoutData(gd);
@@ -228,8 +228,8 @@ public class TLCErrorView extends ViewPart {
         gd = new GridData(SWT.FILL, SWT.FILL, true, true);
         sashForm.setLayoutData(gd);
 
-        Tree tree = toolkit.createTree(sashForm, SWT.V_SCROLL | SWT.BORDER
-                | SWT.FULL_SELECTION | SWT.SINGLE | SWT.VIRTUAL);
+        Tree tree = toolkit.createTree(sashForm, SWT.V_SCROLL | SWT.BORDER | SWT.FULL_SELECTION | SWT.SINGLE
+                | SWT.VIRTUAL);
         tree.setHeaderVisible(true);
         tree.setLinesVisible(true);
 
@@ -247,7 +247,8 @@ public class TLCErrorView extends ViewPart {
         resizer.comp = sashForm;
         resizer.tree = tree;
 
-        for (int i = 0; i < StateLabelProvider.COLUMN_TEXTS.length; i++) {
+        for (int i = 0; i < StateLabelProvider.COLUMN_TEXTS.length; i++)
+        {
             TreeColumn column = new TreeColumn(tree, SWT.LEFT);
             column.setText(StateLabelProvider.COLUMN_TEXTS[i]);
             column.setWidth(StateLabelProvider.COLUMN_WIDTH[i]);
@@ -271,32 +272,30 @@ public class TLCErrorView extends ViewPart {
         variableViewer.setContentProvider(new StateContentProvider());
         variableViewer.setFilters(new ViewerFilter[] { new StateFilter() });
         variableViewer.setLabelProvider(new StateLabelProvider());
-        variableViewer
-                .addSelectionChangedListener(new ISelectionChangedListener() {
+        variableViewer.addSelectionChangedListener(new ISelectionChangedListener() {
 
-                    public void selectionChanged(SelectionChangedEvent event) {
-                        if (!((IStructuredSelection) event.getSelection())
-                                .isEmpty()) {
-                            // Set selection to the selected element (or the
-                            // first if there are multiple
-                            // selections), and show its string representation
-                            // in the value viewer
-                            // (the lower sub-window).
-                            Object selection = ((IStructuredSelection) event
-                                    .getSelection()).getFirstElement();
-                            valueViewer.setDocument(new Document(selection
-                                    .toString()));
-                        }
-                        else {
-                            valueViewer.setDocument(EMPTY_DOCUMENT());
-                        }
+            public void selectionChanged(SelectionChangedEvent event)
+            {
+                if (!((IStructuredSelection) event.getSelection()).isEmpty())
+                {
+                    // Set selection to the selected element (or the
+                    // first if there are multiple
+                    // selections), and show its string representation
+                    // in the value viewer
+                    // (the lower sub-window).
+                    Object selection = ((IStructuredSelection) event.getSelection()).getFirstElement();
+                    valueViewer.setDocument(new Document(selection.toString()));
+                } else
+                {
+                    valueViewer.setDocument(EMPTY_DOCUMENT());
+                }
 
-                    }
-                });
+            }
+        });
 
         /* Horizontal scroll bar added by LL on 26 Aug 2009 */
-        valueViewer = FormHelper.createFormsSourceViewer(toolkit, sashForm,
-                SWT.V_SCROLL | SWT.H_SCROLL | SWT.MULTI | SWT.BORDER);
+        valueViewer = FormHelper.createFormsSourceViewer(toolkit, sashForm, SWT.V_SCROLL | SWT.H_SCROLL | SWT.MULTI
+                | SWT.BORDER);
         valueViewer.setEditable(false);
 
         gd = new GridData(SWT.LEFT, SWT.TOP, true, false);
@@ -315,11 +314,13 @@ public class TLCErrorView extends ViewPart {
         UIHelper.setHelp(parent, "TLCErrorView");
     }
 
-    public void setFocus() {
+    public void setFocus()
+    {
         form.setFocus();
     }
 
-    public void dispose() {
+    public void dispose()
+    {
         toolkit.dispose();
         super.dispose();
     }
@@ -329,14 +330,14 @@ public class TLCErrorView extends ViewPart {
      * @param buffer string buffer to append the error description to
      * @param error error object
      */
-    private static void appendError(StringBuffer buffer, TLCError error) 
+    private static void appendError(StringBuffer buffer, TLCError error)
     {
         String message = error.getMessage();
-        if (message != null && !message.equals("")) 
+        if (message != null && !message.equals(""))
         {
             buffer.append(message).append("\n");
         }
-        if (error.getCause() != null) 
+        if (error.getCause() != null)
         {
             appendError(buffer, error.getCause());
         }
@@ -346,23 +347,27 @@ public class TLCErrorView extends ViewPart {
      * Display the errors in the view, or hides the view if no errors
      * @param errors a list of {@link TLCError}
      */
-    public static void updateErrorView(TLCModelLaunchDataProvider provider) {
-        if (provider == null) {
+    public static void updateErrorView(TLCModelLaunchDataProvider provider)
+    {
+        if (provider == null)
+        {
             return;
         }
         TLCErrorView errorView;
-        if (provider.getErrors().size() > 0) {
+        if (provider.getErrors().size() > 0)
+        {
             errorView = (TLCErrorView) UIHelper.openView(TLCErrorView.ID);
-        }
-        else {
+        } else
+        {
             errorView = (TLCErrorView) UIHelper.findView(TLCErrorView.ID);
         }
-        if (errorView != null) {
+        if (errorView != null)
+        {
             // fill the name and the errors
-            errorView.fill(ModelHelper.getModelName(provider.getConfig()
-                    .getFile()), provider.getErrors());
+            errorView.fill(ModelHelper.getModelName(provider.getConfig().getFile()), provider.getErrors());
 
-            if (provider.getErrors().size() == 0) {
+            if (provider.getErrors().size() == 0)
+            {
                 errorView.hide();
             }
         }
@@ -396,7 +401,8 @@ public class TLCErrorView extends ViewPart {
      * http://www.eclipse.org/swt/snippets/ (see under Tables.../resize columns
      * as table resizes).
      */
-    static class TraceDisplayResizer extends ControlAdapter implements Listener {
+    static class TraceDisplayResizer extends ControlAdapter implements Listener
+    {
 
         // See comments above for meaning of the following flag.
         boolean inControlResized = false;
@@ -437,7 +443,8 @@ public class TLCErrorView extends ViewPart {
          */
         int fudgeFactor = 4;
 
-        public void controlResized(ControlEvent e) {
+        public void controlResized(ControlEvent e)
+        {
 
             inControlResized = true;
 
@@ -455,7 +462,8 @@ public class TLCErrorView extends ViewPart {
             // made by the user, but I can't seem to figure out how to do that
             // reasonably. The following code does a half-decent job. But
             // it needs to be thought out more carefully.
-            do {
+            do
+            {
 
                 // The following stuff became irrelevant when we added the
                 // handleEvent
@@ -484,31 +492,30 @@ public class TLCErrorView extends ViewPart {
                 // firstColPercentageWidth = newWidth;
                 // }
                 // }
-                if (oldSize.x > area.width) {
+                if (oldSize.x > area.width)
+                {
                     // table is getting smaller so make the columns
                     // smaller first and then resize the table to
                     // match the client area width
-                    column[0]
-                            .setWidth((firstColPercentageWidth * width) / 100000);
+                    column[0].setWidth((firstColPercentageWidth * width) / 100000);
                     column[1].setWidth(width - column[0].getWidth());
                     tree.setSize(area.width, area.height);
-                }
-                else {
+                } else
+                {
                     // table is getting bigger so make the table
                     // bigger first and then make the columns wider
                     // to match the client area width
                     tree.setSize(area.width, area.height);
-                    column[0]
-                            .setWidth((firstColPercentageWidth * width) / 100000);
+                    column[0].setWidth((firstColPercentageWidth * width) / 100000);
                     column[1].setWidth(width - column[0].getWidth());
                 }
-                if (hBar.isVisible()) {
+                if (hBar.isVisible())
+                {
                     fudgeFactor++;
                     width = getWidth();
                     // System.out.println("Fudge factor = " + fudgeFactor);
                 }
-            }
-            while (hBar.isVisible());
+            } while (hBar.isVisible());
 
             inControlResized = false;
 
@@ -522,8 +529,10 @@ public class TLCErrorView extends ViewPart {
 
         int count = 0;
 
-        public void handleEvent(Event event) {
-            if (inControlResized) {
+        public void handleEvent(Event event)
+        {
+            if (inControlResized)
+            {
                 // Inside call of controlResized; do nothing.
                 // System.out
                 // .println("Call of handleEvent inside call of controlResized");
@@ -539,24 +548,27 @@ public class TLCErrorView extends ViewPart {
             // become less than 10% or greater than 90%.
             ScrollBar hBar = tree.getHorizontalBar();
             int width = getWidth();
-            do {
-                if (width == 0) {
+            do
+            {
+                if (width == 0)
+                {
                     return;
                 }
                 column[1].setWidth(width - column[0].getWidth());
-                firstColPercentageWidth = (100000 * column[0].getWidth())
-                        / width;
-                if (hBar.isVisible()) {
+                firstColPercentageWidth = (100000 * column[0].getWidth()) / width;
+                if (hBar.isVisible())
+                {
                     fudgeFactor++;
                     width = getWidth();
                     // System.out.println("Fudge factor = " + fudgeFactor);
                 }
-            }
-            while (hBar.isVisible());
-            if (firstColPercentageWidth < 10000) {
+            } while (hBar.isVisible());
+            if (firstColPercentageWidth < 10000)
+            {
                 firstColPercentageWidth = 10000;
             }
-            if (firstColPercentageWidth > 90000) {
+            if (firstColPercentageWidth > 90000)
+            {
                 firstColPercentageWidth = 90000;
             }
 
@@ -569,7 +581,8 @@ public class TLCErrorView extends ViewPart {
          * The value of getWidth() should be the sum of the widths of the two
          * columns.
          */
-        private int getWidth() {
+        private int getWidth()
+        {
             ScrollBar vBar = tree.getVerticalBar();
             boolean scrollBarShown = vBar.isVisible();
             Rectangle area = comp.getClientArea();
@@ -588,87 +601,95 @@ public class TLCErrorView extends ViewPart {
     // , ITreePathContentProvider
     {
 
-        public Object[] getChildren(Object parentElement) {
-            if (parentElement instanceof List) {
-                return (TLCState[]) ((List) parentElement)
-                        .toArray(new TLCState[((List) parentElement).size()]);
-            }
-            else if (parentElement instanceof TLCState) {
+        public Object[] getChildren(Object parentElement)
+        {
+            if (parentElement instanceof List)
+            {
+                return (TLCState[]) ((List) parentElement).toArray(new TLCState[((List) parentElement).size()]);
+            } else if (parentElement instanceof TLCState)
+            {
                 TLCState state = (TLCState) parentElement;
-                if (!state.isStuttering()) {
+                if (!state.isStuttering() && !state.isBackToState())
+                {
                     return state.getVariables();
                 }
-            }
-            else if (parentElement instanceof TLCVariable) {
+            } else if (parentElement instanceof TLCVariable)
+            {
                 TLCVariable variable = (TLCVariable) parentElement;
                 TLCVariableValue value = variable.getValue();
-                if (value instanceof TLCSetVariableValue) {
+                if (value instanceof TLCSetVariableValue)
+                {
                     return ((TLCSetVariableValue) value).getElements();
-                }
-                else if (value instanceof TLCSequenceVariableValue) {
+                } else if (value instanceof TLCSequenceVariableValue)
+                {
                     return ((TLCSequenceVariableValue) value).getElements();
-                }
-                else if (value instanceof TLCFunctionVariableValue) {
+                } else if (value instanceof TLCFunctionVariableValue)
+                {
                     return ((TLCFunctionVariableValue) value).getFcnElements();
-                }
-                else if (value instanceof TLCRecordVariableValue) {
+                } else if (value instanceof TLCRecordVariableValue)
+                {
                     return ((TLCRecordVariableValue) value).getPairs();
                 }
                 return null;
-            }
-            else if (parentElement instanceof TLCVariableValue) {
+            } else if (parentElement instanceof TLCVariableValue)
+            {
                 TLCVariableValue value = (TLCVariableValue) parentElement;
-                if (value instanceof TLCSetVariableValue) {
+                if (value instanceof TLCSetVariableValue)
+                {
                     return ((TLCSetVariableValue) value).getElements();
-                }
-                else if (value instanceof TLCSequenceVariableValue) {
+                } else if (value instanceof TLCSequenceVariableValue)
+                {
                     return ((TLCSequenceVariableValue) value).getElements();
-                }
-                else if (value instanceof TLCFunctionVariableValue) {
+                } else if (value instanceof TLCFunctionVariableValue)
+                {
                     return ((TLCFunctionVariableValue) value).getFcnElements();
-                }
-                else if (value instanceof TLCRecordVariableValue) {
+                } else if (value instanceof TLCRecordVariableValue)
+                {
                     return ((TLCRecordVariableValue) value).getPairs();
-                }
-                else if (value instanceof TLCNamedVariableValue) {
-                    return getChildren(((TLCNamedVariableValue) value)
-                            .getValue());
-                }
-                else if (value instanceof TLCFcnElementVariableValue) {
-                    return getChildren(((TLCFcnElementVariableValue) value)
-                            .getValue());
+                } else if (value instanceof TLCNamedVariableValue)
+                {
+                    return getChildren(((TLCNamedVariableValue) value).getValue());
+                } else if (value instanceof TLCFcnElementVariableValue)
+                {
+                    return getChildren(((TLCFcnElementVariableValue) value).getValue());
                 }
                 return null;
             }
             return null;
         }
 
-        public Object getParent(Object element) {
+        public Object getParent(Object element)
+        {
             return null;
         }
 
-        public boolean hasChildren(Object element) {
+        public boolean hasChildren(Object element)
+        {
             if (element instanceof List)
                 return true;
 
             return (getChildren(element) != null);
         }
 
-        public Object[] getElements(Object inputElement) {
+        public Object[] getElements(Object inputElement)
+        {
             return getChildren(inputElement);
         }
 
-        public void dispose() {
+        public void dispose()
+        {
         }
 
-        public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
+        public void inputChanged(Viewer viewer, Object oldInput, Object newInput)
+        {
         }
     }
 
-    static class StateFilter extends ViewerFilter {
+    static class StateFilter extends ViewerFilter
+    {
 
-        public boolean select(Viewer viewer, Object parentElement,
-                Object element) {
+        public boolean select(Viewer viewer, Object parentElement, Object element)
+        {
             return true;
         }
 
@@ -679,8 +700,7 @@ public class TLCErrorView extends ViewPart {
      * Modified on 30 Aug 2009 by LL to implement ITableColorProvider instead of IColorProvider.
      * This allows coloring of individual columns, not just of entire rows.
      */
-    static class StateLabelProvider extends LabelProvider implements
-            ITableLabelProvider, ITableColorProvider // IColorProvider
+    static class StateLabelProvider extends LabelProvider implements ITableLabelProvider, ITableColorProvider // IColorProvider
     {
         public static final int NAME = 0;
         public static final int VALUE = 1;
@@ -692,27 +712,28 @@ public class TLCErrorView extends ViewPart {
         private Image varImage;
         private Image recordImage;
 
-        public StateLabelProvider() {
-            stateImage = TLCUIActivator.getImageDescriptor(
-                    "/icons/full/default_co.gif").createImage();
-            varImage = TLCUIActivator.getImageDescriptor(
-                    "/icons/full/private_co.gif").createImage();
-            recordImage = TLCUIActivator.getImageDescriptor(
-                    "/icons/full/brkpi_obj.gif").createImage();
+        public StateLabelProvider()
+        {
+            stateImage = TLCUIActivator.getImageDescriptor("/icons/full/default_co.gif").createImage();
+            varImage = TLCUIActivator.getImageDescriptor("/icons/full/private_co.gif").createImage();
+            recordImage = TLCUIActivator.getImageDescriptor("/icons/full/brkpi_obj.gif").createImage();
         }
 
-        public Image getColumnImage(Object element, int columnIndex) {
-            if (columnIndex == NAME) {
-                if (element instanceof TLCState) {
+        public Image getColumnImage(Object element, int columnIndex)
+        {
+            if (columnIndex == NAME)
+            {
+                if (element instanceof TLCState)
+                {
                     return stateImage;
-                }
-                else if (element instanceof TLCVariable) {
+                } else if (element instanceof TLCVariable)
+                {
                     return varImage;
-                }
-                else if (element instanceof TLCNamedVariableValue) {
+                } else if (element instanceof TLCNamedVariableValue)
+                {
                     return recordImage;
-                }
-                else if (element instanceof TLCFcnElementVariableValue) {
+                } else if (element instanceof TLCFcnElementVariableValue)
+                {
                     return recordImage;
                 }
                 return null;
@@ -720,14 +741,20 @@ public class TLCErrorView extends ViewPart {
             return null;
         }
 
-        public String getColumnText(Object element, int columnIndex) {
-            if (element instanceof TLCState) {
+        public String getColumnText(Object element, int columnIndex)
+        {
+            if (element instanceof TLCState)
+            {
                 TLCState state = (TLCState) element;
 
                 switch (columnIndex) {
                 case NAME:
-                    if (state.isStuttering()) {
+                    if (state.isStuttering())
+                    {
                         return "<Stuttering>";
+                    } else if (state.isBackToState())
+                    {
+                        return "<Back to state " + state.getStateNumber() + ">";
                     }
                     return state.getLabel();
                 case VALUE:
@@ -736,8 +763,8 @@ public class TLCErrorView extends ViewPart {
                 default:
                     break;
                 }
-            }
-            else if (element instanceof TLCVariable) {
+            } else if (element instanceof TLCVariable)
+            {
                 TLCVariable var = (TLCVariable) element;
                 switch (columnIndex) {
                 case NAME:
@@ -748,10 +775,9 @@ public class TLCErrorView extends ViewPart {
                 default:
                     break;
                 }
-            }
-            else if (element instanceof TLCSetVariableValue
-                    || element instanceof TLCSequenceVariableValue
-                    || element instanceof TLCSimpleVariableValue) {
+            } else if (element instanceof TLCSetVariableValue || element instanceof TLCSequenceVariableValue
+                    || element instanceof TLCSimpleVariableValue)
+            {
                 TLCVariableValue varValue = (TLCVariableValue) element;
                 switch (columnIndex) {
                 case VALUE:
@@ -760,29 +786,27 @@ public class TLCErrorView extends ViewPart {
                 default:
                     break;
                 }
-            }
-            else if (element instanceof TLCNamedVariableValue) {
+            } else if (element instanceof TLCNamedVariableValue)
+            {
                 TLCNamedVariableValue namedValue = (TLCNamedVariableValue) element;
                 switch (columnIndex) {
                 case NAME:
                     return namedValue.getName();
                 case VALUE:
-                    return ((TLCVariableValue) namedValue.getValue())
-                            .toSimpleString();
+                    return ((TLCVariableValue) namedValue.getValue()).toSimpleString();
                     // Changed from toString by LL on 30 Aug 2009
                 default:
                     break;
                 }
-            }
-            else if (element instanceof TLCFcnElementVariableValue) {
+            } else if (element instanceof TLCFcnElementVariableValue)
+            {
                 TLCFcnElementVariableValue fcnElementValue = (TLCFcnElementVariableValue) element;
                 switch (columnIndex) {
                 case NAME:
                     return fcnElementValue.getFrom().toSimpleString();
                     // Changed from toString by LL on 30 Aug 2009
                 case VALUE:
-                    return ((TLCVariableValue) fcnElementValue.getValue())
-                            .toSimpleString();
+                    return ((TLCVariableValue) fcnElementValue.getValue()).toSimpleString();
                     // Changed from toString by LL on 30 Aug 2009
                 default:
                     break;
@@ -796,16 +820,19 @@ public class TLCErrorView extends ViewPart {
          * the table. It highlights the entire row for an added or deleted item.
          * For a changed value, only the value is highlighted.
          */
-        public Color getBackground(Object element, int column) {
-            if (changedRows.contains(element)) {
-                if (column == VALUE) {
+        public Color getBackground(Object element, int column)
+        {
+            if (changedRows.contains(element))
+            {
+                if (column == VALUE)
+                {
                     return TLCUIActivator.getDefault().getChangedColor();
                 }
-            }
-            else if (addedRows.contains(element)) {
+            } else if (addedRows.contains(element))
+            {
                 return TLCUIActivator.getDefault().getAddedColor();
-            }
-            else if (deletedRows.contains(element)) {
+            } else if (deletedRows.contains(element))
+            {
                 return TLCUIActivator.getDefault().getDeletedColor();
             }
             return null;
@@ -833,19 +860,23 @@ public class TLCErrorView extends ViewPart {
         protected HashSet addedRows = new HashSet();
         protected HashSet deletedRows = new HashSet();
 
-        public Color getForeground(Object element, int i) {
+        public Color getForeground(Object element, int i)
+        {
             return null;
         }
 
-        public Image getImage(Object element) {
+        public Image getImage(Object element)
+        {
             return getColumnImage(element, 0);
         }
 
-        public String getText(Object element) {
+        public String getText(Object element)
+        {
             return getColumnText(element, 0);
         }
 
-        public void dispose() {
+        public void dispose()
+        {
             /*
              * Remove images
              */
@@ -863,8 +894,10 @@ public class TLCErrorView extends ViewPart {
      * sets of objects to be highlighted to show state changes in the states
      * contained in the parameter stateList.
      */
-    private void setDiffInfo(List stateList) {
-        if (stateList.size() < 2) {
+    private void setDiffInfo(List stateList)
+    {
+        if (stateList.size() < 2)
+        {
             return;
         }
 
@@ -875,11 +908,11 @@ public class TLCErrorView extends ViewPart {
          * empty.
          */
         TLCState[] states = new TLCState[stateList.size()];
-        for (int i = 0; i < states.length; i++) {
+        for (int i = 0; i < states.length; i++)
+        {
             states[i] = (TLCState) stateList.get(i);
         }
-        StateLabelProvider labelProvider = (StateLabelProvider) variableViewer
-                .getLabelProvider();
+        StateLabelProvider labelProvider = (StateLabelProvider) variableViewer.getLabelProvider();
         HashSet changedRows = labelProvider.changedRows;
         HashSet addedRows = labelProvider.addedRows;
         HashSet deletedRows = labelProvider.deletedRows;
@@ -890,17 +923,25 @@ public class TLCErrorView extends ViewPart {
         TLCState firstState = states[0];
         TLCVariable[] firstVariables = firstState.getVariables();
 
-        for (int i = 1; i < states.length; i++) {
+        for (int i = 1; i < states.length; i++)
+        {
             TLCState secondState = states[i];
+            if (secondState.isStuttering() || secondState.isBackToState())
+            {
+                // there are no variables in second state
+                // because it is a stuttering or a back to state
+                // step
+                break;
+            }
             TLCVariable[] secondVariables = secondState.getVariables();
-            for (int j = 0; j < firstVariables.length; j++) {
+            for (int j = 0; j < firstVariables.length; j++)
+            {
                 TLCVariableValue firstValue = firstVariables[j].getValue();
                 TLCVariableValue secondValue = secondVariables[j].getValue();
-                if (!firstValue.toSimpleString().equals(
-                        secondValue.toSimpleString())) {
+                if (!firstValue.toSimpleString().equals(secondValue.toSimpleString()))
+                {
                     changedRows.add(secondVariables[j]);
-                    setInnerDiffInfo(firstValue, secondValue, changedRows,
-                            addedRows, deletedRows);
+                    setInnerDiffInfo(firstValue, secondValue, changedRows, addedRows, deletedRows);
                 }
             }
 
@@ -921,59 +962,65 @@ public class TLCErrorView extends ViewPart {
      * representations to the appropriate HashSets to indicate that those rows
      * should be appropriately highlighted.
      */
-    private void setInnerDiffInfo(TLCVariableValue first,
-            TLCVariableValue second, HashSet changed, HashSet added,
-            HashSet deleted) {
-        if (first instanceof TLCSimpleVariableValue) {
+    private void setInnerDiffInfo(TLCVariableValue first, TLCVariableValue second, HashSet changed, HashSet added,
+            HashSet deleted)
+    {
+        if (first instanceof TLCSimpleVariableValue)
+        {
             return;
-        }
-        else if (first instanceof TLCSetVariableValue) { /*
-                                                          * SETS For two sets,
-                                                          * the only meaningful
-                                                          * changes are
-                                                          * additions and
-                                                          * deletions.
-                                                          */
+        } else if (first instanceof TLCSetVariableValue)
+        { /*
+           * SETS For two sets,
+           * the only meaningful
+           * changes are
+           * additions and
+           * deletions.
+           */
 
-            if (!(second instanceof TLCSetVariableValue)) {
+            if (!(second instanceof TLCSetVariableValue))
+            {
                 return;
             }
-            TLCVariableValue[] firstElts = ((TLCSetVariableValue) first)
-                    .getElements();
-            TLCVariableValue[] secondElts = ((TLCSetVariableValue) second)
-                    .getElements();
+            TLCVariableValue[] firstElts = ((TLCSetVariableValue) first).getElements();
+            TLCVariableValue[] secondElts = ((TLCSetVariableValue) second).getElements();
 
-            for (int i = 0; i < firstElts.length; i++) {
+            for (int i = 0; i < firstElts.length; i++)
+            {
                 boolean notfound = true;
                 int j = 0;
-                while (notfound && j < secondElts.length) {
-                    if (firstElts[i].toSimpleString().equals(
-                            secondElts[j].toSimpleString())) {
+                while (notfound && j < secondElts.length)
+                {
+                    if (firstElts[i].toSimpleString().equals(secondElts[j].toSimpleString()))
+                    {
                         notfound = false;
                     }
                     j++;
                 }
-                if (notfound) {
+                if (notfound)
+                {
                     deleted.add(firstElts[i]);
                 }
             }
 
-            for (int i = 0; i < secondElts.length; i++) {
+            for (int i = 0; i < secondElts.length; i++)
+            {
                 boolean notfound = true;
                 int j = 0;
-                while (notfound && j < firstElts.length) {
-                    if (firstElts[j].toSimpleString().equals(
-                            secondElts[i].toSimpleString())) {
+                while (notfound && j < firstElts.length)
+                {
+                    if (firstElts[j].toSimpleString().equals(secondElts[i].toSimpleString()))
+                    {
                         notfound = false;
                     }
                     j++;
                 }
-                if (notfound) {
+                if (notfound)
+                {
                     added.add(secondElts[i]);
                 }
             }
-        }
-        else if (first instanceof TLCRecordVariableValue) {
+        } else if (first instanceof TLCRecordVariableValue)
+        {
             /*
              * RECORDS We mark a record element as added or deleted if its label
              * does not appear in one of the elements of the other record. We
@@ -981,29 +1028,27 @@ public class TLCErrorView extends ViewPart {
              * elements' values if elements with same label but different values
              * appear in the two records.
              */
-            if (!(second instanceof TLCRecordVariableValue)) {
+            if (!(second instanceof TLCRecordVariableValue))
+            {
                 return;
             }
-            TLCVariableValue[] firstElts = ((TLCRecordVariableValue) first)
-                    .getPairs();
-            TLCVariableValue[] secondElts = ((TLCRecordVariableValue) second)
-                    .getPairs();
+            TLCVariableValue[] firstElts = ((TLCRecordVariableValue) first).getPairs();
+            TLCVariableValue[] secondElts = ((TLCRecordVariableValue) second).getPairs();
 
             String[] firstLHStrings = new String[firstElts.length];
-            for (int i = 0; i < firstElts.length; i++) {
-                firstLHStrings[i] = ((TLCNamedVariableValue) firstElts[i])
-                        .getName();
+            for (int i = 0; i < firstElts.length; i++)
+            {
+                firstLHStrings[i] = ((TLCNamedVariableValue) firstElts[i]).getName();
             }
             String[] secondLHStrings = new String[secondElts.length];
-            for (int i = 0; i < secondElts.length; i++) {
-                secondLHStrings[i] = ((TLCNamedVariableValue) secondElts[i])
-                        .getName();
+            for (int i = 0; i < secondElts.length; i++)
+            {
+                secondLHStrings[i] = ((TLCNamedVariableValue) secondElts[i]).getName();
             }
 
-            setElementArrayDiffInfo(firstElts, firstLHStrings, secondElts,
-                    secondLHStrings, changed, added, deleted);
-        }
-        else if (first instanceof TLCFunctionVariableValue) {
+            setElementArrayDiffInfo(firstElts, firstLHStrings, secondElts, secondLHStrings, changed, added, deleted);
+        } else if (first instanceof TLCFunctionVariableValue)
+        {
             /*
              * FUNCTIONS We mark a record element as added or deleted if its
              * label does not appear in one of the elements of the other record.
@@ -1011,17 +1056,18 @@ public class TLCErrorView extends ViewPart {
              * elements' values if elements with same label but different values
              * appear in the two records.
              */
-            if (!(second instanceof TLCFunctionVariableValue)) {
+            if (!(second instanceof TLCFunctionVariableValue))
+            {
                 return;
             }
 
-            setFcnElementArrayDiffInfo(((TLCFunctionVariableValue) first)
-                    .getFcnElements(), ((TLCFunctionVariableValue) second)
-                    .getFcnElements(), changed, added, deleted);
+            setFcnElementArrayDiffInfo(((TLCFunctionVariableValue) first).getFcnElements(),
+                    ((TLCFunctionVariableValue) second).getFcnElements(), changed, added, deleted);
 
         }
 
-        else if (first instanceof TLCSequenceVariableValue) {
+        else if (first instanceof TLCSequenceVariableValue)
+        {
             /*
              * SEQUENCES In general, it's not clear how differences between two
              * sequences should be highlighted. We adopt the following
@@ -1034,44 +1080,43 @@ public class TLCErrorView extends ViewPart {
              * the other then we give preference to interpreting the operation
              * as adding to the end or removing from the front.
              */
-            if (!(second instanceof TLCSequenceVariableValue)) {
+            if (!(second instanceof TLCSequenceVariableValue))
+            {
                 return;
             }
-            TLCFcnElementVariableValue[] firstElts = ((TLCSequenceVariableValue) first)
-                    .getElements();
-            TLCFcnElementVariableValue[] secondElts = ((TLCSequenceVariableValue) second)
-                    .getElements();
-            if (firstElts.length == secondElts.length) {
-                setFcnElementArrayDiffInfo(firstElts, secondElts, changed,
-                        added, deleted);
+            TLCFcnElementVariableValue[] firstElts = ((TLCSequenceVariableValue) first).getElements();
+            TLCFcnElementVariableValue[] secondElts = ((TLCSequenceVariableValue) second).getElements();
+            if (firstElts.length == secondElts.length)
+            {
+                setFcnElementArrayDiffInfo(firstElts, secondElts, changed, added, deleted);
                 return;
             }
 
             TLCFcnElementVariableValue[] shorter = firstElts;
             TLCFcnElementVariableValue[] longer = secondElts;
             boolean firstShorter = true;
-            if (firstElts.length > secondElts.length) {
+            if (firstElts.length > secondElts.length)
+            {
                 longer = firstElts;
                 shorter = secondElts;
                 firstShorter = false;
             }
             boolean isPrefix = true;
-            for (int i = 0; i < shorter.length; i++) {
-                if (!((TLCVariableValue) shorter[i].getValue())
-                        .toSimpleString().equals(
-                                ((TLCVariableValue) longer[i].getValue())
-                                        .toSimpleString())) {
+            for (int i = 0; i < shorter.length; i++)
+            {
+                if (!((TLCVariableValue) shorter[i].getValue()).toSimpleString().equals(
+                        ((TLCVariableValue) longer[i].getValue()).toSimpleString()))
+                {
                     isPrefix = false;
                     break;
                 }
             }
             boolean isSuffix = true;
-            for (int i = 0; i < shorter.length; i++) {
-                if (!((TLCVariableValue) shorter[i].getValue())
-                        .toSimpleString().equals(
-                                ((TLCVariableValue) longer[i + longer.length
-                                        - shorter.length].getValue())
-                                        .toSimpleString())) {
+            for (int i = 0; i < shorter.length; i++)
+            {
+                if (!((TLCVariableValue) shorter[i].getValue()).toSimpleString().equals(
+                        ((TLCVariableValue) longer[i + longer.length - shorter.length].getValue()).toSimpleString()))
+                {
 
                     isSuffix = false;
                     break;
@@ -1082,17 +1127,18 @@ public class TLCErrorView extends ViewPart {
              * either adding to the end or deleting from the front. If it's
              * neither, we treat the sequences as functions.
              */
-            if (isPrefix && isSuffix) {
-                if (firstShorter) {
+            if (isPrefix && isSuffix)
+            {
+                if (firstShorter)
+                {
                     isSuffix = false;
-                }
-                else {
+                } else
+                {
                     isPrefix = false;
                 }
-            }
-            else if (!(isPrefix || isSuffix)) {
-                setFcnElementArrayDiffInfo(firstElts, secondElts, changed,
-                        added, deleted);
+            } else if (!(isPrefix || isSuffix))
+            {
+                setFcnElementArrayDiffInfo(firstElts, secondElts, changed, added, deleted);
                 return;
             }
             /*
@@ -1105,7 +1151,8 @@ public class TLCErrorView extends ViewPart {
             int firstEltToMark = (isPrefix) ? shorter.length : 0;
             HashSet howToMark = (firstShorter) ? added : deleted;
 
-            for (int i = 0; i < longer.length - shorter.length; i++) {
+            for (int i = 0; i < longer.length - shorter.length; i++)
+            {
                 howToMark.add(longer[i + firstEltToMark]);
             }
             // setFcnElementArrayDiffInfo(firstElts, secondElts, changed, added,
@@ -1138,44 +1185,49 @@ public class TLCErrorView extends ViewPart {
      * elements with the same left-hand values having different values appear in
      * the two records.
      */
-    private void setElementArrayDiffInfo(TLCVariableValue[] firstElts,
-            String[] firstLHStrings, TLCVariableValue[] secondElts,
-            String[] secondLHStrings, HashSet changed, HashSet added,
-            HashSet deleted) {
+    private void setElementArrayDiffInfo(TLCVariableValue[] firstElts, String[] firstLHStrings,
+            TLCVariableValue[] secondElts, String[] secondLHStrings, HashSet changed, HashSet added, HashSet deleted)
+    {
 
-        for (int i = 0; i < firstElts.length; i++) {
+        for (int i = 0; i < firstElts.length; i++)
+        {
             boolean notfound = true;
             int j = 0;
-            while (notfound && j < secondElts.length) {
-                if (firstLHStrings[i].equals(secondLHStrings[j])) {
+            while (notfound && j < secondElts.length)
+            {
+                if (firstLHStrings[i].equals(secondLHStrings[j]))
+                {
                     notfound = false;
-                    TLCVariableValue first = (TLCVariableValue) firstElts[i]
-                            .getValue();
-                    TLCVariableValue second = (TLCVariableValue) secondElts[j]
-                            .getValue();
-                    if (!first.toSimpleString().equals(second.toSimpleString())) {
+                    TLCVariableValue first = (TLCVariableValue) firstElts[i].getValue();
+                    TLCVariableValue second = (TLCVariableValue) secondElts[j].getValue();
+                    if (!first.toSimpleString().equals(second.toSimpleString()))
+                    {
                         changed.add(secondElts[j]);
                         setInnerDiffInfo(first, second, changed, added, deleted);
                     }
                 }
                 j++;
             }
-            if (notfound) {
+            if (notfound)
+            {
                 deleted.add(firstElts[i]);
             }
         }
 
-        for (int i = 0; i < secondElts.length; i++) {
+        for (int i = 0; i < secondElts.length; i++)
+        {
             boolean notfound = true;
             int j = 0;
-            while (notfound && j < firstElts.length) {
-                if (firstElts[j].toSimpleString().equals(
-                        secondElts[i].toSimpleString())) {
+            while (notfound && j < firstElts.length)
+            {
+                if (firstElts[j].toSimpleString().equals(secondElts[i].toSimpleString()))
+                {
                     notfound = false;
                 }
                 j++;
             }
-            if (notfound) {
+            if (notfound)
+            {
                 added.add(secondElts[i]);
             }
         }
@@ -1189,19 +1241,19 @@ public class TLCErrorView extends ViewPart {
      * functions (possibly  two sequences).  This method calls setElementArrayDiffInfo
      * to do the work.
     */
-    private void setFcnElementArrayDiffInfo(
-            TLCFcnElementVariableValue[] firstElts,
-            TLCFcnElementVariableValue[] secondElts, HashSet changed,
-            HashSet added, HashSet deleted) {
+    private void setFcnElementArrayDiffInfo(TLCFcnElementVariableValue[] firstElts,
+            TLCFcnElementVariableValue[] secondElts, HashSet changed, HashSet added, HashSet deleted)
+    {
         String[] firstLHStrings = new String[firstElts.length];
-        for (int i = 0; i < firstElts.length; i++) {
+        for (int i = 0; i < firstElts.length; i++)
+        {
             firstLHStrings[i] = firstElts[i].getFrom().toSimpleString();
         }
         String[] secondLHStrings = new String[secondElts.length];
-        for (int i = 0; i < secondElts.length; i++) {
+        for (int i = 0; i < secondElts.length; i++)
+        {
             secondLHStrings[i] = secondElts[i].getFrom().toSimpleString();
         }
-        setElementArrayDiffInfo(firstElts, firstLHStrings, secondElts,
-                secondLHStrings, changed, added, deleted);
+        setElementArrayDiffInfo(firstElts, firstLHStrings, secondElts, secondLHStrings, changed, added, deleted);
     }
 }

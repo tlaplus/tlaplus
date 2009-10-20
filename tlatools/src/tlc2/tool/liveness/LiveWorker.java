@@ -6,6 +6,7 @@ package tlc2.tool.liveness;
 
 import java.io.IOException;
 
+import tlc2.TLCGlobals;
 import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.output.StatePrinter;
@@ -581,10 +582,16 @@ public class LiveWorker extends IdThread {
       {
           throw new EvalException(EC.TLC_FAILED_TO_RECOVER_NEXT);
       }
-      StatePrinter.printState(sinfo, null, (++stateNum));
-      // SZ Jul 10, 2009: replaced with state printer
-      // ToolIO.err.println("STATE " + (++stateNum) + ": " + sinfo.info);
-      MP.printMessage(EC.TLC_BACK_TO_STATE, "" + cyclePos);
+      if (TLCGlobals.tool)
+      {
+          MP.printState(EC.TLC_BACK_TO_STATE, new String[] { "" + cyclePos } );
+      } else
+      {
+          StatePrinter.printState(sinfo, null, (++stateNum));
+          // SZ Jul 10, 2009: replaced with state printer
+          // ToolIO.err.println("STATE " + (++stateNum) + ": " + sinfo.info);
+          MP.printMessage(EC.TLC_BACK_TO_STATE, "" + cyclePos);
+      }
     }
   }
 

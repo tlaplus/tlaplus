@@ -381,7 +381,13 @@ public class MP
             break;
 
         case EC.TLC_BACK_TO_STATE:
-            b.append("Back to state %1%.\n");
+            if (TLCGlobals.tool) {
+                // format same as state printing for easier
+                // parsing by toolbox
+                b.append("%1%: Back to state.\n");
+            } else {
+                b.append("Back to state %1%.\n");
+            }
             break;
 
         case EC.TLC_ERROR_STATE:

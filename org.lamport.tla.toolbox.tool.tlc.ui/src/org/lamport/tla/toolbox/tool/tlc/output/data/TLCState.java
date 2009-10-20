@@ -16,6 +16,7 @@ public class TLCState
     private static final String STUTTERING = "Stuttering";
     private static final String AND = "/\\";
     private static final String EQ = " = ";
+    private static final String BACK_TO_STATE = "Back";
 
     /**
      * A factory for stuttering states
@@ -24,6 +25,18 @@ public class TLCState
     {
         TLCState state = new TLCState(number);
         state.stuttering = true;
+        return state;
+    }
+
+    /**
+     * A factory for Back to state states
+     * @param number2
+     * @return
+     */
+    private static TLCState BACK_TO_STATE(int number)
+    {
+        TLCState state = new TLCState(number);
+        state.isBackToState = true;
         return state;
     }
 
@@ -48,6 +61,9 @@ public class TLCState
         if (label.indexOf(STUTTERING) != -1)
         {
             return STUTTERING_STATE(number);
+        } else if (label.indexOf(BACK_TO_STATE) != -1)
+        {
+            return BACK_TO_STATE(number);
         } else
         {
             TLCState state = new TLCState(number);
@@ -119,6 +135,7 @@ public class TLCState
 
     private int number;
     private boolean stuttering = false;
+    private boolean isBackToState = false;
     private String label;
     private String variablesAsString;
     private TLCVariable[] variables = new TLCVariable[0];
@@ -131,6 +148,11 @@ public class TLCState
     public boolean isStuttering()
     {
         return stuttering;
+    }
+
+    public boolean isBackToState()
+    {
+        return isBackToState;
     }
 
     public int getStateNumber()
