@@ -102,6 +102,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
         progressInformation = new Vector();
         startTimestamp = "";
         finishTimestamp = "";
+        lastCheckpointTimeStamp = "";
         coverageTimestamp = "";
         progressOutput = new Document(NO_OUTPUT_AVAILABLE);
         userOutput = new Document(NO_OUTPUT_AVAILABLE);

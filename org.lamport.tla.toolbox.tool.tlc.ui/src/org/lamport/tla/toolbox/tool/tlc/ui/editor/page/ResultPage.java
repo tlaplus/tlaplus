@@ -191,6 +191,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         // TLCUIActivator.logDebug("Entering reinit()");
         this.startTimestampText.setText("");
         this.finishTimestampText.setText("");
+        this.lastCheckpointTimeText.setText("");
         this.errorStatusHyperLink.setText(TLCModelLaunchDataProvider.NO_ERRORS);
         this.coverage.setInput(new Vector());
         this.stateSpace.setInput(new Vector());
