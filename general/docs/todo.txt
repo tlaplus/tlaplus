@@ -23,7 +23,6 @@
 40. BUG (Help)
 41. BUG (View option)
 43. MINOR BUG (Model Checking Results page display)
-44. MINOR BUG (User Output field of Model Check Results page)
 45. MINOR PARSING BUG (Naming in nested ASSUME/PROVEs)
 46. BUG (Model reports bogus "TLC still running")
 47. MINOR FEATURE (Default JVM heap size)
@@ -230,11 +229,6 @@
     sucks.  It might be better to make a two-column view like in the 
     other two pages, splitting the progress output into two separate fields,
     one in each column.  
-    
-44. MINOR BUG (User Output field of Model Check Results page)
-    The output of the parsing phase should not be put
-    under "User Output".   It should go under Progress output.  Let's try
-    to put only output created by Print commands in the User Output section.
     
 45. MINOR PARSING BUG (Naming in nested ASSUME/PROVEs)
     Here is the example:
