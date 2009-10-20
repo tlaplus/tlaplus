@@ -786,7 +786,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
         // ------------------------------------------
         // what is the spec
-        section = FormHelper.createSectionComposite(left, "What is the behavior spec?", "The behavior specification:",
+        section = FormHelper.createSectionComposite(left, "What is the behavior spec?", "",
                 toolkit, sectionFlags | Section.EXPANDED, getExpansionListener());
         // only grab horizontal space
         gd = new GridData(GridData.FILL_HORIZONTAL);
@@ -805,7 +805,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         // re-added the no-spec option on 10 Sep 2009.
 
         // split formula option
-        initNextFairnessRadio = toolkit.createButton(behaviorArea, "Init and Next", SWT.RADIO);
+        initNextFairnessRadio = toolkit.createButton(behaviorArea, "Initial predicate and next-state relation", SWT.RADIO);
 
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalSpan = 2;
@@ -845,7 +845,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         // fairnessFormulaSource, behaviorPart);
 
         // closed formula option
-        closedFormulaRadio = toolkit.createButton(behaviorArea, "Single formula", SWT.RADIO);
+        closedFormulaRadio = toolkit.createButton(behaviorArea, "Temporal formula", SWT.RADIO);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalSpan = 2;
         closedFormulaRadio.setLayoutData(gd);
@@ -879,7 +879,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
         // ------------------------------------------
         // what to check
-        section = FormHelper.createSectionComposite(left, "What to check?", "List of invariants and properties:",
+        section = FormHelper.createSectionComposite(left, "What to check?", "",
                 toolkit, sectionFlags | Section.EXPANDED, getExpansionListener());
         // only grab horizontal space
         gd = new GridData(GridData.FILL_HORIZONTAL);
@@ -899,7 +899,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
         // invariants
         ValidateableTableSectionPart invariantsPart = new ValidateableTableSectionPart(toBeCheckedArea, "Invariants",
-                "Specify invariants to be checked in every state of the specification.", toolkit, sectionFlags, this,
+                "Formulas true in every reachable state.", toolkit, sectionFlags, this,
                 SEC_WHAT_TO_CHECK_INVARIANTS);
         managedForm.addPart(invariantsPart);
         invariantsTable = invariantsPart.getTableViewer();
@@ -907,7 +907,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
         // properties
         ValidateableTableSectionPart propertiesPart = new ValidateableTableSectionPart(toBeCheckedArea, "Properties",
-                "Specify properties to be checked.", toolkit, sectionFlags, this, SEC_WHAT_TO_CHECK_PROPERTIES);
+                "Temporal formulas true for every possible behavior.", toolkit, sectionFlags, this, SEC_WHAT_TO_CHECK_PROPERTIES);
         managedForm.addPart(propertiesPart);
         propertiesTable = propertiesPart.getTableViewer();
         dm.bindAttribute(MODEL_CORRECTNESS_PROPERTIES, propertiesTable, propertiesPart);
@@ -917,7 +917,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
         // Constants
         ValidateableConstantSectionPart constantsPart = new ValidateableConstantSectionPart(right,
-                "What is the model?", "Specify the values of the model constants.", toolkit, sectionFlags
+                "What is the model?", "Specify the values of declared constants.", toolkit, sectionFlags
                         | Section.EXPANDED, this, SEC_WHAT_IS_THE_MODEL);
         managedForm.addPart(constantsPart);
         constantTable = constantsPart.getTableViewer();
@@ -950,7 +950,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
         // the text
         FormText labelText = toolkit.createFormText(elementLine, false);
-        labelText.setText("Some advanced features:", false, false);
+        labelText.setText("Advanced parts of the model:", false, false);
 
         // the hyperlinks
         Hyperlink hyper;
@@ -981,7 +981,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
         // ------------------------------------------
         // run tab
-        section = FormHelper.createSectionComposite(right, "How to run?", "Parameters of the TLC launch.", toolkit,
+        section = FormHelper.createSectionComposite(right, "How to run?", "TLC Parameters", toolkit,
                 sectionFlags, getExpansionListener());
         gd = new GridData(GridData.FILL_HORIZONTAL);
         section.setLayoutData(gd);
@@ -1012,7 +1012,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
         // label workers
         FormText workersLabel = toolkit.createFormText(howToRunArea, true);
-        workersLabel.setText("Number of workers:", false, false);
+        workersLabel.setText("Number of worker threads:", false, false);
 
         // field workers
         workers = toolkit.createText(howToRunArea, "1");

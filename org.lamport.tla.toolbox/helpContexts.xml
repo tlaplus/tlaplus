@@ -22,12 +22,13 @@
  </context>
  	<context id="constant_assignment_wizard" title="Assigning values to constants">
 		<description>Welcome to the constant assignment dialog help...</description>
-	    <topic label="Assigning values to constants" href="../org.lamport.tla.toolbox.tool.tlc.ui/html/constant_dialog.html" />
+	    <topic label="Assigning values to constants" href="../org.lamport.tla.toolbox.doc/html/model/overview-page.html#what-is-model" />
+	    <topic label="Model Values and Symmetry" href="../org.lamport.tla.toolbox.doc/html/model/model-values.html" />
 		
 	</context>
 	<context id="constant_assignment_typing_wizard" title="To type or not to type?">
 		<description>Do you want to assign a type to the model values?</description>
-	    <topic label="Typed model values" href="../org.lamport.tla.toolbox.tool.tlc.ui/html/constant_dialog.html" />
+	    <topic label="Typed Model Values" href="../org.lamport.tla.toolbox.doc/html/model/model-values.html#typed-values" />
 	</context>
 	
  	<context id="definition_override_wizard" title="Overriding Definitions">

@@ -54,6 +54,37 @@
    </topic>
     <topic label="Model Checking"
            href = "html/model/model.html">
+        <topic label = "Models"
+            href  = "html/model/about-models.html">
+        </topic>
+        
+        <topic label = "Creating a Model"
+            href  = "html/model/creating-model.html">
+
+           <topic label = "Model Overview Page"
+               href  = "html/model/overview-page.html">
+
+              <topic label = "Model Values and Symmetry"
+                  href  = "html/model/model-values.html">
+              </topic>
+
+           </topic>
+
+           <topic label = "Advanced Options Page"
+               href  = "html/model/advanced-page.html">
+           </topic>
+
+           <topic label = "Model Checking Results Page"
+               href  = "html/model/results-page.html">
+           </topic>
+
+
+        </topic>
+     
+        <topic label = "Checking and Running a Model"
+            href  = "html/model/executing-tlc.html">
+        </topic>
+    
    </topic>
  
     <topic label="The PlusCal Translator"

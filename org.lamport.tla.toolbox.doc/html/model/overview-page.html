@@ -1,0 +1,177 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- This is file org.lamport.tla.toobox.doc/html/model/overview-page.html  -->
+
+ 
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+ <LINK href="../style.css" rel="stylesheet" type="text/css">
+
+<title>Model Overview Page</title>
+</head>
+<!-- a comment here -->
+
+<body>
+<h1>Model Overview Page</h1>
+
+ <P> 
+This model editor page is usually the only one you will use to create
+and run your model.&nbsp;  Here are what the different sections of the
+page are for. 
+ </P>
+
+
+<h2>What is the behavior spec?</h2>
+
+The behavior spec is the formula or pair of formulas that describe the
+possible behaviors of the system or algorithm you want to check.&nbsp;  (See
+the <a href="../spec/what-is.html"><em>What Is A Spec?</em></a> help page.)&nbsp;
+There are two ways to write the behavior spec:
+<dl>
+<dt><b>Init and Next</b></dt>
+<dd>A pair of formulas that specify the initial state and the next-state relation,
+respectively.
+</dd>
+<br></br>
+<dt><b>Single formula</b></dt>
+<dd>A single temporal formula of the form&nbsp; <code>Init /\ [][Next]<sub>vars</sub> /\ F</code>,&nbsp;
+where&nbsp; <code>Init</code>&nbsp; is the initial predicate,&nbsp; 
+  <code>Next</sub></code>&nbsp; is the next-state 
+relation,&nbsp; <code>vars</code>&nbsp;
+is the tuple of variables,
+and&nbsp; <code>F</code>&nbsp; is the fairness formula.
+
+</dd>
+</dl>
+The only way to write a behavior spec that includes fairness is with a temporal formula.
+<p>
+If the spec has no variables, then there can be no behavior formula.&nbsp;  In that case, all TLC
+can check are assumptions.
+
+<h2>What to check?</h2>
+There are three kinds of properties of the behavior spec that TLC can check:
+<h3>Deadlock</h3>
+
+A <em>deadlock</em> is said to occur in a state for which the next-state relation
+allows no successor states.&nbsp;  Termination is deadlock that is not considered an error.&nbsp;
+If you want the behavior spec to allow termination, then you should uncheck the
+deadlock option.
+
+<h3>Invariants</h3>
+
+An invariant is a state predicate that is true of all reachable states--that is, 
+states that can occur in a behavior allowed by the behavior spec.&nbsp;  You can include
+a list of invariants.&nbsp;  The checking of each invariant can be enabled or disabled
+by checking or unchecking its box.
+
+
+<h3>Properties</h3>
+
+TLC can check if the behavior spec satisfies (implies) a temporal property, which
+is expressed as a temporal-logic formula.&nbsp;  You can specify a list of such properties,
+each with a check-box for enabling or disabling its checking.
+
+<h2><a name="what-is-model">What is the model?</a></h2>
+
+The most basic part of a model is an assignment of values to declared constants.&nbsp;
+To assign a value to a constant, either double-click on it or select it and click on the&nbsp; 
+<samp>Edit</samp>&nbsp; button.&nbsp;  This will raise a pop-up dialog giving you the choice
+of three ways to assign a value to it:  
+<dl>
+<dt><b>Ordinary assignment</b></dt>
+<dd>You can set the value of the constant to any constant TLA+ expression that
+contains only symbols defined in the spec.&nbsp;  The expression can even include
+declared constants, as long as the value assigned to a constant does not depend
+on that constant.&nbsp;  (If there are circular dependencies, TLC will
+produce a&nbsp; <samp>Java StackOverflowError</samp>&nbsp; error.
+</dd>
+<br></br>
+<dt><b>Model value</b></dt>
+<dd>It assigns to the constant a model value of the same name.&nbsp;  (See
+the <a href="model-values.html"><em>Model Value and Symmetry</em></a> 
+help page.)
+</dd>
+<br></br>
+<dt><b>Set of model values</b></dt>
+<dd>You must enter comma-separated list of legal model-value names,
+optionally enclosed by&nbsp; <code>{</code>&nbsp;
+and&nbsp; <code>}</code>.&nbsp;  You will have the option of making them
+a symmetry set.  
+<p>
+A <em>typed</em> model value is one whose name begins with a letter
+and an underscore--for example,&nbsp; <code>p_42a</code>.&nbsp;  If you
+enter a set of model values that are not all of the same type,
+you will have to click&nbsp; <samp>Next</samp>&nbsp;
+to continue.&nbsp;  You will then be given the choice of specifying a type
+for the set you have just entered.&nbsp;  For example, if you entered the
+set&nbsp; <code>{2, a, b}</code>&nbsp; and choose the 
+type&nbsp; <code>t</code>&nbsp;, the constant will be assigned the
+set&nbsp; <code>{t_2, t_a, t_b}</code>&nbsp; of model values.&nbsp;
+Note that a number like&nbsp; <code>2</code>&nbsp; is not a 
+legal model value.
+<p> See the <a href="model-values.html"><em>Model Values and Symmetry</em></a> 
+help page to learn about typed values and symmetry sets.
+
+</dd>
+</dl>
+<h2>How to run?</h2>
+
+Here, you specify the following two aspects of how TLC should
+be run.&nbsp;  (See the <a href="advanced-page.html#launching">TLC Options</a> section
+of the <a href="advanced-page.html"><em>Advanced Options Page</em></a> help page.)
+
+<h3>TLC Parameters</h3>
+There are two parameters that you can set here:
+
+<h4>Maximum JVM heap size in MB:</h4>
+
+This defines how large a heap TLC will use.&nbsp;  If you make it too small, TLC
+could run out of heap space.&nbsp;  If you make it too large, your machine will not have
+enough memory and TLC will not start.&nbsp;  
+TLC keeps its set of reachable states
+on disk, so the number of reachable states does not affect how much heap space
+TLC uses.&nbsp;  It can run out of heap space only if it takes too much memory to represent the
+set of initial states or the set of successor states of a single state.&nbsp;  So this number 
+rarely needs to be larger than a few hundred MB.&nbsp;  If TLC does run out of stack space,
+you can give it more and restart it from a checkpoint.
+
+<h4>Number of worker threads</h4>
+
+TLC's algorithm for computing the set (actually the graph) of reachable states 
+is highly parallelizable, and it can make good use of arbitrarily many processors.&nbsp; 
+This parameter specifies the number of separate threads that TLC will spawn to
+perform that computation.&nbsp;  You should not set it to be greater than the number of
+separate processors (cores) on your computer; the Toolbox will warn you if you do.
+
+<h3>Checkpoint Recovery</h3>
+
+TLC takes regular checkpoints, from which it can be restarted if it is stopped
+for any reason--for example, if your computer crashes.&nbsp;  The 
+<em>Recover from checkpoint</em> option tells TLC to start from where the
+state recorded by the checkpoint when you run it.&nbsp;
+This option is enabled 
+if the last time you ran TLC, it ran long enough to produce a checkpoint.&nbsp; 
+The Toolbox will fill in the <em>Checkpoint id</em> for you.
+
+<p>
+Warning: If you exit the Toolbox, it will stop any executions of TLC that are in
+process.&nbsp;  However, it is possible to stop the Toolbox in some drastic fashion that
+leaves TLC running as a background process.&nbsp;  Restarting from a checkpoint while
+the TLC process that created it is still running can cause the checkpoint to be destroyed, 
+making recovery impossible.&nbsp;  If you have reason to believe TLC was not stopped,
+check to see if it is still running before trying to recover from a checkpoint.
+</p>
+<hr> 
+<!-- delete rest of line to comment out --> 
+<dl>
+<dt><b><font color=#0000c0>Subtopics</font></b></dt>
+<dd> <A href="model-values.html"> Model Values and Symmetry </A></dd>
+</dl>
+<!-- --> 
+<!-- delete rest of line to comment out -->  
+<a href = "creating-model.html">&uarr; Creating a Model</a>
+<!-- --> 
+</hr>
+
+</body>
+</html>
