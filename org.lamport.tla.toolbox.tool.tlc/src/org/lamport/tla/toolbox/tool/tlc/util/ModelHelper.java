@@ -76,7 +76,6 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
      * Marker indicating the SANY Errors
      */
     public static final String TLC_MODEL_ERROR_MARKER_SANY = "org.lamport.tla.toolbox.tlc.modelErrorSANY";
-    
 
     public static final String TLC_MODEL_ERROR_MARKER_ATTRIBUTE_NAME = "attributeName";
     public static final String TLC_MODEL_ERROR_MARKER_ATTRIBUTE_IDX = "attributeIndex";
@@ -1245,8 +1244,15 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
 
         Vector checkpoints = new Vector();
         IFolder directory = getModelTargetDirectory(config);
+
         if (directory != null && directory.exists())
         {
+            // refreshing is necessary because TLC creates
+            // the checkpoint folders, but they may not have
+            // been incorporated into the toolbox workspace
+            // yet
+            // the depth is one to find any checkpoint folders
+            directory.refreshLocal(IResource.DEPTH_ONE, null);
             IResource[] members = directory.members();
             for (int i = 0; i < members.length; i++)
             {
@@ -1255,6 +1261,10 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
                     Matcher matcher = pattern.matcher(members[i].getName());
                     if (matcher.matches())
                     {
+                        // if there is a checkpoint folder, it is necessary
+                        // to refresh its contents because they may not
+                        // be part of the workspace yet
+                        members[i].refreshLocal(IResource.DEPTH_ONE, null);
                         if (((IFolder) members[i]).findMember(CHECKPOINT_QUEUE) != null
                                 && ((IFolder) members[i]).findMember(CHECKPOINT_VARS) != null
                                 && ((IFolder) members[i]).findMember(CHECKPOINT_STATES) != null)
