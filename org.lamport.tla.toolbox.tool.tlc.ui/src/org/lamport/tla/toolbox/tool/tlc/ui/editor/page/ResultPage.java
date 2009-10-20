@@ -63,6 +63,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
     private Text finishTimestampText;
     private Text lastCheckpointTimeText;
     private Text coverageTimestampText;
+    private Text currentStatusText;
     private TableViewer coverage;
     private TableViewer stateSpace;
 
@@ -114,6 +115,9 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
                     break;
                 case LAST_CHECKPOINT_TIME:
                     ResultPage.this.lastCheckpointTimeText.setText(dataProvider.getLastCheckpointTimeStamp());
+                    break;
+                case CURRENT_STATUS:
+                    ResultPage.this.currentStatusText.setText(dataProvider.getCurrentStatus());
                     break;
                 case COVERAGE_TIME:
                     ResultPage.this.coverageTimestampText.setText(dataProvider.getCoverageTimestamp());
@@ -192,6 +196,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         this.startTimestampText.setText("");
         this.finishTimestampText.setText("");
         this.lastCheckpointTimeText.setText("");
+        this.currentStatusText.setText(TLCModelLaunchDataProvider.NOT_RUNNING);
         this.errorStatusHyperLink.setText(TLCModelLaunchDataProvider.NO_ERRORS);
         this.coverage.setInput(new Vector());
         this.stateSpace.setInput(new Vector());
@@ -261,6 +266,10 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         // last checkpoint time
         this.lastCheckpointTimeText = FormHelper.createTextLeft("Last checkpoint time:", statusComposite, toolkit);
         this.lastCheckpointTimeText.setEditable(false);
+        // current status
+        this.currentStatusText = FormHelper.createTextLeft("Current status:", statusComposite, toolkit);
+        this.currentStatusText.setEditable(false);
+        this.currentStatusText.setText(TLCModelLaunchDataProvider.NOT_RUNNING);
         // errors
         // Label createLabel =
         // toolkit.createLabel(statusComposite, "Errors detected:");

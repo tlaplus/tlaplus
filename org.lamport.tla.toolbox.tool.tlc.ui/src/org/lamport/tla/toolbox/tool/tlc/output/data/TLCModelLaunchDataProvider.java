@@ -44,6 +44,13 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
     public static final String NO_OUTPUT_AVAILABLE = "No user output is available";
 
     public static final String NO_ERRORS = "No errors";
+    // strings for current status reporting
+    public static final String NOT_RUNNING = "Not running";
+    public static final String COMPUTING_INIT = "Computing initial states";
+    public static final String RECOVERING = "Recovering from checkpoint";
+    public static final String COMPUTING_REACHABLE = "Computing reachable states";
+    public static final String CHECKPOINTING = "Checkpointing";
+    public static final String CHECKING_LIVENESS = "Checking liveness";
 
     // presenter for the current process
     private ITLCModelLaunchDataPresenter presenter;
@@ -57,6 +64,8 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
     private String lastCheckpointTimeStamp;
     // coverage at
     private String coverageTimestamp;
+    // reports current status of model checking
+    private String currentStatus;
     // coverage items
     private List coverageInfo;
     // progress information
@@ -104,6 +113,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
         finishTimestamp = "";
         lastCheckpointTimeStamp = "";
         coverageTimestamp = "";
+        setCurrentStatus(NOT_RUNNING);
         progressOutput = new Document(NO_OUTPUT_AVAILABLE);
         userOutput = new Document(NO_OUTPUT_AVAILABLE);
 
@@ -143,6 +153,8 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
 
     public void onDone()
     {
+        this.setCurrentStatus(NOT_RUNNING);
+        informPresenter(ITLCModelLaunchDataPresenter.CURRENT_STATUS);
         isDone = true;
     }
 
@@ -233,29 +245,55 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                 case EC.TLC_MODE_MC:
                 case EC.TLC_MODE_SIMU:
                 case EC.TLC_SANY_END:
-                case EC.TLC_COMPUTING_INIT:
-                case EC.TLC_CHECKING_TEMPORAL_PROPS:
                 case EC.TLC_SUCCESS:
                 case EC.TLC_PROGRESS_START_STATS_DFID:
                 case EC.TLC_INITIAL_STATE:
-                case EC.TLC_INIT_GENERATED1:
-                case EC.TLC_INIT_GENERATED2:
-                case EC.TLC_INIT_GENERATED3:
-                case EC.TLC_INIT_GENERATED4:
                 case EC.TLC_STATS:
                 case EC.TLC_STATS_DFID:
                 case EC.TLC_STATS_SIMU:
                 case EC.TLC_SEARCH_DEPTH:
-                case EC.TLC_CHECKPOINT_START:
-                case EC.TLC_CHECKPOINT_RECOVER_START:
-                case EC.TLC_CHECKPOINT_RECOVER_END:
-                case EC.TLC_CHECKPOINT_RECOVER_END_DFID:
                 case EC.TLC_LIVE_IMPLIED:
                     setDocumentText(this.progressOutput, outputMessage, true);
                     break;
+                case EC.TLC_COMPUTING_INIT:
+                    this.setCurrentStatus(COMPUTING_INIT);
+                    informPresenter(ITLCModelLaunchDataPresenter.CURRENT_STATUS);
+                    setDocumentText(this.progressOutput, outputMessage, true);
+                    break;
+                case EC.TLC_INIT_GENERATED1:
+                case EC.TLC_INIT_GENERATED2:
+                case EC.TLC_INIT_GENERATED3:
+                case EC.TLC_INIT_GENERATED4:
+                    this.setCurrentStatus(COMPUTING_REACHABLE);
+                    informPresenter(ITLCModelLaunchDataPresenter.CURRENT_STATUS);
+                    setDocumentText(this.progressOutput, outputMessage, true);
+                    break;
+                case EC.TLC_CHECKPOINT_START:
+                    this.setCurrentStatus(CHECKPOINTING);
+                    informPresenter(ITLCModelLaunchDataPresenter.CURRENT_STATUS);
+                    setDocumentText(this.progressOutput, outputMessage, true);
+                    break;
                 case EC.TLC_CHECKPOINT_END:
+                    this.setCurrentStatus(COMPUTING_REACHABLE);
+                    informPresenter(ITLCModelLaunchDataPresenter.CURRENT_STATUS);
                     this.lastCheckpointTimeStamp = GeneralOutputParsingHelper.parseTLCTimestamp(outputMessage);
                     informPresenter(ITLCModelLaunchDataPresenter.LAST_CHECKPOINT_TIME);
+                    setDocumentText(this.progressOutput, outputMessage, true);
+                    break;
+                case EC.TLC_CHECKING_TEMPORAL_PROPS:
+                    this.setCurrentStatus(CHECKING_LIVENESS);
+                    informPresenter(ITLCModelLaunchDataPresenter.CURRENT_STATUS);
+                    setDocumentText(this.progressOutput, outputMessage, true);
+                    break;
+                case EC.TLC_CHECKPOINT_RECOVER_START:
+                    this.setCurrentStatus(RECOVERING);
+                    informPresenter(ITLCModelLaunchDataPresenter.CURRENT_STATUS);
+                    setDocumentText(this.progressOutput, outputMessage, true);
+                    break;
+                case EC.TLC_CHECKPOINT_RECOVER_END:
+                case EC.TLC_CHECKPOINT_RECOVER_END_DFID:
+                    this.setCurrentStatus(COMPUTING_REACHABLE);
+                    informPresenter(ITLCModelLaunchDataPresenter.CURRENT_STATUS);
                     setDocumentText(this.progressOutput, outputMessage, true);
                     break;
                 case EC.TLC_STARTING:
@@ -264,6 +302,8 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                     informPresenter(ITLCModelLaunchDataPresenter.START_TIME);
                     break;
                 case EC.TLC_FINISHED:
+                    this.setCurrentStatus(NOT_RUNNING);
+                    informPresenter(ITLCModelLaunchDataPresenter.CURRENT_STATUS);
                     this.finishTimestamp = GeneralOutputParsingHelper.parseTLCTimestamp(outputMessage);
                     informPresenter(ITLCModelLaunchDataPresenter.END_TIME);
                     break;
@@ -677,6 +717,16 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
     public String getLastCheckpointTimeStamp()
     {
         return lastCheckpointTimeStamp;
+    }
+
+    public void setCurrentStatus(String currentStatus)
+    {
+        this.currentStatus = currentStatus;
+    }
+
+    public String getCurrentStatus()
+    {
+        return currentStatus;
     }
 
 }

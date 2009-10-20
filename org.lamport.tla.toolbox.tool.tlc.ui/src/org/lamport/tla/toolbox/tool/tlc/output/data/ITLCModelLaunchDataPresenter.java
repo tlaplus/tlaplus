@@ -19,6 +19,7 @@ public interface ITLCModelLaunchDataPresenter
     public final static int PROGRESS = 64;
     public final static int ERRORS = 128;
     public final static int LAST_CHECKPOINT_TIME = 256;
+    public final static int CURRENT_STATUS = 512;
 
     public final static int[] ALL_FIELDS = { USER_OUTPUT, PROGRESS_OUTPUT, START_TIME, END_TIME, LAST_CHECKPOINT_TIME,
             COVERAGE_TIME, COVERAGE, PROGRESS, ERRORS };

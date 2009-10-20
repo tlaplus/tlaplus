@@ -385,7 +385,7 @@ public class FormHelper
         gd.horizontalIndent = 30;
         gd.verticalAlignment = SWT.TOP;
         gd.horizontalAlignment = SWT.RIGHT;
-        gd.minimumWidth = 150;
+        gd.minimumWidth = 200;
         text.setLayoutData(gd);
 
         return text;
