@@ -344,13 +344,20 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         // opDefNodes necessary for determining if a definition in definition
         // overrides is still in the specification
         SpecObj specObj = ToolboxHandle.getCurrentSpec().getValidRootModule();
-        OpDefNode[] opDefNodes = specObj.getExternalModuleTable().getRootModule().getOpDefs();
+        OpDefNode[] opDefNodes = null;
+        if (specObj != null)
+        {
+            opDefNodes = specObj.getExternalModuleTable().getRootModule().getOpDefs();
+        }
         Hashtable nodeTable = new Hashtable(opDefNodes.length);
 
-        for (int j = 0; j < opDefNodes.length; j++)
+        if (opDefNodes != null)
         {
-            String key = opDefNodes[j].getName().toString();
-            nodeTable.put(key, opDefNodes[j]);
+            for (int j = 0; j < opDefNodes.length; j++)
+            {
+                String key = opDefNodes[j].getName().toString();
+                nodeTable.put(key, opDefNodes[j]);
+            }
         }
 
         // get widget for definition overrides
