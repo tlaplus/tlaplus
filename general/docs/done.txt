@@ -125,6 +125,15 @@
     the checkpoint files even though they exist. Once the user closes the toolbox
     and re-opens, the last checkpoint ID appears.
     
+58. BUGS (TLC model) - FIXED by Dan 21 Oct 2009
+    - When delete the model, the model folder should also be deleted.
+    - Error 2125 should be recognized and reported when it occurs, and
+      the Toolbox should notice that it ends the TLC run.  Are there
+      any other errors in which TLC stops without doing so in a way that
+      makes the Toolbox notice that it stopped on an error?
+    - The MC.out file should be deleted when launching a TLC run.
+    (this already occured)
+    
 59. FEATURE (TLC Result page)
     The "General" section of the TLC Results page should include a
     "TLC Status" field, which has one of the following values:
