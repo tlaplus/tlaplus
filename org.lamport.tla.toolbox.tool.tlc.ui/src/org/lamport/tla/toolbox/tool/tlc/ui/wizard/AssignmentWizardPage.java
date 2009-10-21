@@ -155,7 +155,7 @@ public class AssignmentWizardPage extends WizardPage
 
                 // option to make a set symmetrical
                 flagSymmetricalSet = new Button(container, SWT.CHECK);
-                flagSymmetricalSet.setText("Symmetrical");
+                flagSymmetricalSet.setText("Symmetry set");
                 gd = new GridData(SWT.LEFT, SWT.TOP, false, false);
                 gd.horizontalSpan = 2;
                 gd.horizontalIndent = 10;

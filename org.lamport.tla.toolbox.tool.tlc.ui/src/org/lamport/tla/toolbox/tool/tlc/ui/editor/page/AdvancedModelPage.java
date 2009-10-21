@@ -595,7 +595,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         GridData gd;
 
         // advanced section
-        Section advancedSection = FormHelper.createSectionComposite(parent, "Launching Setup",
+        Section advancedSection = FormHelper.createSectionComposite(parent, "TLC Options",
                 "Advanced settings of the TLC model checker", toolkit, sectionFlags, getExpansionListener());
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalSpan = 2;

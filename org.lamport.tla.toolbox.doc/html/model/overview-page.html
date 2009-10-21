@@ -14,6 +14,15 @@
 <body>
 <h1>Model Overview Page</h1>
 
+<pre>
+Contents
+  <a href="#what-is-behavior">What is the behavior spec?</a>
+  <a href="#what-to-check">What to check?</a>
+  <a href="#what-is-model">What is the model?</a>
+  <a href="#how-to-run">How to run?</a>
+</pre>
+
+
  <P> 
 This model editor page is usually the only one you will use to create
 and run your model.&nbsp;  Here are what the different sections of the
@@ -21,7 +30,7 @@ page are for.
  </P>
 
 
-<h2>What is the behavior spec?</h2>
+<h2><a name="what-is-behavior">What is the behavior spec?</a></h2>
 
 The behavior spec is the formula or pair of formulas that describe the
 possible behaviors of the system or algorithm you want to check.&nbsp;  (See
@@ -32,7 +41,7 @@ There are two ways to write the behavior spec:
 <dd>A pair of formulas that specify the initial state and the next-state relation,
 respectively.
 </dd>
-<br></br>
+</dd>
 <dt><b>Single formula</b></dt>
 <dd>A single temporal formula of the form&nbsp; <code>Init /\ [][Next]<sub>vars</sub> /\ F</code>,&nbsp;
 where&nbsp; <code>Init</code>&nbsp; is the initial predicate,&nbsp; 
@@ -48,7 +57,7 @@ The only way to write a behavior spec that includes fairness is with a temporal 
 If the spec has no variables, then there can be no behavior formula.&nbsp;  In that case, all TLC
 can check are assumptions.
 
-<h2>What to check?</h2>
+<h2><a name="what-to-check">What to check?</h2>
 There are three kinds of properties of the behavior spec that TLC can check:
 <h3>Deadlock</h3>
 
@@ -114,7 +123,7 @@ help page to learn about typed values and symmetry sets.
 
 </dd>
 </dl>
-<h2>How to run?</h2>
+<h2><a name="how-to-run">How to run?</a></h2>
 
 Here, you specify the following two aspects of how TLC should
 be run.&nbsp;  (See the <a href="advanced-page.html#launching">TLC Options</a> section

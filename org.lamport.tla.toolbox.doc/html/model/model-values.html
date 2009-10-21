@@ -14,10 +14,157 @@
 <body>
 <h1>Model Values and Symmetry</h1>
 
+<pre>
+Contents 
+  <a href="#values">Model Values</a>
+  <a href="#typed-values">Typed Model Values</a>
+  <a href="#using">Using Model Values</a>
+  <a href="#symmetry">Symmetry</a>
+</pre>
+ 
+ <h2><a name="values">Ordinary Model Values</a></h2>
  <P> 
-Insert text here.
- </P>
+A model must specify the values of all declared constants.&nbsp;
+You will sometimes want to let a constant equal an unspecified value or a finite
+set of unspecified values.&nbsp;  For example, the spec might have a 
+constant&nbsp; <code>Proc</code>&nbsp; whose value 
+represents a set of processes.&nbsp;
+You could just let a process by a number, substituting an ordinary value 
+  like&nbsp; <code>{1, 2, 3}</code>&nbsp;
+for&nbsp; <code>Proc</code>&nbsp;.&nbsp;  However, a better way is to represent a process by a TLC
+<em>model value</em>.&nbsp;  A model value is an unspecified value
+that TLC considers to be unequal to any value that you can express
+in TLA<sup>+</sup>.&nbsp;  You can substitute the 
+  set&nbsp; <code>{p1, p2, p3}</code>&nbsp; of three model values
+for&nbsp; <code>Proc</code>&nbsp;.&nbsp;  If by mistake you write an expression
+like&nbsp; <code>p+1</code> where the value of&nbsp; <code>p</code> is
+a process, TLC will report an error when it tries to evaluate that expression
+because it knows that a process is not a number.&nbsp;  An important reason for
+substituting a set of model values for&nbsp; <code>Proc</code>&nbsp; is
+to let TLC  take advantage of symmetry, as described <a href="#symmetry">below</a>.
+</P>
+ 
+<P> 
+There is one particular TLA<sup>+</sup> specification idiom
+that requires you to substitute a model value for a defined operator.&nbsp;  
+Here is typical example of this idiom.
+<pre>
+   NotANat == CHOOSE n : n \notin Nat
+</pre>
+It defines&nbsp; <code>NotANat</code>&nbsp; to be an arbitrary value
+that is not a natural number.&nbsp;  TLC cannot evaluate this definition because
+it cannot evaluate the unbounded&nbsp; <code>CHOOSE</code>&nbsp; expression.&nbsp;
+To allow TLC to handle the spec, you need to substitute a model value
+for&nbsp; <code>NotANat</code>&nbsp;.&nbsp;  The best model value to substitute for it
+is one named&nbsp; <code>NotANat</code>&nbsp;.&nbsp;  You can do this with the
+<a href="advanced-page.html#override">Definition Override</a> section of
+the <a href="advanced-page.html">Advanced Options Page</a>.
+</P>
+
+<p>
+You can use a model value as an ordinary value in any expression that
+in your model.&nbsp;  For example, suppose your spec has a 
+constant&nbsp; <code>Proc</code>&nbsp; that represents a set processes 
+and a constant&nbsp; <code>Leader</code>&nbsp; that is some element
+of&nbsp; <code>Proc</code>&nbsp;.&nbsp;  You can substitute the 
+set&nbsp; <code>{p1, p2, p3}</code>&nbsp; of model values
+for&nbsp; <code>Proc</code>&nbsp; using the <em>Set of model values</em>
+option of the <a href="overview-page.html#what-is-model">What is the model?</a>
+section of the <A href="overview-page.html">Model Overview Page</A>.&nbsp;  You
+can then 
+substitute&nbsp; <code>p1</code>&nbsp;
+for &nbsp; <code>Leader</code>&nbsp; using the <em>Ordinary assignment</em>
+option of that section.
+</p>
+
+<p>
+There are some uses of model values that
+can't be specified with the <a href="overview-page.html#what-is-model">What is the model?</a>
+section of the <A href="overview-page.html">Model Overview Page</A>.&nbsp;  
+If you encounter such a problem, you can declare your own set of model values
+with the <A href="advanced-page.html#additional">Additional Definitions</a> section
+of the <A href="advanced-page.html"> Advanced Options Page</A> and then use them
+as ordinary values in expressions of the model.&nbsp;
+</p>
+
 <h2><a name="typed-values">Typed Model Values</a></h2>
+
+<p>
+Suppose that, by mistake, you write the 
+expression&nbsp; <code>p=2</code>&nbsp; where&nbsp; <code>p</code>&nbsp; is
+a process.&nbsp;  If you substitute a set of ordinary model values for the set
+of processes, TLC will simply obtain the value&nbsp; <code>FALSE</code>&nbsp;
+if it evalutes this expression, since it considers an ordinary model value 
+to be different from any other value.&nbsp;  To allow TLC to detect this kind of error,
+you can use a set of <em>typed</em> model values.&nbsp;  TLC considers a typed model value
+to be unequal to any other model value of the same type.&nbsp;  However, it produces an
+error when evaluating an expression requires it to determine if a typed model value
+is equal to any value other than a model value of the same type or an ordinary model value.&nbsp;
+</p>
+
+<p>
+A model-value type consists of
+a single letter, so there are 52 different types because&nbsp; <code>a</code>&nbsp;
+and&nbsp; <code>A</code>&nbsp; are different types.&nbsp;  
+(TLC actually accepts digits and underscore as types; don't use them.)&nbsp;
+A model value has
+type&nbsp; <code>T</code>&nbsp; if and only if its name begins with the two
+characters&nbsp; <code>T_</code>&nbsp;.
+</p>
+
+<h2><a name="using">Using Model Values</a></h2>
+
+A model value may appear in any expression that occurs in the model--for
+example, in an invariant or a <a href="advanced-page.html#override">definition override</a>.
+ 
+
+<h2><a name="symmetry">Symmetry</a></h2>
+<p>
+
+Consider a specification of a memory system containing a declared 
+constant&nbsp; <code>Val</code>&nbsp;  that represents the set of
+possible memory values.&nbsp;   The set of memory values is probably a
+<em>symmetry set</em> for the memory system's behavior specification, 
+meaning that permuting
+the elements in the set of values does not change whether or not
+a behavior satisfies that behavior spec.&nbsp;  TLC can
+take advantage of this to speed up its checking.&nbsp;
+
+Suppose we substitute a 
+set&nbsp; <code>{v1, v2, v3}</code>&nbsp; of model values
+for&nbsp; <code>Val</code>&nbsp;.&nbsp;  We can use
+the
+<em>Symmetry set</em>
+option of the <a href="overview-page.html#what-is-model">What is the model?</a>
+section of the <A href="overview-page.html">Model Overview Page</A>
+to declare this set of model values to be a symmetry set of the behavior spec.&nbsp;
+This will reduce the number of reachable states that TLC has to examine
+by up to 3!, or 6.  
+</p>
+
+<p>
+You can declare more than one set of model values to be a symmetry set.&nbsp;
+However, the union of all the symmetry sets cannot contain two 
+typed model values with different types.
+</p>
+<p>
+TLC does not check if a set you declare to be a symmetry set really
+is one.&nbsp;  If you declare a set to be a symmetry set and it isn't, then
+TLC can fail to find an error
+that it otherwise would find.&nbsp;  Also, beware that using symmetry sets can
+cause TLC to make mistakes when checking liveness properties.&nbsp;  Do not
+use symmetry sets when checking liveness unless you know what you're
+doing.
+</p>
+<!-- 
+<p>
+Symmetry sets are used only in <a href="advanced-page.html#model-mode">model-checking mode</a>.
+See Section 14.3.4 (page 245) of 
+<em><a href=
+"http://research.microsoft.com/en-us/um/people/lamport/tla/book.html" target="_blank">
+Specifying Systems</a></em> for an explanation of symmetry and how TLC uses it.  
+</p>
+ -->
 <hr> 
 <!-- delete rest of line to comment out 
 <dl>
