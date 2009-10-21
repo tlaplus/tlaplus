@@ -124,3 +124,20 @@
     workspace with the actual file system, because that method is not finding
     the checkpoint files even though they exist. Once the user closes the toolbox
     and re-opens, the last checkpoint ID appears.
+    
+59. FEATURE (TLC Result page)
+    The "General" section of the TLC Results page should include a
+    "TLC Status" field, which has one of the following values:
+      1. not running
+      2. computing initial states
+      3. recovering from checkpoint
+      4. computing reachable states
+      5. checkpointing
+      6. checking liveness   
+    The possible state changes are:
+       1 -> 2 -> 4 <-> 5 
+        \         \
+         -> 3 ->    -> 6 -> 1 
+    Note that TLC will print out a message saying something like
+    "Checking temporal properites of CURRENT state space" when
+    it's in state 4.  Those messages should be ignored.

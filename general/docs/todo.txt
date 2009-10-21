@@ -35,7 +35,6 @@
 56. BUG (Parsing Error view)
 57. BUG (Pluscal Translator preferences)
 58. BUGS (TLC model)
-59. FEATURE (TLC Result page)
 60. MINOR BUG (Model Validation)
 -----------------------------------------------------------------------------------------
 1. NEW FEATURE
@@ -338,23 +337,6 @@
       any other errors in which TLC stops without doing so in a way that
       makes the Toolbox notice that it stopped on an error?
     - The MC.out file should be deleted when launching a TLC run.
-
-59. FEATURE (TLC Result page)
-    The "General" section of the TLC Results page should include a
-    "TLC Status" field, which has one of the following values:
-      1. not running
-      2. computing initial states
-      3. recovering from checkpoint
-      4. computing reachable states
-      5. checkpointing
-      6. checking liveness   
-    The possible state changes are:
-       1 -> 2 -> 4 <-> 5 
-        \         \
-         -> 3 ->    -> 6 -> 1 
-    Note that TLC will print out a message saying something like
-    "Checking temporal properites of CURRENT state space" when
-    it's in state 4.  Those messages should be ignored.
         
 60. MINOR BUG (Model Validation)
     When the model is validated and finds an error, the existence
