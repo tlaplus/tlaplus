@@ -134,7 +134,7 @@ public class TLCErrorView extends ViewPart
              *  reset the trace if it is not necessary
              */
             List oldStates = (List) variableViewer.getInput();
-            boolean isNewTrace = states != null && oldStates != null && !states.equals(oldStates);
+            boolean isNewTrace = states != null && oldStates != null && !(states == oldStates);
 
             /*
              * Set the data structures that cause highlighting of changes in the
