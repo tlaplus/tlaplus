@@ -155,6 +155,28 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
 
     public void onDone()
     {
+        /*
+         * If the last message output by TLC
+         * was an error, then this error will not
+         * be added to errors by the method onOutput. The method
+         * onOutput assumes that there will be at least one
+         * message that is not an error at the end of the output
+         * of TLC. This is not always the case. An error such as
+         * "The system cannot find the file specified" will be the last
+         * error output by TLC. Therefore, such a message
+         * must be added here so that it gets shown
+         * to the user. If lastDetectedError is not null
+         * then it points to an error that has not been added
+         * to the list errors. It must be added to this list to
+         * be shown to the user.
+         */
+        if (lastDetectedError != null)
+        {
+            this.errors.add(lastDetectedError);
+            informPresenter(ITLCModelLaunchDataPresenter.ERRORS);
+        }
+
+        // TLC is no longer running
         this.setCurrentStatus(NOT_RUNNING);
         informPresenter(ITLCModelLaunchDataPresenter.CURRENT_STATUS);
         isDone = true;
