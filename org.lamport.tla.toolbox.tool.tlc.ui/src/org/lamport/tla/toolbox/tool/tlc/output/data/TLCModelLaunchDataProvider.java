@@ -102,6 +102,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
      */
     private void initialize()
     {
+        System.out.println("INITIALIZE");
         isDone = false;
         isTLCStarted = false;
         errors = new Vector();
@@ -281,8 +282,11 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                     setDocumentText(this.progressOutput, outputMessage, true);
                     break;
                 case EC.TLC_CHECKING_TEMPORAL_PROPS:
-                    this.setCurrentStatus(CHECKING_LIVENESS);
-                    informPresenter(ITLCModelLaunchDataPresenter.CURRENT_STATUS);
+                    if (outputMessage.indexOf("complete") != 1)
+                    {
+                        this.setCurrentStatus(CHECKING_LIVENESS);
+                        informPresenter(ITLCModelLaunchDataPresenter.CURRENT_STATUS);
+                    }
                     setDocumentText(this.progressOutput, outputMessage, true);
                     break;
                 case EC.TLC_CHECKPOINT_RECOVER_START:
