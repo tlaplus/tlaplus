@@ -126,10 +126,24 @@ public class TLCErrorView extends ViewPart
             }
 
             /*
+             *  determine if trace has changed
+             *  this is important for really long traces
+             *  resetting the trace input locks up the
+             *  toolbox for a few seconds in
+             *  these cases, so it is important to not
+             *  reset the trace if it is not necessary
+             */
+            List oldStates = (List) variableViewer.getInput();
+            boolean isNewTrace = states != null && oldStates != null && !states.equals(oldStates);
+
+            /*
              * Set the data structures that cause highlighting of changes in the
              * error trace.
              */
-            setDiffInfo(states);
+            if (isNewTrace)
+            {
+                setDiffInfo(states);
+            }
 
             // update the error information in the TLC Error View
             IDocument document = errorViewer.getDocument();
@@ -142,7 +156,10 @@ public class TLCErrorView extends ViewPart
             }
 
             // update the trace information
-            this.variableViewer.setInput(states);
+            if (isNewTrace)
+            {
+                this.variableViewer.setInput(states);
+            }
             if (states != null && !states.isEmpty())
             {
                 variableViewer.expandToLevel(2);
