@@ -352,7 +352,10 @@
        1 -> 2 -> 4 <-> 5 
         \         \
          -> 3 ->    -> 6 -> 1 
-         
+    Note that TLC will print out a message saying something like
+    "Checking temporal properites of CURRENT state space" when
+    it's in state 4.  Those messages should be ignored.
+        
 60. MINOR BUG (Model Validation)
     When the model is validated and finds an error, the existence
     of that error should be reported at the top of all the pages--or
