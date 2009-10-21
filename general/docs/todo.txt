@@ -32,7 +32,6 @@
 52. FEATURE CHANGE (Parser preferences)
 53. MINOR BUG (Eclipse resource saving?)
 54. MINOR BUG (Open Module)
-56. BUG (Parsing Error view)
 57. BUG (Pluscal Translator preferences)
 60. MINOR BUG (Model Validation)
 -----------------------------------------------------------------------------------------
@@ -305,19 +304,6 @@
 54. MINOR BUG (Open Module)
     When the user clicks on File/Open Module/Choose TLA+ Module, the
     file browser that pops up should show the specification's directory.
-    
-56. BUG (Parsing Error view)
-    If the "Automatically pop up error view" preference is NOT selected
-    and there is a parsing error, the error parsing status is set, but
-    the Parsing Error view selection on the Window menu is disabled, so
-    it's impossible to find out what the error is.  
-    
-    This may or may not be related, since it happens even when the
-    Parsing Error view is automatically popping up, but parsing a
-    spec with an error causes a null pointer exception in AdvancedModelPage.java, 
-    line 347.  But why on earth is that being called by parsing the
-    spec?  (It occurs when parsing is invoked from the menu, not just
-    by saving the spec.)
  
 57. BUG (Pluscal Translator preferences)
     The PlusCal translator preferences seem to be no-ops.  The 
