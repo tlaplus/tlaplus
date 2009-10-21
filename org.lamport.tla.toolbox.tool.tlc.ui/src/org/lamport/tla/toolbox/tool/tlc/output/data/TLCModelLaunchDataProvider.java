@@ -102,7 +102,6 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
      */
     private void initialize()
     {
-        System.out.println("INITIALIZE");
         isDone = false;
         isTLCStarted = false;
         errors = new Vector();
