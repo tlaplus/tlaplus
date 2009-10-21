@@ -17,13 +17,17 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.ui.handlers.IHandlerActivation;
+import org.eclipse.ui.handlers.IHandlerService;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.spec.nature.TLANature;
 import org.lamport.tla.toolbox.tool.SpecEvent;
 import org.lamport.tla.toolbox.ui.handler.CloseSpecHandler;
+import org.lamport.tla.toolbox.ui.handler.OpenParseErrorViewHandler;
 import org.lamport.tla.toolbox.ui.handler.OpenSpecHandler;
 import org.lamport.tla.toolbox.ui.property.GenericSelectionProvider;
+import org.lamport.tla.toolbox.util.AdapterFactory;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.SpecLifecycleManager;
 import org.lamport.tla.toolbox.util.UIHelper;
@@ -41,6 +45,7 @@ public class WorkspaceSpecManager extends GenericSelectionProvider implements IS
     private Hashtable specStorage = new Hashtable(47);
     private Spec loadedSpec = null;
     private SpecLifecycleManager lifecycleManager = null;
+    private IHandlerActivation parseErrorsHandlerActivation = null;
 
     /**
      * Constructor
@@ -52,7 +57,7 @@ public class WorkspaceSpecManager extends GenericSelectionProvider implements IS
         lifecycleManager.initialize();
 
         IProgressMonitor monitor = null;
-        
+
         IWorkspace ws = ResourcesPlugin.getWorkspace();
 
         String specLoadedName = PreferenceStoreHelper.getInstancePreferenceStore().getString(
@@ -85,14 +90,14 @@ public class WorkspaceSpecManager extends GenericSelectionProvider implements IS
                     projects[i].delete(IResource.FORCE | IResource.ALWAYS_DELETE_PROJECT_CONTENT, monitor);
                 }
             }
-            
-            if (specLoadedName != null && !specLoadedName.equals("") && this.loadedSpec == null) 
+
+            if (specLoadedName != null && !specLoadedName.equals("") && this.loadedSpec == null)
             {
                 // there was a spec loaded but it was not found
                 // explicit un-set it
                 setSpecLoaded(null);
             }
-            
+
         } catch (CoreException e)
         {
             Activator.logError("Error initializing specification workspace", e);
@@ -186,22 +191,22 @@ public class WorkspaceSpecManager extends GenericSelectionProvider implements IS
      */
     public void setSpecLoaded(Spec spec)
     {
-        if (spec == null) 
+        if (spec == null)
         {
             // close a spec
             this.lifecycleManager.sendEvent(new SpecEvent(this.loadedSpec, SpecEvent.TYPE_CLOSE));
-        } else 
+        } else
         {
             // open a spec
             this.lifecycleManager.sendEvent(new SpecEvent(spec, SpecEvent.TYPE_OPEN));
         }
-        
+
         this.loadedSpec = spec;
         if (this.loadedSpec != null)
         {
             // touch the spec
             this.loadedSpec.setLastModified();
-        } 
+        }
     }
 
     /*
@@ -285,11 +290,48 @@ public class WorkspaceSpecManager extends GenericSelectionProvider implements IS
      */
     public void specParsed(Spec spec)
     {
+        /*
+         * This controls graying and activating of the menu
+         * item Parse Errors which raises the parse errors
+         * view. It activates a handler programmatically
+         * when appropriate because declaring the handler as a
+         * plug in extension did not activate the handler quickly
+         * enough. For example, when a parse error is introduced,
+         * the Parse Errors menu item would not be active until
+         * the user did something such as highlight text. However,
+         * by activating it programmatically here, the menu item
+         * will become active as soon as there is a parse error
+         * and will become inactive as soon as there is no parse
+         * error.
+         */
+        IHandlerService handlerService = (IHandlerService) Activator.getDefault().getWorkbench().getService(
+                IHandlerService.class);
+        if (parseErrorsHandlerActivation != null)
+        {
+            /*
+             *  It is necessary to deactivate the currently active handler if there
+             *  was one because a command can have at most one
+             *  active handler at a time.
+             * It seems unnecessary to deactivate and reactivate a handler
+             * when the parse status goes from error to error, but I cannot
+             * find a way to determine if there is currently
+             * an active handler for the parse error view command, so the
+             * currently active handler is always deactivated, and then reactivated
+             * if there is still an error.
+             */
+            handlerService.deactivateHandler(parseErrorsHandlerActivation);
+            parseErrorsHandlerActivation = null;
+        }
+        if (AdapterFactory.isProblemStatus(spec.getStatus()))
+        {
+            parseErrorsHandlerActivation = handlerService.activateHandler("toolbox.command.openParseErrorView",
+                    new OpenParseErrorViewHandler());
+        }
+
         // inform the participants
         this.lifecycleManager.sendEvent(new SpecEvent(spec, SpecEvent.TYPE_PARSE));
     }
 
-    
     /**
      * Constructs a specification name from the proposition string
      * @param proposition a string with spec name 

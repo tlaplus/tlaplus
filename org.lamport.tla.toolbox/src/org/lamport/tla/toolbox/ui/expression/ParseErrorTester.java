@@ -6,6 +6,14 @@ import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.spec.manager.WorkspaceSpecManager;
 import org.lamport.tla.toolbox.util.AdapterFactory;
 
+/**
+ * This was previously used to test whether or not the Parse Errors
+ * menu item should be active. This is now done in WorkspaceSpecManager
+ * in the method {@link WorkspaceSpecManager#specParsed(Spec)}.
+ * 
+ * @author drickett
+ *
+ */
 public class ParseErrorTester extends PropertyTester
 {
 
