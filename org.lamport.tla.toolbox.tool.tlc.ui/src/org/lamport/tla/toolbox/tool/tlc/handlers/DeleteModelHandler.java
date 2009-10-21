@@ -5,6 +5,7 @@ import java.util.Vector;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunchConfiguration;
@@ -73,6 +74,11 @@ public class DeleteModelHandler extends AbstractHandler implements IModelConfigu
                         {
                             // close it
                             UIHelper.getActivePage().closeEditor(editorWithModelOpened, false);
+                        }
+                        IFolder modelFolder = ModelHelper.getModelTargetDirectory(launchConfigurations[i]);
+                        if (modelFolder != null && modelFolder.exists())
+                        {
+                            modelFolder.delete(false, null);
                         }
                         launchConfigurations[i].delete();
                     }
