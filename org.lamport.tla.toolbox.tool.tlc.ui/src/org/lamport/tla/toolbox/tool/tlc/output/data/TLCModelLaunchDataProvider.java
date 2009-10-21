@@ -106,6 +106,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
         isDone = false;
         isTLCStarted = false;
         errors = new Vector();
+        lastDetectedError = null;
         ModelHelper.removeModelProblemMarkers(this.config, ModelHelper.TLC_MODEL_ERROR_MARKER_TLC);
 
         coverageInfo = new Vector();
