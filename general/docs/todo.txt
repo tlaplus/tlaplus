@@ -25,11 +25,9 @@
 43. MINOR BUG (Model Checking Results page display)
 45. MINOR PARSING BUG (Naming in nested ASSUME/PROVEs)
 46. BUG (Model reports bogus "TLC still running")
-47. MINOR FEATURE (Default JVM heap size)
 49. BUG (Displaying Parser errors) 
 50. MINOR BUG (Deleting a Spec)   
 51. VERY MINOR BUG (Re-creating a spec)
-52. FEATURE CHANGE (Parser preferences)
 53. MINOR BUG (Eclipse resource saving?)
 54. MINOR BUG (Open Module)
 57. BUG (Pluscal Translator preferences)
@@ -246,10 +244,6 @@
     in the upper right is red, but clicking it does nothing.  The Toolbox
     The last time this happened, the Toolbox Explorer said that the model
     has crashed, and clicking on repair solved the problem.
-
-47. MINOR FEATURE (Default JVM heap size)
-    Add a TLC Model Checker Preference that specifies the default JVM
-    heap size for a new model.
     
 49. BUG (Displaying Parser errors)    
     I stupidly thought it was impossible for there to be a parser error
@@ -287,13 +281,6 @@
     directory does exist, its present behavior of checking and enabling
     the box is the correct one.  If it's hard to have both behaviors,
     forget about this.
-    
-52. FEATURE CHANGE (Parser preferences)
-    - Comment out the "Automatic re-parse all module dependent 
-      files (experimental)" TLA+ Parser preference.
-    - Disable the "Re-parse specification on spec module save"
-      parser preference unless the "Re-parse module on save"
-      option is selected.
  
 53. MINOR BUG (Eclipse resource saving?)
     If I have automatic parse turned off, modify a file, and then try

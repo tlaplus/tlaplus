@@ -109,11 +109,22 @@
     under "User Output".   It should go under Progress output.  Let's try
     to put only output created by Print commands in the User Output section.
     
+47. MINOR FEATURE (Default JVM heap size)
+    Add a TLC Model Checker Preference that specifies the default JVM
+    heap size for a new model.
+    
 48. MINOR BUG (Generating MC files) - FIXED by Dan 16 Oct 2009
     Create a spec with a variable and some specification Spec.  Run it, specifying
     Spec as the specification formula. Now delete the variable from the spec (but don't
     delete the Spec from where you typed it) and verify the model.  The toolbox is still
     generating putting the specification Spec into the MC files.
+    
+52. FEATURE CHANGE (Parser preferences)
+    - Comment out the "Automatic re-parse all module dependent 
+      files (experimental)" TLA+ Parser preference.
+    - Disable the "Re-parse specification on spec module save"
+      parser preference unless the "Re-parse module on save"
+      option is selected.
     
 55. BUG (Checkpoint recovery) - FIXED by Dan 20 Oct 2009
     When the user runs a model long enough to have checkpointing occur
