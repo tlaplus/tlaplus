@@ -44,6 +44,7 @@ import org.lamport.tla.toolbox.tool.tlc.ui.editor.DataBindingManager;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.ValidateableConstantSectionPart;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.ValidateableSectionPart;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.ValidateableTableSectionPart;
+import org.lamport.tla.toolbox.tool.tlc.ui.preference.ITLCPreferenceConstants;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.DirtyMarkingListener;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.SemanticHelper;
@@ -175,7 +176,9 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         workers.setText("" + getConfig().getAttribute(LAUNCH_NUMBER_OF_WORKERS, LAUNCH_NUMBER_OF_WORKERS_DEFAULT));
 
         // max JVM heap size
-        maxHeapSize.setText("" + getConfig().getAttribute(LAUNCH_MAX_HEAP_SIZE, LAUNCH_MAX_HEAP_SIZE_DEFAULT));
+        int defaultMaxHeapSize = TLCUIActivator.getDefault().getPreferenceStore().getInt(
+                ITLCPreferenceConstants.I_TLC_MAXIMUM_HEAP_SIZE_DEFAULT);
+        maxHeapSize.setText("" + getConfig().getAttribute(LAUNCH_MAX_HEAP_SIZE, defaultMaxHeapSize));
 
         // check deadlock
         boolean checkDeadlock = getConfig().getAttribute(MODEL_CORRECTNESS_CHECK_DEADLOCK,
@@ -684,7 +687,8 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         }
         getConfig().setAttribute(LAUNCH_NUMBER_OF_WORKERS, numberOfWorkers);
 
-        int maxHeapSizeInt = LAUNCH_MAX_HEAP_SIZE_DEFAULT;
+        int maxHeapSizeInt = TLCUIActivator.getDefault().getPreferenceStore().getInt(
+                ITLCPreferenceConstants.I_TLC_MAXIMUM_HEAP_SIZE_DEFAULT);
         try
         {
             maxHeapSizeInt = Integer.parseInt(maxHeapSize.getText());
@@ -786,8 +790,8 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
         // ------------------------------------------
         // what is the spec
-        section = FormHelper.createSectionComposite(left, "What is the behavior spec?", "",
-                toolkit, sectionFlags | Section.EXPANDED, getExpansionListener());
+        section = FormHelper.createSectionComposite(left, "What is the behavior spec?", "", toolkit, sectionFlags
+                | Section.EXPANDED, getExpansionListener());
         // only grab horizontal space
         gd = new GridData(GridData.FILL_HORIZONTAL);
         section.setLayoutData(gd);
@@ -805,7 +809,8 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         // re-added the no-spec option on 10 Sep 2009.
 
         // split formula option
-        initNextFairnessRadio = toolkit.createButton(behaviorArea, "Initial predicate and next-state relation", SWT.RADIO);
+        initNextFairnessRadio = toolkit.createButton(behaviorArea, "Initial predicate and next-state relation",
+                SWT.RADIO);
 
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalSpan = 2;
@@ -879,8 +884,8 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
         // ------------------------------------------
         // what to check
-        section = FormHelper.createSectionComposite(left, "What to check?", "",
-                toolkit, sectionFlags | Section.EXPANDED, getExpansionListener());
+        section = FormHelper.createSectionComposite(left, "What to check?", "", toolkit, sectionFlags
+                | Section.EXPANDED, getExpansionListener());
         // only grab horizontal space
         gd = new GridData(GridData.FILL_HORIZONTAL);
         section.setLayoutData(gd);
@@ -899,15 +904,15 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
         // invariants
         ValidateableTableSectionPart invariantsPart = new ValidateableTableSectionPart(toBeCheckedArea, "Invariants",
-                "Formulas true in every reachable state.", toolkit, sectionFlags, this,
-                SEC_WHAT_TO_CHECK_INVARIANTS);
+                "Formulas true in every reachable state.", toolkit, sectionFlags, this, SEC_WHAT_TO_CHECK_INVARIANTS);
         managedForm.addPart(invariantsPart);
         invariantsTable = invariantsPart.getTableViewer();
         dm.bindAttribute(MODEL_CORRECTNESS_INVARIANTS, invariantsTable, invariantsPart);
 
         // properties
         ValidateableTableSectionPart propertiesPart = new ValidateableTableSectionPart(toBeCheckedArea, "Properties",
-                "Temporal formulas true for every possible behavior.", toolkit, sectionFlags, this, SEC_WHAT_TO_CHECK_PROPERTIES);
+                "Temporal formulas true for every possible behavior.", toolkit, sectionFlags, this,
+                SEC_WHAT_TO_CHECK_PROPERTIES);
         managedForm.addPart(propertiesPart);
         propertiesTable = propertiesPart.getTableViewer();
         dm.bindAttribute(MODEL_CORRECTNESS_PROPERTIES, propertiesTable, propertiesPart);
@@ -981,8 +986,8 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
         // ------------------------------------------
         // run tab
-        section = FormHelper.createSectionComposite(right, "How to run?", "TLC Parameters", toolkit,
-                sectionFlags, getExpansionListener());
+        section = FormHelper.createSectionComposite(right, "How to run?", "TLC Parameters", toolkit, sectionFlags,
+                getExpansionListener());
         gd = new GridData(GridData.FILL_HORIZONTAL);
         section.setLayoutData(gd);
 
@@ -1001,7 +1006,9 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         maxHeapLabel.setText("Maximum JVM heap size in MB:", false, false);
 
         // field max heap size
-        maxHeapSize = toolkit.createText(howToRunArea, "500");
+        int defaultMaxHeapSize = TLCUIActivator.getDefault().getPreferenceStore().getInt(
+                ITLCPreferenceConstants.I_TLC_MAXIMUM_HEAP_SIZE_DEFAULT);
+        maxHeapSize = toolkit.createText(howToRunArea, "" + defaultMaxHeapSize);
         maxHeapSize.addModifyListener(howToRunListener);
         gd = new GridData();
         gd.horizontalIndent = 10;

@@ -17,14 +17,16 @@ public interface IConfigurationDefaults
      * Modified by LL on 11 October 2009 to be half the number of available processors.
      * Fixed by LL on 20 Oct 2009 to equal 1, not 0, if there is only 1 available processor.
      */
-    public static final int LAUNCH_NUMBER_OF_WORKERS_DEFAULT = 
-        (Runtime.getRuntime().availableProcessors() > 1) ?
-                (Runtime.getRuntime().availableProcessors() / 2) : 1 ;
+    public static final int LAUNCH_NUMBER_OF_WORKERS_DEFAULT = (Runtime.getRuntime().availableProcessors() > 1) ? (Runtime
+            .getRuntime().availableProcessors() / 2)
+            : 1;
 
     /**
      * Default max heap size
+     * Now set as a preference in TLCPreferencePage
      */
-    public static final int LAUNCH_MAX_HEAP_SIZE_DEFAULT = 500;
+    /*
+    public static final int LAUNCH_MAX_HEAP_SIZE_DEFAULT = 500;*/
 
     /**
      * Default is the model-checking mode

@@ -19,5 +19,6 @@ public interface ITLCPreferenceConstants
     // * Delete data (.st files and unused checkpoints) from the previous run)
     // */
     // public static final String I_TLC_DELETE_PREVIOUS_FILES = "deleteUnusedMCData";
+    public static final String I_TLC_MAXIMUM_HEAP_SIZE_DEFAULT = "maxHeapSizeDefault";
 
 }

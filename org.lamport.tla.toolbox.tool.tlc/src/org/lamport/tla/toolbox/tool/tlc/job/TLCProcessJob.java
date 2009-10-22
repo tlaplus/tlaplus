@@ -64,11 +64,12 @@ public class TLCProcessJob extends TLCJob
 
             // arguments
             String[] arguments = constructProgramArguments();
-            
+
             System.out.println("---------------------------");
             System.out.println("TLC ARGUMENTS:");
             System.out.println("---------------------------");
-            for (int i = 0; i < arguments.length; i++) {
+            for (int i = 0; i < arguments.length; i++)
+            {
                 System.out.println(arguments[i]);
             }
             System.out.println("---------------------------");
@@ -76,8 +77,9 @@ public class TLCProcessJob extends TLCJob
             System.out.println("---------------------------");
 
             // get max heap size
-            int maxHeapSize = launch.getLaunchConfiguration().getAttribute(LAUNCH_MAX_HEAP_SIZE,
-                    LAUNCH_MAX_HEAP_SIZE_DEFAULT);
+            // the default value should never be returned if validation
+            // of the main model page is correct
+            int maxHeapSize = launch.getLaunchConfiguration().getAttribute(LAUNCH_MAX_HEAP_SIZE, 500);
 
             // using -D to pass the System property of the location of standard modules
             String[] vmArgs = new String[] { "-DTLA-Library=" + ToolboxHandle.getModulesClasspath().toOSString(),

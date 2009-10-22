@@ -2,6 +2,7 @@ package org.lamport.tla.toolbox.tool.tlc.ui.preference;
 
 import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
+import org.eclipse.jface.preference.IntegerFieldEditor;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IWorkbench;
@@ -40,13 +41,15 @@ public class TLCPreferencePage extends FieldEditorPreferencePage implements IWor
      */
     protected void createFieldEditors()
     {
-        addField(new BooleanFieldEditor(ITLCPreferenceConstants.I_TLC_POPUP_ERRORS,
-                "&Always pop up TLC errors view", getFieldEditorParent()));
+        addField(new BooleanFieldEditor(ITLCPreferenceConstants.I_TLC_POPUP_ERRORS, "&Always pop up TLC errors view",
+                getFieldEditorParent()));
 
         addField(new BooleanFieldEditor(ITLCPreferenceConstants.I_TLC_REVALIDATE_ON_MODIFY,
                 "&Re-validate model on save", getFieldEditorParent()));
         // addField(new BooleanFieldEditor(ITLCPreferenceConstants.I_TLC_DELETE_PREVIOUS_FILES,
         // "&Automatically delete unused data from previous model run", getFieldEditorParent()));
+        addField(new IntegerFieldEditor(ITLCPreferenceConstants.I_TLC_MAXIMUM_HEAP_SIZE_DEFAULT,
+                "Maximum JVM Heap Size default", getFieldEditorParent()));
 
     }
 
