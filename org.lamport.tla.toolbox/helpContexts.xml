@@ -20,9 +20,9 @@
  <context id="mainModelPage" title="title of mainModelPage">
     <description>description of mainModelPage</description>
  </context>
- 	<context id="constant_assignment_wizard" title="Assigning values to constants">
+ 	<context id="constant_assignment_wizard" title="What is the model?">
 		<description>Welcome to the constant assignment dialog help...</description>
-	    <topic label="Assigning values to constants" href="../org.lamport.tla.toolbox.doc/html/model/overview-page.html#what-is-model" />
+	    <topic label="What is the model?" href="../org.lamport.tla.toolbox.doc/html/model/overview-page.html#what-is-model" />
 	    <topic label="Model Values and Symmetry" href="../org.lamport.tla.toolbox.doc/html/model/model-values.html" />
 		
 	</context>
