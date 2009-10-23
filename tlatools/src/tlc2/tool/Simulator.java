@@ -335,6 +335,17 @@ public class Simulator implements Cancelable
   public final void printSummary() 
   {
       this.reportCoverage();
+      
+      /*
+       * This allows the toolbox to easily display the last set
+       * of state space statistics by putting them in the same
+       * form as all other progress statistics.
+       */
+      if (TLCGlobals.tool)
+      {
+          MP.printMessage(EC.TLC_PROGRESS_SIMU, String.valueOf(this.numOfGenStates));
+      }
+      
       MP.printMessage(EC.TLC_STATS_SIMU, new String[]{String.valueOf(this.numOfGenStates), String.valueOf(this.seed), String.valueOf(this.aril)});
   }
 

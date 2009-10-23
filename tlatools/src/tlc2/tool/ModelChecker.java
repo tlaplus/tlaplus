@@ -686,6 +686,18 @@ public class ModelChecker extends AbstractChecker
     public final void printSummary(boolean success) throws IOException
     {
         super.reportCoverage(this.workers);
+        
+        /*
+         * This allows the toolbox to easily display the last set
+         * of state space statistics by putting them in the same
+         * form as all other progress statistics.
+         */
+        if (TLCGlobals.tool)
+        {
+            MP.printMessage(EC.TLC_PROGRESS_STATS, new String[] { String.valueOf(this.trace.getLevel()),
+                    String.valueOf(this.numOfGenStates), String.valueOf(this.theFPSet.size()),
+                    String.valueOf(this.theStateQueue.size()) });
+        }
 
         MP.printMessage(EC.TLC_STATS, new String[] { String.valueOf(this.numOfGenStates),
                 String.valueOf(this.theFPSet.size()), String.valueOf(this.theStateQueue.size()) });

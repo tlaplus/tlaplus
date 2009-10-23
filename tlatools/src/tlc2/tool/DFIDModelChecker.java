@@ -685,6 +685,18 @@ public class DFIDModelChecker extends AbstractChecker
     public final void printSummary(boolean success) throws IOException
     {
         this.reportCoverage(this.workers);
+        
+        /*
+         * This allows the toolbox to easily display the last set
+         * of state space statistics by putting them in the same
+         * form as all other progress statistics.
+         */
+        if (TLCGlobals.tool)
+        {
+            MP.printMessage(EC.TLC_PROGRESS_STATS_DFID, new String[] { String.valueOf(this.numOfGenStates),
+                String.valueOf(this.theFPSet.size()) });
+        }
+        
         MP.printMessage(EC.TLC_STATS_DFID, new String[] { String.valueOf(this.numOfGenStates),
                 String.valueOf(this.theFPSet.size()) });
     }
