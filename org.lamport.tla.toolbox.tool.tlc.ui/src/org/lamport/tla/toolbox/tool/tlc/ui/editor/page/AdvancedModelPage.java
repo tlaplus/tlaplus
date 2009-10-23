@@ -349,7 +349,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         {
             opDefNodes = specObj.getExternalModuleTable().getRootModule().getOpDefs();
         }
-        Hashtable nodeTable = new Hashtable(opDefNodes.length);
+        Hashtable nodeTable = new Hashtable();
 
         if (opDefNodes != null)
         {
