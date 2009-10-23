@@ -61,7 +61,7 @@ public class TypingWizardPage extends WizardPage
 
         // untyped option
         optionUntyped = new Button(container, SWT.RADIO);
-        optionUntyped.setText("Let untyped");
+        optionUntyped.setText("Leave untyped");
         gd = new GridData(SWT.LEFT, SWT.TOP, false, false);
         gd.horizontalSpan = 2;
         optionUntyped.setLayoutData(gd);
