@@ -95,6 +95,8 @@ public class TLAMarkerHelper
                     // the resource will not exist if the problem is in a standard module
                     // in this case putting the marker on the project is an acceptable
                     // solution
+                    // this will raise the error view, but clicking on the error will
+                    // do nothing, which is the desired behavior
                     if (Activator.isSpecManagerInstantiated() && Activator.getSpecManager().getSpecLoaded() != null
                             && Activator.getSpecManager().getSpecLoaded().getProject() != null)
                     {

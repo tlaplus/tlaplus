@@ -174,6 +174,8 @@ public class ModuleParserLauncher
             {
                 // add global context errors to semantic errors because they should
                 // be treated the same way by the toolbox
+                // these errors include defining the same operator
+                // in two different modules that are extended
                 Errors globalContextErrors = moduleSpec.getGlobalContextErrors();
 
                 // globalContextErrors contains errors, aborts, and warnings
