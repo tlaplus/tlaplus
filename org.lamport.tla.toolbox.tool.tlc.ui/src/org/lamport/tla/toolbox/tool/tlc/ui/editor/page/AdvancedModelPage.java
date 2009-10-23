@@ -479,7 +479,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         // definition overwrite
 
         ValidateableOverridesSectionPart definitionsPart = new ValidateableOverridesSectionPart(right,
-                "Definition Override", "Replacement of operators and functions defined in specification modules.",
+                "Definition Override", "Directs TLC to use alternate definitions for operators.",
                 toolkit, sectionFlags, this);
 
         managedForm.addPart(definitionsPart);

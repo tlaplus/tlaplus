@@ -33,10 +33,9 @@
 	
  	<context id="definition_override_wizard" title="Overriding Definitions">
 		<description>
-		This dialog allows you to override a definition, meaning that you provide a definition that TLC should use in place of the actual definition.
-		NOTE HOW STUPID THIS WHOLE WAY OF ADDING HELP IS SINCE IT REQUIRES THAT I TYPE AN ENTIRE PARAGRAPH AS A SINGLE LINE IN helpContexts.xml.	
+		This dialog lets you provide a new definition of the chosen operator that TLC will use instead of the actual definition.	
 		</description>
-	    <topic label="Hints on definition overriding" href="../org.lamport.tla.toolbox.tool.tlc.ui/html/constant_dialog.html" />
+	    <topic label="Definition Override" href="../org.lamport.tla.toolbox.doc/html/model/advanced-page.html#override" />
 		
 	</context>
  
