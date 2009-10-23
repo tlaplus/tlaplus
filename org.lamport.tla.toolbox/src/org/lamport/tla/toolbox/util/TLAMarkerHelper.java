@@ -4,6 +4,7 @@ import java.util.Vector;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRunnable;
@@ -62,7 +63,6 @@ public class TLAMarkerHelper
      */
     public static final String TOOLBOX_MARKERS_TRANSLATOR_MARKER_ID = "toolbox.markers.PCalTranslatorProblemMarker";
 
-    
     /**
      * Installs a SANY problem marker on a given resource
      * REFACTOR: remove runable....
@@ -80,8 +80,7 @@ public class TLAMarkerHelper
         Assert.isNotNull(resource);
         Assert.isNotNull(moduleName);
         Assert.isNotNull(coordinates);
-        
-        
+
         IWorkspaceRunnable runnable = new IWorkspaceRunnable() {
 
             public void run(IProgressMonitor monitor) throws CoreException
@@ -90,7 +89,25 @@ public class TLAMarkerHelper
                 // " with error on module "
                 // + moduleName);
 
-                IMarker marker = resource.createMarker(type);
+                IMarker marker = null;
+                if (!resource.exists())
+                {
+                    // the resource will not exist if the problem is in a standard module
+                    // in this case putting the marker on the project is an acceptable
+                    // solution
+                    if (Activator.isSpecManagerInstantiated() && Activator.getSpecManager().getSpecLoaded() != null
+                            && Activator.getSpecManager().getSpecLoaded().getProject() != null)
+                    {
+                        IProject project = Activator.getSpecManager().getSpecLoaded().getProject();
+                        marker = project.createMarker(type);
+                    } else
+                    {
+                        return;
+                    }
+                } else
+                {
+                    marker = resource.createMarker(type);
+                }
                 // Once we have a marker object, we can set its attributes
                 marker.setAttribute(IMarker.SEVERITY, severityError);
                 marker.setAttribute(IMarker.MESSAGE, message);
@@ -320,7 +337,8 @@ public class TLAMarkerHelper
         for (int i = 0; i < detectedErrors.size(); i++)
         {
             TLAMarkerInformationHolder holder = (TLAMarkerInformationHolder) detectedErrors.get(i);
-            installProblemMarker(holder.resource, holder.moduleName, holder.severityError, holder.coordinates, holder.message, monitor, holder.type);
+            installProblemMarker(holder.resource, holder.moduleName, holder.severityError, holder.coordinates,
+                    holder.message, monitor, holder.type);
         }
     }
 }

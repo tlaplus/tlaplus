@@ -31,6 +31,7 @@ import tla2sany.drivers.SemanticException;
 import tla2sany.modanalyzer.ParseUnit;
 import tla2sany.modanalyzer.SpecObj;
 import tla2sany.parser.ParseException;
+import tla2sany.semantic.AbortException;
 import tla2sany.semantic.Errors;
 import tla2sany.semantic.ExternalModuleTable;
 import util.FilenameToStream;
@@ -171,6 +172,37 @@ public class ModuleParserLauncher
             semanticErrors = moduleSpec.semanticErrors;
             if (semanticErrors != null)
             {
+                // add global context errors to semantic errors because they should
+                // be treated the same way by the toolbox
+                Errors globalContextErrors = moduleSpec.getGlobalContextErrors();
+
+                // globalContextErrors contains errors, aborts, and warnings
+                // each should be added to semanticErrors
+                String[] errors = globalContextErrors.getErrors();
+                for (int i = 0; i < errors.length; i++)
+                {
+                    semanticErrors.addError(null, errors[i]);
+                }
+
+                String[] aborts = globalContextErrors.getAborts();
+                for (int i = 0; i < aborts.length; i++)
+                {
+                    try
+                    {
+                        semanticErrors.addAbort(aborts[i], false);
+                    } catch (AbortException e)
+                    {
+                        Activator.logDebug("Abort exception thrown in ModuleParserLauncher."
+                                + "This is a bug. There should not be an AbortException thrown here.");
+                    }
+                }
+
+                String[] warnings = globalContextErrors.getWarnings();
+                for (int i = 0; i < warnings.length; i++)
+                {
+                    semanticErrors.addWarning(null, warnings[i]);
+                }
+
                 if (semanticErrors.getNumMessages() > 0)
                 {
                     if (semanticErrors.isSuccess())
