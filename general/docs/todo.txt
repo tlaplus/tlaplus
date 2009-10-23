@@ -32,7 +32,6 @@
 54. MINOR BUG (Open Module)
 57. BUG (Pluscal Translator preferences)
 60. MINOR BUG (Model Validation)
-61. BUG (Progress statistics)
 62. MINOR BUG (Distribution)
 63. MISSING FEATURE (TLC Progress)
 -----------------------------------------------------------------------------------------
@@ -311,10 +310,6 @@
     at least at the top of the current page.  Now, the user can type
     something on one page that causes an error on another page and
     have no idea what's going on.
-
-61. BUG (Progress statistics)
-    The Toolbox is not printing the "progress statistics" (number
-    of states found) that TLC prints when it successfully completes.
 
 62. MINOR BUG (Distribution)
 	Clicking on HHHHHelp on the page that appears after closing a spec

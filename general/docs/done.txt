@@ -174,3 +174,7 @@
     Note that TLC will print out a message saying something like
     "Checking temporal properites of CURRENT state space" when
     it's in state 4.  Those messages should be ignored.
+    
+ 61. BUG (Progress statistics) - FIXED by DAn 23 Oct 2009
+    The Toolbox is not printing the "progress statistics" (number
+    of states found) that TLC prints when it successfully completes.
