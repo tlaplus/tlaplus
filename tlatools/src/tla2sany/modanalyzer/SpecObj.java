@@ -197,7 +197,8 @@ public class SpecObj
      * errors probably used to get put here in Yuan's code.  They are not
      * being put there in Simon's rewriting.  As a result, they were getting
      * lost--in the sense of not being put anywhere where the Toolbox could
-     * find them.
+     * find them.  This was corrected by LL and Dan on 23 Oct 2009 by adding
+     * a call of spec.setGlobalContextErrors to SANY.frontEndSemanticAnalysis.
      *  
      */
     public final Errors getGlobalContextErrors()
