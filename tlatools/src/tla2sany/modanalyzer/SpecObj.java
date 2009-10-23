@@ -89,7 +89,7 @@ public class SpecObj
     // including the retrieval of files (ParseUnits) for extention and
     // instantiation or the root and their extentions and instantiations, etc.
 
-    Errors globalContextErrors = new Errors();
+    private Errors globalContextErrors = new Errors();
     // The Errors object for reporting errors in creating the global
     // context from the file that stores it.
 
@@ -190,6 +190,15 @@ public class SpecObj
     /**
      * Returns Errors object containing errors found while parsing the
      * built-in operator and synonym tables.  Should never be interesting.
+     * 
+     * The above appears to be Simon's comment, and it is wrong.  Global
+     * context errors include cases where two EXTENDed modules contain
+     * conflicting definitions or declarations of the same operator.   These
+     * errors probably used to get put here in Yuan's code.  They are not
+     * being put there in Simon's rewriting.  As a result, they were getting
+     * lost--in the sense of not being put anywhere where the Toolbox could
+     * find them.
+     *  
      */
     public final Errors getGlobalContextErrors()
     {
@@ -959,6 +968,14 @@ public class SpecObj
     public FilenameToStream getResolver()
     {
         return resolver;
+    }
+
+    /**
+     * @param globalContextErrors the globalContextErrors to set
+     */
+    public void setGlobalContextErrors(Errors globalContextErrors)
+    {
+        this.globalContextErrors = globalContextErrors;
     }
 
 }

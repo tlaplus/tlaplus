@@ -319,6 +319,14 @@ public class SANY {
             syserr.print( "\n" + globalContextErrors );
             // indicate fatal error parsing builtin operator tables
             spec.errorLevel = 3;
+          /** 
+           *  We believe that globalContextErrors is pointing to a global list
+           *  of context errors 
+           *  that keeps being added to.  By setting spec.globalContextErrors
+           *  to its value, we ensure that when we finish, spec.globalContextErrors
+           *  contains the vector of all the globalContextErrors.
+           */
+            spec.setGlobalContextErrors(globalContextErrors);
           }
 
           if (semanticErrors.getNumMessages() > 0) {

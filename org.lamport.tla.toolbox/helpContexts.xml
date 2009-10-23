@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <contexts>
 	<context id="WelcomeView">
-		<description>This is a Welcome view.</description>
-		<topic label="What is Welcome View?" href="../org.lamport.tla.toolbox.doc/html/gettingstarted/subtopic.html" />		
-		<topic label="What to do next?" href="../org.lamport.tla.toolbox.doc/html/gettingstarted/subtopic2.html" />
+		<description>This is the view you see when there is no spec open.  If you are a new Toolbox user, we strongly advise you to click on `Getting Started' below.</description>
+		<topic label="Getting Started" href="../org.lamport.tla.toolbox.doc/html/gettingstarted/gettingstarted.html" />		
+		<topic label="Managing Your Specifications" href="../org.lamport.tla.toolbox.doc/html/spec/spec.html" />
 	</context>
 	<context id="ProblemView">
 		<description>This is a problem view. It is used to display problems reported by the TLA+ parser and other tools.</description>
