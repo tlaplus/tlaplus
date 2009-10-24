@@ -35,6 +35,9 @@
 63. MISSING FEATURE (TLC Progress)
 64. TLC BUG (Liveness checkin in Simulation mode)
 65. MINOR BUG (Constant substitution & definition override)
+66. MINOR MISSING FEATURE (Results page/Simulation mode)
+67. MISSING FEATURE (saved spec files)
+68. TRIVIAL CHANGE ("MC" file name)
 -----------------------------------------------------------------------------------------
 1. NEW FEATURE
    Add way to tell if spec on which a model was last run is the same as the current
@@ -331,5 +334,24 @@
     spec isn't parsed.  However, that call doesn't test the 
     returned value for null.
     
-
+66. MINOR MISSING FEATURE (Results page/Simulation mode)
+    When TLC finds an error in simulation mode, it prints out a "seed"
+    and "aril" that can be used to re-create the error.  It would be nice
+    if the Toolbox reported those values in the General section of the
+    results page.  This is not very important because the Trace Explorer
+    should make it unnecessary for the user to want to use them.
+    
+67. MISSING FEATURE (saved spec files)
+    It should be possible for the user to open in a read-only editor
+    window the copies of the module files saved when a model is run.
+    The menu raised by right-clicking on the model in the Spec Explorer
+    should have an "open saved module" option.  Clicking on it should raise
+    a file browser on the model's directory that shows all the tla files
+    there. (It wouldn't hurt to allow the user to browse the MC.tla 
+    and even the MC.cfg file as well.) 
+    
+68. TRIVIAL CHANGE ("MC" file name)
+    We should probably use a file name that the user is less likely to
+    use as part of his spec than MC.tla.  Perhaps _MC.tla?  Or M_C.tla? 
+    I presume this just requires changing one constant somewhere.      
       
