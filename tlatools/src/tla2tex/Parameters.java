@@ -204,7 +204,8 @@ public final class Parameters
   public final static float LaTeXLeftSpace(int n)
     /***********************************************************************
     * The amount of space, in points, that corresponds to n spaces in the  *
-    * input file.                                                          *
+    * input file.  The definition of \PROVE in tlatex.sty depends on this  *
+    * method and needs to be changed if the method changes.                *
     ***********************************************************************/
     { return Misc.stringToFloat("4.1") * n * LaTeXptSize / 10  ; }
     

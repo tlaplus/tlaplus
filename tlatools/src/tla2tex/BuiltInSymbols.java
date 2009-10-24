@@ -124,7 +124,6 @@ public final class BuiltInSymbols
       *********************************************************************/
       { 
         add("_",          "\\_",             Symbol.KEYWORD, 0);
-        add("ASSUME",     "{\\ASSUME}",      Symbol.KEYWORD, 0);
         add("ASSUMPTION", "{\\ASSUMPTION}",  Symbol.KEYWORD, 0);
         add("AXIOM",      "{\\AXIOM}",       Symbol.KEYWORD, 0);
         add("BOOLEAN",    "{\\BOOLEAN}",     Symbol.KEYWORD, 0);
@@ -160,7 +159,6 @@ public final class BuiltInSymbols
         add("WITNESS",    "{\\WITNESS}",     Symbol.KEYWORD, 0);
         add("PICK",       "{\\PICK}",        Symbol.KEYWORD, 0);
         add("DEFS",       "{\\DEFS}",        Symbol.KEYWORD, 0);
-        add("PROVE",      "{\\PROVE}",       Symbol.KEYWORD, 0);
         add("SUFFICES",   "{\\SUFFICES}",    Symbol.KEYWORD, 0);
         add("NEW",        "{\\NEW}",         Symbol.KEYWORD, 0);
         add("LAMBDA",     "{\\LAMBDA}",      Symbol.KEYWORD, 0);
@@ -324,6 +322,9 @@ public final class BuiltInSymbols
         add("IN",          "\\.{\\IN}",          Symbol.PREFIX, 59);
         add("[]",          "{\\Box}",            Symbol.PREFIX, 60);
         add("::",          "{\\coloncolon}",     Symbol.INFIX,  61);
+        add("ASSUME",      "{\\ASSUME}",         Symbol.KEYWORD, 62);
+        add("PROVE",       "{\\PROVE}",          Symbol.KEYWORD, 62);
+
 
         add("..",           "\\.{\\dotdot}",     Symbol.INFIX, 0);
         add("...",          "\\.{\\dots}",       Symbol.INFIX, 0);

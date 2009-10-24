@@ -111,7 +111,16 @@
 \newcommand{\WITNESS}{\textsc{witness }}
 \newcommand{\PICK}{\textsc{pick }}
 \newcommand{\DEFS}{\textsc{defs }}
-\newcommand{\PROVE}{\textsc{prove }}
+\newcommand{\PROVE}{\settowidth{\symlength}{\ASSUME}%
+   \makebox[\symlength][l]{\textsc{prove}}\@s{-4.1}}%
+  %% The \@s{-4.1) is a kludge added on 24 Oct 2009 [happy birthday, Ellen]
+  %% so the correct alignment occurs if the user types
+  %%   ASSUME X
+  %%   PROVE  Y
+  %% because it cancels the extra 4.1 pts added because of the 
+  %% extra space after the PROVE.  This seems to works OK.
+  %% However, the 4.1 equals Parameters.LaTeXLeftSpace(1) and
+  %% should be changed if that method ever changes.
 \newcommand{\SUFFICES}{\textsc{suffices }}
 \newcommand{\NEW}{\textsc{new }}
 \newcommand{\LAMBDA}{\textsc{lambda }}
