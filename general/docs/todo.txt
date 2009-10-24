@@ -366,7 +366,8 @@
     field blank.  Typing just blanks in any field like Action Constraint
     should be equivalent to not typing anything.  In something like an
     invariant or a definition override, a blank or empty entry should
-    be treated as if the user canceled the operation.
+    be treated as if the user canceled the operation.  (The one place
+    it doesn't matter is in the Additional Definitioins section.)
     
 70. BUG (View option)
     The View option on the Advanced Run section is being ignored.
