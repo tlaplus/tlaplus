@@ -102,6 +102,15 @@ public class TLAMarkerHelper
                     {
                         IProject project = Activator.getSpecManager().getSpecLoaded().getProject();
                         marker = project.createMarker(type);
+                        /* The marker is being installed on the project
+                         * so the location of the error does not make sense
+                         * This is indicated by setting all of the
+                         * coordinates to -1.
+                         */
+                        for (int i = 0; i < coordinates.length; i++)
+                        {
+                            coordinates[i] = -1;
+                        }
                     } else
                     {
                         return;
