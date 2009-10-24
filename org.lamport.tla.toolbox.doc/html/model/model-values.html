@@ -61,21 +61,7 @@ is one named&nbsp; <code>NotANat</code>&nbsp;.&nbsp;  You can do this with the
 the <a href="advanced-page.html">Advanced Options Page</a>.
 </P>
 
-<p>
-You can use a model value as an ordinary value in any expression that
-in your model.&nbsp;  For example, suppose your spec has a 
-constant&nbsp; <code>Proc</code>&nbsp; that represents a set processes 
-and a constant&nbsp; <code>Leader</code>&nbsp; that is some element
-of&nbsp; <code>Proc</code>&nbsp;.&nbsp;  You can substitute the 
-set&nbsp; <code>{p1, p2, p3}</code>&nbsp; of model values
-for&nbsp; <code>Proc</code>&nbsp; using the <em>Set of model values</em>
-option of the <a href="overview-page.html#what-is-model">What is the model?</a>
-section of the <A href="overview-page.html">Model Overview Page</A>.&nbsp;  You
-can then 
-substitute&nbsp; <code>p1</code>&nbsp;
-for &nbsp; <code>Leader</code>&nbsp; using the <em>Ordinary assignment</em>
-option of that section.
-</p>
+
 
 <p>
 There are some uses of model values that
@@ -114,9 +100,40 @@ characters&nbsp; <code>T_</code>&nbsp;.
 
 <h2><a name="using">Using Model Values</a></h2>
 
-A model value may appear in any expression that occurs in the model--for
-example, in an invariant or a <a href="advanced-page.html#override">definition override</a>.
- 
+<p>
+A model value declared in the model can be used as an ordinary value in any expression that
+is part of the model's specification.&nbsp;  For example, suppose your spec has a 
+constant&nbsp; <code>Proc</code>&nbsp; that represents a set of processes 
+and a constant&nbsp; <code>Leader</code>&nbsp; that is some element
+of&nbsp; <code>Proc</code>&nbsp;.&nbsp;  You can substitute the 
+set&nbsp; <code>{p1, p2, p3}</code>&nbsp; of model values
+for&nbsp; <code>Proc</code>&nbsp; using the <em>Set of model values</em>
+option of the <a href="overview-page.html#what-is-model">What is the model?</a>
+section of the <A href="overview-page.html">Model Overview Page</A>.&nbsp;  You
+can then 
+substitute&nbsp; <code>p1</code>&nbsp;
+for &nbsp; <code>Leader</code>&nbsp; using the <em>Ordinary assignment</em>
+option of that section.
+</p>
+
+<p>
+Model values can be declared in the following places:
+<ul>
+<li>When assigning a value to a constant parameter in the 
+<a href="overview-page.html#what-is-model">What is the model?</a> section of
+the <em>Model Overview Page</em>, by choosing the <em>Model value</em>
+or <em>Set of model values</em> option.</li>
+<li>When overriding a definition in the  <a href="advanced-page.html#override">Definition override</a> 
+section of the <em>Advanced Options Page</em>, by choosing the  <em>Model value</em> option.
+</li>
+
+<li>
+In the <a href="advanced-page.html#model">Model Values</a> section of the <em>Advanced Options Page</em>.
+</li>
+</ul>
+
+</p>
+
 
 <h2><a name="symmetry">Symmetry</a></h2>
 <p>
