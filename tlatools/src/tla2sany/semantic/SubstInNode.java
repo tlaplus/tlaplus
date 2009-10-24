@@ -68,7 +68,7 @@ public class SubstInNode extends ExprNode {
     this.instantiatedModule = edmn;
     if (this.body == null) {
       errors.addError(treeNode.getLocation(), "Substitution error, " +
-		      "probably due to error in module being instantiated.");
+		      "probably due to error \nin module being instantiated.");
     }
   }
 
@@ -274,7 +274,7 @@ public class SubstInNode extends ExprNode {
         errors.addError(stn.getLocation(),
 			"Substitution missing for symbol " + opName + " declared at " +
 			((OpDeclNode)(decls.elementAt(i))).getTreeNode().getLocation() +
-			" and instantiated in module " + instantiatingModule.getName() + "." );
+			" \nand instantiated in module " + instantiatingModule.getName() + "." );
       }
     }
   }

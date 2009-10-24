@@ -271,7 +271,7 @@ public class APSubstInNode extends LevelNode {
         errors.addError(stn.getLocation(),
 			"Substitution missing for symbol " + opName + " declared at " +
 			((OpDeclNode)(decls.elementAt(i))).getTreeNode().getLocation() +
-			" and instantiated in module " + instantiatingModule.getName() + "." );
+			" \nand instantiated in module " + instantiatingModule.getName() + "." );
       }
     }
   }

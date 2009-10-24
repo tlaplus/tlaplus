@@ -128,7 +128,7 @@ public class InstanceNode extends LevelNode {
                "Level error in instantiating module '" + module.getName() +
                "':\nThe level of the expression or operator substituted for '" 
                    + mparam.getName() + 
-               "' must be at most " + mparam.getLevel() + ".");
+               "' \nmust be at most " + mparam.getLevel() + ".");
           }
           this.levelCorrect = false;
          } //  if (mexp.getLevel() > mparam.getLevel()) 
@@ -167,7 +167,7 @@ public class InstanceNode extends LevelNode {
           errors.addError(this.stn.getLocation(), 
             "Level error in instantiating module '" + module.getName() +
             "':\nThe level of the expression or operator substituted for '" +
-            mparam.getName() + "' must be at most " + plevel + ".");
+            mparam.getName() + "' \nmust be at most " + plevel + ".");
         }
         this.levelCorrect = false;
       }
@@ -194,7 +194,7 @@ public class InstanceNode extends LevelNode {
                 this.stn.getLocation(), 
                 "Level error in instantiating module '" + module.getName() +
                   "':\nThe level of the argument " + j + " of the operator " +
-                  opDef.getName() + " must be at least " + plevel + ".");
+                  opDef.getName() + " \nmust be at least " + plevel + ".");
             }
             this.levelCorrect = false;
           }
@@ -225,7 +225,7 @@ public class InstanceNode extends LevelNode {
                    "Level error when instantiating module '" + 
                       module.getName() + "':\nThe level of the argument " + 
                       alp.i + " of the operator " +
-                      pi.getName() + "' must be at most " +
+                      pi.getName() + "' \nmust be at most " +
                       ((OpDefNode)op).getMaxLevel(alp.i) + ".");
               }
               this.levelCorrect = false;

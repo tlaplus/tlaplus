@@ -641,7 +641,7 @@ public class OpDefNode extends OpDefOrDeclNode
         for ( int i = 0; i < args.length; i++ ) {
           if (args[i] instanceof OpArgNode) {
             errors.addError(loc, "Illegal expression used as argument " + (i+1) + 
-                            " (counting from 1) to operator '" + this.getName() + "'.");
+                            " to operator '" + this.getName() + "'.");
             result = false;
           }
         }
@@ -661,7 +661,7 @@ public class OpDefNode extends OpDefOrDeclNode
         // if the number of args does not match the number of params 
         if (params.length != args.length) {
           errors.addError(loc, "Wrong number of arguments (" + args.length +
-                          ") given to operator '" + this.getName() + "', which requires " +
+                          ") given to operator '" + this.getName() + "', \nwhich requires " +
                           params.length + " arguments.");
           result = false;
         }
@@ -675,7 +675,7 @@ public class OpDefNode extends OpDefOrDeclNode
             for ( int i = 0; i < params.length; i++ ) {
               if (args[i] instanceof OpArgNode) {
                 errors.addError(loc, "Non-expression used as argument number " + (i + 1)
-                                + " (counting from 1) to BuiltIn operator '" 
+                                + " to BuiltIn operator '" 
                                 + this.getName() + "'.");
                 result = false;
               }
@@ -689,29 +689,29 @@ public class OpDefNode extends OpDefOrDeclNode
                 if (args[i] instanceof OpArgNode) {
                   // No ops can be passed in this parm position
                   errors.addError(loc, "Operator used in argument number " + (i+1) 
-                                  + " (counting from 1) has incorrect number of arguments.");
+                                  + " has incorrect number of arguments.");
                   result = false;
                 }
               }
               else if (params[i].getArity() > 0) {
                 // OpArgNode of correct arity must be passed in this arg position
                 if (! matchingOpArgOperand(args[i],i)) {
-                  errors.addError(loc, "Argument number " + (i+1) + " (counting from 1) to operator '"  
-                                  + this.getName() + "' should be a " + params[i].getArity() 
+                  errors.addError(loc, "Argument number " + (i+1) + " to operator '"  
+                                  + this.getName() + "' \nshould be a " + params[i].getArity() 
                                   + "-parameter operator.");
                   result = false;
                 }
               } else { // if params[i].getArity() < 0
                 errors.addError(loc,
                                 "Internal error: Operator '" + this.getName() +
-                                "' indicates that it requires a negative number of arguments.");
+                                "' indicates that it requires \na negative number of arguments.");
               }
             } // end for
           }
           else {
             errors.addAbort(null,
                             "Internal error: operator neither BuiltIn nor UserDefined" +
-                            " in call to OpDefNode.match()", true);
+                            " \nin call to OpDefNode.match()", true);
           }
         }
       } // end "normal case"

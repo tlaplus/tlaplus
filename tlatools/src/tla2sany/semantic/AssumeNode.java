@@ -66,7 +66,7 @@ public class AssumeNode extends LevelNode {
     if (this.assumeExpr.getLevel() != ConstantLevel) {
       errors.addError(getTreeNode().getLocation(),
                       "Level error: assumptions must be level 0 (Constant), " +
-                      "but this one has level " + this.getLevel() + "." );
+                      "\nbut this one has level " + this.getLevel() + "." );
     }
     /***********************************************************************
     * The following added on 1 Mar 2009.  See                              *

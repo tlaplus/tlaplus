@@ -493,7 +493,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
                                         + opDef.getName() + ":\n" +
                                   "The permitted level of argument " 
                                    + (j+1) + " of the operator argument " +
-                                  (i+1) + " must be at least " + 
+                                  (i+1) + " \nmust be at least " + 
                                   opDef.getMinMaxLevel(i, j) + ".");
                 }
                 this.levelCorrect = false;
@@ -529,7 +529,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
                 this.stn.getLocation(),
                 "Level error in applying operator " + opDef.getName() +
                   ":\nThe level of the range for the bounded variable " +
-                  boundedBoundSymbols[i][0] + " exceeds the maximum " +
+                  boundedBoundSymbols[i][0] + " \nexceeds the maximum " +
                   "level allowed by the operator.");
             }
             this.levelCorrect = false;

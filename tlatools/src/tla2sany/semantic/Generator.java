@@ -4904,9 +4904,9 @@ OpDefNode node = (OpDefNode) vec.elementAt(i);
       errors.addError(
         substTarget.getLocation(),
         "Identifier '" + substTarget.getUS() + "' is not a legal" +
-        " target of a substitution. A legal target must be a declared" +
+        " target of a substitution. \nA legal target must be a declared" +
         " CONSTANT or VARIABLE in the module being instantiated." +
-        " (Also, check for warnings about multiple declarations of" +
+        " \n(Also, check for warnings about multiple declarations of" +
         " this same identifier.)");
       return nullOAN;
     }
@@ -4973,7 +4973,7 @@ OpDefNode node = (OpDefNode) vec.elementAt(i);
       errors.addError(opArgSyntaxNode.getLocation(), 
                       "Arity " + targetSymbol.getArity() + 
                       " operator (not an expression) is expected" + 
-                      " to substitute for CONSTANT '" + 
+                      " \nto substitute for CONSTANT '" + 
                       targetSymbol.getName() + "'." );
       return nullOpArg;
     }
@@ -7025,7 +7025,7 @@ errors.addAbort(stn.getLocation(), "Uses generateNumerable_Step") ;
         retVal = false;
         errors.addError(ln.stn.getLocation(),
                         "Repeated formal parameter " + 
-                        odns[i].getName().toString() + " in label `" +
+                        odns[i].getName().toString() + " \nin label `" +
                         ln.getName().toString() + "'.") ;
        };
       } // for ;

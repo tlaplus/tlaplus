@@ -147,7 +147,7 @@ public class SymbolTable implements ASTConstants {
         currentBinding.getArity() != symbol.getArity()) {
       errors.addError(symbol.getTreeNode().getLocation(),
 		      "Multiply-defined symbol '" + name +
-                      "': this definition or declaration conflicts with the one at " +
+                      "': this definition or declaration conflicts \nwith the one at " +
                       currentBinding.getTreeNode().getLocation().toString() + ".");
       return false;
     }
@@ -198,10 +198,13 @@ public class SymbolTable implements ASTConstants {
     // otherwise permit.
     errors.addWarning(symbol.getTreeNode().getLocation(), 
 		      "Multiple declarations or definitions for symbol " + name +
-		      ".  This duplicates the one at " +
-		      currentBinding.getTreeNode().getLocation().toString() +
-		      ".  The original declaration or definition will be used, " +
-		      "and this one will be ignored." ); 
+		      ".  \nThis duplicates the one at " +
+		      currentBinding.getTreeNode().getLocation().toString()
+		      + "."
+		      // This part of message commented out by LL on 24 Oct 2009
+//		      The original declaration or definition will be used, " +
+//		      "and this one will be ignored." 
+		      ); 
 
     return true; 
   } // end addSymbol() 
@@ -223,7 +226,7 @@ public class SymbolTable implements ASTConstants {
 
     errors.addError(symbol.getTreeNode().getLocation(),
 		    "Multiply-defined module '" + name +
-		    "': this definition or declaration conflicts with the one at " +
+		    "': this definition or declaration conflicts \nwith the one at " +
 		    currentBinding.getTreeNode().getLocation().toString() + ".");
     return false;
   }

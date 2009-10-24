@@ -72,7 +72,7 @@ public class UseOrHideNode extends LevelNode {
           errors.addError(
              this.facts[i].stn.getLocation(),
                "The only expression allowed as a fact in a HIDE " +
-               "is the name of a theorem, assumption, or step.");
+               "is \nthe name of a theorem, assumption, or step.");
       } ;
     } // for
   }

@@ -334,18 +334,23 @@ public class Context implements ExploreNode {
 	    // otherwise, it is considered to be an error.
 	    if (symbol.getClass() == sn.getClass()) {
               errors.addWarning( sn.getTreeNode().getLocation(),
-                                 "Warning: multiply-defined symbol '" + 
+                                 "Warning: the " + kindOfNode(symbol) +  " of '" + 
                                  sName.toString() + 
-                                 "' conflicts with declaration at " + 
+                                 "' conflicts with \nits " + kindOfNode(symbol) + " at " + 
                                  symbol.getTreeNode().getLocation() + ".");
 
             }
 	    else {
               errors.addError( sn.getTreeNode().getLocation(),
-                               "Incompatible multiple definitions of symbol '" + 
+                               "The " + kindOfNode(symbol) +  " of '" + 
                                sName.toString() + 
-                               "'; the conflicting declaration is at " + 
-                               symbol.getTreeNode().getLocation()+ ".");
+                               "' conflicts with \nits " + kindOfNode(symbol) + " at " + 
+                               symbol.getTreeNode().getLocation() + ".");
+                      
+//                               "Incompatible multiple definitions of symbol '" + 
+//                               sName.toString() + 
+//                               "'; \nthe conflicting declaration is at " + 
+//                               symbol.getTreeNode().getLocation()+ ".");
               erc = false;
             } //end else
           } // end if
@@ -356,6 +361,12 @@ public class Context implements ExploreNode {
     return erc;
   }
 
+  private static String kindOfNode(SymbolNode symbol) {
+      if (symbol instanceof OpDefNode) {return "definition";}
+      if (symbol instanceof FormalParamNode) {return "definition";}
+      return "declaration";
+  }
+  
   /**
    * Returns a duplicate of this Context.  Called once from
    * SymbolTable class.  The tricky part is duplicating the
