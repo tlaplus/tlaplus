@@ -26,6 +26,16 @@ public class TLCSequenceVariableValue extends TLCVariableValue
         return getElements();
     }
 
+    /**
+     * LL BUG 
+     * Calling toSimpleString on a sequence <<a, b>> is producing 
+     * <<1:>a, 2:>b>>.  I think that in the following, getElements 
+     * should be returning an array of TLCVariableValue
+     * objects.  I have no idea what I was doing, but it looks like
+     * the code for getElements() here should essentially be the 
+     * same as for TLCSetVariableValue.
+     * @return
+     */
     public TLCFcnElementVariableValue[] getElements() {
         return elements;
     }
