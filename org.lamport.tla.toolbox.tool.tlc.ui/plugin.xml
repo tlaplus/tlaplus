@@ -273,13 +273,18 @@
       </menuContribution>
       <menuContribution
             locationURI="popup:toolbox.explorer.popup?after=additions">
-         <command
+            <!-- The following command is not used because it seems
+             dangerous to have one run button declared in a plug-in
+             and another created dynamically in the code. Calling
+             the two run buttons executes different code. The other button
+             is RunAction, a nested class in BasicFormPage.-->
+         <!-- command
                commandId="toolbox.tool.tlc.commands.model.run"
                icon="icons/full/lrun_obj.gif"
                id="toolbox.popupmenu.model.run"
                label="Run"
                style="push">
-         </command>
+         </command -->
          <command
                commandId="toolbox.tool.tlc.commands.model.stop"
                icon="icons/full/progress_stop.gif"
