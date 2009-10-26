@@ -65,7 +65,7 @@ public class ValidateableOverridesSectionPart extends ValidateableConstantSectio
         // params in definition override
         // if it does not, change number of params to match
         OpDefNode opDefNode = (OpDefNode) ModelHelper.getOpDefNode(formula.getLabel());
-        if (opDefNode.getSource().getNumberOfArgs() != formula.getParams().length)
+        if (opDefNode != null && opDefNode.getSource().getNumberOfArgs() != formula.getParams().length)
         {
             String[] newParams = new String[opDefNode.getSource().getNumberOfArgs()];
             for (int i = 0; i < newParams.length; i++)
