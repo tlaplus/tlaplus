@@ -27,6 +27,9 @@ import org.eclipse.ui.forms.IMessageManager;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.part.FileEditorInput;
+import org.lamport.tla.toolbox.Activator;
+import org.lamport.tla.toolbox.spec.Spec;
+import org.lamport.tla.toolbox.spec.parser.IParseConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationDefaults;
 import org.lamport.tla.toolbox.tool.tlc.launch.TLCModelLaunchDelegate;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCModelLaunchDataProvider;
@@ -394,6 +397,73 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
      */
     public void launchModel(String mode, boolean userPased)
     {
+        /*
+         * The user should not be able to run the model checker
+         * or generate MC files if the spec is unparsed.
+         * Right now, the user will simply see an message dialog
+         * that has a different message depending on whether
+         * the mode is model check or generate. If the mode is
+         * generate, there will be a different message depending
+         * on whether the user explicitly clicked generate or
+         * the generation is occurring because the preference
+         * to automatically revalidate on save is selected.
+         * The messages appear below.
+         * 
+         * It would be nice to eventually add a button
+         * that allows the user to parse the spec from that dialog,
+         * and if parsing succeeds, to run TLC, but right now, that
+         * is not implemented.
+         */
+        if (Activator.isSpecManagerInstantiated())
+        {
+            Spec spec = Activator.getSpecManager().getSpecLoaded();
+            if (spec == null || spec.getStatus() != IParseConstants.PARSED)
+            {
+                if (mode == TLCModelLaunchDelegate.MODE_MODELCHECK)
+                {
+                    MessageDialog
+                            .openError(getSite().getShell(), "Model checking not allowed",
+                                    "The spec status is not \"parsed\". The status must be \"parsed\" before model checking is allowed.");
+                } else if (mode == TLCModelLaunchDelegate.MODE_GENERATE)
+                {
+                    if (userPased)
+                    {
+                        MessageDialog
+                                .openError(getSite().getShell(), "Revalidation not allowed",
+                                        "The spec status is not \"parsed\". The status must be \"parsed\" before model revalidation is allowed.");
+                    } else
+                    {
+                        MessageDialog
+                                .openError(getSite().getShell(), "Revalidation not allowed",
+                                        "The model can be saved, but since the spec status is not \"parsed\" model revalidation is not allowed.");
+                    }
+                }
+                return;
+            }
+        } else
+        {
+            Activator.logDebug("The spec manager has not been instantiated. This is a bug.");
+            return;
+        }
+
+        /* The pages should be validated one last time before TLC
+         * is run. This is currently necessary when auto-parse spec
+         * is disabled. In such cases, if the user removes a contant
+         * or a definition from the spec, saves, and then later parses
+         * the spec, the model pages will not be validated on parsing.
+         * The removed constant should cause a validation error as should
+         * the removed definition if there is an override for that
+         * definition. However, validation is not called, so no error
+         * is displayed to the user and the pages are all complete, so
+         * the toolbox attempts to run TLC. This is incorrect, so
+         * validation must occur here. This is a quick fix. A better
+         * fix would be to revalidate the pages when the spec is parsed.
+         * 
+         * This must be run synchronously so that it finishes before
+         * this method checks if the pages are complete.
+         */
+        UIHelper.runUISync(validateRunable);
+
         IProgressMonitor monitor = new NullProgressMonitor();
 
         // save the editor if not saved
