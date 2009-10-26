@@ -8,17 +8,32 @@ public class TLCSequenceVariableValue extends TLCVariableValue
     private static final String[] DELIMETERS = { "<<", ",", ">>" };
 
     /*
-     * Need to keep the value as an array of TLCFcnElementVariableValue 
-     * objects rather than computing them afresh because those objects
+     * Need to keep the following two values as arrays of objects 
+     * rather than computing them afresh because those objects
      * can be stored in the HashSets that determine highlighting of an
      * error trace.  
      */
+    /**
+     * The list of sequence values represented as function elements
+     * 1 :> v1, 2 :> v2, ... .  We return these as the sequence's children 
+     * because that allows them to be displayed in the error trace in a 
+     * more useful way.
+     */
     private TLCFcnElementVariableValue[] elements;
+
+    /**  
+     * The list of values of the sequence elements.
+     */
+    private TLCVariableValue[] elementValues;
     
     TLCSequenceVariableValue(List values)
     {
         this.value = values;
         this.elements = this.innerGetElements();
+        elementValues = new TLCVariableValue[elements.length];
+        for (int i = 0; i < elements.length; i++) {
+            elementValues[i] = (TLCVariableValue) elements[i].getValue();
+        }
     }
 
     public Object getValue()
@@ -26,19 +41,10 @@ public class TLCSequenceVariableValue extends TLCVariableValue
         return getElements();
     }
 
-    /**
-     * LL BUG 
-     * Calling toSimpleString on a sequence <<a, b>> is producing 
-     * <<1:>a, 2:>b>>.  I think that in the following, getElements 
-     * should be returning an array of TLCVariableValue
-     * objects.  I have no idea what I was doing, but it looks like
-     * the code for getElements() here should essentially be the 
-     * same as for TLCSetVariableValue.
-     * @return
-     */
     public TLCFcnElementVariableValue[] getElements() {
         return elements;
     }
+ 
  
     private TLCFcnElementVariableValue[] innerGetElements() {
         List list = (List) value;
@@ -52,10 +58,12 @@ public class TLCSequenceVariableValue extends TLCVariableValue
         return result;
     }
 
+
     public String toSimpleString()
     {
-        TLCVariableValue[] elements = getElements();
-        return arrayToSimpleStringBuffer(elements, DELIMETERS).toString();
+        // Changed from using elements to using elementValues on 26 Oct 2009
+        // so we don't print the "1:>", "2:>", ...
+        return arrayToSimpleStringBuffer(elementValues, DELIMETERS).toString();
     }
 
 }
