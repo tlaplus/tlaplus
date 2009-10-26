@@ -1347,12 +1347,18 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
     public static OpDefNode getOpDefNode(String name)
     {
         SpecObj specObj = ToolboxHandle.getCurrentSpec().getValidRootModule();
-        OpDefNode[] opDefNodes = specObj.getExternalModuleTable().getRootModule().getOpDefs();
-        for (int j = 0; j < opDefNodes.length; j++)
+        /*
+         * SpecObj can be null if the spec is unparsed.
+         */
+        if (specObj != null)
         {
-            if (opDefNodes[j].getName().toString().equals(name))
+            OpDefNode[] opDefNodes = specObj.getExternalModuleTable().getRootModule().getOpDefs();
+            for (int j = 0; j < opDefNodes.length; j++)
             {
-                return opDefNodes[j];
+                if (opDefNodes[j].getName().toString().equals(name))
+                {
+                    return opDefNodes[j];
+                }
             }
         }
         return null;
