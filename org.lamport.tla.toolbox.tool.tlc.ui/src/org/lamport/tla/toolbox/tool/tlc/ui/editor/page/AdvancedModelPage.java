@@ -336,6 +336,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
                 {
                     mm.addMessage(value, "The toolbox cannot handle the model value " + value + ".", null,
                             IMessageProvider.ERROR, widget);
+                    setComplete(false);
                 }
             }
 
@@ -387,6 +388,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
                         + " has been removed from the specification."
                         + " It must be removed from the list of definition overrides.", null, IMessageProvider.ERROR,
                         widget);
+                setComplete(false);
             } else
             {
                 // add error message if the number of parameters has changed
@@ -396,6 +398,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
                     mm.addMessage(definition.getLabel(), "Edit the definition override for "
                             + opDefNode.getSource().getName() + " to match the correct number of arguments.", null,
                             IMessageProvider.ERROR, widget);
+                    setComplete(false);
                 }
             }
         }
@@ -408,6 +411,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
             {
                 mm.addMessage(label, "The toolbox cannot override the definition of " + label
                         + " because it is a configuration file keyword.", null, IMessageProvider.ERROR, widget);
+                setComplete(false);
             }
         }
 
