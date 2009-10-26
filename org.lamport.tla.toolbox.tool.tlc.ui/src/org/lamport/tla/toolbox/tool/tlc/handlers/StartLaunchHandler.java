@@ -16,7 +16,10 @@ import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 
 /**
  * Runs a model
+ * This class should no longer be used because the run
+ * menu item in the spec explorer pop-up menu has been removed.
  * @author Simon Zambrovski
+ * @deprecated
  * @version $Id$
  */
 public class StartLaunchHandler extends AbstractHandler
