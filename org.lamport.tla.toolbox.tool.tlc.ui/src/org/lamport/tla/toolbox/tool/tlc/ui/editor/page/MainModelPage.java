@@ -413,6 +413,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
                             {
                                 mm.addMessage(value, "The toolbox cannot handle the model value " + value + ".",
                                         constant, IMessageProvider.ERROR, widget);
+                                setComplete(false);
                             }
                         }
                     }
@@ -425,6 +426,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
                 mm.addMessage(constant.getLabel(), "The toolbox cannot handle the constant identifier "
                         + constant.getLabel() + ".", constant, IMessageProvider.ERROR, UIHelper.getWidget(dm
                         .getAttributeControl(MODEL_PARAMETER_CONSTANTS)));
+                setComplete(false);
             }
         }
 
