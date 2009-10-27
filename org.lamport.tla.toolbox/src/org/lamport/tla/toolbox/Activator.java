@@ -12,6 +12,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.spec.manager.WorkspaceSpecManager;
 import org.lamport.tla.toolbox.spec.nature.TLAParsingBuilder.OutOfBuildSpecModulesGatheringDeltaVisitor;
 import org.lamport.tla.toolbox.spec.parser.IParseConstants;
@@ -182,7 +183,11 @@ public class Activator extends AbstractUIPlugin
                             List modules = moduleFinder.getModules();
                             if (!modules.isEmpty())
                             {
-                                getSpecManager().getSpecLoaded().setStatus(IParseConstants.UNPARSED);
+                                Spec spec = getSpecManager().getSpecLoaded();
+                                if (spec != null)
+                                {
+                                    spec.setStatus(IParseConstants.UNPARSED);
+                                }
                             }
                         }
                     } catch (CoreException e)
