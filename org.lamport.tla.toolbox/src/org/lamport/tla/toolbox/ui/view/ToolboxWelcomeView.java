@@ -44,7 +44,7 @@ public class ToolboxWelcomeView extends ViewPart
         }
         // this code is necessary for opening a local file in the plugin
         Bundle plugin = Activator.getDefault().getBundle();
-        IPath relativePagePath = new Path("welcome\\welcomeView.html");
+        IPath relativePagePath = new Path("welcome/welcomeView.html");
         URL fileInPlugin = FileLocator.find(plugin, relativePagePath, null);
         URL pageUrl;
         try
