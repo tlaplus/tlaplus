@@ -9,12 +9,15 @@ import org.eclipse.core.runtime.ListenerList;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IToolBarManager;
+import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Layout;
+import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.IMessage;
 import org.eclipse.ui.forms.IMessageManager;
@@ -108,6 +111,8 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
     // the page completion status (true by default)
     private boolean isComplete = true;
 
+    private ToolBarManager headClientTBM = null;
+
     // hyper link listener activated in case of errors
     protected IHyperlinkListener errorMessageHyperLinkListener = new HyperlinkAdapter() {
 
@@ -181,6 +186,27 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
 
         // refresh the tool-bar
         toolbarManager.update(true);
+
+        /*
+         * The head client is the second row of the header section,
+         * below the title. There should be the same buttons as in the
+         * toolbar on the first row, right corner of the header section
+         * because sometimes those buttons are not visible unless
+         * the user scrolls over to them.
+         */
+        ToolBar headClientTB = new ToolBar(formWidget.getForm().getHead(), SWT.HORIZONTAL);
+        headClientTBM = new ToolBarManager(headClientTB);
+        // run button
+        headClientTBM.add(new DynamicContributionItem(new RunAction()));
+        // validate button
+        headClientTBM.add(new DynamicContributionItem(new GenerateAction()));
+        // stop button
+        headClientTBM.add(new DynamicContributionItem(new StopAction()));
+
+        // refresh the head client toolbar
+        headClientTBM.update(true);
+
+        formWidget.getForm().setHeadClient(headClientTB);
 
         // setup body layout
         body.setLayout(getBodyLayout());
@@ -445,6 +471,10 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
                     mForm.getForm().setText(title + CRASHED_TITLE);
                     // the model crashed
                     toolbarManager.add(new DynamicContributionItem(new ModelRecoveryAction()));
+                    if (headClientTBM != null)
+                    {
+                        headClientTBM.add(new DynamicContributionItem(new ModelRecoveryAction()));
+                    }
                 } else
                 {
                     mForm.getForm().setText(title + RUNNING_TITLE);
@@ -458,9 +488,14 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
                 }
             }
 
-            // refresh the tool-bar
+            // refresh the tool-bars
             toolbarManager.markDirty();
             toolbarManager.update(true);
+            if (headClientTBM != null)
+            {
+                headClientTBM.markDirty();
+                headClientTBM.update(true);
+            }
 
             // refresh enablement status
             setEnabled(!modelInUse);
