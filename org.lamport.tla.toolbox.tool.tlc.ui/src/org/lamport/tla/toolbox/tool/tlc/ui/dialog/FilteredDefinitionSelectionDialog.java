@@ -249,7 +249,7 @@ public class FilteredDefinitionSelectionDialog extends FilteredItemsSelectionDia
         public boolean matchItem(Object item)
         {
 
-            if (getPattern().isEmpty() || getPattern() == null)
+            if (getPattern() == null || getPattern().length() == 0)
             {
                 return true;
             }

@@ -231,7 +231,7 @@ public class ModelWriter
             // create a declaration line
             // CONSTANTS
             // a, b, c
-            if (comment != null && !comment.isEmpty())
+            if (comment != null && !(comment.length() == 0))
             {
                 tlaBuffer.append(COMMENT).append(comment).append(ATTRIBUTE).append(attributeName).append(CR);
             }
@@ -242,7 +242,7 @@ public class ModelWriter
             // a = a
             // b = b
             // c = c
-            if (comment != null && !comment.isEmpty())
+            if (comment != null && !(comment.length() == 0))
             {
                 cfgBuffer.append(COMMENT).append(comment).append(CR);
             }
@@ -293,7 +293,7 @@ public class ModelWriter
      */
     public void addNewDefinitions(String definitions, String attributeName)
     {
-        if (definitions.isEmpty())
+        if (definitions.length() == 0)
         {
             return;
         }
@@ -516,7 +516,7 @@ public class ModelWriter
      */
     static IRegion[] findIds(String text)
     {
-        if (text == null || text.isEmpty())
+        if (text == null || text.length() == 0)
         {
             return new IRegion[0];
         }

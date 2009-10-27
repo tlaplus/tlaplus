@@ -110,7 +110,7 @@ public class ToolboxHandle
      */
     public static boolean isUserModule(String name)
     {
-        if (name == null || name.isEmpty())
+        if (name == null || name.length() == 0)
         {
             return false;
         }

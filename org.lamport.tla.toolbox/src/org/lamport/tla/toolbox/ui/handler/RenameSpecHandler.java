@@ -83,7 +83,7 @@ public class RenameSpecHandler extends AbstractHandler implements IHandler
          */
         public String isValid(String name)
         {
-            if (name == null || name.isEmpty())
+            if (name == null || name.length() == 0)
             {
                 return "The specification name must be not empty";
             }

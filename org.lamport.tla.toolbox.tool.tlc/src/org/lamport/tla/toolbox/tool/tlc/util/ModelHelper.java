@@ -1324,7 +1324,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
      */
     public static IRegion[] findLocations(String text)
     {
-        if (text == null || text.isEmpty())
+        if (text == null || text.length() == 0)
         {
             return new IRegion[0];
         }

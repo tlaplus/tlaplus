@@ -72,7 +72,7 @@ public class TypedSet
                 // and set type violated to false
                 // this also checks that strings like e.G. "P_", "x_" are not valid
                 // because they miss the untyped part
-                boolean typePatternViolated = parsedSet[0].isEmpty();
+                boolean typePatternViolated = parsedSet[0].length() == 0;
 
                 // run through the strings and compare the position of the first "_"
                 // if it changes the type patter is violated: e.G. "p_1" "pi_2".
@@ -82,7 +82,7 @@ public class TypedSet
                     if (parsedSet[i].startsWith(result.getType() + "_"))
                     {
                         parsedSet[i] = parsedSet[i].substring(typeSeparatorPosition + 1);
-                        if (parsedSet[i].isEmpty())
+                        if (parsedSet[i].length() == 0)
                         {
                             typePatternViolated = true;
                         }

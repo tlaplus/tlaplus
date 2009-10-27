@@ -93,7 +93,7 @@ public final class Location
      */
     public static Location parseLocation(String locationString)
     {
-        if (locationString == null || locationString.isEmpty() || UNKNOWN_LOCATION.equals(locationString))
+        if (locationString == null || locationString.length() == 0 || UNKNOWN_LOCATION.equals(locationString))
         {
             return nullLoc;
         }
