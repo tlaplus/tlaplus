@@ -15,6 +15,7 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.ui.IEditorPart;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.TLCModelLaunchDelegate;
+import org.lamport.tla.toolbox.tool.tlc.output.source.TLCOutputSourceRegistry;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
@@ -80,6 +81,11 @@ public class DeleteModelHandler extends AbstractHandler implements IModelConfigu
                         {
                             modelFolder.delete(false, null);
                         }
+                        // remove any tlc output sources corresponding to this model
+                        // in case the user opens a new model of the same name in
+                        // the same toolbox session
+                        TLCOutputSourceRegistry.getSourceRegistry().removeTLCStatusSource(
+                                launchConfigurations[i].getFile().getName());
                         launchConfigurations[i].delete();
                     }
                 }
