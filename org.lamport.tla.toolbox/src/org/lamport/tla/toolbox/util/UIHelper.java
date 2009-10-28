@@ -485,8 +485,9 @@ public class UIHelper
 
     /**
      * Registers a control to the context
+     * This can only be used within the plug-in org.lamport.tla.toolbox
      * @param control control to register 
-     * @param localContext the context id relative to plug-in ID 
+     * @param localContext the context id relative to org.lamport.tla.toolbox plug-in ID 
      * <br>
      * Note: there should be a corresponding context ID defined in the contexts.xml defining the context for current ID. 
      */
