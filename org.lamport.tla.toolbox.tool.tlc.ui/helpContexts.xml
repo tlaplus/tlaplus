@@ -4,12 +4,19 @@
 		<description>Welcome to the model editor help...</description>
 	</context>
  <context id="mainModelPage">
-    <description>This is the main model page. You can do stuff here.</description>
+    <description>This is the main model page. Use it to create most your TLC model.</description>
+    <topic label="Model Overview Page" 
+           href="../org.lamport.tla.toolbox.doc/html/model/overview-page.html" />
  </context>
  <context id="advancedModelPage">
-    <description>This is the advanced model page. You can do more advanced stuff here.</description>
+    <description>This is the advanced model page. You can use it to create the more esoteric aspects of a model.</description>
+       <topic label="Advanced Options Page" 
+           href="../org.lamport.tla.toolbox.doc/html/model/advanced-page.html" />
  </context>
  <context id="resultModelPage">
-    <description>This is the result page. It shows the results of a TLC run.</description>
+    <description>This is the model's result page. It shows the results of a TLC run.</description>
+    <topic label="Advanced Options Page" 
+           href="../org.lamport.tla.toolbox.doc/html/model/results-page.html" />
+    
  </context>
 </contexts>

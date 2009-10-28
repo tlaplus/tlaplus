@@ -6,15 +6,20 @@
 		<topic label="Managing Your Specifications" href="../org.lamport.tla.toolbox.doc/html/spec/spec.html" />
 	</context>
 	<context id="ProblemView">
-		<description>This is a problem view. It is used to display problems reported by the TLA+ parser and other tools.</description>
-		<topic label="Understanding Problems" href="../org.lamport.tla.toolbox.doc/html/tasks/close_spec.html" />
+		<description>This is a problem view. It is used to display problems reported by the TLA+ parser and the PlusCal translator.</description>
+		<topic label="Parsing" 
+		       href="../org.lamport.tla.toolbox.doc/html/spec/parsing.html" />
+		<topic label="The PlusCal Translator" 
+		       href="../org.lamport.tla.toolbox.doc/html/pluscal/pluscal.html" />
+
 	</context>
 	<context id="NewSpecWizard">
-		<description>A wizard to create a new specification</description>
-		<topic label="How to use a wizard?" href="../org.lamport.tla.toolbox.doc/html/tasks/open_spec.html" />
-		<topic label="What is a specification?" href="../org.lamport.tla.toolbox.doc/html/concepts/specification.html" />		
+		<description>A dialog for creating a new specification</description>
+		<topic label="Manipulating Specs" href="../org.lamport.tla.toolbox.doc/html/spec/opening-closing.html" />		
+		<topic label="What Is A Spec?" href="../org.lamport.tla.toolbox.doc/html/spec/what-is.html" />
 	</context>
  <context id="ParserPreferencePage">
+    <!-- There is no help attached to this page -->
     <description>Parser Preference Page</description>
  </context>
  <context id="mainModelPage" title="title of mainModelPage">
