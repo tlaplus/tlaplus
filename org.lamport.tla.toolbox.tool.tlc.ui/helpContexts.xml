@@ -19,4 +19,7 @@
            href="../org.lamport.tla.toolbox.doc/html/model/results-page.html" />
     
  </context>
+ <context id="TLCErrorView">
+    <description>This view shows TLC errors.</description>
+ </context>
 </contexts>

@@ -53,7 +53,9 @@ import org.lamport.tla.toolbox.tool.tlc.output.data.TLCVariable;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCVariableValue;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
+import org.lamport.tla.toolbox.tool.tlc.ui.util.TLCUIHelper;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
+import org.lamport.tla.toolbox.util.IHelpConstants;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 /**
@@ -328,7 +330,7 @@ public class TLCErrorView extends ViewPart
         // init
         clear();
 
-        UIHelper.setHelp(parent, "TLCErrorView");
+        TLCUIHelper.setHelp(parent, IHelpConstants.TLC_ERROR_VIEW);
     }
 
     public void setFocus()
