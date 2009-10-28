@@ -22,6 +22,7 @@ public interface IHelpConstants
     public static final String MAIN_MODEL_PAGE = "mainModelPage";
     public static final String ADVANCED_MODEL_PAGE = "advancedModelPage";
     public static final String RESULT_MODEL_PAGE = "resultModelPage";
+    public static final String TLC_ERROR_VIEW = "TLCErrorView";
     
     /**
      * Menu new spec
