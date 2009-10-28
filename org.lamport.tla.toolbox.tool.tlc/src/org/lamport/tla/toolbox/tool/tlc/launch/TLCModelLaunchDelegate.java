@@ -457,6 +457,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
                 String message = markerHolder.getMessage();
                 if (markerHolder.getModuleName() != null)
                 {
+                    // the root module is MC.tla
                     if (markerHolder.getModuleName().equals(rootModule.getName()))
                     {
                         int severity = markerHolder.getSeverityError();
