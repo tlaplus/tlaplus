@@ -21,8 +21,8 @@
  </context>
  <context id="TLCErrorView">
     <description>This view shows TLC errors.</description>
-    <topic label="Model Checking a Model" 
-           href="../org.lamport.tla.toolbox.doc/html/model/executing-tlc.html#model" />
+    <topic label="TLC Error Reports" 
+           href="../org.lamport.tla.toolbox.doc/html/model/executing-tlc.html#error-reports" />
     
  </context>
 </contexts>
