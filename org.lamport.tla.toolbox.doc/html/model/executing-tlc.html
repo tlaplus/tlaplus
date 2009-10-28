@@ -19,6 +19,7 @@ Contents
   <a href="#validating">Validating a Model</a>
   <a href="#model">Model Checking a Model</a>
   <a href="#preferences">TLC Model Checker Preferences</a>
+  <a href="#crash">If Something Crashes</a>
   <a href="#MC">How TLC is Run</a>
   <a href="#console">The TLC Console View</a>
   
@@ -26,7 +27,7 @@ Contents
  <P> 
 You run the TLC model checker by clicking on the <IMG SRC="run-icon.gif" Align="bottom"/> button.&nbsp;  
 This button
-appears on the top-right of each model editor page.&nbsp;   Before running TLC on the model,
+appears at the top of each model editor page.&nbsp;   Before running TLC on the model,
 the Toolbox first <em>validates</em> the model, checking it for errors.&nbsp;  
 Clicking on the <IMG SRC="validate-icon.gif" Align="bottom"/> button causes the Toobox
 to validate the model without
@@ -72,11 +73,12 @@ That page is automatically displayed when TLC starts running.
 </p>
 
 <h3>Stopping TLC</h3>
-<p>
+
 You can stop TLC by clicking on the <em>Cancel</em> button of this dialog, or else
 on the  <IMG SRC="stop-icon.gif" Align="bottom"/> button that is at the top
 of each model-editor page, next to the <em>run</em> and <em>validate</em> buttons.
-</p>
+
+
 
 <h3><a name="#error-reports">Error Reports</a></h3>
 
@@ -133,7 +135,55 @@ the values of their subexpressions from one state to the next.&nbsp;  The color 
 
 <h2><a name="preferences">TLC Model Checker Preferences</a></h2>
 
-<p>XXXXXXXXXXXXXXX</p>
+<p>
+The Toolbox's <a href="../gettingstarted/preferences.html">Preferences Menu</a>
+allows you to select the following:
+</p>
+<h3>Always pop up TLC errors view</h3>
+<p>
+Controls whether or not the <a href="#error-reports">TLC Errors View</a> is automatically
+popped up when running TLC produces an error.&nbsp;  You will almost certainly want to 
+use the default, which is to pop up the view.
+</p>
+
+<h3>Re-validate model on save</h3>
+<p>
+A model is an object that is edited with a model editor.&nbsp;  When the model is modified,
+an asterisk appears in the model editor's tab, and the model can be saved by
+typing&nbsp; <code>Ctl+S</code>.&nbsp;  This option allows you to choose whether or not
+the Toolbox should <a href="#validating">validate the model</a> when it is saved.&nbsp;
+The model is automatically saved when you run or validate it, so there you will
+probably have no reason to save it explicitly.
+</p>
+<h3>Maximum JVM Heap Size</h3>
+<p>
+This is the value to which the <em>Maximum JVM heap size</em> parameter
+of a new model is set.&nbsp;  See the description of that parameter
+in  the <a href="overview-page.html#how-to-run">How to run?</a> section of the
+model editor's Overview Page help page.
+</p>
+
+<h2><a name="crash">If Something Crashes</a></h2>
+
+<p>
+If TLC crashes (a very rare occurrence), or if  the Toolbox or your computer crashes and
+you restart the Toolbox, you could find the Toolbox in a state in which it says that
+TLC has crashed.&nbsp;  In that case, you will see a <em>Repair</em> button at the top right
+of the model editor.&nbsp;  Click on it.&nbsp;  Instead of saying that TLC has crashed,
+the Toolbox might say that 
+TLC is still running even though it's not.&nbsp;  If that happens, open the 
+<em>Spec Explorer</em> (described on the <a href="../spec/opening-closing.html"><em>Manipulating Specs</em> help page</a>),
+click on the&nbsp; <code>+</code>&nbsp; next to the open spec, right-click on the model in question, and
+select the&nbsp; <code>Repair</code>&nbsp; option.&nbsp; This should fix the problem.
+</p>
+
+<p>
+If you stop the Toolbox in some abnormal way while it is running TLC--for example,
+by using an operating system tool to kill its process--you may leave TLC running
+as a disembodied process.&nbsp;  In that case, you should kill the TLC process.&nbsp;
+Otherwise, strange things will happen if you restart 
+the Toolbox and try to run TLC from it on the model.   
+</p>
 <h2><a name="MC">How TLC is Run</a></h2>
 <p>
 The Toolbox runs TLC on a module named&nbsp; <code>MC</code>&nbsp; that it constructs
