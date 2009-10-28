@@ -1,0 +1,388 @@
+\documentclass{article}
+\usepackage{tla}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                 MODIFICATION DATE                               %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                 %
+% Defines \moddate to expand to modification date such as         %
+%                                                                 %
+%    5 Aug 1991                                                   %
+%                                                                 %
+% and \prdate to print it in a large box.  Assumes editor         %
+% updates modification date in standard SRC Gnu Emacs style.      %
+% (should work for any user name).                                %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\def\ypmd{%                                                       %
+%                                                                 %
+%                                                                 %
+  Last modified on Wed 28 October 2009 at  8:44:12 PST by lamport         %
+  endypmd}                                                        %
+%                                                                 %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\moddate}{\expandafter\xpmd\ypmd}                     %
+\def\xpmd Last modified                                           %
+on #1 #2 #3 #4 at #5:#6:#7 #8 by #9 endypmd{#2 #3 #4}                %
+\newcommand{\prdate}{\noindent\fbox{\Large\moddate}}              %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newcommand{\TLA}[1]{TLA$^{+}$}
+\newcommand{\mytt}{\normalfont\ttfamily}
+\newcommand\bs{\char '134 }  % A backslash character for \tt font
+
+\title{List of Known Toolbox Problems}
+% \author{Leslie Lamport}
+\date{\moddate}
+
+\begin{document}
+\maketitle
+
+\noindent These are all the known bugs and missing features
+of the \TLA+ Toolbox reported as of
+\moddate.  
+
+
+\begin{description}
+
+\item[1. New Feature] \mbox{}\\
+Add way to tell if the spec on which a model was last run is the same as
+the current spec.
+   
+\item[5. New Feature (Locking Models)] \mbox{}\\
+%
+TLC might be running for weeks, and the user in the meantime changed
+the spec.  When TLC stops running, the model gets revalidated and
+stuff that was in the model configuration gets lost.  Here is a
+possible solution: Add the notion of a model being LOCKED, meaning
+that it cannot be changed in any way, meaning that it is \emph{read only} 
+and it doesn't change to conform to the current spec. In
+particular, it conforms to the copy of the spec that's saved
+with the model.  Running the spec locks the model.  There will also be
+a menu item that the use can select to lock the spec himself.  (This
+will allow the user to protect himself from accidentally modifying or
+re-running a spec by mistake---perhaps losing a trace that took weeks
+for TLC to produce.)  We must decide what should happen to the lock
+state when a TLC run completes.  Should the user have to explicitly
+unlock it?  I suggest that it be unlocked when the run completes if
+and only if that run did not take too long---where ``too long'' is a
+user-settable preference.
+
+\item[9. Minor Missing Features (TLC Model)] \mbox{}\\
+%
+The user cannot now declare the same model value in two different
+constant instantiations or in a constant instantiation and a
+definition override.  Moreover, he cannot use a model value declared
+on the advanced page as a model value in a constant instantiation.
+These restrictions should be eliminated.
+
+\item[12. Minor Bug (Parsing Error View)] \mbox{}\\
+%
+If the spec is reparsed after a parsing error, the Parsing Error
+view is displayed, and no errors are found, then the Parsing Error view
+continues to contain the previous error.  The view has to be closed to
+make that error disappear.
+ 
+
+\item[13. Bug (PlusCal Translator Errors)] \mbox{}\\
+%
+Suppose the user starts to write a PlusCal algorithm, translates it
+and gets a PlusCal error, and then decides to delete the PlusCal code
+and just write the spec in \TLA+.  There's no way for him to get rid of
+the PlusCal error message in the Parse Errors window.  In fact, even
+if I run the translator on another module, the PlusCal error remains
+in the Parse Error window---whether or not the other translation
+produces an error.  (The only way to get rid of it is to go back to
+the original module, correct the PlusCall error, and re-run the
+translator.)  The best thing to do is probably to create a separate
+PlusCal Error Window.  Running the translator should first clear this
+window and remove all PlusCal error markers in the module on which the
+translator is run.  (I believe that if running the PlusCal translator
+creates a PlusCal error, then the file is not re-parsed, so only the
+PlusCal error window would need to be popped up.)
+
+\item[15. Possible Change (Handling Unparsed Spec)] \mbox{}\\
+%
+We need to re-think what the user should be able to do to the model
+when the spec is unparsed; and see that anything he shouldn't be able
+to do is disabled and that anything he should be able to do works.
+
+\item[17. Minor Bug (Definition Override)] \mbox{}\\
+%
+The Definitions Override menu allows the user to override the same
+definition multiple times. 
+
+\item[18. Significant Bug (parsing large specs)] \mbox{}\\
+%
+For a really big spec (the one we tried had dozens of files and over
+7000 lines of \TLA+), after the spec is first parsed the parse spec
+command gets disabled.  However, parse module file still works.  
+
+\item[19. Minor Missing Feature (Exit)] \mbox{}\\
+%
+Closing the toolbox simply kills any running TLC. Instead, it should
+warn the user that this will kill TLC and give him the option of
+canceling. 
+
+\item[20. Missing Feature (PlusCal)] \mbox{}\\
+%
+PlusCal translation needs to be examined.  Here are some things that
+need to be fixed:
+\begin{itemize}
+\item There should be a more user-friendly way to specify translation
+   options.  This involves:
+   (a) Providing check-boxes or radio buttons for the common options.
+   (b) Finding a more convenient way to add them than the current
+       one (right-clicking in the Toolbox Explorer) and selecting
+       properties.
+\item Translation options are now attached to the spec; they should
+   be attached to an individual module.  (It's possible for a
+   single spec to have PlusCal algorithms in two different 
+   modules.)
+
+\end{itemize}
+   
+
+\item[21. Tuning Needed (Preferences)] \mbox{}\\
+%
+We need to filter Preferences to eliminate things the user doesn't want
+to see.
+
+\item[22. Bug  (rename spec)] \mbox{}\\
+%
+The rename spec command doesn't do the right thing if a spec by that
+name already exists.
+      
+\item[27. Minor Bug  (Parse Spec/Module Commands)] \mbox{}\\
+%
+If I select Parse spec from the file menu when the file is dirty, a
+popup asks me if I want to save the resource.  If I say yes, it
+doesn't save the file and parses the spec that's on disk.  If I select
+Parse Module from the file menu when the module is dirty, it doesn't
+ask me if I want to save it.  I expect it should.
+ 
+\item[28. Minor Bug  (Reset Window Layout)] \mbox{}\\
+%
+If I select {\tt window/reset window layout} when the Welcome View
+should be shown, it produces a blank window instead of the Welcome
+View.
+
+\item[29. Feature (Module Editor Keybindings)] \mbox{}\\
+%
+Here are some thoughts on enhancements to the Module Editor.  
+\begin{itemize}
+\item Add a
+preference to choose an Emacs-like keybinding.  This requires
+  adding new commands that appear in the General/Editors/Keys, and
+  options that choose from among sets of bindings.
+\item Add editing commands (and invent bindings) for comments.  
+\end{itemize}
+Note that \emph{toggle comments} is bound to Control-/, but that command
+doesn't appear in the Preferences menu's keybinding options.
+
+\item[30. Minor Bug (TLC Error View)] \mbox{}\\
+%
+When I close a spec that has the TLC Error window raised and then open
+a new spec, the TLC Error window is raised again.  If that window
+shows an error, then it shows the same error when the new spec is
+opened.
+ 
+\item[32. Minor Bug (What to parse when)] \mbox{}\\
+%
+The toolbox doesn't seem to be doing the right thing when deciding
+what to parse when the user requests that a module be parsed.  This
+needs to be re-examined and specified precisely, and then we need to
+make sure that the implementation does what it's supposed to.
+
+\item[33. Feature (TLC error reporting)] \mbox{}\\
+%
+When TLC returns an error stack trace, make clicking on the locations
+highlight and go to those locations in the module.
+
+\item[34. Feature (Stack trace)] \mbox{}\\
+%
+Make clicking on the action location highlight and go to that
+location.
+    
+\item[35. Minor Bug (TLC Error report)] \mbox{}\\
+%
+Remove the @START...  and @END...  lines from the error message shown
+to the user in the TLC Error window.  
+
+\item[36. Feature (Action Fairness)] \mbox{}\\
+%
+Enhance the Init/Next method of writing the spec to add lists of
+weakly and strongly fair actions.
+    
+\item[39. Minor Feature (Constant Assignment)] \mbox{}\\
+%
+When the user has assigned a set of model values to a constant
+and specified symmetry, the default on the next page of the wizard
+should be to make the values untyped.  
+
+\item[40. Bug (Help)] \mbox{}\\
+%
+The help menu is not getting the focus if it doesn't already have the
+focus and it either is in or is being opened into a folder that has
+the focus.
+
+\item[41. Bug (View option)] \mbox{}\\
+%
+This option is not implemented.
+
+\item[43. Minor Bug (Model Checking Results page display)] \mbox{}\\
+%
+The layout/spacing of the statistics / progress output / user output
+fields sucks.  It might be better to make a two-column view like in
+the other two pages, splitting the progress output into two separate
+fields, one in each column.
+
+\item[45. Minor Parsing Bug (Naming in nested ASSUME/PROVEs)] \mbox{}\\
+%
+Here is the example:
+\begin{verbatim}
+  THEOREM B == ASSUME TRUE, 
+                      ASSUME NEW Z PROVE FALSE
+               PROVE  FALSE
+  <1>1. B!2!2  \* THIS IS A Bug, IT SHOULD NOT BE ALLOWED
+  <1>2. QED
+  Bar == B!2!2 \* THIS IS A Bug, IT SHOULD NOT BE ALLOWED
+\end{verbatim}
+
+\item[46. Bug (Model reports bogus ``TLC still running'')] \mbox{}\\
+%
+Sometimes when restarting the toolbox after it was closed with a model
+open, the model says that TLC is still running.  The ``stop TLC'' button
+in the upper right is red, but clicking it does nothing.  
+The last time this happened, the Spec Explorer said that the model
+has crashed, and clicking on repair solved the problem.
+  
+% \item[50. Minor Bug (Deleting a Spec)] \mbox{}\\
+% %
+% Deleting a spec throws a null pointer exception deep inside the call
+% of createLink at ResourceHelper.java, line 301.  It would be a good
+% idea to find out why, since this may be a symptom of an undiscovered
+% bug.  (If it's benign, the exception should be caught and dealt with.)
+
+\item[51. Very Minor Bug (Re-creating a spec)] \mbox{}\\
+%
+When creating a new spec, the Import Existing spec option is always
+checked and disabled.  It should be unchecked and disabled if the
+\texttt{.toolbox} directory does not already exist.  However, if the 
+\texttt{.toolbox}
+directory does exist, its present behavior of checking and enabling
+the box is the correct one.  
+
+\item[53. Minor Bug (Eclipse resource saving?)] \mbox{}\\
+%
+If I have automatic parse turned off, modify a file, and then try to
+parse it, the Toolbox pops up a dialog saying I have a modified
+resource and asking if I want to save it.  When I say yes, it closes
+the dialog and goes ahead and parses the spec without saving the file.
+
+\item[54. Minor Bug (Open Module)] \mbox{}\\
+%
+When the user clicks on File/Open Module/Choose \TLA+ Module, the file
+browser that pops up should show the specification's directory.
+
+\item[57. Bug (Pluscal Translator preferences)] \mbox{}\\
+%
+The PlusCal translator preferences seem to be no-ops.  The
+``Re-translate on module save'' option should be made to work.  This
+should cause the PlusCal translator to be called whenever a module is
+saved that contains the string \texttt{--algorithm}.
+
+The ``Popup problem window on translator errors'' is currently
+redundant, since translator errors are shown in the Parsing
+Errors view, which has its own preference for controlling that.
+    
+\item[60. Minor Bug (Model Validation)] \mbox{}\\
+%
+When the model is validated and finds an error, the existence of that
+error should be reported at the top of all the pages---or at least at
+the top of the current page.  Now, the user can type something on one
+page that causes an error on another page and have no idea what's
+going on.
+
+\item[62. Minor Bug (Distribution)] \mbox{}\\
+%
+	Clicking on Help on the page that appears after closing a
+spec 	goes to a page not found screen in the windows distribution.
+
+\item[63. Missing Feature (TLC Progress)] \mbox{}\\
+%
+The Model Checking Results page should list in the General section the
+information about probability of fingerprint collision that TLC prints
+after a run that finishes computing the reachable states.  (I think it
+prints it out in the event of a liveness error.)  It should say
+approximately something like:
+  Probability of fingerprint collision:
+     theoretical: 4.3E-15  pragmatic: 8.7E-15
+
+\item[64. TLC Bug (Liveness checking in Simulation mode)] \mbox{}\\
+%
+TLC's liveness checking in simulation mode is seriously buggy.  
+This is unlikely to be fixed soon, so we'll
+have to tell users not to check liveness properties in simulation
+mode.  
+
+\item[66. Minor Missing Feature (Results page/Simulation mode)] \mbox{}\\
+%
+When TLC finds an error in simulation mode, it prints out a ``seed'' and
+``aril'' that can be used to re-create the error.  It would be nice if
+the Toolbox reported those values in the General section of the
+results page.  This is not very important because the Trace Explorer
+should make it unnecessary for the user to want to use them.
+
+\item[67. Missing Feature (saved spec files)] \mbox{}\\
+%
+It should be possible for the user to open in a read-only editor
+window the copies of the module files saved when a model is run.  The
+menu raised by right-clicking on the model in the Spec Explorer should
+have an ``open saved module'' option.  Clicking on it should raise a
+file browser on the model's directory that shows all the tla files
+there.  (It wouldn't hurt to allow the user to browse the MC.tla and
+even the MC.cfg file as well.)
+
+\item[68. Minor Missing Feature (MC file conflict)] \mbox{}\\
+%
+We should change the model validator to check if the spec contains a
+module named MC and to pop up an error window if it does saying that
+the spec can't be model checked.
+  
+\item[69. Minor Bug (blank and empty expression fields)] \mbox{}\\
+%
+Entering space characters in various fields of the model editor that
+should have expressions creates errors that looks mysterious and can
+be hard to figure out.  For example, look at what happens if you type
+a blank Action Constraint and validate the model.  Or if you create an
+invariant and leave the field blank.  Typing just blanks in any field
+like Action Constraint should be equivalent to not typing anything.
+In something like an invariant or a definition override, a blank or
+empty entry should be treated as if the user canceled the operation.
+(The one place it doesn't matter is in the Additional Definitioins
+section.)
+
+\item[70. Bug (View option)] \mbox{}\\
+The View option on the Advanced Run section is being ignored.
+
+\item[71. Bug/Missing Feature (MC file parsing error bubbles.)] \mbox{}\\
+Putting the mouse cursor over a model error bubble produced by a 
+parsing error in the MC file produces a message that mentions
+the location in the MC file.  It needs to be translated to
+a location in the model.
+
+\item[72. Minor Bug (Advanced Model Values)] \mbox{}\\
+The Toolbox reports an error if a space is left after a model
+value typed into the Model Values section of the advanced
+model editor page.
+
+\item[73. Bug (Opening TLC error view on Linux)] \mbox{}\\
+%
+Opening the TLC error view on Linux causes the program to enter an
+infinite loop.  
+
+\end{description}
+\end{document}
+
+%try
+%try
