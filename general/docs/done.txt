@@ -200,3 +200,18 @@
  61. BUG (Progress statistics) - FIXED by DAn 23 Oct 2009
     The Toolbox is not printing the "progress statistics" (number
     of states found) that TLC prints when it successfully completes.
+    
+ 65. MINOR BUG (Constant substitution & definition override)
+    If I try to substitute for a constant when the spec is unparsed,
+    I get a null pointer exception at
+    	ModelHelper.getOpDefNode(ModelHelper.java:1350)
+    from the call at
+        AssignmentWizardPage.createControl(AssignmentWizardPage.java:117)
+    I didn't check at which point in the expression the null pointer
+    occurred.  Anyway, the getOpDefNode method should return null in 
+    this case.  The createControl method tests for a null value, so I 
+    presume it can handle it.  The getOpDefNode method is also called
+    in ValidateableOverridesSectionPart, and the same null pointer
+    exception can arise when trying to modify an override when the
+    spec isn't parsed.  However, that call doesn't test the 
+    returned value for null.
