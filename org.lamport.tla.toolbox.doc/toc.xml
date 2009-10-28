@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?NLS TYPE="org.eclipse.help.toc"?>
 
-<toc label="TLA+ Toolbox User Guide" topic="html/toc.html">
+<toc label="TLA+ Toolbox User Guide" href="html/contents.html">
    <topic href="html/gettingstarted/gettingstarted.html" label="Getting Started">
  <!--     <anchor id="gettingstarted"/> -->
      <topic label="Using Help" 
@@ -91,4 +91,11 @@
            href = "html/pluscal/pluscal.html">
    </topic>
  
+   <topic label="In Case of Trouble"
+           href = "html/trouble/trouble.html">
+   </topic>
+   
+   <topic label="Please Help Us"
+           href = "html/help-us/help-us.html">
+   </topic>
 </toc>

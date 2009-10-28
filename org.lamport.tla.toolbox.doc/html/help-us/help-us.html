@@ -1,0 +1,112 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- This is file org.lamport.tla.toobox.doc/html/help-us/help-us.html  -->
+
+ 
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+ <LINK href="../style.css" rel="stylesheet" type="text/css">
+
+<title>Please Help Us</title>
+</head>
+<!-- a comment here -->
+
+<body>
+<h1>Please Help Us</h1>
+
+ <P> 
+The initial version of the
+TLA<sup>+</sup> Toolbox was designed and programmed almost entirely by
+Simon Zambrovski in less than a year.&nbsp;  The Toolbox is now being maintained and developed 
+by Daniel Ricketts.&nbsp;   Leslie Lamport has acted as mentor.
+ </P>
+
+<p>
+The Toolbox is written as an Eclipse RCP (Rich Client Platform)
+application.&nbsp;  This has made it possible to implement a great deal of functionality
+in a fairly short time.&nbsp;  It has also led to compromises.&nbsp;  There are things
+we would like the Toolbox to do that it doesn't.&nbsp;  Some of the inadequacies
+are due to a lack of time; others are because we have been unable to 
+figure out how to implement them in Eclipse--either because Eclipse
+lacks the necessary functionality, or because we don't know how to do them
+in Eclipse.
+</p>
+
+<p>
+Another problem we have faced is the difficulty of debugging this kind
+of interactive application.&nbsp;  We have not had the time to do the kind
+of exhaustive testing that's needed to find and eliminate bugs.&nbsp;  
+In particular, we have not done much testing on platforms other than
+Windows.&nbsp;  We expect there to be many bugs that show up only on other
+platforms.
+</p>
+
+<p>
+We can use your help.&nbsp;  Let us know about problems you encounter
+or about any aspect
+of the Toolbox that you don't like.&nbsp;  We also want to know
+what important features you feel the Toolbox lacks.&nbsp;  Below is
+a list of some of the features we are thinking of adding.&nbsp;
+We probably won't have time to add them all, so we want
+to know which of them you would most like.&nbsp;  And we would
+love your help in debugging and developing the Toolbox.&nbsp;  
+Contact <a href="http://lamport.org" target="_blank">Leslie Lamport</a>
+with your feedback.
+</p>
+
+<h2>Some Features We May Add</h2>
+
+<h3>A TLA<sup>+</sup> Tutorial</h3>
+
+We plan to write a tutorial on specifying systems with TLA<sup>+</sup>
+and checking the specifications with the TLA<sup>+</sup> tools.&nbsp;
+The tutorial will be based on the Toolbox.&nbsp;  We do not know whether
+the tutorial will be incorporated within the Toolbox itself.
+
+<h3>A Trace Explorer</h3>
+
+We want to add a facility for evaluating expressions on a
+TLC error trace.&nbsp;  You would specify one or more expressions
+(which could contain primed variables) and the Toolbox
+would show the values of those expressions on each state
+(or pair of states) of the trace.
+
+<h3>A Math Calculator</h3>
+
+This would provide the ability evaluate TLA+ constant-level
+expressions (ones with no variables).&nbsp;  Its primary use would
+be as a teaching aid.
+
+<h3>Better Support for PlusCal</h3>
+
+<p>
+Errors in expressions in a PlusCal algorithm are manifest
+as parsing errors or TLC errors in the corresponding expressions
+of the algorithm's TLA<sup>+</sup> translation.&nbsp;  We would like
+to have the Toolbox mark the locations of those errors in the
+PlusCal code.
+</p>
+
+<p>The pretty-printer does not properly format PlusCal algorithms.&nbsp;  We would like
+it to.</p>
+
+<h3>Support for the TLA<sup>+</sup> Proof System</h3>
+
+A TLA<sup>+</sup> proof checker is under development at the 
+<a href="http://www.msr-inria.inria.fr/Projects/tools-for-formal-specs">Microsoft Research-Inria Joint Centre</a>.&nbsp;
+We expect to add at least a basic level of support for writing and checking proofs within the Toolbox.
+
+<!-- delete rest of line to comment out 
+<dl>
+<dt><b><font color=#0000c0>Subtopics</font></b></dt>
+<dd> <A href=""> TOPIC </A></dd>
+<dd> <A href=""> TOPIC </A></dd>
+</dl>
+ --> 
+<!-- delete rest of line to comment out -->  
+<hr> 
+<a href = "../contents.html">&uarr; TLA+ Toolbox User's Guide</a>
+</hr>
+
+</body>
+</html>
