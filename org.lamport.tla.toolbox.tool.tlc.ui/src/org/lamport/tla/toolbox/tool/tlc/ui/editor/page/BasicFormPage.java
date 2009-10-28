@@ -31,6 +31,7 @@ import org.eclipse.ui.forms.events.IExpansionListener;
 import org.eclipse.ui.forms.events.IHyperlinkListener;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
+import org.eclipse.ui.forms.widgets.Section;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationDefaults;
 import org.lamport.tla.toolbox.tool.tlc.launch.TLCModelLaunchDelegate;
@@ -151,6 +152,11 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
                     if (control != null)
                     {
                         control.setFocus();
+                        if (control.getParent().getParent() instanceof Section)
+                        {
+                            Section section = (Section) control.getParent().getParent();
+                            section.setExpanded(true);
+                        }
                     }
                 }
             }
