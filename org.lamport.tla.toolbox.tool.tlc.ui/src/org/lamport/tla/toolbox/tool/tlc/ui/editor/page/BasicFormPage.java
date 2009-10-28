@@ -44,6 +44,7 @@ import org.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.IgnoringListener;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.SemanticHelper;
+import org.lamport.tla.toolbox.tool.tlc.ui.util.TLCUIHelper;
 import org.lamport.tla.toolbox.tool.tlc.ui.view.TLCErrorView;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
@@ -135,6 +136,17 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
                 // if there is one
                 for (int i = 0; i < messages.length; i++)
                 {
+                    if (messages[i].getData() instanceof String)
+                    {
+                        // the data should be the pageId as set in
+                        // the method handleProblemMarkers() in
+                        // ModelEditor
+                        String pageId = (String) messages[i].getData();
+                        if (pageId != null)
+                        {
+                            getEditor().setActivePage(pageId);
+                        }
+                    }
                     Control control = messages[i].getControl();
                     if (control != null)
                     {
@@ -230,7 +242,7 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
         // finalizes the page construction
         // activates the change listeners
         pageInitializationComplete();
-        UIHelper.setHelp(body, helpId);
+        TLCUIHelper.setHelp(getPartControl(), helpId);
 
         getManagedForm().getForm().getForm().addMessageHyperlinkListener(errorMessageHyperLinkListener);
     }

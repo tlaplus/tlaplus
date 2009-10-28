@@ -3,4 +3,13 @@
 	<context id="main_editor_window" title="The model editor">
 		<description>Welcome to the model editor help...</description>
 	</context>
+ <context id="mainModelPage">
+    <description>This is the main model page. You can do stuff here.</description>
+ </context>
+ <context id="advancedModelPage">
+    <description>This is the advanced model page. You can do more advanced stuff here.</description>
+ </context>
+ <context id="resultModelPage">
+    <description>This is the result page. It shows the results of a TLC run.</description>
+ </context>
 </contexts>
