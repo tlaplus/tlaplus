@@ -202,19 +202,19 @@ public class ModelWriter
 
     /**
      * Add the view definition
-     * @param viewIdentifier the string that the user enters into the view field
+     * @param viewString the string that the user enters into the view field
      * @param attributeName the attribute name of the view field
      */
-    public void addView(String viewIdentifier, String attributeName)
+    public void addView(String viewString, String attributeName)
     {
-        if (!(viewIdentifier.trim().length() == 0))
+        if (!(viewString.trim().length() == 0))
         {
             cfgBuffer.append(COMMENT).append("VIEW definition").append(CR);
             String id = ModelWriter.getValidIdentifier(VIEW_SCHEME);
             cfgBuffer.append("VIEW").append(CR).append(id).append(CR);
             tlaBuffer.append(COMMENT).append("VIEW definition ").append(ATTRIBUTE).append(attributeName).append(INDEX)
                     .append(0).append(CR);
-            tlaBuffer.append(id).append(DEFINES).append(CR).append(viewIdentifier).append(CR);
+            tlaBuffer.append(id).append(DEFINES).append(CR).append(viewString).append(CR);
             tlaBuffer.append(SEP).append(CR).append(CR);
         }
     }
