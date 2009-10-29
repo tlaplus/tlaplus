@@ -36,7 +36,6 @@
 66. MINOR MISSING FEATURE (Results page/Simulation mode)
 67. MISSING FEATURE (saved spec files)
 68. TRIVIAL CHANGE ("MC" file name)
-69. MINOR BUG (blank Model Values [and other]?)
 71. BUG/MISSING FEATURE (MC file parsing error bubbles.)
 72. MINOR BUG (Advanced Model Values)
 73. BUG (Opening TLC error view on Linux)
@@ -340,18 +339,6 @@
     change the model validator to check if the spec contains a
     module named MC and to pop up an error window if it does
     saying that the spec can't be model checked.     
-      
-69. MINOR BUG (blank and empty expression fields)
-    Entering space characters in various fields of the model editor
-    that should have expressions creates errors that 
-    looks mysterious and can be hard to figure out.  For example, 
-    look at what happens if you type a blank Action Constraint and 
-    validate the model.  Or if you create an invariant and leave the
-    field blank.  Typing just blanks in any field like Action Constraint
-    should be equivalent to not typing anything.  In something like an
-    invariant or a definition override, a blank or empty entry should
-    be treated as if the user canceled the operation.  (The one place
-    it doesn't matter is in the Additional Definitioins section.)
     
 71. BUG/MISSING FEATURE (MC file parsing error bubbles.)
     Putting the mouse cursor over a model error bubble produced by a 
