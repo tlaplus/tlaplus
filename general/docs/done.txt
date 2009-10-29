@@ -197,6 +197,13 @@
     "Checking temporal properites of CURRENT state space" when
     it's in state 4.  Those messages should be ignored.
     
+60. MINOR BUG (Model Validation)
+    When the model is validated and finds an error, the existence
+    of that error should be reported at the top of all the pages--or
+    at least at the top of the current page.  Now, the user can type
+    something on one page that causes an error on another page and
+    have no idea what's going on.
+    
  61. BUG (Progress statistics) - FIXED by DAn 23 Oct 2009
     The Toolbox is not printing the "progress statistics" (number
     of states found) that TLC prints when it successfully completes.
@@ -215,3 +222,6 @@
     exception can arise when trying to modify an override when the
     spec isn't parsed.  However, that call doesn't test the 
     returned value for null.
+    
+70. BUG (View option)
+    The View option on the Advanced Run section is being ignored.

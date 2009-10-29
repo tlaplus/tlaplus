@@ -30,7 +30,6 @@
 53. MINOR BUG (Eclipse resource saving?)
 54. MINOR BUG (Open Module)
 57. BUG (Pluscal Translator preferences)
-60. MINOR BUG (Model Validation)
 62. MINOR BUG (Distribution)
 63. MISSING FEATURE (TLC Progress)
 64. TLC BUG (Liveness checkin in Simulation mode)
@@ -38,7 +37,6 @@
 67. MISSING FEATURE (saved spec files)
 68. TRIVIAL CHANGE ("MC" file name)
 69. MINOR BUG (blank Model Values [and other]?)
-70. BUG (View option)
 71. BUG/MISSING FEATURE (MC file parsing error bubbles.)
 72. MINOR BUG (Advanced Model Values)
 73. BUG (Opening TLC error view on Linux)
@@ -289,13 +287,6 @@
     The "Popup problem window on translator errors" is currently
     redundant, since translator errors are shown in the Parsing
     Errors view, which has its own preference for controlling that.
-        
-60. MINOR BUG (Model Validation)
-    When the model is validated and finds an error, the existence
-    of that error should be reported at the top of all the pages--or
-    at least at the top of the current page.  Now, the user can type
-    something on one page that causes an error on another page and
-    have no idea what's going on.
 
 62. MINOR BUG (Distribution)
 	Clicking on HHHHHelp on the page that appears after closing a spec
@@ -362,14 +353,16 @@
     be treated as if the user canceled the operation.  (The one place
     it doesn't matter is in the Additional Definitioins section.)
     
-70. BUG (View option)
-    The View option on the Advanced Run section is being ignored.
-    
 71. BUG/MISSING FEATURE (MC file parsing error bubbles.)
     Putting the mouse cursor over a model error bubble produced by a 
     parsing error in the MC file produces a message that mentions
     the location in the MC file.  It needs to be translated to
     a location in the model.
+    
+    This has now probably been implemented by Dan 29 Oct 2009. It may
+    be that the code does not check for all ways in which the parse errors
+    on the MC file can be reported, so the MC location may still appear
+    in some error messages.
     
 72. MINOR BUG (Advanced Model Values)
     The Toolbox reports an error if a space is left after a model
