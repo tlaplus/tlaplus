@@ -92,6 +92,11 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
                 for (int i = 0; i < getPageCount(); i++)
                 {
                     BasicFormPage page = (BasicFormPage) pages.get(i);
+                    page.resetAllMessages(true);
+                }
+                for (int i = 0; i < getPageCount(); i++)
+                {
+                    BasicFormPage page = (BasicFormPage) pages.get(i);
                     // re-validate the model on changes of the spec
                     page.validatePage(switchToErrorPage);
                 }
@@ -617,27 +622,37 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
 
                         // relevant, since the attribute is displayed on the current
                         // page
-                        if (page.getId().equals(pageId))
+                        // if (page.getId().equals(pageId))
+                        // {
+
+                        // We now want the error message to be displayed on
+                        // the header of every page, so the if statement that is commented
+                        // out is no longer relevant
+                        IMessageManager mm = page.getManagedForm().getMessageManager();
+                        mm.setAutoUpdate(false);
+                        String message = modelProblemMarkers[i].getAttribute(IMarker.MESSAGE,
+                                IModelConfigurationDefaults.EMPTY_STRING);
+
+                        Control widget = UIHelper.getWidget(dm.getAttributeControl(attributeName));
+                        if (widget != null)
                         {
-                            IMessageManager mm = page.getManagedForm().getMessageManager();
-                            mm.setAutoUpdate(false);
-                            String message = modelProblemMarkers[i].getAttribute(IMarker.MESSAGE,
-                                    IModelConfigurationDefaults.EMPTY_STRING);
-
-                            Control widget = UIHelper.getWidget(dm.getAttributeControl(attributeName));
-                            if (widget != null)
-                            {
-                                mm.addMessage("modelProblem_" + i, message, null, bubbleType, widget);
-                            }
-                            // expand the section with an error
-                            dm.expandSection(sectionId);
-                            mm.setAutoUpdate(true);
-
-                            if (errorPageIndex < j)
-                            {
-                                errorPageIndex = j;
-                            }
+                            // we set the message's data object to the page id
+                            // of the attribute with the error
+                            // this makes it simple to switch to that page
+                            // when the user clicks on the hyperlink because
+                            // the hyperlink listener recieves that message and
+                            // the message contains the data object.
+                            mm.addMessage("modelProblem_" + i, message, pageId, bubbleType, widget);
                         }
+                        // expand the section with an error
+                        dm.expandSection(sectionId);
+                        mm.setAutoUpdate(true);
+
+                        if (page.getId().equals(pageId) && errorPageIndex < j)
+                        {
+                            errorPageIndex = j;
+                        }
+                        // }
                     }
                 }
             }
@@ -773,4 +788,26 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
             newPage.getPartControl().setMenu(getContainer().getMenu());
         }
     }
+
+    /**
+     * This adds error messages to all pages for the given control.
+     * If the control is null, it will do nothing.
+     * 
+     * @param key the unique message key
+     * @param messageText the message to add
+     * @param pageId the id of the page that contains the control
+     * @param type the message type
+     * @param control the control to associate the message with
+     */
+    public void addErrorMessage(Object key, String messageText, String pageId, int type, Control control)
+    {
+        if (control != null)
+        {
+            for (int i = 0; i < pagesToAdd.length; i++)
+            {
+                pagesToAdd[i].getManagedForm().getMessageManager().addMessage(key, messageText, pageId, type, control);
+            }
+        }
+    }
+
 }

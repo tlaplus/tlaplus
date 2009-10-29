@@ -41,6 +41,7 @@ import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
 import org.lamport.tla.toolbox.tool.tlc.model.TypedSet;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.DataBindingManager;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.ValidateableConstantSectionPart;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.ValidateableSectionPart;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.ValidateableTableSectionPart;
@@ -278,9 +279,12 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
         DataBindingManager dm = getDataBindingManager();
         IMessageManager mm = getManagedForm().getMessageManager();
+        ModelEditor modelEditor = (ModelEditor) getEditor();
 
         // delete the messages
-        resetAllMessages(false);
+        // this is now done in validateRunnable
+        // in ModelEditor
+        // resetAllMessages(false);
 
         // getting the root module node of the spec
         // this can be null!
@@ -327,8 +331,9 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
             if (constant.getRight() == null || EMPTY_STRING.equals(constant.getRight()))
             {
                 // right side of assignment undefined
-                mm.addMessage(constant.getLabel(), "Provide a value for constant " + constant.getLabel(), constant,
-                        IMessageProvider.ERROR, UIHelper.getWidget(dm.getAttributeControl(MODEL_PARAMETER_CONSTANTS)));
+                modelEditor.addErrorMessage(constant.getLabel(), "Provide a value for constant " + constant.getLabel(),
+                        this.getId(), IMessageProvider.ERROR, UIHelper.getWidget(dm
+                                .getAttributeControl(MODEL_PARAMETER_CONSTANTS)));
                 setComplete(false);
                 expandSection(dm.getSectionForAttribute(MODEL_PARAMETER_CONSTANTS));
 
@@ -367,9 +372,9 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
                         if (hasTwoTypes
                                 || (symmetryType != null && typeString != null && !typeString.equals(symmetryType)))
                         {
-                            mm.addMessage(constant.getLabel(),
-                                    "Two differently typed model values used in symmetry sets.", constant,
-                                    IMessageProvider.ERROR, UIHelper.getWidget(dm
+                            modelEditor.addErrorMessage(constant.getLabel(),
+                                    "Two differently typed model values used in symmetry sets.",
+                                    this.getId()/*constant*/, IMessageProvider.ERROR, UIHelper.getWidget(dm
                                             .getAttributeControl(MODEL_PARAMETER_CONSTANTS)));
                             setComplete(false);
                             expandSection(dm.getSectionForAttribute(MODEL_PARAMETER_CONSTANTS));
@@ -411,8 +416,8 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
                             String value = (String) mvList.get(j);
                             if (SemanticHelper.isConfigFileKeyword(value))
                             {
-                                mm.addMessage(value, "The toolbox cannot handle the model value " + value + ".",
-                                        constant, IMessageProvider.ERROR, widget);
+                                modelEditor.addErrorMessage(value, "The toolbox cannot handle the model value " + value
+                                        + ".", this.getId(), IMessageProvider.ERROR, widget);
                                 setComplete(false);
                             }
                         }
@@ -423,8 +428,8 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
             // the constant identifier is a config file keyword
             if (SemanticHelper.isConfigFileKeyword(constant.getLabel()))
             {
-                mm.addMessage(constant.getLabel(), "The toolbox cannot handle the constant identifier "
-                        + constant.getLabel() + ".", constant, IMessageProvider.ERROR, UIHelper.getWidget(dm
+                modelEditor.addErrorMessage(constant.getLabel(), "The toolbox cannot handle the constant identifier "
+                        + constant.getLabel() + ".", this.getId(), IMessageProvider.ERROR, UIHelper.getWidget(dm
                         .getAttributeControl(MODEL_PARAMETER_CONSTANTS)));
                 setComplete(false);
             }
@@ -447,27 +452,29 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
             int number = Integer.parseInt(numberOfworkers);
             if (number <= 0)
             {
-                mm.addMessage("wrongNumber1", "Number of workers must be a positive integer number", null,
-                        IMessageProvider.ERROR, UIHelper.getWidget(dm.getAttributeControl(LAUNCH_NUMBER_OF_WORKERS)));
+                modelEditor.addErrorMessage("wrongNumber1", "Number of workers must be a positive integer number", this
+                        .getId(), IMessageProvider.ERROR, UIHelper.getWidget(dm
+                        .getAttributeControl(LAUNCH_NUMBER_OF_WORKERS)));
                 setComplete(false);
                 expandSection(SEC_HOW_TO_RUN);
             } else
             {
                 if (number > Runtime.getRuntime().availableProcessors())
                 {
-                    mm.addMessage("strangeNumber1", "Specified number of workers is " + number
+                    modelEditor.addErrorMessage("strangeNumber1", "Specified number of workers is " + number
                             + ". The number of CPU Cores available on the system is "
                             + Runtime.getRuntime().availableProcessors()
                             + ".\n It is not advisable that the number of workers exceeds the number of CPU Cores.",
-                            null, IMessageProvider.WARNING, UIHelper.getWidget(dm
+                            this.getId(), IMessageProvider.WARNING, UIHelper.getWidget(dm
                                     .getAttributeControl(LAUNCH_NUMBER_OF_WORKERS)));
                     expandSection(SEC_HOW_TO_RUN);
                 }
             }
         } catch (NumberFormatException e)
         {
-            mm.addMessage("wrongNumber2", "Number of workers must be a positive integer number", null,
-                    IMessageProvider.ERROR, UIHelper.getWidget(dm.getAttributeControl(LAUNCH_NUMBER_OF_WORKERS)));
+            modelEditor.addErrorMessage("wrongNumber2", "Number of workers must be a positive integer number", this
+                    .getId(), IMessageProvider.ERROR, UIHelper.getWidget(dm
+                    .getAttributeControl(LAUNCH_NUMBER_OF_WORKERS)));
             setComplete(false);
             expandSection(SEC_HOW_TO_RUN);
         }
@@ -479,15 +486,16 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
             int maxHeapSizeNum = Integer.parseInt(maxHeapSizeString);
             if (maxHeapSizeNum <= 0)
             {
-                mm.addMessage("wrongNumber1", "Maximum heap size must be a positive integer number", null,
-                        IMessageProvider.ERROR, UIHelper.getWidget(dm.getAttributeControl(LAUNCH_MAX_HEAP_SIZE)));
+                modelEditor.addErrorMessage("wrongNumber1", "Maximum heap size must be a positive integer number", this
+                        .getId(), IMessageProvider.ERROR, UIHelper.getWidget(dm
+                        .getAttributeControl(LAUNCH_MAX_HEAP_SIZE)));
                 setComplete(false);
                 expandSection(SEC_HOW_TO_RUN);
             }
         } catch (NumberFormatException e)
         {
-            mm.addMessage("wrongNumber2", "Maximum heap size must be a positive integer number", null,
-                    IMessageProvider.ERROR, UIHelper.getWidget(dm.getAttributeControl(LAUNCH_MAX_HEAP_SIZE)));
+            modelEditor.addErrorMessage("wrongNumber2", "Maximum heap size must be a positive integer number", this
+                    .getId(), IMessageProvider.ERROR, UIHelper.getWidget(dm.getAttributeControl(LAUNCH_MAX_HEAP_SIZE)));
             setComplete(false);
             expandSection(SEC_HOW_TO_RUN);
         }
@@ -500,8 +508,8 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         {
             if (EMPTY_STRING.equals(checkpointIdText.getText()))
             {
-                mm.addMessage("noChckpoint", "No chekpoint data found", null, IMessageProvider.ERROR, UIHelper
-                        .getWidget(dm.getAttributeControl(LAUNCH_RECOVER)));
+                modelEditor.addErrorMessage("noChckpoint", "No chekpoint data found", this.getId(),
+                        IMessageProvider.ERROR, UIHelper.getWidget(dm.getAttributeControl(LAUNCH_RECOVER)));
                 setComplete(false);
                 expandSection(SEC_HOW_TO_RUN);
             }
@@ -560,8 +568,8 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         // check if the selected fields are filled
         if (closedFormulaRadio.getSelection() && specSource.getDocument().get().trim().equals(""))
         {
-            mm.addMessage("noSpec", "The formula must be provided", null, IMessageProvider.ERROR, UIHelper.getWidget(dm
-                    .getAttributeControl(MODEL_BEHAVIOR_CLOSED_SPECIFICATION)));
+            modelEditor.addErrorMessage("noSpec", "The formula must be provided", this.getId(), IMessageProvider.ERROR,
+                    UIHelper.getWidget(dm.getAttributeControl(MODEL_BEHAVIOR_CLOSED_SPECIFICATION)));
             setComplete(false);
             expandSection(dm.getSectionForAttribute(MODEL_BEHAVIOR_CLOSED_SPECIFICATION));
         } else if (initNextFairnessRadio.getSelection())
@@ -571,15 +579,17 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
             if (init.equals(""))
             {
-                mm.addMessage("noInit", "The Init formula must be provided", null, IMessageProvider.ERROR, UIHelper
-                        .getWidget(dm.getAttributeControl(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT)));
+                modelEditor.addErrorMessage("noInit", "The Init formula must be provided", this.getId(),
+                        IMessageProvider.ERROR, UIHelper.getWidget(dm
+                                .getAttributeControl(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT)));
                 setComplete(false);
                 expandSection(dm.getSectionForAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT));
             }
             if (next.equals(""))
             {
-                mm.addMessage("noNext", "The Next formula must be provided", null, IMessageProvider.ERROR, UIHelper
-                        .getWidget(dm.getAttributeControl(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT)));
+                modelEditor.addErrorMessage("noNext", "The Next formula must be provided", this.getId(),
+                        IMessageProvider.ERROR, UIHelper.getWidget(dm
+                                .getAttributeControl(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT)));
                 setComplete(false);
                 expandSection(dm.getSectionForAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT));
             }

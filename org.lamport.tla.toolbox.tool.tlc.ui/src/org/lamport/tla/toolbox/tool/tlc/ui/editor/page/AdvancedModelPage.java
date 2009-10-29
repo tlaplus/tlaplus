@@ -30,6 +30,7 @@ import org.lamport.tla.toolbox.tool.tlc.launch.IConfigurationDefaults;
 import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
 import org.lamport.tla.toolbox.tool.tlc.model.TypedSet;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.DataBindingManager;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.ValidateableOverridesSectionPart;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.ValidateableSectionPart;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.DirtyMarkingListener;
@@ -222,8 +223,12 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         IMessageManager mm = getManagedForm().getMessageManager();
         mm.setAutoUpdate(false);
 
+        ModelEditor modelEditor = (ModelEditor) getEditor();
+
         // clean old messages
-        mm.removeAllMessages();
+        // this is now done in validateRunnable of
+        // ModelEditor
+        // mm.removeAllMessages();
         // make the run possible
         setComplete(true);
 
@@ -235,15 +240,15 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
             int dfidDepth = Integer.parseInt(dfidDepthText.getText());
             if (dfidDepth <= 0)
             {
-                mm.addMessage("dfid1", "Depth of DFID launch must be a positive integer", null, IMessageProvider.ERROR,
-                        dfidDepthText);
+                modelEditor.addErrorMessage("dfid1", "Depth of DFID launch must be a positive integer", this.getId(),
+                        IMessageProvider.ERROR, dfidDepthText);
                 setComplete(false);
                 expandSection(SEC_LAUNCHING_SETUP);
             }
         } catch (NumberFormatException e)
         {
-            mm.addMessage("dfid2", "Depth of DFID launch must be a positive integer", null, IMessageProvider.ERROR,
-                    dfidDepthText);
+            modelEditor.addErrorMessage("dfid2", "Depth of DFID launch must be a positive integer", this.getId(),
+                    IMessageProvider.ERROR, dfidDepthText);
             setComplete(false);
             expandSection(SEC_LAUNCHING_SETUP);
         }
@@ -252,16 +257,16 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
             int simuDepth = Integer.parseInt(simuDepthText.getText());
             if (simuDepth <= 0)
             {
-                mm.addMessage("simuDepth1", "Length of the simulation tracemust be a positive integer", null,
-                        IMessageProvider.ERROR, simuDepthText);
+                modelEditor.addErrorMessage("simuDepth1", "Length of the simulation tracemust be a positive integer",
+                        this.getId(), IMessageProvider.ERROR, simuDepthText);
                 setComplete(false);
                 expandSection(SEC_LAUNCHING_SETUP);
             }
 
         } catch (NumberFormatException e)
         {
-            mm.addMessage("simuDepth2", "Length of the simulation trace must be a positive integer", null,
-                    IMessageProvider.ERROR, simuDepthText);
+            modelEditor.addErrorMessage("simuDepth2", "Length of the simulation trace must be a positive integer", this
+                    .getId(), IMessageProvider.ERROR, simuDepthText);
             setComplete(false);
             expandSection(SEC_LAUNCHING_SETUP);
         }
@@ -272,14 +277,14 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
                 long simuAril = Long.parseLong(simuArilText.getText());
                 if (simuAril <= 0)
                 {
-                    mm.addMessage("simuAril1", "The simulation aril must be a positive integer", null,
-                            IMessageProvider.ERROR, simuArilText);
+                    modelEditor.addErrorMessage("simuAril1", "The simulation aril must be a positive integer", this
+                            .getId(), IMessageProvider.ERROR, simuArilText);
                     setComplete(false);
                 }
             } catch (NumberFormatException e)
             {
-                mm.addMessage("simuAril2", "The simulation aril must be a positive integer", null,
-                        IMessageProvider.ERROR, simuArilText);
+                modelEditor.addErrorMessage("simuAril2", "The simulation aril must be a positive integer",
+                        this.getId(), IMessageProvider.ERROR, simuArilText);
                 setComplete(false);
                 expandSection(SEC_LAUNCHING_SETUP);
             }
@@ -293,8 +298,8 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
 
             } catch (NumberFormatException e)
             {
-                mm.addMessage("simuSeed1", "The simulation aril must be a positive integer", null,
-                        IMessageProvider.ERROR, simuSeedText);
+                modelEditor.addErrorMessage("simuSeed1", "The simulation aril must be a positive integer",
+                        this.getId(), IMessageProvider.ERROR, simuSeedText);
                 expandSection(SEC_LAUNCHING_SETUP);
                 setComplete(false);
             }
@@ -334,8 +339,8 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
                 String value = (String) values.get(j);
                 if (SemanticHelper.isConfigFileKeyword(value))
                 {
-                    mm.addMessage(value, "The toolbox cannot handle the model value " + value + ".", null,
-                            IMessageProvider.ERROR, widget);
+                    modelEditor.addErrorMessage(value, "The toolbox cannot handle the model value " + value + ".", this
+                            .getId(), IMessageProvider.ERROR, widget);
                     setComplete(false);
                 }
             }
@@ -383,11 +388,11 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
                 // definitions.remove(i);
                 // definitionsTable.setInput(definitions);
                 // dm.getSection(DEF_OVERRIDES_PART).markDirty();
-                mm.addMessage(definition.getLabel(), "The defined symbol "
+                modelEditor.addErrorMessage(definition.getLabel(), "The defined symbol "
                         + definition.getLabel().substring(definition.getLabel().lastIndexOf("!") + 1)
                         + " has been removed from the specification."
-                        + " It must be removed from the list of definition overrides.", null, IMessageProvider.ERROR,
-                        widget);
+                        + " It must be removed from the list of definition overrides.", this.getId(),
+                        IMessageProvider.ERROR, widget);
                 setComplete(false);
             } else
             {
@@ -395,9 +400,9 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
                 OpDefNode opDefNode = (OpDefNode) nodeTable.get(definition.getLabel());
                 if (opDefNode.getSource().getNumberOfArgs() != definition.getParams().length)
                 {
-                    mm.addMessage(definition.getLabel(), "Edit the definition override for "
-                            + opDefNode.getSource().getName() + " to match the correct number of arguments.", null,
-                            IMessageProvider.ERROR, widget);
+                    modelEditor.addErrorMessage(definition.getLabel(), "Edit the definition override for "
+                            + opDefNode.getSource().getName() + " to match the correct number of arguments.", this
+                            .getId(), IMessageProvider.ERROR, widget);
                     setComplete(false);
                 }
             }
@@ -409,8 +414,8 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
             String label = definition.getLabel();
             if (SemanticHelper.isConfigFileKeyword(label))
             {
-                mm.addMessage(label, "The toolbox cannot override the definition of " + label
-                        + " because it is a configuration file keyword.", null, IMessageProvider.ERROR, widget);
+                modelEditor.addErrorMessage(label, "The toolbox cannot override the definition of " + label
+                        + " because it is a configuration file keyword.", this.getId(), IMessageProvider.ERROR, widget);
                 setComplete(false);
             }
         }

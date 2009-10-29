@@ -132,31 +132,61 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
                 }
             } else
             {
-                // for all other error messages, it will attempt to shift
-                // focus to the control associated with the message
-                // if there is one
+                // will attempt to get a control
+                // if there is an error on this page
+                // the control will be one of the controls
+                // with the error
+                // if there is no error on this page
+                // the control will be one of the controls
+                // with an error on another page
+                Control control = null;
+
+                // for all other types of messages, determine
+                // if the error is on this page
+                boolean errorOnThisPage = false;
                 for (int i = 0; i < messages.length; i++)
                 {
                     if (messages[i].getData() instanceof String)
                     {
                         // the data should be the pageId as set in
-                        // the method handleProblemMarkers() in
-                        // ModelEditor
+                        // the methods handleProblemMarkers() and
+                        // addErrorMessage() in ModelEditor
                         String pageId = (String) messages[i].getData();
-                        if (pageId != null)
+                        if (pageId != null && pageId == getId())
                         {
-                            getEditor().setActivePage(pageId);
+                            errorOnThisPage = true;
+                            control = messages[i].getControl();
                         }
                     }
-                    Control control = messages[i].getControl();
-                    if (control != null)
+                }
+                if (!errorOnThisPage)
+                {
+                    // find the first message with a page id
+                    // and switch to that page
+                    for (int i = 0; i < messages.length; i++)
                     {
-                        control.setFocus();
-                        if (control.getParent().getParent() instanceof Section)
+                        if (messages[i].getData() instanceof String)
                         {
-                            Section section = (Section) control.getParent().getParent();
-                            section.setExpanded(true);
+                            // the data should be the pageId as set in
+                            // the methods handleProblemMarkers() and
+                            // addErrorMessage() in ModelEditor
+                            String pageId = (String) messages[i].getData();
+                            if (pageId != null)
+                            {
+                                getEditor().setActivePage(pageId);
+                                control = messages[i].getControl();
+                                break;
+                            }
                         }
+                    }
+                }
+                if (control != null)
+                {
+                    control.setFocus();
+                    if (control.getParent().getParent() instanceof Section)
+                    {
+                        Section section = (Section) control.getParent().getParent();
+                        section.setExpanded(true);
                     }
                 }
             }
