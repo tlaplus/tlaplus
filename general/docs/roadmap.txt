@@ -79,6 +79,26 @@ The following stuff needs to be done for each release.
   3. Hit on Eclipse Product Export Wizard
      (export to windows, linux stk/x86, macosx cocoa/x86)
 -----------------------------------------------------------------------------
+How to put a new version up on the MSR-INRIA Web site.
+
+1. Go to the web site's project page.
+2. Login
+3. Select "contents", right-click on the html release page, and open it.
+4. Select edit, and choose "html" on the editing panel to get a reasonable
+   format.
+5. Make any necessary changes to the page and save them.
+6. Go back to the "contents" page and use it to upload the new versions.
+   They will appear in the same directory as the html page, with the
+   name by which they were uploaded.
+7. If you created a new file, go to Properties and click the box that
+   makes it not appear in the navigation pane.  Save.
+
+The current preliminary release web page is reachable from the outside
+world at:
+
+http://www.msr-inria.inria.fr/Projects/tools-for-formal-specs/preliminary-release/
+
+------------------------------------------------------------------------------
 HELP
 
 INTRO
