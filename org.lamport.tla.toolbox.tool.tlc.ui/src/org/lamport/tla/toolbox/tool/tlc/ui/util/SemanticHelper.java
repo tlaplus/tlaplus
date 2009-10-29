@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.Iterator;
 
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 
@@ -172,6 +173,24 @@ public class SemanticHelper
      */
     public static boolean isConfigFileKeyword(String name) {
     	return CONFIG_KEYWORDS.contains(name);
+    }
+    
+    /**
+     * Checks if string contains a config file keyword
+     * @param string
+     * @return
+     */
+    public static boolean containsConfigFileKeyword(String string)
+    {
+        Iterator iterator = CONFIG_KEYWORDS.iterator();
+        while (iterator.hasNext())
+        {
+            if (string.contains((CharSequence) iterator.next()))
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

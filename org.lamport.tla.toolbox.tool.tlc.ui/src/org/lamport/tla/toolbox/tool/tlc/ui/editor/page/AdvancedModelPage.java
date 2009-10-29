@@ -420,6 +420,16 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
             }
         }
 
+        // check if the view field contains a cfg file keyword
+        Control viewWidget = UIHelper.getWidget(dm.getAttributeControl(MODEL_PARAMETER_VIEW));
+        String viewString = FormHelper.trimTrailingSpaces(viewSource.getDocument().get());
+        if (SemanticHelper.containsConfigFileKeyword(viewString))
+        {
+            modelEditor.addErrorMessage(viewString, "The toolbox cannot handle the string " + viewString
+                    + " because it contains a configuration file keyword.", this.getId(), IMessageProvider.ERROR, viewWidget);
+            setComplete(false);
+        }
+
         mm.setAutoUpdate(true);
 
         super.validatePage(switchToErrorPage);
