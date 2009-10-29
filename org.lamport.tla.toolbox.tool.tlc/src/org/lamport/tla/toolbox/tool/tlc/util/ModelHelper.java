@@ -1250,7 +1250,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
             {
                 // split around other possibility
                 splitMessage = message.split(
-                        "in block line [0-9]{1,}, col [0-9]{1,} to line [0-9]{1,}, col [0-9]{1,} of module MC", 2);
+                        "line [0-9]{1,}, col [0-9]{1,} to line [0-9]{1,}, col [0-9]{1,} of module MC", 2);
             }
             if (splitMessage.length == 2)
             {
@@ -1306,6 +1306,15 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
         } else if (attributeName.equals(MODEL_PARAMETER_MODEL_VALUES))
         {
             return "Model Values";
+        } else if (attributeName.equals(MODEL_BEHAVIOR_CLOSED_SPECIFICATION))
+        {
+            return "Temporal formula";
+        } else if (attributeName.equals(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT))
+        {
+            return "Init";
+        } else if (attributeName.equals(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT))
+        {
+            return "Next";
         }
         return attributeName;
     }
