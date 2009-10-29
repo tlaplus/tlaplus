@@ -335,4 +335,14 @@ public class AssignmentWizardPage extends WizardPage
         return super.isCurrentPage();
     }
 
+    /**
+     * Returns the unmodified text entered into this pages
+     * source text field.
+     * @return
+     */
+    public String getInputText()
+    {
+        return source.getDocument().get();
+    }
+
 }

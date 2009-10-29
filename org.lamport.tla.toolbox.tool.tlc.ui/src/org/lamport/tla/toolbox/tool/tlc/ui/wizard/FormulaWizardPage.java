@@ -5,6 +5,8 @@ import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -45,6 +47,14 @@ public class FormulaWizardPage extends WizardPage
         gd.grabExcessVerticalSpace = true;
 
         StyledText control = sourceViewer.getTextWidget();
+        control.addModifyListener(new ModifyListener() {
+
+            public void modifyText(ModifyEvent e)
+            {
+                getContainer().updateButtons();
+            }
+
+        });
         control.setEditable(true);
         control.setLayoutData(gd);
 

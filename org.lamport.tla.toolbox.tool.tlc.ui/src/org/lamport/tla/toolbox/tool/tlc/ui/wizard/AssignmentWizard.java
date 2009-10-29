@@ -65,10 +65,24 @@ public class AssignmentWizard extends Wizard
         return this.assignment;
     }
 
+    /**
+     * This returns whether the Finish button
+     * should be enabled. In order for this to be
+     * evaluated, getContainer().updateButtons() must
+     * be called by the page whose buttons are to be
+     * updated. For this particular wizard, that page
+     * is a AssignmentWizardPage. Within the method
+     * createControl a listener is added to the
+     * text field which calls updateButtons() whenever
+     * the input text is modified.
+     */
     public boolean canFinish()
     {
+        String inputText = assignmentPage.getInputText();
         // either on the first page, but no typing of MV set is possible, or on the second page
-        return (assignmentPage.isCurrentPage() && !assignmentPage.isTypeInputPossible())
+        // also, if on the first page, there must be an input that is not only white space
+        return (assignmentPage.isCurrentPage() && !assignmentPage.isTypeInputPossible() && inputText != null && inputText
+                .trim().length() != 0)
                 || !assignmentPage.isCurrentPage();
     }
 

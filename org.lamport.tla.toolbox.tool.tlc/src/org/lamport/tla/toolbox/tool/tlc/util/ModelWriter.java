@@ -313,7 +313,7 @@ public class ModelWriter
      */
     public void addNewDefinitions(String definitions, String attributeName)
     {
-        if (definitions.length() == 0)
+        if (definitions.trim().length() == 0)
         {
             return;
         }
@@ -331,7 +331,7 @@ public class ModelWriter
     {
         Vector result = new Vector();
         String value = config.getAttribute(propertyName, EMPTY_STRING);
-        if (EMPTY_STRING.equals(value))
+        if (value.trim().length() == 0)
         {
             return result;
         }

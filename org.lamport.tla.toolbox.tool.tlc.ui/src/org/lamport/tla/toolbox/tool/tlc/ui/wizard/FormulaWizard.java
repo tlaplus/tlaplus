@@ -31,6 +31,25 @@ public class FormulaWizard extends Wizard
         return true;
     }
 
+    /**
+     * This returns whether the Finish button
+     * should be enabled. In order for this to be
+     * evaluated, getContainer().updateButtons() must
+     * be called by the page whose buttons are to be
+     * updated. For this particular wizard, that page
+     * is a FormulaWizardPage. Within the method
+     * createControl a listener is added to the
+     * text field which calls updateButtons() whenever
+     * the input text is modified.
+     */
+    public boolean canFinish()
+    {
+        // the user can finish if something other than
+        // simply white space has been entered
+        String inputText = page.getDocument().get();
+        return inputText != null && inputText.trim().length() != 0;
+    }
+
     public void addPages()
     {
         addPage(page);
