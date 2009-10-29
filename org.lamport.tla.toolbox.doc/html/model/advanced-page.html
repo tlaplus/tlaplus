@@ -196,10 +196,12 @@ that only a finite set of states is explored, even if
 the complete set of reachable states is infinite.)&nbsp;
 With depth-first search, TLC will usually not produce
 a shortest-length error trace.&nbsp;
-<b>Warning: Depth-first search is an experimental TLC
+</p>
+<p>
+<b>Warning:</b> Depth-first search is an experimental TLC
 option that has not been used much. We don't even know
 if it really works, let alone if it offers any advantages.
-If you do try it, let us know what you discover.</b>
+If you do try it, let us know what you discover.
 </p>
 
 <p>
@@ -224,9 +226,12 @@ look them up in
 <em><a href=
 "http://research.microsoft.com/en-us/um/people/lamport/tla/book.html" target="_blank">
 Specifying Systems</a></em>. 
-
 </p>
 
+<p>
+<b>Warning:</b> Because of a bug in TLC, checking of liveness properties does not
+work in simulation mode.
+</p>
 <!--  I don't know what I'm saving the following for
 <h2><a name="how">How to run?</a></h2>
 <hr> 
