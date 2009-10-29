@@ -1315,6 +1315,9 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
         } else if (attributeName.equals(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT))
         {
             return "Next";
+        } else if (attributeName.equals(MODEL_PARAMETER_VIEW))
+        {
+            return "View";
         }
         return attributeName;
     }

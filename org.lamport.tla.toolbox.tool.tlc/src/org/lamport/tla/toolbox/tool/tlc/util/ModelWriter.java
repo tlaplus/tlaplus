@@ -43,6 +43,7 @@ public class ModelWriter
     public static final String ACTIONCONSTRAINT_SCHEME = "action_constr";
     public static final String INVARIANT_SCHEME = "inv";
     public static final String PROP_SCHEME = "prop";
+    public static final String VIEW_SCHEME = "view";
 
     public static final String SPACE = " ";
     public static final String CR = "\n";
@@ -197,6 +198,25 @@ public class ModelWriter
             cfgBuffer.append("SYMMETRY").append(SPACE).append(label).append(CR);
         }
 
+    }
+
+    /**
+     * Add the view definition
+     * @param viewIdentifier the string that the user enters into the view field
+     * @param attributeName the attribute name of the view field
+     */
+    public void addView(String viewIdentifier, String attributeName)
+    {
+        if (!(viewIdentifier.trim().length() == 0))
+        {
+            cfgBuffer.append(COMMENT).append("VIEW definition").append(CR);
+            String id = ModelWriter.getValidIdentifier(VIEW_SCHEME);
+            cfgBuffer.append("VIEW").append(CR).append(id).append(CR);
+            tlaBuffer.append(COMMENT).append("VIEW definition ").append(ATTRIBUTE).append(attributeName).append(INDEX)
+                    .append(0).append(CR);
+            tlaBuffer.append(id).append(DEFINES).append(CR).append(viewIdentifier).append(CR);
+            tlaBuffer.append(SEP).append(CR).append(CR);
+        }
     }
 
     /**

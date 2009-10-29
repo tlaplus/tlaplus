@@ -575,6 +575,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         ValidateableSectionPart launchPart = new ValidateableSectionPart(section, this, SEC_LAUNCHING_SETUP);
         managedForm.addPart(launchPart);
         DirtyMarkingListener launchListener = new DirtyMarkingListener(launchPart, true);
+        dm.bindAttribute(MODEL_PARAMETER_VIEW, viewSource, launchPart);
 
         // dirty listeners
         simuArilText.addModifyListener(launchListener);
