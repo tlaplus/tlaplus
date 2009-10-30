@@ -1,5 +1,7 @@
 package org.lamport.tla.toolbox.tool.tlc.output.data;
 
+import org.lamport.tla.toolbox.tool.tlc.ui.util.IModuleLocatable;
+
 import tla2sany.st.Location;
 
 /**
@@ -7,13 +9,12 @@ import tla2sany.st.Location;
  * @author Simon Zambrovski
  * @version $Id$
  */
-public class CoverageInformationItem
+public class CoverageInformationItem implements IModuleLocatable
 {
     private final static String MOD = " of module ";
     private final static String COLON = ": ";
     private final static String AT = "at ";
 
-    
     private String locationString;
     private Location location;
     private long count;
@@ -47,7 +48,6 @@ public class CoverageInformationItem
         return count;
     }
 
-
     /**
      * Parses the coverage information item from a string
      * @param outputMessage
@@ -59,7 +59,8 @@ public class CoverageInformationItem
         // "  line 84, col 32 to line 85, col 73 of module AtomicBakery: 1012492"
         outputMessage = outputMessage.trim();
         int index = outputMessage.indexOf(COLON);
-        return new CoverageInformationItem(Location.parseLocation(outputMessage.substring(0, index)), Long.parseLong(outputMessage.substring(index + COLON.length())));
+        return new CoverageInformationItem(Location.parseLocation(outputMessage.substring(0, index)), Long
+                .parseLong(outputMessage.substring(index + COLON.length())));
     }
 
     /**
@@ -70,6 +71,11 @@ public class CoverageInformationItem
     public static String parseCoverageTimestamp(String outputMessage)
     {
         return outputMessage.substring(outputMessage.lastIndexOf(AT) + AT.length());
+    }
+
+    public Location getModuleLocation()
+    {
+        return location;
     }
 
 }

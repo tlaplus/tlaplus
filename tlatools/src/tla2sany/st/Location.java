@@ -25,6 +25,8 @@ public final class Location
     private static final String UNKNOWN_LOCATION = "Unknown location";
     private static final String NATURAL = "([0-9]+)";
     private static final String MODULE_ID = "([A-Za-z_0-9]+)";
+    private static final String CLOSE_ACTION = ">";
+    private static final String OPEN_ACTION = "<Action ";
 
     private static final UniqueString unknown = UniqueString.uniqueStringOf("--unknown--");
 
@@ -55,6 +57,13 @@ public final class Location
      * A REGEX pattern to match the locations 
      */
     public static final Pattern LOCATION_MATCHER2 = Pattern.compile(IN_MODULE + MODULE_ID /* module group */);
+    
+    /**
+     * A pattern to match locations in states.
+     */
+    public static final Pattern LOCATION_MATCHER3 = Pattern.compile(OPEN_ACTION + LINE + NATURAL /* bl group */+ COL + NATURAL
+            /* bc group */+ TO_LINE + NATURAL /* el group */+ COL + NATURAL /* ec group */+ OF_MODULE + MODULE_ID /* module group */
+            + CLOSE_ACTION);
 
     protected UniqueString name;
     protected int bLine, bColumn, eLine, eColumn;
@@ -110,6 +119,19 @@ public final class Location
         } else if ((matcher = LOCATION_MATCHER.matcher(locationString)).matches())
         {
             // REGEX LOCATION_MATCHER defines 5 groups
+            // these are: bl, bc, el, ec, moduleName
+            try
+            {
+                return new Location(UniqueString.uniqueStringOf(matcher.group(5)), Integer.parseInt(matcher.group(1)),
+                        Integer.parseInt(matcher.group(2)), Integer.parseInt(matcher.group(3)), Integer
+                                .parseInt(matcher.group(4)));
+            } catch (NumberFormatException e)
+            {
+                return nullLoc;
+            }
+        } else if ((matcher = LOCATION_MATCHER3.matcher(locationString.trim())).matches())
+        {
+            // REGEX LOCATION_MATCHER3 defines 5 groups
             // these are: bl, bc, el, ec, moduleName
             try
             {

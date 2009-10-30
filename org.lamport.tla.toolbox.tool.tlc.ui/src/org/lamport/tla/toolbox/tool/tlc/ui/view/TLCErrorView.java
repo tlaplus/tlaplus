@@ -52,6 +52,7 @@ import org.lamport.tla.toolbox.tool.tlc.output.data.TLCState;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCVariable;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCVariableValue;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
+import org.lamport.tla.toolbox.tool.tlc.ui.util.ActionDoubleClickListener;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.TLCUIHelper;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
@@ -291,6 +292,9 @@ public class TLCErrorView extends ViewPart
         variableViewer.setContentProvider(new StateContentProvider());
         variableViewer.setFilters(new ViewerFilter[] { new StateFilter() });
         variableViewer.setLabelProvider(new StateLabelProvider());
+
+        variableViewer.addDoubleClickListener(new ActionDoubleClickListener());
+
         variableViewer.addSelectionChangedListener(new ISelectionChangedListener() {
 
             public void selectionChanged(SelectionChangedEvent event)

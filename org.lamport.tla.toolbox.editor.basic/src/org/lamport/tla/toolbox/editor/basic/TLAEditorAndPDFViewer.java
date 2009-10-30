@@ -116,4 +116,9 @@ public class TLAEditorAndPDFViewer extends FormEditor
         return pdfViewingPage;
     }
 
+    public TLAEditor getTLAEditor()
+    {
+        return tlaEditor;
+    }
+
 }

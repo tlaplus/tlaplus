@@ -4,12 +4,16 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
 
+import org.lamport.tla.toolbox.tool.tlc.ui.util.IModuleLocatable;
+
+import tla2sany.st.Location;
+
 /**
  * Representation of the TLC state
  * @author Simon Zambrovski
  * @version $Id$
  */
-public class TLCState
+public class TLCState implements IModuleLocatable
 {
     private static final String COLON = ":";
     private static final String CR = "\n";
@@ -70,6 +74,7 @@ public class TLCState
             state.label = label;
             state.variablesAsString = input.substring(index2 + 1);
             state.variables = TLCState.parseVariables(state.variablesAsString);
+            state.setLocation(Location.parseLocation(label));
             return state;
         }
     }
@@ -139,6 +144,11 @@ public class TLCState
     private String label;
     private String variablesAsString;
     private TLCVariable[] variables = new TLCVariable[0];
+    /*
+     * Contains the location of the action
+     * which caused this state
+     */
+    private Location location;
 
     public TLCState(int number)
     {
@@ -178,5 +188,15 @@ public class TLCState
     public String toString()
     {
         return variablesAsString;
+    }
+
+    public void setLocation(Location location)
+    {
+        this.location = location;
+    }
+
+    public Location getModuleLocation()
+    {
+        return location;
     }
 }
