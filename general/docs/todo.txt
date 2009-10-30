@@ -21,7 +21,6 @@
 36. FEATURE (Action Fairness)
 39. MINOR FEATURE (Constant Assignment)
 40. BUG (Help)
-41. BUG (View option)
 43. MINOR BUG (Model Checking Results page display)
 45. MINOR PARSING BUG (Naming in nested ASSUME/PROVEs)
 46. BUG (Model reports bogus "TLC still running")
@@ -224,9 +223,6 @@
 40. BUG (Help)
     The help menu is not getting the focus if it doesn't already have the focus
     and it either is in or is being opened into a folder that has the focus.
-    
-41. BUG (View option)
-    This option is not implemented.
 
 43. MINOR BUG (Model Checking Results page display)
     The layout/spacing of the statistics / progress output / user output fields

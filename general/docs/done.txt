@@ -98,6 +98,9 @@
     be symmetric, or if he declares two different sets of model values to be
     symmetric, and one include A_c and the other include B_d.  This is what
     the validatePage method should check for.
+    
+41. BUG (View option)
+    This option is not implemented.
 
 42. IMPORTANT MISSING FEATURE (Specifying Java heap size) - DONE DR 10/12/09
     The user should be able to specify the number N of megabytes of storage
