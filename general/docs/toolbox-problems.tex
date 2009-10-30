@@ -16,7 +16,7 @@
 \def\ypmd{%                                                       %
 %                                                                 %
 %                                                                 %
-  Last modified on Wed 28 October 2009 at  8:44:12 PST by lamport         %
+  Last modified on Fri 30 October 2009 at  8:01:22 PST by lamport         %
   endypmd}                                                        %
 %                                                                 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -225,9 +225,9 @@ The help menu is not getting the focus if it doesn't already have the
 focus and it either is in or is being opened into a folder that has
 the focus.
 
-\item[41. Bug (View option)] \mbox{}\\
-%
-This option is not implemented.
+% \item[41. Bug (View option)] \mbox{}\\
+% %
+% This option is not implemented.
 
 \item[43. Minor Bug (Model Checking Results page display)] \mbox{}\\
 %
@@ -295,13 +295,13 @@ The ``Popup problem window on translator errors'' is currently
 redundant, since translator errors are shown in the Parsing
 Errors view, which has its own preference for controlling that.
     
-\item[60. Minor Bug (Model Validation)] \mbox{}\\
-%
-When the model is validated and finds an error, the existence of that
-error should be reported at the top of all the pages---or at least at
-the top of the current page.  Now, the user can type something on one
-page that causes an error on another page and have no idea what's
-going on.
+% \item[60. Minor Bug (Model Validation)] \mbox{}\\
+% %
+% When the model is validated and finds an error, the existence of that
+% error should be reported at the top of all the pages---or at least at
+% the top of the current page.  Now, the user can type something on one
+% page that causes an error on another page and have no idea what's
+% going on.
 
 \item[62. Minor Bug (Distribution)] \mbox{}\\
 %
@@ -349,21 +349,21 @@ We should change the model validator to check if the spec contains a
 module named MC and to pop up an error window if it does saying that
 the spec can't be model checked.
   
-\item[69. Minor Bug (blank and empty expression fields)] \mbox{}\\
-%
-Entering space characters in various fields of the model editor that
-should have expressions creates errors that looks mysterious and can
-be hard to figure out.  For example, look at what happens if you type
-a blank Action Constraint and validate the model.  Or if you create an
-invariant and leave the field blank.  Typing just blanks in any field
-like Action Constraint should be equivalent to not typing anything.
-In something like an invariant or a definition override, a blank or
-empty entry should be treated as if the user canceled the operation.
-(The one place it doesn't matter is in the Additional Definitioins
-section.)
+% \item[69. Minor Bug (blank and empty expression fields)] \mbox{}\\
+% %
+% Entering space characters in various fields of the model editor that
+% should have expressions creates errors that looks mysterious and can
+% be hard to figure out.  For example, look at what happens if you type
+% a blank Action Constraint and validate the model.  Or if you create an
+% invariant and leave the field blank.  Typing just blanks in any field
+% like Action Constraint should be equivalent to not typing anything.
+% In something like an invariant or a definition override, a blank or
+% empty entry should be treated as if the user canceled the operation.
+% (The one place it doesn't matter is in the Additional Definitioins
+% section.)
 
-\item[70. Bug (View option)] \mbox{}\\
-The View option on the Advanced Run section is being ignored.
+% \item[70. Bug (View option)] \mbox{}\\
+% The View option on the Advanced Run section is being ignored.
 
 \item[71. Bug/Missing Feature (MC file parsing error bubbles.)] \mbox{}\\
 Putting the mouse cursor over a model error bubble produced by a 
