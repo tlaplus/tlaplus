@@ -102,7 +102,7 @@ public class ActionDoubleClickListener implements IDoubleClickListener
                                         IEditorPart editor = UIHelper.openEditor(OpenSpecHandler.TLA_EDITOR_CURRENT,
                                                 new FileEditorInput((IFile) moduleResource));
 
-                                        if (editor instanceof TLAEditorAndPDFViewer)
+                                        if (editor != null && editor instanceof TLAEditorAndPDFViewer)
                                         {
                                             TLAEditorAndPDFViewer tlaEditorAndPDFViewer = (TLAEditorAndPDFViewer) editor;
                                             tlaEditorAndPDFViewer.getTLAEditor().selectAndReveal(actionStartPosition,
