@@ -38,7 +38,7 @@ import org.lamport.tla.toolbox.tool.tlc.output.data.StateSpaceInformationItem;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCModelLaunchDataProvider;
 import org.lamport.tla.toolbox.tool.tlc.output.source.TLCOutputSourceRegistry;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
-import org.lamport.tla.toolbox.tool.tlc.ui.util.ActionDoubleClickListener;
+import org.lamport.tla.toolbox.tool.tlc.ui.util.ActionClickListener;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
 import org.lamport.tla.toolbox.tool.tlc.ui.view.TLCErrorView;
 import org.lamport.tla.toolbox.util.IHelpConstants;
@@ -53,6 +53,8 @@ import org.lamport.tla.toolbox.util.UIHelper;
 public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPresenter
 {
     public static final String ID = "resultPage";
+
+    private static final String TOOLTIP = "Click on a row to go to action.";
 
     private Hyperlink errorStatusHyperLink;
     /**
@@ -408,13 +410,14 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 
         stateTable.setHeaderVisible(true);
         stateTable.setLinesVisible(true);
+        stateTable.setToolTipText(TOOLTIP);
 
         CoverageLabelProvider.createTableColumns(stateTable);
 
         // create the viewer
         this.coverage = new TableViewer(stateTable);
 
-        coverage.addDoubleClickListener(new ActionDoubleClickListener());
+        coverage.addSelectionChangedListener(new ActionClickListener());
 
         // create list-based content provider
         this.coverage.setContentProvider(new IStructuredContentProvider() {
@@ -556,6 +559,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
                 TableColumn column = new TableColumn(stateTable, SWT.NULL);
                 column.setWidth(columnWidths[i]);
                 column.setText(columnTitles[i]);
+                column.setToolTipText(TOOLTIP);
             }
         }
 

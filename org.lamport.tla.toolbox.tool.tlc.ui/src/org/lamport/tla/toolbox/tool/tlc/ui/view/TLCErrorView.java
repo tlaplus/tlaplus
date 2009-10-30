@@ -52,7 +52,7 @@ import org.lamport.tla.toolbox.tool.tlc.output.data.TLCState;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCVariable;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCVariableValue;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
-import org.lamport.tla.toolbox.tool.tlc.ui.util.ActionDoubleClickListener;
+import org.lamport.tla.toolbox.tool.tlc.ui.util.ActionClickListener;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.TLCUIHelper;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
@@ -69,6 +69,8 @@ import org.lamport.tla.toolbox.util.UIHelper;
 public class TLCErrorView extends ViewPart
 {
     public static final String ID = "toolbox.tool.tlc.view.TLCErrorView";
+
+    private static final String TOOLTIP = "Click on a row to see in viewer, double-click to go to action.";
 
     private static final IDocument EMPTY_DOCUMENT()
     {
@@ -262,6 +264,7 @@ public class TLCErrorView extends ViewPart
         // gd.grabExcessHorizontalSpace = true ;
 
         tree.setLayoutData(gd);
+        tree.setToolTipText(TOOLTIP);
         // Initialize the trace display's resizer.
         TraceDisplayResizer resizer = new TraceDisplayResizer();
         resizer.comp = sashForm;
@@ -273,6 +276,7 @@ public class TLCErrorView extends ViewPart
             column.setText(StateLabelProvider.COLUMN_TEXTS[i]);
             column.setWidth(StateLabelProvider.COLUMN_WIDTH[i]);
             resizer.column[i] = column; // set up the resizer.
+            column.setToolTipText(TOOLTIP);
         }
 
         sashForm.addControlListener(resizer);
@@ -293,7 +297,7 @@ public class TLCErrorView extends ViewPart
         variableViewer.setFilters(new ViewerFilter[] { new StateFilter() });
         variableViewer.setLabelProvider(new StateLabelProvider());
 
-        variableViewer.addDoubleClickListener(new ActionDoubleClickListener());
+        variableViewer.addDoubleClickListener(new ActionClickListener());
 
         variableViewer.addSelectionChangedListener(new ISelectionChangedListener() {
 

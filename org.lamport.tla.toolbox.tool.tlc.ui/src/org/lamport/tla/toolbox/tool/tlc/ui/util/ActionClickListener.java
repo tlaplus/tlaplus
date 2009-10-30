@@ -9,6 +9,8 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.editors.text.FileDocumentProvider;
@@ -23,7 +25,8 @@ import tla2sany.st.Location;
 
 /**
  * A listener that will respond to the user double clicking on
- * an action by opening the module containing that action and highlighting it.
+ * an action by opening the module containing that action and highlighting
+ * the action
  * 
  * Currently, double clicking on something in a viewer with this as
  * a listener will only do something if the selection is an instance
@@ -35,12 +38,21 @@ import tla2sany.st.Location;
  * @author Daniel Ricketts
  *
  */
-public class ActionDoubleClickListener implements IDoubleClickListener
+public class ActionClickListener implements IDoubleClickListener, ISelectionChangedListener
 {
 
     public void doubleClick(DoubleClickEvent event)
     {
-        ISelection selection = event.getSelection();
+        goToAction(event.getSelection());
+    }
+
+    public void selectionChanged(SelectionChangedEvent event)
+    {
+        goToAction(event.getSelection());
+    }
+
+    private void goToAction(ISelection selection)
+    {
         if (selection != null && !selection.isEmpty())
         {
             if (selection instanceof StructuredSelection)
