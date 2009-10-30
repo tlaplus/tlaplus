@@ -15,8 +15,6 @@
 29. FEATURE (Module Editor Keybindings)
 30. MINOR BUG (TLC Error View)
 32. MINOR BUG (What to parse when)
-33. FEATURE (TLC error reporting)
-34. FEATURE (Stack trace)
 35. MINOR BUG (TLC Error report)
 36. FEATURE (Action Fairness)
 39. MINOR FEATURE (Constant Assignment)
@@ -194,13 +192,6 @@
     to parse when the user requests that a module be parsed.  This needs to
     be re-examined and specified precisely, and then we need to make sure that
     the implementation does what it's supposed to.
-
-33. FEATURE (TLC error reporting)
-    When TLC returns an error stack trace, make clicking on the locations
-    highlight and go to those locations in the module.
-    
-34. FEATURE (Stack trace)
-    Make clicking on the action location highlight and go to that location.
         
 35. MINOR BUG (TLC Error report)
     Remove the @START... and @END... lines from the error message shown to the

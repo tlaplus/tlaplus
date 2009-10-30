@@ -75,6 +75,13 @@
     symbol is still defined with the same number of arguments.  If it's no
     longer defined, we should just remove the override.  If the number of
     arguments has changed, we should report an error.
+    
+33. FEATURE (TLC error reporting)
+    When TLC returns an error stack trace, make clicking on the locations
+    highlight and go to those locations in the module.
+    
+34. FEATURE (Stack trace)
+    Make clicking on the action location highlight and go to that location.
 
 37. MINOR BUG (TLC Error report) - DONE DR 10/12/09
     Here's how to produce the bug:
