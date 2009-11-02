@@ -25,6 +25,7 @@ public class OpenSpecHandler extends AbstractHandler implements IHandler
     public static final String TLA_EDITOR = TLA_EDITOR_CURRENT;
     public static final String COMMAND_ID = "toolbox.command.spec.open";
     public static final String PARAM_SPEC = "toolbox.command.spec.open.param";
+    public static final String TLC_ERROR_VIEW_ID = "toolbox.tool.tlc.view.TLCErrorView";
 
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
@@ -51,6 +52,9 @@ public class OpenSpecHandler extends AbstractHandler implements IHandler
         UIHelper.switchPerspective(SpecLoadedPerspective.ID);
         // close the initial perspective
         UIHelper.closeWindow(InitialPerspective.ID);
+        // close the tlc error view that may have
+        // been open for a previously opened spec
+        UIHelper.hideView(TLC_ERROR_VIEW_ID);
 
         // store information about opened spec in the spec manager
         Activator.getSpecManager().setSpecLoaded(spec);
