@@ -25,8 +25,6 @@ import org.eclipse.swt.events.ControlAdapter;
 import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -265,6 +263,7 @@ public class TLCErrorView extends ViewPart
 
         tree.setLayoutData(gd);
         tree.setToolTipText(TOOLTIP);
+
         // Initialize the trace display's resizer.
         TraceDisplayResizer resizer = new TraceDisplayResizer();
         resizer.comp = sashForm;
@@ -279,7 +278,8 @@ public class TLCErrorView extends ViewPart
             column.setToolTipText(TOOLTIP);
         }
 
-        sashForm.addControlListener(resizer);
+        tree.addControlListener(resizer);
+
         // I need to add a listener for size changes to column[0] to
         // detect when the user has tried to resize the individual columns.
         // The following might work, if I can figure out the real event type
@@ -287,10 +287,6 @@ public class TLCErrorView extends ViewPart
         int eventType = SWT.Resize; // (2^25) - 1 ; // 1023; // what should this
         // be?
         resizer.column[0].addListener(eventType, resizer);
-
-        ScrollBar hBar = tree.getHorizontalBar();
-
-        hBar.addListener(SWT.Show, resizer);
 
         variableViewer = new TreeViewer(tree);
         variableViewer.setContentProvider(new StateContentProvider());
@@ -408,7 +404,7 @@ public class TLCErrorView extends ViewPart
      * real columns.
      * 
      * There are two listener methods in this class: controlResized - called
-     * when the sashForm containing the tree is resized. handleEvent - called
+     * when the tree is resized. handleEvent - called
      * when column[0] is resized. The controlResized command can change the size
      * of column[0], which triggers the calling of the handleEvent.
      * Experimentation indicates that this call of handleEvent occurs in the
@@ -422,136 +418,27 @@ public class TLCErrorView extends ViewPart
      * 
      * Note that all the code here assumes that there are two columns. It needs
      * to be modified if the number of columns is changed.
-     * 
-     * The code in the controlResized method that does the actual resizing of
-     * the columns was copied from Snippet77 from
-     * http://www.eclipse.org/swt/snippets/ (see under Tables.../resize columns
-     * as table resizes).
      */
     static class TraceDisplayResizer extends ControlAdapter implements Listener
     {
+        double firstColumnPercentageWidth = .5;
 
         // See comments above for meaning of the following flag.
         boolean inControlResized = false;
-
-        // firstColPercentageWidth is the percentage of the total width of the
-        // display occupied by the first column times 1000. The factor of 10000
-        // is
-        // needed when computing ratios to prevent roundoff error from scewing
-        // things
-        // up too quickly. However, I haven't done the math to see if this will
-        // cause overflow (which in Java means turning a big number into a small
-        // one)
-        // with large screens.
-
-        int firstColPercentageWidth = 50000;
         Scrollable comp; // The component containing the trace display.
         TreeColumn[] column = new TreeColumn[StateLabelProvider.COLUMN_TEXTS.length];
         Tree tree;
-        // oldWidth1 is the width of column 1 the last time this
-        // the tree was resized. The idea is that if the user has changed the
-        // relative dimensions, we want to keep column 0 about the size to which
-        // it was just set. It is initialized to -1, in which case the current
-        // width of column 1 is used instead.
-        int oldWidth1 = -1;
-        /*
-         * I want to have the tree columns fill the tree's allotted horizontal
-         * space. If I use the formula from Snippet77, the -tree.computeTrim...
-         * term makes the tree too narrow. If I exclude that term, the formula
-         * makes the tree a little too wide, producing a horizontal scrollbar.
-         * So, I subtract a "fudge factor" that I experimentally determined to
-         * be just big enough to avoid the scrollbar. However, it seems unlikely
-         * that this magic number will be big enough on all platforms. So, it is
-         * dynamically increased until it is big enough. However, that increase
-         * happens only when the tree is redisplayed. So if this particular
-         * value is too small, the error trace window will have a scrollbar the
-         * first time it is displayed. When it gets redisplayed, the scrollbar
-         * will disappear.
-         */
-        int fudgeFactor = 4;
 
         public void controlResized(ControlEvent e)
         {
-
             inControlResized = true;
 
-            Rectangle area = comp.getClientArea();
-            // Point size = tree.computeSize(SWT.DEFAULT, SWT.DEFAULT);
-            Point oldSize = tree.getSize();
-            ScrollBar hBar = tree.getHorizontalBar();
-            int width = getWidth();
-            // System.out.println("vbar width: " +
-            // tree.getVerticalBar().getSize().x);
-            // System.out.println("width: " + width);
-            // System.out.println("area.idth: " + area.width);
-
-            // I would like to preserve relative size changes of the columns
-            // made by the user, but I can't seem to figure out how to do that
-            // reasonably. The following code does a half-decent job. But
-            // it needs to be thought out more carefully.
-            do
-            {
-
-                // The following stuff became irrelevant when we added the
-                // handleEvent
-                // method that sets firstColPercentageWidth.
-                // if (width > 0) {
-                // int old1 = (oldWidth1 > 0) ? oldWidth1 : column[1]
-                // .getWidth();
-                // int newWidth = (100000 * column[0].getWidth())
-                // / (column[0].getWidth() + old1 /*
-                // * column[1].getWidth(
-                // * )
-                // */);
-                // // We don't let firstColPercentageWidth change to make
-                // // column 0 too small or too large. We also don't change it
-                // // if the change is small. This prevents roundoff error from
-                // // making the column size drift when it hasn't really been
-                // // changed.
-                // // All this kludgery would disappear if we could modify
-                // // firstColPercentageWidth only when the user resizes the
-                // // individual columns. But I can't figure out how to find
-                // // out when that happens.
-                // if (newWidth > 10000
-                // && newWidth < 90000
-                // && (newWidth - firstColPercentageWidth > 5000 || newWidth
-                // - firstColPercentageWidth < -5000)) {
-                // firstColPercentageWidth = newWidth;
-                // }
-                // }
-                if (oldSize.x > area.width)
-                {
-                    // table is getting smaller so make the columns
-                    // smaller first and then resize the table to
-                    // match the client area width
-                    column[0].setWidth((firstColPercentageWidth * width) / 100000);
-                    column[1].setWidth(width - column[0].getWidth());
-                    tree.setSize(area.width, area.height);
-                } else
-                {
-                    // table is getting bigger so make the table
-                    // bigger first and then make the columns wider
-                    // to match the client area width
-                    tree.setSize(area.width, area.height);
-                    column[0].setWidth((firstColPercentageWidth * width) / 100000);
-                    column[1].setWidth(width - column[0].getWidth());
-                }
-                if (hBar.isVisible())
-                {
-                    fudgeFactor++;
-                    width = getWidth();
-                    // System.out.println("Fudge factor = " + fudgeFactor);
-                }
-            } while (hBar.isVisible());
-
+            int treeWidth = computeMaximumWidthOfAllColumns();
+            int firstColWidth = Math.round(Math.round(firstColumnPercentageWidth * treeWidth));
+            int secondColWidth = treeWidth - firstColWidth;
+            column[0].setWidth(firstColWidth);
+            column[1].setWidth(secondColWidth);
             inControlResized = false;
-
-            oldWidth1 = column[1].getWidth();
-
-            // System.out.println("new widths: " + column[0].getWidth() + ", "
-            // + column[1].getWidth());
-            // System.out.println("firstColPercentageWidth: " +
-            // firstColPercentageWidth);
         }
 
         int count = 0;
@@ -560,63 +447,65 @@ public class TLCErrorView extends ViewPart
         {
             if (inControlResized)
             {
-                // Inside call of controlResized; do nothing.
-                // System.out
-                // .println("Call of handleEvent inside call of controlResized");
                 return;
             }
-            // We now resize the columns so that column[0] maintains the size
-            // set by the user and column[1] fills the rest of the tree's
-            // allotted space.
-            // We also set firstColPercentageWidth to represent the percentage
-            // of the
-            // horizontal space occupied by the first column. However, we don't
-            // let it
-            // become less than 10% or greater than 90%.
-            ScrollBar hBar = tree.getHorizontalBar();
-            int width = getWidth();
-            do
+
+            int treeWidth = computeMaximumWidthOfAllColumns();
+            int firstColWidth = column[0].getWidth();
+
+            if (treeWidth == 0)
             {
-                if (width == 0)
-                {
-                    return;
-                }
-                column[1].setWidth(width - column[0].getWidth());
-                firstColPercentageWidth = (100000 * column[0].getWidth()) / width;
-                if (hBar.isVisible())
-                {
-                    fudgeFactor++;
-                    width = getWidth();
-                    // System.out.println("Fudge factor = " + fudgeFactor);
-                }
-            } while (hBar.isVisible());
-            if (firstColPercentageWidth < 10000)
-            {
-                firstColPercentageWidth = 10000;
-            }
-            if (firstColPercentageWidth > 90000)
-            {
-                firstColPercentageWidth = 90000;
+                return;
             }
 
-            // System.out.println("Event Reported" + count++ + ", "
-            // + firstColPercentageWidth + ", " + width + ", "
-            // + column[0].getWidth());
+            // the percentage that the first column will occupy
+            // until controlResized is called
+            // We do not want the width of either column
+            // to be less than 10% of the total width
+            // of the tree. Currently, the user
+            // can make a column smaller than 10%, but
+            // when controlResized is called, the column
+            // will be enlarged to 10%. It is not very nice
+            // to do the enlarging in this method. It creates
+            // very choppy performance.
+            double tentativefirstColPercentageWidth = (double) firstColWidth / (double) treeWidth;
+            if (tentativefirstColPercentageWidth > .1 && tentativefirstColPercentageWidth < .9)
+            {
+                firstColumnPercentageWidth = (double) firstColWidth / (double) treeWidth;
+
+            } else if (tentativefirstColPercentageWidth <= .1)
+            {
+                firstColumnPercentageWidth = .1;
+            } else
+            {
+                firstColumnPercentageWidth = .9;
+            }
+            firstColWidth = Math.round(Math.round(tentativefirstColPercentageWidth * treeWidth));
+            int secondColWidth = treeWidth - firstColWidth;
+            column[1].setWidth(secondColWidth);
         }
 
         /*
-         * The value of getWidth() should be the sum of the widths of the two
-         * columns.
+         * Computes the maximum width that columns of the
+         * tree can occupy without having a horizontal
+         * scrollbar.
+         * 
+         * This is not equal to the sash form's client
+         * area. From the client area we must subtract
+         * the tree's border width. We must also subtract
+         * the width of the grid lines used in the tree
+         * times the number of columns because there is one
+         * grid line per column. We must subtract the width
+         * of the vertical scroll bar if it is visible.
          */
-        private int getWidth()
+        private int computeMaximumWidthOfAllColumns()
         {
             ScrollBar vBar = tree.getVerticalBar();
             boolean scrollBarShown = vBar.isVisible();
-            Rectangle area = comp.getClientArea();
-            return area.width - fudgeFactor // - tree.computeTrim(0,0,0,0).width
+            return comp.getClientArea().width - tree.getBorderWidth() - tree.getColumnCount() * tree.getGridLineWidth()
                     - ((scrollBarShown) ? vBar.getSize().x : 0);
-
         }
+
     }
 
     /**
