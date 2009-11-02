@@ -705,17 +705,6 @@
             <control
                   class="org.lamport.tla.toolbox.ui.contribution.ParseStatusContributionItem"
                   id="toolobx.contributions.parse.status">
-               <visibleWhen
-                     checkEnabled="true">
-                  <not>
-                     <with
-                           variable="activeWorkbenchWindow.activePerspective">
-                        <equals
-                              value="org.lamport.tla.toolbox.ui.perspective.initial">
-                        </equals>
-                     </with>
-                  </not>
-               </visibleWhen>
             </control>
          </toolbar>
       </menuContribution>
