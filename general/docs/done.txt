@@ -66,6 +66,12 @@
     the number of errors increases each time by the number of actual TLC errors on 
     the model.
     
+30. MINOR BUG (TLC Error View)
+    When I close a spec that has the TLC Error window raised and then
+    open a new spec, the TLC Error window is raised again.  If that window
+    shows an error, then it shows the same error when the new spec is
+    opened.
+    
 31. BUG (Definition Override) - FIXED by Dan 15 Oct 2009
     If a model contains a definition override and the defined symbol is
     removed from the spec, the override is not removed.  Moreover, in that
@@ -247,3 +253,13 @@
     
 70. BUG (View option)
     The View option on the Advanced Run section is being ignored.
+    
+73. BUG (Opening TLC error view on Linux)
+	Opening the TLC error view on Linux causes the program to enter
+	an infinite loop. In particular, in the method controlResized()
+	in the nested class TraceDisplayResizer in TLCErrorView, the
+	do-while loop never terminates on Linux. For some reason,
+	the condition hbar.isVisible() always returns true. At some point,
+	it would be nice to find a more standard solution to the problem,
+	but if a quick fix is needed, a counter could be used to cause the
+	loop to terminate after some fixed number of times.
