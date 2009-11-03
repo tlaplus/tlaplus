@@ -68,7 +68,7 @@ public class TLCErrorView extends ViewPart
 {
     public static final String ID = "toolbox.tool.tlc.view.TLCErrorView";
 
-    private static final String TOOLTIP = "Click on a row to see in viewer, double-click to go to action.";
+    private static final String TOOLTIP = "Click on a row to see in viewer, double-click to go to action in spec.";
 
     private static final IDocument EMPTY_DOCUMENT()
     {
