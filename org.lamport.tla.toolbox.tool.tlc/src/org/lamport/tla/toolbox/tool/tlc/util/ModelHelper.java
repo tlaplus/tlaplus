@@ -181,7 +181,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
     public static ILaunchConfiguration getModelByName(IProject specProject, String modelName)
     {
         // a model name can be "spec__modelname" or just "modelname"
-        if (modelName.indexOf(specProject.getName()) != 0)
+        if (modelName.indexOf(specProject.getName() + "___") != 0)
         {
             modelName = specProject.getName() + "___" + modelName;
         }
