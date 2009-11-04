@@ -29,6 +29,13 @@ public class ModelNameValidator implements IInputValidator
         {
             return "Model with the name " + newText + " already exists. Please choose a different name";
         }
+        // a model name cannot start with the name of the spec + __
+        // this causes a NPE in OpenModelHandler because the method
+        // ModelHelper.getModelByName() will not be able to find the model
+        if (newText.indexOf(project.getName()+"___") == 0)
+        {
+            return "Model name cannot begin with \"" + project.getName() + "___\".";
+        }
         return null;
     }
 }
