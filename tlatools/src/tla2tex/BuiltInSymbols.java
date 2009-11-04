@@ -166,6 +166,7 @@ public final class BuiltInSymbols
         add("ACTION",     "{\\ACTION}",      Symbol.KEYWORD, 0);
         add("TEMPORAL",   "{\\TEMPORAL}",    Symbol.KEYWORD, 0);
         add("ONLY",       "{\\ONLY}",        Symbol.KEYWORD, 0);  // added by LL on 2 Oct 2009
+        add("OMITTED",    "{\\OMITTED}",     Symbol.KEYWORD, 0);  // added by LL on 31 Oct 2009
 
         add("WF_", "{\\WF}",        Symbol.SUBSCRIPTED, 0);
         add("SF_", "{\\SF}",        Symbol.SUBSCRIPTED, 0);

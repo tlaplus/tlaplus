@@ -6530,6 +6530,10 @@ errors.addAbort(stn.getLocation(), "Uses generateNumerable_Step") ;
       nextTok++ ;
      } ;
 
+    if (nextTok >= heirs.length) {
+        errors.addError(stn.getLocation(), "Empty BY, USE, or HIDE");
+        return new UseOrHideNode(kind, stn, new LevelNode[0],  new SymbolNode[0], isOnly);
+    }
     Vector vec = new Vector() ;
       /*********************************************************************
       * To hold the facts and then the defs.                               *

@@ -15,7 +15,7 @@
  </context>
  <context id="resultModelPage">
     <description>This is the model's result page. It shows the results of a TLC run.</description>
-    <topic label="Advanced Options Page" 
+    <topic label="Model Checking Results Page" 
            href="../org.lamport.tla.toolbox.doc/html/model/results-page.html" />
     
  </context>
