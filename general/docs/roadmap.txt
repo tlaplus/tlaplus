@@ -75,6 +75,9 @@ Open standalone.product / Overview tab
 The following stuff needs to be done for each release.
 
   1. Open standalone product / overview page
+  1a. Select New button next to Product: and set
+         Application to org.lamport.tla.toolbox.application      
+        
   2. Hit Synchronizing on the Testing section
   3. Hit on Eclipse Product Export Wizard
      (export to windows, linux stk/x86, macosx cocoa/x86)

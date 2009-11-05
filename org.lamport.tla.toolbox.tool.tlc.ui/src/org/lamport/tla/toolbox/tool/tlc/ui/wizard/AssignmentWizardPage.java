@@ -344,5 +344,14 @@ public class AssignmentWizardPage extends WizardPage
     {
         return source.getDocument().get();
     }
+    
+    /**
+     * Added by LL on 5 Nov 2009
+     * returns true iff the model value option is chosen on the page.
+     * @return
+     */
+    public boolean modelValueSelected() {
+    	return optionModelValue.getSelection();
+    }
 
 }

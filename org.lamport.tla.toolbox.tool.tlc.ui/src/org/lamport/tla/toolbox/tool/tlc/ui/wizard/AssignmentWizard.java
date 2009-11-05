@@ -81,8 +81,14 @@ public class AssignmentWizard extends Wizard
         String inputText = assignmentPage.getInputText();
         // either on the first page, but no typing of MV set is possible, or on the second page
         // also, if on the first page, there must be an input that is not only white space
-        return (assignmentPage.isCurrentPage() && !assignmentPage.isTypeInputPossible() && inputText != null && inputText
-                .trim().length() != 0)
+        // Modified by LL on 5 Nov 2009 to return true regardless of inputText if the model value
+        // option is selected.
+        return (    assignmentPage.isCurrentPage() 
+        		&& !assignmentPage.isTypeInputPossible() 
+        		&& (   (inputText != null && inputText.trim().length() != 0)
+        		     || assignmentPage.modelValueSelected()
+        			)
+        		)
                 || !assignmentPage.isCurrentPage();
     }
 
