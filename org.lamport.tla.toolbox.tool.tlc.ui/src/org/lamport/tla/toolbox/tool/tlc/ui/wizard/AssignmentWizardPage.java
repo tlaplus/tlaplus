@@ -36,7 +36,7 @@ public class AssignmentWizardPage extends WizardPage
     public static final String DEF_OVERRIDE_WIZARD_ID = "definition_override_wizard";
     private LabeledListComposite paramComposite;
     private SourceViewer source;
-    private Button optionModelValue;
+    private Button optionModelValue = null;
     private final int fieldFlags;
     private final String helpId; // The id of the help context for this wizard page
     private Button optionSetModelValues;
@@ -344,14 +344,21 @@ public class AssignmentWizardPage extends WizardPage
     {
         return source.getDocument().get();
     }
-    
+
     /**
      * Added by LL on 5 Nov 2009
-     * returns true iff the model value option is chosen on the page.
+     * Returns true iff the page has a Model Value option that is chosen.
      * @return
      */
-    public boolean modelValueSelected() {
-    	return optionModelValue.getSelection();
+    public boolean modelValueSelected()
+    {
+        // If there is no Model Value option, then optionModelValue
+        // appears to be null.
+        if (optionModelValue == null)
+        {
+            return false;
+        }
+        return optionModelValue.getSelection();
     }
 
 }
