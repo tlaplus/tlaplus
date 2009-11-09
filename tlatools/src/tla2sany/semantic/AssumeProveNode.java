@@ -128,9 +128,8 @@ public class AssumeProveNode extends LevelNode {
     * ASSUME/PROVE is.  Otherwise, it equals null.  In particular, it      *
     * equals null for an inner ASSUME/PROVE                                *
     *                                                                      *
-    * This comment seems to be wrong.  Even on an inner ASSUME/PROVE, the  *
-    * goal field seems to point to the ThmOrAssumpDefNode of the outer     *
-    * ASSUME/PROVE. (LL 17 Feb 2009)                                       *
+    * This comment was wrong until LL added the code to                    *
+    * Generator.generateAssumeProve to make it true on 9 Nov 2009.         *
     ***********************************************************************/
     
   /*************************************************************************

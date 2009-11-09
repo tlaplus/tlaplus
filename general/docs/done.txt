@@ -125,6 +125,16 @@
     under "User Output".   It should go under Progress output.  Let's try
     to put only output created by Print commands in the User Output section.
     
+45. MINOR PARSING BUG (Naming in nested ASSUME/PROVEs)
+    Here is the example:
+      THEOREM B == ASSUME TRUE, 
+                          ASSUME NEW Z PROVE FALSE
+                   PROVE  FALSE
+      <1>1. B!2!2  \* THIS IS A BUG, IT SHOULD NOT BE ALLOWED
+      <1>2. QED
+      
+      Bar == B!2!2 \* THIS IS A BUG, IT SHOULD NOT BE ALLOWED
+
 47. MINOR FEATURE (Default JVM heap size)
     Add a TLC Model Checker Preference that specifies the default JVM
     heap size for a new model.

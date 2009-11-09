@@ -3502,8 +3502,15 @@ OpDefNode node = (OpDefNode) vec.elementAt(i);
     * Added by LL on 17 Mar 2007.                                          *
     ***********************************************************************/
      throws AbortException { 
+       // Following code added on 9 Nov 2009 so that the goal
+       // field of the AssumeProveNode is null unless this is
+       // a top-level Assume/Prove.
+       ThmOrAssumpDefNode cg = null ;
+       if (assumeProveDepth == 0) {
+           cg = currentGoal;
+       } ;
        assumeProveDepth++ ;
-       AssumeProveNode apn = new AssumeProveNode(treeNode, currentGoal) ;
+       AssumeProveNode apn = new AssumeProveNode(treeNode, cg) ;
        TreeNode[] children = treeNode.heirs();
        int numOfChildren = children.length;
        if (numOfChildren % 2 != 0) { 
