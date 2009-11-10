@@ -273,3 +273,15 @@
 	it would be nice to find a more standard solution to the problem,
 	but if a quick fix is needed, a counter could be used to cause the
 	loop to terminate after some fixed number of times.
+
+74. PARSER BUG (Instantiation)
+    If I have in module M
+       Bar(v) == INSTANCE P 
+    and in another module
+       INSTANCE M
+    Then the parser doesn't accept the correct Bar(exp)!Q for an
+    operator Q defined in P, but instead requires Bar!Q(exp).  It
+    works OK if the second instance is 
+       F == INSTANCE M
+    accepting the correct F!Bar(exp)!Q.
+   
