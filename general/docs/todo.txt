@@ -234,7 +234,7 @@
     the box is the correct one.  If it's hard to have both behaviors,
     forget about this.
  
-53. MINOR BUG (Eclipse resource saving?)
+53. MINOR BUG (Eclipse resource saving?)  [same as 27]
     If I have automatic parse turned off, modify a file, and then try
     to parse it, the Toolbox pops up a dialog saying I have a modified
     resource and asking if I want to save it.  When I say yes, it
