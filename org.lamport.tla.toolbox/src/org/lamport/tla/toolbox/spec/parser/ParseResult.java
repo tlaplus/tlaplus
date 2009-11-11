@@ -54,6 +54,8 @@ public class ParseResult implements IParseResult
     }
     /**
      * @param status the status to set
+     * 
+     * According to Eclipse, this method is never called.
      */
     public void setStatus(int status)
     {

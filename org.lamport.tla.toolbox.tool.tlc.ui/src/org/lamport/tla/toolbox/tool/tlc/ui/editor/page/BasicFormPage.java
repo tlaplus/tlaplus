@@ -676,8 +676,16 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
             String value = (String) values.get(i);
             if (!FormHelper.isIdentifier(value))
             {
-                message = elementType + " " + value + " may not be used, since it is not a valid identifier."
-                        + "\nAn identifier is non-empty sequence of letters, digits und '_' with at least one letter.";
+                if (value.trim().equals(""))
+                { message = elementType + " has been omitted." ;
+
+                } else
+                {
+                    message = elementType + " " + value
+                            + " may not be used, since it is not a valid identifier."
+                            + "\nAn identifier is a non-empty sequence of letters, digits and '_' with at least one letter.";
+                }
+
                 mm.addMessage(errorMessagePrefix + i, message, value.toString(), IMessageProvider.ERROR, widget);
                 setComplete(false);
                 expandSection(sectionId);

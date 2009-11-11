@@ -155,6 +155,8 @@ public class Spec implements IAdaptable
     /**
      * Retrieves parsing status
      * 
+     * See {@link IParseConstants} for possible values of status.
+     * 
      * @return the status
      */
     public int getStatus()

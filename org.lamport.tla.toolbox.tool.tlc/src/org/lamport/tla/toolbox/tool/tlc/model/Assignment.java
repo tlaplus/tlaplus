@@ -190,12 +190,18 @@ public class Assignment extends Formula
     /**
      * Set parameters, the left part depends on
      * @param params
+     * 
+     * Modified by LL on 11 Nov 2009 to trim spaces off the ends of 
+     * the parameters.
      */
     public void setParams(String[] params)
     {
         if (params != null)
         {
             this.params = params;
+            for (int i = 0; i < this.params.length; i++) {
+                this.params[i] = this.params[i].trim();
+            }
         } else
         {
             this.params = new String[0];

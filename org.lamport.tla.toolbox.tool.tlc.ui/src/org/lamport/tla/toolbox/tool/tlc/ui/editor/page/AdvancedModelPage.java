@@ -370,44 +370,49 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         Control widget = UIHelper.getWidget(dm.getAttributeControl(MODEL_PARAMETER_DEFINITIONS));
         // check the definition overrides
         List definitions = (List) definitionsTable.getInput();
-        for (int i = 0; i < definitions.size(); i++)
+        // The following if test was added by LL on 11 Nov 2009 to prevent an unparsed
+        // file from producing bogus error messages saying that overridden definitions
+        // have been removed from the spec.
+        if (opDefNodes != null)
         {
-            Assignment definition = (Assignment) definitions.get(i);
-            List values = Arrays.asList(definition.getParams());
-            // check list of parameters
-            validateUsage(MODEL_PARAMETER_DEFINITIONS, values, "param1_", "A parameter name", "Definition Overrides",
-                    false);
-            // check whether the parameters are valid ids
-            validateId(MODEL_PARAMETER_DEFINITIONS, values, "param1_", "A parameter name");
-            // check if definition still appears in root module
-            if (!nodeTable.containsKey(definition.getLabel()))
+            for (int i = 0; i < definitions.size(); i++)
             {
-                // the following would remove
-                // the definition override from the table
-                // right now, an error message appears instead
-                // definitions.remove(i);
-                // definitionsTable.setInput(definitions);
-                // dm.getSection(DEF_OVERRIDES_PART).markDirty();
-                modelEditor.addErrorMessage(definition.getLabel(), "The defined symbol "
-                        + definition.getLabel().substring(definition.getLabel().lastIndexOf("!") + 1)
-                        + " has been removed from the specification."
-                        + " It must be removed from the list of definition overrides.", this.getId(),
-                        IMessageProvider.ERROR, widget);
-                setComplete(false);
-            } else
-            {
-                // add error message if the number of parameters has changed
-                OpDefNode opDefNode = (OpDefNode) nodeTable.get(definition.getLabel());
-                if (opDefNode.getSource().getNumberOfArgs() != definition.getParams().length)
+                Assignment definition = (Assignment) definitions.get(i);
+                List values = Arrays.asList(definition.getParams());
+                // check list of parameters
+                validateUsage(MODEL_PARAMETER_DEFINITIONS, values, "param1_", "A parameter name",
+                        "Definition Overrides", false);
+                // check whether the parameters are valid ids
+                validateId(MODEL_PARAMETER_DEFINITIONS, values, "param1_", "A parameter name");
+                // check if definition still appears in root module
+                if (!nodeTable.containsKey(definition.getLabel()))
                 {
-                    modelEditor.addErrorMessage(definition.getLabel(), "Edit the definition override for "
-                            + opDefNode.getSource().getName() + " to match the correct number of arguments.", this
-                            .getId(), IMessageProvider.ERROR, widget);
+                    // the following would remove
+                    // the definition override from the table
+                    // right now, an error message appears instead
+                    // definitions.remove(i);
+                    // definitionsTable.setInput(definitions);
+                    // dm.getSection(DEF_OVERRIDES_PART).markDirty();
+                    modelEditor.addErrorMessage(definition.getLabel(), "The defined symbol "
+                            + definition.getLabel().substring(definition.getLabel().lastIndexOf("!") + 1)
+                            + " has been removed from the specification."
+                            + " It must be removed from the list of definition overrides.", this.getId(),
+                            IMessageProvider.ERROR, widget);
                     setComplete(false);
+                } else
+                {
+                    // add error message if the number of parameters has changed
+                    OpDefNode opDefNode = (OpDefNode) nodeTable.get(definition.getLabel());
+                    if (opDefNode.getSource().getNumberOfArgs() != definition.getParams().length)
+                    {
+                        modelEditor.addErrorMessage(definition.getLabel(), "Edit the definition override for "
+                                + opDefNode.getSource().getName() + " to match the correct number of arguments.", this
+                                .getId(), IMessageProvider.ERROR, widget);
+                        setComplete(false);
+                    }
                 }
             }
         }
-
         for (int j = 0; j < definitions.size(); j++)
         {
             Assignment definition = (Assignment) definitions.get(j);
@@ -426,7 +431,8 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         if (SemanticHelper.containsConfigFileKeyword(viewString))
         {
             modelEditor.addErrorMessage(viewString, "The toolbox cannot handle the string " + viewString
-                    + " because it contains a configuration file keyword.", this.getId(), IMessageProvider.ERROR, viewWidget);
+                    + " because it contains a configuration file keyword.", this.getId(), IMessageProvider.ERROR,
+                    viewWidget);
             setComplete(false);
         }
 
