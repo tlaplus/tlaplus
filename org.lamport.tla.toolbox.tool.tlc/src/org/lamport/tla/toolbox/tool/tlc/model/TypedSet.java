@@ -38,18 +38,19 @@ public class TypedSet
     public static TypedSet parseSet(String set)
     {
         // This code did not work properly because it could leave spaces at the
-        // beginning of values[0] or end of values[value.length-1] if there 
+        // beginning of values[0] or end of values[value.length-1] if there
         // were spaces at the beginning or end of set or the curly braces were
-        // preceded or followed by spaces.  This was fixed by adding the
-        // two  set = set.trim();  statements and rewriting the
-        // tests for an empty or null set.  Changes made by LL on 11 Nov 2009.
+        // preceded or followed by spaces. This was fixed by adding the
+        // two set = set.trim(); statements and rewriting the
+        // tests for an empty or null set. Changes made by LL on 11 Nov 2009.
         TypedSet result = new TypedSet();
-        if (set == null) {
+        if (set == null)
+        {
             return result;
         }
         set = set.trim();
         // if the curly braces are provided, cut them
-        if (set.charAt(0) == '{' && set.charAt(set.length() - 1) == '}')
+        if (set.length() > 0 && set.charAt(0) == '{' && set.charAt(set.length() - 1) == '}')
         {
             set = set.substring(1, set.length() - 1);
         }
@@ -60,7 +61,7 @@ public class TypedSet
         }
         set = set.trim();
         String[] parsedSet = null;
-        
+
         // split by comma surrounded by any kind of spaces/tabs/new lines
         parsedSet = set.split(PATTERN);
 
