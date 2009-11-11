@@ -8,7 +8,6 @@
 18. SIGNIFICANT BUG (parsing large specs)
 19. MINOR MISSING FEATURE (Exit)
 20. MISSING FEATURE (PlusCal)
-21. TUNING NEEDED BEFORE RELEASE (Preferences)
 22. BUG  (rename spec)
 27. MINOR BUG  (Parse Spec/Module Commands)
 28. MINOR BUG  (Reset Window Layout)
@@ -25,7 +24,6 @@
 53. MINOR BUG (Eclipse resource saving?)
 54. MINOR BUG (Open Module)
 57. BUG (Pluscal Translator preferences)
-62. MINOR BUG (Distribution)
 63. MISSING FEATURE (TLC Progress)
 64. TLC BUG (Liveness checkin in Simulation mode)
 66. MINOR MISSING FEATURE (Results page/Simulation mode)
@@ -146,11 +144,6 @@
        be attached to an individual module.  (It's possible for a
        single spec to have PlusCal algorithms in two different 
        modules.)
-       
-    
-21. TUNING NEEDED BEFORE RELEASE (Preferences)
-    Need to filter Preferences to eliminate things the user doesn't want
-    to see.
     
 22. BUG  (rename spec)
     The rename spec command doesn't do the right thing if a spec by
@@ -246,6 +239,10 @@
     file browser that pops up should show the specification's directory.
  
 57. BUG (Pluscal Translator preferences)
+	The PlusCal preference page has been removed for the time being.
+	When I figure out how to make the preferences actually do something,
+	I can put the page back.
+	
     The PlusCal translator preferences seem to be no-ops.  The 
     "Re-translate on module save" option should be made to work.  This
     should cause the PlusCal translator to be called whenever a module
@@ -254,10 +251,6 @@
     The "Popup problem window on translator errors" is currently
     redundant, since translator errors are shown in the Parsing
     Errors view, which has its own preference for controlling that.
-
-62. MINOR BUG (Distribution)
-	Clicking on HHHHHelp on the page that appears after closing a spec
-	goes to a page not found screen in the windows distribution.
 
 63. MISSING FEATURE (TLC Progress)
     The Model Checking Results page should list in the General section

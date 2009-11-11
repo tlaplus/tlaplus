@@ -43,6 +43,10 @@
        
 16. NOT A PROBLEM
     My Stupidity
+    
+21. TUNING NEEDED BEFORE RELEASE (Preferences)
+    Need to filter Preferences to eliminate things the user doesn't want
+    to see.
 
 23. SAME AS 9
         
@@ -230,9 +234,13 @@
     something on one page that causes an error on another page and
     have no idea what's going on.
     
- 61. BUG (Progress statistics) - FIXED by DAn 23 Oct 2009
+61. BUG (Progress statistics) - FIXED by DAn 23 Oct 2009
     The Toolbox is not printing the "progress statistics" (number
     of states found) that TLC prints when it successfully completes.
+    
+62. MINOR BUG (Distribution)
+	Clicking on HHHHHelp on the page that appears after closing a spec
+	goes to a page not found screen in the windows distribution.
     
  65. MINOR BUG (Constant substitution & definition override)
     If I try to substitute for a constant when the spec is unparsed,
