@@ -1168,6 +1168,12 @@
             class="org.lamport.tla.toolbox.ui.contribution.StatusReflectingSpecLifecycleParticipant">
       </participant>
    </extension>
+   <extension
+         point="org.lamport.tla.toolbox.tool">
+      <participant
+            class="org.lamport.tla.toolbox.util.pref.UnwantedPreferenceManager">
+      </participant>
+   </extension>
    
    <!--                       -->
    <!-- Specification content -->

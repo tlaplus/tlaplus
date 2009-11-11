@@ -15,7 +15,7 @@ import org.lamport.tla.toolbox.tool.ToolboxLifecycleParticipant;
  */
 public class ToolboxLifecycleParticipantManger
 {
-    private static final String POINT = "org.lamport.tla.toolbox.participant";
+    private static final String POINT = "org.lamport.tla.toolbox.tool";
     private static final String CLASS_ATTR_NAME = "class";
 
     /**
