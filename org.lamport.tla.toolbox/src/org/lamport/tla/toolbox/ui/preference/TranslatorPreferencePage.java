@@ -11,9 +11,13 @@ import org.lamport.tla.toolbox.util.UIHelper;
 import org.lamport.tla.toolbox.util.pref.IPreferenceConstants;
 import org.lamport.tla.toolbox.util.pref.PreferenceStoreHelper;
 
+/**
+ * Currently, this preference page is not used.
+ *
+ */
 public class TranslatorPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage
 {
-    
+
     /**
      * Constructor
      */
@@ -48,12 +52,12 @@ public class TranslatorPreferencePage extends FieldEditorPreferencePage implemen
     {
 
     }
-    
-    
+
     protected void initialize()
     {
         // sync the auto-build
-        // getPreferenceStore().setValue(IPreferenceConstants.I_PARSE_MODULE_ON_MODIFY, ResourcesPlugin.getWorkspace().isAutoBuilding());
+        // getPreferenceStore().setValue(IPreferenceConstants.I_PARSE_MODULE_ON_MODIFY,
+        // ResourcesPlugin.getWorkspace().isAutoBuilding());
         super.initialize();
     }
 }
