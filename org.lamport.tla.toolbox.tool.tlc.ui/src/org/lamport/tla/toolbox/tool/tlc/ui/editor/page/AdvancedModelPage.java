@@ -370,20 +370,22 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         Control widget = UIHelper.getWidget(dm.getAttributeControl(MODEL_PARAMETER_DEFINITIONS));
         // check the definition overrides
         List definitions = (List) definitionsTable.getInput();
-        // The following if test was added by LL on 11 Nov 2009 to prevent an unparsed
-        // file from producing bogus error messages saying that overridden definitions
-        // have been removed from the spec.
-        if (opDefNodes != null)
+
+        for (int i = 0; i < definitions.size(); i++)
         {
-            for (int i = 0; i < definitions.size(); i++)
+            Assignment definition = (Assignment) definitions.get(i);
+            List values = Arrays.asList(definition.getParams());
+            // check list of parameters
+            validateUsage(MODEL_PARAMETER_DEFINITIONS, values, "param1_", "A parameter name", "Definition Overrides",
+                    false);
+            // check whether the parameters are valid ids
+            validateId(MODEL_PARAMETER_DEFINITIONS, values, "param1_", "A parameter name");
+
+            // The following if test was added by LL on 11 Nov 2009 to prevent an unparsed
+            // file from producing bogus error messages saying that overridden definitions
+            // have been removed from the spec.
+            if (opDefNodes != null)
             {
-                Assignment definition = (Assignment) definitions.get(i);
-                List values = Arrays.asList(definition.getParams());
-                // check list of parameters
-                validateUsage(MODEL_PARAMETER_DEFINITIONS, values, "param1_", "A parameter name",
-                        "Definition Overrides", false);
-                // check whether the parameters are valid ids
-                validateId(MODEL_PARAMETER_DEFINITIONS, values, "param1_", "A parameter name");
                 // check if definition still appears in root module
                 if (!nodeTable.containsKey(definition.getLabel()))
                 {
