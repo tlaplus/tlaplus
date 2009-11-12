@@ -92,6 +92,12 @@
     
 34. FEATURE (Stack trace)
     Make clicking on the action location highlight and go to that location.
+    
+35. MINOR BUG (TLC Error report) Fixed by Dan Nov 2009
+    Remove the @START... and @END... lines from the error message shown to the
+    user in the TLC Error window.  Simon says that one can do that by adding a 
+    filter to that view, but it seems easy enough to write code to do it
+    directly.
 
 37. MINOR BUG (TLC Error report) - DONE DR 10/12/09
     Here's how to produce the bug:
@@ -293,3 +299,10 @@
        F == INSTANCE M
     accepting the correct F!Bar(exp)!Q.
    
+73. BUG (Parsing TLC Output) Fixed by Dan Nov 2009
+	When there is an error in evaluating an expression, such as
+	dividing by zero when evaluating an invariant, the toolbox throws
+	an exception parsing the output. This exception does not cause a
+	problem after TLC is run, but if the toolbox is closed with an editor
+	open on that model, then when the toolbox is reopened, the exception
+	will prevent the model editor from being opened again.

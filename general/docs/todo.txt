@@ -13,7 +13,6 @@
 28. MINOR BUG  (Reset Window Layout)
 29. FEATURE (Module Editor Keybindings)
 32. MINOR BUG (What to parse when)
-35. MINOR BUG (TLC Error report)
 36. FEATURE (Action Fairness)
 39. MINOR FEATURE (Constant Assignment)
 40. BUG (Help)
@@ -31,7 +30,6 @@
 68. TRIVIAL CHANGE ("MC" file name)
 71. BUG/MISSING FEATURE (MC file parsing error bubbles.)
 72. MINOR BUG (Advanced Model Values)
-73. BUG (Parsing TLC Output)
 -----------------------------------------------------------------------------------------
 1. NEW FEATURE
    Add way to tell if spec on which a model was last run is the same as the current
@@ -177,12 +175,6 @@
     to parse when the user requests that a module be parsed.  This needs to
     be re-examined and specified precisely, and then we need to make sure that
     the implementation does what it's supposed to.
-        
-35. MINOR BUG (TLC Error report)
-    Remove the @START... and @END... lines from the error message shown to the
-    user in the TLC Error window.  Simon says that one can do that by adding a 
-    filter to that view, but it seems easy enough to write code to do it
-    directly.
     
 36. FEATURE (Action Fairness)
     Enhance the Init/Next method of writing the spec to add lists of weakly
@@ -317,13 +309,5 @@
     The Toolbox reports an error if a space is left after a model
     value typed into the Model Values section of the advanced
     model editor page.
-
-73. BUG (Parsing TLC Output)
-	When there is an error in evaluating an expression, such as
-	dividing by zero when evaluating an invariant, the toolbox throws
-	an exception parsing the output. This exception does not cause a
-	problem after TLC is run, but if the toolbox is closed with an editor
-	open on that model, then when the toolbox is reopened, the exception
-	will prevent the model editor from being opened again.
 
        
