@@ -22,7 +22,7 @@ public class TagBasedTLCAnalyzer
 {
 
     // @!@!@STARTMSG 2219:0 @!@!@
-    public static final int OPEN_TAG_LENGTH = 28;
+    public static final int OPEN_TAG_LENGTH = 27;
     // @!@!@ENDMSG 2219 @!@!@
     public static final int CLOSE_TAG_LENGTH = 24;
 

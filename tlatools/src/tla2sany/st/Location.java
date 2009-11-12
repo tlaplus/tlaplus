@@ -18,10 +18,13 @@ public final class Location
 {
     // strings used in toString() and Regex
     private static final String LINE = "line ";
+    private static final String LINE_CAP = "Line ";
     private static final String TO_LINE = " to line ";
     private static final String COL = ", col ";
+    private static final String COLUMN = ", column ";
     private static final String OF_MODULE = " of module ";
     private static final String IN_MODULE = "In module ";
+    private static final String IN = " in ";
     private static final String UNKNOWN_LOCATION = "Unknown location";
     private static final String NATURAL = "([0-9]+)";
     private static final String MODULE_ID = "([A-Za-z_0-9]+)";
@@ -64,6 +67,13 @@ public final class Location
     public static final Pattern LOCATION_MATCHER3 = Pattern.compile(OPEN_ACTION + LINE + NATURAL /* bl group */+ COL + NATURAL
             /* bc group */+ TO_LINE + NATURAL /* el group */+ COL + NATURAL /* ec group */+ OF_MODULE + MODULE_ID /* module group */
             + CLOSE_ACTION);
+    
+    /**
+     * A pattern to match locations when there is an error evaluating a nested expression.
+     */
+    public static final Pattern LOCATION_MATCHER4 = Pattern
+            .compile(LINE_CAP + NATURAL /* bl group */+ COLUMN + NATURAL
+            /* bc group */+ TO_LINE + NATURAL /* el group */+ COLUMN + NATURAL /* ec group */+ IN + MODULE_ID /* module group */);
 
     protected UniqueString name;
     protected int bLine, bColumn, eLine, eColumn;
@@ -130,6 +140,19 @@ public final class Location
                 return nullLoc;
             }
         } else if ((matcher = LOCATION_MATCHER3.matcher(locationString.trim())).matches())
+        {
+            // REGEX LOCATION_MATCHER3 defines 5 groups
+            // these are: bl, bc, el, ec, moduleName
+            try
+            {
+                return new Location(UniqueString.uniqueStringOf(matcher.group(5)), Integer.parseInt(matcher.group(1)),
+                        Integer.parseInt(matcher.group(2)), Integer.parseInt(matcher.group(3)), Integer
+                                .parseInt(matcher.group(4)));
+            } catch (NumberFormatException e)
+            {
+                return nullLoc;
+            }
+        } else if ((matcher = LOCATION_MATCHER4.matcher(locationString.trim())).matches())
         {
             // REGEX LOCATION_MATCHER3 defines 5 groups
             // these are: bl, bc, el, ec, moduleName

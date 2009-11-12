@@ -365,9 +365,21 @@ public class TLCErrorView extends ViewPart
         {
             buffer.append(message).append("\n");
         }
-        if (error.getCause() != null)
+        TLCError cause = error.getCause();
+        // look for a cause that has a message
+        // that is not a substring of this error's
+        // message
+        // if one is found, append that error
+        while (cause != null)
         {
-            appendError(buffer, error.getCause());
+            if (message == null || !message.contains(cause.getMessage()))
+            {
+                appendError(buffer, cause);
+                break;
+            } else
+            {
+                cause = cause.getCause();
+            }
         }
     }
 
@@ -659,7 +671,7 @@ public class TLCErrorView extends ViewPart
                 {
                     return recordImage;
                 }
-                return  setImage; // other things appear in unordered collections
+                return setImage; // other things appear in unordered collections
             }
             return null;
         }

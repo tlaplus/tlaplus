@@ -962,7 +962,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
      */
     public static IRegion locationToRegion(IDocument document, Location location) throws BadLocationException
     {
-        int offset = document.getLineOffset(location.beginLine()) + location.beginColumn();
+        int offset = document.getLineOffset(location.beginLine() - 1) + location.beginColumn();
         int length = location.endColumn() - location.beginColumn();
 
         for (int i = location.beginLine(); i < location.endLine(); i++)
@@ -1439,6 +1439,14 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
 
         Matcher matcher = Location.LOCATION_MATCHER.matcher(text);
         Vector regions = new Vector();
+        while (matcher.find())
+        {
+            regions.add(new Region(matcher.start(), matcher.end() - matcher.start()));
+        }
+        // look for this pattern also
+        // this pattern appears when there
+        // is an error evaluating a nested expression
+        matcher = Location.LOCATION_MATCHER4.matcher(text);
         while (matcher.find())
         {
             regions.add(new Region(matcher.start(), matcher.end() - matcher.start()));

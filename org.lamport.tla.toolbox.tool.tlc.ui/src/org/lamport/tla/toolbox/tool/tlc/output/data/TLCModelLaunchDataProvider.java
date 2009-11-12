@@ -541,10 +541,14 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                                     .getLength());
                             Location location = Location.parseLocation(locationString);
                             // look only for location in the MC file
-                            if (location.source().equals(mcFile.getName()))
+                            if (location.source().equals(
+                                    mcFile.getName().substring(0, mcFile.getName().length() - ".tla".length())))
                             {
                                 IRegion region = ModelHelper.locationToRegion(mcDocument, location);
                                 regionContent[j] = mcDocument.get(region.getOffset(), region.getLength());
+                                // replace the location statement in the error message
+                                // with the string in the MC file to which it points
+                                errorMessage = errorMessage.replace(locationString, regionContent[j]);
                             }
                         }
 
@@ -570,6 +574,10 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                             ModelHelper.installModelProblemMarker(config.getFile(), prop,
                                     ModelHelper.TLC_MODEL_ERROR_MARKER_TLC);
                         }
+
+                        // remove start and end tags from the message
+                        errorMessage = errorMessage.replaceAll("@!@!@STARTMSG [0-9]{4}:[0-9] @!@!@", "");
+                        errorMessage = errorMessage.replaceAll("@!@!@ENDMSG [0-9]{4} @!@!@", "");
 
                         // set error text
                         topError.setMessage(errorMessage);
