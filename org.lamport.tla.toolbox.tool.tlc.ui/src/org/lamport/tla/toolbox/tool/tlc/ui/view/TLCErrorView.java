@@ -363,7 +363,10 @@ public class TLCErrorView extends ViewPart
         String message = error.getMessage();
         if (message != null && !message.equals(""))
         {
-            buffer.append(message).append("\n");
+            // remove start and end tags from the message
+            String toAppend = message.replaceAll("@!@!@STARTMSG [0-9]{4}:[0-9] @!@!@", "");
+            toAppend = toAppend.replaceAll("@!@!@ENDMSG [0-9]{4} @!@!@", "");
+            buffer.append(toAppend).append("\n");
         }
         TLCError cause = error.getCause();
         // look for a cause that has a message

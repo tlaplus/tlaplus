@@ -578,10 +578,6 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                                     ModelHelper.TLC_MODEL_ERROR_MARKER_TLC);
                         }
 
-                        // remove start and end tags from the message
-                        errorMessage = errorMessage.replaceAll("@!@!@STARTMSG [0-9]{4}:[0-9] @!@!@", "");
-                        errorMessage = errorMessage.replaceAll("@!@!@ENDMSG [0-9]{4} @!@!@", "");
-
                         // set error text
                         topError.setMessage(errorMessage);
                         // set error code
