@@ -962,8 +962,8 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
      */
     public static IRegion locationToRegion(IDocument document, Location location) throws BadLocationException
     {
-        int offset = document.getLineOffset(location.beginLine() - 1) + location.beginColumn();
-        int length = location.endColumn() - location.beginColumn();
+        int offset = document.getLineOffset(location.beginLine() - 1) + location.beginColumn()-1;
+        int length = location.endColumn() - location.beginColumn()+1;
 
         for (int i = location.beginLine(); i < location.endLine(); i++)
         {
