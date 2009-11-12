@@ -548,7 +548,10 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                                 regionContent[j] = mcDocument.get(region.getOffset(), region.getLength());
                                 // replace the location statement in the error message
                                 // with the string in the MC file to which it points
-                                errorMessage = errorMessage.replace(locationString, regionContent[j]);
+                                if (locationString != null && regionContent[j] != null)
+                                {
+                                    errorMessage = errorMessage.replace(locationString, regionContent[j]);
+                                }
                             }
                         }
 
