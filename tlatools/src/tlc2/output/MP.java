@@ -815,7 +815,7 @@ public class MP
             b.append("The operator %1% is not defined in the spec.");
             break;
         case EC.TLC_CONFIG_OP_IS_EQUAL:
-            b.append("The operator %1% is equal to %2%");
+            b.append("The operator %1%, which equals %2%,\ncannot be used as a %3%");
             break;
         case EC.TLC_CONFIG_SPEC_IS_TRIVIAL:
             b.append("The spec is trivially false because %1% is false.");

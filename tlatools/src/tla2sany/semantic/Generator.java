@@ -1010,6 +1010,10 @@ public class Generator implements ASTConstants, SyntaxTreeConstants,
                    substInPrefix.addElement(newNode) ;
                    newNode = ((SubstInNode) newNode).getBody() ;
                    }; // while
+                   while (newNode.getKind() == APSubstInKind) {
+                       substInPrefix.addElement(newNode) ;
+                       newNode = ((APSubstInNode) newNode).getBody() ;
+                       }; // while
                 } ;
                if (mode == FindingSubExpr) {
                  curNode = newNode ;
@@ -1878,13 +1882,27 @@ public class Generator implements ASTConstants, SyntaxTreeConstants,
     * +cal: while temp > 0 do ... end while                                *
     ***********************************************************************/
     while (temp > 0) {
-      SubstInNode subst = (SubstInNode) substInPrefix.elementAt(temp-1) ;
-      curExprNode = new SubstInNode(subst.stn,
-                                    subst.getSubsts(),
-                                    curExprNode,
-                                    subst.getInstantiatingModule(),
-                                    subst.getInstantiatedModule()
-                                   );
+      // Modified on 13 Nov 2009 by LL to handle the case of a subexpression
+      // of a Theorem or Assumption. 
+      Object substOb = substInPrefix.elementAt(temp-1) ;
+      if (substOb instanceof SubstInNode) {
+          SubstInNode subst = (SubstInNode) substOb;
+          curExprNode = new SubstInNode(subst.stn,
+                                        subst.getSubsts(),
+                                        curExprNode,
+                                        subst.getInstantiatingModule(),
+                                        subst.getInstantiatedModule()
+                                       );
+      } else {
+          APSubstInNode subst = (APSubstInNode) substOb;
+          curExprNode = new SubstInNode(subst.stn,
+                                        subst.getSubsts(),
+                                        curExprNode,
+                                        subst.getInstantiatingModule(),
+                                        subst.getInstantiatedModule()
+                 );
+          
+      }
       temp = temp - 1;
      }; // while
 
@@ -7795,6 +7813,7 @@ Nbrs == <<           \* 1, 3, 4, 5 and 6
 ************************** end file Tarjan.tla ******************************/
 
 /************************* file Subexpression.tla  **********************
+last modified on Fri 13 November 2009 at 14:11:05 PST by lamport
 ------------------------  MODULE Subexpression --------------------------- 
 
 
@@ -9825,6 +9844,14 @@ macro Error(msg) begin print msg ;
                           substInPrefix := substInPrefix \o <<newNode>>;
                           newNode := Node[newNode.body];  
                         end while ;
+                        while newNode.kind \in {SubstInKind, APSubstInKind}
+                           (************************************************)
+                           (* Added APSubstInKind test on 13 Nov 2009.     *)
+                           (************************************************)
+                         do
+                          substInPrefix := substInPrefix \o <<newNode>>;
+                          newNode := Node[newNode.body];  
+                        end while ;
                         (********************************************)
                         (* If the next op is an OpSel, then need to *)
                         (* skip over SubstInNodes, which are        *)
@@ -10216,7 +10243,10 @@ macro Error(msg) begin print msg ;
        (******************************************************************)
        temp := Len(substInPrefix) ;
        while temp > 0 do
-         curNode := [kind  |-> SubstInKind,
+         curNode := [kind  |-> substInPrefix[temp].kind, 
+                               (********************************************)
+                               (* Changed on 13 Nov 2009 from SubstInKind. *)
+                               (********************************************)
                      body  |-> curNode ,
                      subst |-> substInPrefix[temp].subst ] ;
          temp := temp - 1;

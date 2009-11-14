@@ -19,6 +19,7 @@ import tla2sany.semantic.OpDefNode;
 import tla2sany.semantic.SemanticNode;
 import tla2sany.semantic.Subst;
 import tla2sany.semantic.SubstInNode;
+import tla2sany.semantic.APSubstInNode;
 import tla2sany.semantic.SymbolNode;
 import tla2sany.semantic.ThmOrAssumpDefNode;
 import tlc2.TLCGlobals;
@@ -187,6 +188,22 @@ public class Tool
         }
         return;
       }
+
+      // Added by LL on 13 Nov 2009 to handle theorem and assumption names.
+      case APSubstInKind:
+        {
+          APSubstInNode next1 = (APSubstInNode)next;
+          Subst[] substs = next1.getSubsts();
+          if (substs.length == 0) {
+            this.getActions(next1.getBody(), con);
+          }
+          else {
+            Action action = new Action(next1, con);
+            this.actionVec.addElement(action);
+          }
+          return;
+        }
+
     /***********************************************************************
     * LabelKind class added by LL on 13 Jun 2007.                          *
     ***********************************************************************/
@@ -345,6 +362,22 @@ public class Tool
         this.getInitStates(init1.getBody(), acts, c1, ps, states);
         return;
       }
+
+      // Added by LL on 13 Nov 2009 to handle theorem and assumption names.
+      case APSubstInKind:
+        {
+          APSubstInNode init1 = (APSubstInNode)init;
+          Subst[] subs = init1.getSubsts();
+          Context c1 = c;
+          for (int i = 0; i < subs.length; i++) {
+            Subst sub = subs[i];
+            c1 = c1.cons(sub.getOp(), this.getVal(sub.getExpr(), c, false));
+          }
+          this.getInitStates(init1.getBody(), acts, c1, ps, states);
+          return;
+        }
+
+
     /***********************************************************************
     * LabelKind class added by LL on 13 Jun 2007.                          *
     ***********************************************************************/
@@ -395,6 +428,13 @@ public class Tool
           return;
         }
       }
+      // Added 13 Nov 2009 by LL to fix Yuan's fix.
+      if (val instanceof ThmOrAssumpDefNode) {
+          ThmOrAssumpDefNode opDef = (ThmOrAssumpDefNode)val;
+          opcode = BuiltInOPs.getOpCode(opDef.getName());
+          this.getInitStates(opDef.getBody(), acts, c, ps, states);
+          return;
+        }
 
       if (val instanceof LazyValue) {
         LazyValue lv = (LazyValue)val;
@@ -626,6 +666,12 @@ public class Tool
         }
         return;
       }
+    // The following case added by LL on 13 Nov 2009 to handle subexpression names.
+    case OPCODE_nop:
+    {
+       this.getInitStates(args[0], acts, c, ps, states); 
+       return;
+    }
     default:
       {
         // For all the other builtin operators, simply evaluate:
@@ -680,6 +726,22 @@ public class Tool
         }
         return this.getNextStates(pred1.getBody(), acts, c1, s0, s1, nss);
       }
+
+      // Added by LL on 13 Nov 2009 to handle theorem and assumption names.
+      case APSubstInKind:
+        {
+          APSubstInNode pred1 = (APSubstInNode)pred;
+          Subst[] subs = pred1.getSubsts();
+          int slen = subs.length;
+          Context c1 = c;
+          for (int i = 0; i < slen; i++) {
+            Subst sub = subs[i];
+            c1 = c1.cons(sub.getOp(), this.getVal(sub.getExpr(), c, false));
+          }
+          return this.getNextStates(pred1.getBody(), acts, c1, s0, s1, nss);
+        }
+
+
     /***********************************************************************
     * LabelKind class added by LL on 13 Jun 2007.                          *
     ***********************************************************************/
@@ -754,6 +816,12 @@ public class Tool
           return this.getNextStates(opDef.getBody(), acts, c1, s0, s1, nss);
         }
       }
+      
+      // Added by LL 13 Nov 2009 to fix Yuan's fix 
+      if (val instanceof ThmOrAssumpDefNode) {
+          ThmOrAssumpDefNode opDef = (ThmOrAssumpDefNode)val;
+          return this.getNextStates(opDef.getBody(), acts, c, s0, s1, nss);
+        }
 
       if (val instanceof LazyValue) {
         LazyValue lv = (LazyValue)val;
@@ -786,7 +854,7 @@ public class Tool
             {
                 if (!(bval instanceof BoolValue))
                 {
-                    Assert.fail(EC.TLC_EXPECTED_EXPRESSION_IN_COMPUTING, new String[] { "initial states", "boolean",
+                    Assert.fail(EC.TLC_EXPECTED_EXPRESSION_IN_COMPUTING, new String[] { "next states", "boolean",
                             bval.toString(), pred.toString() });
                 }
                 if (((BoolValue) bval).val)
@@ -1027,6 +1095,11 @@ public class Tool
         ***/
         return s1;
       }
+    // The following case added by LL on 13 Nov 2009 to handle subexpression names.
+    case OPCODE_nop:
+    {
+        return this.getNextStates(args[0], acts, c, s0, s1, nss); 
+    }
     default:
       {
         // We handle all the other builtin operators here.
@@ -1165,6 +1238,22 @@ public class Tool
         }
         return this.eval(expr1.getBody(), c1, s0, s1, control);
       }
+
+      // Added by LL on 13 Nov 2009 to handle theorem and assumption names.
+      case APSubstInKind:
+        {
+          APSubstInNode expr1 = (APSubstInNode)expr;
+          Subst[] subs = expr1.getSubsts();
+          int slen = subs.length;
+          Context c1 = c;
+          for (int i = 0; i < slen; i++) {
+            Subst sub = subs[i];
+            c1 = c1.cons(sub.getOp(), this.getVal(sub.getExpr(), c, true));
+          }
+          return this.eval(expr1.getBody(), c1, s0, s1, control);
+        }
+
+
     case NumeralKind:
     case DecimalKind:
     case StringKind:
@@ -1256,15 +1345,14 @@ public class Tool
         }
       }
       /*********************************************************************
-      * The following added by LL on 27 Jul 2007.                          *
-      *                                                                    *
-      * Getting TLC to be able to evaluate a named theorem or assumption   *
-      * is more of a hassle than it seems to be worth.                     *
+      * The following added by Yuan Yu on 13 Nov 2009 to allow theorem an  *
+      * assumption names to be used as expressions.                        *
       *********************************************************************/
       else if (val instanceof ThmOrAssumpDefNode) {
-        Assert.fail("Trying to evaluate the theorem or assumption name `"
-                     + opNode.getName() + "'. \nUse `" + opNode.getName() 
-                     + "!:' instead.\n" +expr);
+//        Assert.fail("Trying to evaluate the theorem or assumption name `"
+//                     + opNode.getName() + "'. \nUse `" + opNode.getName() 
+//                     + "!:' instead.\n" +expr);
+        return this.eval(((ThmOrAssumpDefNode)val).getBody(), c, s0, s1, control);
         }
       else {
         Assert.fail("In evaluation, the identifier " + opNode.getName() + " is either" +
@@ -2037,6 +2125,22 @@ public class Tool
         }
         return this.enabled(pred1.getBody(), acts, c1, s0, s1);
       }
+
+      // Added by LL on 13 Nov 2009 to handle theorem and assumption names.
+      case APSubstInKind:
+        {
+          APSubstInNode pred1 = (APSubstInNode)pred;
+          Subst[] subs = pred1.getSubsts();
+          int slen = subs.length;
+          Context c1 = c;
+          for (int i = 0; i < slen; i++) {
+            Subst sub = subs[i];
+            c1 = c1.cons(sub.getOp(), this.getVal(sub.getExpr(), c, false));
+          }
+          return this.enabled(pred1.getBody(), acts, c1, s0, s1);
+        }
+
+
     /***********************************************************************
     * LabelKind class added by LL on 13 Jun 2007.                          *
     ***********************************************************************/
@@ -2107,6 +2211,15 @@ public class Tool
                     return this.enabled(opDef.getBody(), acts, c1, s0, s1);
                 }
             }
+            
+
+            // Added 13 Nov 2009 by LL to handle theorem or assumption names
+            if (val instanceof ThmOrAssumpDefNode)
+            {
+                ThmOrAssumpDefNode opDef = (ThmOrAssumpDefNode) val;
+                return this.enabled(opDef.getBody(), acts, c, s0, s1);
+            }
+
 
             if (val instanceof LazyValue)
             {
@@ -2438,6 +2551,12 @@ public class Tool
             }
             return this.enabled(acts, s0, s1);
         }
+        // The following case added by LL on 13 Nov 2009 to handle subexpression names.
+        case OPCODE_nop:
+        {
+            return this.enabled(args[0], acts, c, s0, s1);
+        }
+        
         default: {
             // We handle all the other builtin operators here.
             Value bval = this.eval(pred, c, s0, s1, EvalControl.Enabled);

@@ -311,6 +311,12 @@ public class Liveness implements ToolGlobals, ASTConstants {
 	LiveExprNode lnArg = astToLive(tool, (ExprNode)args[0], con);
 	return new LNEven(lnArg);
       }
+ 
+    // The following case added by LL on 13 Nov 2009 to handle subexpression names.
+    case OPCODE_nop:
+     {
+         return astToLive(tool, (ExprNode) args[0], con);
+     }
     default:
       {
 	// We handle all the other built-in operators here.

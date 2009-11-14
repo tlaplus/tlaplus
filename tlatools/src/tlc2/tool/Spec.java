@@ -35,7 +35,9 @@ import tla2sany.semantic.SemanticNode;
 import tla2sany.semantic.StringNode;
 import tla2sany.semantic.Subst;
 import tla2sany.semantic.SubstInNode;
+import tla2sany.semantic.APSubstInNode;
 import tla2sany.semantic.SymbolNode;
+import tla2sany.semantic.TheoremNode;
 import tlc2.TLCGlobals;
 import tlc2.output.EC;
 import tlc2.output.MP;
@@ -519,6 +521,16 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
             {
                 this.processConstants(assumps[i]);
             }
+            // On 13 Nov 2009, Yuan Yu added the following
+            // processing of all TheoremNodes, which was needed to
+            // allow Theorem and Assumption names to be used as expressions.
+            //
+            // Process all the theorems:
+            TheoremNode[] thms = expr1.getTheorems();
+            for (int i = 0; i < thms.length; i++) {
+              this.processConstants(thms[i]);
+            }
+
             return;
         }
         case OpApplKind: {
@@ -566,6 +578,20 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
             this.processConstants(expr1.getBody());
             return;
         }
+
+        // Added by LL on 13 Nov 2009 to handle theorem and assumption names.
+        case APSubstInKind: {
+            APSubstInNode expr1 = (APSubstInNode) expr;
+            Subst[] subs = expr1.getSubsts();
+            for (int i = 0; i < subs.length; i++)
+            {
+                this.processConstants(subs[i].getExpr());
+            }
+            this.processConstants(expr1.getBody());
+            return;
+        }
+
+
         case NumeralKind: {
             NumeralNode expr1 = (NumeralNode) expr;
             IntValue val = IntValue.gen(expr1.val());
@@ -588,6 +614,16 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
             this.processConstants(expr1.getAssume());
             return;
         }
+        // On 13 Nov 2009, Yuan Yu added the following case, which was
+        // needed to allow Theorem and Assumption names to be used as 
+        // expressions.
+        //
+        case TheoremKind:
+          {
+        TheoremNode expr1 = (TheoremNode)expr;
+        this.processConstants(expr1.getTheorem());
+        return;
+          }
         case OpArgKind: {
             SymbolNode opArgNode = ((OpArgNode) expr).getOp();
             if (opArgNode.getKind() == UserDefinedOpKind)
@@ -887,6 +923,7 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
             this.processConfigSpec(pred1.getBody(), c, subs.cons(pred1));
             return;
         }
+        
         if (pred instanceof OpApplNode)
         {
             OpApplNode pred1 = (OpApplNode) pred;
@@ -923,7 +960,7 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
                 {
                     Assert
                             .fail(EC.TLC_CONFIG_OP_IS_EQUAL,
-                                    new String[] { opNode.getName().toString(), val.toString() });
+                                    new String[] { opNode.getName().toString(), val.toString(), "spec" });
                 }
                 return;
             }
@@ -1108,6 +1145,12 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
                 }
                 return;
             }
+          // The following case added by LL on 13 Nov 2009 to handle subexpression names.
+          if (opcode ==  OPCODE_nop)
+           {
+               this.processConfigSpec((ExprNode) args[0], c, subs);
+               return;
+           }
         }
 
         int level = this.getLevelBound(pred, c);
@@ -1161,7 +1204,7 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
                 {
                     Assert
                             .fail(EC.TLC_CONFIG_OP_IS_EQUAL,
-                                    new String[] { opNode.getName().toString(), val.toString() });
+                                    new String[] { opNode.getName().toString(), val.toString(), "property" });
                 }
                 return;
             }
@@ -1203,6 +1246,12 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
                 }
                 return;
             }
+          // The following case added by LL on 13 Nov 2009 to handle subexpression names.
+          if (opcode ==  OPCODE_nop)
+           {
+               this.processConfigProps(name, (ExprNode) args[0], c, subs);
+               return;
+           }
         }
         int level = this.getLevelBound(pred, c);
         if (level <= 1)
@@ -1645,6 +1694,22 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
             this.collectPrimedLocs(pred1.getBody(), c, tbl);
             return;
         }
+
+        // Added by LL on 13 Nov 2009 to handle theorem and assumption names.
+        case APSubstInKind: {
+            APSubstInNode pred1 = (APSubstInNode) pred;
+            Subst[] subs = pred1.getSubsts();
+            Context c1 = c;
+            for (int i = 0; i < subs.length; i++)
+            {
+                Subst sub = subs[i];
+                c1 = c1.cons(sub.getOp(), this.getVal(sub.getExpr(), c, true));
+            }
+            this.collectPrimedLocs(pred1.getBody(), c, tbl);
+            return;
+        }
+
+
             /***********************************************************************
             * LabelKind case added by LL on 13 Jun 2007.                           *
             ***********************************************************************/
@@ -1698,7 +1763,9 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
         case OPCODE_bf: // BoundedForall
         case OPCODE_land:
         case OPCODE_lor:
-        case OPCODE_implies: {
+        case OPCODE_implies:
+        case OPCODE_nop: // This case added 13 Nov 2009 by LL to handle subexpression names.
+          {
             for (int i = 0; i < args.length; i++)
             {
                 this.collectPrimedLocs(args[i], c, tbl);
@@ -1823,6 +1890,22 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
             }
             return this.getLevelBound(expr1.getBody(), c1);
         }
+
+        // Added by LL on 13 Nov 2009 to handle theorem and assumption names.
+        case APSubstInKind: {
+            APSubstInNode expr1 = (APSubstInNode) expr;
+            Subst[] subs = expr1.getSubsts();
+            int slen = subs.length;
+            Context c1 = c;
+            for (int i = 0; i < slen; i++)
+            {
+                Subst sub = subs[i];
+                c1 = c1.cons(sub.getOp(), this.getVal(sub.getExpr(), c, true));
+            }
+            return this.getLevelBound(expr1.getBody(), c1);
+        }
+
+
             /***********************************************************************
             * LabelKind case added by LL on 13 Jun 2007.                           *
             ***********************************************************************/
