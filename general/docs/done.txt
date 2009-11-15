@@ -278,7 +278,13 @@
 70. BUG (View option)
     The View option on the Advanced Run section is being ignored.
     
-73. BUG (Opening TLC error view on Linux)
+    
+72. MINOR BUG (Advanced Model Values)  (fixed by LL in November 2009)
+    The Toolbox reports an error if a space is left after a model
+    value typed into the Model Values section of the advanced
+    model editor page.
+    
+    73. BUG (Opening TLC error view on Linux)
 	Opening the TLC error view on Linux causes the program to enter
 	an infinite loop. In particular, in the method controlResized()
 	in the nested class TraceDisplayResizer in TLCErrorView, the
@@ -299,7 +305,7 @@
        F == INSTANCE M
     accepting the correct F!Bar(exp)!Q.
    
-73. BUG (Parsing TLC Output) Fixed by Dan Nov 2009
+75. BUG (Parsing TLC Output) Fixed by Dan Nov 2009
 	When there is an error in evaluating an expression, such as
 	dividing by zero when evaluating an invariant, the toolbox throws
 	an exception parsing the output. This exception does not cause a

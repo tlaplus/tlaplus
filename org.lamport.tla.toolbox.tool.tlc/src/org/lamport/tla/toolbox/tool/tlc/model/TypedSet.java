@@ -53,13 +53,14 @@ public class TypedSet
         if (set.length() > 0 && set.charAt(0) == '{' && set.charAt(set.length() - 1) == '}')
         {
             set = set.substring(1, set.length() - 1);
+            set = set.trim();
         }
 
         if ("".equals(set))
         {
             return result;
         }
-        set = set.trim();
+ 
         String[] parsedSet = null;
 
         // split by comma surrounded by any kind of spaces/tabs/new lines
