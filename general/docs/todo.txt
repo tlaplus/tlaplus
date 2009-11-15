@@ -319,6 +319,10 @@
       or else choose Model-checking mode and depth-first mode, then do the same thing
       with the depth field.  (Incidentally, there's no reason to check those fields
       at all when the appropriate option isn't chosen.)  
+    - In the constant assignment section of the main model page, specify the value
+      of a constant to be a set of model values one of which is SPECIFICATION.
+      This produces an error marker which remains after that constant assignment
+      is changed.
    This isn't a big deal, because the errors go away when the model is validated.
     
     A similar case occurs if one first enters a Temporal Formula and then

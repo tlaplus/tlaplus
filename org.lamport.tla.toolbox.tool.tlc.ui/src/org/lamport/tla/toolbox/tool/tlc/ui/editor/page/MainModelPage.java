@@ -421,6 +421,12 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
                                 setComplete(false);
                             }
                         }
+                    } else {
+                        // This made an error by LL on 15 Nov 2009
+                        modelEditor.addErrorMessage(constant.getLabel(), "The set of model values should not be empty.",
+                                this.getId(), IMessageProvider.ERROR, UIHelper.getWidget(dm
+                                .getAttributeControl(MODEL_PARAMETER_CONSTANTS)));
+                        setComplete(false);
                     }
                 }
             }
