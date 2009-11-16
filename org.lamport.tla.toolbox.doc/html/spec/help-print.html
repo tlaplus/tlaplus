@@ -13,28 +13,33 @@
 
 <body>
 <h1>Helping the Pretty-Printer</h1>
-
-<h2> Introduction</h2>
+<pre>
+Contents
+  <a href="#intro">Introduction</a>
+  <a href="#spec">How TLATeX Typesets the Specification</a>
+  <a href="#comments">How TLATeX Typesets Comments</a>
+  <a href="#latex">Using LaTeX Commands to Format Comments</a>
+</pre>
+<h2><a name="intro"> Introduction</a></h2>
  <P> 
 The toolbox pretty prints a module by calling the
 TLATeX program.&nbsp;  TLATeX is a Java program for typesetting TLA+ specifications with&nbsp; 
-<a href="http://www.latex-project.org/"><samp>LaTeX</samp></a>.
+<a href="http://www.latex-project.org/"><samp>LaTeX</samp></a>.&nbsp;
 It was written by Leslie Lamport, based on ideas by Dmitri
 Samborski.  
  </P>
 
 <p>TLATeX's output should be good enough for most users.&nbsp;  Later sections
 describe how you can get TLATeX to do a better job, and will explain
-what happened in the unlikely case that it produces weird output.
+what happened in the unlikely case that it produces weird output.&nbsp;
 However, if you happen to use any of the two-character 
 sequences 
   <pre>
    `~   `^   `.
  </pre>
-in a comment, you'd better read the section on how TLATeX formats
-comments.</p>
+in a comment, you'd better read section <a href="#comments">How TLATeX Typesets Comments</a>.</p>
 
-<h2>How TLATeX Typesets the Specification</h2>
+<h2><a name="spec"> How TLATeX Typesets the Specification</a></h2>
 
 <p>
 TLATeX should typeset the specification itself pretty much the way you
@@ -68,7 +73,7 @@ contains an illegal lexeme, such as a semicolon (<code>;</code>).
 </p>
 
 
-<h2>How TLATeX Typesets Comments</h2>
+<h2><a name="comments"> How TLATeX Typesets Comments</a></h2>
 
  WARNING: A left single-quote&nbsp; <code>`</code>&nbsp; has special meaning to       
  TLATeX.&nbsp;  Enclosing a word in single-quotes like&nbsp; <code>`foo'</code>&nbsp; is      
@@ -84,7 +89,7 @@ just typeset as double-quotes.&nbsp;
 
 <p>
 TLATeX distinguishes between one-line and multi-line comments.&nbsp;  A
-one-line comment is any comment that is not a multi-line comment.
+one-line comment is any comment that is not a multi-line comment.&nbsp;
 Multi-line comments can be typed in any of the following three ways:
 </p>
 
@@ -105,16 +110,16 @@ Multi-line comments can be typed in any of the following three ways:
 
 <p> In the first two ways, the&nbsp; <code>(*</code>&nbsp; or&nbsp;
 <code>\*</code>&nbsp; characters on the left must all be aligned, and
-the last line of&nbsp; <code>*</code>&nbsp; characters is optional.
+the last line of&nbsp; <code>*</code>&nbsp; characters is optional.&nbsp;
 In the first way, nothing may appear to the right of the
 comment--otherwise, the input is considered to be a sequence of
 separate one-line comments.&nbsp;  In a multi-line comment, TLATeX usually
-consider a sequence of non-blank lines to be a single paragraph, in
+considers a sequence of non-blank lines to be a single paragraph, in
 which case it will typeset them as one paragraph and ignore the line
 breaks in the input.  </p>
 
 <p>
-TLATeX does its best to do a sensible job of typesetting comments.
+TLATeX does its best to do a sensible job of typesetting comments.&nbsp;
 You can help it by ending each sentence with a period (<code>.</code>) and by
 adding blank lines to indicate logical separation of items.
 </p>
@@ -136,8 +141,8 @@ comments:
     by putting single quotes&nbsp; <code>(`</code>&nbsp; and&nbsp; <code>')</code>&nbsp; 
     around it.&nbsp;  You can tell
     TLATeX to treat something as ordinary text by putting&nbsp; <code>`^</code>&nbsp; 
-    and&nbsp; <code>^</code>&nbsp; 
-    around it.&nbsp;  For example:
+    and&nbsp; <code>^'</code>&nbsp; 
+    around it--for example:
 <pre>
        \***********************************
        \* To find the latest value of `bar',
@@ -193,8 +198,8 @@ comments:
 <li> A paragraph may be typeset loosely, with one or more lines
     containing  &nbsp;&nbsp;  lots  &nbsp;&nbsp;     of  &nbsp;&nbsp; space  
      &nbsp;&nbsp;    between     
-      &nbsp;&nbsp;  the    &nbsp;&nbsp;  words.
-    This happens if there is no good way to typeset the paragraph.
+      &nbsp;&nbsp;  the    &nbsp;&nbsp;  words.&nbsp;
+    This happens if there is no good way to typeset the paragraph.&nbsp;
     If this bothers you, the easiest solution is to rewrite the
     paragraph.&nbsp;  You can also try to fix the problem with LaTeX
     commands.&nbsp;  (See the section below on using LaTeX commands to
@@ -210,6 +215,77 @@ But a better way to omit part of a comment is to enclose it between&nbsp; <code>
 and&nbsp; <code>~'</code>. 
 </p>
 
+<h2><a name="latex">Using LaTeX Commands to Format Comments</a></h2>
+
+TLATeX puts any text enclosed between&nbsp; <code>`^</code>&nbsp; 
+and&nbsp; <code>^'</code>&nbsp; 
+in a comment into the
+LaTeX input file exactly as it appears.&nbsp;  This allows you to insert
+LaTeX formating commands in comments.&nbsp;  There are two ways to use this.
+
+<ol>
+<li> You can enclose between `^ and ^' a short phrase appearing on
+    a single line of input.&nbsp;  LaTeX typesets that phrase as part of
+    the enclosing paragraph.
+</li>
+ 
+<li>
+  You can enclose one or more complete lines of a multi-line
+    comment between&nbsp; <code>`^</code>&nbsp; 
+and&nbsp; <code>^'</code>&nbsp;.&nbsp; That text is typeset as one or
+more separate paragraphs whose prevailing left margin is determined by
+the position of the &nbsp; <code>`^</code>&nbsp;.&nbsp; For example,
+the input
+<pre>
+       \**********************************
+       \* The first comment paragraph.
+       \*
+       \*    The second comment
+       \*    paragraph.
+       \*
+       \*    `^ Some LaTeX-formated 
+       \*  text  ^'
+       \**********************************
+</pre>
+    causes the LaTeX-formated text to be typeset in a separate
+    paragraph whose prevailing left margin is the same as in the
+    second comment paragraph.
+</li>
+</ol>
+LaTeX typesets the text between&nbsp; <code>`^</code>&nbsp; 
+and&nbsp; <code>^'</code>&nbsp; in LR mode for a one-line
+comment and in paragraph mode for a multi-line comment.&nbsp;  The LaTeX
+file produced by TLATeX defines a "describe" environment that is
+useful for formating text in a multi-line&nbsp; 
+<code>`^&nbsp;...&nbsp;^'</code>&nbsp;.&nbsp;  This
+environment is the same as the standard LaTeX "description"
+environment, except that it takes an argument, which should be the
+widest item label in the environment.&nbsp;  For example, the input might
+contain
+<pre>
+       \***********************
+       \*    `^ \begin{describe}{gnat:}
+       \*        \item[gnat:] A tiny insect.
+       \*  
+       \*        \item[gnu:]  A short word.
+       \*       \end{describe} ^'
+       \***********************
+</pre>
+<p>
+<em>Warning:</em> An error in a LaTeX command inside &nbsp; 
+<code>`^&nbsp;...&nbsp;^'</code>&nbsp; text
+can  
+cause TLATeX not to produce any output. 
+</p>
+
+<p>
+TLATeX has a feature that is not relevant to use with the Toolbox
+that involves putting code between&nbsp; <code>`~</code>&nbsp; 
+and&nbsp; <code>~'</code>&nbsp;.&nbsp;   Unless you are also using
+TLATeX outside the Toolbox and know what you're doing, do
+not put &nbsp; <code>`~</code>&nbsp; 
+or&nbsp; <code>~'</code>&nbsp; in comments.
+</p>
 
 <hr> 
 

@@ -13,27 +13,33 @@
 <h1>Parsing</h1>
 
 <p>
-The Toolbox parses a spec upon opening it.  The parse status of the currently open spec is shown in the lower right-hand
-corner of the Toolbox window.  The status is either:&nbsp; <samp>Parsed</samp>, meaning it has no parsing
-errors;&nbsp; <samp>Unparsed</samp>, meaning that the spec had no errors the last time it was parsed, but that
-one of its files has since been modified and saved;&nbsp; or <samp>Error</samp>, meaning that an error
+The Toolbox parses a spec upon opening it.&nbsp;  The parse status of the currently 
+open spec is shown in the lower right-hand
+corner of the Toolbox window.&nbsp;  The status is either:&nbsp; <samp>Parsed</samp>, 
+meaning it has no parsing
+errors;&nbsp; <samp>Unparsed</samp>, meaning that the spec had no errors the last time
+ it was parsed, but that
+one of its files has since been modified and saved;&nbsp; or <samp>Error</samp>, 
+meaning that an error
 was found the last time it was parsed.
 </p>
 
 <p>
 Clicking&nbsp; <samp>File/Parse Spec</samp>&nbsp;  parses the 
-spec.  Clicking&nbsp; <samp>File/Parse Module</samp>&nbsp; parses the currently selected module, which 
-is the one in the most recently selected module-editor.   Parsing the spec is equivalent to parsing its root module. 
- 
- Unless your spec is <font size=+1>VERY BIG</font>, you will want to parse whenever a module is saved.
- See the parsing preferences listed below for how to do this.</p>
+spec.&nbsp;  Clicking&nbsp; <samp>File/Parse Module</samp>&nbsp; parses the 
+currently selected module, which 
+is the one in the most recently selected module editor.&nbsp;  
+Parsing the spec is equivalent to parsing its root module.&nbsp; 
+Unless your spec is <font size=+1>VERY BIG</font>, you will want to parse whenever 
+a module is saved.&nbsp;
+See the parsing preferences listed below for how to do this.</p>
 
 <p>
-If there is a parsing error, the Toolbox pops up a Parsing Errors view.  For most errors, clicking on
-the error takes you to its location in a module editor.  The Toolbox also marks the locations of the 
-errors in the module editor (or editors).  There is a preference, described below, that controls
+If there is a parsing error, the Toolbox pops up a Parsing Errors view.&nbsp;  For most errors, clicking on
+the error takes you to its location in a module editor.&nbsp;  The Toolbox also marks the locations of the 
+errors in the module editor (or editors).&nbsp;  There is a preference, described below, that controls
 whether or not the Parsing Errors view 
-automatically pops up.  If you set it not to pop up, you can open the view from the 
+automatically pops up.&nbsp;  If you set it not to pop up, you can open the view from the 
 Toolbox's&nbsp; <samp>Window</samp>&nbsp; menu.
 </p>
 
@@ -42,7 +48,7 @@ Toolbox's&nbsp; <samp>Window</samp>&nbsp; menu.
 <h3>Re-parse module on save</h3>
 
 <p>
-Causes a module to be reparsed when you save it from the module editor.  It is the default.
+Causes a module to be reparsed when you save it from the module editor.&nbsp;  It is the default.
 </p>
 
 <h3>Re-parse specification on spec module save</h3>
@@ -50,7 +56,9 @@ Causes a module to be reparsed when you save it from the module editor.  It is t
 <p>
 
 Causes the entire spec to be reparsed when you save a module, if that module is part
-of the spec.  This has no effect unless the <b>Re-parse module on save</b> option is chosen.
+of the spec.&nbsp;  More precisely, the spec is reparsed if the Toolbox found the module to be part of the 
+spec when the spec was
+last parsed.&nbsp;  This option has no effect unless the <b>Re-parse module on save</b> option is chosen.&nbsp;
 It is the default.
 </p>
 
