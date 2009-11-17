@@ -271,6 +271,14 @@ public class TLA
         boolean alignOutOption = false;
         boolean psOption = false;
         boolean nopsOption = false;
+        
+        /********************************************************************
+         * These static variables are set to true later in the method if    *
+         * the user passes the appropriate argument.                        *
+         ********************************************************************/
+        Parameters.CommentShading = false;
+        Parameters.PrintLineNumbers = false;
+        
         int nextArg = 0;
         /******************************************************************
         * The number of the argument being processed.                     *
