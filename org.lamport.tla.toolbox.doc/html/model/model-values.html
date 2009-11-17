@@ -16,7 +16,7 @@
 
 <pre>
 Contents 
-  <a href="#values">Model Values</a>
+  <a href="#values">Ordinary Model Values</a>
   <a href="#typed-values">Typed Model Values</a>
   <a href="#using">Using Model Values</a>
   <a href="#symmetry">Symmetry</a>
@@ -39,7 +39,8 @@ in TLA<sup>+</sup>.&nbsp;  You can substitute the
 for&nbsp; <code>Proc</code>&nbsp;.&nbsp;  If by mistake you write an expression
 like&nbsp; <code>p+1</code> where the value of&nbsp; <code>p</code> is
 a process, TLC will report an error when it tries to evaluate that expression
-because it knows that a process is not a number.&nbsp;  An important reason for
+because it knows that a process is a model value and thus not a number.&nbsp;  
+An important reason for
 substituting a set of model values for&nbsp; <code>Proc</code>&nbsp; is
 to let TLC  take advantage of symmetry, as described <a href="#symmetry">below</a>.
 </P>
@@ -47,7 +48,7 @@ to let TLC  take advantage of symmetry, as described <a href="#symmetry">below</
 <P> 
 There is one particular TLA<sup>+</sup> specification idiom
 that requires you to substitute a model value for a defined operator.&nbsp;  
-Here is typical example of this idiom.
+Here is a typical example of this idiom.
 <pre>
    NotANat == CHOOSE n : n \notin Nat
 </pre>
@@ -140,7 +141,7 @@ In the <a href="advanced-page.html#model">Model Values</a> section of the <em>Ad
 
 Consider a specification of a memory system containing a declared 
 constant&nbsp; <code>Val</code>&nbsp;  that represents the set of
-possible memory values.&nbsp;   The set of memory values is probably a
+possible values of a memory register.&nbsp;   The set&nbsp; <code>Val</code>&nbsp;  of values is probably a
 <em>symmetry set</em> for the memory system's behavior specification, 
 meaning that permuting
 the elements in the set of values does not change whether or not

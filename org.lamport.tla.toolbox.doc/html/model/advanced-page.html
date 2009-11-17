@@ -48,9 +48,9 @@ declared in the model.
 </p>
 
 <p>
-In addition to definitions, you can also 
+In addition to definitions, in this section you can also 
 put assumptions (<code>ASSUME</code>&nbsp; statements)
-for TLC to check in this section.&nbsp;  Putting other
+for TLC to check.&nbsp;  Putting other
 things in this section, such as declarations,
 will result in mysterious TLC errors.
 
@@ -97,7 +97,7 @@ conjoined to form a single constraint.
 You can enter here a set of model values, which you can then
 use in expressions that define the model--for example, in
 the value substituted for a declared constant.&nbsp;  See the
-<A href="model-values.html"> Model Values and Symmetry </A> help
+<A href="model-values.html"><em>Model Values and Symmetry</em></A> help
 page for an explanation of what model values are and how they
 are used.
 
@@ -122,7 +122,7 @@ options.&nbsp;  With the <em>Ordinary assignment</em> option, you just
 write the new definition.&nbsp;  The <em>Model value</em> option
 defines the operator to equal a model value of the same name.&nbsp;
 See the
-<A href="model-values.html"> Model Values and Symmetry </A> help
+<A href="model-values.html"><em>Model Values and Symmetry</em></A> help
 page for an explanation of model values and the most common
 reason why you would want to override the definition in this way.
 </p>
@@ -140,6 +140,7 @@ using the&nbsp; <samp>Edit</samp>&nbsp; or&nbsp; <samp>Remove</samp>&nbsp; butto
 </p>
 
 <p fontsize=80%>
+<b>Some Fine Print</b>&nbsp;
 <font size=-1>
 When overriding a definition, 
 the new definition can use any operator or parameters that
@@ -218,7 +219,7 @@ Specifying Systems</a></em>.
 In simulation mode, TLC does not try to examine all reachable states.&nbsp;
 Instead, it checks an unending series of behaviors, each of which it constructs by
 starting from a randomly choosen initial state and repeatedly making a random
-choice of a possible next state.&nbsp;  (You have to stop TLC by clicking the&nbsp;
+choice of a possible next state.&nbsp;  (In this mode, you  stop TLC by clicking the&nbsp;
 <samp>Cancel</samp>&nbsp; button on the dialog that the Toolbox pops up when it
 runs TLC.)&nbsp; You specify the maximum length of each behavior that it generates.&nbsp;
 If you want to know what specifying the <em>Seed</em> and <em>Aril</em> does,

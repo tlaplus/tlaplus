@@ -48,7 +48,7 @@ where&nbsp; <code>Init</code>&nbsp; is the initial predicate,&nbsp;
   <code>Next</sub></code>&nbsp; is the next-state 
 relation,&nbsp; <code>vars</code>&nbsp;
 is the tuple of variables,
-and&nbsp; <code>F</code>&nbsp; is the fairness formula.
+and&nbsp; <code>F</code>&nbsp; is an optional fairness formula.
 
 </dd>
 </dl>
@@ -64,7 +64,9 @@ There are three kinds of properties of the behavior spec that TLC can check:
 A <em>deadlock</em> is said to occur in a state for which the next-state relation
 allows no successor states.&nbsp;  Termination is deadlock that is not considered an error.&nbsp;
 If you want the behavior spec to allow termination, then you should uncheck the
-deadlock option.
+deadlock option.&nbsp;  (This is not necessary for the spec produced by translating a PlusCal algorithm,
+because its next-state relation is written in a way that causes TLC not to consider normal
+termination to be a deadlock.)
 
 <h3>Invariants</h3>
 
@@ -83,7 +85,7 @@ each with a check-box for enabling or disabling its checking.
 <h2><a name="what-is-model">What is the model?</a></h2>
 
 The most basic part of a model is an assignment of values to declared constants.&nbsp;
-To assign a value to a constant, either double-click on it or select it and click on the&nbsp; 
+To assign a value to a constant, either double-click on the constant or select it and click on the&nbsp; 
 <samp>Edit</samp>&nbsp; button.&nbsp;  This will raise a pop-up dialog giving you the choice
 of three ways to assign a value to it:  
 <dl>
@@ -92,12 +94,12 @@ of three ways to assign a value to it:
 contains only symbols defined in the spec.&nbsp;  The expression can even include
 declared constants, as long as the value assigned to a constant does not depend
 on that constant.&nbsp;  (If there are circular dependencies, TLC will
-produce a&nbsp; <samp>Java StackOverflowError</samp>&nbsp; error.
+produce a&nbsp; <samp>Java StackOverflowError</samp>&nbsp; error.)
 </dd>
 <br></br>
 <dt><b>Model value</b></dt>
 <dd>It assigns to the constant a model value of the same name.&nbsp;  (See
-the <a href="model-values.html"><em>Model Value and Symmetry</em></a> 
+the <a href="model-values.html"><em>Model Values and Symmetry</em></a> 
 help page.)
 </dd>
 <br></br>
@@ -127,7 +129,8 @@ help page to learn about typed values and symmetry sets.
 
 Here, you specify the following two aspects of how TLC should
 be run.&nbsp;  (See the <a href="advanced-page.html#launching">TLC Options</a> section
-of the <a href="advanced-page.html"><em>Advanced Options Page</em></a> help page.)
+of the <a href="advanced-page.html"><em>Advanced Options Page</em></a> help page for 
+additional ways to run TLC.)
 
 <h3>TLC Parameters</h3>
 There are two parameters that you can set here:
@@ -140,7 +143,7 @@ enough memory and TLC will not start.&nbsp;
 TLC keeps its set of reachable states
 on disk, so the number of reachable states does not affect how much heap space
 TLC uses.&nbsp;  It can run out of heap space only if it takes too much memory to represent the
-set of initial states or the set of successor states of a single state.&nbsp;  So this number 
+set of initial states or the set of successor states of a single state.&nbsp;  This number 
 rarely needs to be larger than a few hundred MB.&nbsp;  If TLC does run out of stack space,
 you can give it more and restart it from a checkpoint.
 
@@ -156,8 +159,8 @@ separate processors (cores) on your computer; the Toolbox will warn you if you d
 
 TLC takes regular checkpoints, from which it can be restarted if it is stopped
 for any reason--for example, if your computer crashes.&nbsp;  The 
-<em>Recover from checkpoint</em> option tells TLC to start from where the
-state recorded by the checkpoint when you run it.&nbsp;
+<em>Recover from checkpoint</em> option tells TLC to start from where it was
+when the last checkpoint was taken.&nbsp;
 This option is enabled 
 if the last time you ran TLC, it ran long enough to produce a checkpoint.&nbsp; 
 The Toolbox will fill in the <em>Checkpoint id</em> for you.
