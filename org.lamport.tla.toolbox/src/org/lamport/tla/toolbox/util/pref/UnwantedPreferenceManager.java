@@ -27,6 +27,10 @@ public class UnwantedPreferenceManager extends ToolboxLifecycleParticipant
 
     public void initialize() throws ToolboxLifecycleException
     {
+        if (Activator.getDefault().getWorkbench() == null)
+        {
+            return;
+        }
         PreferenceManager pm = Activator.getDefault().getWorkbench().getPreferenceManager();
 
         if (pm != null)
