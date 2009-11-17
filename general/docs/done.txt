@@ -312,3 +312,11 @@
 	problem after TLC is run, but if the toolbox is closed with an editor
 	open on that model, then when the toolbox is reopened, the exception
 	will prevent the model editor from being opened again.
+	
+77. FEATURE (or perhaps BUG) (TLATeX) Implemented by Dan Nov 2009
+    Simon says that we should make the running of TLATeX asynchronous so
+    it doesn't lock up the editor while it's running. (It can switch to
+    the pdf viewer when it's finished loading.)  By the way, the pdf viewer
+    used to say something like "generating pdf file" while waiting for it
+    to finish.  That seems to have disappeared.  It's a good idea, until
+    this feature is implemented.
