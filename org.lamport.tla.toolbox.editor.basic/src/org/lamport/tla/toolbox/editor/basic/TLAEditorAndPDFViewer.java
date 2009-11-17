@@ -95,7 +95,6 @@ public class TLAEditorAndPDFViewer extends FormEditor
     /**
      * Creates the pdfViewinPage and adds it to the editor if it does not exist.
      * Returns the pdfViewing page whether it previously existed or not.
-     * Also sets the active page to pdfViewingPage.
      * @return
      */
     public PDFViewingPage getPDFViewingPage()
@@ -112,7 +111,7 @@ public class TLAEditorAndPDFViewer extends FormEditor
                 e.printStackTrace();
             }
         }
-        setActivePage(PDFPage_ID);
+        //setActivePage(PDFPage_ID);
         return pdfViewingPage;
     }
 
