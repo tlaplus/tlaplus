@@ -6,6 +6,10 @@ import java.util.Vector;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.browser.Browser;
@@ -81,78 +85,143 @@ public class ProducePDFHandler extends AbstractHandler
 
                         public void completed(ProgressEvent event)
                         {
-                            try
-                            {
-                                browser.removeProgressListener(this);
 
-                                Vector tla2texArgs = new Vector();
+                            browser.removeProgressListener(this);
 
-                                IPreferenceStore preferenceStore = TLA2TeXActivator.getDefault().getPreferenceStore();
+                            // The following is performed as a job
+                            // because producing running the tla2tex
+                            // translation and navigating the browser
+                            // to the new pdf can take several seconds.
+                            // The job provides a progress monitor
+                            // for the user and does not lock the UI thread.
+                            // There are UI operations that must be performed
+                            // within the job's run method. These must be
+                            // run by calling UIHelper.runUISync.
+                            Job tla2TexJob = new Job("Produce PDF") {
 
-                                if (preferenceStore.getBoolean(ITLA2TeXPreferenceConstants.SHADE_COMMENTS))
-                                {
-                                    tla2texArgs.add("-shade");
-                                }
-
-                                if (preferenceStore.getBoolean(ITLA2TeXPreferenceConstants.NUMBER_LINES))
-                                {
-                                    tla2texArgs.add("-number");
-                                }
-
-                                tla2texArgs.add("-latexCommand");
-                                String latexCommand = preferenceStore
-                                        .getString(ITLA2TeXPreferenceConstants.LATEX_COMMAND);
-                                tla2texArgs.add(latexCommand);
-
-                                tla2texArgs.add("-grayLevel");
-                                tla2texArgs.add(Double.toString(preferenceStore
-                                        .getDouble(ITLA2TeXPreferenceConstants.GRAY_LEVEL)));
-
-                                tla2texArgs.add("-latexOutputExt");
-                                tla2texArgs.add(TLA2TeX_Output_Extension);
-                                tla2texArgs.add("-metadir");
-                                tla2texArgs.add(fileToTranslate.getProject().getLocation().toOSString());
-                                tla2texArgs.add(fileToTranslate.getLocation().toOSString());
-
-                                // necessary for checking if the tla2tex output file is actually modified
-                                // it will not be modified if it is open in an external program when
-                                // of running tla2tex
-                                long translationStartTime = System.currentTimeMillis();
-
-                                TLA.runTranslation((String[]) tla2texArgs.toArray(new String[tla2texArgs.size()]));
-
-                                String outputFileName = fileToTranslate.getProject().getLocation().toOSString()
-                                        + File.separator + ResourceHelper.getModuleName(fileToTranslate) + "."
-                                        + TLA2TeX_Output_Extension;
-
-                                File outputFile = new File(outputFileName);
-                                if (outputFile.exists())
+                                protected IStatus run(final IProgressMonitor monitor)
                                 {
 
-                                    browser.setUrl(outputFileName);
-
-                                    if (outputFile.lastModified() < translationStartTime)
+                                    try
                                     {
-                                        MessageDialog.openWarning(UIHelper.getShellProvider().getShell(),
-                                                "PDF File Not Modified", "The pdf file could not be modified. "
-                                                        + "Make sure that the file " + outputFileName
-                                                        + " is not open in any external programs.");
+
+                                        Vector tla2texArgs = new Vector();
+
+                                        IPreferenceStore preferenceStore = TLA2TeXActivator.getDefault()
+                                                .getPreferenceStore();
+
+                                        if (preferenceStore.getBoolean(ITLA2TeXPreferenceConstants.SHADE_COMMENTS))
+                                        {
+                                            tla2texArgs.add("-shade");
+                                        }
+
+                                        if (preferenceStore.getBoolean(ITLA2TeXPreferenceConstants.NUMBER_LINES))
+                                        {
+                                            tla2texArgs.add("-number");
+                                        }
+
+                                        tla2texArgs.add("-latexCommand");
+                                        String latexCommand = preferenceStore
+                                                .getString(ITLA2TeXPreferenceConstants.LATEX_COMMAND);
+                                        tla2texArgs.add(latexCommand);
+
+                                        tla2texArgs.add("-grayLevel");
+                                        tla2texArgs.add(Double.toString(preferenceStore
+                                                .getDouble(ITLA2TeXPreferenceConstants.GRAY_LEVEL)));
+
+                                        tla2texArgs.add("-latexOutputExt");
+                                        tla2texArgs.add(TLA2TeX_Output_Extension);
+                                        tla2texArgs.add("-metadir");
+                                        tla2texArgs.add(fileToTranslate.getProject().getLocation().toOSString());
+                                        tla2texArgs.add(fileToTranslate.getLocation().toOSString());
+
+                                        // necessary for checking if the tla2tex output file is actually modified
+                                        // it will not be modified if it is open in an external program when
+                                        // of running tla2tex
+                                        final long translationStartTime = System.currentTimeMillis();
+
+                                        // the two units of work are running
+                                        // the translation and opening the pdf file
+                                        // in the browser
+                                        monitor.beginTask("Producing PDF", 2);
+                                        monitor.subTask("Translating Module");
+
+                                        TLA.runTranslation((String[]) tla2texArgs
+                                                .toArray(new String[tla2texArgs.size()]));
+
+                                        monitor.worked(1);
+
+                                        final String outputFileName = fileToTranslate.getProject().getLocation()
+                                                .toOSString()
+                                                + File.separator
+                                                + ResourceHelper.getModuleName(fileToTranslate)
+                                                + "."
+                                                + TLA2TeX_Output_Extension;
+
+                                        final File outputFile = new File(outputFileName);
+                                        if (outputFile.exists())
+                                        {
+
+                                            // Open the file if it exists.
+                                            // If it has not been modified, this is
+                                            // most likely because it is open in an
+                                            // external program, so display this information
+                                            // to the user.
+                                            UIHelper.runUISync(new Runnable() {
+
+                                                public void run()
+                                                {
+                                                    monitor.subTask("Opening PDF File");
+                                                    browser.setUrl(outputFileName);
+                                                    monitor.worked(1);
+
+                                                    if (outputFile.lastModified() < translationStartTime)
+                                                    {
+                                                        MessageDialog.openWarning(UIHelper.getShellProvider()
+                                                                .getShell(), "PDF File Not Modified",
+                                                                "The pdf file could not be modified. "
+                                                                        + "Make sure that the file " + outputFileName
+                                                                        + " is not open in any external programs.");
+                                                    }
+                                                }
+                                            });
+                                        } else
+                                        {
+                                            UIHelper.runUISync(new Runnable() {
+
+                                                public void run()
+                                                {
+                                                    MessageDialog.openError(UIHelper.getShellProvider().getShell(),
+                                                            "PDF file not found",
+                                                            "Could not locate a pdf file for the module.");
+                                                }
+                                            });
+                                        }
+                                    } catch (final TLA2TexException e)
+                                    {
+                                        Activator.logError("Error while producing pdf file: " + e.getMessage(), e);
+                                        UIHelper.runUISync(new Runnable() {
+
+                                            public void run()
+                                            {
+                                                MessageDialog.openError(UIHelper.getShellProvider().getShell(),
+                                                        "PDF Production Error", e.getMessage());
+                                            }
+                                        });
+
+                                    } finally
+                                    {
+
                                     }
-                                } else
-                                {
-                                    MessageDialog.openError(UIHelper.getShellProvider().getShell(),
-                                            "PDF file not found", "Could not locate a pdf file for the module.");
+                                    return Status.OK_STATUS;
                                 }
-                            } catch (TLA2TexException e)
-                            {
-                                Activator.logError("Error while producing pdf file: " + e.getMessage(), e);
-                                MessageDialog.openError(UIHelper.getShellProvider().getShell(), "PDF Production Error",
-                                        e.getMessage());
 
-                            } finally
-                            {
+                            };
 
-                            }
+                            tla2TexJob.setUser(true);
+                            tla2TexJob.setPriority(Job.LONG);
+                            tla2TexJob.schedule();
+
                         }
                     };
                     browser.addProgressListener(progressListener);
@@ -160,7 +229,7 @@ public class ProducePDFHandler extends AbstractHandler
                     // It is necessary to navigate to this page in case a pdf file is already open.
                     // This allows tla2tex to write to that file before it gets displayed
                     // to the user again.
-                    browser.setText("<html><body>Producing PDF file...</body></html>");
+                    browser.setText("<html><body></body></html>");
 
                 }
             }
@@ -168,5 +237,4 @@ public class ProducePDFHandler extends AbstractHandler
 
         return null;
     }
-
 }
