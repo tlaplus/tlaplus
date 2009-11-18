@@ -22,6 +22,7 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
+import org.eclipse.ui.IPartService;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.forms.IMessageManager;
 import org.eclipse.ui.forms.editor.FormEditor;
@@ -40,8 +41,8 @@ import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.BasicFormPage;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.MainModelPage;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.ResultPage;
 import org.lamport.tla.toolbox.tool.tlc.ui.preference.ITLCPreferenceConstants;
+import org.lamport.tla.toolbox.tool.tlc.ui.util.ModelEditorPartListener;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.SemanticHelper;
-import org.lamport.tla.toolbox.tool.tlc.ui.view.TLCErrorView;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper.IFileProvider;
 import org.lamport.tla.toolbox.util.ChangedSpecModulesGatheringDeltaVisitor;
@@ -219,6 +220,11 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
             // setContentDescription(path.toString());
             this.setPartName(ModelHelper.getModelName(finput.getFile()));
             this.setTitleToolTip(finput.getFile().getProjectRelativePath().toString());
+
+            // add a listener that will update the tlc error view when a model editor
+            // is made visible
+            IPartService service = (IPartService) getSite().getService(IPartService.class);
+            service.addPartListener(ModelEditorPartListener.getDefault());
         }
 
         /*
@@ -310,24 +316,37 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
 
     public void setFocus()
     {
-        final TLCModelLaunchDataProvider provider = (TLCModelLaunchDataProvider) ModelEditor.this
-                .getAdapter(TLCModelLaunchDataProvider.class);
-        if (!provider.getErrors().isEmpty())
-        {
-            TLCErrorView errorView = (TLCErrorView) UIHelper.findView(TLCErrorView.ID);
-            if (errorView != null)
-            {
-                UIHelper.runUISync(new Runnable() {
-
-                    public void run()
-                    {
-                        TLCErrorView.updateErrorView(provider);
-                    }
-                });
-            }
-        }
-        // TLCUIActivator.logDebug("Focusing " + getConfig().getName() +
-        // " editor");
+        /*
+         * The following commented code was causing a warning that
+         * said "Prevented recursive attempt to activate part
+         * toolbox.tool.tlc.view.TLCErrorView while still in the
+         * middle of activating part
+         * org.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor"
+         * 
+         * The updating of the error view is now done by registering a
+         * part listener in the init method of the modeleditor. This
+         * part listener is an instance of ModelEditorPartListener()
+         * whose partVisible() method does the updating of the
+         * TLCErrorView.
+         */
+        // final TLCModelLaunchDataProvider provider = (TLCModelLaunchDataProvider) ModelEditor.this
+        // .getAdapter(TLCModelLaunchDataProvider.class);
+        // if (!provider.getErrors().isEmpty())
+        // {
+        // TLCErrorView errorView = (TLCErrorView) UIHelper.findView(TLCErrorView.ID);
+        // if (errorView != null)
+        // {
+        // UIHelper.runUISync(new Runnable() {
+        //
+        // public void run()
+        // {
+        // TLCErrorView.updateErrorView(provider);
+        // }
+        // });
+        // }
+        // }
+        // // TLCUIActivator.logDebug("Focusing " + getConfig().getName() +
+        // // " editor");
         super.setFocus();
     }
 
