@@ -49,6 +49,7 @@
 
 	<target name="compile" depends="clean" description="Compile">
 		<!-- compile -->
+		<mkdir dir="${class.dir}" />
 		<javac srcdir="${src.dir}" destdir="${class.dir}" debug="true" verbose="false" source="1.4" target="1.4">
 			<!-- compilerarg value="-Xlint:deprecation"/-->
 			<classpath refid="project.classpath" />
