@@ -247,8 +247,9 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         // -------------------------------------------------------------------
         // general section
         section = FormHelper.createSectionComposite(body, "General", ""
-        /* "The current progress of model-checking"*/, toolkit, sectionFlags, getExpansionListener());
-        twd = new TableWrapData();
+        /* "The current progress of model-checking"*/, toolkit, sectionFlags & ~Section.DESCRIPTION,
+                getExpansionListener());
+        twd = new TableWrapData(TableWrapData.FILL);
         twd.colspan = 1;
 
         section.setLayoutData(twd);
@@ -283,8 +284,8 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         // statistics section
         section = FormHelper.createSectionComposite(body, "Statistics", "",
         /*"The current progress of model-checking",*/
-        toolkit, sectionFlags | Section.COMPACT, getExpansionListener());
-        twd = new TableWrapData();
+        toolkit, (sectionFlags | Section.COMPACT) & ~Section.DESCRIPTION, getExpansionListener());
+        twd = new TableWrapData(TableWrapData.FILL);
         twd.colspan = 1;
         section.setLayoutData(twd);
         Composite statArea = (Composite) section.getClient();
