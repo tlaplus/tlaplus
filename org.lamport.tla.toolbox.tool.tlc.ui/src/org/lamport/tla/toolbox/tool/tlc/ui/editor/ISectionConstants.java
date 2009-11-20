@@ -52,5 +52,6 @@ public interface ISectionConstants
     public final static String SEC_OUTPUT = "__output";
     public static final String SEC_COVERAGE = "__coverage";
     public static final String SEC_ERRORS = "__errors";
+    public static final String SEC_EXPRESSION = "__expression";
 
 }

@@ -1318,6 +1318,9 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
         } else if (attributeName.equals(MODEL_PARAMETER_VIEW))
         {
             return "View";
+        } else if (attributeName.equals(MODEL_EXPRESSION_EVAL))
+        {
+            return "Calculator Input";
         }
         return attributeName;
     }
@@ -1496,5 +1499,19 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
             return true;
         }
         return false;
+    }
+    
+    /**
+     * A convenience method for access to the root module node
+     * @return a module or null, if spec not parsed
+     */
+    public static ModuleNode getRootModuleNode()
+    {
+        SpecObj specObj = ToolboxHandle.getSpecObj();
+        if (specObj != null)
+        {
+            return specObj.getExternalModuleTable().getRootModule();
+        }
+        return null;
     }
 }

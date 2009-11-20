@@ -42,6 +42,9 @@ import org.lamport.tla.toolbox.util.AdapterFactory;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.TLAMarkerInformationHolder;
 
+import tla2sany.semantic.ModuleNode;
+import tla2sany.semantic.OpDeclNode;
+
 /**
  * Represents a launch delegate for TLC<br>
  * The methods in this class are called in the following order:
@@ -285,7 +288,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
                         moduleFile.copy(targetFolderPath.append(moduleFile.getProjectRelativePath()), IResource.DERIVED
                                 | IResource.FORCE, new SubProgressMonitor(monitor, STEP / extendedModules.size()));
                     }
-                    
+
                     // TODO check the existence of copied files
                 }
             }
@@ -349,14 +352,26 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
             writer.addFormulaList(ModelWriter.createSourceContent(MODEL_PARAMETER_ACTION_CONSTRAINT,
                     ModelWriter.ACTIONCONSTRAINT_SCHEME, config), "ACTION_CONSTRAINT",
                     MODEL_PARAMETER_ACTION_CONSTRAINT);
+            // Changed from incorrect "ACTION-CONSTRAINT" on 11 Sep 2009
             // view
             writer.addView(config.getAttribute(LAUNCH_VIEW, EMPTY_STRING), MODEL_PARAMETER_VIEW);
-            // Changed from incorrect "ACTION-CONSTRAINT" on 11 Sep 2009
+            // calculator expression
+            writer.addCalcExpression(config.getAttribute(MODEL_EXPRESSION_EVAL, EMPTY_STRING), MODEL_EXPRESSION_EVAL);
 
             int specType = config.getAttribute(MODEL_BEHAVIOR_SPEC_TYPE, MODEL_BEHAVIOR_TYPE_DEFAULT);
             switch (specType) {
             case MODEL_BEHAVIOR_TYPE_NO_SPEC:
-                // no spec - nothing to do
+                ModuleNode rootModuleNode = ModelHelper.getRootModuleNode();
+                if (rootModuleNode != null)
+                {
+                    OpDeclNode[] vars = rootModuleNode.getVariableDecls();
+                    if (vars != null && vars.length > 0)
+                    {
+                        String var = rootModuleNode.getVariableDecls()[0].getName().toString();
+                        writer.addFormulaList(ModelWriter.createFalseInit(var), "INIT", MODEL_BEHAVIOR_NO_SPEC);
+                        writer.addFormulaList(ModelWriter.createFalseNext(var), "NEXT", MODEL_BEHAVIOR_NO_SPEC);
+                    }
+                }  
                 break;
             case MODEL_BEHAVIOR_TYPE_SPEC_CLOSED:
 
@@ -445,10 +460,10 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
             FileEditorInput fileEditorInput = new FileEditorInput((IFile) rootModule);
             FileDocumentProvider fileDocumentProvider = new FileDocumentProvider();
             fileDocumentProvider.connect(fileEditorInput);
-            
-            // The document for manipulation of the MC.tla file 
+
+            // The document for manipulation of the MC.tla file
             IDocument document = fileDocumentProvider.getDocument(fileEditorInput);
-            
+
             // the find/replace adapter to find texts in the document
             FindReplaceDocumentAdapter searchAdapter = new FindReplaceDocumentAdapter(document);
 
@@ -467,11 +482,12 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
 
                         // find the error cause and install the error marker on the corresponding
                         // field
-                        Hashtable props = ModelHelper.createMarkerDescription(configuration, document, searchAdapter, message, severity,
-                                coordinates);
-                        if (props  != null) 
+                        Hashtable props = ModelHelper.createMarkerDescription(configuration, document, searchAdapter,
+                                message, severity, coordinates);
+                        if (props != null)
                         {
-                            ModelHelper.installModelProblemMarker(configuration.getFile(), props, ModelHelper.TLC_MODEL_ERROR_MARKER_SANY);
+                            ModelHelper.installModelProblemMarker(configuration.getFile(), props,
+                                    ModelHelper.TLC_MODEL_ERROR_MARKER_SANY);
                         }
 
                     } else
@@ -592,7 +608,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
         {
             this.config = config;
         }
-        
+
         public void done(IJobChangeEvent event)
         {
             super.done(event);

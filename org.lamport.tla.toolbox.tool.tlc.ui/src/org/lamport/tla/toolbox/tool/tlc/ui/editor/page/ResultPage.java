@@ -38,7 +38,9 @@ import org.lamport.tla.toolbox.tool.tlc.output.data.StateSpaceInformationItem;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCModelLaunchDataProvider;
 import org.lamport.tla.toolbox.tool.tlc.output.source.TLCOutputSourceRegistry;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.ValidateableSectionPart;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.ActionClickListener;
+import org.lamport.tla.toolbox.tool.tlc.ui.util.DirtyMarkingListener;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
 import org.lamport.tla.toolbox.tool.tlc.ui.view.TLCErrorView;
 import org.lamport.tla.toolbox.util.IHelpConstants;
@@ -62,6 +64,8 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
      */
     private SourceViewer userOutput;
     private SourceViewer progressOutput;
+    private SourceViewer expressionEvalResult;
+    private SourceViewer expressionEvalInput;
     private Text startTimestampText;
     private Text finishTimestampText;
     private Text lastCheckpointTimeText;
@@ -109,6 +113,9 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
                     break;
                 case PROGRESS_OUTPUT:
                     ResultPage.this.progressOutput.setDocument(dataProvider.getProgressOutput());
+                    break;
+                case CALC_OUTPUT:
+                    ResultPage.this.expressionEvalResult.getTextWidget().setText(dataProvider.getCalcOutput());
                     break;
                 case START_TIME:
                     ResultPage.this.startTimestampText.setText(dataProvider.getStartTimestamp());
@@ -187,6 +194,10 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
             // no data provider
             reinit();
         }
+
+        // calculator expression
+        String expression = getConfig().getAttribute(MODEL_EXPRESSION_EVAL, EMPTY_STRING);
+        expressionEvalInput.setDocument(new Document(expression));
     }
 
     /**
@@ -246,6 +257,9 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 
         // -------------------------------------------------------------------
         // general section
+        // there is no description line for this section, so it is
+        // necessary to eliminate that bit in the style flags that
+        // are passed in
         section = FormHelper.createSectionComposite(body, "General", ""
         /* "The current progress of model-checking"*/, toolkit, sectionFlags & ~Section.DESCRIPTION,
                 getExpansionListener());
@@ -282,6 +296,9 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 
         // -------------------------------------------------------------------
         // statistics section
+        // there is no description line for this section, so it is
+        // necessary to eliminate that bit in the style flags that
+        // are passed in
         section = FormHelper.createSectionComposite(body, "Statistics", "",
         /*"The current progress of model-checking",*/
         toolkit, (sectionFlags | Section.COMPACT) & ~Section.DESCRIPTION, getExpansionListener());
@@ -297,6 +314,33 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         createAndSetupStateSpace("State space progress:", statArea, toolkit);
         // coverage stats
         createAndSetupCoverage("Coverage at", statArea, toolkit);
+
+        // -------------------------------------------------------------------
+        // Calculator section
+        section = FormHelper.createSectionComposite(body, "TLC Calculator", "Result of expression evaluation.",
+                toolkit, sectionFlags, getExpansionListener());
+        Composite resultArea = (Composite) section.getClient();
+        resultArea.setLayout(new GridLayout(2, false));
+
+        toolkit.createLabel(resultArea, "Input: ");
+        expressionEvalInput = FormHelper.createFormsSourceViewer(toolkit, resultArea, (textFieldFlags & ~SWT.V_SCROLL)
+                & ~SWT.READ_ONLY);
+        toolkit.createLabel(resultArea, "Result: ");
+        expressionEvalResult = FormHelper.createFormsOutputViewer(toolkit, resultArea, textFieldFlags & ~SWT.V_SCROLL);
+
+        gd = new GridData(SWT.FILL, SWT.LEFT, true, true);
+        gd.minimumWidth = 300;
+        gd.minimumHeight = 18;
+        expressionEvalResult.getControl().setLayoutData(gd);
+        expressionEvalInput.getTextWidget().setLayoutData(gd);
+        expressionEvalResult.getTextWidget().setFont(TLCUIActivator.getDefault().getCourierFont());
+
+        ValidateableSectionPart calculatorSectionPart = new ValidateableSectionPart(section, this, SEC_EXPRESSION);
+        managedForm.addPart(calculatorSectionPart);
+
+        expressionEvalInput.getTextWidget().addModifyListener(new DirtyMarkingListener(calculatorSectionPart, false));
+
+        getDataBindingManager().bindAttribute(MODEL_EXPRESSION_EVAL, expressionEvalInput, calculatorSectionPart);
 
         // -------------------------------------------------------------------
         // output section
@@ -329,6 +373,17 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         gd.minimumWidth = 300;
         progressOutput.getControl().setLayoutData(gd);
 
+    }
+
+    /**
+     * Save data back to model
+     */
+    public void commit(boolean onSave)
+    {
+        String expression = this.expressionEvalInput.getDocument().get();
+        getConfig().setAttribute(MODEL_EXPRESSION_EVAL, expression);
+
+        super.commit(onSave);
     }
 
     /**

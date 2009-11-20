@@ -13,6 +13,8 @@ import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -421,11 +423,12 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
                                 setComplete(false);
                             }
                         }
-                    } else {
+                    } else
+                    {
                         // This made an error by LL on 15 Nov 2009
-                        modelEditor.addErrorMessage(constant.getLabel(), "The set of model values should not be empty.",
-                                this.getId(), IMessageProvider.ERROR, UIHelper.getWidget(dm
-                                .getAttributeControl(MODEL_PARAMETER_CONSTANTS)));
+                        modelEditor.addErrorMessage(constant.getLabel(),
+                                "The set of model values should not be empty.", this.getId(), IMessageProvider.ERROR,
+                                UIHelper.getWidget(dm.getAttributeControl(MODEL_PARAMETER_CONSTANTS)));
                         setComplete(false);
                     }
                 }
@@ -521,38 +524,57 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
             }
         }
 
+        updateRelevantSections();
+
         // The following code added by LL and DR on 10 Sep 2009.
         // Reset the enabling and selection of spec type depending on the number number
         // of variables in the spec.
         // This code needs to be modified when we modify the model launcher
         // to allow the No Spec option to be selected when there are variables.
         //
-        if (rootModuleNode != null)
-        {
-            if (rootModuleNode.getVariableDecls().length == 0)
-            {
-                setHasVariables(false);
-                // set selection to the NO SPEC field
-                if (!noSpecRadio.getSelection())
-                {
-                    // mark dirty so that changes must be written to config file
-                    dm.getSection(dm.getSectionForAttribute(MODEL_BEHAVIOR_NO_SPEC)).markDirty();
-                    setSpecSelection(MODEL_BEHAVIOR_TYPE_NO_SPEC);
-                }
-            } else
-            {
-                setHasVariables(true);
-
-                // no spec has been selected, set the selection to the default
-                if (noSpecRadio.getSelection())
-                {
-                    // mark dirty so that changes must be written to config file
-                    dm.getSection(dm.getSectionForAttribute(MODEL_BEHAVIOR_CLOSED_SPECIFICATION)).markDirty();
-                    // set selection to the default
-                    setSpecSelection(MODEL_BEHAVIOR_TYPE_DEFAULT);
-                }
-            }
-        }
+        // The following was commented by DR because we now allow
+        // the user to select the No Spec option when there are variables
+        // if (rootModuleNode != null)
+        // {
+        // Section propertiesSection = dm.getSection(dm.getSectionForAttribute(MODEL_CORRECTNESS_PROPERTIES))
+        // .getSection();
+        // Section invariantsSection = dm.getSection(dm.getSectionForAttribute(MODEL_CORRECTNESS_INVARIANTS))
+        // .getSection();
+        //
+        // if (rootModuleNode.getVariableDecls().length == 0)
+        // {
+        // setHasVariables(false);
+        //
+        // propertiesSection.setExpanded(false);
+        // propertiesSection.setEnabled(false);
+        //
+        // invariantsSection.setExpanded(false);
+        // invariantsSection.setEnabled(false);
+        //
+        // // set selection to the NO SPEC field
+        // if (!noSpecRadio.getSelection())
+        // {
+        // // mark dirty so that changes must be written to config file
+        // dm.getSection(dm.getSectionForAttribute(MODEL_BEHAVIOR_NO_SPEC)).markDirty();
+        // setSpecSelection(MODEL_BEHAVIOR_TYPE_NO_SPEC);
+        // }
+        // } else
+        // {
+        // setHasVariables(true);
+        //
+        // propertiesSection.setEnabled(true);
+        // invariantsSection.setEnabled(true);
+        //
+        // // no spec has been selected, set the selection to the default
+        // if (noSpecRadio.getSelection())
+        // {
+        // // mark dirty so that changes must be written to config file
+        // dm.getSection(dm.getSectionForAttribute(MODEL_BEHAVIOR_CLOSED_SPECIFICATION)).markDirty();
+        // // set selection to the default
+        // setSpecSelection(MODEL_BEHAVIOR_TYPE_DEFAULT);
+        // }
+        // }
+        // }
         // The following code is not needed now because we automatically change
         // the selection to No Spec if there are no variables.
         //
@@ -651,6 +673,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         default:
             throw new IllegalArgumentException("Wrong spec type, this is a bug");
         }
+
     }
 
     /**
@@ -822,10 +845,6 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         ValidateableSectionPart behaviorPart = new ValidateableSectionPart(section, this, SEC_WHAT_IS_THE_SPEC);
         managedForm.addPart(behaviorPart);
         DirtyMarkingListener whatIsTheSpecListener = new DirtyMarkingListener(behaviorPart, true);
-
-        // DR & LL changed the order of the two ways of giving the spec and
-        // re-added the no-spec option on 10 Sep 2009.
-
         // split formula option
         initNextFairnessRadio = toolkit.createButton(behaviorArea, "Initial predicate and next-state relation",
                 SWT.RADIO);
@@ -1128,6 +1147,37 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
     {
         super.refresh();
         updateCheckpoints();
+    }
+
+    /**
+     * Disables irrelevant sections and enables relevant
+     * ones depending on the state of this page.
+     * 
+     * Currently, this disables properties and invariants when
+     * no spec is selected and enables them when it is not.
+     * 
+     * by the user.
+     * @param noSpec
+     */
+    private void updateRelevantSections()
+    {
+        DataBindingManager dm = getDataBindingManager();
+        Section propertiesSection = dm.getSection(dm.getSectionForAttribute(MODEL_CORRECTNESS_PROPERTIES)).getSection();
+        Section invariantsSection = dm.getSection(dm.getSectionForAttribute(MODEL_CORRECTNESS_INVARIANTS)).getSection();
+
+        if (noSpecRadio.getSelection())
+        {
+            propertiesSection.setExpanded(false);
+            propertiesSection.setEnabled(false);
+
+            invariantsSection.setExpanded(false);
+            invariantsSection.setEnabled(false);
+
+        } else
+        {
+            propertiesSection.setEnabled(true);
+            invariantsSection.setEnabled(true);
+        }
     }
 
 }

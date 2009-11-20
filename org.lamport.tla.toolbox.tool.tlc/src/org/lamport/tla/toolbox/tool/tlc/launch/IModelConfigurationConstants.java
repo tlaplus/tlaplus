@@ -76,4 +76,8 @@ public interface IModelConfigurationConstants extends IConfigurationConstants
      * view
      */
     public static final String MODEL_PARAMETER_VIEW = "modelParameterView";
+    /**
+     * constant expression to be evaluated
+     */
+    public static final String MODEL_EXPRESSION_EVAL = "modelExpressionEval";
 }

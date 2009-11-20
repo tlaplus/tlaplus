@@ -56,6 +56,10 @@ public class ModelWriter
     public static final String ATTRIBUTE = "@";
     public static final String INDEX = ":";
     public static final String EMPTY_STRING = "";
+    public static final String CALC_EXPRESSION_IDENTIFIER = "\"$!@$!@$!@$!@$!\",";
+    public static final String BEGIN_TUPLE = "<<";
+    public static final String END_TUPLE = ">>";
+    public static final String PRIME = "'";
 
     private StringBuffer tlaBuffer;
     private StringBuffer cfgBuffer;
@@ -220,6 +224,23 @@ public class ModelWriter
     }
 
     /**
+     * Adds the ASSUME PrintT statement for the calc expression
+     * @param expression
+     * @param attributeName
+     */
+    public void addCalcExpression(String expression, String attributeName)
+    {
+        if (!((expression.trim().length()) == 0))
+        {
+            tlaBuffer.append(COMMENT).append("Calculator expression ").append(ATTRIBUTE).append(attributeName).append(
+                    INDEX).append(0).append(CR);
+            tlaBuffer.append("ASSUME PrintT(").append(BEGIN_TUPLE).append(CALC_EXPRESSION_IDENTIFIER)
+                    .append(expression).append(END_TUPLE).append(")").append(CR);
+            tlaBuffer.append(SEP).append(CR).append(CR);
+        }
+    }
+
+    /**
      * Assigns a right side to a label using an id generated from given schema
      * @param constant, constant containing the values
      * @param schema schema to generate the Id
@@ -344,6 +365,22 @@ public class ModelWriter
 
         result.add(new String[] { identifier, buffer.toString() });
         return result;
+    }
+
+    public static List createFalseInit(String var)
+    {
+        List list = new Vector();
+        String identifier = getValidIdentifier(INIT_SCHEME);
+        list.add(new String[] { identifier, identifier + DEFINES_CR + "FALSE/\\" + var + EQ + "0" });
+        return list;
+    }
+
+    public static List createFalseNext(String var)
+    {
+        List list = new Vector();
+        String identifier = getValidIdentifier(NEXT_SCHEME);
+        list.add(new String[] { identifier, identifier + DEFINES_CR + "FALSE/\\" + var + PRIME + EQ + var });
+        return list;
     }
 
     /**
