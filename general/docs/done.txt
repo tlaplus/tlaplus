@@ -122,6 +122,10 @@
     symmetric, and one include A_c and the other include B_d.  This is what
     the validatePage method should check for.
     
+40. BUG (Help)
+    The help menu is not getting the focus if it doesn't already have the focus
+    and it either is in or is being opened into a folder that has the focus.
+    
 41. BUG (View option)
     This option is not implemented.
 

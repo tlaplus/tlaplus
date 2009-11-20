@@ -15,7 +15,6 @@
 32. MINOR BUG (What to parse when)
 36. FEATURE (Action Fairness)
 39. MINOR FEATURE (Constant Assignment)
-40. BUG (Help)
 43. MINOR BUG (Model Checking Results page display)
 46. BUG (Model reports bogus "TLC still running")
 50. MINOR BUG (Deleting a Spec)   
@@ -187,10 +186,6 @@
     second wizard page is created before the first page of the wizard is
     raised.  If it's hard, perhaps we should change the default to
     be to make the values untyped.  This is done in TypingWizardPage.createControl.
-    
-40. BUG (Help)
-    The help menu is not getting the focus if it doesn't already have the focus
-    and it either is in or is being opened into a folder that has the focus.
 
 43. MINOR BUG (Model Checking Results page display)
     The layout/spacing of the statistics / progress output / user output fields
