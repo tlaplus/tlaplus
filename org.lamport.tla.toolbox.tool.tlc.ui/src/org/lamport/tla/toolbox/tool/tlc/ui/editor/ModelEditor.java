@@ -48,6 +48,8 @@ import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper.IFileProvider;
 import org.lamport.tla.toolbox.util.ChangedSpecModulesGatheringDeltaVisitor;
 import org.lamport.tla.toolbox.util.UIHelper;
 
+import tla2sany.semantic.ModuleNode;
+
 /**
  * Editor for the model
  * @author Simon Zambrovski
@@ -239,6 +241,7 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
         // initial re-validate the pages, which are already loaded
         UIHelper.runUIAsync(validateRunable);
         // TLCUIActivator.logDebug("leaving ModelEditor#init(IEditorSite site, IEditorInput input)");
+
     }
 
     /**
@@ -347,6 +350,7 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
         // }
         // // TLCUIActivator.logDebug("Focusing " + getConfig().getName() +
         // // " editor");
+
         super.setFocus();
     }
 
@@ -407,6 +411,13 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
         } catch (PartInitException e)
         {
             TLCUIActivator.logError("Error initializing editor", e);
+        }
+
+        ModuleNode rootModule = SemanticHelper.getRootModuleNode();
+        if (rootModule != null && rootModule.getVariableDecls().length == 0
+                && rootModule.getConstantDecls().length == 0)
+        {
+            showResultPage();
         }
 
         // TLCUIActivator.logDebug("leaving ModelEditor#addPages()");
