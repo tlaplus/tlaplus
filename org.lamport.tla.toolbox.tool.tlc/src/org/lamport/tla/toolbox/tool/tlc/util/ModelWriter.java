@@ -56,7 +56,8 @@ public class ModelWriter
     public static final String ATTRIBUTE = "@";
     public static final String INDEX = ":";
     public static final String EMPTY_STRING = "";
-    public static final String CALC_EXPRESSION_IDENTIFIER = "\"$!@$!@$!@$!@$!\",";
+    public static final String CALC_EXPRESSION_IDENTIFIER = "\"$!@$!@$!@$!@$!\"";
+    public static final String COMMA = ",";
     public static final String BEGIN_TUPLE = "<<";
     public static final String END_TUPLE = ">>";
     public static final String PRIME = "'";
@@ -234,7 +235,7 @@ public class ModelWriter
         {
             tlaBuffer.append(COMMENT).append("Calculator expression ").append(ATTRIBUTE).append(attributeName).append(
                     INDEX).append(0).append(CR);
-            tlaBuffer.append("ASSUME PrintT(").append(BEGIN_TUPLE).append(CALC_EXPRESSION_IDENTIFIER)
+            tlaBuffer.append("ASSUME PrintT(").append(BEGIN_TUPLE).append(CALC_EXPRESSION_IDENTIFIER).append(COMMA)
                     .append(expression).append(END_TUPLE).append(")").append(CR);
             tlaBuffer.append(SEP).append(CR).append(CR);
         }

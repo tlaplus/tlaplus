@@ -57,7 +57,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
 
     // pattern for the output of evaluating constant expressions
     public static final Pattern CALC_OUTPUT_PATTERN = Pattern.compile(ModelWriter.BEGIN_TUPLE + "[\\s]*"
-            + Pattern.quote(ModelWriter.CALC_EXPRESSION_IDENTIFIER) + "[\\s]*" + "(.*)"/*calc output group*/
+            + Pattern.quote(ModelWriter.CALC_EXPRESSION_IDENTIFIER) + "[\\s]*" + ModelWriter.COMMA + "(.*)"/*calc output group*/
             + ModelWriter.END_TUPLE + "\r\n", Pattern.DOTALL);
 
     // presenter for the current process
