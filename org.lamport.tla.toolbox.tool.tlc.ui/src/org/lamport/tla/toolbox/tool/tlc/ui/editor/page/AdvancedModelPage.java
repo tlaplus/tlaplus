@@ -445,6 +445,13 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
 
     /**
      * Creates the UI
+     * 
+     * Its helpful to know what the standard SWT widgets look like.
+     * Pictures can be found at http://www.eclipse.org/swt/widgets/
+     * 
+     * Layouts are used throughout this method.
+     * A good explanation of layouts is given in the article
+     * http://www.eclipse.org/articles/article.php?file=Article-Understanding-Layouts/index.html
      */
     protected void createBodyContent(IManagedForm managedForm)
     {
