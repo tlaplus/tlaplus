@@ -339,7 +339,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         resultArea.setLayout(gLayout);
 
         Composite expressionComposite = toolkit.createComposite(resultArea);
-        expressionComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true));
+        expressionComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false));
         gLayout = new GridLayout(1, false);
         gLayout.marginHeight = 0;
         gLayout.marginBottom = 5;
@@ -348,16 +348,31 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         toolkit.createLabel(expressionComposite, "Expression: ");
         expressionEvalInput = FormHelper.createFormsSourceViewer(toolkit, expressionComposite, textFieldFlags);
 
+        // We want the value section to get larger as the window
+        // gets larger but not the expression section.
         Composite valueComposite = toolkit.createComposite(resultArea);
-        valueComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+        valueComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
         valueComposite.setLayout(gLayout);
         toolkit.createLabel(valueComposite, "Value: ");
         expressionEvalResult = FormHelper.createFormsOutputViewer(toolkit, valueComposite, textFieldFlags);
 
-        gd = new GridData(SWT.FILL, SWT.FILL, true, true);
+        // We dont want these items to fill excess
+        // vertical space because then in some cases
+        // this causes the text box to be extremely
+        // tall instead of having a scroll bar.
+        gd = new GridData(SWT.FILL, SWT.FILL, true, false);
         gd.minimumWidth = 500;
-        gd.minimumHeight = 80;
+        gd.heightHint = 80;
         expressionEvalResult.getTextWidget().setLayoutData(gd);
+        // The expression section should not grab excess horizontal
+        // space because if this flag is set to true and the length
+        // of the expression causes a vertical scroll bar to appear,
+        // then when the model is run, the expression text box
+        // will get wide enough to fit the entire expression on
+        // one line instead of wrapping the text.
+        gd = new GridData(SWT.FILL, SWT.FILL, false, false);
+        gd.widthHint = 500;
+        gd.heightHint = 80;
         expressionEvalInput.getTextWidget().setLayoutData(gd);
         // We want this font to be the same as the input.
         // If it was not set it would be the same as the font
@@ -392,8 +407,12 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         // output viewer
         userOutput = FormHelper.createFormsOutputViewer(toolkit, outputArea, textFieldFlags);
 
-        gd = new GridData(SWT.FILL, SWT.LEFT, true, true);
-        gd.minimumHeight = 300;
+        // We dont want this item to fill excess
+        // vertical space because then in some cases
+        // this causes the text box to be extremely
+        // tall instead of having a scroll bar.
+        gd = new GridData(SWT.FILL, SWT.LEFT, true, false);
+        gd.heightHint = 300;
         gd.minimumWidth = 300;
         userOutput.getControl().setLayoutData(gd);
 
@@ -412,8 +431,12 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         progressArea.setLayout(new GridLayout());
 
         progressOutput = FormHelper.createFormsOutputViewer(toolkit, progressArea, textFieldFlags);
-        gd = new GridData(SWT.FILL, SWT.LEFT, true, true);
-        gd.minimumHeight = 300;
+        // We dont want this item to fill excess
+        // vertical space because then in some cases
+        // this causes the text box to be extremely
+        // tall instead of having a scroll bar.
+        gd = new GridData(SWT.FILL, SWT.LEFT, true, false);
+        gd.heightHint = 300;
         gd.minimumWidth = 300;
         progressOutput.getControl().setLayoutData(gd);
 
