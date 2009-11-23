@@ -55,9 +55,10 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
     public static final String CHECKPOINTING = "Checkpointing";
     public static final String CHECKING_LIVENESS = "Checking liveness";
 
-    public static final Pattern CALC_OUTPUT_PATTERN = Pattern.compile(ModelWriter.BEGIN_TUPLE
-            + Pattern.quote(ModelWriter.CALC_EXPRESSION_IDENTIFIER) + "(.*)"/*calc output group*/
-            + ModelWriter.END_TUPLE + "\r\n");
+    // pattern for the output of evaluating constant expressions
+    public static final Pattern CALC_OUTPUT_PATTERN = Pattern.compile(ModelWriter.BEGIN_TUPLE + "[\\s]*"
+            + Pattern.quote(ModelWriter.CALC_EXPRESSION_IDENTIFIER) + "[\\s]*" + "(.*)"/*calc output group*/
+            + ModelWriter.END_TUPLE + "\r\n", Pattern.DOTALL);
 
     // presenter for the current process
     private ITLCModelLaunchDataPresenter presenter;
