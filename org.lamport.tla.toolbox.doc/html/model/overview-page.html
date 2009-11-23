@@ -54,8 +54,12 @@ and&nbsp; <code>F</code>&nbsp; is an optional fairness formula.
 </dl>
 The only way to write a behavior spec that includes fairness is with a temporal formula.
 <p>
-If the spec has no variables, then there can be no behavior formula.&nbsp;  In that case, all TLC
-can check are assumptions.
+You can also choose to specify <em>No behavior spec</em>.&nbsp;  This is the only option
+if the spec has no variables.&nbsp;  With this option, TLC will just check assumptions and
+evaluate a constant expression, if you have entered one in the
+<a href="results-page.html#evaluate"><em>Evaluate Constant Expression</em> section</a>
+of the <a href="results-page.html">Model Checking Results Page</a>.
+</p>
 
 <h2><a name="what-to-check">What to check?</h2>
 There are three kinds of properties of the behavior spec that TLC can check:
