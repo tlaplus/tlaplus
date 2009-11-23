@@ -239,6 +239,13 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 
     /**
      * Draw the fields
+     * 
+     * Its helpful to know what the standard SWT widgets look like.
+     * Pictures can be found at http://www.eclipse.org/swt/widgets/
+     * 
+     * Layouts are used throughout this method.
+     * A good explanation of layouts is given in the article
+     * http://www.eclipse.org/articles/article.php?file=Article-Understanding-Layouts/index.html
      */
     protected void createBodyContent(IManagedForm managedForm)
     {
@@ -257,9 +264,10 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 
         // -------------------------------------------------------------------
         // general section
-        // there is no description line for this section, so it is
+        // There is no description line for this section, so it is
         // necessary to eliminate that bit in the style flags that
-        // are passed in
+        // are passed in. If the bit were not changed to 0, an
+        // extra empty line would appear below the title.
         section = FormHelper.createSectionComposite(body, "General", ""
         /* "The current progress of model-checking"*/, toolkit, sectionFlags & ~Section.DESCRIPTION,
                 getExpansionListener());
@@ -296,9 +304,10 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 
         // -------------------------------------------------------------------
         // statistics section
-        // there is no description line for this section, so it is
+        // There is no description line for this section, so it is
         // necessary to eliminate that bit in the style flags that
-        // are passed in
+        // are passed in. If the bit were not changed to 0, an
+        // extra empty line would appear below the title.
         section = FormHelper.createSectionComposite(body, "Statistics", "",
         /*"The current progress of model-checking",*/
         toolkit, (sectionFlags | Section.COMPACT) & ~Section.DESCRIPTION, getExpansionListener());
@@ -317,27 +326,58 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 
         // -------------------------------------------------------------------
         // Calculator section
-        section = FormHelper.createSectionComposite(body, "TLC Calculator", "Result of expression evaluation.",
-                toolkit, sectionFlags, getExpansionListener());
+        // There is no description line for this section, so it is
+        // necessary to eliminate that bit in the style flags that
+        // are passed in. If the bit were not changed to 0, an
+        // extra empty line would appear below the title.
+        section = FormHelper.createSectionComposite(body, "Evaluate Constant Expression", "", toolkit, sectionFlags
+                & ~Section.DESCRIPTION, getExpansionListener());
+
         Composite resultArea = (Composite) section.getClient();
-        resultArea.setLayout(new GridLayout(2, false));
+        GridLayout gLayout = new GridLayout(2, false);
+        gLayout.marginHeight = 0;
+        resultArea.setLayout(gLayout);
 
-        toolkit.createLabel(resultArea, "Input: ");
-        expressionEvalInput = FormHelper.createFormsSourceViewer(toolkit, resultArea, (textFieldFlags & ~SWT.V_SCROLL)
-                & ~SWT.READ_ONLY);
-        toolkit.createLabel(resultArea, "Result: ");
-        expressionEvalResult = FormHelper.createFormsOutputViewer(toolkit, resultArea, textFieldFlags & ~SWT.V_SCROLL);
+        Composite expressionComposite = toolkit.createComposite(resultArea);
+        expressionComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true));
+        gLayout = new GridLayout(1, false);
+        gLayout.marginHeight = 0;
+        gLayout.marginBottom = 5;
+        expressionComposite.setLayout(gLayout);
 
-        gd = new GridData(SWT.FILL, SWT.LEFT, true, true);
-        gd.minimumWidth = 300;
-        gd.minimumHeight = 18;
-        expressionEvalResult.getControl().setLayoutData(gd);
+        toolkit.createLabel(expressionComposite, "Expression: ");
+        expressionEvalInput = FormHelper.createFormsSourceViewer(toolkit, expressionComposite, textFieldFlags);
+
+        Composite valueComposite = toolkit.createComposite(resultArea);
+        valueComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+        valueComposite.setLayout(gLayout);
+        toolkit.createLabel(valueComposite, "Value: ");
+        expressionEvalResult = FormHelper.createFormsOutputViewer(toolkit, valueComposite, textFieldFlags);
+
+        gd = new GridData(SWT.FILL, SWT.FILL, true, true);
+        gd.minimumWidth = 500;
+        gd.minimumHeight = 80;
+        expressionEvalResult.getTextWidget().setLayoutData(gd);
         expressionEvalInput.getTextWidget().setLayoutData(gd);
+        // We want this font to be the same as the input.
+        // If it was not set it would be the same as the font
+        // in the user output box.
         expressionEvalResult.getTextWidget().setFont(TLCUIActivator.getDefault().getCourierFont());
+        // This is required to paint the borders of the text boxes
+        // it must be called on the direct parent of the widget
+        // with a border. There is a call of this methon in
+        // FormHelper.createSectionComposite, but that is called
+        // on the section which is not a direct parent of the
+        // text box widget.
+        toolkit.paintBordersFor(expressionComposite);
+        toolkit.paintBordersFor(valueComposite);
 
         ValidateableSectionPart calculatorSectionPart = new ValidateableSectionPart(section, this, SEC_EXPRESSION);
+        // This ensures that when the part is made dirty, the model
+        // appears unsaved.
         managedForm.addPart(calculatorSectionPart);
 
+        // This makes the widget unsaved when text is entered.
         expressionEvalInput.getTextWidget().addModifyListener(new DirtyMarkingListener(calculatorSectionPart, false));
 
         getDataBindingManager().bindAttribute(MODEL_EXPRESSION_EVAL, expressionEvalInput, calculatorSectionPart);
@@ -359,9 +399,13 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 
         // -------------------------------------------------------------------
         // progress section
+        // There is no description line for this section, so it is
+        // necessary to eliminate that bit in the style flags that
+        // are passed in. If the bit were not changed to 0, an
+        // extra empty line would appear below the title.
         section = FormHelper.createSectionComposite(body, "Progress Output", "",
         /* "The current progress of model-checking",*/
-        toolkit, sectionFlags, getExpansionListener());
+        toolkit, sectionFlags & ~Section.DESCRIPTION, getExpansionListener());
         section.setExpanded(false);
         Composite progressArea = (Composite) section.getClient();
         progressArea = (Composite) section.getClient();
