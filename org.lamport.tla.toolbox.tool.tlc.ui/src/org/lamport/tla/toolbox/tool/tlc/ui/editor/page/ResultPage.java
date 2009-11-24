@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Vector;
 
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
@@ -376,8 +377,9 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         expressionEvalInput.getTextWidget().setLayoutData(gd);
         // We want this font to be the same as the input.
         // If it was not set it would be the same as the font
-        // in the user output box.
-        expressionEvalResult.getTextWidget().setFont(TLCUIActivator.getDefault().getCourierFont());
+        // in the module editor.
+        expressionEvalResult.getTextWidget().setFont(JFaceResources.getTextFont());
+        expressionEvalInput.getTextWidget().setFont(JFaceResources.getTextFont());
         // This is required to paint the borders of the text boxes
         // it must be called on the direct parent of the widget
         // with a border. There is a call of this methon in
