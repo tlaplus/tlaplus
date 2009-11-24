@@ -962,13 +962,8 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
      */
     public static IRegion locationToRegion(IDocument document, Location location) throws BadLocationException
     {
-        int offset = document.getLineOffset(location.beginLine() - 1) + location.beginColumn()-1;
-        int length = location.endColumn() - location.beginColumn()+1;
-
-        for (int i = location.beginLine(); i < location.endLine(); i++)
-        {
-            length += document.getLineOffset(i);
-        }
+        int offset = document.getLineOffset(location.beginLine() - 1) + location.beginColumn() - 1;
+        int length = document.getLineOffset(location.endLine() - 1) + location.endColumn() - offset;
         return new Region(offset, length);
     }
 
@@ -1500,7 +1495,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
         }
         return false;
     }
-    
+
     /**
      * A convenience method for access to the root module node
      * @return a module or null, if spec not parsed
