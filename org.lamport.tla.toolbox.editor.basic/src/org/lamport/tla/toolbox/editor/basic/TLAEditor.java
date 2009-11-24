@@ -396,15 +396,15 @@ public class TLAEditor extends TextEditor
         public Object execute(ExecutionEvent event) throws ExecutionException
         {
 
-            TLAEditor editor = (TLAEditor) HandlerUtil.getActiveEditor(event);
-            ISourceViewer internalSourceViewer = editor.getSourceViewer();
+            TLAEditorAndPDFViewer editor = (TLAEditorAndPDFViewer) HandlerUtil.getActiveEditor(event);
+            ISourceViewer internalSourceViewer = editor.getTLAEditor().getSourceViewer();
 
-            ITextSelection selection = (ITextSelection) editor.getSelectionProvider().getSelection();
+            ITextSelection selection = (ITextSelection) editor.getTLAEditor().getSelectionProvider().getSelection();
             IRegion region = new Region(selection.getOffset(), selection.getLength());
 
             // get the detectors
-            IHyperlinkDetector[] hyperlinkDetectors = editor.getSourceViewerConfiguration().getHyperlinkDetectors(
-                    internalSourceViewer);
+            IHyperlinkDetector[] hyperlinkDetectors = editor.getTLAEditor().getSourceViewerConfiguration()
+                    .getHyperlinkDetectors(internalSourceViewer);
             if (hyperlinkDetectors != null)
             {
                 for (int i = 0; i < hyperlinkDetectors.length; i++)
