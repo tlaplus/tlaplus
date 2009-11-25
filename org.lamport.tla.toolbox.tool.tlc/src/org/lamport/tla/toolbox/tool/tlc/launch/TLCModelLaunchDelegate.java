@@ -356,7 +356,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
             // view
             writer.addView(config.getAttribute(LAUNCH_VIEW, EMPTY_STRING), MODEL_PARAMETER_VIEW);
             // calculator expression
-            writer.addCalcExpression(config.getAttribute(MODEL_EXPRESSION_EVAL, EMPTY_STRING), MODEL_EXPRESSION_EVAL);
+            writer.addConstantExpressionEvaluation(config.getAttribute(MODEL_EXPRESSION_EVAL, EMPTY_STRING), MODEL_EXPRESSION_EVAL);
 
             int specType = config.getAttribute(MODEL_BEHAVIOR_SPEC_TYPE, MODEL_BEHAVIOR_TYPE_DEFAULT);
             switch (specType) {
