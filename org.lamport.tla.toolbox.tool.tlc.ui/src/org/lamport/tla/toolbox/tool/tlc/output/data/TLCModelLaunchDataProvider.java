@@ -56,9 +56,10 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
     public static final String CHECKING_LIVENESS = "Checking liveness";
 
     // pattern for the output of evaluating constant expressions
-    public static final Pattern CALC_OUTPUT_PATTERN = Pattern.compile(ModelWriter.BEGIN_TUPLE + "[\\s]*"
-            + Pattern.quote(ModelWriter.CALC_EXPRESSION_IDENTIFIER) + "[\\s]*" + ModelWriter.COMMA + "(.*)"/*calc output group*/
-            + ModelWriter.END_TUPLE + "\r\n", Pattern.DOTALL);
+    public static final Pattern CONSTANT_EXPRESSION_OUTPUT_PATTERN = Pattern.compile("(?s)" + ModelWriter.BEGIN_TUPLE
+            + "[\\s]*" + Pattern.quote(ModelWriter.CONSTANT_EXPRESSION_EVAL_IDENTIFIER) + "[\\s]*" + ModelWriter.COMMA
+            + "(.*)"/*calc output group*/
+            + ModelWriter.END_TUPLE);
 
     // presenter for the current process
     private ITLCModelLaunchDataPresenter presenter;
@@ -88,7 +89,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
     // user output
     private Document userOutput;
     // calc output
-    private String calcOutput;
+    private String constantExprEvalOutput;
 
     // the model, which is represented by the current launch data provider
     private ILaunchConfiguration config;
@@ -128,7 +129,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
         setCurrentStatus(NOT_RUNNING);
         progressOutput = new Document(NO_OUTPUT_AVAILABLE);
         userOutput = new Document(NO_OUTPUT_AVAILABLE);
-        calcOutput = "";
+        constantExprEvalOutput = "";
 
     }
 
@@ -394,14 +395,29 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                 // If found, it removes this output from the string
                 // that will be put in user output, and puts
                 // it in the calc output.
-                Matcher calcOutputMatcher = CALC_OUTPUT_PATTERN.matcher(outputMessage);
-                if (calcOutputMatcher.find())
+                Matcher constExprEvalOutputMatcher = CONSTANT_EXPRESSION_OUTPUT_PATTERN.matcher(outputMessage);
+                if (constExprEvalOutputMatcher.find())
                 {
-                    String calcOutput = outputMessage.substring(calcOutputMatcher.start(1), calcOutputMatcher.end(1));
-                    this.calcOutput = calcOutput.trim();
-                    informPresenter(ITLCModelLaunchDataPresenter.CALC_OUTPUT);
+                    // There is only one group in the pattern.
+                    // It contains the constant expression value
+                    String constExprEvalOutput = outputMessage.substring(constExprEvalOutputMatcher.start(1),
+                            constExprEvalOutputMatcher.end(1));
+                    // Sometimes TLC prints a space before or after
+                    // the value, so we remove this.
+                    this.constantExprEvalOutput = constExprEvalOutput.trim();
+                    informPresenter(ITLCModelLaunchDataPresenter.CONST_EXPR_EVAL_OUTPUT);
+                    /*
+                     * Remove the result of constant expression evaluation plus
+                     * the new line and return characters from the string to be placed
+                     * in user output.
+                     * 
+                     * If the new line and return characters are not removed, there will
+                     * be a blank line in the user output field where the constant expression value
+                     * would have appeared
+                     */
+                    outputMessage = outputMessage.replaceFirst(CONSTANT_EXPRESSION_OUTPUT_PATTERN.toString() + "\r\n",
+                            "");
                 }
-                outputMessage = calcOutputMatcher.replaceFirst("");
                 if (outputMessage.length() != 0)
                 {
                     setDocumentText(this.userOutput, outputMessage, true);
@@ -797,7 +813,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
 
     public String getCalcOutput()
     {
-        return calcOutput;
+        return constantExprEvalOutput;
     }
 
 }

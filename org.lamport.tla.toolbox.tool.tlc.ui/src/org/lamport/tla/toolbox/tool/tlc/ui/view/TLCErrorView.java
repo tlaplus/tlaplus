@@ -3,6 +3,7 @@ package org.lamport.tla.toolbox.tool.tlc.ui.view;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.text.BadLocationException;
@@ -57,6 +58,8 @@ import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.util.IHelpConstants;
 import org.lamport.tla.toolbox.util.UIHelper;
 
+import tlc2.output.MP;
+
 /**
  * Error representation view containing the error description and the trace
  * explorer. This is the view of the error description.
@@ -70,6 +73,13 @@ public class TLCErrorView extends ViewPart
     public static final String ID = "toolbox.tool.tlc.view.TLCErrorView";
 
     private static final String TOOLTIP = "Click on a row to see in viewer, double-click to go to action in spec.";
+
+    /**
+     * This is the pattern of an error message resulting from evaluating the constant
+     * expression entered in the expression field by the user.
+     */
+    private static final Pattern CONSTANT_EXPRESSION_ERROR_PATTERN = Pattern.compile("Evaluating assumption PrintT\\("
+            + TLCModelLaunchDataProvider.CONSTANT_EXPRESSION_OUTPUT_PATTERN.toString() + "\\)", Pattern.DOTALL);
 
     private static final IDocument EMPTY_DOCUMENT()
     {
@@ -333,6 +343,10 @@ public class TLCErrorView extends ViewPart
         int[] weights = { 1, 4 };
         outerSashForm.setWeights(weights);
 
+        // ValidateableTraceExplorerPart traceExplorerTable = new ValidateableTraceExplorerPart(sashForm,
+        // "Trace Explorer", "Explore The Trace", toolkit, Section.TITLE_BAR | Section.DESCRIPTION
+        // | Section.TREE_NODE, "");
+
         // init
         clear();
 
@@ -351,7 +365,15 @@ public class TLCErrorView extends ViewPart
     }
 
     /**
-     * Appends the error description to the buffer
+     * Appends the error description to the buffer.
+     * 
+     * This method filters and replaces strings in TLC's
+     * output that we don't want the user to see.
+     * 
+     * Currently, it filters out the starting and ending
+     * tags and replaces error messages resulting from
+     * evaluating the constant expression field with something
+     * more sensible.
      * 
      * @param buffer
      *            string buffer to append the error description to
@@ -364,8 +386,13 @@ public class TLCErrorView extends ViewPart
         if (message != null && !message.equals(""))
         {
             // remove start and end tags from the message
-            String toAppend = message.replaceAll("@!@!@STARTMSG [0-9]{4}:[0-9] @!@!@", "");
-            toAppend = toAppend.replaceAll("@!@!@ENDMSG [0-9]{4} @!@!@", "");
+            String toAppend = message.replaceAll(MP.DELIM + MP.STARTMSG + "[0-9]{4}" + MP.COLON + "[0-9] " + MP.DELIM,
+                    "");
+            toAppend = toAppend.replaceAll(MP.DELIM + MP.ENDMSG + "[0-9]{4} " + MP.DELIM, "");
+            // Replace error messages resulting from evaluating the constant
+            // expression field with something more sensible.
+            toAppend = CONSTANT_EXPRESSION_ERROR_PATTERN.matcher(toAppend).replaceAll(
+                    "The `Evaluate Constant Expression’ section’s evaluation");
             buffer.append(toAppend).append("\n");
         }
         TLCError cause = error.getCause();

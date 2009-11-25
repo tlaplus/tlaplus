@@ -44,6 +44,7 @@ public class ModelWriter
     public static final String INVARIANT_SCHEME = "inv";
     public static final String PROP_SCHEME = "prop";
     public static final String VIEW_SCHEME = "view";
+    public static final String CONSTANTEXPR_SCHEME = "const_expr";
 
     public static final String SPACE = " ";
     public static final String CR = "\n";
@@ -56,7 +57,7 @@ public class ModelWriter
     public static final String ATTRIBUTE = "@";
     public static final String INDEX = ":";
     public static final String EMPTY_STRING = "";
-    public static final String CALC_EXPRESSION_IDENTIFIER = "\"$!@$!@$!@$!@$!\"";
+    public static final String CONSTANT_EXPRESSION_EVAL_IDENTIFIER = "\"$!@$!@$!@$!@$!\"";
     public static final String COMMA = ",";
     public static final String BEGIN_TUPLE = "<<";
     public static final String END_TUPLE = ">>";
@@ -217,26 +218,59 @@ public class ModelWriter
             cfgBuffer.append(COMMENT).append("VIEW definition").append(CR);
             String id = ModelWriter.getValidIdentifier(VIEW_SCHEME);
             cfgBuffer.append("VIEW").append(CR).append(id).append(CR);
-            tlaBuffer.append(COMMENT).append("VIEW definition ").append(ATTRIBUTE).append(attributeName).append(INDEX)
-                    .append(0).append(CR);
+            tlaBuffer.append(COMMENT).append("VIEW definition ").append(ATTRIBUTE).append(attributeName).append(CR);
             tlaBuffer.append(id).append(DEFINES).append(CR).append(viewString).append(CR);
             tlaBuffer.append(SEP).append(CR).append(CR);
         }
     }
 
     /**
-     * Adds the ASSUME PrintT statement for the calc expression
+     * Adds the ASSUME PrintT statement and identifier for the constant expression
+     * evaluation. The MC.tla file will contain:
+     * 
+     * const_expr_1232141234123 ==
+     * expression
+     * -----
+     * ASSUME PrintT(<<"$!@$!@$!@$!@$!", const_expr_1232141234123>>)
+     * 
+     * See the comments in the method for an explanation of defining
+     * an identifier.
+     * 
      * @param expression
      * @param attributeName
      */
-    public void addCalcExpression(String expression, String attributeName)
+    public void addConstantExpressionEvaluation(String expression, String attributeName)
     {
         if (!((expression.trim().length()) == 0))
         {
-            tlaBuffer.append(COMMENT).append("Calculator expression ").append(ATTRIBUTE).append(attributeName).append(
-                    INDEX).append(0).append(CR);
-            tlaBuffer.append("ASSUME PrintT(").append(BEGIN_TUPLE).append(CALC_EXPRESSION_IDENTIFIER).append(COMMA)
-                    .append(expression).append(END_TUPLE).append(")").append(CR);
+            /*
+             *  Identifier definition
+             *  We define an identifier for more sensible error messages
+             *  For example, if the user enters "1+" into the constant
+             *  expression field and "1+" is placed as the second element
+             *  of the tuple that is the argument for PrintT(), then the parse
+             *  error would be something like "Found >>" which would be
+             *  mysterious to the user. With an identifier defined, the message
+             *  says "found ----" which is the separator after each section in
+             *  MC.tla. This error message is equally mysterious, but at least
+             *  it is the same message that would appear were the same error present
+             *  in another section in the model editor. We can potentially replace
+             *  such messages with something more sensible in the future in the 
+             *  appendError() method in TLCErrorView.
+             */
+            String id = ModelWriter.getValidIdentifier(CONSTANTEXPR_SCHEME);
+            tlaBuffer.append(COMMENT).append("Constant expression definition ").append(ATTRIBUTE).append(attributeName)
+                    .append(CR);
+            tlaBuffer.append(id).append(DEFINES).append(CR).append(expression).append(CR);
+            tlaBuffer.append(SEP).append(CR).append(CR);
+
+            // ASSUME PrintT(<<"$!@$!@$!@$!@$!", const_expr_23423232>>) statement
+            // The "$!@$!@$!@$!@$!" allows the toolbox to identify the
+            // value of the constant expression in the TLC output
+            tlaBuffer.append(COMMENT).append("Constant expression ASSUME statement ").append(ATTRIBUTE).append(
+                    attributeName).append(CR);
+            tlaBuffer.append("ASSUME PrintT(").append(BEGIN_TUPLE).append(CONSTANT_EXPRESSION_EVAL_IDENTIFIER).append(
+                    COMMA).append(id).append(END_TUPLE).append(")").append(CR);
             tlaBuffer.append(SEP).append(CR).append(CR);
         }
     }
