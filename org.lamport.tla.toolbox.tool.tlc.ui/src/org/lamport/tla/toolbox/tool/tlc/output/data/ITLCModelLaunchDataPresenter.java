@@ -20,10 +20,10 @@ public interface ITLCModelLaunchDataPresenter
     public final static int ERRORS = 128;
     public final static int LAST_CHECKPOINT_TIME = 256;
     public final static int CURRENT_STATUS = 512;
-    public final static int CALC_OUTPUT = 1024;
+    public final static int CONST_EXPR_EVAL_OUTPUT = 1024;
 
     public final static int[] ALL_FIELDS = { USER_OUTPUT, PROGRESS_OUTPUT, START_TIME, END_TIME, LAST_CHECKPOINT_TIME,
-            COVERAGE_TIME, COVERAGE, PROGRESS, ERRORS, CALC_OUTPUT };
+            COVERAGE_TIME, COVERAGE, PROGRESS, ERRORS, CONST_EXPR_EVAL_OUTPUT };
 
     /**
      * Retrieves the model 
