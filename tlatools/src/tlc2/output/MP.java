@@ -71,7 +71,7 @@ public class MP
     /**
      * 
      */
-    private static final String ENDMSG = "ENDMSG ";
+    public static final String ENDMSG = "ENDMSG ";
     /**
      * 
      */
@@ -83,7 +83,7 @@ public class MP
     /**
      * 
      */
-    private static final String COLON = ":";
+    public static final String COLON = ":";
     public static final String DELIM = "@!@!@"; //$NON-NLS-1$
     public static final String STARTMSG = "STARTMSG "; //$NON-NLS-1$
 
