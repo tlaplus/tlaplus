@@ -115,7 +115,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
                 case PROGRESS_OUTPUT:
                     ResultPage.this.progressOutput.setDocument(dataProvider.getProgressOutput());
                     break;
-                case CALC_OUTPUT:
+                case CONST_EXPR_EVAL_OUTPUT:
                     ResultPage.this.expressionEvalResult.getTextWidget().setText(dataProvider.getCalcOutput());
                     break;
                 case START_TIME:
