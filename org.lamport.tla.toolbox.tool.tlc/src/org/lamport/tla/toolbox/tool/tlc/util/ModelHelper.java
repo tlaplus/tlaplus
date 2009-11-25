@@ -1315,7 +1315,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
             return "View";
         } else if (attributeName.equals(MODEL_EXPRESSION_EVAL))
         {
-            return "Evaluate Constant Expression";
+            return "Expression";
         }
         return attributeName;
     }
