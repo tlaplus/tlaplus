@@ -249,9 +249,9 @@ public class ModelWriter
              *  For example, if the user enters "1+" into the constant
              *  expression field and "1+" is placed as the second element
              *  of the tuple that is the argument for PrintT(), then the parse
-             *  error would be something like "Found >>" which would be
+             *  error would be something like "Encountered >>" which would be
              *  mysterious to the user. With an identifier defined, the message
-             *  says "found ----" which is the separator after each section in
+             *  says "Encountered ----" which is the separator after each section in
              *  MC.tla. This error message is equally mysterious, but at least
              *  it is the same message that would appear were the same error present
              *  in another section in the model editor. We can potentially replace
