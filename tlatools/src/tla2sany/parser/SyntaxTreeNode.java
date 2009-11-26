@@ -19,6 +19,7 @@
 package tla2sany.parser;
 
 import tla2sany.semantic.ASTConstants;
+import tla2sany.semantic.Errors;
 import tla2sany.st.Location;
 import tla2sany.st.SyntaxTreeConstants;
 import tla2sany.st.TreeNode;
@@ -379,40 +380,96 @@ public class SyntaxTreeNode implements TreeNode, SyntaxTreeConstants,
     //System.out.println( image);
     if (zero != null) return zero[0]; else return one[0]; 
   }
+  /******************
+ * Bogus old version
+ */
+//  private void updateLocation() {
+//    int lvi = 0;
+//    location[0] = java.lang.Integer.MAX_VALUE;
+//    location[1] = java.lang.Integer.MAX_VALUE;
+//    location[2] = java.lang.Integer.MIN_VALUE;
+//    location[3] = java.lang.Integer.MIN_VALUE;
+//
+//    if ( zero != null) {
+//      for ( lvi = 0; lvi < zero.length; lvi++ ) {
+//        if ( zero[lvi].location[0] != java.lang.Integer.MAX_VALUE ) {
+//          location[0] = Math.min ( location[0], zero[lvi].location[0] );
+//          if ( location[0] == zero[lvi].location[0] )
+//            location[1] = Math.min ( location[1], zero[lvi].location[1]) ;
+//          location[2] = Math.max ( location[2], zero[lvi].location[2]);
+//          if ( location[2] == zero[lvi].location[2] )
+//            location[3] = Math.max ( location[3], zero[lvi].location[3]);
+//        }
+//      }
+//    }
+//
+//    if ( one != null) {
+//      for ( lvi=0; lvi < one.length; lvi++ ) {
+//        if ( one[lvi].location[0] != java.lang.Integer.MAX_VALUE ) {
+//          location[0] = Math.min ( location[0], one[lvi].location[0] );
+//          if ( location[0] == one[lvi].location[0] )
+//            location[1] = Math.min ( location[1], one[lvi].location[1]) ;
+//          location[2] = Math.max ( location[2], one[lvi].location[2]);
+//          if ( location[2] == one[lvi].location[2] )
+//            location[3] = Math.max ( location[3], one[lvi].location[3]);
+//        }
+//      }
+//    }
+//  }
 
+  /**
+   * updateLocation() computes the location field from the location fields
+   * of the heirs (descendants).  This would seem to be a matter of just
+   * copying the location fields of the first and last heirs, in the 
+   * obvious way.  However, there seem to be some nodes with no heirs
+   * that have their locations set to
+   *  
+   *   (java.lang.Integer.MAX_VALUE, ...MAX_VALUE, ...MIN_VALUE, ...MIN_VALUE)
+   * 
+   * The only ones I've found are N_IdPrefix nodes, which don't have any
+   * corresponding tokens in the module.  Instead of being efficient and
+   * looking for the first and last heirs that have a real location, we
+   * write a simple loop that works regardless of how the heirs are
+   * ordered.   LL 26 Nov 2009
+   */
   private void updateLocation() {
-    int lvi = 0;
-    location[0] = java.lang.Integer.MAX_VALUE;
-    location[1] = java.lang.Integer.MAX_VALUE;
-    location[2] = java.lang.Integer.MIN_VALUE;
-    location[3] = java.lang.Integer.MIN_VALUE;
+      int lvi = 0;
+      location[0] = java.lang.Integer.MAX_VALUE;
+      location[1] = java.lang.Integer.MAX_VALUE;
+      location[2] = java.lang.Integer.MIN_VALUE;
+      location[3] = java.lang.Integer.MIN_VALUE;
+      
+      if ( zero != null) {
+        for ( lvi = 0; lvi < zero.length; lvi++ ) {
 
-    if ( zero != null) {
-      for ( lvi = 0; lvi < zero.length; lvi++ ) {
-        if ( zero[lvi].location[0] != java.lang.Integer.MAX_VALUE ) {
-          location[0] = Math.min ( location[0], zero[lvi].location[0] );
-          if ( location[0] == zero[lvi].location[0] )
-            location[1] = Math.min ( location[1], zero[lvi].location[1]) ;
-          location[2] = Math.max ( location[2], zero[lvi].location[2]);
-          if ( location[2] == zero[lvi].location[2] )
-            location[3] = Math.max ( location[3], zero[lvi].location[3]);
+            if ( (zero[lvi].location[0] < location[0] )
+                  || (zero[lvi].location[0] == location[0] && zero[lvi].location[1] < location[1])) {
+            location[0] = zero[lvi].location[0] ;
+            location[1] = zero[lvi].location[1] ;
+           }
+          if ( (zero[lvi].location[2] > location[2] )
+                  || (zero[lvi].location[2] == location[2] && zero[lvi].location[3] > location[3])) {
+            location[2] = zero[lvi].location[2] ;
+            location[3] = zero[lvi].location[3] ;
+           }
         }
       }
-    }
 
-    if ( one != null) {
-      for ( lvi=0; lvi < one.length; lvi++ ) {
-        if ( one[lvi].location[0] != java.lang.Integer.MAX_VALUE ) {
-          location[0] = Math.min ( location[0], one[lvi].location[0] );
-          if ( location[0] == one[lvi].location[0] )
-            location[1] = Math.min ( location[1], one[lvi].location[1]) ;
-          location[2] = Math.max ( location[2], one[lvi].location[2]);
-          if ( location[2] == one[lvi].location[2] )
-            location[3] = Math.max ( location[3], one[lvi].location[3]);
-        }
+      if ( one != null) {
+          for ( lvi = 0; lvi < one.length; lvi++ ) {
+              if ( (one[lvi].location[0] < location[0] )
+                      || (one[lvi].location[0] == location[0] && one[lvi].location[1] < location[1])) {
+                location[0] = one[lvi].location[0] ;
+                location[1] = one[lvi].location[1] ;
+               }
+              if ( (one[lvi].location[2] > location[2] )
+                      || (one[lvi].location[2] == location[2] && one[lvi].location[3] > location[3])) {
+                location[2] = one[lvi].location[2] ;
+                location[3] = one[lvi].location[3] ;
+               }
+            }
       }
     }
-  }
 
 
   public final tla2sany.st.TreeNode[] one() { return one; }
