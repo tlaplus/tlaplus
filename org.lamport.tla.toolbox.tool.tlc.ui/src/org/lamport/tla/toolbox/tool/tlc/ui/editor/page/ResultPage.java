@@ -196,7 +196,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
             reinit();
         }
 
-        // calculator expression
+        // constant expression
         String expression = getConfig().getAttribute(MODEL_EXPRESSION_EVAL, EMPTY_STRING);
         expressionEvalInput.setDocument(new Document(expression));
     }
