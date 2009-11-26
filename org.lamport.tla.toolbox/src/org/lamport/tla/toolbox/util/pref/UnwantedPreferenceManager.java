@@ -50,10 +50,22 @@ public class UnwantedPreferenceManager extends ToolboxLifecycleParticipant
                 // these are sub pages of general that we want removed
                 generalNode.remove("org.eclipse.ui.preferencePages.Workspace");
                 generalNode.remove("org.eclipse.ui.preferencePages.ContentTypes");
-                generalNode.remove("org.eclipse.ui.preferencePages.Views");
+                // We no longer want to remove this node.
+                // We only want to remove one of its sub nodes.
+                // generalNode.remove("org.eclipse.ui.preferencePages.Views");
                 generalNode.remove("org.eclipse.ui.preferencePages.Editors");
                 generalNode.remove("org.eclipse.ui.preferencePages.Perspectives");
                 generalNode.remove("org.eclipse.equinox.security.ui.category");
+                IPreferenceNode appearanceNode = generalNode.findSubNode("org.eclipse.ui.preferencePages.Views");
+                if (appearanceNode != null)
+                {
+                    // Removes the label decorators node that is a sub node of
+                    // the appearance node.
+                    // We want to keep the other sub node, colors and fonts
+                    // because it allows for setting the font for
+                    // the module editor.
+                    appearanceNode.remove("org.eclipse.ui.preferencePages.Decorators");
+                }
             }
 
             // remove Install/Update
