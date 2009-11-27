@@ -39,12 +39,13 @@ public class RenameSpecHandler extends AbstractHandler implements IHandler
             if (selection != null && selection instanceof IStructuredSelection)
             {
                 Spec spec = (Spec) ((IStructuredSelection) selection).getFirstElement();
-                
+
                 specName = spec.getName() + "_Copy";
-                
+
                 IInputValidator specNameInputValidator = new SpecNameValidator();
-                final InputDialog dialog = new InputDialog(UIHelper.getShellProvider().getShell(), "New specification name",
-                        "Please input the new name of the specification", specName, specNameInputValidator);
+                final InputDialog dialog = new InputDialog(UIHelper.getShellProvider().getShell(),
+                        "New specification name", "Please input the new name of the specification", specName,
+                        specNameInputValidator);
                 dialog.setBlockOnOpen(true);
                 UIHelper.runUISync(new Runnable() {
 
@@ -68,13 +69,12 @@ public class RenameSpecHandler extends AbstractHandler implements IHandler
                 }
                 Activator.logDebug("Rename " + spec.getName() + " to " + specName);
                 Activator.getSpecManager().renameSpec(spec, specName);
-            } 
+            }
         }
 
         return null;
     }
 
-    
     class SpecNameValidator implements IInputValidator
     {
 
@@ -87,19 +87,20 @@ public class RenameSpecHandler extends AbstractHandler implements IHandler
             {
                 return "The specification name must be not empty";
             }
-            Spec spec = Activator.getSpecManager().getSpecByName(name);
-            if (spec !=null) 
+            Spec[] specs = Activator.getSpecManager().getRecentlyOpened();
+            for (int i = 0; i < specs.length; i++)
             {
-                if (spec == Activator.getSpecManager().getSpecLoaded()) 
-                {
-                    return "The specification can not be renamed to its own name";
-                } else 
+                if (name.equals(specs[i].getName()))
                 {
                     return "The specification with this name already exists";
+                }
+                if (name.equalsIgnoreCase(specs[i].getName()))
+                {
+                    return "A specification exists with the same name but a different case. This is not allowed.";
                 }
             }
             return null;
         }
-        
+
     }
 }
