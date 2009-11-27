@@ -8,7 +8,6 @@
 18. SIGNIFICANT BUG (parsing large specs)
 19. MINOR MISSING FEATURE (Exit)
 20. MISSING FEATURE (PlusCal)
-22. BUG  (rename spec)
 27. MINOR BUG  (Parse Spec/Module Commands)
 28. MINOR BUG  (Reset Window Layout)
 29. FEATURE (Module Editor Keybindings)
@@ -142,10 +141,6 @@
        be attached to an individual module.  (It's possible for a
        single spec to have PlusCal algorithms in two different 
        modules.)
-    
-22. BUG  (rename spec)
-    The rename spec command doesn't do the right thing if a spec by
-    that name already exists.
           
 27. MINOR BUG  (Parse Spec/Module Commands)
     If I select Parse spec from the file menu when the file is dirty,

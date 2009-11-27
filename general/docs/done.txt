@@ -47,6 +47,10 @@
 21. TUNING NEEDED BEFORE RELEASE (Preferences)
     Need to filter Preferences to eliminate things the user doesn't want
     to see.
+    
+22. BUG  (rename spec)
+    The rename spec command doesn't do the right thing if a spec by
+    that name already exists.
 
 23. SAME AS 9
         
