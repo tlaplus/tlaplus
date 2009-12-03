@@ -62,4 +62,11 @@ public interface IConfigurationConstants
      */
     public static final String LAUNCH_MAX_HEAP_SIZE = "maxHeapSize";
 
+    /**
+     * Length of time in minutes the TLC must run
+     * before the model is automatically locked at the termination
+     * of the run.
+     */
+    public static final String LAUNCH_AUTO_LOCK_MODEL_TIME = "autoLockTime";
+
 }

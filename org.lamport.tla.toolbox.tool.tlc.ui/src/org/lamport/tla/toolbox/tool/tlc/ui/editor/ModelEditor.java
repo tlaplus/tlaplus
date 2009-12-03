@@ -31,6 +31,7 @@ import org.eclipse.ui.part.FileEditorInput;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.spec.parser.IParseConstants;
+import org.lamport.tla.toolbox.tool.tlc.launch.IConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationDefaults;
 import org.lamport.tla.toolbox.tool.tlc.launch.TLCModelLaunchDelegate;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCModelLaunchDataProvider;
@@ -527,6 +528,16 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
             try
             {
                 // launching the config
+                if (mode.equals(TLCModelLaunchDelegate.MODE_MODELCHECK))
+                {
+                    // if model checking, the length of time that tlc
+                    // should run before the model is automatically locked
+                    // must be saved from the preferences
+                    int autoLockTime = TLCUIActivator.getDefault().getPreferenceStore().getInt(
+                            ITLCPreferenceConstants.I_TLC_AUTO_LOCK_MODEL_TIME);
+                    getConfig().setAttribute(IConfigurationConstants.LAUNCH_AUTO_LOCK_MODEL_TIME, autoLockTime);
+                    getConfig().doSave();
+                }
                 getConfig().launch(mode, new SubProgressMonitor(monitor, 1), true);
             } catch (CoreException e)
             {
