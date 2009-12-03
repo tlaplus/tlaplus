@@ -63,7 +63,7 @@ public class DeleteModelHandler extends AbstractHandler implements IModelConfigu
                 // find the corresponding model
                 if (modelName.equals(ModelHelper.getModelName(launchConfigurations[i].getFile())))
                 {
-                    if (ModelHelper.isModelLocked(launchConfigurations[i]))
+                    if (ModelHelper.isModelRunning(launchConfigurations[i]))
                     {
                         couldNotDelete.add(launchConfigurations[i]);
                     } else

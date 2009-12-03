@@ -49,7 +49,7 @@ public class ModelLabelProvider extends LabelProvider implements IDescriptionPro
                 {
                     return modelName + " [ crashed ]";
                 }
-                if (ModelHelper.isModelLocked(config))
+                if (ModelHelper.isModelRunning(config))
                 {
                     ILaunch[] launches = launchManager.getLaunches();
                     boolean found = false;

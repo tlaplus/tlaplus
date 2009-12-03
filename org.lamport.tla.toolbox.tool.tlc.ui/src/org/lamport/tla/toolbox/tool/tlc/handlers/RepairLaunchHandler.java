@@ -37,7 +37,7 @@ public class RepairLaunchHandler extends AbstractHandler
                     ILaunchConfiguration config = (ILaunchConfiguration) element;
                     try
                     {
-                        if (ModelHelper.isModelLocked(config) && ModelHelper.isModelStale(config))
+                        if (ModelHelper.isModelRunning(config) && ModelHelper.isModelStale(config))
                         {
                             ModelHelper.recoverModel(config);
                         }

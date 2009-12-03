@@ -55,10 +55,11 @@ public class RenameModelHandlerDelegate extends AbstractHandler implements IHand
 
             try
             {
-                if (ModelHelper.isModelLocked(model))
+                if (ModelHelper.isModelRunning(model) || ModelHelper.isModelLocked(model))
                 {
                     MessageDialog.openError(UIHelper.getShellProvider().getShell(), "Could not rename models",
-                            "Could not rename the model " + modelName + ", because it is being model checked.");
+                            "Could not rename the model " + modelName
+                                    + ", because it is being model checked or is locked.");
                     return RETURN;
                 }
             } catch (CoreException e1)

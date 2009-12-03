@@ -235,7 +235,8 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 
     public void setEnabled(boolean enabled)
     {
-        // do nothing here, since the result page is read-only per definition
+        // disable the constant expression evaluation
+        getDataBindingManager().getSection(SEC_EXPRESSION).getSection().setEnabled(enabled);
     }
 
     /**

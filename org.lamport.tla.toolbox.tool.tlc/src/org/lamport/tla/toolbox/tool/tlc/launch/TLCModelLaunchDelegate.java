@@ -12,6 +12,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -356,7 +357,8 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
             // view
             writer.addView(config.getAttribute(LAUNCH_VIEW, EMPTY_STRING), MODEL_PARAMETER_VIEW);
             // calculator expression
-            writer.addConstantExpressionEvaluation(config.getAttribute(MODEL_EXPRESSION_EVAL, EMPTY_STRING), MODEL_EXPRESSION_EVAL);
+            writer.addConstantExpressionEvaluation(config.getAttribute(MODEL_EXPRESSION_EVAL, EMPTY_STRING),
+                    MODEL_EXPRESSION_EVAL);
 
             int specType = config.getAttribute(MODEL_BEHAVIOR_SPEC_TYPE, MODEL_BEHAVIOR_TYPE_DEFAULT);
             switch (specType) {
@@ -371,7 +373,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
                         writer.addFormulaList(ModelWriter.createFalseInit(var), "INIT", MODEL_BEHAVIOR_NO_SPEC);
                         writer.addFormulaList(ModelWriter.createFalseNext(var), "NEXT", MODEL_BEHAVIOR_NO_SPEC);
                     }
-                }  
+                }
                 break;
             case MODEL_BEHAVIOR_TYPE_SPEC_CLOSED:
 
@@ -554,7 +556,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
         synchronized (config)
         {
             // read out the running attribute
-            if (ModelHelper.isModelLocked(config))
+            if (ModelHelper.isModelRunning(config) || ModelHelper.isModelLocked(config))
             {
                 // previous run has not been completed
                 // exit
@@ -562,16 +564,18 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
                         new Status(
                                 IStatus.ERROR,
                                 TLCActivator.PLUGIN_ID,
-                                "The lock for "
+                                "The running attribute for "
                                         + modelName
-                                        + " has been found. Another TLC is possible running on the same model, or has been terminated non-gracefully"));
+                                        + " has been set to true or that model is locked."
+                                        + "Another TLC is possible running on the same model, or has been terminated non-gracefully"
+                                        + "or the user has tried to run TLC on a locked model. Running TLC on a locked model should not be possible."));
             } else
             {
 
                 // setup the running flag
                 // from this point any termination of the run must reset the
                 // flag
-                ModelHelper.lockModel(config);
+                ModelHelper.setModelRunning(config, true);
             }
         }
 
@@ -615,10 +619,23 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
             // make the model modification in order to make it runnable again
             try
             {
-                ModelHelper.unlockModel(config);
+                Assert.isTrue(event.getJob() instanceof TLCProcessJob);
+                Assert.isNotNull(event.getResult());
+                TLCProcessJob tlcJob = (TLCProcessJob) event.getJob();
+                // if (event.getResult().isOK())
+                // {
+                if (tlcJob.getTlcEndTime() - tlcJob.getTlcStartTime() > 60000)
+                {
+                    // length of job execution exceeded a certain length of time
+                    // should lock
+                    ModelHelper.setModelLocked(config, true);
+                }
+                // }
+
+                ModelHelper.setModelRunning(config, false);
             } catch (CoreException e)
             {
-                TLCActivator.logError("Error unlocking the model", e);
+                TLCActivator.logError("Error setting lock and running markers on the model", e);
             }
         }
     }

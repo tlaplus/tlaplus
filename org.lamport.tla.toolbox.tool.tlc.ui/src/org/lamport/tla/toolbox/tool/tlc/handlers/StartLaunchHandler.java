@@ -36,7 +36,7 @@ public class StartLaunchHandler extends AbstractHandler
                 ILaunchConfiguration config = (ILaunchConfiguration) element;
                 try
                 {
-                    if (ModelHelper.isModelLocked(config) || ModelHelper.isModelStale(config))
+                    if (ModelHelper.isModelRunning(config) || ModelHelper.isModelStale(config))
                     {
                         return null;
                     }

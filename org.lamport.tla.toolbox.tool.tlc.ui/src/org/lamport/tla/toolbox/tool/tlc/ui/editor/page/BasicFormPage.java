@@ -6,11 +6,13 @@ import java.util.List;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.ListenerList;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.dialogs.IMessageProvider;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
@@ -231,6 +233,10 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
         toolbarManager.add(new DynamicContributionItem(new GenerateAction()));
         // stop button
         toolbarManager.add(new DynamicContributionItem(new StopAction()));
+        // lock button
+        toolbarManager.add(new DynamicContributionItem(new LockModelAction()));
+        // unlock button
+        toolbarManager.add(new DynamicContributionItem(new UnlockModelAction()));
 
         // refresh the tool-bar
         toolbarManager.update(true);
@@ -250,6 +256,10 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
         headClientTBM.add(new DynamicContributionItem(new GenerateAction()));
         // stop button
         headClientTBM.add(new DynamicContributionItem(new StopAction()));
+        // lock button
+        headClientTBM.add(new DynamicContributionItem(new LockModelAction()));
+        // unlock button
+        headClientTBM.add(new DynamicContributionItem(new UnlockModelAction()));
 
         // refresh the head client toolbar
         headClientTBM.update(true);
@@ -501,7 +511,7 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
             IToolBarManager toolbarManager = mForm.getForm().getToolBarManager();
 
             // get the usage status
-            boolean modelInUse = isModelInUse();
+            boolean modelRunning = isModelRunning();
 
             // refresh the title
             String title = mForm.getForm().getText();
@@ -512,7 +522,7 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
                 title = title.substring(0, titleIndex);
             }
 
-            if (modelInUse)
+            if (modelRunning)
             {
                 if (isModelStale())
                 {
@@ -546,7 +556,7 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
             }
 
             // refresh enablement status
-            setEnabled(!modelInUse);
+            setEnabled(!modelRunning && !isModelLocked());
             mForm.getForm().update();
 
         }
@@ -556,9 +566,18 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
      * Returns true, if the model is being run, that is the attribute MODEL_IS_RUNNING is true
      * @return true if the underlying model file has attribute MODEL_IS_RUNNING set to true 
      */
-    public boolean isModelInUse()
+    public boolean isModelRunning()
     {
-        return ((ModelEditor) getEditor()).isModelInUse();
+        return ((ModelEditor) getEditor()).isModelRunning();
+    }
+
+    /**
+     * Returns true, if the model is locked, that is the attribute MODEL_IS_LOCKED is true
+     * @return true if the underlying model file has attribute MODEL_IS_LOCKED set to true 
+     */
+    public boolean isModelLocked()
+    {
+        return ((ModelEditor) getEditor()).isModelLocked();
     }
 
     public boolean isModelStale()
@@ -677,11 +696,14 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
             if (!FormHelper.isIdentifier(value))
             {
                 if (value.trim().equals(""))
-                { message = elementType + " has been omitted." ;
+                {
+                    message = elementType + " has been omitted.";
 
                 } else
                 {
-                    message = elementType + " " + value
+                    message = elementType
+                            + " "
+                            + value
                             + " may not be used, since it is not a valid identifier."
                             + "\nAn identifier is a non-empty sequence of letters, digits and '_' with at least one letter.";
                 }
@@ -783,7 +805,7 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
          */
         public boolean isEnabled()
         {
-            return !isModelInUse();
+            return !isModelRunning() && !isModelLocked();
         }
     }
 
@@ -810,7 +832,7 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
          */
         public boolean isEnabled()
         {
-            return !isModelInUse();
+            return !isModelRunning() && !isModelLocked();
         }
     }
 
@@ -837,7 +859,7 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
          */
         public boolean isEnabled()
         {
-            return isModelInUse() && !isModelStale();
+            return isModelRunning() && !isModelStale();
         }
     }
 
@@ -868,6 +890,71 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
         public boolean isEnabled()
         {
             return isModelStale();
+        }
+    }
+
+    class UnlockModelAction extends Action
+    {
+        UnlockModelAction()
+        {
+            super("U");
+            setToolTipText("Unlocks the model so that changes are possible.");
+        }
+
+        public void run()
+        {
+            try
+            {
+                ModelHelper.setModelLocked(getConfig(), false);
+            } catch (CoreException e)
+            {
+                TLCUIActivator.logError("There was an error unlocking the model.", e);
+            }
+        }
+
+        public boolean isEnabled()
+        {
+            return !isModelRunning() && isModelLocked();
+        }
+    }
+
+    class LockModelAction extends Action
+    {
+        LockModelAction()
+        {
+            super("L");
+            setToolTipText("Locks the model so that no changes are possible.");
+            // setImageDescriptor(ConsolePluginImages.getImageDescriptor(IInternalConsoleConstants.IMG_DLCL_LOCK));
+        }
+
+        public void run()
+        {
+            if (getEditor().isDirty())
+            {
+                // allow the user to save or cancel
+                // it is not allowed to not save and lock the model
+                boolean save = MessageDialog.open(MessageDialog.CONFIRM, UIHelper.getShellProvider().getShell(),
+                        "Model Modified", "The model has been modified. Do you want to save the changes?", SWT.NONE);
+                if (save)
+                {
+                    getEditor().doSave(new NullProgressMonitor());
+                } else
+                {
+                    return;
+                }
+            }
+            try
+            {
+                ModelHelper.setModelLocked(getConfig(), true);
+            } catch (CoreException e)
+            {
+                TLCUIActivator.logError("There was an error locking the model.", e);
+            }
+        }
+
+        public boolean isEnabled()
+        {
+            return !isModelLocked();
         }
     }
 }

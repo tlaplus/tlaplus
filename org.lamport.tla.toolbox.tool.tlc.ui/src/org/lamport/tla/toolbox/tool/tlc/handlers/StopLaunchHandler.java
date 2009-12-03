@@ -39,7 +39,7 @@ public class StopLaunchHandler extends AbstractHandler
                     ILaunchConfiguration config = (ILaunchConfiguration) element;
                     try
                     {
-                        if (ModelHelper.isModelLocked(config) && !ModelHelper.isModelStale(config))
+                        if (ModelHelper.isModelRunning(config) && !ModelHelper.isModelStale(config))
                         {
                             Job[] runningSpecJobs = Job.getJobManager().find(config);
                             for (int i = 0; i < runningSpecJobs.length; i++)

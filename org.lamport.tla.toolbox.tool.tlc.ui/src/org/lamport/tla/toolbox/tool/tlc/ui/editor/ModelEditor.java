@@ -89,8 +89,13 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
 
         public void run()
         {
-            // re-validate the pages, iff the model is not in use
-            if (!isModelInUse())
+            // re-validate the pages, iff the model is not running
+            // the pages should be validated if the model is locked
+            // because the user may have saved and immediately locked
+            // the model
+            // this can be run asynchronously, so the validation
+            // should still occur to account for those changes
+            if (!isModelRunning())
             {
                 for (int i = 0; i < getPageCount(); i++)
                 {
@@ -209,7 +214,7 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
                         ((BasicFormPage) page).refresh();
                     }
 
-                    if (isModelInUse())
+                    if (isModelRunning())
                     {
                         showResultPage();
                     }
@@ -538,7 +543,7 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
     {
         try
         {
-            if (ModelHelper.isModelLocked(getConfig()) && !ModelHelper.isModelStale(getConfig()))
+            if (ModelHelper.isModelRunning(getConfig()) && !ModelHelper.isModelStale(getConfig()))
             {
                 Job[] runningSpecJobs = Job.getJobManager().find(getConfig());
                 for (int i = 0; i < runningSpecJobs.length; i++)
@@ -758,10 +763,26 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
     }
 
     /**
-     * Retrieves if the working copy of the model is in use
+     * Retrieves if the working copy of the model is running
      * @return true, if the model is locked 
      */
-    public boolean isModelInUse()
+    public boolean isModelRunning()
+    {
+        try
+        {
+            return ModelHelper.isModelRunning(getConfig());
+        } catch (CoreException e)
+        {
+            TLCUIActivator.logError("Error determining model status", e);
+            return true;
+        }
+    }
+
+    /**
+     * Retrieves if the working copy of the model is locked
+     * @return true, if the model is locked 
+     */
+    public boolean isModelLocked()
     {
         try
         {

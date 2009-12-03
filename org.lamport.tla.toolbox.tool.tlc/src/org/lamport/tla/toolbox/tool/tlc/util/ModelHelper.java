@@ -18,6 +18,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
+import org.eclipse.core.resources.IResourceRuleFactory;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
@@ -40,6 +41,7 @@ import org.lamport.tla.toolbox.tool.tlc.TLCActivator;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationDefaults;
 import org.lamport.tla.toolbox.tool.tlc.launch.TLCModelLaunchDelegate;
+import org.lamport.tla.toolbox.tool.tlc.launch.TraceExplorerDelegate;
 import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
 import org.lamport.tla.toolbox.tool.tlc.model.Formula;
 import org.lamport.tla.toolbox.util.UIHelper;
@@ -93,6 +95,10 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
      */
     private static final String MODEL_IS_RUNNING = "modelIsRunning";
     /**
+     * model is locked by a user lock
+     */
+    private static final String MODEL_IS_LOCKED = "modelIsLocked";
+    /**
      * Delimiter used to serialize lists  
      */
     private static final String LIST_DELIMITER = ";";
@@ -105,6 +111,12 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
     public static final String FILE_TLA = MC_MODEL_NAME + ".tla";
     public static final String FILE_CFG = MC_MODEL_NAME + ".cfg";
     public static final String FILE_OUT = MC_MODEL_NAME + ".out";
+
+    // trace explorer file names
+    public static final String TE_MODEL_NAME = "TE";
+    public static final String TE_FILE_TLA = TE_MODEL_NAME + ".tla";
+    public static final String TE_FILE_CFG = TE_MODEL_NAME + ".cfg";
+    public static final String TE_FILE_OUT = TE_MODEL_NAME + ".out";
 
     private static final String CHECKPOINT_STATES = MC_MODEL_NAME + ".st.chkpt";
     private static final String CHECKPOINT_QUEUE = "queue.chkpt";
@@ -214,6 +226,68 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
         }
 
         return null;
+    }
+
+    /**
+     * Given the model name, this will search for a
+     * ILaunchConfiguration that is used to launch
+     * the trace explorer. If it does not exist, it
+     * creates the configuration file.
+     * 
+     * @param modelName 
+     * @return
+     */
+    public static ILaunchConfiguration getTraceExploreConfigByName(String modelName)
+    {
+
+        String configName = ToolboxHandle.getCurrentSpec().getName() + "___" + modelName + "___TE";
+
+        ILaunchManager launchManager = DebugPlugin.getDefault().getLaunchManager();
+        ILaunchConfigurationType configType = launchManager
+                .getLaunchConfigurationType(TraceExplorerDelegate.LAUNCH_CONFIGURATION_TYPE);
+
+        ILaunchConfiguration config = null;
+
+        try
+        {
+            // check if it has been created
+            ILaunchConfiguration[] configs;
+
+            configs = launchManager.getLaunchConfigurations(configType);
+            for (int i = 0; i < configs.length; i++)
+            {
+                if (configs[i].getName().equals(configName))
+                {
+                    config = configs[i];
+                    return config;
+                }
+            }
+
+            // configuration file does not exist, so create it
+            IFolder modelFolder = ToolboxHandle.getCurrentSpec().getProject().getFolder(modelName);
+            // IFolder traceFolder = modelFolder.getFolder(modelName);
+            // if (!traceFolder.exists())
+            // {
+            // traceFolder.create(IResource.DERIVED | IResource.FORCE, true, new NullProgressMonitor());
+            // }
+
+            ILaunchConfigurationWorkingCopy launchCopy = configType.newInstance(modelFolder, configName);
+            return launchCopy.doSave();
+
+        } catch (CoreException e)
+        {
+            TLCActivator.logError("Bug finding a trace explorer launch file for model " + modelName + ".", e);
+        }
+
+        Assert.isNotNull(config, "Could not find or create launch file for trace explorer for model " + modelName
+                + ". This is a bug.");
+        return config;
+
+    }
+
+    public static String getTraceExploreLaunchConfigName(String modelName)
+    {
+        return ToolboxHandle.getCurrentSpec().getName() + "___" + modelName + "___TE";
     }
 
     /**
@@ -638,6 +712,54 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
     }
 
     /**
+     * Checks whether the model is running or not
+     * @param config
+     * @return
+     * @throws CoreException
+     */
+    public static boolean isModelRunning(ILaunchConfiguration config) throws CoreException
+    {
+        // marker
+        IFile resource = config.getFile();
+        if (resource.exists())
+        {
+            IMarker marker;
+            IMarker[] foundMarkers = resource.findMarkers(TLC_MODEL_IN_USE_MARKER, false, IResource.DEPTH_ZERO);
+            if (foundMarkers.length > 0)
+            {
+                marker = foundMarkers[0];
+                // remove trash if any
+                for (int i = 1; i < foundMarkers.length; i++)
+                {
+                    foundMarkers[i].delete();
+                }
+
+                return marker.getAttribute(MODEL_IS_RUNNING, false);
+            } else
+            {
+                return false;
+            }
+        } else
+        {
+            return false;
+        }
+        /*
+        // persistence property
+        String isLocked = config.getFile().getPersistentProperty(new QualifiedName(TLCActivator.PLUGIN_ID, MODEL_IS_RUNNING));
+        if (isLocked == null) 
+        {
+            return false;
+        } else {
+            return Boolean.getBoolean(isLocked);
+        }
+        */
+
+        /*
+        return config.getAttribute(MODEL_IS_RUNNING, false);
+        */
+    }
+
+    /**
      * Checks whether the model is locked or not
      * @param config
      * @return
@@ -660,7 +782,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
                     foundMarkers[i].delete();
                 }
 
-                return marker.getAttribute(MODEL_IS_RUNNING, false);
+                return marker.getAttribute(MODEL_IS_LOCKED, false);
             } else
             {
                 return false;
@@ -764,8 +886,9 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
     /**
      * Signals the start of model execution
      * @param config
+     * @param isRunning whether TLC is running on the config or not
      */
-    public static void lockModel(ILaunchConfiguration config) throws CoreException
+    public static void setModelRunning(ILaunchConfiguration config, boolean isRunning) throws CoreException
     {
         IFile resource = config.getFile();
         if (resource.exists())
@@ -785,7 +908,47 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
                 marker = resource.createMarker(TLC_MODEL_IN_USE_MARKER);
             }
 
-            marker.setAttribute(MODEL_IS_RUNNING, true);
+            marker.setAttribute(MODEL_IS_RUNNING, isRunning);
+        }
+        /*
+        // persistence property
+        config.getFile().setPersistentProperty(new QualifiedName(TLCActivator.PLUGIN_ID, MODEL_IS_RUNNING), Boolean.toString(true));
+         */
+
+        /*
+        // file modification 
+        ModelHelper.writeAttributeValue(config, IModelConfigurationConstants.MODEL_IS_RUNNING, true);
+         */
+    }
+
+    /**
+     * Signals that the model is locked if isLocked is true, signals that
+     * the model is unlocked if isLocked is false
+     * @param config
+     * @param lock whether the model should be locked or not
+     * @throws CoreException
+     */
+    public static void setModelLocked(ILaunchConfiguration config, boolean lock) throws CoreException
+    {
+        IFile resource = config.getFile();
+        if (resource.exists())
+        {
+            IMarker marker;
+            IMarker[] foundMarkers = resource.findMarkers(TLC_MODEL_IN_USE_MARKER, false, IResource.DEPTH_ZERO);
+            if (foundMarkers.length > 0)
+            {
+                marker = foundMarkers[0];
+                // remove trash if any
+                for (int i = 1; i < foundMarkers.length; i++)
+                {
+                    foundMarkers[i].delete();
+                }
+            } else
+            {
+                marker = resource.createMarker(TLC_MODEL_IN_USE_MARKER);
+            }
+
+            marker.setAttribute(MODEL_IS_LOCKED, lock);
         }
         /*
         // persistence property
@@ -800,9 +963,19 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
 
     /**
      * Signals the end of model execution
+     * 
+     * This method is no longer used.
+     * TODO remove
+     * 
+     * User unlock will unlock any model. An automatic unlock caused by the end of 
+     * a run of TLC will only unlock the model if there is no user lock on that model.
      * @param config
+     * @param userLock true if this is caused by the user explicitly unlocking the model
+     * by clicking the lock button, false if this is caused automatically by the end
+     * of TLC
+     * @deprecated
      */
-    public static void unlockModel(ILaunchConfiguration config) throws CoreException
+    public static void unlockModel(ILaunchConfiguration config, boolean userUnlock) throws CoreException
     {
         IFile resource = config.getFile();
         if (config.exists())
@@ -822,7 +995,19 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
                 marker = resource.createMarker(TLC_MODEL_IN_USE_MARKER);
             }
 
-            marker.setAttribute(MODEL_IS_RUNNING, false);
+            if (userUnlock)
+            {
+                // user unlock always unlocks the model
+                marker.setAttribute(MODEL_IS_RUNNING, false);
+                marker.setAttribute(MODEL_IS_LOCKED, false);
+            } else if (!marker.getAttribute(MODEL_IS_LOCKED, false))
+            {
+                // automatic unlock only unlocks the model
+                // if there is not a user lock on that model
+                marker.setAttribute(MODEL_IS_RUNNING, false);
+                marker.setAttribute(MODEL_IS_LOCKED, false);
+            }
+
         }
         /*
         // persistence property

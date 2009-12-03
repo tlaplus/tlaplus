@@ -32,6 +32,17 @@ public class TLCProcessJob extends TLCJob
     private BroadcastStreamListener listener = null;
 
     /**
+     * The tlc start time in milliseconds as given
+     * by {@link System#currentTimeMillis()}.
+     */
+    private long tlcStartTime;
+    /**
+     * The tlc end time in milliseconds as given
+     * by {@link System#currentTimeMillis()}.
+     */
+    private long tlcEndTime;
+
+    /**
      * Constructs a process job
      * @param name
      */
@@ -105,6 +116,7 @@ public class TLCProcessJob extends TLCJob
             {
                 // step 3
                 runner.run(tlcConfig, launch, new SubProgressMonitor(monitor, STEP));
+                tlcStartTime = System.currentTimeMillis();
             } catch (CoreException e)
             {
                 return new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID, "Error launching TLC modle checker", e);
@@ -155,6 +167,7 @@ public class TLCProcessJob extends TLCJob
                         }
 
                         // abnormal termination
+                        tlcEndTime = System.currentTimeMillis();
                         return Status.CANCEL_STATUS;
                     }
                 }
@@ -165,6 +178,8 @@ public class TLCProcessJob extends TLCJob
 
                 // handle finish
                 doFinish();
+
+                tlcEndTime = System.currentTimeMillis();
 
                 return Status.OK_STATUS;
 
@@ -226,6 +241,26 @@ public class TLCProcessJob extends TLCJob
             }
         }
         return null;
+    }
+
+    /**
+     * Returns the tlc start time in milliseconds as given
+     * by {@link System#currentTimeMillis()}.
+     * @return
+     */
+    public long getTlcStartTime()
+    {
+        return tlcStartTime;
+    }
+
+    /**
+     * Returns the tlc end time in milliseconds as given
+     * by {@link System#currentTimeMillis()}.
+     * @return
+     */
+    public long getTlcEndTime()
+    {
+        return tlcEndTime;
     }
 
 }
