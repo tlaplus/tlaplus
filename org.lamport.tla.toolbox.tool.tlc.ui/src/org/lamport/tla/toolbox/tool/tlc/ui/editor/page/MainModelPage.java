@@ -540,8 +540,9 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
                 if (!noSpecRadio.getSelection())
                 {
                     // mark dirty so that changes must be written to config file
-                    dm.getSection(dm.getSectionForAttribute(MODEL_BEHAVIOR_NO_SPEC)).markDirty();
                     setSpecSelection(MODEL_BEHAVIOR_TYPE_NO_SPEC);
+                    dm.getSection(dm.getSectionForAttribute(MODEL_BEHAVIOR_NO_SPEC)).markDirty();
+
                 }
             } else
             {
