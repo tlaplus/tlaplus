@@ -80,4 +80,12 @@ public interface IModelConfigurationConstants extends IConfigurationConstants
      * constant expression to be evaluated
      */
     public static final String MODEL_EXPRESSION_EVAL = "modelExpressionEval";
+    /**
+     * init for trace exploration
+     */
+    public static final String TRACE_EXPLORE_INIT = "traceExploreInit";
+    /**
+     * next for trace exploration
+     */
+    public static final String TRACE_EXPLORE_NEXT = "traceExploreNext";
 }

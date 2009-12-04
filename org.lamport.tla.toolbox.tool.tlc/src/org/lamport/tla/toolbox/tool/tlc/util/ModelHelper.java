@@ -41,7 +41,6 @@ import org.lamport.tla.toolbox.tool.tlc.TLCActivator;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationDefaults;
 import org.lamport.tla.toolbox.tool.tlc.launch.TLCModelLaunchDelegate;
-import org.lamport.tla.toolbox.tool.tlc.launch.TraceExplorerDelegate;
 import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
 import org.lamport.tla.toolbox.tool.tlc.model.Formula;
 import org.lamport.tla.toolbox.util.UIHelper;
@@ -234,61 +233,63 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
      * the trace explorer. If it does not exist, it
      * creates the configuration file.
      * 
+     * Currently not used.
+     * 
      * @param modelName 
      * @return
      */
-    public static ILaunchConfiguration getTraceExploreConfigByName(String modelName)
-    {
+    // public static ILaunchConfiguration getTraceExploreConfigByName(String modelName)
+    // {
+    //
+    // String configName = ToolboxHandle.getCurrentSpec().getName() + "___" + modelName + "___TE";
+    //
+    // ILaunchManager launchManager = DebugPlugin.getDefault().getLaunchManager();
+    // ILaunchConfigurationType configType = launchManager
+    // .getLaunchConfigurationType(TraceExplorerDelegate.LAUNCH_CONFIGURATION_TYPE);
+    //
+    // ILaunchConfiguration config = null;
+    //
+    // try
+    // {
+    // // check if it has been created
+    // ILaunchConfiguration[] configs;
+    //
+    // configs = launchManager.getLaunchConfigurations(configType);
+    // for (int i = 0; i < configs.length; i++)
+    // {
+    // if (configs[i].getName().equals(configName))
+    // {
+    // config = configs[i];
+    // return config;
+    // }
+    // }
+    //
+    // // configuration file does not exist, so create it
+    // IFolder modelFolder = ToolboxHandle.getCurrentSpec().getProject().getFolder(modelName);
+    // // IFolder traceFolder = modelFolder.getFolder(modelName);
+    // // if (!traceFolder.exists())
+    // // {
+    // // traceFolder.create(IResource.DERIVED | IResource.FORCE, true, new NullProgressMonitor());
+    // // }
+    //
+    // ILaunchConfigurationWorkingCopy launchCopy = configType.newInstance(modelFolder, configName);
+    // return launchCopy.doSave();
+    //
+    // } catch (CoreException e)
+    // {
+    // TLCActivator.logError("Bug finding a trace explorer launch file for model " + modelName + ".", e);
+    // }
+    //
+    // Assert.isNotNull(config, "Could not find or create launch file for trace explorer for model " + modelName
+    // + ". This is a bug.");
+    // return config;
+    //
+    // }
 
-        String configName = ToolboxHandle.getCurrentSpec().getName() + "___" + modelName + "___TE";
-
-        ILaunchManager launchManager = DebugPlugin.getDefault().getLaunchManager();
-        ILaunchConfigurationType configType = launchManager
-                .getLaunchConfigurationType(TraceExplorerDelegate.LAUNCH_CONFIGURATION_TYPE);
-
-        ILaunchConfiguration config = null;
-
-        try
-        {
-            // check if it has been created
-            ILaunchConfiguration[] configs;
-
-            configs = launchManager.getLaunchConfigurations(configType);
-            for (int i = 0; i < configs.length; i++)
-            {
-                if (configs[i].getName().equals(configName))
-                {
-                    config = configs[i];
-                    return config;
-                }
-            }
-
-            // configuration file does not exist, so create it
-            IFolder modelFolder = ToolboxHandle.getCurrentSpec().getProject().getFolder(modelName);
-            // IFolder traceFolder = modelFolder.getFolder(modelName);
-            // if (!traceFolder.exists())
-            // {
-            // traceFolder.create(IResource.DERIVED | IResource.FORCE, true, new NullProgressMonitor());
-            // }
-
-            ILaunchConfigurationWorkingCopy launchCopy = configType.newInstance(modelFolder, configName);
-            return launchCopy.doSave();
-
-        } catch (CoreException e)
-        {
-            TLCActivator.logError("Bug finding a trace explorer launch file for model " + modelName + ".", e);
-        }
-
-        Assert.isNotNull(config, "Could not find or create launch file for trace explorer for model " + modelName
-                + ". This is a bug.");
-        return config;
-
-    }
-
-    public static String getTraceExploreLaunchConfigName(String modelName)
-    {
-        return ToolboxHandle.getCurrentSpec().getName() + "___" + modelName + "___TE";
-    }
+    // public static String getTraceExploreLaunchConfigName(String modelName)
+    // {
+    // return ToolboxHandle.getCurrentSpec().getName() + "___" + modelName + "___TE";
+    // }
 
     /**
      * Convenience method
