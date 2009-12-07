@@ -91,12 +91,8 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
         public void run()
         {
             // re-validate the pages, iff the model is not running
-            // the pages should be validated if the model is locked
-            // because the user may have saved and immediately locked
-            // the model
-            // this can be run asynchronously, so the validation
-            // should still occur to account for those changes
-            if (!isModelRunning())
+            // and is not locked
+            if (!isModelRunning() && !isModelLocked())
             {
                 for (int i = 0; i < getPageCount(); i++)
                 {
@@ -870,6 +866,16 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
                 pagesToAdd[i].getManagedForm().getMessageManager().addMessage(key, messageText, pageId, type, control);
             }
         }
+    }
+    
+    /**
+     * Returns the validateRunnable so that the pages
+     * can be validated by code outside of this class.
+     * @return
+     */
+    public ValidateRunnable getValidateRunnable()
+    {
+        return validateRunable;
     }
 
 }

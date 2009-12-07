@@ -937,7 +937,12 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
                         "Model Modified", "The model has been modified. Do you want to save the changes?", SWT.NONE);
                 if (save)
                 {
-                    getEditor().doSave(new NullProgressMonitor());
+                    ModelEditor editor = (ModelEditor) getEditor();
+                    editor.doSave(new NullProgressMonitor());
+                    // The changes may result in an error, but validation
+                    // can only be run on an unlocked model, so the validation
+                    // must be run synchronously before the model is locked.
+                    UIHelper.runUISync(editor.getValidateRunnable());
                 } else
                 {
                     return;
