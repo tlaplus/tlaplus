@@ -626,7 +626,9 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
                 {
                     int autoLockTime = config.getAttribute(LAUNCH_AUTO_LOCK_MODEL_TIME,
                             IModelConfigurationDefaults.MODEL_AUTO_LOCK_TIME_DEFAULT);
-                    if (tlcJob.getTlcEndTime() - tlcJob.getTlcStartTime() > autoLockTime)
+                    // auto lock time is in minutes, getTLCStartTime() and getTLCEndTime()
+                    // are in milliseconds
+                    if (tlcJob.getTlcEndTime() - tlcJob.getTlcStartTime() > autoLockTime*60*1000)
                     {
                         // length of job execution exceeded a certain length of time
                         // should lock
