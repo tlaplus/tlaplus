@@ -37,6 +37,8 @@ import util.ToolIO;
 *   Version 1.3: (February 2008)                                           *
 *                Added "await" as a synonym for "when"                     *
 *                                                                          *
+*   Version 1.31: (December 2009)                                          *
+*                Added .pcal file option.                                  *
 * -----------------------------------------------------------------        *
 *                                                                          *
 * This is the main method of the +CAL to TLA+ translation program.         *
@@ -194,17 +196,16 @@ class trans
       /*********************************************************************
       * Get and print version number.                                      *
       *********************************************************************/
-      String lastModified =  
-         "last modified on Wed 11 March 2009 at 14:52:58 PST by lamport";
+//      String lastModified =  
+//         "last modified on Wed 11 March 2009 at 14:52:58 PST by lamport";
         /*******************************************************************
         * This string is inserted by an Emacs macro when a new version is  *
-        * saved.                                                           *
+        * saved.  Unfortunately, Eclipse isn't Emacs.                      *
         *******************************************************************/
-      String modDate = 
-          lastModified.substring(21, lastModified.indexOf(" at"));
+      String modDate = "8 December 2009";
       if (ToolIO.getMode() == ToolIO.SYSTEM) 
       { 
-          PcalDebug.reportInfo("pcal.trans Version 1.3 of " + modDate) ;
+          PcalDebug.reportInfo("pcal.trans Version 1.31 of " + modDate) ;
       }
 
       // SZ Mar 9, 2009:
@@ -218,6 +219,11 @@ class trans
       * Get and process arguments.                                         
       *********************************************************************/
       int status = parseAndProcessArguments(args); 
+//System.out.println("TLAInputFile = `" + PcalParams.TLAInputFile + "'");
+//System.out.println("fromPcalFile = " + PcalParams.fromPcalFile);
+//System.out.println("status = " + status);
+//System.exit(-1);
+      
       if (status != STATUS_OK) 
       {
           return exitWithStatus(status);
@@ -231,13 +237,19 @@ class trans
     Vector inputVec = null;
     try
     {
-        inputVec = fileToStringVector(PcalParams.TLAInputFile + ".tla");
+        inputVec = fileToStringVector(PcalParams.TLAInputFile + (PcalParams.fromPcalFile?".pcal":".tla"));
     } catch (FileToStringVectorException e)
     {
         PcalDebug.reportError(e);
         return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
     }
 
+     /*********************************************************************
+     * outputVec is an alias for inputVec if the input is a .tla file,    *
+     * otherwise it is a new string vector.                               *
+     *********************************************************************/
+      Vector outputVec = PcalParams.fromPcalFile ? new Vector() : inputVec;
+      
       /*********************************************************************
       * Set untabInputVec to be the vector of strings obtained from        *
       * inputVec by replacing tabs with spaces.                            *
@@ -257,7 +269,43 @@ class trans
       *********************************************************************/
       Vector untabInputVec = removeTabs(inputVec) ;     
 
+      int translationLine = 0;
+
       /*********************************************************************
+      * Set algLine, algCol to the line and column of the first instance   *
+      * of the string PcalParams.BeginAlg in the file.  (These are Java    *
+      * ordinals, in which counting begins at 0.)                          *
+      *                                                                    *
+      * Modified by LL on 18 Feb 2006 to use untabInputVec instead of      *
+      * inputVec, to correct bug that occured when tabs preceded the       *
+      * "--algorithm".                                                     *
+      *********************************************************************/
+      int algLine = 0 ;
+      int algCol = -1 ;
+
+      if (PcalParams.fromPcalFile) {
+           /******************************************************************
+           * Input is .pcal file.                                            *
+           *                                                                 *
+           * Copy everything before the "--algorithm" line to outputVec,     *
+           * processing any version and option statement.                    *
+           ******************************************************************/
+     
+          // copy blank lines
+          while (algLine < untabInputVec.size() 
+                  && ((String) 
+                          untabInputVec.elementAt(algLine)).trim().equals("")) {
+            outputVec.addElement(untabInputVec.elementAt(algLine));
+            algLine++;
+          }
+// XXXXXXXX Stopped here
+          if (algLine == untabInputVec.size()) {PcalDebug.reportError(
+                  "Premature end of pcal input file");}
+          if ("abc".startsWith("??????")){}
+      }
+      else {
+      /*********************************************************************
+      * Input is .tla file.                                                *
       * Delete the previous version of the translation (if it exists) from *
       * inputVec.  Set translationLine to the number of the line after     *
       * which the translation is to be inserted.  (Line numbering is by    *
@@ -268,10 +316,10 @@ class trans
       * untabInputVec, because we will then detect if the begin and end    *
       * translation lines contain part of the algorithm within them.       *
       **********************************************************************/
-      int translationLine = findTokenPair(untabInputVec,
-                                           0,
-                                           PcalParams.BeginXlation1,
-                                           PcalParams.BeginXlation2) ;
+      translationLine = findTokenPair(untabInputVec,
+                                      0,
+                                      PcalParams.BeginXlation1,
+                                      PcalParams.BeginXlation2) ;
       if (translationLine == -1) 
         { PcalDebug.reportError(
             "No line containing `" + PcalParams.BeginXlation1 + " "
@@ -297,18 +345,9 @@ class trans
            untabInputVec.remove(endTranslationLine) ;
            endTranslationLine = endTranslationLine - 1;
          } 
+       
+    } // end if (PcalParams.fromPcalFile)
 
-      /*********************************************************************
-      * Set algLine, algCol to the line and column of the first instance   *
-      * of the string PcalParams.BeginAlg in the file.  (These are Java    *
-      * ordinals, in which counting begins at 0.)                          *
-      *                                                                    *
-      * Modified by LL on 18 Feb 2006 to use untabInputVec instead of      *
-      * inputVec, to correct bug that occured when tabs preceded the       *
-      * "--algorithm".                                                     *
-      *********************************************************************/
-      int algLine = 0 ;
-      int algCol = -1 ;
       boolean foundBegin = false ;
       while ((algLine < untabInputVec.size()) && ! foundBegin)
         { String line = (String) untabInputVec.elementAt(algLine) ;
@@ -1161,6 +1200,7 @@ class trans
          // SZ 02.16.2009: check for correct file extension (ignoring case)
          // and file existence. also handles dots in the pathname
        File file = new File(args[maxArg]);
+       boolean hasExtension = false; 
        if (file.getName().lastIndexOf(".") == -1)
        {
            // no extension
@@ -1169,17 +1209,39 @@ class trans
            // extension present
            if (file.getName().toLowerCase().endsWith(".tla")) 
            {
-               // cut the extension
-               PcalParams.TLAInputFile = file.getPath().substring(0, file.getPath().lastIndexOf("."));
-           } else {
-               return CommandLineError("Input file has extension other than tla");
+                hasExtension = true;
+           } else if (file.getName().toLowerCase().endsWith(".pcal")){
+               hasExtension = true;
+               PcalParams.fromPcalFile = true;
+           }
+           else {   return CommandLineError("Input file has extension other than pcal or tla");
            }
        }
-       file = new File(PcalParams.TLAInputFile + ".tla");
-       if (!file.exists()) 
-       {
-           return CommandLineError("Input file " + file.getPath() + " not found");
+       if (hasExtension) {
+           // cut the extension
+           PcalParams.TLAInputFile = file.getPath().substring(0, file.getPath().lastIndexOf("."));
+           if (!file.exists()) {
+               return CommandLineError("Input file " + file.getPath() + " does not exist.");
+           }
        }
+       else {
+           file = new File(PcalParams.TLAInputFile + ".pcal");
+           if (file.exists()) {
+             PcalParams.fromPcalFile = true;
+           }
+           else {
+               file = new File(PcalParams.TLAInputFile + ".tla");
+               if (!file.exists()) {
+                   return CommandLineError("Input file " + file.getPath() + ".pcal and " 
+                           + file.getPath() + ".tla not found");
+               }
+           }
+       }
+//       file = new File(PcalParams.TLAInputFile + (PcalParams.fromPcalFile?".pcal":".tla"));
+//       if (!file.exists()) 
+//       {
+//           return CommandLineError("Input file " + file.getPath() + " not found");
+//       }
        
        
        // SZ 02.16.2009: since this is a modification of the parameters, moved

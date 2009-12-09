@@ -42,6 +42,8 @@ public final class PcalParams
         FairnessOption = "";
         CheckTermination = false;
         Nocfg = false;
+        fromPcalFile = false;
+        version = 999999;
     }
     
     
@@ -140,13 +142,14 @@ public final class PcalParams
       }
 
     /***********************************************************************
-    * The string identifying the beginning of the algorithm.               *
+    * The string identifying the beginning of the algorithm in the .tla    *
+    * file.                                                                *
     ***********************************************************************/
     public static final String BeginAlg = "--algorithm" ;
 
     /***********************************************************************
     * The strings marking the beginning and end of the translated          *
-    * algorithm in the input file.  The translation is put immediately     *
+    * algorithm in a .tla input file.  The translation is put immediately  *
     * after any line containing                                            *
     *                                                                      *
     *    BeginXLation1 [one or more spaces] BeginXlation2                  *
@@ -157,7 +160,6 @@ public final class PcalParams
     ***********************************************************************/
     public static final String BeginXlation1 = "BEGIN" ;
     public static final String BeginXlation2 = "TRANSLATION" ;
-
 
     public static final String EndXlation1 = "END" ;
     public static final String EndXlation2 = "TRANSLATION" ;
@@ -175,9 +177,22 @@ public final class PcalParams
   public static String TLAInputFile = "" ;
     /***********************************************************************
     * The name of the input file, with no extension.  It is set to equal   *
-    * the argument with which the program is called.                       *
+    * the argument with which the program is called, minus the extension.  *
+    * With the introduction of pcal files, the name no longer makes sense. *
     ***********************************************************************/
-    
+
+  /**
+   * Pcal-File Parameters
+   *    The following parameters were introduced when .pcal files were 
+   *    added.
+   */
+
+  public static boolean fromPcalFile = false ;
+     // True iff the algorithm is in a .pcal file.  It is set false if
+     // the file argument has the extension .tla, or if there is no
+     // file named TLAInputFile + ".pcal".
+  public static int version = 999999;
+     // The version number * 1000
  }  
 
 /* last modified on Thu 23 Aug 2007 at 10:40:25 PST by lamport */
