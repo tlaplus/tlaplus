@@ -63,6 +63,10 @@ public class ResourceHelper
     public static boolean peekProject(String name, String rootFilename)
     {
         String root = getParentDirName(rootFilename);
+        if (root == null)
+        {
+            return false;
+        }
         File projectDir = new File(root.concat("/").concat(name).concat(TOOLBOX_DIRECTORY_SUFFIX));
         return projectDir.exists();
     }
