@@ -897,7 +897,9 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
     {
         UnlockModelAction()
         {
-            super("U");
+            super("Unlock model", TLCUIActivator.imageDescriptorFromPlugin(TLCUIActivator.PLUGIN_ID,
+            "icons/full/owned_monitor_obj.gif"));
+            setDescription("Unlocks the model");
             setToolTipText("Unlocks the model so that changes are possible.");
         }
 
@@ -922,9 +924,10 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
     {
         LockModelAction()
         {
-            super("L");
+            super("Lock model", TLCUIActivator.imageDescriptorFromPlugin(TLCUIActivator.PLUGIN_ID,
+                    "icons/full/lockedstate.gif"));
+            setDescription("Locks the model");
             setToolTipText("Locks the model so that no changes are possible.");
-            // setImageDescriptor(ConsolePluginImages.getImageDescriptor(IInternalConsoleConstants.IMG_DLCL_LOCK));
         }
 
         public void run()
