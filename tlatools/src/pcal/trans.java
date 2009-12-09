@@ -291,17 +291,103 @@ class trans
            * processing any version and option statement.                    *
            ******************************************************************/
      
-          // copy blank lines
-          while (algLine < untabInputVec.size() 
-                  && ((String) 
-                          untabInputVec.elementAt(algLine)).trim().equals("")) {
-            outputVec.addElement(untabInputVec.elementAt(algLine));
-            algLine++;
+          // We use curLoc to keep track of the current position
+          // If we find an error in parsing the beginning of the
+          // file, we set curLoc.one to the next line after the end
+          // of the input.
+          IntPair curLoc = new IntPair(0,0);
+
+          String curLine = GotoNextNonSpace(untabInputVec, outputVec, curLoc);
+
+//System.out.println("3 = " + NextDelimiterCol("abc", 3));
+//System.out.println("3 = " + NextDelimiterCol("abc ", 0));
+//System.out.println("3 = " + NextDelimiterCol("abc,defg", 3));
+//System.out.println("3 = " + NextDelimiterCol("abc) uvw", 3));
+//System.exit(-1);
+//System.out.println("abcd".split(" ")[0]);
+          boolean error = false;          
+          if (curLine.substring(curLoc.two).startsWith("version")) {
+             // Process the version number and move curLoc and curLine
+             // to just after the closing ")".
+             curLoc.two = curLoc.two + 7; // go to position after "version"
+             curLine = GotoNextNonSpace(untabInputVec, outputVec, curLoc);
+             if (!curLine.substring(curLoc.two).startsWith("(")) {
+                 curLoc.one = untabInputVec.size(); 
+                 error = true;
+             }
+             curLoc.two ++;
+             curLine = GotoNextNonSpace(untabInputVec, outputVec, curLoc);
+             int endOfArg = NextDelimiterCol(curLine, curLoc.two);
+//System.out.println("version = `" + curLine.substring(curLoc.two, endOfArg)+ "'");
+             if (!PcalParams.ProcessVersion(curLine.substring(curLoc.two, endOfArg))){
+                 curLoc.one = untabInputVec.size();
+                 error = true;
+             }
+             curLoc.two = endOfArg;
+             curLine = GotoNextNonSpace(untabInputVec, outputVec, curLoc);
+             if (!curLine.substring(curLoc.two).startsWith(")")) {
+                 curLoc.one = untabInputVec.size(); 
+                 error = true;
+             }
+             curLoc.two ++;
+             curLine = GotoNextNonSpace(untabInputVec, outputVec, curLoc);
           }
-// XXXXXXXX Stopped here
-          if (algLine == untabInputVec.size()) {PcalDebug.reportError(
-                  "Premature end of pcal input file");}
-          if ("abc".startsWith("??????")){}
+          
+          if (error) 
+          { PcalDebug.reportError("Error in version statement");
+            return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
+          } 
+          
+          if (curLine.substring(curLoc.two).startsWith("options")) {
+              // Process the options and move curLoc and curLine
+              // to just after the closing ")".
+              curLoc.two = curLoc.two + 7; // go to position after "version"
+              curLine = GotoNextNonSpace(untabInputVec, outputVec, curLoc);
+              if (!curLine.substring(curLoc.two).startsWith("(")) {
+                  curLoc.one = untabInputVec.size(); 
+                  error = true;
+              }
+              curLoc.two ++;
+              curLine = GotoNextNonSpace(untabInputVec, outputVec, curLoc);
+
+              Vector argsVec = new Vector();
+                // the vector of option arguments
+              
+              while (curLoc.one < untabInputVec.size() && (curLine.charAt(curLoc.two) != ')')) {
+                 if (curLine.charAt(curLoc.two) == ',') {
+                     curLoc.two++;
+                 } else {
+                     int endOfArg = NextDelimiterCol(curLine, curLoc.two) ;
+                     argsVec.addElement(curLine.substring(curLoc.two, endOfArg));
+                     curLoc.two = endOfArg;
+                 }
+                 curLine = GotoNextNonSpace(untabInputVec, outputVec, curLoc);
+              }
+//PcalDebug.printVector(argsVec, "argsVec");
+//System.exit(-1);
+// XXXXXXX TODO  Process argsVec 
+              if (!(curLoc.one < untabInputVec.size())) 
+              { PcalDebug.reportError("No closing ')' found in options statement");
+                return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
+              } 
+              curLoc.two ++;
+              curLine = GotoNextNonSpace(untabInputVec, outputVec, curLoc);
+           }
+
+          
+//System.out.println("first nonspace at " + curLoc.toString());
+//String nextline = (String) untabInputVec.elementAt(curLoc.one);
+//
+//int foo = NextSpaceCol(nextline, curLoc.two);
+//System.out.println("first space at col " + foo);
+//curLoc.two = foo;
+//GotoNextNonSpace(untabInputVec, outputVec, curLoc);
+//System.out.println("second nonspace at " + curLoc.toString());
+//PcalDebug.printVector(outputVec, "outputVec");
+//System.exit(-1);
+
+          
+
       }
       else {
       /*********************************************************************
@@ -1232,7 +1318,7 @@ class trans
            else {
                file = new File(PcalParams.TLAInputFile + ".tla");
                if (!file.exists()) {
-                   return CommandLineError("Input file " + file.getPath() + ".pcal and " 
+                   return CommandLineError("Input file " + PcalParams.TLAInputFile + ".pcal and " 
                            + file.getPath() + ".tla not found");
                }
            }
@@ -1429,5 +1515,60 @@ class trans
 		   }
 	   }
        return sb.toString();
+     }
+     /*********************** Helpful Methods for Parsing StringVectors ************/
+     
+     /**
+      * Returns the position of the first space at or after position col
+      * in str, or str.size() if there is none.
+      */
+     private static int NextSpaceCol(String str, int col) {
+        int res = str.indexOf(' ', col);
+        if (res == -1) { return str.length(); };
+        return res;
+     }
+     
+     /**
+      * Returns the position of the first space , ",", or ")" at or after position col
+      * in str, or str.size() if there is none.
+      */
+     private static int NextDelimiterCol(String str, int col) {
+         String[] splitStr = str.substring(col).split(" |,|\\)");
+         return col + splitStr[0].length();
+     }
+
+     /** 
+      * Starting at location loc (interpreted as a row, column pair) in the 
+      * StringVector inp, this method searches for the next non-space character 
+      * and sets loc to its location.  If the new location is not on the same
+      * row, then each row of inp from the starting row through the row preceding
+      * the finishing row is copied from inp to the end of outp.  If there is
+      * no non-space character found, then the location is set to column 0 of
+      * the first row after the end if inp.  It returns the line to which
+      * loc is pointing to, or "" if loc is after the end of the inp 
+      * StringVector.
+      * Note: it does the right thing if loc is the column after the end
+      * of a row.
+      * 
+      */
+     private static String GotoNextNonSpace(Vector inp, Vector outp, IntPair loc) {
+         boolean found = false;
+         while ((!found) && loc.one < inp.size()) {
+           String line = (String) inp.elementAt(loc.one);
+           while ((!found) && loc.two < line.length()) {
+               if (line.charAt(loc.two) == ' ') {
+                   loc.two++;
+                } else {
+                    found = true;
+                }
+           }
+           if (!found) {
+               outp.addElement(inp.elementAt(loc.one));
+               loc.one++;
+               loc.two = 0;
+           }
+         }
+         if (loc.one < inp.size()) {return (String) inp.elementAt(loc.one);}
+         return "";
      }
 }

@@ -43,7 +43,8 @@ public final class PcalParams
         CheckTermination = false;
         Nocfg = false;
         fromPcalFile = false;
-        version = 999999;
+        versionNumber = 999999;
+        versionOption = null;
     }
     
     
@@ -191,8 +192,18 @@ public final class PcalParams
      // True iff the algorithm is in a .pcal file.  It is set false if
      // the file argument has the extension .tla, or if there is no
      // file named TLAInputFile + ".pcal".
-  public static int version = 999999;
+  public static String versionOption = null;
+  public static int versionNumber = 999999;
      // The version number * 1000
+  /**
+   * Processes the version argument ver.  It sets versionNumber
+   * and returns true if it is a legal version number; otherwise,
+   * it reports the error with PcalDebug.reportError and returns false;
+   * XXXXXXXXX TODO 
+   */
+  static boolean ProcessVersion(String ver) {
+      return true ;
+  }
  }  
 
 /* last modified on Thu 23 Aug 2007 at 10:40:25 PST by lamport */
