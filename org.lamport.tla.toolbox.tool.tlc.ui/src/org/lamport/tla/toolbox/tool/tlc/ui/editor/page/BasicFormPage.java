@@ -87,6 +87,7 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
 {
     public static final String CRASHED_TITLE = " ( model checking has crashed )";
     public static final String RUNNING_TITLE = " ( model checking is in progress )";
+    public static final String LOCKED_TITLE = " ( model is locked )";
     private static final String TLC_ERROR_STRING = "TLC Error";
 
     /** 
@@ -515,7 +516,8 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
 
             // refresh the title
             String title = mForm.getForm().getText();
-            int titleIndex = Math.max(title.indexOf(RUNNING_TITLE), title.indexOf(CRASHED_TITLE));
+            int titleIndex = Math.max(Math.max(title.indexOf(RUNNING_TITLE), title.indexOf(CRASHED_TITLE)), title
+                    .indexOf(LOCKED_TITLE));
             // restore the title
             if (titleIndex != -1)
             {
@@ -537,6 +539,10 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
                 {
                     mForm.getForm().setText(title + RUNNING_TITLE);
                 }
+
+            } else if (isModelLocked())
+            {
+                mForm.getForm().setText(title + LOCKED_TITLE);
             } else
             {
                 // restore the title, only if we need
@@ -898,7 +904,7 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
         UnlockModelAction()
         {
             super("Unlock model", TLCUIActivator.imageDescriptorFromPlugin(TLCUIActivator.PLUGIN_ID,
-            "icons/full/owned_monitor_obj.gif"));
+                    "icons/full/owned_monitor_obj.gif"));
             setDescription("Unlocks the model");
             setToolTipText("Unlocks the model so that changes are possible.");
         }
