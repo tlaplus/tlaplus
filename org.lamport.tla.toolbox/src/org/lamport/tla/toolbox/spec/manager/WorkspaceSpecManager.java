@@ -173,7 +173,7 @@ public class WorkspaceSpecManager extends GenericSelectionProvider implements IS
         if (rootModulePath != null)
         {
             Iterator specI = specStorage.values().iterator();
-            if (specI.hasNext())
+            while (specI.hasNext())
             {
                 Spec spec = (Spec) specI.next();
                 if (spec.getRootFilename().equals(rootModulePath))
