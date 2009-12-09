@@ -190,6 +190,10 @@ public class NewSpecWizardPage extends WizardPage
             {
                 reportError("Root file name should have a file-system path and extension .tla");
                 return;
+            } else if(!(new File(rootfilePath).isAbsolute()))
+            {
+                reportError("Root file name should have a file-system path");
+                return;
             } else
             {
                 Spec existingSpec = Activator.getSpecManager().getSpecByRootModule(rootfilePath);
