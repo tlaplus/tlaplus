@@ -48,7 +48,7 @@ public class NewSpecWizardPage extends WizardPage
     {
         super("newSpecWizardPage");
         setTitle("New TLA+ Specification");
-        setDescription("Creates a new TLA+ specification\nPlease provide the specification name and the location of the file, containing the root module.");
+        setDescription("Creates a new TLA+ specification\nEnter a complete file name like c:\\jones\\specs\\foo.tla or click on Browse.");
     }
 
     /*
@@ -188,7 +188,7 @@ public class NewSpecWizardPage extends WizardPage
                 return;
             } else if (!rootfilePath.endsWith(".tla"))
             {
-                reportError("Root file name should have extension .tla");
+                reportError("Root file name should have a file-system path and extension .tla");
                 return;
             } else
             {
