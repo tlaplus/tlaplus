@@ -697,7 +697,7 @@ Console Facory
             category="toolbox.ui.preferences.GeneralPreferencePage"
             class="org.lamport.tla.toolbox.tool.tlc.ui.preference.TLCPreferencePage"
             id="toolbox.ui.preferences.TLCPreferencePage"
-            name="TLC Model Checker Preferences">
+            name="TLC Model Checker">
       </page>
    </extension>
    <extension

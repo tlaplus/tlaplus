@@ -152,7 +152,7 @@
       <page
             class="org.lamport.tla.toolbox.ui.preference.ParserPreferencePage"
             id="toolbox.ui.preferences.ParserPreferencePage"
-            name="TLA+ Parser Preferences"
+            name="TLA+ Parser"
             category="toolbox.ui.preferences.GeneralPreferencePage">
             <keywordReference id="toolbox.keywords.Parser"/>
       </page>

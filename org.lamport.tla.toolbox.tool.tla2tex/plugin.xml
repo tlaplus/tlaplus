@@ -53,7 +53,7 @@
             category="toolbox.ui.preferences.GeneralPreferencePage"
             class="org.lamport.tla.toolbox.tool.tla2tex.preference.TLA2TeXPreferencePage"
             id="toolbox.tool.tla2tex.preference.TLA2TeXPreferencePage"
-            name="PDF Viewer Preferences">
+            name="PDF Viewer">
       </page>
    </extension>
    <extension
