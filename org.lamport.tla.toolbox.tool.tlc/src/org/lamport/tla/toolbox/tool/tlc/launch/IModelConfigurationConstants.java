@@ -88,4 +88,9 @@ public interface IModelConfigurationConstants extends IConfigurationConstants
      * next for trace exploration
      */
     public static final String TRACE_EXPLORE_NEXT = "traceExploreNext";
+    /**
+     * expressions to be evaluated at each state of the trace
+     * when the trace explorer is run
+     */
+    public static final String TRACE_EXPLORE_EXPRESSIONS = "traceExploreExpressions";
 }
