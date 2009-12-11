@@ -15,7 +15,11 @@ import java.util.Vector;
  */
 public final class PcalParams
 { 
-
+    /**
+     * Parameters to be updated on each new release.
+     */
+    public static final String modDate = "8 December 2009";
+    public static final String version = "1.31";
     /**
      * SZ Mar 9, 2009:
      * Added re-initialization method. Since PcalParams class
@@ -43,8 +47,10 @@ public final class PcalParams
         CheckTermination = false;
         Nocfg = false;
         fromPcalFile = false;
-        versionNumber = 999999;
         versionOption = null;
+        inputVersionNumber = VersionToNumber(PcalParams.version);
+        PcalTLAGen.wrapColumn = 78;
+        PcalTLAGen.ssWrapColumn = 45;
     }
     
     
@@ -147,6 +153,8 @@ public final class PcalParams
     * file.                                                                *
     ***********************************************************************/
     public static final String BeginAlg = "--algorithm" ;
+    
+    
 
     /***********************************************************************
     * The strings marking the beginning and end of the translated          *
@@ -171,7 +179,22 @@ public final class PcalParams
   *************************************************************************/
   public static String CfgFileDelimiter = 
             "\\* Add statements after this line." ;
+
+/************ Stuff for .pcal file ***************************************/  
+  
+  /***********************************************************************
+  * The string identifying the beginning of the algorithm in the .pcal   *
+  * file.                                                                *
+  ***********************************************************************/
+  public static final String PcalBeginAlg = "algorithm";
    
+  /**
+   * The <row, col> (in Java coordinates) of the beginning of the
+   * "algorithm" token in the .pcal file.
+   */
+  public static IntPair endOfPreamble = null;
+
+  
   /*************************************************************************
   * File parameters.                                                       *
   *************************************************************************/
@@ -193,15 +216,65 @@ public final class PcalParams
      // the file argument has the extension .tla, or if there is no
      // file named TLAInputFile + ".pcal".
   public static String versionOption = null;
-  public static int versionNumber = 999999;
-     // The version number * 1000
+  public static int inputVersionNumber = VersionToNumber(PcalParams.version);
+     // The input file's version number * 1000
+  public static boolean readOnly = false; 
+     // True iff this is a .pcal input file and the .tla file should 
+     // not be writable.
+
+  /**
+   * If str is a version number like 3.17, then this returns 1000 times
+   * its numeric value--e.g., 3170.  Otherwise, it returns -1.
+   * 
+   */
+  public static int VersionToNumber(String str) {
+    boolean error = false ;
+    int i = 0;
+    int result = 0;
+    int digitsAfterDecimal = 0;
+    boolean afterDecimal = false;
+    while ((!error) && i < str.length()) {
+        char c = str.charAt(i);
+        if (('0' <= c) && (c <= '9')) {
+            result = 10 * result  +  (c - '0');
+            if (afterDecimal) {
+                digitsAfterDecimal++;
+                if (digitsAfterDecimal > 3) {
+                    error = true;
+                }
+            }
+        } else if (c == '.') {
+                afterDecimal = true;
+        } else {
+            error = true;
+        }
+        i++;
+    }
+    if (error) {
+        return -1;
+    }
+    for (int j = 0; j < 3 - digitsAfterDecimal; j++) {
+        result = 10 * result;
+    }
+    return result;
+  }
   /**
    * Processes the version argument ver.  It sets versionNumber
    * and returns true if it is a legal version number; otherwise,
-   * it reports the error with PcalDebug.reportError and returns false;
-   * XXXXXXXXX TODO 
+   * it reports the error with PcalDebug.reportError and returns false.
    */
   static boolean ProcessVersion(String ver) {
+      int vnum = VersionToNumber(ver);
+      if (vnum < 0) {
+          PcalDebug.reportError("Illegal version " + ver + " specified."); 
+          return false;
+      }
+      if (vnum > VersionToNumber(PcalParams.version)) {
+          PcalDebug.reportError("Specified version " + ver + 
+                  " later than current version " + PcalParams.version);
+          return false;
+      }
+      inputVersionNumber = vnum;
       return true ;
   }
  }  

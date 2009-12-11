@@ -11,7 +11,8 @@ import pcal.exception.TLAExprException;
  * {@link PcalTLAGen#generate(AST, PcalSymTab)} returns a vector of Strings, one entry per line of generated TLA+.
  * 
  * @version $Id$ 
- * @author Leslie Lamport (modified on Thu  6 March 2008 at 10:16:22 PST)            
+ * @author Leslie Lamport (modified on Thu  6 March 2008 at 10:16:22 PST)
+ *                        (minor change on 9 December 2009)            
  * @author keith (modified on Mon  3 Oct 2005 at 21:43:09 UT)                  
  *                                                                          
  ****************************************************************************/
@@ -19,8 +20,18 @@ public class PcalTLAGen
 {
     // Constants that control formatting
     public final static boolean boxUnderCASE = true; /* else [] at end of line  */
-    public final static int wrapColumn = 78; /* if over this, then try to wrap */
-    public final static int ssWrapColumn = 45; /* when to start wrapping subscr  */
+
+    // The following two variables made non-final on 9 Dec 2009 so they can
+    // be set by options.  They are initialized in PcalParams.resetParams().
+    public static int wrapColumn ; 
+       /* If the line width will be greater than this, then try to wrap */
+    public static int ssWrapColumn ; 
+       // I think that this is used as follows: 
+       //    when translating an assignment statement (or multiassignment?)
+       //    to  var' = [var EXCEPT ...],  it begins the ... on a new line
+       //    iff  the ... would begin in a column > ssWrapColumn.
+       // For the time being, it is set to wrapColumn - 33.  We may want
+       // to do something cleverer or else make it a user option.
 
     // Private class variables
     private Vector tlacode = new Vector(); /* of lines */

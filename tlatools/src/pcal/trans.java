@@ -16,6 +16,7 @@ import pcal.exception.RemoveNameConflictsException;
 import pcal.exception.StringVectorToFileException;
 import pcal.exception.TLCTranslationException;
 import pcal.exception.UnrecoverableException;
+import tla2tex.Debug;
 import util.ToolIO;
 
 /***************************************************************************
@@ -202,10 +203,11 @@ class trans
         * This string is inserted by an Emacs macro when a new version is  *
         * saved.  Unfortunately, Eclipse isn't Emacs.                      *
         *******************************************************************/
-      String modDate = "8 December 2009";
+      
       if (ToolIO.getMode() == ToolIO.SYSTEM) 
       { 
-          PcalDebug.reportInfo("pcal.trans Version 1.31 of " + modDate) ;
+          PcalDebug.reportInfo("pcal.trans Version " + PcalParams.version 
+                                  + " of " + PcalParams.modDate) ;
       }
 
       // SZ Mar 9, 2009:
@@ -219,10 +221,6 @@ class trans
       * Get and process arguments.                                         
       *********************************************************************/
       int status = parseAndProcessArguments(args); 
-//System.out.println("TLAInputFile = `" + PcalParams.TLAInputFile + "'");
-//System.out.println("fromPcalFile = " + PcalParams.fromPcalFile);
-//System.out.println("status = " + status);
-//System.exit(-1);
       
       if (status != STATUS_OK) 
       {
@@ -299,12 +297,6 @@ class trans
 
           String curLine = GotoNextNonSpace(untabInputVec, outputVec, curLoc);
 
-//System.out.println("3 = " + NextDelimiterCol("abc", 3));
-//System.out.println("3 = " + NextDelimiterCol("abc ", 0));
-//System.out.println("3 = " + NextDelimiterCol("abc,defg", 3));
-//System.out.println("3 = " + NextDelimiterCol("abc) uvw", 3));
-//System.exit(-1);
-//System.out.println("abcd".split(" ")[0]);
           boolean error = false;          
           if (curLine.substring(curLoc.two).startsWith("version")) {
              // Process the version number and move curLoc and curLine
@@ -318,7 +310,6 @@ class trans
              curLoc.two ++;
              curLine = GotoNextNonSpace(untabInputVec, outputVec, curLoc);
              int endOfArg = NextDelimiterCol(curLine, curLoc.two);
-//System.out.println("version = `" + curLine.substring(curLoc.two, endOfArg)+ "'");
              if (!PcalParams.ProcessVersion(curLine.substring(curLoc.two, endOfArg))){
                  curLoc.one = untabInputVec.size();
                  error = true;
@@ -363,32 +354,98 @@ class trans
                  }
                  curLine = GotoNextNonSpace(untabInputVec, outputVec, curLoc);
               }
-//PcalDebug.printVector(argsVec, "argsVec");
-//System.exit(-1);
-// XXXXXXX TODO  Process argsVec 
+              
+ 
               if (!(curLoc.one < untabInputVec.size())) 
               { PcalDebug.reportError("No closing ')' found in options statement");
                 return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
               } 
               curLoc.two ++;
               curLine = GotoNextNonSpace(untabInputVec, outputVec, curLoc);
+              
+              // Process the options arguments.
+              argsVec.addElement(""); // add dummy final argument
+              String[] argsArray = new String[argsVec.size()];
+              for (int i = 0; i < argsArray.length; i++) {
+                  argsArray[i] = (String) argsVec.elementAt(i);
+              }
+              status = parseAndProcessArguments(args); 
+              if (status != STATUS_OK) {
+                  return exitWithStatus(status);
+              }     
            }
-
           
-//System.out.println("first nonspace at " + curLoc.toString());
-//String nextline = (String) untabInputVec.elementAt(curLoc.one);
-//
-//int foo = NextSpaceCol(nextline, curLoc.two);
-//System.out.println("first space at col " + foo);
-//curLoc.two = foo;
-//GotoNextNonSpace(untabInputVec, outputVec, curLoc);
-//System.out.println("second nonspace at " + curLoc.toString());
-//PcalDebug.printVector(outputVec, "outputVec");
-//System.exit(-1);
-
-          
-
-      }
+          /***
+           * We are now past any version and options statement.
+           * We now set curLoc to the point immediately after the 
+           * "algorithm" statement, copying everything up to that point into
+           * outputVec.
+           */
+          try {              
+          boolean found = false;
+          curLine = null;
+          while ((!found) && (curLoc.one < untabInputVec.size())) {
+            curLine = (String) untabInputVec.elementAt(curLoc.one);
+            while ((!found) && (curLoc.two < curLine.length())) {
+                curLoc.two = NextSpaceQuoteOrCommentCol(curLine, curLoc.two);
+                if (curLoc.two < curLine.length()){
+                    char c = curLine.charAt(curLoc.two);
+                    if (c == ' ') {
+                        curLine = GotoNextNonSpace(untabInputVec, outputVec, curLoc);
+                        if ( curLine.substring(curLoc.two).startsWith(PcalParams.PcalBeginAlg)) {
+                            curLoc.two = curLoc.two + PcalParams.PcalBeginAlg.length();
+                            if ( ! ((curLoc.two < curLine.length())
+                                     || Character.isLetter(curLine.charAt(curLoc.two))
+                                     || (curLine.charAt(curLoc.two) == '_')
+                                     )) {
+                                found = true;
+                            }
+                        }
+                    } else if (   (c == '(') 
+                               && (curLoc.two + 1 < curLine.length())
+                               && (curLine.charAt(curLoc.two+1) == '*')) {
+                        ParseAlgorithm.gotoEndOfComment(untabInputVec, outputVec, curLoc, false);
+                    } else if (   (c == '\\') 
+                            && (curLoc.two + 1 < curLine.length())
+                            && (curLine.charAt(curLoc.two+1) == '*')) {
+                        curLoc.two = curLine.length();
+                    } else if (c == '"') {
+                        curLoc.two = ParseAlgorithm.findEndOfString(curLine, curLoc.two);
+                    } else { 
+                        PcalDebug.ReportBug("This should not happen.");
+                    }
+                }
+            } // end of while, either found beginning or at end of line
+            if (!found) {
+                outputVec.addElement(untabInputVec.elementAt(curLoc.one));
+                curLoc.one++;
+            }
+          } // end of while, either found beginning or at end of file
+          if (!found) {
+              PcalDebug.reportError("Beginning of algorithm not found.") ;
+              return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
+            } ;
+          PcalParams.endOfPreamble = 
+              new IntPair(curLoc.one, 
+                          curLoc.two - PcalParams.PcalBeginAlg.length());
+          // If there is some non-space character on the same line
+          // before the "algorithm", then write it to a line by itself
+          // on outputVec.
+          String leftOver = ((String) untabInputVec.elementAt
+                  (curLoc.one)).substring(0,PcalParams.endOfPreamble.two);
+          if (leftOver.trim().length() != 0) {
+              outputVec.addElement(leftOver);
+          }
+System.out.println("curLoc = " + curLoc.toString());
+Debug.printVector(inputVec, "inputVec");
+Debug.printVector(outputVec, "outputVec");
+System.exit(-1);
+          } catch (ParseAlgorithmException e){ 
+              PcalDebug.reportError(e);
+              return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
+             }
+      
+      } // end if (PcalParams.fromPcalFile)
       else {
       /*********************************************************************
       * Input is .tla file.                                                *
@@ -432,7 +489,7 @@ class trans
            endTranslationLine = endTranslationLine - 1;
          } 
        
-    } // end if (PcalParams.fromPcalFile)
+    } // end else of if (PcalParams.fromPcalFile)
 
       boolean foundBegin = false ;
       while ((algLine < untabInputVec.size()) && ! foundBegin)
@@ -515,10 +572,10 @@ class trans
       *********************************************************************/
       
         // SZ February.15 2009: made non-static to make PCal stateless for tool runs
-        PCalTLAGenerator notYetImplemented = new PCalTLAGenerator(ast);
+        PCalTLAGenerator pcalTLAGenerator = new PCalTLAGenerator(ast);
         try
         {
-          notYetImplemented.removeNameConflicts() ;
+          pcalTLAGenerator.removeNameConflicts() ;
         } catch (RemoveNameConflictsException e1)
         {
           PcalDebug.reportError(e1);
@@ -550,7 +607,7 @@ class trans
       else 
         { try
         {
-            translation = notYetImplemented.translate();
+            translation = pcalTLAGenerator.translate();
         } catch (RemoveNameConflictsException e)
         {
             PcalDebug.reportError(e);
@@ -945,7 +1002,23 @@ class trans
     * Writes the Vector of strings inputVec to file named fileName, with   *
     * each element of inputVec written on a new line.                      *
     ***********************************************************************/
-    { try { BufferedWriter fileW = 
+    { try { 
+// I have no idea what Java does if you try to write a new version
+// of a read-only file.  On Windows, it's happy to write it.  Who
+// the hell knows what it does on other operating systems?  So, something
+// like the following code could be necessary.  However, the setWritable()
+// method was introduced in Java 1.6, and in December 2009, that version
+// isn't available on the Mac.  And I can't find out how to set a file
+// to be writable in any earlier version of Java.  On the web, the advice
+// is to copy the file, delete the old version, and rename the copy.
+// But the File method's documentation actually says that delete may or
+// may not delete the read-only file, depending on the OS.
+//
+//            File file = new File(fileName);
+//            if (! file.canWrite()) {
+//                file.setWritable(true);
+//            }
+            BufferedWriter fileW = 
                   new BufferedWriter(new FileWriter(fileName)) ;
             int lineNum = 0 ;
             while (lineNum < inputVec.size())
@@ -1014,6 +1087,12 @@ class trans
      *  the status {@link trans#STATUS_EXIT_WITHOUT_ERROR} indicates that no errors has been found but translation
      *   should not be started (e.G -help call)
      *  the status {@link trans#STATUS_EXIT_WITH_ERRORS} indicates errors 
+     *  
+     * Change made on 9 December 2009 for pcal-file input.  This procedure is
+     * called a second time if there is pcal-file input with an options statement.
+     * It will be the second call iff {@link PcalParams#fromPcalFile} equals true.
+     * The second call should have a dummy extra argument in place of the 
+     * command-line's file-name argument.
      */
     private static int parseAndProcessArguments(String[] args)
     {
@@ -1021,7 +1100,10 @@ class trans
     /** *******************************************************************
      *<pre>
      * Get the command-line arguments and set the appropriate parameters.  *
-     * The following command line arguments are handled.                   *
+     * The following command line arguments are handled.  Only the ones    *
+     * marked with ** besides them can be specified in the .pcal file's    *
+     * options statement.  The "-" can be omitted when the option is in    *
+     * the .pcal file's options statement.                                 *
      *                                                                     *
      *   -help  : Type a help file instead of running the program.         *
      *                                                                     *
@@ -1056,24 +1138,24 @@ class trans
      *              a "^M" at the end of every line when viewed with       *
      *              Emacs.                                                 *
      *                                                                     *
-     *   -wf : Conjoin to formula Spec weak fairness of each process's     *
+     *** -wf : Conjoin to formula Spec weak fairness of each process's     *
      *         next-state action                                           *
      *                                                                     *
-     *   -sf : Conjoin to formula Spec strong fairness of each process's   *
+     *** -sf : Conjoin to formula Spec strong fairness of each process's   *
      *         next-state action                                           *
      *                                                                     *
-     *   -wfNext : Conjoin to formula Spec weak fairness of the entire     *
+     *** -wfNext : Conjoin to formula Spec weak fairness of the entire     *
      *             next-state action                                       *
      *                                                                     *
-     *   -nof : Conjoin no fairness formula to Spec.  This is the default, *
+     *** -nof : Conjoin no fairness formula to Spec.  This is the default, *
      *          except when the -termination option is chosen.             *
      *                                                                     *
-     *   -termination : Add to the .cfg file the command                   *
+     *** -termination : Add to the .cfg file the command                   *
      *                     PROPERTY Termination                            *
      *                                                                     *
      *   -nocfg : Suppress writing of the .cfg file.                       *
      *                                                                     *
-     *   -label : Tells the translator to add missing labels.  This is     *
+     *** -label : Tells the translator to add missing labels.  This is     *
      *            the default only for a uniprocess algorithm in which     *
      *            the user has typed no labels.                            *
      *                                                                     *
@@ -1082,24 +1164,40 @@ class trans
      *                   -label, it tells the translator to add missing    *
      *                   labels.                                           *
      *                                                                     *
-     *   -labelRoot name : If the translator adds missing labels, it       *
+     *** -labelRoot name : If the translator adds missing labels, it       *
      *                     names them name1, name2, etc.  Default value    *
      *                     is "Lbl_".                                      *
+     *                                                                     *
+     *  THE FOLLOWING OPTIONS ADDED IN VERSION 1.31                        *
+     *                                                                     *
+     *** -lineWidth : The translation tries to perform the translation so  *
+     *                lines have this maximum width.  (It will often       *
+     *                fail.)  Default is 78, minimum value is 60.          *
      *</pre>
      ********************************************************************* */
+       boolean pcal = PcalParams.fromPcalFile;
+       boolean tla  = ! pcal;
+         // Just convenient abbreviations
+       boolean firstFairness = pcal;
+         // Used to allow a fairness property specified by a command-line
+         // option to be overridden by one in the pcal-file's options statement.
+         // It is set false when the first fairness property is set from
+         // the options statement.
        int nextArg = 0 ;
          /******************************************************************
          * The number of the argument being processed.                     *
          ******************************************************************/
        int maxArg = args.length - 1;
          /******************************************************************
-         * The number of the final argument, which is the input file name. *
+         * The number of option arguments.  (For processing command-line   *
+         * arguments, the last element of args is the input-file name.)    *
          ******************************************************************/
        if (maxArg < 0)
         { return CommandLineError("No arguments specified");
         } 
 
-       if (   (args[maxArg].length() != 0)
+       if (   tla
+           && (args[maxArg].length() != 0)
            && (args[maxArg].charAt(0) == '-'))
          /******************************************************************
          * If the last argument begins with "-", then no file has been     *
@@ -1118,25 +1216,24 @@ class trans
 
        while (nextArg < maxArg)
         /*******************************************************************
-        * Process all the arguments, except for the last (unless it's a    *
-        * "-" argument).                                                   *
+        * Process all the arguments, except for the input-file name.       *
         *******************************************************************/
         { String option = args[nextArg] ;
-          if (option.equals("-help"))
+          if (tla && option.equals("-help"))
             { if (OutputHelpMessage()) {
               return STATUS_EXIT_WITHOUT_ERROR;}
             else {
               return STATUS_EXIT_WITH_ERRORS;
             }
             }
-          else if (option.equals("-writeAST"))
+          else if (tla && option.equals("-writeAST"))
             { PcalParams.WriteASTFlag  = true ; 
               if (CheckForConflictingSpecOptions()) 
               {
                   return STATUS_EXIT_WITH_ERRORS;
               }
             }
-          else if (option.equals("-spec"))
+          else if (tla && option.equals("-spec"))
             { PcalParams.SpecOption = true ; 
             if (CheckForConflictingSpecOptions()) 
             {
@@ -1149,7 +1246,7 @@ class trans
                  }
                  PcalParams.SpecFile = args[nextArg] ;
             }
-          else if (option.equals("-myspec"))
+          else if (tla && option.equals("-myspec"))
             { PcalParams.MyspecOption = true ; 
             if (CheckForConflictingSpecOptions()) 
             {
@@ -1162,7 +1259,7 @@ class trans
                  }
                  PcalParams.SpecFile = args[nextArg] ;
             }
-          else if (option.equals("-spec2"))
+          else if (tla && option.equals("-spec2"))
             { PcalParams.Spec2Option = true ; 
             if (CheckForConflictingSpecOptions()) 
             {
@@ -1175,7 +1272,7 @@ class trans
                  }
                  PcalParams.SpecFile = args[nextArg] ;
             }
-          else if (option.equals("-myspec2"))
+          else if (tla && option.equals("-myspec2"))
             { PcalParams.Myspec2Option = true ; 
             if (CheckForConflictingSpecOptions()) 
             {
@@ -1188,58 +1285,67 @@ class trans
                  }
                  PcalParams.SpecFile = args[nextArg] ;
             }
-          else if (option.equals("-debug"))
+          else if (tla && option.equals("-debug"))
             { PcalParams.Debug = true ; 
             }
-          else if (option.equals("-unixEOL"))
+          else if (tla && option.equals("-unixEOL"))
             { System.setProperty("line.separator", "\n") ;
             }
-          else if (option.equals("-termination"))
+          else if (option.equals("-termination") || 
+                     (pcal && option.equals("termination")))
             { PcalParams.CheckTermination = true ; 
             }
           else if (option.equals("-nocfg"))
             { PcalParams.Nocfg = true ; 
             }
-          else if (option.equals("-wf"))
-            { if (!PcalParams.FairnessOption.equals(""))
+          else if (option.equals("-wf") || (pcal && option.equals("wf")))
+            { if (firstFairness) {PcalParams.FairnessOption = "";
+                                  firstFairness = false ; }
+              if (!PcalParams.FairnessOption.equals(""))
                 { return CommandLineError(
                      "Can only have one of -wf, -sf, -wfNext, " + 
                      "and -nof options");
                 } 
               PcalParams.FairnessOption = "wf" ; 
             }
-          else if (option.equals("-sf"))
-            { if (!PcalParams.FairnessOption.equals(""))
+          else if (option.equals("-sf") || (pcal && option.equals("sf")))
+            { if (firstFairness) {PcalParams.FairnessOption = "";
+                                  firstFairness = false ; }
+              if (!PcalParams.FairnessOption.equals(""))
                 { return CommandLineError(
                      "Can only have one of -wf, -sf, -wfNext, " + 
                      "and -nof options");
                 } 
               PcalParams.FairnessOption = "sf" ; 
             }
-          else if (option.equals("-wfNext"))
-            { if (!PcalParams.FairnessOption.equals(""))
+          else if (option.equals("-wfNext") || (pcal && option.equals("wfNext")))
+            { if (firstFairness) {PcalParams.FairnessOption = "";
+                                  firstFairness = false ; }
+              if (!PcalParams.FairnessOption.equals(""))
                 { return CommandLineError(
                      "Can only have one of -wf, -sf, -wfNext, " + 
                      "and -nof options");
                 } 
               PcalParams.FairnessOption = "wfNext" ; 
             }
-          else if (option.equals("-nof"))
-            { if (!PcalParams.FairnessOption.equals(""))
+          else if (option.equals("-nof") || (pcal && option.equals("nof")))
+            { if (firstFairness) {PcalParams.FairnessOption = "";
+                                  firstFairness = false ; }
+              if (!PcalParams.FairnessOption.equals(""))
                 { return CommandLineError(
                      "Can only have one of -wf, -sf, -wfNext, " + 
                      "and -nof options");
                 } 
               PcalParams.FairnessOption = "nof" ; 
             }
-          else if (option.equals("-label"))
+          else if (option.equals("-label") || (pcal && option.equals("label")))
             { PcalParams.LabelFlag = true ; 
             }
-          else if (option.equals("-reportLabels"))
+          else if (tla && option.equals("-reportLabels"))
             { PcalParams.ReportLabelsFlag = true ; 
               PcalParams.LabelFlag = true ; 
             }
-          else if (option.equals("-labelRoot"))
+          else if (option.equals("-labelRoot") || (pcal && option.equals("labelRoot")))
             { nextArg = nextArg + 1;
               if (nextArg == maxArg)
                 { return CommandLineError( 
@@ -1247,8 +1353,33 @@ class trans
                  }
                  PcalParams.LabelRoot = args[nextArg];
             }
+//          else if (option.equals("-readOnly") || (pcal && option.equals("readOnly"))) {
+//              PcalParams.readOnly = true;
+//          }
+//          else if (option.equals("-writable") || (pcal && option.equals("writable"))) {
+//              PcalParams.readOnly = false;
+//          }
+          else if (option.equals("-lineWidth") || (pcal && option.equals("lineWidth"))) {
+              nextArg = nextArg + 1 ;
+              try { if (nextArg == maxArg)
+                     { throw new NumberFormatException();
+                     }
+                    PcalParams.SpecFile = args[nextArg] ;
+                    int a = new Integer("123").intValue();
+                    if (a < 60) 
+                      { throw new NumberFormatException();
+                      }
+                    PcalTLAGen.wrapColumn = a;
+                    PcalTLAGen.ssWrapColumn = a - 33;                   
+              } catch (Exception e) {
+                  return CommandLineError( 
+                     "Integer value at least 60 must follow `-lineWidth' option") ;
+            }
+          }
           else 
-            { return CommandLineError("Unknown option: " + option);
+            { if (tla) { return CommandLineError("Unknown command-line option: " + option);}
+              else { return CommandLineError("Unknown or illegal option in options statement: " 
+                                               + option);}
             } ;
           nextArg = nextArg + 1;
         }                      // END while (nextArg < maxArg)
@@ -1263,10 +1394,15 @@ class trans
          } 
 
        /********************************************************************
+        * If we are processing the command-line arguments, we need to get  *
+        * the input-file name.  Otherwise, we're done.                     *     
+        *******************************************************************/
+       if (pcal) {return STATUS_OK;}
+       
+       /********************************************************************
        * Set PcalParams.TLAInputFile to the last argument, removing a      *
        * "tla" extension if it has one.                                    *
        ********************************************************************/
-
          /*
        int dotIndex = args[maxArg].lastIndexOf(".") ;
        if (dotIndex == -1) 
@@ -1536,7 +1672,19 @@ class trans
          String[] splitStr = str.substring(col).split(" |,|\\)");
          return col + splitStr[0].length();
      }
-
+     
+     /**
+      * Returns the position of the first space, quote ("), "(*", or
+      * "\*" at or after position col in str, or str.size() if there is
+      * none.
+      * @param str
+      * @param col
+      * @return
+      */
+     private static int NextSpaceQuoteOrCommentCol(String str, int col) {
+         String[] splitStr = str.substring(col).split(" |\"|\\(\\*|\\\\\\*");
+         return col + splitStr[0].length();
+     }
      /** 
       * Starting at location loc (interpreted as a row, column pair) in the 
       * StringVector inp, this method searches for the next non-space character 

@@ -3040,7 +3040,7 @@ public class ParseAlgorithm
      * begCol, and ending with the first unmatched *) .                    *
      *                                                                     *
      * Note: The proper handling of \* with respect to (* *) is indicated  *
-     * the observation that both                                           *
+     * by the observation that both                                        *
      *                                                                     *
      *       \*  (* xxx                                                    *
      *                                                                     *
@@ -3141,5 +3141,127 @@ public class ParseAlgorithm
          }
        return;
      }
+   
+   /**************** CODE ADDED FOR HANDLING A .pcal FILE **********************/
+   
+   /**
+    * This method assumes that str is a string whose character at
+    * position loc is a quote (").  It returns the position immediately after
+    * the matching quote that ends a TLA+ string.  If there is no matching
+    * quote, then it returns -1.
+    */
+   public static int findEndOfString(String str, int loc) {
+       int pos = loc + 1;
+       boolean found = false;
+       while ((!found) && (pos < str.length())) {
+           char c = str.charAt(pos);
+           if (c == '"') {
+               found = true;
+           } else if (c == '\\' && (pos < str.length()-1)) {
+               pos++;
+           } 
+           pos++;
+       }
+       if (!found) {
+           return -1;
+       }
+       return pos;
+   }
+   
+   /**
+    *  Finds the end of a comment in the String Vector inputVec, assuming
+    *  that loc is the location of the "(" in the "(*" that begins the comment,
+    *  and advances loc to the position just beyond the end of the closing "*)".
+    *  
+    *  If outputVec is not null, then whenever loc is advanced to a new line,
+    *  the line just past is appended to the end of outputVec.
+    *  
+    *  If replace = true, then the comment is replaced by the same number of
+    *  spaces in inputVec.  (If outputVec != null, the new version of
+    *  the line, with the comment removed,  is put in outputVec.  This 
+    *  combination of arguments is not used by the translator.)
+    */
+   public static void gotoEndOfComment(Vector inputVec,  // Vector of strings
+                                       Vector outputVec, // null or Vector of strings
+                                       IntPair loc,      
+                                         // <row, column> in Java coordinates of
+                                         // "(*" that begins a comment.
+                                       boolean replace // true iff comment should
+                                                       // be replaced by spaces.
+                                      )
+                        throws ParseAlgorithmException {
+       IntPair originalLoc = loc ; // value saved for error reporting;
+       boolean found = false;
+       String curLine = (String) inputVec.elementAt(loc.one);
+
+       StringBuffer newLine = new StringBuffer(curLine.substring(0, loc.two));
+       if (replace) {
+           newLine.append("  ");
+       }
+
+       loc.two = loc.two + 2; // skip over "(*"
+       
+       while ((!found) && (loc.one < inputVec.size())) {
+           while ((!found) && (loc.two < curLine.length())) {
+               char c = curLine.charAt(loc.two);
+               if (    (c == '(') 
+                    && (loc.two + 1 < curLine.length())
+                    && (curLine.charAt(loc.two+1) == '*')) {
+                   // this character begins an inner comment.
+                   // must set inputVec to correct value if replacing
+                   if (replace) {
+                      inputVec.setElementAt(
+                        newLine.append(curLine.substring(loc.two)).toString(),
+                                       loc.one);
+                   }
+                   gotoEndOfComment(inputVec, outputVec, loc, replace);
+                   // must reset curLine and newLine
+                   curLine = (String) inputVec.elementAt(loc.one);
+                   if (replace) {
+                       newLine = new StringBuffer(curLine.substring(0, loc.two));
+                   }
+               } else if (    (c == '*') 
+                          && (loc.two + 1 < curLine.length())
+                          && (curLine.charAt(loc.two+1) == ')')) {
+                   // this character begins the comment-ending "*)"
+                   if (replace) {
+                       newLine.append("  ");
+                   }
+                   loc.two = loc.two + 2;
+                   found = true;
+               } else {
+                   if (replace) {
+                       newLine.append(" ");
+                   }
+                   loc.two++;
+               }
+           } // end of loop over characters in curLine
+            if (!found) {
+                if (replace)
+                {
+                    inputVec.setElementAt(newLine.toString(), loc.one);
+                    newLine = new StringBuffer();
+                }
+                if (outputVec != null)
+                {
+                    outputVec.addElement(inputVec.elementAt(loc.one));
+                }
+                loc.one++;
+                loc.two = 0;
+                if (loc.one < inputVec.size()) {
+                    curLine = (String) inputVec.elementAt(loc.one);
+                }
+            }
+       } // end of while loop over lines.
+      if (found && replace) {
+          newLine.append(curLine.substring(loc.two));
+          inputVec.setElementAt(newLine.toString(), loc.one);
+      }
+      if (!found) {
+          throw new ParseAlgorithmException("Unterminated comment begun at line " 
+                  + "\n    line " + (loc.one+1) + ", column " + (loc.two+1)  ) ;
+      }
+      return;
+   }
  }
 
