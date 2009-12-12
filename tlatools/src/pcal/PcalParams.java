@@ -194,6 +194,13 @@ public final class PcalParams
    */
   public static IntPair endOfPreamble = null;
 
+  /**
+   * The <row, col> (in Java coordinates) of the beginning of the TLA+ 
+   * "code" that follows the algorithm in the input (.pcal) and output 
+   * (.tla) files.  For outputSuffixLoc, the column always equals 0.
+   */
+  public static IntPair inputSuffixLoc = null;
+  public static IntPair outputSuffixLoc = null;
   
   /*************************************************************************
   * File parameters.                                                       *

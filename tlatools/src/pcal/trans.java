@@ -172,11 +172,11 @@ import util.ToolIO;
 class trans
 { 
     /** Status indicating no errors and successful process */
-    private static final int STATUS_OK = 1;
+    static final int STATUS_OK = 1;
     /** Status of no errors, but abort of the translation */
     private static final int STATUS_EXIT_WITHOUT_ERROR = 0;
     /** Status of present errors and abort of the translation */
-    private static final int STATUS_EXIT_WITH_ERRORS = -1;
+    static final int STATUS_EXIT_WITH_ERRORS = -1;
 
    /**
     * Main function called from the command line
@@ -267,15 +267,19 @@ class trans
       *********************************************************************/
       Vector untabInputVec = removeTabs(inputVec) ;     
 
+      /**
+       * translationLine is set to the line of the output file at which
+       * the \* BEGIN TRANSLATION appears.
+       */
       int translationLine = 0;
 
       /*********************************************************************
-      * Set algLine, algCol to the line and column of the first instance   *
-      * of the string PcalParams.BeginAlg in the file.  (These are Java    *
+      * Set algLine, algCol to the line and column just after the string   *
+      * [--]algorithm that begins the algorithm.  (These are Java          *
       * ordinals, in which counting begins at 0.)                          *
       *                                                                    *
       * Modified by LL on 18 Feb 2006 to use untabInputVec instead of      *
-      * inputVec, to correct bug that occured when tabs preceded the       *
+      * inputVec, to correct bug that occurred when tabs preceded the      *
       * "--algorithm".                                                     *
       *********************************************************************/
       int algLine = 0 ;
@@ -295,85 +299,18 @@ class trans
           // of the input.
           IntPair curLoc = new IntPair(0,0);
 
-          String curLine = GotoNextNonSpace(untabInputVec, outputVec, curLoc);
+          String curLine;  
 
-          boolean error = false;          
-          if (curLine.substring(curLoc.two).startsWith("version")) {
-             // Process the version number and move curLoc and curLine
-             // to just after the closing ")".
-             curLoc.two = curLoc.two + 7; // go to position after "version"
-             curLine = GotoNextNonSpace(untabInputVec, outputVec, curLoc);
-             if (!curLine.substring(curLoc.two).startsWith("(")) {
-                 curLoc.one = untabInputVec.size(); 
-                 error = true;
-             }
-             curLoc.two ++;
-             curLine = GotoNextNonSpace(untabInputVec, outputVec, curLoc);
-             int endOfArg = NextDelimiterCol(curLine, curLoc.two);
-             if (!PcalParams.ProcessVersion(curLine.substring(curLoc.two, endOfArg))){
-                 curLoc.one = untabInputVec.size();
-                 error = true;
-             }
-             curLoc.two = endOfArg;
-             curLine = GotoNextNonSpace(untabInputVec, outputVec, curLoc);
-             if (!curLine.substring(curLoc.two).startsWith(")")) {
-                 curLoc.one = untabInputVec.size(); 
-                 error = true;
-             }
-             curLoc.two ++;
-             curLine = GotoNextNonSpace(untabInputVec, outputVec, curLoc);
-          }
-          
-          if (error) 
-          { PcalDebug.reportError("Error in version statement");
-            return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
+          // Process any version statement.
+          if (! ParseAlgorithm.ProcessVersion(untabInputVec, outputVec, curLoc)) 
+          { return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
           } 
-          
-          if (curLine.substring(curLoc.two).startsWith("options")) {
-              // Process the options and move curLoc and curLine
-              // to just after the closing ")".
-              curLoc.two = curLoc.two + 7; // go to position after "version"
-              curLine = GotoNextNonSpace(untabInputVec, outputVec, curLoc);
-              if (!curLine.substring(curLoc.two).startsWith("(")) {
-                  curLoc.one = untabInputVec.size(); 
-                  error = true;
-              }
-              curLoc.two ++;
-              curLine = GotoNextNonSpace(untabInputVec, outputVec, curLoc);
 
-              Vector argsVec = new Vector();
-                // the vector of option arguments
-              
-              while (curLoc.one < untabInputVec.size() && (curLine.charAt(curLoc.two) != ')')) {
-                 if (curLine.charAt(curLoc.two) == ',') {
-                     curLoc.two++;
-                 } else {
-                     int endOfArg = NextDelimiterCol(curLine, curLoc.two) ;
-                     argsVec.addElement(curLine.substring(curLoc.two, endOfArg));
-                     curLoc.two = endOfArg;
-                 }
-                 curLine = GotoNextNonSpace(untabInputVec, outputVec, curLoc);
-              }
-              
- 
-              if (!(curLoc.one < untabInputVec.size())) 
-              { PcalDebug.reportError("No closing ')' found in options statement");
-                return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
-              } 
-              curLoc.two ++;
-              curLine = GotoNextNonSpace(untabInputVec, outputVec, curLoc);
-              
-              // Process the options arguments.
-              argsVec.addElement(""); // add dummy final argument
-              String[] argsArray = new String[argsVec.size()];
-              for (int i = 0; i < argsArray.length; i++) {
-                  argsArray[i] = (String) argsVec.elementAt(i);
-              }
-              status = parseAndProcessArguments(args); 
-              if (status != STATUS_OK) {
+          status = ParseAlgorithm.ProcessOptions(untabInputVec, outputVec, curLoc); 
+          if (status != STATUS_OK) {
                   return exitWithStatus(status);
-              }     
-           }
+            }     
+
           
           /***
            * We are now past any version and options statement.
@@ -381,70 +318,73 @@ class trans
            * "algorithm" statement, copying everything up to that point into
            * outputVec.
            */
-          try {              
-          boolean found = false;
-          curLine = null;
-          while ((!found) && (curLoc.one < untabInputVec.size())) {
-            curLine = (String) untabInputVec.elementAt(curLoc.one);
-            while ((!found) && (curLoc.two < curLine.length())) {
-                curLoc.two = NextSpaceQuoteOrCommentCol(curLine, curLoc.two);
-                if (curLoc.two < curLine.length()){
-                    char c = curLine.charAt(curLoc.two);
-                    if (c == ' ') {
-                        curLine = GotoNextNonSpace(untabInputVec, outputVec, curLoc);
-                        if ( curLine.substring(curLoc.two).startsWith(PcalParams.PcalBeginAlg)) {
-                            curLoc.two = curLoc.two + PcalParams.PcalBeginAlg.length();
-                            if ( ! ((curLoc.two < curLine.length())
-                                     || Character.isLetter(curLine.charAt(curLoc.two))
-                                     || (curLine.charAt(curLoc.two) == '_')
-                                     )) {
-                                found = true;
-                            }
+          try { // We first find the beginning of the algorithm and set
+                // PcalParams.endOfPreamble, algLine, and algCol
+      
+                // Find the "algorithm" token.
+                ParseAlgorithm.FindToken (
+                    PcalParams.PcalBeginAlg, untabInputVec, outputVec, curLoc, false,
+                    "Beginning of algorithm not found."); 
+                PcalParams.endOfPreamble = 
+                    new IntPair(curLoc.one, curLoc.two - 
+                                PcalParams.PcalBeginAlg.length());
+                
+                // we can set algLine and algCol to the coordinates of curLoc
+                algLine = curLoc.one;
+                algCol  = curLoc.two;
+                // Skip to the algorithm's name, replacing comments with spaces.
+                String line = ParseAlgorithm.GotoNextNonSpaceOrComment(
+                                 untabInputVec, null, curLoc, true);
+
+                // skip to end of the name.
+                curLoc.two = ParseAlgorithm.NextNonIdChar(line, curLoc.two);
+
+                // skip to the next non-comment token, replacing comments with spaces.
+                line = ParseAlgorithm.GotoNextNonSpaceOrComment(
+                        untabInputVec, null, curLoc, true);
+                
+                // Now skip to the end of the algorithm, 
+                // The algorithm uses the C-syntax iff the next char is a "{".
+                if (line.charAt(curLoc.two) == '{') {
+                    // this is a C-syntax algorithm
+                    ParseAlgorithm.FindMatchingBrace (
+                             untabInputVec, null, curLoc, true,
+                            "Right brace ending algorithm not found.");
+                } else {
+                    // this is a P-syntax algorithm
+                    // must search for "end algorithm"
+                    boolean found = false;
+                    while (!found) {
+                        // find the next "end"
+                        ParseAlgorithm.FindToken (
+                                "end", untabInputVec, null, curLoc, true,
+                                "End of algorithm not found."); 
+                        
+                        // go to next algorithm token.  This is the end of the
+                        // algorithm iff the next part of the line is "algorithm".
+                        line = ParseAlgorithm.GotoNextNonSpaceOrComment(
+                                untabInputVec, null, curLoc, true);
+                        if (line.substring(curLoc.two).startsWith("algorithm")) {
+                            found = true;
+                            curLoc.two = curLoc.two + "algorithm".length();
                         }
-                    } else if (   (c == '(') 
-                               && (curLoc.two + 1 < curLine.length())
-                               && (curLine.charAt(curLoc.two+1) == '*')) {
-                        ParseAlgorithm.gotoEndOfComment(untabInputVec, outputVec, curLoc, false);
-                    } else if (   (c == '\\') 
-                            && (curLoc.two + 1 < curLine.length())
-                            && (curLine.charAt(curLoc.two+1) == '*')) {
-                        curLoc.two = curLine.length();
-                    } else if (c == '"') {
-                        curLoc.two = ParseAlgorithm.findEndOfString(curLine, curLoc.two);
-                    } else { 
-                        PcalDebug.ReportBug("This should not happen.");
                     }
                 }
-            } // end of while, either found beginning or at end of line
-            if (!found) {
-                outputVec.addElement(untabInputVec.elementAt(curLoc.one));
-                curLoc.one++;
-            }
-          } // end of while, either found beginning or at end of file
-          if (!found) {
-              PcalDebug.reportError("Beginning of algorithm not found.") ;
-              return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
-            } ;
-          PcalParams.endOfPreamble = 
-              new IntPair(curLoc.one, 
-                          curLoc.two - PcalParams.PcalBeginAlg.length());
-          // If there is some non-space character on the same line
-          // before the "algorithm", then write it to a line by itself
-          // on outputVec.
-          String leftOver = ((String) untabInputVec.elementAt
-                  (curLoc.one)).substring(0,PcalParams.endOfPreamble.two);
-          if (leftOver.trim().length() != 0) {
-              outputVec.addElement(leftOver);
-          }
-System.out.println("curLoc = " + curLoc.toString());
-Debug.printVector(inputVec, "inputVec");
-Debug.printVector(outputVec, "outputVec");
-System.exit(-1);
+                PcalParams.inputSuffixLoc = new IntPair (curLoc.one, curLoc.two);
+//System.out.println("curLoc = " + curLoc.toString());
+//Debug.printVector(untabInputVec, "inputVec");
+//System.exit(-1);     
           } catch (ParseAlgorithmException e){ 
               PcalDebug.reportError(e);
               return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
              }
-      
+          
+          // We now put \* BEGIN/END TRANSLATION lines in the output file
+          // and set translationLine.  
+          translationLine = outputVec.size();
+          outputVec.addElement("\\******** BEGIN TRANSLATION ********");
+          outputVec.addElement("\\******** END TRANSLATION ********");
+
       } // end if (PcalParams.fromPcalFile)
       else {
       /*********************************************************************
@@ -488,44 +428,46 @@ System.exit(-1);
            untabInputVec.remove(endTranslationLine) ;
            endTranslationLine = endTranslationLine - 1;
          } 
-       
-    } // end else of if (PcalParams.fromPcalFile)
+ 
+       boolean foundBegin = false ;
+       while ((algLine < untabInputVec.size()) && ! foundBegin)
+         { String line = (String) untabInputVec.elementAt(algLine) ;
+           algCol = line.indexOf(PcalParams.BeginAlg) ;
+           if (algCol != -1)
+             { algCol = algCol + PcalParams.BeginAlg.length() ;
+               foundBegin = true ;
+             }
+           else
+             { algLine = algLine + 1 ; } ;
+         } ;
+        
+       if (! foundBegin)
+         { PcalDebug.reportError("Beginning of algorithm string " + 
+                                 PcalParams.BeginAlg + " not found.") ;
+             return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
+         } ;
 
-      boolean foundBegin = false ;
-      while ((algLine < untabInputVec.size()) && ! foundBegin)
-        { String line = (String) untabInputVec.elementAt(algLine) ;
-          algCol = line.indexOf(PcalParams.BeginAlg) ;
-          if (algCol != -1)
-            { algCol = algCol + PcalParams.BeginAlg.length() ;
-              foundBegin = true ;
-            }
-          else
-            { algLine = algLine + 1 ; } ;
-        } ;
-       
-      if (! foundBegin)
-        { PcalDebug.reportError("Beginning of algorithm string " + 
-                                PcalParams.BeginAlg + " not found.") ;
-            return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
-        } ;
+       /*********************************************************************
+       * Added by LL on 18 Feb 2006 to fix bugs related to handling of      *
+       * comments.                                                          *
+       *                                                                    *
+       * Remove all comments from the algorithm in untabInputVec,           *
+       * replacing (* *) comments by spaces to keep the algorithm tokens    *
+       * in the same positions for error reporting.                         *
+       *********************************************************************/
+       try
+     {
+         ParseAlgorithm.uncomment(untabInputVec, algLine, algCol) ;
+     } catch (ParseAlgorithmException e)
+     {
+         PcalDebug.reportError(e);
+         return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
+     }
+     
+    } // end else of if (PcalParams.fromPcalFile) -- i.e., end processing
+      // of .tla input file.
 
-      /*********************************************************************
-      * Added by LL on 18 Feb 2006 to fix bugs related to handling of      *
-      * comments.                                                          *
-      *                                                                    *
-      * Remove all comments from the algorithm in untabInputVec,           *
-      * replacing (* *) comments by spaces to keep the algorithm tokens    *
-      * in the same positions for error reporting.                         *
-      *********************************************************************/
-      try
-    {
-        ParseAlgorithm.uncomment(untabInputVec, algLine, algCol) ;
-    } catch (ParseAlgorithmException e)
-    {
-        PcalDebug.reportError(e);
-        return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
-    }
-
+ 
       /*********************************************************************
       * Set reader to a PcalCharReader for the input file (with tabs and   *
       * the previous translation removed), starting right after the        *
@@ -617,8 +559,10 @@ System.exit(-1);
         PcalDebug.reportInfo("Translation completed.") ;
 
       /*********************************************************************
+      * For .tla input:                                                    *
       * Rename the old file by changing its extension from "tla" to "old". *
       *********************************************************************/
+      if (!PcalParams.fromPcalFile) {
       File file ; 
       try { file = new File(PcalParams.TLAInputFile + ".old") ;
             if (file.exists())
@@ -634,23 +578,46 @@ System.exit(-1);
                                   PcalParams.TLAInputFile + ".old") ;
           return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
           } ;
-
+      }
+      
       /*********************************************************************
-      * Add the translation to inputVec.                                   *
+      * Add the translation to outputVec.                                   *
       *********************************************************************/
       int i = 0 ;
       while (i < translation.size() )
-        { inputVec.insertElementAt(translation.elementAt(i),
+        { outputVec.insertElementAt(translation.elementAt(i),
                                    i + translationLine + 1) ;
           i = i + 1 ;
         }
 
+      /**
+       * For .pcal input, set outputSuffixLoc and add the rest of the input 
+       * file to the output.
+       */
+      if (PcalParams.fromPcalFile) {
+          PcalParams.outputSuffixLoc = new IntPair (outputVec.size(), 0);
+          // if there's stuff in the suffix on the same line with the
+          // end of the algorithm, write it on a separate line.
+          IntPair curLoc = new IntPair (PcalParams.inputSuffixLoc.one, 
+                                        PcalParams.inputSuffixLoc.two);
+          if (curLoc.one < untabInputVec.size()) {
+              String lastLine = (String) untabInputVec.elementAt(curLoc.one);
+              if (curLoc.two < lastLine.length()) {
+                  outputVec.addElement(lastLine.substring(curLoc.two));
+                  curLoc.one++;
+              }
+          }
+          // Copy the rest of the input file into the output file.
+          for (int ii = curLoc.one; ii < untabInputVec.size(); ii++) {
+              outputVec.addElement((String) untabInputVec.elementAt(ii));
+          }
+      }
       /*********************************************************************
       * Write the output file.                                             *
       *********************************************************************/
       try
     {
-        WriteStringVectorToFile(inputVec, PcalParams.TLAInputFile + ".tla") ;
+        WriteStringVectorToFile(outputVec, PcalParams.TLAInputFile + ".tla") ;
     } catch (StringVectorToFileException e)
     {
         PcalDebug.reportError(e);
@@ -1094,7 +1061,7 @@ System.exit(-1);
      * The second call should have a dummy extra argument in place of the 
      * command-line's file-name argument.
      */
-    private static int parseAndProcessArguments(String[] args)
+    static int parseAndProcessArguments(String[] args)
     {
 
     /** *******************************************************************
@@ -1652,71 +1619,5 @@ System.exit(-1);
 	   }
        return sb.toString();
      }
-     /*********************** Helpful Methods for Parsing StringVectors ************/
-     
-     /**
-      * Returns the position of the first space at or after position col
-      * in str, or str.size() if there is none.
-      */
-     private static int NextSpaceCol(String str, int col) {
-        int res = str.indexOf(' ', col);
-        if (res == -1) { return str.length(); };
-        return res;
-     }
-     
-     /**
-      * Returns the position of the first space , ",", or ")" at or after position col
-      * in str, or str.size() if there is none.
-      */
-     private static int NextDelimiterCol(String str, int col) {
-         String[] splitStr = str.substring(col).split(" |,|\\)");
-         return col + splitStr[0].length();
-     }
-     
-     /**
-      * Returns the position of the first space, quote ("), "(*", or
-      * "\*" at or after position col in str, or str.size() if there is
-      * none.
-      * @param str
-      * @param col
-      * @return
-      */
-     private static int NextSpaceQuoteOrCommentCol(String str, int col) {
-         String[] splitStr = str.substring(col).split(" |\"|\\(\\*|\\\\\\*");
-         return col + splitStr[0].length();
-     }
-     /** 
-      * Starting at location loc (interpreted as a row, column pair) in the 
-      * StringVector inp, this method searches for the next non-space character 
-      * and sets loc to its location.  If the new location is not on the same
-      * row, then each row of inp from the starting row through the row preceding
-      * the finishing row is copied from inp to the end of outp.  If there is
-      * no non-space character found, then the location is set to column 0 of
-      * the first row after the end if inp.  It returns the line to which
-      * loc is pointing to, or "" if loc is after the end of the inp 
-      * StringVector.
-      * Note: it does the right thing if loc is the column after the end
-      * of a row.
-      * 
-      */
-     private static String GotoNextNonSpace(Vector inp, Vector outp, IntPair loc) {
-         boolean found = false;
-         while ((!found) && loc.one < inp.size()) {
-           String line = (String) inp.elementAt(loc.one);
-           while ((!found) && loc.two < line.length()) {
-               if (line.charAt(loc.two) == ' ') {
-                   loc.two++;
-                } else {
-                    found = true;
-                }
-           }
-           if (!found) {
-               outp.addElement(inp.elementAt(loc.one));
-               loc.one++;
-               loc.two = 0;
-           }
-         }
-         if (loc.one < inp.size()) {return (String) inp.elementAt(loc.one);}
-         return "";
-     }
+
 }
