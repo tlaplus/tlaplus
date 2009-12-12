@@ -370,10 +370,7 @@ class trans
                         }
                     }
                 }
-                PcalParams.inputSuffixLoc = new IntPair (curLoc.one, curLoc.two);
-//System.out.println("curLoc = " + curLoc.toString());
-//Debug.printVector(untabInputVec, "inputVec");
-//System.exit(-1);     
+                PcalParams.inputSuffixLoc = new IntPair (curLoc.one, curLoc.two);   
           } catch (ParseAlgorithmException e){ 
               PcalDebug.reportError(e);
               return exitWithStatus(STATUS_EXIT_WITH_ERRORS);

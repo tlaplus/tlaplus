@@ -107,14 +107,11 @@ package pcal;
 
 import java.util.Hashtable;
 import java.util.Vector;
-
-import com.sun.org.apache.xerces.internal.impl.xpath.regex.ParseException;
-
 import pcal.exception.ParseAlgorithmException;
 import pcal.exception.TLAExprException;
 import pcal.exception.TokenizerException;
 import pcal.exception.UnrecoverableException;
-import tla2tex.Debug;
+
 
 public class ParseAlgorithm
 { 
@@ -3358,16 +3355,15 @@ public class ParseAlgorithm
            String errorMsg  // The error message if the brace isn't found
           )
              throws ParseAlgorithmException {
-//       boolean found = false;
+
        curLoc.two++;
-       while (/* (!found) && */ (curLoc.one < inputVec.size())) {
+       while (curLoc.one < inputVec.size()) {
            String curLine = (String) inputVec.elementAt(curLoc.one);
-           while (/*(!found) && */(curLoc.two < curLine.length())) {
+           while (curLoc.two < curLine.length()) {
              curLoc.two = NextBraceQuoteOrCommentCol(curLine, curLoc.two);
-             if (/*(!found) && */(curLoc.two < curLine.length())){
+             if (curLoc.two < curLine.length()){
                  char c = curLine.charAt(curLoc.two);
                  if (c == '}') {
-//                   found = true;
                    curLoc.two++;
                    if (outputVec != null) {
                        outputVec.addElement(curLine.substring(0, curLoc.two));
@@ -3399,22 +3395,13 @@ public class ParseAlgorithm
              }
 
          }// end of while, either at end of line or found matching brace
-//           if (!found) {
                curLoc.one ++;
                curLoc.two = 0;
-//           }
+
        } // end of while, either found beginning or at end of file
-//       if (!found) {
+
            throw new ParseAlgorithmException(errorMsg) ;
-//         } ;
-//System.out.println("curLoc = " + curLoc.toString());
-//Debug.printVector(inputVec, "inputVec");
-//Debug.printVector(outputVec, "outputVec");
-//String str = "x{x}\"";
-//System.out.println(str + " -> " + NextBraceQuoteOrCommentCol(str, 2));
-//         
-//System.exit(-1);
-//       return ;
+
 
    }
    /*********************** Helpful Methods for Parsing StringVectors ************/
