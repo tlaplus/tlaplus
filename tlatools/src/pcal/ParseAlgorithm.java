@@ -3144,39 +3144,92 @@ public class ParseAlgorithm
    
    /**************** CODE ADDED FOR HANDLING A .pcal FILE **********************/
    
-   /*********************** METHODS FOR PARSING .pcal FILE ***********************/
-   
+ 
+
+/***************************************************************************
+*         ARGUMENTS OF METHODS FOR PROCESSING THE pcal INPUT               *
+*                                                                          *
+* Many of the following methods for processing the pcal input start at a   *
+* certain point and process a region of the input.  Those for which the    *
+* region can extend across multiple lines have the following arguments.    *
+* (An arguments will not appear if it can have only one possible value     *
+* or is not needed.)                                                       *
+*                                                                          *
+* StringVector inputVec                                                    *
+*    The pcal input file, usually with tabs removed.                       *
+*                                                                          *
+* StringVector outputVec                                                   *
+*    The tla output file, or null.  If non-null, the region of the pcal    *
+*    input file that is processed is copied to the                         *
+*                                                                          *
+* IntPair curLoc                                                           *
+*    The <line, column> location (in Java coordinates) of the beginning    *
+*    of the region to process.  This object is modified by the method      *
+*    to leave it pointing immediately after the last character of the      *
+*    region that was processed.  If that character ends a line, then       *
+*    it points to the nonexistent character after the last character       *
+*    on the line.  (That is, the value of curLoc does not point to         *
+*    the first character on the next line.)                                *
+*                                                                          *
+* boolean replace                                                          *
+*    If true, comments within that region of the pcal input file are       *
+*    removed.  Comments enclosed by (* and *) are replaced by spaces.      *
+*    End of line comments that begin with \* are removed by truncating     *
+*    the line.  No method is called with replace = true and outputVec      *
+*    non-null.  If a method were called with this option, then the input   *
+*    would be copied to the tla output after the comments were removed.    *
+*                                                                          *
+* String errorMsg                                                          *
+*    Used only for a method that has multiple uses and can throw a         *
+*    ParseAlgorithmException.  It is the error reported if the             *
+*    exception is thrown.                                                  *
+*                                                                          *
+* Some methods just process a single line of the input.  Those have the    *
+* following arguments:                                                     *
+*                                                                          *
+* - A string that is the current line.                                     *
+*                                                                          *
+* - An int that is the position within the line of the beginning of        *
+*   the region.                                                            *
+*                                                                          *
+* They return a value that is the position on the line immediately after   *
+* the end of the region.  (This will equal the length of the line if the   *
+* region goes to the end of the line.)                                     *
+***************************************************************************/
+
    /*** 
-    * Moves curLoc to next non-space character in the String Vector untabInputVec.  
-    * If that begins a version statement, the statement is processed, and the curLoc
-    * is moved to after it.  If curLoc is advanced to a new line, all lines moved
-    * past are written to outputVec.  It returns false iff there is a version 
-    * statement with an error.  The error is reported with PcalDebug.reportError.
+    * If curLoc points to a version statement, this method processes the
+    * statement.  It is a no-op otherwise.  It calls PcalParams.ProcessVersion
+    * to do the actual processing, and writes the statement to the tla output
+    * file.  There is no comment removal.  The method returns false iff there is an 
+    * error,calling PcalDebug.reportError to report the error.
+    * 
+    * See the comments above for an explanation of the arguments.
     */
-   public static boolean ProcessVersion(Vector untabInputVec, 
+   public static boolean ProcessVersion(Vector inputVec, 
                                         Vector outputVec, IntPair curLoc) {
-       String curLine = GotoNextNonSpace(untabInputVec, outputVec, curLoc);
+       String curLine = GotoNextNonSpace(inputVec, outputVec, curLoc);
        boolean error = false;          
        if (curLine.substring(curLoc.two).startsWith("version")) {
           // Process the version number and move curLoc and curLine
           // to just after the closing ")".
           curLoc.two = curLoc.two + 7; // go to position after "version"
-          curLine = GotoNextNonSpace(untabInputVec, outputVec, curLoc);
+          curLine = GotoNextNonSpace(inputVec, outputVec, curLoc);
           if (!curLine.substring(curLoc.two).startsWith("(")) {
-              curLoc.one = untabInputVec.size(); 
+              curLoc.one = inputVec.size(); 
               error = true;
           }
           curLoc.two ++;
-          curLine = GotoNextNonSpace(untabInputVec, outputVec, curLoc);
+          curLine = GotoNextNonSpace(inputVec, outputVec, curLoc);
           int endOfArg = NextDelimiterCol(curLine, curLoc.two);
           if (!PcalParams.ProcessVersion(curLine.substring(curLoc.two, endOfArg))){
-              curLoc.one = untabInputVec.size();
+              curLoc.one = inputVec.size();
               error = true;
           }
           curLoc.two = endOfArg;
-          curLine = GotoNextNonSpace(untabInputVec, outputVec, curLoc);
+          curLine = GotoNextNonSpace(inputVec, outputVec, curLoc);
           if (!error && !curLine.substring(curLoc.two).startsWith(")")) {
-              curLoc.one = untabInputVec.size(); 
+              curLoc.one = inputVec.size(); 
               error = true;
           }
           curLoc.two ++;
@@ -3190,11 +3243,14 @@ public class ParseAlgorithm
    }
    
    /*** 
-    * Moves curLoc to next non-space character in the String Vector untabInputVec.  
-    * If that begins an options statement, the statement is processed, and the curLoc
-    * is moved to after it.  If curLoc is advanced to a new line, all lines moved
-    * past are written to outputVec.  It returns STATUS_OK unless there is an
-    * options statement with an error, in which case it returns the error status.
+    * If the next non-space character is the beginning of an options statement,
+    * this method processes the statement.  Otherwise, it does nothing.  The
+    * actual processing of the arguments is done by calling trans.parseAndProcessArguments.
+    * It returns STATUS_OK unless there is an  options statement with an error, in 
+    * which case it returns the error status.  The options statement is written
+    * to the tla output.  There is no removal of comments.
+    * 
+    * See the comments above for an explanation of the arguments.
     */
    public static int ProcessOptions(Vector untabInputVec, 
                                         Vector outputVec, IntPair curLoc) {
@@ -3250,15 +3306,11 @@ public class ParseAlgorithm
    /**
     * Searches for token, starting from curLoc in the String Vector inputVec, and
     * updates curLoc to the position immediately after the token if it's found.
-    * Otherwise, it throws a ParseAlgorithmException.
+    * Otherwise, it throws a ParseAlgorithmException.  The token must be
+    * a sequence of letters, numbers, and "_" characters that is terminated by
+    * any other kind of character or the end of a line.
     * 
-    * If outputVec != null, then lines passed are written to outputVec, including
-    * a line consisting of the characters preceding the token on its line, if there
-    * are any.
-    * 
-    * If replace = true, then comments preceding the token are replaced by spaces in 
-    * inputVec and in outputVec, if it's being written.  (The PlusCal code currently
-    * does not call this with replace = true and outputVec != null.)
+    * See the comments above for an explanation of the arguments.
     * 
     * @param token           The token being searched for.
     * @param inputVec        Input String Vector 
@@ -3268,13 +3320,11 @@ public class ParseAlgorithm
     * @throws ParseAlgorithmException
     */
    public static void FindToken(
-           String token,     // The token being searched for.
-           Vector inputVec,  // Vector of strings
-           Vector outputVec, // null or Vector of strings
-           IntPair curLoc,   // <row, column> in Java coordinates of
-                              // "(*" that begins a comment.
-           boolean replace, // true iff comment should
-                            // be replaced by spaces.
+           String token,  
+           Vector inputVec,  
+           Vector outputVec, 
+           IntPair curLoc,   
+           boolean replace, 
            String errorMsg  // The error message to be reported if not found.
           )
              throws ParseAlgorithmException {
@@ -3327,17 +3377,13 @@ public class ParseAlgorithm
    
    /**
     * Assumes that curLoc points to a left brace ("{") in the String 
-    * Vector inputVec, and it searches for the mathing right brace.
+    * Vector inputVec, and it searches for the matching right brace.
     * It updates curLoc to the position immediately after the token if 
     * it's found.  Otherwise, it raises a ParseAlgorithmException.
     * 
-    * If outputVec != null, then lines passed are written to outputVec, including
-    * a line consisting of the characters preceding the token on its line, if there
-    * are any.
-    * 
-    * If replace = true, then comments preceding the token are replaced by spaces in 
-    * inputVec and in outputVec, if it's being written.  (The PlusCal code currently
-    * calls this only with replace = true and outputVec = null.)
+    * See the comments above for an explanation of the arguments.
+    * The PlusCal code currently calls this only with replace = true and 
+    * outputVec = null.
     * 
     * @param inputVec        Input String Vector 
     * @param outputVec       Output String Vector, or null
@@ -3395,9 +3441,8 @@ public class ParseAlgorithm
              }
 
          }// end of while, either at end of line or found matching brace
-               curLoc.one ++;
-               curLoc.two = 0;
-
+         curLoc.one ++;
+         curLoc.two = 0;
        } // end of while, either found beginning or at end of file
 
            throw new ParseAlgorithmException(errorMsg) ;
@@ -3406,30 +3451,31 @@ public class ParseAlgorithm
    }
    /*********************** Helpful Methods for Parsing StringVectors ************/
    
-   /*
-    * My initial implementation of the following Next... methods used the 
-    * String class's split() method.  Since there's no specification of that method, 
-    * this is dangerous.  The one trap I've found so far is: experimentation suggests
-    * that if the regexp identifies the entire string as being composed of splitting 
-    * strings, then it returns an array of length 0.  Who knows what other features
-    * are lurking.  
-    * 
-    */
-   
-    static int NextCharOf(String str, int col, char[] chs) {
-       int curcol = col;
-       boolean found = false;
-       while ((!found) && (curcol < str.length())) {
-           char c = str.charAt(curcol);
-           for(int i = 0; i < chs.length; i++) {
-               if (c == chs[i]) {
-                   found = true;
-               }
-           }
-           curcol++;
-       }
-       return curcol;
-   }
+   /***********************************************************************
+    * Below are a bunch of methods called Next...  that are implemented    *
+    * using the String class's split() method.  Since there's no           *
+    * specification of that method, this is dangerous.  The one trap I've  *
+    * found so far is this: experimentation suggests that if the regexp    *
+    * identifies the entire string as being composed of splitting          *
+    * strings, then it returns an array of length 0.  Who knows what       *
+    * other features are lurking.  I thought of using the following        *
+    * commented-out method NextCharOf to reimplement these methods, but I  *
+    * decided not to bother.  Beware.                                      *
+    ***********************************************************************/
+//    static int NextCharOf(String str, int col, char[] chs) {
+//       int curcol = col;
+//       boolean found = false;
+//       while ((!found) && (curcol < str.length())) {
+//           char c = str.charAt(curcol);
+//           for(int i = 0; i < chs.length; i++) {
+//               if (c == chs[i]) {
+//                   found = true;
+//               }
+//           }
+//           curcol++;
+//       }
+//       return curcol;
+//   }
    /**
     * Returns the position of the first space at or after position col
     * in str, or str.size() if there is none.
@@ -3481,7 +3527,7 @@ public class ParseAlgorithm
    
    /**
     * Returns the position of the first character not a letter, number,
-    * or "_"at or after position col in str, or str.size() if there is
+    * or "_" at or after position col in str, or str.size() if there is
     * none.
     * @param str
     * @param col
@@ -3501,47 +3547,45 @@ public class ParseAlgorithm
 
    
    /** 
-    * Starting at location loc (interpreted as a row, column pair) in the 
-    * StringVector inp, this method searches for the next non-space character 
-    * and sets loc to its location.  If the new location is not on the same
-    * row, then each row of inp from the starting row through the row preceding
-    * the finishing row is copied from inp to the end of outp.  If there is
-    * no non-space character found, then the location is set to column 0 of
-    * the first row after the end if inp.  It returns the line to which
-    * loc is pointing to, or "" if loc is after the end of the inp 
-    * StringVector.
-    * Note: it does the right thing if loc is the column after the end
-    * of a row.
+    * This method searches for the next non-space character and sets curLoc to 
+    * its location.  If there is no non-space character found, then the location 
+    * is set to column 0 of the first row after the end if inputVec.  It returns 
+    * the line to which curLoc is pointing to, or "" if loc is after the end of the 
+    * Note: it does the right thing if loc is the column after the end of a row.
+    * 
+    * See the comments above for an explanation of the arguments.  (No comment
+    * removal is possible.)
     * 
     */
-   private static String GotoNextNonSpace(Vector inp, Vector outp, IntPair loc) {
+   private static String GotoNextNonSpace(Vector inputVec, Vector outputVec, IntPair curLoc) {
        boolean found = false;
-       while ((!found) && loc.one < inp.size()) {
-         String line = (String) inp.elementAt(loc.one);
-         while ((!found) && loc.two < line.length()) {
-             if (line.charAt(loc.two) == ' ') {
-                 loc.two++;
+       while ((!found) && curLoc.one < inputVec.size()) {
+         String line = (String) inputVec.elementAt(curLoc.one);
+         while ((!found) && curLoc.two < line.length()) {
+             if (line.charAt(curLoc.two) == ' ') {
+                 curLoc.two++;
               } else {
                   found = true;
               }
          }
          if (!found) {
-             if (outp != null) {
-                 outp.addElement(inp.elementAt(loc.one));
+             if (outputVec != null) {
+                 outputVec.addElement(inputVec.elementAt(curLoc.one));
              }
-             loc.one++;
-             loc.two = 0;
+             curLoc.one++;
+             curLoc.two = 0;
          }
        }
-       if (loc.one < inp.size()) {return (String) inp.elementAt(loc.one);}
+       if (curLoc.one < inputVec.size()) {return (String) inputVec.elementAt(curLoc.one);}
        return "";
    }
 
    
    /**
-    * Like GotoNextNonSpace except it also skips over comments.  If
-    * replace = true, then it replaces comments with spaces in inputVec.  Also,
-    * outputVec can be null, in which case no output is generated.
+    * Like GotoNextNonSpace except it also skips over comments.  
+    * 
+    * See the comments above for an explanation of the arguments.  
+    * 
     * @param inputVec
     * @param outputVec
     * @param curLoc
@@ -3612,94 +3656,88 @@ public class ParseAlgorithm
     *  Finds the end of a comment in the String Vector inputVec, assuming
     *  that loc is the location of the "(" in the "(*" that begins the comment,
     *  and advances loc to the position just beyond the end of the closing "*)".
-    *  
-    *  If outputVec is not null, then whenever loc is advanced to a new line,
-    *  the line just past is appended to the end of outputVec.
-    *  
-    *  If replace = true, then the comment is replaced by the same number of
-    *  spaces in inputVec.  (If outputVec != null, the new version of
-    *  the line, with the comment removed,  is put in outputVec.  This 
-    *  combination of arguments is not used by the translator.)
+    * 
+    * See the comments above for an explanation of the arguments.
     */
    public static void gotoEndOfComment(Vector inputVec,  // Vector of strings
                                        Vector outputVec, // null or Vector of strings
-                                       IntPair loc,      
+                                       IntPair curLoc,      
                                          // <row, column> in Java coordinates of
                                          // "(*" that begins a comment.
                                        boolean replace // true iff comment should
                                                        // be replaced by spaces.
                                       )
                         throws ParseAlgorithmException {
-       IntPair originalLoc = loc ; // value saved for error reporting;
+       IntPair originalLoc = curLoc ; // value saved for error reporting;
        boolean found = false;
-       String curLine = (String) inputVec.elementAt(loc.one);
+       String curLine = (String) inputVec.elementAt(curLoc.one);
 
-       StringBuffer newLine = new StringBuffer(curLine.substring(0, loc.two));
+       StringBuffer newLine = new StringBuffer(curLine.substring(0, curLoc.two));
        if (replace) {
            newLine.append("  ");
        }
 
-       loc.two = loc.two + 2; // skip over "(*"
+       curLoc.two = curLoc.two + 2; // skip over "(*"
        
-       while ((!found) && (loc.one < inputVec.size())) {
-           while ((!found) && (loc.two < curLine.length())) {
-               char c = curLine.charAt(loc.two);
+       while ((!found) && (curLoc.one < inputVec.size())) {
+           while ((!found) && (curLoc.two < curLine.length())) {
+               char c = curLine.charAt(curLoc.two);
                if (    (c == '(') 
-                    && (loc.two + 1 < curLine.length())
-                    && (curLine.charAt(loc.two+1) == '*')) {
+                    && (curLoc.two + 1 < curLine.length())
+                    && (curLine.charAt(curLoc.two+1) == '*')) {
                    // this character begins an inner comment.
                    // must set inputVec to correct value if replacing
                    if (replace) {
                       inputVec.setElementAt(
-                        newLine.append(curLine.substring(loc.two)).toString(),
-                                       loc.one);
+                        newLine.append(curLine.substring(curLoc.two)).toString(),
+                                       curLoc.one);
                    }
-                   gotoEndOfComment(inputVec, outputVec, loc, replace);
+                   gotoEndOfComment(inputVec, outputVec, curLoc, replace);
                    // must reset curLine and newLine
-                   curLine = (String) inputVec.elementAt(loc.one);
+                   curLine = (String) inputVec.elementAt(curLoc.one);
                    if (replace) {
-                       newLine = new StringBuffer(curLine.substring(0, loc.two));
+                       newLine = new StringBuffer(curLine.substring(0, curLoc.two));
                    }
                } else if (    (c == '*') 
-                          && (loc.two + 1 < curLine.length())
-                          && (curLine.charAt(loc.two+1) == ')')) {
+                          && (curLoc.two + 1 < curLine.length())
+                          && (curLine.charAt(curLoc.two+1) == ')')) {
                    // this character begins the comment-ending "*)"
                    if (replace) {
                        newLine.append("  ");
                    }
-                   loc.two = loc.two + 2;
+                   curLoc.two = curLoc.two + 2;
                    found = true;
                } else {
                    if (replace) {
                        newLine.append(" ");
                    }
-                   loc.two++;
+                   curLoc.two++;
                }
            } // end of loop over characters in curLine
             if (!found) {
                 if (replace)
                 {
-                    inputVec.setElementAt(newLine.toString(), loc.one);
+                    inputVec.setElementAt(newLine.toString(), curLoc.one);
                     newLine = new StringBuffer();
                 }
                 if (outputVec != null)
                 {
-                    outputVec.addElement(inputVec.elementAt(loc.one));
+                    outputVec.addElement(inputVec.elementAt(curLoc.one));
                 }
-                loc.one++;
-                loc.two = 0;
-                if (loc.one < inputVec.size()) {
-                    curLine = (String) inputVec.elementAt(loc.one);
+                curLoc.one++;
+                curLoc.two = 0;
+                if (curLoc.one < inputVec.size()) {
+                    curLine = (String) inputVec.elementAt(curLoc.one);
                 }
             }
        } // end of while loop over lines.
       if (found && replace) {
-          newLine.append(curLine.substring(loc.two));
-          inputVec.setElementAt(newLine.toString(), loc.one);
+          newLine.append(curLine.substring(curLoc.two));
+          inputVec.setElementAt(newLine.toString(), curLoc.one);
       }
       if (!found) {
           throw new ParseAlgorithmException("Unterminated comment begun at line " 
-                  + "\n    line " + (loc.one+1) + ", column " + (loc.two+1)  ) ;
+                  + "\n    line " + (curLoc.one+1) + ", column " + (curLoc.two+1)  ) ;
       }
       return;
    }

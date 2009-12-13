@@ -39,11 +39,14 @@ import util.ToolIO;
 *                Added "await" as a synonym for "when"                     *
 *                                                                          *
 *   Version 1.31: (December 2009)                                          *
-*                Added .pcal file option.                                  *
+*                Added .pcal file, and -lineWidth option.                  *
 * -----------------------------------------------------------------        *
 *                                                                          *
 * This is the main method of the +CAL to TLA+ translation program.         *
-* the program has the following command-line options.                      *
+* the program has the following command-line options. Only the ones        *
+     * marked with ** besides them can be specified in the .pcal file's    *
+     * options statement.  The "-" can be omitted when the option is in    *
+     * the .pcal file's options statement.                                 *
 *                                                                          *
 *   -help  : Type a help file instead of running the program.              *
 *                                                                          *
@@ -77,26 +80,26 @@ import util.ToolIO;
 *              Windows, the files it writes seem to have a "^M" at the     *
 *              end of every line when viewed with Emacs.                   *
 *                                                                          *
-*   -wf : Conjoin to formula Spec weak fairness of each process's          *
+*** -wf : Conjoin to formula Spec weak fairness of each process's          *
 *         next-state action                                                *
 *                                                                          *
-*   -sf : Conjoin to formula Spec strong fairness of each process's        *
+*** -sf : Conjoin to formula Spec strong fairness of each process's        *
 *         next-state action                                                *
 *                                                                          *
-*   -wfNext : Conjoin to formula Spec weak fairness of the entire          *
+*** -wfNext : Conjoin to formula Spec weak fairness of the entire          *
 *             next-state action                                            *
 *                                                                          *
-*   -nof : Conjoin no fairness formula to Spec.  This is the default,      *
+*** -nof : Conjoin no fairness formula to Spec.  This is the default,      *
 *          except when the -termination option is chosen.                  *
 *                                                                          *
-*   -termination : Add to the .cfg file the command                        *
+*** -termination : Add to the .cfg file the command                        *
 *                     PROPERTY Termination                                 *
 *                  With this option, the default fairness option           *
 *                  becomes -wf.                                            *
 *                                                                          *
 *   -nocfg : Suppress writing of the .cfg file.                            *
 *                                                                          *
-*   -label : Tells the translator to add missing labels.  This is          *
+*** -label : Tells the translator to add missing labels.  This is          *
 *            the default only for a uniprocess algorithm in which          *
 *            the user has typed no labels.                                 *
 *                                                                          *
@@ -105,10 +108,15 @@ import util.ToolIO;
 *                   -label, it tells the translator to add missing         *
 *                   labels.                                                *
 *                                                                          *
-*   -labelRoot name : If the translator adds missing labels, it            *
+*** -labelRoot name : If the translator adds missing labels, it            *
 *                     names them name1, name2, etc.  Default value         *
 *                     is "Lbl_".                                           *
 *                                                                          *
+*  THE FOLLOWING OPTION ADDED IN VERSION 1.31                              *
+*                                                                          *
+*** -lineWidth : The translation tries to perform the translation so       *
+*                lines have this maximum width.  (It will often            *
+*                fail.)  Default is 78, minimum value is 60.               *
 * The program uses vector objects from the Vector class to implement       *
 * sequences (lists).  This generates a compiler warning.                   *
 *                                                                          *
@@ -189,7 +197,8 @@ class trans
   
     /**
      * The main translator method
-     * @return one of {@link trans#STATUS_OK}, {@link trans#STATUS_EXIT_WITH_ERRORS}, {@link trans#STATUS_EXIT_WITH_ERRORS}
+     * @return one of {@link trans#STATUS_OK}, {@link trans#STATUS_EXIT_WITH_ERRORS}, 
+     * {@link trans#STATUS_EXIT_WITH_ERRORS}
      * indicating the status
      */
     public static int runMe(String[] args) 
@@ -201,7 +210,8 @@ class trans
 //         "last modified on Wed 11 March 2009 at 14:52:58 PST by lamport";
         /*******************************************************************
         * This string is inserted by an Emacs macro when a new version is  *
-        * saved.  Unfortunately, Eclipse isn't Emacs.                      *
+        * saved.  Unfortunately, Eclipse isn't Emacs, so the modification  *
+        * date must be entered manually in the PcalParams module.          *
         *******************************************************************/
       
       if (ToolIO.getMode() == ToolIO.SYSTEM) 
@@ -232,15 +242,16 @@ class trans
       * contents, where inputVec[i] is the string containing the contents  *
       * of line i+1 of the input file.                                     *
       *********************************************************************/
-    Vector inputVec = null;
-    try
-    {
-        inputVec = fileToStringVector(PcalParams.TLAInputFile + (PcalParams.fromPcalFile?".pcal":".tla"));
-    } catch (FileToStringVectorException e)
-    {
+      Vector inputVec = null;
+      try
+      {
+        inputVec = fileToStringVector(PcalParams.TLAInputFile + 
+                              (PcalParams.fromPcalFile?".pcal":".tla"));
+      } catch (FileToStringVectorException e)
+      {
         PcalDebug.reportError(e);
         return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
-    }
+      }
 
      /*********************************************************************
      * outputVec is an alias for inputVec if the input is a .tla file,    *
@@ -248,40 +259,51 @@ class trans
      *********************************************************************/
       Vector outputVec = PcalParams.fromPcalFile ? new Vector() : inputVec;
       
-      /*********************************************************************
-      * Set untabInputVec to be the vector of strings obtained from        *
-      * inputVec by replacing tabs with spaces.                            *
-      *                                                                    *
-      * Tabs are date from the days when memory cost $1 per bit and are    *
-      * a stupid anachronism.  They should be banned.                      *
-      * Although the various methods taken from TLATeX should deal with    *
-      * tabs, there are undoubtedly corner cases that don't work right.    *
-      * In particular, I think there's one case where                      *
-      * PcalCharReader.backspace() might be called to backspace over a     *
-      * tab.  It's easier to simply get rid of the tabs than to try to     *
-      * make it work.                                                      *
-      *                                                                    *
-      * Since the user might be evil enough to prefer tabs, the parts of   *
-      * the output file that are not produced by the translator are        *
-      * copied from inputVec, so any tabs the user wants are kept.         *
-      *********************************************************************/
-      Vector untabInputVec = removeTabs(inputVec) ;     
+     /*********************************************************************
+     * Set untabInputVec to be the vector of strings obtained from        *
+     * inputVec by replacing tabs with spaces.                            *
+     *                                                                    *
+     * Tabs are date from the days when memory cost $1 per bit and are a  *
+     * stupid anachronism.  They should be banned.  Although the various  *
+     * methods taken from TLATeX should deal with tabs, there are         *
+     * undoubtedly corner cases that don't work right.  In particular, I  *
+     * think there's one case where PcalCharReader.backspace() might be   *
+     * called to backspace over a tab.  It's easier to simply get rid of  *
+     * the tabs than to try to make it work.                              *
+     *                                                                    *
+     * Since the user might be evil enough to prefer tabs, with tla-file  *
+     * input, the parts of the output file that are not produced by the   *
+     * translator are copied from inputVec, so any tabs the user wants    *
+     * are kept.                                                          *
+     *********************************************************************/
+     Vector untabInputVec = removeTabs(inputVec) ;     
 
       /**
        * translationLine is set to the line of the output file at which
-       * the \* BEGIN TRANSLATION appears.
+       * the \* BEGIN TRANSLATION appears--whether it is inserted into the
+       * tla-file input by the user, or inserted into the output by the
+       * translator for pcal-file input.
        */
       int translationLine = 0;
 
       /*********************************************************************
-      * Set algLine, algCol to the line and column just after the string   *
-      * [--]algorithm that begins the algorithm.  (These are Java          *
-      * ordinals, in which counting begins at 0.)                          *
-      *                                                                    *
-      * Modified by LL on 18 Feb 2006 to use untabInputVec instead of      *
-      * inputVec, to correct bug that occurred when tabs preceded the      *
-      * "--algorithm".                                                     *
-      *********************************************************************/
+       * Set algLine, algCol to the line and column just after the string   *
+       * [--]algorithm that begins the algorithm.  (These are Java          *
+       * ordinals, in which counting begins at 0.)                          *
+       *                                                                    *
+       * Modified by LL on 18 Feb 2006 to use untabInputVec instead of      *
+       * inputVec, to correct bug that occurred when tabs preceded the      *
+       * "--algorithm".                                                     *
+       *                                                                    *
+       * For the code to handle pcal-input, I introduced the use of         *
+       * IntPair objects to hold <line, column> Java coordinates (counting  *
+       * from zero) in a file (or an image of a file in a String Vector).   *
+       * For methods that advance through the file, the IntPair object is   *
+       * passed as an argument and is advanced by the method.  This is      *
+       * what I should have been doing from the start, but I wasn't smart   *
+       * enough The IntPair curLoc is the main one used in the part of the  *
+       * following code that handles pcal-file input.                       *
+       *********************************************************************/
       int algLine = 0 ;
       int algCol = -1 ;
 
@@ -309,19 +331,18 @@ class trans
           status = ParseAlgorithm.ProcessOptions(untabInputVec, outputVec, curLoc); 
           if (status != STATUS_OK) {
                   return exitWithStatus(status);
-            }     
-
+            } 
           
-          /***
-           * We are now past any version and options statement.
-           * We now set curLoc to the point immediately after the 
-           * "algorithm" statement, copying everything up to that point into
-           * outputVec.
-           */
-          try { // We first find the beginning of the algorithm and set
-                // PcalParams.endOfPreamble, algLine, and algCol
-      
-                // Find the "algorithm" token.
+          /*****************************************************************
+          * We are now past any version and options statement.  We set     *
+          * curLoc to the point immediately after the "algorithm"          *
+          * statement, copying everything up to that point into outputVec  *
+          *****************************************************************/
+          try { /***********************************************************
+                * We first find the beginning of the algorithm and set     *
+                * PcalParams.endOfPreamble, algLine, and algCol Find the   *
+                * "algorithm" token.                                       *
+                ***********************************************************/
                 ParseAlgorithm.FindToken (
                     PcalParams.PcalBeginAlg, untabInputVec, outputVec, curLoc, false,
                     "Beginning of algorithm not found."); 
@@ -329,30 +350,32 @@ class trans
                     new IntPair(curLoc.one, curLoc.two - 
                                 PcalParams.PcalBeginAlg.length());
                 
-                // we can set algLine and algCol to the coordinates of curLoc
+                // We can set algLine and algCol to the coordinates of curLoc
                 algLine = curLoc.one;
                 algCol  = curLoc.two;
+
                 // Skip to the algorithm's name, replacing comments with spaces.
                 String line = ParseAlgorithm.GotoNextNonSpaceOrComment(
                                  untabInputVec, null, curLoc, true);
 
-                // skip to end of the name.
+                // Skip to end of the name.
                 curLoc.two = ParseAlgorithm.NextNonIdChar(line, curLoc.two);
 
-                // skip to the next non-comment token, replacing comments with spaces.
+                // Skip to the next non-comment token, replacing comments with spaces.
                 line = ParseAlgorithm.GotoNextNonSpaceOrComment(
                         untabInputVec, null, curLoc, true);
                 
-                // Now skip to the end of the algorithm, 
-                // The algorithm uses the C-syntax iff the next char is a "{".
+                // Now skip to the end of the algorithm.  The algorithm uses 
+                // the C-syntax iff the next char is a "{".
                 if (line.charAt(curLoc.two) == '{') {
-                    // this is a C-syntax algorithm
+                    // This is a C-syntax algorithm.  We find the end of the
+                    // algorithm by searching for the matching right brace.
                     ParseAlgorithm.FindMatchingBrace (
                              untabInputVec, null, curLoc, true,
                             "Right brace ending algorithm not found.");
                 } else {
-                    // this is a P-syntax algorithm
-                    // must search for "end algorithm"
+                    // This is a P-syntax algorithm.  We find the end of the
+                    // algorithm by searching for "end algorithm".
                     boolean found = false;
                     while (!found) {
                         // find the next "end"
@@ -360,7 +383,7 @@ class trans
                                 "end", untabInputVec, null, curLoc, true,
                                 "End of algorithm not found."); 
                         
-                        // go to next algorithm token.  This is the end of the
+                        // Go to next algorithm token.  This is the end of the
                         // algorithm iff the next part of the line is "algorithm".
                         line = ParseAlgorithm.GotoNextNonSpaceOrComment(
                                 untabInputVec, null, curLoc, true);
@@ -578,7 +601,7 @@ class trans
       }
       
       /*********************************************************************
-      * Add the translation to outputVec.                                   *
+      * Add the translation to outputVec.                                  *
       *********************************************************************/
       int i = 0 ;
       while (i < translation.size() )
@@ -587,10 +610,10 @@ class trans
           i = i + 1 ;
         }
 
-      /**
-       * For .pcal input, set outputSuffixLoc and add the rest of the input 
-       * file to the output.
-       */
+      /*********************************************************************
+      * For .pcal input, set outputSuffixLoc and add the rest of the       *
+      * input file to the output.                                          *
+      *********************************************************************/
       if (PcalParams.fromPcalFile) {
           PcalParams.outputSuffixLoc = new IntPair (outputVec.size(), 0);
           // if there's stuff in the suffix on the same line with the
@@ -625,7 +648,7 @@ class trans
                           + " written.") ;
 
       /*********************************************************************
-      * Write the cfg file.                                                *
+      * Write the cfg file, unless the -nocfg option is used.              *
       *********************************************************************/
       File cfgFile = new File(PcalParams.TLAInputFile + ".cfg") ;
       Vector cfg = null ;
@@ -865,7 +888,7 @@ class trans
                  rt.exec( javaInvocation + 
                              PcalParams.SpecFile).getErrorStream())) ;
           while (tlcOut.indexOf("<<") == -1)
-	      { tlcOut = bufferedReader.readLine() ;
+          { tlcOut = bufferedReader.readLine() ;
             } ;
           bufferedReader.close();
         }             
@@ -1567,22 +1590,22 @@ class trans
 /********************* STRING UTILITY FUNCTIONS ***********************/
 
      private static int NextSpace(String s,
-				  int cur)
+                  int cur)
       /********************************************************************
       * Returns the first space in s at or after col. If there is none,   *
       * return the index of the last character in s. Spaces in strings    *
       * are not treated as spaces. Assumes s[cur] is not in a string.     *
       ********************************************************************/
      {   int i = cur;
-	 boolean inString = false;
-	 while ((i < s.length()) && ((s.charAt(i) != ' ') || inString)) 
-	     {   if ((s.charAt(i) == '"')
-		     && ((i == 0) || (s.charAt(i-1) != '\\')))
-		     inString = ! inString;
-		 i = i + 1;
-	     }
-	 if (i == s.length()) return i - 1;
-	 else return i;
+     boolean inString = false;
+     while ((i < s.length()) && ((s.charAt(i) != ' ') || inString)) 
+         {   if ((s.charAt(i) == '"')
+             && ((i == 0) || (s.charAt(i-1) != '\\')))
+             inString = ! inString;
+         i = i + 1;
+         }
+     if (i == s.length()) return i - 1;
+     else return i;
      }
 
      private static String WrapString(String inString, 
@@ -1595,25 +1618,25 @@ class trans
        int ccol = 1;
        StringBuffer sb = new StringBuffer();
        while (i < inString.length())
-	   {   if (inString.charAt(i) == ' ') // An initial space or a space
-		   {   sb.append(' ');        // that follows a space. It
-		       i = i + 1;         // can always be appended to a line.
-		       ccol = ccol + 1;
-		   }
-	       else                      // Find next word, which starts at i.
-		   {   int j = NextSpace(inString, i);
-		       if (ccol + (j - i + 1) > col)
-			   {   sb.append('\n');
-			       ccol = 1;
-			   }
-		       while (i <= j)  // If this overflows col, then the word
-			   {   sb.append(inString.charAt(i));  
+       {   if (inString.charAt(i) == ' ') // An initial space or a space
+           {   sb.append(' ');        // that follows a space. It
+               i = i + 1;         // can always be appended to a line.
+               ccol = ccol + 1;
+           }
+           else                      // Find next word, which starts at i.
+           {   int j = NextSpace(inString, i);
+               if (ccol + (j - i + 1) > col)
+               {   sb.append('\n');
+                   ccol = 1;
+               }
+               while (i <= j)  // If this overflows col, then the word
+               {   sb.append(inString.charAt(i));  
                                        // is longer than col.
-			       i = i + 1;
-			       ccol = ccol + 1;
-			   }
-		   }
-	   }
+                   i = i + 1;
+                   ccol = ccol + 1;
+               }
+           }
+       }
        return sb.toString();
      }
 
