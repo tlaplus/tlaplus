@@ -19,6 +19,8 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
@@ -389,6 +391,14 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
         // TLCUIActivator.logDebug("entering ModelEditor#addPages()");
         try
         {
+
+            // This code moves the tabs to the top of the page.
+            // This makes them more obvious to the user.
+            if (getContainer() instanceof CTabFolder)
+            {
+                ((CTabFolder) getContainer()).setTabPosition(SWT.TOP);
+            }
+
             for (int i = 0; i < pagesToAdd.length; i++)
             {
                 addPage(pagesToAdd[i]);
@@ -867,7 +877,7 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
             }
         }
     }
-    
+
     /**
      * Returns the validateRunnable so that the pages
      * can be validated by code outside of this class.
