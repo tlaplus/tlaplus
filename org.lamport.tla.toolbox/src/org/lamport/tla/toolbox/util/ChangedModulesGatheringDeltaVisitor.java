@@ -8,13 +8,11 @@ import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IResourceDeltaVisitor;
 import org.eclipse.core.runtime.CoreException;
 
-
 /**
  * Visitor to find out what files changed
  */
 
-public class ChangedModulesGatheringDeltaVisitor
-implements IResourceDeltaVisitor
+public class ChangedModulesGatheringDeltaVisitor implements IResourceDeltaVisitor
 {
     Vector modules = new Vector();
 
@@ -31,7 +29,7 @@ implements IResourceDeltaVisitor
         if (IResource.FILE == resource.getType())
         {
             // a file found
-            if (ResourceHelper.isModule(resource))
+            if (resource.exists() && ResourceHelper.isModule(resource))
             {
                 modules.add(resource);
             }
@@ -49,4 +47,3 @@ implements IResourceDeltaVisitor
         return modules;
     }
 }
-
