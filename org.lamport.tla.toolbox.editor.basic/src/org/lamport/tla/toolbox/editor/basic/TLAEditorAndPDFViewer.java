@@ -1,6 +1,8 @@
 package org.lamport.tla.toolbox.editor.basic;
 
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
@@ -39,6 +41,14 @@ public class TLAEditorAndPDFViewer extends FormEditor
     {
         try
         {
+
+            // This code moves the tabs to the top of the page.
+            // This makes them more obvious to the user.
+            if (getContainer() instanceof CTabFolder)
+            {
+                ((CTabFolder) getContainer()).setTabPosition(SWT.TOP);
+            }
+
             tlaEditor = new TLAEditor();
 
             int tlaEditorIndex = 0;
@@ -111,7 +121,7 @@ public class TLAEditorAndPDFViewer extends FormEditor
                 e.printStackTrace();
             }
         }
-        //setActivePage(PDFPage_ID);
+        // setActivePage(PDFPage_ID);
         return pdfViewingPage;
     }
 
