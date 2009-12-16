@@ -81,13 +81,15 @@ public interface IModelConfigurationConstants extends IConfigurationConstants
      */
     public static final String MODEL_EXPRESSION_EVAL = "modelExpressionEval";
     /**
-     * init for trace exploration
+     * Conjunction of variable values in the initial state of a trace
+     * Should only include spec variables, not trace expression variables.
      */
-    public static final String TRACE_EXPLORE_INIT = "traceExploreInit";
+    public static final String TRACE_EXPLORE_INIT_STATE_CONJ = "traceExploreInit";
     /**
-     * next for trace exploration
+     * Disjunction of actions used for trace exploration without the trace
+     * expression variables.
      */
-    public static final String TRACE_EXPLORE_NEXT = "traceExploreNext";
+    public static final String TRACE_EXPLORE_TRACE_ACTION_DISJ = "traceExploreNext";
     /**
      * expressions to be evaluated at each state of the trace
      * when the trace explorer is run

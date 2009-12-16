@@ -26,6 +26,10 @@
             launchAsLabel="Model Generation"
             mode="generate">
       </launchMode>
+      <launchMode
+            label="Explore Trace"
+            mode="exploreTrace">
+      </launchMode>
    </extension>
    <extension
          id="org.lamport.tla.toolbox.tlc.modelMarker"
@@ -134,6 +138,15 @@
       <sink
             class="org.lamport.tla.toolbox.tool.tlc.output.internal.FileProcessOutputSink">
       </sink>
+   </extension>
+   <extension
+         point="org.eclipse.debug.core.launchDelegates">
+      <launchDelegate
+            delegate="org.lamport.tla.toolbox.tool.tlc.launch.TraceExplorerDelegate"
+            id="org.lamport.tla.toolbox.tool.tlc.TraceExplorerDelegate"
+            modes="exploreTrace"
+            type="org.lamport.tla.toolbox.tool.tlc.modelCheck">
+      </launchDelegate>
    </extension>
 <!--
   NCE definition

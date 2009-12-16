@@ -1,5 +1,6 @@
 package org.lamport.tla.toolbox.tool.tlc.util;
 
+import java.io.ByteArrayInputStream;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Hashtable;
@@ -19,11 +20,18 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceRuleFactory;
+import org.eclipse.core.resources.IWorkspace;
+import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.SubProgressMonitor;
+import org.eclipse.core.runtime.jobs.ISchedulingRule;
+import org.eclipse.core.runtime.jobs.MultiRule;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationType;
@@ -43,6 +51,7 @@ import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationDefaults;
 import org.lamport.tla.toolbox.tool.tlc.launch.TLCModelLaunchDelegate;
 import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
 import org.lamport.tla.toolbox.tool.tlc.model.Formula;
+import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 import tla2sany.modanalyzer.SpecObj;
@@ -1694,5 +1703,154 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
             return specObj.getExternalModuleTable().getRootModule();
         }
         return null;
+    }
+
+    /**
+     * Creates the files if they do not exist, and
+     * sets the contents of each file equal to "".
+     * 
+     * @param files
+     * @param monitor
+     */
+    public static void createOrClearFiles(final IFile[] files, IProgressMonitor monitor)
+    {
+        ISchedulingRule fileRule = MultiRule.combine(ResourceHelper.getModifyRule(files), ResourceHelper
+                .getCreateRule(files));
+
+        // create files
+        try
+        {
+            ResourcesPlugin.getWorkspace().run(new IWorkspaceRunnable() {
+                public void run(IProgressMonitor monitor) throws CoreException
+                {
+                    for (int i = 0; i < files.length; i++)
+                    {
+                        if (files[i].exists())
+                        {
+                            files[i].setContents(new ByteArrayInputStream("".getBytes()), IResource.DERIVED
+                                    | IResource.FORCE, new SubProgressMonitor(monitor, 1));
+                        } else
+                        {
+                            files[i].create(new ByteArrayInputStream("".getBytes()), IResource.DERIVED
+                                    | IResource.FORCE, new SubProgressMonitor(monitor, 1));
+                        }
+                    }
+                }
+
+            }, fileRule, IWorkspace.AVOID_UPDATE, new SubProgressMonitor(monitor, 100));
+        } catch (CoreException e)
+        {
+            TLCActivator.logError("Error creating files.", e);
+        }
+
+    }
+
+    /**
+     * Delete all contents of the model folder except for the
+     * checkpoints folder. If deleteCheckPointFolder is true, the check point
+     * folder is also deleted.
+     * @param modelFolder the folder whose contents are to be deleted
+     * @param deleteCheckPointFolder whether to delete the checkpoint folder
+     * @param monitor
+     * @param STEP the unit of work this corresponds to in the progress monitor 
+     * @param config the config file corresponding to the model folder
+     * @throws CoreException
+     */
+    public static void deleteModelFolderContents(IFolder modelFolder, final boolean deleteCheckPointFolder,
+            IProgressMonitor monitor, int STEP, ILaunchConfiguration config) throws CoreException
+    {
+        final IResource[] members = modelFolder.members();
+        // erase everything inside
+        if (members.length == 0)
+        {
+            monitor.worked(STEP);
+        } else
+        {
+            final IResource[] checkpoints = ModelHelper.getCheckpoints(config, true);
+
+            ISchedulingRule deleteRule = ResourceHelper.getDeleteRule(members);
+
+            // delete files
+            ResourcesPlugin.getWorkspace().run(new IWorkspaceRunnable() {
+
+                public void run(IProgressMonitor monitor) throws CoreException
+                {
+                    boolean checkFiles = !deleteCheckPointFolder;
+
+                    monitor.beginTask("Deleting files", members.length);
+                    // delete the members of the target
+                    // directory
+                    for (int i = 0; i < members.length; i++)
+                    {
+                        if (checkFiles)
+                        {
+                            if (checkpoints.length > 0 && checkpoints[0].equals(members[i]))
+                            {
+                                // we found the recovery
+                                // directory and didn't delete
+                                // it
+                                checkFiles = false;
+                                continue;
+                            }
+                        } else
+                        {
+                            // delete file
+                            // either non-recovery mode
+                            // or the recovery directory already
+                            // skipped
+                            try
+                            {
+                                members[i].delete(IResource.FORCE, new SubProgressMonitor(monitor, 1));
+                            } catch (CoreException e)
+                            {
+                                // catch the exception if
+                                // deletion failed, and just
+                                // ignore this fact
+                                // FIXME this should be fixed at
+                                // some later point in time
+                                TLCActivator.logError("Error deleting a file " + members[i].getLocation(), e);
+                            }
+                        }
+                    }
+                    monitor.done();
+                }
+            }, deleteRule, IWorkspace.AVOID_UPDATE, new SubProgressMonitor(monitor, STEP));
+        }
+    }
+
+    /**
+     * Copies the module files that are extended by specRootFile into the
+     * folder given by targetFolderPath.
+     * @param specRootFile the file corresponding to the root module
+     * @param targetFolderPath the path of the folder to which the extended modules are to be copied
+     * @param monitor - the progress monitor
+     * @param STEP the unit of work this corresponds to in the progress monitor 
+     * @param project the project that contains the specRootFile
+     * @throws CoreException
+     */
+    public static void copyExtendedModuleFiles(IFile specRootFile, IPath targetFolderPath, IProgressMonitor monitor,
+            int STEP, IProject project) throws CoreException
+    {
+        // get the list of dependent modules
+        List extendedModules = ToolboxHandle.getExtendedModules(specRootFile.getName());
+
+        // iterate and copy modules that are needed for the spec
+        IFile moduleFile = null;
+        for (int i = 0; i < extendedModules.size(); i++)
+        {
+            String module = (String) extendedModules.get(i);
+            // only take care of user modules
+            if (ToolboxHandle.isUserModule(module))
+            {
+                moduleFile = ResourceHelper.getLinkedFile(project, module, false);
+                if (moduleFile != null)
+                {
+                    moduleFile.copy(targetFolderPath.append(moduleFile.getProjectRelativePath()), IResource.DERIVED
+                            | IResource.FORCE, new SubProgressMonitor(monitor, STEP / extendedModules.size()));
+                }
+
+                // TODO check the existence of copied files
+            }
+        }
     }
 }

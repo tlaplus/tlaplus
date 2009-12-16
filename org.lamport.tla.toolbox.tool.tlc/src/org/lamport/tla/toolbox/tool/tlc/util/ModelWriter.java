@@ -1,18 +1,22 @@
 package org.lamport.tla.toolbox.tool.tlc.util;
 
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.Region;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
+import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
+import org.lamport.tla.toolbox.tool.tlc.launch.TraceExpressionInformationHolder;
 import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
 import org.lamport.tla.toolbox.tool.tlc.model.Formula;
 import org.lamport.tla.toolbox.tool.tlc.model.TypedSet;
@@ -45,6 +49,8 @@ public class ModelWriter
     public static final String PROP_SCHEME = "prop";
     public static final String VIEW_SCHEME = "view";
     public static final String CONSTANTEXPR_SCHEME = "const_expr";
+    public static final String TRACE_EXPR_VAR = "__trace_var";
+    public static final String TRACE_EXPR_DEF = "trace_def";
 
     public static final String SPACE = " ";
     public static final String CR = "\n";
@@ -62,6 +68,7 @@ public class ModelWriter
     public static final String BEGIN_TUPLE = "<<";
     public static final String END_TUPLE = ">>";
     public static final String PRIME = "'";
+    public static final String VARIABLES = "VARIABLES ";
 
     private StringBuffer tlaBuffer;
     private StringBuffer cfgBuffer;
@@ -222,6 +229,139 @@ public class ModelWriter
             tlaBuffer.append(id).append(DEFINES).append(CR).append(viewString).append(CR);
             tlaBuffer.append(SEP).append(CR).append(CR);
         }
+    }
+
+    /**
+     * Adds the expressions that the user enters for trace exploration.
+     * This only changes the tla file. This method adds a variable declaration
+     * for each expression in the list. It also creates an identifier for each
+     * expression and defines the identifier to be that expression.
+     * It returns an array of {@link TraceExpressionInformationHolder} where each element
+     * contains the expression, the identifier, and the variable name.
+     * This is necessary for determining whether each expression
+     * has primed variables or not.
+     * 
+     * If the user enters expressions x' + y and x > 3, The tla file will contain something like
+     * 
+     * VARIABLES __trace_var_21034978347834, __trace_var_90234782309
+     * 
+     * trace_def_3214234234234 == x' + y
+     * trace_def_2342342342342 == x > 3
+     * 
+     * The method should be used before SANY is run by the toolbox. Another method should
+     * be run once SANY has been run by the toolbox but before TLC is run.
+     * 
+     * @param expressions a list of formulas, each one an expression the user wants to have evaluated
+     * at each state of the trace
+     * @return array of {@link TraceExpressionInformationHolder} where each element
+     * contains the expression, the identifier, and the variable name
+     */
+    public TraceExpressionInformationHolder[] addTraceExploreVariablesPreParse(List expressions, String attributeName)
+    {
+
+        TraceExpressionInformationHolder[] expressionTriples = new TraceExpressionInformationHolder[expressions.size()];
+
+        if (expressions.size() > 0)
+        {
+            StringBuffer variableDecls = new StringBuffer();
+            StringBuffer identifierDefs = new StringBuffer();
+
+            Iterator it = expressions.iterator();
+            int position = 0;
+            while (it.hasNext())
+            {
+                String identifier = getValidIdentifier(TRACE_EXPR_DEF);
+                String variable = getValidIdentifier(TRACE_EXPR_VAR);
+                Object next = it.next();
+                Assert.isTrue(next instanceof Formula);
+                String expression = ((Formula) next).getFormula();
+                if (expression.length() > 0)
+                {
+                    expressionTriples[position] = new TraceExpressionInformationHolder(expression, identifier, variable);
+
+                    variableDecls.append(variable).append(COMMA);
+                    identifierDefs.append(identifier).append(DEFINES).append(expression).append(CR);
+                }
+
+                position++;
+            }
+
+            // variable declaration
+            tlaBuffer.append(COMMENT).append("TRACE EXPLORER variable declaration ").append(ATTRIBUTE).append(
+                    attributeName).append(CR);
+            // we eliminate the last character because it is a comma
+            tlaBuffer.append(VARIABLES).append(
+                    variableDecls.toString().substring(0, variableDecls.toString().length() - 1)).append(CR);
+
+            tlaBuffer.append(SEP).append(CR).append(CR);
+
+            // define the identifiers corresponding to each expression
+            tlaBuffer.append(COMMENT).append("TRACE EXPLORER identifier definition ").append(ATTRIBUTE).append(
+                    attributeName).append(CR);
+            tlaBuffer.append(identifierDefs.toString());
+
+            tlaBuffer.append(SEP).append(CR).append(CR);
+        }
+
+        return expressionTriples;
+    }
+
+    public void addTraceExprVarDecsAndDefsPostParse(TraceExpressionInformationHolder[] traceExpressionData,
+            String attributeName)
+    {
+        StringBuffer variableDecls = new StringBuffer();
+        StringBuffer identifierDefs = new StringBuffer();
+
+        for (int i = 0; i < traceExpressionData.length; i++)
+        {
+            TraceExpressionInformationHolder expressionInfo = traceExpressionData[i];
+            variableDecls.append(expressionInfo.getVariableName()).append(COMMA);
+            identifierDefs.append(expressionInfo.getIdentifier()).append(DEFINES)
+                    .append(expressionInfo.getExpression()).append(CR);
+        }
+
+        // variable declaration
+        tlaBuffer.append(COMMENT).append("TRACE EXPLORER variable declaration ").append(ATTRIBUTE)
+                .append(attributeName).append(CR);
+        // we eliminate the last character because it is a comma
+        tlaBuffer.append(VARIABLES)
+                .append(variableDecls.toString().substring(0, variableDecls.toString().length() - 1)).append(CR);
+
+        tlaBuffer.append(SEP).append(CR).append(CR);
+
+        // define the identifiers corresponding to each expression
+        tlaBuffer.append(COMMENT).append("TRACE EXPLORER identifier definition ").append(ATTRIBUTE).append(
+                attributeName).append(CR);
+        tlaBuffer.append(identifierDefs.toString());
+
+        tlaBuffer.append(SEP).append(CR).append(CR);
+    }
+
+    /**
+     * This will generate two identifiers and define one to be equal
+     * to init and one to be equal to next in the tla file.
+     * This should be used in trace exploration to see if the initial state
+     * predicate and next state action parse without the trace explorer
+     * expressions. They may not parse if the model is unlocked and the spec
+     * or model is changed. For example, removing a variable from the spec
+     * would result in a parse error.
+     * 
+     * @param init
+     * @param next
+     */
+    public void addTraceStateDefsPreParse(String init, String next)
+    {
+        tlaBuffer.append(COMMENT).append("TRACE INIT definition").append(
+                IModelConfigurationConstants.TRACE_EXPLORE_INIT_STATE_CONJ).append(CR);
+        tlaBuffer.append(getValidIdentifier(INIT_SCHEME)).append(DEFINES).append(init).append(CR);
+
+        tlaBuffer.append(SEP).append(CR).append(CR);
+
+        tlaBuffer.append(COMMENT).append("TRACE NEXT definition").append(
+                IModelConfigurationConstants.TRACE_EXPLORE_TRACE_ACTION_DISJ).append(CR);
+        tlaBuffer.append(getValidIdentifier(NEXT_SCHEME)).append(DEFINES).append(next).append(CR);
+
+        tlaBuffer.append(SEP).append(CR).append(CR);
     }
 
     /**
@@ -591,6 +731,19 @@ public class ModelWriter
         }
         return resultContent;
     }
+
+    // /**
+    // *
+    // * @param initWithoutTraceVars
+    // * @param nextWithoutTraceVars
+    // * @param traceExpressionData
+    // * @return
+    // */
+    // public static List createTraceInitAndNextContent(String initWithoutTraceVars, String nextWithoutTraceVars,
+    // TraceExpressionInformationHolder[] traceExpressionData)
+    // {
+    //
+    // }
 
     /**
      * A pattern to match IDs generated by the {@link ModelWriter#getValidIdentifier(String)} method

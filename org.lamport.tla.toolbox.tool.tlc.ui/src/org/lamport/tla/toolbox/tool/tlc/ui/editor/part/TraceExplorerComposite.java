@@ -1,7 +1,10 @@
 package org.lamport.tla.toolbox.tool.tlc.ui.editor.part;
 
+import java.util.Iterator;
+import java.util.List;
 import java.util.Vector;
 
+import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
@@ -26,7 +29,10 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
+import org.lamport.tla.toolbox.tool.tlc.launch.TraceExplorerDelegate;
 import org.lamport.tla.toolbox.tool.tlc.model.Formula;
+import org.lamport.tla.toolbox.tool.tlc.output.data.TLCState;
+import org.lamport.tla.toolbox.tool.tlc.output.data.TLCVariable;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.provider.FormulaContentProvider;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
@@ -58,6 +64,15 @@ public class TraceExplorerComposite
     private Button buttonRestore;
     private Section section;
     private TLCErrorView view;
+
+    /*
+     * These are used for writing init and next
+     * for trace exploration.
+     */
+    private static final String TLA_AND = "/\\ ";
+    private static final String TLA_OR = "\\/ ";
+    private static final String EQ = "=";
+    private static final String PRIME = "'";
 
     // a listener reacting on clicks
     protected SelectionListener fSelectionListener = new SelectionAdapter() {
@@ -322,6 +337,38 @@ public class TraceExplorerComposite
         /*
          * 
          */
+
+        try
+        {
+            /*
+             * Retrieve the current launch configuration and save trace data
+             */
+            ILaunchConfiguration modelConfig = view.getCurrentConfig();
+            ILaunchConfigurationWorkingCopy workingCopy = modelConfig.getWorkingCopy();
+            List trace = view.getTrace();
+            if (trace.size() > 0)
+            {
+                if (trace.get(0) instanceof TLCState)
+                {
+                    TLCState initialState = (TLCState) trace.get(0);
+                    workingCopy.setAttribute(IModelConfigurationConstants.TRACE_EXPLORE_INIT_STATE_CONJ,
+                            getConjunctionFromState(initialState));
+                    workingCopy.setAttribute(IModelConfigurationConstants.TRACE_EXPLORE_TRACE_ACTION_DISJ,
+                            getDisjunctionFromTrace(view.getTrace()));
+
+                    workingCopy.doSave();
+
+                    modelConfig.launch(TraceExplorerDelegate.MODE_TRACE_EXPLORE, null, true);
+                } else
+                {
+                    TLCUIActivator.logDebug("The first element of the trace is not a TLCState. This is a bug.");
+                }
+            }
+
+        } catch (CoreException e)
+        {
+            TLCUIActivator.logError("Error launching trace explorer.", e);
+        }
     }
 
     /**
@@ -407,6 +454,77 @@ public class TraceExplorerComposite
         {
             TLCUIActivator.logError("Error saving trace explorer expression.", e);
         }
+    }
+
+    private static String getConjunctionFromState(TLCState state)
+    {
+        StringBuffer conjunction = new StringBuffer();
+        TLCVariable[] variables = state.getVariables();
+        for (int i = 0; i < variables.length; i++)
+        {
+            TLCVariable var = variables[i];
+            conjunction.append(TLA_AND).append(var.getName()).append(EQ).append(var.getValue().toSimpleString())
+                    .append("\n");
+        }
+
+        return conjunction.toString();
+    }
+
+    private static String getDisjunctionFromTrace(List states)
+    {
+        StringBuffer disjunction = new StringBuffer();
+
+        Iterator it = states.iterator();
+        TLCState currentState = null;
+        TLCState nextState = null;
+        if (it.hasNext())
+        {
+            Object first = it.next();
+            Assert
+                    .isTrue(first instanceof TLCState,
+                            "The first element of the trace is not a TLCState. This is a bug.");
+            currentState = (TLCState) first;
+        } else
+        {
+            return "";
+        }
+        while (it.hasNext())
+        {
+            Object next = it.next();
+            Assert.isTrue(next instanceof TLCState, "An element of the trace is not a TLCState. It is an instance of "
+                    + next.getClass().getCanonicalName() + ". This is a bug.");
+            nextState = (TLCState) next;
+            // must take into account stuttering states
+            // and back to state states
+            // need to test to see if this behaves properly
+            if (nextState.isBackToState() || nextState.isStuttering())
+            {
+                break;
+            }
+            disjunction.append(TLA_OR);
+            TLCVariable[] currentStateVariables = currentState.getVariables();
+            TLCVariable[] nextStateVariables = nextState.getVariables();
+            Assert.isTrue(currentStateVariables.length == nextStateVariables.length,
+                    "The number of variables in one state is not the same as in another state of the trace.");
+
+            for (int i = 0; i < currentStateVariables.length; i++)
+            {
+                TLCVariable var = currentStateVariables[i];
+                disjunction.append(TLA_AND).append(var.getName()).append(EQ).append(var.getValue().toSimpleString())
+                        .append("\n");
+            }
+
+            for (int i = 0; i < nextStateVariables.length; i++)
+            {
+                TLCVariable var = nextStateVariables[i];
+                disjunction.append(TLA_AND).append(var.getName()).append(PRIME).append(EQ).append(
+                        var.getValue().toSimpleString()).append("\n");
+            }
+
+            currentState = nextState;
+        }
+
+        return disjunction.toString();
     }
 
 }

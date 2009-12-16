@@ -68,9 +68,9 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
     // Mutex rule for the following jobs to run after each other
     private MutexRule mutexRule = new MutexRule();
 
-    private String specName = null;
-    private String modelName = null;
-    private String specRootFilename = null;
+    protected String specName = null;
+    protected String modelName = null;
+    protected String specRootFilename = null;
 
     /**
      * Configuration type
@@ -628,7 +628,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
                             IModelConfigurationDefaults.MODEL_AUTO_LOCK_TIME_DEFAULT);
                     // auto lock time is in minutes, getTLCStartTime() and getTLCEndTime()
                     // are in milliseconds
-                    if (tlcJob.getTlcEndTime() - tlcJob.getTlcStartTime() > autoLockTime*60*1000)
+                    if (tlcJob.getTlcEndTime() - tlcJob.getTlcStartTime() > autoLockTime * 60 * 1000)
                     {
                         // length of job execution exceeded a certain length of time
                         // should lock
