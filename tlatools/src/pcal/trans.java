@@ -624,8 +624,8 @@ class trans
               String lastLine = (String) untabInputVec.elementAt(curLoc.one);
               if (curLoc.two < lastLine.length()) {
                   outputVec.addElement(lastLine.substring(curLoc.two));
-                  curLoc.one++;
               }
+              curLoc.one++;
           }
           // Copy the rest of the input file into the output file.
           for (int ii = curLoc.one; ii < untabInputVec.size(); ii++) {

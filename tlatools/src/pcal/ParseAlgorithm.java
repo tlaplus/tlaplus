@@ -3540,7 +3540,7 @@ public class ParseAlgorithm
                (Character.isLetter(c) || Character.isDigit(c) ||
                  (c == '_'))) {
            curCol++;
-           c = str.charAt(curCol);
+           if (curCol < str.length()) { c = str.charAt(curCol); }
        }
        return curCol;
    }
