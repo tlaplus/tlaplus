@@ -117,11 +117,14 @@ import util.ToolIO;
 *** -lineWidth : The translation tries to perform the translation so       *
 *                lines have this maximum width.  (It will often            *
 *                fail.)  Default is 78, minimum value is 60.               *
+*                                                                          *
+* ------------------------------------------------------------------------ *
+*                                                                          *
 * The program uses vector objects from the Vector class to implement       *
 * sequences (lists).  This generates a compiler warning.                   *
 *                                                                          *
 * In Java data structures like arrays and Vectors, numbering starts with   *
-* 0.  Unlike programers, human beings count from 1.  I use the term "Java  *
+* 0.  Unlike programmers, human beings count from 1.  I use the term "Java *
 * ordinal" to refer a number that denotes a position that represents the   *
 * first item as 0, and the term "human ordinal" to refer to an ordinary    *
 * ordinal that counts the first item as 1.                                 *
