@@ -19,6 +19,7 @@ import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.tool.tlc.TLCActivator;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationDefaults;
+import org.lamport.tla.toolbox.tool.tlc.launch.TraceExplorerDelegate;
 import org.lamport.tla.toolbox.tool.tlc.result.IResultPresenter;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.util.ResourceHelper;
@@ -70,9 +71,17 @@ public abstract class TLCJob extends AbstractJob implements IModelConfigurationC
 
         this.launch = launch;
 
-        this.rootModule = this.launchDir.getFile(ModelHelper.FILE_TLA);
-        this.cfgFile = this.launchDir.getFile(ModelHelper.FILE_CFG);
-        this.outFile = this.launchDir.getFile(ModelHelper.FILE_OUT);
+        if (launch.getLaunchMode().equals(TraceExplorerDelegate.MODE_TRACE_EXPLORE))
+        {
+            this.rootModule = this.launchDir.getFile(ModelHelper.TE_FILE_TLA);
+            this.cfgFile = this.launchDir.getFile(ModelHelper.TE_FILE_CFG);
+            this.outFile = this.launchDir.getFile(ModelHelper.TE_FILE_OUT);
+        } else
+        {
+            this.rootModule = this.launchDir.getFile(ModelHelper.FILE_TLA);
+            this.cfgFile = this.launchDir.getFile(ModelHelper.FILE_CFG);
+            this.outFile = this.launchDir.getFile(ModelHelper.FILE_OUT);
+        }
     }
 
     /**
@@ -196,7 +205,7 @@ public abstract class TLCJob extends AbstractJob implements IModelConfigurationC
                 IResultPresenter[] registeredResultPresenters = getRegisteredResultPresenters();
                 for (int i = 0; i < registeredResultPresenters.length; i++)
                 {
-                    registeredResultPresenters[i].showResults(launch.getLaunchConfiguration());
+                    registeredResultPresenters[i].showResults(launch);
                 }
             }
         };

@@ -31,7 +31,7 @@ public class ModelErrorsTester extends PropertyTester
                     ILaunchConfiguration config = activeModelEditor.getConfig();
                     if (config != null)
                     {
-                        return TLCOutputSourceRegistry.getSourceRegistry().getProvider(config).getErrors().size() > 0;
+                        return TLCOutputSourceRegistry.getModelCheckSourceRegistry().getProvider(config).getErrors().size() > 0;
                     }
                 }
             }

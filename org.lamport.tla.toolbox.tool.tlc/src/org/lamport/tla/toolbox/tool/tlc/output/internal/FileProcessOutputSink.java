@@ -62,9 +62,11 @@ public class FileProcessOutputSink implements IProcessOutputSink
      */
     public void initializeSink(String processName, int sinkType)
     {
+        boolean isTraceExplore = sinkType == TYPE_TRACE_EXPLORE;
+
         this.processName = processName;
         ILaunchConfiguration config = ModelHelper.getModelByName(processName);
-        this.outFile = ModelHelper.getModelOutputLogFile(config);
+        this.outFile = ModelHelper.getModelOutputLogFile(config, isTraceExplore);
         this.rule = ResourceHelper.getModifyRule(outFile);
     }
 

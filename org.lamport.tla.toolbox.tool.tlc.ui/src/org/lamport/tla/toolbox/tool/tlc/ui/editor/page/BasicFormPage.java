@@ -127,11 +127,11 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
             // if it is a global TLC error, it will shift focus to the error view
             if (messages.length > 0 && messages[0].getMessage().equals(TLC_ERROR_STRING))
             {
-                TLCModelLaunchDataProvider dataProvider = TLCOutputSourceRegistry.getSourceRegistry().getProvider(
+                TLCModelLaunchDataProvider dataProvider = TLCOutputSourceRegistry.getModelCheckSourceRegistry().getProvider(
                         getConfig());
                 if (dataProvider != null)
                 {
-                    TLCErrorView.updateErrorView(dataProvider);
+                    TLCErrorView.updateErrorView(dataProvider, false);
                 }
             } else
             {

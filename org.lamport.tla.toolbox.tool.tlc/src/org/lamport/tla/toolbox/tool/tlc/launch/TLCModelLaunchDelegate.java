@@ -66,7 +66,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
         IModelConfigurationDefaults
 {
     // Mutex rule for the following jobs to run after each other
-    private MutexRule mutexRule = new MutexRule();
+    protected MutexRule mutexRule = new MutexRule();
 
     protected String specName = null;
     protected String modelName = null;
@@ -579,6 +579,9 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
             }
         }
 
+        // set the model to have the original trace shown
+        ModelHelper.setOriginalTraceShown(config, true);
+
         // number of workers
         int numberOfWorkers = config.getAttribute(LAUNCH_NUMBER_OF_WORKERS, LAUNCH_NUMBER_OF_WORKERS_DEFAULT);
 
@@ -616,9 +619,10 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
         public void done(IJobChangeEvent event)
         {
             super.done(event);
-            // make the model modification in order to make it runnable again
+
             try
             {
+                // make the model modification in order to make it runnable again
                 Assert.isTrue(event.getJob() instanceof TLCProcessJob);
                 Assert.isNotNull(event.getResult());
                 TLCProcessJob tlcJob = (TLCProcessJob) event.getJob();

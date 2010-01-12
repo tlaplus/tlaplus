@@ -36,8 +36,8 @@ public class OpenTLCErrorViewHandler extends AbstractHandler implements IHandler
 
                         public void run()
                         {
-                            TLCErrorView.updateErrorView(TLCOutputSourceRegistry.getSourceRegistry()
-                                    .getProvider(config));
+                            TLCErrorView.updateErrorView(TLCOutputSourceRegistry.getModelCheckSourceRegistry()
+                                    .getProvider(config), false);
                         }
                     });
                 }

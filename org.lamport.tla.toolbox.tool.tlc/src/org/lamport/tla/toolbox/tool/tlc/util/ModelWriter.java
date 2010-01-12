@@ -49,8 +49,8 @@ public class ModelWriter
     public static final String PROP_SCHEME = "prop";
     public static final String VIEW_SCHEME = "view";
     public static final String CONSTANTEXPR_SCHEME = "const_expr";
-    public static final String TRACE_EXPR_VAR = "__trace_var";
-    public static final String TRACE_EXPR_DEF = "trace_def";
+    public static final String TRACE_EXPR_VAR_SCHEME = "__trace_var";
+    public static final String TRACE_EXPR_DEF_SCHEME = "trace_def";
 
     public static final String SPACE = " ";
     public static final String CR = "\n";
@@ -69,6 +69,14 @@ public class ModelWriter
     public static final String END_TUPLE = ">>";
     public static final String PRIME = "'";
     public static final String VARIABLES = "VARIABLES ";
+    public static final String TLA_AND = "/\\";
+    public static final String TLA_OR = "\\/";
+    public static final String TLA_NOT = "~";
+    public static final String TLA_EVENTUALLY_ALWAYS = "<>[]";
+    public static final String TLA_INF_OFTEN = "[]<>";
+    public static final String TRACE_NA = "\"--\"";
+    public static final String L_PAREN = "(";
+    public static final String R_PAREN = ")";
 
     private StringBuffer tlaBuffer;
     private StringBuffer cfgBuffer;
@@ -270,8 +278,8 @@ public class ModelWriter
             int position = 0;
             while (it.hasNext())
             {
-                String identifier = getValidIdentifier(TRACE_EXPR_DEF);
-                String variable = getValidIdentifier(TRACE_EXPR_VAR);
+                String identifier = getValidIdentifier(TRACE_EXPR_DEF_SCHEME);
+                String variable = getValidIdentifier(TRACE_EXPR_VAR_SCHEME);
                 Object next = it.next();
                 Assert.isTrue(next instanceof Formula);
                 String expression = ((Formula) next).getFormula();
@@ -338,18 +346,24 @@ public class ModelWriter
     }
 
     /**
-     * This will generate two identifiers and define one to be equal
-     * to init and one to be equal to next in the tla file.
-     * This should be used in trace exploration to see if the initial state
-     * predicate and next state action parse without the trace explorer
-     * expressions. They may not parse if the model is unlocked and the spec
-     * or model is changed. For example, removing a variable from the spec
-     * would result in a parse error.
+     * This will generate two identifiers. The first will be defined
+     * to be equal to the String init. The second will be defined to be
+     * equal to the logical disjunction of the list of Strings actions.
+     * 
+     * If the first elements of actions is "/\ x = 4 /\ x' = 5" and the second
+     * element is "/\ x = 5 /\ x' = 6", then this will write to the tla file
+     * something like
+     * 
+     * next_1232132131232 == \/ (/\ x = 4 /\ x' = 5)
+     * \/ (/\ x = 5 /\ x' = 6)
+     * 
+     * This should be used prior to running SANY on the tla file in order to determine
+     * if any spec or model changes for an unlocked model have made trace exploration impossible.
      * 
      * @param init
      * @param next
      */
-    public void addTraceStateDefsPreParse(String init, String next)
+    public void addTraceStateDefsPreParse(String init, List actions)
     {
         tlaBuffer.append(COMMENT).append("TRACE INIT definition").append(
                 IModelConfigurationConstants.TRACE_EXPLORE_INIT_STATE_CONJ).append(CR);
@@ -357,9 +371,66 @@ public class ModelWriter
 
         tlaBuffer.append(SEP).append(CR).append(CR);
 
-        tlaBuffer.append(COMMENT).append("TRACE NEXT definition").append(
-                IModelConfigurationConstants.TRACE_EXPLORE_TRACE_ACTION_DISJ).append(CR);
-        tlaBuffer.append(getValidIdentifier(NEXT_SCHEME)).append(DEFINES).append(next).append(CR);
+        /*
+         * Iterate through the states to produce the next-state actions
+         */
+        if (actions.size() > 0)
+        {
+            tlaBuffer.append(COMMENT).append("TRACE NEXT definition").append(
+                    IModelConfigurationConstants.TRACE_EXPLORE_TRACE_ACTION_DISJ).append(CR);
+            tlaBuffer.append(getValidIdentifier(NEXT_SCHEME)).append(DEFINES);
+
+            Iterator it = actions.iterator();
+            while (it.hasNext())
+            {
+                tlaBuffer.append(TLA_OR).append(L_PAREN).append(it.next()).append(R_PAREN).append(CR);
+            }
+
+            tlaBuffer.append(SEP).append(CR).append(CR);
+        }
+    }
+
+    public void addInvariantForTraceExplorer(String finalState)
+    {
+        String id = getValidIdentifier(INVARIANT_SCHEME);
+        cfgBuffer.append(COMMENT).append("INVARIANT definition").append(CR);
+        cfgBuffer.append("INVARIANT").append(CR);
+        cfgBuffer.append(id).append(CR);
+
+        tlaBuffer.append(COMMENT).append("INVARIANT definition").append(CR);
+        tlaBuffer.append(id).append(DEFINES_CR);
+        tlaBuffer.append(TLA_NOT).append(L_PAREN).append(finalState).append(R_PAREN).append(CR);
+
+        tlaBuffer.append(SEP).append(CR).append(CR);
+    }
+
+    public void addStutteringPropertyForTraceExplorer(String finalState)
+    {
+        String id = getValidIdentifier(PROP_SCHEME);
+        cfgBuffer.append(COMMENT).append("PROPERTY definition").append(CR);
+        cfgBuffer.append("PROPERTY").append(CR);
+        cfgBuffer.append(id).append(CR);
+
+        tlaBuffer.append(COMMENT).append("PROPERTY definition").append(CR);
+        tlaBuffer.append(id).append(DEFINES_CR);
+        tlaBuffer.append(TLA_NOT).append(TLA_EVENTUALLY_ALWAYS).append(L_PAREN).append(finalState).append(R_PAREN)
+                .append(CR);
+
+        tlaBuffer.append(SEP).append(CR).append(CR);
+    }
+
+    public void addBackToStatePropertyForTraceExplorer(String finalState, String backToState)
+    {
+        String id = getValidIdentifier(PROP_SCHEME);
+        cfgBuffer.append(COMMENT).append("PROPERTY definition").append(CR);
+        cfgBuffer.append("PROPERTY").append(CR);
+        cfgBuffer.append(id).append(CR);
+
+        tlaBuffer.append(COMMENT).append("PROPERTY definition").append(CR);
+        tlaBuffer.append(id).append(DEFINES_CR);
+        tlaBuffer.append(TLA_NOT).append(L_PAREN).append(TLA_INF_OFTEN).append(L_PAREN).append(finalState).append(
+                R_PAREN).append(TLA_AND).append(TLA_INF_OFTEN).append(L_PAREN).append(backToState).append(R_PAREN)
+                .append(R_PAREN).append(CR);
 
         tlaBuffer.append(SEP).append(CR).append(CR);
     }
@@ -515,6 +586,26 @@ public class ModelWriter
         }
         tlaBuffer.append(COMMENT).append("New definitions ").append(ATTRIBUTE).append(attributeName).append(CR);
         tlaBuffer.append(definitions).append(CR).append(SEP).append(CR);
+    }
+
+    /**
+     * Writes comments that will be used for associating variable names with expressions
+     * and will give the level of each expression. In particular, for each expression "expr"
+     * with level x and variable name ___trace_var_3242348934343 this
+     * will append the following comment to the tla file:
+     * 
+     * \* :x:___trace_var_3242348934343:expr
+     * 
+     * @param traceExpressionData
+     */
+    public void addTraceExplorerExpressionInfoComments(TraceExpressionInformationHolder[] traceExpressionData)
+    {
+        for (int i = 0; i < traceExpressionData.length; i++)
+        {
+            TraceExpressionInformationHolder expressionData = traceExpressionData[i];
+            tlaBuffer.append(COMMENT).append(INDEX).append(expressionData.getLevel()).append(INDEX).append(
+                    expressionData.getVariableName()).append(INDEX).append(expressionData.getExpression()).append(CR);
+        }
     }
 
     /**
@@ -732,18 +823,146 @@ public class ModelWriter
         return resultContent;
     }
 
-    // /**
-    // *
-    // * @param initWithoutTraceVars
-    // * @param nextWithoutTraceVars
-    // * @param traceExpressionData
-    // * @return
-    // */
-    // public static List createTraceInitAndNextContent(String initWithoutTraceVars, String nextWithoutTraceVars,
-    // TraceExpressionInformationHolder[] traceExpressionData)
-    // {
-    //
-    // }
+    /**
+    * This adds the trace explorer variables to initWithoutTraceVars.
+    * The method returns a list with one element, a
+    * String[]. The first element of the array is put in TE.cfg, and the
+    * second element is put in TE.tla. The intention is to use
+    * the return value as the first argument of {@link ModelWriter#addFormulaList(List, String, String)}.
+    * 
+    * This can be best explained with an example.
+    * 
+    * The trace is the following:
+    
+    STATE 1: <Initial predicate>
+    /\ x = 0
+    /\ y = 0
+
+    STATE 2: <Action line 8, col 3 to line 9, col 15 of module Test>
+    /\ x = 1
+    /\ y = 0
+
+    STATE 3: <Action line 8, col 3 to line 9, col 15 of module Test>
+    /\ x = 2
+    /\ y = 1
+
+    STATE 4: <Action line 8, col 3 to line 9, col 15 of module Test>
+    /\ x = 3
+    /\ y = 3
+
+    The user wants to evaluate two expressions:
+
+    x + y
+    x' > y
+
+    The file TE.tla will define two new variables:
+
+    VARIABLES sum, big
+
+    The variables are named "sum" and "big" for the simplicity of this example. In
+    reality they will be something like "trace_2348902347238", unless the user is
+    responsible to assigning labels to the expressions. The file will also define
+    two new identifiers:
+
+    sum_def == x + y
+    big_def == x' >y
+
+    We define the initial predicate and next-state relation as follows:
+
+    TInit ==
+    /\ x = 0 
+    /\ y = 0
+    /\ sum = sum_def
+    /\ big = "--"
+
+    TNext ==
+    \/ /\ x = 0
+    /\ y = 0
+    /\ x' = 1
+    /\ y' = 0
+    /\ sum' = sum_def'
+    /\ big' = big_def
+
+    \/ /\ x = 1
+    /\ y = 0
+    /\ x' = 2
+    /\ y' = 1
+    /\ sum' = sum_def'
+    /\ big' = big_def
+
+    \/ /\ x = 2
+    /\ y = 1
+    /\ x' = 3
+    /\ y' = 3
+    /\ sum' = sum_def'
+    /\ big' = big_def
+
+    The expression defined by big_def has primed variables so the variable big
+    takes the value "--" in the initial state predicate. The expression defined by
+    sum_def does not contain primed variables. This will produce an error trace by
+    defining the invariant:
+
+    ~(x=3/\y=3)
+    
+    * 
+    * @param traceInit
+    * @param nextWithoutTraceVars
+    * @param traceExpressionData
+    * @return
+    */
+    public static List createTraceInitContent(String traceInit, TraceExpressionInformationHolder[] traceExpressionData)
+    {
+        String id = getValidIdentifier(INIT_SCHEME);
+        StringBuffer initPredicate = new StringBuffer();
+        initPredicate.append(id).append(DEFINES_CR);
+        initPredicate.append(traceInit);
+        for (int i = 0; i < traceExpressionData.length; i++)
+        {
+            TraceExpressionInformationHolder expressionInfo = traceExpressionData[i];
+            initPredicate.append(TLA_AND).append(expressionInfo.getVariableName()).append(EQ);
+            if (expressionInfo.getLevel() < 2)
+            {
+                initPredicate.append(L_PAREN).append(expressionInfo.getExpression()).append(R_PAREN);
+            } else
+            {
+                initPredicate.append(TRACE_NA);
+            }
+        }
+        Vector toReturn = new Vector();
+        toReturn.add(new String[] { id, initPredicate.toString() });
+        return toReturn;
+    }
+
+    public static List createTraceNextContent(List traceNextActions,
+            TraceExpressionInformationHolder[] traceExpressionData)
+    {
+        String id = getValidIdentifier(NEXT_SCHEME);
+        StringBuffer nextActionDisj = new StringBuffer();
+        nextActionDisj.append(id).append(DEFINES_CR);
+        Iterator it = traceNextActions.iterator();
+        while (it.hasNext())
+        {
+            String actionConj = (String) it.next();
+            nextActionDisj.append(TLA_OR).append(L_PAREN).append(actionConj);
+            for (int i = 0; i < traceExpressionData.length; i++)
+            {
+                TraceExpressionInformationHolder expressionInfo = traceExpressionData[i];
+                nextActionDisj.append(TLA_AND).append(expressionInfo.getVariableName()).append(PRIME).append(EQ);
+                if (expressionInfo.getLevel() < 2)
+                {
+                    nextActionDisj.append(L_PAREN).append(expressionInfo.getExpression()).append(R_PAREN).append(PRIME);
+                } else
+                {
+                    nextActionDisj.append(L_PAREN).append(expressionInfo.getExpression()).append(R_PAREN);
+                }
+            }
+            nextActionDisj.append(R_PAREN).append(CR);
+        }
+
+        Vector toReturn = new Vector();
+        toReturn.add(new String[] { id, nextActionDisj.toString() });
+        return toReturn;
+    }
 
     /**
      * A pattern to match IDs generated by the {@link ModelWriter#getValidIdentifier(String)} method

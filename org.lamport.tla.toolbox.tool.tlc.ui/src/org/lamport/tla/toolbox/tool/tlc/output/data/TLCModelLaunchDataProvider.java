@@ -105,8 +105,10 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
         // init provider, but not connect it to the source!
         initialize();
 
-        // interested in the output for the model
-        TLCOutputSourceRegistry.getSourceRegistry().connect(this);
+        /*
+         *  interested in the output for the model
+         */
+        connectToSourceRegistry();
     }
 
     /**
@@ -439,7 +441,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
      */
     public void destroy()
     {
-        TLCOutputSourceRegistry.getSourceRegistry().disconnect(this);
+        TLCOutputSourceRegistry.getModelCheckSourceRegistry().disconnect(this);
     }
 
     /**
@@ -690,6 +692,19 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                 }
             }
         });
+    }
+
+    /**
+     *  Connects this provider to the tlc output source registry.
+     *  
+     *  There are two different tlc output source registries,
+     *  one for trace exploration and one for model checking. This
+     *  connects to the one for model checking.
+     */
+    protected void connectToSourceRegistry()
+    {
+
+        TLCOutputSourceRegistry.getModelCheckSourceRegistry().connect(this);
     }
 
     /**

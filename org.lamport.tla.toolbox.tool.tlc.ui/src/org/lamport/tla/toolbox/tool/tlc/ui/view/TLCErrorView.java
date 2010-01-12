@@ -10,6 +10,7 @@ import java.util.regex.Pattern;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfiguration;
+import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.Document;
@@ -67,6 +68,7 @@ import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.util.IHelpConstants;
 import org.lamport.tla.toolbox.util.UIHelper;
 
+import tlc2.output.EC;
 import tlc2.output.MP;
 
 /**
@@ -115,7 +117,11 @@ public class TLCErrorView extends ViewPart
     private SourceViewer errorViewer;
     private TreeViewer variableViewer;
     private SourceViewer valueViewer;
-    private ILaunchConfiguration currentConfig;
+    /**
+     * a handle on the underlying configuration file representing the
+     * model for which errors are currently being displayed in this view
+     */
+    private ILaunchConfiguration configFileHandle;
     private TraceExplorerComposite traceExplorerComposite;
 
     /**
@@ -137,23 +143,25 @@ public class TLCErrorView extends ViewPart
      *            name of the model displayed in the view title section
      * @param problems
      *            a list of {@link TLCError} objects representing the errors.
+     * @param isTraceExplorerData true if the new error data is from a run of the trace explorer
      */
-    protected void fill(String modelName, List problems)
+    protected void fill(String modelName, List problems, boolean isTraceExplorerData)
     {
 
-        // Fill the trace explorer expression table
-        // with expressions saved in the config
         try
         {
             /*
-             * FormHelper.setSerializedInput adds elements from the list that is
-             * the second argument to the existing input of the table viewer
-             * that is the first argument. In order to avoid adding duplicate
-             * entries to the table, we must first set the trace explorer
-             * table to an empty input before calling FormHelper.setSerializedInput.
+             * Fill the trace explorer expression table 
+             * with expressions saved in the config.
+             * 
+             * Setting the input of the trace explorer composite
+             * table viewer to an empty vector is done to avoid adding duplicates.
+             * 
+             * FormHelper.setSerializedInput adds the elements from the config
+             * to the table viewer.
              */
             traceExplorerComposite.getTableViewer().setInput(new Vector());
-            FormHelper.setSerializedInput(traceExplorerComposite.getTableViewer(), currentConfig.getAttribute(
+            FormHelper.setSerializedInput(traceExplorerComposite.getTableViewer(), configFileHandle.getAttribute(
                     IModelConfigurationConstants.TRACE_EXPLORE_EXPRESSIONS, new Vector()));
         } catch (CoreException e)
         {
@@ -163,6 +171,10 @@ public class TLCErrorView extends ViewPart
         // if there are errors
         if (problems != null && !problems.isEmpty())
         {
+            /* 
+             * TODO Shift expression values for trace explorer expressions
+             * with primed variables.
+             */
             List states = null;
             StringBuffer buffer = new StringBuffer();
             // iterate over the errors
@@ -170,8 +182,29 @@ public class TLCErrorView extends ViewPart
             {
                 TLCError error = (TLCError) problems.get(i);
 
-                // append error text to the buffer
-                appendError(buffer, error);
+                /*
+                 * Append error text to the buffer if the error
+                 * did not come from running the trace explorer. If the
+                 * error is from running the trace explorer, then only append the
+                 * error if it is not an invariant violation or a temporal property
+                 * violation. These violations occur so that TLC will print out the
+                 * error trace with the new trace explorer expressions. This implementation
+                 * of the trace explorer should be hidden from the user, so these violations
+                 * should not be displayed. However, other TLC errors that occur from running
+                 * the trace explorer, such as dividing by zero, should be displayed to the
+                 * user.
+                 */
+                if (!isTraceExplorerData)
+                {
+                    appendError(buffer, error);
+                } else if (error.getErrorCode() != EC.TLC_INVARIANT_VIOLATED_BEHAVIOR
+                        && error.getErrorCode() != EC.TLC_TEMPORAL_PROPERTY_VIOLATED)
+                {
+                    // add a message to the buffer to indicate that the error
+                    // is from running the trace explorer
+                    buffer.append("Error from running Trace Explorer: \n\n");
+                    appendError(buffer, error);
+                }
 
                 // read out the trace if any
                 if (error.hasTrace())
@@ -186,8 +219,8 @@ public class TLCErrorView extends ViewPart
             }
 
             /*
-             * determine if trace has changed this is important for really long
-             * traces resetting the trace input locks up the toolbox for a few
+             * determine if trace has changed. this is important for really long
+             * traces because resetting the trace input locks up the toolbox for a few
              * seconds in these cases, so it is important to not reset the trace
              * if it is not necessary
              */
@@ -203,14 +236,25 @@ public class TLCErrorView extends ViewPart
                 setDiffInfo(states);
             }
 
-            // update the error information in the TLC Error View
-            IDocument document = errorViewer.getDocument();
-            try
+            /*
+             *  Update the error information in the TLC Error View.
+             *  
+             *  Always update if the new data is not from running
+             *  the trace explorer. If the data is from the trace
+             *  explorer then update only if the buffer is not empty.
+             *  If the buffer is empty from running the trace explorer,
+             *  then the previous message should remain.
+             */
+            if (!isTraceExplorerData || !(buffer.length() == 0))
             {
-                document.replace(0, document.getLength(), buffer.toString());
-            } catch (BadLocationException e)
-            {
-                TLCUIActivator.logError("Error reporting the error " + buffer.toString(), e);
+                IDocument document = errorViewer.getDocument();
+                try
+                {
+                    document.replace(0, document.getLength(), buffer.toString());
+                } catch (BadLocationException e)
+                {
+                    TLCUIActivator.logError("Error reporting the error " + buffer.toString(), e);
+                }
             }
 
             // update the trace information
@@ -229,6 +273,7 @@ public class TLCErrorView extends ViewPart
         {
             clear();
         }
+        // TODO Check if a run of the trace explorer produced no errors. This is a bug.
     }
 
     /**
@@ -483,11 +528,11 @@ public class TLCErrorView extends ViewPart
 
     /**
      * Display the errors in the view, or hides the view if no errors
-     * 
+     * @param isTraceExplorerUpdate true iff the provider has data from a run of the trace explorer
      * @param errors
      *            a list of {@link TLCError}
      */
-    public static void updateErrorView(TLCModelLaunchDataProvider provider)
+    public static void updateErrorView(TLCModelLaunchDataProvider provider, boolean isTraceExplorerUpdate)
     {
 
         if (provider == null)
@@ -504,11 +549,25 @@ public class TLCErrorView extends ViewPart
         }
         if (errorView != null)
         {
-
-            errorView.currentConfig = provider.getConfig();
+            /*
+             * We need a handle on the actual underlying configuration file handle
+             * in order to retrieve the expressions that should be put in the trace
+             * explorer table. Working copies of the configuration file may not have
+             * all of the expressions that should appear. The filling of the trace
+             * explorer table occurs in the fill() method.
+             */
+            ILaunchConfiguration config = provider.getConfig();
+            if (config.isWorkingCopy())
+            {
+                errorView.configFileHandle = ((ILaunchConfigurationWorkingCopy) config).getOriginal();
+            } else
+            {
+                errorView.configFileHandle = config;
+            }
 
             // fill the name and the errors
-            errorView.fill(ModelHelper.getModelName(provider.getConfig().getFile()), provider.getErrors());
+            errorView.fill(ModelHelper.getModelName(provider.getConfig().getFile()), provider.getErrors(),
+                    isTraceExplorerUpdate);
 
             if (provider.getErrors().size() == 0)
             {
@@ -1524,8 +1583,14 @@ public class TLCErrorView extends ViewPart
         return (List) variableViewer.getInput();
     }
 
-    public ILaunchConfiguration getCurrentConfig()
+    /**
+     * Returns a handle on the underlying configuration file for which
+     * errors are being shown by this view. Can return null.
+     * 
+     * @return
+     */
+    public ILaunchConfiguration getCurrentConfigFileHandle()
     {
-        return currentConfig;
+        return configFileHandle;
     }
 }

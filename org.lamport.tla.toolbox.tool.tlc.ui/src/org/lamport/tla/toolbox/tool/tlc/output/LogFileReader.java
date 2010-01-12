@@ -20,10 +20,10 @@ public class LogFileReader
     private TagBasedTLCOutputIncrementalParser parser;
     private IFile logFile;
 
-    public LogFileReader(String name, IFile logFile)
+    public LogFileReader(String name, IFile logFile, boolean isTraceExplorerLogFile)
     {
         this.logFile = logFile;
-        this.parser = new TagBasedTLCOutputIncrementalParser(name, ITLCOutputSource.PRIO_LOW);
+        this.parser = new TagBasedTLCOutputIncrementalParser(name, ITLCOutputSource.PRIO_LOW, isTraceExplorerLogFile);
     }
 
     /**

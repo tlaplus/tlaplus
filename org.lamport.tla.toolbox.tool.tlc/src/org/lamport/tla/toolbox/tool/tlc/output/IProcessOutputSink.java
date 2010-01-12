@@ -20,6 +20,10 @@ public interface IProcessOutputSink
      */
     public final static int TYPE_ERROR = 2;
     /**
+     * Trace explorer output stream
+     */
+    public final static int TYPE_TRACE_EXPLORE = 3;
+    /**
      * Extension point, the interface is used in
      */
     public static final String EXTENSION_ID = "org.lamport.tla.toolbox.tlc.processOutputSink";
@@ -29,14 +33,14 @@ public interface IProcessOutputSink
      * @param text 
      */
     public void appendText(String text);
-    
+
     /**
      * Called prior the usage to initialize the sink
      * @param processName name of the process
-     * @param sinkType type, see constants {@link IProcessOutputSink#TYPE_DEBUG}, {@link IProcessOutputSink#TYPE_ERROR}, {@link IProcessOutputSink#TYPE_OUT}
+     * @param sinkType type, see constants {@link IProcessOutputSink#TYPE_DEBUG}, {@link IProcessOutputSink#TYPE_ERROR}, {@link IProcessOutputSink#TYPE_OUT}, {@link IProcessOutputSink#TYPE_TRACE_EXPLORE}
      */
     public void initializeSink(String processName, int sinkType);
-    
+
     /**
      * Signal to the sink that the process has terminated and no data will be sent
      */

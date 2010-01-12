@@ -108,8 +108,9 @@ public class TagBasedTLCOutputIncrementalParser
      * Constructs the parser
      * @param name
      * @param prio
+     * @param isTraceExplorer TODO
      */
-    public TagBasedTLCOutputIncrementalParser(String name, int prio)
+    public TagBasedTLCOutputIncrementalParser(String name, int prio, boolean isTraceExplorer)
     {
         // create the document
         Document document = new Document();
@@ -127,8 +128,20 @@ public class TagBasedTLCOutputIncrementalParser
         // now register the listener, responsible for evaluating the partitioning information
         document.addDocumentPartitioningListener(new TLCOutputPartitionChangeListener());
 
-        // register the process source
-        TLCOutputSourceRegistry.getSourceRegistry().addTLCOutputSource(this.source);
+        /*
+         *  Register the process source
+         *  
+         *  There are two different source registries, one for trace exploration
+         *  and one for model checking. The source must be added to the
+         *  appropriate registry.
+         */
+        if (isTraceExplorer)
+        {
+            TLCOutputSourceRegistry.getTraceExploreSourceRegistry().addTLCOutputSource(this.source);
+        } else
+        {
+            TLCOutputSourceRegistry.getModelCheckSourceRegistry().addTLCOutputSource(this.source);
+        }
     }
 
     /**

@@ -9,6 +9,7 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.lamport.tla.toolbox.tool.tlc.output.ITLCOutputListener;
 import org.lamport.tla.toolbox.tool.tlc.output.LogFileReader;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCModelLaunchDataProvider;
+import org.lamport.tla.toolbox.tool.tlc.output.data.TraceExplorerDataProvider;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 
@@ -35,7 +36,10 @@ import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
  * new source. The priority resolves the case if a new source for the same name arrives. Currently, high priority is used for the source attached
  * to the running process, low priority is used for the file source. 
  * 
- * 
+ * There should be at most two instances of this class, one for output sources from running TLC for model checking and one for running TLC
+ * for trace exploration. The flag isTraceExploreInstance indicates which type of instance it is, and the methods
+ * {@link TLCOutputSourceRegistry#getModelCheckSourceRegistry()} and {@link TLCOutputSourceRegistry#getTraceExploreSourceRegistry()}
+ * provide access to each instance.
  * 
  * @author Simon Zambrovski
  * @version $Id$
@@ -43,11 +47,17 @@ import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 public class TLCOutputSourceRegistry
 {
     private static final boolean DO_DEBUG = true;
-    private static TLCOutputSourceRegistry instance;
+    // instance for output sources from model checking
+    private static TLCOutputSourceRegistry modelCheckInstance;
+    // instance for output sources from trace exploration
+    private static TLCOutputSourceRegistry traceExploreInstance;
     // container for sources, hashed by the source name
     private Hashtable sources;
     // container for data providers, hashed by the process name
     private Hashtable providers;
+    // flag indicating if this is a trace explorer instance
+    // true indicates that this is a trace explorer instance
+    private boolean isTraceExploreInstance;
 
     /**
      * Adds a source. If the source with the same identity is already present,
@@ -76,21 +86,21 @@ public class TLCOutputSourceRegistry
                 source.addTLCOutputListener(registered[i]);
                 registered[i].onNewSource();
             }
-        } else 
+        } else
         {
-            if (existingSource == null) 
+            if (existingSource == null)
             {
                 // the source didn't exist, but there is a data provider interested in this source
-                TLCModelLaunchDataProvider provider = (TLCModelLaunchDataProvider) providers.get(source.getTLCOutputName());
-                if (provider != null) 
+                TLCModelLaunchDataProvider provider = (TLCModelLaunchDataProvider) providers.get(source
+                        .getTLCOutputName());
+                if (provider != null)
                 {
                     source.addTLCOutputListener(provider);
                 }
             }
         }
         this.sources.put(source.getTLCOutputName(), source);
-        
-        
+
         printStats();
     }
 
@@ -119,16 +129,17 @@ public class TLCOutputSourceRegistry
         if (source == null)
         {
             // no source found, so no live TLC process
-            // look for the log file
+            // also not a source for trace explorer output, so
+            // can look for the log file
             ILaunchConfiguration config = ModelHelper.getModelByName(processName);
-            IFile logFile = ModelHelper.getModelOutputLogFile(config);
+            IFile logFile = ModelHelper.getModelOutputLogFile(config, isTraceExploreInstance);
             // log file found
             if (logFile != null && logFile.exists())
             {
                 // initialize the reader and read the content
                 // this will create the parser
                 // the parser will create a source and register in the registry
-                LogFileReader logFileReader = new LogFileReader(processName, logFile);
+                LogFileReader logFileReader = new LogFileReader(processName, logFile, isTraceExploreInstance);
 
                 // retrieve the source
                 source = logFileReader.getSource();
@@ -183,16 +194,23 @@ public class TLCOutputSourceRegistry
         Assert.isNotNull(configuration);
         String processKey = configuration.getFile().getName();
         TLCModelLaunchDataProvider provider = (TLCModelLaunchDataProvider) providers.get(processKey);
-        if (provider == null) 
+        if (provider == null)
         {
-            provider = new TLCModelLaunchDataProvider(configuration);
+            if (isTraceExploreInstance)
+            {
+                provider = new TraceExplorerDataProvider(configuration);
+            } else
+            {
+                provider = new TLCModelLaunchDataProvider(configuration);
+            }
             providers.put(processKey, provider);
         }
         return provider;
     }
 
     /**
-     * Clients should not invoke this constructor directly, but use {@link TLCOutputSourceRegistry#getSourceRegistry()} instead
+     * Clients should not invoke this constructor directly, but use {@link TLCOutputSourceRegistry#getModelCheckSourceRegistry()}
+     * or {@link TLCOutputSourceRegistry#getTraceExploreSourceRegistry()} instead.
      */
     private TLCOutputSourceRegistry()
     {
@@ -201,16 +219,30 @@ public class TLCOutputSourceRegistry
     }
 
     /**
-     * Singleton access method
+     * Access method for model check source registry instance
      * @return a working copy of the registry
      */
-    public static TLCOutputSourceRegistry getSourceRegistry()
+    public static TLCOutputSourceRegistry getModelCheckSourceRegistry()
     {
-        if (instance == null)
+        if (modelCheckInstance == null)
         {
-            instance = new TLCOutputSourceRegistry();
+            modelCheckInstance = new TLCOutputSourceRegistry();
+            modelCheckInstance.isTraceExploreInstance = false;
         }
-        return instance;
+        return modelCheckInstance;
+    }
+
+    /**
+     * Access method for trace explore source registry instance
+     */
+    public static TLCOutputSourceRegistry getTraceExploreSourceRegistry()
+    {
+        if (traceExploreInstance == null)
+        {
+            traceExploreInstance = new TLCOutputSourceRegistry();
+            traceExploreInstance.isTraceExploreInstance = true;
+        }
+        return traceExploreInstance;
     }
 
     /**
@@ -220,7 +252,13 @@ public class TLCOutputSourceRegistry
     {
         if (DO_DEBUG)
         {
-            TLCUIActivator.logDebug("TLCOutputSourceRegistry maintains " + sources.size() + " sources.");
+            String type = "model checking";
+            if (isTraceExploreInstance)
+            {
+                type = "trace exploration";
+            }
+            TLCUIActivator.logDebug("TLCOutputSourceRegistry for " + type + " maintains " + sources.size()
+                    + " sources.");
             Enumeration keys = sources.keys();
             while (keys.hasMoreElements())
             {

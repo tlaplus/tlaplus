@@ -15,6 +15,7 @@ import org.eclipse.jdt.launching.JavaRuntime;
 import org.eclipse.jdt.launching.VMRunnerConfiguration;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.tool.tlc.TLCActivator;
+import org.lamport.tla.toolbox.tool.tlc.launch.TraceExplorerDelegate;
 import org.lamport.tla.toolbox.tool.tlc.output.IProcessOutputSink;
 import org.lamport.tla.toolbox.tool.tlc.output.internal.BroadcastStreamListener;
 import org.lamport.tla.toolbox.util.ResourceHelper;
@@ -139,7 +140,22 @@ public class TLCProcessJob extends TLCJob
                 // register the broadcasting listener
 
                 String modelFileName = launch.getLaunchConfiguration().getFile().getName();
-                listener = new BroadcastStreamListener(modelFileName, IProcessOutputSink.TYPE_OUT);
+
+                /*
+                 * If TLC is being run for model checking then the stream kind passed to
+                 * BroadcastStreamListener (second argument) is IProcessOutputSink.TYPE_OUT.
+                 * If TLC is being run for trace exploration, then it is
+                 * IProcessOutputSink.TYPE_TRACE_EXPLORE.
+                 */
+
+                int kind = IProcessOutputSink.TYPE_OUT;
+
+                if (launch.getLaunchMode().equals(TraceExplorerDelegate.MODE_TRACE_EXPLORE))
+                {
+                    kind = IProcessOutputSink.TYPE_TRACE_EXPLORE;
+                }
+
+                listener = new BroadcastStreamListener(modelFileName, kind);
 
                 process.getStreamsProxy().getOutputStreamMonitor().addListener(listener);
                 process.getStreamsProxy().getErrorStreamMonitor().addListener(listener);

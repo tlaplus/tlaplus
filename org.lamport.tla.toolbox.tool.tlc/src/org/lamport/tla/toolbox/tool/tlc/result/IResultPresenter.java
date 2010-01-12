@@ -1,6 +1,6 @@
 package org.lamport.tla.toolbox.tool.tlc.result;
 
-import org.eclipse.debug.core.ILaunchConfiguration;
+import org.eclipse.debug.core.ILaunch;
 
 /**
  * Interface for the TLC job result presenter used in the extension point 
@@ -15,5 +15,5 @@ public interface IResultPresenter
     /**
      * Show the results of the launch 
      */
-    public void showResults(ILaunchConfiguration configuration);
+    public void showResults(ILaunch launch);
 }

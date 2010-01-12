@@ -1,11 +1,16 @@
 package org.lamport.tla.toolbox.tool.tlc.ui.util;
 
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartReference;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCModelLaunchDataProvider;
+import org.lamport.tla.toolbox.tool.tlc.output.source.TLCOutputSourceRegistry;
+import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor;
 import org.lamport.tla.toolbox.tool.tlc.ui.view.TLCErrorView;
+import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 /**
@@ -32,7 +37,7 @@ public class ModelEditorPartListener implements IPartListener2
     {
         // TODO Auto-generated constructor stub
     }
-    
+
     public static ModelEditorPartListener getDefault()
     {
         if (listener == null)
@@ -99,14 +104,31 @@ public class ModelEditorPartListener implements IPartListener2
         if (part != null && part instanceof ModelEditor)
         {
             ModelEditor editor = (ModelEditor) part;
-            TLCModelLaunchDataProvider provider = (TLCModelLaunchDataProvider) editor
-                    .getAdapter(TLCModelLaunchDataProvider.class);
+            TLCModelLaunchDataProvider provider = null;
+
+            ILaunchConfiguration config = editor.getConfig().getOriginal();
+
+            try
+            {
+                if (ModelHelper.isOriginalTraceShown(config))
+                {
+                    provider = TLCOutputSourceRegistry.getModelCheckSourceRegistry().getProvider(config);
+                } else
+                {
+                    provider = TLCOutputSourceRegistry.getTraceExploreSourceRegistry().getProvider(config);
+                }
+            } catch (CoreException e)
+            {
+                TLCUIActivator.logError(
+                        "Error determining if original trace should be shown when model editor is made visible.", e);
+            }
+
             TLCErrorView errorView = (TLCErrorView) UIHelper.findView(TLCErrorView.ID);
             if (errorView != null && provider != null)
             {
                 if (provider.getErrors().size() > 0)
                 {
-                    TLCErrorView.updateErrorView(provider);
+                    TLCErrorView.updateErrorView(provider, false);
                 } else
                 {
                     errorView.clear();

@@ -107,6 +107,15 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
      */
     private static final String MODEL_IS_LOCKED = "modelIsLocked";
     /**
+     * marker on .launch file, with boolean attribute isOriginalTraceShown
+     */
+    public static final String TRACE_EXPLORER_MARKER = "org.lamport.tla.toolbox.tlc.traceExplorerMarker";
+    /**
+     * boolean attribute indicating if the original trace of a model checking
+     * run should be shown in the error view for that model
+     */
+    public static final String IS_ORIGINAL_TRACE_SHOWN = "isOriginalTraceShown";
+    /**
      * Delimiter used to serialize lists  
      */
     private static final String LIST_DELIMITER = ";";
@@ -648,17 +657,26 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
     }
 
     /**
-     * Retrieves a file where the log of the TLC run is written
+     * Retrieves a file where the log of the TLC run is written. If isTraceExploration is true, this
+     * will return the log file for trace exploration. If that flag is false, this will return the log file
+     * for normal model checking.
+     * 
      * @param config configuration representing the model
+     * @param isTraceExploration flag indicating if the log file for trace exploration is to be returned
      * @return the file handle, or null
      */
-    public static IFile getModelOutputLogFile(ILaunchConfiguration config)
+    public static IFile getModelOutputLogFile(ILaunchConfiguration config, boolean isTraceExploration)
     {
         Assert.isNotNull(config);
         IFolder targetFolder = ModelHelper.getModelTargetDirectory(config);
         if (targetFolder != null && targetFolder.exists())
         {
-            IFile logFile = (IFile) targetFolder.findMember(ModelHelper.FILE_OUT);
+            String fileName = ModelHelper.FILE_OUT;
+            if (isTraceExploration)
+            {
+                fileName = ModelHelper.TE_FILE_OUT;
+            }
+            IFile logFile = (IFile) targetFolder.findMember(fileName);
             if (logFile != null && logFile.exists())
             {
                 return logFile;
@@ -683,6 +701,26 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
             if (mcFile != null && mcFile.exists())
             {
                 return mcFile;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Retrives the TLA file used by the trace explorer
+     * @param config configuration representing the model
+     * @return a file handle or <code>null</code>
+     */
+    public static IFile getTraceExplorerTLAFile(ILaunchConfiguration config)
+    {
+        Assert.isNotNull(config);
+        IFolder targetFolder = ModelHelper.getModelTargetDirectory(config);
+        if (targetFolder != null && targetFolder.exists())
+        {
+            IFile teFile = (IFile) targetFolder.findMember(ModelHelper.TE_FILE_TLA);
+            if (teFile != null && teFile.exists())
+            {
+                return teFile;
             }
         }
         return null;
@@ -845,6 +883,46 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
     }
 
     /**
+     * Returns whether the original trace or the trace with trace explorer expressions from the
+     * most recent run of the trace explorer for the model should be shown in the TLC error view.
+     * 
+     * See {@link ModelHelper#setOriginalTraceShown(ILaunchConfiguration, boolean)} for setting this
+     * return value.
+     * 
+     * @param config
+     * @return whether the original trace or the trace with trace explorer expressions from the
+     * most recent run of the trace explorer for the model should be shown in the TLC error view
+     * @throws CoreException 
+     */
+    public static boolean isOriginalTraceShown(ILaunchConfiguration config) throws CoreException
+    {
+        // marker
+        IFile resource = config.getFile();
+        if (resource.exists())
+        {
+            IMarker marker;
+            IMarker[] foundMarkers = resource.findMarkers(TRACE_EXPLORER_MARKER, false, IResource.DEPTH_ZERO);
+            if (foundMarkers.length > 0)
+            {
+                marker = foundMarkers[0];
+                // remove trash if any
+                for (int i = 1; i < foundMarkers.length; i++)
+                {
+                    foundMarkers[i].delete();
+                }
+
+                return marker.getAttribute(IS_ORIGINAL_TRACE_SHOWN, true);
+            } else
+            {
+                return true;
+            }
+        } else
+        {
+            return true;
+        }
+    }
+
+    /**
      * Tries to recover model after an abnormal TLC termination
      * It deletes all temporary files on disk and restores the state to unlocked.
      * @param config
@@ -969,6 +1047,44 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
         // file modification 
         ModelHelper.writeAttributeValue(config, IModelConfigurationConstants.MODEL_IS_RUNNING, true);
          */
+    }
+
+    /**
+     * Sets whether the original trace or the trace with trace explorer expressions
+     * should be shown in the TLC error view for the model represented by this
+     * configuration.
+     * 
+     * Code the raises the TLC error view or updates the TLC error view for a model
+     * can use {@link ModelHelper#isOriginalTraceShown(ILaunchConfiguration)} to determine
+     * if the original trace should be shown for a given model.
+     * 
+     * @param config
+     * @param isOriginalTraceShown true if the original trace should be shown, false if
+     * the trace with trace explorer expressions should be shown
+     */
+    public static void setOriginalTraceShown(ILaunchConfiguration config, boolean isOriginalTraceShown)
+            throws CoreException
+    {
+        IFile resource = config.getFile();
+        if (resource.exists())
+        {
+            IMarker marker;
+            IMarker[] foundMarkers = resource.findMarkers(TRACE_EXPLORER_MARKER, false, IResource.DEPTH_ZERO);
+            if (foundMarkers.length > 0)
+            {
+                marker = foundMarkers[0];
+                // remove trash if any
+                for (int i = 1; i < foundMarkers.length; i++)
+                {
+                    foundMarkers[i].delete();
+                }
+            } else
+            {
+                marker = resource.createMarker(TRACE_EXPLORER_MARKER);
+            }
+
+            marker.setAttribute(IS_ORIGINAL_TRACE_SHOWN, isOriginalTraceShown);
+        }
     }
 
     /**

@@ -26,5 +26,15 @@ public class TLCVariable
     {
         return value == null ? "" : value.toString();
     }
+    
+    public void setName(String name)
+    {
+        this.name = name;
+    }
+    
+    public void setValue(TLCVariableValue value)
+    {
+        this.value = value;
+    }
 
 }

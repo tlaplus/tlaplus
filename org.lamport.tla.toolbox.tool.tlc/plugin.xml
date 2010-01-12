@@ -148,6 +148,17 @@
             type="org.lamport.tla.toolbox.tool.tlc.modelCheck">
       </launchDelegate>
    </extension>
+   <extension
+         id="org.lamport.tla.toolbox.tlc.traceExplorerMarker"
+         name="Trace Explorer Marker"
+         point="org.eclipse.core.resources.markers">
+      <attribute
+            name="isOriginalTraceShown">
+      </attribute>
+      <persistent
+            value="true">
+      </persistent>
+   </extension>
 <!--
   NCE definition
  -->   

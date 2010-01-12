@@ -80,11 +80,11 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 
         public void linkActivated(HyperlinkEvent e)
         {
-            TLCModelLaunchDataProvider dataProvider = TLCOutputSourceRegistry.getSourceRegistry().getProvider(
+            TLCModelLaunchDataProvider dataProvider = TLCOutputSourceRegistry.getModelCheckSourceRegistry().getProvider(
                     getConfig());
             if (dataProvider != null)
             {
-                TLCErrorView.updateErrorView(dataProvider);
+                TLCErrorView.updateErrorView(dataProvider, false);
             }
         }
     };
@@ -168,7 +168,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
                     ResultPage.this.errorStatusHyperLink.setForeground(color);
 
                     // update the error view
-                    TLCErrorView.updateErrorView(dataProvider);
+                    TLCErrorView.updateErrorView(dataProvider, false);
                     break;
                 default:
                     break;
@@ -186,7 +186,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
     public void loadData() throws CoreException
     {
 
-        TLCModelLaunchDataProvider provider = TLCOutputSourceRegistry.getSourceRegistry().getProvider(getConfig());
+        TLCModelLaunchDataProvider provider = TLCOutputSourceRegistry.getModelCheckSourceRegistry().getProvider(getConfig());
         if (provider != null)
         {
             provider.setPresenter(this);
@@ -225,7 +225,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
      */
     public void dispose()
     {
-        TLCModelLaunchDataProvider provider = TLCOutputSourceRegistry.getSourceRegistry().getProvider(getConfig());
+        TLCModelLaunchDataProvider provider = TLCOutputSourceRegistry.getModelCheckSourceRegistry().getProvider(getConfig());
         if (provider != null)
         {
             provider.setPresenter(null);

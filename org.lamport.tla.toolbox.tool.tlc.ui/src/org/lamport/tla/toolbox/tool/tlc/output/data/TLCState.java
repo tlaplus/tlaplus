@@ -174,6 +174,11 @@ public class TLCState implements IModuleLocatable
     {
         return label;
     }
+    
+    public void setLabel(String label)
+    {
+        this.label = label;
+    }
 
     public final List getVariablesAsList()
     {

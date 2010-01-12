@@ -84,7 +84,7 @@ public class DeleteModelHandler extends AbstractHandler implements IModelConfigu
                         // remove any tlc output sources corresponding to this model
                         // in case the user opens a new model of the same name in
                         // the same toolbox session
-                        TLCOutputSourceRegistry.getSourceRegistry().removeTLCStatusSource(
+                        TLCOutputSourceRegistry.getModelCheckSourceRegistry().removeTLCStatusSource(
                                 launchConfigurations[i].getFile().getName());
                         launchConfigurations[i].delete();
                     }

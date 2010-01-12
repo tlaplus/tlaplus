@@ -36,8 +36,9 @@ public class ParsingTLCOutputSink implements IProcessOutputSink
      */
     public void initializeSink(String processName, int sinkType)
     {
+        boolean isTraceExploration = sinkType == IProcessOutputSink.TYPE_TRACE_EXPLORE;
         // parser = new TLCOutputIncrementalParser(processName, ITLCOutputSource.PRIO_HIGH);
-        parser = new TagBasedTLCOutputIncrementalParser(processName, ITLCOutputSource.PRIO_HIGH);
+        parser = new TagBasedTLCOutputIncrementalParser(processName, ITLCOutputSource.PRIO_HIGH, isTraceExploration);
     }
 
     /* (non-Javadoc)

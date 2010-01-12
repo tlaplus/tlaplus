@@ -311,7 +311,7 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
         if (TLCModelLaunchDataProvider.class.equals(required))
         {
             // return a provider, if this can be found
-            TLCModelLaunchDataProvider provider = TLCOutputSourceRegistry.getSourceRegistry().getProvider(getConfig());
+            TLCModelLaunchDataProvider provider = TLCOutputSourceRegistry.getModelCheckSourceRegistry().getProvider(getConfig());
             if (provider != null)
             {
                 return provider;
