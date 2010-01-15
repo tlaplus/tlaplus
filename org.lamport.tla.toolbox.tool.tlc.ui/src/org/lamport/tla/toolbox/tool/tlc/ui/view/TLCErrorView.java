@@ -349,7 +349,7 @@ public class TLCErrorView extends ViewPart
          * 
          * The lower part of the outer sash form contains the composite
          * belowErrorViewerComposite which contains the trace explorer expression
-         * table section and the inner sash form.
+         * table section and the errorTraceSection which contains the inner sash form.
          */
         Composite belowErrorViewerComposite = toolkit.createComposite(outerSashForm);
         layout = new GridLayout(1, false);
@@ -364,13 +364,40 @@ public class TLCErrorView extends ViewPart
         layout.marginWidth = 0;
         belowErrorViewerComposite.setLayout(layout);
 
-        traceExplorerComposite = new TraceExplorerComposite(belowErrorViewerComposite, "Trace Explorer",
+        traceExplorerComposite = new TraceExplorerComposite(belowErrorViewerComposite, "Error-Trace Exploration",
                 "Enter expressions to be evaluated at each state of the trace", toolkit, this);
+
+        // A group can be used to organize and provide a title for the inner sash form
+        // but right now I think the section looks better because it looks the same
+        // as the trace explorer section
+        // Group lowerGroup = new Group(belowErrorViewerComposite, SWT.SHADOW_NONE);
+        // lowerGroup.setLayout(new GridLayout(1, true));
+        // lowerGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+        // lowerGroup.setText("Error-Trace");
+
+        /*
+         * This section contains the inner sash form which contains the error trace table
+         * and the variable value viewer.
+         * 
+         * Putting these in a section gives a them a title and logically groups them together.
+         * 
+         * There is no reason to make it possible to not have this in the expanded form, so the
+         * only style bit is for the title bar.
+         */
+        Section errorTraceSection = toolkit.createSection(belowErrorViewerComposite, Section.TITLE_BAR);
+        errorTraceSection.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+        errorTraceSection.setLayout(new GridLayout(1, true));
+        errorTraceSection.setText("Error-Trace");
+
+        // must create the client area for the section
+        Composite errorTraceSectionClientArea = toolkit.createComposite(errorTraceSection);
+        errorTraceSectionClientArea.setLayout(new GridLayout(1, true));
+        errorTraceSection.setClient(errorTraceSectionClientArea);
 
         // Modified on 30 Aug 2009 as part of putting error viewer inside a
         // sash.
         // SashForm sashForm = new SashForm(body, SWT.VERTICAL); //
-        SashForm sashForm = new SashForm(belowErrorViewerComposite, SWT.VERTICAL);
+        SashForm sashForm = new SashForm(errorTraceSectionClientArea/*belowErrorViewerComposite*/, SWT.VERTICAL);
         toolkit.adapt(sashForm);
 
         gd = new GridData(SWT.FILL, SWT.FILL, true, true);
