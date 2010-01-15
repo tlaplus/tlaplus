@@ -110,7 +110,7 @@ public class TraceExplorerDataProvider extends TLCModelLaunchDataProvider
                 String commentString = teDocument.get(region.getOffset(), region.getLength());
                 // commentString should be of the form "\* :x:___trace_var_12321312312312:expr"
                 // where x is the level of the expression
-                String[] stringSections = commentString.split(":");
+                String[] stringSections = commentString.split(":", 4);
                 int level = Integer.parseInt(stringSections[1]);
                 String variableName = stringSections[2];
                 String expression = stringSections[3];
@@ -212,6 +212,11 @@ public class TraceExplorerDataProvider extends TLCModelLaunchDataProvider
                                         "Variables are not in the same order in each state. This is unexpected.");
                             }
 
+                            // retrieve the object containing the data corresponding to the variable.
+                            // this object will be null if the variable currently being looked at does
+                            // not represent a trace explorer expression
+                            // If the variable does represent a trace explorer expression, then the following
+                            // object will contain the variable name, the expression, and the level of the expression
                             TraceExpressionInformationHolder traceExpressionData = (TraceExpressionInformationHolder) traceExpressionDataTable
                                     .get(variableName.trim());
 
@@ -236,6 +241,7 @@ public class TraceExplorerDataProvider extends TLCModelLaunchDataProvider
                             }
                         }
 
+                        // remove extra states
                         if (stateNum >= totalNumStates && isBackToStateOrStutteringTrace
                                 && !nextStateNewTrace.isBackToState() && !nextStateNewTrace.isStuttering())
                         {

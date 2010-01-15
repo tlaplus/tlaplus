@@ -408,7 +408,18 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
                 Object next = it.next();
                 if (next instanceof TLAMarkerInformationHolder)
                 {
-                    errorMessage.append(((TLAMarkerInformationHolder) next).getMessage() + "\n");
+
+                    TLAMarkerInformationHolder errorInfo = (TLAMarkerInformationHolder) next;
+                    if (errorInfo.getModuleName().equals(ModelHelper.TE_MODEL_NAME))
+                    {
+                        // TODO remove references to TE file
+                        errorMessage.append(errorInfo.getMessage() + "\n");
+                    } else
+                    {
+                        // the error is outside of the TE file, simply append it to the buffer
+                        errorMessage.append(errorInfo.getMessage() + "\n");
+                    }
+
                 } else
                 {
                     TLCActivator
@@ -451,12 +462,42 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
 
         /*
          * Set the level for each trace expression using the corresponding OpDefNode
+         * 
+         * We use the following object to collect level three expressions in order to display
+         * these in a message to the user.
          */
+        Vector levelThreeExpressions = new Vector();
         for (int i = 0; i < traceExpressionData.length; i++)
         {
             OpDefNode opDefNode = (OpDefNode) nodeTable.get(traceExpressionData[i].getIdentifier());
-            traceExpressionData[i].setLevel(opDefNode.getBody().getLevel());
-            // TODO check for temporal formulas (level 3)
+            int level = opDefNode.getBody().getLevel();
+            traceExpressionData[i].setLevel(level);
+
+            if (level == 3)
+            {
+                levelThreeExpressions.add(traceExpressionData[i]);
+            }
+        }
+
+        // check if there are level three expressions
+        // display them to the user if found and return false
+        // the launch should not proceed
+        if (!levelThreeExpressions.isEmpty())
+        {
+            StringBuffer errorBuffer = new StringBuffer();
+            errorBuffer
+                    .append("The trace explorer cannot evaluate temporal formulas. The following expressions are temporal formulas:\n\n");
+            Iterator it = levelThreeExpressions.iterator();
+            while (it.hasNext())
+            {
+                TraceExpressionInformationHolder expressionInfo = (TraceExpressionInformationHolder) it.next();
+                errorBuffer.append(expressionInfo.getExpression() + "\n\n");
+            }
+
+            MessageDialog.openError(UIHelper.getShellProvider().getShell(), "Temporal formulas found", errorBuffer
+                    .toString());
+
+            return false;
         }
 
         /*************************************************************************************

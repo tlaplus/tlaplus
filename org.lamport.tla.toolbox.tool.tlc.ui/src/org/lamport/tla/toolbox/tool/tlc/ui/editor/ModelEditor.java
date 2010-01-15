@@ -576,6 +576,11 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
 
     }
 
+    /**
+     * Returns a working copy of the launch configuration for this model.
+     * 
+     * @return
+     */
     public ILaunchConfigurationWorkingCopy getConfig()
     {
         return configurationCopy;

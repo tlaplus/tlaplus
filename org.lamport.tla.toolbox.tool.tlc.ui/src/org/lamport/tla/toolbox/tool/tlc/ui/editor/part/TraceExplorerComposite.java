@@ -36,6 +36,7 @@ import org.lamport.tla.toolbox.tool.tlc.output.data.TLCState;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCVariable;
 import org.lamport.tla.toolbox.tool.tlc.output.source.TLCOutputSourceRegistry;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.provider.FormulaContentProvider;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
 import org.lamport.tla.toolbox.tool.tlc.ui.view.TLCErrorView;
@@ -595,7 +596,36 @@ public class TraceExplorerComposite
         {
             if (view.getCurrentConfigFileHandle() != null)
             {
-                ILaunchConfigurationWorkingCopy configCopy = view.getCurrentConfigFileHandle().getWorkingCopy();
+                /*
+                 * Retrieve a working copy of the launch configuration whose errors
+                 * are currently loaded in the error view.
+                 * 
+                 * If a model editor is open on the launch configuration, then the model
+                 * editor already has a working copy open for the launch configuration. We
+                 * don't want to open a second working copy because they could become out of
+                 * synch. In that case if working copy A were saved and then working copy B were saved,
+                 * the contents of working copy A that were saved originally would be overwritten by working
+                 * copy B.
+                 * 
+                 * We can get the working copy from the model editor by calling the getConfig() method
+                 * of ModelEditor. If there is not a model editor open on the launch configuration, then
+                 * there should be no other working copies open on the the launch configuration returned
+                 * by view.getCurrentConfigFileHandle() so a working copy can safely be used.
+                 */
+                ModelEditor modelEditor = ((ModelEditor) ModelHelper.getEditorWithModelOpened(view
+                        .getCurrentConfigFileHandle()));
+
+                ILaunchConfigurationWorkingCopy configCopy = null;
+
+                if (modelEditor != null)
+                {
+                    configCopy = modelEditor.getConfig();
+                } else
+                {
+                    // there is no editor open on the model
+                    // obtain the working copy from the handle stored by the view
+                    configCopy = view.getCurrentConfigFileHandle().getWorkingCopy();
+                }
 
                 configCopy.setAttribute(IModelConfigurationConstants.TRACE_EXPLORE_EXPRESSIONS, FormHelper
                         .getSerializedInput(tableViewer));
