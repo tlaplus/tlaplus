@@ -242,9 +242,9 @@ public class TLCErrorView extends ViewPart
                 {
                     if (isTraceExplorerData)
                     {
-                        // add a message to the buffer to indicate that the error
+                        // add a message to the beginning of the buffer to indicate that the error
                         // is from running the trace explorer
-                        buffer.append("Error(s) from running Trace Explorer: \n\n");
+                        buffer.insert(0, "Error(s) from running Trace Explorer: \n\n");
                     }
                     document.replace(0, document.getLength(), buffer.toString());
                 } catch (BadLocationException e)
