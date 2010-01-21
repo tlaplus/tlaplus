@@ -46,6 +46,7 @@ import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.ResultPage;
 import org.lamport.tla.toolbox.tool.tlc.ui.preference.ITLCPreferenceConstants;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.ModelEditorPartListener;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.SemanticHelper;
+import org.lamport.tla.toolbox.tool.tlc.ui.view.TLCErrorView;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper.IFileProvider;
 import org.lamport.tla.toolbox.util.ChangedSpecModulesGatheringDeltaVisitor;
@@ -311,7 +312,8 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
         if (TLCModelLaunchDataProvider.class.equals(required))
         {
             // return a provider, if this can be found
-            TLCModelLaunchDataProvider provider = TLCOutputSourceRegistry.getModelCheckSourceRegistry().getProvider(getConfig());
+            TLCModelLaunchDataProvider provider = TLCOutputSourceRegistry.getModelCheckSourceRegistry().getProvider(
+                    getConfig());
             if (provider != null)
             {
                 return provider;
@@ -545,6 +547,13 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
                     getConfig().doSave();
                 }
                 getConfig().launch(mode, new SubProgressMonitor(monitor, 1), true);
+
+                // clear the error view when launching
+                TLCErrorView errorView = (TLCErrorView) UIHelper.findView(TLCErrorView.ID);
+                if (errorView != null)
+                {
+                    errorView.clear();
+                }
             } catch (CoreException e)
             {
                 TLCUIActivator.logError("Error launching the configuration " + getConfig().getName(), e);

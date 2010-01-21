@@ -1,8 +1,11 @@
 package org.lamport.tla.toolbox.tool.tlc.output.data;
 
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.Assert;
@@ -14,9 +17,9 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.ui.editors.text.FileDocumentProvider;
 import org.eclipse.ui.part.FileEditorInput;
-import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.TraceExpressionInformationHolder;
 import org.lamport.tla.toolbox.tool.tlc.output.source.TLCOutputSourceRegistry;
+import org.lamport.tla.toolbox.tool.tlc.traceexplorer.TraceExplorerHelper;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelWriter;
@@ -99,7 +102,8 @@ public class TraceExplorerDataProvider extends TLCModelLaunchDataProvider
 
             // search for comments containing the information about trace explorer expressions
             String regularExpression = FindReplaceDocumentAdapter.escapeForRegExPattern("\\* ") + ":[0-2]:"
-                    + ModelWriter.TRACE_EXPR_VAR_SCHEME + "_[0-9]{17,}:.*\n";
+                    + ModelWriter.TRACE_EXPR_VAR_SCHEME + "_[0-9]{17,}:[\\s\\S]*?"
+                    + Pattern.quote(ModelWriter.CONSTANT_EXPRESSION_EVAL_IDENTIFIER) + "\n";
             IRegion region = teSearcher.find(0, regularExpression, true, true, false, true);
 
             while (region != null)
@@ -108,12 +112,15 @@ public class TraceExplorerDataProvider extends TLCModelLaunchDataProvider
                 // found a region
                 // first character should be the level of the expression
                 String commentString = teDocument.get(region.getOffset(), region.getLength());
-                // commentString should be of the form "\* :x:___trace_var_12321312312312:expr"
+                // commentString should be of the form "\* :x:___trace_var_12321312312312:expr"$!@$!@$!@$!@$!""
                 // where x is the level of the expression
                 String[] stringSections = commentString.split(":", 4);
                 int level = Integer.parseInt(stringSections[1]);
                 String variableName = stringSections[2];
-                String expression = stringSections[3];
+                // should be expr"$!@$!@$!@$!@$!" where "$!@$!@$!@$!@$!" is the delimiter
+                String expressionAndDelimiter = stringSections[3];
+                String expression = expressionAndDelimiter.substring(0, expressionAndDelimiter
+                        .indexOf(ModelWriter.CONSTANT_EXPRESSION_EVAL_IDENTIFIER));
 
                 TraceExpressionInformationHolder expressionData = new TraceExpressionInformationHolder(expression,
                         null, variableName);
@@ -134,179 +141,327 @@ public class TraceExplorerDataProvider extends TLCModelLaunchDataProvider
     }
 
     /**
-     * Performs processing for errors produces after a run of the trace explorer.
+     * Performs processing for the error trace produced after a run of the trace explorer.
      * 
-     * In particular, this changes the names of the variables corresponding to trace
-     * explorer expressions to the actual expressions. It also shifts the values of expressions
+     * In particular, this does the following to a trace:
+     * 
+     * 1.) Changes the names of the variables corresponding to trace
+     * explorer expressions to the actual expressions.
+     * 
+     * 2.) It also shifts the values of expressions
      * of level 2. For an expressions of level 2 (expression with primed variables), the value in
      * state x becomes the original value in state x+1. The value in the final state of such
      * expressions is equal to "--".
      * 
+     * 3.) Changes the state labels "<Action ... in module TE> State (num = 3)" to the state labels
+     * of the original trace. The goal is to have no reference to module TE.
      * 
+     * 4.) Puts the variables representing the trace explorer expressions before the actual
+     * variables in each state.
+     * 
+     * 5.) Removes any extra states produced by the trace explorer. This can sometimes occur when
+     * evaluating expressions for a looping ("Back to state") trace and for a stuttering trace. This can
+     * be illustrated by an example. Consider the following trace:
+
+
+
+    <Initial predicate> <State num 1>
+    x=0
+
+    <Action ...> <State num 2>
+    x=1
+
+    <Back to state 1>
+
+
+
+
+    The user wants to evaluate the following expression:
+
+    x' >= x
+
+    The toolbox uses the following as init and next:
+
+    Init ==
+     /\ x=0
+     /\ __trace_var_213123 = "--"
+
+    Next ==
+     \/ /\ x=0
+        /\ x'=1
+        /\ __trace_var_213123' = (x'>=x)
+     \/ /\ x=1
+        /\ x'=0
+        /\ __trace_var_213123' = (x'>=x)
+
+    We check the following property:
+
+    prop_23432 ==
+    ~([]<>(x=1)/\[]<>(x=0))
+
+    This produces the following trace:
+
+
+
+    <Initial predicate> <State num 1>
+    x=0
+    __trace_var_213123 = "--"
+
+    <Action ...> <State num 2>
+    x=1
+    __trace_var_213123 = TRUE
+
+    <Action ...> <State num 3>
+    x=0
+    __trace_var_213123 = FALSE
+
+    <Back to state 2>
+
+
+
+    Note the additional state with x=0 and __trace_var_213123 = FALSE. We shift the values for
+    expressions with primed variables up by one state, so this extra state is necessary for
+    producing the value for the expression "x' >= x" in the second state of the trace (In non-looping
+    traces, there is no value for the expression in the final state, so we simply assign it
+    the value "--".) The processing by this method eliminates this extra state but uses the value for
+    __trace_var_213123, so that the following trace can be displayed to the user:
+
+
+
+    <Initial predicate> <State num 1>
+    x=0
+    (x' >= x)    =     TRUE
+
+    <Action ...> <State num 2>
+    x=1
+    (x' >= x)    =    FALSE
+
+    <Back to state 1>
+
      */
     private void processTraceForTraceExplorer()
     {
-        List originalTrace = getOriginalTrace();
+        // retrieve the original trace
+        // this is necessary for items (3) and (5) from the list in the
+        // documentation for this method
+        List originalTrace = TraceExplorerHelper.getOriginalTrace(getConfig());
         Assert.isNotNull(originalTrace, "Could not get original trace after running trace explorer. This is a bug.");
-        try
+
+        // iterate through the errors to find one with a trace
+        Iterator it = getErrors().iterator();
+        while (it.hasNext())
         {
-            Iterator it = getErrors().iterator();
-            while (it.hasNext())
+            TLCError error = (TLCError) it.next();
+
+            if (error.hasTrace())
             {
-                TLCError error = (TLCError) it.next();
+                // a comparator used for sorting the variables within each
+                // state so that the variables representing the trace explorer
+                // expressions appear first in each state
+                Comparator varComparator = new Comparator() {
 
-                if (error.hasTrace())
+                    public int compare(Object arg0, Object arg1)
+                    {
+                        TLCVariable var0 = (TLCVariable) arg0;
+                        TLCVariable var1 = (TLCVariable) arg1;
+                        if ((var0.isTraceExplorerVar() && var1.isTraceExplorerVar())
+                                || (!var0.isTraceExplorerVar() && !var1.isTraceExplorerVar()))
+                        {
+                            // both represent TE expressions or neither does
+                            // use string comparison to make sure
+                            // that the variables appear in the same order
+                            // in every state
+                            return var0.getName().compareTo(var1.getName());
+                        } else if (var0.isTraceExplorerVar())
+                        {
+                            // var0 should appear before
+                            return -1;
+                        } else
+                        {
+                            // var1 represents TE expression, so it should appear before
+                            return 1;
+                        }
+                    }
+                };
+
+                // found an error with a trace
+
+                // this is the trace produced by the run
+                // of TLC for the trace explorer
+                List newTrace = error.getStates();
+
+                Iterator newTraceIt = newTrace.iterator();
+                Iterator originalTraceIt = originalTrace.iterator();
+
+                TLCState currentStateNewTrace = (TLCState) newTraceIt.next();
+                TLCState nextStateNewTrace = null;
+
+                TLCState currentStateOriginalTrace = (TLCState) originalTraceIt.next();
+
+                /*
+                 * The following while loop performs items 1-4 for some of the states.
+                 * In particular, if the original trace has n states and the trace produced
+                 * by the trace explorer has m states, this loop performs
+                 * items 1-4 for states 1 through min(n-1, m-1). The trace produced by the
+                 * trace explorer can be shorter than the original trace if there is a TLC error
+                 * during evaluation of one of the states. The trace produced by the trace explorer
+                 * can be longer than the original trace as in the example of item 5.
+                 * 
+                 * The final state of the trace produced by the trace explorer is processed
+                 * after this loop. Item 5 is also accomplished after this loop.
+                 */
+                while (newTraceIt.hasNext() && originalTraceIt.hasNext())
                 {
-                    List newTrace = error.getStates();
 
-                    Iterator newTraceIt = newTrace.iterator();
-                    Iterator originalTraceIt = originalTrace.iterator();
+                    // change the label of the state of newTrace to the label of the state
+                    // of the original trace
+                    currentStateNewTrace.setLabel(currentStateOriginalTrace.getLabel());
 
-                    TLCState currentStateNewTrace = (TLCState) newTraceIt.next();
-                    TLCState nextStateNewTrace = null;
+                    // need to get the next state in order to perform any
+                    // shifting of expression values (item 2 in the documentation)
+                    nextStateNewTrace = (TLCState) newTraceIt.next();
 
-                    TLCState currentStateOriginalTrace = (TLCState) originalTraceIt.next();
+                    TLCVariable[] currentStateNewTraceVariables = currentStateNewTrace.getVariables();
+                    TLCVariable[] nextStateNewTraceVariables = nextStateNewTrace.getVariables();
 
-                    /*
-                     * The following values are used in a bit of a hack to deal with 
-                     * back to state traces.
-                     * 
-                     * isBackToStateOrStutteringTrace: flag indicating if the trace is a back to
-                     * state trace or a stuttering trace
-                     * 
-                     * totalNumStates: total number of states in the trace NOT including
-                     * the state labeled "Back to state x". This number is meaningless
-                     * if the trace is not a back to state trace.
-                     * 
-                     * stateNum: counter giving the state number of currentState within the
-                     * following while loop
-                     * 
-                     * The hack is necessary for the following reason. 
-                     */
-                    boolean isBackToStateOrStutteringTrace = getConfig().getAttribute(
-                            IModelConfigurationConstants.IS_TRACE_BACK_TO_STATE, false)
-                            || getConfig().getAttribute(IModelConfigurationConstants.IS_TRACE_STUTTERING, false);
-                    int totalNumStates = getConfig().getAttribute(IModelConfigurationConstants.TRACE_NUM_STATES,
-                            newTrace.size());
-                    int stateNum = 0;
-
-                    while (newTraceIt.hasNext())
+                    // iterate through the variables
+                    for (int i = 0; i < currentStateNewTraceVariables.length; i++)
                     {
-                        stateNum++;
-
-                        nextStateNewTrace = (TLCState) newTraceIt.next();
-
-                        TLCVariable[] currentStateNewTraceVariables = currentStateNewTrace.getVariables();
-                        TLCVariable[] nextStateNewTraceVariables = nextStateNewTrace.getVariables();
-
-                        // iterate through the variables
-                        for (int i = 0; i < currentStateNewTraceVariables.length; i++)
+                        // This code assumes that the variables are in the same order in each state
+                        String variableName = currentStateNewTraceVariables[i].getName();
+                        // if next state is back to state or stuttering, it has no variables, so the code
+                        // contained within the if block would cause an NPE
+                        if (!nextStateNewTrace.isBackToState() && !nextStateNewTrace.isStuttering())
                         {
-                            // This code assumes that the variables are in the same order in each state
-                            String variableName = currentStateNewTraceVariables[i].getName();
-                            // if next state is back to state or stuttering, it has no variables, so the code
-                            // contained within the if block would cause an NPE
-                            if (!nextStateNewTrace.isBackToState() && !nextStateNewTrace.isStuttering())
-                            {
-                                Assert.isTrue(variableName.equals(nextStateNewTraceVariables[i].getName()),
-                                        "Variables are not in the same order in each state. This is unexpected.");
-                            }
-
-                            // retrieve the object containing the data corresponding to the variable.
-                            // this object will be null if the variable currently being looked at does
-                            // not represent a trace explorer expression
-                            // If the variable does represent a trace explorer expression, then the following
-                            // object will contain the variable name, the expression, and the level of the expression
-                            TraceExpressionInformationHolder traceExpressionData = (TraceExpressionInformationHolder) traceExpressionDataTable
-                                    .get(variableName.trim());
-
-                            if (traceExpressionData != null)
-                            {
-                                // we have located a trace expression variable
-
-                                // if next state is back to state or stuttering, it has no variables, so the
-                                // code contained within this if block would not apply
-                                if (!nextStateNewTrace.isBackToState() && !nextStateNewTrace.isStuttering()
-                                        && traceExpressionData.getLevel() == 2)
-                                {
-                                    // found expression with primed variables
-                                    // shift the value from the next state to the current state
-                                    currentStateNewTraceVariables[i].setValue(nextStateNewTraceVariables[i].getValue());
-
-                                }
-
-                                // set the name to be the expression the variable represents
-                                currentStateNewTraceVariables[i].setName(traceExpressionData.getExpression());
-
-                            }
+                            Assert.isTrue(variableName.equals(nextStateNewTraceVariables[i].getName()),
+                                    "Variables are not in the same order in each state. This is unexpected.");
                         }
 
-                        // remove extra states
-                        if (stateNum >= totalNumStates && isBackToStateOrStutteringTrace
-                                && !nextStateNewTrace.isBackToState() && !nextStateNewTrace.isStuttering())
-                        {
-                            newTraceIt.remove();
-                        }
+                        // retrieve the object containing the data corresponding to the variable.
+                        // this object will be null if the variable currently being looked at does
+                        // not represent a trace explorer expression
+                        // If the variable does represent a trace explorer expression, then the following
+                        // object will contain the variable name, the expression, and the level of the expression
+                        TraceExpressionInformationHolder traceExpressionData = (TraceExpressionInformationHolder) traceExpressionDataTable
+                                .get(variableName.trim());
 
-                        currentStateNewTrace = nextStateNewTrace;
+                        if (traceExpressionData != null)
+                        {
+                            // we have located a trace expression variable
+
+                            // If next state is back to state or stuttering, it has no variables, so the
+                            // code contained within this if block would not apply. It should be unnecessary
+                            // to check for this because the while loop should terminate before this happens.
+                            if (!nextStateNewTrace.isBackToState() && !nextStateNewTrace.isStuttering()
+                                    && traceExpressionData.getLevel() == 2)
+                            {
+                                // found expression with primed variables
+                                // shift the value from the next state to the current state
+                                currentStateNewTraceVariables[i].setValue(nextStateNewTraceVariables[i].getValue());
+
+                            }
+
+                            // set the name to be the expression the variable represents
+                            currentStateNewTraceVariables[i].setName(traceExpressionData.getExpression());
+
+                            // flag this as a variable representing a trace explorer expression
+                            currentStateNewTraceVariables[i].setTraceExplorerVar(true);
+
+                        }
                     }
 
-                    // fix the final state
-                    if (!currentStateNewTrace.isStuttering() && !currentStateNewTrace.isBackToState())
-                    {
-                        TLCVariable[] currentStateVariables = currentStateNewTrace.getVariables();
+                    // sort the variables so that the variables representing trace explorer
+                    // expressions appear first
+                    Arrays.sort(currentStateNewTraceVariables, varComparator);
 
-                        // iterate through the variables
-                        for (int i = 0; i < currentStateVariables.length; i++)
-                        {
+                    currentStateNewTrace = nextStateNewTrace;
 
-                            TraceExpressionInformationHolder traceExpressionData = (TraceExpressionInformationHolder) traceExpressionDataTable
-                                    .get(currentStateVariables[i].getName().trim());
-
-                            if (traceExpressionData != null)
-                            {
-                                // we have located a trace expression variable
-
-                                if (traceExpressionData.getLevel() == 2)
-                                {
-                                    // expression with primed variables
-                                    // shift the value from the next state to the current state
-                                    currentStateVariables[i].setValue(TLCVariableValue.parseValue("\"--\""));
-                                }
-
-                                // set the name to be the expression the variable represents
-                                currentStateVariables[i].setName(traceExpressionData.getExpression());
-                            }
-                        }
-                    }
+                    currentStateOriginalTrace = (TLCState) originalTraceIt.next();
                 }
+
+                /*
+                 * Remove any extra states (item 5).
+                 * 
+                 * This is only necessary for looping or stuttering traces
+                 * (n elements in original trace, m elements in new trace)-
+                 *       if (m >= n) remove states n..m
+                 *       else do nothing
+                 *       
+                 * if (m >= n), the new trace will be left with n-1 elements.
+                 * Later code adds the final stuttering or "back to state" state
+                 * to these traces.
+                 */
+                if (currentStateOriginalTrace.isBackToState() || currentStateOriginalTrace.isStuttering()
+                        && newTrace.size() >= originalTrace.size())
+                {
+                    newTrace.subList(originalTrace.size() - 1, newTrace.size()).clear();
+                }
+
+                // fix the final state
+                TLCState finalStateOriginalTrace = (TLCState) originalTrace.get(originalTrace.size() - 1);
+
+                if (newTrace.size() < originalTrace.size() - 1
+                        || (!finalStateOriginalTrace.isStuttering() && !finalStateOriginalTrace.isBackToState()))
+                {
+                    /*
+                     *  For a non-looping and non-stuttering state, just set the expressions
+                     *  with primed variables equal to "--" for the last state.
+                     *  
+                     *  Do the same thing if the new trace is less than the original trace size minus 1.
+                     *  This means there was a TLC error before evaluating all of the states, so
+                     *  even if the original trace finished with a looping state or a stuttering state, the
+                     *  trace that is displayed to the user should not. It should terminate before the TLC error
+                     *  occurred.
+                     */
+                    TLCVariable[] finalStateNewTraceVariables = ((TLCState) newTrace.get(newTrace.size() - 1))
+                            .getVariables();
+
+                    // iterate through the variables
+                    for (int i = 0; i < finalStateNewTraceVariables.length; i++)
+                    {
+
+                        TraceExpressionInformationHolder traceExpressionData = (TraceExpressionInformationHolder) traceExpressionDataTable
+                                .get(finalStateNewTraceVariables[i].getName().trim());
+
+                        if (traceExpressionData != null)
+                        {
+                            // we have located a trace expression variable
+
+                            if (traceExpressionData.getLevel() == 2)
+                            {
+                                // expression with primed variables
+                                // shift the value from the next state to the current state
+                                finalStateNewTraceVariables[i].setValue(TLCVariableValue.parseValue("\"--\""));
+                            }
+
+                            // set the name to be the expression the variable represents
+                            finalStateNewTraceVariables[i].setName(traceExpressionData.getExpression());
+                            // flag this as a variable representing a trace explorer expression
+                            finalStateNewTraceVariables[i].setTraceExplorerVar(true);
+                        }
+                    }
+
+                    // sort the variables of the final state
+                    Arrays.sort(finalStateNewTraceVariables, varComparator);
+                } else if (finalStateOriginalTrace.isBackToState())
+                {
+                    error.addState(TLCState.BACK_TO_STATE(finalStateOriginalTrace.getStateNumber()));
+                } else
+                {
+                    // stuttering trace
+                    error.addState(TLCState.STUTTERING_STATE(finalStateOriginalTrace.getStateNumber()));
+                }
+
             }
-        } catch (CoreException e)
-        {
-            TLCUIActivator.logError("Error processing trace after running trace explorer.", e);
         }
     }
 
-    private List getOriginalTrace()
+    /**
+     * No-op. This overrides the method in {@link TLCModelLaunchDataProvider} to
+     * do nothing because traces from this provider should not be registered.
+     */
+    protected void registerTraceForTraceExplorer()
     {
-        TLCModelLaunchDataProvider originalTraceProvider = TLCOutputSourceRegistry.getModelCheckSourceRegistry()
-                .getProvider(getConfig());
-        List errors = originalTraceProvider.getErrors();
-        if (errors != null)
-        {
-            Iterator it = errors.iterator();
-            while (it.hasNext())
-            {
-                TLCError error = (TLCError) it.next();
-                if (error.hasTrace())
-                {
-                    return error.getStates();
-                }
-            }
-        }
-
-        // no trace found
-        return null;
     }
 
 }

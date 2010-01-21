@@ -1,17 +1,13 @@
 package org.lamport.tla.toolbox.tool.tlc.ui;
 
-import java.util.List;
-import java.util.Vector;
-
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunch;
-import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.TraceExplorerDelegate;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCModelLaunchDataProvider;
 import org.lamport.tla.toolbox.tool.tlc.output.source.TLCOutputSourceRegistry;
 import org.lamport.tla.toolbox.tool.tlc.result.IResultPresenter;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor;
 import org.lamport.tla.toolbox.tool.tlc.ui.view.TLCErrorView;
+import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 /**
@@ -35,27 +31,22 @@ public class ResultPresenter implements IResultPresenter
          * from the run of TLC for trace exploration. For model checking, open
          * the editor for that model, show the result page, and update the
          * data on the result page.
-         * 
-         * TODO Check if the model on which the trace explorer was run is still
-         * the active model. It is possible that the user has switched models
-         * in the short amount of time it takes to run the trace explorer.
          */
         if (launch.getLaunchMode().equals(TraceExplorerDelegate.MODE_TRACE_EXPLORE))
         {
-            TLCModelLaunchDataProvider traceExplorerDataProvider = TLCOutputSourceRegistry
-                    .getTraceExploreSourceRegistry().getProvider(launch.getLaunchConfiguration());
-            try
+            ModelEditor editor = (ModelEditor) ModelHelper.getEditorWithModelOpened(launch.getLaunchConfiguration());
+            if (editor != null && editor.getActivePage() != -1)
             {
-                List expressions = launch.getLaunchConfiguration().getAttribute(
-                        IModelConfigurationConstants.TRACE_EXPLORE_EXPRESSIONS, new Vector());
-                int x = 2;
-            } catch (CoreException e)
-            {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
+                // If an editor is open and active on the model, update the error view.
+                // Although the trace explorer only takes a few seconds to run,
+                // the user could still switch to another model.
+                // If so, this code should not be run.
+                TLCModelLaunchDataProvider traceExplorerDataProvider = TLCOutputSourceRegistry
+                        .getTraceExploreSourceRegistry().getProvider(launch.getLaunchConfiguration());
 
-            TLCErrorView.updateErrorView(traceExplorerDataProvider, true);
+                TLCErrorView.updateErrorView(traceExplorerDataProvider, true);
+
+            }
         } else
         {
             ModelEditor editor = (ModelEditor) UIHelper.openEditor(ModelEditor.ID, launch.getLaunchConfiguration()

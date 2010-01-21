@@ -25,7 +25,7 @@ public class TLCState implements IModuleLocatable
     /**
      * A factory for stuttering states
      */
-    public static TLCState STUTTERING_STATE(int number)
+    protected static TLCState STUTTERING_STATE(int number)
     {
         TLCState state = new TLCState(number);
         state.stuttering = true;
@@ -37,7 +37,7 @@ public class TLCState implements IModuleLocatable
      * @param number2
      * @return
      */
-    private static TLCState BACK_TO_STATE(int number)
+    protected static TLCState BACK_TO_STATE(int number)
     {
         TLCState state = new TLCState(number);
         state.isBackToState = true;

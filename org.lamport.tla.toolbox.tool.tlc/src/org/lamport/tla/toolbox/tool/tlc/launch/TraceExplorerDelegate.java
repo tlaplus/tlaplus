@@ -32,6 +32,8 @@ import org.lamport.tla.toolbox.tool.tlc.TLCActivator;
 import org.lamport.tla.toolbox.tool.tlc.job.TLCJob;
 import org.lamport.tla.toolbox.tool.tlc.job.TLCProcessJob;
 import org.lamport.tla.toolbox.tool.tlc.model.TypedSet;
+import org.lamport.tla.toolbox.tool.tlc.traceexplorer.SimpleTLCState;
+import org.lamport.tla.toolbox.tool.tlc.traceexplorer.TLCErrorTraceRegistry;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelWriter;
 import org.lamport.tla.toolbox.util.ResourceHelper;
@@ -85,6 +87,9 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
     private IFile tlaFile;
     private IFile cfgFile;
     private IFile outFile;
+    private List trace;
+    private String initId;
+    private String nextId;
 
     /**
      * Writes data to TE.tla so that SANY can be run on that module in the next
@@ -149,28 +154,76 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
     The following is the TE.tla file produced by this method:
 
     ---- MODULE TE ----
-    EXTENDS TETest2, TLC
+    EXTENDS TETest1, TLC
 
     \* TRACE EXPLORER variable declaration @traceExploreExpressions
-    VARIABLES __trace_var_12627816375173000,__trace_var_12627816375435000
+    VARIABLES __trace_var_12640790850643000,__trace_var_12640790850845000
     ----
 
     \* TRACE EXPLORER identifier definition @traceExploreExpressions
-    trace_def_12627816375072000 == x + y
-    trace_def_12627816375334000 == x' > y
+    trace_def_12640790850542000 ==
+    x + y
+    ----
+
+    \* TRACE EXPLORER identifier definition @traceExploreExpressions
+    trace_def_12640790850744000 ==
+    x' > y
     ----
 
     \* TRACE INIT definitiontraceExploreInit
-    init_12627816375536000 == /\  x=0/\  y=0
+    init_12640790850946000 ==
+    x = (
+    0
+    )/\
+    y = (
+    0
+    )
     ----
 
     \* TRACE NEXT definitiontraceExploreNext
-    next_12627816375637000 == \/(/\  x=0/\  y=0/\  x'=1/\  y'=0)
-    \/(/\  x=1/\  y=0/\  x'=2/\  y'=1)
-    \/(/\  x=2/\  y=1/\  x'=3/\  y'=3)
+    next_12640790851047000 ==
+    ( x = (
+    0
+    )/\
+    y = (
+    0
+    )/\
+    x' = (
+    1
+    )/\
+    y' = (
+    0
+    ))
+    \/
+    ( x = (
+    1
+    )/\
+    y = (
+    0
+    )/\
+    x' = (
+    2
+    )/\
+    y' = (
+    1
+    ))
+    \/
+    ( x = (
+    2
+    )/\
+    y = (
+    1
+    )/\
+    x' = (
+    3
+    )/\
+    y' = (
+    3
+    ))
     ----
 
     ====
+
 
     
      * As explained before, the init and next identifiers are defined only for parsing
@@ -326,6 +379,10 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
         monitor.worked(STEP);
         monitor.subTask("Creating contents");
 
+        // retrieve the trace produced by running the model checker on the
+        // config
+        trace = TLCErrorTraceRegistry.getErrorTraceRegistry().getTrace(config);
+
         ModelWriter writer = new ModelWriter();
 
         // add extend primer
@@ -348,7 +405,7 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
          * of each expression. This is done in finalLaunchCheck() using the ParseResult
          * object returned by SANY.
          */
-        traceExpressionData = writer.addTraceExploreVariablesPreParse(ModelHelper.deserializeFormulaList(config
+        traceExpressionData = writer.createAndAddTEVariablesAndDefinitions(ModelHelper.deserializeFormulaList(config
                 .getAttribute(IModelConfigurationConstants.TRACE_EXPLORE_EXPRESSIONS, new Vector())),
                 TRACE_EXPLORE_EXPRESSIONS);
 
@@ -356,8 +413,13 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
 
         // add the initial state predicate and next state action without
         // the trace exploration expressions in order to determine if they parse
-        writer.addTraceStateDefsPreParse(config.getAttribute(IModelConfigurationConstants.TRACE_INIT, EMPTY_STRING),
-                config.getAttribute(IModelConfigurationConstants.TRACE_NEXT, new Vector()));
+        // initNext[0] is the identifier for init, initNext[1] is the identifier for next
+        String[] initNext = writer.addInitNextForTE(trace, null);
+        if (initNext != null)
+        {
+            initId = initNext[0];
+            nextId = initNext[1];
+        }
 
         monitor.worked(STEP);
         monitor.subTask("Writing contents");
@@ -506,12 +568,22 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
          *                                                                                   *
          * 1.) Name of module and EXTENDS specRootModule, TLC                                *
          * 2.) Variable declaration for each trace exploration expression                    *
-         * 3.) Definition of each trace exploration expression                               *
-         * 4.) values of constants                                                           *
-         * 5.) additional model values                                                       *
-         * 6.) additional definitions                                                        *
-         * 7.) definition overrides                                                          *
-         * 8.) Init and Next including trace explorer variables                              *
+         * 3.) values of constants                                                           *
+         * 4.) additional model values                                                       *
+         * 5.) additional definitions                                                        *
+         * 6.) definition overrides                                                          *
+         * 7.) Init and Next including trace explorer variables                              *
+         * 8.) Temporal property or invariant                                                *
+         *                                                                                   *
+         * For a trace that loops ("Back to state i"), the property is ~([]<>P /\ []<>Q),    *
+         * where P is the formula describing the final state before the "Back to state i"    *
+         * and Q the formula describing the state i to which the trace loops back.           *
+         *                                                                                   *
+         * For a stuttering trace, the property is ~<>[](P) where P is the formula           *
+         * describing the final state that stutters.                                         *
+         *                                                                                   *
+         * For all other states the invariant is ~(P) where P is the formula describing      *
+         * finalState.                                                                       *
          *************************************************************************************/
         ModelHelper.createOrClearFiles(new IFile[] { tlaFile, cfgFile, outFile }, monitor);
 
@@ -526,31 +598,31 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
         // add extend primer
         writer.addPrimer(ModelHelper.TE_MODEL_NAME, ResourceHelper.getModuleName(specRootFilename));
 
-        // variables and definitions for trace explorer expressions
-        writer.addTraceExprVarDecsAndDefsPostParse(traceExpressionData, TRACE_EXPLORE_EXPRESSIONS);
+        // variables declarations for trace explorer expressions
+        writer.addTEVariablesAndDefinitions(traceExpressionData, TRACE_EXPLORE_EXPRESSIONS, false);
 
+        // write constants, model values, new definitions, definition overrides
         writeModelInfo(configuration, writer);
 
-        writer.addFormulaList(ModelWriter.createTraceInitContent(configuration.getAttribute(TRACE_INIT, EMPTY_STRING),
-                traceExpressionData), "INIT", "traceExploreInit");
-        writer.addFormulaList(ModelWriter.createTraceNextContent(configuration.getAttribute(TRACE_NEXT, new Vector()),
-                traceExpressionData), "NEXT", "traceExploreNext");
+        // add init and next
+        writer.addInitNextForTE(trace, traceExpressionData, initId, nextId);
 
-        boolean isBackToState = configuration.getAttribute(IS_TRACE_BACK_TO_STATE, false);
-        boolean isStuttering = configuration.getAttribute(IS_TRACE_STUTTERING, false);
+        SimpleTLCState finalState = (SimpleTLCState) trace.get(trace.size() - 1);
+        boolean isBackToState = finalState.isBackToState();
+        boolean isStuttering = finalState.isStuttering();
 
-        String finalStateConj = configuration.getAttribute(TRACE_FINAL_STATE, EMPTY_STRING);
-
+        // add temporal property or invariant depending on type of trace
+        // read the method comments to see the form of the invariant or property
         if (isStuttering)
         {
-            writer.addStutteringPropertyForTraceExplorer(finalStateConj);
+            writer.addStutteringPropertyForTraceExplorer((SimpleTLCState) trace.get(trace.size() - 2));
         } else if (isBackToState)
         {
-            writer.addBackToStatePropertyForTraceExplorer(finalStateConj, configuration.getAttribute(
-                    TRACE_BACK_TO_STATE, EMPTY_STRING));
+            writer.addBackToStatePropertyForTraceExplorer((SimpleTLCState) trace.get(trace.size() - 2),
+                    (SimpleTLCState) trace.get(finalState.getStateNumber() - 1));
         } else
         {
-            writer.addInvariantForTraceExplorer(finalStateConj);
+            writer.addInvariantForTraceExplorer(finalState);
         }
 
         writer.writeFiles(tlaFile, cfgFile, monitor);

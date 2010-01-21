@@ -1,7 +1,6 @@
 package org.lamport.tla.toolbox.tool.tlc.ui.view;
 
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Vector;
@@ -11,7 +10,7 @@ import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
-import org.eclipse.jface.action.Action;
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IDocument;
@@ -19,6 +18,7 @@ import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITableColorProvider;
+import org.eclipse.jface.viewers.ITableFontProvider;
 import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.LabelProvider;
@@ -31,6 +31,7 @@ import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.ControlAdapter;
 import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -39,7 +40,6 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.ScrollBar;
 import org.eclipse.swt.widgets.Scrollable;
-import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.ui.forms.widgets.Form;
@@ -59,8 +59,8 @@ import org.lamport.tla.toolbox.tool.tlc.output.data.TLCSimpleVariableValue;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCState;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCVariable;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCVariableValue;
+import org.lamport.tla.toolbox.tool.tlc.traceexplorer.TraceExplorerComposite;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
-import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.TraceExplorerComposite;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.ActionClickListener;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.TLCUIHelper;
@@ -84,15 +84,6 @@ public class TLCErrorView extends ViewPart
     public static final String ID = "toolbox.tool.tlc.view.TLCErrorView";
 
     private static final String TOOLTIP = "Click on a row to see in viewer, double-click to go to action in spec.";
-
-    /*
-     * These are used for writing init and next
-     * for trace exploration.
-     */
-    private static final String TLA_AND = "/\\ ";
-    private static final String TLA_OR = "\\/ ";
-    private static final String EQ = "=";
-    private static final String PRIME = "'";
 
     /**
      * This is the pattern of an error message resulting from evaluating the constant
@@ -132,6 +123,7 @@ public class TLCErrorView extends ViewPart
         errorViewer.setDocument(EMPTY_DOCUMENT());
         variableViewer.setInput(EMPTY_LIST());
         traceExplorerComposite.getTableViewer().setInput(new Vector());
+        traceExplorerComposite.changeExploreEnablement(false);
     }
 
     /**
@@ -261,6 +253,7 @@ public class TLCErrorView extends ViewPart
             if (isNewTrace)
             {
                 this.variableViewer.setInput(states);
+                traceExplorerComposite.changeExploreEnablement(true);
             }
             if (states != null && !states.isEmpty())
             {
@@ -273,7 +266,7 @@ public class TLCErrorView extends ViewPart
         {
             clear();
         }
-        // TODO Check if a run of the trace explorer produced no errors. This is a bug.
+        // TODO Check if a run of the trace explorer produced no errors. This would be a bug.
     }
 
     /**
@@ -820,7 +813,8 @@ public class TLCErrorView extends ViewPart
      * implement ITableColorProvider instead of IColorProvider. This allows
      * coloring of individual columns, not just of entire rows.
      */
-    static class StateLabelProvider extends LabelProvider implements ITableLabelProvider, ITableColorProvider // IColorProvider
+    static class StateLabelProvider extends LabelProvider implements ITableLabelProvider, ITableColorProvider,
+            ITableFontProvider // IColorProvider
     {
         public static final int NAME = 0;
         public static final int VALUE = 1;
@@ -1033,6 +1027,19 @@ public class TLCErrorView extends ViewPart
             recordImage.dispose();
             setImage.dispose();
             super.dispose();
+        }
+
+        public Font getFont(Object element, int columnIndex)
+        {
+            if (element instanceof TLCVariable)
+            {
+                TLCVariable variable = (TLCVariable) element;
+                if (variable.isTraceExplorerVar())
+                {
+                    return JFaceResources.getFontRegistry().getBold("");
+                }
+            }
+            return null;
         }
 
     }
@@ -1406,205 +1413,6 @@ public class TLCErrorView extends ViewPart
         setElementArrayDiffInfo(firstElts, firstLHStrings, secondElts, secondLHStrings, changed, added, deleted);
     }
 
-    private void setUpTraceExplorerSection(Composite parent, FormToolkit toolkit)
-    {
-        GridData gd;
-
-        Section section = FormHelper.createSectionComposite(parent, "Trace Explorer",
-                "Enter expressions to be evaluated at each state of the trace.", toolkit);
-
-        Composite sectionArea = (Composite) section.getClient();
-
-        sectionArea.setLayout(new GridLayout(2, false));
-
-        // create the table to contain the expressions
-        Table table = toolkit.createTable(sectionArea, SWT.MULTI | SWT.CHECK | SWT.V_SCROLL | SWT.H_SCROLL
-                | SWT.FULL_SELECTION);
-        table.setLinesVisible(false);
-        table.setHeaderVisible(false);
-
-        gd = new GridData(GridData.FILL_BOTH);
-        gd.grabExcessHorizontalSpace = true;
-        gd.grabExcessVerticalSpace = true;
-        // span for the buttons
-        gd.verticalSpan = 3;
-        table.setLayoutData(gd);
-    }
-
-    private class ExploreAction extends Action
-    {
-
-        ExploreAction()
-        {
-            super("Explore", TLCUIActivator.imageDescriptorFromPlugin(TLCUIActivator.PLUGIN_ID,
-                    "icons/full/lrun_obj.gif"));
-            this.setDescription("Explores the trace.");
-            this.setToolTipText("Explores the trace.");
-        }
-
-        public void run()
-        {
-            // // get the launch manager
-            // ILaunchManager launchManager = DebugPlugin.getDefault().getLaunchManager();
-            //
-            // // get the launch type (model check)
-            // ILaunchConfigurationType launchConfigurationType = launchManager
-            // .getLaunchConfigurationType(TLCModelLaunchDelegate.LAUNCH_CONFIGURATION_TYPE);
-            //
-            // // create new launch instance
-            // try
-            // {
-            // String modelName = "traceTest";
-            // String configName = ToolboxHandle.getCurrentSpec().getName() + "___" + modelName;
-            // ILaunchConfiguration[] configs = launchManager.getLaunchConfigurations(launchConfigurationType);
-            // ILaunchConfiguration config = null;
-            // for (int i = 0; i < configs.length; i++)
-            // {
-            // if (configs[i].getName().equals(configName))
-            // {
-            // config = configs[i];
-            // }
-            // }
-            // if (config == null)
-            // {
-            // // retrieve the model folder
-            // IProject project = ToolboxHandle.getCurrentSpec().getProject();
-            // IFolder modelFolder = project.getFolder(modelName);
-            // if (!modelFolder.exists())
-            // {
-            // return;
-            // }
-            // IFolder traceFolder = modelFolder.getFolder(modelName);
-            // if (!traceFolder.exists())
-            // {
-            // traceFolder.create(IResource.DERIVED | IResource.FORCE, true, new NullProgressMonitor());
-            // }
-            // ILaunchConfigurationWorkingCopy launchCopy = launchConfigurationType.newInstance(project,
-            // configName);
-            // launchCopy.setAttribute(IConfigurationConstants.MODEL_NAME, modelName);
-            // launchCopy
-            // .setAttribute(IConfigurationConstants.SPEC_NAME, ToolboxHandle.getCurrentSpec().getName());
-            // config = launchCopy.doSave();
-            // }
-            // config.launch(TLCModelLaunchDelegate.MODE_MODELCHECK, new NullProgressMonitor(), true);
-            // } catch (CoreException e)
-            // {
-            // // TODO Auto-generated catch block
-            // e.printStackTrace();
-            // }
-            explore();
-
-        }
-
-        public boolean isEnabled()
-        {
-            return true;
-        }
-
-    }
-
-    private void explore()
-    {
-        // // ILaunchConfiguration config = ModelHelper.getTraceExploreConfigByName(modelName);
-        // ILaunchConfiguration modelConfig = ModelHelper.getModelByName(modelName);
-        // try
-        // {
-        // ILaunchConfigurationWorkingCopy configCopy = modelConfig.getWorkingCopy();
-        // configCopy.setAttribute(IModelConfigurationConstants.TRACE_EXPLORE_INIT, getInitFromTrace());
-        // configCopy.setAttribute(IModelConfigurationConstants.TRACE_EXPLORE_NEXT, getNextFromTrace());
-        //
-        // // configCopy.doSave().launch(TLCModelLaunchDelegate.MODE_TRACE_EXPLORE, new NullProgressMonitor(), true);
-        // } catch (CoreException e)
-        // {
-        // // TODO Auto-generated catch block
-        // e.printStackTrace();
-        // }
-
-    }
-
-    private String getInitFromTrace()
-    {
-        List trace = (List) variableViewer.getInput();
-        Object firstElement = (TLCState) trace.get(0);
-        StringBuffer initPredicate = new StringBuffer();
-        if (firstElement instanceof TLCState)
-        {
-            TLCState initState = (TLCState) firstElement;
-            if (initState.getLabel().contains("<Initial predicate>"))
-            {
-                TLCVariable[] variables = initState.getVariables();
-                for (int i = 0; i < variables.length; i++)
-                {
-                    TLCVariable var = variables[i];
-                    initPredicate.append(TLA_AND).append(var.getName()).append(EQ).append(
-                            var.getValue().toSimpleString()).append("\n");
-                }
-            } else
-            {
-                TLCUIActivator.logDebug("The first element of the trace is not the initial predicate. This is a bug.");
-            }
-        }
-        return initPredicate.toString();
-    }
-
-    private String getNextFromTrace()
-    {
-        StringBuffer nextPredicate = new StringBuffer();
-
-        List trace = (List) variableViewer.getInput();
-        Iterator it = trace.iterator();
-        TLCState currentState = null;
-        TLCState nextState = null;
-        if (it.hasNext())
-        {
-            Object first = it.next();
-            Assert
-                    .isTrue(first instanceof TLCState,
-                            "The first element of the trace is not a TLCState. This is a bug.");
-            currentState = (TLCState) first;
-        } else
-        {
-            return "";
-        }
-        while (it.hasNext())
-        {
-            Object next = it.next();
-            Assert.isTrue(next instanceof TLCState, "An element of the trace is not a TLCState. It is an instance of "
-                    + next.getClass().getCanonicalName() + ". This is a bug.");
-            nextState = (TLCState) next;
-            // must take into account stuttering states
-            // and back to state states
-            // need to test to see if this behaves properly
-            if (nextState.isBackToState() || nextState.isStuttering())
-            {
-                break;
-            }
-            nextPredicate.append(TLA_OR);
-            TLCVariable[] currentStateVariables = currentState.getVariables();
-            TLCVariable[] nextStateVariables = nextState.getVariables();
-            Assert.isTrue(currentStateVariables.length == nextStateVariables.length,
-                    "The number of variables in one state is not the same as in another state of the trace.");
-
-            for (int i = 0; i < currentStateVariables.length; i++)
-            {
-                TLCVariable var = currentStateVariables[i];
-                nextPredicate.append(TLA_AND).append(var.getName()).append(EQ).append(var.getValue().toSimpleString())
-                        .append("\n");
-            }
-
-            for (int i = 0; i < nextStateVariables.length; i++)
-            {
-                TLCVariable var = nextStateVariables[i];
-                nextPredicate.append(TLA_AND).append(var.getName()).append(PRIME).append(EQ).append(
-                        var.getValue().toSimpleString()).append("\n");
-            }
-
-            currentState = nextState;
-        }
-
-        return nextPredicate.toString();
-    }
-
     public List getTrace()
     {
         return (List) variableViewer.getInput();
@@ -1620,4 +1428,5 @@ public class TLCErrorView extends ViewPart
     {
         return configFileHandle;
     }
+
 }

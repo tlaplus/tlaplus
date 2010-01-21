@@ -84,52 +84,16 @@ public interface IModelConfigurationConstants extends IConfigurationConstants
      * Conjunction of variable values in the initial state of a trace
      * Should only include spec variables, not trace expression variables.
      */
-    public static final String TRACE_EXPLORE_INIT_STATE_CONJ = "traceExploreInit";
+    public static final String TRACE_EXPLORE_INIT = "traceExploreInit";
     /**
      * Disjunction of actions used for trace exploration without the trace
      * expression variables.
      */
-    public static final String TRACE_EXPLORE_TRACE_ACTION_DISJ = "traceExploreNext";
+    public static final String TRACE_EXPLORE_NEXT = "traceExploreNext";
     /**
      * expressions to be evaluated at each state of the trace
      * when the trace explorer is run
      */
     public static final String TRACE_EXPLORE_EXPRESSIONS = "traceExploreExpressions";
-    /**
-     * Trace states without trace exploration variables.
-     * Should be a list of strings. Each string a conjunction
-     * of variable values.
-     */
-    public static final String TRACE_EXPLORE_STATES = "traceExploreStates";
-    /**
-     * conjunction giving the initial state of the trace
-     */
-    public static final String TRACE_INIT = "traceInit";
-    /**
-     * List of conjunctions, each giving the state transitions
-     */
-    public static final String TRACE_NEXT = "traceNext";
-    /**
-     * Boolean indicating if the trace ends with a stuttering state
-     */
-    public static final String IS_TRACE_STUTTERING = "isTraceStuttering";
-    /**
-     * Boolean indicating if the trace ends with back to state
-     */
-    public static final String IS_TRACE_BACK_TO_STATE = "isTraceBackToState";
-    /**
-     * Conjunction giving the state to which the trace returns
-     * if it is a "back to state" trace.
-     */
-    public static final String TRACE_BACK_TO_STATE = "traceBackToState";
-    /**
-     * Conjunction giving the last state of the trace.
-     */
-    public static final String TRACE_FINAL_STATE = "traceFinalState";
-    /**
-     * integer giving the number of states in the original trace
-     * 
-     * Note that this number does not count a "Back to State" as a state.
-     */
-    public static final String TRACE_NUM_STATES = "traceNumStates";
+    
 }
