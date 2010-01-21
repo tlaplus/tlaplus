@@ -4,8 +4,6 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IHandler;
-import org.eclipse.swt.custom.BusyIndicator;
-import org.eclipse.ui.IViewPart;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 /**
@@ -18,7 +16,8 @@ public class HelpHandler extends AbstractHandler implements IHandler
 
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
-        // This may take a while, so use the busy indicator
+        UIHelper.showDynamicHelp();
+        /*// This may take a while, so use the busy indicator
         BusyIndicator.showWhile(null, new Runnable() {
             public void run()
             {
@@ -34,7 +33,7 @@ public class HelpHandler extends AbstractHandler implements IHandler
                     UIHelper.getActiveWindow().getActivePage().activate(helpView);
                 }
             }
-        });
+        });*/
         return null;
     }
 

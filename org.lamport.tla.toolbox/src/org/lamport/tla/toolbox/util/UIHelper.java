@@ -20,6 +20,7 @@ import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.window.IShellProvider;
+import org.eclipse.swt.custom.BusyIndicator;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Control;
@@ -564,6 +565,26 @@ public class UIHelper
         }
 
         return null;
+    }
+
+    public static void showDynamicHelp()
+    {
+        // This may take a while, so use the busy indicator
+        BusyIndicator.showWhile(null, new Runnable() {
+            public void run()
+            {
+                getActiveWindow().getWorkbench().getHelpSystem().displayDynamicHelp();
+                // the following ensure that the help view receives focus
+                // prior to adding this, it would not receive focus if
+                // it was opened into a folder or was already
+                // open in a folder in which another part had focus
+                IViewPart helpView = findView("org.eclipse.help.ui.HelpView");
+                if (helpView != null && getActiveWindow() != null && getActiveWindow().getActivePage() != null)
+                {
+                    getActiveWindow().getActivePage().activate(helpView);
+                }
+            }
+        });
     }
 
 }

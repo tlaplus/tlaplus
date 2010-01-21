@@ -10,6 +10,8 @@ import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.Document;
@@ -95,6 +97,11 @@ public class TLCErrorView extends ViewPart
     private static final IDocument EMPTY_DOCUMENT()
     {
         return new Document("No error information");
+    }
+
+    private static final IDocument NO_VALUE_DOCUMENT()
+    {
+        return new Document("Select line in Error Trace to show its value here.");
     }
 
     private static final List EMPTY_LIST()
@@ -463,7 +470,7 @@ public class TLCErrorView extends ViewPart
                     valueViewer.setDocument(new Document(selection.toString()));
                 } else
                 {
-                    valueViewer.setDocument(EMPTY_DOCUMENT());
+                    valueViewer.setDocument(NO_VALUE_DOCUMENT());
                 }
 
             }
@@ -483,6 +490,9 @@ public class TLCErrorView extends ViewPart
          */
         int[] weights = { 1, 4 };
         outerSashForm.setWeights(weights);
+
+        form.getToolBarManager().add(new HelpAction());
+        form.getToolBarManager().update(true);
 
         // init
         clear();
@@ -1431,6 +1441,21 @@ public class TLCErrorView extends ViewPart
     public ILaunchConfiguration getCurrentConfigFileHandle()
     {
         return configFileHandle;
+    }
+
+    private class HelpAction extends Action
+    {
+        public HelpAction()
+        {
+            super("Help", JFaceResources.getImageRegistry().getDescriptor(Dialog.DLG_IMG_HELP));
+            this.setDescription("Opens help");
+            this.setToolTipText("Opens help for the TLC Error View.");
+        }
+
+        public void run()
+        {
+            UIHelper.showDynamicHelp();
+        }
     }
 
 }
