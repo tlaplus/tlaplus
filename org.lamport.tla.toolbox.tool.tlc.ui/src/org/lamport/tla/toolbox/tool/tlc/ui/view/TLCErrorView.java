@@ -192,9 +192,7 @@ public class TLCErrorView extends ViewPart
                 } else if (error.getErrorCode() != EC.TLC_INVARIANT_VIOLATED_BEHAVIOR
                         && error.getErrorCode() != EC.TLC_TEMPORAL_PROPERTY_VIOLATED)
                 {
-                    // add a message to the buffer to indicate that the error
-                    // is from running the trace explorer
-                    buffer.append("Error from running Trace Explorer: \n\n");
+
                     appendError(buffer, error);
                 }
 
@@ -237,11 +235,17 @@ public class TLCErrorView extends ViewPart
              *  If the buffer is empty from running the trace explorer,
              *  then the previous message should remain.
              */
-            if (!isTraceExplorerData || !(buffer.length() == 0))
+            if (!isTraceExplorerData || buffer.length() > 0)
             {
                 IDocument document = errorViewer.getDocument();
                 try
                 {
+                    if (isTraceExplorerData)
+                    {
+                        // add a message to the buffer to indicate that the error
+                        // is from running the trace explorer
+                        buffer.append("Error(s) from running Trace Explorer: \n\n");
+                    }
                     document.replace(0, document.getLength(), buffer.toString());
                 } catch (BadLocationException e)
                 {
