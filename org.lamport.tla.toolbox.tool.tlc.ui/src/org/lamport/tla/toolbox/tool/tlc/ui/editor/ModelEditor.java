@@ -548,11 +548,14 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
                 }
                 getConfig().launch(mode, new SubProgressMonitor(monitor, 1), true);
 
-                // clear the error view when launching
-                TLCErrorView errorView = (TLCErrorView) UIHelper.findView(TLCErrorView.ID);
-                if (errorView != null)
+                // clear the error view when launching the model checker but not when validating
+                if (mode.equals(TLCModelLaunchDelegate.MODE_MODELCHECK))
                 {
-                    errorView.clear();
+                    TLCErrorView errorView = (TLCErrorView) UIHelper.findView(TLCErrorView.ID);
+                    if (errorView != null)
+                    {
+                        errorView.clear();
+                    }
                 }
             } catch (CoreException e)
             {
