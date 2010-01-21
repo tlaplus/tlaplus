@@ -6,6 +6,7 @@ import java.util.Vector;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
@@ -353,6 +354,43 @@ public class TraceExplorerComposite
     private void doExplore()
     {
 
+        /*
+         * Check for validation errors.
+         * 
+         * If there is a validation error in the model, switch to a page
+         * with an error, display a message to the user indicating that
+         * the trace explorer cannot be run with a validation error, and
+         * do not run the trace explorer.
+         * 
+         * If a model editor is not open on this model, then it is not
+         * currently possible to check for validation errors, so the
+         * trace explorer cannot be run.
+         */
+        ModelEditor modelEditor = ((ModelEditor) ModelHelper
+                .getEditorWithModelOpened(view.getCurrentConfigFileHandle()));
+        if (modelEditor == null)
+        {
+            // the model editor must be open to run the trace explorer
+            // in order to detect validation errors
+            // the model editor is null, so show a message to the user
+            // and do not run the trace explorer
+            MessageDialog
+                    .openError(
+                            view.getSite().getShell(),
+                            "Trace exploration not allowed",
+                            "There is no model editor open on this model. The trace explorer cannot be run without opening the model editor on this model.");
+
+            return;
+        } else if (!modelEditor.isComplete())
+        {
+            // validation error
+            MessageDialog.openError(view.getSite().getShell(), "Trace exploration not allowed",
+                    "The model contains errors, which should be corrected before running the trace explorer.");
+
+            // do not run trace explorer
+            return;
+        }
+
         try
         {
             // save the launch configuration
@@ -379,41 +417,6 @@ public class TraceExplorerComposite
                 // set the model to have the trace with trace explorer expression shown
                 ModelHelper.setOriginalTraceShown(modelConfig, false);
 
-                /*
-                 * The following will be used if I determine that it is necessary
-                 * to have a seperate launch configuration file for the trace explorer.
-                 * This may be necessary depending on the code that determines how output
-                 * from TLC is displayed.
-                 * 
-                 * The following code copies the data from the model launch configuration
-                 * to a trace explorer launch configuration file.
-                 * 
-                 * If this code is used, it should be moved above the preceeding else statement.
-                 */
-
-                // ILaunchManager launchManager = DebugPlugin.getDefault().getLaunchManager();
-                // ILaunchConfigurationType configType = launchManager
-                // .getLaunchConfigurationType(TraceExplorerDelegate.LAUNCH_CONFIGURATION_TYPE);
-                //
-                // String traceConfigName = modelConfig.getName() + "__TE";
-                //
-                // // check if it has been created
-                // ILaunchConfiguration[] configs;
-                //
-                // configs = launchManager.getLaunchConfigurations(configType);
-                // for (int i = 0; i < configs.length; i++)
-                // {
-                // if (configs[i].getName().equals(traceConfigName))
-                // {
-                // configs[i].delete();
-                // }
-                // }
-                //
-                // workingCopy.doSave();
-                //
-                // ILaunchConfigurationWorkingCopy traceConfigCopy = modelConfig.copy(traceConfigName);
-                //
-                // traceConfigCopy.doSave().launch(TraceExplorerDelegate.MODE_TRACE_EXPLORE, null, true);
             }
 
         } catch (CoreException e)
