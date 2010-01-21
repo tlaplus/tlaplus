@@ -464,7 +464,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
      * @param tlcOutputDocument the document containing the error description
      * @return the TLC Error representing the error
      */
-    private TLCError createError(TLCRegion tlcRegion, IDocument tlcOutputDocument)
+    protected TLCError createError(TLCRegion tlcRegion, IDocument tlcOutputDocument)
     {
         // the root of the error trace
         TLCError topError = new TLCError();

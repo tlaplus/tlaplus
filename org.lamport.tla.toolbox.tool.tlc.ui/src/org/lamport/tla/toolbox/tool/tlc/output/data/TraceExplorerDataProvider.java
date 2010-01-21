@@ -15,10 +15,13 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.FindReplaceDocumentAdapter;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
+import org.eclipse.jface.text.ITypedRegion;
 import org.eclipse.ui.editors.text.FileDocumentProvider;
 import org.eclipse.ui.part.FileEditorInput;
 import org.lamport.tla.toolbox.tool.tlc.launch.TraceExpressionInformationHolder;
 import org.lamport.tla.toolbox.tool.tlc.output.source.TLCOutputSourceRegistry;
+import org.lamport.tla.toolbox.tool.tlc.output.source.TLCRegion;
+import org.lamport.tla.toolbox.tool.tlc.output.source.TLCRegionContainer;
 import org.lamport.tla.toolbox.tool.tlc.traceexplorer.TraceExplorerHelper;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
@@ -462,6 +465,50 @@ public class TraceExplorerDataProvider extends TLCModelLaunchDataProvider
      */
     protected void registerTraceForTraceExplorer()
     {
+    }
+
+    /**
+     * Creates an error without any replacement of text from the error message reported by TLC.
+     */
+    protected TLCError createError(TLCRegion tlcRegion, IDocument tlcOutputDocument)
+    {
+        // the root of the error trace
+        TLCError topError = new TLCError();
+
+        if (tlcRegion instanceof TLCRegionContainer)
+        {
+            TLCRegionContainer container = (TLCRegionContainer) tlcRegion;
+            // read out the subordinated regions
+            ITypedRegion[] regions = container.getSubRegions();
+
+            // currently, there can be at most three regions
+            Assert.isTrue(regions.length < 3, "Unexpected error region structure, this is a bug.");
+
+            // iterate over regions
+            for (int i = 0; i < regions.length; i++)
+            {
+                // the region itself is a TLC region, detect the child error
+                if (regions[i] instanceof TLCRegion)
+                {
+                    TLCError cause = createError((TLCRegion) regions[i], tlcOutputDocument);
+                    topError.setCause(cause);
+                } else
+                {
+                    try
+                    {
+                        // set error text
+                        topError.setMessage(tlcOutputDocument.get(tlcRegion.getOffset(), tlcRegion.getLength()));
+                        // set error code
+                        topError.setErrorCode(tlcRegion.getMessageCode());
+                    } catch (BadLocationException e)
+                    {
+                        TLCUIActivator.logError("Error parsing the error message", e);
+                    }
+                }
+            }
+        }
+        return topError;
+
     }
 
 }
