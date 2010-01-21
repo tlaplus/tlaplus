@@ -472,15 +472,7 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
                 {
 
                     TLAMarkerInformationHolder errorInfo = (TLAMarkerInformationHolder) next;
-                    if (errorInfo.getModuleName().equals(ModelHelper.TE_MODEL_NAME))
-                    {
-                        // TODO remove references to TE file
-                        errorMessage.append(errorInfo.getMessage() + "\n");
-                    } else
-                    {
-                        // the error is outside of the TE file, simply append it to the buffer
-                        errorMessage.append(errorInfo.getMessage() + "\n");
-                    }
+                    errorMessage.append(errorInfo.getMessage() + "\n");
 
                 } else
                 {
