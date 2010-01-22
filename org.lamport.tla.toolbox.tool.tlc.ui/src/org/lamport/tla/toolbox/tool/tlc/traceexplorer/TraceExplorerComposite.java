@@ -7,8 +7,10 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.DoubleClickEvent;
+import org.eclipse.jface.viewers.ICheckStateListener;
 import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -202,6 +204,15 @@ public class TraceExplorerComposite
             public void doubleClick(DoubleClickEvent event)
             {
                 doEdit();
+            }
+        });
+
+        // save the input when an element is checked or unchecked
+        tableViewer.addCheckStateListener(new ICheckStateListener() {
+
+            public void checkStateChanged(CheckStateChangedEvent event)
+            {
+                saveInput();
             }
         });
 
