@@ -128,9 +128,10 @@ public class TLCErrorView extends ViewPart
     public void clear()
     {
         errorViewer.setDocument(EMPTY_DOCUMENT());
-        variableViewer.setInput(EMPTY_LIST());
+        setTraceInput(EMPTY_LIST());
         traceExplorerComposite.getTableViewer().setInput(new Vector());
         traceExplorerComposite.changeExploreEnablement(false);
+        valueViewer.setInput(EMPTY_DOCUMENT());
     }
 
     /**
@@ -263,7 +264,7 @@ public class TLCErrorView extends ViewPart
             // update the trace information
             if (isNewTrace)
             {
-                this.variableViewer.setInput(states);
+                this.setTraceInput(states);
                 traceExplorerComposite.changeExploreEnablement(true);
             }
             if (states != null && !states.isEmpty())
@@ -1461,6 +1462,25 @@ public class TLCErrorView extends ViewPart
         public void run()
         {
             UIHelper.showDynamicHelp();
+        }
+    }
+
+    /**
+     * Sets the input of the trace viewer to states
+     * and sets the value viewer to "Select line in Error Trace to show its value here."
+     * if the list of states is not empty.
+     * 
+     * @param states
+     */
+    private void setTraceInput(List states)
+    {
+        variableViewer.setInput(states);
+        if (!states.isEmpty())
+        {
+            valueViewer.setDocument(NO_VALUE_DOCUMENT());
+        } else
+        {
+            valueViewer.setDocument(EMPTY_DOCUMENT());
         }
     }
 
