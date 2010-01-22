@@ -429,7 +429,14 @@ public class TLCErrorView extends ViewPart
                     // in the value viewer
                     // (the lower sub-window).
                     Object selection = ((IStructuredSelection) event.getSelection()).getFirstElement();
-                    valueViewer.setDocument(new Document(selection.toString()));
+                    if (selection instanceof TLCState)
+                    {
+                        TLCState state = (TLCState) selection;
+                        valueViewer.setDocument(new Document(state.getDescriptionWithTraceExpressions()));
+                    } else
+                    {
+                        valueViewer.setDocument(new Document(selection.toString()));
+                    }
                 } else
                 {
                     valueViewer.setDocument(NO_VALUE_DOCUMENT());

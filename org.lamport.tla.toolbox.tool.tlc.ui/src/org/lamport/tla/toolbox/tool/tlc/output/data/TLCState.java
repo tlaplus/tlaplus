@@ -174,7 +174,7 @@ public class TLCState implements IModuleLocatable
     {
         return label;
     }
-    
+
     public void setLabel(String label)
     {
         this.label = label;
@@ -204,7 +204,7 @@ public class TLCState implements IModuleLocatable
     {
         return location;
     }
-    
+
     /**
      * Returns a string describing the state with the
      * variables representing trace explorer expressions
@@ -214,6 +214,44 @@ public class TLCState implements IModuleLocatable
      */
     public String getDescriptionWithTraceExpressions()
     {
-        return null;
+        /*
+         * The returns a conjunction list of variables.
+         * 
+         * For variables representing trace explorer expressions,
+         * the returned string has:
+         * 
+         * /\ expr = value
+         * 
+         *  where expr is the single line form of the trace explorer expression
+         *  as shown in the Name column of the trace viewer.
+         *  
+         *  For all other variables, this method attempts to display them as TLC
+         *  does.
+         */
+        StringBuffer result = new StringBuffer();
+        for (int i = 0; i < variables.length; i++)
+        {
+            TLCVariable var = variables[i];
+            result.append("/\\ ");
+            if (var.isTraceExplorerVar())
+            {
+                result.append(var.getSingleLineName());
+            } else
+            {
+                result.append(var.getName());
+            }
+
+            result.append(" = ");
+
+            if (var.getValue().toString() != null)
+            {
+                result.append(var.getValue().toString()).append("\n");
+            } else
+            {
+                result.append(var.getValue().toSimpleString());
+            }
+
+        }
+        return result.toString();
     }
 }
