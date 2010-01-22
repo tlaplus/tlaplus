@@ -132,7 +132,7 @@ public class AdapterFactory implements IAdapterFactory
         {
             switch (spec.getStatus()) {
             case IParseConstants.PARSED:
-                return SWT.COLOR_DARK_GREEN;
+                return SWT.COLOR_GREEN;
             case IParseConstants.COULD_NOT_FIND_MODULE:
             case IParseConstants.SEMANTIC_WARNING:
             case IParseConstants.SEMANTIC_ERROR:
