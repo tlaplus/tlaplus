@@ -899,7 +899,13 @@ public class TLCErrorView extends ViewPart
                 TLCVariable var = (TLCVariable) element;
                 switch (columnIndex) {
                 case NAME:
-                    return var.getName();
+                    if (var.isTraceExplorerVar())
+                    {
+                        return var.getSingleLineName();
+                    } else
+                    {
+                        return var.getName();
+                    }
                 case VALUE:
                     return var.getValue().toSimpleString();
                     // Changed from toString by LL on 30 Aug 2009

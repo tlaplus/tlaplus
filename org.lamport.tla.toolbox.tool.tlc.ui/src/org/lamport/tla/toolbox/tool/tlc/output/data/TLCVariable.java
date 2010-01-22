@@ -49,7 +49,19 @@ public class TLCVariable
     {
         return isTraceExplorerVar;
     }
-    
+
+    /**
+     * Returns the name this variable in a single line String.
+     * 
+     * The name could be multiple lines if this represents a trace explorer
+     * expression.
+     * 
+     * @return
+     */
+    public String getSingleLineName()
+    {
+        return name.replaceAll("\n", "").replaceAll("\r", "");    }
+
     /**
      * Sets the status of this variable as representing or not
      * representing a trace explorer expression. By default, it
