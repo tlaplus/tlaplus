@@ -37,8 +37,6 @@ import org.eclipse.ui.forms.widgets.Section;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationDefaults;
 import org.lamport.tla.toolbox.tool.tlc.launch.TLCModelLaunchDelegate;
-import org.lamport.tla.toolbox.tool.tlc.output.data.TLCModelLaunchDataProvider;
-import org.lamport.tla.toolbox.tool.tlc.output.source.TLCOutputSourceRegistry;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.ui.contribution.DynamicContributionItem;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.DataBindingManager;
@@ -127,11 +125,9 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
             // if it is a global TLC error, it will shift focus to the error view
             if (messages.length > 0 && messages[0].getMessage().equals(TLC_ERROR_STRING))
             {
-                TLCModelLaunchDataProvider dataProvider = TLCOutputSourceRegistry.getModelCheckSourceRegistry().getProvider(
-                        getConfig());
-                if (dataProvider != null)
+                if (getConfig() != null)
                 {
-                    TLCErrorView.updateErrorView(dataProvider, false);
+                    TLCErrorView.updateErrorView(getConfig());
                 }
             } else
             {

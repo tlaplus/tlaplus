@@ -204,4 +204,16 @@ public class TLCState implements IModuleLocatable
     {
         return location;
     }
+    
+    /**
+     * Returns a string describing the state with the
+     * variables representing trace explorer expressions
+     * replaced with the expressions.
+     * 
+     * @return
+     */
+    public String getDescriptionWithTraceExpressions()
+    {
+        return null;
+    }
 }

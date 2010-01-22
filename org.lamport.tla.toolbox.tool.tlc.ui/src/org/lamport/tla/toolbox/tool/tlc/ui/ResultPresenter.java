@@ -2,8 +2,6 @@ package org.lamport.tla.toolbox.tool.tlc.ui;
 
 import org.eclipse.debug.core.ILaunch;
 import org.lamport.tla.toolbox.tool.tlc.launch.TraceExplorerDelegate;
-import org.lamport.tla.toolbox.tool.tlc.output.data.TLCModelLaunchDataProvider;
-import org.lamport.tla.toolbox.tool.tlc.output.source.TLCOutputSourceRegistry;
 import org.lamport.tla.toolbox.tool.tlc.result.IResultPresenter;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor;
 import org.lamport.tla.toolbox.tool.tlc.ui.view.TLCErrorView;
@@ -41,10 +39,8 @@ public class ResultPresenter implements IResultPresenter
                 // Although the trace explorer only takes a few seconds to run,
                 // the user could still switch to another model.
                 // If so, this code should not be run.
-                TLCModelLaunchDataProvider traceExplorerDataProvider = TLCOutputSourceRegistry
-                        .getTraceExploreSourceRegistry().getProvider(launch.getLaunchConfiguration());
 
-                TLCErrorView.updateErrorView(traceExplorerDataProvider, true);
+                TLCErrorView.updateErrorView(launch.getLaunchConfiguration());
 
             }
         } else

@@ -128,7 +128,7 @@ public class ModelEditorPartListener implements IPartListener2
             {
                 if (provider.getErrors().size() > 0)
                 {
-                    TLCErrorView.updateErrorView(provider, false);
+                    TLCErrorView.updateErrorView(config);
                 } else
                 {
                     errorView.clear();

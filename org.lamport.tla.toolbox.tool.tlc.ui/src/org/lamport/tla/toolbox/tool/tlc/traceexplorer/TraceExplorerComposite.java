@@ -32,8 +32,6 @@ import org.eclipse.ui.forms.widgets.Section;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.TraceExplorerDelegate;
 import org.lamport.tla.toolbox.tool.tlc.model.Formula;
-import org.lamport.tla.toolbox.tool.tlc.output.data.TLCModelLaunchDataProvider;
-import org.lamport.tla.toolbox.tool.tlc.output.source.TLCOutputSourceRegistry;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.provider.FormulaContentProvider;
@@ -407,15 +405,6 @@ public class TraceExplorerComposite
             // save the launch configuration
             ILaunchConfiguration modelConfig = saveInput();
 
-            /*
-             * Restore the original trace.
-             * 
-             * This is so that if the new run of the trace explorer completes successfully,
-             * the error the originally produced the trace will appear in the error viewer
-             * at the top of the error view.
-             */
-            doRestore();
-
             ILaunchConfigurationWorkingCopy workingCopy = modelConfig.getWorkingCopy();
 
             List trace = view.getTrace();
@@ -441,18 +430,13 @@ public class TraceExplorerComposite
      */
     private void doRestore()
     {
-        // get the data provider for the original model checking
-        // run of TLC
-        TLCModelLaunchDataProvider originalTraceProvider = TLCOutputSourceRegistry.getModelCheckSourceRegistry()
-                .getProvider(view.getCurrentConfigFileHandle());
-
-        // update the error view with this provider
-        TLCErrorView.updateErrorView(originalTraceProvider, false);
-
-        // set the model to have the original trace shown
         try
         {
+            // set the model to have the original trace shown
             ModelHelper.setOriginalTraceShown(view.getCurrentConfigFileHandle(), true);
+
+            // update the error view with this provider
+            TLCErrorView.updateErrorView(view.getCurrentConfigFileHandle());
         } catch (CoreException e)
         {
             TLCUIActivator.logError("Error setting original trace shown flag.", e);

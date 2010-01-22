@@ -27,6 +27,8 @@ import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelWriter;
 
+import tlc2.output.EC;
+
 /**
  * A data provider for runs of the trace explorer. This mostly uses the methods from
  * {@link TLCModelLaunchDataProvider}, but it also performs some processing
@@ -44,6 +46,7 @@ public class TraceExplorerDataProvider extends TLCModelLaunchDataProvider
     // is an instance of TraceExpressionInformationHolder corresponding
     // to the expression.
     private Hashtable traceExpressionDataTable;
+    private static String TE_ERROR_HEADER = "Error(s) from running the Trace Explorer:\n";
 
     public TraceExplorerDataProvider(ILaunchConfiguration config)
     {
@@ -144,9 +147,12 @@ public class TraceExplorerDataProvider extends TLCModelLaunchDataProvider
     }
 
     /**
-     * Performs processing for the error trace produced after a run of the trace explorer.
+     * Performs processing for the error and the error trace produced after a run of the trace explorer.
+     * This method replaces the message of the error with a trace produced by the trace explorer with
+     * the message from the original error with a trace for which the trace explorer was run if that message
+     * should be shown to the user.
      * 
-     * In particular, this does the following to a trace:
+     * This method does the following to a trace:
      * 
      * 1.) Changes the names of the variables corresponding to trace
      * explorer expressions to the actual expressions.
@@ -244,10 +250,15 @@ public class TraceExplorerDataProvider extends TLCModelLaunchDataProvider
      */
     private void processTraceForTraceExplorer()
     {
+        // retrieve the error with a trace for which the trace explorer was run
+        TLCError originalErrorWithTrace = TraceExplorerHelper.getErrorOfOriginalTrace(getConfig());
+        Assert.isNotNull(originalErrorWithTrace,
+                "Could not get original trace after running trace explorer. This is a bug.");
+
         // retrieve the original trace
         // this is necessary for items (3) and (5) from the list in the
         // documentation for this method
-        List originalTrace = TraceExplorerHelper.getOriginalTrace(getConfig());
+        List originalTrace = originalErrorWithTrace.getStates();
         Assert.isNotNull(originalTrace, "Could not get original trace after running trace explorer. This is a bug.");
 
         // iterate through the errors to find one with a trace
@@ -258,6 +269,24 @@ public class TraceExplorerDataProvider extends TLCModelLaunchDataProvider
 
             if (error.hasTrace())
             {
+                // Set the message, cause, and code of the error to the message of the original
+                // error for which the trace explorer was run if the new error
+                // message is for an invariant or property violation or deadlock. An invariant
+                // or property violation or deadlock indicates that the trace explorer ran
+                // successfully.
+                int errorCode = error.getErrorCode();
+                if (errorCode == EC.TLC_DEADLOCK_REACHED || errorCode == EC.TLC_TEMPORAL_PROPERTY_VIOLATED
+                        || errorCode == EC.TLC_INVARIANT_VIOLATED_BEHAVIOR
+                        || errorCode == EC.TLC_INVARIANT_VIOLATED_INITIAL)
+                {
+                    error.setErrorCode(originalErrorWithTrace.getErrorCode());
+                    error.setMessage(originalErrorWithTrace.getMessage());
+                    error.setCause(originalErrorWithTrace.getCause());
+                } else
+                {
+                    error.setMessage(TE_ERROR_HEADER + error.getMessage());
+                }
+
                 // a comparator used for sorting the variables within each
                 // state so that the variables representing the trace explorer
                 // expressions appear first in each state
@@ -455,6 +484,11 @@ public class TraceExplorerDataProvider extends TLCModelLaunchDataProvider
                     error.addState(TLCState.STUTTERING_STATE(finalStateOriginalTrace.getStateNumber()));
                 }
 
+            } else
+            {
+                // error does not have trace
+                // indicate that it is an error from the trace explorer
+                error.setMessage(TE_ERROR_HEADER + error.getMessage());
             }
         }
     }

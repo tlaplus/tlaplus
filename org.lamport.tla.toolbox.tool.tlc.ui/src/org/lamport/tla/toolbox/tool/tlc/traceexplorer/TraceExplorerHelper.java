@@ -17,13 +17,13 @@ public class TraceExplorerHelper
 {
 
     /**
-     * Returns the trace most recently produced by running model checking
+     * Returns the error that has a trace most recently produced by running model checking
      * on the config or null if none found.
      * 
      * @param config
      * @return
      */
-    public static List getOriginalTrace(ILaunchConfiguration config)
+    public static TLCError getErrorOfOriginalTrace(ILaunchConfiguration config)
     {
         /*
          * The trace explorer should not be run for a model while TLC is being run for
@@ -41,7 +41,7 @@ public class TraceExplorerHelper
                 TLCError error = (TLCError) it.next();
                 if (error.hasTrace())
                 {
-                    return error.getStates();
+                    return error;
                 }
             }
         }

@@ -8,11 +8,10 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IHandler;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.ui.IEditorPart;
-import org.lamport.tla.toolbox.tool.tlc.output.source.TLCOutputSourceRegistry;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor;
 import org.lamport.tla.toolbox.tool.tlc.ui.view.TLCErrorView;
-import org.lamport.tla.toolbox.util.UIHelper;
 import org.lamport.tla.toolbox.ui.handler.OpenViewHandler;
+import org.lamport.tla.toolbox.util.UIHelper;
 
 public class OpenTLCErrorViewHandler extends AbstractHandler implements IHandler
 {
@@ -36,8 +35,7 @@ public class OpenTLCErrorViewHandler extends AbstractHandler implements IHandler
 
                         public void run()
                         {
-                            TLCErrorView.updateErrorView(TLCOutputSourceRegistry.getModelCheckSourceRegistry()
-                                    .getProvider(config), false);
+                            TLCErrorView.updateErrorView(config);
                         }
                     });
                 }

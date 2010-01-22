@@ -61,6 +61,7 @@ import org.lamport.tla.toolbox.tool.tlc.output.data.TLCSimpleVariableValue;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCState;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCVariable;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCVariableValue;
+import org.lamport.tla.toolbox.tool.tlc.output.source.TLCOutputSourceRegistry;
 import org.lamport.tla.toolbox.tool.tlc.traceexplorer.TraceExplorerComposite;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.ActionClickListener;
@@ -70,7 +71,6 @@ import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.util.IHelpConstants;
 import org.lamport.tla.toolbox.util.UIHelper;
 
-import tlc2.output.EC;
 import tlc2.output.MP;
 
 /**
@@ -143,9 +143,8 @@ public class TLCErrorView extends ViewPart
      *            name of the model displayed in the view title section
      * @param problems
      *            a list of {@link TLCError} objects representing the errors.
-     * @param isTraceExplorerData true if the new error data is from a run of the trace explorer
      */
-    protected void fill(String modelName, List problems, boolean isTraceExplorerData)
+    protected void fill(String modelName, List problems)
     {
 
         try
@@ -182,27 +181,7 @@ public class TLCErrorView extends ViewPart
             {
                 TLCError error = (TLCError) problems.get(i);
 
-                /*
-                 * Append error text to the buffer if the error
-                 * did not come from running the trace explorer. If the
-                 * error is from running the trace explorer, then only append the
-                 * error if it is not an invariant violation or a temporal property
-                 * violation. These violations occur so that TLC will print out the
-                 * error trace with the new trace explorer expressions. This implementation
-                 * of the trace explorer should be hidden from the user, so these violations
-                 * should not be displayed. However, other TLC errors that occur from running
-                 * the trace explorer, such as dividing by zero, should be displayed to the
-                 * user.
-                 */
-                if (!isTraceExplorerData)
-                {
-                    appendError(buffer, error);
-                } else if (error.getErrorCode() != EC.TLC_INVARIANT_VIOLATED_BEHAVIOR
-                        && error.getErrorCode() != EC.TLC_TEMPORAL_PROPERTY_VIOLATED)
-                {
-
-                    appendError(buffer, error);
-                }
+                appendError(buffer, error);
 
                 // read out the trace if any
                 if (error.hasTrace())
@@ -234,31 +213,13 @@ public class TLCErrorView extends ViewPart
                 setDiffInfo(states);
             }
 
-            /*
-             *  Update the error information in the TLC Error View.
-             *  
-             *  Always update if the new data is not from running
-             *  the trace explorer. If the data is from the trace
-             *  explorer then update only if the buffer is not empty.
-             *  If the buffer is empty from running the trace explorer,
-             *  then the previous message should remain.
-             */
-            if (!isTraceExplorerData || buffer.length() > 0)
+            IDocument document = errorViewer.getDocument();
+            try
             {
-                IDocument document = errorViewer.getDocument();
-                try
-                {
-                    if (isTraceExplorerData)
-                    {
-                        // add a message to the beginning of the buffer to indicate that the error
-                        // is from running the trace explorer
-                        buffer.insert(0, "Error(s) from running Trace Explorer: \n\n");
-                    }
-                    document.replace(0, document.getLength(), buffer.toString());
-                } catch (BadLocationException e)
-                {
-                    TLCUIActivator.logError("Error reporting the error " + buffer.toString(), e);
-                }
+                document.replace(0, document.getLength(), buffer.toString());
+            } catch (BadLocationException e)
+            {
+                TLCUIActivator.logError("Error reporting the error " + buffer.toString(), e);
             }
 
             // update the trace information
@@ -563,51 +524,74 @@ public class TLCErrorView extends ViewPart
 
     /**
      * Display the errors in the view, or hides the view if no errors
-     * @param isTraceExplorerUpdate true iff the provider has data from a run of the trace explorer
+     * Displays data from the most recent trace explorer run for config
+     * iff {@link ModelHelper#isOriginalTraceShown(ILaunchConfiguration)} is false.
+     * 
+     * @param config TODO
      * @param errors
      *            a list of {@link TLCError}
      */
-    public static void updateErrorView(TLCModelLaunchDataProvider provider, boolean isTraceExplorerUpdate)
+    public static void updateErrorView(ILaunchConfiguration config)
     {
 
-        if (provider == null)
+        try
         {
-            return;
-        }
-        TLCErrorView errorView;
-        if (provider.getErrors().size() > 0)
-        {
-            errorView = (TLCErrorView) UIHelper.openView(TLCErrorView.ID);
-        } else
-        {
-            errorView = (TLCErrorView) UIHelper.findView(TLCErrorView.ID);
-        }
-        if (errorView != null)
-        {
-            /*
-             * We need a handle on the actual underlying configuration file handle
-             * in order to retrieve the expressions that should be put in the trace
-             * explorer table. Working copies of the configuration file may not have
-             * all of the expressions that should appear. The filling of the trace
-             * explorer table occurs in the fill() method.
-             */
-            ILaunchConfiguration config = provider.getConfig();
-            if (config.isWorkingCopy())
+            if (config == null)
             {
-                errorView.configFileHandle = ((ILaunchConfigurationWorkingCopy) config).getOriginal();
+                return;
+            }
+            boolean isTraceExplorerUpdate;
+            isTraceExplorerUpdate = !ModelHelper.isOriginalTraceShown(config);
+
+            TLCModelLaunchDataProvider provider = null;
+            if (isTraceExplorerUpdate)
+            {
+                provider = TLCOutputSourceRegistry.getTraceExploreSourceRegistry().getProvider(config);
             } else
             {
-                errorView.configFileHandle = config;
+                provider = TLCOutputSourceRegistry.getModelCheckSourceRegistry().getProvider(config);
             }
 
-            // fill the name and the errors
-            errorView.fill(ModelHelper.getModelName(provider.getConfig().getFile()), provider.getErrors(),
-                    isTraceExplorerUpdate);
-
-            if (provider.getErrors().size() == 0)
+            if (provider == null)
             {
-                errorView.hide();
+                return;
             }
+            TLCErrorView errorView;
+            if (provider.getErrors().size() > 0)
+            {
+                errorView = (TLCErrorView) UIHelper.openView(TLCErrorView.ID);
+            } else
+            {
+                errorView = (TLCErrorView) UIHelper.findView(TLCErrorView.ID);
+            }
+            if (errorView != null)
+            {
+                /*
+                 * We need a handle on the actual underlying configuration file handle
+                 * in order to retrieve the expressions that should be put in the trace
+                 * explorer table. Working copies of the configuration file may not have
+                 * all of the expressions that should appear. The filling of the trace
+                 * explorer table occurs in the fill() method.
+                 */
+                if (config.isWorkingCopy())
+                {
+                    errorView.configFileHandle = ((ILaunchConfigurationWorkingCopy) config).getOriginal();
+                } else
+                {
+                    errorView.configFileHandle = config;
+                }
+
+                // fill the name and the errors
+                errorView.fill(ModelHelper.getModelName(provider.getConfig().getFile()), provider.getErrors());
+
+                if (provider.getErrors().size() == 0)
+                {
+                    errorView.hide();
+                }
+            }
+        } catch (CoreException e)
+        {
+            TLCUIActivator.logError("Error determining if trace explorer expressions should be shown", e);
         }
 
     }
