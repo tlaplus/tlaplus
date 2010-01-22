@@ -245,11 +245,13 @@ public class TLCState implements IModuleLocatable
 
             if (var.getValue().toString() != null)
             {
-                result.append(var.getValue().toString()).append("\n");
+                result.append(var.getValue().toString());
             } else
             {
                 result.append(var.getValue().toSimpleString());
             }
+            
+            result.append("\n");
 
         }
         return result.toString();
