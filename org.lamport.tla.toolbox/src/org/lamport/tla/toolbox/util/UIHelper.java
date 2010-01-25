@@ -1,6 +1,7 @@
 package org.lamport.tla.toolbox.util;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -13,6 +14,8 @@ import org.eclipse.core.commands.common.NotDefinedException;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ISelection;
@@ -20,6 +23,7 @@ import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.window.IShellProvider;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.BusyIndicator;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Button;
@@ -419,6 +423,82 @@ public class UIHelper
         }
 
         return new LinkedList();
+    }
+
+    /**
+     * If there are unsaved modules open, this prompts the user
+     * to save the modules with a Yes/No/Cancel dialog. If the user
+     * selects yes, this saves the modules before returning, other wise it does not.
+     * 
+     * @return false if a dialog is opened and the user selects cancel or the user closes
+     * the dialog without pressing Yes, No, or cancel, true otherwise
+     */
+    public static boolean promptUserForDirtyModules()
+    {
+        final List dirtyEditors = new LinkedList();
+        IEditorReference[] references = UIHelper.getActivePage().getEditorReferences();
+        if (references != null)
+        {
+            for (int i = 0; i < references.length; i++)
+            {
+                try
+                {
+                    if (references[i].isDirty() && references[i].getEditorInput().getName().endsWith(".tla"))
+                    {
+                        dirtyEditors.add(references[i]);
+                    }
+                } catch (PartInitException e)
+                {
+                    Activator.logError("Error getting unsaved resources.", e);
+                }
+            }
+        }
+
+        if (dirtyEditors.size() > 0)
+        {
+
+            MessageDialog dialog = new MessageDialog(getShell(), "Modified resources", null,
+                    "Some resources are modified.\nDo you want to save the modified resources?",
+                    MessageDialog.QUESTION_WITH_CANCEL, new String[] { IDialogConstants.YES_LABEL,
+                            IDialogConstants.NO_LABEL, IDialogConstants.CANCEL_LABEL }, 0);
+
+            // index 0: Yes
+            // index 1: No
+            // index 2: Cancel
+            int button = dialog.open();
+
+            if (button == 0)
+            {
+                // User selected Yes
+                runUISync(new Runnable() {
+
+                    public void run()
+                    {
+                        // save modified resources
+                        Iterator it = dirtyEditors.iterator();
+                        while (it.hasNext())
+                        {
+                            Object next = it.next();
+                            if (next instanceof IEditorReference)
+                            {
+                                IEditorReference reference = (IEditorReference) next;
+                                IEditorPart editor = reference.getEditor(false);
+                                if (editor != null)
+                                {
+                                    editor.doSave(new NullProgressMonitor());
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // SWT.DEFAULT indicates that the dialog was closed by means
+            // other than pressing Yes/No/Cancel
+            return button != 2 && button != SWT.DEFAULT;
+        }
+
+        return true;
     }
 
     /**

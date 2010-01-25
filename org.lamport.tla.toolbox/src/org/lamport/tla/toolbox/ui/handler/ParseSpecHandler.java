@@ -1,7 +1,5 @@
 package org.lamport.tla.toolbox.ui.handler;
 
-import java.util.List;
-
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -33,15 +31,34 @@ public class ParseSpecHandler extends AbstractHandler implements IHandler
      */
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
-        List references = UIHelper.checkOpenResources("Modified resources",
-                "Some resources are modified.\nDo you want to save the modified resources?");
-        for (int i = 0; i < references.size(); i++)
+        // List references = UIHelper.checkOpenResources("Modified resources",
+        // "Some resources are modified.\nDo you want to save the modified resources?");
+        // for (int i = 0; i < references.size(); i++)
+        // {
+        // // save resources
+        // // TODO!!!!
+        // // ((EditorReference)references.get(i)).getEditor(false);
+        // // saveDirtyEditors();
+        // }
+
+        // List editorReferences = UIHelper.getDirtyEditorReferences();
+        // if (editorReferences.size() > 0)
+        // {
+        // boolean saveResources = UIHelper.promptUserForSave("Modified resources",
+        // "Some resources are modified.\nDo you want to save the modified resources?");
+        // if (saveResources)
+        // {
+        // UIHelper.saveResources(editorReferences);
+        // }
+        // }
+
+        boolean proceed = UIHelper.promptUserForDirtyModules();
+
+        if (!proceed)
         {
-            // save resources
-            // TODO!!!!
-            // ((EditorReference)references.get(i)).getEditor(false);
-            // saveDirtyEditors();
+            return null;
         }
+
         Spec spec = Activator.getSpecManager().getSpecLoaded();
 
         if (spec != null)

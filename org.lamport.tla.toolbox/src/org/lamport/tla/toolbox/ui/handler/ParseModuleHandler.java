@@ -25,30 +25,38 @@ public class ParseModuleHandler extends AbstractHandler implements IHandler
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
         IEditorPart activeEditor = UIHelper.getActivePage().getActiveEditor();
-        
-        if (activeEditor.isDirty()) 
+
+        // if (activeEditor.isDirty())
+        // {
+        // // editor is not saved
+        // // TODO react on this!
+        // }
+
+        // prompt to save any unsaved resources
+        // the module open in the active editor could be dependent upon
+        // any open module
+        boolean proceed = UIHelper.promptUserForDirtyModules();
+        if (!proceed)
         {
-            // editor is not saved
-            // TODO react on this!
+            return null;
         }
-        
+
         IEditorInput editorInput = activeEditor.getEditorInput();
         if (editorInput instanceof IFileEditorInput)
         {
-            IResource fileToBuild = ((IFileEditorInput)editorInput).getFile();
+            IResource fileToBuild = ((IFileEditorInput) editorInput).getFile();
             // explicitly invoke the module rebuild
             // if the module is the root module, rebuild the spec (and change the status afterwards)
             Spec currentSpec = ToolboxHandle.getCurrentSpec();
-            if (currentSpec != null && currentSpec.getRootFile().equals(fileToBuild)) 
+            if (currentSpec != null && currentSpec.getRootFile().equals(fileToBuild))
             {
                 ParserHelper.rebuildSpec(new NullProgressMonitor());
-            } else 
+            } else
             {
                 ParserHelper.rebuildModule(fileToBuild, new NullProgressMonitor());
             }
-        } 
-        
-        
+        }
+
         return null;
     }
 }
