@@ -33,7 +33,6 @@ import org.lamport.tla.toolbox.tool.tlc.job.TLCJob;
 import org.lamport.tla.toolbox.tool.tlc.job.TLCProcessJob;
 import org.lamport.tla.toolbox.tool.tlc.model.TypedSet;
 import org.lamport.tla.toolbox.tool.tlc.traceexplorer.SimpleTLCState;
-import org.lamport.tla.toolbox.tool.tlc.traceexplorer.TLCErrorTraceRegistry;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelWriter;
 import org.lamport.tla.toolbox.util.ResourceHelper;
@@ -381,7 +380,8 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
 
         // retrieve the trace produced by running the model checker on the
         // config
-        trace = TLCErrorTraceRegistry.getErrorTraceRegistry().getTrace(config);
+        // trace = TLCErrorTraceRegistry.getErrorTraceRegistry().getTrace(config);
+        trace = ModelHelper.getErrorTrace(config);
 
         ModelWriter writer = new ModelWriter();
 
@@ -623,6 +623,9 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
         IFolder modelFolder = project.getFolder(modelName);
         // refresh the model folder
         modelFolder.refreshLocal(IResource.DEPTH_ONE, new SubProgressMonitor(monitor, 100));
+
+        // set the model to have the trace with trace explorer expression shown
+        ModelHelper.setOriginalTraceShown(configuration, false);
 
         // launch should proceed
         return true;

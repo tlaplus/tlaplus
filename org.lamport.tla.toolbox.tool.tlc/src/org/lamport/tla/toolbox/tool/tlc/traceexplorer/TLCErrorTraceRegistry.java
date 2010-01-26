@@ -7,6 +7,8 @@ import java.util.List;
 import org.eclipse.debug.core.ILaunchConfiguration;
 
 /**
+ * This class should not longer be used.
+ * 
  * This class contains TLC error traces for launch
  * configurations. Up to one trace can be stored for each launch configuration.
  * 
@@ -21,6 +23,7 @@ import org.eclipse.debug.core.ILaunchConfiguration;
  * 
  * @author Daniel Ricketts
  *
+ *@deprecated
  */
 public class TLCErrorTraceRegistry
 {

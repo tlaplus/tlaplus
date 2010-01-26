@@ -114,7 +114,6 @@ public class TraceExplorerDataProvider extends TLCModelLaunchDataProvider
 
             while (region != null)
             {
-                System.out.println(teDocument.get(region.getOffset(), region.getLength()));
                 // found a region
                 // first character should be the level of the expression
                 String commentString = teDocument.get(region.getOffset(), region.getLength());
@@ -491,14 +490,6 @@ public class TraceExplorerDataProvider extends TLCModelLaunchDataProvider
                 error.setMessage(TE_ERROR_HEADER + error.getMessage());
             }
         }
-    }
-
-    /**
-     * No-op. This overrides the method in {@link TLCModelLaunchDataProvider} to
-     * do nothing because traces from this provider should not be registered.
-     */
-    protected void registerTraceForTraceExplorer()
-    {
     }
 
     /**

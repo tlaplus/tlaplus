@@ -43,6 +43,7 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.Region;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.editors.text.FileDocumentProvider;
 import org.eclipse.ui.part.FileEditorInput;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.tool.tlc.TLCActivator;
@@ -51,6 +52,7 @@ import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationDefaults;
 import org.lamport.tla.toolbox.tool.tlc.launch.TLCModelLaunchDelegate;
 import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
 import org.lamport.tla.toolbox.tool.tlc.model.Formula;
+import org.lamport.tla.toolbox.tool.tlc.traceexplorer.SimpleTLCState;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
@@ -60,6 +62,7 @@ import tla2sany.semantic.OpDeclNode;
 import tla2sany.semantic.OpDefNode;
 import tla2sany.semantic.SymbolNode;
 import tla2sany.st.Location;
+import tlc2.output.MP;
 
 /**
  * Provides utility methods for model manipulation
@@ -119,10 +122,12 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
      * Delimiter used to serialize lists  
      */
     private static final String LIST_DELIMITER = ";";
+    private static final String CR = "\n";
     /**
      * Delimiter used to serialize parameter-value pair  
      */
     private static final String PARAM_DELIMITER = ":";
+    private static final String SPACE = " ";
 
     public static final String MC_MODEL_NAME = "MC";
     public static final String FILE_TLA = MC_MODEL_NAME + ".tla";
@@ -598,17 +603,17 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
      * for normal model checking.
      * 
      * @param config configuration representing the model
-     * @param isTraceExploration flag indicating if the log file for trace exploration is to be returned
+     * @param getTraceExplorerOutput flag indicating if the log file for trace exploration is to be returned
      * @return the file handle, or null
      */
-    public static IFile getModelOutputLogFile(ILaunchConfiguration config, boolean isTraceExploration)
+    public static IFile getModelOutputLogFile(ILaunchConfiguration config, boolean getTraceExplorerOutput)
     {
         Assert.isNotNull(config);
         IFolder targetFolder = ModelHelper.getModelTargetDirectory(config);
         if (targetFolder != null && targetFolder.exists())
         {
             String fileName = ModelHelper.FILE_OUT;
-            if (isTraceExploration)
+            if (getTraceExplorerOutput)
             {
                 fileName = ModelHelper.TE_FILE_OUT;
             }
@@ -1904,5 +1909,88 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
                 // TODO check the existence of copied files
             }
         }
+    }
+
+    /**
+     * Returns a possibly empty List of {@link SimpleTLCState} that represents
+     * the error trace produced by the most recent run of TLC on config, if an error
+     * trace was produced.
+     * 
+     * @param config
+     * @return
+     */
+    public static List getErrorTrace(ILaunchConfiguration config)
+    {
+        // try
+        // {
+        // File logFile = getModelOutputLogFile(config, false).getFullPath().toFile();
+        // if (logFile.exists())
+        // {
+        // FileInputStream fis = new FileInputStream(logFile);
+        // } else
+        // {
+        // TLCActivator.logDebug("Could not locate log file for model " + config.getName() + ".");
+        // }
+        // } catch (FileNotFoundException e)
+        // {
+        // // TODO Auto-generated catch block
+        // e.printStackTrace();
+        // }
+
+        try
+        {
+            FileEditorInput logFileEditorInput = new FileEditorInput(getModelOutputLogFile(config, false));
+            FileDocumentProvider logFileDocumentProvider = new FileDocumentProvider();
+            logFileDocumentProvider.connect(logFileEditorInput);
+            IDocument logFileDocument = logFileDocumentProvider.getDocument(logFileEditorInput);
+
+            FindReplaceDocumentAdapter logFileSearcher = new FindReplaceDocumentAdapter(logFileDocument);
+
+            // the regular expression for searching for the start tag for state print outs
+            String regExStartTag = MP.DELIM + MP.STARTMSG + "[0-9]{4}" + MP.COLON + MP.STATE + SPACE + MP.DELIM + CR;
+            // the regular expression for searching for the end tag for state print outs
+            String regExEndTag = MP.DELIM + MP.ENDMSG + "[0-9]{4}" + SPACE + MP.DELIM;
+
+            IRegion startTagRegion = logFileSearcher.find(0, regExStartTag, true, true, false, true);
+
+            // vector of SimpleTLCStates
+            Vector trace = new Vector();
+
+            while (startTagRegion != null)
+            {
+                IRegion endTagRegion = logFileSearcher.find(startTagRegion.getOffset() + startTagRegion.getLength(),
+                        regExEndTag, true, true, false, true);
+
+                if (endTagRegion != null)
+                {
+                    int stateInputStart = startTagRegion.getOffset() + startTagRegion.getLength();
+                    int stateInputLength = endTagRegion.getOffset() - stateInputStart;
+                    // string from which the state can be parsed
+                    String stateInputString = logFileDocument.get(stateInputStart, stateInputLength);
+
+                    trace.add(SimpleTLCState.parseSimpleTLCState(stateInputString));
+
+                } else
+                {
+                    TLCActivator.logDebug("Found start tag region in model log file without end tag for model "
+                            + config.getName() + ".");
+                }
+                //System.out.println(logFileDocument.get(startTagRegion.getOffset() + startTagRegion.getLength(),
+                //        endTagRegion.getOffset() - startTagRegion.getLength() - startTagRegion.getOffset()));
+
+                startTagRegion = logFileSearcher.find(startTagRegion.getOffset() + startTagRegion.getLength(),
+                        regExStartTag, true, true, false, true);
+            }
+
+            return trace;
+        } catch (CoreException e)
+        {
+            TLCActivator.logError("Error connecting to model log file for model " + config.getName() + ".", e);
+        } catch (BadLocationException e)
+        {
+            TLCActivator.logError("Error searching model log file for " + config.getName() + ".", e);
+        }
+
+        return new Vector();
     }
 }

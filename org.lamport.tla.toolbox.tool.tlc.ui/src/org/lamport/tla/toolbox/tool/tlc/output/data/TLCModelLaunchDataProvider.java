@@ -2,7 +2,6 @@ package org.lamport.tla.toolbox.tool.tlc.output.data;
 
 import java.util.ArrayList;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 import java.util.regex.Matcher;
@@ -29,9 +28,6 @@ import org.lamport.tla.toolbox.tool.tlc.output.ITLCOutputListener;
 import org.lamport.tla.toolbox.tool.tlc.output.source.TLCOutputSourceRegistry;
 import org.lamport.tla.toolbox.tool.tlc.output.source.TLCRegion;
 import org.lamport.tla.toolbox.tool.tlc.output.source.TLCRegionContainer;
-import org.lamport.tla.toolbox.tool.tlc.traceexplorer.SimpleTLCState;
-import org.lamport.tla.toolbox.tool.tlc.traceexplorer.SimpleTLCVariable;
-import org.lamport.tla.toolbox.tool.tlc.traceexplorer.TLCErrorTraceRegistry;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelWriter;
@@ -200,7 +196,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
          *  is in the tlc plug-in for use by the launch delegate
          *  used for trace exploration.
          */
-        registerTraceForTraceExplorer();
+        // registerTraceForTraceExplorer();
 
         // TLC is no longer running
         this.setCurrentStatus(NOT_RUNNING);
@@ -661,67 +657,67 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
         return topError;
     }
 
-    /**
-     * If there is an error trace produced, this registers it with {@link TLCErrorTraceRegistry}.
-     */
-    protected void registerTraceForTraceExplorer()
-    {
-        List trace = null;
-        // find the trace, if there is one
-        if (errors != null)
-        {
-            Iterator it = errors.iterator();
-            while (it.hasNext())
-            {
-                TLCError error = (TLCError) it.next();
-                if (error.hasTrace())
-                {
-                    trace = error.getStates();
-                }
-            }
-        }
-
-        // register the trace if found
-        if (trace != null)
-        {
-            // convert the trace to a list of SimpleTLCState
-            // a list of TLCState cannot be added to
-            // the TLCErrorTraceRegistry
-            // read the comments of that class for more details
-
-            // result is the converted trace
-            Vector result = new Vector(trace.size());
-            Iterator it = trace.iterator();
-            while (it.hasNext())
-            {
-                // current TLCState
-                TLCState state = (TLCState) it.next();
-                boolean isBackToState = state.isBackToState();
-                boolean isStuttering = state.isStuttering();
-                SimpleTLCVariable[] simpleVariables = null;
-
-                if (!isStuttering && !isBackToState)
-                {
-                    // the variables for the current TLCState
-                    TLCVariable[] variables = state.getVariables();
-                    // the variables for the current SimpleTLCState
-                    simpleVariables = new SimpleTLCVariable[variables.length];
-
-                    for (int i = 0; i < variables.length; i++)
-                    {
-                        TLCVariable currentVar = variables[i];
-                        simpleVariables[i] = new SimpleTLCVariable(currentVar.getName(), currentVar.getValue()
-                                .toSimpleString());
-                    }
-                }
-
-                result.add(new SimpleTLCState(simpleVariables, isStuttering, isBackToState, state.getStateNumber()));
-
-            }
-            TLCErrorTraceRegistry.getErrorTraceRegistry().addTLCErrorTrace(getConfig(), result);
-
-        }
-    }
+    // /**
+    // * If there is an error trace produced, this registers it with {@link TLCErrorTraceRegistry}.
+    // */
+    // protected void registerTraceForTraceExplorer()
+    // {
+    // List trace = null;
+    // // find the trace, if there is one
+    // if (errors != null)
+    // {
+    // Iterator it = errors.iterator();
+    // while (it.hasNext())
+    // {
+    // TLCError error = (TLCError) it.next();
+    // if (error.hasTrace())
+    // {
+    // trace = error.getStates();
+    // }
+    // }
+    // }
+    //
+    // // register the trace if found
+    // if (trace != null)
+    // {
+    // // convert the trace to a list of SimpleTLCState
+    // // a list of TLCState cannot be added to
+    // // the TLCErrorTraceRegistry
+    // // read the comments of that class for more details
+    //
+    // // result is the converted trace
+    // Vector result = new Vector(trace.size());
+    // Iterator it = trace.iterator();
+    // while (it.hasNext())
+    // {
+    // // current TLCState
+    // TLCState state = (TLCState) it.next();
+    // boolean isBackToState = state.isBackToState();
+    // boolean isStuttering = state.isStuttering();
+    // SimpleTLCVariable[] simpleVariables = null;
+    //
+    // if (!isStuttering && !isBackToState)
+    // {
+    // // the variables for the current TLCState
+    // TLCVariable[] variables = state.getVariables();
+    // // the variables for the current SimpleTLCState
+    // simpleVariables = new SimpleTLCVariable[variables.length];
+    //
+    // for (int i = 0; i < variables.length; i++)
+    // {
+    // TLCVariable currentVar = variables[i];
+    // simpleVariables[i] = new SimpleTLCVariable(currentVar.getName(), currentVar.getValue()
+    // .toSimpleString());
+    // }
+    // }
+    //
+    // result.add(new SimpleTLCState(simpleVariables, isStuttering, isBackToState, state.getStateNumber()));
+    //
+    // }
+    // TLCErrorTraceRegistry.getErrorTraceRegistry().addTLCErrorTrace(getConfig(), result);
+    //
+    // }
+    // }
 
     /**
      * Sets text to a document
