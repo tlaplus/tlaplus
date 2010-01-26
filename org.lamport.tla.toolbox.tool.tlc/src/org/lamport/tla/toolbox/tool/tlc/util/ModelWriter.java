@@ -322,6 +322,11 @@ public class ModelWriter
     public void addTEVariablesAndDefinitions(TraceExpressionInformationHolder[] traceExpressionData,
             String attributeName, boolean addDefinitions)
     {
+        if (traceExpressionData.length == 0)
+        {
+            return;
+        }
+
         StringBuffer variableDecls = new StringBuffer();
         StringBuffer definitions = new StringBuffer();
 
