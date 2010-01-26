@@ -70,7 +70,7 @@ import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
  */
 public class TraceExplorerComposite
 {
-    protected TableViewer tableViewer;
+    protected CheckboxTableViewer tableViewer;
     private Button buttonAdd;
     private Button buttonEdit;
     private Button buttonRemove;
@@ -189,7 +189,7 @@ public class TraceExplorerComposite
      * @param table
      * @return
      */
-    protected TableViewer createTableViewer(Table table)
+    protected CheckboxTableViewer createTableViewer(Table table)
     {
         // create
         CheckboxTableViewer tableViewer = new CheckboxTableViewer(table);
@@ -414,9 +414,6 @@ public class TraceExplorerComposite
             {
                 workingCopy.doSave().launch(TraceExplorerDelegate.MODE_TRACE_EXPLORE, null, true);
 
-                // set the model to have the trace with trace explorer expression shown
-                ModelHelper.setOriginalTraceShown(modelConfig, false);
-
             }
 
         } catch (CoreException e)
@@ -458,6 +455,11 @@ public class TraceExplorerComposite
         if (buttonEdit != null)
         {
             buttonEdit.setEnabled(selection.size() == 1);
+        }
+        if (buttonExplore != null)
+        {
+            buttonExplore.setEnabled(view.getTrace() != null && view.getTrace().size() > 0
+                    && tableViewer.getCheckedElements().length > 0);
         }
     }
 
