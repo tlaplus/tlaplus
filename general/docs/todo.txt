@@ -1,7 +1,6 @@
 1. NEW FEATURE
 5. NEW FEATURE (Locking Models)
 9. MINOR MISSING FEATURES (TLC Model)
-12. MINOR BUG (Parsing Error View)
 13. BUG (PlusCal Translator Errors)
 15. POSSIBLE CHANGE (Handling Unparsed Spec)
 17. MINOR BUG (Definition Override)
@@ -14,9 +13,7 @@
 32. MINOR BUG (What to parse when)
 36. FEATURE (Action Fairness)
 39. MINOR FEATURE (Constant Assignment)
-43. MINOR BUG (Model Checking Results page display)
 46. BUG (Model reports bogus "TLC still running")
-50. MINOR BUG (Deleting a Spec)   
 51. VERY MINOR BUG (Re-creating a spec)
 53. MINOR BUG (Eclipse resource saving?)
 54. MINOR BUG (Open Module)
@@ -74,11 +71,6 @@
    However, the current structure of the toolbox makes it a nuisance to do
    this, and the current validator will disallow the models that this order
    is designed to allow.  
-   
-12. MINOR BUG (Parsing Error View)
-    When the spec is reparsed after a parsing error, the Parsing Error view
-    is displayed, and no errors are found, the Parsing Error view continues to
-    contain the previous error.  The view has to be closed to make that error disappear.
     
 13. BUG (PlusCal Translator Errors)
     Suppose the user starts to write a PlusCal algorithm,
@@ -181,12 +173,6 @@
     second wizard page is created before the first page of the wizard is
     raised.  If it's hard, perhaps we should change the default to
     be to make the values untyped.  This is done in TypingWizardPage.createControl.
-
-43. MINOR BUG (Model Checking Results page display)
-    The layout/spacing of the statistics / progress output / user output fields
-    sucks.  It might be better to make a two-column view like in the 
-    other two pages, splitting the progress output into two separate fields,
-    one in each column.  
     
 46. BUG (Model reports bogus "TLC still running")
     Sometimes when restarting the toolbox after it was closed with a model
@@ -194,13 +180,6 @@
     in the upper right is red, but clicking it does nothing.  The Toolbox
     The last time this happened, the Toolbox Explorer said that the model
     has crashed, and clicking on repair solved the problem.
-      
-50. MINOR BUG (Deleting a Spec)
-    Deleting a spec throws a null pointer exception deep inside the call
-    of createLink at ResourceHelper.java, line 301.  It would be a good
-    idea to find out why, since this may be a symptom of an undiscovered
-    bug.  (If it's benign, the exception should be caught and dealt
-    with.)
 
 51. VERY MINOR BUG (Re-creating a spec)
     When creating a new spec, the Import Existing spec option is always

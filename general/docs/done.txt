@@ -36,6 +36,11 @@
     The Parsing Error item on the Window menu should be disabled when there is no 
     parsing error.
     
+12. MINOR BUG (Parsing Error View)
+    When the spec is reparsed after a parsing error, the Parsing Error view
+    is displayed, and no errors are found, the Parsing Error view continues to
+    contain the previous error.  The view has to be closed to make that error disappear.
+    
 14. SHOW-STOPPER SANY BUG - FIXED 7 October 2009
     SANY2 does not correctly parse an expression containing a "<" immediately followed
     by a number.  This is undoubtedly a lexing error, the lexer thinking that
@@ -138,6 +143,12 @@
     alloted to the Java heap when running TLC.  TLC should be run with
     Java getting the argument -XmxNm.
     
+43. MINOR BUG (Model Checking Results page display)
+    The layout/spacing of the statistics / progress output / user output fields
+    sucks.  It might be better to make a two-column view like in the 
+    other two pages, splitting the progress output into two separate fields,
+    one in each column.  
+    
 44. MINOR BUG (User Output field of Model Check Results page) - FIXED by Dan 19 Oct 2009
     The output of the parsing phase should not be put
     under "User Output".   It should go under Progress output.  Let's try
@@ -184,6 +195,13 @@
     that case it should raise the Parse Error view even if the preference
     says that it shouldn't.  (If this is not easy to implement, don't bother
     with it.)
+    
+50. MINOR BUG (Deleting a Spec) - cannot reproduce
+    Deleting a spec throws a null pointer exception deep inside the call
+    of createLink at ResourceHelper.java, line 301.  It would be a good
+    idea to find out why, since this may be a symptom of an undiscovered
+    bug.  (If it's benign, the exception should be caught and dealt
+    with.)
     
 52. FEATURE CHANGE (Parser preferences)
     - Comment out the "Automatic re-parse all module dependent 
