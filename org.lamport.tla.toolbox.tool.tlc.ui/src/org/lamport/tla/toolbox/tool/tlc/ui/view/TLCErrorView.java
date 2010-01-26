@@ -1427,6 +1427,10 @@ public class TLCErrorView extends ViewPart
 
     public List getTrace()
     {
+        if (variableViewer == null)
+        {
+            return null;
+        }
         return (List) variableViewer.getInput();
     }
 
