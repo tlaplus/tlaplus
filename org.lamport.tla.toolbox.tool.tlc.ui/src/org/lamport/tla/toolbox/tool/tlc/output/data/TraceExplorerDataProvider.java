@@ -421,12 +421,19 @@ public class TraceExplorerDataProvider extends TLCModelLaunchDataProvider
                  * if (m >= n), the new trace will be left with n-1 elements.
                  * Later code adds the final stuttering or "back to state" state
                  * to these traces.
+                 * 
+                 * There should never be extra states for non-looping, non-stuttering
+                 * traces.
                  */
-                if (currentStateOriginalTrace.isBackToState() || currentStateOriginalTrace.isStuttering()
+                if ((currentStateOriginalTrace.isBackToState() || currentStateOriginalTrace.isStuttering())
                         && newTrace.size() >= originalTrace.size())
                 {
                     newTrace.subList(originalTrace.size() - 1, newTrace.size()).clear();
                 }
+
+                // new trace should now be no longer than the original trace
+                Assert.isTrue(newTrace.size() <= originalTrace.size(),
+                        "States from trace explorer trace not removed properly.");
 
                 // fix the final state
                 TLCState finalStateOriginalTrace = (TLCState) originalTrace.get(originalTrace.size() - 1);
@@ -444,8 +451,13 @@ public class TraceExplorerDataProvider extends TLCModelLaunchDataProvider
                      *  trace that is displayed to the user should not. It should terminate before the TLC error
                      *  occurred.
                      */
-                    TLCVariable[] finalStateNewTraceVariables = ((TLCState) newTrace.get(newTrace.size() - 1))
-                            .getVariables();
+
+                    TLCState finalStateNewTrace = (TLCState) newTrace.get(newTrace.size() - 1);
+
+                    // set the label of the final state of the new trace
+                    finalStateNewTrace.setLabel(((TLCState) originalTrace.get(newTrace.size() - 1)).getLabel());
+
+                    TLCVariable[] finalStateNewTraceVariables = finalStateNewTrace.getVariables();
 
                     // iterate through the variables
                     for (int i = 0; i < finalStateNewTraceVariables.length; i++)
