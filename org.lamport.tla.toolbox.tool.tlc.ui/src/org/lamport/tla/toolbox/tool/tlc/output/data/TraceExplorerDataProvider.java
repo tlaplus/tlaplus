@@ -348,6 +348,9 @@ public class TraceExplorerDataProvider extends TLCModelLaunchDataProvider
                     // of the original trace
                     currentStateNewTrace.setLabel(currentStateOriginalTrace.getLabel());
 
+                    // set the location of the current state of the new trace
+                    currentStateNewTrace.setLocation(currentStateOriginalTrace.getModuleLocation());
+
                     // need to get the next state in order to perform any
                     // shifting of expression values (item 2 in the documentation)
                     nextStateNewTrace = (TLCState) newTraceIt.next();
@@ -454,8 +457,14 @@ public class TraceExplorerDataProvider extends TLCModelLaunchDataProvider
 
                     TLCState finalStateNewTrace = (TLCState) newTrace.get(newTrace.size() - 1);
 
+                    // state in the original trace at the same position as finalStateNewTrace
+                    TLCState samePositionOriginalTrace = (TLCState) originalTrace.get(newTrace.size() - 1);
+
                     // set the label of the final state of the new trace
-                    finalStateNewTrace.setLabel(((TLCState) originalTrace.get(newTrace.size() - 1)).getLabel());
+                    finalStateNewTrace.setLabel(samePositionOriginalTrace.getLabel());
+
+                    // set the location of the final state of the new trace
+                    finalStateNewTrace.setLocation(samePositionOriginalTrace.getModuleLocation());
 
                     TLCVariable[] finalStateNewTraceVariables = finalStateNewTrace.getVariables();
 
