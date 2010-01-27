@@ -44,6 +44,7 @@ import org.lamport.tla.toolbox.tool.tlc.ui.util.ActionClickListener;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.DirtyMarkingListener;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
 import org.lamport.tla.toolbox.tool.tlc.ui.view.TLCErrorView;
+import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.util.IHelpConstants;
 import org.lamport.tla.toolbox.util.UIHelper;
 
@@ -82,6 +83,13 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         {
             if (getConfig() != null)
             {
+                try
+                {
+                    ModelHelper.setOriginalTraceShown(getConfig(), true);
+                } catch (CoreException e1)
+                {
+                    TLCUIActivator.logError("Error setting the original trace to be shown.", e1);
+                }
                 TLCErrorView.updateErrorView(getConfig());
             }
         }
