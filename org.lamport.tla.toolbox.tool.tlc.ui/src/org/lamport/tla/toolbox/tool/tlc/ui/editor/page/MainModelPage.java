@@ -527,9 +527,6 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         // of variables in the spec.
         // This code needs to be modified when we modify the model launcher
         // to allow the No Spec option to be selected when there are variables.
-        //
-        // The following was commented by DR because we now allow
-        // the user to select the No Spec option when there are variables
         if (rootModuleNode != null)
         {
             if (rootModuleNode.getVariableDecls().length == 0)
