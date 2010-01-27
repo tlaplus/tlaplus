@@ -309,6 +309,8 @@ public class TraceExplorerComposite
         input.removeAll(selection.toList());
         tableViewer.setInput(input);
 
+        changeButtonEnablement();
+
         saveInput();
     }
 
@@ -329,6 +331,8 @@ public class TraceExplorerComposite
             {
                 ((CheckboxTableViewer) tableViewer).setChecked(formula, true);
             }
+
+            changeButtonEnablement();
 
             saveInput();
 
@@ -352,6 +356,8 @@ public class TraceExplorerComposite
             }
             tableViewer.refresh();
         }
+
+        changeButtonEnablement();
 
         saveInput();
     }
