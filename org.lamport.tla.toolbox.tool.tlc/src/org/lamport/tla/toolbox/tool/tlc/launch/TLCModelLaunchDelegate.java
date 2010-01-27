@@ -346,21 +346,44 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
             writer.addFormulaList(ModelWriter.createOverridesContent(overrides, ModelWriter.DEFOV_SCHEME), "CONSTANT",
                     MODEL_PARAMETER_DEFINITIONS);
 
-            // constraint
-            writer.addFormulaList(ModelWriter.createSourceContent(MODEL_PARAMETER_CONSTRAINT,
-                    ModelWriter.CONSTRAINT_SCHEME, config), "CONSTRAINT", MODEL_PARAMETER_CONSTRAINT);
-            // action constraint
-            writer.addFormulaList(ModelWriter.createSourceContent(MODEL_PARAMETER_ACTION_CONSTRAINT,
-                    ModelWriter.ACTIONCONSTRAINT_SCHEME, config), "ACTION_CONSTRAINT",
-                    MODEL_PARAMETER_ACTION_CONSTRAINT);
-            // Changed from incorrect "ACTION-CONSTRAINT" on 11 Sep 2009
-            // view
-            writer.addView(config.getAttribute(LAUNCH_VIEW, EMPTY_STRING), MODEL_PARAMETER_VIEW);
+            /* 
+             * specType is used to write the desired spec or lack of spec to the MC files.
+             * 
+             * specType is also used to make sure that aspects of the model that are not relevant
+             * when there is no behavior spec are not written. In particular, the following should
+             * be ignored when there is no behavior spec:
+             * 
+             * 1.) Invariants
+             * 2.) Properties
+             * 3.) State constraint
+             * 4.) Action constraint
+             * 5.) View
+             * 
+             * Recover from checkpoint and TLC options should also be ignored, but
+             * that is done in TLCJob.constructProgramArguments().
+             */
+            int specType = config.getAttribute(MODEL_BEHAVIOR_SPEC_TYPE, MODEL_BEHAVIOR_TYPE_DEFAULT);
+            boolean hasSpec = specType != MODEL_BEHAVIOR_TYPE_NO_SPEC;
+
+            if (hasSpec)
+            {
+                // constraint
+                writer.addFormulaList(ModelWriter.createSourceContent(MODEL_PARAMETER_CONSTRAINT,
+                        ModelWriter.CONSTRAINT_SCHEME, config), "CONSTRAINT", MODEL_PARAMETER_CONSTRAINT);
+                // action constraint
+                writer.addFormulaList(ModelWriter.createSourceContent(MODEL_PARAMETER_ACTION_CONSTRAINT,
+                        ModelWriter.ACTIONCONSTRAINT_SCHEME, config), "ACTION_CONSTRAINT",
+                        MODEL_PARAMETER_ACTION_CONSTRAINT);
+                // Changed from incorrect "ACTION-CONSTRAINT" on 11 Sep 2009
+
+                // view
+                writer.addView(config.getAttribute(LAUNCH_VIEW, EMPTY_STRING), MODEL_PARAMETER_VIEW);
+            }
+
             // calculator expression
             writer.addConstantExpressionEvaluation(config.getAttribute(MODEL_EXPRESSION_EVAL, EMPTY_STRING),
                     MODEL_EXPRESSION_EVAL);
 
-            int specType = config.getAttribute(MODEL_BEHAVIOR_SPEC_TYPE, MODEL_BEHAVIOR_TYPE_DEFAULT);
             switch (specType) {
             case MODEL_BEHAVIOR_TYPE_NO_SPEC:
                 ModuleNode rootModuleNode = ModelHelper.getRootModuleNode();
@@ -395,15 +418,19 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
             // writer.addSpecDefinition(ModelHelper.createSpecificationContent(config),
             // MODEL_BEHAVIOR_CLOSED_SPECIFICATION);
 
-            // invariants
-            writer.addFormulaList(ModelWriter.createFormulaListContent(config.getAttribute(
-                    MODEL_CORRECTNESS_INVARIANTS, new Vector()), ModelWriter.INVARIANT_SCHEME), "INVARIANT",
-                    MODEL_CORRECTNESS_INVARIANTS);
+            // do not write invariants and properties if there is no behavior spec
+            if (hasSpec)
+            {
+                // invariants
+                writer.addFormulaList(ModelWriter.createFormulaListContent(config.getAttribute(
+                        MODEL_CORRECTNESS_INVARIANTS, new Vector()), ModelWriter.INVARIANT_SCHEME), "INVARIANT",
+                        MODEL_CORRECTNESS_INVARIANTS);
 
-            // properties
-            writer.addFormulaList(ModelWriter.createFormulaListContent(config.getAttribute(
-                    MODEL_CORRECTNESS_PROPERTIES, new Vector()), ModelWriter.PROP_SCHEME), "PROPERTY",
-                    MODEL_CORRECTNESS_PROPERTIES);
+                // properties
+                writer.addFormulaList(ModelWriter.createFormulaListContent(config.getAttribute(
+                        MODEL_CORRECTNESS_PROPERTIES, new Vector()), ModelWriter.PROP_SCHEME), "PROPERTY",
+                        MODEL_CORRECTNESS_PROPERTIES);
+            }
 
             monitor.worked(STEP);
             monitor.subTask("Writing contents");

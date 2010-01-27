@@ -106,60 +106,68 @@ public abstract class TLCJob extends AbstractJob implements IModelConfigurationC
         arguments.add("-checkpoint");
         arguments.add(String.valueOf(CHECKPOINT_INTERVAL));
 
-        boolean runAsModelCheck = config.getAttribute(IModelConfigurationConstants.LAUNCH_MC_MODE,
-                IModelConfigurationDefaults.LAUNCH_MC_MODE_DEFAULT);
-        if (runAsModelCheck)
-        {
-            // look for advanced model checking parameters
-            boolean isDepthFirst = config.getAttribute(IModelConfigurationConstants.LAUNCH_DFID_MODE,
-                    IModelConfigurationDefaults.LAUNCH_DFID_MODE_DEFAULT);
-            if (isDepthFirst)
-            {
-                // for depth-first run, look for the depth
-                int dfidDepth = config.getAttribute(IModelConfigurationConstants.LAUNCH_DFID_DEPTH,
-                        IModelConfigurationDefaults.LAUNCH_DFID_DEPTH_DEFAULT);
-                arguments.add("-dfid");
-                arguments.add(String.valueOf(dfidDepth));
-            }
-        } else
-        {
-            arguments.add("-simulate");
+        boolean hasSpec = config.getAttribute(MODEL_BEHAVIOR_SPEC_TYPE, MODEL_BEHAVIOR_TYPE_DEFAULT) != IModelConfigurationDefaults.MODEL_BEHAVIOR_TYPE_NO_SPEC;
 
-            // look for advanced simulation parameters
-            int traceDepth = config.getAttribute(IModelConfigurationConstants.LAUNCH_SIMU_DEPTH,
-                    IModelConfigurationDefaults.LAUNCH_SIMU_DEPTH_DEFAULT);
-            if (traceDepth != IModelConfigurationDefaults.LAUNCH_SIMU_DEPTH_DEFAULT)
+        if (hasSpec)
+        {
+            boolean runAsModelCheck = config.getAttribute(IModelConfigurationConstants.LAUNCH_MC_MODE,
+                    IModelConfigurationDefaults.LAUNCH_MC_MODE_DEFAULT);
+            if (runAsModelCheck)
             {
-                arguments.add("-depth");
-                arguments.add(String.valueOf(traceDepth));
-            }
+                // look for advanced model checking parameters
+                boolean isDepthFirst = config.getAttribute(IModelConfigurationConstants.LAUNCH_DFID_MODE,
+                        IModelConfigurationDefaults.LAUNCH_DFID_MODE_DEFAULT);
+                if (isDepthFirst)
+                {
+                    // for depth-first run, look for the depth
+                    int dfidDepth = config.getAttribute(IModelConfigurationConstants.LAUNCH_DFID_DEPTH,
+                            IModelConfigurationDefaults.LAUNCH_DFID_DEPTH_DEFAULT);
+                    arguments.add("-dfid");
+                    arguments.add(String.valueOf(dfidDepth));
+                }
+            } else
+            {
+                arguments.add("-simulate");
 
-            int aril = config.getAttribute(IModelConfigurationConstants.LAUNCH_SIMU_ARIL,
-                    IModelConfigurationDefaults.LAUNCH_SIMU_ARIL_DEFAULT);
-            int seed = config.getAttribute(IModelConfigurationConstants.LAUNCH_SIMU_SEED,
-                    IModelConfigurationDefaults.LAUNCH_SIMU_SEED_DEFAULT);
-            if (aril != IModelConfigurationDefaults.LAUNCH_SIMU_ARIL_DEFAULT)
-            {
-                arguments.add("-aril");
-                arguments.add(String.valueOf(aril));
-            }
-            if (seed != IModelConfigurationDefaults.LAUNCH_SIMU_SEED_DEFAULT)
-            {
-                arguments.add("-seed");
-                arguments.add(String.valueOf(seed));
+                // look for advanced simulation parameters
+                int traceDepth = config.getAttribute(IModelConfigurationConstants.LAUNCH_SIMU_DEPTH,
+                        IModelConfigurationDefaults.LAUNCH_SIMU_DEPTH_DEFAULT);
+                if (traceDepth != IModelConfigurationDefaults.LAUNCH_SIMU_DEPTH_DEFAULT)
+                {
+                    arguments.add("-depth");
+                    arguments.add(String.valueOf(traceDepth));
+                }
+
+                int aril = config.getAttribute(IModelConfigurationConstants.LAUNCH_SIMU_ARIL,
+                        IModelConfigurationDefaults.LAUNCH_SIMU_ARIL_DEFAULT);
+                int seed = config.getAttribute(IModelConfigurationConstants.LAUNCH_SIMU_SEED,
+                        IModelConfigurationDefaults.LAUNCH_SIMU_SEED_DEFAULT);
+                if (aril != IModelConfigurationDefaults.LAUNCH_SIMU_ARIL_DEFAULT)
+                {
+                    arguments.add("-aril");
+                    arguments.add(String.valueOf(aril));
+                }
+                if (seed != IModelConfigurationDefaults.LAUNCH_SIMU_SEED_DEFAULT)
+                {
+                    arguments.add("-seed");
+                    arguments.add(String.valueOf(seed));
+                }
             }
         }
 
         // recover from checkpoint
-        boolean recover = config.getAttribute(IModelConfigurationConstants.LAUNCH_RECOVER,
-                IModelConfigurationDefaults.LAUNCH_RECOVER_DEFAULT);
-        if (recover)
+        if (hasSpec)
         {
-            IResource[] checkpoints = ModelHelper.getCheckpoints(config, false);
-            if (checkpoints.length > 0)
+            boolean recover = config.getAttribute(IModelConfigurationConstants.LAUNCH_RECOVER,
+                    IModelConfigurationDefaults.LAUNCH_RECOVER_DEFAULT);
+            if (recover)
             {
-                arguments.add("-recover");
-                arguments.add(checkpoints[0].getName());
+                IResource[] checkpoints = ModelHelper.getCheckpoints(config, false);
+                if (checkpoints.length > 0)
+                {
+                    arguments.add("-recover");
+                    arguments.add(checkpoints[0].getName());
+                }
             }
         }
 
