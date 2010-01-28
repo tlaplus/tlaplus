@@ -28,6 +28,7 @@ import org.eclipse.jface.text.source.projection.ProjectionAnnotation;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotationModel;
 import org.eclipse.jface.text.source.projection.ProjectionSupport;
 import org.eclipse.jface.text.source.projection.ProjectionViewer;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.FileDialog;
@@ -266,7 +267,7 @@ public class TLAEditor extends TextEditor
         {
             // construct the dialog
             // should this be replaced by a dialog showing the logical view of the FS?
-            saveAsDialog = new FileDialog(shell);
+            saveAsDialog = new FileDialog(shell, SWT.SAVE);
             saveAsDialog.setOverwrite(true);
             saveAsDialog.setText("Select the new filename...");
             saveAsDialog.setFilterExtensions(new String[] { "*.tla" });

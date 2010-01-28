@@ -1,15 +1,29 @@
 package org.lamport.tla.toolbox.editor.basic;
 
+import java.io.File;
+import java.io.IOException;
+
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.Path;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.widgets.FileDialog;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.part.FileEditorInput;
+import org.eclipse.ui.texteditor.IDocumentProvider;
+import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.util.ResourceHelper;
+import org.lamport.tla.toolbox.util.UIHelper;
 
 /**
  * This is a multi page editor with two tabs.
@@ -56,7 +70,7 @@ public class TLAEditorAndPDFViewer extends FormEditor
             addPage(tlaEditorIndex, tlaEditor, tlaEditorInput);
             setPageText(tlaEditorIndex, "TLA Module");
 
-            setContentDescription(tlaEditor.getContentDescription());
+            setDescription();
 
         } catch (PartInitException e)
         {
@@ -94,7 +108,123 @@ public class TLAEditorAndPDFViewer extends FormEditor
 
     public void doSaveAs()
     {
-        tlaEditor.doSaveAs();
+
+        IFile file = ((FileEditorInput) getEditorInput()).getFile();
+        Shell shell = UIHelper.getShellProvider().getShell();
+
+        // TODO fix this?
+        IPath specRootPrefix = new Path(ResourceHelper.getParentDirName(ToolboxHandle.getRootModule()));
+
+        FileDialog saveAsDialog = null;
+        while (true)
+        {
+            // construct the dialog
+            // should this be replaced by a dialog showing the logical view of the FS?
+            saveAsDialog = new FileDialog(shell, SWT.SAVE);
+            saveAsDialog.setOverwrite(true);
+            saveAsDialog.setText("Select the new filename...");
+            saveAsDialog.setFilterExtensions(new String[] { "*.tla" });
+            saveAsDialog.setFilterNames(new String[] { "TLA+ Files" });
+            saveAsDialog.setFilterPath(file.getLocation().toOSString());
+            String result = saveAsDialog.open();
+            saveAsDialog = null;
+            // no cancellation
+            if (result != null)
+            {
+                IPath newPath = new Path(result);
+                // check whether the file is in the same directory as the root module
+                if (!specRootPrefix.isPrefixOf(newPath))
+                {
+                    MessageDialog.openError(shell, "Wrong location selected",
+                            "The provided filename must point to the same directory as the specification root file");
+                    continue;
+                }
+
+                // fix the extension
+                if (!"tla".equals(newPath.getFileExtension()))
+                {
+                    newPath = newPath.addFileExtension("tla");
+                }
+
+                File newFile = newPath.toFile();
+                if (newFile.exists())
+                {
+                    boolean confirmOverwrite = MessageDialog.openQuestion(shell, "Overwrite file?",
+                            "The provided filename already exists. The existing file will be overwritten.\nDo you want to overwrite the file "
+                                    + newPath.toOSString() + "?");
+                    if (!confirmOverwrite)
+                    {
+                        continue;
+                    }
+
+                    // overwriting existing file file exists
+                } else
+                {
+                    // file does not exist
+                    // create the empty file
+                    boolean newFileCreated = false;
+                    try
+                    {
+                        newFileCreated = newFile.createNewFile();
+                    } catch (IOException e)
+                    {
+                        // do nothing, since we react on the newFileCreated being false
+                    }
+                    if (!newFileCreated)
+                    {
+                        MessageDialog.openError(shell, "Error saving a file", "File could not be created");
+                        break;
+                    }
+                }
+
+                // create a link to a file
+                IFile newResource = ResourceHelper.getLinkedFile(file.getProject(), newPath.toOSString());
+
+                // new editor input
+                IEditorInput newInput = new FileEditorInput(newResource);
+
+                // System.out.println("TODO: Save " + file.getLocation().toOSString() + " as " + newPath);
+
+                // get the document provider
+                IDocumentProvider provider = tlaEditor.getDocumentProvider();
+                boolean saveAsSuccess = false;
+                try
+                {
+                    // notify
+                    provider.aboutToChange(newInput);
+                    // perform the save
+                    provider.saveDocument(new NullProgressMonitor(), newInput, provider.getDocument(getEditorInput()),
+                            true);
+                    saveAsSuccess = true;
+                } catch (CoreException x)
+                {
+                    MessageDialog.openError(shell, "Error saving a file", "File could not be created");
+                } finally
+                {
+                    // notify
+                    provider.changed(newInput);
+                    if (saveAsSuccess)
+                    {
+                        // change the input
+                        // alternatively, open another editor with the new resource?
+                        setInput(newInput);
+                        tlaEditor.setInput(newInput);
+                        if (newInput instanceof FileEditorInput)
+                        {
+                            FileEditorInput fin = (FileEditorInput) newInput;
+                            setPartName(fin.getFile().getName());
+                            setDescription();
+                        }
+                    }
+                }
+                // break out on save
+                break;
+            } else
+            {
+                // break out on cancel of the dialog
+                break;
+            }
+        }
     }
 
     public boolean isSaveAsAllowed()
@@ -128,6 +258,26 @@ public class TLAEditorAndPDFViewer extends FormEditor
     public TLAEditor getTLAEditor()
     {
         return tlaEditor;
+    }
+
+    /**
+     * Sets the text that appears above the text viewer.
+     * Currently, this is the full file path.
+     */
+    private void setDescription()
+    {
+        IEditorInput input = getEditorInput();
+        if (input != null)
+        {
+            if (input instanceof FileEditorInput)
+            {
+                FileEditorInput fin = (FileEditorInput) input;
+                setContentDescription(fin.getPath().toOSString());
+            } else
+            {
+                setContentDescription(input.getName());
+            }
+        }
     }
 
 }
