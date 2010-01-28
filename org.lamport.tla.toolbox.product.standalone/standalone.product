@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="TLA Toolbox" id="org.lamport.tla.toolbox.product.standalone.product" application="org.lamport.tla.toolbox.application" version="0.0.1" useFeatures="true" includeLaunchers="true">
+<product name="TLA+ Toolbox" id="org.lamport.tla.toolbox.product.standalone.product" application="org.lamport.tla.toolbox.application" version="0.0.1" useFeatures="true" includeLaunchers="true">
 
    <aboutInfo>
-      <image path="icons/full/product_lg.gif"/>
+      <image path="splash_small.bmp"/>
       <text>
          TLA+ Toolbox provides a user interface for TLA+ Tools. 
 Version 0.2 of 25 October 2008
