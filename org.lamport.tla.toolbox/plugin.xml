@@ -573,15 +573,29 @@
       </menuContribution>
       <menuContribution
             locationURI="menu:org.eclipse.ui.main.menu?after=additions">
-         <command
-               commandId="toolbox.command.help"
+         <menu
                id="toolbox.menu.help"
                label="Help"
                mnemonic="H"
-               mode="FORCE_TEXT"
-               style="push"
-               tooltip="Opens the help">
-         </command>
+               tooltip="Opens the help menu">
+            <command
+                  commandId="toolbox.command.help"
+                  id="toolbox.menuItem.dynamicHelp"
+                  label="Dynamic Help"
+                  mnemonic="D"
+                  mode="FORCE_TEXT"
+                  style="push"
+                  tooltip="Opens dynamic help">
+            </command>
+            <command
+                  commandId="org.eclipse.ui.help.aboutAction"
+                  id="toolbox.menuItem.about"
+                  label="About"
+                  mnemonic="A"
+                  style="push"
+                  tooltip="Opens the about dialog">
+            </command>
+         </menu>
       </menuContribution>
       <menuContribution
             locationURI="menu:toolbox.window.menu?after=toolbox.window.open.separator">
