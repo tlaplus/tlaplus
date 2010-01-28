@@ -515,10 +515,10 @@ public class UIHelper
         {
             // Mac
             openFileDialog = new FileDialog(shell, SWT.SAVE);
-            // we dont want the system to prompt the user
-            // to overwrite the existing file simply because
-            // this is called a "save" dialog
-            // overwriting makes no sense in this context
+            // since this could be a save as dialog trying
+            // to act as an open dialog, the default will be
+            // to not prompt the user to overwrite a file because
+            // that would not make any sense in an open file dialog.
             openFileDialog.setOverwrite(false);
         } else
         {
