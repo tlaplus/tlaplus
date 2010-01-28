@@ -31,13 +31,13 @@ import org.lamport.tla.toolbox.util.UIHelper;
  */
 public class NewSpecWizardPage extends WizardPage
 {
-    private Text                 specNameText;
-    private Text                 fileText;
-    private Button               importExisting;
+    private Text specNameText;
+    private Text fileText;
+    private Button importExisting;
 
     // the flags show if the fields has been touched
-    private boolean              specNameDirty       = false;
-    private boolean              fileTextDirty       = false;
+    private boolean specNameDirty = false;
+    private boolean fileTextDirty = false;
 
     public static final String[] ACCEPTED_EXTENSIONS = { "*.tla", "*.*" };
 
@@ -107,15 +107,14 @@ public class NewSpecWizardPage extends WizardPage
 
         // just to align
         new Label(container, SWT.NULL);
-        
-        
+
         new Label(container, SWT.NULL);
-        
+
         importExisting = new Button(container, SWT.CHECK);
         importExisting.setText("Import existing");
         importExisting.setSelection(true);
         importExisting.setEnabled(false);
-        
+
         gd = new GridData();
         gd.horizontalSpan = 2;
         importExisting.setLayoutData(gd);
@@ -129,34 +128,47 @@ public class NewSpecWizardPage extends WizardPage
                 dialogChanged();
             }
         });
-        
 
         // disable the next/finish button
         setPageComplete(false);
 
-        UIHelper.setHelp(container, "NewSpecWizard" );
-        
+        UIHelper.setHelp(container, "NewSpecWizard");
+
         // the created parent is the control we see
         setControl(container);
-        
 
     }
 
     /**
-	 * 
-	 */
+     * 
+     */
     protected void handleBrowse()
     {
-        FileDialog openFileDialog = new FileDialog(this.fileText.getShell(), SWT.OPEN);
+        FileDialog openFileDialog = UIHelper.getFileDialog(this.fileText.getShell());
+
+        // // platform dependent code
+        // // on mac, we need a Save dialog in order to allow
+        // // the user to type in a file name as well as select one
+        // // on other platforms, an open dialog is sufficient
+        // if (Platform.getOS().equals(Platform.OS_MACOSX))
+        // {
+        // // Mac
+        // openFileDialog = new FileDialog(this.fileText.getShell(), SWT.SAVE);
+        // } else
+        // {
+        // // all other operating systems
+        // openFileDialog = new FileDialog(this.fileText.getShell(), SWT.OPEN);
+        // }
+
         openFileDialog.setText("Open root file");
-        
+
         IDialogSettings settings = Activator.getDefault().getDialogSettings();
         String rootPath = settings.get("ROOT_FILE_NAME");
-        if (rootPath == null) 
+        if (rootPath == null)
         {
             rootPath = System.getProperty("user.home");
         }
-        
+
         openFileDialog.setFilterPath(rootPath);
 
         openFileDialog.setFilterExtensions(ACCEPTED_EXTENSIONS);
@@ -190,7 +202,7 @@ public class NewSpecWizardPage extends WizardPage
             {
                 reportError("Root file name should have a file-system path and extension .tla");
                 return;
-            } else if(!(new File(rootfilePath).isAbsolute()))
+            } else if (!(new File(rootfilePath).isAbsolute()))
             {
                 reportError("Root file name should have a file-system path");
                 return;
@@ -236,7 +248,7 @@ public class NewSpecWizardPage extends WizardPage
                 String moduleName = ResourceHelper.getModuleNameChecked(getRootFilename(), false);
 
                 Spec existingSpec = Activator.getSpecManager().getSpecByName(moduleName);
-                if (existingSpec != null) 
+                if (existingSpec != null)
                 {
                     moduleName = Activator.getSpecManager().constructSpecName(moduleName, true);
                 }
@@ -244,16 +256,16 @@ public class NewSpecWizardPage extends WizardPage
             }
         }
         // project directory exists
-        if (ResourceHelper.peekProject(getSpecName(), rootfilePath)) 
+        if (ResourceHelper.peekProject(getSpecName(), rootfilePath))
         {
-            if (!importExisting.getSelection()) 
+            if (!importExisting.getSelection())
             {
-                reportError("The "+getSpecName()+".toolbox directory already exists at the provided location." +
-                		"\nPlease select a different specification name or  root-module file.");
+                reportError("The " + getSpecName() + ".toolbox directory already exists at the provided location."
+                        + "\nPlease select a different specification name or  root-module file.");
                 return;
             }
             importExisting.setEnabled(true);
-        } else 
+        } else
         {
             importExisting.setEnabled(false);
         }
@@ -268,10 +280,8 @@ public class NewSpecWizardPage extends WizardPage
         {
             // allow this
             reportWarning("Root file name does not exist. A new file will be created.");
-        } 
-        
+        }
 
-        
         // we should not enable the next/finish if both fields are virgin
         if (!fileTextDirty || !specNameDirty)
         {
@@ -279,7 +289,7 @@ public class NewSpecWizardPage extends WizardPage
         }
         // enable the next/finish button
         this.setPageComplete(true);
-        
+
         IDialogSettings settings = Activator.getDefault().getDialogSettings();
         settings.put("ROOT_FILE_NAME", getRootFilename());
 
@@ -335,7 +345,7 @@ public class NewSpecWizardPage extends WizardPage
     {
         return this.fileText.getText();
     }
-    
+
     /**
      * Returns the user choice if the existing project files should be imported
      * @return
@@ -344,6 +354,5 @@ public class NewSpecWizardPage extends WizardPage
     {
         return importExisting.getSelection();
     }
-
 
 }

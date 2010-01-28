@@ -15,6 +15,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ISelection;
@@ -22,11 +23,13 @@ import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.window.IShellProvider;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.BusyIndicator;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IEditorInput;
@@ -491,6 +494,34 @@ public class UIHelper
         // no dirty modules
         // no dialog opened
         return true;
+    }
+
+    /**
+     * Returns a possibly platform dependent {@link FileDialog} that allows the
+     * user to select a file or type in a file name.
+     * 
+     * @param shell
+     * @return
+     */
+    public static FileDialog getFileDialog(Shell shell)
+    {
+        FileDialog openFileDialog = null;
+
+        // platform dependent code
+        // on mac, we need a Save dialog in order to allow
+        // the user to type in a file name as well as select one
+        // on other platforms, an open dialog is sufficient
+        if (Platform.getOS().equals(Platform.OS_MACOSX))
+        {
+            // Mac
+            openFileDialog = new FileDialog(shell, SWT.SAVE);
+        } else
+        {
+            // all other operating systems
+            openFileDialog = new FileDialog(shell, SWT.OPEN);
+        }
+
+        return openFileDialog;
     }
 
     /**

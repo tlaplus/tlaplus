@@ -12,7 +12,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
@@ -42,7 +41,7 @@ public class AddModuleHandler extends AbstractHandler implements IHandler
 
         Spec spec = Activator.getSpecManager().getSpecLoaded();
 
-        FileDialog openFileDialog = new FileDialog(window.getShell(), SWT.OPEN);
+        FileDialog openFileDialog = UIHelper.getFileDialog(window.getShell());
         openFileDialog.setText("Add TLA+ module to the spec");
         openFileDialog.setFilterPath(spec.getRootFile().getLocation().toOSString());
 
@@ -105,7 +104,8 @@ public class AddModuleHandler extends AbstractHandler implements IHandler
 
                             try
                             {
-                                ResourcesPlugin.getWorkspace().run(ResourceHelper.createTLAModuleCreationOperation(modulePath), null);
+                                ResourcesPlugin.getWorkspace().run(
+                                        ResourceHelper.createTLAModuleCreationOperation(modulePath), null);
                             } catch (CoreException e)
                             {
                                 e.printStackTrace();
