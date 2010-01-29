@@ -24,5 +24,14 @@ public interface ITLCPreferenceConstants
      * Automatically lock model after TLC exceeds given length of time.
      */
     public static final String I_TLC_AUTO_LOCK_MODEL_TIME = "autoLockModelTime";
+    /**
+     * font used for text in the error viewer at the top of the TLC error
+     * view, the User Output field on the results page, and the Progress
+     * Output on the results page.
+     * 
+     * Note: this preference appears in the preference page General > Appearance > Colors and Fonts
+     * It is put there by registering an extension to the extension point org.eclipse.ui.themes
+     */
+    public static final String I_TLC_OUTPUT_FONT = "org.lamport.tla.toolbox.tool.tlc.ui.tlcOutputFont";
 
 }

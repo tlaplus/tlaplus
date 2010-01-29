@@ -20,6 +20,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.Text;
@@ -40,8 +41,10 @@ import org.lamport.tla.toolbox.tool.tlc.output.data.TLCModelLaunchDataProvider;
 import org.lamport.tla.toolbox.tool.tlc.output.source.TLCOutputSourceRegistry;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.ValidateableSectionPart;
+import org.lamport.tla.toolbox.tool.tlc.ui.preference.ITLCPreferenceConstants;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.ActionClickListener;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.DirtyMarkingListener;
+import org.lamport.tla.toolbox.tool.tlc.ui.util.FontPreferenceChangeListener;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
 import org.lamport.tla.toolbox.tool.tlc.ui.view.TLCErrorView;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
@@ -75,6 +78,9 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
     private Text currentStatusText;
     private TableViewer coverage;
     private TableViewer stateSpace;
+
+    // listener on changes to the tlc output font preference
+    private FontPreferenceChangeListener fontChangeListener;
 
     // hyper link listener activated in case of errors
     protected IHyperlinkListener errorHyperLinkListener = new HyperlinkAdapter() {
@@ -232,6 +238,8 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
      */
     public void dispose()
     {
+        JFaceResources.getFontRegistry().removeListener(fontChangeListener);
+
         TLCModelLaunchDataProvider provider = TLCOutputSourceRegistry.getModelCheckSourceRegistry().getProvider(
                 getConfig());
         if (provider != null)
@@ -426,6 +434,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         gd.heightHint = 300;
         gd.minimumWidth = 300;
         userOutput.getControl().setLayoutData(gd);
+        userOutput.getControl().setFont(JFaceResources.getFont(ITLCPreferenceConstants.I_TLC_OUTPUT_FONT));
 
         // -------------------------------------------------------------------
         // progress section
@@ -450,7 +459,12 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         gd.heightHint = 300;
         gd.minimumWidth = 300;
         progressOutput.getControl().setLayoutData(gd);
+        progressOutput.getControl().setFont(JFaceResources.getFont(ITLCPreferenceConstants.I_TLC_OUTPUT_FONT));
 
+        fontChangeListener = new FontPreferenceChangeListener(new Control[] { userOutput.getControl(),
+                progressOutput.getControl() }, ITLCPreferenceConstants.I_TLC_OUTPUT_FONT);
+
+        JFaceResources.getFontRegistry().addListener(fontChangeListener);
     }
 
     /**

@@ -38,6 +38,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.ScrollBar;
@@ -64,7 +65,9 @@ import org.lamport.tla.toolbox.tool.tlc.output.data.TLCVariableValue;
 import org.lamport.tla.toolbox.tool.tlc.output.source.TLCOutputSourceRegistry;
 import org.lamport.tla.toolbox.tool.tlc.traceexplorer.TraceExplorerComposite;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
+import org.lamport.tla.toolbox.tool.tlc.ui.preference.ITLCPreferenceConstants;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.ActionClickListener;
+import org.lamport.tla.toolbox.tool.tlc.ui.util.FontPreferenceChangeListener;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.TLCUIHelper;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
@@ -121,6 +124,9 @@ public class TLCErrorView extends ViewPart
      */
     private ILaunchConfiguration configFileHandle;
     private TraceExplorerComposite traceExplorerComposite;
+
+    // listener on changes to the tlc output font preference
+    private FontPreferenceChangeListener fontChangeListener;
 
     /**
      * Clears the view
@@ -304,6 +310,7 @@ public class TLCErrorView extends ViewPart
         gd = new GridData(SWT.FILL, SWT.FILL, true, false);
         gd.heightHint = 100;
         errorViewer.getControl().setLayoutData(gd);
+        errorViewer.getControl().setFont(JFaceResources.getFont(ITLCPreferenceConstants.I_TLC_OUTPUT_FONT));
 
         /*
          * We want the lower part of the outer sash form to contain
@@ -466,6 +473,13 @@ public class TLCErrorView extends ViewPart
         // init
         clear();
 
+        // add a listener to the preference store to react when the font is
+        // changed
+
+        fontChangeListener = new FontPreferenceChangeListener(new Control[] { errorViewer.getControl() },
+                ITLCPreferenceConstants.I_TLC_OUTPUT_FONT);
+        JFaceResources.getFontRegistry().addListener(fontChangeListener);
+
         TLCUIHelper.setHelp(parent, IHelpConstants.TLC_ERROR_VIEW);
     }
 
@@ -476,6 +490,7 @@ public class TLCErrorView extends ViewPart
 
     public void dispose()
     {
+        JFaceResources.getFontRegistry().removeListener(fontChangeListener);
         toolkit.dispose();
         super.dispose();
     }

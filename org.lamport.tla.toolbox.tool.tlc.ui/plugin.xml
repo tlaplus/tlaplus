@@ -740,4 +740,21 @@ Console Facory
             type="java.lang.Object">
       </propertyTester>
    </extension>
+   <extension
+         point="org.eclipse.ui.themes">
+      <fontDefinition
+            id="org.lamport.tla.toolbox.tool.tlc.ui.tlcOutputFont"
+            isEditable="true"
+            label="TLC Output Font"
+            value="Courier New-regular-12">
+         <fontValue
+               os="win32"
+               value="Courier New-bold-12">
+         </fontValue>
+         <fontValue
+               os="macosx"
+               value="Courier New-italic-12">
+         </fontValue>
+      </fontDefinition>
+   </extension>
 </plugin>
