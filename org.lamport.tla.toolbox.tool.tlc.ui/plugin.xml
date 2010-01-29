@@ -745,15 +745,15 @@ Console Facory
       <fontDefinition
             id="org.lamport.tla.toolbox.tool.tlc.ui.tlcOutputFont"
             isEditable="true"
-            label="TLC Output Font"
-            value="Courier New-regular-12">
+            label="TLC Output"
+            value="Courier New-regular-8">
          <fontValue
                os="win32"
-               value="Courier New-bold-12">
+               value="Courier New-regular-8">
          </fontValue>
          <fontValue
                os="macosx"
-               value="Courier New-italic-12">
+               value="Microsoft Sans Serif-regular-10">
          </fontValue>
       </fontDefinition>
    </extension>
