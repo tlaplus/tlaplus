@@ -13,6 +13,7 @@
       </editor>
       <editor
             class="org.lamport.tla.toolbox.editor.basic.TLAEditorAndPDFViewer"
+            contributorClass="org.lamport.tla.toolbox.editor.basic.TLAMultiPageEditorActionBarContributor"
             default="false"
             extensions="pdf, tla"
             id="org.lamport.tla.toolbox.editor.basic.TLAEditorAndPDFViewer"
