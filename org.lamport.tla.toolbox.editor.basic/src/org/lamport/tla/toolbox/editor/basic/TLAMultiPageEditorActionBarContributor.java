@@ -21,7 +21,9 @@ import org.eclipse.ui.texteditor.StatusLineContributionItem;
  * currently active editor.
  * 
  * This is currently used as the contributor class for the {@link TLAEditorAndPDFViewer}. Since that is
- * a multipage editor, this class must extend {@link MultiPageEditorActionBarContributor}.
+ * a multipage editor, this class must extend {@link MultiPageEditorActionBarContributor}. This is set as
+ * the contributor class for {@link TLAEditorAndPDFViewer} in the extension that registers that class
+ * as an editor.
  * 
  * This class currently contributes two actions to the edit menu:
  * 
