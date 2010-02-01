@@ -1975,8 +1975,8 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
                     TLCActivator.logDebug("Found start tag region in model log file without end tag for model "
                             + config.getName() + ".");
                 }
-                //System.out.println(logFileDocument.get(startTagRegion.getOffset() + startTagRegion.getLength(),
-                //        endTagRegion.getOffset() - startTagRegion.getLength() - startTagRegion.getOffset()));
+                // System.out.println(logFileDocument.get(startTagRegion.getOffset() + startTagRegion.getLength(),
+                // endTagRegion.getOffset() - startTagRegion.getLength() - startTagRegion.getOffset()));
 
                 startTagRegion = logFileSearcher.find(startTagRegion.getOffset() + startTagRegion.getLength(),
                         regExStartTag, true, true, false, true);
@@ -1992,5 +1992,61 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
         }
 
         return new Vector();
+    }
+
+    /**
+     * Determines if the spec with root module rootModuleName is dependent on a
+     * module with the same name as the root module used for model checking.
+     * 
+     * @param rootModuleName
+     * @return
+     */
+    public static boolean containsModelCheckingModuleConflict(String rootModuleName)
+    {
+        String rootModuleFileName = rootModuleName;
+        if (!rootModuleName.endsWith(ResourceHelper.TLA_EXTENSION))
+        {
+            rootModuleFileName = ResourceHelper.getModuleFileName(rootModuleName);
+        }
+        List extendedModuleNames = ToolboxHandle.getExtendedModules(rootModuleFileName);
+        Iterator it = extendedModuleNames.iterator();
+        while (it.hasNext())
+        {
+            String moduleName = (String) it.next();
+            if (moduleName.equals(FILE_TLA))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Determines if the spec with root module rootModuleName is dependent on a
+     * module with the same name as the root module used for trace exploration.
+     * 
+     * @param rootModuleName
+     * @return
+     */
+    public static boolean containsTraceExplorerModuleConflict(String rootModuleName)
+    {
+        String rootModuleFileName = rootModuleName;
+        if (!rootModuleName.endsWith(ResourceHelper.TLA_EXTENSION))
+        {
+            rootModuleFileName = ResourceHelper.getModuleFileName(rootModuleName);
+        }
+        List extendedModuleNames = ToolboxHandle.getExtendedModules(rootModuleFileName);
+        Iterator it = extendedModuleNames.iterator();
+        while (it.hasNext())
+        {
+            String moduleName = (String) it.next();
+            if (moduleName.equals(TE_FILE_TLA))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

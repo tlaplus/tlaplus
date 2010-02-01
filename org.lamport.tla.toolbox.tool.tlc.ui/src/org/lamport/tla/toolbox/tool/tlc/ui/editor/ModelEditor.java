@@ -488,6 +488,30 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
                     }
                 }
                 return;
+            } else
+            {
+                /*
+                 * The spec cannot be model checked if it contains a module named
+                 * MC or a module named TE. Pop-up an error message to the user
+                 * and do not run TLC.
+                 */
+                String rootModuleName = spec.getRootModule().getName();
+                if (ModelHelper.containsModelCheckingModuleConflict(rootModuleName))
+                {
+                    MessageDialog.openError(getSite().getShell(), "Illegal module name",
+                            "Model validation and checking is not allowed on a spec containing a module named "
+                                    + ModelHelper.MC_MODEL_NAME + "."
+                                    + (userPased ? "" : " However, the model can still be saved."));
+                    return;
+                }
+                if (ModelHelper.containsTraceExplorerModuleConflict(rootModuleName))
+                {
+                    MessageDialog.openError(getSite().getShell(), "Illegal module name",
+                            "Model validation and checking is not allowed on a spec containing a module named "
+                                    + ModelHelper.TE_MODEL_NAME + "."
+                                    + (userPased ? "" : " However, the model can still be saved."));
+                    return;
+                }
             }
         } else
         {

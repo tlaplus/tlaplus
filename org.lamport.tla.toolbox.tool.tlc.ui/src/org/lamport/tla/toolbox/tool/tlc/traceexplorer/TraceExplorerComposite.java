@@ -29,6 +29,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
+import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.TraceExplorerDelegate;
 import org.lamport.tla.toolbox.tool.tlc.model.Formula;
@@ -368,6 +369,18 @@ public class TraceExplorerComposite
      */
     private void doExplore()
     {
+        /*
+         * Check for module TE in spec.
+         * Cannot run trace explorer if the spec contains a module named TE.
+         */
+        String rootModuleFileName = ToolboxHandle.getRootModule().getName();
+        if (ModelHelper.containsTraceExplorerModuleConflict(rootModuleFileName))
+        {
+            MessageDialog.openError(view.getSite().getShell(), "Illegal module name",
+                    "Trace exploration is not allowed for a spec that contains a module named "
+                            + ModelHelper.TE_MODEL_NAME + ".");
+            return;
+        }
 
         /*
          * Check for validation errors.
