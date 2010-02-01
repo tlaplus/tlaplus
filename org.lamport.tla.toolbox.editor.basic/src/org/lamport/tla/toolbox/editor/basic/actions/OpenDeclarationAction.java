@@ -6,7 +6,7 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.eclipse.ui.part.FileEditorInput;
-import org.lamport.tla.toolbox.editor.basic.TLAEditor;
+import org.lamport.tla.toolbox.editor.basic.TLAEditorAndPDFViewer;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 /**
@@ -28,7 +28,8 @@ public class OpenDeclarationAction extends Action implements IHyperlink
      * @param hyperlinkLabel label of the hyperlink
      * @param hyperlinkLocation location of the hyperlink
      */
-    public OpenDeclarationAction(IResource targetResource, IRegion targetLocation, String hyperlinkLabel, IRegion hyperlinkLocation)
+    public OpenDeclarationAction(IResource targetResource, IRegion targetLocation, String hyperlinkLabel,
+            IRegion hyperlinkLocation)
     {
         super();
         this.resource = targetResource;
@@ -44,8 +45,9 @@ public class OpenDeclarationAction extends Action implements IHyperlink
     {
         System.out.println("Opening " + label + "(" + resource.getName() + " at " + location + ")");
 
-        TLAEditor editor = (TLAEditor) UIHelper.openEditor(TLAEditor.ID, new FileEditorInput((IFile) resource));
-        editor.selectAndReveal(location.getOffset(), location.getLength());
+        TLAEditorAndPDFViewer editor = (TLAEditorAndPDFViewer) UIHelper.openEditor(TLAEditorAndPDFViewer.ID,
+                new FileEditorInput((IFile) resource));
+        editor.getTLAEditor().selectAndReveal(location.getOffset(), location.getLength());
 
     }
 
