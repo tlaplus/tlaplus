@@ -93,7 +93,7 @@ public class AdapterFactory implements IAdapterFactory
         case IParseConstants.PARSED:
             return " parsed ";
         case IParseConstants.SEMANTIC_WARNING:
-            return " warning ";
+            return " error ";
         case IParseConstants.SEMANTIC_ERROR:
         case IParseConstants.SYNTAX_ERROR:
         case IParseConstants.UNKNOWN_ERROR:
