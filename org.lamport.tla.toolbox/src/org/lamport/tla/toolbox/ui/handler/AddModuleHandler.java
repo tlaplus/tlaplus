@@ -46,10 +46,17 @@ public class AddModuleHandler extends AbstractHandler implements IHandler
         openFileDialog.setFilterPath(spec.getRootFile().getLocation().toOSString());
 
         openFileDialog.setFilterExtensions(ACCEPTED_EXTENSIONS);
-        final String moduleFileName = openFileDialog.open();
+        String moduleFileName = openFileDialog.open();
         if (moduleFileName != null)
         {
             IFile module = ResourceHelper.getLinkedFile(spec.getProject(), moduleFileName, false);
+
+            // add .tla extension is the file does not have any extension
+            if (module != null && module.getFileExtension() == null)
+            {
+                moduleFileName = ResourceHelper.getModuleFileName(moduleFileName);
+                module = ResourceHelper.getLinkedFile(spec.getProject(), moduleFileName, false);
+            }
 
             // check if it a TLA file
             if (!ResourceHelper.isModule(module))
@@ -133,5 +140,4 @@ public class AddModuleHandler extends AbstractHandler implements IHandler
 
         return null;
     }
-
 }
