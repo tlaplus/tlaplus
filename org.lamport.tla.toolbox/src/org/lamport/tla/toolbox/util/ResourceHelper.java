@@ -281,7 +281,7 @@ public class ResourceHelper
     }
 
     /**
-     * Retrieves a a resource from the project, creates a link, if the file is not present 
+     * Retrieves a a resource from the project, creates a link if createNew is true and the file is not present 
      * TODO improve this, if the name is wrong
      * 
      * @param name full filename of the resource
