@@ -2,6 +2,8 @@ package org.lamport.tla.toolbox.ui.wizard;
 
 import java.io.File;
 
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.dialogs.DialogPage;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.wizard.WizardPage;
@@ -175,6 +177,12 @@ public class NewSpecWizardPage extends WizardPage
         String selected = openFileDialog.open();
         if (selected != null)
         {
+            // add .tla extension if no extension provided
+            IPath path = new Path(selected);
+            if (path.getFileExtension() == null)
+            {
+                selected = selected.concat(".").concat(ResourceHelper.TLA_EXTENSION);
+            }
             this.fileText.setText(selected);
         }
     }
