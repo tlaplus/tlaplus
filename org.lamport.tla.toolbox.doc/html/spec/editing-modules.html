@@ -11,7 +11,13 @@
 
 <body>
 <h1>Editing Modules</h1>
-
+<pre>
+Contents
+  <a href="#module">Module Editors</a>
+  <a href="#finding">Finding Definitions and Declarations</a>
+  <a href="#key-bindings">Module Editor Key Bindings</a>
+</pre>
+<h2><a name="module">Module Editors</a></h2>
  <P> 
 When you first open a spec, the Toolbox shows the root module in a module editor view.&nbsp;  
 You can open additional modules in separate module editor views by clicking&nbsp; <samp>File/Open Module</samp>.&nbsp;
@@ -42,11 +48,41 @@ There are&nbsp;
 <samp>Save</samp>&nbsp; and&nbsp;  <samp>Save As</samp>&nbsp; commands on the &nbsp;  <samp>File</samp>&nbsp;
 menu.&nbsp;  (Typing&nbsp; <code>Control+s</code>&nbsp; also performs the save command.)&nbsp;  The&nbsp;  <samp>Edit</samp>&nbsp;
 menu provides a few familiar commands.&nbsp;  
-Below is a list of available commands and the keys to which they are bound.&nbsp;
+<a href="#key-bindings">Below</a> is a list of available commands and the keys to which they are bound.&nbsp;
 
 </p>
 
-<h3>Module Editor Key Bindings</h3>
+<h2><a name="finding">Finding Definitions and Declarations</a></h2>
+
+<p>
+If your module is successfully <a href="">parsed</a>, you can find the definition or declaration
+of a symbol (such as an operator name) in any of the following ways: 
+<ul>
+<li>Hold  down the <code>Control</code> key and move the mouse's cursor to an occurrence of the symbol.&nbsp;  When the cursor changes to a hand
+with index finger extended,  click on the left mouse button.</li><br></br>
+<li>Select an occurrence of the symbol in the editor and then either (a)&nbsp;type <code>F3</code></li> or (b)&nbsp;right click and 
+select <code>Open Declaration</code>
+
+</ul>   
+This will take you to the symbol's definition or declaration, which will be highlighted.&nbsp;  
+This feature currently has the following limitations:
+<ul>
+<li>No matter where or in what module you select the symbol, you will be taken to the declaration or definition
+as if the occurrence of that symbol were at the end of the root module. </li><br></br>
+
+<li>If the symbol's definition is imported through an <code>INSTANCE</code> of a module with parameters,
+then you will be taken to the <code>INSTANCE</code> statement.</li><br></br>
+
+<li>If the file has changed since it was parsed, this may take you to the wrong place.</li><br></br>
+
+<li> It works only for globally defined symbols of the spec.&nbsp;  It does not work for a symbol defined in a <code>LET</code> statement, 
+for a definition parameter, or for any other locally declared symbol. </li><br></br>
+
+<li> It doesn't work for symbols defined in standard modules.</li>
+</ul>
+</p>
+     
+<h2><a name="key-bindings">Module Editor Key Bindings</a></h2>
 
 The following are the default key bindings for module editors.&nbsp;  The <samp>General/Keys</samp> item on
 the <a href="../gettingstarted/preferences.html">Preference</a> menu allows you to change those
@@ -110,6 +146,8 @@ Insert, Delete, and Move Text</font></TH>
 <TR> <TD><CODE>Ctl+L</CODE></TD> <TD> Go to line [asks for line number]</TD></TR>
 
 <TR> <TD><CODE>Ctl+Q</CODE></TD> <TD> Go to last edit location</TD></TR>
+
+<TR> <TD><CODE>F3</CODE></TD> <TD> <a href="#finding">Find definition or declaration</a></TD></TR>
 
 <TR> <TD><CODE>Ctl+Up/DownArrow</CODE></TD> <TD> Scroll up/down one line</TD></TR>
 <TR> <TD colspan=2 align=left>The arrow and page-up/down keys behave as usual.</TD>
