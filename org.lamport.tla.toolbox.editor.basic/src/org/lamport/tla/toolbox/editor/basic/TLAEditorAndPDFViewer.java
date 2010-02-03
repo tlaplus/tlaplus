@@ -125,7 +125,7 @@ public class TLAEditorAndPDFViewer extends FormEditor
             saveAsDialog.setText("Select the new filename...");
             saveAsDialog.setFilterExtensions(new String[] { "*.tla" });
             saveAsDialog.setFilterNames(new String[] { "TLA+ Files" });
-            saveAsDialog.setFilterPath(file.getLocation().toOSString());
+            saveAsDialog.setFilterPath(ResourceHelper.getParentDirName(file));
             String result = saveAsDialog.open();
             saveAsDialog = null;
             // no cancellation

@@ -43,7 +43,7 @@ public class AddModuleHandler extends AbstractHandler implements IHandler
 
         FileDialog openFileDialog = UIHelper.getFileDialog(window.getShell());
         openFileDialog.setText("Add TLA+ module to the spec");
-        openFileDialog.setFilterPath(spec.getRootFile().getLocation().toOSString());
+        openFileDialog.setFilterPath(ResourceHelper.getParentDirName(spec.getRootFile()));
 
         openFileDialog.setFilterExtensions(ACCEPTED_EXTENSIONS);
         String moduleFileName = openFileDialog.open();
