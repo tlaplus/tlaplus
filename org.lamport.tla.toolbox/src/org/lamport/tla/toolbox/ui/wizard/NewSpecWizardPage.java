@@ -5,7 +5,6 @@ import java.io.File;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.dialogs.DialogPage;
-import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -42,6 +41,12 @@ public class NewSpecWizardPage extends WizardPage
     private boolean fileTextDirty = false;
 
     public static final String[] ACCEPTED_EXTENSIONS = { "*.tla", "*.*" };
+
+    /**
+     * Holds the path to the most recently browsed
+     * directory
+     */
+    private String lastBrowsedDirectory;
 
     /**
      * @param pageName
@@ -164,8 +169,27 @@ public class NewSpecWizardPage extends WizardPage
 
         openFileDialog.setText("Open root file");
 
-        IDialogSettings settings = Activator.getDefault().getDialogSettings();
-        String rootPath = settings.get("ROOT_FILE_NAME");
+        /*
+         * The directory to which the browse dialog should be opened is computed
+         * by going through the following list in order until a directory is found.
+         * 
+         * 1.) Last directory in which the user opened a file by browsing
+         * from this page. This is reset every time the user selects "Add New Spec...".
+         * 2.) Directory of the most recently opened spec.
+         * 3.) Home directory for the user.
+         */
+        String rootPath = lastBrowsedDirectory;
+        if (rootPath == null)
+        {
+            if (Activator.isSpecManagerInstantiated())
+            {
+                Spec mostRecentlyOpenedSpec = Activator.getSpecManager().getMostRecentlyOpenedSpec();
+                if (mostRecentlyOpenedSpec != null)
+                {
+                    rootPath = ResourceHelper.getParentDirName(mostRecentlyOpenedSpec.getRootFile());
+                }
+            }
+        }
         if (rootPath == null)
         {
             rootPath = System.getProperty("user.home");
@@ -298,8 +322,9 @@ public class NewSpecWizardPage extends WizardPage
         // enable the next/finish button
         this.setPageComplete(true);
 
-        IDialogSettings settings = Activator.getDefault().getDialogSettings();
-        settings.put("ROOT_FILE_NAME", getRootFilename());
+        // stored so that if the user reopens browse, the dialog will open
+        // to the last directory in which he selected a file
+        lastBrowsedDirectory = ResourceHelper.getParentDirName(getRootFilename());
 
     }
 

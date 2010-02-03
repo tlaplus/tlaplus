@@ -418,4 +418,34 @@ public class WorkspaceSpecManager extends GenericSelectionProvider implements IS
         return null;
     }
 
+    public Spec getMostRecentlyOpenedSpec()
+    {
+        if (loadedSpec != null)
+        {
+            return loadedSpec;
+        }
+
+        // no spec currently open
+        // search for the last spec to be closed
+        Spec[] specs = getRecentlyOpened();
+        Spec mostRecentlyOpened = null;
+        try
+        {
+            for (int i = 0; i < specs.length; i++)
+            {
+                if (mostRecentlyOpened == null
+                        || Long.parseLong(mostRecentlyOpened.getProject().getPersistentProperty(
+                                CloseSpecHandler.LAST_CLOSED_DATE)) < Long.parseLong(specs[i].getProject()
+                                .getPersistentProperty(CloseSpecHandler.LAST_CLOSED_DATE)))
+                {
+                    mostRecentlyOpened = specs[i];
+                }
+            }
+        } catch (CoreException e)
+        {
+            Activator.logError("Error finding most recently opened spec.", e);
+        }
+
+        return mostRecentlyOpened;
+    }
 }
