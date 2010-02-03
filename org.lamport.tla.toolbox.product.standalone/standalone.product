@@ -7,9 +7,9 @@
       <image path="splash_small.bmp"/>
       <text>
          TLA+ Toolbox provides a user interface for TLA+ Tools. 
-Version 0.2 of 25 October 2008
+Version 1.1.0 of 4 February 2010
 Don&apos;t forget to click on help.  You can learn about features that you never knew about or have forgotten.
-To report a bug or make a suggestion, please contact Leslie Lamport at http://www.lamport.org/
+Please send us reports of problems or suggestions; see http:/www.tlaplus.net .
       </text>
    </aboutInfo>
 
