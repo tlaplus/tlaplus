@@ -175,7 +175,7 @@ public class NewSpecWizardPage extends WizardPage
          * 
          * 1.) Last directory in which the user opened a file by browsing
          * from this page. This is reset every time the user selects "Add New Spec...".
-         * 2.) Directory of the most recently opened spec.
+         * 2.) Directory of the root file of the most recently opened spec.
          * 3.) Home directory for the user.
          */
         String rootPath = lastBrowsedDirectory;
