@@ -105,11 +105,13 @@ public class TLCOutputSourceRegistry
     }
 
     /**
-     * Remove a source
+     * Remove a source and the date provider associated with that source, if it
+     * exists.
      */
     public synchronized void removeTLCStatusSource(String name)
     {
         this.sources.remove(name);
+        this.providers.remove(name);
         printStats();
     }
 
