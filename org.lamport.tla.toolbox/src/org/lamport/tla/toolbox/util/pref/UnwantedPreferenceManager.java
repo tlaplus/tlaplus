@@ -53,7 +53,22 @@ public class UnwantedPreferenceManager extends ToolboxLifecycleParticipant
                 // We no longer want to remove this node.
                 // We only want to remove one of its sub nodes.
                 // generalNode.remove("org.eclipse.ui.preferencePages.Views");
-                generalNode.remove("org.eclipse.ui.preferencePages.Editors");
+                // we only want to remove some subnodes of the Editors page
+                IPreferenceNode editorsNode = generalNode.findSubNode("org.eclipse.ui.preferencePages.Editors");
+                if (editorsNode != null)
+                {
+                    // remove File Associations page
+                    editorsNode.remove("org.eclipse.ui.preferencePages.FileEditors");
+                    // want to remove only some subnodes of the Text Editors page
+                    IPreferenceNode textEditorsNode = editorsNode
+                            .findSubNode("org.eclipse.ui.preferencePages.GeneralTextEditor");
+                    if (textEditorsNode != null)
+                    {
+                        textEditorsNode.remove("org.eclipse.ui.editors.preferencePages.Spelling");
+                        textEditorsNode.remove("org.eclipse.ui.editors.preferencePages.QuickDiff");
+                        textEditorsNode.remove("org.eclipse.ui.editors.preferencePages.LinkedModePreferencePage");
+                    }
+                }
                 generalNode.remove("org.eclipse.ui.preferencePages.Perspectives");
                 generalNode.remove("org.eclipse.equinox.security.ui.category");
                 IPreferenceNode appearanceNode = generalNode.findSubNode("org.eclipse.ui.preferencePages.Views");
@@ -80,7 +95,7 @@ public class UnwantedPreferenceManager extends ToolboxLifecycleParticipant
 
             /*List nodes = pm.getElements(PreferenceManager.PRE_ORDER);
             Iterator it = nodes.iterator();
-            while(it.hasNext())
+            while (it.hasNext())
             {
                 IPreferenceNode node = (IPreferenceNode) it.next();
                 System.out.println("Name: " + node.getLabelText());
