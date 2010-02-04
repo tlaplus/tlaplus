@@ -388,6 +388,8 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
         // add extend primer
         writer.addPrimer(ModelHelper.TE_MODEL_NAME, ResourceHelper.getModuleName(specRootFilename));
 
+        writeModelInfo(config, writer);
+
         /*
          * The following writes variable declarations and identifier definitions
          * for the trace explorer expressions. It also stores information about
@@ -408,8 +410,6 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
         traceExpressionData = writer.createAndAddTEVariablesAndDefinitions(ModelHelper.deserializeFormulaList(config
                 .getAttribute(IModelConfigurationConstants.TRACE_EXPLORE_EXPRESSIONS, new Vector())),
                 TRACE_EXPLORE_EXPRESSIONS);
-
-        writeModelInfo(config, writer);
 
         // add the initial state predicate and next state action without
         // the trace exploration expressions in order to determine if they parse
@@ -590,11 +590,11 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
         // add extend primer
         writer.addPrimer(ModelHelper.TE_MODEL_NAME, ResourceHelper.getModuleName(specRootFilename));
 
-        // variables declarations for trace explorer expressions
-        writer.addTEVariablesAndDefinitions(traceExpressionData, TRACE_EXPLORE_EXPRESSIONS, false);
-
         // write constants, model values, new definitions, definition overrides
         writeModelInfo(configuration, writer);
+
+        // variables declarations for trace explorer expressions
+        writer.addTEVariablesAndDefinitions(traceExpressionData, TRACE_EXPLORE_EXPRESSIONS, false);
 
         // add init and next
         writer.addInitNextForTE(trace, traceExpressionData, initId, nextId);
