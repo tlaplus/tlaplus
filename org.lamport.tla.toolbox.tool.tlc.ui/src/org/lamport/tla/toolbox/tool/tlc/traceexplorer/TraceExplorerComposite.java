@@ -421,6 +421,11 @@ public class TraceExplorerComposite
             return;
         }
 
+        // Save model without validating.
+        // Validating would erase MC.out, which we dont want
+        // the trace explorer to do.
+        // This could erase a trace that was produced
+        // after a three week run of TLC.
         UIHelper.runUISync(new Runnable() {
 
             public void run()
