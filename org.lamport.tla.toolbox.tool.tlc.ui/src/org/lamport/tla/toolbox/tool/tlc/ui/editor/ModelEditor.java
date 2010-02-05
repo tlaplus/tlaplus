@@ -296,6 +296,20 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
     }
 
     /**
+     * Commits the pages and saves the config without running validation
+     * on the model.
+     * 
+     * @param monitor
+     */
+    public void doSaveWithoutValidating(IProgressMonitor monitor)
+    {
+        this.commitPages(monitor, true);
+        ModelHelper.doSaveConfigurationCopy(configurationCopy);
+
+        this.editorDirtyStateChanged();
+    }
+
+    /**
      * @see org.eclipse.ui.part.EditorPart#doSaveAs()
      */
     public void doSaveAs()
