@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Vector;
 
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -40,6 +41,7 @@ import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
 import org.lamport.tla.toolbox.tool.tlc.ui.view.TLCErrorView;
 import org.lamport.tla.toolbox.tool.tlc.ui.wizard.FormulaWizard;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
+import org.lamport.tla.toolbox.util.UIHelper;
 
 /**
  * This is somewhat mislabeled as a composite. Its really
@@ -394,8 +396,8 @@ public class TraceExplorerComposite
          * currently possible to check for validation errors, so the
          * trace explorer cannot be run.
          */
-        ModelEditor modelEditor = ((ModelEditor) ModelHelper
-                .getEditorWithModelOpened(view.getCurrentConfigFileHandle()));
+        final ModelEditor modelEditor = ((ModelEditor) ModelHelper.getEditorWithModelOpened(view
+                .getCurrentConfigFileHandle()));
         if (modelEditor == null)
         {
             // the model editor must be open to run the trace explorer
@@ -419,8 +421,13 @@ public class TraceExplorerComposite
             return;
         }
 
-        // saving triggers validation of the model which we do not want
-        // modelEditor.doSave(new NullProgressMonitor());
+        UIHelper.runUISync(new Runnable() {
+
+            public void run()
+            {
+                modelEditor.doSaveWithoutValidating((new NullProgressMonitor()));
+            }
+        });
 
         try
         {
