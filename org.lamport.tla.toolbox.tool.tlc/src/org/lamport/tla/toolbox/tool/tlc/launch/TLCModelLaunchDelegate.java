@@ -234,7 +234,10 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
                                     // skipped
                                     try
                                     {
-                                        members[i].delete(IResource.FORCE, new SubProgressMonitor(monitor, 1));
+                                        if (!members[i].getName().equals(ModelHelper.TE_TRACE_SOURCE))
+                                        {
+                                            members[i].delete(IResource.FORCE, new SubProgressMonitor(monitor, 1));
+                                        }
                                     } catch (CoreException e)
                                     {
                                         // catch the exception if

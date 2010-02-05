@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Vector;
 
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -419,6 +420,8 @@ public class TraceExplorerComposite
             return;
         }
 
+        modelEditor.doSave(new NullProgressMonitor());
+
         try
         {
             // save the launch configuration
@@ -431,6 +434,7 @@ public class TraceExplorerComposite
             // if the trace is empty, then do nothing
             if (trace.size() > 0)
             {
+                // TraceExplorerHelper.serializeTrace(modelConfig);
                 workingCopy.doSave().launch(TraceExplorerDelegate.MODE_TRACE_EXPLORE, null, true);
 
             }

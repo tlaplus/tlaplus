@@ -139,6 +139,9 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
     public static final String TE_FILE_TLA = TE_MODEL_NAME + ".tla";
     public static final String TE_FILE_CFG = TE_MODEL_NAME + ".cfg";
     public static final String TE_FILE_OUT = TE_MODEL_NAME + ".out";
+    // the file to which TLC's output is written so
+    // that the trace explorer can retrieve the trace when it is run
+    public static final String TE_TRACE_SOURCE = "MC_TE.out";
 
     private static final String CHECKPOINT_STATES = MC_MODEL_NAME + ".st.chkpt";
     private static final String CHECKPOINT_QUEUE = "queue.chkpt";
@@ -1939,7 +1942,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
 
         try
         {
-            FileEditorInput logFileEditorInput = new FileEditorInput(getModelOutputLogFile(config, false));
+            FileEditorInput logFileEditorInput = new FileEditorInput(getTraceSourceFile(config));
             FileDocumentProvider logFileDocumentProvider = new FileDocumentProvider();
             logFileDocumentProvider.connect(logFileEditorInput);
             IDocument logFileDocument = logFileDocumentProvider.getDocument(logFileEditorInput);
@@ -2048,5 +2051,30 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
         }
 
         return false;
+    }
+
+    /**
+     * Returns a handle to the output file {@link ModelHelper#TE_TRACE_SOURCE} used by the
+     * trace explorer to retrieve the trace from the most recent run of TLC on
+     * the config.
+     * 
+     * Note that this is a handle-only operation. The file need not exist in the
+     * underlying file system.
+     * 
+     * @param config
+     * @return
+     */
+    public static IFile getTraceSourceFile(ILaunchConfiguration config)
+    {
+
+        Assert.isNotNull(config);
+        IFolder targetFolder = ModelHelper.getModelTargetDirectory(config);
+        if (targetFolder != null && targetFolder.exists())
+        {
+            IFile logFile = targetFolder.getFile(TE_TRACE_SOURCE);
+            Assert.isNotNull(logFile);
+            return logFile;
+        }
+        return null;
     }
 }

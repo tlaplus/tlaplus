@@ -138,6 +138,9 @@
       <sink
             class="org.lamport.tla.toolbox.tool.tlc.output.internal.FileProcessOutputSink">
       </sink>
+      <sink
+            class="org.lamport.tla.toolbox.tool.tlc.output.internal.TraceExplorerTraceSourceOutputSink">
+      </sink>
    </extension>
    <extension
          point="org.eclipse.debug.core.launchDelegates">

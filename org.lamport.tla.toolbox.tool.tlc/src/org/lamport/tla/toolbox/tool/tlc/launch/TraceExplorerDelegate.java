@@ -305,10 +305,11 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
                                 if ((checkpoints.length > 0 && checkpoints[0].equals(members[i]))
                                         || members[i].getName().equals(ModelHelper.FILE_CFG)
                                         || members[i].getName().equals(ModelHelper.FILE_TLA)
-                                        || members[i].getName().equals(ModelHelper.FILE_OUT))
+                                        || members[i].getName().equals(ModelHelper.FILE_OUT)
+                                        || members[i].getName().equals(ModelHelper.TE_TRACE_SOURCE))
                                 {
                                     // We don't want to delete the checkpoints folder
-                                    // or any of the MC files.
+                                    // or any of the MC files or the MC_TE.out file.
                                     continue;
                                 }
                                 members[i].delete(IResource.FORCE, new SubProgressMonitor(monitor, 1));

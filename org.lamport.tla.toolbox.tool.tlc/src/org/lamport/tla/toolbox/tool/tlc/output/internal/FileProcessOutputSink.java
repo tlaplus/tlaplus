@@ -24,9 +24,9 @@ import org.lamport.tla.toolbox.util.ResourceHelper;
  */
 public class FileProcessOutputSink implements IProcessOutputSink
 {
-    private ISchedulingRule rule;
-    private IFile outFile;
-    private String processName;
+    protected ISchedulingRule rule;
+    protected IFile outFile;
+    protected String processName;
 
     public FileProcessOutputSink()
     {
