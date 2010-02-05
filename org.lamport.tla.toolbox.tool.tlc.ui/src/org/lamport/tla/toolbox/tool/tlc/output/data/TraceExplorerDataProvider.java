@@ -251,8 +251,13 @@ public class TraceExplorerDataProvider extends TLCModelLaunchDataProvider
     {
         // retrieve the error with a trace for which the trace explorer was run
         TLCError originalErrorWithTrace = TraceExplorerHelper.getErrorOfOriginalTrace(getConfig());
-        Assert.isNotNull(originalErrorWithTrace,
-                "Could not get original trace after running trace explorer. This is a bug.");
+        if (originalErrorWithTrace == null)
+        {
+            // the trace explorer is meaningless if the original trace cannot be recovered
+            // all errors should be cleared
+            getErrors().clear();
+            return;
+        }
 
         // retrieve the original trace
         // this is necessary for items (3) and (5) from the list in the
