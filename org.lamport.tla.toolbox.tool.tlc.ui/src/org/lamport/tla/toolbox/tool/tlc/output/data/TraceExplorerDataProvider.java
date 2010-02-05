@@ -24,8 +24,10 @@ import org.lamport.tla.toolbox.tool.tlc.output.source.TLCRegion;
 import org.lamport.tla.toolbox.tool.tlc.output.source.TLCRegionContainer;
 import org.lamport.tla.toolbox.tool.tlc.traceexplorer.TraceExplorerHelper;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
+import org.lamport.tla.toolbox.tool.tlc.ui.view.TLCErrorView;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelWriter;
+import org.lamport.tla.toolbox.util.UIHelper;
 
 import tlc2.output.EC;
 
@@ -73,6 +75,14 @@ public class TraceExplorerDataProvider extends TLCModelLaunchDataProvider
         getTraceExpressionsInformation();
 
         processTraceForTraceExplorer();
+
+        UIHelper.runUIAsync(new Runnable() {
+
+            public void run()
+            {
+                TLCErrorView.updateErrorView(getConfig());
+            }
+        });
     }
 
     /**
