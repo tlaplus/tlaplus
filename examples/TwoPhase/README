@@ -1,0 +1,13 @@
+This directory contains two specifications:
+
+Alternate
+  A specification of a trivial alternation system.
+  The only non-trivial aspect of the spec is the way it uses
+  constant operator parameters to describe unspecified actions. 
+  
+TwoPhase
+  A specification of a very simple hardware protocol called 
+  two-phase handshaking, and a theorem asserting that it
+  implements the Alternate spec under a refinement mapping.  
+  It contains a TLA+ proof that this theorem that has been 
+  checked by the TLAPS proof system.

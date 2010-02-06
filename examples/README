@@ -18,6 +18,14 @@ Prisoners
    is rather subtle, and hence it's not so easy to understand
    why the solution is correct.
    
+TwoPhase
+   A specification of a very simple hardware protocol and of 
+   the problem it solves.  This is a nice example of the use
+   of instantiation to describe a refinement mapping, and
+   of the use of constant operator parameters to describe
+   unspecified actions.  There is also a TLA+ proof of 
+   correctness that has been checked by the TLAPS proof system.
+   
 Paxos
    A high-level specification of the Paxos consensus algorithm,
    consisting of a specification of consensus, a very high
