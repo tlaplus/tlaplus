@@ -1,0 +1,32 @@
+This file contains three specifications:
+
+Consensus
+  A specification of the consensus problem.
+  
+Voting
+  A specification of a very abstract consensus algorithm
+  with a high level (unchecked) TLA+ proof that it implements
+  the Consensus spec.  I believe that this proof has been
+  expanded and checked with the TLAPS proof system by
+  Jean-Baptiste Tristan.
+  
+Paxos
+  A specification of a high-level version of the Paxos
+  algorithm, a distributed message-passing algorithm that
+  implements the Voting spec--and hence implements consensus.
+  It contains a "first attempt" at an inductive invariant
+  for the proof of implementation.  Tristan, who wrote most
+  of a formal TLA+ proof of implementation, found that,
+  while the invariant is indeed an invariant, it is not
+  strong enough to be inductive.  (Note: because when he
+  began the proof TLAPS did not handle records, Tristan
+  rewrote the algorithm in terms of tuples for his proof.)
+  
+MCConsensus
+MCVoting
+MCPaxos
+  Specifications that are used to model-check the corresponding
+  three specifications above.  The Toolbox makes it unnecessary
+  for the user to write such specs, essentially producing them
+  itself from the models defined by the user.
+   

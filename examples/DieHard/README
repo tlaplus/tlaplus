@@ -1,0 +1,14 @@
+There are two specifications:
+
+DieHard
+  A very elementary example taken from a movie that introduces
+  TLA+ and the use of the TLC model checker.  It solves a of
+  obtaining 4 gallons of water using two buckets of capacity 
+  3 and 5 gallons.
+  
+DieHarder 
+  A generalization of DieHard in which the amount of water
+  to produce and the number of buckets and their capacities 
+  are parameters.  It introduces the TLA+ operators for
+  handling functions (known to programmers as arrays).
+  

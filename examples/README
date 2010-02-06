@@ -1,43 +1,32 @@
-This is a directory of material to accompany the book "Specifying
-Concurrent Systems" by Leslie Lamport.  It contains the following
-subdirectories:
+This is a directory of examples, containing the following 
+subdirectories.
 
-SimpleMath
-   Material to accompany the chapter "A Little Simple Math".
+SpecifyingSystems
+  Examples to accompany the book Specifying Systems
+  
+allocator
+   Specification of a resource allocator, written by Stephan
+   Merz.
 
-HourClock
-   Material to accompany the chapter "Specifying a Simple Clock".
+DieHard
+   A very elementary example based on a puzzle from a movie.
+   I provides a good first introduction to TLA+.
 
-AsynchronousInterface
-   Material to accompany the chapter "An Asynchronous Interface".
-
-FIFO
-   Material to accompany the chapter "A FIFO".
-
-CachingMemory
-   Material to accompany the chapter "A Caching Memory".
-
-MoreMath
-   Material to accompany the chapter "Some More Math".
-
-Liveness
-   Material to accompany the chapter "Liveness and Fairness"
-
-RealTime
-   Preliminary version of material to accompany the chapter "Real
-   Time".
-
-Composing
-   Material to accompany the chapter "Composing Specifications".
-
-AdvancedExamples
-   Material to accompany the chapter "Advanced Examples".
-
-TLC
-   Material to accompany the chapter "The TLC Model Checker"
-
-Syntax
-   Material to accompany the chapter "The Syntax of TLA+"
-
-Standard
-   Material to accompany the chapter "The Standard Modules"
+Prisoners
+   A simple specification that solves a puzzle that was 
+   presented on an American radio program.  The solution
+   is rather subtle, and hence it's not so easy to understand
+   why the solution is correct.
+   
+Paxos
+   A high-level specification of the Paxos consensus algorithm,
+   consisting of a specification of consensus, a very high
+   level spec of the algorithm (with no messages) that 
+   implements consensus and is implemented by the Paxos
+   algorithm.  
+   
+Voting
+   Ignore this spec.  It seems to be obsolete, but it will be
+   deleted only when we can figure out how it got into this
+   directory.
+   
