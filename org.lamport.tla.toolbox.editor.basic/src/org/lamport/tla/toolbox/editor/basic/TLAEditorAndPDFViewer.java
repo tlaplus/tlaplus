@@ -43,6 +43,8 @@ public class TLAEditorAndPDFViewer extends FormEditor
      */
     public static final String ID = "org.lamport.tla.toolbox.TLAEditorAndPDFViewer";
     public static final String PDFPage_ID = "pdfPage";
+    // index at which the tla module editor tab appears
+    private static final int tlaEditorIndex = 0;
 
     private Image rootImage = TLAEditorActivator.imageDescriptorFromPlugin(TLAEditorActivator.PLUGIN_ID,
             "/icons/root_file.gif").createImage();
@@ -64,8 +66,6 @@ public class TLAEditorAndPDFViewer extends FormEditor
             }
 
             tlaEditor = new TLAEditor();
-
-            int tlaEditorIndex = 0;
 
             addPage(tlaEditorIndex, tlaEditor, tlaEditorInput);
             setPageText(tlaEditorIndex, "TLA Module");
@@ -278,6 +278,16 @@ public class TLAEditorAndPDFViewer extends FormEditor
                 setContentDescription(input.getName());
             }
         }
+    }
+    
+    /**
+     * Sets the TLA module editor as the active
+     * tab for this editor. Does not necessarily make
+     * this multi-page editor the active editor.
+     */
+    public void setTLAEditorActive()
+    {
+        setActivePage(tlaEditorIndex);
     }
 
 }

@@ -117,6 +117,9 @@ public class ActionClickListener implements IDoubleClickListener, ISelectionChan
                                         if (editor != null && editor instanceof TLAEditorAndPDFViewer)
                                         {
                                             TLAEditorAndPDFViewer tlaEditorAndPDFViewer = (TLAEditorAndPDFViewer) editor;
+                                            // the pdf viewing page may currently be the active tab for the multi-page editor
+                                            // we want the tla module editor to be the active tab
+                                            tlaEditorAndPDFViewer.setTLAEditorActive();
                                             tlaEditorAndPDFViewer.getTLAEditor().selectAndReveal(actionStartPosition,
                                                     length);
                                         }
