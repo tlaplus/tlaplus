@@ -5872,6 +5872,16 @@ OpDefNode node = (OpDefNode) vec.elementAt(i);
                  ************************************************************/
                  if (   prevIsInfix
                      && (curLHS != null)
+                     && (curLHS.heirs().length > 0)
+                        /***************************************************
+                        * This test added 25 Feb 2010 because if curLHS    *
+                        * is a string, then curLHS.heirs() is a            *
+                        * zero-length array, so the following test threw   *
+                        * an out-of-bounds array index exception.  Note    *
+                        * that curLHS.heirs() should never be null,        *
+                        * because the heirs() method can never return      *
+                        * null.                                            *
+                        ***************************************************/
                      && (((SyntaxTreeNode) 
                              curLHS.heirs()[0]).heirs().length == 0) 
                      && (curLHS.heirs()).length > 1
