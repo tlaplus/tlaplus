@@ -41,7 +41,7 @@ public class TLAEditorAndPDFViewer extends FormEditor
     /**
      * Editor ID
      */
-    public static final String ID = "org.lamport.tla.toolbox.TLAEditorAndPDFViewer";
+    public static final String ID = "org.lamport.tla.toolbox.editor.basic.TLAEditorAndPDFViewer";
     public static final String PDFPage_ID = "pdfPage";
     // index at which the tla module editor tab appears
     private static final int tlaEditorIndex = 0;
