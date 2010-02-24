@@ -42,7 +42,7 @@ public class SANY {
     * The following string is inserted by an Emacs macro when a new        *
     * version is saved.                                                    *
     ***********************************************************************/
-    "last modified on Mon  9 November 2009 at 12:33:20 PST by lamport";
+    "last modified on Wed 24 February 2010 at 10:07:37 PST by lamport";
 
   private static String modDate = 
                 lastModified.substring(21, lastModified.indexOf(" at"));
@@ -51,7 +51,7 @@ public class SANY {
     ***********************************************************************/
 
   public static String version = 
-    "Version .99 created " + modDate ; 
+    "Version 2.0 created " + modDate ; 
 
   private static boolean doParsing          = true;  
     // true <=> parsing should be done
