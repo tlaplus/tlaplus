@@ -5676,7 +5676,11 @@ OpDefNode node = (OpDefNode) vec.elementAt(i);
       *********************************************************************/
       UniqueString stepNum = null ;
       switch (stepNumSTN.getKind()) {
-// XXXXXX  xyz: need to add the following case
+      // LL: On 25 Feb 2010 I discovered the following comment here:
+      //      XXXXXX  xyz: need to add the following case
+      // The ProofImplicitStepLexeme case (something like <*>3) seems to be 
+      // handled properly in tests.  I presume that this is an obsolete
+      // comment that I didn't remove when I added the case to the code. 
         case TLAplusParserConstants.ProofImplicitStepLexeme :
         case TLAplusParserConstants.ProofStepLexeme :
           stepNum = stepNumSTN.getUS() ; 
