@@ -617,7 +617,13 @@ public class Generator implements ASTConstants, SyntaxTreeConstants,
                       return -1 ;
                       } ;
     if (op == LLSel) {return (arity > 0) ? 1 : -1 ;} ;
-    if (op == GGSel) {if (arity == 1) {return 1;} ;
+    if (op == GGSel) {// if (arity == 1) {return 1;} ;
+                      /**************************************************
+                      * Commented out on 9 Mar 2010 by LL. Apparently,  *
+                      * I once thought it was a good idea to let !>>    *
+                      * refer to the argument of a unary operator.  I   *
+                      * no longer think so.                             *
+                      **************************************************/
                       if (arity == 2) {return 2;} ;
                       } ;
     return -1;
