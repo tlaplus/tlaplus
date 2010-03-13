@@ -79,7 +79,7 @@ public class Worker extends IdThread implements IWorker {
       // Assert.printStack(e);
       synchronized(this.tlc) {
 	if (this.tlc.setErrState(curState, null, true)) {
-	    MP.printError(EC.GENERAL, e.getMessage());
+	    MP.printError(EC.GENERAL, (e.getMessage()==null)?e.toString():e.getMessage());
 	}
 	this.squeue.finishAll();
 	this.tlc.notify();

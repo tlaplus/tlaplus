@@ -38,8 +38,19 @@ public class SetPredValue extends Value implements Enumerable {
     this.pred = pred;
     this.tool = tool;
     this.con = con;
-    this.state = s0;
-    this.pstate = s1;
+    this.state = s0.copy();  
+    if (s1 != null) {
+        this.pstate = s1.copy();
+    } else {
+        this.pstate = null;
+    }
+      /**
+       * The two copy()s above were added by YY on 12 Mar 2010 to fix the
+       * following bug: When a lazily evaluated expression is saved, the
+       * state under which it should be evaluated must be saved.  The
+       * s0 and s1 objects with which this method is called can be modified
+       * after the call, so copies must be made.
+       */
     this.control = control;
   }
 

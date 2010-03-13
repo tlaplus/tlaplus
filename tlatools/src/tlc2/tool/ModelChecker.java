@@ -121,13 +121,27 @@ public class ModelChecker extends AbstractChecker
                 report("exception in init");
                 report(e);
                 // Initial state computation fails with an exception:
-
+                String msg = e.getMessage();
+                /**
+                 * The following code replaced code equivalent to setting msg = e.getMessage().
+                 * getMessage() for a StackOverflowError returned null, producing a useless
+                 * error message.  Changed by LL on 12 Mar 2010
+                 */
+                if (e instanceof StackOverflowError) {
+                    msg = "This was a Java StackOverflowError. It was probably the result\n"
+                        + "of an incorrect recursive function definition that caused TLC to enter\n"
+                        + "an infinite loop when trying to compute the function or its application\n"
+                        + "to an element in its putative domain." ;
+                }
+                if (msg == null) {
+                    msg = e.toString();
+                }
                 if (this.errState != null)
                 {
-                    MP.printError(EC.TLC_INITIAL_STATE, new String[] { e.getMessage(), this.errState.toString() });
+                    MP.printError(EC.TLC_INITIAL_STATE, new String[] { msg, this.errState.toString() });
                 } else
                 {
-                    MP.printError(EC.GENERAL, e.getMessage());
+                    MP.printError(EC.GENERAL, msg);
                 }
 
                 // Replay the error with the error stack recorded:
@@ -217,7 +231,7 @@ public class ModelChecker extends AbstractChecker
             report("TLC terminated with error");
             // Assert.printStack(e);
             success = false;
-            MP.printError(EC.GENERAL, e.getMessage());
+            MP.printError(EC.GENERAL, (e.getMessage()==null)?e.toString():e.getMessage());
         } finally
         {
             this.printSummary(success);
@@ -485,7 +499,8 @@ public class ModelChecker extends AbstractChecker
                             if (this.setErrState(curState, succState, true))
                             {
                                 MP.printError(EC.TLC_INVARIANT_EVALUATION_FAILED, new String[] {
-                                        this.tool.getInvNames()[k], e.getMessage() });
+                                        this.tool.getInvNames()[k], 
+                                        (e.getMessage()==null)?e.toString():e.getMessage() });
                                 this.trace.printTrace(curState.uid, curState, succState);
                                 this.theStateQueue.finishAll();
                                 this.notify();
@@ -539,7 +554,8 @@ public class ModelChecker extends AbstractChecker
                         if (this.setErrState(curState, succState, true))
                         {
                             MP.printError(EC.TLC_ACTION_PROPERTY_EVALUATION_FAILED, new String[] {
-                                    this.tool.getImpliedActNames()[k], e.getMessage() });
+                                    this.tool.getImpliedActNames()[k], 
+                                    (e.getMessage()==null)?e.toString():e.getMessage() });
                             this.trace.printTrace(curState.uid, curState, succState);
                             this.theStateQueue.finishAll();
                             this.notify();
@@ -589,9 +605,16 @@ public class ModelChecker extends AbstractChecker
                     } else if (e instanceof OutOfMemoryError)
                     {
                         MP.printError(EC.SYSTEM_OUT_OF_MEMORY);
-                    } else
+                    } else if (e.getMessage() != null)
                     {
                         MP.printError(EC.GENERAL, e.getMessage());
+                    } else  
+                    { 
+                    /**
+                     * This case added by LL on 12 Mar 2010 because e.getMessage() = null
+                     * for a NullPointerException.  (How logical!?)
+                     */
+                        MP.printError(EC.GENERAL, e.toString());
                     }
                     this.trace.printTrace(curState.uid, curState, succState);
                     this.theStateQueue.finishAll();

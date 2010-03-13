@@ -618,7 +618,7 @@ public class LiveWorker extends IdThread {
       }
       catch (Exception e) 
       {
-          MP.printError(EC.GENERAL, e.getMessage());
+          MP.printError(EC.GENERAL, (e.getMessage()==null)?e.toString():e.getMessage());
           // Assert.printStack(e);
           return;
       }

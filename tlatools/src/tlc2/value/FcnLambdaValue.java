@@ -38,8 +38,13 @@ public class FcnLambdaValue extends Value implements Applicable {
     this.excepts = null;
     this.tool = tool;
     this.con = c;
-    this.state = s0;
-    this.pstate = s1;
+    this.state = s0.copy();  // copy() added 12 Mar 2010 by Yuan Yu. 
+    if (s1 != null) {        // see SetPredValue constructor.
+        this.pstate = s1.copy(); 
+    } else {
+        this.pstate = null;
+    }
+    
     this.control = control;
     this.fcnRcd = null;
   }

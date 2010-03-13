@@ -110,7 +110,7 @@ public abstract class StateQueue {
           catch (Exception e) 
           {
               // SZ Jul 10, 2009: added error prefix
-              MP.printError(EC.GENERAL, e.getMessage());
+              MP.printError(EC.GENERAL, (e.getMessage()==null)?e.toString():e.getMessage());
               System.exit(1);
           }
           this.numWaiting--;
@@ -138,7 +138,7 @@ public abstract class StateQueue {
               }
               catch (Exception e) {
                   // SZ Jul 10, 2009: added error prefix
-                  MP.printError(EC.GENERAL, e.getMessage());
+                  MP.printError(EC.GENERAL, (e.getMessage()==null)?e.toString():e.getMessage());
                   System.exit(1);
               }
           }

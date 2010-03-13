@@ -71,7 +71,8 @@ public class DiskStateQueue extends StateQueue {
 	this.enqIndex = 0;
       }
       catch (Exception e) {
-          Assert.fail(EC.SYSTEM_ERROR_WRITING_STATES, new String[]{"queue", e.getMessage()});
+          Assert.fail(EC.SYSTEM_ERROR_WRITING_STATES, 
+                  new String[]{"queue", (e.getMessage()==null)?e.toString():e.getMessage()});
       }
     }
     this.enqBuf[this.enqIndex++] = state;
@@ -120,7 +121,8 @@ public class DiskStateQueue extends StateQueue {
       }
     }
     catch (Exception e) {
-        Assert.fail(EC.SYSTEM_ERROR_READING_STATES, new String[]{"queue", e.getMessage()});
+        Assert.fail(EC.SYSTEM_ERROR_READING_STATES, 
+                new String[]{"queue", (e.getMessage()==null)?e.toString():e.getMessage()});
     }
   }
 

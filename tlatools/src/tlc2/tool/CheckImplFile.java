@@ -97,7 +97,7 @@ public class CheckImplFile extends CheckImpl
             SANY.frontEndSemanticAnalysis(spec, ToolIO.out, true);
         } catch (Throwable e)
         {
-            String msg = e.getMessage();
+            String msg = (e.getMessage()==null)?e.toString():e.getMessage();
             Assert.fail(EC.CHECK_COULD_NOT_READ_TRACE, msg);
         }
         if (!spec.initErrors.isSuccess() || !spec.parseErrors.isSuccess() || !spec.semanticErrors.isSuccess())

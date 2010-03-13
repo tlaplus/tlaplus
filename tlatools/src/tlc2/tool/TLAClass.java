@@ -54,7 +54,8 @@ public class TLAClass
             }
         } catch (Throwable e)
         {
-            Assert.fail(EC.TLC_ERROR_REPLACING_MODULES, new String[] { name, e.getMessage() });
+            Assert.fail(EC.TLC_ERROR_REPLACING_MODULES, new String[] { name, 
+                       (e.getMessage()==null)?e.toString():e.getMessage() });
         }
         return cl;
     }

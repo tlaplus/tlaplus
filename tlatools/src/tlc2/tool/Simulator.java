@@ -135,10 +135,11 @@ public class Simulator implements Cancelable
         // Assert.printStack(e);
         if (curState != null)
         {
-            MP.printError(EC.TLC_INITIAL_STATE, new String[] { e.getMessage(), curState.toString() });
+            MP.printError(EC.TLC_INITIAL_STATE, 
+                    new String[] { (e.getMessage()==null)?e.toString():e.getMessage(), curState.toString() });
         } else
         {
-            MP.printError(EC.GENERAL, e.getMessage());
+            MP.printError(EC.GENERAL,(e.getMessage()==null)?e.toString():e.getMessage());
         }
         
         this.printSummary();
@@ -260,7 +261,8 @@ public class Simulator implements Cancelable
       {
           this.printSummary();
       } else {
-          this.printBehavior(EC.GENERAL, new String[]{e.getMessage()}, curState, traceIdx);
+          this.printBehavior(EC.GENERAL, 
+                  new String[]{(e.getMessage()==null)?e.toString():e.getMessage()}, curState, traceIdx);
       }
     }
   }

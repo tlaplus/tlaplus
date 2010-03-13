@@ -176,7 +176,7 @@ public class Generator {
     }
     catch (Exception e) {
       // Assert.printStack(e);
-        MP.printError(EC.GENERAL, e.getMessage());
+        MP.printError(EC.GENERAL, (e.getMessage()==null)?e.toString():e.getMessage());
     }
     //System.exit(0); //SZ: no-op removed
   }
