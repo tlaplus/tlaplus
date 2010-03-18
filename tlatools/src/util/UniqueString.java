@@ -281,7 +281,8 @@ public final class UniqueString implements Serializable
     public final void write(BufferedDataOutputStream dos) throws IOException
     {
         dos.writeInt(this.tok);
-        dos.writeInt(this.loc);
+        dos.writeInt(this. getVarLoc()); 
+         // Above changed from dos.writeInt(this.loc); by Yuan Yu on 17 Mar 2010
         dos.writeInt(this.s.length());
         dos.writeString(this.s);
     }
