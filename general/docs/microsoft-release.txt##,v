@@ -1,0 +1,92 @@
+head	1.2;
+access;
+symbols;
+locks
+	lamport:1.2; strict;
+comment	@# @;
+
+
+1.2
+date	2010.03.22.21.33.11;	author lamport;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2010.03.22.21.33.00;	author lamport;	state Exp;
+branches;
+next	;
+
+
+desc
+@#
+@
+
+
+1.2
+log
+@#
+@
+text
+@TO PREPARE THE ZIP FILES FOR THE RELEASE
+
+In org.lamport.tla.toolbox.product.standalone
+  plugin.xml : line 32, update date and version
+  standalone.product: 
+     Branding tab: update date and version
+     Overview: update version
+
+In org.lamport.tla.toolbox/welcome/welcomeView.html
+   Update date and version
+     
+In org.lamport.tla.toolbox.product.standalone.product
+  synchronize and use Eclipse Product export wizard
+  In the first menu, give
+    Product Configuration: 
+      Configuration:
+        /org.lamport.tla.toolbox.product.standalone/standalone.product
+      Root directory: toolbox
+    Synchronization:
+      Synchronize before exporting
+    Destination:
+      Archive file:
+        c:\users\lamport\tla\toolbox-release\toolbox-i.j.k
+    Export Options
+      Export for muliple platforms
+      Allow for binary cycles in target platform
+  In Cross-platform export menu, select
+    linux (gtk/x86 & x86_64)
+    macosx (cocoa/x86 & x86_64
+    win32 (win32/x86 & x86_64)
+
+ Hitting Finish then puts the the zip files into:
+     c:\users\lamport\tla\toolbox-release
+
+
+TO GENERATE THE RELEASE:
+  Go to  Code Posting Tool - My Requests
+    http://msrredtools/tools/publish/cpt_v26/research/list.aspx
+  Click on the version:
+  Click on Upgrade Installation
+     Indicate new version number
+  Note: when uploading the file, wait for progress bar at bottom
+    of screen to indicate it's done (and for new file name to
+    appear in Installation field)
+
+Queries to msrcpx or Chuck Needham (chuckne)
+-------------------------------------------------------------
+ Version 1.1.0 -  5 Feb 2010 : 
+    initial release
+ Version 1.1.1 - 22 Mar 2010 : 
+    Fixes TLC bug that made restarting from a checkpoint not work,
+    plus minor fixes.
+@
+
+
+1.1
+log
+@#
+@
+text
+@a47 1
+
+@
