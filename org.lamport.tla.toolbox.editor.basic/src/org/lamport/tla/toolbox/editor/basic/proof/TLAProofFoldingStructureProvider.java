@@ -143,26 +143,26 @@ public class TLAProofFoldingStructureProvider implements IParseResultListener, I
         {
             TheoremNode theoremNode = theorems[i];
 
-            // DEBUGGING CODE
-            try
-            {
-
-                // current position in the module of the theorem
-                if (theoremNode.getLocation().source().equals(moduleName))
-                {
-                    IRegion region = DocumentHelper.locationToRegion(document, theoremNode.getLocation());
-                    System.out.println("Theorem " + i + " : ");
-                    System.out.println(document.get(region.getOffset(), region.getLength()));
-                } else
-                {
-                    System.out.println("Found a theorem in module " + theoremNode.getLocation().source()
-                            + ". Only looking for theorems in module " + moduleName + ".");
-                }
-            } catch (BadLocationException e)
-            {
-
-            }
-            // END DEBUGGING CODE
+            // // DEBUGGING CODE
+            // try
+            // {
+            //
+            // // current position in the module of the theorem
+            // if (theoremNode.getLocation().source().equals(moduleName))
+            // {
+            // IRegion region = DocumentHelper.locationToRegion(document, theoremNode.getLocation());
+            // System.out.println("Theorem " + i + " : ");
+            // System.out.println(document.get(region.getOffset(), region.getLength()));
+            // } else
+            // {
+            // System.out.println("Found a theorem in module " + theoremNode.getLocation().source()
+            // + ". Only looking for theorems in module " + moduleName + ".");
+            // }
+            // } catch (BadLocationException e)
+            // {
+            //
+            // }
+            // // END DEBUGGING CODE
 
             try
             {
@@ -282,7 +282,7 @@ public class TLAProofFoldingStructureProvider implements IParseResultListener, I
 
         String moduleName = ResourceHelper.getModuleName(((FileEditorInput) editor.getEditorInput()).getFile());
 
-        System.out.println("Proof structure provider for " + moduleName + " recieved a parse result.");
+        // System.out.println("Proof structure provider for " + moduleName + " recieved a parse result.");
 
         if (editor == null)
         {
@@ -362,12 +362,12 @@ public class TLAProofFoldingStructureProvider implements IParseResultListener, I
                     while (previousFoldsIt.hasNext())
                     {
                         FoldTuple fold = (FoldTuple) previousFoldsIt.next();
-                        System.out.println("Previous fold at position " + fold.getPosition());
+                        // System.out.println("Previous fold at position " + fold.getPosition());
                         if (fold.getPosition().getOffset() == proofPosition.getOffset()
                                 && fold.getPosition().getLength() == proofPosition.getLength())
                         {
-                            System.out.println("Found existing fold at " + proofPosition + ". Fold is "
-                                    + (fold.getAnnotation().isCollapsed() ? "collapsed." : "expanded."));
+                            // System.out.println("Found existing fold at " + proofPosition + ". Fold is "
+                            // + (fold.getAnnotation().isCollapsed() ? "collapsed." : "expanded."));
                             proof.setFold(fold);
                             previousFoldsIt.remove();
                             foundExistingFold = true;
@@ -378,7 +378,7 @@ public class TLAProofFoldingStructureProvider implements IParseResultListener, I
 
                     if (!foundExistingFold)
                     {
-                        System.out.println("Creating new fold at position " + proofPosition);
+                        // System.out.println("Creating new fold at position " + proofPosition);
                         FoldTuple newFold = new FoldTuple(new ProjectionAnnotation(), proofPosition);
                         proof.setFold(newFold);
                         additions.put(newFold.getAnnotation(), newFold.getPosition());
