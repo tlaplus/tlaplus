@@ -9,6 +9,8 @@ import org.eclipse.jface.text.rules.IWordDetector;
 import org.lamport.tla.toolbox.editor.basic.tla.TLAWhitespaceDetector;
 import org.lamport.tla.toolbox.editor.basic.tla.TLAWordDetector;
 
+import tla2sany.st.Location;
+
 /**
  * Toolkit for document helper methods
  * @author Simon Zambrovski
@@ -103,8 +105,8 @@ public class DocumentHelper
                 break;
             }
         }
-        
-        return new Region(documentOffset - charCounter, charCounter + 1 );
+
+        return new Region(documentOffset - charCounter, charCounter + 1);
     }
 
     /**
@@ -119,6 +121,51 @@ public class DocumentHelper
         IRegion backwards = getRegionExpandedBackwards(document, documentOffset, detector);
         IRegion forwards = getRegionExpandedForwards(document, documentOffset, detector);
         return new Region(backwards.getOffset(), backwards.getLength() + forwards.getLength());
+    }
+
+    /**
+     * Converts four-int-location to a region
+     * TODO: unit test!
+     * @param document
+     * @param location
+     * @return
+     * @throws BadLocationException 
+     */
+    public static IRegion locationToRegion(IDocument document, Location location) throws BadLocationException
+    {
+        int offset = document.getLineOffset(location.beginLine() - 1) + location.beginColumn() - 1;
+        // If the location described a string consisting of one character, then it would begin
+        // and end at the same column. The corresponding region would have length one, so we have
+        // to add one to the length.
+        int length = document.getLineOffset(location.endLine() - 1) + location.endColumn() + 1 - offset;
+        return new Region(offset, length);
+    }
+
+    /**
+     * Returns a new region that ends at the end of the input region and begins
+     * at the first character of the line before the line containing the offset
+     * of the input region. If the input region's offset is on the first
+     * line of the document, this method does nothing.
+     * 
+     * @param document
+     * @param region
+     * @return
+     * @throws BadLocationException
+     */
+    public static IRegion getRegionWithPreviousLine(IDocument document, IRegion region) throws BadLocationException
+    {
+        // the first line of the region
+        int currentFirstLine = document.getLineOfOffset(region.getOffset());
+        if (currentFirstLine > 0)
+        {
+            int newOffset = document.getLineOffset(currentFirstLine - 1);
+            return new Region(newOffset, region.getLength() + (region.getOffset() - newOffset));
+        } else
+        {
+            // no previous line so do nothing
+            return region;
+        }
+
     }
 
 }

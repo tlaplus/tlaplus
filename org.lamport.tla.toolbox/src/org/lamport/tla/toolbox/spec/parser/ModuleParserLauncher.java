@@ -140,6 +140,9 @@ public class ModuleParserLauncher
         // They're called with this one.
         PrintStream outputStr = ToolIO.out;
 
+        // get the time stamp for the call of the parser
+        long parserCallTime = System.currentTimeMillis();
+
         try
         {
             SANY.frontEndInitialize(moduleSpec, outputStr);
@@ -149,7 +152,7 @@ public class ModuleParserLauncher
         {
             // set spec status
             specStatus = IParseConstants.UNKNOWN_ERROR;
-            return new ParseResult(specStatus, null, parseResource, parseErrors, semanticErrors);
+            return new ParseResult(specStatus, null, parseResource, parseErrors, semanticErrors, parserCallTime);
 
         } catch (ParseException e)
         {
@@ -341,7 +344,11 @@ public class ModuleParserLauncher
         // }
         // userModules = null;
 
-        return new ParseResult(specStatus, moduleSpec, parseResource, parseErrors, semanticErrors);
+        // broadcast new parse result
+        ParseResult parseResult = new ParseResult(specStatus, moduleSpec, parseResource, parseErrors, semanticErrors, parserCallTime);
+        ParseResultBroadcaster.getParseResultBroadcaster().broadcastParseResult(parseResult);
+
+        return parseResult;/*new ParseResult(specStatus, moduleSpec, parseResource, parseErrors, semanticErrors);*/
     }
 
     /**

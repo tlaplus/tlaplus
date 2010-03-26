@@ -22,13 +22,20 @@ public class ParseResult implements IParseResult
     private Errors parseErrors;
     private Errors semanticErrors;
     private Vector detectedErrors;
+    /**
+     * Time stamp for when the parser
+     * was called that eventually produced this result
+     * as returned by {@link System#currentTimeMillis()}.
+     */
+    private long parserCalled;
 
     /**
      * Constructs the parse status object 
      * @param status one of the {@link IParseConstants} values
      * @param specObj current specObject or null
      */
-    public ParseResult(int status, SpecObj specObj, IResource parsedResource, Errors parseErrors, Errors semanticErrors)
+    public ParseResult(int status, SpecObj specObj, IResource parsedResource, Errors parseErrors,
+            Errors semanticErrors, long parserCalled)
     {
         this.status = status;
         this.specObj = specObj;
@@ -36,8 +43,9 @@ public class ParseResult implements IParseResult
         this.parseErrors = parseErrors;
         this.semanticErrors = semanticErrors;
         this.detectedErrors = new Vector();
+        this.parserCalled = parserCalled;
     }
-    
+
     /**
      * @param specObj the specObj to set
      */
@@ -45,6 +53,7 @@ public class ParseResult implements IParseResult
     {
         this.specObj = specObj;
     }
+
     /**
      * @return the specObj
      */
@@ -52,6 +61,7 @@ public class ParseResult implements IParseResult
     {
         return specObj;
     }
+
     /**
      * @param status the status to set
      * 
@@ -61,6 +71,7 @@ public class ParseResult implements IParseResult
     {
         this.status = status;
     }
+
     /**
      * @return the status
      */
@@ -78,7 +89,7 @@ public class ParseResult implements IParseResult
     {
         this.parsedResource = parsedResource;
     }
-    
+
     public Errors getParseErrors()
     {
         return parseErrors;
@@ -101,5 +112,18 @@ public class ParseResult implements IParseResult
     public void addMarker(TLAMarkerInformationHolder error)
     {
         detectedErrors.add(error);
-    } 
+    }
+
+    /**
+     * Time stamp for when the parser
+     * was called that eventually produced this result
+     * as returned by {@link System#currentTimeMillis()}
+     * 
+     * @return the time when the parser was called to produce
+     * this result
+     */
+    public long getParserCalled()
+    {
+        return parserCalled;
+    }
 }

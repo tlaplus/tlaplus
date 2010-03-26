@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -18,6 +19,7 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextSelection;
+import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.eclipse.jface.text.hyperlink.IHyperlinkDetector;
@@ -47,6 +49,7 @@ import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.eclipse.ui.texteditor.TextOperationAction;
 import org.lamport.tla.toolbox.editor.basic.actions.ToggleCommentAction;
+import org.lamport.tla.toolbox.editor.basic.proof.TLAProofFoldingStructureProvider;
 import org.lamport.tla.toolbox.editor.basic.util.ElementStateAdapter;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.util.ResourceHelper;
@@ -74,6 +77,8 @@ public class TLAEditor extends TextEditor
     private Annotation[] oldAnnotations;
     // annotation model
     private ProjectionAnnotationModel annotationModel;
+    // proof structure provider
+    private TLAProofFoldingStructureProvider proofStructureProvider;
 
     /**
      * Constructor
@@ -180,6 +185,10 @@ public class TLAEditor extends TextEditor
 
         this.annotationModel = viewer.getProjectionAnnotationModel();
 
+        // this must be instantiated after annotation model so that it does
+        // not call methods that use annotation model when the model is still null
+        this.proofStructureProvider = new TLAProofFoldingStructureProvider(this);
+
     }
 
     /**
@@ -233,6 +242,10 @@ public class TLAEditor extends TextEditor
      */
     public void updateFoldingStructure(ArrayList positions)
     {
+        // TODO for each position, if there is a current annotation
+        // with that position, it should not be removed, and no new
+        // annotation should be created for that position. This
+        // will preserve the expansion state of foldable regions.
 
         Annotation[] annotations = new Annotation[positions.size()];
 
@@ -246,12 +259,35 @@ public class TLAEditor extends TextEditor
             newAnnotations.put(annotation, positions.get(i));
             annotations[i] = annotation;
         }
+        // If this method is called too early, then annotationModel
+        // can be null. This should obviously be addressed.
         this.annotationModel.modifyAnnotations(oldAnnotations, newAnnotations, null);
         oldAnnotations = annotations;
     }
 
     /**
+     * Calls {@link ProjectionAnnotationModel#modifyAnnotations(Annotation[], Map, Annotation[])} with the
+     * arguments.
+     * 
+     * Note that in the map additions, the keys should be instances of {@link ProjectionAnnotation} and the values
+     * should be instances of the corresponding {@link Position}.
+     * 
+     * @param deletions
+     * @param additions
+     * @param modifications
+     */
+    public void modifyAnnotations(Annotation[] deletions, Map additions, Annotation[] modifications)
+    {
+        this.annotationModel.modifyAnnotations(deletions, additions, modifications);
+    }
+
+    /**
      * SaveAs support
+     * 
+     * Now that this editor is part of the multi-page editor
+     * {@link TLAEditorAndPDFViewer} this method should not be called.
+     * Instead, the method {@link TLAEditorAndPDFViewer#doSaveAs()} should
+     * be called when the user selects Save As.
      */
     protected void performSaveAs(IProgressMonitor progressMonitor)
     {
@@ -381,8 +417,14 @@ public class TLAEditor extends TextEditor
 
     public void dispose()
     {
+        proofStructureProvider.dispose();
         rootImage.dispose();
         super.dispose();
+    }
+
+    public ISourceViewer getViewer()
+    {
+        return getSourceViewer();
     }
 
     /**
