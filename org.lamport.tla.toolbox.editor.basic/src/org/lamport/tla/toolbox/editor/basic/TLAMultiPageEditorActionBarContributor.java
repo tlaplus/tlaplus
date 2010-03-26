@@ -3,8 +3,10 @@ package org.lamport.tla.toolbox.editor.basic;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.text.source.projection.ProjectionViewer;
 import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.editors.text.IFoldingCommandIds;
 import org.eclipse.ui.part.MultiPageEditorActionBarContributor;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.eclipse.ui.texteditor.ITextEditorActionConstants;
@@ -12,6 +14,7 @@ import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.eclipse.ui.texteditor.ITextEditorExtension;
 import org.eclipse.ui.texteditor.RetargetTextEditorAction;
 import org.eclipse.ui.texteditor.StatusLineContributionItem;
+import org.eclipse.ui.texteditor.TextOperationAction;
 
 /**
  * This class can contribute actions to menus, toolbars, and coolbars, and 
@@ -45,6 +48,10 @@ public class TLAMultiPageEditorActionBarContributor extends MultiPageEditorActio
     private IEditorPart activeEditor;
     protected RetargetTextEditorAction fContentAssistProposal;
     protected RetargetTextEditorAction fContentAssistTip;
+    protected TextOperationAction fFoldingExpand;
+    protected TextOperationAction fFoldingExpandAll;
+    protected TextOperationAction fFoldingCollapse;
+    protected TextOperationAction fFoldingCollapseAll;
     // status field for the line and column of the cursor
     private StatusLineContributionItem cursorPositionStatusField;
 
@@ -94,6 +101,56 @@ public class TLAMultiPageEditorActionBarContributor extends MultiPageEditorActio
             ITextEditor editor = (ITextEditor) activeEditor;
             fContentAssistProposal.setAction(editor.getAction("ContentAssistProposal")); //$NON-NLS-1$
             fContentAssistTip.setAction(editor.getAction("ContentAssistTip")); //$NON-NLS-1$
+
+            // the following code registers the eclipse folding actions globally
+            // so that keystrokes can be used for them
+            if (fFoldingExpand == null)
+            {
+                fFoldingExpand = new TextOperationAction(TLAEditorMessages.getResourceBundle(), "Projection.Expand.",
+                        editor, ProjectionViewer.EXPAND, true);
+                fFoldingExpand.setActionDefinitionId(IFoldingCommandIds.FOLDING_EXPAND);
+            } else
+            {
+                fFoldingExpand.setEditor(editor);
+            }
+            editor.setAction(IFoldingCommandIds.FOLDING_EXPAND, fFoldingExpand);
+            getActionBars().getGlobalActionHandler(fFoldingExpand.getActionDefinitionId());
+
+            if (fFoldingExpandAll == null)
+            {
+                fFoldingExpandAll = new TextOperationAction(TLAEditorMessages.getResourceBundle(),
+                        "Projection.ExpandAll.", editor, ProjectionViewer.EXPAND_ALL, true);
+                fFoldingExpandAll.setActionDefinitionId(IFoldingCommandIds.FOLDING_EXPAND_ALL);
+            } else
+            {
+                fFoldingExpandAll.setEditor(editor);
+            }
+            editor.setAction(IFoldingCommandIds.FOLDING_EXPAND_ALL, fFoldingExpandAll);
+            getActionBars().getGlobalActionHandler(fFoldingExpandAll.getActionDefinitionId());
+
+            if (fFoldingCollapse == null)
+            {
+                fFoldingCollapse = new TextOperationAction(TLAEditorMessages.getResourceBundle(),
+                        "Projection.Collapse.", editor, ProjectionViewer.COLLAPSE, true);
+                fFoldingCollapse.setActionDefinitionId(IFoldingCommandIds.FOLDING_COLLAPSE);
+            } else
+            {
+                fFoldingCollapse.setEditor(editor);
+            }
+            editor.setAction(IFoldingCommandIds.FOLDING_COLLAPSE, fFoldingCollapse);
+            getActionBars().getGlobalActionHandler(fFoldingCollapse.getActionDefinitionId());
+
+            if (fFoldingCollapseAll == null)
+            {
+                fFoldingCollapseAll = new TextOperationAction(TLAEditorMessages.getResourceBundle(),
+                        "Projection.CollapseAll.", editor, ProjectionViewer.COLLAPSE_ALL, true);
+                fFoldingCollapseAll.setActionDefinitionId(IFoldingCommandIds.FOLDING_COLLAPSE_ALL);
+            } else
+            {
+                fFoldingCollapseAll.setEditor(editor);
+            }
+            editor.setAction(IFoldingCommandIds.FOLDING_COLLAPSE_ALL, fFoldingCollapseAll);
+            getActionBars().getGlobalActionHandler(fFoldingCollapseAll.getActionDefinitionId());
 
             if (editor instanceof ITextEditorExtension)
             {
