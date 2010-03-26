@@ -294,12 +294,13 @@ public class TLAProofFoldingStructureProvider implements IParseResultListener, I
             return;
         }
 
-        // check if the editor is dirty
+        // check if the editor is dirty or the editor document has been modified
+        // or saved before SANY finished
         // if it is, SANYs output is useless
-        if (editor.isDirty()/*
-                            || parseResult.getParserCalled() < documentLastModified
-                            || parseResult.getParserCalled() < ((FileEditorInput) editor.getEditorInput()).getFile()
-                            .getLocalTimeStamp()*/)
+        if (editor.isDirty()
+                || parseResult.getParserCalled() < documentLastModified
+                || parseResult.getParserCalled() < ((FileEditorInput) editor.getEditorInput()).getFile()
+                        .getLocalTimeStamp())
         {
             return;
         }
