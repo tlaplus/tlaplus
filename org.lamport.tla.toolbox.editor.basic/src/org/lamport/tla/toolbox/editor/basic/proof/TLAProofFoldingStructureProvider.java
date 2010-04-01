@@ -142,6 +142,13 @@ public class TLAProofFoldingStructureProvider implements IParseResultListener, I
         ProofNode proofNode = theoremNode.getProof();
         IRegion proofNodeRegion = DocumentHelper.locationToRegion(document, proofNode.getLocation());
 
+        // if last line of proof is on last line of step, nothing to fold, so just return
+        if (document.getLineOfOffset(theoremStatementRegion.getOffset() + theoremStatementRegion.getLength()) == document
+                .getLineOfOffset(proofNodeRegion.getOffset() + proofNodeRegion.getLength()))
+        {
+            return;
+        }
+
         /* 
          * Iterate through previous folds to find if fold matches location of proof
          * 
@@ -625,6 +632,11 @@ public class TLAProofFoldingStructureProvider implements IParseResultListener, I
         return new Region(newOffset, newLength);
     }
 
+    /**
+     * This method used to assess whether the document has
+     * changed between the time that the parser was called
+     * and when it completes.
+     */
     public void documentAboutToBeChanged(DocumentEvent event)
     {
         documentLastModified = System.currentTimeMillis();
@@ -634,6 +646,20 @@ public class TLAProofFoldingStructureProvider implements IParseResultListener, I
     public void documentChanged(DocumentEvent event)
     {
 
+    }
+
+    /**
+     * Folds all proofs not containing the cursor.
+     * 
+     * @param cursorOffset
+     */
+    public void foldEverythingUnusable(int cursorOffset)
+    {
+        for (Iterator it = foldPositions.iterator(); it.hasNext();)
+        {
+            TLAProofPosition proofPosition = (TLAProofPosition) it.next();
+
+        }
     }
 
 }
