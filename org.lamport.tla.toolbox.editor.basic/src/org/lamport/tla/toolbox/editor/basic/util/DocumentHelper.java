@@ -124,7 +124,9 @@ public class DocumentHelper
     }
 
     /**
-     * Converts four-int-location to a region
+     * Converts four-int-location that is 1-based to a two int {@link IRegion} that is
+     * 0-based.
+     * 
      * TODO: unit test!
      * @param document
      * @param location
@@ -133,11 +135,29 @@ public class DocumentHelper
      */
     public static IRegion locationToRegion(IDocument document, Location location) throws BadLocationException
     {
+        /* 
+         * The coordinates returned by location are 1-based and the coordinates
+         * for a region in a document should be 0-based to be consistent with Positions
+         * in documents. Therefore, we subtract 1 from each location coordinate.
+         */
         int offset = document.getLineOffset(location.beginLine() - 1) + location.beginColumn() - 1;
-        // If the location described a string consisting of one character, then it would begin
-        // and end at the same column. The corresponding region would have length one, so we have
-        // to add one to the length.
-        int length = document.getLineOffset(location.endLine() - 1) + location.endColumn() + 1 - offset;
+        /*
+         * If location describes a two-character sequence beginning at column x, then it would
+         * have location.endColumn() = x+1. This means that when computing the length, we add 1 to
+         * the offset of the second point described by location. In other words, the offset of the
+         * second point described by location is:
+         * 
+         * document.getLineOffset(location.endLine() - 1) + location.endColumn()-1
+         * 
+         * So the length is:
+         * 
+         * (document.getLineOffset(location.endLine() - 1) + location.endColumn()-1)+1 - offset
+         * 
+         * which equals:
+         * 
+         * document.getLineOffset(location.endLine() - 1) + location.endColumn() - offset
+         */
+        int length = document.getLineOffset(location.endLine() - 1) + location.endColumn() - offset;
         return new Region(offset, length);
     }
 

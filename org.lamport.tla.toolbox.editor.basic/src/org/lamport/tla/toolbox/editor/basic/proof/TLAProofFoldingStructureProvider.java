@@ -2,6 +2,8 @@ package org.lamport.tla.toolbox.editor.basic.proof;
 
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Vector;
 
 import org.eclipse.core.runtime.Assert;
@@ -10,7 +12,8 @@ import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentListener;
 import org.eclipse.jface.text.IRegion;
-import org.eclipse.jface.text.Position;
+import org.eclipse.jface.text.Region;
+import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotation;
 import org.eclipse.ui.part.FileEditorInput;
 import org.lamport.tla.toolbox.Activator;
@@ -65,10 +68,10 @@ public class TLAProofFoldingStructureProvider implements IParseResultListener, I
      */
     private IDocument document;
     /**
-     * List of {@link IProof}'s in the current
-     * proof trees.
+     * List of {@link TLAProofPosition} for the
+     * current proof trees.
      */
-    // private Vector proofList;
+    private List foldPositions;
     /**
      * List of {@link FoldTuple} for the current
      * proof trees.
@@ -93,6 +96,7 @@ public class TLAProofFoldingStructureProvider implements IParseResultListener, I
         proofTrees = new Vector();
         // proofList = new Vector();
         folds = new Vector();
+        foldPositions = new LinkedList();
 
         // add this as listener to document to listen for changes
         document.addDocumentListener(this);
@@ -112,12 +116,104 @@ public class TLAProofFoldingStructureProvider implements IParseResultListener, I
     }
 
     /**
+     * Computes the {@link TLAProofPosition} for the {@link TheoremNode}. For each proof in tree represented
+     * by theoremNode, this determines if a matching fold exists in previousFolds. If one does exist, it is
+     * removed from previous folds. If one does not exist, a new {@link TLAProofPosition} is created for the proof
+     * and is added to additions.
+     * 
+     * Any {@link TLAProofPosition} that is added to additions or removed from previousFolds is added
+     * to foldsInCurrentTree.
+     * 
+     * @param theorems
+     * @throws BadLocationException 
+     */
+    private void computeProofFoldPositions(TheoremNode theoremNode, HashMap additions, List foldsInCurrentTree,
+            List previousFolds) throws BadLocationException
+    {
+
+        if (theoremNode.getProof() == null)
+        {
+            return;
+        }
+
+        // the region describing the statement of the theorem
+        IRegion theoremStatementRegion = DocumentHelper.locationToRegion(document, theoremNode.getTheorem()
+                .getLocation());
+        ProofNode proofNode = theoremNode.getProof();
+        IRegion proofNodeRegion = DocumentHelper.locationToRegion(document, proofNode.getLocation());
+
+        /* 
+         * Iterate through previous folds to find if fold matches location of proof
+         * 
+         * If fold is found, remove from list of previous folds, and add to list of new folds for
+         * proof tree.
+         * 
+         * If fold is not found, create new one, add to list of additions, and add to list of
+         * new folds for proof tree.
+         */
+        boolean proofPositionFound = false;
+        for (Iterator it = previousFolds.iterator(); it.hasNext();)
+        {
+            TLAProofPosition proofPosition = (TLAProofPosition) it.next();
+
+            // positions are considered the same if the beginning and end line are the same
+            if (proofPosition.isSamePosition(proofNodeRegion, document))
+            {
+                proofPositionFound = true;
+                foldsInCurrentTree.add(proofPosition);
+                System.out.println("Existing fold found at " + proofPosition);
+                it.remove();
+                break;
+            }
+        }
+
+        if (!proofPositionFound)
+        {
+            TLAProofPosition newProofPosition = new TLAProofPosition(proofNodeRegion.getOffset(), proofNodeRegion
+                    .getLength(), theoremStatementRegion.getOffset(), theoremStatementRegion.getLength(),
+                    new ProjectionAnnotation(), document);
+            additions.put(newProofPosition.getAnnotation(), newProofPosition);
+            foldsInCurrentTree.add(newProofPosition);
+        }
+
+        if (proofNode instanceof NonLeafProofNode)
+        {
+            // recursively compute proof positions
+            NonLeafProofNode nonLeafProofNode = (NonLeafProofNode) proofNode;
+            LevelNode[] steps = nonLeafProofNode.getSteps();
+
+            /*
+             * From the documentation of NonLeafProofNode,
+             * a step can be one of four types:
+             * 
+             * DefStepNode
+             * UseOrHideNode
+             * InstanceNode
+             * TheoremNode
+             * 
+             * Only TheoremNode can have a proof. Recursively compute
+             * the proof positions for those steps.
+             */
+            for (int i = 0; i < steps.length; i++)
+            {
+                if (steps[i] instanceof TheoremNode)
+                {
+                    computeProofFoldPositions((TheoremNode) steps[i], additions, foldsInCurrentTree, previousFolds);
+                }
+            }
+        }
+
+    }
+
+    /**
      * Computes all of the proof trees for the module.
      * 
      * Will do nothing if the spec status
      * is not "parsed" or if the editor is dirty. The current implementation
      * uses output from SANY to compute the proof trees, so if the editor is dirty
      * or the status is not "parsed" SANY's output is useless.
+     * 
+     * @deprecated
      */
     private void computeProofTrees(ModuleNode moduleNode)
     {
@@ -184,11 +280,12 @@ public class TLAProofFoldingStructureProvider implements IParseResultListener, I
     }
 
     /**
-     * Converts a {@link ProofNode} to an {@link IProof}.
+     * Converts a {@link ProofNode} to an {@link Proof}.
      * 
      * @param proofNode
      * @param provable the {@link Provable} containing this proof
      * @return
+     * @deprecated
      * @throws BadLocationException 
      */
     private Proof getProof(ProofNode proofNode, Provable provable) throws BadLocationException
@@ -326,78 +423,126 @@ public class TLAProofFoldingStructureProvider implements IParseResultListener, I
             return;
         }
 
-        computeProofTrees(moduleNode);
+        // computeProofTrees(moduleNode);
+        //
+        // Iterator it = proofTrees.iterator();
+        //
+        // // new folds to be added
+        // HashMap additions = new HashMap();
+        //
+        // // list of folds for the newly generated proof tree
+        // // that will be populated in the next while loop
+        // Vector newTreeFolds = new Vector();
+        // while (it.hasNext())
+        // {
+        // Theorem theorem = (Theorem) it.next();
+        // ProofTreeComponent[] components = theorem.getComponents();
+        // for (int i = 0; i < components.length; i++)
+        // {
+        // if (components[i] instanceof Proof)
+        // {
+        // Proof proof = (Proof) components[i];
+        // Position proofPosition = proof.getPosition();
+        //
+        // // We are only concerned with proof positions that occupy more than one
+        // // line
+        // // Folds that take up only one line have no visual effect
+        // // when collapsed or expanded, so they only serve to clutter
+        // // the left hand side of the page.
+        // try
+        // {
+        // if (document.getLineOfOffset(proofPosition.getOffset()) != document
+        // .getLineOfOffset(proofPosition.getLength() + proofPosition.getOffset()))
+        // {
+        //
+        // /*
+        // * Iterate through previous folds to find if fold matches position of proof
+        // *
+        // * If fold is found, bind to proof, remove from list of previous folds, and add to list of new folds for
+        // * proof tree.
+        // *
+        // * If fold is not found, create new one, bind to proof, add to list of additions, and add to list of
+        // * new folds for proof tree.
+        // *
+        // * The folds remaining in the list of previous folds after this while loop terminates are deleted.
+        // */
+        // Iterator previousFoldsIt = folds.iterator();
+        // boolean foundExistingFold = false;
+        // while (previousFoldsIt.hasNext())
+        // {
+        // FoldTuple fold = (FoldTuple) previousFoldsIt.next();
+        // // System.out.println("Previous fold at position " + fold.getPosition());
+        // if (fold.getPosition().getOffset() == proofPosition.getOffset()
+        // && fold.getPosition().getLength() == proofPosition.getLength())
+        // {
+        // // System.out.println("Found existing fold at " + proofPosition + ". Fold is "
+        // // + (fold.getAnnotation().isCollapsed() ? "collapsed." : "expanded."));
+        // proof.setFold(fold);
+        // previousFoldsIt.remove();
+        // foundExistingFold = true;
+        // newTreeFolds.add(fold);
+        // break;
+        // }
+        // }
+        //
+        // if (!foundExistingFold)
+        // {
+        // // System.out.println("Creating new fold at position " + proofPosition);
+        // FoldTuple newFold = new FoldTuple(new ProjectionAnnotation(), proofPosition);
+        // proof.setFold(newFold);
+        // additions.put(newFold.getAnnotation(), newFold.getPosition());
+        // newTreeFolds.add(newFold);
+        // }
+        // }
+        // } catch (BadLocationException e)
+        // {
+        // Activator.logError("Error adding folds to editor.", e);
+        // }
+        // }
+        // }
+        // }
+        //
+        // // put the annotations remaining in the list of folds
+        // // into an array to be deleted
+        // ProjectionAnnotation[] deletions = new ProjectionAnnotation[folds.size()];
+        // for (int i = 0; i < deletions.length; i++)
+        // {
+        // deletions[i] = ((FoldTuple) folds.get(i)).getAnnotation();
+        // }
 
-        Iterator it = proofTrees.iterator();
-
-        // new folds to be added
         HashMap additions = new HashMap();
+        List foldsInCurrentTree = new LinkedList();
 
-        // list of folds for the newly generated proof tree
-        // that will be populated in the next while loop
-        Vector newTreeFolds = new Vector();
-        while (it.hasNext())
+        TheoremNode[] theorems = moduleNode.getTheorems();
+
+        for (int i = 0; i < theorems.length; i++)
         {
-            Theorem theorem = (Theorem) it.next();
-            ProofTreeComponent[] components = theorem.getComponents();
-            for (int i = 0; i < components.length; i++)
+            TheoremNode theoremNode = theorems[i];
+
+            try
             {
-                if (components[i] instanceof Proof)
+                if (theoremNode.getLocation().source().equals(moduleName))
                 {
-                    Proof proof = (Proof) components[i];
-                    Position proofPosition = proof.getPosition();
-
-                    /* 
-                     * Iterate through previous folds to find if fold matches position of proof
-                     * 
-                     * If fold is found, bind to proof, remove from list of previous folds, and add to list of new folds for
-                     * proof tree.
-                     * 
-                     * If fold is not found, create new one, bind to proof, add to list of additions, and add to list of
-                     * new folds for proof tree.
-                     * 
-                     * The folds remaining in the list of previous folds after this while loop terminates are deleted.
-                     */
-                    Iterator previousFoldsIt = folds.iterator();
-                    boolean foundExistingFold = false;
-                    while (previousFoldsIt.hasNext())
-                    {
-                        FoldTuple fold = (FoldTuple) previousFoldsIt.next();
-                        // System.out.println("Previous fold at position " + fold.getPosition());
-                        if (fold.getPosition().getOffset() == proofPosition.getOffset()
-                                && fold.getPosition().getLength() == proofPosition.getLength())
-                        {
-                            // System.out.println("Found existing fold at " + proofPosition + ". Fold is "
-                            // + (fold.getAnnotation().isCollapsed() ? "collapsed." : "expanded."));
-                            proof.setFold(fold);
-                            previousFoldsIt.remove();
-                            foundExistingFold = true;
-                            newTreeFolds.add(fold);
-                            break;
-                        }
-                    }
-
-                    if (!foundExistingFold)
-                    {
-                        // System.out.println("Creating new fold at position " + proofPosition);
-                        FoldTuple newFold = new FoldTuple(new ProjectionAnnotation(), proofPosition);
-                        proof.setFold(newFold);
-                        additions.put(newFold.getAnnotation(), newFold.getPosition());
-                        newTreeFolds.add(newFold);
-                    }
+                    computeProofFoldPositions(theoremNode, additions, foldsInCurrentTree, foldPositions);
                 }
+            } catch (BadLocationException e)
+            {
+                Activator.logError("Error converting theorem location to region in module " + moduleName, e);
             }
         }
 
-        // put the annotations remaining in the list of folds
-        // into an array to be deleted
-        ProjectionAnnotation[] deletions = new ProjectionAnnotation[folds.size()];
-        for (int i = 0; i < deletions.length; i++)
+        // compute array of annotations to be deleted
+        Annotation[] deletions = new ProjectionAnnotation[foldPositions.size()];
+        int i = 0;
+        for (Iterator it = foldPositions.iterator(); it.hasNext();)
         {
-            deletions[i] = ((FoldTuple) folds.get(i)).getAnnotation();
+            TLAProofPosition proofPosition = (TLAProofPosition) it.next();
+            proofPosition.remove(document);
+            deletions[i] = proofPosition.getAnnotation();
         }
 
-        folds = newTreeFolds;
+        // set previous folds to new folds
+        foldPositions = foldsInCurrentTree;
 
         editor.modifyAnnotations(deletions, additions, null);
     }
@@ -416,6 +561,7 @@ public class TLAProofFoldingStructureProvider implements IParseResultListener, I
      * @param location
      * @param provable
      * @return
+     * @deprecated
      * @throws BadLocationException 
      */
     private IRegion getProofRegion(IDocument document, Location location, Provable provable)
@@ -426,38 +572,57 @@ public class TLAProofFoldingStructureProvider implements IParseResultListener, I
          * when eclipse folds a region, it shows the first line of that region. This code
          * compensates for that fact.
          * 
-         * If the proof is not on the same line as the step it attempts to prove, then this code
-         * expands the region describing the proof to include the last line of the step that it is trying
-         * to prove.
+         * Use the following definitions to describe the 1-based beginning and ending lines
+         * of the step (Provable) and the proof (Location). Note that in reality, location
+         * is 1-based while the Position of provable is 0-based, but for the purposes of this
+         * description, assume they are both 1-based.
          * 
-         * If the proof is on the same line as the step then this method will return exactly the region described
-         * by the location returned by SANY.
+         * beignLineProvable
+         * endLineProvable
+         * beginLineLocation
+         * endLineLocation
+         * 
+         * if (beginLineLocation > endLineProvable) then
+         * 
+         * This code makes the following modifications:
+         * 
+         * 1.) If the proof begins on a line after the last line of the step it attempts to prove,
+         * then this code expands the region describing the proof to include the line
+         * before that region. (QUESTION: What about multiline proofs the begin on a step line?)
+         * 
+         * 2.) After performing modification 1, the code expands each region to begin at the first
+         * index of the first line and end at the last index of the last line.
+         * 
+         * If the proof is on the same line as a line of the step then this method will return
+         * exactly the region described by the location returned by SANY.
          */
 
         // region describing the location returned by SANY
         IRegion sanyRegion = DocumentHelper.locationToRegion(document, location);
+        IRegion foldRegion = sanyRegion;
 
-        if (document.getLineOfOffset(sanyRegion.getOffset()) != document.getLineOfOffset(provable.getPosition()
-                .getOffset()))
+        if (document.getLineOfOffset(sanyRegion.getOffset()) > document.getLineOfOffset(provable.getPosition()
+                .getOffset()
+                + provable.getPosition().getLength()))
         {
-            // // the first line of the region
-            // int currentFirstLine = document.getLineOfOffset(sanyRegion.getOffset());
-            // if (currentFirstLine > 0)
-            // {
-            // // new offset is beginning of the last line of the provable
-            // int newOffset = document.getLineOffset(document.getLineOfOffset(provable.getPosition().getOffset()
-            // + provable.getPosition().getLength()));
-            // return new Region(newOffset, sanyRegion.getLength() + (sanyRegion.getOffset() - newOffset));
-            // } else
-            // {
-            // // no previous line so do nothing
-            // return sanyRegion;
-            // }
 
-            return DocumentHelper.getRegionWithPreviousLine(document, sanyRegion);
+            // MODIFICATION 1
+            foldRegion = DocumentHelper.getRegionWithPreviousLine(document, sanyRegion);
         }
 
-        return sanyRegion;
+        // MODIFICATION 2
+        // get the offset of the beginning of the first line
+        int newOffset = document.getLineOffset(document.getLineOfOffset(foldRegion.getOffset()));
+
+        // get the length that expands the region to the end of the line
+        IRegion endLineInformation = document.getLineInformationOfOffset(foldRegion.getOffset()
+                + foldRegion.getLength());
+        int newLength = endLineInformation.getOffset() + endLineInformation.getLength() - newOffset;
+
+        System.out.println("Proof fold from line " + (document.getLineOfOffset(newOffset) + 1) + " to line "
+                + (document.getLineOfOffset(newOffset + newLength) + 1));
+
+        return new Region(newOffset, newLength);
     }
 
     public void documentAboutToBeChanged(DocumentEvent event)
