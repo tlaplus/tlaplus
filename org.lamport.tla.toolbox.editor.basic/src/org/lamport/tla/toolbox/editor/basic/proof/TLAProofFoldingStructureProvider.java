@@ -171,7 +171,7 @@ public class TLAProofFoldingStructureProvider implements IParseResultListener, I
             {
                 matchingPosition = proofPosition;
                 foldsInCurrentTree.add(matchingPosition);
-                System.out.println("Existing fold found at " + matchingPosition);
+                // System.out.println("Existing fold found at " + matchingPosition);
                 it.remove();
                 break;
             }
