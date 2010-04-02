@@ -61,27 +61,27 @@
       </command>
       <command
             categoryId="org.eclipse.ui.category.textEditor"
-            description="Folds steps that are unusable at a position."
+            description="Shows all usable steps and their siblings, and shows immediate children, hides all others"
             id="org.lamport.tla.toolbox.editor.basic.FoldUnusableSteps"
-            name="Fold Unusable Steps">
+            name="Focus On Step">
       </command>
       <command
             categoryId="org.eclipse.ui.category.textEditor"
-            description="Folds all proofs in module"
+            description="Hides all proofs in module"
             id="org.lamport.tla.toolbox.editor.basic.FoldAllProofs"
-            name="Fold All Proofs">
+            name="Hise All Proofs">
       </command>
       <command
             categoryId="org.eclipse.ui.category.textEditor"
-            description="Expands all proofs in the module"
+            description="Shows all proofs in the module"
             id="org.lamport.tla.toolbox.editor.basic.ExpandAllProofs"
-            name="Expand All Proofs">
+            name="Show All Proofs">
       </command>
       <command
             categoryId="org.eclipse.ui.category.textEditor"
-            description="Expands the subtree containing the caret."
+            description="Shows the subtree containing the caret."
             id="org.lamport.tla.toolbox.editor.basic.ExpandSubtree"
-            name="Expands Current Subtree">
+            name="Show Current Subtree">
       </command>
       <command
             categoryId="org.eclipse.ui.category.textEditor"
@@ -91,7 +91,7 @@
       </command>
       <command
             categoryId="org.eclipse.ui.category.textEditor"
-            description="Expands the proof of the step containing the caret and collapses all subproofs."
+            description="Shows the proof of the step containing the caret and collapses all subproofs."
             id="org.lamport.tla.toolbox.editor.basic.ShowImmediate"
             name="Show Children Only">
       </command>
@@ -191,7 +191,7 @@
                        style="push">
                  </command>
                  <command
-                       commandId="org.lamport.tla.toolbox.editor.basic.CollapseSubtree"
+                       commandId="org.lamport.tla.toolbox.editor.basic.FoldAllProofs"
                        style="push">
                  </command>
                  <command
@@ -199,15 +199,15 @@
                        style="push">
                  </command>
                  <command
-                       commandId="org.lamport.tla.toolbox.editor.basic.FoldAllProofs"
-                       style="push">
-                 </command>
-                 <command
-                       commandId="org.lamport.tla.toolbox.editor.basic.FoldUnusableSteps"
+                       commandId="org.lamport.tla.toolbox.editor.basic.CollapseSubtree"
                        style="push">
                  </command>
                  <command
                        commandId="org.lamport.tla.toolbox.editor.basic.ShowImmediate"
+                       style="push">
+                 </command>
+                 <command
+                       commandId="org.lamport.tla.toolbox.editor.basic.FoldUnusableSteps"
                        style="push">
                  </command>
               </menu>
