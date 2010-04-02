@@ -16,6 +16,16 @@ import tla2sany.semantic.TheoremNode;
 /**
  * Represents a proof and its statement (step/theorem) for folding.
  * 
+ * The offset and length of this class describe the region from the beginning
+ * of the statement of the proof to the end of the proof. There is some
+ * modifications done to the exact offset and length because
+ * of the way in which eclipse displays, collapses, and expands folds. This
+ * is explained in comments in the constructor for this class.
+ * 
+ * Instances of this class also maintains the {@link Position} of the statement
+ * and the {@link Position} of the proof. This can be used to determine if a certain
+ * offset is contained specifically within the proof or within the offset. There
+ * are methods for computing this.
  * 
  * @author Daniel Ricketts
  *
