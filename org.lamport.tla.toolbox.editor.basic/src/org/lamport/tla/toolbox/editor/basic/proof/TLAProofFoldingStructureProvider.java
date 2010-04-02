@@ -391,7 +391,7 @@ public class TLAProofFoldingStructureProvider implements IParseResultListener, I
         if (canPerformFoldingCommands)
         {
             // for now, only allow if the selection is only a point, not a range
-            if (selection.getLength() == 0)
+            if (selection != null && selection.getLength() == 0)
             {
                 int caretOffset = selection.getOffset();
                 if (commandId.equals(IProofFoldCommandIds.FOLD_UNUSABLE))
