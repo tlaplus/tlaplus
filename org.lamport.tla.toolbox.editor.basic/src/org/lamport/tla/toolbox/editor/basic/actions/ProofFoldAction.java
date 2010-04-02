@@ -45,19 +45,4 @@ public class ProofFoldAction extends TextEditorAction
         }
     }
 
-    public void update()
-    {
-        super.update();
-
-        if (getTextEditor() instanceof TLAEditor)
-        {
-            TLAEditor editor = (TLAEditor) getTextEditor();
-            // TODO check if selection is at a single point
-            // (not a range) within a proof
-        } else
-        {
-            setEnabled(false);
-        }
-    }
-
 }
