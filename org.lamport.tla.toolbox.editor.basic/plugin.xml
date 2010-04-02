@@ -53,12 +53,58 @@
             id="org.lamport.tla.toolbox.editor.basic.Format"
             name="Format">
       </command>
+      <command
+            categoryId="org.eclipse.ui.category.textEditor"
+            description="Example of editor command"
+            id="org.lamport.tla.toolbox.editor.basic.TestEditorCommand"
+            name="Test Editor Command">
+      </command>
+      <command
+            categoryId="org.eclipse.ui.category.textEditor"
+            description="Folds steps that are unusable at a position."
+            id="org.lamport.tla.toolbox.editor.basic.FoldUnusableSteps"
+            name="Fold Unusable Steps">
+      </command>
+      <command
+            categoryId="org.eclipse.ui.category.textEditor"
+            description="Folds all proofs in module"
+            id="org.lamport.tla.toolbox.editor.basic.FoldAllProofs"
+            name="Fold All Proofs">
+      </command>
+      <command
+            categoryId="org.eclipse.ui.category.textEditor"
+            description="Expands all proofs in the module"
+            id="org.lamport.tla.toolbox.editor.basic.ExpandAllProofs"
+            name="Expand All Proofs">
+      </command>
+      <command
+            categoryId="org.eclipse.ui.category.textEditor"
+            description="Expands the subtree containing the caret."
+            id="org.lamport.tla.toolbox.editor.basic.ExpandSubtree"
+            name="Expands Current Subtree">
+      </command>
+      <command
+            categoryId="org.eclipse.ui.category.textEditor"
+            description="Hides the subtree containing the caret."
+            id="org.lamport.tla.toolbox.editor.basic.CollapseSubtree"
+            name="Hide Current Subtree">
+      </command>
+      <command
+            categoryId="org.eclipse.ui.category.textEditor"
+            description="Expands the proof of the step containing the caret and collapses all subproofs."
+            id="org.lamport.tla.toolbox.editor.basic.ShowImmediate"
+            name="Show Children Only">
+      </command>
    </extension>
    <extension
          point="org.eclipse.ui.handlers">
       <handler
             class="org.lamport.tla.toolbox.editor.basic.TLAEditor$OpenDeclarationHandler"
             commandId="org.lamport.tla.toolbox.tla.editor.hyperlinking.OpenDeclaration">
+      </handler>
+      <handler
+            class="org.lamport.tla.toolbox.editor.basic.Testhandler"
+            commandId="org.lamport.tla.toolbox.editor.basic.TestEditorCommand">
       </handler>
    </extension>
    <extension
@@ -73,6 +119,48 @@
             contextId="org.eclipse.ui.textEditorScope"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="M1+/" />
+      <key
+            commandId="org.lamport.tla.toolbox.editor.basic.TestEditorCommand"
+            contextId="org.eclipse.ui.contexts.window"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+5">
+      </key>
+      <key
+            commandId="org.lamport.tla.toolbox.editor.basic.FoldUnusableSteps"
+            contextId="org.eclipse.ui.contexts.window"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+1">
+      </key>
+      <key
+            commandId="org.lamport.tla.toolbox.editor.basic.FoldAllProofs"
+            contextId="org.eclipse.ui.contexts.window"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+2">
+      </key>
+      <key
+            commandId="org.lamport.tla.toolbox.editor.basic.ExpandAllProofs"
+            contextId="org.eclipse.ui.contexts.window"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+3">
+      </key>
+      <key
+            commandId="org.lamport.tla.toolbox.editor.basic.ExpandSubtree"
+            contextId="org.eclipse.ui.contexts.window"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+8">
+      </key>
+      <key
+            commandId="org.lamport.tla.toolbox.editor.basic.CollapseSubtree"
+            contextId="org.eclipse.ui.contexts.window"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+6">
+      </key>
+      <key
+            commandId="org.lamport.tla.toolbox.editor.basic.ShowImmediate"
+            contextId="org.eclipse.ui.contexts.window"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+7">
+      </key>
       
    </extension>
    <extension
@@ -95,6 +183,34 @@
               <command
                     commandId="org.eclipse.ui.edit.text.contentAssist.contextInformation">
               </command>
+              <menu
+                    id="org.lamport.tla.toolbox.editor.basic.ProofFoldCommands"
+                    label="Proof Folding">
+                 <command
+                       commandId="org.lamport.tla.toolbox.editor.basic.ExpandAllProofs"
+                       style="push">
+                 </command>
+                 <command
+                       commandId="org.lamport.tla.toolbox.editor.basic.CollapseSubtree"
+                       style="push">
+                 </command>
+                 <command
+                       commandId="org.lamport.tla.toolbox.editor.basic.ExpandSubtree"
+                       style="push">
+                 </command>
+                 <command
+                       commandId="org.lamport.tla.toolbox.editor.basic.FoldAllProofs"
+                       style="push">
+                 </command>
+                 <command
+                       commandId="org.lamport.tla.toolbox.editor.basic.FoldUnusableSteps"
+                       style="push">
+                 </command>
+                 <command
+                       commandId="org.lamport.tla.toolbox.editor.basic.ShowImmediate"
+                       style="push">
+                 </command>
+              </menu>
            </menuContribution>
          
    </extension>

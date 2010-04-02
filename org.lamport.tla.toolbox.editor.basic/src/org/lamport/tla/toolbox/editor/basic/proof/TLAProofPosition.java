@@ -8,9 +8,13 @@ import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.source.projection.IProjectionPosition;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotation;
 import org.lamport.tla.toolbox.Activator;
+import org.lamport.tla.toolbox.editor.basic.util.DocumentHelper;
+
+import tla2sany.semantic.ProofNode;
+import tla2sany.semantic.TheoremNode;
 
 /**
- * Represents a proof for folding.
+ * Represents a proof and its statement (step/theorem) for folding.
  * 
  * 
  * @author Daniel Ricketts
@@ -34,15 +38,31 @@ public class TLAProofPosition extends Position implements IProjectionPosition
      */
     private ProjectionAnnotation annotation;
 
+    /**
+     * For proof offset and length for a {@link ProofNode}, use {@link DocumentHelper#locationToRegion(IDocument, tla2sany.st.Location)}
+     * for the location from {@link ProofNode#getLocation()}. For the offset and length of the provable, use the location
+     * from {@link TheoremNode#getTheorem()} in the method {@link DocumentHelper#locationToRegion(IDocument, tla2sany.st.Location)}.
+     * 
+     * @param initProofOffset initial offset of the proof
+     * @param initProofLength initial length of the proof
+     * @param initProvableOffset initial offset of the statement of the theorem or step
+     * for which this is a proof
+     * @param initProvableLength initial length of the statement of the theorem or step
+     * for which this is a proof
+     * @param annotation {@link ProjectionAnnotation} that should be at this position
+     * @param document
+     */
     public TLAProofPosition(int initProofOffset, int initProofLength, int initProvableOffset, int initProvableLength,
             ProjectionAnnotation annotation, IDocument document)
     {
+        // children = new Vector();
         /*
          * This seems to be a bit of a hack, but I see
          * no other way to do it correctly because of
          * how eclipse expands folds. In particular, when eclipse
          * is asked to expand a fold, it expands all lines between
-         * the start line and end line, inclusive. It computes start
+         * the start line and end line, including the start line but
+         * excluding the end line. It computes start
          * and end lines for a fold with offset and length in the following way:
          * 
          * start line: the greatest numbered line with
@@ -53,7 +73,8 @@ public class TLAProofPosition extends Position implements IProjectionPosition
          *      
          * In other words, it takes the offset of the fold and moves it back until it finds the start
          * of a line and takes the offset+length of a fold and moves it back until it finds the
-         * start of a line. It then expands all lines in between and including those two lines.
+         * start of a line. It then expands all lines in between and including those two lines. See
+         * ProjectionViewer.addMasterDocumentRange() to see the exact implementation.
          * 
          * I think this is a silly way of doing things. The interface IProjectionPosition
          * allows the position to compute what lines are collapsed using the method
@@ -174,11 +195,93 @@ public class TLAProofPosition extends Position implements IProjectionPosition
     }
 
     /**
+     * Returns whether the offset is contained on any of the lines
+     * of the proof or the statement. Note that this position ends
+     * at the first offset of the line after the proof, but this method
+     * does not consider that line part of the statement or the proof. The position
+     * ends at that offset for reasons explained in the constructor of this class.
+     * 
+     * @return
+     * @throws BadLocationException 
+     */
+    public boolean containsInProofOrStatement(int offset, IDocument document) throws BadLocationException
+    {
+        int startLine = document.getLineOfOffset(this.offset);
+        /*
+         *  Subtract 1 because this position ends
+         *  at the first offset of the line after the proof, but this method
+         *  does not consider that line part of the statement or the proof.
+         */
+        int endLine = document.getLineOfOffset(this.offset + length) - 1;
+
+        int lineOfOffset = document.getLineOfOffset(offset);
+
+        return lineOfOffset >= startLine && lineOfOffset <= endLine;
+    }
+
+    /**
+     * Returns whether the offset is contained on any of the lines
+     * of the proof. Note that this position ends
+     * at the first offset of the line after the proof, but this method
+     * does not consider that line part of the proof. The position
+     * ends at that offset for reasons explained in the constructor of this class.
+     * 
+     * @param offset
+     * @param document
+     * @return
+     * @throws BadLocationException 
+     */
+    public boolean containsInProof(int offset, IDocument document) throws BadLocationException
+    {
+        int startLine = document.getLineOfOffset(positionOfProof.getOffset());
+        int endLine = document.getLineOfOffset(positionOfProof.getOffset() + positionOfProof.getLength());
+
+        int lineOfOffset = document.getLineOfOffset(offset);
+
+        return lineOfOffset >= startLine && lineOfOffset <= endLine;
+    }
+
+    /**
+     * Returns whether the offset is contained on any of the lines
+     * >= start line of the statement and < the start line of
+     * the proof.
+     * 
+     * @param offset
+     * @param document
+     * @return
+     * @throws BadLocationException 
+     */
+    public boolean containsBeforeProof(int offset, IDocument document) throws BadLocationException
+    {
+        int startLine = document.getLineOfOffset(positionOfProvable.getOffset());
+        int endLine = document.getLineOfOffset(positionOfProof.getOffset());
+
+        int lineOfOffset = document.getLineOfOffset(offset);
+
+        return lineOfOffset >= startLine && lineOfOffset < endLine;
+    }
+
+    /**
+     * Returns whether the input proofPosition is contained inside
+     * this instance. More precisely, returns
+     * 
+     * this.offset <= proofPosition.getOffset() &&
+     * this.offset + this.length >= proofPosition.getOffset() + proofPosition.getLength()
+     * 
+     * @param proofPosition
+     * @return
+     */
+    public boolean contains(TLAProofPosition proofPosition)
+    {
+        return this.offset <= proofPosition.getOffset()
+                && this.offset + this.length >= proofPosition.getOffset() + proofPosition.getLength();
+    }
+
+    /**
      * Aligns <code>region</code> to start and end at a line offset. The region's start is
      * decreased to the next line offset, and the end offset increased to the next line start or the
      * end of the document. <code>null</code> is returned if <code>region</code> is
-     * <code>null</code> itself or does not comprise at least one line delimiter, as a single line
-     * cannot be folded.
+     * <code>null</code> itself or if region's end line is less than its start line.
      *
      * @param region the region to align, may be <code>null</code>
      * @param document

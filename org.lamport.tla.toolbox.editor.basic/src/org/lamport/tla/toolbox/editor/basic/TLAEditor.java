@@ -47,8 +47,11 @@ import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.ChainedPreferenceStore;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
+import org.eclipse.ui.texteditor.ResourceAction;
 import org.eclipse.ui.texteditor.TextOperationAction;
+import org.lamport.tla.toolbox.editor.basic.actions.ProofFoldAction;
 import org.lamport.tla.toolbox.editor.basic.actions.ToggleCommentAction;
+import org.lamport.tla.toolbox.editor.basic.proof.IProofFoldCommandIds;
 import org.lamport.tla.toolbox.editor.basic.proof.TLAProofFoldingStructureProvider;
 import org.lamport.tla.toolbox.editor.basic.util.ElementStateAdapter;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
@@ -234,6 +237,35 @@ public class TLAEditor extends TextEditor
             markAsStateDependentAction("Format", true); //$NON-NLS-1$
             markAsSelectionDependentAction("Format", true); //$NON-NLS-1$
         }
+
+        createProofFoldAction(IProofFoldCommandIds.FOLD_UNUSABLE, "FoldUnusable.", "FoldUnusable");
+        createProofFoldAction(IProofFoldCommandIds.FOLD_ALL_PROOFS, "FoldAllProofs.", "FoldAllProofs");
+        createProofFoldAction(IProofFoldCommandIds.EXPAND_ALL_PROOFS, "ExpandAllProofs.", "ExpandAllProofs");
+        createProofFoldAction(IProofFoldCommandIds.EXPAND_SUBTREE, "ExpandSubtree.", "ExpandSubtree");
+        createProofFoldAction(IProofFoldCommandIds.COLLAPSE_SUBTREE, "CollapseSubtree.", "CollapseSubtree");
+        createProofFoldAction(IProofFoldCommandIds.SHOW_IMMEDIATE, "ShowImmediate.", "ShowImmediate");
+    }
+
+    /**
+     * Creates a proof folding action for the given commandId (the action will be executed when
+     * that command is called). Its unclear what the purpose of prefix is (for an explanation,
+     * see the explanation of the prefix argument for
+     * {@link ResourceAction#ResourceAction(java.util.ResourceBundle, String)}. Use the examples
+     * in createActions() for what the prefix should be.
+     * 
+     * The actionId should be a String that no other actions in this class use.
+     * 
+     * @param commandId
+     * @param prefix
+     * @param actionId
+     */
+    private void createProofFoldAction(String commandId, String prefix, String actionId)
+    {
+        IAction a = new ProofFoldAction(TLAEditorMessages.getResourceBundle(), prefix, this);
+        a.setActionDefinitionId(commandId);
+        setAction(actionId, a);
+        markAsStateDependentAction(actionId, true);
+        markAsSelectionDependentAction(actionId, true);
     }
 
     /**
@@ -425,6 +457,19 @@ public class TLAEditor extends TextEditor
     public ISourceViewer getViewer()
     {
         return getSourceViewer();
+    }
+
+    /**
+     * Runs the fold operation represented by commandId. This
+     * should be an id from {@link IProofFoldCommandIds}.
+     * @param commandId
+     */
+    public void runFoldOperation(String commandId)
+    {
+        // the current selection
+        ITextSelection selection = (ITextSelection) getSelectionProvider().getSelection();
+
+        proofStructureProvider.runFoldOperation(commandId, selection);
     }
 
     /**
