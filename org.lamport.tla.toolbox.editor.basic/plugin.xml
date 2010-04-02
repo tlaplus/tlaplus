@@ -102,10 +102,6 @@
             class="org.lamport.tla.toolbox.editor.basic.TLAEditor$OpenDeclarationHandler"
             commandId="org.lamport.tla.toolbox.tla.editor.hyperlinking.OpenDeclaration">
       </handler>
-      <handler
-            class="org.lamport.tla.toolbox.editor.basic.Testhandler"
-            commandId="org.lamport.tla.toolbox.editor.basic.TestEditorCommand">
-      </handler>
    </extension>
    <extension
          point="org.eclipse.ui.bindings">
