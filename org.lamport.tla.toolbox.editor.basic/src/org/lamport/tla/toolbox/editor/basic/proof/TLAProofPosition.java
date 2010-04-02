@@ -90,14 +90,10 @@ public class TLAProofPosition extends Position implements IProjectionPosition
          */
         IRegion region = alignRegion(new Region(initProvableOffset, initProofOffset + initProofLength
                 - initProvableOffset), document);
-        if (region != null)
-        {
-            offset = region.getOffset();
-            length = region.getLength();
-        } else
-        {
-            // TODO something when position is one line
-        }
+
+        offset = region.getOffset();
+        length = region.getLength();
+
         positionOfProvable = new Position(initProvableOffset, initProvableLength);
         positionOfProof = new Position(initProofOffset, initProofLength);
         this.annotation = annotation;
