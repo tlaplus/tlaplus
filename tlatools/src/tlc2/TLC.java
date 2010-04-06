@@ -60,7 +60,13 @@ public class TLC
     
     // handle to the cancellable instance (MC or Simulator)
     private Cancelable instance;
-
+    /**
+     * fpMemSize is the number of bytes of memory to allocate
+     * to storing fingerprints of found states in memory.  It
+     * defaults to .25 * runtime.maxMemory().
+     */
+    private long fpMemSize;
+    
     /**
      * Initialization
      */
@@ -87,6 +93,8 @@ public class TLC
         
         // instance is not set
         instance = null;
+
+        fpMemSize = -1;
     }
 
     /*
@@ -136,6 +144,9 @@ public class TLC
      *  o -tool: tool mode (put output codes on console)
      *  o -checkpoint num: interval for check pointing (in minutes)
      *  Defaults to 30
+     *  o -fpmem num: the number of megabytes of memory used to store
+     *                the fingerprints of found states.
+     *  Defaults to 1/4 physical memory.  (Added 6 Apr 2010 by Yuan Yu.)
      */
     public static void main(String[] args)
     {
@@ -162,8 +173,7 @@ public class TLC
     {
         // SZ Feb 20, 2009: extracted this method to separate the 
         // parameter handling from the actual processing
-        
-        
+               
         int index = 0;
         while (index < args.length)
         {
@@ -459,6 +469,25 @@ public class TLC
                     printErrorMsg("Error: expect an integer for -workers option.");
                     return false;
                 }
+            } else if (args[index].equals("-fpmem"))
+            {
+                index++;
+                if (index < args.length)
+                {
+                    try
+                    {
+                        fpMemSize = Long.parseLong(args[index]) << 20;
+                        index++;
+                    } catch (Exception e)
+                    {
+                        printErrorMsg("Error: An integer for fpset memory size required. But encountered " + args[index]);
+                        return false;
+                    }
+                } else
+                {
+                    printErrorMsg("Error: fpset memory size required.");
+                    return false;
+                }
             } else
             {
                 if (args[index].charAt(0) == '-')
@@ -478,6 +507,11 @@ public class TLC
                     mainFile = mainFile.substring(0, len - 4);
                 }
             }
+        }
+        if (fpMemSize == -1)
+        {
+            Runtime runtime = Runtime.getRuntime();
+            fpMemSize = runtime.maxMemory() >> 2;
         }
         if (mainFile == null)
         {
@@ -563,7 +597,7 @@ public class TLC
                 AbstractChecker mc = null;
                 if (TLCGlobals.DFIDMax == -1)
                 {
-                    mc = new ModelChecker(mainFile, configFile, dumpFile, deadlock, fromChkpt, resolver, specObj);
+                    mc = new ModelChecker(mainFile, configFile, dumpFile, deadlock, fromChkpt, resolver, specObj, fpMemSize);
                     TLCGlobals.mainChecker = (ModelChecker) mc;
                 } else
                 {

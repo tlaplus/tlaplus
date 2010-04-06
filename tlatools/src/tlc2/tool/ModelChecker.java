@@ -48,9 +48,10 @@ public class ModelChecker extends AbstractChecker
      * SZ Feb 20, 2009
      * @param resolver name resolver to be able to load files (specs and configs) from managed environments 
      * @param specObj external SpecObj added to enable to work on existing specification 
+     * Modified on 6 Apr 2010 by Yuan Yu to add fpMemSize parameter.
      */
     public ModelChecker(String specFile, String configFile, String dumpFile, boolean deadlock, String fromChkpt,
-            FilenameToStream resolver, SpecObj specObj) throws EvalException, IOException
+            FilenameToStream resolver, SpecObj specObj, long fpMemSize) throws EvalException, IOException
     {
         // call the abstract constructor
         super(specFile, configFile, dumpFile, deadlock, fromChkpt, true, resolver, specObj);
@@ -60,7 +61,7 @@ public class ModelChecker extends AbstractChecker
         // this.theStateQueue = new MemStateQueue(this.metadir);
 
         // SZ Feb 20, 2009: this is a selected alternative
-        this.theFPSet = new MultiFPSet(1);
+        this.theFPSet = new MultiFPSet(1, fpMemSize/20);
         // this.theFPSet = new DiskFPSet(-1);
         // this.theFPSet = new MemFPSet();
         // this.theFPSet = new MemFPSet1();

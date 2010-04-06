@@ -33,10 +33,15 @@ public class CheckImplFile extends CheckImpl
 
     private static int WaitForTrace = 10000;
 
+    /**
+     * @param fpMemSize : Parameter added 6 Apr 2010 by Yuan Yu because it was added
+     * to ModelChecker constructor.
+     * 
+     */
     public CheckImplFile(String specFile, String configFile, boolean deadlock, int depth, String fromChkpt,
-            String traceFile) throws IOException
+            String traceFile, long fpMemSize) throws IOException
     {
-        super(specFile, configFile, deadlock, depth, fromChkpt);
+        super(specFile, configFile, deadlock, depth, fromChkpt, fpMemSize);
         this.traceFile = traceFile;
         this.states = null;
         this.sidx = 0;
@@ -302,8 +307,15 @@ public class CheckImplFile extends CheckImpl
       FP64.Init(0);
       
       // Start the checker:
+      Runtime runtime = Runtime.getRuntime();
+      /**
+       * The following modified by Yuan Yu on 6 Apr 2010 to provide the newly added
+       * parameter to the constructor.  Note that this changes (and probably enlarges)
+       * the amount of memory devoted to fingerprints of found states.
+       */
+      long fpMemSize = runtime.totalMemory() >> 2;
       CheckImplFile checker = new CheckImplFile(mainFile, configFile, deadlock,
-						depth, fromChkpt, traceFile);
+						depth, fromChkpt, traceFile, fpMemSize);
       checker.init();
       while (true) {
 	// Get a trace and check it.

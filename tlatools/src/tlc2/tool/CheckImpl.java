@@ -25,11 +25,15 @@ public abstract class CheckImpl extends ModelChecker {
   
   private static int TraceDuration = 30000;
 
+  /**
+   * @param fpMemSize : This parameter added by Yuan Yu on 6 Apr 2010 
+   * because same parameter was added to the ModelChecker constructor. 
+   */
   public CheckImpl(String specFile, String configFile, boolean deadlock,
-		   int depth, String fromChkpt)
+		   int depth, String fromChkpt, long fpMemSize)
   throws IOException {
     // SZ Feb 20, 2009: patched due to changes to ModelCheker
-    super(specFile, configFile, null, deadlock, fromChkpt, null, null); // no name resolver and no specobj
+    super(specFile, configFile, null, deadlock, fromChkpt, null, null, fpMemSize); // no name resolver and no specobj
     this.depth = depth;
     this.curState = null;
     this.coverSet = new DiskFPSet(-1);

@@ -21,12 +21,12 @@ public class MultiFPSet extends FPSet {
   private int fpbits;
 
   /* Create a MultiFPSet with 2^bits FPSets. */
-  public MultiFPSet(int bits) throws RemoteException {
+  public MultiFPSet(int bits, long fpMemSize) throws RemoteException {
     int len = 1 << bits;
     this.sets = new FPSet[len];
     for (int i = 0; i < len; i++) {
       // this.sets[i] = new MemFPSet();
-      this.sets[i] = new DiskFPSet(-1);
+      this.sets[i] = new DiskFPSet((int)(fpMemSize/len));
     }
     this.fpbits = 64 - bits;
   }
