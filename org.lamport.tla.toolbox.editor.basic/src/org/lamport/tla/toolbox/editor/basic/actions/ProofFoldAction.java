@@ -44,5 +44,16 @@ public class ProofFoldAction extends TextEditorAction
             editor.runFoldOperation(getActionDefinitionId());
         }
     }
+    
+    public void update()
+    {
+        super.update();
+        
+    }
+    
+    public boolean isEnabled()
+    {
+        return true;
+    }
 
 }

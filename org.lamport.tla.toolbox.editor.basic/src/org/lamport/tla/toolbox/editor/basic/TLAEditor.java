@@ -21,6 +21,7 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.Region;
+import org.eclipse.jface.text.TextViewer;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.eclipse.jface.text.hyperlink.IHyperlinkDetector;
 import org.eclipse.jface.text.source.Annotation;
@@ -238,12 +239,16 @@ public class TLAEditor extends TextEditor
             markAsSelectionDependentAction("Format", true); //$NON-NLS-1$
         }
 
-        createProofFoldAction(IProofFoldCommandIds.FOLD_UNUSABLE, "FoldUnusable.", "FoldUnusable");
-        createProofFoldAction(IProofFoldCommandIds.FOLD_ALL_PROOFS, "FoldAllProofs.", "FoldAllProofs");
-        createProofFoldAction(IProofFoldCommandIds.EXPAND_ALL_PROOFS, "ExpandAllProofs.", "ExpandAllProofs");
-        createProofFoldAction(IProofFoldCommandIds.EXPAND_SUBTREE, "ExpandSubtree.", "ExpandSubtree");
-        createProofFoldAction(IProofFoldCommandIds.COLLAPSE_SUBTREE, "CollapseSubtree.", "CollapseSubtree");
-        createProofFoldAction(IProofFoldCommandIds.SHOW_IMMEDIATE, "ShowImmediate.", "ShowImmediate");
+        // createProofFoldAction(IProofFoldCommandIds.FOLD_UNUSABLE, "FoldUnusable.", "FoldUnusable");
+        // createProofFoldAction(IProofFoldCommandIds.FOLD_ALL_PROOFS, "FoldAllProofs.", "FoldAllProofs");
+        // createProofFoldAction(IProofFoldCommandIds.EXPAND_ALL_PROOFS, "ExpandAllProofs.", "ExpandAllProofs");
+        // createProofFoldAction(IProofFoldCommandIds.EXPAND_SUBTREE, "ExpandSubtree.", "ExpandSubtree");
+        // createProofFoldAction(IProofFoldCommandIds.COLLAPSE_SUBTREE, "CollapseSubtree.", "CollapseSubtree");
+        // createProofFoldAction(IProofFoldCommandIds.SHOW_IMMEDIATE, "ShowImmediate.", "ShowImmediate");
+
+        //a = new ExampleEditorAction(TLAEditorMessages.getResourceBundle(), "Example.", this, getStatusLineManager()); //$NON-NLS-1$
+        // a.setActionDefinitionId("org.lamport.tla.toolbox.editor.basic.TestEditorCommand");
+        // setAction("ToggleComment", a);
     }
 
     /**
@@ -264,8 +269,8 @@ public class TLAEditor extends TextEditor
         IAction a = new ProofFoldAction(TLAEditorMessages.getResourceBundle(), prefix, this);
         a.setActionDefinitionId(commandId);
         setAction(actionId, a);
-        markAsStateDependentAction(actionId, true);
-        markAsSelectionDependentAction(actionId, true);
+        // markAsStateDependentAction(actionId, true);
+        // markAsSelectionDependentAction(actionId, true);
     }
 
     /**
@@ -454,9 +459,14 @@ public class TLAEditor extends TextEditor
         super.dispose();
     }
 
-    public ISourceViewer getViewer()
+    public TextViewer getViewer()
     {
-        return getSourceViewer();
+        return (TextViewer) getSourceViewer();
+    }
+
+    public void setStatusMessage(String message)
+    {
+        getStatusLineManager().setMessage(message);
     }
 
     /**
@@ -467,9 +477,12 @@ public class TLAEditor extends TextEditor
     public void runFoldOperation(String commandId)
     {
         // the current selection
-        ITextSelection selection = (ITextSelection) getSelectionProvider().getSelection();
+        if (getSelectionProvider().getSelection() instanceof ITextSelection)
+        {
+            ITextSelection selection = (ITextSelection) getSelectionProvider().getSelection();
 
-        proofStructureProvider.runFoldOperation(commandId, selection);
+            proofStructureProvider.runFoldOperation(commandId, selection);
+        }
     }
 
     /**

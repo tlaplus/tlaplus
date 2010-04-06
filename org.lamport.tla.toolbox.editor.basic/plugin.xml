@@ -55,42 +55,49 @@
       </command>
       <command
             categoryId="org.eclipse.ui.category.textEditor"
+            defaultHandler="org.lamport.tla.toolbox.editor.basic.handlers.ExampleEditCommandHandler"
             description="Example of editor command"
             id="org.lamport.tla.toolbox.editor.basic.TestEditorCommand"
             name="Test Editor Command">
       </command>
       <command
             categoryId="org.eclipse.ui.category.textEditor"
+            defaultHandler="org.lamport.tla.toolbox.editor.basic.handlers.ProofFoldCommandHandler"
             description="Shows all usable steps and their siblings, and shows immediate children, hides all others"
             id="org.lamport.tla.toolbox.editor.basic.FoldUnusableSteps"
             name="Focus On Step">
       </command>
       <command
             categoryId="org.eclipse.ui.category.textEditor"
+            defaultHandler="org.lamport.tla.toolbox.editor.basic.handlers.ProofFoldCommandHandler"
             description="Hides all proofs in module"
             id="org.lamport.tla.toolbox.editor.basic.FoldAllProofs"
             name="Hise All Proofs">
       </command>
       <command
             categoryId="org.eclipse.ui.category.textEditor"
+            defaultHandler="org.lamport.tla.toolbox.editor.basic.handlers.ProofFoldCommandHandler"
             description="Shows all proofs in the module"
             id="org.lamport.tla.toolbox.editor.basic.ExpandAllProofs"
             name="Show All Proofs">
       </command>
       <command
             categoryId="org.eclipse.ui.category.textEditor"
+            defaultHandler="org.lamport.tla.toolbox.editor.basic.handlers.ProofFoldCommandHandler"
             description="Shows the subtree containing the caret."
             id="org.lamport.tla.toolbox.editor.basic.ExpandSubtree"
             name="Show Current Subtree">
       </command>
       <command
             categoryId="org.eclipse.ui.category.textEditor"
+            defaultHandler="org.lamport.tla.toolbox.editor.basic.handlers.ProofFoldCommandHandler"
             description="Hides the subtree containing the caret."
             id="org.lamport.tla.toolbox.editor.basic.CollapseSubtree"
             name="Hide Current Subtree">
       </command>
       <command
             categoryId="org.eclipse.ui.category.textEditor"
+            defaultHandler="org.lamport.tla.toolbox.editor.basic.handlers.ProofFoldCommandHandler"
             description="Shows the proof of the step containing the caret and collapses all subproofs."
             id="org.lamport.tla.toolbox.editor.basic.ShowImmediate"
             name="Show Children Only">

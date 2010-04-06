@@ -24,7 +24,7 @@ import tla2sany.semantic.TheoremNode;
  * 
  * Instances of this class also maintains the {@link Position} of the statement
  * and the {@link Position} of the proof. This can be used to determine if a certain
- * offset is contained specifically within the proof or within the offset. There
+ * offset is contained specifically within the proof or within the statement. There
  * are methods for computing this.
  * 
  * @author Daniel Ricketts
