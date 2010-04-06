@@ -21,6 +21,17 @@ import org.lamport.tla.toolbox.editor.basic.util.EditorUtil;
  * Performs a useless command to illustrate how to get keyboard input
  * and modify the contents of an editor.
  * 
+ * When execute is called, if a TLA editor currently has focus, this
+ * handler starts listening for key strokes and starts listening
+ * for focus events on the editor's underlying widget. It will stop listening for key
+ * strokes if the widget loses focus or after the first key stroke is entered.
+ * 
+ * If the first key stroke to be entered is a digit, this handler finds
+ * the word currently containing the caret in the editor and repeats that word
+ * the number of times equal to the digit pressed. If the key pressed
+ * is not a digit, this does nothing to the document and
+ * removes itself from subsequent key events.
+ * 
  * @author Daniel Ricketts
  *
  */
@@ -53,10 +64,11 @@ public class ExampleEditCommandHandler extends AbstractHandler implements Verify
         {
             // no other listeners should respond to this event
             event.doit = false;
-            
 
             // the state mask indicates what modifier keys (such as CTRL) were being
             // pressed when the character was pressed
+
+            // the digit should be pressed without any modifier keys
             if (event.stateMask == SWT.NONE && Character.isDigit(event.character))
             {
                 // get the digit input
@@ -64,13 +76,14 @@ public class ExampleEditCommandHandler extends AbstractHandler implements Verify
 
                 // get the text selection
                 ISelection selection = editor.getSelectionProvider().getSelection();
+
                 if (selection != null && selection instanceof ITextSelection)
                 {
                     ITextSelection textSelection = (ITextSelection) selection;
 
                     IDocument document = editor.getDocumentProvider().getDocument(editor.getEditorInput());
 
-                    // if one or more characters are selected, do nothing
+                    // if one or more characters are highlighted, do nothing
                     if (textSelection.getLength() == 0 && document != null)
                     {
 
@@ -88,6 +101,8 @@ public class ExampleEditCommandHandler extends AbstractHandler implements Verify
                             {
                                 sb.append(insertionText);
                             }
+
+                            // insert the string
                             document.replace(region.getOffset() + region.getLength(), 0, sb.toString());
                         } catch (BadLocationException e)
                         {
