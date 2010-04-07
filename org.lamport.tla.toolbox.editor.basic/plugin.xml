@@ -64,7 +64,7 @@
             categoryId="org.eclipse.ui.category.textEditor"
             defaultHandler="org.lamport.tla.toolbox.editor.basic.handlers.ProofFoldCommandHandler"
             description="Shows all usable steps and their siblings, and shows immediate children, hides all others"
-            id="org.lamport.tla.toolbox.editor.basic.FoldUnusableSteps"
+            id="org.lamport.tla.toolbox.editor.basic.FocusOnStep"
             name="Focus On Step">
       </command>
       <command
@@ -72,7 +72,7 @@
             defaultHandler="org.lamport.tla.toolbox.editor.basic.handlers.ProofFoldCommandHandler"
             description="Hides all proofs in module"
             id="org.lamport.tla.toolbox.editor.basic.FoldAllProofs"
-            name="Hise All Proofs">
+            name="Hide All Proofs">
       </command>
       <command
             categoryId="org.eclipse.ui.category.textEditor"
@@ -129,40 +129,40 @@
             sequence="M1+5">
       </key>
       <key
-            commandId="org.lamport.tla.toolbox.editor.basic.FoldUnusableSteps"
+            commandId="org.lamport.tla.toolbox.editor.basic.FocusOnStep"
             contextId="org.eclipse.ui.contexts.window"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            sequence="M1+1">
+            sequence="M1+C M1+F">
       </key>
       <key
             commandId="org.lamport.tla.toolbox.editor.basic.FoldAllProofs"
             contextId="org.eclipse.ui.contexts.window"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            sequence="M1+2">
+            sequence="M1+C M1+N">
       </key>
       <key
             commandId="org.lamport.tla.toolbox.editor.basic.ExpandAllProofs"
             contextId="org.eclipse.ui.contexts.window"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            sequence="M1+3">
+            sequence="M1+C M1+A">
       </key>
       <key
             commandId="org.lamport.tla.toolbox.editor.basic.ExpandSubtree"
             contextId="org.eclipse.ui.contexts.window"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            sequence="M1+8">
+            sequence="M1+C M1+S">
       </key>
       <key
             commandId="org.lamport.tla.toolbox.editor.basic.CollapseSubtree"
             contextId="org.eclipse.ui.contexts.window"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            sequence="M1+6">
+            sequence="M1+C M1+H">
       </key>
       <key
             commandId="org.lamport.tla.toolbox.editor.basic.ShowImmediate"
             contextId="org.eclipse.ui.contexts.window"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            sequence="M1+7">
+            sequence="M1+C M1+C">
       </key>
       
    </extension>
