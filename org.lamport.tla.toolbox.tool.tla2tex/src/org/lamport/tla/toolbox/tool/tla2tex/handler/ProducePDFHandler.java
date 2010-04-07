@@ -181,6 +181,7 @@ public class ProducePDFHandler extends AbstractHandler
                     if (preferenceStore.getBoolean(ITLA2TeXPreferenceConstants.SHADE_COMMENTS))
                     {
                         tla2texArgs.add("-shade");
+                        tla2texArgs.add("-nops");  // The -nops switch added by LL on 7 Apr 2010
                     }
 
                     if (preferenceStore.getBoolean(ITLA2TeXPreferenceConstants.NUMBER_LINES))
