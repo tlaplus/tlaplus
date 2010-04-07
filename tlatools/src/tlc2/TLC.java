@@ -64,8 +64,12 @@ public class TLC
      * fpMemSize is the number of bytes of memory to allocate
      * to storing fingerprints of found states in memory.  It
      * defaults to .25 * runtime.maxMemory().
+     * The minimum value of fpMemSize is MinFpMemSize unless
+     * that's bigger than Runtime.getRuntime()).maxMemory(), in
+     * which case it is .75 * (Runtime.getRuntime()).maxMemory().
      */
     private long fpMemSize;
+    private static long MinFpMemSize = 20 * (1 << 19);
     
     /**
      * Initialization
@@ -508,11 +512,19 @@ public class TLC
                 }
             }
         }
+        Runtime runtime = Runtime.getRuntime();
         if (fpMemSize == -1)
         {
-            Runtime runtime = Runtime.getRuntime();
             fpMemSize = runtime.maxMemory() >> 2;
+         }
+        if (fpMemSize < MinFpMemSize) 
+        {
+            fpMemSize = MinFpMemSize;
         }
+        if (fpMemSize >= runtime.maxMemory()) 
+        { 
+            fpMemSize = runtime.maxMemory() - (runtime.maxMemory() >> 2);
+        }  
         if (mainFile == null)
         {
             printErrorMsg("Error: Missing input TLA+ module.");
