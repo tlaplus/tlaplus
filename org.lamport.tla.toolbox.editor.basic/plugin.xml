@@ -210,7 +210,7 @@
                        style="push">
                  </command>
                  <command
-                       commandId="org.lamport.tla.toolbox.editor.basic.FoldUnusableSteps"
+                       commandId="org.lamport.tla.toolbox.editor.basic.FocusOnStep"
                        style="push">
                  </command>
               </menu>
