@@ -183,9 +183,6 @@
               <command
                     commandId="org.eclipse.ui.edit.text.contentAssist.proposals">
               </command>
-              <command
-                    commandId="org.eclipse.ui.edit.text.contentAssist.contextInformation">
-              </command>
               <menu
                     id="org.lamport.tla.toolbox.editor.basic.ProofFoldCommands"
                     label="Proof Folding">

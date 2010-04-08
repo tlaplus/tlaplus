@@ -15,6 +15,9 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.action.IContributionItem;
+import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.IRegion;
@@ -47,6 +50,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.ChainedPreferenceStore;
 import org.eclipse.ui.texteditor.IDocumentProvider;
+import org.eclipse.ui.texteditor.ITextEditorActionConstants;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.eclipse.ui.texteditor.ResourceAction;
 import org.eclipse.ui.texteditor.TextOperationAction;
@@ -271,6 +275,51 @@ public class TLAEditor extends TextEditor
         setAction(actionId, a);
         // markAsStateDependentAction(actionId, true);
         // markAsSelectionDependentAction(actionId, true);
+    }
+
+    /**
+     * Called when the context menu is about to show.
+     * 
+     * We use this to remove unwanted items from the menu
+     * that eclipse plug-ins contribute.
+     */
+    protected void editorContextMenuAboutToShow(IMenuManager menuManager)
+    {
+        super.editorContextMenuAboutToShow(menuManager);
+
+        /*
+         * The following removes unwanted preference items.
+         * 
+         * The calls to the super class implementations of this method
+         * add menu items that we dont want, so after they are added,
+         * we remove them.
+         */
+        menuManager.remove(ITextEditorActionConstants.SHIFT_RIGHT);
+        menuManager.remove(ITextEditorActionConstants.SHIFT_LEFT);
+
+        /*
+         * The following is a bit of a hack to remove
+         * the "Show In" submenu that is contributed by
+         * AbstractDecoratedTextEditor in its implementation
+         * of this method. It is contributed without
+         * an id, so we have to check all items in the menu
+         * to check if a submenu contains an item with
+         * the id viewShowIn. Then we remove this submenu.
+         */
+        IContributionItem[] items = menuManager.getItems();
+        for (int i = 0; i < items.length; i++)
+        {
+            if (items[i] instanceof MenuManager)
+            {
+                MenuManager subMenu = (MenuManager) items[i];
+                if (subMenu.find("viewsShowIn") != null)
+                {
+                    menuManager.remove(subMenu);
+                    break;
+                }
+            }
+        }
+
     }
 
     /**
