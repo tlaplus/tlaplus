@@ -2,7 +2,11 @@ package org.lamport.tla.toolbox.editor.basic.actions;
 
 import java.util.ResourceBundle;
 
-import org.eclipse.ui.texteditor.ITextEditor;
+import org.eclipse.jface.text.ITextSelection;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
+import org.eclipse.swt.custom.CaretEvent;
+import org.eclipse.swt.custom.CaretListener;
 import org.eclipse.ui.texteditor.ResourceAction;
 import org.eclipse.ui.texteditor.TextEditorAction;
 import org.lamport.tla.toolbox.editor.basic.TLAEditor;
@@ -13,7 +17,7 @@ import org.lamport.tla.toolbox.editor.basic.TLAEditor;
  * @author Daniel Ricketts
  *
  */
-public class ProofFoldAction extends TextEditorAction
+public class ProofFoldAction extends TextEditorAction implements CaretListener, ISelectionChangedListener
 {
 
     /**
@@ -27,9 +31,11 @@ public class ProofFoldAction extends TextEditorAction
      * @param editor the text editor
      * @see ResourceAction#ResourceAction(ResourceBundle, String, int)
      */
-    public ProofFoldAction(ResourceBundle bundle, String prefix, ITextEditor editor)
+    public ProofFoldAction(ResourceBundle bundle, String prefix, TLAEditor editor)
     {
         super(bundle, prefix, editor);
+        editor.getViewer().getTextWidget().addCaretListener(this);
+        editor.getSelectionProvider().addSelectionChangedListener(this);
     }
 
     /**
@@ -44,16 +50,36 @@ public class ProofFoldAction extends TextEditorAction
             editor.runFoldOperation(getActionDefinitionId());
         }
     }
-    
+
     public void update()
     {
-        super.update();
-        
+        if (getTextEditor() instanceof TLAEditor)
+        {
+            TLAEditor editor = (TLAEditor) getTextEditor();
+            if (editor.getProofStructureProvider() != null)
+            {
+                setEnabled(editor.getProofStructureProvider().canRunFoldOperation(getActionDefinitionId(),
+                        (ITextSelection) editor.getSelectionProvider().getSelection()));
+            }
+        }
     }
-    
-    public boolean isEnabled()
+
+    public void caretMoved(CaretEvent event)
     {
-        return true;
+        update();
+    }
+
+    public void selectionChanged(SelectionChangedEvent event)
+    {
+        if (getTextEditor() instanceof TLAEditor)
+        {
+            TLAEditor editor = (TLAEditor) getTextEditor();
+            if (editor.getProofStructureProvider() != null)
+            {
+                setEnabled(editor.getProofStructureProvider().canRunFoldOperation(getActionDefinitionId(),
+                        (ITextSelection) event.getSelection()));
+            }
+        }
     }
 
 }
