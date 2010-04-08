@@ -239,7 +239,7 @@ public class TLAEditor extends TextEditor
             markAsSelectionDependentAction("Format", true); //$NON-NLS-1$
         }
 
-        // createProofFoldAction(IProofFoldCommandIds.FOLD_UNUSABLE, "FoldUnusable.", "FoldUnusable");
+        // createProofFoldAction(IProofFoldCommandIds.FOCUS_ON_STEP, "FoldUnusable.", "FoldUnusable");
         // createProofFoldAction(IProofFoldCommandIds.FOLD_ALL_PROOFS, "FoldAllProofs.", "FoldAllProofs");
         // createProofFoldAction(IProofFoldCommandIds.EXPAND_ALL_PROOFS, "ExpandAllProofs.", "ExpandAllProofs");
         // createProofFoldAction(IProofFoldCommandIds.EXPAND_SUBTREE, "ExpandSubtree.", "ExpandSubtree");
@@ -484,7 +484,7 @@ public class TLAEditor extends TextEditor
             proofStructureProvider.runFoldOperation(commandId, selection);
         }
     }
-    
+
     public TLAProofFoldingStructureProvider getProofStructureProvider()
     {
         return proofStructureProvider;
