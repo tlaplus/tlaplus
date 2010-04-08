@@ -7,12 +7,18 @@ import org.lamport.tla.toolbox.editor.basic.TLAEditor;
 import org.lamport.tla.toolbox.editor.basic.util.EditorUtil;
 
 /**
- * Handler for any proof folding command.
+ * Abstract base handler for fold command handling.
+ * 
+ * Subclasses can extend by implementing the {@link ProofFoldCommandHandler#setEnabled(Object)} method
+ * to enable and disable the handler. This has the effect of graying out any menu items for the
+ * command if the handler is disabled. The {@link ProofFoldCommandHandler#setEnabled(Object)}
+ * method seems to be called just before such menu items are rendered in the UI and
+ * just before the handler is executed.
  * 
  * @author Daniel Ricketts
  *
  */
-public class ProofFoldCommandHandler extends AbstractHandler
+public abstract class ProofFoldCommandHandler extends AbstractHandler
 {
 
     public Object execute(ExecutionEvent event) throws ExecutionException

@@ -385,14 +385,14 @@ public class TLAProofFoldingStructureProvider implements IParseResultListener, I
      * @param selection selection in the editor
      * @return
      */
-    public boolean containedByStep(ITextSelection selection)
+    private boolean containedByStep(int caretOffset)
     {
         try
         {
             for (int i = 0; i < foldPositions.size(); i++)
             {
                 TLAProofPosition proofPosition = (TLAProofPosition) foldPositions.get(i);
-                if (proofPosition.containsBeforeProof(selection.getOffset() + selection.getLength(), document))
+                if (proofPosition.containsBeforeProof(caretOffset, document))
                 {
                     return true;
                 }
@@ -413,14 +413,14 @@ public class TLAProofFoldingStructureProvider implements IParseResultListener, I
      * @param selection selection in the editor
      * @return
      */
-    public boolean containedByProof(ITextSelection selection)
+    private boolean containedByProof(int caretOffset)
     {
         try
         {
             for (int i = 0; i < foldPositions.size(); i++)
             {
                 TLAProofPosition proofPosition = (TLAProofPosition) foldPositions.get(i);
-                if (proofPosition.containsInProof(selection.getOffset() + selection.getLength(), document))
+                if (proofPosition.containsInProof(caretOffset, document))
                 {
                     return true;
                 }
@@ -441,14 +441,14 @@ public class TLAProofFoldingStructureProvider implements IParseResultListener, I
      * @param selection selection in the editor
      * @return
      */
-    public boolean containedByStepOrProof(ITextSelection selection)
+    private boolean containedByStepOrProof(int caretOffset)
     {
         try
         {
             for (int i = 0; i < foldPositions.size(); i++)
             {
                 TLAProofPosition proofPosition = (TLAProofPosition) foldPositions.get(i);
-                if (proofPosition.containsInProofOrStatement(selection.getOffset() + selection.getLength(), document))
+                if (proofPosition.containsInProofOrStatement(caretOffset, document))
                 {
                     return true;
                 }
@@ -458,6 +458,64 @@ public class TLAProofFoldingStructureProvider implements IParseResultListener, I
             Activator.logError("Error computing if selection is in proof step.", e);
         }
         return false;
+    }
+
+    /**
+     * Returns whether the fold operation can be run. If this
+     * returns false, then calling {@link TLAProofFoldingStructureProvider#runFoldOperation(String, ITextSelection)}
+     * with the same commandId and caret offset should have no effect.
+     * 
+     * @param commandId
+     * @param caretOffset
+     * @return
+     */
+    public boolean canRunFoldOperation(String commandId, ITextSelection selection)
+    {
+        if (!canPerformFoldingCommands || selection == null)
+        {
+            return false;
+        }
+
+        int caretOffset = selection.getOffset() + selection.getLength();
+
+        if (commandId.equals(IProofFoldCommandIds.FOCUS_ON_STEP))
+        {
+            // This can be done if the caret is at a step,
+            // between a step and a proof (if there are empty lines
+            // or comments in between a step and a proof), or at
+            // a leaf proof.
+            return containedByStepOrProof(caretOffset);
+        } else if (commandId.equals(IProofFoldCommandIds.FOLD_ALL_PROOFS))
+        {
+            // Always possible.
+            return true;
+        } else if (commandId.equals(IProofFoldCommandIds.EXPAND_ALL_PROOFS))
+        {
+            // Always possible.
+            return true;
+        } else if (commandId.equals(IProofFoldCommandIds.EXPAND_SUBTREE))
+        {
+            // This can be done if the caret is at a step,
+            // between a step and a proof (if there are empty lines
+            // or comments in between a step and a proof).
+            // This command does not make sense at a leaf proof.
+            return containedByStep(caretOffset);
+        } else if (commandId.equals(IProofFoldCommandIds.COLLAPSE_SUBTREE))
+        {
+            // This can be done if the caret is at a step,
+            // between a step and a proof (if there are empty lines
+            // or comments in between a step and a proof).
+            // This command does not make sense at a leaf proof.
+            return containedByStep(caretOffset);
+        } else if (commandId.equals(IProofFoldCommandIds.SHOW_IMMEDIATE))
+        {
+            // This can be done if the caret is at a step,
+            // between a step and a proof (if there are empty lines
+            // or comments in between a step and a proof).
+            // This command does not make sense at a leaf proof.
+            return containedByStep(caretOffset);
+        }
+        return true;
     }
 
     /**
@@ -485,7 +543,7 @@ public class TLAProofFoldingStructureProvider implements IParseResultListener, I
             if (selection != null)
             {
                 int caretOffset = selection.getOffset() + selection.getLength();
-                if (commandId.equals(IProofFoldCommandIds.FOLD_UNUSABLE))
+                if (commandId.equals(IProofFoldCommandIds.FOCUS_ON_STEP))
                 {
                     foldEverythingUnusable(caretOffset);
                 } else if (commandId.equals(IProofFoldCommandIds.FOLD_ALL_PROOFS))
