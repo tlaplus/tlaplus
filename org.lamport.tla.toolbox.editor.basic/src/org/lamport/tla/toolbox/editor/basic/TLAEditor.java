@@ -484,6 +484,11 @@ public class TLAEditor extends TextEditor
             proofStructureProvider.runFoldOperation(commandId, selection);
         }
     }
+    
+    public TLAProofFoldingStructureProvider getProofStructureProvider()
+    {
+        return proofStructureProvider;
+    }
 
     /**
      * The class is located here, because editor does not expose the source viewer (method protected)
