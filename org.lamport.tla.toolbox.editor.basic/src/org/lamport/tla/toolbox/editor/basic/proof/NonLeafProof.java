@@ -6,7 +6,7 @@ import java.util.ArrayList;
  * Represents a non-leaf proof, i.e. one that has steps.
  * 
  * @author Daniel Ricketts
- *
+ * @deprecated
  */
 public class NonLeafProof extends Proof
 {

@@ -8,6 +8,7 @@ import org.eclipse.jface.text.source.projection.ProjectionAnnotation;
  * for a fold.
  * 
  * @author drickett
+ * @deprecated
  *
  */
 public class FoldTuple

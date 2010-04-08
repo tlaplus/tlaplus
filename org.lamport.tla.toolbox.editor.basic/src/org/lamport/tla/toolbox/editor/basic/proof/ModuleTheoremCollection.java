@@ -7,7 +7,7 @@ import java.util.ArrayList;
  * a module.
  * 
  * @author Daniel Ricketts
- *
+ * @deprecated
  */
 public class ModuleTheoremCollection
 {

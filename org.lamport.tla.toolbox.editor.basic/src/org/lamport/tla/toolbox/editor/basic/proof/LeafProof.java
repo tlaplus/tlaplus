@@ -6,7 +6,7 @@ package org.lamport.tla.toolbox.editor.basic.proof;
  * Represents a leaf proof, i.e. a proof without any steps.
  * 
  * @author Daniel Ricketts
- *
+ * @deprecated
  */
 public class LeafProof extends Proof
 {

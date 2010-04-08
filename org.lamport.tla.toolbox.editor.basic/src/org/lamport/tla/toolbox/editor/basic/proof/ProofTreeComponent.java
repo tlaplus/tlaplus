@@ -7,7 +7,7 @@ import org.eclipse.jface.text.Position;
  * such as a theorem, lemma, or proof step, or it can be a proof.
  * 
  * @author Daniel Ricketts
- *
+ * @deprecated
  */
 public abstract class ProofTreeComponent
 {

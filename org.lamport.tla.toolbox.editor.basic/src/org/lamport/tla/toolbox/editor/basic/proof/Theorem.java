@@ -2,6 +2,11 @@ package org.lamport.tla.toolbox.editor.basic.proof;
 
 import java.util.Vector;
 
+/**
+ * 
+ * @author Daniel Ricketts
+ * @deprecated
+ */
 public class Theorem extends Provable
 {
 

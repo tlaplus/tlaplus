@@ -5,7 +5,7 @@ package org.lamport.tla.toolbox.editor.basic.proof;
  * interface to the two types of proofs, {@link LeafProof} and {@link NonLeafProof}.
  * 
  * @author Daniel Ricketts
- *
+ * @deprecated
  */
 public abstract class Proof extends ProofTreeComponent
 {
