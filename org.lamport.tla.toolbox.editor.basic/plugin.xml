@@ -183,34 +183,33 @@
               <command
                     commandId="org.eclipse.ui.edit.text.contentAssist.proposals">
               </command>
-              <menu
-                    id="org.lamport.tla.toolbox.editor.basic.ProofFoldCommands"
-                    label="Proof Folding">
-                 <command
-                       commandId="org.lamport.tla.toolbox.editor.basic.ExpandAllProofs"
-                       style="push">
-                 </command>
-                 <command
-                       commandId="org.lamport.tla.toolbox.editor.basic.FoldAllProofs"
-                       style="push">
-                 </command>
-                 <command
-                       commandId="org.lamport.tla.toolbox.editor.basic.ExpandSubtree"
-                       style="push">
-                 </command>
-                 <command
-                       commandId="org.lamport.tla.toolbox.editor.basic.CollapseSubtree"
-                       style="push">
-                 </command>
-                 <command
-                       commandId="org.lamport.tla.toolbox.editor.basic.ShowImmediate"
-                       style="push">
-                 </command>
-                 <command
-                       commandId="org.lamport.tla.toolbox.editor.basic.FocusOnStep"
-                       style="push">
-                 </command>
-              </menu>
+           </menuContribution>
+           <menuContribution
+                 locationURI="popup:#TextEditorContext?after=foldCommands">
+              <command
+                    commandId="org.lamport.tla.toolbox.editor.basic.ExpandAllProofs"
+                    style="push">
+              </command>
+              <command
+                    commandId="org.lamport.tla.toolbox.editor.basic.FoldAllProofs"
+                    style="push">
+              </command>
+              <command
+                    commandId="org.lamport.tla.toolbox.editor.basic.ExpandSubtree"
+                    style="push">
+              </command>
+              <command
+                    commandId="org.lamport.tla.toolbox.editor.basic.CollapseSubtree"
+                    style="push">
+              </command>
+              <command
+                    commandId="org.lamport.tla.toolbox.editor.basic.ShowImmediate"
+                    style="push">
+              </command>
+              <command
+                    commandId="org.lamport.tla.toolbox.editor.basic.FocusOnStep"
+                    style="push">
+              </command>
            </menuContribution>
          
    </extension>

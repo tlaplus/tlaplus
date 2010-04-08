@@ -18,6 +18,7 @@ import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.IRegion;
@@ -41,6 +42,7 @@ import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
+import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.contexts.IContextActivation;
 import org.eclipse.ui.contexts.IContextService;
@@ -286,6 +288,18 @@ public class TLAEditor extends TextEditor
     protected void editorContextMenuAboutToShow(IMenuManager menuManager)
     {
         super.editorContextMenuAboutToShow(menuManager);
+        // The following adds an extra section for the fold commands.
+        // First, try to find the additions group.
+        IContributionItem additions = menuManager.find(IWorkbenchActionConstants.MB_ADDITIONS);
+        if (additions != null)
+        {
+            // insert fold commands after additions if found
+            menuManager.insertAfter(IWorkbenchActionConstants.MB_ADDITIONS, new Separator("foldCommands"));
+        } else
+        {
+            // else just put fold commands at the end
+            menuManager.add(new Separator("foldCommands"));
+        }
 
         /*
          * The following removes unwanted preference items.
