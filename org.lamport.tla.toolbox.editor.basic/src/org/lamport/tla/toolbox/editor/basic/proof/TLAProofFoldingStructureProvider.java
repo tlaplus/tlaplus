@@ -377,6 +377,90 @@ public class TLAProofFoldingStructureProvider implements IParseResultListener, I
     }
 
     /**
+     * Returns whether or not the selection is at a proof step or theorem statement.
+     * The selection can be a range of text, so a selection
+     * is considered to be at a proof step if the index in the document
+     * described by {@link ITextSelection#getOffset()}+{@link ITextSelection#getLength()} is
+     * in a step or theorem statement.
+     * @param selection selection in the editor
+     * @return
+     */
+    public boolean containedByStep(ITextSelection selection)
+    {
+        try
+        {
+            for (int i = 0; i < foldPositions.size(); i++)
+            {
+                TLAProofPosition proofPosition = (TLAProofPosition) foldPositions.get(i);
+                if (proofPosition.containsBeforeProof(selection.getOffset() + selection.getLength(), document))
+                {
+                    return true;
+                }
+            }
+        } catch (BadLocationException e)
+        {
+            Activator.logError("Error computing if selection is in proof step.", e);
+        }
+        return false;
+    }
+
+    /**
+     * Returns whether or not the selection is in a proof.
+     * The selection can be a range of text, so a selection
+     * is considered to be at a proof step if the index in the document
+     * described by {@link ITextSelection#getOffset()}+{@link ITextSelection#getLength()} is
+     * in a step or theorem statement.
+     * @param selection selection in the editor
+     * @return
+     */
+    public boolean containedByProof(ITextSelection selection)
+    {
+        try
+        {
+            for (int i = 0; i < foldPositions.size(); i++)
+            {
+                TLAProofPosition proofPosition = (TLAProofPosition) foldPositions.get(i);
+                if (proofPosition.containsInProof(selection.getOffset() + selection.getLength(), document))
+                {
+                    return true;
+                }
+            }
+        } catch (BadLocationException e)
+        {
+            Activator.logError("Error computing if selection is in proof step.", e);
+        }
+        return false;
+    }
+
+    /**
+     * Returns whether or not the selection is at a proof step, theorem statement, or leaf proof.
+     * The selection can be a range of text, so a selection
+     * is considered to be at a proof step if the index in the document
+     * described by {@link ITextSelection#getOffset()}+{@link ITextSelection#getLength()} is
+     * in a step or theorem statement.
+     * @param selection selection in the editor
+     * @return
+     */
+    public boolean containedByStepOrProof(ITextSelection selection)
+    {
+        try
+        {
+            for (int i = 0; i < foldPositions.size(); i++)
+            {
+                TLAProofPosition proofPosition = (TLAProofPosition) foldPositions.get(i);
+                if (proofPosition.containsInProofOrStatement(selection.getOffset() + selection.getLength(), document))
+                {
+                    return true;
+                }
+            }
+        } catch (BadLocationException e)
+        {
+            Activator.logError("Error computing if selection is in proof step.", e);
+        }
+        return false;
+    }
+
+    /**
      * Runs the fold operation represented by commandId. This
      * should be an id from {@link IProofFoldCommandIds}.
      * 
@@ -390,10 +474,17 @@ public class TLAProofFoldingStructureProvider implements IParseResultListener, I
     {
         if (canPerformFoldingCommands)
         {
-            // for now, only allow if the selection is only a point, not a range
-            if (selection != null && selection.getLength() == 0)
+            /*
+             * Allow commands to run even if a range of text
+             * is selected (highlighted). We treat end of the selection
+             * (indexed by offset+length) as the location of the caret
+             * for the command. This means that for commands that act
+             * on specific steps, the step on which the command acts is determined
+             * by the position of selection.getOffset()+selection.getLength().
+             */
+            if (selection != null)
             {
-                int caretOffset = selection.getOffset();
+                int caretOffset = selection.getOffset() + selection.getLength();
                 if (commandId.equals(IProofFoldCommandIds.FOLD_UNUSABLE))
                 {
                     foldEverythingUnusable(caretOffset);
