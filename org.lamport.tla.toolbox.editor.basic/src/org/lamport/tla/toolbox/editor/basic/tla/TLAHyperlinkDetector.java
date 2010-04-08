@@ -76,7 +76,7 @@ public class TLAHyperlinkDetector extends AbstractHyperlinkDetector
                     resource = ResourceHelper.getResourceByModuleName(csNode.getFilename());
                 } else
                 {
-                    System.out.println("A StandardModule '" + csNode.getFilename() + "' is requested...");
+                    // System.out.println("A StandardModule '" + csNode.getFilename() + "' is requested...");
                     return null;
                 }
 
