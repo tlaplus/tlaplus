@@ -9,7 +9,7 @@ package org.lamport.tla.toolbox.editor.basic.proof;
 public interface IProofFoldCommandIds
 {
 
-    public static final String FOLD_UNUSABLE = "org.lamport.tla.toolbox.editor.basic.FoldUnusableSteps";
+    public static final String FOLD_UNUSABLE = "org.lamport.tla.toolbox.editor.basic.FocusOnStep";
 
     /**
      * Collapses all proofs.
