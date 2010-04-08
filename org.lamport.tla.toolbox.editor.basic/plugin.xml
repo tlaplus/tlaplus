@@ -132,37 +132,37 @@
             commandId="org.lamport.tla.toolbox.editor.basic.FocusOnStep"
             contextId="org.eclipse.ui.contexts.window"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            sequence="M1+C M1+F">
+            sequence="M1+G M1+F">
       </key>
       <key
             commandId="org.lamport.tla.toolbox.editor.basic.FoldAllProofs"
             contextId="org.eclipse.ui.contexts.window"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            sequence="M1+C M1+N">
+            sequence="M1+G M1+N">
       </key>
       <key
             commandId="org.lamport.tla.toolbox.editor.basic.ExpandAllProofs"
             contextId="org.eclipse.ui.contexts.window"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            sequence="M1+C M1+A">
+            sequence="M1+G M1+A">
       </key>
       <key
             commandId="org.lamport.tla.toolbox.editor.basic.ExpandSubtree"
             contextId="org.eclipse.ui.contexts.window"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            sequence="M1+C M1+S">
+            sequence="M1+G M1+S">
       </key>
       <key
             commandId="org.lamport.tla.toolbox.editor.basic.CollapseSubtree"
             contextId="org.eclipse.ui.contexts.window"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            sequence="M1+C M1+H">
+            sequence="M1+G M1+H">
       </key>
       <key
             commandId="org.lamport.tla.toolbox.editor.basic.ShowImmediate"
             contextId="org.eclipse.ui.contexts.window"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            sequence="M1+C M1+C">
+            sequence="M1+G M1+C">
       </key>
       
    </extension>
