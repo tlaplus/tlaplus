@@ -1795,6 +1795,11 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
                 if (val instanceof OpDefNode)
                 {
                     OpDefNode opDef = (OpDefNode) val;
+                    // Following added by LL on 10 Apr 2010 to avoid infinite 
+                    // recursion for recursive operator definitions
+                    if (opDef.getInRecursive()) {
+                        return ;
+                    }
                     Context c1 = this.getOpContext(opDef, args, c, true);
                     this.collectPrimedLocs(opDef.getBody(), c1, tbl);
                 } else if (val instanceof LazyValue)

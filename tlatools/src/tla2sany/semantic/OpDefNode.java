@@ -216,7 +216,8 @@ public class OpDefNode extends OpDefOrDeclNode
     /***********************************************************************
     * True iff this node's operator appears in a RECURSIVE statement.      *
     ***********************************************************************/
-
+  public boolean getInRecursive() { return inRecursive; }
+  
 /***************************************************************************
 * XXXXX The uses of "recursive section" in the names of the next two       *
 * fields do not have the same meaning.  Hence, one of these names should   *
