@@ -108,7 +108,9 @@ public class AssignmentWizardPage extends WizardPage
         styledText.setEditable(true);
         styledText.setFocus();
 
-        gd = new GridData(SWT.RIGHT, SWT.TOP, true, true);
+        // SWT.FILL causes the text field to expand and contract
+        // with changes in size of the dialog window.
+        gd = new GridData(SWT.FILL, SWT.FILL, true, true);
         gd.minimumWidth = 500;
         gd.minimumHeight = 100;
         styledText.setLayoutData(gd);
