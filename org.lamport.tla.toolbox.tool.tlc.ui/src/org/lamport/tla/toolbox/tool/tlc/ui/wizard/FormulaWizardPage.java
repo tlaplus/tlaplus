@@ -40,7 +40,9 @@ public class FormulaWizardPage extends WizardPage
 
         sourceViewer = FormHelper.createSourceViewer(container, SWT.BORDER | SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
 
-        GridData gd = new GridData(SWT.CENTER, SWT.CENTER, true, true);
+        // SWT.FILL causes the text field to expand and contract
+        // with changes in size of the dialog window.
+        GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true);
         gd.heightHint = 200;
         gd.widthHint = 400;
         gd.grabExcessHorizontalSpace = true;
