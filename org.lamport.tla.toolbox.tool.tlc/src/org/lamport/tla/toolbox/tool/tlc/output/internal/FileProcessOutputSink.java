@@ -44,8 +44,7 @@ public class FileProcessOutputSink implements IProcessOutputSink
                 public void run(IProgressMonitor monitor) throws CoreException
                 {
                     // System.out.print(Thread.currentThread().getId() + " : " + message);
-                    outFile.appendContents(new ByteArrayInputStream(text.getBytes()), IResource.KEEP_HISTORY
-                            | IResource.FORCE, monitor);
+                    outFile.appendContents(new ByteArrayInputStream(text.getBytes()), IResource.FORCE, monitor);
                 }
             }, rule, IWorkspace.AVOID_UPDATE, new NullProgressMonitor());
 

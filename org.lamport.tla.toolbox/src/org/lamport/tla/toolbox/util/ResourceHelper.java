@@ -589,7 +589,7 @@ public class ResourceHelper
         if (file.exists())
         {
             // System.out.println(buffer.toString());
-            file.setContents(stream, IResource.FORCE | IResource.KEEP_HISTORY, monitor);
+            file.setContents(stream, IResource.FORCE, monitor);
         } else
         {
             throw new CoreException(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Exected " + file.getName()
@@ -614,7 +614,7 @@ public class ResourceHelper
         if (file.exists())
         {
             // System.out.println(buffer.toString());
-            file.appendContents(stream, IResource.FORCE | IResource.KEEP_HISTORY, monitor);
+            file.appendContents(stream, IResource.FORCE, monitor);
         } else
         {
             file.create(stream, force, monitor);
