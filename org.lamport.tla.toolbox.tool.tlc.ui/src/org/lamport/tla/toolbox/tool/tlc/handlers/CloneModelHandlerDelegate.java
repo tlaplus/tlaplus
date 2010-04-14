@@ -21,12 +21,27 @@ import org.lamport.tla.toolbox.tool.tlc.util.ModelNameValidator;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 /**
- * Renames a model
+ * Copies the contents of a model into a new model.
+ * 
  * @author Simon Zambrovski
  * @version $Id$
  */
 public class CloneModelHandlerDelegate extends AbstractHandler implements IHandler
 {
+
+    public static final String COMMAND_ID = "toolbox.tool.tlc.commands.model.clone.delegate";
+
+    /**
+     * Parameter giving the name of the model to be cloned.
+     * 
+     * If this parameter is set, the call to event.getParameter(PARAM_MODEL) should return
+     * an object of type String. This is an optional parameter, so if it is not
+     * set this handler looks for the current selection to find the model to be cloned.
+     * 
+     * The model name can be of the form specName___modelName or just of the form
+     * modelName.
+     */
+    public static final String PARAM_MODEL_NAME = "toolbox.tool.tlc.commands.model.clone.param.modelName";
 
     private String modelName;
 
@@ -36,13 +51,30 @@ public class CloneModelHandlerDelegate extends AbstractHandler implements IHandl
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
         /*
-         * No parameter try to get it from active navigator if any
+         * First try to get the model from the parameters. It is an optional
+         * parameter, so it may not have been set.
          */
-        ISelection selection = HandlerUtil.getCurrentSelectionChecked(event);
-        if (selection != null && selection instanceof IStructuredSelection)
+        String paramModelName = (String) event.getParameter(PARAM_MODEL_NAME);
+        ILaunchConfiguration model = null;
+
+        if (paramModelName != null)
         {
-            // model
-            ILaunchConfiguration model = (ILaunchConfiguration) ((IStructuredSelection) selection).getFirstElement();
+            model = ModelHelper.getModelByName(paramModelName);
+        } else
+        {
+            /*
+             * No parameter try to get it from active navigator if any
+             */
+            ISelection selection = HandlerUtil.getCurrentSelectionChecked(event);
+            if (selection != null && selection instanceof IStructuredSelection)
+            {
+                // model
+                model = (ILaunchConfiguration) ((IStructuredSelection) selection).getFirstElement();
+            }
+        }
+
+        if (model != null)
+        {
 
             // root file
             IResource specRootModule = ToolboxHandle.getRootModule(model.getFile().getProject());

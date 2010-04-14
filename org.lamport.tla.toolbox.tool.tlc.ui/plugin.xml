@@ -96,6 +96,11 @@
             description="Creates a copy of selected model."
             id="toolbox.tool.tlc.commands.model.clone.delegate"
             name="Clone Model">
+         <commandParameter
+               id="toolbox.tool.tlc.commands.model.clone.param.modelName"
+               name="Model to be cloned"
+               optional="true">
+         </commandParameter>
       </command>
       <command
             categoryId="toolbox.tool.tlc.commands.category"
@@ -157,6 +162,26 @@
                <dynamic
                      class="org.lamport.tla.toolbox.tool.tlc.ui.modelexplorer.ModelContributionItem"
                      id="toolbox.tool.tlc.model.open.dynamic">
+               </dynamic>
+               <visibleWhen
+                     checkEnabled="true">
+                  <with
+                        variable="activeWorkbenchWindow.activePerspective">
+                     <not>
+                        <equals
+                              value="org.lamport.tla.toolbox.ui.perspective.initial">
+                        </equals>
+                     </not>
+                  </with>
+               </visibleWhen>
+            </menu>
+            <menu
+                  id="toolbox.tool.tlc.modellaunch.clone"
+                  label="Clone Model"
+                  mnemonic="O">
+               <dynamic
+                     class="org.lamport.tla.toolbox.tool.tlc.ui.modelexplorer.CloneModelContributionItem"
+                     id="toolbox.tool.tlc.model.clone.dynamic">
                </dynamic>
                <visibleWhen
                      checkEnabled="true">
@@ -541,6 +566,34 @@ Console Facory
             class="org.lamport.tla.toolbox.tool.tlc.handlers.CloneModelHandlerDelegate"
             commandId="toolbox.tool.tlc.commands.model.clone.delegate">
          <enabledWhen>
+            <or>
+               <and>
+                  <count
+                        value="1">
+                  </count>
+                  <with
+                        variable="selection">
+                     <iterate
+                           ifEmpty="false"
+                           operator="or">
+                        <instanceof
+                              value="org.eclipse.debug.core.ILaunchConfiguration">
+                        </instanceof>
+                     </iterate>
+                  </with></and>
+               <with
+                     variable="activeMenu">
+                  <iterate>
+                     <not>
+                        <equals
+                              value="toolbox.explorer.popup">
+                        </equals>
+                     </not>
+                  </iterate>
+               </with>
+            </or>
+         </enabledWhen>
+         <!-- enabledWhen>
             <count
                   value="1">
             </count>
@@ -556,7 +609,7 @@ Console Facory
                   </instanceof>
                </iterate>
             </with>
-         </activeWhen>
+         </activeWhen -->
       </handler>
       <handler
             class="org.lamport.tla.toolbox.tool.tlc.handlers.StartLaunchHandler"
