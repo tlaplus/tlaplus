@@ -121,13 +121,15 @@ public class CloneModelHandlerDelegate extends AbstractHandler implements IHandl
             parameters.put(CloneModelHandler.PARAM_MODELCOPY_NAME, newModelName);
             UIHelper.runCommand(CloneModelHandler.COMMAND_ID, parameters);
 
+            // Changed by LL on 14 Apr 2010 to open the cloned spec regardless
+            // of whether it is open
             // original model was open
-            if (wasOpened)
-            {
+            //            if (wasOpened)
+            //            {
                 parameters = new HashMap();
                 parameters.put(OpenModelHandler.PARAM_MODEL_NAME, modelName);
                 UIHelper.runCommand(OpenModelHandler.COMMAND_ID, parameters);
-            }
+            //            }
         }
 
         return null;
