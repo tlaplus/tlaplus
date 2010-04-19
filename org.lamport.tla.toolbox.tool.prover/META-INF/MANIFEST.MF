@@ -1,0 +1,13 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Prover
+Bundle-SymbolicName: org.lamport.tla.toolbox.tool.prover;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Bundle-Activator: org.lamport.tla.toolbox.tool.prover.ProverActivator
+Require-Bundle: org.eclipse.core.runtime,
+ org.eclipse.debug.core
+Bundle-ActivationPolicy: lazy
+Bundle-RequiredExecutionEnvironment: J2SE-1.4
+Bundle-Vendor: Daniel Ricketts
+Export-Package: org.lamport.tla.toolbox.tool.prover.launch,
+ org.lamport.tla.toolbox.tool.prover.output

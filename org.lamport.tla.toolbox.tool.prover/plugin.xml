@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension-point id="org.lamport.tla.toolbox.tool.prover.processOutputSink" name="Prover Process Output Sink" schema="schema/org.lamport.tla.toolbox.tool.prover.processOutputSink.exsd"/>
+   <extension
+         point="org.eclipse.debug.core.launchConfigurationTypes">
+      <launchConfigurationType
+            delegate="org.lamport.tla.toolbox.tool.prover.launch.ProverLaunchDelegate"
+            delegateDescription="Launches the TLA Proof Manager on a module to check proofs"
+            delegateName="TLA Proof Manager"
+            id="org.lamport.tla.toolbox.tool.prover.proverLaunch"
+            modes="checkStep"
+            name="Prover Launcher"
+            public="true">
+      </launchConfigurationType>
+   </extension>
+   <extension
+         point="org.eclipse.debug.core.launchModes">
+      <launchMode
+            label="Launch the Prover on a Step"
+            launchAsLabel="Launch Prover"
+            mode="checkStep">
+      </launchMode>
+   </extension>
+
+</plugin>
