@@ -40,6 +40,15 @@ public class TLASourceViewerConfiguration extends TextSourceViewerConfiguration
 
     /**
      * Reconciler setup
+     * 
+     * This is used to setup the text coloring. This is done by adding one or more damager-repairers
+     * to the presentation reconciler returned by this method. Each damager-repairer is registered
+     * for a specific content type. The text ranges that correspond to each content type
+     * are computed using a partitioner. The partitioner for the document
+     * held in the editor is setup in {@link TLADocumentSetupParticipant#setup(IDocument)}.
+     * 
+     * The partitioner computes the partitions at the appropriate times and then the various
+     * damager-repairers set in this method compute the coloring for the partitions.
      */
     public IPresentationReconciler getPresentationReconciler(ISourceViewer sourceViewer)
     {
