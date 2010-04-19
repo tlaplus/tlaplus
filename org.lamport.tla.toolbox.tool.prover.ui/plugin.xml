@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.eclipse.ui.commands">
+      <command
+            defaultHandler="org.lamport.tla.toolbox.tool.prover.ui.handler.CheckProofStepHandler"
+            description="Checks the proof of one step."
+            id="org.lamport.tla.toolbox.tool.prover.ui.checkProof"
+            name="Checks Proof of Step">
+         <commandParameter
+               id="org.lamport.tla.toolbox.tool.prover.ui.paramModuleName"
+               name="Model Name"
+               optional="false">
+         </commandParameter>
+         <commandParameter
+               id="org.lamport.tla.toolbox.tool.prover.ui.paramLineNumber"
+               name="Line Number"
+               optional="false">
+         </commandParameter>
+      </command>
+      <command
+            categoryId="org.eclipse.debug.ui.category.run"
+            defaultHandler="org.lamport.tla.toolbox.tool.prover.ui.handler.CheckProofStepHandlerDelegate"
+            description="Checks the proof step containing the caret in the active editor"
+            id="org.lamport.tla.toolbox.tool.prover.ui.checkStep.delegate"
+            name="Check Proof Step">
+      </command>
+   </extension>
+   <extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            locationURI="popup:#TextEditorContext?after=foldCommands">
+         <command
+               commandId="org.lamport.tla.toolbox.tool.prover.ui.checkStep.delegate"
+               style="push">
+         </command>
+      </menuContribution>
+      <menuContribution
+            locationURI="menu:org.eclipse.ui.main.menu?after=toolbox.tools.separator">
+         <menu
+               id="toolbox.toolmenus.tlapm"
+               label="TLA Proof Manager"
+               mnemonic="M"
+               tooltip="TLA Proof Manager Actions">
+            <command
+                  commandId="toolbox.command.openview"
+                  label="TLAPM Console"
+                  style="push">
+               <parameter
+                     name="toolbox.openview.name"
+                     value="org.eclipse.ui.console.ConsoleView">
+               </parameter>
+               <visibleWhen
+                     checkEnabled="true">
+                  <with
+                        variable="activeWorkbenchWindow.activePerspective">
+                     <not>
+                        <equals
+                              value="org.lamport.tla.toolbox.ui.perspective.initial">
+                        </equals>
+                     </not>
+                  </with>
+               </visibleWhen>
+            </command>
+         </menu>
+      </menuContribution>
+   </extension>
+   <extension
+         point="org.eclipse.ui.console.consoleFactories">
+      <consoleFactory
+            class="org.lamport.tla.toolbox.tool.prover.ui.TLAPMConsoleFactory"
+            label="TLAPM Console">
+      </consoleFactory>
+   </extension>
+   <extension
+         point="org.lamport.tla.toolbox.tool.prover.processOutputSink">
+      <sink
+            class="org.lamport.tla.toolbox.tool.prover.ui.ConsoleProverProcessOutputSink">
+      </sink>
+   </extension>
+
+</plugin>
