@@ -72,6 +72,9 @@ public class ProverLaunchDelegate extends LaunchConfigurationDelegate implements
         ProverJob job = new ProverJob("Prover Job", modulePath, null /*new Path("C:/cygwin/usr/local/bin/tlapm")*/,
                 null /*new Path(
                      "C:/cygwin/bin")*/, launch);
+
+        // set the job progress to appear in a dialog in the UI
+        job.setUser(true);
         job.schedule();
 
     }

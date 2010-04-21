@@ -178,6 +178,8 @@ public class ProverJob extends Job
 
             pb.redirectErrorStream(true);
 
+            monitor.beginTask("Running prover.", IProgressMonitor.UNKNOWN);
+
             /*
              * Start the process. Calling DebugPlugin.newProcess()
              * wraps the java.lang.Process in an IProcess with some
