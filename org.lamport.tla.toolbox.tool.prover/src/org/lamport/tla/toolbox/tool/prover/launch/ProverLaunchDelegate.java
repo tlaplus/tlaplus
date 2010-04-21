@@ -3,11 +3,15 @@ package org.lamport.tla.toolbox.tool.prover.launch;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.model.LaunchConfigurationDelegate;
+import org.lamport.tla.toolbox.spec.parser.ModuleParserLauncher;
+import org.lamport.tla.toolbox.spec.parser.ParseResult;
 import org.lamport.tla.toolbox.tool.prover.job.ProverJob;
+import org.lamport.tla.toolbox.util.ResourceHelper;
 
 public class ProverLaunchDelegate extends LaunchConfigurationDelegate implements IProverConfigurationConstants
 {
@@ -21,6 +25,7 @@ public class ProverLaunchDelegate extends LaunchConfigurationDelegate implements
     public boolean finalLaunchCheck(ILaunchConfiguration configuration, String mode, IProgressMonitor monitor)
             throws CoreException
     {
+
         /*
          * Check if the module exists and if the line
          * number is a valid line number for that module.
@@ -42,6 +47,20 @@ public class ProverLaunchDelegate extends LaunchConfigurationDelegate implements
 
         // TODO check that line number is valid
         // use document provider
+
+        /*
+         * Parse module.
+         * 
+         * If parsing is unsuccessful, return false.
+         */
+        ParseResult result = (new ModuleParserLauncher()).parseModule(ResourceHelper.getResourceByName(modulePath
+                .lastSegment()), new NullProgressMonitor());
+        if (!result.getDetectedErrors().isEmpty())
+        {
+            // MessageDialog.openError(UIHelper.getShellProvider().getShell(), "Module not parsed.",
+            // "The module must be parsed before launching the prover.");
+            return false;
+        }
 
         return true;
     }
