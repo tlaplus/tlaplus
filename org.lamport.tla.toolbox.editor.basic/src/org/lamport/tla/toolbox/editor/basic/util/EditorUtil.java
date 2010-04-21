@@ -1,8 +1,11 @@
 package org.lamport.tla.toolbox.editor.basic.util;
 
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.ui.IEditorPart;
 import org.lamport.tla.toolbox.editor.basic.TLAEditor;
 import org.lamport.tla.toolbox.editor.basic.TLAEditorAndPDFViewer;
+import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 public class EditorUtil
@@ -30,4 +33,23 @@ public class EditorUtil
         return null;
     }
 
+    /**
+     * 
+     * @param moduleFileName name of the module with .tla extension.
+     * @return
+     */
+    public static TLAEditor openTLAEditor(String moduleFileName)
+    {
+        IResource module = ResourceHelper.getResourceByName(moduleFileName);
+        if (module != null && module instanceof IFile)
+        {
+            IEditorPart editor = UIHelper.openEditor(TLAEditor.ID, (IFile) module);
+            if (editor instanceof TLAEditorAndPDFViewer)
+            {
+                return ((TLAEditorAndPDFViewer) editor).getTLAEditor();
+            }
+        }
+
+        return null;
+    }
 }
