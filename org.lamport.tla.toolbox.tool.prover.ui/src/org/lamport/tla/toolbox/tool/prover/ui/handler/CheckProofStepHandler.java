@@ -11,6 +11,7 @@ import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.tool.prover.launch.ProverLaunchDelegate;
 import org.lamport.tla.toolbox.util.ResourceHelper;
+import org.lamport.tla.toolbox.util.UIHelper;
 
 public class CheckProofStepHandler extends AbstractHandler
 {
@@ -28,6 +29,15 @@ public class CheckProofStepHandler extends AbstractHandler
     {
         try
         {
+            // prompt to save any unsaved resources
+            // the module open in the active editor could be dependent upon
+            // any open module
+            boolean proceed = UIHelper.promptUserForDirtyModules();
+            if (!proceed)
+            {
+                return null;
+            }
+
             /*
              * Retrieve the module name and the line
              * number from the execution event.
@@ -48,7 +58,7 @@ public class CheckProofStepHandler extends AbstractHandler
                     config.setAttribute(ProverLaunchDelegate.MODULE_PATH, module.getRawLocation().toPortableString());
 
                     config.setAttribute(ProverLaunchDelegate.LINE_NUMBER, lineNumber);
-                    
+
                     config.launch(ProverLaunchDelegate.MODE_CHECK_STEP, new NullProgressMonitor());
 
                 } else
