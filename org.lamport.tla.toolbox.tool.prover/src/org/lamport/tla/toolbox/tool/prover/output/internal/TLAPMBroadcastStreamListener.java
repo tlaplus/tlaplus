@@ -4,6 +4,7 @@ import java.util.Vector;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.debug.core.IStreamListener;
 import org.eclipse.debug.core.model.IStreamMonitor;
@@ -14,21 +15,30 @@ import org.lamport.tla.toolbox.tool.prover.output.IProverProcessOutputSink;
  * A listener that broadcasts streams to listeners registered to the extension
  * point {@link IProverProcessOutputSink#EXTENSION_ID}.
  * 
+ * A stream is TLAPM output for a given module.
+ * 
  * @author Daniel Ricketts
  * @version $Id$
  */
-public class BroadcastStreamListener implements IStreamListener
+public class TLAPMBroadcastStreamListener implements IStreamListener
 {
     private IProverProcessOutputSink[] listeners = null;
 
     /**
+     * Constructs a stream listener for output for the given processName.
+     * This is the name that will be sent to all listeners for TLAPM
+     * output. 
      * 
-     * @param streamName
+     * In the case of launches of the prover for output for a single module.
+     * This name should be the String generate by calling {@link IPath#toPortableString()} on
+     * an existing {@link IPath} to the module.
+     * 
+     * @param modulePathString.
      * @param kind, see constants {@link IProcessOutputSink#TYPE_DEBUG}, {@link IProcessOutputSink#TYPE_ERROR}, {@link IProcessOutputSink#TYPE_OUT}
      */
-    public BroadcastStreamListener(String streamName, int kind)
+    public TLAPMBroadcastStreamListener(String processName, int kind)
     {
-        this.listeners = getRegisteredStreamManagers(streamName, kind);
+        this.listeners = getRegisteredStreamManagers(processName, kind);
     }
 
     /* (non-Javadoc)
@@ -53,7 +63,7 @@ public class BroadcastStreamListener implements IStreamListener
     }
 
     /**
-     * Inform about completion
+     * Inform the listeners about completion.
      */
     public synchronized void streamClosed()
     {
@@ -75,10 +85,15 @@ public class BroadcastStreamListener implements IStreamListener
     }
 
     /**
-     * Retrieves all registered listener managers
-     * @return 
+     * Retrieves all {@link IProverProcessOutputSink}'s registered at the extension
+     * point {@link IProverProcessOutputSink#EXTENSION_ID}.
+     * 
+     * Calls {@link IProverProcessOutputSink#initializeSink(IPath, int)} for each sink
+     * with the processName and type.
+     * 
+     * @return an array of registered listeners.
      */
-    public static IProverProcessOutputSink[] getRegisteredStreamManagers(String name, int type)
+    public static IProverProcessOutputSink[] getRegisteredStreamManagers(String processName, int type)
     {
         IConfigurationElement[] decls = Platform.getExtensionRegistry().getConfigurationElementsFor(
                 IProverProcessOutputSink.EXTENSION_ID);
@@ -90,7 +105,7 @@ public class BroadcastStreamListener implements IStreamListener
             {
                 IProverProcessOutputSink extension = (IProverProcessOutputSink) decls[i]
                         .createExecutableExtension("class");
-                extension.initializeSink(name, type);
+                extension.initializeSink(processName, type);
                 validExtensions.add(extension);
             } catch (CoreException e)
             {
