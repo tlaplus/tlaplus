@@ -4,7 +4,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -29,6 +31,7 @@ import org.eclipse.jface.text.TextViewer;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.eclipse.jface.text.hyperlink.IHyperlinkDetector;
 import org.eclipse.jface.text.source.Annotation;
+import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.IVerticalRuler;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotation;
@@ -56,10 +59,12 @@ import org.eclipse.ui.texteditor.ITextEditorActionConstants;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.eclipse.ui.texteditor.ResourceAction;
 import org.eclipse.ui.texteditor.TextOperationAction;
+import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.editor.basic.actions.ProofFoldAction;
 import org.lamport.tla.toolbox.editor.basic.actions.ToggleCommentAction;
 import org.lamport.tla.toolbox.editor.basic.proof.IProofFoldCommandIds;
 import org.lamport.tla.toolbox.editor.basic.proof.TLAProofFoldingStructureProvider;
+import org.lamport.tla.toolbox.editor.basic.prover.TLAPMColoringOutputListener;
 import org.lamport.tla.toolbox.editor.basic.util.ElementStateAdapter;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.util.ResourceHelper;
@@ -89,6 +94,16 @@ public class TLAEditor extends TextEditor
     private ProjectionAnnotationModel annotationModel;
     // proof structure provider
     private TLAProofFoldingStructureProvider proofStructureProvider;
+    /**
+     * The annotation model for adding visual elements
+     * such as colored annotation.
+     */
+    private IAnnotationModel visualAnnotationModel;
+    /**
+     * Listener to TLAPM output for adding status
+     * coloring to proofs.
+     */
+    private TLAPMColoringOutputListener tlapmColoring;
 
     /**
      * Constructor
@@ -193,11 +208,16 @@ public class TLAEditor extends TextEditor
         projectionSupport.install();
         viewer.doOperation(ProjectionViewer.TOGGLE);
 
+        // model for adding projections (folds)
         this.annotationModel = viewer.getProjectionAnnotationModel();
+        // model for adding other visual annotations, such as coloring.
+        this.visualAnnotationModel = viewer.getAnnotationModel();
 
-        // this must be instantiated after annotation model so that it does
+        // this must be instantiated after annotationModel so that it does
         // not call methods that use annotation model when the model is still null
         this.proofStructureProvider = new TLAProofFoldingStructureProvider(this);
+
+        tlapmColoring = new TLAPMColoringOutputListener(this);
 
     }
 
@@ -338,14 +358,16 @@ public class TLAEditor extends TextEditor
 
     /**
      * Update the annotation structure in the editor.
+     * 
+     * This is only currently used by comment
+     * folding and should be removed because it
+     * is incorrect.
+     * 
      * @param positions
+     * @deprecated
      */
     public void updateFoldingStructure(ArrayList positions)
     {
-        // TODO for each position, if there is a current annotation
-        // with that position, it should not be removed, and no new
-        // annotation should be created for that position. This
-        // will preserve the expansion state of foldable regions.
 
         Annotation[] annotations = new Annotation[positions.size()];
 
@@ -372,13 +394,75 @@ public class TLAEditor extends TextEditor
      * Note that in the map additions, the keys should be instances of {@link ProjectionAnnotation} and the values
      * should be instances of the corresponding {@link Position}.
      * 
+     * This method is for changing the projection annotations. For changing other visual annotations, use
+     * {@link TLAEditor#modifyRegularAnnotations(Annotation[], Map, Annotation[])}.
+     * 
      * @param deletions
      * @param additions
      * @param modifications
      */
-    public void modifyAnnotations(Annotation[] deletions, Map additions, Annotation[] modifications)
+    public void modifyProjectionAnnotations(Annotation[] deletions, Map additions, Annotation[] modifications)
     {
         this.annotationModel.modifyAnnotations(deletions, additions, modifications);
+    }
+
+    /**
+     * Adds, deletes, and modifies "regular" annotations for this editor. These are
+     * visual annotations, such as proof coloring, that are not projection annotations.
+     * To make changes to the projection annotations, {@link TLAEditor#modifyProjectionAnnotations(Annotation[], Map, Annotation[])}
+     * should be used.
+     * 
+     * @param deletions
+     * @param additions
+     * @param modifications
+     */
+    public void modifyRegularAnnotations(Annotation[] deletions, Map additions, Annotation[] modifications)
+    {
+        if (visualAnnotationModel == null)
+        {
+            Activator.logDebug("Visual annotation model is null and annotations are being added. This is a bug.");
+            return;
+        }
+
+        // delete annotations
+        if (deletions != null)
+        {
+            for (int i = 0; i < deletions.length; i++)
+            {
+                visualAnnotationModel.removeAnnotation(deletions[i]);
+            }
+        }
+
+        /*
+         * Modify annotations.
+         * 
+         * For each annotation to be modified:
+         * 
+         * Get the position of the annotation.
+         * Remove the annotation.
+         * Add the annotation again.
+         */
+        if (modifications != null)
+        {
+            for (int i = 0; i < modifications.length; i++)
+            {
+                Position position = visualAnnotationModel.getPosition(modifications[i]);
+                visualAnnotationModel.removeAnnotation(modifications[i]);
+                visualAnnotationModel.addAnnotation(modifications[i], position);
+            }
+        }
+
+        // add new annotations
+        if (additions != null)
+        {
+            for (Iterator it = additions.entrySet().iterator(); it.hasNext();)
+            {
+                Map.Entry entry = (Entry) it.next();
+                Annotation annotation = (Annotation) entry.getKey();
+                Position position = (Position) entry.getValue();
+                visualAnnotationModel.addAnnotation(annotation, position);
+            }
+        }
     }
 
     /**
@@ -517,6 +601,7 @@ public class TLAEditor extends TextEditor
 
     public void dispose()
     {
+        tlapmColoring.dispose();
         proofStructureProvider.dispose();
         rootImage.dispose();
         super.dispose();
