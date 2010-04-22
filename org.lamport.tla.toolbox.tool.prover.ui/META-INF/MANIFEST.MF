@@ -15,3 +15,6 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.ui.console
 Bundle-RequiredExecutionEnvironment: J2SE-1.4
 Bundle-ActivationPolicy: lazy
+Import-Package: org.eclipse.ui.part
+Export-Package: org.lamport.tla.toolbox.tool.prover.ui.output.data,
+ org.lamport.tla.toolbox.tool.prover.ui.output.source

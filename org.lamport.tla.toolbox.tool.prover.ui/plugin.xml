@@ -78,6 +78,9 @@
       <sink
             class="org.lamport.tla.toolbox.tool.prover.ui.ConsoleProverProcessOutputSink">
       </sink>
+      <sink
+            class="org.lamport.tla.toolbox.tool.prover.ui.output.ParsingProverProcessOutputSink">
+      </sink>
    </extension>
 
 </plugin>
