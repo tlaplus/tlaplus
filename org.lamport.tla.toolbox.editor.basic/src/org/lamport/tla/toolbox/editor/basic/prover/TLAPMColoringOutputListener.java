@@ -65,7 +65,7 @@ public class TLAPMColoringOutputListener implements ITLAPMOutputSourceListener
                     IRegion locRegion = DocumentHelper.locationToRegion(editor.getDocumentProvider().getDocument(
                             editor.getEditorInput()), loc);
                     HashMap newAnnotations = new HashMap();
-                    newAnnotations.put(new Annotation(type, true, ""), new Position(locRegion.getOffset(), locRegion
+                    newAnnotations.put(new Annotation(type, false, ""), new Position(locRegion.getOffset(), locRegion
                             .getLength()));
                     editor.modifyRegularAnnotations(null, newAnnotations, null);
                 } catch (BadLocationException e)
