@@ -14,7 +14,7 @@ import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.model.IProcess;
 import org.lamport.tla.toolbox.tool.prover.ProverActivator;
 import org.lamport.tla.toolbox.tool.prover.output.IProverProcessOutputSink;
-import org.lamport.tla.toolbox.tool.prover.output.internal.BroadcastStreamListener;
+import org.lamport.tla.toolbox.tool.prover.output.internal.TLAPMBroadcastStreamListener;
 
 public class ProverJob extends Job
 {
@@ -51,7 +51,7 @@ public class ProverJob extends Job
      * Broadcasts prover output
      * to registered listeners.
      */
-    private BroadcastStreamListener listener;
+    private TLAPMBroadcastStreamListener listener;
     protected static final long TIMEOUT = 1000 * 1;
 
     /**
@@ -192,8 +192,14 @@ public class ProverJob extends Job
                 /*
                  * Setup the broadcasting of the prover output stream.
                  * 
+                 * We name the process using a string representation of the
+                 * path to the module.
+                 * 
+                 * This should allow interested listeners to uniquely identify
+                 * the appropriate output.
                  */
-                listener = new BroadcastStreamListener(modulePath.lastSegment(), IProverProcessOutputSink.TYPE_OUT);
+                listener = new TLAPMBroadcastStreamListener(modulePath.toPortableString(),
+                        IProverProcessOutputSink.TYPE_OUT);
 
                 proverProcess.getStreamsProxy().getErrorStreamMonitor().addListener(listener);
                 proverProcess.getStreamsProxy().getOutputStreamMonitor().addListener(listener);
