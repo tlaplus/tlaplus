@@ -17,7 +17,7 @@ import org.lamport.tla.toolbox.util.UIHelper;
  * The method {@link TLAPMConsoleFactory#openConsole()} is specified
  * by the interface and is used to create/open the console.
  * 
- * The method {@link TLAPMConsoleFactory#getTLCConsole()} can be used
+ * The method {@link TLAPMConsoleFactory#getTLAPMConsole()} can be used
  * by other class to get the console for the TLAPM.
  * 
  * @author Daniel Ricketts
@@ -28,7 +28,7 @@ public class TLAPMConsoleFactory implements IConsoleFactory
 
     /**
      * The name used to register the console so that it can
-     * later be found using {@link TLAPMConsoleFactory#getTLCConsole()}
+     * later be found using {@link TLAPMConsoleFactory#getTLAPMConsole()}
      */
     private static final String TLAPM_CONSOLE_ID = "TLAPM-Console";
 
@@ -56,7 +56,7 @@ public class TLAPMConsoleFactory implements IConsoleFactory
      * the TLAPM.
      * @return
      */
-    public static MessageConsole getTLCConsole()
+    public static MessageConsole getTLAPMConsole()
     {
         MessageConsole console = findConsole(TLAPM_CONSOLE_ID);
 
