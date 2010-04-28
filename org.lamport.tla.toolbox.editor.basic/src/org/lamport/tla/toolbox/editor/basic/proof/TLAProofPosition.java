@@ -1,6 +1,7 @@
 package org.lamport.tla.toolbox.editor.basic.proof;
 
 import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.DefaultPositionUpdater;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.Position;
@@ -8,7 +9,7 @@ import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.source.projection.IProjectionPosition;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotation;
 import org.lamport.tla.toolbox.Activator;
-import org.lamport.tla.toolbox.editor.basic.util.DocumentHelper;
+import org.lamport.tla.toolbox.util.AdapterFactory;
 
 import tla2sany.semantic.ProofNode;
 import tla2sany.semantic.TheoremNode;
@@ -22,10 +23,19 @@ import tla2sany.semantic.TheoremNode;
  * of the way in which eclipse displays, collapses, and expands folds. This
  * is explained in comments in the constructor for this class.
  * 
+ * The method {@link TLAProofPosition#computeProjectionRegions(IDocument)} computes
+ * the regions that will be collapsed when this is collapsed. See that method
+ * for a description of what is collapsed.
+ * 
  * Instances of this class also maintains the {@link Position} of the statement
  * and the {@link Position} of the proof. This can be used to determine if a certain
  * offset is contained specifically within the proof or within the statement. There
- * are methods for computing this.
+ * are methods in this class for computing this. These positions are also used
+ * to compute the correct foldable regions.
+ * 
+ * Note that {@link Position}'s are added to a document to become sticky pointers
+ * to locations. See {@link DefaultPositionUpdater} for the default implementation
+ * of how sticky pointers are maintained for {@link Position}'s.
  * 
  * @author Daniel Ricketts
  *
@@ -38,7 +48,7 @@ public class TLAProofPosition extends Position implements IProjectionPosition
      * attempts to prove. This could be the position
      * of a theorem, lemma, corollary, proof step, etc.
      */
-    private Position positionOfProvable;
+    private Position positionOfStatement;
     /**
      * The {@link Position} of the proof.
      */
@@ -49,20 +59,20 @@ public class TLAProofPosition extends Position implements IProjectionPosition
     private ProjectionAnnotation annotation;
 
     /**
-     * For proof offset and length for a {@link ProofNode}, use {@link DocumentHelper#locationToRegion(IDocument, tla2sany.st.Location)}
-     * for the location from {@link ProofNode#getLocation()}. For the offset and length of the provable, use the location
-     * from {@link TheoremNode#getTheorem()} in the method {@link DocumentHelper#locationToRegion(IDocument, tla2sany.st.Location)}.
+     * For proof offset and length for a {@link ProofNode}, use {@link AdapterFactory#locationToRegion(IDocument, tla2sany.st.Location)}
+     * for the location from {@link ProofNode#getLocation()}. For the offset and length of the statement, use the location
+     * from {@link TheoremNode#getTheorem()} in the method {@link AdapterFactory#locationToRegion(IDocument, tla2sany.st.Location)}.
      * 
      * @param initProofOffset initial offset of the proof
      * @param initProofLength initial length of the proof
-     * @param initProvableOffset initial offset of the statement of the theorem or step
+     * @param initStatementOffset initial offset of the statement of the theorem or step
      * for which this is a proof
-     * @param initProvableLength initial length of the statement of the theorem or step
+     * @param initStatementLength initial length of the statement of the theorem or step
      * for which this is a proof
      * @param annotation {@link ProjectionAnnotation} that should be at this position
      * @param document
      */
-    public TLAProofPosition(int initProofOffset, int initProofLength, int initProvableOffset, int initProvableLength,
+    public TLAProofPosition(int initProofOffset, int initProofLength, int initStatementOffset, int initStatementLength,
             ProjectionAnnotation annotation, IDocument document)
     {
         // children = new Vector();
@@ -98,13 +108,13 @@ public class TLAProofPosition extends Position implements IProjectionPosition
          * comments to see what it does. It should ensure that the entire proof is revealed
          * when expanded.
          */
-        IRegion region = alignRegion(new Region(initProvableOffset, initProofOffset + initProofLength
-                - initProvableOffset), document);
+        IRegion region = alignRegion(new Region(initStatementOffset, initProofOffset + initProofLength
+                - initStatementOffset), document);
 
         offset = region.getOffset();
         length = region.getLength();
 
-        positionOfProvable = new Position(initProvableOffset, initProvableLength);
+        positionOfStatement = new Position(initStatementOffset, initStatementLength);
         positionOfProof = new Position(initProofOffset, initProofLength);
         this.annotation = annotation;
 
@@ -112,7 +122,7 @@ public class TLAProofPosition extends Position implements IProjectionPosition
         try
         {
             document.addPosition(positionOfProof);
-            document.addPosition(positionOfProvable);
+            document.addPosition(positionOfStatement);
         } catch (BadLocationException e)
         {
             Activator.logError("Error installing positions for proof fold at " + this, e);
@@ -129,23 +139,59 @@ public class TLAProofPosition extends Position implements IProjectionPosition
     /**
      * Computes the regions that will be hidden when the fold at this
      * position is collapsed.
+     * 
+     * The following is from an email from Leslie. It starts by explaining
+     * how comments should be used and folded in proofs and ends by describing
+     * the folding rule.
+     * 
+     * In proofs, there are two
+    ways I can think of for using comments:
+
+    - At the beginning of a proof to explain the proof.  For example:
+
+    <2>3. x > 0
+      (********************************************************************)
+      (* We prove y >0 and x \geq y by using Finagle's theorem and step   *)
+      (* <1>3.                                                            *)
+      (********************************************************************)
+      <3>1. ...
+
+    - As an informal leaf proof.  For example:
+
+    <2>3. x > 0
+     (*********************************************************************)
+     (* This follows by simple algebra from <2>1 and <1>3, but I'm not    *)
+     (* going to bother trying to convince this stupid prover that it     *)
+     (* does.                                                             *)
+     (*********************************************************************)
+
+    <2>4. ...
+
+    In this case, I will also want to add a PROOF OMITTED to tell
+    the prover that I didn't just forget about this proof step.
+
+    We can handle both these cases by the following rule, where the PROOF
+    OMITTED follows the comment in the second case:
+
+    When hiding a proof, hide everything from the (line following the)
+    end of the statement being proved to the end of the proof.
      */
     public IRegion[] computeProjectionRegions(IDocument document) throws BadLocationException
     {
-        // fold all lines in the proof
-        // that are not lines in the provable
 
-        // first line in foldable region
-        int firstLine = Math.max(document.getLineOfOffset(positionOfProvable.getOffset()
-                + positionOfProvable.getLength()) + 1, document.getLineOfOffset(positionOfProof.getOffset()));
+        /*
+         * First line in foldable region - line following the end of the statement.
+         */
+
+        int firstLine = document.getLineOfOffset(positionOfStatement.getOffset() + positionOfStatement.getLength()) + 1;
 
         // last line of proof
         int lastLine = document.getLineOfOffset(positionOfProof.getOffset() + positionOfProof.getLength());
 
         // If the last line is before the first line, then
-        // the proof is on the same line as a line of the provable
+        // the proof is on the same line as a line of the statement
         // so no regions should be folded.
-        // We do not want any of the provable to be hidden when its
+        // We do not want any of the statement to be hidden when its
         // proof is folded.
         if (firstLine > lastLine)
         {
@@ -156,6 +202,19 @@ public class TLAProofPosition extends Position implements IProjectionPosition
         int firstLineOffset = document.getLineOffset(firstLine);
         IRegion lastLineInfo = document.getLineInformation(lastLine);
 
+        /*
+         * Eclipse does not allow for folding of single characters;
+         * it only allows for line folding.
+         * 
+         * In particular, for each region r returned by this method,
+         * eclipse will fold all lines line such that
+         * 
+         * line.offset >= r.offset && line.offset + line.length < r.offset + r.length
+         * 
+         * Notice that the second inequality is strictly less than. This forces
+         * us to use the method alignRegion, stolen from the code used for Java
+         * code folding and slightly modified.
+         */
         IRegion toFold = alignRegion(new Region(firstLineOffset, lastLineInfo.getOffset() + lastLineInfo.getLength()
                 - firstLineOffset), document);
 
@@ -177,6 +236,11 @@ public class TLAProofPosition extends Position implements IProjectionPosition
      * a foldable proof in the same position as proofRegion.
      * Considers only start and end lines, not characters.
      * 
+     * Slightly more precisely, it returns true
+     * if proofRegion starts and ends on the same line as the
+     * {@link Position} representing the proof in this instance
+     * of {@link TLAProofPosition}.
+     * 
      * @param proofRegion
      * @return
      * @throws BadLocationException 
@@ -197,7 +261,7 @@ public class TLAProofPosition extends Position implements IProjectionPosition
     public void remove(IDocument document)
     {
         document.removePosition(positionOfProof);
-        document.removePosition(positionOfProvable);
+        document.removePosition(positionOfStatement);
     }
 
     /**
@@ -259,7 +323,7 @@ public class TLAProofPosition extends Position implements IProjectionPosition
      */
     public boolean containsBeforeProof(int offset, IDocument document) throws BadLocationException
     {
-        int startLine = document.getLineOfOffset(positionOfProvable.getOffset());
+        int startLine = document.getLineOfOffset(positionOfStatement.getOffset());
         int endLine = document.getLineOfOffset(positionOfProof.getOffset());
 
         int lineOfOffset = document.getLineOfOffset(offset);
