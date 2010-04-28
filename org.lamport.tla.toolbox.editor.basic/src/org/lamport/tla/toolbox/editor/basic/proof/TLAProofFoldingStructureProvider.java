@@ -20,10 +20,10 @@ import org.eclipse.jface.text.source.projection.ProjectionAnnotation;
 import org.eclipse.ui.part.FileEditorInput;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.editor.basic.TLAEditor;
-import org.lamport.tla.toolbox.editor.basic.util.DocumentHelper;
 import org.lamport.tla.toolbox.spec.parser.IParseResultListener;
 import org.lamport.tla.toolbox.spec.parser.ParseResult;
 import org.lamport.tla.toolbox.spec.parser.ParseResultBroadcaster;
+import org.lamport.tla.toolbox.util.AdapterFactory;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 
 import tla2sany.modanalyzer.SpecObj;
@@ -140,10 +140,11 @@ public class TLAProofFoldingStructureProvider implements IParseResultListener, I
         }
 
         // the region describing the statement of the theorem
-        IRegion theoremStatementRegion = DocumentHelper.locationToRegion(document, theoremNode.getTheorem()
+        IRegion theoremStatementRegion = AdapterFactory.locationToRegion(document, theoremNode.getTheorem()
                 .getLocation());
         ProofNode proofNode = theoremNode.getProof();
-        IRegion proofNodeRegion = DocumentHelper.locationToRegion(document, proofNode.getLocation());
+        // the region describing the proof
+        IRegion proofNodeRegion = AdapterFactory.locationToRegion(document, proofNode.getLocation());
 
         // if last line of proof is on last line of step, nothing to fold, so just return
         if (document.getLineOfOffset(theoremStatementRegion.getOffset() + theoremStatementRegion.getLength()) == document
