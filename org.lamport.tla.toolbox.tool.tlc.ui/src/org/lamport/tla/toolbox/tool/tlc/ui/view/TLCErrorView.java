@@ -176,10 +176,6 @@ public class TLCErrorView extends ViewPart
         // if there are errors
         if (problems != null && !problems.isEmpty())
         {
-            /* 
-             * TODO Shift expression values for trace explorer expressions
-             * with primed variables.
-             */
             List states = null;
             StringBuffer buffer = new StringBuffer();
             // iterate over the errors
