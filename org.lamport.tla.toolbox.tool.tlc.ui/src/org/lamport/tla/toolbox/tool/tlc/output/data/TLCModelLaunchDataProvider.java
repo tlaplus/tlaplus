@@ -31,6 +31,7 @@ import org.lamport.tla.toolbox.tool.tlc.output.source.TLCRegionContainer;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelWriter;
+import org.lamport.tla.toolbox.util.AdapterFactory;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 import tla2sany.st.Location;
@@ -595,7 +596,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                             if (location.source().equals(
                                     mcFile.getName().substring(0, mcFile.getName().length() - ".tla".length())))
                             {
-                                IRegion region = ModelHelper.locationToRegion(mcDocument, location);
+                                IRegion region = AdapterFactory.locationToRegion(mcDocument, location);
                                 regionContent[j] = mcDocument.get(region.getOffset(), region.getLength());
                                 // replace the location statement in the error message
                                 // with the string in the MC file to which it points
