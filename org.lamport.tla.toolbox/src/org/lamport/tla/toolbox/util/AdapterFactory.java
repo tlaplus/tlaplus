@@ -5,12 +5,18 @@ import java.util.Vector;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.IAdapterFactory;
+import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IRegion;
+import org.eclipse.jface.text.Region;
 import org.eclipse.swt.SWT;
 import org.eclipse.ui.model.IWorkbenchAdapter;
 import org.eclipse.ui.model.WorkbenchAdapter;
 import org.lamport.tla.toolbox.spec.Module;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.spec.parser.IParseConstants;
+
+import tla2sany.st.Location;
 
 /**
  * A toolkit with adapter methods
@@ -57,6 +63,44 @@ public class AdapterFactory implements IAdapterFactory
     {
         return "from line " + coordinates[0] + ", column " + coordinates[1] + " to line " + coordinates[2]
                 + ", column " + coordinates[3] + " of module " + moduleName;
+    }
+
+    /**
+     * Converts four-int {@link Location} that is 1-based to a two int {@link IRegion} that is
+     * 0-based.
+     * 
+     * TODO: unit test!
+     * @param document
+     * @param location
+     * @return
+     * @throws BadLocationException 
+     */
+    public static IRegion locationToRegion(IDocument document, Location location) throws BadLocationException
+    {
+        /* 
+         * The coordinates returned by location are 1-based and the coordinates
+         * for a region in a document should be 0-based to be consistent with Positions
+         * in documents. Therefore, we subtract 1 from each location coordinate.
+         */
+        int offset = document.getLineOffset(location.beginLine() - 1) + location.beginColumn() - 1;
+        /*
+         * If location describes a two-character sequence beginning at column x, then it would
+         * have location.endColumn() = x+1. This means that when computing the length, we add 1 to
+         * the offset of the second point described by location. In other words, the offset of the
+         * second point described by location is:
+         * 
+         * document.getLineOffset(location.endLine() - 1) + location.endColumn()-1
+         * 
+         * So the length is:
+         * 
+         * (document.getLineOffset(location.endLine() - 1) + location.endColumn()-1)+1 - offset
+         * 
+         * which equals:
+         * 
+         * document.getLineOffset(location.endLine() - 1) + location.endColumn() - offset
+         */
+        int length = document.getLineOffset(location.endLine() - 1) + location.endColumn() - offset;
+        return new Region(offset, length);
     }
 
     /**
@@ -241,28 +285,29 @@ public class AdapterFactory implements IAdapterFactory
             return "Info";
         }
     }
-    
+
     /**
      * Resolves the origin of the marker 
      * @param markerType
      * @return
      */
-    public static String getMarkerTypeAsText(String markerType) 
+    public static String getMarkerTypeAsText(String markerType)
     {
-        if (markerType == null || "".equals(markerType)) 
+        if (markerType == null || "".equals(markerType))
         {
             return "";
         }
-        if (TLAMarkerHelper.TOOLBOX_MARKERS_ALL_MARKER_ID.equals(markerType)) 
+        if (TLAMarkerHelper.TOOLBOX_MARKERS_ALL_MARKER_ID.equals(markerType))
         {
             return "TLA+ Toolbox";
         } else if (TLAMarkerHelper.TOOLBOX_MARKERS_TRANSLATOR_MARKER_ID.equals(markerType))
         {
             return "PCal Translator";
-        } else if (TLAMarkerHelper.TOOLBOX_MARKERS_TLAPARSER_MARKER_ID.equals(markerType)) 
+        } else if (TLAMarkerHelper.TOOLBOX_MARKERS_TLAPARSER_MARKER_ID.equals(markerType))
         {
             return "TLA+ Parser";
-        } else {
+        } else
+        {
             return "";
         }
     }
