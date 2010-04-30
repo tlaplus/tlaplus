@@ -1,7 +1,7 @@
 package org.lamport.tla.toolbox.tool.prover.ui.output.source;
 
 import org.eclipse.core.runtime.IPath;
-import org.lamport.tla.toolbox.tool.prover.ui.output.data.TLAPMData;
+import org.lamport.tla.toolbox.tool.prover.ui.output.data.TLAPMMessage;
 
 /**
  * This is a source of data from the output of the
@@ -42,7 +42,7 @@ public interface ITLAPMOutputSource
      * 
      * @param data
      */
-    public void newData(TLAPMData data);
+    public void newData(TLAPMMessage data);
     
     /**
      * Notifies the source that no more data is to be sent.

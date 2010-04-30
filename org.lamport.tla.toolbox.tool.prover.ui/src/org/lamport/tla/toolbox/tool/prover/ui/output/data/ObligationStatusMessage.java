@@ -10,7 +10,7 @@ import tla2sany.st.Location;
  * @author drickett
  *
  */
-public class ObligationStatus extends TLAPMData
+public class ObligationStatusMessage extends TLAPMMessage
 {
 
     /**
@@ -39,16 +39,19 @@ public class ObligationStatus extends TLAPMData
      * @param type
      * @param status see status constants in this class.
      */
-    public ObligationStatus(int status, Location location, IPath modulePath)
+    public ObligationStatusMessage(int status, Location location, IPath modulePath)
     {
-
-        super(modulePath);
 
         this.status = status;
         this.location = location;
     }
 
-    public int getStatus()
+    public ObligationStatusMessage()
+    {
+        // TODO Auto-generated constructor stub
+    }
+
+    public int getStatusInt()
     {
         return status;
     }

@@ -1,7 +1,7 @@
 package org.lamport.tla.toolbox.tool.prover.ui.output.source;
 
 import org.eclipse.core.runtime.IPath;
-import org.lamport.tla.toolbox.tool.prover.ui.output.data.TLAPMData;
+import org.lamport.tla.toolbox.tool.prover.ui.output.data.TLAPMMessage;
 
 /**
  * Interface for listening to data from TLAPM
@@ -18,7 +18,7 @@ public interface ITLAPMOutputSourceListener
      * 
      * @param data
      */
-    public void newData(TLAPMData data);
+    public void newData(TLAPMMessage data);
 
     /**
      * The full file system path for which this

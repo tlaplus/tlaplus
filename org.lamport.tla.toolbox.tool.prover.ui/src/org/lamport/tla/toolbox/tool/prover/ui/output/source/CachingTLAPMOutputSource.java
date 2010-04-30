@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Vector;
 
 import org.eclipse.core.runtime.IPath;
-import org.lamport.tla.toolbox.tool.prover.ui.output.data.TLAPMData;
+import org.lamport.tla.toolbox.tool.prover.ui.output.data.TLAPMMessage;
 
 /**
  * Caches parsed output data from the TLAPM for use
@@ -20,7 +20,7 @@ public class CachingTLAPMOutputSource implements ITLAPMOutputSource
 {
     /**
      * List of objects containing
-     * {@link TLAPMData} output information.
+     * {@link TLAPMMessage} output information.
      */
     private List outputData;
     /**
@@ -46,7 +46,7 @@ public class CachingTLAPMOutputSource implements ITLAPMOutputSource
         this.modulePath = modulePath;
     }
 
-    public void newData(TLAPMData data)
+    public void newData(TLAPMMessage data)
     {
         // cache the data for listeners added later
         outputData.add(data);
@@ -77,7 +77,7 @@ public class CachingTLAPMOutputSource implements ITLAPMOutputSource
             // already been added
             for (Iterator it = outputData.iterator(); it.hasNext();)
             {
-                listener.newData((TLAPMData) it.next());
+                listener.newData((TLAPMMessage) it.next());
             }
         }
     }
