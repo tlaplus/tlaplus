@@ -11,7 +11,8 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITypedRegion;
 import org.eclipse.jface.text.rules.FastPartitioner;
 import org.lamport.tla.toolbox.Activator;
-import org.lamport.tla.toolbox.tool.prover.ui.output.data.ObligationStatus;
+import org.lamport.tla.toolbox.tool.prover.ui.output.data.ObligationStatusMessage;
+import org.lamport.tla.toolbox.tool.prover.ui.output.data.TLAPMMessage;
 import org.lamport.tla.toolbox.tool.prover.ui.output.source.CachingTLAPMOutputSource;
 import org.lamport.tla.toolbox.tool.prover.ui.output.source.ITLAPMOutputSource;
 import org.lamport.tla.toolbox.tool.prover.ui.output.source.TLAPMOutputSourceRegistry;
@@ -67,7 +68,7 @@ public class TagBasedTLAPMOutputIncrementalParser
      * pass to the {@link ITLAPMOutputSource} for this parser.
      * 
      * For example, when it encounters a partition corresponding
-     * to an obligation status line, it creates an {@link ObligationStatus}
+     * to an obligation status line, it creates an {@link ObligationStatusMessage}
      * object to pass to the source.
      * 
      * @author Daniel Ricketts
@@ -115,7 +116,7 @@ public class TagBasedTLAPMOutputIncrementalParser
                             // .parseInt(data[1]), Integer.parseInt(data[2]), Integer.parseInt(data[3]), Integer
                             // .parseInt(data[4])));
                             
-                            ObligationStatus region = new ObligationStatus(convertStatus(data[5]), new Location(null,
+                            ObligationStatusMessage region = new ObligationStatusMessage(convertStatus(data[5]), new Location(null,
                                     Integer.parseInt(data[1]), Integer.parseInt(data[2]), Integer.parseInt(data[3]),
                                     Integer.parseInt(data[4])), modulePath);
 
@@ -194,7 +195,7 @@ public class TagBasedTLAPMOutputIncrementalParser
      * Converts obligation status represented as a string
      * from the output of the TLAPM
      * to one represented by an int. The possible ints
-     * are in {@link ObligationStatus}.
+     * are in {@link ObligationStatusMessage}.
      * @param status
      * @return
      */
@@ -202,15 +203,43 @@ public class TagBasedTLAPMOutputIncrementalParser
     {
         if (status.equals("V"))
         {
-            return ObligationStatus.STATUS_VERIFIED;
+            return ObligationStatusMessage.STATUS_VERIFIED;
         }
 
         if (status.equals("E"))
         {
-            return ObligationStatus.STATUS_REJECTED;
+            return ObligationStatusMessage.STATUS_REJECTED;
         }
 
-        return ObligationStatus.STATUS_UNKNOWN;
+        return ObligationStatusMessage.STATUS_UNKNOWN;
+    }
+    
+    /**
+     * Returns a {@link TLAPMMessage} representing the information
+     * contained in proverMessage. The String proverMessage
+     * should be the String between the tags @!!BEGIN and @!!END.
+     * It should not include these tags.
+     * 
+     * @param proverMessage
+     * @return
+     */
+    private TLAPMMessage parseData(String proverMessage)
+    {
+        /*
+         * The String proverMessage should be of the form
+         * 
+         * @!!<field-name>:<field-value>
+         * @!!<field-name>:<field-value>
+         * .
+         * .
+         * .
+         * 
+         * Possible field names right now are "loc" (location),
+         * "status", and "obl" (obligation). In the future, there
+         * might be a message type field, but for now, it is not used.
+         */
+        
+        return null;
     }
     
     /**

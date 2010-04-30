@@ -20,7 +20,7 @@ import org.lamport.tla.toolbox.tool.prover.output.IProverProcessOutputSink;
 public class ParsingProverProcessOutputSink implements IProverProcessOutputSink
 {
 
-    private TagBasedTLAPMOutputIncrementalParser parser;
+    private TagBasedTLAPMOutputIncrementalParser2 parser;
     private String name;
 
     /**
@@ -48,7 +48,7 @@ public class ParsingProverProcessOutputSink implements IProverProcessOutputSink
      */
     public void initializeSink(String modulePathString, int sinkType)
     {
-        this.parser = new TagBasedTLAPMOutputIncrementalParser(Path.fromPortableString(modulePathString));
+        this.parser = new TagBasedTLAPMOutputIncrementalParser2(Path.fromPortableString(modulePathString));
         this.name = modulePathString;
     }
 
