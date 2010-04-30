@@ -4,24 +4,39 @@
    <extension
          point="org.eclipse.ui.commands">
       <command
-            defaultHandler="org.lamport.tla.toolbox.tool.prover.ui.handler.CheckProofStepHandler"
-            description="Checks the proof of one step."
+            defaultHandler="org.lamport.tla.toolbox.tool.prover.ui.handler.CheckProofHandler"
+            description="Checks the proof of a step or the entire module if a location is not specified."
             id="org.lamport.tla.toolbox.tool.prover.ui.checkProof"
-            name="Checks Proof of Step">
+            name="Checks Proof">
          <commandParameter
                id="org.lamport.tla.toolbox.tool.prover.ui.paramModuleName"
                name="Model Name"
                optional="false">
          </commandParameter>
          <commandParameter
-               id="org.lamport.tla.toolbox.tool.prover.ui.paramLineNumber"
-               name="Line Number"
-               optional="false">
+               id="org.lamport.tla.toolbox.tool.prover.ui.paramBeginLine"
+               name="Begin Line Number"
+               optional="true">
+         </commandParameter>
+         <commandParameter
+               id="org.lamport.tla.toolbox.tool.prover.ui.paramBeginColumn"
+               name="Begin Column Number"
+               optional="true">
+         </commandParameter>
+         <commandParameter
+               id="org.lamport.tla.toolbox.tool.prover.ui.paramEndLine"
+               name="End Line"
+               optional="true">
+         </commandParameter>
+         <commandParameter
+               id="org.lamport.tla.toolbox.tool.prover.ui.paramEndColumn"
+               name="End Column"
+               optional="true">
          </commandParameter>
       </command>
       <command
             categoryId="org.eclipse.debug.ui.category.run"
-            defaultHandler="org.lamport.tla.toolbox.tool.prover.ui.handler.CheckProofStepHandlerDelegate"
+            defaultHandler="org.lamport.tla.toolbox.tool.prover.ui.handler.CheckProofHandlerDelegate"
             description="Checks the proof step containing the caret in the active editor"
             id="org.lamport.tla.toolbox.tool.prover.ui.checkStep.delegate"
             name="Check Proof Step">
@@ -81,6 +96,11 @@
       <sink
             class="org.lamport.tla.toolbox.tool.prover.ui.output.ParsingProverProcessOutputSink">
       </sink>
+   </extension>
+   <extension
+         id="org.lamport.tla.toolbox.tool.prover.ui.rejectedObligation"
+         name="Rejected Obligation"
+         point="org.eclipse.core.resources.markers">
    </extension>
 
 </plugin>
