@@ -11,4 +11,5 @@ Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: J2SE-1.4
 Bundle-Vendor: Daniel Ricketts
 Export-Package: org.lamport.tla.toolbox.tool.prover.launch,
- org.lamport.tla.toolbox.tool.prover.output
+ org.lamport.tla.toolbox.tool.prover.output,
+ org.lamport.tla.toolbox.tool.prover.util
