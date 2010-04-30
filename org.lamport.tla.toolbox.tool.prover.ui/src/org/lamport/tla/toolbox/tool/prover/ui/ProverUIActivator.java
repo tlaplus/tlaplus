@@ -1,7 +1,5 @@
 package org.lamport.tla.toolbox.tool.prover.ui;
 
-import java.io.IOException;
-
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
@@ -56,9 +54,15 @@ public class ProverUIActivator extends AbstractUIPlugin
         return plugin;
     }
 
-    public static void logError(String string, IOException e)
+    public static void logError(String string, Throwable e)
     {
         getDefault().getLog().log(new Status(IStatus.ERROR, PLUGIN_ID, string, e));
+    }
+
+    public static void logDebug(String message)
+    {
+        System.out.println(message);
+
     }
 
 }
