@@ -9,11 +9,11 @@ import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.ui.part.FileEditorInput;
 import org.lamport.tla.toolbox.editor.basic.TLAEditor;
-import org.lamport.tla.toolbox.editor.basic.util.DocumentHelper;
-import org.lamport.tla.toolbox.tool.prover.ui.output.data.ObligationStatus;
-import org.lamport.tla.toolbox.tool.prover.ui.output.data.TLAPMData;
+import org.lamport.tla.toolbox.tool.prover.ui.output.data.ObligationStatusMessage;
+import org.lamport.tla.toolbox.tool.prover.ui.output.data.TLAPMMessage;
 import org.lamport.tla.toolbox.tool.prover.ui.output.source.ITLAPMOutputSourceListener;
 import org.lamport.tla.toolbox.tool.prover.ui.output.source.TLAPMOutputSourceRegistry;
+import org.lamport.tla.toolbox.util.AdapterFactory;
 
 import tla2sany.st.Location;
 
@@ -42,17 +42,17 @@ public class TLAPMColoringOutputListener implements ITLAPMOutputSourceListener
         return ((FileEditorInput) editor.getEditorInput()).getFile().getLocation();
     }
 
-    public void newData(TLAPMData data)
+    public void newData(TLAPMMessage data)
     {
-        if (data instanceof ObligationStatus)
+        if (data instanceof ObligationStatusMessage)
         {
-            ObligationStatus obRegion = (ObligationStatus) data;
+            ObligationStatusMessage obRegion = (ObligationStatusMessage) data;
 
             String type = null;
-            if (obRegion.getStatus() == ObligationStatus.STATUS_VERIFIED)
+            if (obRegion.getStatusInt() == ObligationStatusMessage.STATUS_VERIFIED)
             {
                 type = VERIFIED_TYPE;
-            } else if (obRegion.getStatus() == ObligationStatus.STATUS_REJECTED)
+            } else if (obRegion.getStatusInt() == ObligationStatusMessage.STATUS_REJECTED)
             {
                 type = REJECTED_TYPE;
             }
@@ -62,7 +62,7 @@ public class TLAPMColoringOutputListener implements ITLAPMOutputSourceListener
                 try
                 {
 
-                    IRegion locRegion = DocumentHelper.locationToRegion(editor.getDocumentProvider().getDocument(
+                    IRegion locRegion = AdapterFactory.locationToRegion(editor.getDocumentProvider().getDocument(
                             editor.getEditorInput()), loc);
                     HashMap newAnnotations = new HashMap();
                     newAnnotations.put(new Annotation(type, false, ""), new Position(locRegion.getOffset(), locRegion
