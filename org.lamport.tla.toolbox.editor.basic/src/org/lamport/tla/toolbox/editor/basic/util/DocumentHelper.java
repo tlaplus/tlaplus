@@ -8,6 +8,7 @@ import org.eclipse.jface.text.rules.IWhitespaceDetector;
 import org.eclipse.jface.text.rules.IWordDetector;
 import org.lamport.tla.toolbox.editor.basic.tla.TLAWhitespaceDetector;
 import org.lamport.tla.toolbox.editor.basic.tla.TLAWordDetector;
+import org.lamport.tla.toolbox.util.AdapterFactory;
 
 import tla2sany.st.Location;
 
@@ -132,6 +133,7 @@ public class DocumentHelper
      * @param location
      * @return
      * @throws BadLocationException 
+     * @deprecated use {@link AdapterFactory#locationToRegion(IDocument, Location)} instead
      */
     public static IRegion locationToRegion(IDocument document, Location location) throws BadLocationException
     {
