@@ -12,6 +12,10 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IMarkerDelta;
+import org.eclipse.core.resources.IResourceChangeEvent;
+import org.eclipse.core.resources.IResourceChangeListener;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -45,6 +49,7 @@ import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
+import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.contexts.IContextActivation;
@@ -67,6 +72,7 @@ import org.lamport.tla.toolbox.editor.basic.proof.TLAProofFoldingStructureProvid
 import org.lamport.tla.toolbox.editor.basic.prover.TLAPMColoringOutputListener;
 import org.lamport.tla.toolbox.editor.basic.util.ElementStateAdapter;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
+import org.lamport.tla.toolbox.tool.prover.util.ProverHelper;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
@@ -104,6 +110,15 @@ public class TLAEditor extends TextEditor
      * coloring to proofs.
      */
     private TLAPMColoringOutputListener tlapmColoring;
+    /**
+     * Listens to resource changes to the module.
+     * 
+     * In particular, reacts to prover running marker
+     * begin changed on the module.
+     * 
+     * Calls {@link TLAEditor#refresh()} when this happens.
+     */
+    private IResourceChangeListener moduleFileChangeListener;
 
     /**
      * Constructor
@@ -179,6 +194,36 @@ public class TLAEditor extends TextEditor
         // grab context service and activate the context on editor load
         this.contextService = (IContextService) getSite().getService(IContextService.class);
         this.contextActivation = contextService.activateContext("toolbox.contexts.cleaneditor");
+
+        /*
+         * This resource change listener listens to changes
+         * to markers. If it finds a change to the prover running
+         * marker on the module in this editor, then it refreshes
+         * the editor. See method refresh().
+         */
+        this.moduleFileChangeListener = new IResourceChangeListener() {
+
+            public void resourceChanged(IResourceChangeEvent event)
+            {
+                IMarkerDelta[] markerChanges = event.findMarkerDeltas(ProverHelper.PROVER_RUNNING_MARKER, false);
+
+                for (int i = 0; i < markerChanges.length; i++)
+                {
+                    if (markerChanges[i].getResource().equals(((IFileEditorInput) getEditorInput()).getFile()))
+                    {
+                        UIHelper.runUISync(new Runnable() {
+
+                            public void run()
+                            {
+                                refresh();
+                            }
+                        });
+                    }
+                }
+            }
+        };
+
+        ResourcesPlugin.getWorkspace().addResourceChangeListener(moduleFileChangeListener);
 
     }
 
@@ -636,6 +681,27 @@ public class TLAEditor extends TextEditor
     public TLAProofFoldingStructureProvider getProofStructureProvider()
     {
         return proofStructureProvider;
+    }
+
+    /**
+     * Refreshes the editor.
+     * 
+     * This currently just involves checking if the prover
+     * is running on the module. If it is, the editor
+     * is set to be read only. If it isn't, the editor
+     * is set to be editable.
+     */
+    private void refresh()
+    {
+        try
+        {
+            getSourceViewer()
+                    .setEditable(!ProverHelper.isProverRunning(((FileEditorInput) getEditorInput()).getFile()));
+        } catch (CoreException e)
+        {
+            Activator.logError("Error determining if prover is running on module "
+                    + ((FileEditorInput) getEditorInput()).getFile().getName(), e);
+        }
     }
 
     /**

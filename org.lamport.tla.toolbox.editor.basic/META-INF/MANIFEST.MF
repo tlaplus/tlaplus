@@ -19,5 +19,6 @@ Bundle-RequiredExecutionEnvironment: J2SE-1.4
 Bundle-ActivationPolicy: lazy
 Import-Package: org.eclipse.ui.forms,
  org.lamport.tla.toolbox.tool.prover.ui.output.data,
- org.lamport.tla.toolbox.tool.prover.ui.output.source
+ org.lamport.tla.toolbox.tool.prover.ui.output.source,
+ org.lamport.tla.toolbox.tool.prover.util
 Export-Package: org.lamport.tla.toolbox.editor.basic
