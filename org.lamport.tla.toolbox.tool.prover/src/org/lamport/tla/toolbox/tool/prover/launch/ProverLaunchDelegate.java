@@ -25,7 +25,22 @@ public class ProverLaunchDelegate extends LaunchConfigurationDelegate implements
     public static final String MODE_CHECK_STEP = "checkStep";
 
     IPath modulePath;
-    int lineNumber;
+    /**
+     * Begin line.
+     */
+    int bl;
+    /**
+     * Begin column.
+     */
+    int bc;
+    /**
+     * End line.
+     */
+    int el;
+    /**
+     * End column.
+     */
+    int ec;
     IResource module;
 
     public boolean finalLaunchCheck(ILaunchConfiguration configuration, String mode, IProgressMonitor monitor)
@@ -49,10 +64,17 @@ public class ProverLaunchDelegate extends LaunchConfigurationDelegate implements
             return false;
         }
 
-        lineNumber = configuration.getAttribute(IProverConfigurationConstants.LINE_NUMBER, -1);
+        /*
+         * Get the coordinates.
+         * 
+         * If any coordinate is -1, this means the location is the entire module.
+         */
+        bl = configuration.getAttribute(IProverConfigurationConstants.BEGIN_LINE, -1);
+        bc = configuration.getAttribute(IProverConfigurationConstants.BEGIN_COLUMN, -1);
+        el = configuration.getAttribute(IProverConfigurationConstants.END_LINE, -1);
+        ec = configuration.getAttribute(IProverConfigurationConstants.END_COLUMN, -1);
 
-        // TODO check that line number is valid
-        // use document provider
+        // TODO check that the location is valid.
 
         /*
          * Get the IResource pointing to the module.
@@ -108,6 +130,11 @@ public class ProverLaunchDelegate extends LaunchConfigurationDelegate implements
         ProverJob job = new ProverJob("Prover Job", modulePath, null /*new Path("C:/cygwin/usr/local/bin/tlapm")*/,
                 null /*new Path(
                      "C:/cygwin/bin")*/, launch);
+
+        if (bl != -1 && bc != -1 && el != -1 && ec != -1)
+        {
+            job.setLocation(bl, bc, el, ec);
+        }
 
         // set the job progress to appear in a dialog in the UI
         job.setUser(true);

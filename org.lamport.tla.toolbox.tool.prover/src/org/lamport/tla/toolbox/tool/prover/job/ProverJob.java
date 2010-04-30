@@ -53,6 +53,12 @@ public class ProverJob extends Job
      */
     private TLAPMBroadcastStreamListener listener;
     protected static final long TIMEOUT = 1000 * 1;
+    /**
+     * Array holding the coordinates of the job.
+     * 
+     * {bl, bc, el, ec}
+     */
+    private int[] coordinates = new int[] { -1, -1, -1, -1 };
 
     /**
      * Constructor.
@@ -326,14 +332,19 @@ public class ProverJob extends Job
         return (!proverProcess.isTerminated());
     }
 
-    public static void main(String[] args)
+    /**
+     * Sets the location of the job. The coordinates should all
+     * be 1-based. If this method is not called, then the location
+     * is assumed to be the entire module.
+     * 
+     * @param bl begin line
+     * @param bc begin column
+     * @param el end line
+     * @param ec end column
+     */
+    public void setLocation(int bl, int bc, int el, int ec)
     {
-        // System.out.println(System.getenv("PATH"));
-        // System.out.println(System.getenv("Path"));
-        // ProverJob job = new ProverJob("ProverJob Test", new Path(
-        // "C:/Users/drickett/work/svn-repository/examples/HourClock/HourClock.tla"), new Path(
-        // "C:/cygwin/usr/local/bin/tlapm"), new Path("C:/cygwin/bin"));
-        // job.run(new NullProgressMonitor());
+        coordinates = new int[] { bl, bc, el, ec };
     }
 
 }
