@@ -12,6 +12,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
@@ -201,7 +202,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
                 } else
                 {
                     final boolean recover = config.getAttribute(LAUNCH_RECOVER, LAUNCH_RECOVER_DEFAULT);
-                    final IResource[] checkpoints = ModelHelper.getCheckpoints(config, true);
+                    final IResource[] checkpoints = ModelHelper.getCheckpoints(config, false);
 
                     ISchedulingRule deleteRule = ResourceHelper.getDeleteRule(members);
 
@@ -652,6 +653,46 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
 
             try
             {
+                /*
+                 * After the job has completed, new check points
+                 * may have been created in the file system but
+                 * not yet recognized by the eclipse resource
+                 * framework. The following method
+                 * is called with the flag to refresh. This synch's
+                 * the resource framework with the new checkpoints (if any).
+                 * 
+                 * This refresh operation is wrapped in a job. The following
+                 * explains why. To read about jobs in general, check out:
+                 * http://www.eclipse.org/articles/Article-Concurrency/jobs-api.html.
+                 * 
+                 * The refresh operation is a long running job. This means
+                 * that it cannot be run within the running code of another
+                 * job whose scheduling rule does not encompass the scheduling rule
+                 * of the refresh operation. This method (done()) seems to be
+                 * called during the running of the TLC job. Therefore, simply
+                 * calling ModelHelper.getCheckpoints(config, true) results
+                 * in an exception because getCheckpoints calls the refresh
+                 * operation which has a scheduling rule that is not included
+                 * by the TLC job scheduling rule.
+                 * 
+                 * To solve this problem, we wrap the call to getCheckpoints()
+                 * in another job, set the scheduling rule to be a scheduling rule
+                 * for refreshing the model folder, and schedule that wrapping job
+                 * to be run later.
+                 */
+                IProject project = ResourceHelper.getProject(specName);
+                IFolder modelFolder = project.getFolder(modelName);
+                WorkspaceJob refreshJob = new WorkspaceJob("") {
+
+                    public IStatus runInWorkspace(IProgressMonitor monitor) throws CoreException
+                    {
+                        ModelHelper.getCheckpoints(config, true);
+                        return Status.OK_STATUS;
+                    }
+                };
+                refreshJob.setRule(ResourcesPlugin.getWorkspace().getRuleFactory().refreshRule(modelFolder));
+                refreshJob.schedule();
+
                 // make the model modification in order to make it runnable again
                 Assert.isTrue(event.getJob() instanceof TLCProcessJob);
                 Assert.isNotNull(event.getResult());

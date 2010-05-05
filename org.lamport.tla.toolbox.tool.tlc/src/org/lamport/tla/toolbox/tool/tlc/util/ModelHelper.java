@@ -53,6 +53,7 @@ import org.lamport.tla.toolbox.tool.tlc.launch.TLCModelLaunchDelegate;
 import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
 import org.lamport.tla.toolbox.tool.tlc.model.Formula;
 import org.lamport.tla.toolbox.tool.tlc.traceexplorer.SimpleTLCState;
+import org.lamport.tla.toolbox.util.AdapterFactory;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
@@ -1214,6 +1215,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
      * @param location
      * @return
      * @throws BadLocationException 
+     * @deprecated use {@link AdapterFactory#locationToRegion(IDocument, Location)} instead
      */
     public static IRegion locationToRegion(IDocument document, Location location) throws BadLocationException
     {
@@ -1599,7 +1601,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
      * and if a checkpoint folder is found, it will refresh the contents of that folder.
      * This means that the eclipse workspace representation of that directory will
      * synch with the file system. This is a long running job, so this method should not
-     * be called within the run method of another job unless the scheduling rule for
+     * be called within the running of another job unless the scheduling rule for
      * refreshing the model directory is included in the scheduling rule of the job which
      * is calling this method. This scheduling rule can be found by calling
      * {@link IResourceRuleFactory#refreshRule(IResource)}
@@ -1826,7 +1828,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
             monitor.worked(STEP);
         } else
         {
-            final IResource[] checkpoints = ModelHelper.getCheckpoints(config, true);
+            final IResource[] checkpoints = ModelHelper.getCheckpoints(config, false);
 
             ISchedulingRule deleteRule = ResourceHelper.getDeleteRule(members);
 
