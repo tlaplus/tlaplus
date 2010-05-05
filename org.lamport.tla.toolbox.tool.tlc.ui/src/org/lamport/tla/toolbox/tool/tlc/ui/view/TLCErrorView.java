@@ -30,8 +30,11 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.ControlAdapter;
 import org.eclipse.swt.events.ControlEvent;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
@@ -219,6 +222,7 @@ public class TLCErrorView extends ViewPart
             try
             {
                 document.replace(0, document.getLength(), buffer.toString());
+                TLCUIHelper.setTLCLocationHyperlinks(errorViewer.getTextWidget());
             } catch (BadLocationException e)
             {
                 TLCUIActivator.logError("Error reporting the error " + buffer.toString(), e);
@@ -307,6 +311,30 @@ public class TLCErrorView extends ViewPart
         gd.heightHint = 100;
         errorViewer.getControl().setLayoutData(gd);
         errorViewer.getControl().setFont(JFaceResources.getFont(ITLCPreferenceConstants.I_TLC_OUTPUT_FONT));
+        
+        /*
+         * Add a listener to hyperlink clicks in the error viewer.
+         */
+        final StyledText text = errorViewer.getTextWidget();
+        text.addMouseListener(new MouseListener() {
+            
+            public void mouseUp(MouseEvent e)
+            {
+                // TODO Auto-generated method stub
+                
+            }
+            
+            public void mouseDown(MouseEvent e)
+            {
+                TLCUIHelper.openTLCLocationHyperlink(text, e);
+            }
+            
+            public void mouseDoubleClick(MouseEvent e)
+            {
+                // TODO Auto-generated method stub
+                
+            }
+        });
 
         /*
          * We want the lower part of the outer sash form to contain
