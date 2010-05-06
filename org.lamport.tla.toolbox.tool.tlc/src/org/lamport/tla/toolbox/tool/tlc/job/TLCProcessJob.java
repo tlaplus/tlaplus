@@ -29,7 +29,7 @@ import tlc2.TLC;
  */
 public class TLCProcessJob extends TLCJob
 {
-    private IProcess process = null;
+    protected IProcess process = null;
     private BroadcastStreamListener listener = null;
 
     /**

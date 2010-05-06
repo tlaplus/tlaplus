@@ -31,6 +31,7 @@ import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.tool.tlc.TLCActivator;
 import org.lamport.tla.toolbox.tool.tlc.job.TLCJob;
 import org.lamport.tla.toolbox.tool.tlc.job.TLCProcessJob;
+import org.lamport.tla.toolbox.tool.tlc.job.TraceExplorerJob;
 import org.lamport.tla.toolbox.tool.tlc.model.TypedSet;
 import org.lamport.tla.toolbox.tool.tlc.traceexplorer.SimpleTLCState;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
@@ -652,9 +653,9 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
                     "Error accessing the spec project " + specName));
         }
 
-        TLCJob tlcjob = new TLCProcessJob(specName, modelName, launch);
+        TLCJob tlcjob = new TraceExplorerJob(specName, modelName, launch);
         tlcjob.setWorkers(1);
-        tlcjob.setPriority(Job.LONG);
+        tlcjob.setPriority(Job.SHORT);
         tlcjob.setUser(true);
         // The TLC job itself does not do any file IO
         tlcjob.setRule(mutexRule);
