@@ -187,6 +187,15 @@ public class ProverJob extends Job
             monitor.beginTask("Running prover.", IProgressMonitor.UNKNOWN);
 
             /*
+             * Print the coordinates for debugging.
+             */
+            System.out.println("-------------Prover job coordinates----------");
+            System.out.println("BL : " + coordinates[0]);
+            System.out.println("BC : " + coordinates[1]);
+            System.out.println("EL : " + coordinates[2]);
+            System.out.println("EC : " + coordinates[3]);
+
+            /*
              * Start the process. Calling DebugPlugin.newProcess()
              * wraps the java.lang.Process in an IProcess with some
              * convenience methods.
