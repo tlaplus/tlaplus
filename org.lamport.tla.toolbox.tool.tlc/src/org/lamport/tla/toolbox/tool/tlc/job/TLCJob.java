@@ -205,6 +205,11 @@ public abstract class TLCJob extends AbstractJob implements IModelConfigurationC
         this.workers = workers;
     }
 
+    /**
+     * Returns the action that tells all registered result
+     * presenters to show results. Result presenters are registered
+     * using the extension point {@link IResultPresenter#EXTENSION_ID}.
+     */
     protected Action getJobCompletedAction()
     {
         return new Action("View job results") {
