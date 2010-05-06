@@ -8,7 +8,7 @@ import org.lamport.tla.toolbox.tool.prover.output.IProverProcessOutputSink;
 
 /**
  * This class receives streaming output from the TLAPM
- * and sends it to a {@link TagBasedTLAPMOutputIncrementalParser}
+ * and sends it to a {@link TagBasedTLAPMOutputIncrementalParser2}
  * for parsing.
  * 
  * This class receives output by registering at the extension point
