@@ -50,7 +50,7 @@ public class TLCUIHelper
          * all matches of the pattern.
          * 
          * Do not link to locations that are null, equal
-         * to nullLoc, or point to the MC module.
+         * to nullLoc, or point to the MC or TE modules.
          */
         Matcher matcher;
         for (int i = 0; i < Location.ALL_PATTERNS.length; i++)
@@ -61,7 +61,8 @@ public class TLCUIHelper
                 String locationString = matcher.group();
                 Location location = Location.parseLocation(locationString);
                 if (location != null && !location.equals(Location.nullLoc)
-                        && !location.source().equals(ModelHelper.MC_MODEL_NAME))
+                        && !location.source().equals(ModelHelper.MC_MODEL_NAME)
+                        && !location.source().equals(ModelHelper.TE_MODEL_NAME))
                 {
                     /*
                      * To create the link, we follow the instructions
