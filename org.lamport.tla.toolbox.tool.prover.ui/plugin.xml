@@ -48,6 +48,7 @@
             locationURI="popup:#TextEditorContext?after=foldCommands">
          <command
                commandId="org.lamport.tla.toolbox.tool.prover.ui.checkStep.delegate"
+               label="Check Module Proofs"
                style="push">
          </command>
       </menuContribution>
