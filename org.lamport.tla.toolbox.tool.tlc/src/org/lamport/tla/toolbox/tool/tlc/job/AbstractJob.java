@@ -35,7 +35,7 @@ public abstract class AbstractJob extends Job
     }
 
     /**
-     * 
+     * Called when the job is finished.
      */
     public void doFinish()
     {
