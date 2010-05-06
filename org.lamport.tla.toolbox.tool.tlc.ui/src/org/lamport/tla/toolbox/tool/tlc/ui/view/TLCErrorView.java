@@ -311,28 +311,31 @@ public class TLCErrorView extends ViewPart
         gd.heightHint = 100;
         errorViewer.getControl().setLayoutData(gd);
         errorViewer.getControl().setFont(JFaceResources.getFont(ITLCPreferenceConstants.I_TLC_OUTPUT_FONT));
-        
+
         /*
-         * Add a listener to hyperlink clicks in the error viewer.
+         * Add a listener to clicks in the error viewer.
+         * 
+         * Currently, this listener just reacts to clicks
+         * on location hyperlinks.
          */
         final StyledText text = errorViewer.getTextWidget();
         text.addMouseListener(new MouseListener() {
-            
+
             public void mouseUp(MouseEvent e)
             {
                 // TODO Auto-generated method stub
-                
+
             }
-            
+
             public void mouseDown(MouseEvent e)
             {
                 TLCUIHelper.openTLCLocationHyperlink(text, e);
             }
-            
+
             public void mouseDoubleClick(MouseEvent e)
             {
                 // TODO Auto-generated method stub
-                
+
             }
         });
 
