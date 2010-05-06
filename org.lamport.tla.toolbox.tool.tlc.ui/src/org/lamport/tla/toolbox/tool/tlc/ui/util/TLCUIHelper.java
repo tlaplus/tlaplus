@@ -85,7 +85,7 @@ public class TLCUIHelper
     }
 
     /**
-     * If the trigger corresponds to a location in the styled text that
+     * If the trigger corresponds to a point in the styled text that
      * is a link created by {@link TLCUIHelper#setTLCLocationHyperlinks(StyledText)}, then
      * this method jumps to the location in the module corresponding to the link.
      * 
