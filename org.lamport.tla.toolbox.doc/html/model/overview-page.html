@@ -177,6 +177,29 @@ the TLC process that created it is still running can cause the checkpoint to be 
 making recovery impossible.&nbsp;  If you have reason to believe TLC was not stopped,
 check to see if it is still running before trying to recover from a checkpoint.
 </p>
+
+<p> 
+
+The checkpoint TLC produces after a short run does not take up
+much space.&nbsp;
+
+However, if TLC finds an error after running for a long time, the
+checkpoint files could take up a lot of space--often on the order
+of a gigabyte for a model that has run for several days.&nbsp;
+
+These files are deleted if the model is re-run and a new checkpoint is
+produced.&nbsp; 
+
+The Toolbox does not yet provide a facility for deleting
+old checkpoints; you'll have to do that yourself.  The checkpoint files
+for a model named &nbsp;<samp>Model</samp>&nbsp; 
+of a spec named &nbsp;<samp>Spec</samp>&nbsp; are in a folder (directory)
+with a name something like 
+ &nbsp;<samp>10-05-06-11-55-28</samp>&nbsp; 
+in the subfolder&nbsp;<samp>Model</samp>&nbsp; 
+of the folder &nbsp;<samp>Spec.toolbox</samp>&nbsp;. 
+</p>
+
 <hr> 
 <!-- delete rest of line to comment out --> 
 <dl>

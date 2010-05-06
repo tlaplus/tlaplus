@@ -1,0 +1,147 @@
+head	1.1;
+access;
+symbols;
+locks
+	lamport:1.1; strict;
+comment	@# @;
+
+
+1.1
+date	2010.05.06.18.18.25;	author lamport;	state Exp;
+branches;
+next	;
+
+
+desc
+@#
+@
+
+
+1.1
+log
+@#
+@
+text
+@<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- This is file org.lamport.tla.toobox.doc/html/spec/opening-closing.html -->
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+ <LINK href="../style.css" rel="stylesheet" type="text/css">
+
+<title>Manipulating Specs</title>
+</head>
+<!-- a comment -->
+
+<body>
+<h1>Manipulating Specs</h1>
+<p>
+A specification has a <em>name</em> and a <em>root module</em>, which
+is in a file whose extension is <code>.tla</code>.&nbsp;  You will probably
+give your spec the same name as its root module, but you need not.&nbsp;
+You can create two different specifications with the same root module, but there's
+little reason to do that.&nbsp;  Two different specs cannot have the same name.&nbsp;
+Here are the Toolbox's spec operations.
+</p>
+
+<p>
+<b>Warning:</b> if you want to use the <a href="../model/model.html">model checker</a>,
+your spec must not contain a module named&nbsp; <code>MC</code>&nbsp;.
+</p>
+<h3>Create</h3>
+
+You can create a new spec with the&nbsp;
+<samp>File/Open Spec/Add New Spec...&nbsp;</samp> menu item.&nbsp;  
+It raises a dialog asking you to choose the root file (which must have
+the extension <code>.tla</code>) and the 
+specification name.  
+
+
+<h3>Open</h3>
+
+You can open an existing spec by choosing it from the&nbsp;
+<samp>File/Open Spec</samp> menu.&nbsp;  You can also use the 
+<em>Spec Explorer</em>, which is opened by clicking on the
+<IMG SRC=spec-explorer-icon.gif Align=bottom> icon on the left side of the Toolbox, near the top.&nbsp;
+Right-click on the desired spec and select <samp>Open</samp>.&nbsp;  If you open a spec when another spec
+is open, the other spec will automatically be closed.
+
+
+<h3>Close</h3>
+
+You can close a spec with the&nbsp; <samp>File/Close Spec</samp>&nbsp; menu.&nbsp;  
+This returns you to the Welcome View.&nbsp;
+However, remember that the toolbox will close the current spec if you open another one.
+
+<h3>Delete and Rename</h3>
+
+You can delete or rename an existing spec by opening the Spec Explorer (described above), 
+right-clicking on
+the desired spec, and making the appropriate choice.&nbsp;  
+Deleting a spec does not delete any of the specification's
+files.&nbsp;  
+However, it will delete all its <a href = "../model/about-models.html">TLC models</a>.
+
+<h3>Finding Your Spec</h3>
+
+It's easy to forget where in your file system a spec's module files are.&nbsp;  
+To find them, open the
+Spec Explorer view, right-click
+on the spec's name, and select&nbsp;<samp>Properties</samp>&nbsp;.&nbsp;  
+This will bring
+up a dialog that shows you the root-module file's complete path name.&nbsp;  
+(The rest of the spec's module files are in the same folder.)
+
+<h3>Moving a Spec from Elsewhere</h3>
+
+<P> Here is how to move an existing spec named&nbsp; <samp>SName&nbsp;</samp> to a 
+different folder (directory) on the
+same computer, or to a different computer.&nbsp;  Copy all the spec's module files
+(the root-module file and its imported module files)
+and the folder (directory) named&nbsp; <samp>SName.toolbox&nbsp;</samp> to the new
+location.&nbsp;  If there is already a spec named&nbsp; <samp>SName&nbsp;</samp> (which
+will be the case if you're moving the spec to a different place on the same computer),
+delete it from the Toolbox.&nbsp;  Open a new specification named &nbsp; <samp>SName&nbsp;</samp>
+using the new copy of the root-module file.
+ </P>
+
+<h3>Keeping Copies of a Spec on Different Computers</h3> 
+
+ <p> 
+You may want to run the Toolbox on different machines for the same
+spec.&nbsp;
+
+Once you've created a spec on one machine, copy the spec's module
+files and <samp>.toolbox&nbsp;</samp> directory to the other machine
+and use the instructions above to create a copy of the spec on that
+machine.&nbsp;
+
+When you modify the spec or its models on one machine, just copy the
+module files and <samp>.toolbox&nbsp;</samp> directory to the other
+machine.&nbsp;
+
+Strange things might happen if you do that while the spec is open in
+the Toolbox on that other machine.&nbsp;
+
+It's a good idea to close spec on that machine before copying the
+files.&nbsp;  If you forget to do that, you will probably need to
+close and re-open the spec to see the new version in the Toolbox.&nbsp;  
+If strange things happen when you do that, try closing and re-opening
+the Toolbox.
+</p>
+
+<hr> 
+<!-- delete rest of line to comment out 
+<dl>
+<dt><b><font color=#0000c0>Subtopics</font></b></dt>
+<dd> <A href=""> TOPIC </A></dd>
+<dd> <A href=""> TOPIC </A></dd>
+</dl>
+ --> 
+<!-- delete rest of line to comment out -->  
+<a href = "spec.html">&uarr; Managing Your Specifications</a>
+<!-- --> 
+</hr>
+
+</body>
+</html>@

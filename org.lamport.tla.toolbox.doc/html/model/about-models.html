@@ -30,14 +30,25 @@ that you must explicitly choose:</p>
  </p>
 
 <p>
-A specification may contain multiple models.&nbsp;  You can create a new model or open an existing one
-by clicking on the&nbsp; <samp>TLC Model Checker</samp>&nbsp; menu.&nbsp;  Alternatively, you can use
-the <a href="../spec/opening-closing.html">Spec Explorer</a>.&nbsp;  To create a new model, 
-open the <a href="../spec/opening-closing.html">Spec Explorer</a> and right-click on
-the currently open spec.&nbsp;  To open an existing model, open the spec's menu item (by clicking on the&nbsp; <samp>+</samp>&nbsp;)
-and double-clicking on the model.&nbsp;  Right-clicking on the model also gives you the options of
-renaming it, deleting it, and creating a clone--a copy with a different name.
-</p>
+
+A specification may contain multiple models.&nbsp; You can create a
+new model, open an existing one, or create a clone (a copy with a new
+name) of an existing model by clicking on the&nbsp; <samp>TLC Model
+Checker</samp>&nbsp; menu.&nbsp;
+
+Alternatively, you can use the <a
+href="../spec/opening-closing.html">Spec Explorer</a>.&nbsp; 
+
+To create a new model, open the <a
+href="../spec/opening-closing.html">Spec Explorer</a> and right-click
+on the currently open spec.&nbsp; 
+
+To open an existing model, open the spec's menu item (by clicking on
+the&nbsp; <samp>+</samp>&nbsp;) and double-clicking on the
+model.&nbsp; 
+
+Right-clicking on the model also gives you the options of renaming it,
+deleting it, and creating a clone.  </p>
 
 <p>
 When you model check a spec, you should begin with a very small model--that is, a model for which the 
@@ -47,16 +58,43 @@ quite a few errors.&nbsp;  Using a small model, TLC can find the trivial ones ve
 no errors in a small model, you can then gradually increase the size of the model.
 </p>
 
-<p>
-As you run your spec on larger and larger models, it's easy to forget what you've done.&nbsp;  Instead of
-changing a model and running it again, create a new model and keep the old one.&nbsp;  
-(This is easy to do by cloning the model, as described above.)
-It will be easier to identify
-your models if you put the important contents of the model in the model name--for example, you can name a model
-</p>
-<pre>
+<p> 
+
+As you run your spec on larger and larger models, it's easy to forget
+what you've done.&nbsp; 
+
+Instead of changing a model and running it again, create a new model
+and keep the old one.&nbsp; (This is easy to do by cloning the model,
+as described above.)&nbsp; 
+
+It will be easier to identify your models if you put the important
+contents of the model in the model name--for example, you can name a
+model </p> <pre>
    N=3,Proc={a1,a2,a3}
 </pre>
+To prevent accidentally running or editing a model, you can lock it.&nbsp; 
+
+
+There is a lock icon and a key icon that you click to lock or
+unlock the model.&nbsp;  
+
+Those icons are in the upper-left part of each model-editor page.&nbsp;
+
+
+The model is always locked while it is being run by TLC, and it remains
+locked after TLC completes unless the run was short.&nbsp;
+
+This means that you can't view information in sections of a running
+model that are closed.&nbsp;
+
+It's therefore a good idea to open all sections of the model
+that you might want to look at before starting a TLC run that will
+take a significant amount of time.&nbsp; 
+
+If you forget to do this, you can clone the running model and examine
+the clone.&nbsp;
+
+
 <p>
 The Toolbox keeps a
 copy of the version of the spec on which the model was run, so you can look at it even after you 

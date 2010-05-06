@@ -18,7 +18,7 @@
 When you open a model, you open it in a <em>model editor</em>.&nbsp;  The model editor 
 has three pages:  The  <A href="overview-page.html"> Model Overview Page</A> and
 <A href="advanced-page.html">Advanced Options Page</A> specify the model.&nbsp;
-The <A href="results-page.html"> Model Checking Results Page</A> shows you either what
+The <A href="results-page.html"> Model Checking Results Page</A> shows you either what 
 the model checker is doing while it runs, or what it did the last time it was
 run.&nbsp;  You can switch between the pages using the tabs at the upper-left of the
 model editor <a href="../gettingstarted/views.html">view</a>, or with the&nbsp;
@@ -33,6 +33,7 @@ the&nbsp;
 standard editing commands.  
 </p>
 
+
 <p>Whenever you enter a TLA<sup>+</sup> expression as part of the model,
 that expression can use any
 symbols that you could use in a new definition placed at the end of the spec's root module.&nbsp;  
@@ -41,6 +42,16 @@ in the model, as well as additional definitions entered in the
 <a href="advanced-page.html#additional">Additional Definitions</a> section 
 of the <A href="advanced-page.html">Advanced Options Page</A>.
 </p>
+
+
+<p>
+A model can be locked or unlocked by using the lock icon or the key icon 
+in the upper-left part of each model-editor page.&nbsp;
+
+The model is always locked while it is being run by TLC, and it remains
+locked after TLC completes unless the run was short.&nbsp;
+</p>
+
 <hr> 
 <!-- delete rest of line to comment out --> 
 <dl>

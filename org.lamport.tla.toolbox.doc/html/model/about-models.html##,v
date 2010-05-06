@@ -1,0 +1,242 @@
+head	1.6;
+access;
+symbols;
+locks
+	lamport:1.6; strict;
+comment	@# @;
+
+
+1.6
+date	2010.05.06.18.52.10;	author lamport;	state Exp;
+branches;
+next	1.5;
+
+1.5
+date	2010.05.06.18.49.30;	author lamport;	state Exp;
+branches;
+next	1.4;
+
+1.4
+date	2010.05.06.18.45.09;	author lamport;	state Exp;
+branches;
+next	1.3;
+
+1.3
+date	2010.05.06.18.43.54;	author lamport;	state Exp;
+branches;
+next	1.2;
+
+1.2
+date	2010.05.06.18.40.14;	author lamport;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2010.05.06.18.26.10;	author lamport;	state Exp;
+branches;
+next	;
+
+
+desc
+@#
+@
+
+
+1.6
+log
+@#
+@
+text
+@<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- This is file org.lamport.tla.toobox.doc/html/model/about-models.html -->
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+ <LINK href="../style.css" rel="stylesheet" type="text/css">
+
+<title>Models</title>
+</head>
+<!-- a comment -->
+
+<body>
+<h1>Models</h1>
+
+ <p> 
+You run the TLC model checker on a <em>model</em> of your spec.&nbsp;  The model
+tells TLC what it should do.&nbsp;  Here are the parts of the model
+that you must explicitly choose:</p>
+<ul>
+<li>What the <a href="../spec/what-is.html">behavior spec</a> is.</li>
+
+<li>What TLC should check.</li>
+
+<li>What values to substitute for constant parameters.</li>
+</ul>
+ <p>
+ The <em><a href="overview-page.html">Model Overview Page</a></em> 
+ and <em><a href="advanced-page.html">Advanced Options Page</a></em> 
+ help pages describe all the things that can go into a model.
+ </p>
+
+<p>
+
+A specification may contain multiple models.&nbsp; You can create a
+new model, open an existing one, or create a clone (a copy with a new
+name) of an existing model by clicking on the&nbsp; <samp>TLC Model
+Checker</samp>&nbsp; menu.&nbsp;
+
+Alternatively, you can use the <a
+href="../spec/opening-closing.html">Spec Explorer</a>.&nbsp; 
+
+To create a new model, open the <a
+href="../spec/opening-closing.html">Spec Explorer</a> and right-click
+on the currently open spec.&nbsp; 
+
+To open an existing model, open the spec's menu item (by clicking on
+the&nbsp; <samp>+</samp>&nbsp;) and double-clicking on the
+model.&nbsp; 
+
+Right-clicking on the model also gives you the options of renaming it,
+deleting it, and creating a clone.  </p>
+
+<p>
+When you model check a spec, you should begin with a very small model--that is, a model for which the 
+values substituted for constants (and perhaps a <a href="advanced-page.html#state">constraint</a>)
+yield a small set of reachable states.&nbsp;  Before you've model checked it, your spec almost surely contains
+quite a few errors.&nbsp;  Using a small model, TLC can find the trivial ones very quickly.&nbsp;  When it finds
+no errors in a small model, you can then gradually increase the size of the model.
+</p>
+
+<p> 
+
+As you run your spec on larger and larger models, it's easy to forget
+what you've done.&nbsp; 
+
+Instead of changing a model and running it again, create a new model
+and keep the old one.&nbsp; (This is easy to do by cloning the model,
+as described above.)&nbsp; 
+
+It will be easier to identify your models if you put the important
+contents of the model in the model name--for example, you can name a
+model </p> <pre>
+   N=3,Proc={a1,a2,a3}
+</pre>
+To prevent accidentally running or editing a model, you can lock it.&nbsp; 
+
+
+There is a lock icon and a key icon that you click to lock or
+unlock the model.&nbsp;  
+
+Those icons are in the upper-left part of each model-editor page.&nbsp;
+
+
+The model is always locked while it is being run by TLC, and it remains
+locked after TLC completes unless the run was short.&nbsp;
+
+This means that you can't view information in sections of a running
+model that are closed.&nbsp;
+
+It's therefore a good idea to open all sections of the model
+that you might want to look at before starting a TLC run that will
+take a significant amount of time.&nbsp; 
+
+If you forget to do this, you can clone the running model and examine
+the clone.&nbsp;
+
+
+<p>
+The Toolbox keeps a
+copy of the version of the spec on which the model was run, so you can look at it even after you 
+have changed the spec.&nbsp;
+(You cannot yet examine that version with the Toolbox.  See the 
+<a href="executing-tlc.html#MC">How TLC is Run</a>
+help-page section to find out where
+those saved files are.)
+ </p>
+<hr> 
+<!-- delete rest of line to comment out 
+<dl>
+<dt><b><font color=#0000c0>Subtopics</font></b></dt>
+<dd> <A href=""> TOPIC </A></dd>
+<dd> <A href=""> TOPIC </A></dd>
+</dl>
+--> 
+<!-- delete rest of line to comment out -->  
+<a href = "model.html">&uarr; Model Checking</a>
+<!-- --> 
+</hr>
+
+</body>
+</html>@
+
+
+1.5
+log
+@#
+@
+text
+@d84 1
+a84 1
+The model is always locked while it is running, and a model remains
+@
+
+
+1.4
+log
+@#
+@
+text
+@d78 5
+a82 2
+Clicking on the lock icon next to the icons with which you run or stop
+TLC locks the model; the key icon unlocks it.&nbsp;  
+@
+
+
+1.3
+log
+@#
+@
+text
+@d88 2
+a89 1
+that you might want to look at before running the model&nbsp; 
+d91 2
+a92 2
+However, if you forget to do this, you can clone the running model and
+examine the clone.&nbsp;
+@
+
+
+1.2
+log
+@#
+@
+text
+@d81 2
+a82 1
+The model is always locked while it is running.&nbsp; 
+d84 2
+a85 2
+This means that you can't view information in sections
+of the model that are closed.&nbsp;  
+@
+
+
+1.1
+log
+@#
+@
+text
+@d61 12
+a72 8
+<p>
+As you run your spec on larger and larger models, it's easy to forget what you've done.&nbsp;  Instead of
+changing a model and running it again, create a new model and keep the old one.&nbsp;  
+(This is easy to do by cloning the model, as described above.)
+It will be easier to identify
+your models if you put the important contents of the model in the model name--for example, you can name a model
+</p>
+<pre>
+d75 18
+@
