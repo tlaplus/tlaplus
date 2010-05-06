@@ -171,9 +171,6 @@ public class TraceExplorerDataProvider extends TLCModelLaunchDataProvider
 
     /**
      * Performs processing for the error and the error trace produced after a run of the trace explorer.
-     * This method replaces the message of the error with a trace produced by the trace explorer with
-     * the message from the original error with a trace for which the trace explorer was run if that message
-     * should be shown to the user.
      * 
      * This method does the following to a trace:
      * 
@@ -270,6 +267,10 @@ public class TraceExplorerDataProvider extends TLCModelLaunchDataProvider
 
     <Back to state 1>
 
+     * 6.) If the trace explorer ran successfully, this method replaces the error message
+     * associated with the trace produced by the trace explorer with
+     * the error message produced by the last run of model checking on
+     * the model for which the trace explorer was run.
      */
     private void processTraceForTraceExplorer()
     {
@@ -301,7 +302,7 @@ public class TraceExplorerDataProvider extends TLCModelLaunchDataProvider
                 // error for which the trace explorer was run if the new error
                 // message is for an invariant or property violation or deadlock. An invariant
                 // or property violation or deadlock indicates that the trace explorer ran
-                // successfully.
+                // successfully. This is item (6).
                 int errorCode = error.getErrorCode();
                 if (errorCode == EC.TLC_DEADLOCK_REACHED || errorCode == EC.TLC_TEMPORAL_PROPERTY_VIOLATED
                         || errorCode == EC.TLC_INVARIANT_VIOLATED_BEHAVIOR
