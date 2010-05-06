@@ -60,7 +60,7 @@ public class ActionClickListener implements IDoubleClickListener, ISelectionChan
                         /*
                          * The following code was commented out by DR on May 6, 2010
                          * because it had been moved to UIHelper.jumpToLocation() and simplified.
-                         * The line of code the preceedes these comments accomplishes what this
+                         * The line of code the precedes these comments accomplishes what this
                          * commented code accomplishes and is sufficiently general to be used
                          * elsewhere in the toolbox.
                          */
