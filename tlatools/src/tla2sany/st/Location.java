@@ -1,6 +1,7 @@
 // Copyright (c) 2003 Compaq Corporation.  All rights reserved.
 package tla2sany.st;
 
+import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -51,6 +52,7 @@ public final class Location
      * }
      * </pre>
      * @see {@link Location#parseLocation(String)}
+     * @see Location#getParsedLocations(String)
      */
     public static final Pattern LOCATION_MATCHER = Pattern
             .compile(LINE + NATURAL /* bl group */+ COL + NATURAL
@@ -60,20 +62,28 @@ public final class Location
      * A REGEX pattern to match the locations 
      */
     public static final Pattern LOCATION_MATCHER2 = Pattern.compile(IN_MODULE + MODULE_ID /* module group */);
-    
+
     /**
      * A pattern to match locations in states.
      */
-    public static final Pattern LOCATION_MATCHER3 = Pattern.compile(OPEN_ACTION + LINE + NATURAL /* bl group */+ COL + NATURAL
+    public static final Pattern LOCATION_MATCHER3 = Pattern.compile(OPEN_ACTION + LINE + NATURAL /* bl group */+ COL
+            + NATURAL
             /* bc group */+ TO_LINE + NATURAL /* el group */+ COL + NATURAL /* ec group */+ OF_MODULE + MODULE_ID /* module group */
             + CLOSE_ACTION);
-    
+
     /**
      * A pattern to match locations when there is an error evaluating a nested expression.
      */
     public static final Pattern LOCATION_MATCHER4 = Pattern
             .compile(LINE_CAP + NATURAL /* bl group */+ COLUMN + NATURAL
             /* bc group */+ TO_LINE + NATURAL /* el group */+ COLUMN + NATURAL /* ec group */+ IN + MODULE_ID /* module group */);
+
+    /**
+     * An array containing all {@link Pattern} currently defined
+     * in this class.
+     */
+    public static final Pattern[] ALL_PATTERNS = new Pattern[] { LOCATION_MATCHER, LOCATION_MATCHER2,
+            LOCATION_MATCHER3, LOCATION_MATCHER4 };
 
     protected UniqueString name;
     protected int bLine, bColumn, eLine, eColumn;
@@ -170,6 +180,59 @@ public final class Location
             // not recognized pattern
             return nullLoc;
         }
+    }
+
+    /**
+     * Returns an array of {@link Location} that can be parsed
+     * from the input. More precisely, this method returns all
+     * instances of {@link Location} <code>loc</code> such that
+     * 
+     * <pre>
+     * loc != null && !loc.equals(Location.nullLoc)
+     * </pre>
+     * 
+     * and such that there exists some substring <code>sub</code> of input
+     * for which
+     * 
+     * <pre>
+     * Location loc = Location.parseLocation(sub)
+     * </pre>
+     * 
+     * @param input
+     * @return
+     * @see Location#nullLoc
+     */
+    public static Location[] getParsedLocations(String input)
+    {
+        /*
+         * The Toolbox does not support generics,
+         * so generics cannot be used here.
+         */
+        ArrayList locations = new ArrayList();
+        /*
+         * For each Pattern defined in this class, we find
+         * all matches of the pattern and add this to the list
+         * of locations.
+         * 
+         * Do not add locations that are null or equal
+         * to nullLoc.
+         */
+        Matcher matcher;
+        for (int i = 0; i < ALL_PATTERNS.length; i++)
+        {
+            matcher = ALL_PATTERNS[i].matcher(input);
+            while (matcher.find())
+            {
+                String locationString = matcher.group();
+                Location location = Location.parseLocation(locationString);
+                if (location != null && !location.equals(nullLoc))
+                {
+                    locations.add(location);
+                }
+            }
+        }
+
+        return (Location[]) locations.toArray(new Location[locations.size()]);
     }
 
     /** 
