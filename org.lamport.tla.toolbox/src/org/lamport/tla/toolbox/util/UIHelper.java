@@ -737,25 +737,39 @@ public class UIHelper
                         try
                         {
                             // we now need to convert the four coordinates of the location
-                            // to a begin character location and a length
+                            // to an offset and length
 
-                            // find the two lines in the document
-                            IRegion beginLineRegion = document.getLineInformation(location.beginLine() - 1);
-                            IRegion endLineRegion = document.getLineInformation(location.endLine() - 1);
+                            /*
+                             * The following was commented out by DR. It originally was required
+                             * to compensate for a bug in the reporting of locations by SANY. SANY
+                             * was reporting multiline locations as a bounding box instead of the
+                             * actual begin line, begin column, end line, end column. This has
+                             * been fixed, so the commented out code can be simplified to what follows it.
+                             */
+                            // // find the two lines in the document
+                            // IRegion beginLineRegion = document.getLineInformation(location.beginLine() - 1);
+                            // IRegion endLineRegion = document.getLineInformation(location.endLine() - 1);
+                            //
+                            // // get the text representation of the lines
+                            // String textBeginLine = document.get(beginLineRegion.getOffset(), beginLineRegion
+                            // .getLength());
+                            // String textEndLine = document.get(endLineRegion.getOffset(), endLineRegion.getLength());
+                            //
+                            // // the Math.min is necessary because sometimes the end column
+                            // // is greater than the length of the end line, so if Math.min
+                            // // were not called in such a situation, extra lines would be
+                            // // highlighted
+                            // int offset = beginLineRegion.getOffset()
+                            // + Math.min(textBeginLine.length(), location.beginColumn() - 1);
+                            // int length = endLineRegion.getOffset()
+                            // + Math.min(textEndLine.length(), location.endColumn()) - offset;
 
-                            // get the text representation of the lines
-                            String textBeginLine = document.get(beginLineRegion.getOffset(), beginLineRegion
-                                    .getLength());
-                            String textEndLine = document.get(endLineRegion.getOffset(), endLineRegion.getLength());
-
-                            // the Math.min is necessary because sometimes the end column
-                            // is greater than the length of the end line, so if Math.min
-                            // were not called in such a situation, extra lines would be
-                            // highlighted
-                            int actionStartPosition = beginLineRegion.getOffset()
-                                    + Math.min(textBeginLine.length(), location.beginColumn() - 1);
-                            int length = endLineRegion.getOffset()
-                                    + Math.min(textEndLine.length(), location.endColumn()) - actionStartPosition;
+                            /*
+                             * This is the new code for converting to an offset and length.
+                             */
+                            IRegion region = AdapterFactory.locationToRegion(document, location);
+                            int offset = region.getOffset();
+                            int length = region.getLength();
 
                             IEditorPart editor = UIHelper.openEditor(OpenSpecHandler.TLA_EDITOR_CURRENT,
                                     new FileEditorInput((IFile) moduleResource));
@@ -801,7 +815,7 @@ public class UIHelper
                                         ((MultiPageEditorPart) editor).setActiveEditor(textEditor);
                                     }
                                     // getActivePage().activate(textEditor);
-                                    textEditor.selectAndReveal(actionStartPosition, length);
+                                    textEditor.selectAndReveal(offset, length);
                                 }
                             }
                         } catch (BadLocationException e)
