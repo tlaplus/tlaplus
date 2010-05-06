@@ -740,7 +740,7 @@ public class UIHelper
                             // to an offset and length
 
                             /*
-                             * The following was commented out by DR. It originally was required
+                             * The following was commented out by DR on May 6, 2010. It originally was required
                              * to compensate for a bug in the reporting of locations by SANY. SANY
                              * was reporting multiline locations as a bounding box instead of the
                              * actual begin line, begin column, end line, end column. This has
