@@ -11,11 +11,11 @@ import org.lamport.tla.toolbox.util.UIHelper;
 import tla2sany.st.Location;
 
 /**
- * A listener that will respond to the user double clicking on
+ * A listener that will respond to the user double clicking or selecting
  * an action by opening the module containing that action and highlighting
  * the action
  * 
- * Currently, double clicking on something in a viewer with this as
+ * Currently, double clicking or selecting something in a viewer with this as
  * a listener will only do something if the selection is an instance
  * of {@link IModuleLocatable}.
  * {@link org.lamport.tla.toolbox.tool.tlc.output.data.TLCState} and
