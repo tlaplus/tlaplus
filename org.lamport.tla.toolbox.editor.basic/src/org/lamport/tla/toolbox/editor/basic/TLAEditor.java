@@ -69,7 +69,6 @@ import org.lamport.tla.toolbox.editor.basic.actions.ProofFoldAction;
 import org.lamport.tla.toolbox.editor.basic.actions.ToggleCommentAction;
 import org.lamport.tla.toolbox.editor.basic.proof.IProofFoldCommandIds;
 import org.lamport.tla.toolbox.editor.basic.proof.TLAProofFoldingStructureProvider;
-import org.lamport.tla.toolbox.editor.basic.prover.TLAPMColoringOutputListener;
 import org.lamport.tla.toolbox.editor.basic.util.ElementStateAdapter;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.tool.prover.util.ProverHelper;
@@ -108,8 +107,12 @@ public class TLAEditor extends TextEditor
     /**
      * Listener to TLAPM output for adding status
      * coloring to proofs.
+     * 
+     * Commented out by DR. I think the coloring
+     * will be done using markers in the prover
+     * ui plug-in.
      */
-    private TLAPMColoringOutputListener tlapmColoring;
+    // private TLAPMColoringOutputListener tlapmColoring;
     /**
      * Listens to resource changes to the module.
      * 
@@ -262,7 +265,7 @@ public class TLAEditor extends TextEditor
         // not call methods that use annotation model when the model is still null
         this.proofStructureProvider = new TLAProofFoldingStructureProvider(this);
 
-        tlapmColoring = new TLAPMColoringOutputListener(this);
+        // tlapmColoring = new TLAPMColoringOutputListener(this);
 
     }
 
@@ -646,7 +649,7 @@ public class TLAEditor extends TextEditor
 
     public void dispose()
     {
-        tlapmColoring.dispose();
+        // tlapmColoring.dispose();
         proofStructureProvider.dispose();
         rootImage.dispose();
         super.dispose();
