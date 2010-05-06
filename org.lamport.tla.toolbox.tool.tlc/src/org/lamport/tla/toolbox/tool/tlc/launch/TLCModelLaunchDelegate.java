@@ -488,10 +488,11 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
             TLCActivator.logDebug("Errors in model file found " + rootModule.getLocation());
         }
 
+        FileEditorInput fileEditorInput = new FileEditorInput((IFile) rootModule);
+        FileDocumentProvider fileDocumentProvider = new FileDocumentProvider();
         try
         {
-            FileEditorInput fileEditorInput = new FileEditorInput((IFile) rootModule);
-            FileDocumentProvider fileDocumentProvider = new FileDocumentProvider();
+
             fileDocumentProvider.connect(fileEditorInput);
 
             // The document for manipulation of the MC.tla file
@@ -544,6 +545,13 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
 
         } finally
         {
+            /*
+             * The document provider is not needed. Always disconnect it to avoid a memory leak.
+             * 
+             * Keeping it connected only seems to provide synchronization of
+             * the document with file changes. That is not necessary in this context.
+             */
+            fileDocumentProvider.disconnect(fileEditorInput);
             monitor.done();
         }
 

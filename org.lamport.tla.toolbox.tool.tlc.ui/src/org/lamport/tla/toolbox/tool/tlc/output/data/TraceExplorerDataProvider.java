@@ -99,14 +99,19 @@ public class TraceExplorerDataProvider extends TLCModelLaunchDataProvider
             traceExpressionDataTable.clear();
         }
 
+        /*
+         * Retrieve the TE file and create a document provider. This document
+         * provider will be used to connect to the file editor input for
+         * the TE file so that a Document representation of the file can
+         * be created in the following try block. We disconnect the document
+         * provider in the finally block for this try block in order to avoid
+         * a memory leak.
+         */
+        IFile teFile = ModelHelper.getTraceExplorerTLAFile(getConfig());
+        FileEditorInput teFileEditorInput = new FileEditorInput((IFile) teFile);
+        FileDocumentProvider teFileDocumentProvider = new FileDocumentProvider();
         try
         {
-            // retrieve the TE file
-            // create a document provider, in order to create a document and the
-            // search adapter
-            IFile teFile = ModelHelper.getTraceExplorerTLAFile(getConfig());
-            FileEditorInput teFileEditorInput = new FileEditorInput((IFile) teFile);
-            FileDocumentProvider teFileDocumentProvider = new FileDocumentProvider();
 
             teFileDocumentProvider.connect(teFileEditorInput);
 
@@ -152,6 +157,15 @@ public class TraceExplorerDataProvider extends TLCModelLaunchDataProvider
         } catch (BadLocationException e)
         {
             TLCUIActivator.logError("Error finding trace expression information in TE.tla file.", e);
+        } finally
+        {
+            /*
+             * The document provider is not needed. Always disconnect it to avoid a memory leak.
+             * 
+             * Keeping it connected only seems to provide synchronization of
+             * the document with file changes. That is not necessary in this context.
+             */
+            teFileDocumentProvider.disconnect(teFileEditorInput);
         }
     }
 

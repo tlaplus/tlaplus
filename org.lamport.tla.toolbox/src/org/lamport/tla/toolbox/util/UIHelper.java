@@ -720,14 +720,20 @@ public class UIHelper
             IResource moduleResource = ResourceHelper.getResourceByModuleName(location.source());
             if (moduleResource != null && moduleResource.exists())
             {
+                /*
+                 * Now, retrieve a representation of the resource
+                 * as a document. To do this, we use a FileDocumentProvider.
+                 * 
+                 * We disconnect the document provider in the finally block
+                 * for the following try block in order to avoid a memory leak.
+                 */
+                IDocument document = null;
+
+                // since we know that the editor uses file based editor representation
+                FileEditorInput fileEditorInput = new FileEditorInput((IFile) moduleResource);
+                FileDocumentProvider fileDocumentProvider = new FileDocumentProvider();
                 try
                 {
-                    // retrieve the resource
-                    IDocument document = null;
-
-                    // since we know that the editor uses file based editor representation
-                    FileEditorInput fileEditorInput = new FileEditorInput((IFile) moduleResource);
-                    FileDocumentProvider fileDocumentProvider = new FileDocumentProvider();
 
                     fileDocumentProvider.connect(fileEditorInput);
 
@@ -826,6 +832,15 @@ public class UIHelper
                 } catch (CoreException e1)
                 {
                     Activator.logDebug("Error going to a module location. This is a bug.");
+                } finally
+                {
+                    /*
+                     * The document provider is not needed. Always disconnect it to avoid a memory leak.
+                     * 
+                     * Keeping it connected only seems to provide synchronization of
+                     * the document with file changes. That is not necessary in this context.
+                     */
+                    fileDocumentProvider.disconnect(fileEditorInput);
                 }
             }
         }

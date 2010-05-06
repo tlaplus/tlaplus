@@ -31,10 +31,10 @@ public class LogFileReader
      */
     public void read()
     {
+        FileEditorInput fileEditorInput = new FileEditorInput(logFile);
+        FileDocumentProvider fileDocumentProvider = new FileDocumentProvider();
         try
         {
-            FileEditorInput fileEditorInput = new FileEditorInput(logFile);
-            FileDocumentProvider fileDocumentProvider = new FileDocumentProvider();
             fileDocumentProvider.connect(fileEditorInput);
             IDocument document = fileDocumentProvider.getDocument(fileEditorInput);
             this.parser.addIncrement(document.get());
@@ -45,6 +45,15 @@ public class LogFileReader
         } catch (BadLocationException e)
         {
             TLCUIActivator.logError("Error positioning in the TLC log file", e);
+        } finally
+        {
+            /*
+             * The document provider is not needed. Always disconnect it to avoid a memory leak.
+             * 
+             * Keeping it connected only seems to provide synchronization of
+             * the document with file changes. That is not necessary in this context.
+             */
+            fileDocumentProvider.disconnect(fileEditorInput);
         }
 
     }

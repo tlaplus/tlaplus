@@ -29,10 +29,10 @@ import org.lamport.tla.toolbox.util.pref.IPreferenceConstants;
  */
 public class PCalDetectingBuilder extends IncrementalProjectBuilder
 {
-    
+
     public static final String BUILDER_ID = "toolbox.builder.PCalAlgorithmSearchingBuilder";
     private static final String PCAL_ALGORITHM_DEFINITION = "--algorithm";
-    
+
     private PCalDetectingVisitor visitor = new PCalDetectingVisitor();
 
     /* (non-Javadoc)
@@ -41,13 +41,13 @@ public class PCalDetectingBuilder extends IncrementalProjectBuilder
     protected IProject[] build(int kind, Map args, IProgressMonitor monitor) throws CoreException
     {
         Spec spec = Activator.getSpecManager().getSpecLoaded();
-        if (spec == null) 
+        if (spec == null)
         {
             return null;
         }
-        
+
         IProject project = getProject();
-        
+
         if (project != spec.getProject())
         {
             // skip the build calls on wrong projects (which are in WS, but not a current spec)
@@ -55,7 +55,7 @@ public class PCalDetectingBuilder extends IncrementalProjectBuilder
         }
 
         project.accept(visitor);
-        
+
         // must return null
         return null;
     }
@@ -68,7 +68,7 @@ public class PCalDetectingBuilder extends IncrementalProjectBuilder
         public boolean visit(IResource resource) throws CoreException
         {
             // check for resource existence (WS in-sync or out-of-sync)
-            if (!resource.exists() || !new File(resource.getLocation().toOSString()).exists()) 
+            if (!resource.exists() || !new File(resource.getLocation().toOSString()).exists())
             {
                 return false;
             }
@@ -79,28 +79,42 @@ public class PCalDetectingBuilder extends IncrementalProjectBuilder
             {
                 FileEditorInput fileEditorInput = new FileEditorInput((IFile) resource);
                 FileDocumentProvider fileDocumentProvider = new FileDocumentProvider();
-                fileDocumentProvider.connect(fileEditorInput);
-                IDocument document = fileDocumentProvider.getDocument(fileEditorInput);
-                FindReplaceDocumentAdapter searchAdapter = new FindReplaceDocumentAdapter(document);
                 try
                 {
-                    IRegion matchRegion = searchAdapter.find(0, PCAL_ALGORITHM_DEFINITION, true, true, false, false);
-                    
-                    // store the session property
-                    QualifiedName key = new QualifiedName(Activator.PLUGIN_ID, IPreferenceConstants.CONTAINS_PCAL_ALGORITHM);
-                    if (matchRegion != null ) 
+                    fileDocumentProvider.connect(fileEditorInput);
+                    IDocument document = fileDocumentProvider.getDocument(fileEditorInput);
+                    FindReplaceDocumentAdapter searchAdapter = new FindReplaceDocumentAdapter(document);
+                    try
                     {
-                        // found a algorithm definition
-                        Activator.logDebug("Found algorithm definition in " + resource.getName());
-                        resource.setSessionProperty(key, new Boolean(true));
-                        
-                    } else 
+                        IRegion matchRegion = searchAdapter
+                                .find(0, PCAL_ALGORITHM_DEFINITION, true, true, false, false);
+
+                        // store the session property
+                        QualifiedName key = new QualifiedName(Activator.PLUGIN_ID,
+                                IPreferenceConstants.CONTAINS_PCAL_ALGORITHM);
+                        if (matchRegion != null)
+                        {
+                            // found a algorithm definition
+                            Activator.logDebug("Found algorithm definition in " + resource.getName());
+                            resource.setSessionProperty(key, new Boolean(true));
+
+                        } else
+                        {
+                            resource.setSessionProperty(key, null);
+                        }
+                    } catch (BadLocationException e)
                     {
-                        resource.setSessionProperty(key, null);
+                        Activator.logError("Error trying to detect the algorithm", e);
                     }
-                } catch (BadLocationException e)
+                } finally
                 {
-                    Activator.logError("Error trying to detect the algorithm", e);
+                    /*
+                     * The document provider is not needed. Always disconnect it to avoid a memory leak.
+                     * 
+                     * Keeping it connected only seems to provide synchronization of
+                     * the document with file changes. That is not necessary in this context.
+                     */
+                    fileDocumentProvider.disconnect(fileEditorInput);
                 }
             }
             return false;

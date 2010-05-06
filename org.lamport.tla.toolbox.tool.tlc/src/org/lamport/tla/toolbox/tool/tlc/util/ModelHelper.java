@@ -1942,10 +1942,14 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
         // e.printStackTrace();
         // }
 
+        /*
+         * Use a file editor input and file document provider to gain access to the
+         * document representation of the file containing the trace.
+         */
+        FileEditorInput logFileEditorInput = new FileEditorInput(getTraceSourceFile(config));
+        FileDocumentProvider logFileDocumentProvider = new FileDocumentProvider();
         try
         {
-            FileEditorInput logFileEditorInput = new FileEditorInput(getTraceSourceFile(config));
-            FileDocumentProvider logFileDocumentProvider = new FileDocumentProvider();
             logFileDocumentProvider.connect(logFileEditorInput);
             IDocument logFileDocument = logFileDocumentProvider.getDocument(logFileEditorInput);
 
@@ -1994,6 +1998,15 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
         } catch (BadLocationException e)
         {
             TLCActivator.logError("Error searching model log file for " + config.getName() + ".", e);
+        } finally
+        {
+            /*
+             * The document provider is not needed. Always disconnect it to avoid a memory leak.
+             * 
+             * Keeping it connected only seems to provide synchronization of
+             * the document with file changes. That is not necessary in this context.
+             */
+            logFileDocumentProvider.disconnect(logFileEditorInput);
         }
 
         return new Vector();

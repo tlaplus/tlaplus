@@ -66,8 +66,7 @@ public class TLAHyperlinkDetector extends AbstractHyperlinkDetector
                 {
                     System.out.println(csNode.getAttachedComments()[i]);
                 }
-                
-                
+
                 IResource resource = null;
                 // 
                 if (ToolboxHandle.isUserModule(ResourceHelper.getModuleFileName(csNode.getFilename())))
@@ -83,8 +82,21 @@ public class TLAHyperlinkDetector extends AbstractHyperlinkDetector
                 // connect to the resource
                 FileEditorInput fileEditorInput = new FileEditorInput((IFile) resource);
                 FileDocumentProvider fileDocumentProvider = new FileDocumentProvider();
-                fileDocumentProvider.connect(fileEditorInput);
-                document = fileDocumentProvider.getDocument(fileEditorInput);
+                try
+                {
+                    fileDocumentProvider.connect(fileEditorInput);
+                    document = fileDocumentProvider.getDocument(fileEditorInput);
+                } finally
+                {
+                    /*
+                     * Once the document has been retrieved, the document provider is
+                     * not needed. Always disconnect it to avoid a memory leak.
+                     * 
+                     * Keeping it connected only seems to provide synchronization of
+                     * the document with file changes. That is not necessary in this context.
+                     */
+                    fileDocumentProvider.disconnect(fileEditorInput);
+                }
 
                 try
                 {

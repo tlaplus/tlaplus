@@ -143,8 +143,21 @@ public class TLAMarkerHelper
                     // since we know that the editor uses file based editor representation
                     FileEditorInput fileEditorInput = new FileEditorInput((IFile) resource);
                     FileDocumentProvider fileDocumentProvider = new FileDocumentProvider();
-                    fileDocumentProvider.connect(fileEditorInput);
-                    document = fileDocumentProvider.getDocument(fileEditorInput);
+                    try
+                    {
+                        fileDocumentProvider.connect(fileEditorInput);
+                        document = fileDocumentProvider.getDocument(fileEditorInput);
+                    } finally
+                    {
+                        /*
+                         * Once the document has been retrieved, the document provider is
+                         * not needed. Always disconnect it to avoid a memory leak.
+                         * 
+                         * Keeping it connected only seems to provide synchronization of
+                         * the document with file changes. That is not necessary in this context.
+                         */
+                        fileDocumentProvider.disconnect(fileEditorInput);
+                    }
                     if (document != null)
                     {
                         try

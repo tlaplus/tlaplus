@@ -479,6 +479,19 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                 {
                     // read the error from message
                     String errorMessage;
+
+                    /*
+                     * Retrieve the MC file and create a document provider. This document
+                     * provider will be used to connect to the file editor input for
+                     * the MC file so that a Document representation of the file can
+                     * be created in the following try block. We disconnect the document
+                     * provider in the finally block for this try block in order to avoid
+                     * a memory leak.
+                     */
+                    IFile mcFile = ModelHelper.getModelTLAFile(config);
+                    FileEditorInput mcFileEditorInput = new FileEditorInput((IFile) mcFile);
+                    FileDocumentProvider mcFileDocumentProvider = new FileDocumentProvider();
+
                     try
                     {
                         // this is the error text
@@ -490,12 +503,8 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
 
                         boolean markerInstalled = false;
 
-                        // retrieve the MC file
-                        // create a document provider, in order to create a document and the
-                        // search adapter
-                        IFile mcFile = ModelHelper.getModelTLAFile(config);
-                        FileEditorInput mcFileEditorInput = new FileEditorInput((IFile) mcFile);
-                        FileDocumentProvider mcFileDocumentProvider = new FileDocumentProvider();
+                        // Connect to the file editor input
+                        // so that a document can be created.
                         mcFileDocumentProvider.connect(mcFileEditorInput);
 
                         // the document connected to the MC file
@@ -641,6 +650,15 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                     } catch (CoreException e)
                     {
                         TLCUIActivator.logError("Error parsing the error message", e);
+                    } finally
+                    {
+                        /*
+                         * The document provider is not needed. Always disconnect it to avoid a memory leak.
+                         * 
+                         * Keeping it connected only seems to provide synchronization of
+                         * the document with file changes. That is not necessary in this context.
+                         */
+                        mcFileDocumentProvider.disconnect(mcFileEditorInput);
                     }
 
                 }

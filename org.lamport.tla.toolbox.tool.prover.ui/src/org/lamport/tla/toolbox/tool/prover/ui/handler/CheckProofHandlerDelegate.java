@@ -18,7 +18,6 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.editors.text.FileDocumentProvider;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.part.FileEditorInput;
-import org.eclipse.ui.texteditor.ITextEditor;
 import org.lamport.tla.toolbox.spec.parser.ParseResult;
 import org.lamport.tla.toolbox.spec.parser.ParseResultBroadcaster;
 import org.lamport.tla.toolbox.tool.prover.ui.ProverUIActivator;
@@ -87,6 +86,16 @@ public class CheckProofHandlerDelegate extends AbstractHandler implements IHandl
                 {
                     ProverUIActivator.logError("Error connecting file document provider to file for module "
                             + moduleName, e);
+                } finally
+                {
+                    /*
+                     * Once the document has been retrieved, the document provider is
+                     * not needed. Always disconnect it to avoid a memory leak.
+                     * 
+                     * Keeping it connected only seems to provide synchronization of
+                     * the document with file changes. That is not necessary in this context.
+                     */
+                    fdp.disconnect(edInput);
                 }
 
                 HashMap params = new HashMap();
@@ -175,8 +184,6 @@ public class CheckProofHandlerDelegate extends AbstractHandler implements IHandl
 
                     UIHelper.runCommand(CheckProofHandler.COMMAND_ID, params);
                 }
-
-                fdp.disconnect(edInput);
             }
         }
 
