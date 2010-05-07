@@ -1,0 +1,395 @@
+head	1.17;
+access;
+symbols;
+locks
+	lamport:1.17; strict;
+comment	@# @;
+
+
+1.17
+date	2010.05.07.00.39.46;	author lamport;	state Exp;
+branches;
+next	1.16;
+
+1.16
+date	2010.05.07.00.39.27;	author lamport;	state Exp;
+branches;
+next	1.15;
+
+1.15
+date	2010.05.07.00.38.32;	author lamport;	state Exp;
+branches;
+next	1.14;
+
+1.14
+date	2010.05.07.00.37.13;	author lamport;	state Exp;
+branches;
+next	1.13;
+
+1.13
+date	2010.05.07.00.20.38;	author lamport;	state Exp;
+branches;
+next	1.12;
+
+1.12
+date	2010.05.07.00.19.07;	author lamport;	state Exp;
+branches;
+next	1.11;
+
+1.11
+date	2010.05.07.00.18.51;	author lamport;	state Exp;
+branches;
+next	1.10;
+
+1.10
+date	2010.05.07.00.18.24;	author lamport;	state Exp;
+branches;
+next	1.9;
+
+1.9
+date	2010.05.07.00.16.35;	author lamport;	state Exp;
+branches;
+next	1.8;
+
+1.8
+date	2010.05.07.00.16.23;	author lamport;	state Exp;
+branches;
+next	1.7;
+
+1.7
+date	2010.05.07.00.16.08;	author lamport;	state Exp;
+branches;
+next	1.6;
+
+1.6
+date	2010.05.07.00.04.13;	author lamport;	state Exp;
+branches;
+next	1.5;
+
+1.5
+date	2010.05.07.00.03.38;	author lamport;	state Exp;
+branches;
+next	1.4;
+
+1.4
+date	2010.05.06.23.56.06;	author lamport;	state Exp;
+branches;
+next	1.3;
+
+1.3
+date	2010.05.06.23.37.54;	author lamport;	state Exp;
+branches;
+next	1.2;
+
+1.2
+date	2010.05.06.23.37.11;	author lamport;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2010.05.06.23.35.40;	author lamport;	state Exp;
+branches;
+next	;
+
+
+desc
+@#
+@
+
+
+1.17
+log
+@#
+@
+text
+@<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- This is file org.lamport.tla.toobox.doc/html/prover/prover.html -->
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+ <LINK href="../style.css" rel="stylesheet" type="text/css">
+
+	<title>Viewing Structured Proofs</title>
+</head>
+<!-- a comment -->
+
+<body>
+<h1>Viewing Structured Proofs</h1>
+
+<p> When you open in the module editor a module containing a theorem
+wth a proof, you will see a &nbsp;<samp>(-)</samp>&nbsp; next to the
+theorem and next to each step that has a subproof.&nbsp; To avoid
+repeatedly saying <em>step or theorem</em>, we here take a
+<em>step</em> to be either a theorem or a step of a theorem's
+proof.&nbsp;
+
+Clicking on the &nbsp;<samp>(-)</samp>&nbsp; next to a step hides the
+step's proof and changes the &nbsp;<samp>(-)</samp>&nbsp; to a
+&nbsp;<samp>(+)</samp>&nbsp;.
+
+Clicking on the &nbsp;<samp>(+)</samp>&nbsp; undoes the effect of
+clicking on the &nbsp;<samp>(-)</samp>&nbsp;.
+
+
+Right-clicking on a step provides the following menu options for
+hiding and revealing parts of the proof of the step at which the
+cursor is positioned.&nbsp;  (The indicated pair of keystrokes can be used
+instead.)
+
+<dl>
+
+<dt> <b>Show Current Subtree</b> &nbsp; &nbsp; <samp>Ctl+G Ctl+S</samp> </dt>
+<dd> Reveals the proof of the step.</dd>
+<p> </p>
+
+<dt> <b>Hide Current Subtree</b> &nbsp; &nbsp; <samp>Ctl+G Ctl+H</samp> </dt>
+<dd> Hides the proof of the step.</dd>
+<p> </p>
+
+<dt> <b>Show Children Only</b> &nbsp; &nbsp; <samp>Ctl+G Ctl+C</samp> </dt>
+<dd> Reveals the top level of the step's proof.</dd>
+<p> </p>
+
+<dt> <b>Focus on Step</b> &nbsp; &nbsp; <samp>Ctl+G Ctl+F</samp> </dt>
+<dd> Hides everything except the top level of the step's proof and
+the siblings (steps at the same level as) of the step and
+of every ancestor of that step in the proof.</dd>
+</dl>
+
+The following commands can be performed by right-clicking anywhere
+in the module.
+
+<dl>
+<dt> <b>Show All Proofs</b> &nbsp; &nbsp; <samp>Ctl+G Ctl+A</samp> </dt>
+<dd> Reveals the complete proof of every theorem in the module.</dd>
+<p> </p>
+
+<dt> <b>Hide All Proofs</b> &nbsp; &nbsp; <samp>Ctl+G Ctl+N</samp> </dt>
+<dd> Hides the proof of every theorem in the module.</dd>
+</dl>
+The <em>Focus on Step</em> command performed outside a proof
+is equivalent to <em>Hide All Proofs</em>
+
+
+&nbsp;
+
+&nbsp;
+
+&nbsp;
+
+
+</p>
+<hr>
+<a href = "prover.html">&uarr; Proofs</a>
+</hr>@
+
+
+1.16
+log
+@#
+@
+text
+@d41 1
+a41 1
+<dt> Hide Current Subtree &nbsp; &nbsp; <samp>Ctl+G Ctl+H</samp> </dt>
+d45 1
+a45 1
+<dt> Show Children Only &nbsp; &nbsp; <samp>Ctl+G Ctl+C</samp> </dt>
+d49 1
+a49 1
+<dt> Focus on Step &nbsp; &nbsp; <samp>Ctl+G Ctl+F</samp> </dt>
+d59 1
+a59 1
+<dt> Show All Proofs &nbsp; &nbsp; <samp>Ctl+G Ctl+A</samp> </dt>
+d63 1
+a63 1
+<dt> Hide All Proofs &nbsp; &nbsp; <samp>Ctl+G Ctl+N</samp> </dt>
+@
+
+
+1.15
+log
+@#
+@
+text
+@d37 1
+a37 1
+<dt> Show Current Subtree &nbsp; &nbsp; <samp>Ctl+G Ctl+S</samp> </dt>
+@
+
+
+1.14
+log
+@#
+@
+text
+@d51 2
+a52 1
+the siblings (steps at the same level as) of every ancestor of.</dd>
+@
+
+
+1.13
+log
+@#
+@
+text
+@d31 25
+a55 2
+hiding and revealing parts of the step's proof.  (The indicated pair
+of keystrokes can be used instead.)
+d64 4
+a68 1
+</dl>
+@
+
+
+1.12
+log
+@#
+@
+text
+@d31 2
+a32 1
+hiding and revealing parts of the step's proof.
+d37 1
+d39 1
+a39 1
+<dt> Hide All Proofs (Ctl+G Ctl+N) </dt>
+@
+
+
+1.11
+log
+@#
+@
+text
+@d34 1
+a34 1
+<dt> Show All Proofs <samp>Ctl+G Ctl+A</samp> </dt>
+@
+
+
+1.10
+log
+@#
+@
+text
+@d34 1
+a34 1
+<dt> Show All Proofs (Ctl+G Ctl+A) </dt>
+@
+
+
+1.9
+log
+@#
+@
+text
+@d34 5
+a38 2
+<dt> Blah 
+<dd> This is some <br> text </dd>
+@
+
+
+1.8
+log
+@#
+@
+text
+@d34 1
+a34 1
+<dt> Blah </dt>
+@
+
+
+1.7
+log
+@#
+@
+text
+@d35 1
+a35 1
+<dd> This is some text </dd>
+@
+
+
+1.6
+log
+@#
+@
+text
+@d16 5
+a20 2
+wth a proof, you will see next a &nbsp;<samp>(-)</samp>&nbsp; next to
+the theorem and next to each step that has a subproof.&nbsp;
+d22 3
+a24 1
+Clicking on the &nbsp;<samp>-</samp>&nbsp; hides the proof of that step or theorem.&nbsp;
+d26 12
+@
+
+
+1.5
+log
+@#
+@
+text
+@d16 2
+a17 2
+wth a proof, you will see next a <samp>-</samp> next to the theorem
+and next to each step that has a subproof.&nbsp;
+d19 1
+a19 1
+Clicking on the <samp>-</samp> hides the proof of that step or theorem.&nbsp;
+@
+
+
+1.4
+log
+@#
+@
+text
+@d15 14
+@
+
+
+1.3
+log
+@#
+@
+text
+@d8 1
+a8 1
+	<title>Reading Structured Proofs</title>
+d13 1
+a13 1
+<h1>Reading Structured Proofs</h1>
+@
+
+
+1.2
+log
+@#
+@
+text
+@a15 3
+<dt><b><font color=#0000c0>Subtopics</font></b></dt>
+<dd> <A href="reading.html">Reading Structured Proofs</A></dd>
+</dl> 
+@
+
+
+1.1
+log
+@#
+@
+text
+@d8 1
+a8 1
+	<title>Getting Started</title>
+d13 1
+a13 1
+<h1>Getting Started</h1>
+@

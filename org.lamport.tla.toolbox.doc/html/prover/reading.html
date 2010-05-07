@@ -1,0 +1,80 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- This is file org.lamport.tla.toobox.doc/html/prover/prover.html -->
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+ <LINK href="../style.css" rel="stylesheet" type="text/css">
+
+	<title>Viewing Structured Proofs</title>
+</head>
+<!-- a comment -->
+
+<body>
+<h1>Viewing Structured Proofs</h1>
+
+<p> When you open in the module editor a module containing a theorem
+wth a proof, you will see a &nbsp;<samp>(-)</samp>&nbsp; next to the
+theorem and next to each step that has a subproof.&nbsp; To avoid
+repeatedly saying <em>step or theorem</em>, we here take a
+<em>step</em> to be either a theorem or a step of a theorem's
+proof.&nbsp;
+
+Clicking on the &nbsp;<samp>(-)</samp>&nbsp; next to a step hides the
+step's proof and changes the &nbsp;<samp>(-)</samp>&nbsp; to a
+&nbsp;<samp>(+)</samp>&nbsp;.
+
+Clicking on the &nbsp;<samp>(+)</samp>&nbsp; undoes the effect of
+clicking on the &nbsp;<samp>(-)</samp>&nbsp;.
+
+
+Right-clicking on a step provides the following menu options for
+hiding and revealing parts of the proof of the step at which the
+cursor is positioned.&nbsp;  (The indicated pair of keystrokes can be used
+instead.)
+
+<dl>
+
+<dt> <b>Show Current Subtree</b> &nbsp; &nbsp; <samp>Ctl+G Ctl+S</samp> </dt>
+<dd> Reveals the proof of the step.</dd>
+<p> </p>
+
+<dt> <b>Hide Current Subtree</b> &nbsp; &nbsp; <samp>Ctl+G Ctl+H</samp> </dt>
+<dd> Hides the proof of the step.</dd>
+<p> </p>
+
+<dt> <b>Show Children Only</b> &nbsp; &nbsp; <samp>Ctl+G Ctl+C</samp> </dt>
+<dd> Reveals the top level of the step's proof.</dd>
+<p> </p>
+
+<dt> <b>Focus on Step</b> &nbsp; &nbsp; <samp>Ctl+G Ctl+F</samp> </dt>
+<dd> Hides everything except the top level of the step's proof and
+the siblings (steps at the same level as) of the step and
+of every ancestor of that step in the proof.</dd>
+</dl>
+
+The following commands can be performed by right-clicking anywhere
+in the module.
+
+<dl>
+<dt> <b>Show All Proofs</b> &nbsp; &nbsp; <samp>Ctl+G Ctl+A</samp> </dt>
+<dd> Reveals the complete proof of every theorem in the module.</dd>
+<p> </p>
+
+<dt> <b>Hide All Proofs</b> &nbsp; &nbsp; <samp>Ctl+G Ctl+N</samp> </dt>
+<dd> Hides the proof of every theorem in the module.</dd>
+</dl>
+The <em>Focus on Step</em> command performed outside a proof
+is equivalent to <em>Hide All Proofs</em>
+
+
+&nbsp;
+
+&nbsp;
+
+&nbsp;
+
+
+</p>
+<hr>
+<a href = "prover.html">&uarr; Proofs</a>
+</hr>
