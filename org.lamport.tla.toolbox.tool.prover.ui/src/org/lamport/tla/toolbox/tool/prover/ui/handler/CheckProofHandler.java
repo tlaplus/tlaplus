@@ -10,6 +10,7 @@ import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.tool.prover.launch.ProverLaunchDelegate;
+import org.lamport.tla.toolbox.tool.prover.ui.ProverUIActivator;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
@@ -50,6 +51,24 @@ public class CheckProofHandler extends AbstractHandler
 
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
+        /*
+         * This method attempts to retrieve the module name
+         * and location of the proof region to be checked. If it cannot
+         * get the module name from the parameters, this method does nothing.
+         * If it cannot get one or more of the location parameters, it sets these
+         * values to be -1.
+         * 
+         * If the module name is successfully retrieved, this method creates a working
+         * copy of a launch configuration of the type delegated to the ProverLaunchDelegate
+         * in the main prover plug-in. It does not save this working copy because
+         * there is no reason to do so. Instead, a new working copy is created
+         * every time this handler is called. In order to avoid references to these
+         * working copies after they are needed (which would result in a memory leak), the
+         * ProverJob should remove the associated launch from the launch manager.
+         * 
+         * Note that setting any of the location coordinates to -1 indicates to the prover
+         * launch delegate that the entire module should be checked.
+         */
         try
         {
             // prompt to save any unsaved resources
@@ -132,11 +151,12 @@ public class CheckProofHandler extends AbstractHandler
             }
         } catch (CoreException e)
         {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            ProverUIActivator.logError("Problem creating launch configuration for prover launch.", e);
         } catch (NumberFormatException e)
         {
-            e.printStackTrace();
+            ProverUIActivator.logError(
+                    "A string that is not parsable to an integer was passed as a location coordinate to CheckProofHandler."
+                            + "This is a bug.", e);
         }
         return null;
     }
