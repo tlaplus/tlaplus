@@ -50,7 +50,7 @@ Queries to msrcpx or Chuck Needham (chuckne)
  Version 1.1.1 - 22 Mar 2010 : 
     Fixes TLC bug that made restarting from a checkpoint not work,
     plus minor fixes.
- Version 1.1.2 - ?? May 2010
+ Version 1.1.2 - 6 May 2010
     Added trace Explorer, which evaluates expressions on an error trace.
     Added folding of proofs to permit reading them hierarchically.
     Added TLA Proof Manager menu item that currently does nothing. 
