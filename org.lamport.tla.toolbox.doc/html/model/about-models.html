@@ -72,7 +72,8 @@ contents of the model in the model name--for example, you can name a
 model </p> <pre>
    N=3,Proc={a1,a2,a3}
 </pre>
-To prevent accidentally running or editing a model, you can lock it.&nbsp; 
+<A name="locking">
+To prevent accidentally running or editing a model, you can lock it.&nbsp;</A>
 
 
 There is a lock icon and a key icon that you click to lock or
@@ -82,7 +83,9 @@ Those icons are in the upper-left part of each model-editor page.&nbsp;
 
 
 The model is always locked while it is being run by TLC, and it remains
-locked after TLC completes unless the run was short.&nbsp;
+locked after TLC completes unless the run was shorter
+than the 
+ <a href="executing-tlc.html#auto-lock-time"><em>TLC Run Auto-Lock Time</em> preference</A>.&nbsp;
 
 This means that you can't view information in sections of a running
 model that are closed.&nbsp;

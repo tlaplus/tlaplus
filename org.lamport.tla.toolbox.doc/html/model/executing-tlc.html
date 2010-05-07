@@ -92,15 +92,28 @@ and then clicking and dragging.)
 </p>
 <h4><a name="error-view">The Error View</a></h4>
 
-This view displays the error message that TLC reports.&nbsp;  If an invariant or property is violated,
-the Toolbox will also put this warning icon <IMG SRC="warning.gif" Align="bottom"/> near
-the part of the model containing that invariant or property.&nbsp;  Otherwise, the error probably
-occurred because TLC could not evaluate an expression.&nbsp;
-If you're lucky, the error message will
-contain the location of that expression.&nbsp;  If not, you'll have to figure it out from
-what TLC complained that it was unable to do.&nbsp;  If the message indicates that the error
-occurs in a module named&nbsp; <code>MC</code>&nbsp;,  see the section 
-<em><a href="#MC">How TLC is Run</a></em> below. 
+This view displays the error message that TLC reports.&nbsp; 
+
+If an invariant or property is violated, the Toolbox will also put
+this warning icon <IMG SRC="warning.gif" Align="bottom"/> near the
+part of the model containing that invariant or property.&nbsp;
+
+Otherwise, the error probably occurred because TLC could not evaluate
+an expression.&nbsp; 
+
+If you're lucky, the error message will contain the location of that
+expression--or a list of locations indicating the hierarchy of
+expressions that TLC was evaluating when it found the error.&nbsp;
+
+Clicking on a location jumps to the appropriate point in the spec,
+where that location is highlighted.&nbsp;
+
+If not lucky, you'll have to figure it out where the error occurred
+from what TLC complained that it was unable to do.&nbsp;
+
+If the message indicates that the error occured in a module named&nbsp;
+<code>MC</code>&nbsp;, see the section <em><a href="#MC">How TLC is
+Run</a></em> below.
 
 <p>On some systems, you might find that the <em>Error View</em> text is displayed in an unreadably
  small font.  See the <a href="../gettingstarted/preferences.html#tlc-errors"><em>Preferences</em></a>
@@ -167,6 +180,7 @@ same folder as the file&nbsp; <code>MC.tla</code>&nbsp; described
 <a href="#MC">above</a>.&nbsp;  You may want to examine file&nbsp; <code>TE.tla</code>&nbsp;
 if you can't figure out what the error in the expression is.
 </p>
+
 <h2><a name="preferences">TLC Model Checker Preferences</a></h2>
 
 <p>
@@ -195,6 +209,14 @@ This is the value to which the <em>Maximum JVM heap size</em> parameter
 of a new model is set.&nbsp;  See the description of that parameter
 in  the <a href="overview-page.html#how-to-run">How to run?</a> section of the
 model editor's Overview Page help page.
+</p>
+
+<h3><A name="auto-lock-time">TLC Run Auto-Lock Time</A></h3>
+<p>
+
+If a TLC run completes after executing for at least this number of minutes,
+then the model will remain <A href="about-models.html#locking">locked</A>.
+
 </p>
 
 <h2><a name="crash">If Something Crashes</a></h2>

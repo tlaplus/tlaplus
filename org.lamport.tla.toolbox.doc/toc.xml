@@ -91,6 +91,14 @@
            href = "html/pluscal/pluscal.html">
    </topic>
  
+    <topic label="Proofs"
+           href = "html/prover/prover.html">
+           <topic label="Viewing Structured Proofs"
+               href = "html/prover/reading.html">
+           </topic>
+ 
+   </topic>
+ 
    <topic label="In Case of Trouble"
            href = "html/trouble/trouble.html">
    </topic>

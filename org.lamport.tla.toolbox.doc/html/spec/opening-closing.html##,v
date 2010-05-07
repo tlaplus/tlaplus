@@ -1,10 +1,15 @@
-head	1.1;
+head	1.2;
 access;
 symbols;
 locks
-	lamport:1.1; strict;
+	lamport:1.2; strict;
 comment	@# @;
 
+
+1.2
+date	2010.05.06.22.42.12;	author lamport;	state Exp;
+branches;
+next	1.1;
 
 1.1
 date	2010.05.06.18.18.25;	author lamport;	state Exp;
@@ -17,7 +22,7 @@ desc
 @
 
 
-1.1
+1.2
 log
 @#
 @
@@ -60,11 +65,13 @@ specification name.
 <h3>Open</h3>
 
 You can open an existing spec by choosing it from the&nbsp;
-<samp>File/Open Spec</samp> menu.&nbsp;  You can also use the 
-<em>Spec Explorer</em>, which is opened by clicking on the
-<IMG SRC=spec-explorer-icon.gif Align=bottom> icon on the left side of the Toolbox, near the top.&nbsp;
-Right-click on the desired spec and select <samp>Open</samp>.&nbsp;  If you open a spec when another spec
-is open, the other spec will automatically be closed.
+<samp>File/Open Spec</samp> menu.&nbsp; You can also use the <em>Spec
+Explorer</em>, which is opened either from the <samp>File</samp> menu
+or by clicking on the <IMG SRC=spec-explorer-icon.gif Align=bottom>
+icon on the left side of the Toolbox, near the top.&nbsp; Right-click
+on the desired spec and select <samp>Open</samp>.&nbsp; If you open a
+spec when another spec is open, the other spec will automatically be
+closed.
 
 
 <h3>Close</h3>
@@ -145,3 +152,18 @@ the Toolbox.
 
 </body>
 </html>@
+
+
+1.1
+log
+@#
+@
+text
+@d39 7
+a45 5
+<samp>File/Open Spec</samp> menu.&nbsp;  You can also use the 
+<em>Spec Explorer</em>, which is opened by clicking on the
+<IMG SRC=spec-explorer-icon.gif Align=bottom> icon on the left side of the Toolbox, near the top.&nbsp;
+Right-click on the desired spec and select <samp>Open</samp>.&nbsp;  If you open a spec when another spec
+is open, the other spec will automatically be closed.
+@
