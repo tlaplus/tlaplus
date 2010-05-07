@@ -11,8 +11,10 @@ import org.eclipse.jface.text.source.projection.ProjectionAnnotation;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.util.AdapterFactory;
 
+import tla2sany.semantic.LevelNode;
 import tla2sany.semantic.ProofNode;
 import tla2sany.semantic.TheoremNode;
+import tla2sany.st.Location;
 
 /**
  * Represents a proof and its statement (step/theorem) for folding.
@@ -59,9 +61,14 @@ public class TLAProofPosition extends Position implements IProjectionPosition
     private ProjectionAnnotation annotation;
 
     /**
-     * For proof offset and length for a {@link ProofNode}, use {@link AdapterFactory#locationToRegion(IDocument, tla2sany.st.Location)}
-     * for the location from {@link ProofNode#getLocation()}. For the offset and length of the statement, use the location
-     * from {@link TheoremNode#getTheorem()} in the method {@link AdapterFactory#locationToRegion(IDocument, tla2sany.st.Location)}.
+     * Constructor for the position.
+     * 
+     * For the offset and length for the proof and statement, first obtain the {@link Location} from the syntax tree. For the proof, use
+     * the location returned by {@link ProofNode#getLocation()}, where the {@link ProofNode} is obtained by {@link TheoremNode#getProof()}.
+     * For the statement, use the location returned by {@link LevelNode#getLocation()}  for the {@link LevelNode} returned by {@link TheoremNode#getTheorem()}.
+     *
+     * To convert from the 4-int {@link Location} to the offset and length, use {@link AdapterFactory#locationToRegion(IDocument, Location)} and
+     * then use the offset and length for the returned region.
      * 
      * @param initProofOffset initial offset of the proof
      * @param initProofLength initial length of the proof
@@ -75,7 +82,6 @@ public class TLAProofPosition extends Position implements IProjectionPosition
     public TLAProofPosition(int initProofOffset, int initProofLength, int initStatementOffset, int initStatementLength,
             ProjectionAnnotation annotation, IDocument document)
     {
-        // children = new Vector();
         /*
          * This seems to be a bit of a hack, but I see
          * no other way to do it correctly because of
