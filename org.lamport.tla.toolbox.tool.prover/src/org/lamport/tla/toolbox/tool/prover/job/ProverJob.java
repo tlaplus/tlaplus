@@ -128,7 +128,7 @@ public class ProverJob extends Job
             
              * This requires knowing where cygwin is installed. We could make this something
              * that can be set in preferences. Another idea is to tell
-             * the user to set the PATH variable himself.
+             * the user to set the PATH variable himself. The following code does this.
              * 
              * On Linux and Mac, I don't think anything extra needs to be done.
              * 
