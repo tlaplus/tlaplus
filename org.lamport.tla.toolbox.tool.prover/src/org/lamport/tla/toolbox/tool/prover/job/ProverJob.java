@@ -231,7 +231,10 @@ public class ProverJob extends Job
                     // check the cancellation status
                     if (monitor.isCanceled())
                     {
-                        // cancel the TLC
+                        // cancel the prover
+                        /*
+                         * TODO figure out how to properly stop the prover.
+                         */
                         try
                         {
                             proverProcess.terminate();
@@ -318,6 +321,16 @@ public class ProverJob extends Job
             }
             // make sure to complete the monitor
             monitor.done();
+
+            /*
+             * Remove the launch from the launch manager and remove
+             * the stream broadcaster as a listener from the process streams.
+             * This avoids a memory leak.
+             */
+            DebugPlugin.getDefault().getLaunchManager().removeLaunch(launch);
+
+            proverProcess.getStreamsProxy().getErrorStreamMonitor().removeListener(listener);
+            proverProcess.getStreamsProxy().getOutputStreamMonitor().removeListener(listener);
         }
     }
 
