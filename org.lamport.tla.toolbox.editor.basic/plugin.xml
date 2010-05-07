@@ -233,40 +233,4 @@
             targetId="org.eclipse.ui.DefaultTextEditor">
       </hyperlinkDetector>
    </extension>
-   <extension
-         point="org.eclipse.ui.editors.annotationTypes">
-      <type
-            name="org.lamport.tla.toolbox.editor.basic.verifiedProofStep">
-      </type>
-      <type
-            name="org.lamport.tla.toolbox.editor.basic.rejectedProofStep">
-      </type>
-   </extension>
-   <extension
-         point="org.eclipse.ui.editors.markerAnnotationSpecification">
-      <specification
-            annotationType="org.lamport.tla.toolbox.editor.basic.verifiedProofStep"
-            colorPreferenceKey="verifiedProofStepColorKey"
-            colorPreferenceValue="0,255,0"
-            highlightPreferenceKey="verifiedProofStepHighlightKey"
-            highlightPreferenceValue="true"
-            includeOnPreferencePage="true"
-            label="Verified Proof Step"
-            overviewRulerPreferenceKey="verifiedProofStepOverviewKey"
-            textPreferenceKey="verifiedProofStepTextKey"
-            textPreferenceValue="true">
-      </specification>
-      <specification
-            annotationType="org.lamport.tla.toolbox.editor.basic.rejectedProofStep"
-            colorPreferenceKey="rejectedProofStepColorKey"
-            colorPreferenceValue="255,0,0"
-            highlightPreferenceKey="rejectedProofStepHighlightKey"
-            highlightPreferenceValue="true"
-            includeOnPreferencePage="true"
-            label="Rejected Proof Step"
-            overviewRulerPreferenceKey="rejectedProofStepOverviewKey"
-            textPreferenceKey="rejectedProofStepTextKey"
-            textPreferenceValue="true">
-      </specification>
-   </extension>
 </plugin>
