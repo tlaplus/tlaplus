@@ -139,7 +139,7 @@ public class ProverJob extends Job
             /*
              * Launch from the command line:
              * 
-             * > <tlapm-command> -C moduleName
+             * > <tlapm-command> -toolbox bl:bc:el:ec moduleName
              * 
              * If no path has been specified (probably in the preferences
              * by the user, then we assume the path to the tlapm has been
@@ -155,7 +155,8 @@ public class ProverJob extends Job
             {
                 tlapmCommand = tlapmPath.toOSString();
             }
-            ProcessBuilder pb = new ProcessBuilder(new String[] { tlapmCommand, "-C", "-k", "--paranoid",
+            ProcessBuilder pb = new ProcessBuilder(new String[] { tlapmCommand, "--toolbox",
+                    coordinates[0] + ":" + coordinates[1] + ":" + coordinates[2] + ":" + coordinates[3],
                     modulePath.lastSegment() });
 
             /*
@@ -215,6 +216,12 @@ public class ProverJob extends Job
                  */
                 listener = new TLAPMBroadcastStreamListener(modulePath.toPortableString(),
                         IProverProcessOutputSink.TYPE_OUT);
+
+                /*
+                 * Send a string to the listener indicating
+                 * that a new prover job is starting.
+                 */
+                listener.streamAppended("---------------- New Prover Launch --------------\n", null);
 
                 proverProcess.getStreamsProxy().getErrorStreamMonitor().addListener(listener);
                 proverProcess.getStreamsProxy().getOutputStreamMonitor().addListener(listener);
