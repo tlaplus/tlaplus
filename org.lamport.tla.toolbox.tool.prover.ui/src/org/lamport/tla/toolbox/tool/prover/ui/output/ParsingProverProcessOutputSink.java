@@ -8,7 +8,7 @@ import org.lamport.tla.toolbox.tool.prover.output.IProverProcessOutputSink;
 
 /**
  * This class receives streaming output from the TLAPM
- * and sends it to a {@link TagBasedTLAPMOutputIncrementalParser2}
+ * and sends it to a {@link TagBasedTLAPMOutputIncrementalParser}
  * for parsing.
  * 
  * This class receives output by registering at the extension point
@@ -20,7 +20,7 @@ import org.lamport.tla.toolbox.tool.prover.output.IProverProcessOutputSink;
 public class ParsingProverProcessOutputSink implements IProverProcessOutputSink
 {
 
-    private TagBasedTLAPMOutputIncrementalParser2 parser;
+    private TagBasedTLAPMOutputIncrementalParser parser;
     private String name;
 
     /**
@@ -48,7 +48,7 @@ public class ParsingProverProcessOutputSink implements IProverProcessOutputSink
      */
     public void initializeSink(String modulePathString, int sinkType)
     {
-        this.parser = new TagBasedTLAPMOutputIncrementalParser2(Path.fromPortableString(modulePathString));
+        this.parser = new TagBasedTLAPMOutputIncrementalParser(Path.fromPortableString(modulePathString));
         this.name = modulePathString;
     }
 

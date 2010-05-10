@@ -28,15 +28,15 @@ import org.lamport.tla.toolbox.tool.prover.ui.status.ProofStepStatusMarkerHelper
  * @!!END
  * 
  * TLAPM output streams into this class through calls of
- * {@link TagBasedTLAPMOutputIncrementalParser2#addIncrement(String)},
+ * {@link TagBasedTLAPMOutputIncrementalParser#addIncrement(String)},
  * 
- * See {@link TagBasedTLAPMOutputIncrementalParser2#addIncrement(String)}
+ * See {@link TagBasedTLAPMOutputIncrementalParser#addIncrement(String)}
  * for the parsing algorithm.
  * 
  * @author Daniel Ricketts
  *
  */
-public class TagBasedTLAPMOutputIncrementalParser2
+public class TagBasedTLAPMOutputIncrementalParser
 {
 
     private StringBuilder currentMessageBuffer;
@@ -247,7 +247,7 @@ public class TagBasedTLAPMOutputIncrementalParser2
         // }
     }
 
-    public TagBasedTLAPMOutputIncrementalParser2(IPath modulePath)
+    public TagBasedTLAPMOutputIncrementalParser(IPath modulePath)
     {
         currentMessageBuffer = new StringBuilder();
         source = new CachingTLAPMOutputSource(modulePath);

@@ -5,7 +5,7 @@ import java.util.Map;
 
 import org.eclipse.core.runtime.Assert;
 import org.lamport.tla.toolbox.tool.prover.ui.ProverUIActivator;
-import org.lamport.tla.toolbox.tool.prover.ui.output.TagBasedTLAPMOutputIncrementalParser2;
+import org.lamport.tla.toolbox.tool.prover.ui.output.TagBasedTLAPMOutputIncrementalParser;
 
 /**
  * Abstract class for the data in a message of output
@@ -133,7 +133,7 @@ public abstract class TLAPMMessage
          * in between the delimiter and try to parse
          * field names and values.
          */
-        String[] fieldStrings = proverMessage.split(TagBasedTLAPMOutputIncrementalParser2.DELIM);
+        String[] fieldStrings = proverMessage.split(TagBasedTLAPMOutputIncrementalParser.DELIM);
 
         String type = null;
 
