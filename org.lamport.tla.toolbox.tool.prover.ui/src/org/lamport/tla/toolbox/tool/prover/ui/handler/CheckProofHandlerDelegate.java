@@ -54,11 +54,10 @@ public class CheckProofHandlerDelegate extends AbstractHandler implements IHandl
          * This command has one required parameter, the module name, and four optional
          * parameters, begin line, begin column, end line, end column.
          * 
-         * This handler will pass in the four location parameters iff the caret is
-         * contained by a proof step.
-         * 
-         * If the location parameters are not passed to CheckProofHandler, then
-         * the entire module will be checked.
+         * This handler will pass in the four location parameters of step
+         * if the caret lies on the same line as a step. It will pass in the
+         * four location parameters of the entire module if the caret does
+         * not lie on the same line as a step.
          */
         ISelection selection = UIHelper.getActivePage().getSelection();
         IEditorPart editor = HandlerUtil.getActiveEditor(event);
@@ -179,6 +178,27 @@ public class CheckProofHandlerDelegate extends AbstractHandler implements IHandl
                             params.put(CheckProofHandler.PARAM_END_COLUMN, "" + proof.getLocation().endColumn());
 
                         }
+                    } else
+                    {
+                        try
+                        {
+                            /*
+                             * Check the entire module.
+                             */
+                            params.put(CheckProofHandler.PARAM_BEGIN_LINE, "" + 1);
+                            params.put(CheckProofHandler.PARAM_BEGIN_COLUMN, "" + 1);
+                            params.put(CheckProofHandler.PARAM_END_LINE, "" + document.getNumberOfLines());
+                            /*
+                             * IDocument lines are 0-based.
+                             */
+                            params.put(CheckProofHandler.PARAM_END_COLUMN, ""
+                                    + document.getLineInformation(document.getNumberOfLines() - 1).getLength());
+                        } catch (BadLocationException e)
+                        {
+                            ProverUIActivator.logError("Error getting line information of last line of module "
+                                    + moduleName, e);
+                            return null;
+                        }
                     }
 
                     UIHelper.runCommand(CheckProofHandler.COMMAND_ID, params);
@@ -240,34 +260,37 @@ public class CheckProofHandlerDelegate extends AbstractHandler implements IHandl
              * the caret if the proof contains the caret.
              */
             ProofNode proof = theoremNode.getProof();
-            Location proofLoc = proof.getLocation();
-            if (caretLine >= proofLoc.beginColumn() && caretLine <= proofLoc.endLine())
+            if (proof != null)
             {
-                if (proof instanceof NonLeafProofNode)
+                Location proofLoc = proof.getLocation();
+                if (caretLine >= proofLoc.beginColumn() && caretLine <= proofLoc.endLine())
                 {
-                    NonLeafProofNode nonLeafProof = (NonLeafProofNode) proof;
-                    LevelNode[] steps = nonLeafProof.getSteps();
-
-                    /*
-                     * From the documentation of NonLeafProofNode,
-                     * a step can be one of four types:
-                     * 
-                     * DefStepNode
-                     * UseOrHideNode
-                     * InstanceNode
-                     * TheoremNode
-                     * 
-                     * Only TheoremNode can have a proof. Recursively compute
-                     * the proof positions for those steps.
-                     */
-                    for (int i = 0; i < steps.length; i++)
+                    if (proof instanceof NonLeafProofNode)
                     {
-                        if (steps[i] instanceof TheoremNode)
+                        NonLeafProofNode nonLeafProof = (NonLeafProofNode) proof;
+                        LevelNode[] steps = nonLeafProof.getSteps();
+
+                        /*
+                         * From the documentation of NonLeafProofNode,
+                         * a step can be one of four types:
+                         * 
+                         * DefStepNode
+                         * UseOrHideNode
+                         * InstanceNode
+                         * TheoremNode
+                         * 
+                         * Only TheoremNode can have a proof. Recursively compute
+                         * the proof positions for those steps.
+                         */
+                        for (int i = 0; i < steps.length; i++)
                         {
-                            TheoremNode node = getStepWithCaret((TheoremNode) steps[i], caretOffset);
-                            if (node != null)
+                            if (steps[i] instanceof TheoremNode)
                             {
-                                return node;
+                                TheoremNode node = getStepWithCaret((TheoremNode) steps[i], caretOffset);
+                                if (node != null)
+                                {
+                                    return node;
+                                }
                             }
                         }
                     }
