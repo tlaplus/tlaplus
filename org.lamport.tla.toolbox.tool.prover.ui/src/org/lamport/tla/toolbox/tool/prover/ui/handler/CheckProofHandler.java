@@ -18,9 +18,10 @@ import org.lamport.tla.toolbox.util.UIHelper;
  * Checks the proof of a specific location in a module or of the entire
  * module if the location is not specified through parameters.
  * 
- * The command associated with this handler has one required parameter,
- * the module name, and four optional parameters, begin line, begin column,
- * end line, end column.
+ * The command associated with this handler has three required parameters,
+ * the module name, begin line, and end line, and two optional parameters
+ * begin column, and end column. Begin column and end column are optional
+ * because they currently are not used by the prover.
  * 
  * @author Daniel Ricketts
  *
@@ -55,10 +56,10 @@ public class CheckProofHandler extends AbstractHandler
          * This method attempts to retrieve the module name
          * and location of the proof region to be checked. If it cannot
          * get the module name from the parameters, this method does nothing.
-         * If it cannot get one or more of the location parameters, it sets these
-         * values to be -1.
+         * If it cannot get the begin line or end line, it does not launch the
+         * prover.
          * 
-         * If the module name is successfully retrieved, this method creates a working
+         * If the module name, begin line, and end line are successfully retrieved, this method creates a working
          * copy of a launch configuration of the type delegated to the ProverLaunchDelegate
          * in the main prover plug-in. It does not save this working copy because
          * there is no reason to do so. Instead, a new working copy is created
@@ -66,8 +67,9 @@ public class CheckProofHandler extends AbstractHandler
          * working copies after they are needed (which would result in a memory leak), the
          * ProverJob should remove the associated launch from the launch manager.
          * 
-         * Note that setting any of the location coordinates to -1 indicates to the prover
-         * launch delegate that the entire module should be checked.
+         * Note that the begin column and end column are not currently used
+         * by the prover, but we pass these values, if retrieved from the parameters,
+         * to the ProverLaunchDelegate in case the prover uses them in the future.
          */
         try
         {
@@ -127,23 +129,32 @@ public class CheckProofHandler extends AbstractHandler
                 IResource module = ResourceHelper.getResourceByModuleName(moduleName);
                 if (module != null)
                 {
+                    if (beginLine != -1 && endLine != -1)
+                    {
 
-                    ILaunchConfigurationWorkingCopy config = DebugPlugin.getDefault().getLaunchManager()
-                            .getLaunchConfigurationType(ProverLaunchDelegate.CONFIG_TYPE).newInstance(
-                                    ToolboxHandle.getCurrentSpec().getProject(), module.getFullPath().toOSString());
+                        ILaunchConfigurationWorkingCopy config = DebugPlugin.getDefault().getLaunchManager()
+                                .getLaunchConfigurationType(ProverLaunchDelegate.CONFIG_TYPE).newInstance(
+                                        ToolboxHandle.getCurrentSpec().getProject(), module.getFullPath().toOSString());
 
-                    config.setAttribute(ProverLaunchDelegate.MODULE_PATH, module.getRawLocation().toPortableString());
+                        config.setAttribute(ProverLaunchDelegate.MODULE_PATH, module.getRawLocation()
+                                .toPortableString());
 
-                    config.setAttribute(ProverLaunchDelegate.BEGIN_LINE, beginLine);
+                        config.setAttribute(ProverLaunchDelegate.BEGIN_LINE, beginLine);
 
-                    config.setAttribute(ProverLaunchDelegate.BEGIN_COLUMN, beginColumn);
+                        config.setAttribute(ProverLaunchDelegate.BEGIN_COLUMN, beginColumn);
 
-                    config.setAttribute(ProverLaunchDelegate.END_LINE, endLine);
+                        config.setAttribute(ProverLaunchDelegate.END_LINE, endLine);
 
-                    config.setAttribute(ProverLaunchDelegate.END_COLUMN, endColumn);
+                        config.setAttribute(ProverLaunchDelegate.END_COLUMN, endColumn);
 
-                    config.launch(ProverLaunchDelegate.MODE_CHECK_STEP, new NullProgressMonitor());
+                        config.launch(ProverLaunchDelegate.MODE_CHECK_STEP, new NullProgressMonitor());
 
+                    } else
+                    {
+                        ProverUIActivator
+                                .logDebug("CheckProofHandler could not the begin line and end line for the launch of the prover on module "
+                                        + moduleName + ". This is a bug.");
+                    }
                 } else
                 {
                     System.out.println("Module name does not correspond to a module in the current project.");
