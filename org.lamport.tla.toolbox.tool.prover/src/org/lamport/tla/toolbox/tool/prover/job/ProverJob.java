@@ -16,6 +16,12 @@ import org.lamport.tla.toolbox.tool.prover.ProverActivator;
 import org.lamport.tla.toolbox.tool.prover.output.IProverProcessOutputSink;
 import org.lamport.tla.toolbox.tool.prover.output.internal.TLAPMBroadcastStreamListener;
 
+/**
+ * Long running job for launching the prover.
+ * 
+ * @author Daniel Ricketts
+ *
+ */
 public class ProverJob extends Job
 {
 
@@ -61,7 +67,8 @@ public class ProverJob extends Job
     private int[] coordinates = new int[] { -1, -1, -1, -1 };
 
     /**
-     * Constructor.
+     * Constructor. Call {@link ProverJob#setLocation(int, int, int, int)} to set
+     * the location of the prover launch.
      * 
      * @param name human readable name for the job, will appear in progress monitor
      * @param module the IPath pointing to the module to be checked, e.g.
@@ -156,8 +163,7 @@ public class ProverJob extends Job
                 tlapmCommand = tlapmPath.toOSString();
             }
             ProcessBuilder pb = new ProcessBuilder(new String[] { tlapmCommand, "--toolbox",
-                    coordinates[0] + ":" + coordinates[1] + ":" + coordinates[2] + ":" + coordinates[3],
-                    modulePath.lastSegment() });
+                    coordinates[0] + ":" + coordinates[2], modulePath.lastSegment() });
 
             /*
              * Set the working directory to be the directory
@@ -363,8 +369,11 @@ public class ProverJob extends Job
 
     /**
      * Sets the location of the job. The coordinates should all
-     * be 1-based. If this method is not called, then the location
-     * is assumed to be the entire module.
+     * be 1-based. If this method is not called, the prover cannot
+     * be launched.
+     * 
+     * Note that currently the prover does not consider column
+     * numbers, so those arguments are irrelevant.
      * 
      * @param bl begin line
      * @param bc begin column
