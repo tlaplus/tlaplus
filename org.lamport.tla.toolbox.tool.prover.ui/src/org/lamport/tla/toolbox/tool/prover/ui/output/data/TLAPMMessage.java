@@ -37,59 +37,8 @@ public abstract class TLAPMMessage
      */
     public static final String FIELD_PAIR_SPLIT = ":";
 
-    // public static final Pattern FIELD_PATTERN = Pattern.compile(TagBasedTLAPMOutputIncrementalParser2.DELIM +
-    // "(\\w*)"/*<-1: the field name group*/
-    // + ":(.*)"/*<-2: the field value group*/+ TagBasedTLAPMOutputIncrementalParser2.DELIM, Pattern.DOTALL);
-
     public static final String OB_STATUS_TYPE = "obligation";
     public static final String LEAF_STATUS_TYPE = "leafStatus";
-
-    // private String type;
-    // private Location location;
-    // private String status;
-    // private String obligation;
-
-    // /**
-    // * Returns the message type. This is one of {@link TLAPMMessage#OB_STATUS_TYPE}, {@link
-    // TLAPMMessage#LEAF_STATUS_TYPE}.
-    // * @return
-    // */
-    // public String getMessageType()
-    // {
-    // return type;
-    // }
-
-    // /**
-    // * Returns the location associated with this message or null
-    // * if there is no location associated with it.
-    // * @return
-    // */
-    // public Location getLocation()
-    // {
-    // return location;
-    // }
-
-    // /**
-    // * Returns the status of this message or null if there
-    // * is no status associated with this message type. If the
-    // * returned value is not null, it is one of
-    // * @return
-    // */
-    // public String getStatus()
-    // {
-    // return status;
-    // }
-
-    // /**
-    // * Returns the obligation associated with this message
-    // * or null if there is none.
-    // *
-    // * @return
-    // */
-    // public String getObligation()
-    // {
-    // return obligation;
-    // }
 
     /**
      * Returns a {@link TLAPMMessage} representing the information
@@ -204,6 +153,9 @@ public abstract class TLAPMMessage
         }
         return null;
 
+        /*
+         * This first bad implementations of this method.
+         */
         // TLAPMMessage message = new TLAPMMessage();
         //
         // /*
@@ -376,9 +328,4 @@ public abstract class TLAPMMessage
         //
         // return null;
     }
-
-    // public String toString()
-    // {
-    // return "TYPE : " + type + "\nLOCATION : " + location + "\nSTATUS : " + status + "\nOBLIGATION : " + obligation;
-    // }
 }
