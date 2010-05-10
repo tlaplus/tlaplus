@@ -10,7 +10,6 @@ import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IEditorInput;
@@ -21,7 +20,6 @@ import org.eclipse.ui.part.FileEditorInput;
 import org.lamport.tla.toolbox.spec.parser.ParseResult;
 import org.lamport.tla.toolbox.spec.parser.ParseResultBroadcaster;
 import org.lamport.tla.toolbox.tool.prover.ui.ProverUIActivator;
-import org.lamport.tla.toolbox.util.AdapterFactory;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
@@ -31,6 +29,7 @@ import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.NonLeafProofNode;
 import tla2sany.semantic.ProofNode;
 import tla2sany.semantic.TheoremNode;
+import tla2sany.semantic.ThmOrAssumpDefNode;
 import tla2sany.st.Location;
 import util.UniqueString;
 
@@ -191,8 +190,9 @@ public class CheckProofHandlerDelegate extends AbstractHandler implements IHandl
     }
 
     /**
-     * Returns the {@link TheoremNode} corresponding to the step
-     * containing the caret or null if none is found.
+     * For all {@link TheoremNode} in the tree rooted at theoremNode,
+     * this returns the {@link TheoremNode} that is first on the line
+     * containing the caret, or null if none satisfy that criteria.
      * 
      * @param theoremNode
      * @return
@@ -201,46 +201,74 @@ public class CheckProofHandlerDelegate extends AbstractHandler implements IHandl
     {
         try
         {
-            // get the location of the step
+            /*
+             * Get the location of the step.
+             * 
+             * theoremNode.getTheorem() returns the node
+             * corresponding to the statement of the step (or theorem).
+             * 
+             * Return theoremNode if the caret is on any of the lines
+             * of the statement of theoremNode. If the caret is not
+             * on any of the lines of the statement of theoremNode, then
+             * recursively search for a substep containing the caret.
+             */
             Location stepLoc = theoremNode.getTheorem().getLocation();
-            IRegion stepRegion;
+            /*
+             * IDocument lines are 0-based and SANY Location lines
+             * are 1-based.
+             */
+            int caretLine = document.getLineOfOffset(caretOffset) + 1;
+            // IRegion stepRegion = AdapterFactory.locationToRegion(document, stepLoc);
 
-            stepRegion = AdapterFactory.locationToRegion(document, stepLoc);
-
-            if (stepRegion.getOffset() <= caretOffset && stepRegion.getOffset() + stepRegion.getLength() >= caretOffset)
+            if (stepLoc.beginLine() <= caretLine && stepLoc.endLine() >= caretLine/*stepRegion.getOffset() <= caretOffset && stepRegion.getOffset() + stepRegion.getLength() >= caretOffset*/)
             {
                 return theoremNode;
             }
 
-            // Theorem node does not contain the caret.
-            // Recursively try to find a sub-step containing
-            // the caret.
-            ProofNode proof = theoremNode.getProof();
-            if (proof instanceof NonLeafProofNode)
+            ThmOrAssumpDefNode defNode = theoremNode.getDef();
+            /*
+             * According to the comments, defNode can be null.
+             */
+            if (defNode != null)
             {
-                NonLeafProofNode nonLeafProof = (NonLeafProofNode) proof;
-                LevelNode[] steps = nonLeafProof.getSteps();
 
-                /*
-                 * From the documentation of NonLeafProofNode,
-                 * a step can be one of four types:
-                 * 
-                 * DefStepNode
-                 * UseOrHideNode
-                 * InstanceNode
-                 * TheoremNode
-                 * 
-                 * Only TheoremNode can have a proof. Recursively compute
-                 * the proof positions for those steps.
-                 */
-                for (int i = 0; i < steps.length; i++)
+            }
+
+            /*
+             * Theorem node does not contain the caret.
+             * Recursively try to find a sub-step containing
+             * the caret if the proof contains the caret.
+             */
+            ProofNode proof = theoremNode.getProof();
+            Location proofLoc = proof.getLocation();
+            if (caretLine >= proofLoc.beginColumn() && caretLine <= proofLoc.endLine())
+            {
+                if (proof instanceof NonLeafProofNode)
                 {
-                    if (steps[i] instanceof TheoremNode)
+                    NonLeafProofNode nonLeafProof = (NonLeafProofNode) proof;
+                    LevelNode[] steps = nonLeafProof.getSteps();
+
+                    /*
+                     * From the documentation of NonLeafProofNode,
+                     * a step can be one of four types:
+                     * 
+                     * DefStepNode
+                     * UseOrHideNode
+                     * InstanceNode
+                     * TheoremNode
+                     * 
+                     * Only TheoremNode can have a proof. Recursively compute
+                     * the proof positions for those steps.
+                     */
+                    for (int i = 0; i < steps.length; i++)
                     {
-                        TheoremNode node = getStepWithCaret((TheoremNode) steps[i], caretOffset);
-                        if (node != null)
+                        if (steps[i] instanceof TheoremNode)
                         {
-                            return node;
+                            TheoremNode node = getStepWithCaret((TheoremNode) steps[i], caretOffset);
+                            if (node != null)
+                            {
+                                return node;
+                            }
                         }
                     }
                 }
