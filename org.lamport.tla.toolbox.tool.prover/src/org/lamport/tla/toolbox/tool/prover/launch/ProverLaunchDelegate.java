@@ -67,14 +67,20 @@ public class ProverLaunchDelegate extends LaunchConfigurationDelegate implements
         /*
          * Get the coordinates.
          * 
-         * If any coordinate is -1, this means the location is the entire module.
+         * If begin line or end line are -1, the prover should not be launched.
+         * This is a bug.
          */
         bl = configuration.getAttribute(IProverConfigurationConstants.BEGIN_LINE, -1);
         bc = configuration.getAttribute(IProverConfigurationConstants.BEGIN_COLUMN, -1);
         el = configuration.getAttribute(IProverConfigurationConstants.END_LINE, -1);
         ec = configuration.getAttribute(IProverConfigurationConstants.END_COLUMN, -1);
 
-        // TODO check that the location is valid.
+        if (bl == -1 || el == -1)
+        {
+            ProverActivator.logDebug("Begin line or end line is -1 for a launch of the prover on module " + modulePath
+                    + ". This is a bug.");
+            return false;
+        }
 
         /*
          * Get the IResource pointing to the module.
@@ -131,10 +137,7 @@ public class ProverLaunchDelegate extends LaunchConfigurationDelegate implements
                 null /*new Path(
                      "C:/cygwin/bin")*/, launch);
 
-        if (bl != -1 && bc != -1 && el != -1 && ec != -1)
-        {
-            job.setLocation(bl, bc, el, ec);
-        }
+        job.setLocation(bl, bc, el, ec);
 
         // set the job progress to appear in a dialog in the UI
         job.setUser(true);
