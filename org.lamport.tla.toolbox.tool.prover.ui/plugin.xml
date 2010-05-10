@@ -5,7 +5,7 @@
          point="org.eclipse.ui.commands">
       <command
             defaultHandler="org.lamport.tla.toolbox.tool.prover.ui.handler.CheckProofHandler"
-            description="Checks the proof of a step or the entire module if a location is not specified."
+            description="Checks the proof given by the location. Considers only lines currently."
             id="org.lamport.tla.toolbox.tool.prover.ui.checkProof"
             name="Checks Proof">
          <commandParameter
@@ -16,7 +16,7 @@
          <commandParameter
                id="org.lamport.tla.toolbox.tool.prover.ui.paramBeginLine"
                name="Begin Line Number"
-               optional="true">
+               optional="false">
          </commandParameter>
          <commandParameter
                id="org.lamport.tla.toolbox.tool.prover.ui.paramBeginColumn"
@@ -26,7 +26,7 @@
          <commandParameter
                id="org.lamport.tla.toolbox.tool.prover.ui.paramEndLine"
                name="End Line"
-               optional="true">
+               optional="false">
          </commandParameter>
          <commandParameter
                id="org.lamport.tla.toolbox.tool.prover.ui.paramEndColumn"
