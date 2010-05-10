@@ -40,7 +40,7 @@ import tla2sany.st.Location;
  * for this parser.
  * 
  * @author Daniel Ricketts
- *
+ *@deprecated
  */
 public class TagBasedTLAPMOutputIncrementalParser
 {
@@ -115,12 +115,13 @@ public class TagBasedTLAPMOutputIncrementalParser
                             // IRegion obRegion = DocumentHelper.locationToRegion(document, new Location(null, Integer
                             // .parseInt(data[1]), Integer.parseInt(data[2]), Integer.parseInt(data[3]), Integer
                             // .parseInt(data[4])));
-                            
-                            ObligationStatusMessage region = new ObligationStatusMessage(convertStatus(data[5]), new Location(null,
-                                    Integer.parseInt(data[1]), Integer.parseInt(data[2]), Integer.parseInt(data[3]),
-                                    Integer.parseInt(data[4])), modulePath);
 
-                            source.newData(region);
+                            // ObligationStatusMessage region = new ObligationStatusMessage(convertStatus(data[5]), new
+                            // Location(null,
+                            // Integer.parseInt(data[1]), Integer.parseInt(data[2]), Integer.parseInt(data[3]),
+                            // Integer.parseInt(data[4])), modulePath);
+
+                            // source.newData(region);
                         }
                     }
                 } catch (BadLocationException e)
@@ -213,7 +214,7 @@ public class TagBasedTLAPMOutputIncrementalParser
 
         return ObligationStatusMessage.STATUS_UNKNOWN;
     }
-    
+
     /**
      * Returns a {@link TLAPMMessage} representing the information
      * contained in proverMessage. The String proverMessage
@@ -238,10 +239,10 @@ public class TagBasedTLAPMOutputIncrementalParser
          * "status", and "obl" (obligation). In the future, there
          * might be a message type field, but for now, it is not used.
          */
-        
+
         return null;
     }
-    
+
     /**
      * Called when no more text is to be
      * sent to this parser.
