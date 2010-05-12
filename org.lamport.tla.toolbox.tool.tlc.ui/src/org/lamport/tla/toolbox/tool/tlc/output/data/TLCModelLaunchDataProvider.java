@@ -204,7 +204,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
         populate();
     }
 
-    public void onOutput(ITypedRegion region, IDocument document)
+    public void onOutput(ITypedRegion region, String text)
     {
         // restarting
         if (isDone)
@@ -213,18 +213,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
             isDone = false;
         }
 
-        String outputMessage;
-        try
-        {
-            outputMessage = document.get(region.getOffset(), region.getLength());
-
-        } catch (BadLocationException e)
-        {
-            TLCUIActivator.logError("Error retrieving a message for the process", e);
-            TLCUIActivator.logDebug("R " + region);
-            return;
-        }
-
+        String outputMessage = text;
         if (region instanceof TLCRegion)
         {
             TLCRegion tlcRegion = (TLCRegion) region;
@@ -260,7 +249,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                         this.lastDetectedError = null;
                     }
                     // create an error
-                    this.lastDetectedError = createError(tlcRegion, document);
+                    this.lastDetectedError = createError(tlcRegion, text);
                     break;
                 }
                 break;
@@ -453,7 +442,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
      * @param tlcOutputDocument the document containing the error description
      * @return the TLC Error representing the error
      */
-    protected TLCError createError(TLCRegion tlcRegion, IDocument tlcOutputDocument)
+    protected TLCError createError(TLCRegion tlcRegion, String message)
     {
         // the root of the error trace
         TLCError topError = new TLCError();
@@ -473,7 +462,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                 // the region itself is a TLC region, detect the child error
                 if (regions[i] instanceof TLCRegion)
                 {
-                    TLCError cause = createError((TLCRegion) regions[i], tlcOutputDocument);
+                    TLCError cause = createError((TLCRegion) regions[i], message);
                     topError.setCause(cause);
                 } else
                 {
@@ -495,7 +484,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                     try
                     {
                         // this is the error text
-                        errorMessage = tlcOutputDocument.get(tlcRegion.getOffset(), tlcRegion.getLength());
+                        errorMessage = message;//tlcOutputDocument.get(tlcRegion.getOffset(), tlcRegion.getLength());
 
                         // create the error document
                         Document errorDocument = new Document();

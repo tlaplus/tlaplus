@@ -35,16 +35,25 @@ public class CachingTLCOutputSource implements ITLCOutputSource
     }
 
     /**
-     * Inform the listeners about the change 
+     * Inform the listeners about the change. The change comes in the form
+     * of an {@link ITypedRegion} and the text represented by the region. The
+     * text represented by the region is the text that could be obtained from this
+     * source's document using the region's offset and length when the region was created.
+     * However, the document may have changed since the region was created, so its
+     * offset and length may not correspond to anything useful. However, its type
+     * is useful, and if it is a {@link TLCRegion}, then it could contain other
+     * useful information.
+     * 
+     * @param regionText TODO
      */
-    public synchronized void onOutput(ITypedRegion region)
+    public synchronized void onOutput(ITypedRegion region, String regionText)
     {
         Assert.isTrue(!done, "Output source is not accepting new output after it reported the finalization");
 
-        this.detectedRegions.add(region);
+        this.detectedRegions.add(new TypedRegionAndText(region, regionText));
         for (int i = 0; i < this.listenerHolders.size(); i++)
         {
-            onOutput(((ListenerProgressHolder) this.listenerHolders.get(i)), region);
+            onOutput(((ListenerProgressHolder) this.listenerHolders.get(i)), region, regionText);
         }
     }
 
@@ -60,10 +69,24 @@ public class CachingTLCOutputSource implements ITLCOutputSource
         }
     }
 
-    private synchronized void onOutput(ListenerProgressHolder holder, ITypedRegion region)
+    /**
+     * Inform the listener about the change. The change comes in the form
+     * of an {@link ITypedRegion} and the text represented by the region. The
+     * text represented by the region is the text that could be obtained from this
+     * source's document using the region's offset and length when the region was created.
+     * However, the document may have changed since the region was created, so its
+     * offset and length may not correspond to anything useful. However, its type
+     * is useful, and if it is a {@link TLCRegion}, then it could contain other
+     * useful information.
+     * 
+     * @param holder
+     * @param region
+     * @param regionText
+     */
+    private synchronized void onOutput(ListenerProgressHolder holder, ITypedRegion region, String regionText)
     {
         Assert.isNotNull(document, "The document must be initialized");
-        holder.listener.onOutput(region, document);
+        holder.listener.onOutput(region, regionText);
         holder.reported++;
     }
 
@@ -80,7 +103,8 @@ public class CachingTLCOutputSource implements ITLCOutputSource
         for (int i = 0; i < this.detectedRegions.size(); i++)
         {
             /* inform the listener about missed changes */
-            onOutput(holder, (ITypedRegion) this.detectedRegions.get(i));
+            onOutput(holder, ((TypedRegionAndText) this.detectedRegions.get(i)).getRegion(),
+                    ((TypedRegionAndText) this.detectedRegions.get(i)).getText());
         }
         if (done)
         {
@@ -170,6 +194,35 @@ public class CachingTLCOutputSource implements ITLCOutputSource
         public String toString()
         {
             return listener.toString();
+        }
+
+    }
+
+    private class TypedRegionAndText
+    {
+        private ITypedRegion region;
+        private String text;
+
+        private TypedRegionAndText(ITypedRegion region, String text)
+        {
+            this.region = region;
+            this.text = text;
+        }
+
+        /**
+         * @return the region
+         */
+        public ITypedRegion getRegion()
+        {
+            return region;
+        }
+
+        /**
+         * @return the text
+         */
+        public String getText()
+        {
+            return text;
         }
 
     }

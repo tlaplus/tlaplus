@@ -80,6 +80,7 @@ public class TagBasedTLCAnalyzer
             stack.push(userRegion);
         }
         processTag(end);
+        
     }
 
     /**
@@ -99,6 +100,12 @@ public class TagBasedTLCAnalyzer
         return (userOutput.size() > 1);
     }
 
+    /**
+     * True iff the stack of start and end
+     * tags is not empty.
+     * 
+     * @return
+     */
     public boolean inTag()
     {
         return !stack.isEmpty();
