@@ -215,6 +215,18 @@ public class TLCProcessJob extends TLCJob
             if (listener != null)
             {
                 listener.streamClosed();
+                // remove this listener from the stream to avoid memory leak
+                if (process != null && process.getStreamsProxy() != null)
+                {
+                    if (process.getStreamsProxy().getOutputStreamMonitor() != null)
+                    {
+                        process.getStreamsProxy().getOutputStreamMonitor().removeListener(listener);
+                    }
+                    if (process.getStreamsProxy().getErrorStreamMonitor() != null)
+                    {
+                        process.getStreamsProxy().getErrorStreamMonitor().removeListener(listener);
+                    }
+                }
             }
             // make sure to complete the monitor
             monitor.done();
