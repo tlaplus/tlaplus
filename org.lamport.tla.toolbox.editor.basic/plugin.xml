@@ -102,6 +102,98 @@
             id="org.lamport.tla.toolbox.editor.basic.ShowImmediate"
             name="Show Children Only">
       </command>
+      <command
+            categoryId="org.eclipse.ui.category.textEditor"
+            defaultHandler="org.lamport.tla.toolbox.editor.basic.handlers.CursorMovementHandler"
+            description="Moves cursor one character to the right (does nothing if at end of line)."
+            id="org.lamport.tla.toolbox.editor.basic.charRight"
+            name="Move Right One Character">
+      </command>
+      <command
+            categoryId="org.eclipse.ui.category.textEditor"
+            defaultHandler="org.lamport.tla.toolbox.editor.basic.handlers.ExecuteNextCommandHandler"
+            description="Executes the command represented by the next character."
+            id="org.lamport.tla.toolbox.editor.basic.executeNextCommand"
+            name="Execute Next Command">
+      </command>
+      <command
+            categoryId="org.eclipse.ui.category.textEditor"
+            defaultHandler="org.lamport.tla.toolbox.editor.basic.handlers.CursorMovementHandler"
+            description="Moves cursor one character to the left (does nothing if at end of line)."
+            id="org.lamport.tla.toolbox.editor.basic.charLeft"
+            name="Move Left One Character">
+      </command>
+      <command
+            categoryId="org.eclipse.ui.category.textEditor"
+            defaultHandler="org.lamport.tla.toolbox.editor.basic.handlers.CommandPrefixDigitHandler"
+            description="Numeric command-prefix digit1"
+            id="org.lamport.tla.toolbox.editor.basic.alt1"
+            name="Prefix 1">
+      </command>
+      <command
+            categoryId="org.eclipse.ui.category.textEditor"
+            defaultHandler="org.lamport.tla.toolbox.editor.basic.handlers.CommandPrefixDigitHandler"
+            description="Numeric command-prefix digit 2"
+            id="org.lamport.tla.toolbox.editor.basic.alt2"
+            name="Prefix 2">
+      </command>
+      <command
+            categoryId="org.eclipse.ui.category.textEditor"
+            defaultHandler="org.lamport.tla.toolbox.editor.basic.handlers.CommandPrefixDigitHandler"
+            description="Numeric command-prefix digit 3"
+            id="org.lamport.tla.toolbox.editor.basic.alt3"
+            name="Prefix 3">
+      </command>
+      <command
+            categoryId="org.eclipse.ui.category.textEditor"
+            defaultHandler="org.lamport.tla.toolbox.editor.basic.handlers.CommandPrefixDigitHandler"
+            description="Numeric command-prefix digit 4"
+            id="org.lamport.tla.toolbox.editor.basic.alt4"
+            name="Prefix 4">
+      </command>
+      <command
+            categoryId="org.eclipse.ui.category.textEditor"
+            defaultHandler="org.lamport.tla.toolbox.editor.basic.handlers.CommandPrefixDigitHandler"
+            description="Numeric command-prefix digit 5"
+            id="org.lamport.tla.toolbox.editor.basic.alt5"
+            name="Prefix 5">
+      </command>
+      <command
+            categoryId="org.eclipse.ui.category.textEditor"
+            defaultHandler="org.lamport.tla.toolbox.editor.basic.handlers.CommandPrefixDigitHandler"
+            description="Numeric command-prefix digit 6"
+            id="org.lamport.tla.toolbox.editor.basic.alt6"
+            name="Prefix 6">
+      </command>
+      <command
+            categoryId="org.eclipse.ui.category.textEditor"
+            defaultHandler="org.lamport.tla.toolbox.editor.basic.handlers.CommandPrefixDigitHandler"
+            description="Numeric command-prefix digit 7"
+            id="org.lamport.tla.toolbox.editor.basic.alt7"
+            name="Prefix 7">
+      </command>
+      <command
+            categoryId="org.eclipse.ui.category.textEditor"
+            defaultHandler="org.lamport.tla.toolbox.editor.basic.handlers.CommandPrefixDigitHandler"
+            description="Numeric command-prefix digit 8"
+            id="org.lamport.tla.toolbox.editor.basic.alt8"
+            name="Prefix 8">
+      </command>
+      <command
+            categoryId="org.eclipse.ui.category.textEditor"
+            defaultHandler="org.lamport.tla.toolbox.editor.basic.handlers.CommandPrefixDigitHandler"
+            description="Numeric command-prefix digit 9"
+            id="org.lamport.tla.toolbox.editor.basic.alt9"
+            name="Prefix 9">
+      </command>
+      <command
+            categoryId="org.eclipse.ui.category.textEditor"
+            defaultHandler="org.lamport.tla.toolbox.editor.basic.handlers.CommandPrefixDigitHandler"
+            description="Numeric command-prefix digit 0"
+            id="org.lamport.tla.toolbox.editor.basic.alt0"
+            name="Prefix 0">
+      </command>
+
    </extension>
    <extension
          point="org.eclipse.ui.handlers">
@@ -163,6 +255,66 @@
             contextId="org.eclipse.ui.contexts.window"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="M1+G M1+C">
+      </key>
+      <key
+            commandId="org.lamport.tla.toolbox.editor.basic.alt1"
+            contextId="org.eclipse.ui.contexts.window"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M3+1">
+      </key>
+      <key
+            commandId="org.lamport.tla.toolbox.editor.basic.alt2"
+            contextId="org.eclipse.ui.contexts.window"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M3+2">
+      </key>
+      <key
+            commandId="org.lamport.tla.toolbox.editor.basic.alt3"
+            contextId="org.eclipse.ui.contexts.window"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M3+3">
+      </key>
+      <key
+            commandId="org.lamport.tla.toolbox.editor.basic.alt4"
+            contextId="org.eclipse.ui.contexts.window"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M3+4">
+      </key>
+      <key
+            commandId="org.lamport.tla.toolbox.editor.basic.alt5"
+            contextId="org.eclipse.ui.contexts.window"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M3+5">
+      </key>
+      <key
+            commandId="org.lamport.tla.toolbox.editor.basic.alt6"
+            contextId="org.eclipse.ui.contexts.window"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M3+6">
+      </key>
+      <key
+            commandId="org.lamport.tla.toolbox.editor.basic.alt7"
+            contextId="org.eclipse.ui.contexts.window"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M3+7">
+      </key>
+      <key
+            commandId="org.lamport.tla.toolbox.editor.basic.alt8"
+            contextId="org.eclipse.ui.contexts.window"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M3+8">
+      </key>
+      <key
+            commandId="org.lamport.tla.toolbox.editor.basic.alt9"
+            contextId="org.eclipse.ui.contexts.window"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M3+9">
+      </key>
+      <key
+            commandId="org.lamport.tla.toolbox.editor.basic.alt0"
+            contextId="org.eclipse.ui.contexts.window"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M3+0">
       </key>
       
    </extension>
