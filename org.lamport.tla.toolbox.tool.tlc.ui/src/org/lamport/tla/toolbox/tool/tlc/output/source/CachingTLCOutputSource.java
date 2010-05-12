@@ -18,6 +18,9 @@ public class CachingTLCOutputSource implements ITLCOutputSource
 {
     private Vector listenerHolders = new Vector();
     private boolean done = false;
+    /**
+     * List of {@link TypedRegionAndText}s.
+     */
     private Vector detectedRegions = new Vector();
     protected IDocument document;
     private String sourceName;
@@ -198,6 +201,13 @@ public class CachingTLCOutputSource implements ITLCOutputSource
 
     }
 
+    /**
+     * Wrapper class for a region and the text that it
+     * represents in the document when it was created.
+     * 
+     * @author Daniel Ricketts
+     *
+     */
     private class TypedRegionAndText
     {
         private ITypedRegion region;

@@ -439,7 +439,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
      * <br>This is a factory method
      * 
      * @param tlcRegion a region marking the error information in the document
-     * @param tlcOutputDocument the document containing the error description
+     * @param message the message represented by the region
      * @return the TLC Error representing the error
      */
     protected TLCError createError(TLCRegion tlcRegion, String message)
