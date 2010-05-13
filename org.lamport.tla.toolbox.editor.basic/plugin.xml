@@ -193,6 +193,41 @@
             id="org.lamport.tla.toolbox.editor.basic.alt0"
             name="Prefix 0">
       </command>
+      <command
+            categoryId="org.eclipse.ui.category.textEditor"
+            defaultHandler="org.lamport.tla.toolbox.editor.basic.handlers.BoxedCommentHandler"
+            description="Inserts comment delimiters for starting a boxed comment."
+            id="org.lamport.tla.toolbox.editor.basic.startBoxedComment"
+            name="Start Boxed Comment">
+      </command>
+      <command
+            categoryId="org.eclipse.ui.category.textEditor"
+            defaultHandler="org.lamport.tla.toolbox.editor.basic.handlers.BoxedCommentHandler"
+            description="Puts a comment inside a box of asterisks."
+            id="org.lamport.tla.toolbox.editor.basic.boxComment"
+            name="Box Comment">
+      </command>
+      <command
+            categoryId="org.eclipse.ui.category.textEditor"
+            defaultHandler="org.lamport.tla.toolbox.editor.basic.handlers.BoxedCommentHandler"
+            description="Removes the box from around a boxed comment."
+            id="org.lamport.tla.toolbox.editor.basic.unboxComment"
+            name="Unbox Comment">
+      </command>
+      <command
+            categoryId="org.eclipse.ui.category.textEditor"
+            defaultHandler="org.lamport.tla.toolbox.editor.basic.handlers.BoxedCommentHandler"
+            description="Formats a comment for boxing."
+            id="org.lamport.tla.toolbox.editor.basic.formatComment"
+            name="Format Comment">
+      </command>
+      <command
+            categoryId="org.eclipse.ui.category.textEditor"
+            defaultHandler="org.lamport.tla.toolbox.editor.basic.handlers.BoxedCommentHandler"
+            description="Equivalent to executing Format then Box"
+            id="org.lamport.tla.toolbox.editor.basic.formatAndBoxComment"
+            name="Format and Box Comment">
+      </command>
 
    </extension>
    <extension
@@ -315,6 +350,36 @@
             contextId="org.eclipse.ui.contexts.window"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="M3+0">
+      </key>
+      <key
+            commandId="org.lamport.tla.toolbox.editor.basic.startBoxedComment"
+            contextId="org.eclipse.ui.contexts.window"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+O M1+S">
+      </key>
+      <key
+            commandId="org.lamport.tla.toolbox.editor.basic.boxComment"
+            contextId="org.eclipse.ui.contexts.window"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+O M1+B">
+      </key>
+      <key
+            commandId="org.lamport.tla.toolbox.editor.basic.unboxComment"
+            contextId="org.eclipse.ui.contexts.window"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+O M1+U">
+      </key>
+      <key
+            commandId="org.lamport.tla.toolbox.editor.basic.formatComment"
+            contextId="org.eclipse.ui.contexts.window"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+O M1+F">
+      </key>
+      <key
+            commandId="org.lamport.tla.toolbox.editor.basic.formatAndBoxComment"
+            contextId="org.eclipse.ui.contexts.window"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+O M1+O">
       </key>
       
    </extension>

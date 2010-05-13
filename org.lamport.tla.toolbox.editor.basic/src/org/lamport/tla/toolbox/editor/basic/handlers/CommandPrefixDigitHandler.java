@@ -48,16 +48,17 @@ public class CommandPrefixDigitHandler extends AbstractHandler implements IHandl
 //    public static String alt9Id = "org.lamport.tla.toolbox.editor.basic.alt9" ;
 //    public static String alt0Id = "org.lamport.tla.toolbox.editor.basic.alt0" ;
 
-    private TLAEditor editor;
-   // private IDocument doc ;                          // The document being edited.
-    private ISelectionProvider selectionProvider ;   //
+//    private TLAEditor editor;
+//      private IDocument doc ;                          // The document being edited.
+//    private ISelectionProvider selectionProvider ;   //
     private  static boolean existsPrefix = false ; //
        // True iff a prefix value has been or is being typed.
     private  static int prefixValue = 0 ; // The current prefix value 
-    private TextSelection selection ;                // The current selection.
+//    private TextSelection selection ;                // The current selection.
     private static TextSelection lastSelection = new TextSelection(-1, -1);            
       // The selection when handler last called.
-   // private int offset ;                           // The current offset.
+
+    // private int offset ;                           // The current offset.
    // private IRegion lineInfo ;                     // The lineInfo for the current offset.
 
     /* (non-Javadoc)
@@ -66,14 +67,14 @@ public class CommandPrefixDigitHandler extends AbstractHandler implements IHandl
      */
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
-        editor = EditorUtil.getTLAEditorWithFocus() ;  // gets the editor to which command applies
+        TLAEditor editor = EditorUtil.getTLAEditorWithFocus() ;  // gets the editor to which command applies
         if (editor == null) {
             return null;
         }
         
    //     doc = editor.getDocumentProvider().getDocument(editor.getEditorInput());  // gets document being edited.
-        selectionProvider = editor.getSelectionProvider() ;
-        selection = (TextSelection) selectionProvider.getSelection();
+        ISelectionProvider selectionProvider = editor.getSelectionProvider() ;
+        TextSelection selection = (TextSelection) selectionProvider.getSelection();
         
         // reset the prefix if the selection has changed
         if (existsPrefix && !selection.equals(lastSelection)) {

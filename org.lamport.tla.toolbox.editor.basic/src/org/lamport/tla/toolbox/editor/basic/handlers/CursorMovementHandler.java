@@ -32,9 +32,9 @@ public class CursorMovementHandler extends AbstractHandler implements IHandler
      * and are set when  the command is executed (by calling the handler's execute
      * method.
      */
-    private IDocument doc ;                          // The document being edited.
+//    private IDocument doc ;                          // The document being edited.
     private ISelectionProvider selectionProvider ;   // 
-    private TextSelection selection ;                // The current selection.
+//    private TextSelection selection ;                // The current selection.
     private int offset ;                             // The current offset.
     private IRegion lineInfo ;                       // The lineInfo for the current offset.
 
@@ -53,19 +53,14 @@ public class CursorMovementHandler extends AbstractHandler implements IHandler
           return null;
       }
       
-      doc = editor.getDocumentProvider().getDocument(editor.getEditorInput());  // gets document being edited.
+      IDocument doc = editor.getDocumentProvider().getDocument(editor.getEditorInput());  // gets document being edited.
       selectionProvider = editor.getSelectionProvider() ;
-      selection = (TextSelection) selectionProvider.getSelection();
+      TextSelection selection = (TextSelection) selectionProvider.getSelection();
       offset = selection.getOffset();
       if (offset < 0){
           return null;
       }
       try {
-//          char nextChar = doc.getChar(offset);
-//          System.out.println("-" + nextChar + "-");
-//          if (nextChar == '\n') {
-//              return null;
-//          }
           lineInfo = doc.getLineInformationOfOffset(offset);
 
           String cmd = event.getCommand().getId(); 
@@ -85,7 +80,6 @@ public class CursorMovementHandler extends AbstractHandler implements IHandler
                     System.out.println("Unrecognized command.");
                     System.out.println(cmd);
                 }
-                System.out.println("Called with repeatVal = " + repeatVal);
             }
                       
       
