@@ -918,7 +918,7 @@ public class PcalTLAGen
             sb.append((String) sv.elementAt(v));
         }
         sb.append(", ");
-        sc.append("\"Failure of assertion at line ");
+        sc.append("\"Failure of assertion at ");
         sc.append(ast.location());
         // modified on 23 Mar 2006 by LL to use locatinn() instead of
         // ast.line and ast.col
