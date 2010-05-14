@@ -12,6 +12,7 @@ public interface IHelpConstants
     public static final String TRANSLATOR_PREFERENCE_PAGE = "TranslatorPreferencePage";
     public static final String GENERAL_PREFERENCE_PAGE = "GeneralPreferencePage";
     public static final String TLC_PREFERENCE_PAGE = "TLCPreferencePage";
+    public static final String EDITOR_PREFERENCE_PAGE = "EditorPreferencePage";
 
     // removed
     // public static final String MODULE_PROPERTY_PAGE = "ModulePropertyPage";

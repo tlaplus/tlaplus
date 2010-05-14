@@ -12,19 +12,38 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.TextSelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.lamport.tla.toolbox.editor.basic.TLAEditor;
+import org.lamport.tla.toolbox.editor.basic.TLAEditorActivator;
+import org.lamport.tla.toolbox.editor.basic.preferences.EditorPreferencePage;
 import org.lamport.tla.toolbox.editor.basic.util.EditorUtil;
 import org.lamport.tla.toolbox.util.StringHelper;
 
 /**
+ * This is the handler method for the following commands:
+ * 
+ *   Start Boxed Comment
+ *   Format Comment
+ *   Box Comment
+ *   Format and Box Comment
+ *   Unbox Comment
+ *   
+ * I put them all in the same handler to make it simpler to implement.
+ * It would be more Eclipsically correct to put Start Boxed Comment and
+ * Unbox Comment in separate handlers.  For one thing, the commands could
+ * be disabled when they're not applicable instead of their just doing nothing.
+ * Also, to avoid either recomputing values or having methods that take
+ * lots of arguments, the code passes values between methods by setting
+ * private fields.  It would be more elegant to create a new class of
+ * object in which those values are passed. 
+ * 
  * @author lamport
  *
  */
 public class BoxedCommentHandler extends AbstractHandler implements IHandler
 {
     /*
-     * The following should be replaced by a preference-specified value.
+     * The following is set to the preference value.
      */
-    public final int RightMargin = 77;
+    private int RightMargin;
 
     /*
      * The following private fields are used only for sharing information
@@ -79,6 +98,8 @@ public class BoxedCommentHandler extends AbstractHandler implements IHandler
         selectionProvider = editor.getSelectionProvider();
         selection = (TextSelection) selectionProvider.getSelection();
         offset = selection.getOffset();
+        
+        RightMargin = TLAEditorActivator.getDefault().getPreferenceStore().getInt(EditorPreferencePage.EDITOR_RIGHT_MARGIN);
         if (offset < 0)
         {
             return null;
@@ -106,32 +127,45 @@ public class BoxedCommentHandler extends AbstractHandler implements IHandler
                 formatComment();
             } else
             {
-                System.out.println("Unrecognized command.");
-                System.out.println(cmd);
+                // System.out.println("Unrecognized command.");
+                // System.out.println(cmd);
             }
 
         } catch (org.eclipse.jface.text.BadLocationException e)
         {
-            return null;
+            // just do nothing 
         }
+        
+        // free the space.  (Probably not worth doing.)
+        doc = null;
+        text = null;
+        selectionProvider = null;
+        selection = null;
+        lineInfo = null;
+       
         return null;
     }
 
     /*
      *  Replaces the selected region with (or puts at the cursor if no 
      *  region is selected): 
-     *    -  A "(*" 
+     *    -  A "(****..." 
      *    -  two new-line characters,
-     *    -  a series of spaces followed by spaces and a "*)", with enough
-     *       spaces so the two asterisks line up.
+     *    -  a series of spaces followed by spaces and a "...******)", with 
+     *       spaces so they line up.
      *   
      */
     private void startBoxedComment() throws org.eclipse.jface.text.BadLocationException
     {
         int indent = offset - lineInfo.getOffset() + 1;
-        String newText = "(*" + newline + newline + StringHelper.copyString(" ", indent) + "*)" + newline;
+        String asterisks = StringHelper.copyString("*", 
+                               Math.max(3, RightMargin - indent - 1));
+        String newText = "(" + asterisks + newline + newline + 
+                              StringHelper.copyString(" ", indent) + 
+                              asterisks + ")" + newline;
         doc.replace(selection.getOffset(), selection.getLength(), newText);
-        selectionProvider.setSelection(new TextSelection(offset + 2 + newline.length(), 0));
+        selectionProvider.setSelection(new 
+                 TextSelection(offset + 1 + asterisks.length() + newline.length(), 0));
     }
 
     private void formatAndBoxComment() throws org.eclipse.jface.text.BadLocationException
@@ -276,6 +310,13 @@ public class BoxedCommentHandler extends AbstractHandler implements IHandler
         int startOffset = text.lastIndexOf("(**", offset);
         ;
         int endOffset = text.indexOf("**)", offset) + 3;
+    
+        int startIndent = startOffset - 
+                            doc.getLineOffset(
+                              doc.getLineOfOffset(startOffset));
+        int asteriskLength = RightMargin - startIndent - 1;
+        String asterisks = StringHelper.copyString("*", asteriskLength);
+        
         if ((startOffset < 0) || (endOffset < 0))
         {
             return; // error: not in comment
@@ -284,12 +325,13 @@ public class BoxedCommentHandler extends AbstractHandler implements IHandler
         int endLine = doc.getLineOfOffset(endOffset);
 
         // we need to compute the indent of the final *);
-        int finalIndent = startOffset - doc.getLineOffset(beginLine) + 1;
+        // int finalIndent = startOffset - doc.getLineOffset(beginLine) + 1;
 
         StringBuffer buffer = new StringBuffer(endOffset - startOffset - 6 * (endLine - beginLine));
-        // We replace everything between the starting (*
-        // and the ending *) . We must therefore begin
-        // with a newline;
+        // We replace everything from the starting (
+        // and the ending ) . We must therefore begin
+        // with asterisks and a newline;
+        buffer.append(asterisks);
         buffer.append(newline);
 
         // process the individual lines.
@@ -306,9 +348,9 @@ public class BoxedCommentHandler extends AbstractHandler implements IHandler
             }
 
         }
-
-        buffer.append(StringHelper.copyString(" ", finalIndent));
-        doc.replace(startOffset + 2, endOffset - startOffset - 4, buffer.toString());
+        buffer.append(StringHelper.copyString(" ", startIndent));
+        buffer.append(asterisks);
+        doc.replace(startOffset+1, endOffset - 2 - startOffset, buffer.toString());
         return;
 
     }
