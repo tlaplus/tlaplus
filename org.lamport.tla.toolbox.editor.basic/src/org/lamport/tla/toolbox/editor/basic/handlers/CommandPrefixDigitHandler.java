@@ -58,7 +58,7 @@ public class CommandPrefixDigitHandler extends AbstractHandler implements IHandl
     private static TextSelection lastSelection = new TextSelection(-1, -1);            
       // The selection when handler last called.
 
-    // private int offset ;                           // The current offset.
+   // private int offset ;                           // The current offset.
    // private IRegion lineInfo ;                     // The lineInfo for the current offset.
 
     /* (non-Javadoc)
