@@ -54,7 +54,7 @@ public abstract class TLAPMMessage
      */
     public static TLAPMMessage parseMessage(String proverMessage, String moduleName)
     {
-        System.out.println("New message to be parsed : \n" + proverMessage);
+        // System.out.println("New message to be parsed : \n" + proverMessage);
         /*
          * The String proverMessage should be of the form
          * 
@@ -140,7 +140,7 @@ public abstract class TLAPMMessage
             {
                 ObligationStatusMessage message = ObligationStatusMessage.getObMessage(fieldPairs.entrySet(),
                         moduleName);
-                System.out.println(message);
+                // System.out.println(message);
                 return message;
             } else
             {
