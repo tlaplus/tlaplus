@@ -78,6 +78,15 @@
                   </with>
                </visibleWhen>
             </command>
+            <command
+                  commandId="toolbox.command.openview"
+                  label="Interesting Obligations"
+                  style="push">
+               <parameter
+                     name="toolbox.openview.name"
+                     value="org.lamport.tla.toolbox.tool.prover.ui.rejectedObligations">
+               </parameter>
+            </command>
          </menu>
       </menuContribution>
    </extension>
