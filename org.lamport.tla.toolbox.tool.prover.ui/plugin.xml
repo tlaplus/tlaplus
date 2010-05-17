@@ -207,5 +207,14 @@
             textPreferenceValue="true">
       </specification>
    </extension>
+   <extension
+         point="org.eclipse.ui.views">
+      <view
+            class="org.lamport.tla.toolbox.tool.prover.ui.view.ObligationsView"
+            id="org.lamport.tla.toolbox.tool.prover.ui.rejectedObligations"
+            name="Obligations View"
+            restorable="true">
+      </view>
+   </extension>
 
 </plugin>
