@@ -2,12 +2,13 @@ package org.lamport.tla.toolbox.tool.prover.ui.output;
 
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.text.BadLocationException;
+import org.lamport.tla.toolbox.tool.prover.ui.output.data.ObligationStatusMessage;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.TLAPMMessage;
 import org.lamport.tla.toolbox.tool.prover.ui.output.source.CachingTLAPMOutputSource;
 import org.lamport.tla.toolbox.tool.prover.ui.output.source.ITLAPMOutputSource;
 import org.lamport.tla.toolbox.tool.prover.ui.output.source.TLAPMOutputSourceRegistry;
+import org.lamport.tla.toolbox.tool.prover.ui.status.ProofMarkerHelper;
 import org.lamport.tla.toolbox.tool.prover.ui.status.ProofStepStatus;
-import org.lamport.tla.toolbox.tool.prover.ui.status.ProofStepStatusMarkerHelper;
 
 /**
  * This class is used to parse raw output from
@@ -68,7 +69,7 @@ public class TagBasedTLAPMOutputIncrementalParser
      */
     public void addIncrement(String text) throws BadLocationException
     {
-        System.out.println("New text : \n" + text);
+        // System.out.println("New text : \n" + text);
         /*
          * The following sends each string between a
          * begin and end tag to be parsed into
@@ -114,10 +115,15 @@ public class TagBasedTLAPMOutputIncrementalParser
                          * If it is, call the appropriate method
                          * to create a marker for that proof step.
                          */
-                        ProofStepStatus status = ProofStepStatusMarkerHelper.messageToStatus(data);
+                        ProofStepStatus status = ProofMarkerHelper.messageToStatus(data);
                         if (status != null)
                         {
-                            ProofStepStatusMarkerHelper.newStepStatus(status);
+                            ProofMarkerHelper.newStepStatus(status);
+                        }
+
+                        if (data instanceof ObligationStatusMessage)
+                        {
+                            ProofMarkerHelper.newObligationStatus((ObligationStatusMessage) data);
                         }
                     }
 
@@ -263,6 +269,7 @@ public class TagBasedTLAPMOutputIncrementalParser
     public void onDone()
     {
         source.onDone();
+
     }
 
 }

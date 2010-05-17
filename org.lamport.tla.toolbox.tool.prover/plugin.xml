@@ -33,5 +33,25 @@
             name="org.lamport.tla.toolbox.tool.prover.isProverRunning">
       </attribute>
    </extension>
+   <extension
+         id="org.lamport.tla.toolbox.tool.prover.obligation"
+         name="Obligation information"
+         point="org.eclipse.core.resources.markers">
+      <super
+            type="org.eclipse.core.resources.marker">
+      </super>
+      <attribute
+            name="org.lamport.tla.toolbox.tool.prover.obId">
+      </attribute>
+      <attribute
+            name="org.lamport.tla.toolbox.tool.prover.obStatus">
+      </attribute>
+      <attribute
+            name="org.lamport.tla.toolbox.tool.prover.obMethod">
+      </attribute>
+      <attribute
+            name="org.lamport.tla.toolbox.tool.prover.obString">
+      </attribute>
+   </extension>
 
 </plugin>

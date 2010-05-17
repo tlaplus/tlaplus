@@ -13,21 +13,23 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.ui.editors.text.FileDocumentProvider;
 import org.eclipse.ui.part.FileEditorInput;
 import org.lamport.tla.toolbox.tool.prover.ui.ProverUIActivator;
+import org.lamport.tla.toolbox.tool.prover.ui.output.data.ObligationStatusMessage;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.StepStatusMessage;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.TLAPMMessage;
+import org.lamport.tla.toolbox.tool.prover.util.ProverHelper;
 import org.lamport.tla.toolbox.util.AdapterFactory;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 
 import tla2sany.st.Location;
 
 /**
- * This class contains static methods for installing and removing markers indicating proof
- * step status.
+ * This class contains static methods for installing and removing markers
+ * on proofs.
  * 
  * @author Daniel Ricketts
  *
  */
-public class ProofStepStatusMarkerHelper
+public class ProofMarkerHelper
 {
 
     /**
@@ -73,7 +75,7 @@ public class ProofStepStatusMarkerHelper
          */
         Location location = status.getLocation();
         IResource module = ResourceHelper.getResourceByModuleName(location.source());
-        if (module != null && module instanceof IFile)
+        if (module != null && module instanceof IFile && module.exists())
         {
             /*
              * We need a document to convert the 4-int location to a 2-int
@@ -121,12 +123,101 @@ public class ProofStepStatusMarkerHelper
             {
                 ProverUIActivator.logError("Could not convert location to region for a step status.\n" + "Status : "
                         + status.getStatus() + "\nLocation : " + location, e);
+            } finally
+            {
+                fileDocumentProvider.disconnect(fileEditorInput);
             }
         } else
         {
             ProverUIActivator.logDebug("A module could not be located for a step status.\n" + "Status : "
                     + status.getStatus() + "\nLocation : " + location);
         }
+    }
+
+    /**
+     * Installs a new marker on the obligation in the message or updates the existing
+     * marker on that obligation (if there is one) with the information contained in
+     * message.
+     * 
+     * The message location should be for a module in the currently opened spec. If no
+     * such module exists, this method returns null.
+     * 
+     * Returns the marker created or updated.
+     * 
+     * @param message must not be null
+     */
+    public static IMarker newObligationStatus(ObligationStatusMessage message)
+    {
+        Location location = message.getLocation();
+        IResource module = ResourceHelper.getResourceByModuleName(location.source());
+        if (module != null && module instanceof IFile && module.exists())
+        {
+            /*
+             * We may need to convert the 4-int location of the message
+             * to a 2-int region if an existing marker is not found. We use a FileDocumentProvider.
+             * We create it now so that if it is used, it can be disconnected in
+             * the finally block of the following try block to avoid a memory leak.
+             */
+            FileEditorInput fileEditorInput = new FileEditorInput((IFile) module);
+            FileDocumentProvider fileDocumentProvider = new FileDocumentProvider();
+
+            try
+            {
+                /*
+                 * First try to find an existing marker with the same id
+                 * and update it.
+                 */
+                IMarker[] markers = module.findMarkers(ProverHelper.OBLIGATION_MARKER, false, IResource.DEPTH_ZERO);
+                for (int i = 0; i < markers.length; i++)
+                {
+                    if (markers[i].getAttribute(ProverHelper.OBLIGATION_ID, -1) == message.getID())
+                    {
+                        /*
+                         * Found an existing marker with the same id.
+                         * 
+                         * Replace the status, and the method.
+                         */
+                        markers[i].setAttribute(ProverHelper.OBLIGATION_STATUS, message.getStatus());
+
+                        markers[i].setAttribute(ProverHelper.OBLIGATION_METHOD, message.getMethod());
+
+                        // DEBUG
+                        // System.out.println("Marker updated for obligation from message \n" + message);
+                        return markers[i];
+                    }
+                }
+
+                // marker not found, create new one
+                IMarker marker = module.createMarker(ProverHelper.OBLIGATION_MARKER);
+                marker.setAttribute(ProverHelper.OBLIGATION_ID, message.getID());
+                marker.setAttribute(ProverHelper.OBLIGATION_METHOD, message.getMethod());
+                marker.setAttribute(ProverHelper.OBLIGATION_STATUS, message.getStatus());
+                marker.setAttribute(ProverHelper.OBLIGATION_STRING, message.getObString());
+
+                fileDocumentProvider.connect(fileEditorInput);
+                IDocument document = fileDocumentProvider.getDocument(fileEditorInput);
+                IRegion obRegion = AdapterFactory.locationToRegion(document, location);
+                marker.setAttribute(IMarker.CHAR_START, obRegion.getOffset());
+                marker.setAttribute(IMarker.CHAR_END, obRegion.getOffset() + obRegion.getLength());
+
+                // DEBUG
+                // System.out.println("Marker created for obligation from message \n" + message);
+                return marker;
+            } catch (CoreException e)
+            {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } catch (BadLocationException e)
+            {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } finally
+            {
+                fileDocumentProvider.disconnect(fileEditorInput);
+            }
+        }
+        return null;
+
     }
 
     /**
@@ -161,7 +252,7 @@ public class ProofStepStatusMarkerHelper
      * Converts a {@link TLAPMMessage} to a {@link ProofStepStatus}. Returns
      * null if the message is not a message about the status of a proof step.
      * The proof step status can be added as a marker to the module by calling
-     * {@link ProofStepStatusMarkerHelper#newStepStatus(ProofStepStatus)}.
+     * {@link ProofMarkerHelper#newStepStatus(ProofStepStatus)}.
      * 
      * It seems unnecessary to convert from a message to this proof step
      * status object, but I'm using this method in case we decide that the

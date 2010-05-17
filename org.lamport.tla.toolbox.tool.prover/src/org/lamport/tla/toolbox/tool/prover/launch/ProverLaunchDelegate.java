@@ -128,6 +128,12 @@ public class ProverLaunchDelegate extends LaunchConfigurationDelegate implements
         ProverHelper.setProverRunning(module, true);
 
         /*
+         * Remove any obligation markers from previous runs of
+         * the prover on the spec containing this module.
+         */
+        ProverHelper.clearObligationMarkers(module.getProject());
+
+        /*
          * Launch the prover.
          * 
          * For now, we pass in null for the path to cygwin and to the tlapm executable. Eventually, there

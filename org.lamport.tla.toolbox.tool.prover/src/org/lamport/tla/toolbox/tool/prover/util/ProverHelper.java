@@ -14,7 +14,7 @@ public class ProverHelper
 {
 
     /**
-     * ID of the marker that contains a boolean attribute indicating if the prover is running
+     * Type of the marker that contains a boolean attribute indicating if the prover is running
      * on a module.
      */
     public static final String PROVER_RUNNING_MARKER = "org.lamport.tla.toolbox.tool.prover.proverRunning";
@@ -23,6 +23,26 @@ public class ProverHelper
      * prover is running on a module.
      */
     public static final String PROVER_IS_RUNNING_ATR = "org.lamport.tla.toolbox.tool.prover.isProverRunning";
+    /**
+     * Type of a marker that contains information about an obligation. 
+     */
+    public static final String OBLIGATION_MARKER = "org.lamport.tla.toolbox.tool.prover.obligation";
+    /**
+     * Attribute on an obligation marker giving the integer id of the obligation.
+     */
+    public static final String OBLIGATION_ID = "org.lamport.tla.toolbox.tool.prover.obId";
+    /**
+     * Attribute on an obligation marker giving the String status of the obligation.
+     */
+    public static final String OBLIGATION_STATUS = "org.lamport.tla.toolbox.tool.prover.obStatus";
+    /**
+     * Attribute on an obligation marker giving the String method of the obligation.
+     */
+    public static final String OBLIGATION_METHOD = "org.lamport.tla.toolbox.tool.prover.obMethod";
+    /**
+     * Attribute on an obligation marker giving the formatted String of the obligation.
+     */
+    public static final String OBLIGATION_STRING = "org.lamport.tla.toolbox.tool.prover.obString";
 
     /**
      * Signals using a marker that the prover is or is not running
@@ -99,6 +119,37 @@ public class ProverHelper
         {
             return false;
         }
+    }
+
+    /**
+     * Removes all markers indicating obligation information on a resource. Does
+     * nothing if module does not exist.
+     * 
+     * @param resource
+     * @throws CoreException 
+     */
+    public static void clearObligationMarkers(IResource resource) throws CoreException
+    {
+        if (resource.exists())
+        {
+            resource.deleteMarkers(OBLIGATION_MARKER, false, IResource.DEPTH_ONE);
+        }
+    }
+
+    /**
+     * Returns true iff the marker is of the type
+     * {@link ProverHelper#OBLIGATION_MARKER} and represents
+     * an obligation that is in an "interesting" state. Interesting
+     * generally means that the obligation has not been proved or
+     * checked.
+     * 
+     * @param marker
+     * @return
+     * @throws CoreException 
+     */
+    public static boolean isInterestingObligation(IMarker marker) throws CoreException
+    {
+        return marker.getType().equals(OBLIGATION_MARKER);
     }
 
 }
