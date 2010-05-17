@@ -42,6 +42,7 @@ import org.eclipse.jface.text.source.projection.ProjectionAnnotation;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotationModel;
 import org.eclipse.jface.text.source.projection.ProjectionSupport;
 import org.eclipse.jface.text.source.projection.ProjectionViewer;
+import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
@@ -642,6 +643,11 @@ public class TLAEditor extends TextEditor
             Object adapter = projectionSupport.getAdapter(getSourceViewer(), required);
             if (adapter != null)
                 return adapter;
+        }
+        
+        if (ISelectionProvider.class.equals(required))
+        {
+            return getSelectionProvider();
         }
 
         return super.getAdapter(required);

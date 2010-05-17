@@ -12,6 +12,7 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.editors.text.FileDocumentProvider;
@@ -59,8 +60,12 @@ public class CheckProofHandlerDelegate extends AbstractHandler implements IHandl
          * four location parameters of the entire module if the caret does
          * not lie on the same line as a step.
          */
-        ISelection selection = UIHelper.getActivePage().getSelection();
+        // ISelection selection = UIHelper.getActivePage().getSelection();
         IEditorPart editor = HandlerUtil.getActiveEditor(event);
+        Assert.isNotNull(editor, "Check proof step handler delegate was called with no active editor. This is a bug.");
+        ISelectionProvider selectionProvider = (ISelectionProvider) editor.getAdapter(ISelectionProvider.class);
+        Assert.isNotNull(selectionProvider, "Active editor does not have a selection provider. This is a bug.");
+        ISelection selection = selectionProvider.getSelection();
         if (selection instanceof ITextSelection)
         {
             ITextSelection textSelection = (ITextSelection) selection;
