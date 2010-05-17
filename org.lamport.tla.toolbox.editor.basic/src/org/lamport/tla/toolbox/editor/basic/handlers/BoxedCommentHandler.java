@@ -7,15 +7,19 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IHandler;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.TextSelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
+import org.eclipse.swt.widgets.Shell;
+import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.editor.basic.TLAEditor;
 import org.lamport.tla.toolbox.editor.basic.TLAEditorActivator;
 import org.lamport.tla.toolbox.editor.basic.preferences.EditorPreferencePage;
 import org.lamport.tla.toolbox.editor.basic.util.EditorUtil;
 import org.lamport.tla.toolbox.util.StringHelper;
+import org.lamport.tla.toolbox.util.UIHelper;
 
 /**
  * This is the handler method for the following commands:
@@ -127,12 +131,12 @@ public class BoxedCommentHandler extends AbstractHandler implements IHandler
                 formatComment();
             } else
             {
-                // System.out.println("Unrecognized command.");
-                // System.out.println(cmd);
+                Activator.logInfo("Unrecognized boxing command.");
             }
 
         } catch (org.eclipse.jface.text.BadLocationException e)
         {
+            Activator.logError("Error executing comment-boxing command", e);
             // just do nothing 
         }
         
@@ -307,22 +311,42 @@ public class BoxedCommentHandler extends AbstractHandler implements IHandler
      */
     private final void unboxComment() throws org.eclipse.jface.text.BadLocationException
     {
+        // Check if the cursor is right before ')', or right before '*)',
+        // and modify offset to put it before '**)'.
+        if ((offset > 2) && (text.charAt(offset) == ')')) {
+            offset--;
+        }
+        if ((offset > 1) && (text.charAt(offset) == '*')) {
+            offset--;
+        }
+        String errorMsg = "Unbox Coment command called when not inside a boxed comment.";
         int startOffset = text.lastIndexOf("(**", offset);
-        ;
         int endOffset = text.indexOf("**)", offset) + 3;
-    
+        if ((startOffset < 0) || (endOffset < 0)) {
+            displayNotInBoxedCommentError(errorMsg);
+            return;
+        } 
+         
         int startIndent = startOffset - 
                             doc.getLineOffset(
                               doc.getLineOfOffset(startOffset));
         int asteriskLength = RightMargin - startIndent - 1;
         String asterisks = StringHelper.copyString("*", asteriskLength);
         
-        if ((startOffset < 0) || (endOffset < 0))
-        {
-            return; // error: not in comment
-        }
+        
         int beginLine = doc.getLineOfOffset(startOffset);
         int endLine = doc.getLineOfOffset(endOffset);
+        
+        if (beginLine == endLine) {
+            if (text.substring(startOffset+1, endOffset-1).equals(
+                 StringHelper.copyString("*",endOffset - startOffset - 2))){
+                displayNotInBoxedCommentError("You are at the beginning or ending line of a boxed comment,\n" +
+                                              "not inside the boxed comment");
+            } else {
+                displayNotInBoxedCommentError(errorMsg);
+            }
+            return;
+        }
 
         // we need to compute the indent of the final *);
         // int finalIndent = startOffset - doc.getLineOffset(beginLine) + 1;
@@ -345,6 +369,9 @@ public class BoxedCommentHandler extends AbstractHandler implements IHandler
             {
                 buffer.append(StringHelper.trimEnd(currentLine.substring(beginTokenIndex + 3, endTokenIndex)));
                 buffer.append(newline);
+            } else {
+                buffer.append(currentLine);
+                buffer.append(newline);
             }
 
         }
@@ -355,6 +382,12 @@ public class BoxedCommentHandler extends AbstractHandler implements IHandler
 
     }
 
+    void displayNotInBoxedCommentError(String msg) {
+        Shell shell = UIHelper.getShellProvider().getShell();
+        MessageDialog.openError(shell, "Not inside a boxed comment",
+                                 msg);
+        return; 
+    }
     /*
      * Formats comments for boxing. It just formats the lines after the
      * line containing the starting (* and before the line containing the
