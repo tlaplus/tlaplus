@@ -11,6 +11,8 @@ import org.lamport.tla.toolbox.tool.prover.ui.output.data.TLAPMMessage;
  * should register themselves using the singleton instance of the {@link TLAPMOutputSourceRegistry}
  * using the method {@link TLAPMOutputSourceRegistry#addListener(ITLAPMOutputSourceListener)}.
  * 
+ * This interface is not used.
+ * 
  * @author Daniel Ricketts
  *
  */
@@ -18,6 +20,7 @@ public interface ITLAPMOutputSource
 {
 
     public void addListener(ITLAPMOutputSourceListener listener);
+
     public void removeListener(ITLAPMOutputSourceListener listener);
 
     /**
@@ -43,7 +46,7 @@ public interface ITLAPMOutputSource
      * @param data
      */
     public void newData(TLAPMMessage data);
-    
+
     /**
      * Notifies the source that no more data is to be sent.
      */

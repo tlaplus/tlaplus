@@ -4,18 +4,19 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.text.BadLocationException;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.ObligationStatusMessage;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.TLAPMMessage;
-import org.lamport.tla.toolbox.tool.prover.ui.output.source.CachingTLAPMOutputSource;
 import org.lamport.tla.toolbox.tool.prover.ui.output.source.ITLAPMOutputSource;
-import org.lamport.tla.toolbox.tool.prover.ui.output.source.TLAPMOutputSourceRegistry;
 import org.lamport.tla.toolbox.tool.prover.ui.status.ProofMarkerHelper;
 import org.lamport.tla.toolbox.tool.prover.ui.status.ProofStepStatus;
 
 /**
  * This class is used to parse raw output from
  * the TLAPM to produce instances of {@link TLAPMMessage}
- * to describe that output. It stores that output
- * in a {@link ITLAPMOutputSource} which is placed
- * in the {@link TLAPMOutputSourceRegistry}.
+ * to describe that output. It creates resource markers
+ * representing the information from the messages.
+ * 
+ * The first implementation stored output in a source, but
+ * we decided that caching this information is unnecessary.
+ * Markers are used instead.
  * 
  * Output from the prover comes in the following generic
  * form:
@@ -41,7 +42,7 @@ public class TagBasedTLAPMOutputIncrementalParser
 {
 
     private StringBuilder currentMessageBuffer;
-    private ITLAPMOutputSource source;
+    // private ITLAPMOutputSource source;
     private IPath modulePath;
     /**
      * Flag indicating that this parser has encountered
@@ -107,7 +108,7 @@ public class TagBasedTLAPMOutputIncrementalParser
 
                     if (data != null)
                     {
-                        source.newData(data);
+                        // source.newData(data);
 
                         /*
                          * Determine if the message is
@@ -256,10 +257,10 @@ public class TagBasedTLAPMOutputIncrementalParser
     public TagBasedTLAPMOutputIncrementalParser(IPath modulePath)
     {
         currentMessageBuffer = new StringBuilder();
-        source = new CachingTLAPMOutputSource(modulePath);
+        // source = new CachingTLAPMOutputSource(modulePath);
         this.modulePath = modulePath;
 
-        TLAPMOutputSourceRegistry.getInstance().addSource(source);
+        // TLAPMOutputSourceRegistry.getInstance().addSource(source);
     }
 
     /**
@@ -268,7 +269,7 @@ public class TagBasedTLAPMOutputIncrementalParser
      */
     public void onDone()
     {
-        source.onDone();
+        // source.onDone();
 
     }
 

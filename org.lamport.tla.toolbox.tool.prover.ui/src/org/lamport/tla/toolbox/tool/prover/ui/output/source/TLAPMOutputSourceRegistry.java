@@ -8,6 +8,12 @@ import java.util.List;
 import org.eclipse.core.runtime.IPath;
 
 /**
+ * Note that this class is not used. I originally created it
+ * to copy the model of parsing and storing TLC's output, but we
+ * have decided that for now there is no need to cache the output of
+ * the prover. The parser installs markers on the appropriate resources
+ * based on the output it receives. It does not need to use this registry.
+ * 
  * This is a singleton registry for output from the TLAPM.
  * 
  * Listeners can register themselves to receive output by calling

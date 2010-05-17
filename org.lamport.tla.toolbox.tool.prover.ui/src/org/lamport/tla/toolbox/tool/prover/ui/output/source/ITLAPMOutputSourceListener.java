@@ -5,7 +5,8 @@ import org.lamport.tla.toolbox.tool.prover.ui.output.data.TLAPMMessage;
 
 /**
  * Interface for listening to data from TLAPM
- * output.
+ * output through the {@link TLAPMOutputSourceRegistry}
+ * This interface is not used.
  * 
  * @author Daniel Ricketts
  *
