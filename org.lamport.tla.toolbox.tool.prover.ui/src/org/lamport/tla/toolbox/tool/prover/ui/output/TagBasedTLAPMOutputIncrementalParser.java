@@ -111,10 +111,10 @@ public class TagBasedTLAPMOutputIncrementalParser
                         // source.newData(data);
 
                         /*
-                         * Determine if the message is
-                         * giving the status of a proof step.
-                         * If it is, call the appropriate method
-                         * to create a marker for that proof step.
+                         * Create the appropriate marker for the
+                         * message. If the message is step status, create
+                         * a step status marker. If the message is an obligation
+                         * status, create an obligation status marker.
                          */
                         ProofStepStatus status = ProofMarkerHelper.messageToStatus(data);
                         if (status != null)
