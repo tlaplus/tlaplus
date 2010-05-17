@@ -221,7 +221,7 @@
       <view
             class="org.lamport.tla.toolbox.tool.prover.ui.view.ObligationsView"
             id="org.lamport.tla.toolbox.tool.prover.ui.rejectedObligations"
-            name="Obligations View"
+            name="Interesting Obligations"
             restorable="true">
       </view>
    </extension>
