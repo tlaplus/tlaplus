@@ -149,7 +149,12 @@ public class ProverHelper
      */
     public static boolean isInterestingObligation(IMarker marker) throws CoreException
     {
-        return marker.getType().equals(OBLIGATION_MARKER);
+        /*
+         * Should return true iff that status is one of some collection of strings.
+         * 
+         * TODO update this method once we know what those strings are.
+         */
+        return true;
     }
 
 }
