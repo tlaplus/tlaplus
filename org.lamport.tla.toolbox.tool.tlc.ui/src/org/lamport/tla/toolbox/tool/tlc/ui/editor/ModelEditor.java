@@ -99,16 +99,28 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
             // and is not locked
             if (!isModelRunning() && !isModelLocked())
             {
+                /*
+                 * Note that all pages are not necessarily
+                 * instances of BasicFormPage. Some are read
+                 * only editors showing saved versions of
+                 * modules.
+                 */
                 for (int i = 0; i < getPageCount(); i++)
                 {
-                    BasicFormPage page = (BasicFormPage) pages.get(i);
-                    page.resetAllMessages(true);
+                    if (pages.get(i) instanceof BasicFormPage)
+                    {
+                        BasicFormPage page = (BasicFormPage) pages.get(i);
+                        page.resetAllMessages(true);
+                    }
                 }
                 for (int i = 0; i < getPageCount(); i++)
                 {
-                    BasicFormPage page = (BasicFormPage) pages.get(i);
-                    // re-validate the model on changes of the spec
-                    page.validatePage(switchToErrorPage);
+                    if (pages.get(i) instanceof BasicFormPage)
+                    {
+                        BasicFormPage page = (BasicFormPage) pages.get(i);
+                        // re-validate the model on changes of the spec
+                        page.validatePage(switchToErrorPage);
+                    }
                 }
             }
         }
@@ -212,8 +224,17 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
                     // update the pages
                     for (int i = 0; i < getPageCount(); i++)
                     {
-                        BasicFormPage page = (BasicFormPage) pages.get(i);
-                        ((BasicFormPage) page).refresh();
+                        /*
+                         * Note that all pages are not necessarily
+                         * instances of BasicFormPage. Some are read
+                         * only editors showing saved versions of
+                         * modules.
+                         */
+                        if (pages.get(i) instanceof BasicFormPage)
+                        {
+                            BasicFormPage page = (BasicFormPage) pages.get(i);
+                            ((BasicFormPage) page).refresh();
+                        }
                     }
 
                     if (isModelRunning())
@@ -392,10 +413,19 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
         // TLCUIActivator.logDebug("entering ModelEditor#commitPages(IProgressMonitor monitor, boolean onSave)");
         for (int i = 0; i < getPageCount(); i++)
         {
-            BasicFormPage page = (BasicFormPage) pages.get(i);
-            if (page.isInitialized())
+            /*
+             * Note that all pages are not necessarily
+             * instances of BasicFormPage. Some are read
+             * only editors showing saved versions of
+             * modules.
+             */
+            if (pages.get(i) instanceof BasicFormPage)
             {
-                page.commit(onSave);
+                BasicFormPage page = (BasicFormPage) pages.get(i);
+                if (page.isInitialized())
+                {
+                    page.commit(onSave);
+                }
             }
         }
         // TLCUIActivator.logDebug("leaving ModelEditor#commitPages(IProgressMonitor monitor, boolean onSave)");
@@ -646,11 +676,20 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
     {
         for (int i = 0; i < getPageCount(); i++)
         {
-            BasicFormPage page = (BasicFormPage) pages.get(i);
-            if (!page.isComplete())
+            /*
+             * Note that all pages are not necessarily
+             * instances of BasicFormPage. Some are read
+             * only editors showing saved versions of
+             * modules.
+             */
+            if (pages.get(i) instanceof BasicFormPage)
             {
-                setActivePage(page.getId());
-                return false;
+                BasicFormPage page = (BasicFormPage) pages.get(i);
+                if (!page.isComplete())
+                {
+                    setActivePage(page.getId());
+                    return false;
+                }
             }
         }
         return true;
@@ -676,92 +715,101 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
 
             for (int j = 0; j < getPageCount(); j++)
             {
-                // get the current page
-                BasicFormPage page = (BasicFormPage) pages.get(j);
-                Assert.isNotNull(page.getManagedForm(), "Page not initialized, this is a bug.");
-
-                for (int i = 0; i < modelProblemMarkers.length; i++)
+                /*
+                 * Note that all pages are not necessarily
+                 * instances of BasicFormPage. Some are read
+                 * only editors showing saved versions of
+                 * modules.
+                 */
+                if (pages.get(j) instanceof BasicFormPage)
                 {
-                    String attributeName = modelProblemMarkers[i]
-                            .getAttribute(ModelHelper.TLC_MODEL_ERROR_MARKER_ATTRIBUTE_NAME,
-                                    IModelConfigurationDefaults.EMPTY_STRING);
+                    // get the current page
+                    BasicFormPage page = (BasicFormPage) pages.get(j);
+                    Assert.isNotNull(page.getManagedForm(), "Page not initialized, this is a bug.");
 
-                    int bubbleType = -1;
-                    if (modelProblemMarkers[i].getType().equals(ModelHelper.TLC_MODEL_ERROR_MARKER_SANY))
+                    for (int i = 0; i < modelProblemMarkers.length; i++)
                     {
-                        // SANY markers are errors
-                        bubbleType = IMessageProvider.ERROR;
-                    } else if (modelProblemMarkers[i].getType().equals(ModelHelper.TLC_MODEL_ERROR_MARKER_TLC))
-                    {
-                        // TLC markers are warnings
-                        bubbleType = IMessageProvider.WARNING;
-                    } else
-                    {
-                        bubbleType = IMessageProvider.INFORMATION;
-                    }
-
-                    if (ModelHelper.EMPTY_STRING.equals(attributeName))
-                    {
-                        String message = modelProblemMarkers[i].getAttribute(IMarker.MESSAGE,
+                        String attributeName = modelProblemMarkers[i].getAttribute(
+                                ModelHelper.TLC_MODEL_ERROR_MARKER_ATTRIBUTE_NAME,
                                 IModelConfigurationDefaults.EMPTY_STRING);
-                        // no attribute, this is a global error, not bound to a particular attribute
-                        // install it on the first page
-                        // if it is a global TLC error, then we call addGlobalTLCErrorMessage()
-                        // to add a hyperlink to the TLC Error view
-                        if (bubbleType == IMessageProvider.WARNING)
+
+                        int bubbleType = -1;
+                        if (modelProblemMarkers[i].getType().equals(ModelHelper.TLC_MODEL_ERROR_MARKER_SANY))
                         {
-                            this.pagesToAdd[0].addGlobalTLCErrorMessage("modelProblem_" + i);
-                            this.pagesToAdd[1].addGlobalTLCErrorMessage("modelProblem_" + i);
+                            // SANY markers are errors
+                            bubbleType = IMessageProvider.ERROR;
+                        } else if (modelProblemMarkers[i].getType().equals(ModelHelper.TLC_MODEL_ERROR_MARKER_TLC))
+                        {
+                            // TLC markers are warnings
+                            bubbleType = IMessageProvider.WARNING;
                         } else
                         {
-                            // else install as with other messages
-                            IMessageManager mm = this.pagesToAdd[0].getManagedForm().getMessageManager();
+                            bubbleType = IMessageProvider.INFORMATION;
+                        }
+
+                        if (ModelHelper.EMPTY_STRING.equals(attributeName))
+                        {
+                            String message = modelProblemMarkers[i].getAttribute(IMarker.MESSAGE,
+                                    IModelConfigurationDefaults.EMPTY_STRING);
+                            // no attribute, this is a global error, not bound to a particular attribute
+                            // install it on the first page
+                            // if it is a global TLC error, then we call addGlobalTLCErrorMessage()
+                            // to add a hyperlink to the TLC Error view
+                            if (bubbleType == IMessageProvider.WARNING)
+                            {
+                                this.pagesToAdd[0].addGlobalTLCErrorMessage("modelProblem_" + i);
+                                this.pagesToAdd[1].addGlobalTLCErrorMessage("modelProblem_" + i);
+                            } else
+                            {
+                                // else install as with other messages
+                                IMessageManager mm = this.pagesToAdd[0].getManagedForm().getMessageManager();
+                                mm.setAutoUpdate(false);
+                                mm.addMessage("modelProblem_" + i, message, null, bubbleType);
+                                mm.setAutoUpdate(true);
+                            }
+                        } else
+                        {
+                            // attribute found
+                            String sectionId = dm.getSectionForAttribute(attributeName);
+                            Assert.isNotNull(sectionId,
+                                    "Page is either not initialized or attribute not bound, this is a bug.");
+
+                            String pageId = dm.getSectionPage(sectionId);
+
+                            // relevant, since the attribute is displayed on the current
+                            // page
+                            // if (page.getId().equals(pageId))
+                            // {
+
+                            // We now want the error message to be displayed on
+                            // the header of every page, so the if statement that is commented
+                            // out is no longer relevant
+                            IMessageManager mm = page.getManagedForm().getMessageManager();
                             mm.setAutoUpdate(false);
-                            mm.addMessage("modelProblem_" + i, message, null, bubbleType);
+                            String message = modelProblemMarkers[i].getAttribute(IMarker.MESSAGE,
+                                    IModelConfigurationDefaults.EMPTY_STRING);
+
+                            Control widget = UIHelper.getWidget(dm.getAttributeControl(attributeName));
+                            if (widget != null)
+                            {
+                                // we set the message's data object to the page id
+                                // of the attribute with the error
+                                // this makes it simple to switch to that page
+                                // when the user clicks on the hyperlink because
+                                // the hyperlink listener recieves that message and
+                                // the message contains the data object.
+                                mm.addMessage("modelProblem_" + i, message, pageId, bubbleType, widget);
+                            }
+                            // expand the section with an error
+                            dm.expandSection(sectionId);
                             mm.setAutoUpdate(true);
+
+                            if (page.getId().equals(pageId) && errorPageIndex < j)
+                            {
+                                errorPageIndex = j;
+                            }
+                            // }
                         }
-                    } else
-                    {
-                        // attribute found
-                        String sectionId = dm.getSectionForAttribute(attributeName);
-                        Assert.isNotNull(sectionId,
-                                "Page is either not initialized or attribute not bound, this is a bug.");
-
-                        String pageId = dm.getSectionPage(sectionId);
-
-                        // relevant, since the attribute is displayed on the current
-                        // page
-                        // if (page.getId().equals(pageId))
-                        // {
-
-                        // We now want the error message to be displayed on
-                        // the header of every page, so the if statement that is commented
-                        // out is no longer relevant
-                        IMessageManager mm = page.getManagedForm().getMessageManager();
-                        mm.setAutoUpdate(false);
-                        String message = modelProblemMarkers[i].getAttribute(IMarker.MESSAGE,
-                                IModelConfigurationDefaults.EMPTY_STRING);
-
-                        Control widget = UIHelper.getWidget(dm.getAttributeControl(attributeName));
-                        if (widget != null)
-                        {
-                            // we set the message's data object to the page id
-                            // of the attribute with the error
-                            // this makes it simple to switch to that page
-                            // when the user clicks on the hyperlink because
-                            // the hyperlink listener recieves that message and
-                            // the message contains the data object.
-                            mm.addMessage("modelProblem_" + i, message, pageId, bubbleType, widget);
-                        }
-                        // expand the section with an error
-                        dm.expandSection(sectionId);
-                        mm.setAutoUpdate(true);
-
-                        if (page.getId().equals(pageId) && errorPageIndex < j)
-                        {
-                            errorPageIndex = j;
-                        }
-                        // }
                     }
                 }
             }
