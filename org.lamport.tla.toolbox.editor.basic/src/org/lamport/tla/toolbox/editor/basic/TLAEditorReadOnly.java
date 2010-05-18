@@ -1,5 +1,7 @@
 package org.lamport.tla.toolbox.editor.basic;
 
+import org.eclipse.jface.action.IMenuManager;
+
 /**
  * A read-only version of the {@link TLAEditor}.
  * Simply overrides the necessary methods to make
@@ -33,6 +35,15 @@ public class TLAEditorReadOnly extends TLAEditor
     public boolean isEditorInputModifiable()
     {
         return false;
+    }
+
+    /**
+     * TODO Remove items from the context menu that don't make sense
+     * for a read-only version of the module.
+     */
+    protected void editorContextMenuAboutToShow(IMenuManager menuManager)
+    {
+        menuManager.removeAll();
     }
 
 }
