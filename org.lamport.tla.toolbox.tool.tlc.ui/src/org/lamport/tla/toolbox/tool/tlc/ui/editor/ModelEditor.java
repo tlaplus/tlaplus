@@ -51,6 +51,7 @@ import org.lamport.tla.toolbox.tool.tlc.ui.view.TLCErrorView;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper.IFileProvider;
 import org.lamport.tla.toolbox.util.ChangedSpecModulesGatheringDeltaVisitor;
+import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 import tla2sany.semantic.ModuleNode;
@@ -945,17 +946,44 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
     }
 
     /**
-     * Overrides the method in {@link FormEditor}. Calls this method in {@link FormEditor}
-     * and then sets the page text to be the name of the input. This is done so
-     * that when read-only editor pages are added to this model editor, the title of
-     * the tabs of those pages is the name of the module being shown. If this is not
-     * done, the title of those tabs would be the empty string.
+     * Overrides the method in {@link FormEditor}. Calls this method in the superclass
+     * and then makes some changes if the input is a tla file.
+     * 
+     * This is done so that when read-only editor pages are added to this model editor,
+     * we can make the following changes:
+     * 
+     * 1.) Set the title of the tabs of those pages to the name of the module being shown.
+     *    If this is not done, the title of those tabs would be the empty string.
+     *    
+     * 2.) Set those pages to be closeable. This makes it possible to click on the tab
+     *     to close it.
      */
     public void addPage(int index, IEditorPart editor, IEditorInput input) throws PartInitException
     {
         super.addPage(index, editor, input);
-        setPageText(index, input.getName());
-        // setPageImage(pageIndex, image);
+        /*
+         * Do stuff if the input is a tla file.
+         * 
+         * Set the title of the page to be the
+         * name of the file.
+         * 
+         * Set the page to be closeable.
+         */
+        if (input instanceof FileEditorInput
+                && ((FileEditorInput) input).getFile().getFileExtension().equals(ResourceHelper.TLA_EXTENSION))
+        {
+            setPageText(index, input.getName());
+            /*
+             * When I implemented this method, getContainer()
+             * returned a CTabFolder. If this somehow stops
+             * being the case, then I do not know how to set
+             * the tla file pages to be closeable.
+             */
+            if (getContainer() instanceof CTabFolder)
+            {
+                ((CTabFolder) getContainer()).getItem(index).setShowClose(true);
+            }
+            // setPageImage(pageIndex, image);
+        }
     }
-
 }
