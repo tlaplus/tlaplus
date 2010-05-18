@@ -485,19 +485,4 @@
             targetId="org.eclipse.ui.DefaultTextEditor">
       </hyperlinkDetector>
    </extension>
-   <extension
-         point="org.eclipse.ui.preferencePages">
-      <page
-            category="toolbox.ui.preferences.GeneralPreferencePage"
-            class="org.lamport.tla.toolbox.editor.basic.preferences.EditorPreferencePage"
-            id="org.lamport.tla.toolbox.editor.basic.EditorPreferencePage"
-            name="Module Editor Preferences">
-      </page>
-   </extension>
-   <extension
-         point="org.eclipse.core.runtime.preferences">
-      <initializer
-            class="org.lamport.tla.toolbox.editor.basic.PreferenceInitializer">
-      </initializer>
-   </extension>
 </plugin>
