@@ -19,6 +19,14 @@
             id="org.lamport.tla.toolbox.editor.basic.TLAEditorAndPDFViewer"
             name="TLA Editor And PDF Viewer">
       </editor>
+      <editor
+            class="org.lamport.tla.toolbox.editor.basic.TLAEditorReadOnly"
+            default="false"
+            extensions="tla"
+            icon="icons/tla_obj.gif"
+            id="org.lamport.tla.toolbox.editor.basic.TLAEditorReadOnly"
+            name="TLA+ Read-Only Editor">
+      </editor>
    </extension>
  <extension
        id="org.lamport.tla.toolbox.editor.basic.DocumentSetup"

@@ -23,6 +23,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IPartService;
 import org.eclipse.ui.PartInitException;
@@ -941,6 +942,20 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
     public ValidateRunnable getValidateRunnable()
     {
         return validateRunable;
+    }
+
+    /**
+     * Overrides the method in {@link FormEditor}. Calls this method in {@link FormEditor}
+     * and then sets the page text to be the name of the input. This is done so
+     * that when read-only editor pages are added to this model editor, the title of
+     * the tabs of those pages is the name of the module being shown. If this is not
+     * done, the title of those tabs would be the empty string.
+     */
+    public void addPage(int index, IEditorPart editor, IEditorInput input) throws PartInitException
+    {
+        super.addPage(index, editor, input);
+        setPageText(index, input.getName());
+        // setPageImage(pageIndex, image);
     }
 
 }

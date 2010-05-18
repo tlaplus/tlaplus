@@ -128,6 +128,17 @@
             id="toolbox.tool.tlc.commands.open.tlc.errors"
             name="Open TLC Error View">
       </command>
+      <command
+            categoryId="toolbox.tool.tlc.commands.category"
+            defaultHandler="org.lamport.tla.toolbox.tool.tlc.handlers.OpenSavedModuleHandler"
+            id="toolbox.tool.tlc.commands.open.savedModule"
+            name="Open Saved Module">
+         <commandParameter
+               id="toolbox.tool.tlc.commands.open.savedModule.modulePath"
+               name="Module Path"
+               optional="false">
+         </commandParameter>
+      </command>
    </extension>
    <extension
          point="org.eclipse.ui.menus">
@@ -182,6 +193,25 @@
                <dynamic
                      class="org.lamport.tla.toolbox.tool.tlc.ui.modelexplorer.CloneModelContributionItem"
                      id="toolbox.tool.tlc.model.clone.dynamic">
+               </dynamic>
+               <visibleWhen
+                     checkEnabled="true">
+                  <with
+                        variable="activeWorkbenchWindow.activePerspective">
+                     <not>
+                        <equals
+                              value="org.lamport.tla.toolbox.ui.perspective.initial">
+                        </equals>
+                     </not>
+                  </with>
+               </visibleWhen>
+            </menu>
+            <menu
+                  id="toolbox.tool.tlc.model.savedModule"
+                  label="Open Saved Module">
+               <dynamic
+                     class="org.lamport.tla.toolbox.tool.tlc.ui.modelexplorer.SavedModuleContributionItem"
+                     id="toolbox.tool.tlc.model.savedModule.dynamic">
                </dynamic>
                <visibleWhen
                      checkEnabled="true">
