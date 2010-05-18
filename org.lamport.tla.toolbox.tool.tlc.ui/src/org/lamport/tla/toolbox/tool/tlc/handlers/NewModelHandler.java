@@ -91,7 +91,7 @@ public class NewModelHandler extends AbstractHandler implements IModelConfigurat
 
         IInputValidator modelNameInputValidator = new ModelNameValidator(specProject);
         final InputDialog dialog = new InputDialog(UIHelper.getShellProvider().getShell(), "New model...",
-                "Plese input the name of the model to create", modelName, modelNameInputValidator);
+                "Please input the name of the model to create", modelName, modelNameInputValidator);
 
         dialog.setBlockOnOpen(true);
         UIHelper.runUISync(new Runnable() {

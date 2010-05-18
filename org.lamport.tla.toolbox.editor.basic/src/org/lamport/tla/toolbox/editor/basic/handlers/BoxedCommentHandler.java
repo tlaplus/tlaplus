@@ -15,9 +15,8 @@ import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.swt.widgets.Shell;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.editor.basic.TLAEditor;
-import org.lamport.tla.toolbox.editor.basic.TLAEditorActivator;
-import org.lamport.tla.toolbox.editor.basic.preferences.EditorPreferencePage;
 import org.lamport.tla.toolbox.editor.basic.util.EditorUtil;
+import org.lamport.tla.toolbox.ui.preference.EditorPreferencePage;
 import org.lamport.tla.toolbox.util.StringHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
@@ -103,7 +102,7 @@ public class BoxedCommentHandler extends AbstractHandler implements IHandler
         selection = (TextSelection) selectionProvider.getSelection();
         offset = selection.getOffset();
         
-        RightMargin = TLAEditorActivator.getDefault().getPreferenceStore().getInt(EditorPreferencePage.EDITOR_RIGHT_MARGIN);
+        RightMargin = Activator.getDefault().getPreferenceStore().getInt(EditorPreferencePage.EDITOR_RIGHT_MARGIN);
         if (offset < 0)
         {
             return null;

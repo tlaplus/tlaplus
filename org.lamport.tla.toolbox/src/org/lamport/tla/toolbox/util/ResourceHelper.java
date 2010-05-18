@@ -32,6 +32,7 @@ import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.spec.nature.PCalDetectingBuilder;
 import org.lamport.tla.toolbox.spec.nature.TLANature;
 import org.lamport.tla.toolbox.spec.nature.TLAParsingBuilder;
+import org.lamport.tla.toolbox.ui.preference.EditorPreferencePage;
 
 /**
  * A toolbox with resource related methods
@@ -501,8 +502,12 @@ public class ResourceHelper
     public static StringBuffer getEmptyModuleContent(String moduleFilename)
     {
         StringBuffer buffer = new StringBuffer();
-        buffer.append("---- MODULE ").append(ResourceHelper.getModuleNameChecked(moduleFilename, false)).append(
-                " ----\n").append("\n\n");
+        String moduleName = ResourceHelper.getModuleNameChecked(moduleFilename, false);
+        int numberOfDashes = Math.max(4, 
+                (Activator.getDefault().getPreferenceStore().getInt(EditorPreferencePage.EDITOR_RIGHT_MARGIN)
+                  - moduleName.length() - 9) / 2);
+        String dashes = StringHelper.copyString("-", numberOfDashes);
+        buffer.append(dashes).append(" MODULE ").append(moduleName).append(" ").append(dashes).append("\n\n\n");
         return buffer;
     }
 
@@ -513,7 +518,10 @@ public class ResourceHelper
     public static StringBuffer getModuleClosingTag()
     {
         StringBuffer buffer = new StringBuffer();
-        buffer.append("====\n").append("\\* Generated at ").append(new Date());
+        buffer.append(StringHelper.copyString("=", 
+                Activator.getDefault().getPreferenceStore().getInt(
+                        EditorPreferencePage.EDITOR_RIGHT_MARGIN))).append(
+                                "\n\\* Generated ").append(new Date());
         return buffer;
     }
 
