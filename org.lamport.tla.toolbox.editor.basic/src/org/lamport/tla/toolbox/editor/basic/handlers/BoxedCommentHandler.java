@@ -98,7 +98,7 @@ public class BoxedCommentHandler extends AbstractHandler implements IHandler
         selection = (TextSelection) selectionProvider.getSelection();
         offset = selection.getOffset();
         
-        RightMargin = TLAEditorActivator.getDefault().getPreferenceStore().getInt(EditorPreferencePage.EDITOR_RIGHT_MARGIN);
+        RightMargin = Activator.getDefault().getPreferenceStore().getInt(EditorPreferencePage.EDITOR_RIGHT_MARGIN);
         if (offset < 0)
         {
             return null;
