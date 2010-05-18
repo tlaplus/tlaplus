@@ -69,31 +69,57 @@ public class OpenSavedModuleHandler extends AbstractHandler implements IHandler
                         try
                         {
                             /*
-                             * First, we determine if the model editor already has the
-                             * saved module open in an editor. If it does, activate
-                             * that page. If it doesn't, add a new page with an read-only
-                             * editor open on the module.
+                             * First, we determine if the model editor already has a TLAEditorReadOnly
+                             * open on the saved module.
                              * 
+                             * If the model editor does have a TLAEditorReadOnly on the saved module,
+                             * we set the input to be the new editor input on the module. It is necessary
+                             * to reset the input even though the editor is already open on that module
+                             * because the saved version of the module may have changed.
+                             * 
+                             * If the model editor does not have a TLAEditorReadOnly open on the saved module
+                             * then we create a new instance and open it in the model editor.
+                             * 
+                             * Whether the editor was previously open or not, we always activate
+                             * that page.
+                             */
+                            FileEditorInput editorInput = new FileEditorInput(module);
+
+                            /*
                              * The only method to get currently opened editors in the model
                              * editor is findEditors(editorInput) which returns an array
                              * of currently opened editors on the input. This should only
                              * have length one, but for whatever reason we may decide in
-                             * the future to have more than one editor open on a given input.
-                             * If there is more than one open, just activate the first one
-                             * in the returned array.
+                             * the future to have more than one editor open on a given input
+                             * in the model editor.
+                             * 
+                             * We iterate through this array of editors until we find one
+                             * that is a TLAEditorReadOnly. We then set the input to be the
+                             * editor input.
                              */
-                            FileEditorInput editorInput = new FileEditorInput(module);
                             IEditorPart[] editors = modelEditor.findEditors(editorInput);
-                            IEditorPart moduleEditor = null;
-                            if (editors.length > 0)
+                            TLAEditorReadOnly moduleEditor = null;
+                            for (int i = 0; i < editors.length; i++)
                             {
-                                moduleEditor = editors[0];
-                            } else
+                                if (editors[i] instanceof TLAEditorReadOnly)
+                                {
+                                    moduleEditor = (TLAEditorReadOnly) editors[i];
+                                    moduleEditor.setInput(editorInput);
+                                    break;
+                                }
+                            }
+
+                            /*
+                             * Create a new instance if there is not already
+                             * an editor open.
+                             */
+                            if (moduleEditor == null)
                             {
                                 moduleEditor = new TLAEditorReadOnly();
                                 modelEditor.addPage(moduleEditor, editorInput);
                             }
 
+                            // always activate the editor page.
                             modelEditor.setActiveEditor(moduleEditor);
                         } catch (PartInitException e)
                         {
