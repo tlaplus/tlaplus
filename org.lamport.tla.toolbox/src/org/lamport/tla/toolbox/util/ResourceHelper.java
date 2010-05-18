@@ -56,6 +56,25 @@ public class ResourceHelper
      */
     public static final String TLA_EXTENSION = "tla";
 
+
+    /*
+     * Constants used for displaying modification history.
+     * It has the syntax:
+     *   modificationHistory +
+     *   (lastModified + date + modifiedBy +
+     *      username + newline)*
+     */
+    public static String modificationHistory = 
+          StringHelper.newline + "\\* Modification History";
+    
+    public static String lastModified = 
+        StringHelper.newline + "\\* Last modified ";
+    
+    public static String modifiedBy = 
+         " by ";
+    
+    
+    
     /**
      * Look up if a project exist and return true if so
      * @param name name of the project
@@ -507,7 +526,8 @@ public class ResourceHelper
                 (Activator.getDefault().getPreferenceStore().getInt(EditorPreferencePage.EDITOR_RIGHT_MARGIN)
                   - moduleName.length() - 9) / 2);
         String dashes = StringHelper.copyString("-", numberOfDashes);
-        buffer.append(dashes).append(" MODULE ").append(moduleName).append(" ").append(dashes).append("\n\n\n");
+        buffer.append(dashes).append(" MODULE ").append(moduleName).append(" ").append(dashes).append(
+                StringHelper.copyString(StringHelper.newline, 3));
         return buffer;
     }
 
@@ -521,7 +541,12 @@ public class ResourceHelper
         buffer.append(StringHelper.copyString("=", 
                 Activator.getDefault().getPreferenceStore().getInt(
                         EditorPreferencePage.EDITOR_RIGHT_MARGIN))).append(
-                                "\n\\* Generated ").append(new Date());
+                modificationHistory).append(
+                StringHelper.newline).append(
+                "\\* Created ").append(
+                new Date()).append(" by ").append(
+                System.getProperty("user.name")).append(
+                StringHelper.newline);
         return buffer;
     }
 

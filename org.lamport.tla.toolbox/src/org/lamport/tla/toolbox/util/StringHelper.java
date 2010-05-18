@@ -11,6 +11,13 @@ package org.lamport.tla.toolbox.util;
  */
 public class StringHelper
 {
+    
+    /*
+     * The following defines newline to be a new-line character in whatever
+     * system this is.
+     */
+    public static String newline = System.getProperty("line.separator");
+
     /**
      * Returns the result of concatenating 'copies' copies of string str, 
      * or the empty string if copies < 0. 

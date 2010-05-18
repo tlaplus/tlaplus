@@ -3,6 +3,7 @@ package org.lamport.tla.toolbox.editor.basic;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -27,6 +28,8 @@ import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.Position;
@@ -70,10 +73,12 @@ import org.lamport.tla.toolbox.editor.basic.actions.ProofFoldAction;
 import org.lamport.tla.toolbox.editor.basic.actions.ToggleCommentAction;
 import org.lamport.tla.toolbox.editor.basic.proof.IProofFoldCommandIds;
 import org.lamport.tla.toolbox.editor.basic.proof.TLAProofFoldingStructureProvider;
+import org.lamport.tla.toolbox.editor.basic.util.EditorUtil;
 import org.lamport.tla.toolbox.editor.basic.util.ElementStateAdapter;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.tool.prover.util.ProverHelper;
 import org.lamport.tla.toolbox.util.ResourceHelper;
+import org.lamport.tla.toolbox.util.StringHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 /**
@@ -405,6 +410,95 @@ public class TLAEditor extends TextEditor
 
     }
 
+    /*
+     * We override this method to add information about who modified the file when. 
+     * @see org.eclipse.ui.texteditor.AbstractTextEditor#doSave(org.eclipse.core.runtime.IProgressMonitor)
+     */
+    public void doSave(IProgressMonitor progressMonitor)
+    {
+        IDocument doc = this.getDocumentProvider().getDocument(this.getEditorInput());
+        String text = doc.get();
+
+        // Set historyStart to the offset at the start of the
+        // modification history section, if there is one. And if there is,
+        // we add the modification date and user.
+        int historyStart = text.indexOf(ResourceHelper.modificationHistory);
+
+        if (historyStart > -1)
+        {
+
+            // Set newEntryStart to the point at which the new modification
+            // information is to be inserted.
+            int newEntryStart = historyStart + ResourceHelper.modificationHistory.length();
+
+            String user = System.getProperty("user.name");
+            String searchString = ResourceHelper.modifiedBy + user;
+            int searchStringLength = searchString.length();
+
+            // Need to remove existing modification entry for user
+            // if there is one. The following while loop sets found to true
+            // iff there is an existing entry and, if so, sets nextEntry to
+            // its starting offset and endOfLine to the offset at its end.
+            boolean found = false;
+            // In the loop, nextEntry is set to the start of the next
+            // Modified entry. The next one is found by searching from
+            // one character to the right of the current entry. To start
+            // the loop, we initialize it to one char to the left of
+            // newEntryStart, which could be pointing to the first
+            // Modified entry.
+            int nextEntry = newEntryStart - 1;
+            int endOfLine = -1; // initialization needed to make compiler happy.
+            label: while (!found)
+            {
+                nextEntry = text.indexOf(ResourceHelper.lastModified, nextEntry + 1);
+                // It we don't find an entry, we eventually exit by
+                // nextEntry becoming -1.
+                if (nextEntry < 0)
+                {
+                    break label;
+                }
+                endOfLine = text.indexOf(StringHelper.newline, nextEntry + 1);
+                if (endOfLine < 0)
+                {
+                    endOfLine = text.length();
+                }
+                // We want this to work even if an extra space is added at the end
+                // of the user name. So, we set realEOL to the offset just to the
+                // right of the last non-space character to the left of endOfLine,
+                // and look for the user name ending there.
+                int realEOL = endOfLine;
+                while (text.charAt(realEOL - 1) == ' ')
+                {
+                    realEOL--;
+                }
+
+                if ((nextEntry + searchStringLength < realEOL)
+                        && (searchString.equals(text.substring(realEOL - searchStringLength, realEOL))))
+                {
+                    found = true;
+                }
+            } // end while
+
+            // Need to put the rest of the replacement code into
+            // a try / catch for BadLocationExceptions.
+            try
+            {
+                // remove old entry, if there is one.
+                if (found)
+                {
+                    doc.replace(nextEntry, endOfLine - nextEntry, "");
+                }
+                doc.replace(newEntryStart, 0, ResourceHelper.lastModified + (new Date()) + searchString);
+            } catch (BadLocationException e)
+            { // System.out.println("Exception.");
+
+            }
+
+        } // end if (historyStart > -1)
+
+        super.doSave(progressMonitor);
+    }
+
     /**
      * Update the annotation structure in the editor.
      * 
@@ -644,7 +738,7 @@ public class TLAEditor extends TextEditor
             if (adapter != null)
                 return adapter;
         }
-        
+
         if (ISelectionProvider.class.equals(required))
         {
             return getSelectionProvider();
