@@ -35,6 +35,7 @@ import org.eclipse.ui.forms.IMessageManager;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.part.FileEditorInput;
+import org.eclipse.ui.texteditor.ITextEditor;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.spec.parser.IParseConstants;
@@ -633,6 +634,26 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
                     getConfig().doSave();
                 }
                 getConfig().launch(mode, new SubProgressMonitor(monitor, 1), true);
+
+                /*
+                 * Close any tabs in this editor containing read-only
+                 * versions of modules. They will be changed by the launch,
+                 * regardless of the mode. We could do something more sophisticated
+                 * like listening to resource changes and updating the editors
+                 * when the underlying files change, but the doesn't seem worth
+                 * the effort.
+                 */
+                for (int i = 0; i < getPageCount(); i++)
+                {
+                    /*
+                     * The normal form pages (main model page, advanced options, results)
+                     * are not text editors. We leave those pages but remove all text editors.
+                     */
+                    if (pages.get(i) instanceof ITextEditor)
+                    {
+                        removePage(i);
+                    }
+                }
 
                 // clear the error view when launching the model checker but not when validating
                 if (mode.equals(TLCModelLaunchDelegate.MODE_MODELCHECK))
