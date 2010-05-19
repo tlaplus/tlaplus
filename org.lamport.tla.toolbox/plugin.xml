@@ -1202,6 +1202,9 @@
       <participant
             class="org.lamport.tla.toolbox.ui.contribution.StatusReflectingSpecLifecycleParticipant">
       </participant>
+      <participant
+            class="org.lamport.tla.toolbox.ParseResultSpecLifecycleParticipant">
+      </participant>
    </extension>
    <extension
          point="org.lamport.tla.toolbox.tool">

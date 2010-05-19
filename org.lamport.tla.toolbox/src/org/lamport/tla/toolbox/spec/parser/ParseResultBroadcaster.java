@@ -23,6 +23,10 @@ import tla2sany.semantic.ModuleNode;
  * Classes can also get the most recent {@link ParseResult} for a given module
  * by calling {@link ParseResultBroadcaster#getParseResult(String)}.
  * 
+ * All {@link ParseResult}s are for modules in the currently opened spec.
+ * When the spec is closed, all information in this class should be cleared
+ * by calling {@link ParseResultBroadcaster#clear()}.
+ * 
  * @author Daniel Ricketts
  *
  */
@@ -127,10 +131,22 @@ public class ParseResultBroadcaster
 
     /**
      * Returns the most recent {@link ParseResult} for the module
-     * name.
+     * name (without .tla extension). This method assumes the module
+     * is in the currently opened spec.
      */
     public ParseResult getParseResult(String moduleName)
     {
         return (ParseResult) parseResults.get(moduleName);
+    }
+
+    /**
+     * Clears all information from this broadcaster. The
+     * list of listeners and the map of parse results gets
+     * cleared.
+     */
+    public void clear()
+    {
+        listeners.clear();
+        parseResults.clear();
     }
 }
