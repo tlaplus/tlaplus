@@ -152,7 +152,7 @@ public class CheckProofHandler extends AbstractHandler
                     } else
                     {
                         ProverUIActivator
-                                .logDebug("CheckProofHandler could not the begin line and end line for the launch of the prover on module "
+                                .logDebug("CheckProofHandler could not get the begin line and end line for the launch of the prover on module "
                                         + moduleName + ". This is a bug.");
                     }
                 } else
