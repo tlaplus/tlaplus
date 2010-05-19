@@ -21,6 +21,10 @@ import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
+import org.eclipse.swt.custom.CTabFolder2Adapter;
+import org.eclipse.swt.custom.CTabFolder2Listener;
+import org.eclipse.swt.custom.CTabFolderEvent;
+import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
@@ -175,6 +179,13 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
     // data binding manager
     private DataBindingManager dataBindingManager = new DataBindingManager();
 
+    /**
+     * A listener that reacts to when editor tabs showing saved modules
+     * get closed. This listener properly disposes of the editor and its contents.
+     * See the class documentation for more details.
+     */
+    private CTabFolder2Listener listener = new CloseModuleTabListener();
+
     // array of pages to add
     private BasicFormPage[] pagesToAdd;
 
@@ -255,6 +266,7 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
             // is made visible
             IPartService service = (IPartService) getSite().getService(IPartService.class);
             service.addPartListener(ModelEditorPartListener.getDefault());
+
         }
 
         /*
@@ -445,6 +457,10 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
             if (getContainer() instanceof CTabFolder)
             {
                 ((CTabFolder) getContainer()).setTabPosition(SWT.TOP);
+                ((CTabFolder) getContainer()).addCTabFolder2Listener(listener);
+            } else
+            {
+                TLCUIActivator.logDebug("The model editor container is not a CTabFolder. This is a bug.");
             }
 
             for (int i = 0; i < pagesToAdd.length; i++)
@@ -1012,10 +1028,10 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
         /*
          * Do stuff if the input is a tla file.
          * 
-         * Set the title of the page to be the
+         * 1.) Set the title of the page to be the
          * name of the file.
          * 
-         * Set the page to be closeable.
+         * 2.) Set the page to be closeable.
          */
         if (input instanceof FileEditorInput
                 && ((FileEditorInput) input).getFile().getFileExtension().equals(ResourceHelper.TLA_EXTENSION))
@@ -1030,8 +1046,39 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
             if (getContainer() instanceof CTabFolder)
             {
                 ((CTabFolder) getContainer()).getItem(index).setShowClose(true);
+
             }
             // setPageImage(pageIndex, image);
+        }
+    }
+
+    /**
+     * A listener that reacts to when editor tabs showing saved modules
+     * get closed. This listener blocks the underlying folder widget
+     * from directly closing the page. Instead, it calls the
+     * {@link ModelEditor#removePage(int)} method to remove the page.
+     * This properly disposes of the editor. If the editor page is not
+     * removed this way, bad things happen, like memory leaks and bizarre
+     * problems updating the editor contents.
+     * 
+     * @author Daniel Ricketts
+     *
+     */
+    private class CloseModuleTabListener extends CTabFolder2Adapter
+    {
+
+        public void close(CTabFolderEvent event)
+        {
+            Assert
+                    .isTrue(event.item instanceof CTabItem,
+                            "Something other than a CTabItem was closed in a CTabFolder.");
+            CTabItem item = (CTabItem) event.item;
+
+            // block the CTabFolder from directly removing the tab
+            event.doit = false;
+
+            // remove the page properly
+            removePage(item.getParent().indexOf(item));
         }
     }
 }
