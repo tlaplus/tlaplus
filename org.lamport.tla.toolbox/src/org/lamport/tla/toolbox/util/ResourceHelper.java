@@ -26,13 +26,22 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.core.runtime.jobs.MultiRule;
+import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.ITextSelection;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.job.NewTLAModuleCreationOperation;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.spec.nature.PCalDetectingBuilder;
 import org.lamport.tla.toolbox.spec.nature.TLANature;
 import org.lamport.tla.toolbox.spec.nature.TLAParsingBuilder;
+import org.lamport.tla.toolbox.spec.parser.IParseConstants;
+import org.lamport.tla.toolbox.spec.parser.ParseResult;
+import org.lamport.tla.toolbox.spec.parser.ParseResultBroadcaster;
 import org.lamport.tla.toolbox.ui.preference.EditorPreferencePage;
+
+import tla2sany.semantic.ModuleNode;
+import tla2sany.semantic.TheoremNode;
+import util.UniqueString;
 
 /**
  * A toolbox with resource related methods
@@ -50,12 +59,11 @@ public class ResourceHelper
      * 
      */
     private static final String TOOLBOX_DIRECTORY_SUFFIX = ".toolbox";
-    
+
     /**
      * TLA extension
      */
     public static final String TLA_EXTENSION = "tla";
-
 
     /*
      * Constants used for displaying modification history.
@@ -64,17 +72,12 @@ public class ResourceHelper
      *   (lastModified + date + modifiedBy +
      *      username + newline)*
      */
-    public static String modificationHistory = 
-          StringHelper.newline + "\\* Modification History";
-    
-    public static String lastModified = 
-        StringHelper.newline + "\\* Last modified ";
-    
-    public static String modifiedBy = 
-         " by ";
-    
-    
-    
+    public static String modificationHistory = StringHelper.newline + "\\* Modification History";
+
+    public static String lastModified = StringHelper.newline + "\\* Last modified ";
+
+    public static String modifiedBy = " by ";
+
     /**
      * Look up if a project exist and return true if so
      * @param name name of the project
@@ -171,13 +174,13 @@ public class ResourceHelper
                 }
 
                 String parentDirectory = getParentDirName(rootFilename);
-                
+
                 Assert.isNotNull(parentDirectory);
 
                 // parent directory could be determined
 
-                IPath projectDescriptionPath = new Path(parentDirectory).removeTrailingSeparator()
-                        .append(name.concat(TOOLBOX_DIRECTORY_SUFFIX)).addTrailingSeparator();
+                IPath projectDescriptionPath = new Path(parentDirectory).removeTrailingSeparator().append(
+                        name.concat(TOOLBOX_DIRECTORY_SUFFIX)).addTrailingSeparator();
 
                 // create a new description for the given name
                 IProjectDescription description;
@@ -376,7 +379,7 @@ public class ResourceHelper
 
                         getLinkedFile(project, newLocation.toOSString(), true);
                         monitor.worked(1);
-                        
+
                         Activator.logDebug("File found " + newLocation.toOSString());
                     } else
                     {
@@ -384,10 +387,11 @@ public class ResourceHelper
                                 + name + ". The specified location " + newLocation.toOSString()
                                 + " did not contain the file."));
                     }
-                } else {
+                } else
+                {
                     monitor.worked(2);
                 }
-                
+
             }
 
         } catch (CoreException e)
@@ -522,9 +526,9 @@ public class ResourceHelper
     {
         StringBuffer buffer = new StringBuffer();
         String moduleName = ResourceHelper.getModuleNameChecked(moduleFilename, false);
-        int numberOfDashes = Math.max(4, 
-                (Activator.getDefault().getPreferenceStore().getInt(EditorPreferencePage.EDITOR_RIGHT_MARGIN)
-                  - moduleName.length() - 9) / 2);
+        int numberOfDashes = Math.max(4, (Activator.getDefault().getPreferenceStore().getInt(
+                EditorPreferencePage.EDITOR_RIGHT_MARGIN)
+                - moduleName.length() - 9) / 2);
         String dashes = StringHelper.copyString("-", numberOfDashes);
         buffer.append(dashes).append(" MODULE ").append(moduleName).append(" ").append(dashes).append(
                 StringHelper.copyString(StringHelper.newline, 3));
@@ -538,15 +542,11 @@ public class ResourceHelper
     public static StringBuffer getModuleClosingTag()
     {
         StringBuffer buffer = new StringBuffer();
-        buffer.append(StringHelper.copyString("=", 
-                Activator.getDefault().getPreferenceStore().getInt(
-                        EditorPreferencePage.EDITOR_RIGHT_MARGIN))).append(
-                modificationHistory).append(
-                StringHelper.newline).append(
-                "\\* Created ").append(
-                new Date()).append(" by ").append(
-                System.getProperty("user.name")).append(
-                StringHelper.newline);
+        buffer.append(
+                StringHelper.copyString("=", Activator.getDefault().getPreferenceStore().getInt(
+                        EditorPreferencePage.EDITOR_RIGHT_MARGIN))).append(modificationHistory).append(
+                StringHelper.newline).append("\\* Created ").append(new Date()).append(" by ").append(
+                System.getProperty("user.name")).append(StringHelper.newline);
         return buffer;
     }
 
@@ -785,6 +785,90 @@ public class ResourceHelper
         {
             Activator.logError("Error deleting a specification", e);
         }
+    }
+
+    /**
+     * If file has been parsed since it was last written, then return
+     * its parseResult.  Else, return null.
+     * @param file
+     * @return
+     */
+    public static ParseResult getValidParseResult(IFile file)
+    {
+        String moduleName = ResourceHelper.getModuleName(file);
+
+        ParseResult parseResult = ParseResultBroadcaster.getParseResultBroadcaster().getParseResult(moduleName);
+        if ((parseResult == null))
+        {
+            return null;
+        }
+
+        long timeWhenParsed = parseResult.getParserCalled();
+        long timeWhenWritten = file.getLocalTimeStamp();
+        if ((timeWhenWritten == IResource.NULL_STAMP) || (timeWhenWritten > timeWhenParsed))
+        {
+            return null;
+        }
+        return parseResult;
+    }
+
+    /**
+     * If parseResult's status is not equal to PARSED, returns null.  Else, it tries to find a TheoremNode in
+     * module moduleName "at" the point textSelection.  More precisely, it is the TheoremNode whose location
+     * is the first one on the line containing the offset of textSelection.  
+     * 
+     * The method assumes that document is the document for the module.
+     * 
+     * @param parseResult
+     * @param moduleName
+     * @param textSelection
+     * @param document
+     * @return
+     */
+    public static TheoremNode getTheoremNodeWithCaret(ParseResult parseResult, String moduleName,
+            ITextSelection textSelection, IDocument document)
+    {
+        if ((parseResult == null) || (parseResult.getStatus() != IParseConstants.PARSED)) {
+            return null;
+        }
+        ModuleNode module = parseResult.getSpecObj().getExternalModuleTable().getModuleNode(
+                UniqueString.uniqueStringOf(moduleName));
+        if (module == null)
+        {
+            return null;
+        }
+        TheoremNode[] theorems = module.getTheorems();
+
+        TheoremNode stepWithCaret = null;
+
+        for (int i = 0; i < theorems.length; i++)
+        {
+            TheoremNode theoremNode = theorems[i];
+
+            if (theoremNode.getLocation().source().equals(moduleName))
+            {
+                /*
+                 * Found a theorem in the module.
+                 * 
+                 * See if it has a step containing the caret.
+                 * 
+                 * The caret is located at the end of the current
+                 * selection if a range of text is selected (highlighted).
+                 */
+                TheoremNode step = UIHelper.getStepWithCaret(theoremNode, textSelection.getOffset()
+                /* + textSelection.getLength() */, document);
+
+                if (step != null)
+                {
+                    // found the step with the caret
+                    stepWithCaret = step;
+                    break;
+                }
+            }
+        }
+
+        return stepWithCaret;
+
     }
 
 }
