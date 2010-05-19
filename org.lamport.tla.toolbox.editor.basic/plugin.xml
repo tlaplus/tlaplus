@@ -448,6 +448,10 @@
                     commandId="org.lamport.tla.toolbox.editor.basic.FocusOnStep"
                     style="push">
               </command>
+              <command
+                    commandId="org.lamport.tla.toolbox.editor.basic.renumberProof"
+                    style="push">
+              </command>
               <separator
                     name="org.lamport.tla.toolbox.editor.basic.commentseparator"
                     visible="true">
