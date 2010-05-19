@@ -8,6 +8,7 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IHandler;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextSelection;
@@ -151,8 +152,8 @@ public class CheckProofHandlerDelegate extends AbstractHandler implements IHandl
                              * The caret is located at the end of the current
                              * selection if a range of text is selected (highlighted).
                              */
-                            TheoremNode step = getStepWithCaret(theoremNode, textSelection.getOffset()
-                                    + textSelection.getLength());
+                            TheoremNode step = UIHelper.getStepWithCaret(theoremNode, textSelection.getOffset()
+                                    + textSelection.getLength(), document);
 
                             if (step != null)
                             {
@@ -182,6 +183,14 @@ public class CheckProofHandlerDelegate extends AbstractHandler implements IHandl
                             params.put(CheckProofHandler.PARAM_END_LINE, "" + proof.getLocation().endLine());
                             params.put(CheckProofHandler.PARAM_END_COLUMN, "" + proof.getLocation().endColumn());
 
+                        } else
+                        {
+                            /*
+                             * Display a message to the user indicating that there is no
+                             * proof for this proof step and then return.
+                             */
+                            MessageDialog.openError(UIHelper.getShellProvider().getShell(), "Step without proof.",
+                                    "The proof step you have selected does not have a proof.");
                         }
                     } else
                     {
@@ -214,98 +223,4 @@ public class CheckProofHandlerDelegate extends AbstractHandler implements IHandl
         return null;
     }
 
-    /**
-     * For all {@link TheoremNode} in the tree rooted at theoremNode,
-     * this returns the {@link TheoremNode} that is first on the line
-     * containing the caret, or null if none satisfy that criteria.
-     * 
-     * @param theoremNode
-     * @return
-     */
-    private TheoremNode getStepWithCaret(TheoremNode theoremNode, int caretOffset)
-    {
-        try
-        {
-            /*
-             * Get the location of the step.
-             * 
-             * theoremNode.getTheorem() returns the node
-             * corresponding to the statement of the step (or theorem).
-             * 
-             * Return theoremNode if the caret is on any of the lines
-             * of the statement of theoremNode. If the caret is not
-             * on any of the lines of the statement of theoremNode, then
-             * recursively search for a substep containing the caret.
-             */
-            Location stepLoc = theoremNode.getTheorem().getLocation();
-            /*
-             * IDocument lines are 0-based and SANY Location lines
-             * are 1-based.
-             */
-            int caretLine = document.getLineOfOffset(caretOffset) + 1;
-            // IRegion stepRegion = AdapterFactory.locationToRegion(document, stepLoc);
-
-            if (stepLoc.beginLine() <= caretLine && stepLoc.endLine() >= caretLine/*stepRegion.getOffset() <= caretOffset && stepRegion.getOffset() + stepRegion.getLength() >= caretOffset*/)
-            {
-                return theoremNode;
-            }
-
-            ThmOrAssumpDefNode defNode = theoremNode.getDef();
-            /*
-             * According to the comments, defNode can be null.
-             */
-            if (defNode != null)
-            {
-
-            }
-
-            /*
-             * Theorem node does not contain the caret.
-             * Recursively try to find a sub-step containing
-             * the caret if the proof contains the caret.
-             */
-            ProofNode proof = theoremNode.getProof();
-            if (proof != null)
-            {
-                Location proofLoc = proof.getLocation();
-                if (caretLine >= proofLoc.beginColumn() && caretLine <= proofLoc.endLine())
-                {
-                    if (proof instanceof NonLeafProofNode)
-                    {
-                        NonLeafProofNode nonLeafProof = (NonLeafProofNode) proof;
-                        LevelNode[] steps = nonLeafProof.getSteps();
-
-                        /*
-                         * From the documentation of NonLeafProofNode,
-                         * a step can be one of four types:
-                         * 
-                         * DefStepNode
-                         * UseOrHideNode
-                         * InstanceNode
-                         * TheoremNode
-                         * 
-                         * Only TheoremNode can have a proof. Recursively compute
-                         * the proof positions for those steps.
-                         */
-                        for (int i = 0; i < steps.length; i++)
-                        {
-                            if (steps[i] instanceof TheoremNode)
-                            {
-                                TheoremNode node = getStepWithCaret((TheoremNode) steps[i], caretOffset);
-                                if (node != null)
-                                {
-                                    return node;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-        } catch (BadLocationException e)
-        {
-            ProverUIActivator.logError("Error finding step containing caret.", e);
-        }
-        return null;
-    }
 }
