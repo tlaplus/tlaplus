@@ -26,13 +26,9 @@ import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 import tla2sany.modanalyzer.SpecObj;
-import tla2sany.semantic.LevelNode;
 import tla2sany.semantic.ModuleNode;
-import tla2sany.semantic.NonLeafProofNode;
 import tla2sany.semantic.ProofNode;
 import tla2sany.semantic.TheoremNode;
-import tla2sany.semantic.ThmOrAssumpDefNode;
-import tla2sany.st.Location;
 import util.UniqueString;
 
 /**
@@ -187,10 +183,12 @@ public class CheckProofHandlerDelegate extends AbstractHandler implements IHandl
                         {
                             /*
                              * Display a message to the user indicating that there is no
-                             * proof for this proof step and then return.
+                             * proof for this proof step and then return. The prover
+                             * should not be launched.
                              */
                             MessageDialog.openError(UIHelper.getShellProvider().getShell(), "Step without proof.",
                                     "The proof step you have selected does not have a proof.");
+                            return null;
                         }
                     } else
                     {
