@@ -236,6 +236,13 @@
             id="org.lamport.tla.toolbox.editor.basic.formatAndBoxComment"
             name="Format and Box Comment">
       </command>
+      <command
+            categoryId="org.eclipse.ui.category.textEditor"
+            defaultHandler="org.lamport.tla.toolbox.editor.basic.handlers.RenumberProofHandler"
+            description="Renumbers steps of a statement&apos;s proof"
+            id="org.lamport.tla.toolbox.editor.basic.renumberProof"
+            name="Renumber Proof">
+      </command>
 
    </extension>
    <extension
@@ -388,6 +395,12 @@
             contextId="org.eclipse.ui.contexts.window"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="M1+O M1+O">
+      </key>
+      <key
+            commandId="org.lamport.tla.toolbox.editor.basic.renumberProof"
+            contextId="org.eclipse.ui.contexts.window"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+G M1+R">
       </key>
       
    </extension>
