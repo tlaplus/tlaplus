@@ -223,6 +223,7 @@ public class RenumberProofHandler extends AbstractHandler implements IHandler
         } else
         {
             pfNode = null;
+            return false;
         }
         return true;
     }
