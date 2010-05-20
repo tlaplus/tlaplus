@@ -256,9 +256,6 @@ public class ObligationsView extends ViewPart
                     viewer.setDocument(new Document(oblString.trim()));
                     StyledText text = viewer.getTextWidget();
 
-                    System.out.println(viewer.getDocument().get());
-                    System.out.println("Num lines " + text.getLineCount());
-
                     /*
                      * Give the item the appropriate number of lines
                      * to display the entire obligation.
