@@ -73,7 +73,6 @@ import org.lamport.tla.toolbox.editor.basic.actions.ProofFoldAction;
 import org.lamport.tla.toolbox.editor.basic.actions.ToggleCommentAction;
 import org.lamport.tla.toolbox.editor.basic.proof.IProofFoldCommandIds;
 import org.lamport.tla.toolbox.editor.basic.proof.TLAProofFoldingStructureProvider;
-import org.lamport.tla.toolbox.editor.basic.util.EditorUtil;
 import org.lamport.tla.toolbox.editor.basic.util.ElementStateAdapter;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.tool.prover.util.ProverHelper;
@@ -752,6 +751,7 @@ public class TLAEditor extends TextEditor
         // tlapmColoring.dispose();
         proofStructureProvider.dispose();
         rootImage.dispose();
+        ResourcesPlugin.getWorkspace().removeResourceChangeListener(moduleFileChangeListener);
         super.dispose();
     }
 
