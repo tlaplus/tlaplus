@@ -10,6 +10,7 @@ import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
@@ -51,6 +52,11 @@ public class ObligationsView extends ViewPart
      */
     private HashMap items;
     /**
+     * A map from {@link ExpandItem} to their
+     * associated {@link SourceViewer}.
+     */
+    private HashMap viewers;
+    /**
      * Listens to when the user clicks
      * on an item's widget and jumps to the marker.
      * 
@@ -78,6 +84,7 @@ public class ObligationsView extends ViewPart
     public ObligationsView()
     {
         items = new HashMap();
+        viewers = new HashMap();
     }
 
     public void createPartControl(Composite parent)
@@ -201,11 +208,10 @@ public class ObligationsView extends ViewPart
                      * but is not a top priority.
                      */
                     SourceViewer viewer = new SourceViewer(oblWidget, null, SWT.READ_ONLY | SWT.MULTI | SWT.WRAP);
-                    StyledText text = viewer.getTextWidget();
+                    viewer.getTextWidget().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
-                    // set the viewers document to the obligation.
-                    String oblString = marker.getAttribute(ProverHelper.OBLIGATION_STRING, "");
-                    viewer.setDocument(new Document(oblString.trim()));
+                    // item maps to viewer for later access
+                    viewers.put(item, viewer);
 
                     item.setControl(oblWidget);
                     item.setExpanded(true);
@@ -223,11 +229,6 @@ public class ObligationsView extends ViewPart
                     viewer.getTextWidget().addListener(SWT.MouseDown, listener);
                     oblWidget.addListener(SWT.MouseDown, listener);
 
-                    /*
-                     * Give the item the appropriate number of lines
-                     * to display the entire obligation.
-                     */
-                    item.setHeight(text.getLineHeight() * text.getLineCount());
                     items.put(new Integer(id), item);
                 }
 
@@ -239,6 +240,31 @@ public class ObligationsView extends ViewPart
                 String status = marker.getAttribute(ProverHelper.OBLIGATION_STATUS, "Unknown");
                 String method = marker.getAttribute(ProverHelper.OBLIGATION_METHOD, "");
                 item.setText("Obligation " + id + " - status : " + status + " - method : " + method);
+
+                /*
+                 * Get the item's viewer. If the viewer's document is null
+                 * and the obligation string in the marker is not empty,
+                 * set the viewer's document to a new document containing
+                 * the obligation string.
+                 */
+                SourceViewer viewer = (SourceViewer) viewers.get(item);
+                Assert.isNotNull(viewer, "Expand item has been created without a source viewer. This is a bug.");
+                String oblString = marker.getAttribute(ProverHelper.OBLIGATION_STRING, "");
+                if (viewer.getDocument() == null && !oblString.isEmpty())
+                {
+                    // set the viewers document to the obligation.
+                    viewer.setDocument(new Document(oblString.trim()));
+                    StyledText text = viewer.getTextWidget();
+
+                    System.out.println(viewer.getDocument().get());
+                    System.out.println("Num lines " + text.getLineCount());
+
+                    /*
+                     * Give the item the appropriate number of lines
+                     * to display the entire obligation.
+                     */
+                    item.setHeight(text.getLineHeight() * text.getLineCount());
+                }
 
             }
         } catch (CoreException e)
