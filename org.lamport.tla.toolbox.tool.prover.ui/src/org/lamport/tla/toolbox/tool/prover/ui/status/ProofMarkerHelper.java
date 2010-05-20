@@ -197,8 +197,12 @@ public class ProofMarkerHelper
                 fileDocumentProvider.connect(fileEditorInput);
                 IDocument document = fileDocumentProvider.getDocument(fileEditorInput);
                 IRegion obRegion = AdapterFactory.locationToRegion(document, location);
+                /*
+                 * For marking a region that starts at offset o and has length l, the
+                 * start character is o and the end character is o+l-1.
+                 */
                 marker.setAttribute(IMarker.CHAR_START, obRegion.getOffset());
-                marker.setAttribute(IMarker.CHAR_END, obRegion.getOffset() + obRegion.getLength());
+                marker.setAttribute(IMarker.CHAR_END, obRegion.getOffset() + obRegion.getLength() - 1);
 
                 // DEBUG
                 // System.out.println("Marker created for obligation from message \n" + message);
