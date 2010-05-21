@@ -86,6 +86,17 @@
                      name="toolbox.openview.name"
                      value="org.lamport.tla.toolbox.tool.prover.ui.rejectedObligations">
                </parameter>
+               <visibleWhen
+                     checkEnabled="true">
+                  <with
+                        variable="activeWorkbenchWindow.activePerspective">
+                     <not>
+                        <equals
+                              value="org.lamport.tla.toolbox.ui.perspective.initial">
+                        </equals>
+                     </not>
+                  </with>
+               </visibleWhen>
             </command>
          </menu>
       </menuContribution>
