@@ -83,7 +83,11 @@ public class Spec implements IAdaptable
         this.rootFile = PreferenceStoreHelper.readProjectRootFile(project);
         this.specObj = null;
         this.status = IParseConstants.UNPARSED;
-
+        
+        // Initialize the spec's ToolboxDirSize property.
+        // Added by LL and Dan on 21 May 2010
+        ResourceHelper.setToolboxDirSize(this.project);
+        
         Assert.isNotNull(this.rootFile);
     }
 

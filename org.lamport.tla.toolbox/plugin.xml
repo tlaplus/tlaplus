@@ -738,8 +738,12 @@
          <toolbar
                id="toolbox.trim">
             <control
+                  class="org.lamport.tla.toolbox.ui.contribution.SizeControlContribution"
+                  id="toolbox.contributions.spec.size">
+            </control>
+            <control
                   class="org.lamport.tla.toolbox.ui.contribution.ParseStatusContributionItem"
-                  id="toolobx.contributions.parse.status">
+                  id="toolbox.contributions.parse.status">
             </control>
          </toolbar>
       </menuContribution>

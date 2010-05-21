@@ -26,6 +26,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.core.runtime.jobs.MultiRule;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextSelection;
 import org.lamport.tla.toolbox.Activator;
@@ -38,6 +39,8 @@ import org.lamport.tla.toolbox.spec.parser.IParseConstants;
 import org.lamport.tla.toolbox.spec.parser.ParseResult;
 import org.lamport.tla.toolbox.spec.parser.ParseResultBroadcaster;
 import org.lamport.tla.toolbox.ui.preference.EditorPreferencePage;
+import org.lamport.tla.toolbox.util.pref.IPreferenceConstants;
+import org.lamport.tla.toolbox.util.pref.PreferenceStoreHelper;
 
 import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.TheoremNode;
@@ -828,7 +831,8 @@ public class ResourceHelper
     public static TheoremNode getTheoremNodeWithCaret(ParseResult parseResult, String moduleName,
             ITextSelection textSelection, IDocument document)
     {
-        if ((parseResult == null) || (parseResult.getStatus() != IParseConstants.PARSED)) {
+        if ((parseResult == null) || (parseResult.getStatus() != IParseConstants.PARSED))
+        {
             return null;
         }
         ModuleNode module = parseResult.getSpecObj().getExternalModuleTable().getModuleNode(
@@ -871,4 +875,74 @@ public class ResourceHelper
 
     }
 
+    /**
+     * Sets the ToolboxDirSize property, which equals the number of kbytes of storage
+     * used by the spec's .toolbox directory, where resource is the IProject object
+     * for the spec.
+     * 
+     * @param resource
+     */
+    public static void setToolboxDirSize(IProject resource)
+    {
+        // set dirSize to the size of the .toolbox directory
+        long dirSize = ResourceHelper.getSizeOfJavaFileResource(resource);
+
+        // Set the size property of the Spec's property page spec to the Spec object for which
+        IPreferenceStore preferenceStore = PreferenceStoreHelper.getProjectPreferenceStore(resource);
+
+        preferenceStore.setValue(IPreferenceConstants.P_PROJECT_TOOLBOX_DIR_SIZE, String.valueOf(dirSize / 1000));
+    }
+
+    /**
+     * Called to find the number of bytes contained within an IResource
+     * that represents a Java File object (a file or directory).  Returns
+     * 0 if resource or its File are null.
+     * 
+     * @param resource
+     * @return
+     */
+    public static long getSizeOfJavaFileResource(IResource resource)
+    {
+        // Set file to the Java File represented by the resource.
+        if (resource == null) {
+            return 0;
+        }
+        File file = resource.getLocation().toFile();
+
+        if (file == null) {
+            return 0;
+        }
+        return getDirSize(file);
+    }
+
+    /**
+     * If dir is a directory, return the size of all
+     * @param dir
+     * @return
+     */
+    private static long getDirSize(File dir)
+    {
+        long size = 0;
+        if (dir.isFile())
+        {
+            size = dir.length();
+        } else
+        {
+            File[] subFiles = dir.listFiles();
+            size += dir.length();
+            for (int i = 0; i < subFiles.length; i++)
+            {
+                File file = subFiles[i];
+
+                if (file.isFile())
+                {
+                    size += file.length();
+                } else
+                {
+                    size += getDirSize(file);
+                }
+            }
+        }
+        return size;
+    }
 }

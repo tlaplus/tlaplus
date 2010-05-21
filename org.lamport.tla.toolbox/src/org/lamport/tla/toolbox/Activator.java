@@ -1,8 +1,11 @@
 package org.lamport.tla.toolbox;
 
+import java.util.Iterator;
 import java.util.List;
 
 import org.eclipse.core.resources.IMarkerDelta;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
@@ -11,6 +14,7 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.spec.manager.WorkspaceSpecManager;
@@ -19,7 +23,9 @@ import org.lamport.tla.toolbox.spec.parser.IParseConstants;
 import org.lamport.tla.toolbox.spec.parser.ParserDependencyStorage;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.ui.contribution.ParseStatusContributionItem;
+import org.lamport.tla.toolbox.ui.contribution.SizeControlContribution;
 import org.lamport.tla.toolbox.ui.view.ProblemView;
+import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.TLAMarkerHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 import org.lamport.tla.toolbox.util.pref.IPreferenceConstants;
@@ -40,7 +46,8 @@ public class Activator extends AbstractUIPlugin
     private static WorkspaceSpecManager specManager;
     private static ParserDependencyStorage parserDependencyStorage;
     private ParseStatusContributionItem parseStatusContributionItem = null;
-
+    private SizeControlContribution sizeControlContribution = null;
+    
     private final Runnable parseStatusUpdateRunable = new Runnable() {
 
         public void run()
@@ -48,6 +55,17 @@ public class Activator extends AbstractUIPlugin
             if (parseStatusContributionItem != null)
             {
                 parseStatusContributionItem.updateStatus();
+            }
+        }
+    };
+    
+    private final Runnable sizeUpdateRunnable = new Runnable() {
+
+        public void run()
+        {
+            if (sizeControlContribution != null)
+            {
+                sizeControlContribution.updateSize();
             }
         }
     };
@@ -199,6 +217,53 @@ public class Activator extends AbstractUIPlugin
             }
 
         }, IResourceChangeEvent.POST_CHANGE);
+
+        // Register a listener to find any changed .toobox directories of specs.
+        workspace.addResourceChangeListener(new IResourceChangeListener() {
+
+            public void resourceChanged(IResourceChangeEvent event)
+            {
+                IResourceDelta delta = event.getDelta();
+                if (delta != null)
+                {
+
+                    ToolboxDirectoryVisitor toolboxDirectoryFinder = new ToolboxDirectoryVisitor();
+                    try
+                    {
+                        // We cannot get the spec manager if it has not been instantiated
+                        // because this would trigger a resource change event, and this code
+                        // is being called within a resourceChanged method. Such an
+                        // infinite loop is not allowed.
+                        if (Activator.isSpecManagerInstantiated())
+                        {
+                            // delta.accept calls the visit method of the visitor
+                            // on the delta.
+                            delta.accept(toolboxDirectoryFinder);
+                            List directories = toolboxDirectoryFinder.getDirectories();
+                            for (Iterator it = directories.iterator(); it.hasNext();)
+                            {   // Set resource to the IResource representing a project
+                                // for a spec.  This resource is embodied in the file
+                                // system as the spec's .toolbox director.
+                                IProject resource = (IProject) it.next();
+                                ResourceHelper.setToolboxDirSize(resource);
+                                
+                                // TO-DO: If this is the currently opened spec, change display of
+                                // that spec's size.  
+                                if (ToolboxHandle.getCurrentSpec().getProject().equals(resource)){
+                                    UIHelper.runUIAsync(sizeUpdateRunnable);
+                                }
+                            }
+
+                        }
+                    } catch (CoreException e)
+                    {
+                        Activator.logError("Error during post save status update", e);
+                    }
+                }
+
+            }
+
+        }, IResourceChangeEvent.POST_CHANGE);
     }
 
     public void stop(BundleContext context) throws Exception
@@ -292,6 +357,12 @@ public class Activator extends AbstractUIPlugin
     public static boolean isSpecManagerInstantiated()
     {
         return specManager != null;
+    }
+
+    public void setSizeControlContribution(SizeControlContribution sizeControlContribution)
+    {
+        this.sizeControlContribution = sizeControlContribution; 
+        
     }
 
 }

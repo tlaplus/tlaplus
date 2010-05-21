@@ -53,9 +53,9 @@ import org.lamport.tla.toolbox.tool.tlc.ui.preference.ITLCPreferenceConstants;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.ModelEditorPartListener;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.SemanticHelper;
 import org.lamport.tla.toolbox.tool.tlc.ui.view.TLCErrorView;
+import org.lamport.tla.toolbox.tool.tlc.util.ChangedSpecModulesGatheringDeltaVisitor;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper.IFileProvider;
-import org.lamport.tla.toolbox.util.ChangedSpecModulesGatheringDeltaVisitor;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
@@ -132,7 +132,7 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
     };
 
     // react on spec file changes
-    private IResourceChangeListener workspaceResourceChangeListner = new IResourceChangeListener() {
+    private IResourceChangeListener workspaceResourceChangeListener = new IResourceChangeListener() {
         public void resourceChanged(IResourceChangeEvent event)
         {
             IResourceDelta delta = event.getDelta();
@@ -141,7 +141,7 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
              * This is a helper method that returns a new instance of ChangedModulesGatheringDeltaVisitor,
              * which gathers the changed TLA modules from a resource delta tree.
              */
-            ChangedSpecModulesGatheringDeltaVisitor visitor = new ChangedSpecModulesGatheringDeltaVisitor() {
+            ChangedSpecModulesGatheringDeltaVisitor visitor = new ChangedSpecModulesGatheringDeltaVisitor(getConfig()) {
                 public IResource getModel()
                 {
                     return ModelEditor.this.getConfig().getFile();
@@ -155,7 +155,7 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
                 // one of the modules in the specification has changed
                 // this means that identifiers defined in a spec might have changed
                 // re-validate the editor
-                if (!modules.isEmpty() || visitor.isModelChanged())
+                if (!modules.isEmpty() || visitor.isModelChanged() || visitor.getCheckpointChanged())
                 {
                     // update the specObject of the helper
                     helper.resetSpecNames();
@@ -273,7 +273,7 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
         /*
          * Install resource change listener on the workspace root to react on any changes in th current spec
          */
-        ResourcesPlugin.getWorkspace().addResourceChangeListener(workspaceResourceChangeListner,
+        ResourcesPlugin.getWorkspace().addResourceChangeListener(workspaceResourceChangeListener,
                 IResourceChangeEvent.POST_BUILD);
 
         // update the spec object of the helper
@@ -292,7 +292,7 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
     {
         // TLCUIActivator.logDebug("entering ModelEditor#dispose()");
         // remove the listeners
-        ResourcesPlugin.getWorkspace().removeResourceChangeListener(workspaceResourceChangeListner);
+        ResourcesPlugin.getWorkspace().removeResourceChangeListener(workspaceResourceChangeListener);
         ResourcesPlugin.getWorkspace().removeResourceChangeListener(modelFileChangeListener);
         super.dispose();
         // TLCUIActivator.logDebug("leaving ModelEditor#dispose()");

@@ -41,6 +41,11 @@ public class SpecPropertyPage extends GenericFieldEditorPropertyPage
         pcalParamEditor = new StringFieldEditor(IPreferenceConstants.PCAL_CAL_PARAMS, "PlusCal call arguments", composite);
         addEditor(pcalParamEditor);
         
+        StringFieldEditor directorySizeEditor = new StringFieldEditor(IPreferenceConstants.P_PROJECT_TOOLBOX_DIR_SIZE,
+                "Size of .toolbox directory in kbytes", composite);
+        addEditor(directorySizeEditor);
+        directorySizeEditor.getTextControl(composite).setEditable(false);
+        
     }
    
     

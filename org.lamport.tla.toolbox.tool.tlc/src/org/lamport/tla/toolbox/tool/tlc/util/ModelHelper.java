@@ -1604,6 +1604,11 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
      * be called within the running of another job unless the scheduling rule for
      * refreshing the model directory is included in the scheduling rule of the job which
      * is calling this method. This scheduling rule can be found by calling
+     * 
+     * Note: Because the Toolbox deletes any existing checkpoint when running TLC,
+     * there should be at most one checkpoint.  Therefore, this method should return an array
+     * of length 0 or 1.
+     * 
      * {@link IResourceRuleFactory#refreshRule(IResource)}
      * @param config
      * @param doRefresh whether the model directory's contents and any checkpoint

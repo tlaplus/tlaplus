@@ -5,14 +5,21 @@ import java.util.List;
 import java.util.Vector;
 
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IWorkspaceRunnable;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.source.SourceViewer;
+import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -21,6 +28,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.ISelectionListener;
+import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.forms.HyperlinkGroup;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.IMessageManager;
@@ -51,6 +60,7 @@ import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.SemanticHelper;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.util.IHelpConstants;
+import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 import tla2sany.semantic.ModuleNode;
@@ -130,6 +140,11 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
     private Button checkpointButton;
     private Text checkpointIdText;
 
+    // The widgets to display the checkpoint size and
+    // the delete button.
+    private FormText chkpointSizeLabel;
+    private Text checkpointSizeText;
+    private Button chkptDeleteButton;
     /**
      * constructs the main model page 
      * @param editor
@@ -515,7 +530,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         {
             if (EMPTY_STRING.equals(checkpointIdText.getText()))
             {
-                modelEditor.addErrorMessage("noChckpoint", "No chekpoint data found", this.getId(),
+                modelEditor.addErrorMessage("noChckpoint", "No checkpoint data found", this.getId(),
                         IMessageProvider.ERROR, UIHelper.getWidget(dm.getAttributeControl(LAUNCH_RECOVER)));
                 setComplete(false);
                 expandSection(SEC_HOW_TO_RUN);
@@ -788,6 +803,19 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         } else
         {
             this.checkpointIdText.setText(EMPTY_STRING);
+        }
+
+        if ((checkpoints == null) || (checkpoints.length == 0))
+        {
+            checkpointSizeText.setVisible(false);
+            chkpointSizeLabel.setVisible(false);
+            chkptDeleteButton.setVisible(false);
+        } else
+        {
+            checkpointSizeText.setText(String.valueOf(ResourceHelper.getSizeOfJavaFileResource(checkpoints[0]) / 1000));
+            checkpointSizeText.setVisible(true);
+            chkpointSizeLabel.setVisible(true);
+            chkptDeleteButton.setVisible(true);
         }
     }
 
@@ -1096,6 +1124,49 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         gd.widthHint = 100;
         checkpointIdText.setLayoutData(gd);
         dm.bindAttribute(LAUNCH_RECOVER, checkpointButton, howToRunPart);
+
+        chkpointSizeLabel = toolkit.createFormText(howToRunArea, true);
+        chkpointSizeLabel.setText("Checkpoint size (kbytes):", false, false);
+        checkpointSizeText = toolkit.createText(howToRunArea, "");
+        gd = new GridData();
+        gd.horizontalIndent = 10;
+        gd.widthHint = 100;
+        checkpointSizeText.setLayoutData(gd);
+        chkptDeleteButton = toolkit.createButton(howToRunArea, "Delete Checkpoint", SWT.PUSH);
+        chkptDeleteButton.addSelectionListener(new SelectionListener() {
+
+            public void widgetSelected(SelectionEvent e)
+            {
+                final IResource[] checkpoints;
+                try
+                {
+                    checkpoints = ModelHelper.getCheckpoints(getConfig(), false);
+
+                    if ((checkpoints != null) && checkpoints.length > 0)
+                    {
+                        ResourcesPlugin.getWorkspace().run(new IWorkspaceRunnable() {
+
+                            public void run(IProgressMonitor monitor) throws CoreException
+                            {
+                                checkpoints[0].delete(true, new SubProgressMonitor(monitor, 1));
+
+                            }
+                        }, null);
+                    }
+                } catch (CoreException e1)
+                {
+                    return;
+                }
+                // TODO Auto-generated method stub
+
+            }
+
+            public void widgetDefaultSelected(SelectionEvent e)
+            {
+                // TODO Auto-generated method stub
+
+            }
+        });
 
         // run link
         runLink = toolkit.createImageHyperlink(howToRunArea, SWT.NONE);

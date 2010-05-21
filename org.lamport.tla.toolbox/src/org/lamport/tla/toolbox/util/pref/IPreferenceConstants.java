@@ -14,6 +14,10 @@ public interface IPreferenceConstants
      */
     public static final String P_PROJECT_ROOT_FILE      = "ProjectRootFile";
     /**
+     * The current size of the spec project's .toolbox directory.
+     */
+    public static final String P_PROJECT_TOOLBOX_DIR_SIZE = "ProjectToolboxDirSize";
+    /**
      * Popup parser errors
      */
     public static final String I_PARSER_POPUP_ERRORS        = "parserPopupErrors";
