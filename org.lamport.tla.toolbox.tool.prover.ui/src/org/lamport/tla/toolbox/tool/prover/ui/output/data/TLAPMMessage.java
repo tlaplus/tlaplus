@@ -142,6 +142,10 @@ public abstract class TLAPMMessage
                         moduleName);
                 // System.out.println(message);
                 return message;
+            } else if (type.equals(LEAF_STATUS_TYPE))
+            {
+                StepStatusMessage message = StepStatusMessage.getStepMessage(fieldPairs.entrySet(), moduleName);
+                return message;
             } else
             {
                 ProverUIActivator.logDebug("Unsuppported message type " + type);
