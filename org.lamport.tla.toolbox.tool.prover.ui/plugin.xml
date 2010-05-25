@@ -236,5 +236,11 @@
             restorable="true">
       </view>
    </extension>
+   <extension
+         point="org.lamport.tla.toolbox.spec">
+      <participant
+            class="org.lamport.tla.toolbox.tool.prover.ui.util.ClearObMarkersSpecLifecycleParticipant">
+      </participant>
+   </extension>
 
 </plugin>

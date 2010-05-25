@@ -3,7 +3,6 @@ package org.lamport.tla.toolbox.tool.prover.ui.view;
 import java.util.HashMap;
 
 import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.text.Document;
@@ -17,9 +16,9 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.ExpandBar;
 import org.eclipse.swt.widgets.ExpandItem;
 import org.eclipse.swt.widgets.Listener;
+import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.part.ViewPart;
 import org.lamport.tla.toolbox.spec.Spec;
-import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.tool.prover.util.ProverHelper;
 import org.lamport.tla.toolbox.util.TLAMarkerHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
@@ -29,14 +28,36 @@ import org.lamport.tla.toolbox.util.UIHelper;
  * obligations.
  * 
  * This view can be updated with information about
- * an obligation using the static method {@link ObligationsView#updateObligationView(IMarker)}.
+ * an obligation using the static method {@link ObligationsView#updateObligationView(IMarker)}
+ * with a marker that contains information about an obligation.
  * Check the method documentation for how it works.
  * 
- * When the method is opened, it searches for all obligation markers on any module in the
- * currently opened project, where the currently opened project is the project returned
- * by {@link Spec#getProject()} for the currently opened spec. This view assumes
- * that all such markers are from the same run of the prover and are from the most
- * recent run of the prover on any module in the project.
+ * It is important that whenever this view is open, it shows only information on obligations
+ * from the currently opened project, where the currently opened project is the project returned
+ * by {@link Spec#getProject()} for the currently opened spec.
+ * This is maintained in the following two ways:
+ * 
+ * 1.) When the view is opened, the method createPartControl() is called. This creates
+ * a new {@link ExpandBar} widget for displaying obligation item information with no items.
+ * The method then searches for all obligation markers on any module in the
+ * currently opened project. This view assumes that all such markers are from the
+ * same run of the prover and are from the most recent run of the prover on any module
+ * in the project. If any markers are found from the currently opened project, the expand bar
+ * is populated with one item for each marker that has information about an "interesting"
+ * obligation. If no such markers are found, the view is left empty.
+ * 
+ * 2.) The method {@link ObligationsView#refreshObligationView()} is called at the appropriate times.
+ *
+ *    -It is called when a spec is opened. This ensures that when the currently opened spec in the toolbox
+ *     changes, obligation information from the previously opened spec is not shown.
+ *    -It is called when obligation markers have been deleted. This should mean that the prover
+ *     has been launched, causing the previous obligation markers to be removed. Calling refreshObligationView()
+ *     will clear the information from these previous markers from the view, if the view is currently open.
+ *     If the view is not currently open, it doesn't matter because the view stores no information.
+ * 
+ * Side note :  I've noticed that the documentation for {@link IWorkbenchPart} claims that createPartControl()
+ * should also be called when the view is made invisible and then visible again, but experimentation
+ * shows that this is not the case.
  * 
  * @author Daniel Ricketts
  *
@@ -45,6 +66,15 @@ public class ObligationsView extends ViewPart
 {
 
     public static final String VIEW_ID = "org.lamport.tla.toolbox.tool.prover.ui.rejectedObligations";
+    /**
+     * The beginning of the view name. The total view name will be
+     * PART_NAME_BASE + moduleName.
+     */
+    public static final String PART_NAME_BASE = "Interesting Obligations for ";
+    /**
+     * The widget that displays a list of items, each
+     * containing information about an interesting obligation.
+     */
     private ExpandBar bar = null;
     /**
      * A map of obligation id (as an Integer object)
@@ -92,32 +122,100 @@ public class ObligationsView extends ViewPart
         /*
          * Create the expand bar that will contain
          * a list of ExpandItems with interesting information
-         * about obligations. These items are created
+         * about obligations. The items for each obligation are created
          * in the method newMarker().
          */
         bar = new ExpandBar(parent, SWT.V_SCROLL | SWT.BORDER);
         bar.setSpacing(8);
 
-        /*
-         * Retrieve all obligation markers on any module in the
-         * currently opened project, where the currently opened project is the project returned
-         * by {@link Spec#getProject()} for the currently opened spec. This view assumes
-         * that all such markers are from the same run of the prover and are from the most
-         * recent run of the prover on any module in the project.
-         */
+        fillFromCurrentSpec();
+    }
+
+    /**
+     * Used to refresh the obligation view if it is currently open. If the view
+     * is not currently open, this method does nothing. If the view is currently open,
+     * this takes the following two steps:
+     * 
+     * 1.) Removes all items from the expand bar for this view.
+     * 
+     * 2.) Retrieve all obligation markers on any module in the
+     * currently opened project, where the currently opened project is the project returned
+     * by {@link Spec#getProject()} for the currently opened spec. This view assumes
+     * that all such markers are from the same run of the prover and are from the most
+     * recent run of the prover on any module in the project. For each such marker,
+     * call {@link ObligationsView#newMarker(IMarker)}. This has the effect of repopulating
+     * the expand bar with items if any of markers are for an interesting obligation.
+     */
+    public static void refreshObligationView()
+    {
+
+        ObligationsView oblView = (ObligationsView) UIHelper.findView(VIEW_ID);
+        if (oblView != null)
+        {
+
+            /*
+             * Remove all items in the bar.
+             * 
+             * For each item:
+             * 1.) Dispose the item's control.
+             * 2.) Dispose the item.
+             * 
+             * After disposing of all items, clear
+             * the map of ids to items.
+             */
+            ExpandItem[] expandItems = oblView.bar.getItems();
+            for (int i = 0; i < expandItems.length; i++)
+            {
+                expandItems[i].getControl().dispose();
+                expandItems[i].dispose();
+            }
+
+            oblView.items.clear();
+
+            /*
+             * Fill the obligation view with markers from the current spec.
+             * If there are no such markers, hide the view.
+             */
+            boolean hide = !oblView.fillFromCurrentSpec();
+
+            if (hide)
+            {
+                UIHelper.getActivePage().hideView(oblView);
+            }
+
+        }
+
+    }
+
+    /**
+     * Fills the obligation view with information
+     * from all obligation markers in the currently
+     * opened spec. Returns true iff the current spec
+     * has obligation markers.
+     */
+    private boolean fillFromCurrentSpec()
+    {
         try
         {
-            IMarker[] markers = ToolboxHandle.getCurrentSpec().getProject().findMarkers(ProverHelper.OBLIGATION_MARKER,
-                    false, IResource.DEPTH_ONE);
-            for (int i = 0; i < markers.length; i++)
+            IMarker[] markers = ProverHelper.getObMarkersCurSpec();
+            if (markers != null)
             {
-                newMarker(markers[i]);
+                for (int i = 0; i < markers.length; i++)
+                {
+                    updateItem(markers[i]);
+                }
+
+                return markers.length > 0;
             }
+
+            return false;
         } catch (CoreException e)
         {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
+
+        return false;
     }
 
     /**
@@ -131,11 +229,35 @@ public class ObligationsView extends ViewPart
      */
     public static void updateObligationView(IMarker marker)
     {
+        /*
+         * If the marker is not interesting, try to find the view.
+         * If the view is found update the view with that marker.
+         * 
+         * If the view is not found, there is no need to update it
+         * with the new markers.
+         * 
+         * If the marker is interesting, open the view and update it.
+         */
+        ObligationsView oblView;
+        if (!ProverHelper.isInterestingObligation(marker))
+        {
+            oblView = (ObligationsView) UIHelper.findView(VIEW_ID);
+        } else
+        {
+            oblView = (ObligationsView) UIHelper.openView(VIEW_ID);
+        }
 
-        ObligationsView oblView = (ObligationsView) UIHelper.openView(VIEW_ID);
         if (oblView != null)
         {
-            oblView.newMarker(marker);
+
+            String moduleName = marker.getResource().getName();
+            if (!oblView.getPartName().equals(PART_NAME_BASE + moduleName))
+            {
+                oblView.setPartName(PART_NAME_BASE + moduleName);
+            }
+
+            oblView.updateItem(marker);
+
         }
 
     }
@@ -148,10 +270,11 @@ public class ObligationsView extends ViewPart
      * obligation as the marker, that item is updated. If no
      * such item exists, a new one is created.
      */
-    private void newMarker(IMarker marker)
+    private void updateItem(IMarker marker)
     {
         try
         {
+
             Assert.isTrue(marker.getType().equals(ProverHelper.OBLIGATION_MARKER),
                     "Non obligation marker passed to newMarker method. This is a bug.");
             int id = marker.getAttribute(ProverHelper.OBLIGATION_ID, -1);
@@ -176,6 +299,7 @@ public class ObligationsView extends ViewPart
                         item.dispose();
                         items.remove(new Integer(id));
                     }
+
                     return;
                 }
 
@@ -274,9 +398,7 @@ public class ObligationsView extends ViewPart
 
     public void setFocus()
     {
-        /*
-         * Set focus on appropriate control to which
-         * context help is attached.
-         */
+        // TODO Auto-generated method stub
+
     }
 }

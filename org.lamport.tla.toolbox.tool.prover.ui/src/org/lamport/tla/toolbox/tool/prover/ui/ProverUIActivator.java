@@ -63,16 +63,13 @@ public class ProverUIActivator extends AbstractUIPlugin
                  * Update the obligation view with any obligation markers
                  * that have been added or modified.
                  * 
-                 * If an obligation marker has been deleted, hide the obligations
-                 * view. This has the effect of removing any information from the view,
-                 * so that on opening, it will be re-populated with information from existing
-                 * markers.
-                 * 
-                 * Currently, deleting a marker only occurs when the prover is launched. All
-                 * markers in the currently opened spec are deleted, so this code hides
-                 * and clears the obligation view to be ready for the new output from
-                 * the prover.
+                 * If any obligation markers have been deleted, this indicates that the prover
+                 * has been relaunched. When the prover is relaunched, old obligation
+                 * markers are deleted. We can clear the information of these old obligation
+                 * markers from the obligation view by calling
+                 * ObligationView.refreshObligationView().
                  */
+                boolean markersDeleted = false;
                 for (int i = 0; i < deltas.length; i++)
                 {
                     if (deltas[i].getType().equals(ProverHelper.OBLIGATION_MARKER))
@@ -91,9 +88,14 @@ public class ProverUIActivator extends AbstractUIPlugin
 
                         } else
                         {
-                            UIHelper.hideView(ObligationsView.VIEW_ID);
+                            markersDeleted = true;
                         }
                     }
+                }
+
+                if (markersDeleted)
+                {
+                    ObligationsView.refreshObligationView();
                 }
 
             }

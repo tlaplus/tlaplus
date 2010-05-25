@@ -3,6 +3,7 @@ package org.lamport.tla.toolbox.tool.prover.util;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.lamport.tla.toolbox.tool.ToolboxHandle;
 
 /**
  * Helper methods for the launching of the prover.
@@ -132,6 +133,11 @@ public class ProverHelper
     {
         if (resource.exists())
         {
+            /*
+             * Obligation markers should only be on files directly in the project folder, so we
+             * only need to delete markers to depth one. Depth infinite would search any
+             * checkpoint folders, which can be slow if there are many files.
+             */
             resource.deleteMarkers(OBLIGATION_MARKER, false, IResource.DEPTH_ONE);
         }
     }
@@ -147,14 +153,38 @@ public class ProverHelper
      * @return
      * @throws CoreException 
      */
-    public static boolean isInterestingObligation(IMarker marker) throws CoreException
+    public static boolean isInterestingObligation(IMarker marker)
     {
         /*
          * Should return true iff that status is one of some collection of strings.
          * 
          * TODO update this method once we know what those strings are.
          */
-        return true;
+        String obStatus = marker.getAttribute(OBLIGATION_STATUS, "");
+        return obStatus.equals("beingproved") || obStatus.equals("failed")
+                || obStatus.equals("failed (already processed");
+    }
+
+    /**
+     * Returns all {@link IMarker} of type {@link ProverHelper#OBLIGATION_MARKER}
+     * for the currently opened spec. These markers contain information about obligations.
+     * 
+     * If there is no spec currently open in the toolbox, this returns null.
+     * 
+     * @return
+     * @throws CoreException 
+     */
+    public static IMarker[] getObMarkersCurSpec() throws CoreException
+    {
+
+        if (ToolboxHandle.getCurrentSpec() != null)
+        {
+            return ToolboxHandle.getCurrentSpec().getProject().findMarkers(OBLIGATION_MARKER, false,
+                    IResource.DEPTH_ONE);
+        }
+
+        return null;
+
     }
 
 }
