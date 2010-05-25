@@ -4,6 +4,9 @@
 package org.lamport.tla.toolbox.tool.tlc.util;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.jface.dialogs.IInputValidator;
 
@@ -36,6 +39,11 @@ public class ModelNameValidator implements IInputValidator
         {
             return "Model name cannot begin with \"" + project.getName() + "___\".";
         }
+        IStatus fileStatus = ResourcesPlugin.getWorkspace().validateName(newText, IResource.FILE);
+        if (! fileStatus.isOK()) {
+          return fileStatus.getMessage(); 
+        }
         return null;
+        
     }
 }
