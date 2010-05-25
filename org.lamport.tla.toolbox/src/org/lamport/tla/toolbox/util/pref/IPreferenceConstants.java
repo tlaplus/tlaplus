@@ -30,6 +30,11 @@ public interface IPreferenceConstants
      */
     public static final String I_RESTORE_LAST_SPEC          = "restoreLastSpec";
     /**
+     * The minimum amount of storage used by the spec (in kbytes) for that
+     * size to be displayed (on the bottom line, next to the parse status).
+     */
+    public static final String I_MIN_DISPLAYED_SIZE          = "minDisplayedSize";
+    /**
      * Re-parse root on modify
      */
     public static final String I_PARSE_FILES_ON_MODIFY      = "autoParseTopModules";

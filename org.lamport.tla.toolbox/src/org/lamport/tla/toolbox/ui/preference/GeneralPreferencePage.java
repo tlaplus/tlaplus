@@ -2,6 +2,7 @@ package org.lamport.tla.toolbox.ui.preference;
 
 import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
+import org.eclipse.jface.preference.IntegerFieldEditor;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IWorkbench;
@@ -28,7 +29,12 @@ import org.lamport.tla.toolbox.util.pref.PreferenceStoreHelper;
  */
 public class GeneralPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage
 {
-
+    /**
+     * The default value for the minimum size (in kbytes) of storage occupied by
+     * the spec that is displayed.
+     */
+    public static final int MIN_DISPLAYED_SIZE_DEFAULT = 50000;
+    
     public GeneralPreferencePage()
     {
         super(GRID);
@@ -63,7 +69,12 @@ public class GeneralPreferencePage extends FieldEditorPreferencePage implements 
         */
         addField(new BooleanFieldEditor(IPreferenceConstants.I_RESTORE_LAST_SPEC,
                 "&Continue Previous Session on Restart", getFieldEditorParent()));
-
+        
+        IntegerFieldEditor minStorageSizeEditor = 
+             new IntegerFieldEditor(IPreferenceConstants.I_MIN_DISPLAYED_SIZE, 
+                "&Minimum spec storage displayed (in kilobytes)", getFieldEditorParent());
+        addField(minStorageSizeEditor);
+        minStorageSizeEditor.setValidRange(0, 2000000);
     }
 
     /**

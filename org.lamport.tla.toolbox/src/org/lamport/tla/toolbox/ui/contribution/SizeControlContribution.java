@@ -40,7 +40,6 @@ public class SizeControlContribution extends WorkbenchWindowControlContribution
 
     }
 
-
     /* (non-Javadoc)
      * @see org.eclipse.jface.action.ControlContribution#createControl(org.eclipse.swt.widgets.Composite)
      */
@@ -64,8 +63,8 @@ public class SizeControlContribution extends WorkbenchWindowControlContribution
 
         // label informing the user that this reflects the parse status of the spec
         Label description = new Label(composite, SWT.NONE);
-        description.setText("Size (kbytes): ");
-        description.setSize(70, 20);
+        description.setText("Storage (KB): ");
+        description.setSize(50, 20);
 
         // Create label inside composite.
         sizeLabel = new Label(composite, SWT.BORDER | SWT.CENTER);
@@ -76,7 +75,7 @@ public class SizeControlContribution extends WorkbenchWindowControlContribution
         updateSize();
         return composite;
     }
-    
+
     // Updates status from the specification currently loaded in the SpecManager
     public void updateSize()
     {
@@ -91,18 +90,20 @@ public class SizeControlContribution extends WorkbenchWindowControlContribution
             composite.setVisible(false);
             return;
         }
-        
+
         IPreferenceStore preferenceStore = PreferenceStoreHelper.getProjectPreferenceStore(spec.getProject());
         String size = preferenceStore.getString(IPreferenceConstants.P_PROJECT_TOOLBOX_DIR_SIZE);
         sizeLabel.setText(size);
 
-        // TO-DO change 50 to a preference--perhaps defaulting to 200MB.
-        if (Long.parseLong(size) < 50) {
+        // Make invisible if less than the I_MIN_DISPLAYED_SIZE preference.
+        if (Long.parseLong(size) < Activator.getDefault().getPreferenceStore().getInt(
+                IPreferenceConstants.I_MIN_DISPLAYED_SIZE))
+        {
             composite.setVisible(false);
             return;
         }
- //       sizeLabel.setBackground(sizeLabel.getDisplay().getSystemColor(AdapterFactory.getStatusAsSWTBGColor(spec)));
- //     sizeLabel.setForeground(sizeLabel.getDisplay().getSystemColor(AdapterFactory.getStatusAsSWTFGColor(spec)));
+        // sizeLabel.setBackground(sizeLabel.getDisplay().getSystemColor(AdapterFactory.getStatusAsSWTBGColor(spec)));
+        // sizeLabel.setForeground(sizeLabel.getDisplay().getSystemColor(AdapterFactory.getStatusAsSWTFGColor(spec)));
         sizeLabel.redraw();
         composite.setVisible(true);
     }
