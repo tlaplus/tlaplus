@@ -160,7 +160,7 @@
             category="toolbox.ui.preferences.GeneralPreferencePage"
             class="org.lamport.tla.toolbox.ui.preference.EditorPreferencePage"
             id="org.lamport.tla.toolbox.EditorPreferencePage"
-            name="Module Editor Preferences">
+            name="Module Editor">
       </page>
       <!--Currently, the fields on this page do nothing, ao it is removed. -->
       <!-- page

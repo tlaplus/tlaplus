@@ -159,46 +159,51 @@ This parameter specifies the number of separate threads that TLC will spawn to
 perform that computation.&nbsp;  You should not set it to be greater than the number of
 separate processors (cores) on your computer; the Toolbox will warn you if you do.
 
-<h3>Checkpoint Recovery</h3>
+<A name="checkpoint"></A><h3>Checkpoint Recovery</h3></A>
 
-TLC takes regular checkpoints, from which it can be restarted if it is stopped
-for any reason--for example, if your computer crashes.&nbsp;  The 
-<em>Recover from checkpoint</em> option tells TLC to start from where it was
-when the last checkpoint was taken.&nbsp;
-This option is enabled 
-if the last time you ran TLC, it ran long enough to produce a checkpoint.&nbsp; 
-The Toolbox will fill in the <em>Checkpoint id</em> for you.
+ <p>
+TLC takes regular checkpoints, from which it can be restarted if it is
+stopped for any reason--for example, if your computer crashes.&nbsp; 
 
-<p>
-Warning: If you exit the Toolbox, it will stop any executions of TLC that are in
-process.&nbsp;  However, it is possible to stop the Toolbox in some drastic fashion that
-leaves TLC running as a background process.&nbsp;  Restarting from a checkpoint while
-the TLC process that created it is still running can cause the checkpoint to be destroyed, 
-making recovery impossible.&nbsp;  If you have reason to believe TLC was not stopped,
-check to see if it is still running before trying to recover from a checkpoint.
-</p>
+The <em>Recover from checkpoint</em> option tells TLC to start from where it
+was when the last checkpoint was taken.&nbsp; 
 
-<p> 
+This option is enabled if the last time you ran TLC, it ran long enough to
+produce a checkpoint.&nbsp; The Toolbox will fill in the <em>Checkpoint
+id</em> for you.
+ </p>
+ <p>
+Warning: If you exit the Toolbox, it will stop any executions of TLC that are
+in process.&nbsp; 
 
+However, it is possible to stop the Toolbox in some drastic fashion that
+leaves TLC running as a background process.&nbsp; 
+
+Restarting from a checkpoint while the TLC process that created it is still
+running can cause the checkpoint to be destroyed, making recovery
+impossible.&nbsp; 
+
+If you have reason to believe TLC was not stopped, check to see if it is
+still running before trying to recover from a checkpoint. 
+ </p>
+ <p> 
 The checkpoint TLC produces after a short run does not take up
 much space.&nbsp;
 
 However, if TLC finds an error after running for a long time, the
-checkpoint files could take up a lot of space--often on the order
+checkpoint files could take up a lot of space--sometimes on the order
 of a gigabyte for a model that has run for several days.&nbsp;
 
 These files are deleted if the model is re-run and a new checkpoint is
-produced.&nbsp; 
+produced, or if the model is validated when the
+<em>Recover from checkpoint</em> option is not selected.&nbsp; 
 
-The Toolbox does not yet provide a facility for deleting
-old checkpoints; you'll have to do that yourself.  The checkpoint files
-for a model named &nbsp;<samp>Model</samp>&nbsp; 
-of a spec named &nbsp;<samp>Spec</samp>&nbsp; are in a folder (directory)
-with a name something like 
- &nbsp;<samp>10-05-06-11-55-28</samp>&nbsp; 
-in the subfolder&nbsp;<samp>Model</samp>&nbsp; 
-of the folder &nbsp;<samp>Spec.toolbox</samp>&nbsp;. 
-</p>
+When TLC has created a checkpoint, the <em>How to Run</em> section
+of the Model Overview page displays how much storage the checkpoint
+occupies.&nbsp; 
+
+It also provides a button that you can click to delete the checkpoint.&nbsp;
+ </p>
 
 <hr> 
 <!-- delete rest of line to comment out --> 

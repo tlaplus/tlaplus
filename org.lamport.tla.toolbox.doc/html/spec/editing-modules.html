@@ -15,7 +15,10 @@
 Contents
   <a href="#module">Module Editors</a>
   <a href="#finding">Finding Definitions and Declarations</a>
+  <a href="#comments">Editing Comments</a>
+  <a href="#proofs">Editing and Viewing Proofs</a>
   <a href="#key-bindings">Module Editor Key Bindings</a>
+
 </pre>
 <h2><a name="module">Module Editors</a></h2>
  <P> 
@@ -82,6 +85,141 @@ for a definition parameter, or for any other locally declared symbol. </li><br><
 </ul>
 </p>
      
+
+<h2><a name="comments">Editing Comments</a></h2>
+
+<p>
+The <a href="pretty-printing.html">TLA+ Pretty Printer</a> regards
+a comment "boxed" as follows to be a sequence of paragraphs.
+<pre>
+  (**************************************)
+  (* This is the                        *)
+  (*   first paragraph.                 *)
+  (*                                    *)
+  (*   This text is a display           *)
+  (*                                    *)
+  (* This is another paragraph.         *)
+  (**************************************)
+</pre>
+Such a box can be placed on a series of lines by itself, or
+it can appear to the right of other text.&nbsp;
+</p>
+
+<p>
+The module editor provides the commands for creating and
+editing boxed comments.&nbsp;  
+
+They make boxed comments that extend from some specified point to a right
+margin--a column specified by a 
+<a href="../gettingstarted/module-editor-preferences.html">preference.</a>.&nbsp; 
+
+These commands are executed by typing two characters, the first of
+which is <samp>Ctl+O</samp>.&nbsp; 
+
+If you type <samp>Ctl+O</samp> and wait a moment, the list of all these
+commands will appear.&nbsp;
+
+The commands can also be executed by right-clicking on the mouse.&nbsp;
+
+For these commands, the <em>current position</em> is the location where
+the typing cursor is, not where the mouse is pointing.&nbsp;
+</p>
+
+<p>
+To create a comment, you first position cursor where you
+want the top left-hand corner of the comment and execute the
+<em>Start Boxed Comment</em> by typing <samp>Ctl+O Ctl+S</samp>.&nbsp;
+
+This produces the comment begin and end tokens like this:
+<pre>
+Beauty == TRUE  (***********************************
+
+                ***********************************)</pre>
+showing where the finished box will be positioned, and it leaves the cursor
+between them in the first column.&nbsp;
+
+Type your comment like ordinary text, with all paragraph lines
+starting in column 1, like this:
+<pre>
+Beauty == TRUE  (***********************************
+This is a very interesting formula, because it 
+expresses Keats' famous formula
+
+  Beauty is truth
+  and truth beauty.
+         
+How much more than this do you really 
+need to know?
+               ***********************************)</pre>
+When you have finished the contents of the comment, execute
+the <em>Format Comment</em> command by typing 
+<samp>Ctl+O Ctl+F</samp>.&nbsp;
+
+This will format each sequence of non-blank lines that all begin in column 1
+as a paragraph, with lines broken so the paragraphs will fit snugly in the
+comment box--like this:&nbsp;
+
+<pre>
+Beauty == TRUE  (***********************************
+This is a very interesting
+formula, because it expresses
+Keats' famous formula
+
+  Beauty is truth
+  and truth beauty.
+         
+How much more than this do you
+really need to know?
+               ***********************************)</pre>
+
+
+Note that lines that do not begin in column 1 are not changed.&nbsp;
+
+If it looks right, execute the <em>Box Comment</em> command by
+typing <samp>Ctl+O Ctl+B</samp> to create the box.
+
+<pre>
+Beauty == TRUE  (**********************************)
+                (* This is a very interesting     *)
+                (* formula, because it expresses  *)
+                (* Keats' famous formula          *)
+                (*                                *)
+                (*   Beauty is truth              *)
+                (*   and truth beauty.            *)
+                (*                                *)
+                (* How much more than this do you *)
+                (* really need to know?           *)
+                (**********************************)</pre>
+
+
+If the result doesn't look right, type <samp>Ctl+Z</samp> to undo the <em>Box
+Comment</em> command and do whatever manual formatting seems necessary.&nbsp;
+Then execute <em>Box Comment</em> again.&nbsp;
+
+Both the formatting and the boxing can be done together with the
+<em>Format and Box Comment</em> command by typing <samp>Ctl+O Ctl+O</samp>.
+
+</p>
+
+<p>
+To modify an existing boxed comment, put the cursor inside the
+comment box and execute the <em>Unbox Comment</em> command
+by typing <samp>Ctl+O Ctl+U</samp>.&nbsp;  You can then edit and
+rebox it with the commands described above.  
+</p>
+
+
+<h2><a name="proofs">Editing and Viewing Proofs</a></h2>
+
+Editor commands for hierarchically viewing proofs are
+described in <a href="../prover/reading.html">Viewing Structured Proofs</a>.&nbsp;
+
+The module editor will eventually provide commands to aid in writing
+and editing proofs.&nbsp;  
+
+We would appreciate any suggestions for what commands we should
+implement.&nbsp;
+
 <h2><a name="key-bindings">Module Editor Key Bindings</a></h2>
 
 The following are the default key bindings for module editors.&nbsp;  The <samp>General/Keys</samp> item on
@@ -158,6 +296,7 @@ Insert, Delete, and Move Text</font></TH>
 -->
 
 <TR> <TD colspan=2> <BR> </TD></TR>
+
 <TR> <TH colspan=2 align=left> <font color=000000>Find and Replace</font></TH>
 <TR> <TD><CODE>Ctl+F</CODE></TD> <TD> Raise Find/Replace dialog</TD></TR>
 
@@ -169,8 +308,39 @@ Insert, Delete, and Move Text</font></TH>
 
 <TR> <TD><CODE>Ctl+Shift+J</CODE></TD> <TD> Incremental backwards find</TD></TR>
 
+
 <TR> <TD colspan=2> <BR> </TD></TR>
+
+<TR> <TH colspan=2 align=left> <font color=000000>Editing Comments</font></TH>
+<TR> <TD><CODE>Ctl+O Ctl+S</CODE></TD> <TD> Begin comment</TD></TR>
+
+<TR> <TD><CODE>Ctl+O Ctl+F</CODE></TD> <TD>Format comment</TD></TR>
+
+<TR> <TD><CODE>Ctl+O Ctl+B</CODE></TD> <TD>Box comment</TD></TR>
+
+<TR> <TD><CODE>Ctl+O Ctl+O</CODE></TD> <TD>Format and box comment</TD></TR>
+
+<TR> <TD><CODE>Ctl+O Ctl+U</CODE></TD> <TD>Unbox comment</TD></TR>
+
+<TR> <TD colspan=2> <BR> </TD></TR>
+
+<TR> <TH colspan=2 align=left> <font color=000000>Viewing Proofs</font></TH>
+<TR> <TD><CODE>Ctl+G Ctl+S</CODE></TD> <TD>Show current subtree</TD></TR>
+
+<TR> <TD><CODE>Ctl+G Ctl+H</CODE></TD> <TD>Hide current subtree</TD></TR>
+
+<TR> <TD><CODE>Ctl+G Ctl+C</CODE></TD> <TD>Show children only</TD></TR>
+
+<TR> <TD><CODE>Ctl+G Ctl+F</CODE></TD> <TD>Focus on step</TD></TR>
+
+<TR> <TD><CODE>Ctl+G Ctl+A</CODE></TD> <TD>Show all proofs</TD></TR>
+<TR> <TD><CODE>Ctl+G Ctl+N</CODE></TD> <TD>Hide all proofs</TD></TR>
+
+<TR> <TD colspan=2> <BR> </TD></TR>
+
 <TR> <TH colspan=2 align=left> <font color=000000>Other</font></TH></TR>
+
+
 
 <TR> <TD><CODE>Ctl+S</CODE></TD> <TD> Save module</TD></TR>
 

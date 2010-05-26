@@ -1,0 +1,70 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- This is file org.lamport.tla.toobox.doc/html/gettingstarted/preferences.html -->
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+ <LINK href="../style.css" rel="stylesheet" type="text/css">
+
+<title>TLA+ Preferences</title>
+</head>
+<!-- a comment -->
+
+<body>
+<h1>TLA+ Preferences</h1>
+
+<p>There are two preferences that can be set on this page.</p>
+
+<h3>Continue Previous Session on Restart</h3>
+
+This option allows you to choose whether, when you close the Toolbox, it
+resumes from where you were (the default) or opens the Welcome View.
+
+<h3>Minimum spec storage displayed</h3>
+
+<p>
+The Toolbox keeps all the information about a specification name
+<code>Spec</code>, other than its actual files, in a folder named
+<code>Spec.toolbox</code>.&nbsp;
+
+When that folder becomes sufficiently large, its size is
+shown near the bottom right-hand corner of the Toolbox window.&nbsp;
+
+This parameter specifies how large (in kilobytes) <em>sufficiently large</em>
+is.&nbsp; 
+
+The default is 50 megabytes.
+</p>
+
+<p>
+When the <code>.toolbox</code> folder becomes very large, it is probably
+because it contains one or more checkpoints created by TLC.&nbsp;
+
+The checkpoint is deleted if TLC completes successfully, but is saved
+if TLC is stopped or finds an error.&nbsp;
+
+A TLC execution that takes several days can create a checkpoint
+with more than a gigabyte of data.&nbsp;
+
+When a spec uses a lot of space, you should view the 
+<A href="../model/about-models.html">TLC models</A> you have created for it
+to see if any have large checkpoints.&nbsp;
+
+See <A href="../model/overview-page.html#checkpoint">Checkpoint 
+Recovery</A> to learn how you can find out how large a checkpoint
+is and how you can delete a checkpoint.
+</p>
+<hr> 
+<!-- delete rest of line to comment out
+<dl>
+<dt><b><font color=#0000c0>Topics</font></b></dt>
+<dd> <A href=""> TOPIC </A></dd>
+<dd> <A href=""> TOPIC </A></dd>
+</dl>
+ --> 
+<!-- delete rest of line to comment out -->  
+<a href = "preferences.html">&uarr; Preferences</a>
+<!-- --> 
+</hr>
+
+</body>
+</html>
