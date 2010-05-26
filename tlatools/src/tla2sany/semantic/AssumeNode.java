@@ -27,12 +27,26 @@ public class AssumeNode extends LevelNode {
     * definition.                                                          *
     ***********************************************************************/
 
+  private boolean isAxiom = false;
+    /***********************************************************************
+    * True iff this is an AXIOM rather than an ASSUME or ASSUMPTION.       *
+    ***********************************************************************/
 
+  
+  public boolean getIsAxiom() {
+    return isAxiom;
+  }
 //  boolean     localness;
 //  Assumptions can no longer be local
 
 
-  public AssumeNode(TreeNode stn, ExprNode expr, ModuleNode mn,
+  /**
+ * @param stn
+ * @param expr
+ * @param mn
+ * @param opd
+ */
+public AssumeNode(TreeNode stn, ExprNode expr, ModuleNode mn,
                      ThmOrAssumpDefNode opd) {
     super(AssumeKind, stn);
     this.assumeExpr = expr;
@@ -40,6 +54,10 @@ public class AssumeNode extends LevelNode {
 //    this.localness = local;
     this.module = mn;
     this.def = opd;
+    if(stn.heirs()[0].getImage().equals("AXIOM")){
+        isAxiom = true;
+    }
+
    }
 
   /* Returns the expression that is the statement of the assumption */

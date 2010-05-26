@@ -248,11 +248,12 @@ public class ModelChecker extends AbstractChecker
     public boolean checkAssumptions()
     {
         ExprNode[] assumps = this.tool.getAssumptions();
+        boolean[] isAxiom = this.tool.getAssumptionIsAxiom();
         for (int i = 0; i < assumps.length; i++)
         {
             try
             {
-                if (!this.tool.isValid(assumps[i]))
+                if ((!isAxiom[i]) && !this.tool.isValid(assumps[i]))
                 {
                     MP.printError(EC.TLC_ASSUMPTION_FALSE, assumps[i].toString());
                     return false;

@@ -88,6 +88,8 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
     protected ExprNode[] modelConstraints; // Model constraints
     protected ExprNode[] actionConstraints; // Action constraints
     protected ExprNode[] assumptions; // Assumptions
+    protected boolean[] assumptionIsAxiom; // assumptionIsAxiom[i] is true iff assumptions[i]
+                                           // is an AXIOM.  Added 26 May 2010 by LL
     private FilenameToStream resolver; // takes car of path to stream resoltion
 
     public Spec(String specDir, String file, FilenameToStream resolver)
@@ -116,6 +118,7 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
         this.modelConstraints = null;
         this.actionConstraints = null;
         this.assumptions = null;
+        this.assumptionIsAxiom = null;  // added 26 May 2010 by LL
         this.resolver = resolver;
     }
 
@@ -256,9 +259,11 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
         // Collect all the assumptions.
         AssumeNode[] assumes = this.rootModule.getAssumptions();
         this.assumptions = new ExprNode[assumes.length];
+        this.assumptionIsAxiom = new boolean[assumes.length];
         for (int i = 0; i < assumes.length; i++)
         {
             this.assumptions[i] = assumes[i].getAssume();
+            this.assumptionIsAxiom[i] = assumes[i].getIsAxiom();
         }
 
         // Get the constants and overrides in config file.
@@ -1579,7 +1584,11 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
     {
         return this.assumptions;
     }
-
+    
+    /* Get the assumptionIsAxiom field */
+    public final boolean[] getAssumptionIsAxiom() {
+        return this.assumptionIsAxiom;
+    }
     /**
      * This method gets the value of a symbol from the enviroment. We
      * look up in the context c, its tool object, and the state s.

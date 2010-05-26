@@ -205,15 +205,17 @@ public class DFIDModelChecker extends AbstractChecker
         }
     }
 
-    /* Check the assumptions.  */
+    /* Check the assumptions.  
+     * This code is a clone of the same method in ModelChecker */
     public final boolean checkAssumptions()
     {
         ExprNode[] assumps = this.tool.getAssumptions();
+        boolean[] isAxiom = this.tool.getAssumptionIsAxiom();
         for (int i = 0; i < assumps.length; i++)
         {
             try
             {
-                if (!this.tool.isValid(assumps[i]))
+                if ((!isAxiom[i]) && !this.tool.isValid(assumps[i]))
                 {
                     MP.printError(EC.TLC_ASSUMPTION_FALSE, assumps[i].toString());
                     return false;
@@ -685,7 +687,7 @@ public class DFIDModelChecker extends AbstractChecker
     public final void printSummary(boolean success) throws IOException
     {
         this.reportCoverage(this.workers);
-        
+
         /*
          * This allows the toolbox to easily display the last set
          * of state space statistics by putting them in the same
@@ -694,9 +696,9 @@ public class DFIDModelChecker extends AbstractChecker
         if (TLCGlobals.tool)
         {
             MP.printMessage(EC.TLC_PROGRESS_STATS_DFID, new String[] { String.valueOf(this.numOfGenStates),
-                String.valueOf(this.theFPSet.size()) });
+                    String.valueOf(this.theFPSet.size()) });
         }
-        
+
         MP.printMessage(EC.TLC_STATS_DFID, new String[] { String.valueOf(this.numOfGenStates),
                 String.valueOf(this.theFPSet.size()) });
     }
