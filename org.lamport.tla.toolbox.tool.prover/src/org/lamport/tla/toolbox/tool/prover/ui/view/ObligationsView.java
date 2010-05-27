@@ -390,7 +390,6 @@ public class ObligationsView extends ViewPart
                 SourceViewer viewer = (SourceViewer) viewers.get(item);
                 Assert.isNotNull(viewer, "Expand item has been created without a source viewer. This is a bug.");
                 String oblString = marker.getAttribute(ProverHelper.OBLIGATION_STRING, "");
-                System.out.println("Obligation : " + oblString);
                 if (viewer.getDocument() == null && !oblString.isEmpty())
                 {
                     // set the viewers document to the obligation.
