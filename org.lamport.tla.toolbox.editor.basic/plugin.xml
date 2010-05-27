@@ -502,4 +502,15 @@
             targetId="org.eclipse.ui.DefaultTextEditor">
       </hyperlinkDetector>
    </extension>
+   <extension
+         id="org.lamport.tla.toolbox.editor.basic.readOnly"
+         name="Read Only Module"
+         point="org.eclipse.core.resources.markers">
+      <super
+            type="org.eclipse.core.resources.marker">
+      </super>
+      <attribute
+            name="org.lamport.tla.toolbox.editor.basic.isReadOnly">
+      </attribute>
+   </extension>
 </plugin>

@@ -1,25 +1,24 @@
 package org.lamport.tla.toolbox.editor.basic.util;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.Assert;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.part.FileEditorInput;
+import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.editor.basic.TLAEditor;
 import org.lamport.tla.toolbox.editor.basic.TLAEditorAndPDFViewer;
-import org.lamport.tla.toolbox.spec.parser.IParseConstants;
 import org.lamport.tla.toolbox.spec.parser.ParseResult;
-import org.lamport.tla.toolbox.spec.parser.ParseResultBroadcaster;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
-import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.TheoremNode;
-import util.UniqueString;
 
 /**
  * A collection of useful editor methods.
@@ -29,6 +28,17 @@ import util.UniqueString;
  */
 public class EditorUtil
 {
+
+    /**
+     * Type of the marker that contains a boolean attribute indicating if the module on which
+     * the marker is placed should be read-only.
+     */
+    public static final String READ_ONLY_MODULE_MARKER = "org.lamport.tla.toolbox.editor.basic.readOnly";
+    /**
+     * ID for the boolean attribute for {@link EditorUtil#READ_ONLY_MODULE_MARKER} indicating if
+     * the module should be read only.
+     */
+    public static final String IS_READ_ONLY_ATR = "org.lamport.tla.toolbox.editor.basic.isReadOnly";
 
     /**
      * Returns the {@link TLAEditor} with focus or null if
@@ -125,5 +135,99 @@ public class EditorUtil
         IFile file = ((FileEditorInput) editor.getEditorInput()).getFile();
         String name = ResourceHelper.getModuleName(file);
         return name;
+    }
+
+    /**
+     * Signals using a marker that the module should be read-only
+     * if isReadOnly is true or not read-only if isReadOnly is false.
+     * 
+     * @param module
+     * @param isReadOnly
+     * @throws CoreException 
+     */
+    public static void setReadOnly(IResource module, boolean isReadOnly)
+    {
+        try
+        {
+
+            if (module.exists())
+            {
+                IMarker marker;
+                // Try to find any existing markers.
+                IMarker[] foundMarkers = module.findMarkers(READ_ONLY_MODULE_MARKER, false, IResource.DEPTH_ZERO);
+
+                // There should only be one such marker at most.
+                // In case there is more than one existing marker,
+                // remove extra markers.
+                if (foundMarkers.length > 0)
+                {
+                    marker = foundMarkers[0];
+                    // remove trash if any
+                    for (int i = 1; i < foundMarkers.length; i++)
+                    {
+                        foundMarkers[i].delete();
+                    }
+                } else
+                {
+                    // Create a new marker if no existing ones.
+                    marker = module.createMarker(READ_ONLY_MODULE_MARKER);
+                }
+
+                // Set the boolean attribute to indicate if the marker is running.
+                marker.setAttribute(IS_READ_ONLY_ATR, isReadOnly);
+            }
+        } catch (CoreException e)
+        {
+            Activator.logError("Error setting module " + module + " to read only.", e);
+        }
+
+    }
+
+    /**
+     * Returns true iff the module has been set to read only using
+     * the method {@link EditorUtil#setReadOnly(IResource, boolean)}.
+     * 
+     * @param module
+     * @return
+     * @throws CoreException 
+     */
+    public static boolean isReadOnly(IResource module)
+    {
+
+        try
+        {
+            if (module.exists())
+            {
+                IMarker marker;
+                // Try to find any existing markers.
+                IMarker[] foundMarkers = module.findMarkers(READ_ONLY_MODULE_MARKER, false, IResource.DEPTH_ZERO);
+
+                // There should only be one such marker at most.
+                // In case there is more than one existing marker,
+                // remove extra markers.
+                if (foundMarkers.length > 0)
+                {
+                    marker = foundMarkers[0];
+                    // remove trash if any
+                    for (int i = 1; i < foundMarkers.length; i++)
+                    {
+                        foundMarkers[i].delete();
+                    }
+
+                    return marker.getAttribute(IS_READ_ONLY_ATR, false);
+                } else
+                {
+                    return false;
+                }
+            } else
+            {
+                return false;
+            }
+        } catch (CoreException e)
+        {
+            Activator.logError("Error determining if module " + module + " is read only.", e);
+        }
+        return false;
+
     }
 }

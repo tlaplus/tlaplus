@@ -73,6 +73,7 @@ import org.lamport.tla.toolbox.editor.basic.actions.ProofFoldAction;
 import org.lamport.tla.toolbox.editor.basic.actions.ToggleCommentAction;
 import org.lamport.tla.toolbox.editor.basic.proof.IProofFoldCommandIds;
 import org.lamport.tla.toolbox.editor.basic.proof.TLAProofFoldingStructureProvider;
+import org.lamport.tla.toolbox.editor.basic.util.EditorUtil;
 import org.lamport.tla.toolbox.editor.basic.util.ElementStateAdapter;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.util.ResourceHelper;
@@ -120,8 +121,8 @@ public class TLAEditor extends TextEditor
     /**
      * Listens to resource changes to the module.
      * 
-     * In particular, reacts to prover running marker
-     * begin changed on the module.
+     * In particular, reacts to read-only markers
+     * being placed on the module.
      * 
      * Calls {@link TLAEditor#refresh()} when this happens.
      */
@@ -204,7 +205,7 @@ public class TLAEditor extends TextEditor
 
         /*
          * This resource change listener listens to changes
-         * to markers. If it finds a change to the prover running
+         * to markers. If it finds a change to the read only
          * marker on the module in this editor, then it refreshes
          * the editor. See method refresh().
          */
@@ -212,7 +213,7 @@ public class TLAEditor extends TextEditor
 
             public void resourceChanged(IResourceChangeEvent event)
             {
-                IMarkerDelta[] markerChanges = event.findMarkerDeltas(""/*ProverHelper.PROVER_RUNNING_MARKER*/, false);
+                IMarkerDelta[] markerChanges = event.findMarkerDeltas(EditorUtil.READ_ONLY_MODULE_MARKER, false);
 
                 for (int i = 0; i < markerChanges.length; i++)
                 {
@@ -795,8 +796,7 @@ public class TLAEditor extends TextEditor
      */
     private void refresh()
     {
-        getSourceViewer()
-                .setEditable(true/*!ProverHelper.isProverRunning(((FileEditorInput) getEditorInput()).getFile())*/);
+        getSourceViewer().setEditable(!EditorUtil.isReadOnly(((FileEditorInput) getEditorInput()).getFile()));
     }
 
     /**

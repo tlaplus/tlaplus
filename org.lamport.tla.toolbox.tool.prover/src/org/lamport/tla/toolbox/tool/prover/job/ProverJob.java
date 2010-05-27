@@ -19,6 +19,7 @@ import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.Launch;
 import org.eclipse.debug.core.model.IProcess;
+import org.lamport.tla.toolbox.editor.basic.util.EditorUtil;
 import org.lamport.tla.toolbox.tool.prover.ui.ProverUIActivator;
 import org.lamport.tla.toolbox.tool.prover.ui.util.ProverHelper;
 import org.lamport.tla.toolbox.tool.prover.output.IProverProcessOutputSink;
@@ -133,6 +134,11 @@ public class ProverJob extends Job
             {
                 ProverUIActivator.logError("Error clearing obligation markers for project of module " + modulePath, e1);
             }
+
+            /*
+             * Set the module to be read-only.
+             */
+            EditorUtil.setReadOnly(module, true);
 
             /*
              * Launch the prover.
@@ -382,6 +388,8 @@ public class ProverJob extends Job
 
             proverProcess.getStreamsProxy().getErrorStreamMonitor().removeListener(listener);
             proverProcess.getStreamsProxy().getOutputStreamMonitor().removeListener(listener);
+
+            EditorUtil.setReadOnly(module, false);
         }
     }
 
