@@ -3,6 +3,11 @@ package org.lamport.tla.toolbox.tool.prover.job;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.Assert;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -15,6 +20,7 @@ import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.Launch;
 import org.eclipse.debug.core.model.IProcess;
 import org.lamport.tla.toolbox.tool.prover.ui.ProverUIActivator;
+import org.lamport.tla.toolbox.tool.prover.ui.util.ProverHelper;
 import org.lamport.tla.toolbox.tool.prover.output.IProverProcessOutputSink;
 import org.lamport.tla.toolbox.tool.prover.output.internal.TLAPMBroadcastStreamListener;
 
@@ -31,7 +37,7 @@ public class ProverJob extends Job
      * the IPath pointing to the module to be checked, e.g.
      *    new Path("C:/Users/drickett/work/svn-repository/examples/HourClock/HourClock.tla")
      */
-    private IPath modulePath;
+    private IFile module;
     /**
      * Path to the tlapm executable or null.
      * 
@@ -80,10 +86,10 @@ public class ProverJob extends Job
      * @param cygwinPath absolute path to the folder containing cygwin, or null
      * if this is not Windows or the cygwin path is assumed to be in the System Path.
      */
-    public ProverJob(String name, IPath modulePath, IPath tlapmPath, IPath cygwinPath, ILaunch launch)
+    public ProverJob(String name, IFile module, IPath tlapmPath, IPath cygwinPath, ILaunch launch)
     {
         super(name);
-        this.modulePath = modulePath;
+        this.module = module;
         this.tlapmPath = tlapmPath;
         this.cygwinPath = cygwinPath;
         this.launch = new Launch(null, "", null);
@@ -93,9 +99,12 @@ public class ProverJob extends Job
     {
         try
         {
+
+            IPath modulePath = module.getLocation();
+
             /*
              * Check that the module exists and that the tlapm
-             * and cygwin paths are valid paths.
+             * and cygwin paths are valid paths, if they aren't null.
              */
 
             if (!modulePath.toFile().exists())
@@ -112,6 +121,17 @@ public class ProverJob extends Job
                 // TODO show error message to user
                 ProverUIActivator.logDebug("The given cygwin path does not exist.");
                 return new Status(IStatus.ERROR, ProverUIActivator.PLUGIN_ID, "The given cygwin path does not exist.");
+            }
+
+            /*
+             * Clear obligation markers on the project containing the module.
+             */
+            try
+            {
+                ProverHelper.clearObligationMarkers(module.getProject());
+            } catch (CoreException e1)
+            {
+                ProverUIActivator.logError("Error clearing obligation markers for project of module " + modulePath, e1);
             }
 
             /*

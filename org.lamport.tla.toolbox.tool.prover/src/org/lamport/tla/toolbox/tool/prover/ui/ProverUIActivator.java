@@ -95,7 +95,13 @@ public class ProverUIActivator extends AbstractUIPlugin
 
                 if (markersDeleted)
                 {
-                    ObligationsView.refreshObligationView();
+                    UIHelper.runUIAsync(new Runnable() {
+
+                        public void run()
+                        {
+                            ObligationsView.refreshObligationView();
+                        }
+                    });
                 }
 
             }

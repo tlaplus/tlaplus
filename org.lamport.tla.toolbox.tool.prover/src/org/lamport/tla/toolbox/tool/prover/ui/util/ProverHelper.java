@@ -123,8 +123,9 @@ public class ProverHelper
     }
 
     /**
-     * Removes all markers indicating obligation information on a resource. Does
-     * nothing if module does not exist.
+     * Removes all markers indicating obligation information on  a resource. Does
+     * nothing if the resource does not exist. It deletes these markers only at one level
+     * under the resource.
      * 
      * @param resource
      * @throws CoreException 

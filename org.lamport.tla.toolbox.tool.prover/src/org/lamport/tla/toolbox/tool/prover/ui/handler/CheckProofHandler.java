@@ -134,7 +134,7 @@ public class CheckProofHandler extends AbstractHandler implements IHandler
          * Step 7                                                  *
          ***********************************************************/
         ProverJob proverJob = new ProverJob("Prover launched on module " + moduleName + " from line " + beginLine
-                + " to line " + endLine, moduleFile.getLocation(), null, null, null);
+                + " to line " + endLine, moduleFile, null, null, null);
         proverJob.setLocation(beginLine, 0, endLine, 0);
         proverJob.setUser(true);
         proverJob.schedule();

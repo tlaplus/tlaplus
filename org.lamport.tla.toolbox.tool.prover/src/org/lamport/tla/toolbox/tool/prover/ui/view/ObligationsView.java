@@ -132,6 +132,8 @@ public class ObligationsView extends ViewPart
     }
 
     /**
+     * This method must be run from a UI thread.
+     * 
      * Used to refresh the obligation view if it is currently open. If the view
      * is not currently open, this method does nothing. If the view is currently open,
      * this takes the following two steps:
