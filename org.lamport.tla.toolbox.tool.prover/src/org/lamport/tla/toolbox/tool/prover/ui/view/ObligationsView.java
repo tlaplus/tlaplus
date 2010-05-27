@@ -335,6 +335,7 @@ public class ObligationsView extends ViewPart
                      */
                     SourceViewer viewer = new SourceViewer(oblWidget, null, SWT.READ_ONLY | SWT.MULTI | SWT.WRAP);
                     viewer.getTextWidget().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+                    viewer.configure(new ObligationSourceViewerConfiguration());
 
                     // item maps to viewer for later access
                     viewers.put(item, viewer);
