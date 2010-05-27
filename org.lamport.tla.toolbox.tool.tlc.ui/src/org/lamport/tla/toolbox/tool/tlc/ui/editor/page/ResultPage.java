@@ -44,10 +44,10 @@ import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.ValidateableSectionPart;
 import org.lamport.tla.toolbox.tool.tlc.ui.preference.ITLCPreferenceConstants;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.ActionClickListener;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.DirtyMarkingListener;
-import org.lamport.tla.toolbox.tool.tlc.ui.util.FontPreferenceChangeListener;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
 import org.lamport.tla.toolbox.tool.tlc.ui.view.TLCErrorView;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
+import org.lamport.tla.toolbox.util.FontPreferenceChangeListener;
 import org.lamport.tla.toolbox.util.IHelpConstants;
 import org.lamport.tla.toolbox.util.UIHelper;
 
@@ -461,8 +461,10 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         progressOutput.getControl().setLayoutData(gd);
         progressOutput.getControl().setFont(JFaceResources.getFont(ITLCPreferenceConstants.I_TLC_OUTPUT_FONT));
 
-        fontChangeListener = new FontPreferenceChangeListener(new Control[] { userOutput.getControl(),
-                progressOutput.getControl() }, ITLCPreferenceConstants.I_TLC_OUTPUT_FONT);
+        Vector controls = new Vector();
+        controls.add(userOutput.getControl());
+        controls.add(progressOutput.getControl());
+        fontChangeListener = new FontPreferenceChangeListener(controls, ITLCPreferenceConstants.I_TLC_OUTPUT_FONT);
 
         JFaceResources.getFontRegistry().addListener(fontChangeListener);
     }

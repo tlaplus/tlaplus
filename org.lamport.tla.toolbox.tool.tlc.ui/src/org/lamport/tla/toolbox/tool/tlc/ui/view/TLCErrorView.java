@@ -70,10 +70,10 @@ import org.lamport.tla.toolbox.tool.tlc.traceexplorer.TraceExplorerComposite;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.ui.preference.ITLCPreferenceConstants;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.ActionClickListener;
-import org.lamport.tla.toolbox.tool.tlc.ui.util.FontPreferenceChangeListener;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.TLCUIHelper;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
+import org.lamport.tla.toolbox.util.FontPreferenceChangeListener;
 import org.lamport.tla.toolbox.util.IHelpConstants;
 import org.lamport.tla.toolbox.util.UIHelper;
 
@@ -503,8 +503,9 @@ public class TLCErrorView extends ViewPart
         // add a listener to the preference store to react when the font is
         // changed
 
-        fontChangeListener = new FontPreferenceChangeListener(new Control[] { errorViewer.getControl() },
-                ITLCPreferenceConstants.I_TLC_OUTPUT_FONT);
+        Vector controls = new Vector();
+        controls.add(errorViewer.getControl());
+        fontChangeListener = new FontPreferenceChangeListener(controls, ITLCPreferenceConstants.I_TLC_OUTPUT_FONT);
         JFaceResources.getFontRegistry().addListener(fontChangeListener);
 
         TLCUIHelper.setHelp(parent, IHelpConstants.TLC_ERROR_VIEW);

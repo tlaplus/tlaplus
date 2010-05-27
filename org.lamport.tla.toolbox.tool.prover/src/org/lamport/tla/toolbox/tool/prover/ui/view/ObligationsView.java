@@ -5,6 +5,7 @@ import java.util.HashMap;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.swt.SWT;
@@ -20,6 +21,7 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.part.ViewPart;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.tool.prover.ui.util.ProverHelper;
+import org.lamport.tla.toolbox.util.FontPreferenceChangeListener;
 import org.lamport.tla.toolbox.util.TLAMarkerHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
@@ -86,6 +88,7 @@ public class ObligationsView extends ViewPart
      * associated {@link SourceViewer}.
      */
     private HashMap viewers;
+    private FontPreferenceChangeListener fontListener;
     /**
      * Listens to when the user clicks
      * on an item's widget and jumps to the marker.
@@ -115,6 +118,8 @@ public class ObligationsView extends ViewPart
     {
         items = new HashMap();
         viewers = new HashMap();
+        fontListener = new FontPreferenceChangeListener(null, JFaceResources.TEXT_FONT);
+        JFaceResources.getFontRegistry().addListener(fontListener);
     }
 
     public void createPartControl(Composite parent)
@@ -336,6 +341,8 @@ public class ObligationsView extends ViewPart
                     SourceViewer viewer = new SourceViewer(oblWidget, null, SWT.READ_ONLY | SWT.MULTI | SWT.WRAP);
                     viewer.getTextWidget().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
                     viewer.configure(new ObligationSourceViewerConfiguration());
+                    viewer.getControl().setFont(JFaceResources.getTextFont());
+                    fontListener.addControl(viewer.getControl());
 
                     // item maps to viewer for later access
                     viewers.put(item, viewer);
