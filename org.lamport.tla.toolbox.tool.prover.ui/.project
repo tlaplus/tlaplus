@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>org.lamport.tla.toolbox.tool.prover.ui</name>
+	<name>org.lamport.tla.toolbox.tool.prover</name>
 	<comment></comment>
 	<projects>
 	</projects>

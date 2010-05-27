@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Prover Launching UI
-Bundle-SymbolicName: org.lamport.tla.toolbox.tool.prover.ui;singleton:=true
+Bundle-SymbolicName: org.lamport.tla.toolbox.tool.prover;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-Activator: org.lamport.tla.toolbox.tool.prover.ui.ProverUIActivator
 Bundle-Vendor: Daniel Ricketts
