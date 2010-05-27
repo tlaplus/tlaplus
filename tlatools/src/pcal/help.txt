@@ -1,4 +1,4 @@
-This is the +cal translator, which translates a +cal algorithm into
+This is the PlusCal translator, which translates a PlusCal algorithm into
 a TLA+ specification.  The translator is called by typing
 
    java pcal.trans [options] input-file
@@ -41,6 +41,15 @@ what the TLA+ file must contain.  The possible options are
                     names them name1, name2, etc.  The default value
                     is "Lbl_".
 
+  -lineWidth : The translation tries to perform the translation so
+               lines have this maximum width.  (It will often
+               fail.)  Default is 78, minimum value is 60.
+
+  -version : The version of PlusCal for which this algorithm is
+             written.  If the language is ever changed to make
+             algorithms written for earlier versions no longer
+             legal, then the translator should do the appropriate
+             thing when the earlier version number is specified. 
 
   -unixEOL : Forces the use of Unix end-of-line convention, regardless
              of the system's default.  Without this, when run on

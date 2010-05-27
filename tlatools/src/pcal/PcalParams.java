@@ -18,8 +18,8 @@ public final class PcalParams
     /**
      * Parameters to be updated on each new release.
      */
-    public static final String modDate = "8 December 2009";
-    public static final String version = "1.31";
+    public static final String modDate = "27 May 2010";
+    public static final String version = "1.4";
     /**
      * SZ Mar 9, 2009:
      * Added re-initialization method. Since PcalParams class
@@ -46,7 +46,7 @@ public final class PcalParams
         FairnessOption = "";
         CheckTermination = false;
         Nocfg = false;
-        fromPcalFile = false;
+        optionsInFile = false;
         versionOption = null;
         inputVersionNumber = VersionToNumber(PcalParams.version);
         PcalTLAGen.wrapColumn = 78;
@@ -218,7 +218,7 @@ public final class PcalParams
    *    added.
    */
 
-  public static boolean fromPcalFile = false ;
+  public static boolean optionsInFile = false ;
      // True iff the algorithm is in a .pcal file.  It is set false if
      // the file argument has the extension .tla, or if there is no
      // file named TLAInputFile + ".pcal".

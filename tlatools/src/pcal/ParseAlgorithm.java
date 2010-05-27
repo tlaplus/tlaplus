@@ -3158,10 +3158,6 @@ public class ParseAlgorithm
 * StringVector inputVec                                                    *
 *    The pcal input file, usually with tabs removed.                       *
 *                                                                          *
-* StringVector outputVec                                                   *
-*    The tla output file, or null.  If non-null, the region of the pcal    *
-*    input file that is processed is copied to the                         *
-*                                                                          *
 * IntPair curLoc                                                           *
 *    The <line, column> location (in Java coordinates) of the beginning    *
 *    of the region to process.  This object is modified by the method      *
@@ -3170,14 +3166,6 @@ public class ParseAlgorithm
 *    it points to the nonexistent character after the last character       *
 *    on the line.  (That is, the value of curLoc does not point to         *
 *    the first character on the next line.)                                *
-*                                                                          *
-* boolean replace                                                          *
-*    If true, comments within that region of the pcal input file are       *
-*    removed.  Comments enclosed by (* and *) are replaced by spaces.      *
-*    End of line comments that begin with \* are removed by truncating     *
-*    the line.  No method is called with replace = true and outputVec      *
-*    non-null.  If a method were called with this option, then the input   *
-*    would be copied to the tla output after the comments were removed.    *
 *                                                                          *
 * String errorMsg                                                          *
 *    Used only for a method that has multiple uses and can throw a         *
@@ -3206,34 +3194,35 @@ public class ParseAlgorithm
     * 
     * See the comments above for an explanation of the arguments.
     */
-   public static boolean ProcessVersion(Vector inputVec, 
-                                        Vector outputVec, IntPair curLoc) {
-       String curLine = GotoNextNonSpace(inputVec, outputVec, curLoc);
+   /***************************
+     public static boolean ProcessVersion(Vector inputVec, 
+                                        IntPair curLoc) {
+       String curLine = GotoNextNonSpace(inputVec, curLoc);
        boolean error = false;          
        if (curLine.substring(curLoc.two).startsWith("version")) {
           // Process the version number and move curLoc and curLine
           // to just after the closing ")".
           curLoc.two = curLoc.two + 7; // go to position after "version"
-          curLine = GotoNextNonSpace(inputVec, outputVec, curLoc);
+          curLine = GotoNextNonSpace(inputVec,  curLoc);
           if (!curLine.substring(curLoc.two).startsWith("(")) {
               curLoc.one = inputVec.size(); 
               error = true;
           }
           curLoc.two ++;
-          curLine = GotoNextNonSpace(inputVec, outputVec, curLoc);
+          curLine = GotoNextNonSpace(inputVec,  curLoc);
           int endOfArg = NextDelimiterCol(curLine, curLoc.two);
           if (!PcalParams.ProcessVersion(curLine.substring(curLoc.two, endOfArg))){
               curLoc.one = inputVec.size();
               error = true;
           }
           curLoc.two = endOfArg;
-          curLine = GotoNextNonSpace(inputVec, outputVec, curLoc);
+          curLine = GotoNextNonSpace(inputVec, curLoc);
           if (!error && !curLine.substring(curLoc.two).startsWith(")")) {
               curLoc.one = inputVec.size(); 
               error = true;
           }
           curLoc.two ++;
-//          curLine = GotoNextNonSpace(untabInputVec, outputVec, curLoc);
+          // curLine = GotoNextNonSpace(untabInputVec, outputVec, curLoc);
        }
        if (error) 
        { PcalDebug.reportError("Error in version statement");
@@ -3241,67 +3230,77 @@ public class ParseAlgorithm
        } 
        return true ;
    }
+    ************************/
    
    /*** 
-    * If the next non-space character is the beginning of an options statement,
-    * this method processes the statement.  Otherwise, it does nothing.  The
-    * actual processing of the arguments is done by calling trans.parseAndProcessArguments.
-    * It returns STATUS_OK unless there is an  options statement with an error, in 
-    * which case it returns the error status.  The options statement is written
-    * to the tla output.  There is no removal of comments.
+    * If the next non-space character is the beginning of the "options" string of 
+    * an options statement, then this method processes the statement.  Otherwise, 
+    * it does nothing.  The actual processing of the arguments is done by calling 
+    * trans.parseAndProcessArguments.  It returns STATUS_OK unless there is an  
+    * options statement with an error, in which case it returns the error status.  
+    * The options statement is written to the tla output.  There is no removal of comments.
     * 
     * See the comments above for an explanation of the arguments.
     */
-   public static int ProcessOptions(Vector untabInputVec, 
-                                        Vector outputVec, IntPair curLoc) {
-       String curLine = GotoNextNonSpace(untabInputVec, outputVec, curLoc);
-       if (curLine.substring(curLoc.two).startsWith("options")) {
-           // Process the options and move curLoc and curLine
-           // to just after the closing ")".
-           curLoc.two = curLoc.two + 7; // go to position after "version"
-           curLine = GotoNextNonSpace(untabInputVec, outputVec, curLoc);
-           if (!curLine.substring(curLoc.two).startsWith("(")) {
-               curLoc.one = untabInputVec.size(); 
-//               error = true;
-           }
-           curLoc.two ++;
-           curLine = GotoNextNonSpace(untabInputVec, outputVec, curLoc);
+    public static int ProcessOptions(Vector untabInputVec, IntPair curLoc)
+    {
+        String curLine = GotoNextNonSpace(untabInputVec, curLoc);
+        if (curLine.substring(curLoc.two).startsWith("options"))
+        {
+            // Process the options and move curLoc and curLine
+            // to just after the closing ")".
+            curLoc.two = curLoc.two + 7; // go to position after "options"
+            curLine = GotoNextNonSpace(untabInputVec, curLoc);
+            if (!curLine.substring(curLoc.two).startsWith("("))
+            {
+                curLoc.one = untabInputVec.size();
+                PcalDebug.reportError("`PlusCal options' not followed by '('");
+                return trans.STATUS_EXIT_WITH_ERRORS;
+            }
+            curLoc.two++;
+            curLine = GotoNextNonSpace(untabInputVec, curLoc);
 
-           Vector argsVec = new Vector();
-             // the vector of option arguments
-           
-           while (curLoc.one < untabInputVec.size() && (curLine.charAt(curLoc.two) != ')')) {
-              if (curLine.charAt(curLoc.two) == ',') {
-                  curLoc.two++;
-              } else {
-                  int endOfArg = NextDelimiterCol(curLine, curLoc.two) ;
-                  argsVec.addElement(curLine.substring(curLoc.two, endOfArg));
-                  curLoc.two = endOfArg;
-              }
-              curLine = GotoNextNonSpace(untabInputVec, outputVec, curLoc);
-           }
-           
+            Vector argsVec = new Vector();
+            // the vector of option arguments
 
-           if (!(curLoc.one < untabInputVec.size())) 
-           { PcalDebug.reportError("No closing ')' found in options statement");
-             return trans.STATUS_EXIT_WITH_ERRORS;
-           } 
-           curLoc.two ++;
-           curLine = GotoNextNonSpace(untabInputVec, outputVec, curLoc);
-           
-           // Process the options arguments.
-           argsVec.addElement(""); // add dummy final argument
-           String[] argsArray = new String[argsVec.size()];
-           for (int i = 0; i < argsArray.length; i++) {
-               argsArray[i] = (String) argsVec.elementAt(i);
-           }
-           int status = trans.parseAndProcessArguments(argsArray); 
-           if (status != trans.STATUS_OK) {
-               return status;
-           }     
+            while (curLoc.one < untabInputVec.size() && (curLine.charAt(curLoc.two) != ')'))
+            {
+                if (curLine.charAt(curLoc.two) == ',')
+                {
+                    curLoc.two++;
+                } else
+                {
+                    int endOfArg = NextDelimiterCol(curLine, curLoc.two);
+                    argsVec.addElement(curLine.substring(curLoc.two, endOfArg));
+                    curLoc.two = endOfArg;
+                }
+                curLine = GotoNextNonSpace(untabInputVec, curLoc);
+            }
+
+            if (!(curLoc.one < untabInputVec.size()))
+            {
+                PcalDebug.reportError("No closing ')' found in options statement");
+                return trans.STATUS_EXIT_WITH_ERRORS;
+            }
+            curLoc.two++;
+            curLine = GotoNextNonSpace(untabInputVec, curLoc);
+
+            // Process the options arguments.
+            argsVec.addElement(""); // add dummy final argument
+            String[] argsArray = new String[argsVec.size()];
+            for (int i = 0; i < argsArray.length; i++)
+            {
+                argsArray[i] = (String) argsVec.elementAt(i);
+            }
+// printArray(argsArray);           
+            int status = trans.parseAndProcessArguments(argsArray);
+            if (status != trans.STATUS_OK)
+            {
+                return status;
+            }
         }
-       return trans.STATUS_OK;
-   }
+        return trans.STATUS_OK;
+    }
    
    /**
     * Searches for token, starting from curLoc in the String Vector inputVec, and
@@ -3314,58 +3313,55 @@ public class ParseAlgorithm
     * 
     * @param token           The token being searched for.
     * @param inputVec        Input String Vector 
-    * @param outputVec       Output String Vector, or null
     * @param curLoc          <row, column> (Java coordinates) of beginning of search.
-    * @param replace         True iff replacing comments by spaces.
     * @throws ParseAlgorithmException
     */
    public static void FindToken(
            String token,  
            Vector inputVec,  
-           Vector outputVec, 
            IntPair curLoc,   
-           boolean replace, 
            String errorMsg  // The error message to be reported if not found.
           )
              throws ParseAlgorithmException {
        boolean found = false;
        while ((!found) && (curLoc.one < inputVec.size())) {
-         String curLine = GotoNextNonSpace(inputVec, outputVec, curLoc);
+         String curLine = GotoNextNonSpace(inputVec, curLoc);
              if (curLine.substring(curLoc.two).startsWith(token)){
                  int endLoc = curLoc.two + token.length();
                  if ( (endLoc >= curLine.length()) || 
                         ! (Character.isLetter(curLine.charAt(endLoc)) ||
                            (curLine.charAt(endLoc) == '_'))) {                
                    found = true;
-                   if (outputVec != null && curLoc.two != 0) {
-                      outputVec.addElement(curLine.substring(0, curLoc.two));
-                   }
+//                   if (outputVec != null && curLoc.two != 0) {
+//                      outputVec.addElement(curLine.substring(0, curLoc.two));
+//                   }
                    curLoc.two = endLoc;
                  }                
               }
-           
-             curLoc.two = NextSpaceQuoteOrCommentCol(curLine, curLoc.two);
-             if ((!found) && (curLoc.two < curLine.length())){
-                 char c = curLine.charAt(curLoc.two);
-                 if (   (c == '(') 
-                            && (curLoc.two + 1 < curLine.length())
-                            && (curLine.charAt(curLoc.two+1) == '*')) {
-                     ParseAlgorithm.gotoEndOfComment(inputVec, outputVec, 
-                                                     curLoc, replace);
-                     curLine = GotoNextNonSpace(inputVec, outputVec, curLoc);
-                 } else if (   (c == '\\') 
-                         && (curLoc.two + 1 < curLine.length())
-                         && (curLine.charAt(curLoc.two+1) == '*')) {
-                     if (replace) {
-                         inputVec.setElementAt(
-                              curLine.substring(0, curLoc.two), curLoc.one);
-                     }
-                     curLoc.two = curLine.length();
-                 } else if (c == '"') {
-                     curLoc.two = 
-                         ParseAlgorithm.findEndOfString(curLine, curLoc.two, curLoc.one);
-                 } 
-             }
+             curLoc.two = NextSpaceCol(curLine, curLoc.two);
+             
+            // if ((!found) && (curLoc.two < curLine.length()))
+            //
+            // {
+            // char c = curLine.charAt(curLoc.two);
+            // if ((c == '(') && (curLoc.two + 1 < curLine.length()) && (curLine.charAt(curLoc.two + 1) == '*'))
+            // {
+            // ParseAlgorithm.gotoEndOfComment(inputVec, curLoc);
+            // curLine = GotoNextNonSpace(inputVec, curLoc);
+            // } else if ((c == '\\') && (curLoc.two + 1 < curLine.length())
+            // && (curLine.charAt(curLoc.two + 1) == '*'))
+            // {
+            // // if (replace) {
+            // // inputVec.setElementAt(
+            // // curLine.substring(0, curLoc.two), curLoc.one);
+            // // }
+            // curLoc.two = curLine.length();
+            // } else if (c == '"')
+            // {
+            // curLoc.two = ParseAlgorithm.findEndOfString(curLine, curLoc.two, curLoc.one);
+            // }
+            // }
+
        } // end of while, either found beginning or at end of file
        if (!found) {
            throw new ParseAlgorithmException(errorMsg) ;
@@ -3393,11 +3389,11 @@ public class ParseAlgorithm
     */
    public static void FindMatchingBrace(
            Vector inputVec,  // Vector of strings
-           Vector outputVec, // null or Vector of strings
+//           Vector outputVec, // null or Vector of strings
            IntPair curLoc,   // <row, column> in Java coordinates of
                               // "(*" that begins a comment.
-           boolean replace, // true iff comment should
-                           // be replaced by spaces.
+//           boolean replace, // true iff comment should
+//                           // be replaced by spaces.
            String errorMsg  // The error message if the brace isn't found
           )
              throws ParseAlgorithmException {
@@ -3407,38 +3403,38 @@ public class ParseAlgorithm
            String curLine = (String) inputVec.elementAt(curLoc.one);
            while (curLoc.two < curLine.length()) {
              curLoc.two = NextBraceQuoteOrCommentCol(curLine, curLoc.two);
-             if (curLoc.two < curLine.length()){
-                 char c = curLine.charAt(curLoc.two);
-                 if (c == '}') {
-                   curLoc.two++;
-                   if (outputVec != null) {
-                       outputVec.addElement(curLine.substring(0, curLoc.two));
+                if (curLoc.two < curLine.length())
+                {
+                    char c = curLine.charAt(curLoc.two);
+                    if (c == '}')
+                    {
+                        curLoc.two++;
+                        // if (outputVec != null) {
+                        // outputVec.addElement(curLine.substring(0, curLoc.two));
+                        // }
+                        return;
+                    } else if (c == '{')
+                    {
+                        FindMatchingBrace(inputVec, curLoc, errorMsg);
+                        curLine = (String) inputVec.elementAt(curLoc.one);
+                    } else if ((c == '(') && (curLoc.two + 1 < curLine.length())
+                            && (curLine.charAt(curLoc.two + 1) == '*'))
+                    {
+                        ParseAlgorithm.gotoEndOfComment(inputVec, curLoc);
+                        curLine = (String) inputVec.elementAt(curLoc.one);
+                    } else if ((c == '\\') && (curLoc.two + 1 < curLine.length())
+                            && (curLine.charAt(curLoc.two + 1) == '*'))
+                    {
+                        // if (replace) {
+                        // inputVec.setElementAt(
+                        // curLine.substring(0, curLoc.two), curLoc.one);
+                        // }
+                        curLoc.two = curLine.length();
+                    } else if (c == '"')
+                    {
+                        curLoc.two = ParseAlgorithm.findEndOfString(curLine, curLoc.two, curLoc.one);
                     }
-                   return;
-                 } else if (c == '{') {
-                     FindMatchingBrace(inputVec, outputVec, curLoc, 
-                                       replace, errorMsg);
-                     curLine = (String) inputVec.elementAt(curLoc.one);
-                 }
-                     else if (   (c == '(') 
-                            && (curLoc.two + 1 < curLine.length())
-                            && (curLine.charAt(curLoc.two+1) == '*')) {
-                     ParseAlgorithm.gotoEndOfComment(inputVec, outputVec, 
-                                                     curLoc, replace);
-                     curLine = (String) inputVec.elementAt(curLoc.one);
-                 } else if (   (c == '\\') 
-                         && (curLoc.two + 1 < curLine.length())
-                         && (curLine.charAt(curLoc.two+1) == '*')) {
-                     if (replace) {
-                         inputVec.setElementAt(
-                              curLine.substring(0, curLoc.two), curLoc.one);
-                     }
-                     curLoc.two = curLine.length();
-                 } else if (c == '"') {
-                     curLoc.two = 
-                         ParseAlgorithm.findEndOfString(curLine, curLoc.two, curLoc.one);
-                 } 
-             }
+                }
 
          }// end of while, either at end of line or found matching brace
          curLoc.one ++;
@@ -3497,15 +3493,14 @@ public class ParseAlgorithm
    }
    
    /**
-    * Returns the position of the first space, quote ("), "(*", or
-    * "\*" at or after position col in str, or str.size() if there is
-    * none.
+    * Returns the position of the first spaceat or after position col in 
+    * str, or str.size() if there is none.
     * @param str
     * @param col
     * @return
     */
-   private static int NextSpaceQuoteOrCommentCol(String str, int col) {
-       String[] splitStr = str.substring(col).split(" |\"|\\(\\*|\\\\\\*");
+   private static int NextSpaceCol(String str, int col) {
+       String[] splitStr = str.substring(col).split(" ");
        if (splitStr.length == 0) { return col ; }
        return col + splitStr[0].length();
    }
@@ -3557,7 +3552,7 @@ public class ParseAlgorithm
     * removal is possible.)
     * 
     */
-   private static String GotoNextNonSpace(Vector inputVec, Vector outputVec, IntPair curLoc) {
+   public static String GotoNextNonSpace(Vector inputVec, IntPair curLoc) {
        boolean found = false;
        while ((!found) && curLoc.one < inputVec.size()) {
          String line = (String) inputVec.elementAt(curLoc.one);
@@ -3569,9 +3564,9 @@ public class ParseAlgorithm
               }
          }
          if (!found) {
-             if (outputVec != null) {
-                 outputVec.addElement(inputVec.elementAt(curLoc.one));
-             }
+//             if (outputVec != null) {
+//                 outputVec.addElement(inputVec.elementAt(curLoc.one));
+//             }
              curLoc.one++;
              curLoc.two = 0;
          }
@@ -3592,36 +3587,36 @@ public class ParseAlgorithm
     * @param replace
     * @return
     */
-   public static String GotoNextNonSpaceOrComment(
-                Vector inputVec, Vector outputVec, IntPair curLoc, 
-                boolean replace)
-            throws ParseAlgorithmException {
-       boolean found = false;
-       while ((!found) && curLoc.one < inputVec.size()) {
-         String curLine = GotoNextNonSpace(inputVec, outputVec, curLoc);
-         char c = curLine.charAt(curLoc.two);
-
-         if (   (c == '(') 
-                    && (curLoc.two + 1 < curLine.length())
-                    && (curLine.charAt(curLoc.two+1) == '*')) {
-             ParseAlgorithm.gotoEndOfComment(inputVec, outputVec, curLoc, replace);
-             curLine = GotoNextNonSpace(inputVec, outputVec, curLoc);
-         } else if (   (c == '\\') 
-                 && (curLoc.two + 1 < curLine.length())
-                 && (curLine.charAt(curLoc.two+1) == '*')) {
-             if (replace) {
-                 inputVec.setElementAt(
-                      curLine.substring(0, curLoc.two), curLoc.one);
-             }
-             curLoc.two = curLine.length();
-         } else {
-             found = true;
-         }
-       }
-       if (curLoc.one < inputVec.size()) {
-           return (String) inputVec.elementAt(curLoc.one);}
-       return "";
-   }
+//   public static String GotoNextNonSpaceOrComment(
+//                Vector inputVec, Vector outputVec, IntPair curLoc, 
+//                boolean replace)
+//            throws ParseAlgorithmException {
+//       boolean found = false;
+//       while ((!found) && curLoc.one < inputVec.size()) {
+//         String curLine = GotoNextNonSpace(inputVec, outputVec, curLoc);
+//         char c = curLine.charAt(curLoc.two);
+//
+//         if (   (c == '(') 
+//                    && (curLoc.two + 1 < curLine.length())
+//                    && (curLine.charAt(curLoc.two+1) == '*')) {
+//             ParseAlgorithm.gotoEndOfComment(inputVec, outputVec, curLoc, replace);
+//             curLine = GotoNextNonSpace(inputVec, outputVec, curLoc);
+//         } else if (   (c == '\\') 
+//                 && (curLoc.two + 1 < curLine.length())
+//                 && (curLine.charAt(curLoc.two+1) == '*')) {
+//             if (replace) {
+//                 inputVec.setElementAt(
+//                      curLine.substring(0, curLoc.two), curLoc.one);
+//             }
+//             curLoc.two = curLine.length();
+//         } else {
+//             found = true;
+//         }
+//       }
+//       if (curLoc.one < inputVec.size()) {
+//           return (String) inputVec.elementAt(curLoc.one);}
+//       return "";
+//   }
 
    
    
@@ -3660,11 +3655,11 @@ public class ParseAlgorithm
     * See the comments above for an explanation of the arguments.
     */
    public static void gotoEndOfComment(Vector inputVec,  // Vector of strings
-                                       Vector outputVec, // null or Vector of strings
-                                       IntPair curLoc,      
+//                                       Vector outputVec, // null or Vector of strings
+                                       IntPair curLoc      
                                          // <row, column> in Java coordinates of
                                          // "(*" that begins a comment.
-                                       boolean replace // true iff comment should
+//                                       boolean replace // true iff comment should
                                                        // be replaced by spaces.
                                       )
                         throws ParseAlgorithmException {
@@ -3673,9 +3668,9 @@ public class ParseAlgorithm
        String curLine = (String) inputVec.elementAt(curLoc.one);
 
        StringBuffer newLine = new StringBuffer(curLine.substring(0, curLoc.two));
-       if (replace) {
-           newLine.append("  ");
-       }
+//       if (replace) {
+//           newLine.append("  ");
+//       }
 
        curLoc.two = curLoc.two + 2; // skip over "(*"
        
@@ -3687,43 +3682,43 @@ public class ParseAlgorithm
                     && (curLine.charAt(curLoc.two+1) == '*')) {
                    // this character begins an inner comment.
                    // must set inputVec to correct value if replacing
-                   if (replace) {
-                      inputVec.setElementAt(
-                        newLine.append(curLine.substring(curLoc.two)).toString(),
-                                       curLoc.one);
-                   }
-                   gotoEndOfComment(inputVec, outputVec, curLoc, replace);
+//                   if (replace) {
+//                      inputVec.setElementAt(
+//                        newLine.append(curLine.substring(curLoc.two)).toString(),
+//                                       curLoc.one);
+//                   }
+                   gotoEndOfComment(inputVec, curLoc);
                    // must reset curLine and newLine
                    curLine = (String) inputVec.elementAt(curLoc.one);
-                   if (replace) {
-                       newLine = new StringBuffer(curLine.substring(0, curLoc.two));
-                   }
+//                   if (replace) {
+//                       newLine = new StringBuffer(curLine.substring(0, curLoc.two));
+//                   }
                } else if (    (c == '*') 
                           && (curLoc.two + 1 < curLine.length())
                           && (curLine.charAt(curLoc.two+1) == ')')) {
                    // this character begins the comment-ending "*)"
-                   if (replace) {
-                       newLine.append("  ");
-                   }
+//                   if (replace) {
+//                       newLine.append("  ");
+//                   }
                    curLoc.two = curLoc.two + 2;
                    found = true;
                } else {
-                   if (replace) {
-                       newLine.append(" ");
-                   }
+//                   if (replace) {
+//                       newLine.append(" ");
+//                   }
                    curLoc.two++;
                }
            } // end of loop over characters in curLine
             if (!found) {
-                if (replace)
-                {
-                    inputVec.setElementAt(newLine.toString(), curLoc.one);
-                    newLine = new StringBuffer();
-                }
-                if (outputVec != null)
-                {
-                    outputVec.addElement(inputVec.elementAt(curLoc.one));
-                }
+//                if (replace)
+//                {
+//                    inputVec.setElementAt(newLine.toString(), curLoc.one);
+//                    newLine = new StringBuffer();
+//                }
+//                if (outputVec != null)
+//                {
+//                    outputVec.addElement(inputVec.elementAt(curLoc.one));
+//                }
                 curLoc.one++;
                 curLoc.two = 0;
                 if (curLoc.one < inputVec.size()) {
@@ -3731,15 +3726,32 @@ public class ParseAlgorithm
                 }
             }
        } // end of while loop over lines.
-      if (found && replace) {
-          newLine.append(curLine.substring(curLoc.two));
-          inputVec.setElementAt(newLine.toString(), curLoc.one);
-      }
+//      if (found && replace) {
+//          newLine.append(curLine.substring(curLoc.two));
+//          inputVec.setElementAt(newLine.toString(), curLoc.one);
+//      }
       if (!found) {
           throw new ParseAlgorithmException("Unterminated comment begun at line " 
                   + "\n    line " + (curLoc.one+1) + ", column " + (curLoc.two+1)  ) ;
       }
       return;
    }
+   
+   // Copied from StringHelper
+   public static final void printArray(Object[] array) {
+       if (array == null) {
+           System.out.println("null array");
+           return;
+       }
+       if (array.length == 0) {
+           System.out.println("zero-length array");
+           return;
+       }
+       System.out.println("0-" + array[0].toString() + "-0");
+       for (int i = 1; i < array.length; i++) {
+           System.out.println("*-" + array[i].toString() + "-*");
+       }
+   }
+
  }
 
