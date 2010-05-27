@@ -182,11 +182,8 @@ public class ObligationsView extends ViewPart
             ExpandItem[] expandItems = oblView.bar.getItems();
             for (int i = 0; i < expandItems.length; i++)
             {
-                expandItems[i].getControl().dispose();
-                expandItems[i].dispose();
+                oblView.removeItem(expandItems[i]);
             }
-
-            oblView.items.clear();
 
             /*
              * Fill the obligation view with markers from the current spec.
@@ -311,9 +308,7 @@ public class ObligationsView extends ViewPart
                 {
                     if (item != null)
                     {
-                        item.getControl().dispose();
-                        item.dispose();
-                        items.remove(new Integer(id));
+                        removeItem(item);
                     }
 
                     return;
@@ -395,6 +390,7 @@ public class ObligationsView extends ViewPart
                 SourceViewer viewer = (SourceViewer) viewers.get(item);
                 Assert.isNotNull(viewer, "Expand item has been created without a source viewer. This is a bug.");
                 String oblString = marker.getAttribute(ProverHelper.OBLIGATION_STRING, "");
+                System.out.println("Obligation : " + oblString);
                 if (viewer.getDocument() == null && !oblString.isEmpty())
                 {
                     // set the viewers document to the obligation.
@@ -421,5 +417,34 @@ public class ObligationsView extends ViewPart
     {
         // TODO Auto-generated method stub
 
+    }
+
+    public void dispose()
+    {
+        JFaceResources.getFontRegistry().removeListener(fontListener);
+        super.dispose();
+    }
+
+    /**
+     * Removes the item from the view, performing necessary
+     * cleanup.
+     * 
+     * @param item
+     */
+    private void removeItem(ExpandItem item)
+    {
+        // remove the source viewer's control from the
+        // font listener since it no longer needs to be
+        // notified of font changes.
+        fontListener.removeControl(((SourceViewer) viewers.get(item)).getControl());
+
+        // retrieve the id for the item
+        // the id is stored in the item's data, which should be a marker,
+        // as set in the updateItem method
+        Integer id = new Integer(((IMarker) item.getData()).getAttribute(ProverHelper.OBLIGATION_ID, -1));
+        items.remove(id);
+
+        item.getControl().dispose();
+        item.dispose();
     }
 }
