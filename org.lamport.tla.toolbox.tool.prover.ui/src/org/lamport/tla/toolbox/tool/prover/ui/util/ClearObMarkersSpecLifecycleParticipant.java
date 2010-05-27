@@ -5,7 +5,6 @@ import org.lamport.tla.toolbox.tool.SpecEvent;
 import org.lamport.tla.toolbox.tool.SpecLifecycleParticipant;
 import org.lamport.tla.toolbox.tool.prover.ui.ProverUIActivator;
 import org.lamport.tla.toolbox.tool.prover.ui.view.ObligationsView;
-import org.lamport.tla.toolbox.tool.prover.util.ProverHelper;
 
 /**
  * This class listens to changes in specs in order to update information

@@ -19,7 +19,7 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.part.ViewPart;
 import org.lamport.tla.toolbox.spec.Spec;
-import org.lamport.tla.toolbox.tool.prover.util.ProverHelper;
+import org.lamport.tla.toolbox.tool.prover.ui.util.ProverHelper;
 import org.lamport.tla.toolbox.util.TLAMarkerHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 

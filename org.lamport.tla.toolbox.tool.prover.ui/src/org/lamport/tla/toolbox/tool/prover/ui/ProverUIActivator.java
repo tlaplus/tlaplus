@@ -10,8 +10,8 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.lamport.tla.toolbox.tool.prover.ui.util.ProverHelper;
 import org.lamport.tla.toolbox.tool.prover.ui.view.ObligationsView;
-import org.lamport.tla.toolbox.tool.prover.util.ProverHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 import org.osgi.framework.BundleContext;
 

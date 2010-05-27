@@ -75,7 +75,6 @@ import org.lamport.tla.toolbox.editor.basic.proof.IProofFoldCommandIds;
 import org.lamport.tla.toolbox.editor.basic.proof.TLAProofFoldingStructureProvider;
 import org.lamport.tla.toolbox.editor.basic.util.ElementStateAdapter;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
-import org.lamport.tla.toolbox.tool.prover.util.ProverHelper;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.StringHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
@@ -213,7 +212,7 @@ public class TLAEditor extends TextEditor
 
             public void resourceChanged(IResourceChangeEvent event)
             {
-                IMarkerDelta[] markerChanges = event.findMarkerDeltas(ProverHelper.PROVER_RUNNING_MARKER, false);
+                IMarkerDelta[] markerChanges = event.findMarkerDeltas(""/*ProverHelper.PROVER_RUNNING_MARKER*/, false);
 
                 for (int i = 0; i < markerChanges.length; i++)
                 {
@@ -796,15 +795,8 @@ public class TLAEditor extends TextEditor
      */
     private void refresh()
     {
-        try
-        {
-            getSourceViewer()
-                    .setEditable(!ProverHelper.isProverRunning(((FileEditorInput) getEditorInput()).getFile()));
-        } catch (CoreException e)
-        {
-            Activator.logError("Error determining if prover is running on module "
-                    + ((FileEditorInput) getEditorInput()).getFile().getName(), e);
-        }
+        getSourceViewer()
+                .setEditable(true/*!ProverHelper.isProverRunning(((FileEditorInput) getEditorInput()).getFile())*/);
     }
 
     /**

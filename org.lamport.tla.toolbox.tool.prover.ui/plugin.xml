@@ -4,39 +4,8 @@
    <extension
          point="org.eclipse.ui.commands">
       <command
-            defaultHandler="org.lamport.tla.toolbox.tool.prover.ui.handler.CheckProofHandler"
-            description="Checks the proof given by the location. Considers only lines currently."
-            id="org.lamport.tla.toolbox.tool.prover.ui.checkProof"
-            name="Checks Proof">
-         <commandParameter
-               id="org.lamport.tla.toolbox.tool.prover.ui.paramModuleName"
-               name="Model Name"
-               optional="false">
-         </commandParameter>
-         <commandParameter
-               id="org.lamport.tla.toolbox.tool.prover.ui.paramBeginLine"
-               name="Begin Line Number"
-               optional="false">
-         </commandParameter>
-         <commandParameter
-               id="org.lamport.tla.toolbox.tool.prover.ui.paramBeginColumn"
-               name="Begin Column Number"
-               optional="true">
-         </commandParameter>
-         <commandParameter
-               id="org.lamport.tla.toolbox.tool.prover.ui.paramEndLine"
-               name="End Line"
-               optional="false">
-         </commandParameter>
-         <commandParameter
-               id="org.lamport.tla.toolbox.tool.prover.ui.paramEndColumn"
-               name="End Column"
-               optional="true">
-         </commandParameter>
-      </command>
-      <command
             categoryId="org.eclipse.debug.ui.category.run"
-            defaultHandler="org.lamport.tla.toolbox.tool.prover.ui.handler.CheckProofHandlerDelegate"
+            defaultHandler="org.lamport.tla.toolbox.tool.prover.ui.handler.CheckProofHandler"
             description="Checks the proof step containing the caret in the active editor"
             id="org.lamport.tla.toolbox.tool.prover.ui.checkStep.delegate"
             name="Check Proof Step">
@@ -107,15 +76,6 @@
             class="org.lamport.tla.toolbox.tool.prover.ui.TLAPMConsoleFactory"
             label="TLAPM Console">
       </consoleFactory>
-   </extension>
-   <extension
-         point="org.lamport.tla.toolbox.tool.prover.processOutputSink">
-      <sink
-            class="org.lamport.tla.toolbox.tool.prover.ui.ConsoleProverProcessOutputSink">
-      </sink>
-      <sink
-            class="org.lamport.tla.toolbox.tool.prover.ui.output.ParsingProverProcessOutputSink">
-      </sink>
    </extension>
    <extension
          id="org.lamport.tla.toolbox.tool.prover.ui.fullyCheckedStep"
@@ -241,6 +201,37 @@
       <participant
             class="org.lamport.tla.toolbox.tool.prover.ui.util.ClearObMarkersSpecLifecycleParticipant">
       </participant>
+   </extension>
+   <extension
+         id="org.lamport.tla.toolbox.tool.prover.proverRunning"
+         name="Prover Running on Module"
+         point="org.eclipse.core.resources.markers">
+      <super
+            type="org.eclipse.core.resources.marker">
+      </super>
+      <attribute
+            name="org.lamport.tla.toolbox.tool.prover.isProverRunning">
+      </attribute>
+   </extension>
+   <extension
+         id="org.lamport.tla.toolbox.tool.prover.obligation"
+         name="Obligation information"
+         point="org.eclipse.core.resources.markers">
+      <super
+            type="org.eclipse.core.resources.marker">
+      </super>
+      <attribute
+            name="org.lamport.tla.toolbox.tool.prover.obId">
+      </attribute>
+      <attribute
+            name="org.lamport.tla.toolbox.tool.prover.obStatus">
+      </attribute>
+      <attribute
+            name="org.lamport.tla.toolbox.tool.prover.obMethod">
+      </attribute>
+      <attribute
+            name="org.lamport.tla.toolbox.tool.prover.obString">
+      </attribute>
    </extension>
 
 </plugin>
