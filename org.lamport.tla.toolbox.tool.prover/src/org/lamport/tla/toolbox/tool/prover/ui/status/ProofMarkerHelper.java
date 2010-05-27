@@ -93,8 +93,13 @@ public class ProofMarkerHelper
                 Map markerAttributes = new HashMap(2);
 
                 IRegion stepRegion = AdapterFactory.locationToRegion(document, location);
+                /*
+                 * For marking a region that starts at offset o and has length l, the
+                 * start character is o and the end character is o+l-1.
+                 */
                 markerAttributes.put(IMarker.CHAR_START, new Integer(stepRegion.getOffset()));
-                markerAttributes.put(IMarker.CHAR_END, new Integer(stepRegion.getOffset() + stepRegion.getLength()));
+                markerAttributes
+                        .put(IMarker.CHAR_END, new Integer(stepRegion.getOffset() + stepRegion.getLength() - 1));
 
                 newMarker.setAttributes(markerAttributes);
 
