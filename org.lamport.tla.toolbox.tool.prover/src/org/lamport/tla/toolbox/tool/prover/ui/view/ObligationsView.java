@@ -56,6 +56,10 @@ import org.lamport.tla.toolbox.util.UIHelper;
  *     has been launched, causing the previous obligation markers to be removed. Calling refreshObligationView()
  *     will clear the information from these previous markers from the view, if the view is currently open.
  *     If the view is not currently open, it doesn't matter because the view stores no information.
+ *     
+ * The font and syntax coloring of the items in the view is the same as that of the tla editor. The
+ * syntax coloring is done by configuring the obligation items with the {@link ObligationSourceViewerConfiguration}
+ * and the font is done by adding a listener to the preference for text editor font.
  * 
  * Side note :  I've noticed that the documentation for {@link IWorkbenchPart} claims that createPartControl()
  * should also be called when the view is made invisible and then visible again, but experimentation
@@ -88,6 +92,11 @@ public class ObligationsView extends ViewPart
      * associated {@link SourceViewer}.
      */
     private HashMap viewers;
+    /**
+     * A listener that reacts to changes of the text editor font
+     * by notifying all items in this view that they should update
+     * their font.
+     */
     private FontPreferenceChangeListener fontListener;
     /**
      * Listens to when the user clicks
@@ -342,6 +351,8 @@ public class ObligationsView extends ViewPart
                     viewer.getTextWidget().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
                     viewer.configure(new ObligationSourceViewerConfiguration());
                     viewer.getControl().setFont(JFaceResources.getTextFont());
+                    // add the control to the list of controls to be notified when the
+                    // text editor font changes.
                     fontListener.addControl(viewer.getControl());
 
                     // item maps to viewer for later access

@@ -10,6 +10,7 @@ import org.lamport.tla.toolbox.editor.basic.TLAEditorActivator;
 
 /**
  * The configuration for source viewers displaying pretty-printed forms of obligations.
+ * Uses the syntax highlighting of the tla editor.
  * 
  * @author Daniel Ricketts
  *
@@ -17,6 +18,11 @@ import org.lamport.tla.toolbox.editor.basic.TLAEditorActivator;
 public class ObligationSourceViewerConfiguration extends SourceViewerConfiguration
 {
 
+    /**
+     * This registers one damager repairer for all content in the source viewer.
+     * The damager-repairer scans the content for TLA keywords and sets them to the
+     * same color used in the tla editor.
+     */
     public IPresentationReconciler getPresentationReconciler(ISourceViewer sourceViewer)
     {
         PresentationReconciler reconciler = new PresentationReconciler();
