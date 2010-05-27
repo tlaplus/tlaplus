@@ -168,30 +168,37 @@ public class ProofMarkerHelper
                  * and update it.
                  */
                 IMarker[] markers = module.findMarkers(ProverHelper.OBLIGATION_MARKER, false, IResource.DEPTH_ZERO);
+
+                // the marker to be updated or created from the message
+                IMarker marker = null;
                 for (int i = 0; i < markers.length; i++)
                 {
                     if (markers[i].getAttribute(ProverHelper.OBLIGATION_ID, -1) == message.getID())
                     {
-                        /*
-                         * Found an existing marker with the same id.
-                         * 
-                         * Replace the status, and the method.
-                         */
-                        markers[i].setAttribute(ProverHelper.OBLIGATION_STATUS, message.getStatus());
-
-                        markers[i].setAttribute(ProverHelper.OBLIGATION_METHOD, message.getMethod());
 
                         // DEBUG
                         // System.out.println("Marker updated for obligation from message \n" + message);
-                        return markers[i];
+                        marker = markers[i];
+                        break;
                     }
                 }
 
-                // marker not found, create new one
-                IMarker marker = module.createMarker(ProverHelper.OBLIGATION_MARKER);
-                marker.setAttribute(ProverHelper.OBLIGATION_ID, message.getID());
+                if (marker == null)
+                {
+                    // marker not found, create new one
+                    marker = module.createMarker(ProverHelper.OBLIGATION_MARKER);
+                    marker.setAttribute(ProverHelper.OBLIGATION_ID, message.getID());
+                }
+
                 marker.setAttribute(ProverHelper.OBLIGATION_METHOD, message.getMethod());
                 marker.setAttribute(ProverHelper.OBLIGATION_STATUS, message.getStatus());
+                /*
+                 * The obligation string is not sent by the prover for every message.
+                 * It is only sent once when the obligation is first interesting.
+                 * Thus, message.getObString() can be null. Everytime a new message comes
+                 * in for a given id, we set the obligation string. This way, when the obligation
+                 * string is actually sent by the prover, it is set on the marker.
+                 */
                 marker.setAttribute(ProverHelper.OBLIGATION_STRING, message.getObString());
 
                 fileDocumentProvider.connect(fileEditorInput);
