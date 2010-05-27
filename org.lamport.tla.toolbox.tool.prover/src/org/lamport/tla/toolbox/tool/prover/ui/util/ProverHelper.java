@@ -163,7 +163,7 @@ public class ProverHelper
          */
         String obStatus = marker.getAttribute(OBLIGATION_STATUS, "");
         return obStatus.equals("beingproved") || obStatus.equals("failed")
-                || obStatus.equals("failed (already processed");
+                || obStatus.equals("failed (already processed") || obStatus.equals("checking failed");
     }
 
     /**
