@@ -14,10 +14,14 @@ import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 public class StateSpaceInformationItem
 {
     private Date time;
-    private int diameter;
-    private int foundStates;
-    private int distinctStates;
-    private int leftStates;
+    /*
+     * The number of states can exceed
+     * the maximum int, so we use a long.
+     */
+    private long diameter;
+    private long foundStates;
+    private long distinctStates;
+    private long leftStates;
 
     /**
      * @param time
@@ -26,7 +30,7 @@ public class StateSpaceInformationItem
      * @param distinctStates
      * @param leftStates
      */
-    private StateSpaceInformationItem(Date time, int diameter, int foundStates, int distinctStates, int leftStates)
+    private StateSpaceInformationItem(Date time, long diameter, long foundStates, long distinctStates, long leftStates)
     {
         super();
         this.time = time;
@@ -46,27 +50,27 @@ public class StateSpaceInformationItem
         this.time = time;
     }
 
-    public final int getDiameter()
+    public final long getDiameter()
     {
         return diameter;
     }
 
-    public final void setDiameter(int diameter)
+    public final void setDiameter(long diameter)
     {
         this.diameter = diameter;
     }
 
-    public final int getFoundStates()
+    public final long getFoundStates()
     {
         return foundStates;
     }
 
-    public final void setFoundStates(int foundStates)
+    public final void setFoundStates(long foundStates)
     {
         this.foundStates = foundStates;
     }
 
-    public final int getDistinctStates()
+    public final long getDistinctStates()
     {
         return distinctStates;
     }
@@ -76,12 +80,12 @@ public class StateSpaceInformationItem
         this.distinctStates = distinctStates;
     }
 
-    public final int getLeftStates()
+    public final long getLeftStates()
     {
         return leftStates;
     }
 
-    public final void setLeftStates(int leftStates)
+    public final void setLeftStates(long leftStates)
     {
         this.leftStates = leftStates;
     }
@@ -109,11 +113,11 @@ public class StateSpaceInformationItem
 
         try
         {
-            return new StateSpaceInformationItem(SDF.parse(outputMessage.substring(i[1] + AT.length(), i[2])), Integer
-                    .parseInt(outputMessage.substring(i[0] + OB.length(), i[1])), Integer.parseInt(outputMessage
-                    .substring(i[2] + COLON.length(), i[3])), Integer.parseInt(outputMessage.substring(i[3]
-                    + GENERATED.length(), i[4])), Integer.parseInt(outputMessage.substring(i[4] + DISTINCT.length(),
-                    i[5])));
+            return new StateSpaceInformationItem(SDF.parse(outputMessage.substring(i[1] + AT.length(), i[2])), Long
+                    .parseLong(outputMessage.substring(i[0] + OB.length(), i[1])), Long.parseLong(outputMessage
+                    .substring(i[2] + COLON.length(), i[3])), Long.parseLong(outputMessage.substring(i[3]
+                    + GENERATED.length(), i[4])), Long.parseLong(outputMessage
+                    .substring(i[4] + DISTINCT.length(), i[5])));
         } catch (NumberFormatException e)
         {
             TLCUIActivator.logError("Error reading progress information", e);
