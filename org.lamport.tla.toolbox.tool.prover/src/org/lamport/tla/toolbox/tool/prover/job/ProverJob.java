@@ -285,14 +285,14 @@ public class ProverJob extends Job
                         process.getOutputStream().write("kill".getBytes());
                         process.getOutputStream().flush();
                         process.getOutputStream().close();
-                        try
+                        /*try
                         {
                             Thread.sleep(5000);
                         } catch (InterruptedException e)
                         {
                             // TODO Auto-generated catch block
                             e.printStackTrace();
-                        }
+                        }*/
                         System.out.println("IProcess terminated ? " + proverProcess.isTerminated());
 
                         // } catch (DebugException e)
