@@ -220,8 +220,7 @@ class trans
 
         if (ToolIO.getMode() == ToolIO.SYSTEM)
         {
-            PcalDebug.reportInfo("pcal.trans Version " + PcalParams.version + 
-                    " of " + PcalParams.modDate);
+            PcalDebug.reportInfo("pcal.trans Version " + PcalParams.version + " of " + PcalParams.modDate);
         }
 
         // SZ Mar 9, 2009:
@@ -260,8 +259,8 @@ class trans
         * outputVec is an alias for inputVec if the input is a .tla file,    *
         * which was not always the case in the aborted version 1.31.         *
         *********************************************************************/
-//        Vector outputVec =  PcalParams.fromPcalFile ? new Vector() : inputVec;
-        Vector outputVec =  inputVec ;
+        // Vector outputVec = PcalParams.fromPcalFile ? new Vector() : inputVec;
+        Vector outputVec = inputVec;
 
         /*********************************************************************
         * Set untabInputVec to be the vector of strings obtained from        *
@@ -282,7 +281,6 @@ class trans
         *********************************************************************/
         Vector untabInputVec = removeTabs(inputVec);
 
-
         /**
          *  Look through the file for PlusCal options.  They are put anywhere
          *  in the file (either before or after the module or in a comment)
@@ -295,22 +293,25 @@ class trans
          */
         IntPair searchLoc = new IntPair(0, 0);
         boolean notDone = true;
-        while (notDone) {
+        while (notDone)
+        {
             try
-            { 
-              ParseAlgorithm.FindToken("PlusCal", untabInputVec, searchLoc, "");
-              String line = ParseAlgorithm.GotoNextNonSpace(untabInputVec, searchLoc);
-              String restOfLine = line.substring(searchLoc.two);
-              if (restOfLine.startsWith("options")) {
-                  // The first string after "PlusCal" not starting with a
-                  // space character is "options"
-                  if (ParseAlgorithm.NextNonIdChar(restOfLine, 0) == 7) {
-                      // The "options" should begin an options line
-                      PcalParams.optionsInFile = true;
-                      ParseAlgorithm.ProcessOptions(untabInputVec, searchLoc);
-                      notDone = false;
-                  }                  
-              }
+            {
+                ParseAlgorithm.FindToken("PlusCal", untabInputVec, searchLoc, "");
+                String line = ParseAlgorithm.GotoNextNonSpace(untabInputVec, searchLoc);
+                String restOfLine = line.substring(searchLoc.two);
+                if (restOfLine.startsWith("options"))
+                {
+                    // The first string after "PlusCal" not starting with a
+                    // space character is "options"
+                    if (ParseAlgorithm.NextNonIdChar(restOfLine, 0) == 7)
+                    {
+                        // The "options" should begin an options line
+                        PcalParams.optionsInFile = true;
+                        ParseAlgorithm.ProcessOptions(untabInputVec, searchLoc);
+                        notDone = false;
+                    }
+                }
             } catch (ParseAlgorithmException e)
             {
                 // The token "PlusCal" not found.
@@ -1269,6 +1270,13 @@ class trans
         // option to be overridden by one in the pcal-file's options statement.
         // It is set false when the first fairness property is set from
         // the options statement.
+        boolean explicitNof = false;
+        // Set true when the "nof" fairness option is set by an explicit
+        // user request, rather than by default. It was added to fix
+        // a bug in -termination introduced in version 1.4 by having
+        // the options statement in the file. I think option processing
+        // can be simplified to eliminate this, but it's easier to add
+        // this kludge.
         int nextArg = 0;
         /******************************************************************
         * The number of the argument being processed.                     *
@@ -1437,6 +1445,7 @@ class trans
                     return CommandLineError("Can only have one of -wf, -sf, -wfNext, " + "and -nof options");
                 }
                 PcalParams.FairnessOption = "nof";
+                explicitNof = true;
             } else if (option.equals("-label") || (inFile && option.equals("label")))
             {
                 PcalParams.LabelFlag = true;
@@ -1463,13 +1472,14 @@ class trans
             {
                 nextArg = nextArg + 1;
                 if (nextArg == maxArg)
-                    {
-                        return CommandLineError("Version number must follow `-version' option");
-                    }
-                if (!PcalParams.ProcessVersion(args[nextArg])) {
+                {
+                    return CommandLineError("Version number must follow `-version' option");
+                }
+                if (!PcalParams.ProcessVersion(args[nextArg]))
+                {
                     return CommandLineError("Bad version number");
                 }
-                
+
             } else if (option.equals("-lineWidth"))
             {
                 nextArg = nextArg + 1;
@@ -1513,6 +1523,18 @@ class trans
         ******************************************************************/
         {
             return CommandLineError("No input file specified");
+        }
+
+        // SZ 02.16.2009: since this is a modification of the parameters, moved
+        // to the parameter handling method
+        if (PcalParams.FairnessOption.equals("-nof"))
+        {
+            PcalParams.FairnessOption = "";
+        }
+        if (PcalParams.CheckTermination && PcalParams.FairnessOption.equals("")  && !explicitNof)
+        {
+            PcalParams.FairnessOption = "wf";
+
         }
 
         /********************************************************************
@@ -1599,19 +1621,6 @@ class trans
         // {
         // return CommandLineError("Input file " + file.getPath() + " not found");
         // }
-
-        // SZ 02.16.2009: since this is a modification of the parameters, moved
-        // to the parameter handling method
-        if (PcalParams.FairnessOption.equals("-nof"))
-        {
-            PcalParams.FairnessOption = "";
-        } else
-        {
-            if (PcalParams.CheckTermination && PcalParams.FairnessOption.equals(""))
-            {
-                PcalParams.FairnessOption = "wf";
-            }
-        }
 
         return STATUS_OK;
     }
