@@ -70,4 +70,15 @@ public class FontPreferenceChangeListener implements IPropertyChangeListener
         controls.add(control);
     }
 
+    /**
+     * Removes a control from the set of controls whose font should be
+     * set when the preference corresponding to preferenceName is changed
+     * 
+     * @param control
+     */
+    public void removeControl(Control control)
+    {
+        controls.remove(control);
+    }
+
 }
