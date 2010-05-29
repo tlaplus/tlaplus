@@ -61,7 +61,10 @@ public final class TLCStateFun extends TLCState {
   }
   
   public final TLCState copy() {
-      throw new WrongInvocationException("TLCStateFun.copy: This is a TLC bug.");
+      // The following code added blindly by LL on 28 May 2010
+      // to fix a bug.  I have no idea what's going on here.
+       return new TLCStateFun(this.name, this.value, this.next);
+      // throw new WrongInvocationException("TLCStateFun.copy: This is a TLC bug.");
   }
   
   public final TLCState deepCopy() {

@@ -950,8 +950,12 @@ class trans
         Runtime rt = Runtime.getRuntime();
         try
         {
+            // Modified on 29 May 2010 by LL to replace getErrorStream() with 
+            // getInputStream(), which by Java logic gets standard out.  (And no,
+            // getErrorStream() did not get standard non-error.)  Apparently,
+            // TLC has been changed to put its output on stdout.
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(rt.exec(
-                    javaInvocation + PcalParams.SpecFile).getErrorStream()));
+                    javaInvocation + PcalParams.SpecFile).getInputStream()));
             while (tlcOut.indexOf("<<") == -1)
             {
                 tlcOut = bufferedReader.readLine();
@@ -1175,7 +1179,9 @@ class trans
      * called a second time if there is pcal-file input with an options statement.
      * It will be the second call iff {@link PcalParams#optionsInFile} equals true.
      * The second call should have a dummy extra argument in place of the 
-     * command-line's file-name argument.
+     * command-line's file-name argument.   When pcal files were eliminated, this
+     * kludgy mechanism was kept and used to indicate if the method is being called
+     * for options specified inside the module. 
      */
     static int parseAndProcessArguments(String[] args)
     {
@@ -1190,7 +1196,7 @@ class trans
          *                                                                     *
          *   -help  : Type a help file instead of running the program.         *
          *                                                                     *
-         *   -spec name : Uses TLC and the TLA+ specification name.tla to do   *
+         *** -spec name : Uses TLC and the TLA+ specification name.tla to do   *
          *                the translation.  The files name.tla and name.cfg    *
          *                are copied from the java/ directory to the current   *
          *                directory; the file AST.tla that defines `fairness'  *
@@ -1199,7 +1205,7 @@ class trans
          *                algorithm is written to the current directory; and   *
          *                TLC is run on name.tla to produce the translation.   *
          *                                                                     *
-         *   -myspec name : Like -spec, except it finds the files names.tla    *
+         *** -myspec name : Like -spec, except it finds the files names.tla    *
          *                  and names.cfg in the current directory, instead    *
          *                  of writing them there.                             *
          *                                                                     *
@@ -1333,7 +1339,8 @@ class trans
                 {
                     return STATUS_EXIT_WITH_ERRORS;
                 }
-            } else if (notInFile && option.equals("-spec"))
+            } else if (option.equals("-spec") || 
+                        (inFile && option.equals("spec")))
             {
                 PcalParams.SpecOption = true;
                 if (CheckForConflictingSpecOptions())
@@ -1346,7 +1353,8 @@ class trans
                     return CommandLineError("Specification name must follow `-spec' option");
                 }
                 PcalParams.SpecFile = args[nextArg];
-            } else if (notInFile && option.equals("-myspec"))
+            } else if (option.equals("-myspec") || 
+                    (inFile && option.equals("myspec")))
             {
                 PcalParams.MyspecOption = true;
                 if (CheckForConflictingSpecOptions())

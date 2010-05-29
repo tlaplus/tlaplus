@@ -377,7 +377,8 @@ public class UIHelper
      * Runs a command with parameters
      * 
      * Note added by LL:
-     * What this intensely informative comment seems to mean is that this
+     * In case you don't have time to read the extensive comment above
+     * written by Simon, here is my attempt at a condensed version.  This
      * method takes a commandId, which was registered in the plugin.xml file
      * as a command for the org.eclipse.ui.commands extension, 
      * as the name of a command, and invokes the Eclipse magic that calls

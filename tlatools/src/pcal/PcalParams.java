@@ -219,9 +219,11 @@ public final class PcalParams
    */
 
   public static boolean optionsInFile = false ;
-     // True iff the algorithm is in a .pcal file.  It is set false if
-     // the file argument has the extension .tla, or if there is no
-     // file named TLAInputFile + ".pcal".
+     // Set true when an options statement has been found in the
+     // module.  It is a kludgy way to pass an argument to 
+     // trans.parseAndProcessStringArguments; things are done this
+     // way because of the way the code evolved, and no intelligent
+     // design has stepped in to fix it.
   public static String versionOption = null;
   public static int inputVersionNumber = VersionToNumber(PcalParams.version);
      // The input file's version number * 1000
