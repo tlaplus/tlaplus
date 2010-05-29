@@ -49,6 +49,11 @@ public interface IModelConfigurationConstants extends IConfigurationConstants
     public static final String MODEL_CORRECTNESS_PROPERTIES = "modelCorrectnessProperties";
 
     /**
+     * This property is set only if, when creating the model, the Properties
+     * part should be expanded when first opened.
+     */
+    public static final String MODEL_PROPERTIES_EXPAND = "modelPropertiesExpand";
+    /**
      * action constraints list
      */
     public static final String MODEL_PARAMETER_ACTION_CONSTRAINT = "modelParameterActionConstraint";

@@ -376,6 +376,28 @@ public class UIHelper
     /**
      * Runs a command with parameters
      * 
+     * Note added by LL:
+     * What this intensely informative comment seems to mean is that this
+     * method takes a commandId, which was registered in the plugin.xml file
+     * as a command for the org.eclipse.ui.commands extension, 
+     * as the name of a command, and invokes the Eclipse magic that calls
+     * the execute(...) method of the Handler class for the handler that was  
+     * associated with that command by adding it to the extension org.eclipse.ui.handlers
+     * (in some plugin.xml file) and giving it the command's Id.  (I'm surprised
+     * that Eclipse was able to do that with so few levels of indirection.)
+     * 
+     * The parameters argument seems to be used as follows for passing arguments
+     * to the execute(e) command. The caller of UIHelper.java packages the
+     * parameters as a HashMap by executing
+     * 
+     *    HashMap parameters = new HashMap();
+     *    parameters.put(ParameterNameAsAString, parameterValue);
+     *    ...
+     *    
+     * The execute(event) command fetches the parameters by executing
+     * 
+     *    ... = event.getParameter((String) ParameterNameAsString);
+     * 
      * @param commandId
      * @param parameters
      * @return

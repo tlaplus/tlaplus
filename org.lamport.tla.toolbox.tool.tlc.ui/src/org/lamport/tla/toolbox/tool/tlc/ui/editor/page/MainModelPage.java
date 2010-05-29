@@ -976,16 +976,32 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         DirtyMarkingListener whatToCheckListener = new DirtyMarkingListener(toBeCheckedPart, true);
         checkDeadlockButton.addSelectionListener(whatToCheckListener);
 
-        // invariants
+        // Invariants
         ValidateableTableSectionPart invariantsPart = new ValidateableTableSectionPart(toBeCheckedArea, "Invariants",
                 "Formulas true in every reachable state.", toolkit, sectionFlags, this, SEC_WHAT_TO_CHECK_INVARIANTS);
         managedForm.addPart(invariantsPart);
         invariantsTable = invariantsPart.getTableViewer();
         dm.bindAttribute(MODEL_CORRECTNESS_INVARIANTS, invariantsTable, invariantsPart);
 
-        // properties
+        // Properties
+
+        // The following code added by LL on 29 May 2010 to expand the Property section
+        // and reset the MODEL_PROPERTIES_EXPAND property to "" if that property has 
+        // been set to a non-"" value.
+        int propFlags = sectionFlags;
+        try
+        {
+            if (!((String) getConfig().getAttribute(MODEL_PROPERTIES_EXPAND, "")).equals("")) {
+               propFlags = propFlags | Section.EXPANDED;
+               getConfig().setAttribute(MODEL_PROPERTIES_EXPAND, "");
+            }
+        } catch (CoreException e2)
+        {
+            // I don't know why such an exception might occur, but there's no
+            // great harm if it does. LL
+        }
         ValidateableTableSectionPart propertiesPart = new ValidateableTableSectionPart(toBeCheckedArea, "Properties",
-                "Temporal formulas true for every possible behavior.", toolkit, sectionFlags, this,
+                "Temporal formulas true for every possible behavior.", toolkit, propFlags, this,
                 SEC_WHAT_TO_CHECK_PROPERTIES);
         managedForm.addPart(propertiesPart);
         propertiesTable = propertiesPart.getTableViewer();
