@@ -936,8 +936,10 @@ class trans
         String javaInvocation;
         if (PcalParams.SpecOption || PcalParams.MyspecOption)
         {
-            PcalDebug.reportInfo("Running TLC.");
-            javaInvocation = "java -Xss1m tlc.TLC ";
+            // Modified on 29 May 2010 by LL so tlc2 is run in
+            // all cases.
+            PcalDebug.reportInfo("Running TLC2.");
+            javaInvocation = "java -Xss1m tlc2.TLC ";
         } else
         {
             PcalDebug.reportInfo("Running TLC2.");
