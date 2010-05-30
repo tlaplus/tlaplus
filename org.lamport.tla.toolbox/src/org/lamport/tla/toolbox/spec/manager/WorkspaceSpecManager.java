@@ -194,7 +194,12 @@ public class WorkspaceSpecManager extends GenericSelectionProvider implements IS
         if (spec == null)
         {
             // close a spec
-            this.lifecycleManager.sendEvent(new SpecEvent(this.loadedSpec, SpecEvent.TYPE_CLOSE));
+            // modified by LL on 30 May 2010 to add the follow test that
+            // there is a loaded spec to close.
+            if (this.loadedSpec != null)
+            {
+                this.lifecycleManager.sendEvent(new SpecEvent(this.loadedSpec, SpecEvent.TYPE_CLOSE));
+            }
         } else
         {
             // open a spec

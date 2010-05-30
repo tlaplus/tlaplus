@@ -907,7 +907,13 @@ public class ResourceHelper
         if (resource == null) {
             return 0;
         }
-        File file = resource.getLocation().toFile();
+        // Check for resource.getLocation() = null added 30 May 2010
+        // by LL.
+        IPath ipath = resource.getLocation();
+        if (ipath == null) {
+            return 0;
+        }
+        File file = ipath.toFile();
 
         if (file == null) {
             return 0;
