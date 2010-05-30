@@ -1,6 +1,7 @@
 package org.lamport.tla.toolbox.tool.tlc.handlers;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 
@@ -22,6 +23,7 @@ import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationDefaults;
 import org.lamport.tla.toolbox.tool.tlc.launch.TLCModelLaunchDelegate;
+import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelNameValidator;
@@ -132,6 +134,19 @@ public class NewModelHandler extends AbstractHandler implements IModelConfigurat
         // get the list of constants
         List constants = ModelHelper.createConstantsList(moduleNode);
 
+        // if defaultInitValue is a constant, initialize it
+        // to be a model value.  (Should perhaps be changed to do this
+        // only if the root module or some extended module has an algorithm?)
+        Iterator iter = constants.iterator();
+        boolean done = false;
+        while ((! done) && iter.hasNext()) {
+            Assignment assign = (Assignment) iter.next();
+            if (assign.getLabel().equals("defaultInitValue")) {
+                assign.setRight("defaultInitValue");
+                done = true;
+            }
+        }
+        
         try
         {
             // create new launch instance
