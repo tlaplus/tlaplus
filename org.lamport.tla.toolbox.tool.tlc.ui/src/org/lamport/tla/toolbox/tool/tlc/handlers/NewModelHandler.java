@@ -135,18 +135,21 @@ public class NewModelHandler extends AbstractHandler implements IModelConfigurat
         List constants = ModelHelper.createConstantsList(moduleNode);
 
         // if defaultInitValue is a constant, initialize it
-        // to be a model value.  (Should perhaps be changed to do this
+        // to be a model value. (Should perhaps be changed to do this
         // only if the root module or some extended module has an algorithm?)
         Iterator iter = constants.iterator();
         boolean done = false;
-        while ((! done) && iter.hasNext()) {
+        while ((!done) && iter.hasNext())
+        {
             Assignment assign = (Assignment) iter.next();
-            if (assign.getLabel().equals("defaultInitValue")) {
+            if (assign.getLabel().equals("defaultInitValue") && 
+                    (assign.getParams().length == 0))
+            {
                 assign.setRight("defaultInitValue");
                 done = true;
             }
         }
-        
+
         try
         {
             // create new launch instance
@@ -176,7 +179,7 @@ public class NewModelHandler extends AbstractHandler implements IModelConfigurat
             //
             // Also, if Spec is found and Termination is defined to be a
             // temporal formula, then add it to the list of temporal properties,
-            // except not checked.  It should be checked iff the root file 
+            // except not checked. It should be checked iff the root file
             // contains a PlusCal spec and the -termination option has been
             // selected, either as a property or in the file.
             OpDefNode[] defs = moduleNode.getOpDefs();
@@ -186,23 +189,28 @@ public class NewModelHandler extends AbstractHandler implements IModelConfigurat
             boolean foundTermination = false;
             for (int i = 0; i < defs.length; i++)
             {
-                if (defs[i].getName().toString().equals("Spec") && (defs[i].getLevel() == LevelNode.TemporalLevel))
+                if (defs[i].getNumberOfArgs() == 0)
                 {
-                    foundSpec = true;
+                    // Only look at operators with no arguments.
+                    if (defs[i].getName().toString().equals("Spec") && (defs[i].getLevel() == LevelNode.TemporalLevel))
+                    {
+                        foundSpec = true;
 
-                } else if (defs[i].getName().toString().equals("Init")
-                        && (defs[i].getLevel() == LevelNode.VariableLevel))
-                {
-                    foundInit = true;
-                } else if (defs[i].getName().toString().equals("Next") && (defs[i].getLevel() == LevelNode.ActionLevel))
-                {
-                    foundNext = true;
+                    } else if (defs[i].getName().toString().equals("Init")
+                            && (defs[i].getLevel() == LevelNode.VariableLevel))
+                    {
+                        foundInit = true;
+                    } else if (defs[i].getName().toString().equals("Next")
+                            && (defs[i].getLevel() == LevelNode.ActionLevel))
+                    {
+                        foundNext = true;
 
-                } else if (defs[i].getName().toString().equals("Termination")
-                        && (defs[i].getLevel() == LevelNode.TemporalLevel))
-                {
-                    foundTermination = true;
+                    } else if (defs[i].getName().toString().equals("Termination")
+                            && (defs[i].getLevel() == LevelNode.TemporalLevel))
+                    {
+                        foundTermination = true;
 
+                    }
                 }
             }
             if (foundSpec)
@@ -219,11 +227,20 @@ public class NewModelHandler extends AbstractHandler implements IModelConfigurat
                     // on whether or not the box enabling the property should be checked.
                     launchCopy.setAttribute(IModelConfigurationConstants.MODEL_CORRECTNESS_PROPERTIES, vec);
                 }
-            } else if (foundInit && foundNext) {
-                launchCopy.setAttribute(IModelConfigurationConstants.MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT, "Init");
-                launchCopy.setAttribute(IModelConfigurationConstants.MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT, "Next");
+            } else if (foundInit || foundNext)
+            {
                 launchCopy.setAttribute(IModelConfigurationConstants.MODEL_BEHAVIOR_SPEC_TYPE,
                         IModelConfigurationDefaults.MODEL_BEHAVIOR_TYPE_SPEC_INIT_NEXT);
+                if (foundInit)
+                {
+                    launchCopy.setAttribute(IModelConfigurationConstants.MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT,
+                            "Init");
+                }
+                if (foundNext)
+                {
+                    launchCopy.setAttribute(IModelConfigurationConstants.MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT,
+                            "Next");
+                }
             }
             // Set a test initial property to check.
 
