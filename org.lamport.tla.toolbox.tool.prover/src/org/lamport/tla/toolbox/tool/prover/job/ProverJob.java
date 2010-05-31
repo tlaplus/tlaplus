@@ -13,6 +13,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunch;
+import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.Launch;
 import org.eclipse.debug.core.model.IProcess;
 import org.lamport.tla.toolbox.editor.basic.util.EditorUtil;
@@ -52,8 +53,13 @@ public class ProverJob extends Job
      */
     private IPath cygwinPath;
     /**
-     * The {@link ILaunch} that resulted in the
-     * creation of this job.
+     * This is a useless launch object. It is
+     * used later to construct an {@link IProcess}. This object
+     * provides convenience methods for processes.
+     * In particular, an IProcess listens for the termination
+     * of the underlying process. It requires a non-null
+     * {@link ILaunch} but the {@link ILaunch} can contain
+     * a null {@link ILaunchConfiguration}.
      */
     private ILaunch launch;
     /**
@@ -78,19 +84,26 @@ public class ProverJob extends Job
      * the location of the prover launch.
      * 
      * @param name human readable name for the job, will appear in progress monitor
-     * @param module the IPath pointing to the module to be checked, e.g.
-     *    new Path("C:/Users/drickett/work/svn-repository/examples/HourClock/HourClock.tla")
+     * @param module the {@link IFile} pointing to the module on which the prover is being
+     * launched
      * @param tlapmPath absolute path to the tlapm executable, or null if it is assumed
      * to be in the system Path
      * @param cygwinPath absolute path to the folder containing cygwin, or null
      * if this is not Windows or the cygwin path is assumed to be in the System Path.
      */
-    public ProverJob(String name, IFile module, IPath tlapmPath, IPath cygwinPath, ILaunch launch)
+    public ProverJob(String name, IFile module, IPath tlapmPath, IPath cygwinPath)
     {
         super(name);
         this.module = module;
         this.tlapmPath = tlapmPath;
         this.cygwinPath = cygwinPath;
+        /*
+         * We create a useless launch object. It is
+         * used later to construct a IProcess. This object
+         * provides convenience methods for processes.
+         * In particular, an IProcess listens for the termination
+         * of the underlying process.
+         */
         this.launch = new Launch(null, "", null);
     }
 
@@ -287,9 +300,6 @@ public class ProverJob extends Job
                          */
                         // try
                         // {
-                        System.out.println("Wrote kill string.");
-                        // proverProcess.getStreamsProxy().write("kill");
-                        System.out.println("Bytes : " + "kill".getBytes());
                         process.getOutputStream().write("kill".getBytes());
                         process.getOutputStream().flush();
                         process.getOutputStream().close();
