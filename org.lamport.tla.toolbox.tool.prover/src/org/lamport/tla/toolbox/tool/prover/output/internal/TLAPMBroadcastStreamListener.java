@@ -1,6 +1,7 @@
 package org.lamport.tla.toolbox.tool.prover.output.internal;
 
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.debug.core.IStreamListener;
 import org.eclipse.debug.core.model.IStreamMonitor;
 import org.lamport.tla.toolbox.tool.prover.output.IProverProcessOutputSink;
@@ -30,12 +31,17 @@ public class TLAPMBroadcastStreamListener implements IStreamListener
      * This name should be the String generate by calling {@link IPath#toPortableString()} on
      * an existing {@link IPath} to the module.
      * 
+     * The constructor also takes a progress monitor. This monitor can be sent to listeners
+     * to TLC output so that they can report progress.
+     * 
+     * @param monitor
+     * 
      * @param modulePathString.
-     * @param kind, see constants {@link IProcessOutputSink#TYPE_DEBUG}, {@link IProcessOutputSink#TYPE_ERROR}, {@link IProcessOutputSink#TYPE_OUT}
+     * @param kind, see constants {@link IProcessOutputSink#TYPE_DEBUG}, {@link IProcessOutputSink#TYPE_ERROR}, {@link IProcessOutputSink#TYPE_PROVE}
      */
-    public TLAPMBroadcastStreamListener(String processName, int kind)
+    public TLAPMBroadcastStreamListener(String processName, int kind, IProgressMonitor monitor)
     {
-        this.listeners = getRegisteredStreamManagers(processName, kind);
+        this.listeners = getRegisteredStreamManagers(processName, kind, monitor);
     }
 
     /* (non-Javadoc)
@@ -84,17 +90,20 @@ public class TLAPMBroadcastStreamListener implements IStreamListener
     /**
      * Creates a {@link ConsoleProverProcessOutputSink} and a {@link ParsingProverProcessOutputSink}.
      * 
-     * Calls {@link IProverProcessOutputSink#initializeSink(IPath, int)} for each of those sinks
-     * with the processName and type.
+     * Calls {@link IProverProcessOutputSink#initializeSink(IPath, int, IProgressMonitor)} for each of those sinks
+     * with the processName, type, and monitor. The monitor can be used to report progress on TLC's output.
+     * 
+     * @param monitor TODO
      * 
      * @return an array of the instantiated sinks.
      */
-    public static IProverProcessOutputSink[] getRegisteredStreamManagers(String processName, int type)
+    public static IProverProcessOutputSink[] getRegisteredStreamManagers(String processName, int type,
+            IProgressMonitor monitor)
     {
         IProverProcessOutputSink[] outputSinks = new IProverProcessOutputSink[] { new ConsoleProverProcessOutputSink(),
                 new ParsingProverProcessOutputSink() };
-        outputSinks[0].initializeSink(processName, type);
-        outputSinks[1].initializeSink(processName, type);
+        outputSinks[0].initializeSink(processName, type, monitor);
+        outputSinks[1].initializeSink(processName, type, monitor);
         return outputSinks;
     }
 }

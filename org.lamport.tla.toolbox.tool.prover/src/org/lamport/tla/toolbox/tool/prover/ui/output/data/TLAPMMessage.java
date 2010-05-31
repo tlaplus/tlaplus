@@ -37,8 +37,21 @@ public abstract class TLAPMMessage
      */
     public static final String FIELD_PAIR_SPLIT = ":";
 
+    /**
+     * Type of message containing information
+     * on the status of an obligation.
+     */
     public static final String OB_STATUS_TYPE = "obligation";
-    public static final String LEAF_STATUS_TYPE = "leafStatus";
+    /**
+     * Type of message containing information on the
+     * status of a proof step.
+     */
+    public static final String STEP_STATUS_TYPE = "stepStatus";
+    /**
+     * Type of message containing the number of obligations
+     * in the region being proved or checked.
+     */
+    public static final String OB_NUMBER_TYPE = "obligationsnumber";
 
     /**
      * Returns a {@link TLAPMMessage} representing the information
@@ -142,9 +155,14 @@ public abstract class TLAPMMessage
                         moduleName);
                 // System.out.println(message);
                 return message;
-            } else if (type.equals(LEAF_STATUS_TYPE))
+            } else if (type.equals(STEP_STATUS_TYPE))
             {
                 StepStatusMessage message = StepStatusMessage.getStepMessage(fieldPairs.entrySet(), moduleName);
+                return message;
+            } else if (type.equals(OB_NUMBER_TYPE))
+            {
+                ObligationNumberMessage message = ObligationNumberMessage.getObNumMessage(fieldPairs.entrySet(),
+                        moduleName);
                 return message;
             } else
             {

@@ -1,6 +1,7 @@
 package org.lamport.tla.toolbox.tool.prover.ui.output;
 
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.text.BadLocationException;
 import org.lamport.tla.toolbox.Activator;
@@ -46,9 +47,10 @@ public class ParsingProverProcessOutputSink implements IProverProcessOutputSink
      * {@link IPath#toPortableString()} and so the original {@link IPath} can
      * be retrieved by calling {@link Path#fromPortableString(String)}.
      */
-    public void initializeSink(String modulePathString, int sinkType)
+    public void initializeSink(String modulePathString, int sinkType, IProgressMonitor monitor)
     {
-        this.parser = new TagBasedTLAPMOutputIncrementalParser(Path.fromPortableString(modulePathString));
+        this.parser = new TagBasedTLAPMOutputIncrementalParser(Path.fromPortableString(modulePathString), monitor,
+                sinkType);
         this.name = modulePathString;
     }
 

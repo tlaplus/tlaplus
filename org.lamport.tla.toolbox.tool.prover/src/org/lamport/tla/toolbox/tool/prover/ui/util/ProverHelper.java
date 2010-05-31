@@ -79,6 +79,18 @@ public class ProverHelper
     }
 
     /**
+     * Returns true iff the marker represents an obligation that is
+     * finished being processed in any way (proving or checking).
+     * 
+     * @param marker
+     * @return
+     */
+    public static boolean isObligationFinished(IMarker marker, int type)
+    {
+        return true;
+    }
+
+    /**
      * Returns all {@link IMarker} of type {@link ProverHelper#OBLIGATION_MARKER}
      * for the currently opened spec. These markers contain information about obligations.
      * 

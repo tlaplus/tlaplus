@@ -2,12 +2,16 @@ package org.lamport.tla.toolbox.tool.prover.ui.output;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.text.BadLocationException;
+import org.lamport.tla.toolbox.tool.prover.output.IProverProcessOutputSink;
+import org.lamport.tla.toolbox.tool.prover.ui.output.data.ObligationNumberMessage;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.ObligationStatusMessage;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.TLAPMMessage;
 import org.lamport.tla.toolbox.tool.prover.ui.output.source.ITLAPMOutputSource;
 import org.lamport.tla.toolbox.tool.prover.ui.status.ProofMarkerHelper;
 import org.lamport.tla.toolbox.tool.prover.ui.status.ProofStepStatus;
+import org.lamport.tla.toolbox.tool.prover.ui.util.ProverHelper;
 import org.lamport.tla.toolbox.tool.prover.ui.view.ObligationsView;
 import org.lamport.tla.toolbox.util.UIHelper;
 
@@ -47,6 +51,18 @@ public class TagBasedTLAPMOutputIncrementalParser
     private StringBuilder currentMessageBuffer;
     // private ITLAPMOutputSource source;
     private IPath modulePath;
+    /**
+     * The type of prover launch, which should
+     * be one of {@link IProverProcessOutputSink#TYPE_PROVE} or {@link IProverProcessOutputSink#TYPE_CHECK}.
+     */
+    private int type;
+    /**
+     * The monitor that can
+     * be used to report information about progress.
+     * In particular, it should be used to report
+     * progress on obligation processing.
+     */
+    private IProgressMonitor monitor;
     /**
      * Flag indicating that this parser has encountered
      * a start tag but has not yet found its matching
@@ -118,6 +134,13 @@ public class TagBasedTLAPMOutputIncrementalParser
                          * message. If the message is step status, create
                          * a step status marker. If the message is an obligation
                          * status, create an obligation status marker.
+                         * 
+                         * If the message gives the number of obligations
+                         * to be checked, then update the progress monitor
+                         * for this parser to indicate this. If the message is an
+                         * ObligationStatusMessage that indicates that
+                         * the TLAPM is done processing the obligation in any
+                         * way, then the monitor will reflect this fact.
                          */
                         ProofStepStatus status = ProofMarkerHelper.messageToStatus(data);
                         if (status != null)
@@ -136,6 +159,16 @@ public class TagBasedTLAPMOutputIncrementalParser
                                     ObligationsView.updateObligationView(obMarker);
                                 }
                             });
+
+                            if (ProverHelper.isObligationFinished(obMarker, type))
+                            {
+                                monitor.worked(1);
+                            }
+                        } else if (data instanceof ObligationNumberMessage)
+                        {
+                            ObligationNumberMessage numMessage = (ObligationNumberMessage) data;
+                            monitor.beginTask("Processing Obligations : " + numMessage.getCount() + " total.",
+                                    numMessage.getCount());
                         }
                     }
 
@@ -265,11 +298,22 @@ public class TagBasedTLAPMOutputIncrementalParser
         // }
     }
 
-    public TagBasedTLAPMOutputIncrementalParser(IPath modulePath)
+    /**
+     * Constructor taking the path to the module to be parsed, the monitor that can
+     * be used to report information about progress, and the type of prover launch, which should
+     * be one of {@link IProverProcessOutputSink#TYPE_PROVE} or {@link IProverProcessOutputSink#TYPE_CHECK}.
+     * 
+     * @param modulePath
+     * @param monitor
+     * @param type
+     */
+    public TagBasedTLAPMOutputIncrementalParser(IPath modulePath, IProgressMonitor monitor, int type)
     {
         currentMessageBuffer = new StringBuilder();
         // source = new CachingTLAPMOutputSource(modulePath);
         this.modulePath = modulePath;
+        this.monitor = monitor;
+        this.type = type;
 
         // TLAPMOutputSourceRegistry.getInstance().addSource(source);
     }

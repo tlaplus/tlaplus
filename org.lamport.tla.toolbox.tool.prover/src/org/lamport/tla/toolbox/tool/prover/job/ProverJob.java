@@ -227,7 +227,7 @@ public class ProverJob extends Job
 
             pb.redirectErrorStream(true);
 
-            monitor.beginTask("Running prover.", IProgressMonitor.UNKNOWN);
+            // monitor.beginTask("Running prover.", IProgressMonitor.UNKNOWN);
 
             /*
              * Print the coordinates for debugging.
@@ -258,7 +258,7 @@ public class ProverJob extends Job
                  * the appropriate output.
                  */
                 listener = new TLAPMBroadcastStreamListener(modulePath.toPortableString(),
-                        IProverProcessOutputSink.TYPE_OUT);
+                        IProverProcessOutputSink.TYPE_PROVE, monitor);
 
                 /*
                  * Send a string to the listener indicating
