@@ -298,6 +298,14 @@ public class TagBasedTLCOutputIncrementalParser
 
     /**
      * add the increment
+     * 
+     * The argument should be a relatively short string, i.e. no more
+     * than what TLC prints out in a single instant.
+     * 
+     * It is also better if when at least one TLC end tag is part
+     * of the string passed to this method, the string terminates with
+     * a TLC end tag.
+     * 
      * @param text
      * @throws BadLocationException
      */

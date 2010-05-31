@@ -37,7 +37,20 @@ public class LogFileReader
         {
             fileDocumentProvider.connect(fileEditorInput);
             IDocument document = fileDocumentProvider.getDocument(fileEditorInput);
-            this.parser.addIncrement(document.get());
+            /*
+             * When the output file is somewhat large (several hundred KB)
+             * the toolbox hangs if the entire document representing that file
+             * is passed to the parser at once. We can send in pieces of it
+             * to solve this problem.
+             * 
+             * We send in one line at a time. Note that IDocument lines
+             * are 0-based.
+             */
+            for (int lineNum = 0; lineNum < document.getNumberOfLines(); lineNum++)
+            {
+                String line = document.get(document.getLineOffset(lineNum), document.getLineLength(lineNum));
+                this.parser.addIncrement(line);
+            }
             this.parser.done();
         } catch (CoreException e)
         {
