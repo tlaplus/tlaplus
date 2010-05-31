@@ -7,6 +7,7 @@ import org.eclipse.core.commands.IHandler;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.ui.part.FileEditorInput;
@@ -116,14 +117,18 @@ public class CheckProofHandler extends AbstractHandler implements IHandler
          * Step 6                                                 *
          **********************************************************/
         // beginning and ending lines of the region to be checked
-        int beginLine;
-        int endLine;
+        int beginLine = 0;
+        int endLine = 0;
 
         if (theoremNode == null || theoremNode.getProof() == null)
         {
             // ask user if he wants to check the entire module
-            beginLine = 0;
-            endLine = document.getNumberOfLines();
+            MessageDialog
+                    .openWarning(
+                            UIHelper.getShellProvider().getShell(),
+                            "Cannot check step",
+                            "The caret is not at a step with a proof. It should be at a step with a proof in order to run the command \"Check Proof Step)\"");
+            return null;
         } else
         {
             beginLine = theoremNode.getLocation().beginLine();
