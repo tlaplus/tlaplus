@@ -3,6 +3,8 @@
  */
 package org.lamport.tla.toolbox.ui.contribution;
 
+import java.awt.Color;
+
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FillLayout;
@@ -65,12 +67,13 @@ public class SizeControlContribution extends WorkbenchWindowControlContribution
         Label description = new Label(composite, SWT.NONE);
         description.setText("Storage (KB): ");
         description.setSize(50, 20);
+        // description.setBackground(description.getDisplay().getSystemColor(SWT.COLOR_YELLOW));
 
         // Create label inside composite.
         sizeLabel = new Label(composite, SWT.BORDER | SWT.CENTER);
         sizeLabel.setToolTipText("Size of .toolbox directory");
         sizeLabel.setSize(100, 20);
-
+        sizeLabel.setBackground(description.getDisplay().getSystemColor(SWT.COLOR_YELLOW));
         // update status
         updateSize();
         return composite;
