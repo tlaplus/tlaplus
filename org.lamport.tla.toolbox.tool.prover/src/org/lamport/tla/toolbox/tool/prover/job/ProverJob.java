@@ -1,12 +1,8 @@
 package org.lamport.tla.toolbox.tool.prover.job;
 
-import java.io.BufferedOutputStream;
 import java.io.IOException;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -20,10 +16,12 @@ import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.Launch;
 import org.eclipse.debug.core.model.IProcess;
 import org.lamport.tla.toolbox.editor.basic.util.EditorUtil;
-import org.lamport.tla.toolbox.tool.prover.ui.ProverUIActivator;
-import org.lamport.tla.toolbox.tool.prover.ui.util.ProverHelper;
 import org.lamport.tla.toolbox.tool.prover.output.IProverProcessOutputSink;
 import org.lamport.tla.toolbox.tool.prover.output.internal.TLAPMBroadcastStreamListener;
+import org.lamport.tla.toolbox.tool.prover.ui.ProverUIActivator;
+import org.lamport.tla.toolbox.tool.prover.ui.util.ProverHelper;
+import org.lamport.tla.toolbox.tool.prover.ui.view.ObligationsView;
+import org.lamport.tla.toolbox.util.UIHelper;
 
 /**
  * Long running job for launching the prover.
@@ -126,10 +124,20 @@ public class ProverJob extends Job
 
             /*
              * Clear obligation markers on the project containing the module.
+             * 
+             * Refresh the obligations view to reflect the deletion of markers.
+             * 
              */
             try
             {
                 ProverHelper.clearObligationMarkers(module.getProject());
+                UIHelper.runUIAsync(new Runnable() {
+
+                    public void run()
+                    {
+                        ObligationsView.refreshObligationView();
+                    }
+                });
             } catch (CoreException e1)
             {
                 ProverUIActivator.logError("Error clearing obligation markers for project of module " + modulePath, e1);
@@ -293,7 +301,7 @@ public class ProverJob extends Job
                             // TODO Auto-generated catch block
                             e.printStackTrace();
                         }*/
-                        System.out.println("IProcess terminated ? " + proverProcess.isTerminated());
+                        // System.out.println("IProcess terminated ? " + proverProcess.isTerminated());
 
                         // } catch (DebugException e)
                         // {

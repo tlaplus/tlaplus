@@ -1,18 +1,8 @@
 package org.lamport.tla.toolbox.tool.prover.ui;
 
-import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.resources.IMarkerDelta;
-import org.eclipse.core.resources.IResourceChangeEvent;
-import org.eclipse.core.resources.IResourceChangeListener;
-import org.eclipse.core.resources.IResourceDelta;
-import org.eclipse.core.resources.IWorkspace;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
-import org.lamport.tla.toolbox.tool.prover.ui.util.ProverHelper;
-import org.lamport.tla.toolbox.tool.prover.ui.view.ObligationsView;
-import org.lamport.tla.toolbox.util.UIHelper;
 import org.osgi.framework.BundleContext;
 
 /**
@@ -44,68 +34,75 @@ public class ProverUIActivator extends AbstractUIPlugin
         plugin = this;
 
         /*
+         * The following was commented out by DR to make it easier to
+         * understand how the obligations view is updated. Initially this
+         * code got new obligation markers indirectly through a resource
+         * change listener and passed them to the obligation view. Now
+         * the obligations view is informed of new markers and of marker
+         * deletions by the classes that call the marker creation and deletion,
+         * namely, TagBasedTLAPMOutputIncrementalParser and ProverJob.
          * Add a resource change listener that reacts to new obligation
          * markers by updating the obligations view.
          */
-        IWorkspace workspace = ResourcesPlugin.getWorkspace();
-
-        workspace.addResourceChangeListener(new IResourceChangeListener() {
-
-            public void resourceChanged(IResourceChangeEvent event)
-            {
-                final IMarkerDelta[] deltas = event.findMarkerDeltas(ProverHelper.OBLIGATION_MARKER, false);
-                if (deltas.length == 0)
-                {
-                    return;
-                }
-
-                /*
-                 * Update the obligation view with any obligation markers
-                 * that have been added or modified.
-                 * 
-                 * If any obligation markers have been deleted, this indicates that the prover
-                 * has been relaunched. When the prover is relaunched, old obligation
-                 * markers are deleted. We can clear the information of these old obligation
-                 * markers from the obligation view by calling
-                 * ObligationView.refreshObligationView().
-                 */
-                boolean markersDeleted = false;
-                for (int i = 0; i < deltas.length; i++)
-                {
-                    if (deltas[i].getType().equals(ProverHelper.OBLIGATION_MARKER))
-                    {
-                        if (deltas[i].getKind() == IResourceDelta.ADDED
-                                || deltas[i].getKind() == IResourceDelta.CHANGED)
-                        {
-                            final IMarker marker = deltas[i].getMarker();
-                            UIHelper.runUIAsync(new Runnable() {
-
-                                public void run()
-                                {
-                                    ObligationsView.updateObligationView(marker);
-                                }
-                            });
-
-                        } else
-                        {
-                            markersDeleted = true;
-                        }
-                    }
-                }
-
-                if (markersDeleted)
-                {
-                    UIHelper.runUIAsync(new Runnable() {
-
-                        public void run()
-                        {
-                            ObligationsView.refreshObligationView();
-                        }
-                    });
-                }
-
-            }
-        }, IResourceChangeEvent.POST_CHANGE);
+        // IWorkspace workspace = ResourcesPlugin.getWorkspace();
+        //
+        // workspace.addResourceChangeListener(new IResourceChangeListener() {
+        //
+        // public void resourceChanged(IResourceChangeEvent event)
+        // {
+        // final IMarkerDelta[] deltas = event.findMarkerDeltas(ProverHelper.OBLIGATION_MARKER, false);
+        // if (deltas.length == 0)
+        // {
+        // return;
+        // }
+        //
+        // /*
+        // * Update the obligation view with any obligation markers
+        // * that have been added or modified.
+        // *
+        // * If any obligation markers have been deleted, this indicates that the prover
+        // * has been relaunched. When the prover is relaunched, old obligation
+        // * markers are deleted. We can clear the information of these old obligation
+        // * markers from the obligation view by calling
+        // * ObligationView.refreshObligationView().
+        // */
+        // boolean markersDeleted = false;
+        // for (int i = 0; i < deltas.length; i++)
+        // {
+        // if (deltas[i].getType().equals(ProverHelper.OBLIGATION_MARKER))
+        // {
+        // if (deltas[i].getKind() == IResourceDelta.ADDED
+        // || deltas[i].getKind() == IResourceDelta.CHANGED)
+        // {
+        // final IMarker marker = deltas[i].getMarker();
+        // UIHelper.runUIAsync(new Runnable() {
+        //
+        // public void run()
+        // {
+        // ObligationsView.updateObligationView(marker);
+        // }
+        // });
+        //
+        // } else
+        // {
+        // markersDeleted = true;
+        // }
+        // }
+        // }
+        //
+        // if (markersDeleted)
+        // {
+        // UIHelper.runUIAsync(new Runnable() {
+        //
+        // public void run()
+        // {
+        // ObligationsView.refreshObligationView();
+        // }
+        // });
+        // }
+        //
+        // }
+        // }, IResourceChangeEvent.POST_CHANGE);
     }
 
     /*

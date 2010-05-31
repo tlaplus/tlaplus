@@ -1,5 +1,6 @@
 package org.lamport.tla.toolbox.tool.prover.ui.output;
 
+import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.text.BadLocationException;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.ObligationStatusMessage;
@@ -7,6 +8,8 @@ import org.lamport.tla.toolbox.tool.prover.ui.output.data.TLAPMMessage;
 import org.lamport.tla.toolbox.tool.prover.ui.output.source.ITLAPMOutputSource;
 import org.lamport.tla.toolbox.tool.prover.ui.status.ProofMarkerHelper;
 import org.lamport.tla.toolbox.tool.prover.ui.status.ProofStepStatus;
+import org.lamport.tla.toolbox.tool.prover.ui.view.ObligationsView;
+import org.lamport.tla.toolbox.util.UIHelper;
 
 /**
  * This class is used to parse raw output from
@@ -124,7 +127,15 @@ public class TagBasedTLAPMOutputIncrementalParser
 
                         if (data instanceof ObligationStatusMessage)
                         {
-                            ProofMarkerHelper.newObligationStatus((ObligationStatusMessage) data);
+                            final IMarker obMarker = ProofMarkerHelper
+                                    .newObligationStatus((ObligationStatusMessage) data);
+                            UIHelper.runUIAsync(new Runnable() {
+
+                                public void run()
+                                {
+                                    ObligationsView.updateObligationView(obMarker);
+                                }
+                            });
                         }
                     }
 
