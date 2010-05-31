@@ -892,12 +892,33 @@ public class UIHelper
              * theoremNode.getTheorem() returns the node
              * corresponding to the statement of the step (or theorem).
              * 
+             * theoremNode.getDef() returns the node corresponding to
+             * the definition of the theorem, i.e. the node corresponding to
+             * "Foo" in
+             * "THEOREM Foo =="
+             * or the node corresponding to "<1>2" for a named step.
+             * 
              * Return theoremNode if the caret is on any of the lines
-             * of the statement of theoremNode. If the caret is not
-             * on any of the lines of the statement of theoremNode, then
+             * from the first line of the definition of the node to the
+             * last line of the statement of the node. The definition can
+             * be null, in which case we return theoremNode if the
+             * caret is on any of the lines containing the statement.
+             * 
+             * If the caret is not on any of those lines, then
              * recursively search for a substep containing the caret.
              */
-            Location stepLoc = theoremNode.getTheorem().getLocation();
+            int nodeBeginLine;
+            int nodeEndLine;
+
+            if (theoremNode.getDef() != null)
+            {
+                nodeBeginLine = theoremNode.getDef().getLocation().beginLine();
+            } else
+            {
+                nodeBeginLine = theoremNode.getTheorem().getLocation().beginLine();
+            }
+
+            nodeEndLine = theoremNode.getTheorem().getLocation().endLine();
             /*
              * IDocument lines are 0-based and SANY Location lines
              * are 1-based.
@@ -905,7 +926,7 @@ public class UIHelper
             int caretLine = document.getLineOfOffset(caretOffset) + 1;
             // IRegion stepRegion = AdapterFactory.locationToRegion(document, stepLoc);
 
-            if (stepLoc.beginLine() <= caretLine && stepLoc.endLine() >= caretLine/*stepRegion.getOffset() <= caretOffset && stepRegion.getOffset() + stepRegion.getLength() >= caretOffset*/)
+            if (nodeBeginLine <= caretLine && nodeEndLine >= caretLine/*stepRegion.getOffset() <= caretOffset && stepRegion.getOffset() + stepRegion.getLength() >= caretOffset*/)
             {
                 return theoremNode;
             }
