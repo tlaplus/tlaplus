@@ -190,7 +190,7 @@ public class ProverJob extends Job
             {
                 tlapmCommand = tlapmPath.toOSString();
             }
-            ProcessBuilder pb = new ProcessBuilder(new String[] { tlapmCommand, "-C", "--isaprove", "--toolbox",
+            ProcessBuilder pb = new ProcessBuilder(new String[] { tlapmCommand, "--isaprove", "--toolbox",
                     coordinates[0] + ":" + coordinates[2], modulePath.lastSegment() });
 
             /*
