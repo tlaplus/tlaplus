@@ -249,7 +249,8 @@ public class Activator extends AbstractUIPlugin
                                 
                                 // TO-DO: If this is the currently opened spec, change display of
                                 // that spec's size.  
-                                if (ToolboxHandle.getCurrentSpec().getProject().equals(resource)){
+                                Spec curSpec = ToolboxHandle.getCurrentSpec();
+                                if ((curSpec != null) && curSpec.getProject().equals(resource)){
                                     UIHelper.runUIAsync(sizeUpdateRunnable);
                                 }
                             }
