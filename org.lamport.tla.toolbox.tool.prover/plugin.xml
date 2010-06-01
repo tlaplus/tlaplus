@@ -222,5 +222,14 @@
             name="org.lamport.tla.toolbox.tool.prover.obString">
       </attribute>
    </extension>
+   <extension
+         point="org.eclipse.ui.bindings">
+      <key
+            commandId="org.lamport.tla.toolbox.tool.prover.ui.checkStep.delegate"
+            contextId="org.eclipse.ui.contexts.window"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+G M1+G">
+      </key>
+   </extension>
 
 </plugin>
