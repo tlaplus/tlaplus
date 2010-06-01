@@ -20,7 +20,7 @@ import tla2sany.st.Location;
  * Represents a proof and its statement (step/theorem) for folding.
  * 
  * The offset and length of this class describe the region from the beginning
- * of the statement of the proof to the end of the proof. There is some
+ * of the statement of the proof to the end of the proof. There are some
  * modifications done to the exact offset and length because
  * of the way in which eclipse displays, collapses, and expands folds. This
  * is explained in comments in the constructor for this class.
@@ -49,6 +49,10 @@ public class TLAProofPosition extends Position implements IProjectionPosition
      * The {@link Position} of what the proof
      * attempts to prove. This could be the position
      * of a theorem, lemma, corollary, proof step, etc.
+     * 
+     * This position should span from the beginning
+     * of the theorem or step (at <1>2 or THEOREM) to
+     * the end of the statement of the step or theorem.
      */
     private Position positionOfStatement;
     /**
@@ -65,22 +69,26 @@ public class TLAProofPosition extends Position implements IProjectionPosition
      * 
      * For the offset and length for the proof and statement, first obtain the {@link Location} from the syntax tree. For the proof, use
      * the location returned by {@link ProofNode#getLocation()}, where the {@link ProofNode} is obtained by {@link TheoremNode#getProof()}.
-     * For the statement, use the location returned by {@link LevelNode#getLocation()}  for the {@link LevelNode} returned by {@link TheoremNode#getTheorem()}.
+     * 
+     * For initTheoremOffset, use the beginning of the location returned by {@link TheoremNode#getLocation()}.
+     * 
+     * For the end of the statement, use the end of the location returned by {@link LevelNode#getLocation()} 
+     * for the {@link LevelNode} returned by {@link TheoremNode#getTheorem()}.
      *
      * To convert from the 4-int {@link Location} to the offset and length, use {@link AdapterFactory#locationToRegion(IDocument, Location)} and
      * then use the offset and length for the returned region.
      * 
      * @param initProofOffset initial offset of the proof
      * @param initProofLength initial length of the proof
-     * @param initStatementOffset initial offset of the statement of the theorem or step
+     * @param initTheoremOffset initial offset of the theorem or step
      * for which this is a proof
-     * @param initStatementLength initial length of the statement of the theorem or step
-     * for which this is a proof
+     * @param initLengthToEndOfStatement initial length from initTheoremOffset to the end of
+     * the statement of the theorem
      * @param annotation {@link ProjectionAnnotation} that should be at this position
      * @param document
      */
-    public TLAProofPosition(int initProofOffset, int initProofLength, int initStatementOffset, int initStatementLength,
-            ProjectionAnnotation annotation, IDocument document)
+    public TLAProofPosition(int initProofOffset, int initProofLength, int initTheoremOffset,
+            int initLengthToEndOfStatement, ProjectionAnnotation annotation, IDocument document)
     {
         /*
          * This seems to be a bit of a hack, but I see
@@ -114,13 +122,13 @@ public class TLAProofPosition extends Position implements IProjectionPosition
          * comments to see what it does. It should ensure that the entire proof is revealed
          * when expanded.
          */
-        IRegion region = alignRegion(new Region(initStatementOffset, initProofOffset + initProofLength
-                - initStatementOffset), document);
+        IRegion region = alignRegion(new Region(initTheoremOffset, initProofOffset + initProofLength
+                - initTheoremOffset), document);
 
         offset = region.getOffset();
         length = region.getLength();
 
-        positionOfStatement = new Position(initStatementOffset, initStatementLength);
+        positionOfStatement = new Position(initTheoremOffset, initLengthToEndOfStatement);
         positionOfProof = new Position(initProofOffset, initProofLength);
         this.annotation = annotation;
 

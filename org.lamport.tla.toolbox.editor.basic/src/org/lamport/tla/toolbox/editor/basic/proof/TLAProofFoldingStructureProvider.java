@@ -142,6 +142,9 @@ public class TLAProofFoldingStructureProvider implements IParseResultListener, I
         // the region describing the statement of the theorem
         IRegion theoremStatementRegion = AdapterFactory.locationToRegion(document, theoremNode.getTheorem()
                 .getLocation());
+        // the region describing the theoremNode
+        IRegion theoremRegion = AdapterFactory.locationToRegion(document, theoremNode.getLocation());
+        // the proof node
         ProofNode proofNode = theoremNode.getProof();
         // the region describing the proof
         IRegion proofNodeRegion = AdapterFactory.locationToRegion(document, proofNode.getLocation());
@@ -180,10 +183,15 @@ public class TLAProofFoldingStructureProvider implements IParseResultListener, I
 
         if (matchingPosition == null)
         {
-            // no position found
+            /*
+             * No position found.
+             * 
+             * Create a new positions whose statement part goes from the beginning of theoremNode
+             * to the end of the statement of theoremNode.
+             */
             matchingPosition = new TLAProofPosition(proofNodeRegion.getOffset(), proofNodeRegion.getLength(),
-                    theoremStatementRegion.getOffset(), theoremStatementRegion.getLength(), new ProjectionAnnotation(),
-                    document);
+                    theoremRegion.getOffset(), theoremStatementRegion.getOffset() + theoremStatementRegion.getLength()
+                            - theoremRegion.getOffset(), new ProjectionAnnotation(), document);
             additions.put(matchingPosition.getAnnotation(), matchingPosition);
             foldsInCurrentTree.add(matchingPosition);
         }
