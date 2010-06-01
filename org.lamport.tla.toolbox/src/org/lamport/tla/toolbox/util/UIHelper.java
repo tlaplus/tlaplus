@@ -892,33 +892,17 @@ public class UIHelper
              * theoremNode.getTheorem() returns the node
              * corresponding to the statement of the step (or theorem).
              * 
-             * theoremNode.getDef() returns the node corresponding to
-             * the definition of the theorem, i.e. the node corresponding to
-             * "Foo" in
-             * "THEOREM Foo =="
-             * or the node corresponding to "<1>2" for a named step.
-             * 
              * Return theoremNode if the caret is on any of the lines
-             * from the first line of the definition of the node to the
-             * last line of the statement of the node. The definition can
-             * be null, in which case we return theoremNode if the
-             * caret is on any of the lines containing the statement.
+             * from the first line of the theoremNode to the
+             * last line of the statement of the node.
              * 
              * If the caret is not on any of those lines, then
              * recursively search for a substep containing the caret.
              */
-            int nodeBeginLine;
-            int nodeEndLine;
 
-            if (theoremNode.getDef() != null)
-            {
-                nodeBeginLine = theoremNode.getDef().getLocation().beginLine();
-            } else
-            {
-                nodeBeginLine = theoremNode.getTheorem().getLocation().beginLine();
-            }
+            int nodeBeginLine = theoremNode.getLocation().beginLine();
 
-            nodeEndLine = theoremNode.getTheorem().getLocation().endLine();
+            int nodeEndLine = theoremNode.getTheorem().getLocation().endLine();
             /*
              * IDocument lines are 0-based and SANY Location lines
              * are 1-based.
