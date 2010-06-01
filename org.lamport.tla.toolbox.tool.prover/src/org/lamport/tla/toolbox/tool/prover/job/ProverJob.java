@@ -294,6 +294,7 @@ public class ProverJob extends Job
                     // check the cancellation status
                     if (monitor.isCanceled())
                     {
+                        System.out.println("prover job cancelled");
                         // cancel the prover
                         /*
                          * TODO figure out how to properly stop the prover.
@@ -447,6 +448,36 @@ public class ProverJob extends Job
     public void setLocation(int bl, int bc, int el, int ec)
     {
         coordinates = new int[] { bl, bc, el, ec };
+    }
+
+    /**
+     * This class is used for finding running
+     * ProverJobs. One can find all such jobs
+     * by calling
+     * 
+     * Job.getJobManager().find(new ProverJobMatcher());
+     * 
+     * The job manager finds matches by calling
+     * the belongsTo(Object) method for each job with the
+     * argument equal to the argument given to the find method.
+     * The belongsTo method for this class returns true iff
+     * the argument is an instance of ProverJobMatcher.
+     * 
+     * @author Daniel Ricketts
+     *
+     */
+    public static class ProverJobMatcher
+    {
+    }
+
+    /**
+     * Returns true iff the argument is an instance of ProverJobMatcher.
+     * This method is used by the job manager to locate jobs. See
+     * {@link ProverJobMatcher}.
+     */
+    public boolean belongsTo(Object family)
+    {
+        return family instanceof ProverJobMatcher;
     }
 
 }

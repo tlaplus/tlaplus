@@ -9,7 +9,6 @@ import org.lamport.tla.toolbox.tool.prover.ui.output.data.ObligationNumberMessag
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.ObligationStatusMessage;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.TLAPMMessage;
 import org.lamport.tla.toolbox.tool.prover.ui.output.source.ITLAPMOutputSource;
-import org.lamport.tla.toolbox.tool.prover.ui.status.ProofMarkerHelper;
 import org.lamport.tla.toolbox.tool.prover.ui.status.ProofStepStatus;
 import org.lamport.tla.toolbox.tool.prover.ui.util.ProverHelper;
 import org.lamport.tla.toolbox.tool.prover.ui.view.ObligationsView;
@@ -142,15 +141,15 @@ public class TagBasedTLAPMOutputIncrementalParser
                          * the TLAPM is done processing the obligation in any
                          * way, then the monitor will reflect this fact.
                          */
-                        ProofStepStatus status = ProofMarkerHelper.messageToStatus(data);
+                        ProofStepStatus status = ProverHelper.messageToStatus(data);
                         if (status != null)
                         {
-                            ProofMarkerHelper.newStepStatus(status);
+                            ProverHelper.newStepStatus(status);
                         }
 
                         if (data instanceof ObligationStatusMessage)
                         {
-                            final IMarker obMarker = ProofMarkerHelper
+                            final IMarker obMarker = ProverHelper
                                     .newObligationStatus((ObligationStatusMessage) data);
                             UIHelper.runUIAsync(new Runnable() {
 
