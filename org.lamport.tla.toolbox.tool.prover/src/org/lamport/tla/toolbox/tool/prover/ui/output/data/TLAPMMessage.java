@@ -117,7 +117,7 @@ public abstract class TLAPMMessage
                  */
                 String[] nameValPair = fieldStrings[i].trim().split(FIELD_PAIR_SPLIT, 2);
                 Assert.isTrue(nameValPair.length == 2, "Encountered a flawed field name-value string : "
-                        + fieldStrings[i]);
+                        + fieldStrings[i] + "\n in message :" + proverMessage);
 
                 String fieldName = nameValPair[0];
                 String fieldValue = nameValPair[1];
