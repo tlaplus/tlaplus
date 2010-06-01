@@ -1,6 +1,7 @@
 package org.lamport.tla.toolbox.tool.prover.job;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
@@ -71,6 +72,10 @@ public class ProverJob extends Job
      * to registered listeners.
      */
     private TLAPMBroadcastStreamListener listener;
+    /**
+     * The timeout used when waiting for cancelation
+     * of this job.
+     */
     protected static final long TIMEOUT = 1000 * 1;
     /**
      * Array holding the coordinates of the job.
@@ -78,6 +83,17 @@ public class ProverJob extends Job
      * {bl, bc, el, ec}
      */
     private int[] coordinates = new int[] { -1, -1, -1, -1 };
+    /**
+     * True iff fingerprints should be used for
+     * the run of the prover.
+     */
+    private boolean useFP = true;
+    /**
+     * True iff the entire module should be checked.
+     * The value of coordinates will be ignored if
+     * this is true.
+     */
+    private boolean all = false;
 
     /**
      * Constructor. Call {@link ProverJob#setLocation(int, int, int, int)} to set
@@ -194,25 +210,16 @@ public class ProverJob extends Job
 
             /*
              * Launch from the command line:
-             * 
-             * > <tlapm-command> -toolbox bl:bc:el:ec moduleName
-             * 
-             * If no path has been specified (probably in the preferences
-             * by the user, then we assume the path to the tlapm has been
-             * put in the system Path, and <tlapm-command> is tlapm. If a path
-             * has been specified, <tlapm-command> is the path to the tlapm
-             * executable.
-             * 
-             * Module name should end with .tla
-             * such as HourClock.tla
              */
-            String tlapmCommand = "tlapm";
-            if (tlapmPath != null)
+            String[] commandArray = constructCommand();
+            ProcessBuilder pb = new ProcessBuilder(commandArray);
+
+            System.out.println("---------------Start Prover Command-----------");
+            for (int i = 0; i < commandArray.length; i++)
             {
-                tlapmCommand = tlapmPath.toOSString();
+                System.out.println(commandArray[i]);
             }
-            ProcessBuilder pb = new ProcessBuilder(new String[] { tlapmCommand, "--isaprove", "--toolbox",
-                    coordinates[0] + ":" + coordinates[2], modulePath.lastSegment() });
+            System.out.println("---------------End Prover Command-----------");
 
             /*
              * Set the working directory to be the directory
@@ -236,20 +243,9 @@ public class ProverJob extends Job
                 pb.environment().put(pathVar, pb.environment().get(pathVar) + ";" + cygwinPath.toOSString());
             }
 
-            System.out.println(pb.environment().get("Path"));
-
             pb.redirectErrorStream(true);
 
             // monitor.beginTask("Running prover.", IProgressMonitor.UNKNOWN);
-
-            /*
-             * Print the coordinates for debugging.
-             */
-            System.out.println("-------------Prover job coordinates----------");
-            System.out.println("BL : " + coordinates[0]);
-            System.out.println("BC : " + coordinates[1]);
-            System.out.println("EL : " + coordinates[2]);
-            System.out.println("EC : " + coordinates[3]);
 
             /*
              * Start the process. Calling DebugPlugin.newProcess()
@@ -294,37 +290,10 @@ public class ProverJob extends Job
                     // check the cancellation status
                     if (monitor.isCanceled())
                     {
-                        System.out.println("prover job cancelled");
                         // cancel the prover
-                        /*
-                         * TODO figure out how to properly stop the prover.
-                         */
-                        // try
-                        // {
                         process.getOutputStream().write("kill".getBytes());
                         process.getOutputStream().flush();
                         process.getOutputStream().close();
-                        /*try
-                        {
-                            Thread.sleep(5000);
-                        } catch (InterruptedException e)
-                        {
-                            // TODO Auto-generated catch block
-                            e.printStackTrace();
-                        }*/
-                        // System.out.println("IProcess terminated ? " + proverProcess.isTerminated());
-
-                        // } catch (DebugException e)
-                        // {
-                        // // react on the status code
-                        // switch (e.getStatus().getCode()) {
-                        // case DebugException.TARGET_REQUEST_FAILED:
-                        // case DebugException.NOT_SUPPORTED:
-                        // default:
-                        // return new Status(IStatus.ERROR, ProverUIActivator.PLUGIN_ID,
-                        // "Error terminating the running tlapm instance. This is a bug. Make sure to exit the toolbox.");
-                        // }
-                        // }
 
                         // cancellation termination
                         return Status.CANCEL_STATUS;
@@ -405,8 +374,15 @@ public class ProverJob extends Job
              */
             DebugPlugin.getDefault().getLaunchManager().removeLaunch(launch);
 
-            proverProcess.getStreamsProxy().getErrorStreamMonitor().removeListener(listener);
-            proverProcess.getStreamsProxy().getOutputStreamMonitor().removeListener(listener);
+            /*
+             * The listener and prover process can be null if the prover could
+             * not be launched successfully, e.g. an exception was thrown.
+             */
+            if (proverProcess != null && listener != null)
+            {
+                proverProcess.getStreamsProxy().getErrorStreamMonitor().removeListener(listener);
+                proverProcess.getStreamsProxy().getOutputStreamMonitor().removeListener(listener);
+            }
 
             EditorUtil.setReadOnly(module, false);
         }
@@ -434,8 +410,8 @@ public class ProverJob extends Job
 
     /**
      * Sets the location of the job. The coordinates should all
-     * be 1-based. If this method is not called, the prover cannot
-     * be launched.
+     * be 1-based. If setAll(true) is called, the arguments to this method
+     * will be ignored.
      * 
      * Note that currently the prover does not consider column
      * numbers, so those arguments are irrelevant.
@@ -448,6 +424,30 @@ public class ProverJob extends Job
     public void setLocation(int bl, int bc, int el, int ec)
     {
         coordinates = new int[] { bl, bc, el, ec };
+    }
+
+    /**
+     * Set to false if fingerprints should not be used.
+     * Default is true.
+     * @param useFP
+     */
+    public void setUseFP(boolean useFP)
+    {
+        this.useFP = useFP;
+    }
+
+    /**
+     * Sets whether the prover should be run
+     * on the entire module. Default is false.
+     * Setting this to true will make any calls
+     * to setCoordinates() have no effect.
+     * 
+     * @param all true iff the prover should
+     * be run on the entire module
+     */
+    public void setAll(boolean all)
+    {
+        this.all = all;
     }
 
     /**
@@ -478,6 +478,62 @@ public class ProverJob extends Job
     public boolean belongsTo(Object family)
     {
         return family instanceof ProverJobMatcher;
+    }
+
+    /**
+     * Constructs and returns the command to launch the prover.
+     * 
+     * @return
+     */
+    private String[] constructCommand()
+    {
+        ArrayList command = new ArrayList();
+        /*
+         * Launch from the command line:
+         * 
+         * > <tlapm-command> --isaprove --toolbox <loc> moduleName
+         * 
+         * where <loc> is "bl:el" or "all" if the entire module
+         * is to be checked.
+         * 
+         * Optionally --nofp can be specified to not use fingerprinting.
+         * 
+         * If no path has been specified (probably in the preferences
+         * by the user, then we assume the path to the tlapm has been
+         * put in the system Path, and <tlapm-command> is tlapm. If a path
+         * has been specified, <tlapm-command> is the path to the tlapm
+         * executable.
+         * 
+         * Module name should end with .tla
+         * such as HourClock.tla
+         */
+        String tlapmCommand = "tlapm";
+        if (tlapmPath != null)
+        {
+            tlapmCommand = tlapmPath.toOSString();
+        }
+        command.add(tlapmCommand);
+
+        command.add("--isaprove");
+
+        command.add("--toolbox");
+
+        if (all)
+        {
+            command.add("all");
+        } else
+        {
+            command.add(coordinates[0] + ":" + coordinates[2]);
+        }
+
+        if (!useFP)
+        {
+            command.add("--nofp");
+        }
+
+        command.add(module.getLocation().lastSegment());
+
+        return (String[]) command.toArray(new String[command.size()]);
     }
 
 }
