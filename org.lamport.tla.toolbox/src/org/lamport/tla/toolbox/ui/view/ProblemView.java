@@ -72,7 +72,12 @@ public class ProblemView extends ViewPart
             List markersList = new ArrayList(Arrays.asList(markers));
             Collections.sort(markersList, new MarkerComparator());
 
-            for (int j = 0; j < markers.length; j++)
+            // Bug fix: 2 June 2010.  It takes forever if
+            // there are a large number of markers, which
+            // can easily happen if you remove a definition
+            // that's used hundreds of times.
+            int iterations = Math.min(markers.length, 20);
+            for (int j = 0; j < iterations; j++)
             {
                 final IMarker problem = (IMarker) markersList.get(j);
 
@@ -121,6 +126,7 @@ public class ProblemView extends ViewPart
                 item.addListener(SWT.MouseDown, listener);
             }
         }
+        return ;
     }
 
     /**
