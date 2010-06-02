@@ -372,6 +372,7 @@ public class ObligationsView extends ViewPart
                     item.setData(marker);
                     viewer.getTextWidget().setData(marker);
                     oblWidget.setData(marker);
+                    // adding the listener to the item seems to have no effect.
                     item.addListener(SWT.MouseDown, listener);
                     viewer.getTextWidget().addListener(SWT.MouseDown, listener);
                     oblWidget.addListener(SWT.MouseDown, listener);
@@ -411,6 +412,17 @@ public class ObligationsView extends ViewPart
                      */
                     ScrollBar hBar = text.getHorizontalBar();
                     item.setHeight(text.getLineHeight() * text.getLineCount() + (hBar != null ? hBar.getSize().y : 0));
+                } else
+                {
+                    /*
+                     * A slight hack. For some interesting obligations, the prover
+                     * does not send back the pretty printed obligation. This is
+                     * a bug. In the meantime, we need the source viewer to be visible
+                     * so that the user can click on it to jump to the obligation.
+                     * The following does that.
+                     */
+                    viewer.setDocument(new Document("No obligation text available."));
+                    item.setHeight(100);
                 }
 
             }
