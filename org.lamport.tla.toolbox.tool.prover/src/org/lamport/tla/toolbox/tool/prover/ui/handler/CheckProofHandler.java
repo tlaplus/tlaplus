@@ -23,8 +23,10 @@ import org.lamport.tla.toolbox.util.UIHelper;
 import tla2sany.semantic.TheoremNode;
 
 /**
- * Checks the proof step currently containing the caret
- * or checks the entire module if the caret is not located at a proof step.
+ * Checks the proof step currently containing the caret. Does
+ * not launch the prover if the caret is not at a step. Instead,
+ * it shows a message to the user explaining this. See the comments
+ * in the execute method for how it works.
  * 
  * Does nothing if the module has parse errors.
  * 
@@ -53,12 +55,13 @@ public class CheckProofHandler extends AbstractHandler implements IHandler
          * 4.) Check if there are errors in the valid parse result obtained in step 3. If
          *     there are errors, return on this method. There is no need to show a message
          *     to the user in this case because the parse errors view will pop open anyway.
-         * 5.) Get the TheoremNode containing the caret, if the TheoremNode is at a caret.
-         * 6.) Get the line numbers to send to the prover. If the caret is at a TheoremNode,
-         *     then send the beginning line of the TheoremNode and the end line of the proof
-         *     of the theorem node. If the caret is not at a TheoremNode, then send the beginning
-         *     and end lines of the entire module. In the future, it might be better to show a message
-         *     to the user in the second case asking if he wants to check the entire module.
+         * 5.) Get the LevelNode representing a step containing the caret,
+         *     if the caret is at a proof step.
+         * 6.) If a LevelNode is not found in step 5, show a message to the user saying
+         *     the caret is not at a step and return on this method. If a LevelNode is found
+         *     in step 5, the begin line is the begin line of the location of the level node.
+         *     If the level node has a proof, the end line is the end line of the proof. If the
+         *     level node does not have a proof, the end line is the end line of the level node.
          * 7.) Create and schedule a prover job.
          * 
          * Note that at step 6 ,there are some other possibilities:
@@ -120,7 +123,7 @@ public class CheckProofHandler extends AbstractHandler implements IHandler
         int beginLine = 0;
         int endLine = 0;
 
-        if (theoremNode == null || theoremNode.getProof() == null)
+        if (theoremNode == null)
         {
             // ask user if he wants to check the entire module
             MessageDialog
@@ -132,7 +135,13 @@ public class CheckProofHandler extends AbstractHandler implements IHandler
         } else
         {
             beginLine = theoremNode.getLocation().beginLine();
-            endLine = theoremNode.getProof().getLocation().endLine();
+            if (theoremNode.getProof() != null)
+            {
+                endLine = theoremNode.getProof().getLocation().endLine();
+            } else
+            {
+                endLine = theoremNode.getLocation().endLine();
+            }
         }
 
         /***********************************************************
