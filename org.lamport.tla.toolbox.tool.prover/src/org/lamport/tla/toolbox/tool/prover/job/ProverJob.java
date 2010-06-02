@@ -290,10 +290,28 @@ public class ProverJob extends Job
                     // check the cancellation status
                     if (monitor.isCanceled())
                     {
-                        // cancel the prover
+                        /*
+                         * Cancel the prover. This is done
+                         * by sending the string "kill" to the
+                         * prover. The prover takes the appropriate
+                         * steps to shut down. For some reason it
+                         * seems to be necessary to both flush and close
+                         * the stream to the prover process.
+                         */
                         process.getOutputStream().write("kill".getBytes());
                         process.getOutputStream().flush();
                         process.getOutputStream().close();
+
+                        /*
+                         * Wait for the process to actually
+                         * kill itself. It can stream data
+                         * to the toolbox after the kill string
+                         * is sent.
+                         */
+                        while (checkAndSleep())
+                        {
+
+                        }
 
                         // cancellation termination
                         return Status.CANCEL_STATUS;
@@ -389,7 +407,8 @@ public class ProverJob extends Job
     }
 
     /**
-     * Checks if tlapm is still running.
+     * Sleeps for {@link #TIMEOUT} and then returns
+     * true if the tlapm is still running.
      * @return true, if tlapm is still running
      */
     public boolean checkAndSleep()
