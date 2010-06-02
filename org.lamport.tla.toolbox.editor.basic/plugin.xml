@@ -47,11 +47,13 @@
    <extension
          point="org.eclipse.ui.commands">
       <command
+            categoryId="org.eclipse.ui.category.textEditor"
             description="Opens the declaration for the currently selected cross reference"
             id="org.lamport.tla.toolbox.tla.editor.hyperlinking.OpenDeclaration"
             name="Open Declaration">
       </command>
       <command
+            categoryId="org.eclipse.ui.category.textEditor"
             description="Toggles the comment at current position"
             id="org.lamport.tla.toolbox.editor.basic.ToggleCommentAction"
             name="Toggle Comment">
@@ -243,6 +245,12 @@
             id="org.lamport.tla.toolbox.editor.basic.renumberProof"
             name="Renumber Proof">
       </command>
+      <command
+            categoryId="org.eclipse.ui.category.textEditor"
+            defaultHandler="org.lamport.tla.toolbox.editor.basic.handlers.ReturnFromOpenDeclarationHandler"
+            id="org.lamport.tla.toolbox.editor.basic.returnFromOpenDeclaration"
+            name="Return From Open Declaration">
+      </command>
 
    </extension>
    <extension
@@ -402,6 +410,12 @@
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="M1+G M1+R">
       </key>
+      <key
+            commandId="org.lamport.tla.toolbox.editor.basic.returnFromOpenDeclaration"
+            contextId="org.eclipse.ui.contexts.window"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="F4">
+      </key>
       
    </extension>
    <extension
@@ -409,6 +423,10 @@
          		<menuContribution locationURI="popup:#TextEditorContext?after=group.open">
 			<command commandId="org.lamport.tla.toolbox.tla.editor.hyperlinking.OpenDeclaration">
 			</command>
+   <command
+         commandId="org.lamport.tla.toolbox.editor.basic.returnFromOpenDeclaration"
+         style="push">
+   </command>
 		</menuContribution>
            <menuContribution
                  locationURI="popup:#TextEditorContext?after=additions">

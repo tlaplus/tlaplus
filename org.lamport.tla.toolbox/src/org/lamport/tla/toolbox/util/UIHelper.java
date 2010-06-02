@@ -23,6 +23,7 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
+import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
@@ -964,6 +965,60 @@ public class UIHelper
             Activator.logError("Error finding step containing caret.", e);
         }
         return null;
+    }
+
+    public static void jumpToSelection(String fileName, ITextSelection its)
+    {
+        IResource moduleResource = ResourceHelper.getResourceByModuleName(fileName.substring(0, fileName.indexOf('.')));
+        if (moduleResource != null && moduleResource.exists())
+        {
+            IEditorPart editor = UIHelper.openEditor(OpenSpecHandler.TLA_EDITOR_CURRENT, new FileEditorInput(
+                    (IFile) moduleResource));
+
+            if (editor != null)
+            {
+                ITextEditor textEditor;
+                /*
+                 * Try to get the text editor that contains the module.
+                 * The module may be open in a multipage editor.
+                 */
+                if (editor instanceof ITextEditor)
+                {
+                    textEditor = (ITextEditor) editor;
+                } else
+                {
+                    textEditor = (ITextEditor) editor.getAdapter(ITextEditor.class);
+                }
+
+                if (editor instanceof MultiPageEditorPart)
+                {
+                    /*
+                     * In this case, get all editors that are
+                     * part of the multipage editor. Iterate through
+                     * until a text editor is found.
+                     */
+                    IEditorPart[] editors = ((MultiPageEditorPart) editor).findEditors(editor.getEditorInput());
+                    for (int i = 0; i < editors.length; i++)
+                    {
+                        if (editors[i] instanceof ITextEditor)
+                        {
+                            textEditor = (ITextEditor) editors[i];
+                        }
+                    }
+                }
+
+                if (textEditor != null)
+                {
+                    // the text editor may not be active, so set it active
+                    if (editor instanceof MultiPageEditorPart)
+                    {
+                        ((MultiPageEditorPart) editor).setActiveEditor(textEditor);
+                    }
+                    // getActivePage().activate(textEditor);
+                    textEditor.selectAndReveal(its.getOffset(), its.getLength());
+                }
+            }
+        }
     }
 
 }

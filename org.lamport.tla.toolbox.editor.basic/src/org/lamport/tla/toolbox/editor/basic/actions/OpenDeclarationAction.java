@@ -4,9 +4,15 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.text.IRegion;
+import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
+import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.part.FileEditorInput;
+import org.lamport.tla.toolbox.editor.basic.TLAEditor;
 import org.lamport.tla.toolbox.editor.basic.TLAEditorAndPDFViewer;
+import org.lamport.tla.toolbox.editor.basic.util.EditorUtil;
+import org.lamport.tla.toolbox.spec.Spec;
+import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 /**
@@ -52,6 +58,16 @@ public class OpenDeclarationAction extends Action implements IHyperlink
     public void run()
     {
         System.out.println("Opening " + label + "(" + resource.getName() + " at " + location + ")");
+
+        // Find current location and store as a property of the spec for the
+        // Return from Open Declaration command.
+        TLAEditor srcEditor = EditorUtil.getTLAEditorWithFocus();
+        if (srcEditor != null)
+        {
+            Spec spec = ToolboxHandle.getCurrentSpec();
+            spec.setOpenDeclModuleName(srcEditor.getEditorInput().getName());
+            spec.setOpenDeclSelection((ITextSelection) srcEditor.getSelectionProvider().getSelection());
+        }
 
         TLAEditorAndPDFViewer editor = (TLAEditorAndPDFViewer) UIHelper.openEditor(TLAEditorAndPDFViewer.ID,
                 new FileEditorInput((IFile) resource));

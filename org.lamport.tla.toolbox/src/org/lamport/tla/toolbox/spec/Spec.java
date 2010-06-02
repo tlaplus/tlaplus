@@ -16,6 +16,7 @@ import org.eclipse.core.runtime.IAdapterManager;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.jface.text.ITextSelection;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.spec.parser.IParseConstants;
 import org.lamport.tla.toolbox.util.AdapterFactory;
@@ -33,6 +34,14 @@ import tla2sany.modanalyzer.SpecObj;
 public class Spec implements IAdaptable
 {
 
+    /**
+     *  The following fields are used for remembering the jumping-off
+     *  point for an Open Declaration command so we can return to it
+     *  with a Return from Open Declaration command.
+     */
+    private String openDeclModuleName;
+    private ITextSelection openDeclSelection;
+      
     /* project handle */
     private IProject project;
 
@@ -246,6 +255,38 @@ public class Spec implements IAdaptable
     public void setSpecObj(SpecObj specObj)
     {
         this.specObj = specObj;
+    }
+
+    /**
+     * @param openDeclModuleName the openDeclModuleName to set
+     */
+    public void setOpenDeclModuleName(String openDeclModuleName)
+    {
+        this.openDeclModuleName = openDeclModuleName;
+    }
+
+    /**
+     * @return the openDeclModuleName
+     */
+    public String getOpenDeclModuleName()
+    {
+        return openDeclModuleName;
+    }
+
+    /**
+     * @param openDeclSelection the openDeclSelection to set
+     */
+    public void setOpenDeclSelection(ITextSelection openDeclSelection)
+    {
+        this.openDeclSelection = openDeclSelection;
+    }
+
+    /**
+     * @return the openDeclSelection
+     */
+    public ITextSelection getOpenDeclSelection()
+    {
+        return openDeclSelection;
     }
 
 }
