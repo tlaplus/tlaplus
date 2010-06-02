@@ -117,6 +117,11 @@ public class ProverHelper
      */
     public static final String CHECKING_FAILED = "checking failed";
     /**
+     * Obligation status indicating that checking an obligation
+     * was interrupted.
+     */
+    public static final String CHECKING_INTERUPTED = "checking interrupted";
+    /**
      * Obligation status indicating that the obligation
      * has been proved in a prior run of the prover.
      */
@@ -162,8 +167,13 @@ public class ProverHelper
      * Returns true iff the marker is of the type
      * {@link ProverHelper#OBLIGATION_MARKER} and represents
      * an obligation that is in an "interesting" state. Interesting
-     * generally means that the obligation has not been proved or
-     * checked.
+     * currently means one of:
+     * 
+     * {@link #BEING_PROVED}
+     * {@link #FAILED}
+     * {@link #FAILED_ALREADY}
+     * {@link #CHECKING_FAILED}
+     * {@link #CHECKING_INTERUPTED}
      * 
      * @param marker
      * @return
@@ -178,7 +188,7 @@ public class ProverHelper
          */
         String obStatus = marker.getAttribute(OBLIGATION_STATUS, "");
         return obStatus.equals(BEING_PROVED) || obStatus.equals(FAILED) || obStatus.equals(FAILED_ALREADY)
-                || obStatus.equals(CHECKING_FAILED);
+                || obStatus.equals(CHECKING_FAILED) || obStatus.equals(CHECKING_INTERUPTED);
     }
 
     /**
