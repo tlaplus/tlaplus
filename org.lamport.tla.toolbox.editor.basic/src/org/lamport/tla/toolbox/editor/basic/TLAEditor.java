@@ -800,7 +800,23 @@ public class TLAEditor extends TextEditor
     }
 
     /**
+     * Simon's comments, explaining exactly what this class is doing:
      * The class is located here, because editor does not expose the source viewer (method protected)
+     * 
+     * What LL has discovered by experimentation and from Dan:
+     * This is the handler for the OpenDeclaration (F3) command that finds 
+     * the definition or declaration of the currently selected string.  
+     * Here's how that command is implemented.  
+     * 
+     * This class is the handler for  the OpenDeclaration command.
+     * Executing the command causes the execute method to be called.   
+     * That method calls the getHyperlinkDetectors method of the editor,
+     * which will return an array IHyperLinkDetector objects, that
+     * currently contains only a single TLAHyperlinkDetector object.  
+     * It then calls that detector, which will return an array of 
+     * 0 or 1 OpenDeclarationAction objects (the hyperlinks).  
+     * If one such object is returned, its open method is called to
+     * jump to the definition or declaration.  
      */
     public static final class OpenDeclarationHandler extends AbstractHandler
     {

@@ -11,6 +11,14 @@ import org.lamport.tla.toolbox.util.UIHelper;
 
 /**
  * Action-based hyperlink implementation 
+ * 
+ * An OpenDeclarationAction object is created in  
+ * TLAHyperlinkDetector.detectHyperlinks.  Its run method is called
+ * to jump to the location of a definition or declaration, which is 
+ * in the location field.  It is used in the OpenDeclaration (F3)
+ * command.  See the commands in TLAEditor for the OpenDeclarationHandler 
+ * nested class.
+ * 
  * @author Simon Zambrovski
  * @version $Id$
  */

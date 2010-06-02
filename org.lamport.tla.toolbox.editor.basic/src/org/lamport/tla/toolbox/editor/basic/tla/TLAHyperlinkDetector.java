@@ -23,6 +23,14 @@ import util.UniqueString;
 
 /**
  * Detects hyperlinks in TLA+ code
+ * 
+ * The hyperlinks in a module editor are the identifiers whose 
+ * definitions or declarations are in the root module--meaning they are
+ * in the root module, in EXTENDed modules, or are imported with an INSTANCE
+ * statement.  The detectHyperlinks method returns an array of at most one
+ * object, which is an OpenDeclarationAction object.  See the comments
+ * in TLAEditor.java for the OpenDeclarationHandler nested class.
+ * 
  * @author Simon Zambrovski
  * @version $Id$
  */
