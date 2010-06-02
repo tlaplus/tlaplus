@@ -390,15 +390,16 @@ public class ObligationsView extends ViewPart
                 item.setText("Obligation " + id + " - status : " + status + " - method : " + method);
 
                 /*
-                 * Get the item's viewer. If the viewer's document is null
-                 * and the obligation string in the marker is not empty,
+                 * Get the item's viewer. If the viewer's document does not contain
+                 * the obligation string and the obligation string in the marker is not empty,
                  * set the viewer's document to a new document containing
                  * the obligation string.
                  */
                 SourceViewer viewer = (SourceViewer) viewers.get(item);
                 Assert.isNotNull(viewer, "Expand item has been created without a source viewer. This is a bug.");
                 String oblString = marker.getAttribute(ProverHelper.OBLIGATION_STRING, "");
-                if (viewer.getDocument() == null && !oblString.isEmpty())
+                if ((viewer.getDocument() == null || !viewer.getDocument().get().equals(oblString))
+                        && !oblString.isEmpty())
                 {
                     // set the viewers document to the obligation.
                     viewer.setDocument(new Document(oblString.trim()));
