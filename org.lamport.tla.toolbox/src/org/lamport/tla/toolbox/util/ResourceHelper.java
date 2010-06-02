@@ -27,6 +27,7 @@ import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.core.runtime.jobs.MultiRule;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextSelection;
 import org.lamport.tla.toolbox.Activator;
@@ -42,8 +43,15 @@ import org.lamport.tla.toolbox.ui.preference.EditorPreferencePage;
 import org.lamport.tla.toolbox.util.pref.IPreferenceConstants;
 import org.lamport.tla.toolbox.util.pref.PreferenceStoreHelper;
 
+import tla2sany.semantic.DefStepNode;
+import tla2sany.semantic.InstanceNode;
+import tla2sany.semantic.LevelNode;
 import tla2sany.semantic.ModuleNode;
+import tla2sany.semantic.NonLeafProofNode;
+import tla2sany.semantic.ProofNode;
 import tla2sany.semantic.TheoremNode;
+import tla2sany.semantic.UseOrHideNode;
+import tla2sany.st.Location;
 import util.UniqueString;
 
 /**
@@ -859,7 +867,7 @@ public class ResourceHelper
                  * The caret is located at the end of the current
                  * selection if a range of text is selected (highlighted).
                  */
-                TheoremNode step = UIHelper.getStepWithCaret(theoremNode, textSelection.getOffset()
+                TheoremNode step = UIHelper.getThmNodeStepWithCaret(theoremNode, textSelection.getOffset()
                 /* + textSelection.getLength() */, document);
 
                 if (step != null)
@@ -873,6 +881,159 @@ public class ResourceHelper
 
         return stepWithCaret;
 
+    }
+
+    /**
+     * If parseResult's status is not equal to PARSED, returns null.  Else, it tries to find a {@link LevelNode}
+     * representing a proof step or a top level USE/HIDE node in module moduleName "at" the point textSelection. 
+     * More precisely, the caret is at a LevelNode if the level node is the first proof step or USE/HIDE node
+     * on the line containing the offset of textSelection.  
+     * 
+     * The method assumes that document is the document for the module.
+     * 
+     * @param parseResult
+     * @param moduleName
+     * @param textSelection
+     * @param document
+     * @return
+     */
+    public static LevelNode getPfStepOrUseHideFromMod(ParseResult parseResult, String moduleName,
+            ITextSelection textSelection, IDocument document)
+    {
+        try
+        {
+
+            if ((parseResult == null) || (parseResult.getStatus() != IParseConstants.PARSED))
+            {
+                return null;
+            }
+            ModuleNode module = parseResult.getSpecObj().getExternalModuleTable().getModuleNode(
+                    UniqueString.uniqueStringOf(moduleName));
+            if (module == null)
+            {
+                return null;
+            }
+
+            LevelNode[] topLevelNodes = module.getTopLevel();
+
+            for (int i = 0; i < topLevelNodes.length; i++)
+            {
+
+                if (topLevelNodes[i].getLocation().source().equals(moduleName))
+                {
+                    /*
+                     * If the level node is a use or hide node search to see if the
+                     * caret is at that node. If the node is a theorem node, see if
+                     * the caret is at a node in the tree rooted at the theorem node.
+                     */
+                    LevelNode node = getLevelNodeFromTree(topLevelNodes[i], document.getLineOfOffset(textSelection
+                            .getOffset()) + 1);
+                    if (node != null)
+                    {
+                        return node;
+                    }
+                }
+
+            }
+        } catch (BadLocationException e)
+        {
+            Activator.logError("Error getting line number of caret.", e);
+        }
+        return null;
+
+    }
+
+    /**
+     * Returns the {@link LevelNode} in the tree rooted at levelNode that is the first
+     * on the line lineNum. Returns null if no such node found. Assumes that levelNode is one of
+     * 
+     * {@link UseOrHideNode}
+     * {@link InstanceNode}
+     * {@link TheoremNode}
+     * {@link DefStepNode}
+     * 
+     * If that is not true, this method returns null.
+     * 
+     * @param levelNode
+     * @param lineNum
+     * @return
+     */
+    public static LevelNode getLevelNodeFromTree(LevelNode levelNode, int lineNum)
+    {
+        /*
+         * Get the location of the step.
+         * 
+         * For a TheoremNode, the location of the
+         * step is from the beginning of the theorem
+         * node to the end of the statement of the
+         * theorem node. TheoremNode.getTheorem() returns the node
+         * corresponding to the statement of the step (or theorem).
+         * 
+         * For other nodes the location is simply the begin line
+         * to the end line of the node.
+         * 
+         * Return levelNode if the caret is on any of the lines
+         * from of the location of the node.
+         * 
+         * If the caret is not on any of those lines and the node is a TheoremNode, then
+         * recursively search for a substep containing the caret. Since the steps
+         * are recursively searched in order, this will return the step
+         * that is first on lineNum, if there is such a step.
+         */
+        int nodeBeginLine = levelNode.getLocation().beginLine();
+        int nodeEndLine = 0;
+        if (levelNode instanceof TheoremNode)
+        {
+            nodeEndLine = ((TheoremNode) levelNode).getTheorem().getLocation().endLine();
+        } else if (levelNode instanceof UseOrHideNode || levelNode instanceof InstanceNode
+                || levelNode instanceof DefStepNode)
+        {
+            nodeEndLine = levelNode.getLocation().endLine();
+        } else
+        {
+            return null;
+        }
+
+        if (nodeBeginLine <= lineNum && nodeEndLine >= lineNum)
+        {
+            return levelNode;
+        }
+
+        if (levelNode instanceof TheoremNode)
+        {
+            /*
+             * Recursively search for a substep
+             * if the theorem node has a proof
+             * and lineNum is in the proof.
+             */
+            TheoremNode theoremNode = (TheoremNode) levelNode;
+
+            ProofNode proof = theoremNode.getProof();
+            if (proof != null && proof instanceof NonLeafProofNode)
+            {
+                Location proofLoc = proof.getLocation();
+                if (lineNum >= proofLoc.beginLine() && lineNum <= proofLoc.endLine())
+                {
+
+                    NonLeafProofNode nonLeafProof = (NonLeafProofNode) proof;
+                    LevelNode[] steps = nonLeafProof.getSteps();
+
+                    for (int i = 0; i < steps.length; i++)
+                    {
+                        LevelNode node = getLevelNodeFromTree(steps[i], lineNum);
+                        if (node != null)
+                        {
+                            return node;
+                        }
+
+                    }
+                }
+
+            }
+
+        }
+
+        return null;
     }
 
     /**
@@ -904,18 +1065,21 @@ public class ResourceHelper
     public static long getSizeOfJavaFileResource(IResource resource)
     {
         // Set file to the Java File represented by the resource.
-        if (resource == null) {
+        if (resource == null)
+        {
             return 0;
         }
         // Check for resource.getLocation() = null added 30 May 2010
         // by LL.
         IPath ipath = resource.getLocation();
-        if (ipath == null) {
+        if (ipath == null)
+        {
             return 0;
         }
         File file = ipath.toFile();
 
-        if (file == null) {
+        if (file == null)
+        {
             return 0;
         }
         return getDirSize(file);

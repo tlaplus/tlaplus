@@ -20,6 +20,7 @@ import org.lamport.tla.toolbox.tool.prover.job.ProverJob;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
+import tla2sany.semantic.LevelNode;
 import tla2sany.semantic.TheoremNode;
 
 /**
@@ -55,8 +56,8 @@ public class CheckProofHandler extends AbstractHandler implements IHandler
          * 4.) Check if there are errors in the valid parse result obtained in step 3. If
          *     there are errors, return on this method. There is no need to show a message
          *     to the user in this case because the parse errors view will pop open anyway.
-         * 5.) Get the LevelNode representing a step containing the caret,
-         *     if the caret is at a proof step.
+         * 5.) Get the LevelNode representing a step or top level use/hide containing the caret,
+         *     if the caret is at such a node.
          * 6.) If a LevelNode is not found in step 5, show a message to the user saying
          *     the caret is not at a step and return on this method. If a LevelNode is found
          *     in step 5, the begin line is the begin line of the location of the level node.
@@ -113,7 +114,7 @@ public class CheckProofHandler extends AbstractHandler implements IHandler
          **********************************************************/
         String moduleName = ResourceHelper.getModuleName(moduleFile);
         IDocument document = editor.getDocumentProvider().getDocument(editor.getEditorInput());
-        TheoremNode theoremNode = ResourceHelper.getTheoremNodeWithCaret(parseResult, moduleName,
+        LevelNode nodeToProve = ResourceHelper.getPfStepOrUseHideFromMod(parseResult, moduleName,
                 (ITextSelection) editor.getSelectionProvider().getSelection(), document);
 
         /**********************************************************
@@ -123,7 +124,7 @@ public class CheckProofHandler extends AbstractHandler implements IHandler
         int beginLine = 0;
         int endLine = 0;
 
-        if (theoremNode == null)
+        if (nodeToProve == null)
         {
             // ask user if he wants to check the entire module
             MessageDialog
@@ -134,13 +135,15 @@ public class CheckProofHandler extends AbstractHandler implements IHandler
             return null;
         } else
         {
-            beginLine = theoremNode.getLocation().beginLine();
-            if (theoremNode.getProof() != null)
+            beginLine = nodeToProve.getLocation().beginLine();
+
+            // only TheoremNodes can have proofs
+            if (nodeToProve instanceof TheoremNode && ((TheoremNode) nodeToProve).getProof() != null)
             {
-                endLine = theoremNode.getProof().getLocation().endLine();
+                endLine = ((TheoremNode) nodeToProve).getProof().getLocation().endLine();
             } else
             {
-                endLine = theoremNode.getLocation().endLine();
+                endLine = nodeToProve.getLocation().endLine();
             }
         }
 
@@ -152,185 +155,6 @@ public class CheckProofHandler extends AbstractHandler implements IHandler
         proverJob.setLocation(beginLine, 0, endLine, 0);
         proverJob.setUser(true);
         proverJob.schedule();
-
-        /*
-         * This handler works by launching the command handled by CheckProofHandler.
-         * This command has one required parameter, the module name, and four optional
-         * parameters, begin line, begin column, end line, end column.
-         * 
-         * This handler will pass in the four location parameters of step
-         * if the caret lies on the same line as a step. It will pass in the
-         * four location parameters of the entire module if the caret does
-         * not lie on the same line as a step.
-         */
-        // IEditorPart editor = HandlerUtil.getActiveEditor(event);
-        // Assert.isNotNull(editor,
-        // "Check proof step handler delegate was called with no active editor. This is a bug.");
-        // ISelectionProvider selectionProvider = (ISelectionProvider) editor.getAdapter(ISelectionProvider.class);
-        // Assert.isNotNull(selectionProvider, "Active editor does not have a selection provider. This is a bug.");
-        // ISelection selection = selectionProvider.getSelection();
-        // if (selection instanceof ITextSelection)
-        // {
-        // ITextSelection textSelection = (ITextSelection) selection;
-        // IEditorInput edInput = editor.getEditorInput();
-        //
-        // if (edInput instanceof FileEditorInput)
-        // {
-        //
-        // IFile moduleFile = ((FileEditorInput) edInput).getFile();
-        // String moduleName = ResourceHelper.getModuleName(moduleFile);
-        //
-        // /*
-        // * Create a file document provider for the editor
-        // * input. Remember to disconnect it.
-        // */
-        // FileDocumentProvider fdp = new FileDocumentProvider();
-        // try
-        // {
-        // fdp.connect(edInput);
-        // document = fdp.getDocument(edInput);
-        // } catch (CoreException e)
-        // {
-        // ProverUIActivator.logError("Error connecting file document provider to file for module "
-        // + moduleName, e);
-        // } finally
-        // {
-        // /*
-        // * Once the document has been retrieved, the document provider is
-        // * not needed. Always disconnect it to avoid a memory leak.
-        // *
-        // * Keeping it connected only seems to provide synchronization of
-        // * the document with file changes. That is not necessary in this context.
-        // */
-        // fdp.disconnect(edInput);
-        // }
-        //
-        // HashMap params = new HashMap();
-        //
-        // /*
-        // * Try to retrieve the proof step containing the caret.
-        // */
-        // ParseResult parseResult = ResourceHelper.getValidParseResult(moduleFile);
-        //
-        // if (parseResult == null)
-        // {
-        // /*
-        // * No valid parse result available, parse the module.
-        // */
-        // }
-        //
-        // if (parseResult != null)
-        // {
-        //
-        // SpecObj specObj = parseResult.getSpecObj();
-        //
-        // if (specObj == null)
-        // {
-        // // module not successfully parsed
-        // return null;
-        // }
-        //
-        // /*
-        // * Retrieve the ModuleNode corresponding to the module in the
-        // * editor.
-        // */
-        // Assert.isNotNull(specObj.getExternalModuleTable());
-        //
-        // ModuleNode moduleNode = specObj.getExternalModuleTable().getModuleNode(
-        // UniqueString.uniqueStringOf(moduleName));
-        // if (moduleNode == null)
-        // {
-        // // nothing to do
-        // return null;
-        // }
-        //
-        // TheoremNode[] theorems = moduleNode.getTheorems();
-        //
-        // TheoremNode stepWithCaret = null;
-        //
-        // for (int i = 0; i < theorems.length; i++)
-        // {
-        // TheoremNode theoremNode = theorems[i];
-        //
-        // if (theoremNode.getLocation().source().equals(moduleName))
-        // {
-        // /*
-        // * Found a theorem in the module.
-        // *
-        // * See if it has a step containing the caret.
-        // *
-        // * The caret is located at the end of the current
-        // * selection if a range of text is selected (highlighted).
-        // */
-        // TheoremNode step = UIHelper.getStepWithCaret(theoremNode, textSelection.getOffset()
-        // + textSelection.getLength(), document);
-        //
-        // if (step != null)
-        // {
-        // // found the step with the caret
-        // stepWithCaret = step;
-        // break;
-        // }
-        // }
-        // }
-        //
-        // params.put(CheckProofHandler.PARAM_MODULE_NAME, moduleName);
-        //
-        // if (stepWithCaret != null)
-        // {
-        // ProofNode proof = stepWithCaret.getProof();
-        // if (proof != null)
-        // {
-        // /*
-        // * The region to check is from the beginning
-        // * of the step to the end of the proof.
-        // */
-        // params
-        // .put(CheckProofHandler.PARAM_BEGIN_LINE, ""
-        // + stepWithCaret.getLocation().beginLine());
-        // params.put(CheckProofHandler.PARAM_BEGIN_COLUMN, ""
-        // + stepWithCaret.getLocation().beginColumn());
-        // params.put(CheckProofHandler.PARAM_END_LINE, "" + proof.getLocation().endLine());
-        // params.put(CheckProofHandler.PARAM_END_COLUMN, "" + proof.getLocation().endColumn());
-        //
-        // } else
-        // {
-        // /*
-        // * Display a message to the user indicating that there is no
-        // * proof for this proof step and then return. The prover
-        // * should not be launched.
-        // */
-        // MessageDialog.openError(UIHelper.getShellProvider().getShell(), "Step without proof.",
-        // "The proof step you have selected does not have a proof.");
-        // return null;
-        // }
-        // } else
-        // {
-        // try
-        // {
-        // /*
-        // * Check the entire module.
-        // */
-        // params.put(CheckProofHandler.PARAM_BEGIN_LINE, "" + 1);
-        // params.put(CheckProofHandler.PARAM_BEGIN_COLUMN, "" + 1);
-        // params.put(CheckProofHandler.PARAM_END_LINE, "" + document.getNumberOfLines());
-        // /*
-        // * IDocument lines are 0-based.
-        // */
-        // params.put(CheckProofHandler.PARAM_END_COLUMN, ""
-        // + document.getLineInformation(document.getNumberOfLines() - 1).getLength());
-        // } catch (BadLocationException e)
-        // {
-        // ProverUIActivator.logError("Error getting line information of last line of module "
-        // + moduleName, e);
-        // return null;
-        // }
-        // }
-        //
-        // UIHelper.runCommand(CheckProofHandler.COMMAND_ID, params);
-        // }
-        // }
-        // }
 
         return null;
     }

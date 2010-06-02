@@ -882,7 +882,7 @@ public class UIHelper
      * @param theoremNode
      * @return
      */
-    public static TheoremNode getStepWithCaret(TheoremNode theoremNode, int caretOffset, IDocument document)
+    public static TheoremNode getThmNodeStepWithCaret(TheoremNode theoremNode, int caretOffset, IDocument document)
     {
         try
         {
@@ -915,15 +915,6 @@ public class UIHelper
                 return theoremNode;
             }
 
-            ThmOrAssumpDefNode defNode = theoremNode.getDef();
-            /*
-             * According to the comments, defNode can be null.
-             */
-            if (defNode != null)
-            {
-
-            }
-
             /*
              * Theorem node does not contain the caret.
              * Recursively try to find a sub-step containing
@@ -933,7 +924,7 @@ public class UIHelper
             if (proof != null)
             {
                 Location proofLoc = proof.getLocation();
-                if (caretLine >= proofLoc.beginColumn() && caretLine <= proofLoc.endLine())
+                if (caretLine >= proofLoc.beginLine() && caretLine <= proofLoc.endLine())
                 {
                     if (proof instanceof NonLeafProofNode)
                     {
@@ -956,7 +947,8 @@ public class UIHelper
                         {
                             if (steps[i] instanceof TheoremNode)
                             {
-                                TheoremNode node = getStepWithCaret((TheoremNode) steps[i], caretOffset, document);
+                                TheoremNode node = getThmNodeStepWithCaret((TheoremNode) steps[i], caretOffset,
+                                        document);
                                 if (node != null)
                                 {
                                     return node;
