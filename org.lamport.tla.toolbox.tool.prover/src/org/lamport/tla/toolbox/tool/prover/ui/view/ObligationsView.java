@@ -413,7 +413,7 @@ public class ObligationsView extends ViewPart
                      */
                     ScrollBar hBar = text.getHorizontalBar();
                     item.setHeight(text.getLineHeight() * text.getLineCount() + (hBar != null ? hBar.getSize().y : 0));
-                } else
+                } else if (oblString.isEmpty())
                 {
                     /*
                      * A slight hack. For some interesting obligations, the prover
