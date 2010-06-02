@@ -17,6 +17,7 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.ExpandBar;
 import org.eclipse.swt.widgets.ExpandItem;
 import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.ScrollBar;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.part.ViewPart;
 import org.lamport.tla.toolbox.spec.Spec;
@@ -335,14 +336,20 @@ public class ObligationsView extends ViewPart
 
                     /*
                      * We use a source viewer to display the
-                     * obligation. We could simply use StyledText,
-                     * but by using a source viewer, we leave open
-                     * the possibility of configuring it with a source
-                     * viewer configuration that will perform syntax
-                     * highlighting of the obligation. This might be nice,
-                     * but is not a top priority.
+                     * obligation. This allows us to easily do
+                     * syntax highlighting by configuring the source
+                     * viewer with a source viewer configuration
+                     * that basically takes some code from the editor
+                     * plug-in. This code does the syntax highlighting.
+                     * See ObligationSourceViewerConfiguration.
+                     * 
+                     * For the style bits, we want the source viewer to be read
+                     * only, multiline, and have a horizontal scroll bar. We
+                     * don't want the text to wrap because that makes the
+                     * obligations difficult to read, so a horizontal scroll
+                     * bar is necessary.
                      */
-                    SourceViewer viewer = new SourceViewer(oblWidget, null, SWT.READ_ONLY | SWT.MULTI | SWT.WRAP);
+                    SourceViewer viewer = new SourceViewer(oblWidget, null, SWT.READ_ONLY | SWT.MULTI | SWT.H_SCROLL);
                     viewer.getTextWidget().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
                     viewer.configure(new ObligationSourceViewerConfiguration());
                     viewer.getControl().setFont(JFaceResources.getTextFont());
@@ -397,10 +404,13 @@ public class ObligationsView extends ViewPart
                     StyledText text = viewer.getTextWidget();
 
                     /*
-                     * Give the item the appropriate number of lines
-                     * to display the entire obligation.
+                     * Give the item the appropriate height to show
+                     * the obligation. This includes both the height
+                     * of the text of the obligation and the height
+                     * of the horizontal scroll bar, if there is one.
                      */
-                    item.setHeight(text.getLineHeight() * text.getLineCount());
+                    ScrollBar hBar = text.getHorizontalBar();
+                    item.setHeight(text.getLineHeight() * text.getLineCount() + (hBar != null ? hBar.getSize().y : 0));
                 }
 
             }
