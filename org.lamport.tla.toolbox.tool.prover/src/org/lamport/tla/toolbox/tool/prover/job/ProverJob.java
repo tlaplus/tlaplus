@@ -201,7 +201,8 @@ public class ProverJob extends Job
                 ProverUIActivator.logDebug("The given tlapm path does not exist.");
                 // TODO show error message to user
                 return new Status(IStatus.ERROR, ProverUIActivator.PLUGIN_ID, "The given tlapm path does not exist.");
-            } else if (cygwinPath != null && !cygwinPath.toFile().exists())
+            } else if (Platform.getOS().equals(Platform.OS_WIN32) && cygwinPath != null
+                    && !cygwinPath.toFile().exists())
             {
                 // TODO show error message to user
                 ProverUIActivator.logDebug("The given cygwin path does not exist.");
