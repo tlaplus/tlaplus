@@ -187,7 +187,7 @@ public class ProverHelper
         /*
          * Should return true iff that status is one of some collection of strings.
          * 
-         * A status is interesting if it contains the string being proved,
+         * A status is interesting if it contains the string "beingproved",
          * e.g. "beingproved(3s)".
          */
         String obStatus = marker.getAttribute(OBLIGATION_STATUS, "");
