@@ -187,10 +187,11 @@ public class ProverHelper
         /*
          * Should return true iff that status is one of some collection of strings.
          * 
-         * TODO update this method once we know what those strings are.
+         * A status is interesting if it contains the string being proved,
+         * e.g. "beingproved(3s)".
          */
         String obStatus = marker.getAttribute(OBLIGATION_STATUS, "");
-        return obStatus.equals(BEING_PROVED) || obStatus.equals(FAILED) || obStatus.equals(FAILED_ALREADY)
+        return obStatus.contains(BEING_PROVED) || obStatus.equals(FAILED) || obStatus.equals(FAILED_ALREADY)
                 || obStatus.equals(CHECKING_FAILED) || obStatus.equals(CHECKING_INTERUPTED);
     }
 
