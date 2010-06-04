@@ -219,7 +219,7 @@ public class TLAEditor extends TextEditor
                 {
                     if (markerChanges[i].getResource().equals(((IFileEditorInput) getEditorInput()).getFile()))
                     {
-                        UIHelper.runUISync(new Runnable() {
+                        UIHelper.runUIAsync(new Runnable() {
 
                             public void run()
                             {
@@ -796,7 +796,10 @@ public class TLAEditor extends TextEditor
      */
     private void refresh()
     {
-        getSourceViewer().setEditable(!EditorUtil.isReadOnly(((FileEditorInput) getEditorInput()).getFile()));
+        if (getSourceViewer() != null)
+        {
+            getSourceViewer().setEditable(!EditorUtil.isReadOnly(((FileEditorInput) getEditorInput()).getFile()));
+        }
     }
 
     /**
