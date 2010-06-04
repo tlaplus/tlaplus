@@ -1,6 +1,5 @@
 package org.lamport.tla.toolbox.tool.prover.job;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -10,6 +9,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
@@ -42,17 +42,11 @@ public class ProverJob extends Job
      */
     private IFile module;
     /**
-     * Path to the tlapm executable or null.
-     * 
-     * Null if it is assumed
-     * to be in the system Path
+     * Path to the tlapm executable.
      */
     private IPath tlapmPath;
     /**
-     * Path to the folder containing cygwin or null.
-     * 
-     * Null if this is not Windows or the cygwin path
-     * is assumed to be in the System Path.
+     * Path to the folder containing cygwin.
      */
     private IPath cygwinPath;
     /**
@@ -113,8 +107,69 @@ public class ProverJob extends Job
     {
         super(name);
         this.module = module;
-        this.tlapmPath = tlapmPath;
-        this.cygwinPath = cygwinPath;
+
+        /*
+         * The following sets the path to tlapm.
+         */
+        Assert.isTrue(Platform.isRunning(), "Platform is not running when prover was launched. This makes no sense.");
+        // the default tlapm command on all systems if
+        // no complete tlapm path can be found.
+        this.tlapmPath = new Path("tlapm");
+        if (Platform.getOS().equals(Platform.OS_WIN32))
+        {
+            /*
+             * If tlapmPath is not null, that is the path.
+             * 
+             * If tlapmPath is null, check if "C:/cygwin/usr/local/bin/tlapm.exe" exists.
+             * If it does exist, that is the path. Else, the path is "tlapm". Setting
+             * the path to "tlapm" assumes that it is in the system path.
+             */
+            IPath defaultPath = new Path("C:/cygwin/usr/local/bin/tlapm.exe");
+            if (tlapmPath != null)
+            {
+                this.tlapmPath = tlapmPath;
+            } else if (defaultPath.toFile().exists())
+            {
+                this.tlapmPath = defaultPath;
+            }
+
+        } else if (Platform.getOS().equals(Platform.OS_MACOSX) || Platform.getOS().equals(Platform.OS_LINUX))
+        {
+
+            /*
+             * If tlapmPath is not null, that is the path.
+             * 
+             * If tlapmPath is null, check if "/usr/local/bin/tlapm" exists.
+             * If it does exist, that is the path. Else, the path is tlapm. Setting
+             * the path to "tlapm" assumes that it is in the system path.
+             */
+            IPath defaultPath = new Path("/usr/local/bin/tlapm");
+            if (tlapmPath != null)
+            {
+                this.tlapmPath = tlapmPath;
+            } else if (defaultPath.toFile().exists())
+            {
+                this.tlapmPath = defaultPath;
+            }
+
+        } else
+        {
+            // TODO indicate that the operating system is unsupported
+        }
+
+        /*
+         * If cygwin path is specified, use that. If not
+         * use the default cygwin path : 
+         * "C:\cygwin\bin"
+         */
+        if (cygwinPath != null)
+        {
+            this.cygwinPath = cygwinPath;
+        } else
+        {
+            this.cygwinPath = new Path("C:\\cygwin\\bin");
+        }
+
         /*
          * We create a useless launch object. It is
          * used later to construct a IProcess. This object
@@ -180,34 +235,8 @@ public class ProverJob extends Job
             EditorUtil.setReadOnly(module, true);
 
             /*
-             * Launch the prover.
-             * 
-             * For all operating systems, we need to know where the prover
-             * is installed or assume that the user has set the PATH environmental
-             * variable to include the path to the prover.
-             * 
-             * This will be operating system dependent. On Windows,
-             * the prover requires Cygwin. According to a post
-             * on http://stackoverflow.com/questions/1307202/how-can-i-run-cygwin-from-java,
-             * 
-
-            If you are trying to run a binary that requires the cygwin1.dll
-            (which includes most commands you can execute from the cygwin bash shell)
-            then you can run it by specifying the cygwin\bin directory in the path environment variable like this:
-
-            Process p = Runtime.getRuntime().exec(
-            "C:/path/to/cygwin/binary.exe", new String[] { "PATH=C:\\cygwin\\bin" });
-            
-            This assumes you installed cygwin in C:\cygwin
-            
-             * This requires knowing where cygwin is installed. We could make this something
-             * that can be set in preferences. Another idea is to tell
-             * the user to set the PATH variable himself. The following code does this.
-             * 
-             * On Linux and Mac, I don't think anything extra needs to be done.
-             * 
-             * I think that the working directory should be set to the one containing
-             * the module.
+             * Launch the prover. The path to the tlapm is set in the
+             * constructor for this class. Check there for how that is done.
              */
 
             /*
@@ -230,10 +259,28 @@ public class ProverJob extends Job
             pb.directory(modulePath.toFile().getParentFile());
 
             /*
-             * Add "C:/cygwin/bin" on windows.
+             * On Windows,
+             * the prover requires Cygwin. According to a post
+             * on http://stackoverflow.com/questions/1307202/how-can-i-run-cygwin-from-java,
              * 
-             * If the path to cygwin is set in preferences, add
-             * that to the path instead of the previous path.
+
+            If you are trying to run a binary that requires the cygwin1.dll
+            (which includes most commands you can execute from the cygwin bash shell)
+            then you can run it by specifying the cygwin\bin directory in the path environment variable like this:
+
+            Process p = Runtime.getRuntime().exec(
+            "C:/path/to/cygwin/binary.exe", new String[] { "PATH=C:\\cygwin\\bin" });
+            
+            This assumes you installed cygwin in C:\cygwin
+            
+             * We actually use the ProcessBuilder class which wraps the
+             * Runtime.exec method. It provides a map of environment variables
+             * instead of a string array.
+             * 
+             * On Linux and Mac, I don't think anything extra needs to be done.
+             * 
+             * The working directory should be set to the one containing
+             * the module.
              * 
              * Note that Platform.OS_WIN32 is the only constant for Windows
              * operating systems. The documentation says that it is for
@@ -246,11 +293,7 @@ public class ProverJob extends Job
                 if (cygwinPath != null)
                 {
                     pb.environment().put(pathVar, cygwinPath.toOSString() + ";" + pb.environment().get(pathVar));
-                } else
-                {
-                    pb.environment().put(pathVar, "C:\\cygwin\\bin" + ";" + pb.environment().get(pathVar));
                 }
-
             }
 
             pb.redirectErrorStream(true);
@@ -535,50 +578,8 @@ public class ProverJob extends Job
          * Module name should end with .tla
          * such as HourClock.tla
          */
-        String tlapmCommand = "tlapm";
-        Assert.isTrue(Platform.isRunning(), "Platform is not running when prover was launched. This makes no sense.");
-        if (Platform.getOS().equals(Platform.OS_WIN32))
-        {
-            /*
-             * If tlapmPath is not null, that is the command.
-             * 
-             * If tlapmPath is null, check if "C:/cygwin/usr/local/bin/tlapm.exe" exists.
-             * If it does exist, that is the command. Else, the command is tlapm.
-             */
-            String defaultPath = "C:/cygwin/usr/local/bin/tlapm.exe";
-            if (tlapmPath != null)
-            {
-                tlapmCommand = tlapmPath.toOSString();
-            } else if (new File(defaultPath).exists())
-            {
-                tlapmCommand = defaultPath;
-            }
 
-        } else if (Platform.getOS().equals(Platform.OS_MACOSX) || Platform.getOS().equals(Platform.OS_LINUX))
-        {
-
-            /*
-             * If tlapmPath is not null, that is the command.
-             * 
-             * If tlapmPath is null, check if "/usr/local/bin/tlapm" exists.
-             * If it does exist, that is the command. Else, the command is tlapm.
-             */
-            String defaultPath = "/usr/local/bin/tlapm";
-            if (tlapmPath != null)
-            {
-                tlapmCommand = tlapmPath.toOSString();
-            } else if (new File(defaultPath).exists())
-            {
-                tlapmCommand = defaultPath;
-            }
-
-        }
-
-        if (tlapmPath != null)
-        {
-            tlapmCommand = tlapmPath.toOSString();
-        }
-        command.add(tlapmCommand);
+        command.add(tlapmPath.toOSString());
 
         command.add("--isaprove");
 
