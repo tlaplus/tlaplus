@@ -199,7 +199,7 @@
    <extension
          point="org.lamport.tla.toolbox.spec">
       <participant
-            class="org.lamport.tla.toolbox.tool.prover.ui.util.ClearObMarkersSpecLifecycleParticipant">
+            class="org.lamport.tla.toolbox.tool.prover.ui.util.ProverSpecLifecycleParticipant">
       </participant>
    </extension>
    <extension
