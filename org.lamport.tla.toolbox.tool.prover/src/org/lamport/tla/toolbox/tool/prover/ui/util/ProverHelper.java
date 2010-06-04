@@ -695,7 +695,7 @@ public class ProverHelper
                     Thread.sleep(1000);
                 } catch (InterruptedException e)
                 {
-                    e.printStackTrace();
+                    ProverUIActivator.logError("Error sleeping thread.", e);
                 }
             }
         }
