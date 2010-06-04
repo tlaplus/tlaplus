@@ -7,6 +7,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
@@ -14,6 +15,8 @@ import org.eclipse.ui.editors.text.FileDocumentProvider;
 import org.eclipse.ui.part.FileEditorInput;
 import org.lamport.tla.toolbox.spec.parser.ParseResult;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
+import org.lamport.tla.toolbox.tool.prover.job.ProverJob;
+import org.lamport.tla.toolbox.tool.prover.job.ProverJob.ProverJobMatcher;
 import org.lamport.tla.toolbox.tool.prover.output.IProverProcessOutputSink;
 import org.lamport.tla.toolbox.tool.prover.ui.ProverUIActivator;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.ObligationStatusMessage;
@@ -673,4 +676,29 @@ public class ProverHelper
      */
     public static final String STEP_STATUS_MARKER = "org.lamport.tla.toolbox.tool.prover.ui.proofStepStatus";
 
+    /**
+     * Requests cancellation of all running prover jobs. If wait
+     * is true, sleeps the current thread until all prover jobs are done
+     * that they are done.
+     */
+    public static void cancelProverJobs(boolean wait)
+    {
+
+        ProverJobMatcher jobMatcher = new ProverJob.ProverJobMatcher();
+        Job.getJobManager().cancel(jobMatcher);
+        if (wait)
+        {
+            while (Job.getJobManager().find(jobMatcher).length > 0)
+            {
+                try
+                {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e)
+                {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+    }
 }

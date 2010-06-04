@@ -231,5 +231,11 @@
             sequence="M1+G M1+G">
       </key>
    </extension>
+   <extension
+         point="org.lamport.tla.toolbox.tool">
+      <participant
+            class="org.lamport.tla.toolbox.tool.prover.ProverToolboxLifecycleParticipant">
+      </participant>
+   </extension>
 
 </plugin>
