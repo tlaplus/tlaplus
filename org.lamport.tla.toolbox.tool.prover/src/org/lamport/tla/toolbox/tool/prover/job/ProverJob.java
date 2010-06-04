@@ -408,7 +408,8 @@ public class ProverJob extends Job
 
     /**
      * Sleeps for {@link #TIMEOUT} and then returns
-     * true if the tlapm is still running.
+     * true if the tlapm is still running. Returns false
+     * if the tlapm was not launched.
      * @return true, if tlapm is still running
      */
     public boolean checkAndSleep()
@@ -424,7 +425,7 @@ public class ProverJob extends Job
             // e.printStackTrace();
         }
         // return true if tlapm is still running
-        return (!proverProcess.isTerminated());
+        return (proverProcess != null && !proverProcess.isTerminated());
     }
 
     /**
