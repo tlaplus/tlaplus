@@ -1,9 +1,11 @@
 package org.lamport.tla.toolbox.tool.prover.job;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -228,24 +230,30 @@ public class ProverJob extends Job
             pb.directory(modulePath.toFile().getParentFile());
 
             /*
-             * Add the cygwin directory to the path variable for Windows OS.
-             * If the path to cygwin is not given, we assume that it has already been placed
-             * in the system Path.
+             * Add "C:/cygwin/bin" on windows.
+             * 
+             * If the path to cygwin is set in preferences, add
+             * that to the path instead of the previous path.
              * 
              * Note that Platform.OS_WIN32 is the only constant for Windows
              * operating systems. The documentation says that it is for
              * 32-bit windows operating systems, but hopefully it also is
              * for 64-bit systems. This needs to be tested.
              */
-            if (Platform.isRunning() && Platform.getOS().equals(Platform.OS_WIN32) && cygwinPath != null)
+            if (Platform.isRunning() && Platform.getOS().equals(Platform.OS_WIN32))
             {
                 String pathVar = "Path";
-                pb.environment().put(pathVar, pb.environment().get(pathVar) + ";" + cygwinPath.toOSString());
+                if (cygwinPath != null)
+                {
+                    pb.environment().put(pathVar, cygwinPath.toOSString() + ";" + pb.environment().get(pathVar));
+                } else
+                {
+                    pb.environment().put(pathVar, "C:\\cygwin\\bin" + ";" + pb.environment().get(pathVar));
+                }
+
             }
 
             pb.redirectErrorStream(true);
-
-            // monitor.beginTask("Running prover.", IProgressMonitor.UNKNOWN);
 
             /*
              * Start the process. Calling DebugPlugin.newProcess()
@@ -528,6 +536,44 @@ public class ProverJob extends Job
          * such as HourClock.tla
          */
         String tlapmCommand = "tlapm";
+        Assert.isTrue(Platform.isRunning(), "Platform is not running when prover was launched. This makes no sense.");
+        if (Platform.getOS().equals(Platform.OS_WIN32))
+        {
+            /*
+             * If tlapmPath is not null, that is the command.
+             * 
+             * If tlapmPath is null, check if "C:/cygwin/usr/local/bin/tlapm.exe" exists.
+             * If it does exist, that is the command. Else, the command is tlapm.
+             */
+            String defaultPath = "C:/cygwin/usr/local/bin/tlapm.exe";
+            if (tlapmPath != null)
+            {
+                tlapmCommand = tlapmPath.toOSString();
+            } else if (new File(defaultPath).exists())
+            {
+                tlapmCommand = defaultPath;
+            }
+
+        } else if (Platform.getOS().equals(Platform.OS_MACOSX) || Platform.getOS().equals(Platform.OS_LINUX))
+        {
+
+            /*
+             * If tlapmPath is not null, that is the command.
+             * 
+             * If tlapmPath is null, check if "/usr/local/bin/tlapm" exists.
+             * If it does exist, that is the command. Else, the command is tlapm.
+             */
+            String defaultPath = "/usr/local/bin/tlapm";
+            if (tlapmPath != null)
+            {
+                tlapmCommand = tlapmPath.toOSString();
+            } else if (new File(defaultPath).exists())
+            {
+                tlapmCommand = defaultPath;
+            }
+
+        }
+
         if (tlapmPath != null)
         {
             tlapmCommand = tlapmPath.toOSString();
@@ -555,5 +601,4 @@ public class ProverJob extends Job
 
         return (String[]) command.toArray(new String[command.size()]);
     }
-
 }
