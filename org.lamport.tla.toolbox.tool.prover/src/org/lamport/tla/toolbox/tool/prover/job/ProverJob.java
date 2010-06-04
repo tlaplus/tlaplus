@@ -206,7 +206,8 @@ public class ProverJob extends Job
             {
                 // TODO show error message to user
                 ProverUIActivator.logDebug("The given cygwin path does not exist.");
-                return new Status(IStatus.ERROR, ProverUIActivator.PLUGIN_ID, "The given cygwin path does not exist.");
+                return new Status(IStatus.ERROR, ProverUIActivator.PLUGIN_ID, "The given cygwin path " + cygwinPath
+                        + " does not exist.");
             }
 
             /*
