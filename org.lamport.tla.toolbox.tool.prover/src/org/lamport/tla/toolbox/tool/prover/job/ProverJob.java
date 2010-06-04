@@ -305,8 +305,7 @@ public class ProverJob extends Job
              * wraps the java.lang.Process in an IProcess with some
              * convenience methods.
              */
-            Process process = pb.start();
-            proverProcess = DebugPlugin.newProcess(launch, process, getName());
+            proverProcess = DebugPlugin.newProcess(launch, pb.start(), getName());
 
             if (proverProcess != null)
             {
@@ -351,9 +350,7 @@ public class ProverJob extends Job
                          * seems to be necessary to both flush and close
                          * the stream to the prover process.
                          */
-                        process.getOutputStream().write("kill".getBytes());
-                        process.getOutputStream().flush();
-                        process.getOutputStream().close();
+                        proverProcess.getStreamsProxy().write("kill\n");
 
                         /*
                          * Wait for the process to actually
