@@ -17,6 +17,7 @@ import org.lamport.tla.toolbox.spec.parser.IParseConstants;
 import org.lamport.tla.toolbox.spec.parser.ModuleParserLauncher;
 import org.lamport.tla.toolbox.spec.parser.ParseResult;
 import org.lamport.tla.toolbox.tool.prover.job.ProverJob;
+import org.lamport.tla.toolbox.tool.prover.job.ProverJobRule;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
@@ -154,6 +155,7 @@ public class CheckProofHandler extends AbstractHandler implements IHandler
                 + " to line " + endLine, moduleFile, null, null);
         proverJob.setLocation(beginLine, 0, endLine, 0);
         proverJob.setUser(true);
+        proverJob.setRule(new ProverJobRule());
         proverJob.schedule();
 
         return null;
