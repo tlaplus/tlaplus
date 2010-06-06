@@ -769,7 +769,20 @@ public class PcalTLAGen
             Changed cC = new Changed(c);
             for (int j = 0; j < orClause.size(); j++)
             {
-                GenStmt((AST) orClause.elementAt(j), cC, context, sb.toString(), here);
+                /***********************************************************
+                * On 6 Jun 2010, LL added the "+3" in the following call   *
+                * of GenStmt.  This seems to fix a bug which caused        *
+                *                                                          *
+                *    either when \/ A                                      *
+                *                \/ B                                      *
+                *        or ...                                            *
+                *                                                          *
+                * to produce                                               *
+                *    \/ /\ \/ A                                            *
+                *       \/ B                                               *
+                *    \/ ...                                                *
+                ***********************************************************/
+                GenStmt((AST) orClause.elementAt(j), cC, context, sb.toString(), here + 3); 
                 sb = new StringBuffer(NSpaces(here) + "/\\ ");
             }
             ;
