@@ -137,7 +137,7 @@ public class SymbolTable implements ASTConstants {
 
     // If the currentBinding is to a different SymbolNode that does
     // not have the same kind or arity as "symbol" then this is
-    // definitely an erroreous duplicate definition.  Also, even if it
+    // definitely an erroneous duplicate definition.  Also, even if it
     // *IS* the same kind and arity, if we are attempting to bind a
     // name to a FormalParamNode when that name has already been used
     // then that is an error, since formal param names must be "new".
@@ -161,7 +161,7 @@ public class SymbolTable implements ASTConstants {
     } 
 
 // The following test is misguided. The problem we need to worry about is merging symbols
-// from the same module twice or more throufg EXTENDS or INSTANCE. Not multiple definitions.
+// from the same module twice or more through EXTENDS or INSTANCE. Not multiple definitions.
 
     // If "name" resolves to a different SymbolNode than "symbol", 
     // but of the same kind and arity, and is not a FormalParamNode,

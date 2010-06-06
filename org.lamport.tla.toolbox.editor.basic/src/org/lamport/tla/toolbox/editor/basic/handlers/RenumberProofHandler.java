@@ -23,11 +23,14 @@ import org.lamport.tla.toolbox.editor.basic.util.EditorUtil;
 import org.lamport.tla.toolbox.util.AdapterFactory;
 import org.lamport.tla.toolbox.util.UIHelper;
 
+import tla2sany.semantic.DefStepNode;
+import tla2sany.semantic.InstanceNode;
 import tla2sany.semantic.LeafProofNode;
 import tla2sany.semantic.LevelNode;
 import tla2sany.semantic.NonLeafProofNode;
 import tla2sany.semantic.ProofNode;
 import tla2sany.semantic.TheoremNode;
+import tla2sany.semantic.UseOrHideNode;
 import tla2sany.st.Location;
 import util.UniqueString;
 
@@ -64,10 +67,12 @@ public class RenumberProofHandler extends AbstractHandler implements IHandler
             LevelNode[] steps = pfNode.getSteps();
 
             // Set replace to the list of replacements.
+            // Modified on 10 June 2010 by LL to handle non-TheoremNodes.
             ArrayList replace = new ArrayList(15);
             int stepNumber = 1;
             for (int i = 0; i < steps.length; i++)
             {
+                UniqueString uname = null;
                 if (steps[i] instanceof TheoremNode)
                 {
                     // check if the step has a leaf proof that uses <*>
@@ -89,15 +94,22 @@ public class RenumberProofHandler extends AbstractHandler implements IHandler
                     }
 
                     // Get the step name.
-                    UniqueString uname = ((TheoremNode) steps[i]).getName();
-                    if (uname != null)
-                    {
-                        String oldName = uname.toString();
-                        String newName = oldName.substring(0, oldName.indexOf('>') + 1) + stepNumber;
-                        stepNumber++;
-                        replace.add(new StringReplacement(oldName, newName));
-                    }
+                    uname = ((TheoremNode) steps[i]).getName();
+                } else if (steps[i] instanceof DefStepNode) {
+                    uname = ((DefStepNode) steps[i]).getStepNumber();
+                } else if (steps[i] instanceof UseOrHideNode) {
+                    uname = ((UseOrHideNode) steps[i]).getStepName();
+                } else if (steps[i] instanceof InstanceNode) {
+                    uname = ((InstanceNode) steps[i]).getStepName();
                 }
+                if (uname != null)
+                {
+                    String oldName = uname.toString();
+                    String newName = oldName.substring(0, oldName.indexOf('>') + 1) + stepNumber;
+                    stepNumber++;
+                    replace.add(new StringReplacement(oldName, newName));
+                }
+
             }
             // Set replaceArray to the array of replacements, sorted in decreasing order
             // of oldString. This ensures that a replacement with oldString = s

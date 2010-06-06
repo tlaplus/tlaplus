@@ -53,10 +53,35 @@ public class InstanceNode extends LevelNode {
      // surface syntax because they are of the form c <- c or x <- x
      // Have length 0 if there is no substitution.
 
+  
   /*************************************************************************
   * The following field was added by LL on 29 Jul 2007.                    *
   *************************************************************************/
   boolean local;
+    /**
+ * @param stepName the stepName to set
+ */
+ 
+  /**
+   * If the InstanceNode is a proof step, this is the step number.  It
+   * is made a UniqueString for consistency; there's no need to make
+   * comparison efficient.
+   * Added by LL on 6 June 2010.
+   */
+  private UniqueString stepName = null;
+  public void setStepName(UniqueString stepName)
+{
+    this.stepName = stepName;
+}
+
+/**
+ * @return the stepName
+ */
+public UniqueString getStepName()
+{
+    return stepName;
+}
+
     /***********************************************************************
     * True iff this is a LOCAL instance.                                   *
     ***********************************************************************/

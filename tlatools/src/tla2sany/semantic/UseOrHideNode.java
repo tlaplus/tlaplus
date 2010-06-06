@@ -6,6 +6,7 @@ import java.util.Hashtable;
 
 import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
+import util.UniqueString;
 
 /***************************************************************************
 * This class represents a USE or HIDE statement.  It is of kind            *
@@ -44,6 +45,26 @@ public class UseOrHideNode extends LevelNode {
     * proof.  However, the "ONLY BY" construct might be disabled.          *
     ***********************************************************************/
     
+  /**
+   * If the UseOrHideNode is a proof step, this is the step number.  It
+   * is made a UniqueString for consistency; there's no need to make
+   * comparison efficient.
+   * Added by LL on 6 June 2010.
+   */
+  private UniqueString stepName = null;
+
+    public void setStepName(UniqueString stepName)
+    {
+        this.stepName = stepName;
+    }
+
+    /**
+     * @return the stepName
+     */
+    public UniqueString getStepName()
+    {
+        return stepName;
+    }
   /*************************************************************************
   * The constructor.                                                       *
   *************************************************************************/

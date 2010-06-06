@@ -5263,18 +5263,26 @@ OpDefNode node = (OpDefNode) vec.elementAt(i);
            * definitions.  So, for nonlocal definitions, we just           *
            * set newOdn to odn.                                            *
            *                                                               *
-           * However, now the problem is: suppose the current modules      *
+           * However, now the problem is: suppose the current module       *
            * does not EXTEND the Naturals module.  Then the operators      *
            * defined in Naturals, which should be defined in the current   *
            * module, are not.  So, we add them to symbolTable.  This does  *
            * not lead to a multiple definition error because apparently    *
            * it's the addSymbol method that is smart enough to detect if   *
-           * we adding a definition that comes from the same source as     *
+           * we are adding a definition that comes from the same source as *
            * the original one.                                             *
            *                                                               *
            * This fix was made by LL on 16 Feb 2009.                       *
+           *                                                               *
+           * On 6 June 2010, LL add "&& topLevel" to the following `if'    *
+           * test.  This was needed because an INSTANCE inside a proof     *
+           * was producing a "Multiple declarations or definition"         *
+           * warning if the INSTANCEd module and the current module both   *
+           * EXTENDed Naturals.  This fix seems to do the right thing,     *
+           * but I have not extensively tested it and I have no idea what  *
+           * problems may remain.                                          *
            ****************************************************************/
-           if (localness) {
+           if (localness  && topLevel ) {
              newOdn = new OpDefNode( odn.getName(), UserDefinedOpKind, odn.getParams(),
                             localness, odn.getBody(), 
                             odn.getOriginallyDefinedInModuleNode(), 
@@ -5779,6 +5787,7 @@ OpDefNode node = (OpDefNode) vec.elementAt(i);
 
         case N_UseOrHide :
           UseOrHideNode uohn = generateUseOrHide(stepBodySTN, cm) ;
+          uohn.setStepName(stepNum);  // Added 6 June 2010 by LL.
           
           if (uohn.facts.length + uohn.defs.length == 0) {
             errors.addError(stepBodySTN.getLocation(),
@@ -5791,7 +5800,10 @@ OpDefNode node = (OpDefNode) vec.elementAt(i);
           break ;
 
         case N_NonLocalInstance :
-          pfNumNode = generateInstance(stepBodySTN, cm, false);
+          // Code to set step name added by LL on 6 June 2010
+          InstanceNode inst = generateInstance(stepBodySTN, cm, false);
+          inst.setStepName(stepNum);
+          pfNumNode = inst;
           steps[i - offset] = pfNumNode ;
           break ;
 
