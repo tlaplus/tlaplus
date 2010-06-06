@@ -1003,11 +1003,19 @@ public class PcalTranslate {
         * LL on 30 Mar 2006.  This error isn't caught by the parsing       *
         * phase for reasons explained in the comments for                  *
         * ParseAlgorithm.GetReturn.                                        *
+        *                                                                  *
+        * On 10 June 2010, LL commented out this test.  It was preventing  *
+        * the use of a return in a macro even when the macro was used      *
+        * only inside a procedure.  I've been unable to find where this    *
+        * could cause an error, because using a return outside a           *
+        * procedure--either directly or through macro expansion--seems to  *
+        * generate an error in the parsing phase.                          *
         *******************************************************************/
-        if (ast.from == null)
-          { throw new PcalTranslateException("`return' statement not in procedure", 
-                                     ast) ;
-          } ;
+        // if (ast.from == null)
+        // { throw new PcalTranslateException("`return' statement not in procedure",
+        // ast) ;
+        // } ;
+        
         int from = st.FindProc(ast.from);
         PcalSymTab.ProcedureEntry pe =
             (PcalSymTab.ProcedureEntry) st.procs.elementAt(from);
