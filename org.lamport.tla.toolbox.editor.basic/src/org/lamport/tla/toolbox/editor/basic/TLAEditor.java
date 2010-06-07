@@ -270,6 +270,10 @@ public class TLAEditor extends TextEditor
         // not call methods that use annotation model when the model is still null
         this.proofStructureProvider = new TLAProofFoldingStructureProvider(this);
 
+        // refresh the editor in case it should be
+        // read only
+        refresh();
+
         // tlapmColoring = new TLAPMColoringOutputListener(this);
 
     }
@@ -789,9 +793,9 @@ public class TLAEditor extends TextEditor
     /**
      * Refreshes the editor.
      * 
-     * This currently just involves checking if the prover
-     * is running on the module. If it is, the editor
-     * is set to be read only. If it isn't, the editor
+     * This currently just involves checking if the resource
+     * has been marked read-only by {@link EditorUtil#setReadOnly(org.eclipse.core.resources.IResource, boolean)}.
+     * If it is, the editor is set to be read only. If it isn't, the editor
      * is set to be editable.
      */
     private void refresh()
