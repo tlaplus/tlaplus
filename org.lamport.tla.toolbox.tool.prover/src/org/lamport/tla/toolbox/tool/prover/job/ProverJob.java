@@ -90,6 +90,11 @@ public class ProverJob extends Job
      * this is true.
      */
     private boolean all = false;
+    /**
+     * If true, the prover will be launched for
+     * status checking only, not proving.
+     */
+    private boolean checkStatus = false;
 
     /**
      * Constructor. Call {@link ProverJob#setLocation(int, int, int, int)} to set
@@ -242,7 +247,7 @@ public class ProverJob extends Job
              */
 
             /*
-             * Launch from the command line:
+             * Launch the prover command:
              */
             String[] commandArray = constructCommand();
             ProcessBuilder pb = new ProcessBuilder(commandArray);
@@ -344,11 +349,9 @@ public class ProverJob extends Job
                     {
                         /*
                          * Cancel the prover. This is done
-                         * by sending the string "kill" to the
+                         * by sending the string "kill\n" to the
                          * prover. The prover takes the appropriate
-                         * steps to shut down. For some reason it
-                         * seems to be necessary to both flush and close
-                         * the stream to the prover process.
+                         * steps to shut down.
                          */
                         proverProcess.getStreamsProxy().write("kill\n");
 
