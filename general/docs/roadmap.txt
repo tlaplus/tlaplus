@@ -274,4 +274,11 @@ INDEX TO USEFUL COMMENTS IN THE CODE
 
 Open Declaration Command
   Its implementation is described in TLAEditor$OpenDeclarationHandler.
+  
+Attaching a Listener to Something
+  The implementation of the graphing of columns of the "State space 
+  progress" section of the Model Checking Results page adds the listeners 
+  in ResultPage.createTableColumns.  The listener and interesting
+  stuff is documented in ResultPageColumnListener subclass of 
+  ResultPage.
    

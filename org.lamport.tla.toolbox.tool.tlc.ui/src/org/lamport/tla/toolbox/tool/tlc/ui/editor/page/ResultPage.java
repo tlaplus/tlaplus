@@ -14,13 +14,20 @@ import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.PaintEvent;
+import org.eclipse.swt.events.PaintListener;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.Text;
@@ -338,7 +345,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         statArea.setLayout(rowLayout);
 
         // progress stats
-        createAndSetupStateSpace("State space progress:", statArea, toolkit);
+        createAndSetupStateSpace("State space progress (click column header for graph)", statArea, toolkit);
         // coverage stats
         createAndSetupCoverage("Coverage at", statArea, toolkit);
 
@@ -502,7 +509,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         stateTable.setHeaderVisible(true);
         stateTable.setLinesVisible(true);
 
-        StateSpaceLabelProvider.createTableColumns(stateTable);
+        StateSpaceLabelProvider.createTableColumns(stateTable, this);
 
         // create the viewer
         this.stateSpace = new TableViewer(stateTable);
@@ -594,6 +601,25 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
     }
 
     /**
+     * Returns the StateSpaceInformationItem objects currently being displayed in 
+     * the "State space progress" area, except in temporal order--that is, in the
+     * opposite order from which they are displayed.
+     * 
+     * @return
+     */
+    public StateSpaceInformationItem[] getStateSpaceInformation()
+    {
+        List infoList = (List) stateSpace.getInput();
+        StateSpaceInformationItem[] result = new StateSpaceInformationItem[infoList.size()];
+        for (int i = 0; i < result.length; i++)
+        {
+            result[i] = (StateSpaceInformationItem) infoList.get(result.length - i - 1);
+        }
+        return result;
+
+    }
+
+    /**
      * Provides labels for the state space table 
      */
     static class StateSpaceLabelProvider extends LabelProvider implements ITableLabelProvider
@@ -622,7 +648,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         /**
          * @param stateTable
          */
-        public static void createTableColumns(Table stateTable)
+        public static void createTableColumns(Table stateTable, ResultPage page)
         {
             // create table headers
             for (int i = 0; i < columnTitles.length; i++)
@@ -630,6 +656,10 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
                 TableColumn column = new TableColumn(stateTable, SWT.NULL);
                 column.setWidth(columnWidths[i]);
                 column.setText(columnTitles[i]);
+                
+                // The following statement attaches a listener to the column
+                // header.   See the ResultPageColumnListener comments.
+                column.addSelectionListener(new ResultPageColumnListener(i, page));
             }
         }
 
@@ -731,6 +761,239 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
                 }
             }
             return null;
+        }
+
+    }
+
+    /**
+     * A ResultPageColumnListener is a listener that handles clicks on
+     * the column headers of the "State space progress" region of the
+     * Result Page.  The same class is used for all the column
+     * headers, with the column number indicating which column header
+     * was clicked on.
+     * 
+     * @author lamport
+     *
+     */
+    static class ResultPageColumnListener implements SelectionListener
+    {
+
+        private int columnNumber;
+        private ResultPage resultPage;
+
+        public ResultPageColumnListener(int columnNumber, ResultPage resultPage)
+        {
+            super();
+            this.columnNumber = columnNumber;
+            this.resultPage = resultPage;
+        }
+
+        {
+            // TODO Auto-generated constructor stub
+        }
+
+        public void widgetDefaultSelected(SelectionEvent e)
+        {
+            // TODO Auto-generated method stub
+
+        }
+
+        /**
+         * This is called when the user clicks on the header of a column
+         * of the "State space progress" region of the ResultsPage.  It 
+         * raises a window with a graph of the specified column.
+         */
+        public void widgetSelected(SelectionEvent e)
+        {
+            StateSpaceInformationItem[] ssInfo = resultPage.getStateSpaceInformation();
+            String modelName = ModelHelper.getModelName(resultPage.getConfig().getFile());
+            UIHelper.runUIAsync(new DataDisplay(ssInfo, columnNumber, modelName));
+
+        }
+
+    }
+    
+    /**
+     * The run method of this class creates a shell (a window) to display
+     * a graph of the appropriate State Space Progress information when the user clicks on
+     * a column heading.  It then adds a PaintListener to that shell, and that 
+     * listener draws the graph initially and whenever the window is resized or
+     * some other event requires it to be redrawn.
+     * 
+     * The constructor is used to pass the arguments needed by the run method to
+     * display the data.
+     * 
+     * Note: The location at which the shells are displayed is fixed in code
+     * buried deeply.  There should probably be some thought given to where to
+     * pop up the window, and perhaps a window should be popped up in the same
+     * place as the last such window was popped--perhaps with a bit of random
+     * variation to prevent them all from piling up.
+     *  
+     * @author lamport
+     *
+     */
+    static class DataDisplay implements Runnable
+    {
+        long[] data = null;
+        long[] times = null;
+        int column;
+        String modelName;
+
+        /**
+         *  The constructor returns an object with null data and times arrays
+         *  if there are not at least two data points.  
+         *  
+         * @param ssInfo
+         * @param columnNumber
+         */
+        public DataDisplay(StateSpaceInformationItem[] ssInfo, int columnNumber, String modelName)
+        {
+            if (ssInfo.length < 2)
+            {
+                return;
+            }
+            
+            /*
+             * The data and times arrays are set to contain the data items to be displayed
+             * and the elapsed time (in milliseconds) at which each item was posted.
+             * The data is obtained from the appropriate column of the ssInfo items.
+             * For the Time column, the number of reports is graphed.
+             */
+            data = new long[ssInfo.length];   
+            times = new long[ssInfo.length];  
+
+            long startTime = ssInfo[0].getTime().getTime();
+            for (int i = 0; i < data.length; i++)
+            {
+                switch (columnNumber) {
+                case StateSpaceLabelProvider.COL_TIME:
+                    data[i] = i;
+                    break;
+                case StateSpaceLabelProvider.COL_DIAMETER:
+                    data[i] = ssInfo[i].getDiameter();
+                    break;
+                case StateSpaceLabelProvider.COL_FOUND:
+                    data[i] = ssInfo[i].getFoundStates();
+                    break;
+                case StateSpaceLabelProvider.COL_DISTINCT:
+                    data[i] = ssInfo[i].getDistinctStates();
+                    break;
+                case StateSpaceLabelProvider.COL_LEFT:
+                    data[i] = ssInfo[i].getLeftStates();
+                    break;
+                default:
+                    return;
+                }
+                times[i] = ssInfo[i].getTime().getTime() - startTime;
+            }
+            column = columnNumber;
+            this.modelName = modelName;
+        }
+
+        /**
+         * Much of the stuff in this run() method was copied, without much
+         * understanding from Snippet245.java in the Eclipse examples.
+         */
+        public void run()
+        {
+            if (data == null)
+            {
+                return;
+            }
+            
+            // The following method for getting the current display was
+            // copied without understanding from someplace or other.
+            Display display = Display.getCurrent();
+            if (display == null)
+            {
+                display = Display.getDefault();
+            }
+
+            // The window's title is the same as the column's title, 
+            // except for the time.
+            String title = StateSpaceLabelProvider.columnTitles[column];
+            if (column == StateSpaceLabelProvider.COL_TIME)
+            {
+                title = "Number of Progress Reports";
+            }
+            title = title + " (" + modelName + ")";
+
+            // We check if a shell exists with this title, and use it if
+            // it does.  Otherwise, we get a new shell.
+            boolean shellExists = false;
+            Shell theShell = null;
+            Shell[] shells = display.getShells();
+            for (int i = 0; i < shells.length; i++)
+            {
+                if (shells[i].getText().equals(title))
+                {
+                    theShell = shells[i];
+                    shellExists = true;
+                    break;
+                }
+            }
+            if (!shellExists)
+            {
+                theShell = new Shell(display);
+            }
+            final Shell shell = theShell;
+            shell.setText(title);
+            shell.addPaintListener(new PaintListener() {
+                public void paintControl(PaintEvent event)
+                {
+                    Rectangle rect = shell.getClientArea();
+                    // Set maxData to the largest data value;
+                    long maxData = 0;
+                    for (int i = 0; i < data.length; i++)
+                    {
+                        if (data[i] > maxData)
+                        {
+                            maxData = data[i];
+                        }
+                    }
+                    long maxTime = times[times.length - 1];
+
+                    // event.gc.drawOval(0, 0, rect.width - 1, rect.height - 1);
+                    int[] pointArray = new int[2 * data.length];
+                    for (int i = 0; i < data.length; i++)
+                    {
+                        pointArray[2 * i] = (int) ((times[i] * rect.width) / maxTime);
+                        pointArray[(2 * i) + 1] = (int) (rect.height - ((data[i] * rect.height) / maxData));
+                    }
+                    event.gc.drawPolyline(pointArray);
+                    String stringTime = "Elapsed time: ";
+                    long unreportedTime = maxTime;
+                    long days = maxTime / (1000 * 60 * 60 * 24);
+                    if (days > 0)
+                    {
+                        unreportedTime = unreportedTime - days * (1000 * 60 * 60 * 24);
+                        stringTime = stringTime + days + " days  ";
+
+                    }
+                    long hours = unreportedTime / (1000 * 60 * 60);
+                    if (hours > 0)
+                    {
+                        unreportedTime = unreportedTime - hours * (1000 * 60 * 60);
+                        stringTime = stringTime + hours + " hours  ";
+                    }
+                    stringTime = stringTime + (unreportedTime / (1000 * 60)) + " minutes";
+                    event.gc.drawString(stringTime, 0, 0);
+                    event.gc.drawString("Maximum: " + maxData, 0, 15);
+                }
+            });
+            if (!shellExists)
+            {
+                shell.setBounds(100 + 30 * column, 100 + 30 * column, 400, 300);
+            }
+            shell.open();
+            // The following code from the Eclipse example was eliminated.
+            // It seems to cause the shell to survive after the Toolbox is
+            // killed.
+            //
+            // while (!shell.isDisposed()) {
+            // if (!display.readAndDispatch()) display.sleep();
+            // }
+
         }
 
     }
