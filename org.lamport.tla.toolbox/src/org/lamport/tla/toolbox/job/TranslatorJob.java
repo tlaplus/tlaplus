@@ -3,10 +3,13 @@ package org.lamport.tla.toolbox.job;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Vector;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.WorkspaceJob;
+import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -26,12 +29,12 @@ import pcal.Translator;
  * @author Simon Zambrovski
  * @version $Id$
  */
-public class TranslatorJob extends WorkspaceJob 
+public class TranslatorJob extends WorkspaceJob
 {
-    private Translator  translator;
-    private Vector      callParams;
-    private IResource   fileToBuild;
-    
+    private Translator translator;
+    private Vector callParams;
+    private IResource fileToBuild;
+
     /**
      * @param name
      */
@@ -41,7 +44,7 @@ public class TranslatorJob extends WorkspaceJob
         this.translator = new Translator();
         this.fileToBuild = fileToBuild;
         this.callParams = new Vector();
-        
+
         Activator.logDebug("Translating " + fileToBuild.getLocation().toOSString());
 
         boolean hasPcalAlg = false;
@@ -50,21 +53,23 @@ public class TranslatorJob extends WorkspaceJob
 
         try
         {
-            prop = fileToBuild.getSessionProperty(ResourceHelper
-                    .getQName(IPreferenceConstants.CONTAINS_PCAL_ALGORITHM)); 
-            if (prop != null) 
+            prop = fileToBuild
+                    .getSessionProperty(ResourceHelper.getQName(IPreferenceConstants.CONTAINS_PCAL_ALGORITHM));
+            if (prop != null)
             {
-                hasPcalAlg = ((Boolean)prop).booleanValue();
+                hasPcalAlg = ((Boolean) prop).booleanValue();
             }
-            
-            IPreferenceStore projectPreferenceStore = PreferenceStoreHelper.getProjectPreferenceStore(fileToBuild.getProject());
-            
+
+            IPreferenceStore projectPreferenceStore = PreferenceStoreHelper.getProjectPreferenceStore(fileToBuild
+                    .getProject());
+
             String paramString = projectPreferenceStore.getString(IPreferenceConstants.PCAL_CAL_PARAMS);
-                        
-            if (paramString != null) 
+
+            if (paramString != null)
             {
                 params = paramString.split(" ");
-            } else {
+            } else
+            {
                 params = new String[0];
             }
 
@@ -78,20 +83,20 @@ public class TranslatorJob extends WorkspaceJob
         {
             // no algorithm detected
             Activator.logDebug("No algorithm found");
-        } else {
+        } else
+        {
             Activator.logDebug("Algorithm found");
         }
 
         // add params from the resource setting
-        for (int i=0; i < params.length; i++)
+        for (int i = 0; i < params.length; i++)
         {
-            if (params[i] != null && !params[i].equals("")) 
+            if (params[i] != null && !params[i].equals(""))
             {
                 callParams.add(params[i]);
             }
         }
         callParams.add(fileToBuild.getLocation().toOSString());
-        
 
     }
 
@@ -104,16 +109,16 @@ public class TranslatorJob extends WorkspaceJob
 
         // remove markers
         monitor.setTaskName("Removing problem markers");
-        TLAMarkerHelper.removeProblemMarkers(fileToBuild, monitor, TLAMarkerHelper.TOOLBOX_MARKERS_TRANSLATOR_MARKER_ID);
-        
+        TLAMarkerHelper
+                .removeProblemMarkers(fileToBuild, monitor, TLAMarkerHelper.TOOLBOX_MARKERS_TRANSLATOR_MARKER_ID);
+
         StringBuffer buffer = new StringBuffer();
         for (int i = 0; i < callParams.size(); i++)
         {
             buffer.append(" " + callParams.elementAt(i));
         }
-        Activator.logDebug("Translator invoked with params: '" + buffer.toString()+ "'");
+        Activator.logDebug("Translator invoked with params: '" + buffer.toString() + "'");
 
-        
         translator.runTranslation((String[]) callParams.toArray(new String[callParams.size()]));
 
         monitor.worked(1);
@@ -129,7 +134,8 @@ public class TranslatorJob extends WorkspaceJob
                 String errorMessage = (String) errors.get(i);
 
                 TLAMarkerHelper.installProblemMarker(fileToBuild, fileToBuild.getName(), IMarker.SEVERITY_ERROR,
-                        detectLocation(errorMessage), errorMessage, monitor, TLAMarkerHelper.TOOLBOX_MARKERS_TRANSLATOR_MARKER_ID);
+                        detectLocation(errorMessage), errorMessage, monitor,
+                        TLAMarkerHelper.TOOLBOX_MARKERS_TRANSLATOR_MARKER_ID);
             }
         }
 
@@ -137,7 +143,7 @@ public class TranslatorJob extends WorkspaceJob
         monitor.done();
         return Status.OK_STATUS;
     }
-    
+
     /**
      * Return as runnable instead of the job
      * @param fileToBuild
@@ -146,8 +152,7 @@ public class TranslatorJob extends WorkspaceJob
     public static IRunnableWithProgress getAsRunnableWithProgress(final IResource fileToBuild)
     {
         final TranslatorJob job = new TranslatorJob(fileToBuild);
-        return new IRunnableWithProgress()
-        {
+        return new IRunnableWithProgress() {
             public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException
             {
                 try
@@ -161,30 +166,42 @@ public class TranslatorJob extends WorkspaceJob
             }
         };
     }
-    
+
     private int[] detectLocation(String message)
     {
         String LINE = "line ";
-        String COLUMN = ", column "; 
-        
+        String COLUMN = ", column ";
+
         int lineStarts = message.indexOf(LINE);
         int lineEnds = message.indexOf(COLUMN);
         if (lineStarts != -1 && lineEnds != -1)
         {
             String line = message.substring(lineStarts + LINE.length(), lineEnds);
-            String column = message.substring(lineEnds + COLUMN.length());
-            
-            
+            /*
+             * afterColumnString is the substring of message that comes after the
+             * first occurance of ", column" in message.
+             */
+            String afterColumnString = message.substring(lineEnds + COLUMN.length());
+            // match any number of white spaces followed by the first string of digits.
+            Matcher matcher = Pattern.compile("\\s*\\d+").matcher(afterColumnString);
+            Assert.isTrue(matcher.find(), "No column number found in PlusCal message " + message);
+            // the column string that should be a parsable int
+            String column = matcher.group().trim();
+
             int lineNumber = -1;
             int columnNumber = -1;
-            try 
+            try
             {
                 lineNumber = Integer.parseInt(line);
-            } catch (NumberFormatException e) {  }
-            try 
+            } catch (NumberFormatException e)
+            {
+            }
+            try
             {
                 columnNumber = Integer.parseInt(column);
-            } catch (NumberFormatException e) {  }
+            } catch (NumberFormatException e)
+            {
+            }
             return new int[] { lineNumber, columnNumber, lineNumber, columnNumber + 1 };
         }
         return new int[] { -1, -1, -1, -1 };
