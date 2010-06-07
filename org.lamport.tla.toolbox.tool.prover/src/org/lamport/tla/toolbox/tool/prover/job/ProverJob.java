@@ -103,12 +103,10 @@ public class ProverJob extends Job
      * @param name human readable name for the job, will appear in progress monitor
      * @param module the {@link IFile} pointing to the module on which the prover is being
      * launched
-     * @param tlapmPath absolute path to the tlapm executable, or null if it is assumed
-     * to be in the system Path
-     * @param cygwinPath absolute path to the folder containing cygwin, or null
-     * if this is not Windows or the cygwin path is assumed to be in the System Path.
+     * @param checkStatus true iff the prover should be launched for status checking
+     * only, not proving.
      */
-    public ProverJob(String name, IFile module, IPath tlapmPath, IPath cygwinPath)
+    public ProverJob(String name, IFile module, boolean checkStatus)
     {
         super(name);
         this.module = module;
@@ -120,20 +118,17 @@ public class ProverJob extends Job
         // the default tlapm command on all systems if
         // no complete tlapm path can be found.
         this.tlapmPath = new Path("tlapm");
+
         if (Platform.getOS().equals(Platform.OS_WIN32))
         {
             /*
-             * If tlapmPath is not null, that is the path.
-             * 
-             * If tlapmPath is null, check if "C:/cygwin/usr/local/bin/tlapm.exe" exists.
+             * Check if "C:/cygwin/usr/local/bin/tlapm.exe" exists.
              * If it does exist, that is the path. Else, the path is "tlapm". Setting
              * the path to "tlapm" assumes that it is in the system path.
              */
             IPath defaultPath = new Path("C:/cygwin/usr/local/bin/tlapm.exe");
-            if (tlapmPath != null)
-            {
-                this.tlapmPath = tlapmPath;
-            } else if (defaultPath.toFile().exists())
+
+            if (defaultPath.toFile().exists())
             {
                 this.tlapmPath = defaultPath;
             }
@@ -142,17 +137,13 @@ public class ProverJob extends Job
         {
 
             /*
-             * If tlapmPath is not null, that is the path.
-             * 
-             * If tlapmPath is null, check if "/usr/local/bin/tlapm" exists.
+             * Check if "/usr/local/bin/tlapm" exists.
              * If it does exist, that is the path. Else, the path is tlapm. Setting
              * the path to "tlapm" assumes that it is in the system path.
              */
             IPath defaultPath = new Path("/usr/local/bin/tlapm");
-            if (tlapmPath != null)
-            {
-                this.tlapmPath = tlapmPath;
-            } else if (defaultPath.toFile().exists())
+
+            if (defaultPath.toFile().exists())
             {
                 this.tlapmPath = defaultPath;
             }
@@ -167,13 +158,7 @@ public class ProverJob extends Job
          * use the default cygwin path : 
          * "C:\cygwin\bin"
          */
-        if (cygwinPath != null)
-        {
-            this.cygwinPath = cygwinPath;
-        } else
-        {
-            this.cygwinPath = new Path("C:\\cygwin\\bin");
-        }
+        this.cygwinPath = new Path("C:\\cygwin\\bin");
 
         /*
          * We create a useless launch object. It is
