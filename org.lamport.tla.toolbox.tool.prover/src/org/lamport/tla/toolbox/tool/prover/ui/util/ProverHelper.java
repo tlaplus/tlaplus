@@ -657,24 +657,28 @@ public class ProverHelper
 
                 newMarker.setAttributes(markerAttributes);
 
-                /*
-                 * Remove any overlapping existing markers.
-                 */
-                IMarker[] existingMarkers = module.findMarkers(ProverHelper.STEP_STATUS_MARKER, true,
-                        IResource.DEPTH_ZERO);
-                for (int i = 0; i < existingMarkers.length; i++)
-                {
-                    IMarker existingMarker = existingMarkers[i];
-                    int startChar = existingMarker.getAttribute(IMarker.CHAR_START, -1);
-                    int endChar = existingMarker.getAttribute(IMarker.CHAR_END, -1);
-
-                    if (stepRegion.getOffset() < startChar && stepRegion.getLength() + stepRegion.getOffset() > endChar)
-                    {
-                        // new marker overlaps with old marker
-                        // remove old marker
-                        existingMarker.delete();
-                    }
-                }
+                // The following was commentted out
+                // because there should not longer be any overlapping
+                // markers. Any overlapping markers should be removed before
+                // launching the prover.
+                // /*
+                // * Remove any overlapping existing markers.
+                // */
+                // IMarker[] existingMarkers = module.findMarkers(ProverHelper.STEP_STATUS_MARKER, true,
+                // IResource.DEPTH_ZERO);
+                // for (int i = 0; i < existingMarkers.length; i++)
+                // {
+                // IMarker existingMarker = existingMarkers[i];
+                // int startChar = existingMarker.getAttribute(IMarker.CHAR_START, -1);
+                // int endChar = existingMarker.getAttribute(IMarker.CHAR_END, -1);
+                //
+                // if (stepRegion.getOffset() < startChar && stepRegion.getLength() + stepRegion.getOffset() > endChar)
+                // {
+                // // new marker overlaps with old marker
+                // // remove old marker
+                // existingMarker.delete();
+                // }
+                // }
             } catch (CoreException e)
             {
                 ProverUIActivator.logError("Error creating marker for new status.\n" + "Status : " + status.getStatus()
