@@ -425,8 +425,32 @@ public class ProverHelper
      * @param module
      * @return
      */
-    public static IMarker findSANYStepMarker(IResource module, Location location)
+    public static IMarker findSANYMarker(IResource module, Location location)
     {
+        try
+        {
+            IMarker[] sanyMarkers = module.findMarkers(SANY_MARKER, false, IResource.DEPTH_ZERO);
+            /*
+             * Iterate through all markers. For each marker, retrieve
+             * the SANY location. Return the marker if its SANY location
+             * equals location.
+             */
+            for (int i = 0; i < sanyMarkers.length; i++)
+            {
+                String sanyLocString = sanyMarkers[i].getAttribute(SANY_LOC_ATR, "");
+                if (!sanyLocString.isEmpty())
+                {
+                    Location sanyLoc = stringToLoc(sanyLocString);
+                    if (sanyLoc.equals(location))
+                    {
+                        return sanyMarkers[i];
+                    }
+                }
+            }
+        } catch (CoreException e)
+        {
+            ProverUIActivator.logError("Error finding existing SANY marker for location " + location, e);
+        }
         return null;
     }
 
@@ -667,6 +691,93 @@ public class ProverHelper
         {
             ProverUIActivator.logDebug("A module could not be located for a step status.\n" + "Status : "
                     + status.getStatus() + "\nLocation : " + location);
+        }
+    }
+
+    /**
+     * Removes all status markers from the module.
+     */
+    public static void removeStatusFromModule(IResource module)
+    {
+        try
+        {
+            module.deleteMarkers(STEP_STATUS_MARKER, true, IResource.DEPTH_ZERO);
+        } catch (CoreException e)
+        {
+            ProverUIActivator.logError("Error removing status markers from module " + module, e);
+        }
+    }
+
+    /**
+     * Removes or modifies status markers so that no markers appear on any
+     * of the lines from the begin line to the end line of the root.
+     * Any markers that are only on those lines are deleted. Any markers that overlap
+     * with those lines are shortened so that they do not overlap.
+     * 
+     * If root is a TheoremNode with a proof, then the begin line is
+     * root.getLocation().beginLine() and the end line is
+     * root.getProof().getLocation().endLine().
+     * 
+     * For all other cases, the begin line is root.getLocation().beginLine()
+     * and the end line is root.getLocation().endLine().
+     *  
+     * @param module
+     * @param root
+     */
+    public static void removeStatusFromTree(IFile module, LevelNode root)
+    {
+        /*
+         * We need a file document provider for the
+         * module in order to get a document to convert
+         * from the 4-int location provided by SANY
+         * to the 2-int location of markers.
+         */
+        FileDocumentProvider fdp = new FileDocumentProvider();
+        FileEditorInput input = new FileEditorInput(module);
+        try
+        {
+            fdp.connect(input);
+            IDocument document = fdp.getDocument(input);
+            int beginLine = root.getLocation().beginLine();
+            int endLine = root.getLocation().endLine();
+            if (root instanceof TheoremNode && ((TheoremNode) root).getProof() != null)
+            {
+                endLine = ((TheoremNode) root).getProof().getLocation().endLine();
+            }
+            int beginChar = document.getLineOffset(beginLine);
+            /*
+             * In the following, we subtract 1 to get the end char.
+             * 
+             * For a marker representing a region that starts at offset o and has length l, the
+             * start character is o and the end character is o+l-1.
+             */
+            int endChar = document.getLineOffset(endLine) + document.getLineLength(endLine) - 1;
+            IMarker[] markers = module.findMarkers(STEP_STATUS_MARKER, true, IResource.DEPTH_ZERO);
+            for (int i = 0; i < markers.length; i++)
+            {
+                int markerStartChar = markers[i].getAttribute(IMarker.CHAR_START, -1);
+                int markerEndChar = markers[i].getAttribute(IMarker.CHAR_END, -1);
+
+                if (markerStartChar >= beginChar && markerEndChar <= endChar)
+                {
+                    markers[i].delete();
+                } else if (markerStartChar < beginChar && markerEndChar >= beginChar)
+                {
+                    markers[i].setAttribute(IMarker.CHAR_END, beginChar - 1);
+                } else if (markerStartChar >= beginChar && markerEndChar > endChar)
+                {
+                    markers[i].setAttribute(IMarker.CHAR_END, endChar + 1);
+                }
+            }
+        } catch (CoreException e)
+        {
+            ProverUIActivator.logError("Error removing status markers from tree rooted at " + root, e);
+        } catch (BadLocationException e)
+        {
+            ProverUIActivator.logError("Error removing status markers from tree rooted at " + root, e);
+        } finally
+        {
+            fdp.disconnect(input);
         }
     }
 
