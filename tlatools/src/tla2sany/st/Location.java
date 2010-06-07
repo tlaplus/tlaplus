@@ -298,4 +298,21 @@ public final class Location
             return (LINE + bLine + COL + bColumn + TO_LINE + eLine + COL + eColumn + OF_MODULE + name);
         }
     }
+
+    /**
+     * Returns true if object is an instance of Location
+     * and has the same begin line, begin column, end line,
+     * end column, and module name.
+     */
+    public boolean equals(Object object)
+    {
+        if (object instanceof Location)
+        {
+            Location loc = (Location) object;
+            return loc.bLine == bLine && loc.bColumn == bColumn && loc.eLine == eLine && loc.eColumn == eColumn
+                    && loc.source().equals(source());
+        }
+
+        return false;
+    }
 }
