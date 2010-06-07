@@ -31,6 +31,7 @@ import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.NonLeafProofNode;
 import tla2sany.semantic.ProofNode;
 import tla2sany.semantic.TheoremNode;
+import tla2sany.semantic.UseOrHideNode;
 import tla2sany.st.Location;
 import util.UniqueString;
 
@@ -88,7 +89,7 @@ public class ProverHelper
      * Obligation status that occurs when
      * zenon or isabelle "takes time" to prove an obligation.
      */
-    public static final String BEING_PROVED = "beingproved";
+    public static final String BEING_PROVED = "being proved";
     /**
      * Obligation status indicating that the obligation
      * has been proved by the value of the "meth" field.
@@ -272,8 +273,15 @@ public class ProverHelper
     }
 
     /**
-     * Creates all SANY step markers on the module. Puts a marker
-     * on every step in the module with a proof. If there is no
+     * Creates SANY markers on all nodes in the module for which there can be
+     * a prover status. A SANY marker stores the location of the node as returned
+     * by SANY when the marker is created. Since markers are "sticky", SANY markers
+     * can be used to map from locations returned by the prover to the current
+     * location of a node. A location returned by the prover should equal
+     * the SANY location of a SANY marker.
+     * 
+     * This currently puts SANY markers on all step or top level
+     * USE node markers on the module. If there is no
      * valid parse result for the module, this method does nothing.
      * 
      * See {@link ProverHelper#SANY_MARKER} for a description of
@@ -282,7 +290,7 @@ public class ProverHelper
      * @param module
      * @throws CoreException 
      */
-    public static void createSANYStepMarkers(IFile module) throws CoreException
+    public static void createSANYMarkers(IFile module) throws CoreException
     {
         ParseResult parseResult = ResourceHelper.getValidParseResult(module);
         if (parseResult == null)
@@ -298,24 +306,22 @@ public class ProverHelper
         {
             return;
         }
-        TheoremNode[] theorems = moduleNode.getTheorems();
+        LevelNode[] topLevelNodes = moduleNode.getTopLevel();
 
-        for (int i = 0; i < theorems.length; i++)
+        for (int i = 0; i < topLevelNodes.length; i++)
         {
-            TheoremNode theoremNode = theorems[i];
 
-            if (theoremNode.getLocation().source().equals(moduleName))
+            if (topLevelNodes[i].getLocation().source().equals(moduleName))
             {
                 // found a theorem in the module
-                createSANYMarkersForTheorem(theoremNode, module);
+                createSANYMarkersForTree(topLevelNodes[i], module);
             }
         }
     }
 
     /**
-     * Creates a SANY marker for theoremNode if it has a proof. Recursively
-     * places SANY markers on each {@link TheoremNode} that is a child of
-     * theoremNode and has a proof.
+     * Creates a SANY marker for levelNode if it is a {@link TheoremNode} or a {@link UseOrHideNode}.
+     * If it has a proof, this method recursively calls it self on all children.
      * 
      * See {@link ProverHelper#SANY_MARKER} for a description of
      * these markers.
@@ -323,45 +329,53 @@ public class ProverHelper
      * @param theoremNode
      * @throws CoreException 
      */
-    public static void createSANYMarkersForTheorem(TheoremNode theoremNode, IResource module) throws CoreException
+    public static void createSANYMarkersForTree(LevelNode levelNode, IResource module) throws CoreException
     {
-        if (theoremNode == null)
+        if (levelNode == null)
         {
             return;
         }
 
-        ProofNode proof = theoremNode.getProof();
-        if (proof != null)
+        if (levelNode instanceof UseOrHideNode || levelNode instanceof TheoremNode)
         {
             IMarker marker = module.createMarker(SANY_MARKER);
-            marker.setAttribute(SANY_LOC_ATR, locToString(theoremNode.getLocation()));
-            // TODO set location of marker. Which location do we use?
+            marker.setAttribute(SANY_LOC_ATR, locToString(levelNode.getLocation()));
+        }
 
-            if (proof instanceof NonLeafProofNode)
+        if (levelNode instanceof TheoremNode)
+        {
+
+            TheoremNode theoremNode = (TheoremNode) levelNode;
+            ProofNode proof = theoremNode.getProof();
+            if (proof != null)
             {
-                NonLeafProofNode nonLeafProof = (NonLeafProofNode) proof;
-                LevelNode[] steps = nonLeafProof.getSteps();
-
-                /*
-                 * From the documentation of NonLeafProofNode,
-                 * a step can be one of four types:
-                 * 
-                 * DefStepNode
-                 * UseOrHideNode
-                 * InstanceNode
-                 * TheoremNode
-                 * 
-                 * Only TheoremNode can have a proof. Recursively
-                 * put markers on each child theorem node.
-                 */
-                for (int i = 0; i < steps.length; i++)
+                if (proof instanceof NonLeafProofNode)
                 {
-                    if (steps[i] instanceof TheoremNode)
+                    NonLeafProofNode nonLeafProof = (NonLeafProofNode) proof;
+                    LevelNode[] steps = nonLeafProof.getSteps();
+
+                    /*
+                     * From the documentation of NonLeafProofNode,
+                     * a step can be one of four types:
+                     * 
+                     * DefStepNode
+                     * UseOrHideNode
+                     * InstanceNode
+                     * TheoremNode
+                     * 
+                     * Only TheoremNode can have a proof. Recursively
+                     * put markers on each child theorem node.
+                     */
+                    for (int i = 0; i < steps.length; i++)
                     {
-                        createSANYMarkersForTheorem((TheoremNode) steps[i], module);
+                        if (steps[i] instanceof TheoremNode)
+                        {
+                            createSANYMarkersForTree((TheoremNode) steps[i], module);
+                        }
                     }
                 }
             }
+
         }
     }
 
