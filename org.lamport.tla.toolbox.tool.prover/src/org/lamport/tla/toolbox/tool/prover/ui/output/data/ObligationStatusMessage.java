@@ -5,11 +5,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 
-import org.eclipse.core.runtime.Assert;
 import org.lamport.tla.toolbox.tool.prover.ui.ProverUIActivator;
 
 import tla2sany.st.Location;
-import util.UniqueString;
 
 /**
  * Contains data about the status of an obligation.
@@ -115,28 +113,7 @@ public class ObligationStatusMessage extends TLAPMMessage
             {
                 if (fieldName.equals(LOC_FIELD))
                 {
-                    try
-                    {
-                        /*
-                         * Attempt to parse bl, bc, el, ec from
-                         * the field value.
-                         * 
-                         * fieldValue should be of the form:
-                         * 
-                         * "bl:bc:el:ec"
-                         * 
-                         */
-                        String[] coordinates = fieldValue.split(":");
-                        Assert.isTrue(coordinates.length >= 4, "Not enough coordinates found in location string "
-                                + fieldName);
-                        message.location = new Location(UniqueString.uniqueStringOf(moduleName), Integer
-                                .parseInt(coordinates[0]), Integer.parseInt(coordinates[1]), Integer
-                                .parseInt(coordinates[2]), Integer.parseInt(coordinates[3]));
-                    } catch (NumberFormatException e)
-                    {
-                        ProverUIActivator.logError("Error parsing location from TLAPM message. Location string : "
-                                + fieldValue, e);
-                    }
+                    message.location = parseLocation(fieldValue, moduleName);
                 } else if (fieldName.equals(OBL_FIELD))
                 {
                     message.obString = fieldValue;

@@ -7,6 +7,9 @@ import org.eclipse.core.runtime.Assert;
 import org.lamport.tla.toolbox.tool.prover.ui.ProverUIActivator;
 import org.lamport.tla.toolbox.tool.prover.ui.output.TagBasedTLAPMOutputIncrementalParser;
 
+import tla2sany.st.Location;
+import util.UniqueString;
+
 /**
  * Abstract class for the data in a message of output
  * of the TLAPM.
@@ -349,5 +352,39 @@ public abstract class TLAPMMessage
         // }
         //
         // return null;
+    }
+
+    /**
+     * Parses the location string returned by the prover
+     * into an instance of {@link Location}. Null
+     * if parsing is unsuccessful.
+     * 
+     * @param locString
+     * @return
+     */
+    protected static Location parseLocation(String locString, String moduleName)
+    {
+
+        try
+        {
+            /*
+             * Attempt to parse bl, bc, el, ec from
+             * the field value.
+             * 
+             * fieldValue should be of the form:
+             * 
+             * "bl:bc:el:ec"
+             * 
+             */
+            String[] coordinates = locString.split(":");
+            Assert.isTrue(coordinates.length >= 4, "Not enough coordinates found in location string : " + locString);
+            return new Location(UniqueString.uniqueStringOf(moduleName), Integer.parseInt(coordinates[0]), Integer
+                    .parseInt(coordinates[1]), Integer.parseInt(coordinates[2]), Integer.parseInt(coordinates[3]));
+        } catch (NumberFormatException e)
+        {
+            ProverUIActivator.logError("Error parsing location from TLAPM message. Location string : " + locString, e);
+        }
+        return null;
+
     }
 }
