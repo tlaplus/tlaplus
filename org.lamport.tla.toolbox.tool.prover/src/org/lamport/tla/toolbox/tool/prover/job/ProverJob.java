@@ -20,12 +20,15 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.Launch;
 import org.eclipse.debug.core.model.IProcess;
 import org.lamport.tla.toolbox.editor.basic.util.EditorUtil;
-import org.lamport.tla.toolbox.tool.prover.output.IProverProcessOutputSink;
+import org.lamport.tla.toolbox.tool.prover.output.internal.ProverLaunchDescription;
 import org.lamport.tla.toolbox.tool.prover.output.internal.TLAPMBroadcastStreamListener;
 import org.lamport.tla.toolbox.tool.prover.ui.ProverUIActivator;
 import org.lamport.tla.toolbox.tool.prover.ui.util.ProverHelper;
 import org.lamport.tla.toolbox.tool.prover.ui.view.ObligationsView;
 import org.lamport.tla.toolbox.util.UIHelper;
+
+import tla2sany.semantic.LevelNode;
+import tla2sany.semantic.TheoremNode;
 
 /**
  * Long running job for launching the prover.
@@ -74,42 +77,54 @@ public class ProverJob extends Job
      */
     protected static final long TIMEOUT = 1000 * 1;
     /**
-     * Array holding the coordinates of the job.
-     * 
-     * {bl, bc, el, ec}
-     */
-    private int[] coordinates = new int[] { -1, -1, -1, -1 };
-    /**
      * True iff fingerprints should be used for
      * the run of the prover.
      */
     private boolean useFP = true;
     /**
-     * True iff the entire module should be checked.
-     * The value of coordinates will be ignored if
-     * this is true.
-     */
-    private boolean all = false;
-    /**
      * If true, the prover will be launched for
      * status checking only, not proving.
      */
     private boolean checkStatus = false;
+    /**
+     * If true, the prover will be told
+     * to check proofs. Should not be true
+     * if checkStatus is also true.
+     */
+    private boolean checkProofs = false;
+    /**
+     * The node on which the prover will be launched.
+     * Set in the constructor. If left null, the prover
+     * will be launched on the entire module.
+     */
+    private LevelNode nodeToProve;
+    /**
+     * Description of the parameters used to
+     * launch the prover. This field is set
+     * in {@link #constructCommand()}. It should
+     * not be set anywhere else.
+     */
+    private ProverLaunchDescription description;
 
     /**
-     * Constructor. Call {@link ProverJob#setLocation(int, int, int, int)} to set
-     * the location of the prover launch.
+     * Constructor. 
      * 
-     * @param name human readable name for the job, will appear in progress monitor
      * @param module the {@link IFile} pointing to the module on which the prover is being
      * launched
      * @param checkStatus true iff the prover should be launched for status checking
      * only, not proving.
+     * @param node the node on which the prover should be launched or null if it
+     * should be launched on the entire module.
+     * @param checkProofs true iff proofs should be checked. Should not be set
+     * to true if checkStatus is also set to true.
      */
-    public ProverJob(String name, IFile module, boolean checkStatus)
+    public ProverJob(IFile module, boolean checkStatus, LevelNode node, boolean checkProofs)
     {
-        super(name);
+        super("Prover Job on module " + module + " from line " + getBeginLine(node) + " to line " + getEndLine(node));
         this.module = module;
+        this.checkStatus = checkStatus;
+        this.nodeToProve = node;
+        this.checkProofs = checkProofs;
 
         /*
          * The following sets the path to tlapm.
@@ -200,14 +215,17 @@ public class ProverJob extends Job
                         + " does not exist.");
             }
 
-            /*
-             * Clear obligation markers on the project containing the module.
-             * 
-             * Refresh the obligations view to reflect the deletion of markers.
-             * 
-             */
+            /**************************************************************
+             * The following performs some cleanup and preparation work   *
+             * on markers.                                                *
+             **************************************************************/
             try
             {
+                /*
+                 * Clear obligation markers on the project containing the module.
+                 * 
+                 * Refresh the obligations view to reflect the deletion of markers.
+                 */
                 ProverHelper.clearObligationMarkers(module.getProject());
                 UIHelper.runUIAsync(new Runnable() {
 
@@ -216,10 +234,33 @@ public class ProverJob extends Job
                         ObligationsView.refreshObligationView();
                     }
                 });
+
+                /*
+                 * Remove all existing proof step status markers in the tree
+                 * or module for which the launch is being performed. If there is a marker
+                 * that overlaps with the tree for which the launch is being performed, shorten
+                 * that marker so that it does not overlap.
+                 * 
+                 * Remove any existing SANY proof step markers
+                 * and put a new SANY marker on each proof step for which status is requested.
+                 */
+                ProverHelper.removeSANYStepMarkers(module);
+                if (nodeToProve == null)
+                {
+                    ProverHelper.removeStatusFromModule(module);
+                    ProverHelper.createSANYMarkers(module);
+                } else
+                {
+                    ProverHelper.removeStatusFromTree(module, nodeToProve);
+                    ProverHelper.createSANYMarkersForTree(nodeToProve, module);
+                }
             } catch (CoreException e1)
             {
                 ProverUIActivator.logError("Error clearing obligation markers for project of module " + modulePath, e1);
             }
+            /**************************************************************
+             * Finished with marker work.                                 *
+             **************************************************************/
 
             /*
              * Set the module to be read-only.
@@ -301,19 +342,15 @@ public class ProverJob extends Job
             {
                 /*
                  * Setup the broadcasting of the prover output stream.
-                 * 
-                 * We name the process using a string representation of the
-                 * path to the module.
-                 * 
-                 * This should allow interested listeners to uniquely identify
-                 * the appropriate output.
+                 * We pass in the progress monitor to allow listeners
+                 * to report progress.
                  */
-                listener = new TLAPMBroadcastStreamListener(modulePath.toPortableString(),
-                        IProverProcessOutputSink.TYPE_PROVE, monitor);
+                listener = new TLAPMBroadcastStreamListener(modulePath, description, monitor);
 
                 /*
                  * Send a string to the listener indicating
-                 * that a new prover job is starting.
+                 * that a new prover job is starting. This makes
+                 * it easier to read the console.
                  */
                 listener.streamAppended("---------------- New Prover Launch --------------\n", null);
 
@@ -467,24 +504,6 @@ public class ProverJob extends Job
     }
 
     /**
-     * Sets the location of the job. The coordinates should all
-     * be 1-based. If setAll(true) is called, the arguments to this method
-     * will be ignored.
-     * 
-     * Note that currently the prover does not consider column
-     * numbers, so those arguments are irrelevant.
-     * 
-     * @param bl begin line
-     * @param bc begin column
-     * @param el end line
-     * @param ec end column
-     */
-    public void setLocation(int bl, int bc, int el, int ec)
-    {
-        coordinates = new int[] { bl, bc, el, ec };
-    }
-
-    /**
      * Set to false if fingerprints should not be used.
      * Default is true.
      * @param useFP
@@ -492,20 +511,6 @@ public class ProverJob extends Job
     public void setUseFP(boolean useFP)
     {
         this.useFP = useFP;
-    }
-
-    /**
-     * Sets whether the prover should be run
-     * on the entire module. Default is false.
-     * Setting this to true will make any calls
-     * to setCoordinates() have no effect.
-     * 
-     * @param all true iff the prover should
-     * be run on the entire module
-     */
-    public void setAll(boolean all)
-    {
-        this.all = all;
     }
 
     /**
@@ -541,10 +546,17 @@ public class ProverJob extends Job
     /**
      * Constructs and returns the command to launch the prover.
      * 
+     * Also sets the field {@link #description}.
+     * 
      * @return
      */
     private String[] constructCommand()
     {
+        description = new ProverLaunchDescription();
+        description.setUseFP(useFP);
+        description.setStatusCheck(checkStatus);
+        description.setCheckProofs(checkProofs);
+
         ArrayList command = new ArrayList();
         /*
          * Launch from the command line:
@@ -572,12 +584,23 @@ public class ProverJob extends Job
 
         command.add("--toolbox");
 
-        if (all)
+        if (nodeToProve == null)
         {
             command.add("all");
+            description.setStartLine(-1);
+            description.setEndLine(-1);
         } else
         {
-            command.add(coordinates[0] + ":" + coordinates[2]);
+            /*
+             * Get the begin line and end line of the node.
+             */
+            int beginLine = getBeginLine(nodeToProve);
+            int endLine = getEndLine(nodeToProve);
+
+            command.add(beginLine + ":" + endLine);
+
+            description.setStartLine(beginLine);
+            description.setEndLine(endLine);
         }
 
         if (!useFP)
@@ -585,8 +608,46 @@ public class ProverJob extends Job
             command.add("--nofp");
         }
 
+        if (checkStatus)
+        {
+            // TODO add status check argument
+        }
+
+        if (checkProofs)
+        {
+            command.add("-C");
+        }
+
         command.add(module.getLocation().lastSegment());
 
         return (String[]) command.toArray(new String[command.size()]);
+    }
+
+    /**
+     * Get the begin line of the region to pass to the prover.
+     * 
+     * The begin line is the begin line of the location of the level node.
+     */
+    private static int getBeginLine(LevelNode nodeToProve)
+    {
+        return nodeToProve.getLocation().beginLine();
+    }
+
+    /**
+     * Get the end line of the region to pass to the prover.
+     * 
+     * If the level node has a proof, the end line is the end line of the proof. If the
+     * level node does not have a proof, the end line is the end line of the level node.
+     */
+    private static int getEndLine(LevelNode nodeToProve)
+    {
+        // only TheoremNodes can have proofs
+        if (nodeToProve instanceof TheoremNode && ((TheoremNode) nodeToProve).getProof() != null)
+        {
+            return ((TheoremNode) nodeToProve).getProof().getLocation().endLine();
+        } else
+        {
+            return nodeToProve.getLocation().endLine();
+        }
     }
 }

@@ -6,6 +6,7 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.text.BadLocationException;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.tool.prover.output.IProverProcessOutputSink;
+import org.lamport.tla.toolbox.tool.prover.output.internal.ProverLaunchDescription;
 
 /**
  * This class receives streaming output from the TLAPM
@@ -22,7 +23,7 @@ public class ParsingProverProcessOutputSink implements IProverProcessOutputSink
 {
 
     private TagBasedTLAPMOutputIncrementalParser parser;
-    private String name;
+    private IPath name;
 
     /**
      * Sends text to the parser.
@@ -47,11 +48,10 @@ public class ParsingProverProcessOutputSink implements IProverProcessOutputSink
      * {@link IPath#toPortableString()} and so the original {@link IPath} can
      * be retrieved by calling {@link Path#fromPortableString(String)}.
      */
-    public void initializeSink(String modulePathString, int sinkType, IProgressMonitor monitor)
+    public void initializeSink(IPath modulePath, ProverLaunchDescription description, IProgressMonitor monitor)
     {
-        this.parser = new TagBasedTLAPMOutputIncrementalParser(Path.fromPortableString(modulePathString), monitor,
-                sinkType);
-        this.name = modulePathString;
+        this.parser = new TagBasedTLAPMOutputIncrementalParser(modulePath, monitor, description);
+        this.name = modulePath;
     }
 
     /**

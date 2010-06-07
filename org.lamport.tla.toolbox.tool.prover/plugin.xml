@@ -10,6 +10,13 @@
             id="org.lamport.tla.toolbox.tool.prover.ui.checkStep.delegate"
             name="Check Proof Step">
       </command>
+      <command
+            categoryId="org.eclipse.debug.ui.category.run"
+            defaultHandler="org.lamport.tla.toolbox.tool.prover.ui.handler.StatusStepHandler"
+            description="Gets the status of the proof step (and sub-steps) containing the caret in the active editor"
+            id="org.lamport.tla.toolbox.tool.prover.ui.statusStep"
+            name="Status Of Step">
+      </command>
    </extension>
    <extension
          point="org.eclipse.ui.menus">
@@ -236,6 +243,17 @@
       <participant
             class="org.lamport.tla.toolbox.tool.prover.ProverToolboxLifecycleParticipant">
       </participant>
+   </extension>
+   <extension
+         id="org.lamport.tla.toolbox.tool.prover.ui.sanyMarker"
+         name="SANY Step Location Marker"
+         point="org.eclipse.core.resources.markers">
+      <super
+            type="org.eclipse.core.resources.marker">
+      </super>
+      <attribute
+            name="org.lamport.tla.toolbox.tool.prover.ui.sanyLoc">
+      </attribute>
    </extension>
 
 </plugin>

@@ -6,18 +6,27 @@ import java.util.Map;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
+import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.ui.editors.text.FileDocumentProvider;
 import org.eclipse.ui.part.FileEditorInput;
+import org.lamport.tla.toolbox.editor.basic.TLAEditor;
+import org.lamport.tla.toolbox.editor.basic.util.EditorUtil;
+import org.lamport.tla.toolbox.spec.parser.IParseConstants;
+import org.lamport.tla.toolbox.spec.parser.ModuleParserLauncher;
 import org.lamport.tla.toolbox.spec.parser.ParseResult;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.tool.prover.job.ProverJob;
+import org.lamport.tla.toolbox.tool.prover.job.ProverJobRule;
 import org.lamport.tla.toolbox.tool.prover.job.ProverJob.ProverJobMatcher;
-import org.lamport.tla.toolbox.tool.prover.output.IProverProcessOutputSink;
+import org.lamport.tla.toolbox.tool.prover.output.internal.ProverLaunchDescription;
 import org.lamport.tla.toolbox.tool.prover.ui.ProverUIActivator;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.ObligationStatusMessage;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.StepStatusMessage;
@@ -25,6 +34,7 @@ import org.lamport.tla.toolbox.tool.prover.ui.output.data.TLAPMMessage;
 import org.lamport.tla.toolbox.tool.prover.ui.status.ProofStepStatus;
 import org.lamport.tla.toolbox.util.AdapterFactory;
 import org.lamport.tla.toolbox.util.ResourceHelper;
+import org.lamport.tla.toolbox.util.UIHelper;
 
 import tla2sany.semantic.LevelNode;
 import tla2sany.semantic.ModuleNode;
@@ -72,13 +82,13 @@ public class ProverHelper
      * because the marker is sticky and the module may have been edited since
      * the prover was last launch for a status check.
      */
-    public static final String SANY_MARKER = "";
+    public static final String SANY_MARKER = "org.lamport.tla.toolbox.tool.prover.ui.sanyMarker";
     /**
      * Attribute on a SANY marker giving the location of the proof
      * step the last time the prover was launched for a proof step
      * status check.
      */
-    public static final String SANY_LOC_ATR = "";
+    public static final String SANY_LOC_ATR = "org.lamport.tla.toolbox.tool.prover.ui.sanyLoc";
     /**
      * Delimiter used for representing
      * locations as strings.
@@ -200,14 +210,15 @@ public class ProverHelper
      * Returns true iff the marker represents an obligation that is
      * finished being processed in any way (proving or checking).
      * 
-     * typeOfProverLaunch should be one of {@link IProverProcessOutputSink#TYPE_PROVE}
-     * or {@link IProverProcessOutputSink#TYPE_CHECK}.
+     * The description gives information about the parameters used to launch
+     * the prover.
      * 
      * @param marker
+     * @param description
      * @return
      * @throws CoreException 
      */
-    public static boolean isObligationFinished(IMarker marker, int typeOfProverLaunch)
+    public static boolean isObligationFinished(IMarker marker, ProverLaunchDescription description)
     {
         try
         {
@@ -220,12 +231,12 @@ public class ProverHelper
 
             boolean isTrivial = status.equals(TRIVIAL) || status.equals(TRIVIAL_ALREADY);
 
-            if (typeOfProverLaunch == IProverProcessOutputSink.TYPE_PROVE)
+            if (!description.isCheckProofs())
             {
                 return isTrivial || status.equals(PROVED) || status.equals(PROVED_ALREADY);
             }
 
-            if (typeOfProverLaunch == IProverProcessOutputSink.TYPE_CHECK)
+            if (description.isCheckProofs())
             {
                 return isTrivial || status.equals(CHECKED) || status.equals(CHECKED_ALREADY);
             }
@@ -416,7 +427,8 @@ public class ProverHelper
 
     /**
      * Returns the SANY step marker on the module whose SANY location
-     * is the same as the location passed to this method.
+     * is the same as the location passed to this method. Returns null
+     * if such a marker is not found.
      * 
      * See {@link ProverHelper#SANY_MARKER} for a description of
      * these markers.
@@ -609,7 +621,11 @@ public class ProverHelper
 
     /**
      * Should be called to update the status of a proof
-     * step. Does nothing if status is null.
+     * step. Searches for an existing SANY marker
+     * with the same location as the status. If found, replaces
+     * this marker with the appropriate step status marker. If
+     * a SANY marker is not found, this is a bug and will be
+     * printed out on the console.
      * 
      * @param status
      */
@@ -623,79 +639,105 @@ public class ProverHelper
          * Create a marker located at the proof step.
          * 
          * The type of the marker depends on the status.
-         * 
-         * If there is already a marker overlapping (in location)
-         * with the new marker, remove the existing marker.
          */
         Location location = status.getLocation();
         IResource module = ResourceHelper.getResourceByModuleName(location.source());
         if (module != null && module instanceof IFile && module.exists())
         {
-            /*
-             * We need a document to convert the 4-int location to a 2-int
-             * region. We use a FileDocumentProvider. It is disconnected
-             * from the input in the finally block to avoid a memory leak.
-             */
-            FileEditorInput fileEditorInput = new FileEditorInput((IFile) module);
-            FileDocumentProvider fileDocumentProvider = new FileDocumentProvider();
-            try
+            IMarker sanyMarker = findSANYMarker(module, location);
+            if (sanyMarker != null)
             {
-                fileDocumentProvider.connect(fileEditorInput);
-                IDocument document = fileDocumentProvider.getDocument(fileEditorInput);
+                try
+                {
+                    IMarker newMarker = module.createMarker(statusStringToMarkerType(status.getStatus()));
+                    Map markerAttributes = new HashMap(2);
+                    markerAttributes.put(IMarker.CHAR_START,
+                            new Integer(sanyMarker.getAttribute(IMarker.CHAR_START, 0)));
+                    markerAttributes.put(IMarker.CHAR_END, new Integer(sanyMarker.getAttribute(IMarker.CHAR_END, 0)));
 
-                IMarker newMarker = module.createMarker(statusStringToMarkerType(status.getStatus()));
-                Map markerAttributes = new HashMap(2);
-
-                IRegion stepRegion = AdapterFactory.locationToRegion(document, location);
-                /*
-                 * For marking a region that starts at offset o and has length l, the
-                 * start character is o and the end character is o+l-1.
-                 */
-                markerAttributes.put(IMarker.CHAR_START, new Integer(stepRegion.getOffset()));
-                markerAttributes
-                        .put(IMarker.CHAR_END, new Integer(stepRegion.getOffset() + stepRegion.getLength() - 1));
-
-                newMarker.setAttributes(markerAttributes);
-
-                // The following was commentted out
-                // because there should not longer be any overlapping
-                // markers. Any overlapping markers should be removed before
-                // launching the prover.
-                // /*
-                // * Remove any overlapping existing markers.
-                // */
-                // IMarker[] existingMarkers = module.findMarkers(ProverHelper.STEP_STATUS_MARKER, true,
-                // IResource.DEPTH_ZERO);
-                // for (int i = 0; i < existingMarkers.length; i++)
-                // {
-                // IMarker existingMarker = existingMarkers[i];
-                // int startChar = existingMarker.getAttribute(IMarker.CHAR_START, -1);
-                // int endChar = existingMarker.getAttribute(IMarker.CHAR_END, -1);
-                //
-                // if (stepRegion.getOffset() < startChar && stepRegion.getLength() + stepRegion.getOffset() > endChar)
-                // {
-                // // new marker overlaps with old marker
-                // // remove old marker
-                // existingMarker.delete();
-                // }
-                // }
-            } catch (CoreException e)
+                    newMarker.setAttributes(markerAttributes);
+                } catch (CoreException e)
+                {
+                    ProverUIActivator.logError("Error creating new status marker.", e);
+                }
+            } else
             {
-                ProverUIActivator.logError("Error creating marker for new status.\n" + "Status : " + status.getStatus()
-                        + "\nLocation : " + location, e);
-            } catch (BadLocationException e)
-            {
-                ProverUIActivator.logError("Could not convert location to region for a step status.\n" + "Status : "
-                        + status.getStatus() + "\nLocation : " + location, e);
-            } finally
-            {
-                fileDocumentProvider.disconnect(fileEditorInput);
+                ProverUIActivator.logDebug("Existing SANY marker not found for location " + location
+                        + ". This is a bug.");
             }
         } else
         {
             ProverUIActivator.logDebug("A module could not be located for a step status.\n" + "Status : "
                     + status.getStatus() + "\nLocation : " + location);
         }
+
+        // if (module != null && module instanceof IFile && module.exists())
+        // {
+        // /*
+        // * We need a document to convert the 4-int location to a 2-int
+        // * region. We use a FileDocumentProvider. It is disconnected
+        // * from the input in the finally block to avoid a memory leak.
+        // */
+        // FileEditorInput fileEditorInput = new FileEditorInput((IFile) module);
+        // FileDocumentProvider fileDocumentProvider = new FileDocumentProvider();
+        // try
+        // {
+        // fileDocumentProvider.connect(fileEditorInput);
+        // IDocument document = fileDocumentProvider.getDocument(fileEditorInput);
+        //
+        // IMarker newMarker = module.createMarker(statusStringToMarkerType(status.getStatus()));
+        // Map markerAttributes = new HashMap(2);
+        //
+        // IRegion stepRegion = AdapterFactory.locationToRegion(document, location);
+        // /*
+        // * For marking a region that starts at offset o and has length l, the
+        // * start character is o and the end character is o+l-1.
+        // */
+        // markerAttributes.put(IMarker.CHAR_START, new Integer(stepRegion.getOffset()));
+        // markerAttributes
+        // .put(IMarker.CHAR_END, new Integer(stepRegion.getOffset() + stepRegion.getLength() - 1));
+        //
+        // newMarker.setAttributes(markerAttributes);
+        //
+        // // The following was commentted out
+        // // because there should not longer be any overlapping
+        // // markers. Any overlapping markers should be removed before
+        // // launching the prover.
+        // // /*
+        // // * Remove any overlapping existing markers.
+        // // */
+        // // IMarker[] existingMarkers = module.findMarkers(ProverHelper.STEP_STATUS_MARKER, true,
+        // // IResource.DEPTH_ZERO);
+        // // for (int i = 0; i < existingMarkers.length; i++)
+        // // {
+        // // IMarker existingMarker = existingMarkers[i];
+        // // int startChar = existingMarker.getAttribute(IMarker.CHAR_START, -1);
+        // // int endChar = existingMarker.getAttribute(IMarker.CHAR_END, -1);
+        // //
+        // // if (stepRegion.getOffset() < startChar && stepRegion.getLength() + stepRegion.getOffset() > endChar)
+        // // {
+        // // // new marker overlaps with old marker
+        // // // remove old marker
+        // // existingMarker.delete();
+        // // }
+        // // }
+        // } catch (CoreException e)
+        // {
+        // ProverUIActivator.logError("Error creating marker for new status.\n" + "Status : " + status.getStatus()
+        // + "\nLocation : " + location, e);
+        // } catch (BadLocationException e)
+        // {
+        // ProverUIActivator.logError("Could not convert location to region for a step status.\n" + "Status : "
+        // + status.getStatus() + "\nLocation : " + location, e);
+        // } finally
+        // {
+        // fileDocumentProvider.disconnect(fileEditorInput);
+        // }
+        // } else
+        // {
+        // ProverUIActivator.logDebug("A module could not be located for a step status.\n" + "Status : "
+        // + status.getStatus() + "\nLocation : " + location);
+        // }
     }
 
     /**
@@ -831,4 +873,126 @@ public class ProverHelper
         }
 
     }
+
+    /**
+     * Runs the prover on the active selection in the {@link TLAEditor} with
+     * focus. The active selection is the position of the caret. This method
+     * runs the prover on the step at the caret, where step is either a proof
+     * step or a top level USE node. A step is at the caret if it is the first
+     * step on the line containing the caret.
+     * 
+     * If there is not a step at the caret, this method will show a message
+     * indicating this to the user and will not launch the prover.
+     * 
+     * If there are dirty editors open, this method will prompt the user
+     * to save them before continuing. If there is not a valid parse result
+     * available, this method will parse the module in the editor with focus.
+     * If there are parse errors, the prover will not be launched, but the parse
+     * error window will show the errors.
+     * 
+     * If statusCheck is true, this tells prover job to launch the prover
+     * for status checking, not proving.
+     * 
+     * @return
+     */
+    public static void runProverForActiveSelection(boolean statusCheck)
+    {
+        /*
+         * This method works by scheduling a ProverJob. The ProverJob
+         * requires a full file system path to the module for which it is launched
+         * and the node on which the prover will be launched. In order
+         * to do this, this method will take the following steps:
+         * 
+         * 1.) Prompt the user to save any modules that are currently open
+         *     and unsaved.
+         * 2.) Get the active module editor.
+         * 3.) Try to obtain a valid parse result for the module in the active editor.
+         *     A valid parse result is one that was created since the module was last
+         *     written. If there is no valid parse result available, then prompt the user
+         *     to parse the module (or maybe just always parse the module). This creates
+         *     a valid parse result because the parsing is run in the UI thread.
+         * 4.) Check if there are errors in the valid parse result obtained in step 3. If
+         *     there are errors, return on this method. There is no need to show a message
+         *     to the user in this case because the parse errors view will pop open anyway.
+         * 5.) Get the LevelNode representing a step or top level use/hide containing the caret,
+         *     if the caret is at such a node.
+         * 6.) If a LevelNode is not found in step 5, show a message to the user saying
+         *     the caret is not at a step and return on this method.
+         * 7.) Create and schedule a prover job if a level node is found in step 5.
+         * 
+         * Note that at step 6 ,there are some other possibilities:
+         *     -If the caret is not at any proof step, check the whole module.
+         *     -If the caret is at a step without a proof, check the whole module.
+         *     -If the caret is at a step without a proof, show a message to the user.
+         *     -If the caret is at a step without a proof, disable this handler.
+         *     -If the caret is not at any proof step, disable this handler.
+         *     -If the caret is not at a step with a proof, ask the user if he wants
+         *      to check the entire module.
+         */
+
+        /**********************************************************
+         * Step 1                                                 *
+         **********************************************************/
+        boolean proceed = UIHelper.promptUserForDirtyModules();
+        if (!proceed)
+        {
+            // the user cancelled
+            return;
+        }
+
+        /**********************************************************
+         * Step 2                                                 *
+         **********************************************************/
+        TLAEditor editor = EditorUtil.getTLAEditorWithFocus();
+        Assert.isNotNull(editor, "CheckProofStepHandler was executed without a tla editor in focus. This is a bug.");
+
+        /**********************************************************
+         * Step 3                                                 *
+         **********************************************************/
+        IFile moduleFile = ((FileEditorInput) editor.getEditorInput()).getFile();
+        ParseResult parseResult = ResourceHelper.getValidParseResult(moduleFile);
+
+        if (parseResult == null)
+        {
+            parseResult = new ModuleParserLauncher().parseModule(moduleFile, new NullProgressMonitor());
+        }
+
+        /**********************************************************
+         * Step 4                                                 *
+         **********************************************************/
+        if (parseResult.getStatus() != IParseConstants.PARSED)
+        {
+            return;
+        }
+
+        /**********************************************************
+         * Step 5                                                 *
+         **********************************************************/
+        String moduleName = ResourceHelper.getModuleName(moduleFile);
+        IDocument document = editor.getDocumentProvider().getDocument(editor.getEditorInput());
+        LevelNode nodeToProve = ResourceHelper.getPfStepOrUseHideFromMod(parseResult, moduleName,
+                (ITextSelection) editor.getSelectionProvider().getSelection(), document);
+
+        /**********************************************************
+         * Step 6                                                 *
+         **********************************************************/
+
+        if (nodeToProve == null)
+        {
+            // ask user if he wants to check the entire module
+            MessageDialog.openWarning(UIHelper.getShellProvider().getShell(), "Cannot launch prover",
+                    "The caret is not at a step or USE node. It must be to launch this command.");
+            return;
+        }
+
+        /***********************************************************
+         * Step 7                                                  *
+         ***********************************************************/
+        ProverJob proverJob = new ProverJob(moduleFile, statusCheck, nodeToProve, false);
+        // proverJob.setLocation(beginLine, 0, endLine, 0);
+        proverJob.setUser(true);
+        proverJob.setRule(new ProverJobRule());
+        proverJob.schedule();
+    }
+
 }

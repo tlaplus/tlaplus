@@ -4,7 +4,7 @@ import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.text.BadLocationException;
-import org.lamport.tla.toolbox.tool.prover.output.IProverProcessOutputSink;
+import org.lamport.tla.toolbox.tool.prover.output.internal.ProverLaunchDescription;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.ObligationNumberMessage;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.ObligationStatusMessage;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.TLAPMMessage;
@@ -51,10 +51,11 @@ public class TagBasedTLAPMOutputIncrementalParser
     // private ITLAPMOutputSource source;
     private IPath modulePath;
     /**
-     * The type of prover launch, which should
-     * be one of {@link IProverProcessOutputSink#TYPE_PROVE} or {@link IProverProcessOutputSink#TYPE_CHECK}.
+     * The description of the prover launch.
+     * Contains information about
+     * the parameters used to launch the prover.
      */
-    private int type;
+    private ProverLaunchDescription description;
     /**
      * The monitor that can
      * be used to report information about progress.
@@ -149,8 +150,7 @@ public class TagBasedTLAPMOutputIncrementalParser
 
                         if (data instanceof ObligationStatusMessage)
                         {
-                            final IMarker obMarker = ProverHelper
-                                    .newObligationStatus((ObligationStatusMessage) data);
+                            final IMarker obMarker = ProverHelper.newObligationStatus((ObligationStatusMessage) data);
                             UIHelper.runUIAsync(new Runnable() {
 
                                 public void run()
@@ -159,7 +159,7 @@ public class TagBasedTLAPMOutputIncrementalParser
                                 }
                             });
 
-                            if (ProverHelper.isObligationFinished(obMarker, type))
+                            if (ProverHelper.isObligationFinished(obMarker, description))
                             {
                                 monitor.worked(1);
                             }
@@ -298,21 +298,23 @@ public class TagBasedTLAPMOutputIncrementalParser
     }
 
     /**
-     * Constructor taking the path to the module to be parsed, the monitor that can
-     * be used to report information about progress, and the type of prover launch, which should
-     * be one of {@link IProverProcessOutputSink#TYPE_PROVE} or {@link IProverProcessOutputSink#TYPE_CHECK}.
+     * Constructor taking the path to the module for which there is output, the monitor that can
+     * be used to report information about progress, and the description of the prover launch.
+     * This contains information about the parameters used to launch the prover.
      * 
      * @param modulePath
      * @param monitor
-     * @param type
+     * @param description the description of the prover launch. Contains information about
+     * the parameters used to launch the prover.
      */
-    public TagBasedTLAPMOutputIncrementalParser(IPath modulePath, IProgressMonitor monitor, int type)
+    public TagBasedTLAPMOutputIncrementalParser(IPath modulePath, IProgressMonitor monitor,
+            ProverLaunchDescription description)
     {
         currentMessageBuffer = new StringBuilder();
         // source = new CachingTLAPMOutputSource(modulePath);
         this.modulePath = modulePath;
         this.monitor = monitor;
-        this.type = type;
+        this.description = description;
 
         // TLAPMOutputSourceRegistry.getInstance().addSource(source);
     }
