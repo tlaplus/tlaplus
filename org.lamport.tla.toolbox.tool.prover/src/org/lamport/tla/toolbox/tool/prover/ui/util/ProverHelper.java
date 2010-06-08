@@ -356,17 +356,27 @@ public class ProverHelper
         if (levelNode instanceof UseOrHideNode || levelNode instanceof TheoremNode)
         {
             IMarker marker = module.createMarker(SANY_MARKER);
+            // the location to be used for setting the sany location attribute on the marker
+            Location locForAttr;
             if (levelNode instanceof UseOrHideNode)
             {
-                marker.setAttribute(SANY_LOC_ATR, locToString(levelNode.getLocation()));
+                locForAttr = levelNode.getLocation();
             } else
             {
                 /*
                  * The location of a theorem node is the location of its statement,
                  * The statement is returned by theoremNode.getTheorem().
                  */
-                marker.setAttribute(SANY_LOC_ATR, locToString(((TheoremNode) levelNode).getTheorem().getLocation()));
+                locForAttr = ((TheoremNode) levelNode).getTheorem().getLocation();
             }
+            marker.setAttribute(SANY_LOC_ATR, locToString(locForAttr));
+            IRegion locRegion = AdapterFactory.locationToRegion(locForAttr);
+            marker.setAttribute(IMarker.CHAR_START, locRegion.getOffset());
+            /*
+             * For marking a region that starts at offset o and has length l, the
+             * start character is o and the end character is o+l-1.
+             */
+            marker.setAttribute(IMarker.CHAR_END, locRegion.getOffset() + locRegion.getLength() - 1);
         }
 
         if (levelNode instanceof TheoremNode)
@@ -382,23 +392,11 @@ public class ProverHelper
                     LevelNode[] steps = nonLeafProof.getSteps();
 
                     /*
-                     * From the documentation of NonLeafProofNode,
-                     * a step can be one of four types:
-                     * 
-                     * DefStepNode
-                     * UseOrHideNode
-                     * InstanceNode
-                     * TheoremNode
-                     * 
-                     * Only TheoremNode can have a proof. Recursively
-                     * put markers on each child theorem node.
+                     * Recursively put markers on each child node.
                      */
                     for (int i = 0; i < steps.length; i++)
                     {
-                        if (steps[i] instanceof TheoremNode)
-                        {
-                            createSANYMarkersForTree((TheoremNode) steps[i], module);
-                        }
+                        createSANYMarkersForTree(steps[i], module);
                     }
                 }
             }

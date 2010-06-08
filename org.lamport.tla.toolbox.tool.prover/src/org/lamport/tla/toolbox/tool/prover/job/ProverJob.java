@@ -243,17 +243,23 @@ public class ProverJob extends Job
                  * that marker so that it does not overlap.
                  * 
                  * Remove any existing SANY proof step markers
-                 * and put a new SANY marker on each proof step for which status is requested.
+                 * and put a new SANY marker on every place that can
+                 * receive a status. This should be done for all
+                 * steps and use nodes in the module because proving
+                 * obligations for one step can affect other steps as well.
+                 * We could be smart and only put these SANY markers on
+                 * the tree containing nodeToProve, but for ease
+                 * of programming, for now we will put these markers 
+                 * on the entire module.
                  */
                 ProverHelper.removeSANYStepMarkers(module);
+                ProverHelper.createSANYMarkers(module);
                 if (nodeToProve == null)
                 {
                     ProverHelper.removeStatusFromModule(module);
-                    ProverHelper.createSANYMarkers(module);
                 } else
                 {
                     ProverHelper.removeStatusFromTree(module, nodeToProve);
-                    ProverHelper.createSANYMarkersForTree(nodeToProve, module);
                 }
             } catch (CoreException e1)
             {
