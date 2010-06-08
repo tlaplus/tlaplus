@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Vector;
 
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.source.SourceViewer;
@@ -27,6 +28,7 @@ import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
@@ -79,6 +81,9 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
     private SourceViewer expressionEvalResult;
     private SourceViewer expressionEvalInput;
     private Text startTimestampText;
+    // startTime is provided by the TLCModelLaunchDataProvider's getStartTime()
+    // method.
+    private long startTime = 0;
     private Text finishTimestampText;
     private Text lastCheckpointTimeText;
     private Text coverageTimestampText;
@@ -139,6 +144,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
                     break;
                 case START_TIME:
                     ResultPage.this.startTimestampText.setText(dataProvider.getStartTimestamp());
+                    ResultPage.this.startTime = dataProvider.getStartTime();
                     break;
                 case END_TIME:
                     ResultPage.this.finishTimestampText.setText(dataProvider.getFinishTimestamp());
@@ -157,6 +163,22 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
                     break;
                 case PROGRESS:
                     ResultPage.this.stateSpace.setInput(dataProvider.getProgressInformation());
+
+                    // The following code finds all the graph windows (shells) for this
+                    // model and calls redraw() and update() on them, which apparently is the
+                    // magic incantation to cause its listener to be called to issue the
+                    // necessary commands to redraw the data and then displays the result.
+                    String suffix = getGraphTitleSuffix(ResultPage.this);
+                    Shell[] shells = UIHelper.getCurrentDisplay().getShells();
+                    for (int i = 0; i < shells.length; i++)
+                    {
+                        if (shells[i].getText().endsWith(suffix))
+                        {
+                            shells[i].redraw();
+                            shells[i].update();
+                            System.out.println("Called redraw/update on shell number" + i);
+                        }
+                    }
                     break;
                 case ERRORS:
                     String text;
@@ -229,6 +251,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
     {
         // TLCUIActivator.logDebug("Entering reinit()");
         this.startTimestampText.setText("");
+        this.startTime = 0;
         this.finishTimestampText.setText("");
         this.lastCheckpointTimeText.setText("");
         this.currentStatusText.setText(TLCModelLaunchDataProvider.NOT_RUNNING);
@@ -245,6 +268,20 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
      */
     public void dispose()
     {
+
+        /*
+         * Remove graph windows raised for the page.
+         */
+        String suffix = getGraphTitleSuffix(this);
+        Shell[] shells = UIHelper.getCurrentDisplay().getShells();
+        for (int i = 0; i < shells.length; i++)
+        {
+            if (shells[i].getText().endsWith(suffix))
+            {
+                shells[i].dispose();
+            }
+        }
+
         JFaceResources.getFontRegistry().removeListener(fontChangeListener);
 
         TLCModelLaunchDataProvider provider = TLCOutputSourceRegistry.getModelCheckSourceRegistry().getProvider(
@@ -509,6 +546,8 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         stateTable.setHeaderVisible(true);
         stateTable.setLinesVisible(true);
 
+        ILaunchConfigurationWorkingCopy config = getConfig();
+
         StateSpaceLabelProvider.createTableColumns(stateTable, this);
 
         // create the viewer
@@ -656,9 +695,10 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
                 TableColumn column = new TableColumn(stateTable, SWT.NULL);
                 column.setWidth(columnWidths[i]);
                 column.setText(columnTitles[i]);
-                
+
                 // The following statement attaches a listener to the column
-                // header.   See the ResultPageColumnListener comments.
+                // header. See the ResultPageColumnListener comments.
+
                 column.addSelectionListener(new ResultPageColumnListener(i, page));
             }
         }
@@ -805,14 +845,12 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
          */
         public void widgetSelected(SelectionEvent e)
         {
-            StateSpaceInformationItem[] ssInfo = resultPage.getStateSpaceInformation();
-            String modelName = ModelHelper.getModelName(resultPage.getConfig().getFile());
-            UIHelper.runUIAsync(new DataDisplay(ssInfo, columnNumber, modelName));
+            UIHelper.runUIAsync(new DataDisplay(resultPage, columnNumber));
 
         }
 
     }
-    
+
     /**
      * The run method of this class creates a shell (a window) to display
      * a graph of the appropriate State Space Progress information when the user clicks on
@@ -834,10 +872,8 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
      */
     static class DataDisplay implements Runnable
     {
-        long[] data = null;
-        long[] times = null;
-        int column;
-        String modelName;
+        int columnNumber;
+        ResultPage resultPage;
 
         /**
          *  The constructor returns an object with null data and times arrays
@@ -846,48 +882,11 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
          * @param ssInfo
          * @param columnNumber
          */
-        public DataDisplay(StateSpaceInformationItem[] ssInfo, int columnNumber, String modelName)
+        public DataDisplay(ResultPage resultPage, int columnNumber)
         {
-            if (ssInfo.length < 2)
-            {
-                return;
-            }
-            
-            /*
-             * The data and times arrays are set to contain the data items to be displayed
-             * and the elapsed time (in milliseconds) at which each item was posted.
-             * The data is obtained from the appropriate column of the ssInfo items.
-             * For the Time column, the number of reports is graphed.
-             */
-            data = new long[ssInfo.length];   
-            times = new long[ssInfo.length];  
 
-            long startTime = ssInfo[0].getTime().getTime();
-            for (int i = 0; i < data.length; i++)
-            {
-                switch (columnNumber) {
-                case StateSpaceLabelProvider.COL_TIME:
-                    data[i] = i;
-                    break;
-                case StateSpaceLabelProvider.COL_DIAMETER:
-                    data[i] = ssInfo[i].getDiameter();
-                    break;
-                case StateSpaceLabelProvider.COL_FOUND:
-                    data[i] = ssInfo[i].getFoundStates();
-                    break;
-                case StateSpaceLabelProvider.COL_DISTINCT:
-                    data[i] = ssInfo[i].getDistinctStates();
-                    break;
-                case StateSpaceLabelProvider.COL_LEFT:
-                    data[i] = ssInfo[i].getLeftStates();
-                    break;
-                default:
-                    return;
-                }
-                times[i] = ssInfo[i].getTime().getTime() - startTime;
-            }
-            column = columnNumber;
-            this.modelName = modelName;
+            this.resultPage = resultPage;
+            this.columnNumber = columnNumber;
         }
 
         /**
@@ -896,30 +895,22 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
          */
         public void run()
         {
-            if (data == null)
-            {
-                return;
-            }
-            
+
+            /*
+             * The data and times arrays are set to contain the data items to be displayed
+             * and the elapsed time (in milliseconds) at which each item was posted.
+             * The data is obtained from the appropriate column of the ssInfo items.
+             * For the Time column, the number of reports is graphed.
+             */
+
             // The following method for getting the current display was
             // copied without understanding from someplace or other.
-            Display display = Display.getCurrent();
-            if (display == null)
-            {
-                display = Display.getDefault();
-            }
 
-            // The window's title is the same as the column's title, 
-            // except for the time.
-            String title = StateSpaceLabelProvider.columnTitles[column];
-            if (column == StateSpaceLabelProvider.COL_TIME)
-            {
-                title = "Number of Progress Reports";
-            }
-            title = title + " (" + modelName + ")";
+            String title = getGraphTitle(columnNumber, resultPage);
 
             // We check if a shell exists with this title, and use it if
-            // it does.  Otherwise, we get a new shell.
+            // it does. Otherwise, we get a new shell.
+            Display display = UIHelper.getCurrentDisplay();
             boolean shellExists = false;
             Shell theShell = null;
             Shell[] shells = display.getShells();
@@ -934,56 +925,120 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
             }
             if (!shellExists)
             {
-                theShell = new Shell(display);
+                theShell = new Shell(display, SWT.SHELL_TRIM | SWT.ON_TOP);
             }
             final Shell shell = theShell;
             shell.setText(title);
-            shell.addPaintListener(new PaintListener() {
-                public void paintControl(PaintEvent event)
-                {
-                    Rectangle rect = shell.getClientArea();
-                    // Set maxData to the largest data value;
-                    long maxData = 0;
-                    for (int i = 0; i < data.length; i++)
+            shell.setActive(); // should cause it to pop up to the top.
+            if (shellExists)
+            {
+                shell.redraw();
+                shell.update();
+            } else
+            {
+                shell.addPaintListener(new PaintListener() {
+                    public void paintControl(PaintEvent event)
                     {
-                        if (data[i] > maxData)
+                        StateSpaceInformationItem[] ssInfo = resultPage.getStateSpaceInformation();
+                        if (ssInfo.length < 2)
                         {
-                            maxData = data[i];
+                            return;
+                        }
+
+                        long[] data = new long[ssInfo.length + 1];
+                        long[] times = new long[ssInfo.length + 1];
+                        data[0] = 0;
+                        times[0] = 0;
+
+                        long startTime = resultPage.startTime;
+                        System.out.println("first reported time - starttime = "
+                                + (ssInfo[0].getTime().getTime() - startTime));
+                        if (startTime > ssInfo[0].getTime().getTime() - 1000)
+                        {
+                            startTime = ssInfo[0].getTime().getTime() - 1000;
+                        }
+                        for (int i = 1; i < data.length; i++)
+                        {
+                            switch (columnNumber) {
+                            case StateSpaceLabelProvider.COL_TIME:
+                                data[i] = i - 1;
+                                break;
+                            case StateSpaceLabelProvider.COL_DIAMETER:
+                                data[i] = ssInfo[i - 1].getDiameter();
+                                break;
+                            case StateSpaceLabelProvider.COL_FOUND:
+                                data[i] = ssInfo[i - 1].getFoundStates();
+                                break;
+                            case StateSpaceLabelProvider.COL_DISTINCT:
+                                data[i] = ssInfo[i - 1].getDistinctStates();
+                                break;
+                            case StateSpaceLabelProvider.COL_LEFT:
+                                data[i] = ssInfo[i - 1].getLeftStates();
+                                break;
+                            default:
+                                return;
+                            }
+                            times[i] = ssInfo[i - 1].getTime().getTime() - startTime;
+                        }
+                        if (data == null)
+                        {
+                            return;
+                        }
+
+                        Rectangle rect = shell.getClientArea();
+                        // Set maxData to the largest data value;
+                        long maxData = 0;
+                        for (int i = 0; i < data.length; i++)
+                        {
+                            if (data[i] > maxData)
+                            {
+                                maxData = data[i];
+                            }
+                        }
+                        long maxTime = times[times.length - 1];
+
+                        // event.gc.drawOval(0, 0, rect.width - 1, rect.height - 1);
+                        if (maxTime > 0)
+                        {
+                            int[] pointArray = new int[2 * data.length];
+                            for (int i = 0; i < data.length; i++)
+                            {
+                                pointArray[2 * i] = (int) ((times[i] * rect.width) / maxTime);
+                                pointArray[(2 * i) + 1] = (int) (rect.height - ((data[i] * rect.height) / maxData));
+                            }
+                            event.gc.drawPolyline(pointArray);
+                        }
+                        String stringTime = "Time: ";
+                        long unreportedTime = maxTime;
+                        long days = maxTime / (1000 * 60 * 60 * 24);
+                        if (days > 0)
+                        {
+                            unreportedTime = unreportedTime - days * (1000 * 60 * 60 * 24);
+                            stringTime = stringTime + days + ((days == 1) ? (" day ") : (" days  "));
+
+                        }
+                        long hours = unreportedTime / (1000 * 60 * 60);
+                        if (hours > 0)
+                        {
+                            unreportedTime = unreportedTime - hours * (1000 * 60 * 60);
+                            stringTime = stringTime + hours + ((hours == 1) ? (" hour ") : (" hours  "));
+                        }
+                        unreportedTime = (unreportedTime + (1000 * 26)) / (1000 * 60);
+                        stringTime = stringTime + unreportedTime
+                                + ((unreportedTime == 1) ? (" minute ") : (" minutes  "));
+                        event.gc.drawString(stringTime, 0, 0);
+                        event.gc.drawString("Current: " + data[data.length - 1], 0, 15);
+                        if (maxData != data[data.length - 1])
+                        {
+                            event.gc.drawString("Maximum: " + maxData, 0, 30);
                         }
                     }
-                    long maxTime = times[times.length - 1];
-
-                    // event.gc.drawOval(0, 0, rect.width - 1, rect.height - 1);
-                    int[] pointArray = new int[2 * data.length];
-                    for (int i = 0; i < data.length; i++)
-                    {
-                        pointArray[2 * i] = (int) ((times[i] * rect.width) / maxTime);
-                        pointArray[(2 * i) + 1] = (int) (rect.height - ((data[i] * rect.height) / maxData));
-                    }
-                    event.gc.drawPolyline(pointArray);
-                    String stringTime = "Elapsed time: ";
-                    long unreportedTime = maxTime;
-                    long days = maxTime / (1000 * 60 * 60 * 24);
-                    if (days > 0)
-                    {
-                        unreportedTime = unreportedTime - days * (1000 * 60 * 60 * 24);
-                        stringTime = stringTime + days + " days  ";
-
-                    }
-                    long hours = unreportedTime / (1000 * 60 * 60);
-                    if (hours > 0)
-                    {
-                        unreportedTime = unreportedTime - hours * (1000 * 60 * 60);
-                        stringTime = stringTime + hours + " hours  ";
-                    }
-                    stringTime = stringTime + (unreportedTime / (1000 * 60)) + " minutes";
-                    event.gc.drawString(stringTime, 0, 0);
-                    event.gc.drawString("Maximum: " + maxData, 0, 15);
-                }
-            });
+                });
+            }
+            ;
             if (!shellExists)
             {
-                shell.setBounds(100 + 30 * column, 100 + 30 * column, 400, 300);
+                shell.setBounds(100 + 30 * columnNumber, 100 + 30 * columnNumber, 400, 300);
             }
             shell.open();
             // The following code from the Eclipse example was eliminated.
@@ -996,6 +1051,30 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 
         }
 
+    }
+
+    /**
+     * The title of a graph consists of two parts:  the prefix, which
+     * identifies the column, and the suffix, which identifies the model.
+     * When we dispose of the ResultPage, we must dispose of all graph
+     * window (shells) forthat model.
+     * 
+     * @param resultPage
+     * @return
+     */
+    private static String getGraphTitleSuffix(ResultPage resultPage)
+    {
+        return "(" + ModelHelper.getModelName(resultPage.getConfig().getFile()) + ")";
+    }
+
+    private static String getGraphTitle(int columnNumber, ResultPage resultPage)
+    {
+        String title = StateSpaceLabelProvider.columnTitles[columnNumber];
+        if (columnNumber == StateSpaceLabelProvider.COL_TIME)
+        {
+            title = "Number of Progress Reports";
+        }
+        return title + " " + getGraphTitleSuffix(resultPage);
     }
 
 }

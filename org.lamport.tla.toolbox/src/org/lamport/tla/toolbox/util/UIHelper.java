@@ -577,6 +577,22 @@ public class UIHelper
     {
         return getActiveWindow().getShell();
     }
+    
+    /**
+     * Added by LL on 11 June 2010.  This snippet of code
+     * was used in several places, so I turned it into a method.
+     * I have no idea exactly what it's doing.
+     * 
+     * @return The current display, whatever that means.
+     */
+    public static Display getCurrentDisplay() {
+        Display display = Display.getCurrent();
+        if (display == null)
+        {
+            return Display.getDefault();
+        }
+        return display;
+    }
 
     /**
      * Runs a task in synchronous UI thread 
@@ -584,11 +600,7 @@ public class UIHelper
      */
     public static void runUISync(Runnable task)
     {
-        Display display = Display.getCurrent();
-        if (display == null)
-        {
-            display = Display.getDefault();
-        }
+        Display display = getCurrentDisplay();
         display.syncExec(task);
     }
 
@@ -598,11 +610,7 @@ public class UIHelper
      */
     public static void runUIAsync(Runnable task)
     {
-        Display display = Display.getCurrent();
-        if (display == null)
-        {
-            display = Display.getDefault();
-        }
+        Display display = getCurrentDisplay();
         display.asyncExec(task);
     }
 

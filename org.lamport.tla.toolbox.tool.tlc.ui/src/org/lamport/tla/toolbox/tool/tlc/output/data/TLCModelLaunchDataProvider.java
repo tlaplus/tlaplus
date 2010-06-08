@@ -1,6 +1,8 @@
 package org.lamport.tla.toolbox.tool.tlc.output.data;
 
+import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Vector;
@@ -100,6 +102,22 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
     // should be put in the user output widget
     private boolean isTLCStarted = false;
 
+    /**
+     *  Set to the starting time of the current TLC run.
+     *  Actually, it is set to the time when the TLC Start
+     *  message is processed.  Thus, there is no guarantee
+     *  that this time bears any relation to startTimeStamp.
+     */
+    private long startTime = 0;
+    
+    /**
+     * @return the startTime
+     */
+    public long getStartTime()
+    {
+        return startTime;
+    }
+
     public TLCModelLaunchDataProvider(ILaunchConfiguration config)
     {
         this.config = config;
@@ -125,6 +143,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
 
         coverageInfo = new Vector();
         progressInformation = new Vector();
+        startTime = 0;
         startTimestamp = "";
         finishTimestamp = "";
         lastCheckpointTimeStamp = "";
@@ -330,6 +349,8 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                 case EC.TLC_STARTING:
                     isTLCStarted = true;
                     this.startTimestamp = GeneralOutputParsingHelper.parseTLCTimestamp(outputMessage);
+                    this.startTime = System.currentTimeMillis();
+                    
                     informPresenter(ITLCModelLaunchDataPresenter.START_TIME);
                     break;
                 case EC.TLC_FINISHED:

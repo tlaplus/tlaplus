@@ -89,9 +89,7 @@ public class ParseSpecHandler extends AbstractHandler implements IHandler
      */
     protected void saveDirtyEditors()
     {
-        Display display = Display.getCurrent();
-        if (display == null)
-            display = Display.getDefault();
+        Display display = UIHelper.getCurrentDisplay(); 
         display.syncExec(new Runnable() {
             public void run()
             {
