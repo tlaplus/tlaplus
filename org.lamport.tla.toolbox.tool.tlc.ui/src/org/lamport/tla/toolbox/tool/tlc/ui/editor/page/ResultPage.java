@@ -26,9 +26,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
@@ -293,12 +291,6 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         super.dispose();
     }
 
-    public void setEnabled(boolean enabled)
-    {
-        // disable the constant expression evaluation
-        getDataBindingManager().getSection(SEC_EXPRESSION).getSection().setEnabled(enabled);
-    }
-
     /**
      * Draw the fields
      * 
@@ -459,6 +451,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         expressionEvalInput.getTextWidget().addModifyListener(new DirtyMarkingListener(calculatorSectionPart, false));
 
         getDataBindingManager().bindAttribute(MODEL_EXPRESSION_EVAL, expressionEvalInput, calculatorSectionPart);
+        getDataBindingManager().bindSection(calculatorSectionPart, SEC_EXPRESSION, getId());
 
         // -------------------------------------------------------------------
         // output section
