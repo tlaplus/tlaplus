@@ -4,7 +4,10 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
 
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.forms.SectionPart;
+import org.eclipse.ui.forms.widgets.Section;
 
 /**
  * Takes care of section on pages, and attributes on sections
@@ -51,7 +54,11 @@ public class DataBindingManager implements ISectionConstants
     }
 
     /**
-     * Enables or disables all section on the current page
+     * Enables or disables all section on the current page. More precisely, this
+     * means setting the enablement state of any child of a
+     * section that is a {@link Composite} but not a {@link Section}
+     * to enabled.
+     * 
      * @param enabled 
      */
     public void setAllSectionsEnabled(String pageId, boolean enabled)
@@ -64,7 +71,10 @@ public class DataBindingManager implements ISectionConstants
     }
 
     /**
-     * enables a section by given id
+     * enables a section by given id. More precisely, this
+     * means setting the enablement state of any child of the
+     * section that is a {@link Composite} but not a {@link Section}
+     * to enabled.
      */
     public void enableSection(String id, boolean enabled)
     {
@@ -73,7 +83,36 @@ public class DataBindingManager implements ISectionConstants
         {
             throw new IllegalArgumentException("No section for id");
         }
-        part.getSection().setEnabled(enabled);
+        Section section = part.getSection();
+        Control[] children = section.getChildren();
+        for (int i = 0; i < children.length; i++)
+        {
+
+            if (children[i] instanceof Composite)
+            {
+                enableSectionComposite((Composite) children[i], enabled);
+            }
+        }
+    }
+
+    /**
+     * Sets the enablement state of a section's composite. More precisely, this
+     * means setting the enablement state of any child of the
+     * composite that is  not a {@link Section}
+     * to enabled.
+     * 
+     * @param composite
+     */
+    public void enableSectionComposite(Composite composite, boolean enable)
+    {
+        Control[] children = composite.getChildren();
+        for (int i = 0; i < children.length; i++)
+        {
+            if (!(children[i] instanceof Section))
+            {
+                children[i].setEnabled(enable);
+            }
+        }
     }
 
     /**

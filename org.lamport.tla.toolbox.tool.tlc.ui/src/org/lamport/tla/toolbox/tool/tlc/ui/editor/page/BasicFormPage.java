@@ -481,7 +481,6 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
     public void setEnabled(boolean enabled)
     {
         getDataBindingManager().setAllSectionsEnabled(getId(), enabled);
-        getManagedForm().getForm().getBody().setEnabled(enabled);
     }
 
     /**
