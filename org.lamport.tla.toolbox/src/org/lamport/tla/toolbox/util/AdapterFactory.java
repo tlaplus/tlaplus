@@ -3,6 +3,7 @@ package org.lamport.tla.toolbox.util;
 import java.util.List;
 import java.util.Vector;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.IAdapterFactory;
 import org.eclipse.jface.text.BadLocationException;
@@ -12,6 +13,7 @@ import org.eclipse.jface.text.Region;
 import org.eclipse.swt.SWT;
 import org.eclipse.ui.model.IWorkbenchAdapter;
 import org.eclipse.ui.model.WorkbenchAdapter;
+import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.spec.Module;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.spec.parser.IParseConstants;
@@ -101,6 +103,38 @@ public class AdapterFactory implements IAdapterFactory
          */
         int length = document.getLineOffset(location.endLine() - 1) + location.endColumn() - offset;
         return new Region(offset, length);
+    }
+
+    /**
+     * Converts four-int {@link Location} that is 1-based to a two int {@link IRegion} that is
+     * 0-based. Different than {@link #locationToRegion(IDocument, Location)} because
+     * it does not need a document as an argument but instead creates one.
+     * 
+     * Returns null if the location cannot be converted to a region for any reason.
+     * Possible reasons are that the location points to a non-existent module or a
+     * location in a module that does not exist.
+     * 
+     * @param location
+     * @return
+     */
+    public static IRegion locationToRegion(Location location)
+    {
+
+        IFile module = (IFile) ResourceHelper.getResourceByModuleName(location.source());
+
+        if (module != null && module instanceof IFile && module.exists())
+        {
+            try
+            {
+                return locationToRegion(ResourceHelper.getDocFromFile(module), location);
+            } catch (BadLocationException e)
+            {
+                Activator.logError("Error converting location to region for location " + location, e);
+            }
+        }
+
+        return null;
+
     }
 
     /**

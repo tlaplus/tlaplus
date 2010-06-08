@@ -518,6 +518,12 @@ public class ProverHelper
         } else if (status.equals(ProofStepStatus.FAILED_OBS_FOR_STEP))
         {
             return ProverHelper.FAILED_OBS_FOR_STEP_MARKER;
+        } else if (status.equals(ProofStepStatus.PROVED))
+        {
+            return ProverHelper.FULLY_CHECKED_MARKER;
+        } else if (status.equals(ProofStepStatus.OMITTED))
+        {
+            return ProverHelper.WRITTEN_PROOFS_CHECKED_MARKER;
         }
         return null;
     }
@@ -644,26 +650,48 @@ public class ProverHelper
         IResource module = ResourceHelper.getResourceByModuleName(location.source());
         if (module != null && module instanceof IFile && module.exists())
         {
+            /*
+             * Try to find an existing SANY marker.
+             * 
+             * For the moment, if an existing SANY marker is not
+             * found, put a marker at the location given by the
+             * message location. Also log a debug message saying
+             * a sany marker has not been found.
+             * 
+             * If a sany marker is found, put a marker at the current location
+             * of the sany marker (not at the SANY location attribute of the sany marker).
+             */
             IMarker sanyMarker = findSANYMarker(module, location);
-            if (sanyMarker != null)
+            try
             {
-                try
+                IMarker newMarker = module.createMarker(statusStringToMarkerType(status.getStatus()));
+                Map markerAttributes = new HashMap(2);
+                // value based on whether a sany marker is found or not
+                int charStart;
+                int charEnd;
+                if (sanyMarker != null)
                 {
-                    IMarker newMarker = module.createMarker(statusStringToMarkerType(status.getStatus()));
-                    Map markerAttributes = new HashMap(2);
-                    markerAttributes.put(IMarker.CHAR_START,
-                            new Integer(sanyMarker.getAttribute(IMarker.CHAR_START, 0)));
-                    markerAttributes.put(IMarker.CHAR_END, new Integer(sanyMarker.getAttribute(IMarker.CHAR_END, 0)));
-
-                    newMarker.setAttributes(markerAttributes);
-                } catch (CoreException e)
+                    charStart = sanyMarker.getAttribute(IMarker.CHAR_START, 0);
+                    charEnd = sanyMarker.getAttribute(IMarker.CHAR_END, 0);
+                } else
                 {
-                    ProverUIActivator.logError("Error creating new status marker.", e);
+                    ProverUIActivator.logDebug("Existing SANY marker not found for location " + location
+                            + ". This is a bug.");
+                    // the region from the tlapm message
+                    IRegion messageRegion = AdapterFactory.locationToRegion(location);
+                    /*
+                     * For marking a region that starts at offset o and has length l, the
+                     * start character is o and the end character is o+l-1.
+                     */
+                    charStart = messageRegion.getOffset();
+                    charEnd = messageRegion.getOffset() + messageRegion.getLength() - 1;
                 }
-            } else
+                markerAttributes.put(IMarker.CHAR_START, new Integer(charStart));
+                markerAttributes.put(IMarker.CHAR_END, new Integer(charEnd));
+                newMarker.setAttributes(markerAttributes);
+            } catch (CoreException e)
             {
-                ProverUIActivator.logDebug("Existing SANY marker not found for location " + location
-                        + ". This is a bug.");
+                ProverUIActivator.logError("Error creating new status marker.", e);
             }
         } else
         {
@@ -772,47 +800,96 @@ public class ProverHelper
      */
     public static void removeStatusFromTree(IFile module, LevelNode root)
     {
-        /*
-         * We need a file document provider for the
-         * module in order to get a document to convert
-         * from the 4-int location provided by SANY
-         * to the 2-int location of markers.
-         */
-        FileDocumentProvider fdp = new FileDocumentProvider();
-        FileEditorInput input = new FileEditorInput(module);
         try
         {
-            fdp.connect(input);
-            IDocument document = fdp.getDocument(input);
-            int beginLine = root.getLocation().beginLine();
-            int endLine = root.getLocation().endLine();
+            /*
+             * We need a  document to convert
+             * from the 4-int location provided by SANY
+             * to the 2-int location of markers.
+             */
+            IDocument document = ResourceHelper.getDocFromFile(module);
+            /*
+             * SANY lines are 1-based and document lines
+             * are 0-based. We use document lines from now
+             * on.
+             */
+            int beginLine = root.getLocation().beginLine() - 1;
+            int endLine = root.getLocation().endLine() - 1;
+
             if (root instanceof TheoremNode && ((TheoremNode) root).getProof() != null)
             {
-                endLine = ((TheoremNode) root).getProof().getLocation().endLine();
+                endLine = ((TheoremNode) root).getProof().getLocation().endLine() - 1;
             }
-            int beginChar = document.getLineOffset(beginLine);
+            // get the start and end characters of the tree
+            int treeBeginChar = document.getLineOffset(beginLine);
             /*
              * In the following, we subtract 1 to get the end char.
              * 
              * For a marker representing a region that starts at offset o and has length l, the
              * start character is o and the end character is o+l-1.
              */
-            int endChar = document.getLineOffset(endLine) + document.getLineLength(endLine) - 1;
+            int treeEndChar = document.getLineOffset(endLine) + document.getLineLength(endLine) - 1;
+
+            // get all existing step status markers on the module
             IMarker[] markers = module.findMarkers(STEP_STATUS_MARKER, true, IResource.DEPTH_ZERO);
             for (int i = 0; i < markers.length; i++)
             {
-                int markerStartChar = markers[i].getAttribute(IMarker.CHAR_START, -1);
-                int markerEndChar = markers[i].getAttribute(IMarker.CHAR_END, -1);
+                IMarker oldMarker = markers[i];
+                // get the start and end characters of the marker
+                int markerStartChar = oldMarker.getAttribute(IMarker.CHAR_START, -1);
+                int markerEndChar = oldMarker.getAttribute(IMarker.CHAR_END, -1);
 
-                if (markerStartChar >= beginChar && markerEndChar <= endChar)
+                /*
+                 * It appears that simply altering the char start and char end
+                 * attributes of a marker will not cause that change to be reflected in the
+                 * open editor. To solve this, markers that should be altered will instead
+                 * be deleted and one or two markers will be created at the correct locations.
+                 * 
+                 * If the marker is completely contained by the tree, delete it.
+                 * 
+                 * If the marker starts before the tree and ends inside the tree, delete
+                 * the marker and create one new marker that begins at the same point
+                 * as the deleted marker but ends one character before the start of the tree.
+                 * 
+                 * If the marker completely contains the tree, delete that marker. Create two
+                 * new markers. One marker will start at the old marker's start point and end
+                 * one character before the tree. The second marker will begin one character after
+                 * the end of the tree and end at the old marker's end point.
+                 * 
+                 * If the marker starts inside the tree and ends after the tree, delete that marker.
+                 * Create a new marker that begins one character after the end of the tree and
+                 * ends at the old marker's end point.
+                 */
+                if (markerStartChar >= treeBeginChar && markerEndChar <= treeEndChar)
                 {
-                    markers[i].delete();
-                } else if (markerStartChar < beginChar && markerEndChar >= beginChar)
+                    oldMarker.delete();
+                } else if (markerStartChar < treeBeginChar && markerEndChar >= treeBeginChar
+                        && markerEndChar <= treeEndChar)
                 {
-                    markers[i].setAttribute(IMarker.CHAR_END, beginChar - 1);
-                } else if (markerStartChar >= beginChar && markerEndChar > endChar)
+                    IMarker newMarker = module.createMarker(oldMarker.getType());
+                    newMarker.setAttribute(IMarker.CHAR_START, markerStartChar);
+                    newMarker.setAttribute(IMarker.CHAR_END, treeBeginChar - 1);
+                    oldMarker.delete();
+                } else if (markerStartChar < treeBeginChar && markerEndChar > treeEndChar)
                 {
-                    markers[i].setAttribute(IMarker.CHAR_END, endChar + 1);
+                    // marker before the tree
+                    IMarker beforeMarker = module.createMarker(oldMarker.getType());
+                    beforeMarker.setAttribute(IMarker.CHAR_START, markerStartChar);
+                    beforeMarker.setAttribute(IMarker.CHAR_END, treeBeginChar - 1);
+
+                    // marker after the tree
+                    IMarker afterMarker = module.createMarker(oldMarker.getType());
+                    afterMarker.setAttribute(IMarker.CHAR_START, treeEndChar + 1);
+                    afterMarker.setAttribute(IMarker.CHAR_END, markerEndChar);
+
+                    oldMarker.delete();
+                } else if (markerStartChar >= treeBeginChar && markerStartChar <= treeEndChar
+                        && markerEndChar > treeEndChar)
+                {
+                    IMarker newMarker = module.createMarker(oldMarker.getType());
+                    newMarker.setAttribute(IMarker.CHAR_START, treeEndChar + 1);
+                    newMarker.setAttribute(IMarker.CHAR_END, markerEndChar);
+                    oldMarker.delete();
                 }
             }
         } catch (CoreException e)
@@ -821,9 +898,6 @@ public class ProverHelper
         } catch (BadLocationException e)
         {
             ProverUIActivator.logError("Error removing status markers from tree rooted at " + root, e);
-        } finally
-        {
-            fdp.disconnect(input);
         }
     }
 

@@ -30,6 +30,8 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextSelection;
+import org.eclipse.ui.editors.text.FileDocumentProvider;
+import org.eclipse.ui.part.FileEditorInput;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.job.NewTLAModuleCreationOperation;
 import org.lamport.tla.toolbox.spec.Spec;
@@ -1034,6 +1036,57 @@ public class ResourceHelper
         }
 
         return null;
+    }
+
+    /**
+     * Returns a document representing the document given
+     * by module name in the current spec (name without tla extension).
+     * Note that this document will not be synchronized with changes to
+     * the file. It will simply be a snapshot of the file.
+     * 
+     * @param moduleName
+     * @return
+     */
+    public static IDocument getDocFromName(String moduleName)
+    {
+        IFile module = (IFile) getResourceByModuleName(moduleName);
+        return getDocFromFile(module);
+    }
+
+    /**
+     * Returns a document representing the file. Note that
+     * this document will not be synchronized with changes to
+     * the file. It will simply be a snapshot of the file.
+     * 
+     * Returns null if unsuccessful.
+     * 
+     * @param module
+     * @return
+     */
+    public static IDocument getDocFromFile(IFile file)
+    {
+
+        /*
+         * We need a file document provider to create
+         * the document. After the document is created
+         * the file document provider must be disconnected
+         * to avoid a memory leak.
+         */
+        FileDocumentProvider fdp = new FileDocumentProvider();
+        FileEditorInput input = new FileEditorInput(file);
+        try
+        {
+            fdp.connect(input);
+            return fdp.getDocument(input);
+        } catch (CoreException e)
+        {
+            Activator.logError("Error getting document for module " + file, e);
+        } finally
+        {
+            fdp.disconnect(input);
+        }
+        return null;
+
     }
 
     /**
