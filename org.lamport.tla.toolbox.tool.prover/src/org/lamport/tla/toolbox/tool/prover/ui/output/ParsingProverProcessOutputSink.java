@@ -1,10 +1,9 @@
 package org.lamport.tla.toolbox.tool.prover.ui.output;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
-import org.eclipse.jface.text.BadLocationException;
-import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.tool.prover.output.IProverProcessOutputSink;
 import org.lamport.tla.toolbox.tool.prover.output.internal.ProverLaunchDescription;
 
@@ -16,6 +15,9 @@ import org.lamport.tla.toolbox.tool.prover.output.internal.ProverLaunchDescripti
  * This class receives output by registering at the extension point
  * org.lamport.tla.toolbox.tool.prover.processOutputSink.
  * 
+ * This class should no longer be used.
+ * 
+ * @deprecated
  * @author Daniel Ricketts
  *
  */
@@ -30,14 +32,14 @@ public class ParsingProverProcessOutputSink implements IProverProcessOutputSink
      */
     public void appendText(String text)
     {
-        try
-        {
-            parser.addIncrement(text);
-
-        } catch (BadLocationException e)
-        {
-            Activator.logError("Error parsing the TLAPM output stream for " + name, e);
-        }
+        // try
+        // {
+        // // parser.addIncrement(text);
+        //
+        // } catch (BadLocationException e)
+        // {
+        // Activator.logError("Error parsing the TLAPM output stream for " + name, e);
+        // }
     }
 
     /**
@@ -48,10 +50,10 @@ public class ParsingProverProcessOutputSink implements IProverProcessOutputSink
      * {@link IPath#toPortableString()} and so the original {@link IPath} can
      * be retrieved by calling {@link Path#fromPortableString(String)}.
      */
-    public void initializeSink(IPath modulePath, ProverLaunchDescription description, IProgressMonitor monitor)
+    public void initializeSink(IFile moduleFile, ProverLaunchDescription description, IProgressMonitor monitor)
     {
-        this.parser = new TagBasedTLAPMOutputIncrementalParser(modulePath, monitor, description);
-        this.name = modulePath;
+        // this.parser = new TagBasedTLAPMOutputIncrementalParser(moduleFile, monitor, description);
+        // this.name = moduleFile;
     }
 
     /**
@@ -60,7 +62,7 @@ public class ParsingProverProcessOutputSink implements IProverProcessOutputSink
      */
     public void processFinished()
     {
-        parser.onDone();
+        // parser.onDone();
     }
 
 }

@@ -1,9 +1,10 @@
 package org.lamport.tla.toolbox.tool.prover.ui.output;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.text.BadLocationException;
+import org.lamport.tla.toolbox.tool.prover.output.IProverProcessOutputSink;
 import org.lamport.tla.toolbox.tool.prover.output.internal.ProverLaunchDescription;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.ObligationNumberMessage;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.ObligationStatusMessage;
@@ -44,12 +45,12 @@ import org.lamport.tla.toolbox.util.UIHelper;
  * @author Daniel Ricketts
  *
  */
-public class TagBasedTLAPMOutputIncrementalParser
+public class TagBasedTLAPMOutputIncrementalParser implements IProverProcessOutputSink
 {
 
     private StringBuilder currentMessageBuffer;
     // private ITLAPMOutputSource source;
-    private IPath modulePath;
+    private IFile moduleFile;
     /**
      * The description of the prover launch.
      * Contains information about
@@ -74,9 +75,6 @@ public class TagBasedTLAPMOutputIncrementalParser
     public static final String START_TAG = DELIM + "BEGIN";
     public static final String END_TAG = DELIM + "END";
 
-    // public static final Pattern START_TAG_PATTERN = Pattern.compile(START_TAG);
-    // public static final Pattern END_TAG_PATTERN = Pattern.compile(END_TAG);
-
     /**
      * Called to stream text into this parser.
      * 
@@ -87,7 +85,7 @@ public class TagBasedTLAPMOutputIncrementalParser
      * @param text
      * @throws BadLocationException
      */
-    public void addIncrement(String text) throws BadLocationException
+    public void appendText(String text)
     {
         // System.out.println("New text : \n" + text);
         /*
@@ -122,12 +120,11 @@ public class TagBasedTLAPMOutputIncrementalParser
                      */
                     currentMessageBuffer.append(searchText.substring(0, endTagIndex));
 
-                    TLAPMMessage data = TLAPMMessage.parseMessage(currentMessageBuffer.toString(), modulePath
-                            .removeFileExtension().lastSegment());
+                    TLAPMMessage data = TLAPMMessage.parseMessage(currentMessageBuffer.toString(), moduleFile
+                            .getLocation().removeFileExtension().lastSegment());
 
                     if (data != null)
                     {
-                        // source.newData(data);
 
                         /*
                          * Create the appropriate marker for the
@@ -203,98 +200,6 @@ public class TagBasedTLAPMOutputIncrementalParser
                 }
             }
         }
-        /*
-         * Use a pattern matcher to search for start tags.
-         * 
-         * while(startTagMatcher.find)
-         *    currentMessageBuffer.append(all data between found
-         *                                start tag and previous start
-         *                                tag (or beginning of text if
-         *                                this is the first found start tag))
-         *    convert currentMessageBuffer to TLAPMData and send to source
-         *    set currentMessageBuffer to an empty buffer
-         */
-
-        /*
-         * The sub strings that fall between START_TAG's.
-         * 
-         * If the text is 
-         * 
-         * "@!!<field-name>:<field-value1>
-         * .
-         * .
-         * .
-         * @!!BEGIN
-         * @!!<field-name>:<field-value2>
-         * .
-         * .
-         * .
-         * @!!BEGIN
-         * @!!<field-name>:<field-value3>
-         * .
-         * ."
-         * 
-         * then this array has 3 elements:
-         * 1.) 
-         * "@!!<field-name>:<field-value1>
-         * .
-         * .
-         * ."
-         * 
-         * 2.) 
-         * "@!!<field-name>:<field-value2>
-         * .
-         * .
-         * ."
-         * 
-         * 3.)
-         * @!!<field-name>:<field-value3>
-         * .
-         * ."
-         * 
-         * 
-         * If text terminates with a start tag, then
-         * the last element of messageSegments will be an empty
-         */
-        // String[] messageSegments = text.split(START_TAG, -1);
-        //
-        // for (int i = 0; i < messageSegments.length; i++)
-        // {
-        // currentMessageBuffer.append(messageSegments[i]);
-        //
-        // if (i != messageSegments.length - 1)
-        // {
-        // /*
-        // * This message currently contained in currentMessageBuffer
-        // * should be complete because the input
-        // * text contains another start tag after this segment.
-        // *
-        // * 1.) Generate a TLAPMData for this message.
-        // * 2.) Clear the currentMessageBuffer to ready
-        // * it for the next message.
-        // */
-        // TLAPMMessage data = TLAPMMessage.parseMessage(currentMessageBuffer.toString(), modulePath
-        // .removeFileExtension().lastSegment());
-        // if (data != null)
-        // {
-        // source.newData(data);
-        //
-        // /*
-        // * Determine if the message is
-        // * giving the status of a proof step.
-        // * If it is, call the appropriate method
-        // * to create a marker for that proof step.
-        // */
-        // ProofStepStatus status = ProofStepStatusMarkerHelper.messageToStatus(data);
-        // if (status != null)
-        // {
-        // ProofStepStatusMarkerHelper.newStepStatus(status);
-        // }
-        // }
-        //
-        // currentMessageBuffer = new StringBuilder();
-        // }
-        // }
     }
 
     /**
@@ -302,31 +207,26 @@ public class TagBasedTLAPMOutputIncrementalParser
      * be used to report information about progress, and the description of the prover launch.
      * This contains information about the parameters used to launch the prover.
      * 
-     * @param modulePath
+     * @param moduleFile
      * @param monitor
      * @param description the description of the prover launch. Contains information about
      * the parameters used to launch the prover.
      */
-    public TagBasedTLAPMOutputIncrementalParser(IPath modulePath, IProgressMonitor monitor,
-            ProverLaunchDescription description)
+    public void initializeSink(IFile moduleFile, ProverLaunchDescription description, IProgressMonitor monitor)
     {
         currentMessageBuffer = new StringBuilder();
-        // source = new CachingTLAPMOutputSource(modulePath);
-        this.modulePath = modulePath;
+
+        this.moduleFile = moduleFile;
         this.monitor = monitor;
         this.description = description;
-
-        // TLAPMOutputSourceRegistry.getInstance().addSource(source);
     }
 
     /**
      * Called when no more text is to be
      * sent to this parser.
      */
-    public void onDone()
+    public void processFinished()
     {
-        // source.onDone();
-
     }
 
 }

@@ -352,7 +352,7 @@ public class ProverJob extends Job
                  * We pass in the progress monitor to allow listeners
                  * to report progress.
                  */
-                listener = new TLAPMBroadcastStreamListener(modulePath, description, monitor);
+                listener = new TLAPMBroadcastStreamListener(module, description, monitor);
 
                 /*
                  * Send a string to the listener indicating
@@ -485,6 +485,20 @@ public class ProverJob extends Job
             }
 
             EditorUtil.setReadOnly(module, false);
+
+            /*
+             * Always remove SANY markers at the end
+             * of the (attempted) run of the prover, regardless of
+             * whether it was successful or not because they
+             * are no longer needed.
+             */
+            try
+            {
+                ProverHelper.removeSANYStepMarkers(module);
+            } catch (CoreException e)
+            {
+                ProverUIActivator.logError("Error removing SANY step markers after prover finished running.", e);
+            }
         }
     }
 

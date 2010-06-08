@@ -2,7 +2,7 @@ package org.lamport.tla.toolbox.tool.prover.ui;
 
 import java.io.IOException;
 
-import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.ui.console.IOConsoleOutputStream;
 import org.eclipse.ui.console.MessageConsole;
@@ -44,7 +44,7 @@ public class ConsoleProverProcessOutputSink implements IProverProcessOutputSink
         }
     }
 
-    public void initializeSink(IPath modulePath, ProverLaunchDescription description, IProgressMonitor monitor)
+    public void initializeSink(IFile moduleFile, ProverLaunchDescription description, IProgressMonitor monitor)
     {
         // TODO Auto-generated method stub
 

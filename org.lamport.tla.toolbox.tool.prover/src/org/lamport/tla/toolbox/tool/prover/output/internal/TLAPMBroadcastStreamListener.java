@@ -1,17 +1,17 @@
 package org.lamport.tla.toolbox.tool.prover.output.internal;
 
-import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.debug.core.IStreamListener;
 import org.eclipse.debug.core.model.IStreamMonitor;
 import org.lamport.tla.toolbox.tool.prover.output.IProverProcessOutputSink;
 import org.lamport.tla.toolbox.tool.prover.ui.ConsoleProverProcessOutputSink;
 import org.lamport.tla.toolbox.tool.prover.ui.ProverUIActivator;
-import org.lamport.tla.toolbox.tool.prover.ui.output.ParsingProverProcessOutputSink;
+import org.lamport.tla.toolbox.tool.prover.ui.output.TagBasedTLAPMOutputIncrementalParser;
 
 /**
  * A listener that broadcasts streams to a {@link ConsoleProverProcessOutputSink}
- * and a {@link ParsingProverProcessOutputSink}.
+ * and a {@link TagBasedTLAPMOutputIncrementalParser}.
  * 
  * A stream is TLAPM output for a given module.
  * 
@@ -24,7 +24,7 @@ public class TLAPMBroadcastStreamListener implements IStreamListener
 
     /**
      * Constructs a stream listener for output for the given modulePath.
-     * This is the modulePath that will be sent to all listeners for TLAPM
+     * This is the module that will be sent to all listeners for TLAPM
      * output.
      * 
      * The constructor also takes a progress monitor. This monitor can be sent to listeners
@@ -32,13 +32,13 @@ public class TLAPMBroadcastStreamListener implements IStreamListener
      * 
      * @param monitor
      * 
-     * @param modulePathString.
+     * @param module
      * @param description the description of the prover launch. Contains information about
      * the parameters used to launch the prover.
      */
-    public TLAPMBroadcastStreamListener(IPath modulePath, ProverLaunchDescription description, IProgressMonitor monitor)
+    public TLAPMBroadcastStreamListener(IFile module, ProverLaunchDescription description, IProgressMonitor monitor)
     {
-        this.listeners = getRegisteredStreamManagers(modulePath, description, monitor);
+        this.listeners = getRegisteredStreamManagers(module, description, monitor);
     }
 
     /* (non-Javadoc)
@@ -85,22 +85,22 @@ public class TLAPMBroadcastStreamListener implements IStreamListener
     }
 
     /**
-     * Creates a {@link ConsoleProverProcessOutputSink} and a {@link ParsingProverProcessOutputSink}.
+     * Creates a {@link ConsoleProverProcessOutputSink} and a {@link TagBasedTLAPMOutputIncrementalParser}.
      * 
-     * Calls {@link IProverProcessOutputSink#initializeSink(IPath, ProverLaunchDescription, IProgressMonitor)} for each of those sinks
-     * with the modulePath, description, and monitor. The monitor can be used to report progress on TLC's output.
+     * Calls {@link IProverProcessOutputSink#initializeSink(IFile, ProverLaunchDescription, IProgressMonitor)} for each of those sinks
+     * with the module, description, and monitor. The monitor can be used to report progress on TLC's output.
      * 
      * @param monitor TODO
      * 
      * @return an array of the instantiated sinks.
      */
-    public static IProverProcessOutputSink[] getRegisteredStreamManagers(IPath modulePath,
+    public static IProverProcessOutputSink[] getRegisteredStreamManagers(IFile module,
             ProverLaunchDescription description, IProgressMonitor monitor)
     {
         IProverProcessOutputSink[] outputSinks = new IProverProcessOutputSink[] { new ConsoleProverProcessOutputSink(),
-                new ParsingProverProcessOutputSink() };
-        outputSinks[0].initializeSink(modulePath, description, monitor);
-        outputSinks[1].initializeSink(modulePath, description, monitor);
+                new TagBasedTLAPMOutputIncrementalParser() };
+        outputSinks[0].initializeSink(module, description, monitor);
+        outputSinks[1].initializeSink(module, description, monitor);
         return outputSinks;
     }
 }
