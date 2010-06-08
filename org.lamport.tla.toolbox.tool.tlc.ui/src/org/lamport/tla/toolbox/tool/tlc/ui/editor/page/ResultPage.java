@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Vector;
 
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.source.SourceViewer;
@@ -538,8 +537,6 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 
         stateTable.setHeaderVisible(true);
         stateTable.setLinesVisible(true);
-
-        ILaunchConfigurationWorkingCopy config = getConfig();
 
         StateSpaceLabelProvider.createTableColumns(stateTable, this);
 
