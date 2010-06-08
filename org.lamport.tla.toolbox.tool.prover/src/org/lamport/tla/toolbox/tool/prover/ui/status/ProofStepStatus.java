@@ -10,6 +10,14 @@ import tla2sany.st.Location;
  */
 public class ProofStepStatus
 {
+    /**
+     * Status indicating something about a step being proved.
+     */
+    public static final String PROVED = "proved";
+    /**
+     * Status indicating that something about a step has been omitted.
+     */
+    public static final String OMITTED = "omitted";
 
     /**
      * Status indicating that for a step, all obligations have proofs that are checked
