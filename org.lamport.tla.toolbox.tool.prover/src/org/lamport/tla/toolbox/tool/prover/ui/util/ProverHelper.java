@@ -332,7 +332,13 @@ public class ProverHelper
 
     /**
      * Creates a SANY marker for levelNode if it is a {@link TheoremNode} or a {@link UseOrHideNode}.
-     * If it has a proof, this method recursively calls it self on all children.
+     * If it has a proof, this method recursively calls it self on all children. The SANY location
+     * attribute for these markers is a string representation of the location of the node
+     * if it is a {@link UseOrHideNode} and the string representation of the location of the node
+     * {@link TheoremNode#getTheorem()} if it is a {@link TheoremNode}.
+     * 
+     * The methods {@link #locToString(Location)} and {@link #stringToLoc(String)} convert from
+     * {@link Location} to Strings and back.
      * 
      * See {@link ProverHelper#SANY_MARKER} for a description of
      * these markers.
@@ -350,7 +356,17 @@ public class ProverHelper
         if (levelNode instanceof UseOrHideNode || levelNode instanceof TheoremNode)
         {
             IMarker marker = module.createMarker(SANY_MARKER);
-            marker.setAttribute(SANY_LOC_ATR, locToString(levelNode.getLocation()));
+            if (levelNode instanceof UseOrHideNode)
+            {
+                marker.setAttribute(SANY_LOC_ATR, locToString(levelNode.getLocation()));
+            } else
+            {
+                /*
+                 * The location of a theorem node is the location of its statement,
+                 * The statement is returned by theoremNode.getTheorem().
+                 */
+                marker.setAttribute(SANY_LOC_ATR, locToString(((TheoremNode) levelNode).getTheorem().getLocation()));
+            }
         }
 
         if (levelNode instanceof TheoremNode)
@@ -427,8 +443,8 @@ public class ProverHelper
 
     /**
      * Returns the SANY step marker on the module whose SANY location
-     * is the same as the location passed to this method. Returns null
-     * if such a marker is not found.
+     * has the same begin and end line as the location passed to this method.
+     * Returns null if such a marker is not found.
      * 
      * See {@link ProverHelper#SANY_MARKER} for a description of
      * these markers.
@@ -453,7 +469,7 @@ public class ProverHelper
                 if (!sanyLocString.isEmpty())
                 {
                     Location sanyLoc = stringToLoc(sanyLocString);
-                    if (sanyLoc.equals(location))
+                    if (sanyLoc.beginLine() == location.beginLine() && sanyLoc.endLine() == location.endLine())
                     {
                         return sanyMarkers[i];
                     }
