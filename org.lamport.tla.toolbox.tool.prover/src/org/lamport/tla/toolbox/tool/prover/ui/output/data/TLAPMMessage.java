@@ -49,7 +49,7 @@ public abstract class TLAPMMessage
      * Type of message containing information on the
      * status of a proof step.
      */
-    public static final String STEP_STATUS_TYPE = "stepStatus";
+    public static final String STEP_STATUS_TYPE = "proof-step";
     /**
      * Type of message containing the number of obligations
      * in the region being proved or checked.
