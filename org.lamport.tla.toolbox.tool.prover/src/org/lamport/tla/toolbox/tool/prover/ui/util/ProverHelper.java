@@ -681,12 +681,12 @@ public class ProverHelper
                 IMarker newMarker = module.createMarker(statusStringToMarkerType(status.getStatus()));
                 Map markerAttributes = new HashMap(2);
                 // value based on whether a sany marker is found or not
-                int charStart;
-                int charEnd;
+                int newCharStart;
+                int newCharEnd;
                 if (sanyMarker != null)
                 {
-                    charStart = sanyMarker.getAttribute(IMarker.CHAR_START, 0);
-                    charEnd = sanyMarker.getAttribute(IMarker.CHAR_END, 0);
+                    newCharStart = sanyMarker.getAttribute(IMarker.CHAR_START, 0);
+                    newCharEnd = sanyMarker.getAttribute(IMarker.CHAR_END, 0);
                 } else
                 {
                     ProverUIActivator.logDebug("Existing SANY marker not found for location " + location
@@ -697,12 +697,33 @@ public class ProverHelper
                      * For marking a region that starts at offset o and has length l, the
                      * start character is o and the end character is o+l-1.
                      */
-                    charStart = messageRegion.getOffset();
-                    charEnd = messageRegion.getOffset() + messageRegion.getLength() - 1;
+                    newCharStart = messageRegion.getOffset();
+                    newCharEnd = messageRegion.getOffset() + messageRegion.getLength() - 1;
                 }
-                markerAttributes.put(IMarker.CHAR_START, new Integer(charStart));
-                markerAttributes.put(IMarker.CHAR_END, new Integer(charEnd));
+
+                /*
+                 * Remove any existing step status markers that overlap
+                 * with the new step status marker.
+                 */
+                IMarker[] existingMarkers = module.findMarkers(ProverHelper.STEP_STATUS_MARKER, true,
+                        IResource.DEPTH_ZERO);
+                for (int i = 0; i < existingMarkers.length; i++)
+                {
+                    IMarker existingMarker = existingMarkers[i];
+                    int existingCharStart = existingMarker.getAttribute(IMarker.CHAR_START, -1);
+                    int existingCharEnd = existingMarker.getAttribute(IMarker.CHAR_END, -1);
+
+                    // conditions for overlapping
+                    if (existingCharStart < newCharEnd && existingCharEnd > newCharStart)
+                    {
+                        existingMarker.delete();
+                    }
+                }
+
+                markerAttributes.put(IMarker.CHAR_START, new Integer(newCharStart));
+                markerAttributes.put(IMarker.CHAR_END, new Integer(newCharEnd));
                 newMarker.setAttributes(markerAttributes);
+
             } catch (CoreException e)
             {
                 ProverUIActivator.logError("Error creating new status marker.", e);
