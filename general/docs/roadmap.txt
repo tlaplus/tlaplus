@@ -272,8 +272,10 @@ determine how these instances are displayed in a viewer.
 -------------------------------------------------------------------
 INDEX TO USEFUL COMMENTS IN THE CODE
 
-Open Declaration Command
+Open Declaration Command 
   Its implementation is described in TLAEditor$OpenDeclarationHandler.
+  This also describes the implementation of hyperlinks displayed by
+    holding Control key and moving over the module.
   
 Attaching a Listener to Something
   The implementation of the graphing of columns of the "State space 
@@ -281,4 +283,4 @@ Attaching a Listener to Something
   in ResultPage.createTableColumns.  The listener and interesting
   stuff is documented in ResultPageColumnListener subclass of 
   ResultPage.
-   
+
