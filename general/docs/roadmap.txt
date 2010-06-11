@@ -251,7 +251,7 @@ not contain the modules on which the root module depends or the root
 module itself.  This makes sense because without a successful parse,
 it cannot be determined on which modules the root module depends.
 
-An IResource is the class that respresents a resource in the
+An IResource is the class that represents a resource in the
 workspace.  There is a good explanation of resources in the Eclipse
 Help Platform Plug-in Developer Guide Programmer's Guide.  A IResource
 allows setting persistent and session properties.  Persistent
@@ -262,7 +262,7 @@ persistent property in the private parseModule method in
 ModuleParserLauncher.
 
 The basic principle behind designing the widgets in the toolbox is to
-have a three components: a viewer, a content provider, and a class
+have three components: a viewer, a content provider, and a class
 that represents the data to appear.  The viewer does not know how the
 data is represented that it is to present.  The content provider takes
 instances of the class (Assignment for example) that represents the
