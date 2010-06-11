@@ -47,6 +47,7 @@ import org.lamport.tla.toolbox.util.pref.PreferenceStoreHelper;
 
 import tla2sany.semantic.DefStepNode;
 import tla2sany.semantic.InstanceNode;
+import tla2sany.semantic.LeafProofNode;
 import tla2sany.semantic.LevelNode;
 import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.NonLeafProofNode;
@@ -956,6 +957,16 @@ public class ResourceHelper
      * 
      * If that is not true, this method returns null.
      * 
+     * This method was modified by LL on 11 June 2010 so that if the line is in a leaf proof,
+     * then it returns the step that proof is proving.  More precisely, it returns that step
+     * if lineNum is between the lines on which the leaf proof begins and ends.  In this example:
+     * 
+     *   line 10 : <2>1. X
+     *   line 11 :   OBVIOUS <2>2. Y
+     *   
+     * if lineNum = 11 then the method returns the step <2>1.  This is weird, but it always does
+     * the right thing if a step always begins a line, which it should.
+     * 
      * @param levelNode
      * @param lineNum
      * @return
@@ -963,10 +974,9 @@ public class ResourceHelper
     public static LevelNode getLevelNodeFromTree(LevelNode levelNode, int lineNum)
     {
         /*
-         * Get the location of the step.
+         * Get the location of the step.    
          * 
-         * For a TheoremNode, the location of the
-         * step is from the beginning of the theorem
+         * For a TheoremNode, the step is from the beginning of the theorem
          * node to the end of the statement of the
          * theorem node. TheoremNode.getTheorem() returns the node
          * corresponding to the statement of the step (or theorem).
@@ -1004,37 +1014,43 @@ public class ResourceHelper
         if (levelNode instanceof TheoremNode)
         {
             /*
-             * Recursively search for a substep
-             * if the theorem node has a proof
-             * and lineNum is in the proof.
+             * If the theorem has a proof and the lineNum is in it,
+             * then if it is a non-leaf proof, recursively search for 
+             * a substep.  Otherwise, it is a leaf proof containing
+             * the lineNum and we return the theorem node.
              */
             TheoremNode theoremNode = (TheoremNode) levelNode;
 
             ProofNode proof = theoremNode.getProof();
-            if (proof != null && proof instanceof NonLeafProofNode)
+            if (proof != null)
             {
                 Location proofLoc = proof.getLocation();
                 if (lineNum >= proofLoc.beginLine() && lineNum <= proofLoc.endLine())
                 {
-
-                    NonLeafProofNode nonLeafProof = (NonLeafProofNode) proof;
-                    LevelNode[] steps = nonLeafProof.getSteps();
-
-                    for (int i = 0; i < steps.length; i++)
+                    if (proof instanceof NonLeafProofNode)
                     {
-                        LevelNode node = getLevelNodeFromTree(steps[i], lineNum);
-                        if (node != null)
-                        {
-                            return node;
-                        }
+                        NonLeafProofNode nonLeafProof = (NonLeafProofNode) proof;
+                        LevelNode[] steps = nonLeafProof.getSteps();
 
+                        for (int i = 0; i < steps.length; i++)
+                        {
+                            LevelNode node = getLevelNodeFromTree(steps[i], lineNum);
+                            if (node != null)
+                            {
+                                return node;
+                            }
+
+                        }
+                    }
+
+                    else
+                    {
+                        return levelNode;
                     }
                 }
-
             }
 
         }
-
         return null;
     }
 
