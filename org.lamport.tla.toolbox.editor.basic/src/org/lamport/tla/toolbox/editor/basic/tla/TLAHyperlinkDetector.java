@@ -14,10 +14,14 @@ import org.eclipse.ui.editors.text.FileDocumentProvider;
 import org.eclipse.ui.part.FileEditorInput;
 import org.lamport.tla.toolbox.editor.basic.actions.OpenDeclarationAction;
 import org.lamport.tla.toolbox.editor.basic.util.DocumentHelper;
+import org.lamport.tla.toolbox.editor.basic.util.EditorUtil;
+import org.lamport.tla.toolbox.editor.basic.util.EditorUtil.StringAndLocation;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 
 import tla2sany.parser.SyntaxTreeNode;
+import tla2sany.semantic.Context;
+import tla2sany.semantic.OpDefNode;
 import tla2sany.semantic.SymbolNode;
 import util.UniqueString;
 
@@ -41,6 +45,22 @@ public class TLAHyperlinkDetector extends AbstractHyperlinkDetector
     {
     }
 
+    /**
+     * This method first sets label to the token at the position indicated by the
+     * region.  If the module is parsed and unmodified, it uses EditorUtil.getTokenAt
+     * to do that from the syntax tree.  Otherwise, it uses DocumentHelper.getRegionExpandedBoth
+     * to try to do it from the actual text in the buffer.  This method, written by Simon,
+     * works only if the region actually indicates the entire token, if it is inside
+     * an Identifier, or in certain other cases if it is lucky.
+     * 
+     * It then currently tries to look up label in the module's symbol table.  It thus finds
+     * only globally defined symbols.  It should be modified so that, if that fails and 
+     * the module is parsed and unmodified, then it goes down the semantic tree trying to 
+     * find a local definition for the label. 
+     * 
+     * This was modified by LL on 12 June 2010 so that, for identifiers like Foo!bar!X, 
+     * it produces a hyperlink to the definition of X in the source module.
+     */
     public IHyperlink[] detectHyperlinks(ITextViewer textViewer, IRegion region, boolean canShowMultipleHyperlinks)
     {
         if (ToolboxHandle.getSpecObj() == null)
@@ -49,26 +69,65 @@ public class TLAHyperlinkDetector extends AbstractHyperlinkDetector
             return null;
         }
 
-        String label = null;
-
         IDocument document = textViewer.getDocument();
+
+        // Set goodLabel to the real label, obtained from the syntax tree.
+        StringAndLocation goodLabelAndLoc = EditorUtil.getTokenAt(document, region.getOffset(), region.getLength());
+
+        // Set label to the label to be used, which is goodLabel if that is not null,
+        // else is the label computed by Simon's approximate method that just looks at
+        // the actual text in the editor.
+        String label = null;
+        if (goodLabelAndLoc != null)
+        {
+            label = goodLabelAndLoc.string;
+            try
+            {
+                region = DocumentHelper.locationToRegion(document, goodLabelAndLoc.location);
+            } catch (BadLocationException e)
+            {
+                System.out.println("Bad location");
+                // If there's an exception, we just won't get
+                // a visible hyperlink.
+            }
+        }
+        if (goodLabelAndLoc != null)
+        {
+            System.out.println("Label = " + label);
+
+        } else
+        {
+            System.out.println("getCurrentToken returned null");
+        }
         try
         {
-            if (region.getLength() == 0)
+            if (label == null)
             {
-                region = DocumentHelper.getRegionExpandedBoth(document, region.getOffset(), DocumentHelper
-                        .getDefaultWordDetector());
-            }
-            label = document.get(region.getOffset(), region.getLength());
 
+                if (region.getLength() == 0)
+                {
+                    region = DocumentHelper.getRegionExpandedBoth(document, region.getOffset(), DocumentHelper
+                            .getDefaultWordDetector());
+                }
+                label = document.get(region.getOffset(), region.getLength());
+            }
             // System.out.println("Hyperlink request at position " + region.getOffset() + " for '" + label + "'");
 
-            SymbolNode resolvedSymbol = ToolboxHandle.getSpecObj().getExternalModuleTable().getRootModule()
-                    .getContext().getSymbol(UniqueString.uniqueStringOf(label));
+            Context context = ToolboxHandle.getSpecObj().getExternalModuleTable().getRootModule().getContext();
+            SymbolNode resolvedSymbol = context.getSymbol(UniqueString.uniqueStringOf(label));
 
             // try symbols (does not work for module nodes)
             if (resolvedSymbol != null)
             {
+                // If this symbol was imported by instantiation from
+                // another module, we set resolvedSymbol to its
+                // definition in that module.
+                if (resolvedSymbol instanceof OpDefNode) {
+                  OpDefNode opdef = (OpDefNode) resolvedSymbol;
+                  if (opdef.getSource() != null) {
+                      resolvedSymbol = opdef.getSource();
+                  }
+                }
                 SyntaxTreeNode csNode = (SyntaxTreeNode) resolvedSymbol.getTreeNode();
                 for (int i = 0; i < csNode.getAttachedComments().length; i++)
                 {

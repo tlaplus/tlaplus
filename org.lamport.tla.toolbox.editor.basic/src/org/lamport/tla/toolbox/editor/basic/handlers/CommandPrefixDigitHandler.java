@@ -28,8 +28,11 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.TextSelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
+import org.eclipse.ui.IEditorReference;
 import org.lamport.tla.toolbox.editor.basic.TLAEditor;
 import org.lamport.tla.toolbox.editor.basic.util.EditorUtil;
+import org.lamport.tla.toolbox.editor.basic.util.EditorUtil.StringAndLocation;
+import org.lamport.tla.toolbox.util.UIHelper;
 
 /**
  * @author lamport
@@ -67,6 +70,14 @@ public class CommandPrefixDigitHandler extends AbstractHandler implements IHandl
      */
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
+IEditorReference[] references = UIHelper.getActivePage().getEditorReferences();
+
+StringAndLocation token = EditorUtil.getCurrentToken();
+if (token == null) {
+    System.out.println("Null returned");
+} else {
+System.out.println(token.toString());
+}
         TLAEditor editor = EditorUtil.getTLAEditorWithFocus() ;  // gets the editor to which command applies
         if (editor == null) {
             return null;
