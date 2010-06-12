@@ -25,7 +25,14 @@ import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 import tla2sany.parser.SyntaxTreeNode;
+import tla2sany.semantic.FormalParamNode;
+import tla2sany.semantic.LetInNode;
 import tla2sany.semantic.ModuleNode;
+import tla2sany.semantic.NonLeafProofNode;
+import tla2sany.semantic.OpApplNode;
+import tla2sany.semantic.OpDefNode;
+import tla2sany.semantic.SemanticNode;
+import tla2sany.semantic.SymbolNode;
 import tla2sany.semantic.TheoremNode;
 import tla2sany.st.Location;
 import tla2sany.st.SyntaxTreeConstants;
@@ -144,10 +151,11 @@ public class EditorUtil
     {
         TLAEditor editor = EditorUtil.getTLAEditorWithFocus();
         // This method is called only when there is a TLAEditor with
-        // the focus, so I don't see how it could be null.  However,
+        // the focus, so I don't see how it could be null. However,
         // while debugging, that did happen in some unreproducible
         // fashion.
-        if (editor == null) {
+        if (editor == null)
+        {
             return null;
         }
         IFile moduleFile = ((FileEditorInput) editor.getEditorInput()).getFile();
@@ -314,6 +322,85 @@ public class EditorUtil
             // e.printStackTrace();
         }
         return loc;
+    }
+
+    /**
+     * Returns the definition or declaration node that the symbol with name
+     * `name' would have if it appeared within `node' at the position
+     * given by `location', or if `node' has a getContext() method and
+     * `name' is defined in that context.   It returns null if
+     * no such definition or declaration node is found.  
+     * 
+     * It is implemented by using the getChildren() method to walk down the semantic
+     * tree towards the symbol's location.
+     * 
+     * @param symbol
+     * @param module
+     * @param location
+     */
+    public static SymbolNode lookupSymbol(UniqueString name, SemanticNode curNode, Location location)
+    {
+        SymbolNode foundSymbol = null;
+        boolean notDone = true;
+        if (curNode instanceof ModuleNode)
+        {
+            foundSymbol = ((ModuleNode) curNode).getContext().getSymbol(name);
+        } else if (curNode instanceof LetInNode)
+        {
+            foundSymbol = ((LetInNode) curNode).context.getSymbol(name);
+        } else if (curNode instanceof NonLeafProofNode)
+        {
+            foundSymbol = ((NonLeafProofNode) curNode).getContext().getSymbol(name);
+        } else if (curNode instanceof OpApplNode)
+        {
+            OpApplNode oan = (OpApplNode) curNode;
+            FormalParamNode[] fpn = oan.getUnbdedQuantSymbols();
+            if (fpn != null)
+            {
+                for (int i = 0; i < fpn.length; i++)
+                {
+                    if (fpn[i].getName() == name)
+                    {
+                        return fpn[i];
+                    }
+                }
+            }
+
+            FormalParamNode[][] fpnA = oan.getBdedQuantSymbolLists();
+            if (fpnA != null)
+            {
+                for (int i = 0; i < fpnA.length; i++)
+                {
+                    for (int j = 0; j < fpnA[i].length; j++)
+                    {
+                        if (fpnA[i][j].getName() == name)
+                        {
+                            return fpn[i];
+                        }
+                    }
+                }
+            }
+        } else if (curNode instanceof OpDefNode)
+        {
+            // TODO add this processing.
+        }
+        if (foundSymbol != null)
+        {
+            return foundSymbol;
+        }
+        SemanticNode[] children = curNode.getChildren();
+        if (children == null)
+        {
+            return null;
+        }
+        for (int i = 0; i < children.length; i++)
+        {
+            if (locationContainment(location, children[i].getLocation()))
+            {
+                return lookupSymbol(name, children[i], location);
+            }
+        }
+        return null;
     }
 
     /**

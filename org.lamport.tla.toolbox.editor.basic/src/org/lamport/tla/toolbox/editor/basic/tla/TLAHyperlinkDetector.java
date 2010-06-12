@@ -58,6 +58,10 @@ public class TLAHyperlinkDetector extends AbstractHyperlinkDetector
      * the module is parsed and unmodified, then it goes down the semantic tree trying to 
      * find a local definition for the label. 
      * 
+     * It also needs to be modified to look up the symbol in the module whose editor
+     * has the focus, instead of in the root module--at least, if the spec
+     * is parsed and that module in the spec.
+     * 
      * This was modified by LL on 12 June 2010 so that, for identifiers like Foo!bar!X, 
      * it produces a hyperlink to the definition of X in the source module.
      */
