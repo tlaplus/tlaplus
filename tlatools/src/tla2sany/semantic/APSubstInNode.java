@@ -414,6 +414,19 @@ public class APSubstInNode extends LevelNode {
     return ret;
   }
 
+  /**
+   * The children of this node are the body and the expressions
+   * being substituted for symbols.
+   */
+  public SemanticNode[] getChildren() {
+     SemanticNode[] res = new SemanticNode[this.substs.length + 1];
+     res[0] = this.body;
+     for (int i = 0; i < substs.length; i++) {
+         res[i+1] = substs[i].getExpr();
+     }
+     return res;
+  }
+
   public final void walkGraph(Hashtable semNodesTable) {
     Integer uid = new Integer(myUID);
     if (semNodesTable.get(uid) != null) return;

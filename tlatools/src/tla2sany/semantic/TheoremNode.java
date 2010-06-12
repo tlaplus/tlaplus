@@ -328,6 +328,18 @@ public final boolean levelCheck(int iter) {
     return res ;
   }
 
+  /**
+   * The children are the statement and the proof (if there is one).
+   */
+  
+  public SemanticNode[] getChildren() {
+    if (this.proof == null) {
+    return new SemanticNode[] {this.theoremExprOrAssumeProve};
+    }
+    return new SemanticNode[] {this.theoremExprOrAssumeProve, 
+                               this.proof};
+  }
+
   public final void walkGraph(Hashtable semNodesTable) {
     Integer uid = new Integer(myUID);
     if (semNodesTable.get(uid) != null) return;

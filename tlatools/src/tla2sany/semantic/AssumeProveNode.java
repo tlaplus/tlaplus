@@ -315,6 +315,19 @@ public class AssumeProveNode extends LevelNode {
 //           "ArgLevelParams: "      + this.getArgLevelParams()      + "\n";
 //  }
 
+  
+  /**
+   * The children of this node are the assumes and prove expressions.
+   */
+  public SemanticNode[] getChildren() {
+     SemanticNode[] res = new SemanticNode[this.assumes.length + 1];
+     res[assumes.length] = this.prove;
+     for (int i = 0; i < assumes.length; i++) {
+         res[i] = assumes[i];
+     }
+     return res;
+  }
+
   public final void walkGraph(Hashtable h) {
     Integer uid = new Integer(myUID);
     if (h.get(uid) != null) return;

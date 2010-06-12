@@ -216,6 +216,20 @@ implements ExploreNode, LevelConstants {
 //           "ArgLevelParams: "      + this.argLevelParams      + "\n" ;
 //  }
 
+  public SemanticNode[] getChildren() {
+      SemanticNode[] res = 
+         new SemanticNode[this.opDefs.length + this.insts.length + 1];
+      res[res.length-1] = this.body;
+      int i;
+      for (i = 0; i < this.opDefs.length; i++) {
+          res[i] = this.opDefs[i];
+      }
+      for (int j = 0; j < this.insts.length; j++) {
+          res[i+j] = this.insts[j];
+      }
+      return res;
+   }
+  
   public final void walkGraph(Hashtable semNodesTable) {
     Integer uid = new Integer(myUID);
 

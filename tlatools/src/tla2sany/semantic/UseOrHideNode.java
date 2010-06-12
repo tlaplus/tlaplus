@@ -121,6 +121,21 @@ public class UseOrHideNode extends LevelNode {
     ***********************************************************************/
    }
 
+  /*
+   * The children are the facts.
+   * @see tla2sany.semantic.SemanticNode#getChildren()
+   */
+  public SemanticNode[] getChildren() {
+      if (this.facts == null || this.facts.length == 0) {
+          return null;
+      }
+      SemanticNode[] res = new SemanticNode[this.facts.length];
+      for (int i = 0; i < facts.length; i++) {
+          res[i] = facts[i];
+      }
+      return res;
+   }
+  
   public String toString(int depth) {
     if (depth <= 0) return "";
     String ret = "\n*UseOrHideNode:\n"

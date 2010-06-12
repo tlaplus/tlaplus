@@ -76,6 +76,21 @@ public class LeafProofNode extends ProofNode {
     if (this.levelChecked >= iter) return this.levelCorrect;
     return this.levelCheckSubnodes(iter, facts) ;
    }
+  
+  /*
+   * The children are the facts.
+   * @see tla2sany.semantic.SemanticNode#getChildren()
+   */
+  public SemanticNode[] getChildren() {
+      if (this.facts == null || this.facts.length == 0) {
+          return null;
+      }
+      SemanticNode[] res = new SemanticNode[this.facts.length];
+      for (int i = 0; i < facts.length; i++) {
+          res[i] = facts[i];
+      }
+      return res;
+   }
 
   public void walkGraph(Hashtable semNodesTable) {
     Integer uid = new Integer(myUID);

@@ -977,6 +977,23 @@ public class ModuleNode extends SymbolNode {
            "ArgLevelParams: "      + getArgLevelParams()      + "\n";
   }
 
+  private SemanticNode[] children = null;
+  public SemanticNode[] getChildren() {
+      if (children != null) {
+          return children;
+      }
+      children = 
+         new SemanticNode[this.opDefs.length + this.topLevel.length];
+      int i;
+      for (i = 0; i < this.opDefs.length; i++) {
+          children[i] = this.opDefs[i];
+      }
+      for (int j = 0; j < this.topLevel.length; j++) {
+          children[i+j] = this.topLevel[j];
+      }
+      return children;
+   }
+
   public final void walkGraph (Hashtable semNodesTable) {
     Integer uid = new Integer(myUID);
 

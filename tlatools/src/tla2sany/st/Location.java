@@ -289,7 +289,12 @@ public final class Location
         if (this == nullLoc)
         {
             return UNKNOWN_LOCATION;
-        } else if (!this.name.equals(unknown) && this.bColumn == 0 && this.eColumn == 0 && this.bLine == 0
+        } else if (this.name == null) // this arm added by LL on 12 Jun 2010
+        {
+            return (LINE + bLine + COL + bColumn + TO_LINE + eLine + COL + eColumn + OF_MODULE + "null");
+        }
+        else if (
+             !this.name.equals(unknown) && this.bColumn == 0 && this.eColumn == 0 && this.bLine == 0
                 && this.eLine == 0)
         {
             return IN_MODULE + name; // Changed from "Unknown location in module..." by LL on 4 Aug 2009

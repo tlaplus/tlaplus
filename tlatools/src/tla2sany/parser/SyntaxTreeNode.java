@@ -339,7 +339,39 @@ public class SyntaxTreeNode implements TreeNode, SyntaxTreeConstants,
      return aPre;
   }
 
-
+  /**
+   * Through some piece of stupidity whose origin is lost to history,
+   * the heirs() method declares its return value type to be
+   * TreeNode[].  This results in a lot of needless type casting, 
+   * since the only class that implements the TreeNode interface
+   * seems to be SyntaxTreeNode.  Eclipse doesn't seem to be able
+   * to find the errors that are caused by simply changing the
+   * return type of heirs() to SyntaxTreeNode[]; it just finds errors
+   * when it runs ant.  So, LL added this method, which is line-for-line
+   * identical to heirs() except for the declaration of the return type.
+   */
+  public final SyntaxTreeNode[] getHeirs() {
+    if ( zero == null && one == null ) {
+      return nullArray;
+    } else {
+      SyntaxTreeNode result[];
+      if ( zero != null ) {
+        if ( one != null ) {
+          result = new SyntaxTreeNode[ zero.length + one.length ];
+          System.arraycopy(zero, 0, result, 0, zero.length);
+          System.arraycopy(one, 0, result, zero.length, one.length);
+        } else {
+          result = new SyntaxTreeNode[ zero.length ];
+          System.arraycopy(zero, 0, result, 0, zero.length);
+        }
+      } else {
+        result = new SyntaxTreeNode[ one.length ];
+        System.arraycopy(one, 0, result, 0, one.length);
+      }
+      return result;
+    }
+  }
+  
   public final TreeNode[] heirs() {
     if ( zero == null && one == null ) {
       return nullArray;
@@ -361,7 +393,7 @@ public class SyntaxTreeNode implements TreeNode, SyntaxTreeConstants,
       return result;
     }
   }
-
+  
 
   public final String         getFilename() {return fileName.toString(); }
 

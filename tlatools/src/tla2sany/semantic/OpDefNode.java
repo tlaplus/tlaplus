@@ -1126,6 +1126,15 @@ public class OpDefNode extends OpDefOrDeclNode
     }
   }
 
+  
+  /**
+   * The body is the node's only child.
+   */
+  
+  public SemanticNode[] getChildren() {
+    return new SemanticNode[] {this.body};
+  }
+  
   /**
    * walkGraph finds all reachable nodes in the semantic graph
    * and inserts them in the Hashtable semNodesTable for use by 

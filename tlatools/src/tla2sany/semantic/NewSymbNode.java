@@ -151,6 +151,18 @@ public class NewSymbNode extends LevelNode {
 //           "ArgLevelParams: "      + this.getArgLevelParams()      + "\n";
 //  }
 
+  /**
+   * The body is the node's only child.
+   */
+  
+  public SemanticNode[] getChildren() {
+    if (this.set == null) {
+        return null;
+    } else {
+      return new SemanticNode[] {this.set};
+    }
+  }
+ 
   public final void walkGraph(Hashtable semNodesTable) {
     Integer uid = new Integer(myUID);
     if (semNodesTable.get(uid) != null) return;

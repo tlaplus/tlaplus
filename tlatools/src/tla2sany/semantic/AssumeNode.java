@@ -155,6 +155,14 @@ public AssumeNode(TreeNode stn, ExprNode expr, ModuleNode mn,
   }
 
   /**
+   * The assume expression is the node's only child.
+   */
+  
+  public SemanticNode[] getChildren() {
+    return new SemanticNode[] {this.assumeExpr};
+  }
+
+  /**
    * walkGraph finds all reachable nodes in the semantic graph and
    * inserts them in the Hashtable semNodesTable for use by the
    * Explorer tool.

@@ -369,7 +369,18 @@ public UniqueString getStepName()
            "ArgLevelConstraints: " + this.argLevelConstraints + "\n" +
            "ArgLevelParams: "      + this.argLevelParams      + "\n";
   }
-
+  /**
+   * The children of an instance are the expressions beings
+   * substituted for parameters.
+   */
+  public SemanticNode[] getChildren() {
+      SemanticNode[] res = new SemanticNode[substs.length];
+      for (int i = 0; i < substs.length; i++) {
+          res[i] = substs[i].getExpr();
+      }
+      return res;
+   }
+  
   public final void walkGaph(Hashtable semNodesTable) {
     Integer uid = new Integer(myUID);
     if (semNodesTable.get(uid) != null) return;

@@ -141,6 +141,29 @@ implements ASTConstants, ExploreNode, LevelConstants {
   */
 
   /**
+   *  Returns the children of this node in the semantic tree.  For a
+   *  node that normally has no children, it should return null.  It may
+   *  not be obvious what the children should be for some kinds of semantic 
+   *  nodes; check the method for the particular kind of node to find
+   *  out what it actually returns.
+   *  
+   *  Initially, this method is not implemented for all kinds of semantic
+   *  nodes.  It will be implemented as needed for whatever we decide to
+   *  use it for.  The initial implementation is for being able to 
+   *  walk down the semantic tree to find the definition or declaration
+   *  of a symbol.
+   *  
+   *  This should probably be optimized by adding a field to a semantic
+   *  node to cache the value of getChildren() when it's computed.
+   *  However, perhaps that's only necessary for a ModuleNode.
+   *  
+   *  This default method returns null.
+   */
+  public SemanticNode[] getChildren() {
+      return null;
+  }
+  
+  /**
    * Default implementations of walkGraph() to be inherited by subclasses
    * of SemanticNode for implementing ExploreNode interface; the purpose
    * of walkgraph is to find all reachable nodes in the semantic graph

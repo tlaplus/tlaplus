@@ -326,6 +326,15 @@ public class ThmOrAssumpDefNode extends SymbolNode
 //    return this.body.levelDataToString();
 //   }
 
+
+
+  /**
+   *  The body is the node's only child.
+   */
+  public SemanticNode[] getChildren() {
+    return new SemanticNode[] {this.body};
+  }
+
   public final void walkGraph(Hashtable semNodesTable) {
     Integer uid = new Integer(myUID);
     if (semNodesTable.get(uid) != null) return;

@@ -1046,6 +1046,19 @@ public class OpApplNode extends ExprNode implements ExploreNode {
 //           "ArgLevelParams: "      + this.argLevelParams      + "\n" ;
 //  }
 
+  public SemanticNode[] getChildren() {
+      SemanticNode[] res = 
+         new SemanticNode[this.ranges.length + this.operands.length];
+      int i;
+      for (i = 0; i < this.ranges.length; i++) {
+          res[i] = this.ranges[i];
+      }
+      for (int j = 0; j < this.operands.length; j++) {
+          res[i+j] = this.operands[j];
+      }
+      return res;
+   }
+  
   /**
    * walkGraph finds all reachable nodes in the semantic graph
    * and inserts them in the Hashtable semNodesTable for use by the Explorer tool.

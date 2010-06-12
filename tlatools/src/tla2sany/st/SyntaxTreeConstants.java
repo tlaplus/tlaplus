@@ -55,7 +55,7 @@ public interface SyntaxTreeConstants {
   int  N_FunctionParam  =  357 ;
   int  N_GeneralId  =  358 ;
   int  N_GenInfixOp  =  359 ;
-  int  N_GenNonExpPrefixOp  =  360 ;
+  int  N_GenNonExpPrefixOp  =  360 ; // I think this is used only for unary -
   int  N_GenPostfixOp  =  361 ;
   int  N_GenPrefixOp  =  362 ;
   int  N_IdentDecl  =  363 ;

@@ -150,6 +150,21 @@ public class NonLeafProofNode extends ProofNode {
     return this.levelCheckSubnodes(iter, ln) ;
    }
 
+  /*
+   * The children are the steps.
+   * @see tla2sany.semantic.SemanticNode#getChildren()
+   */
+  public SemanticNode[] getChildren() {
+      if (this.steps == null || this.steps.length == 0) {
+          return null;
+      }
+      SemanticNode[] res = new SemanticNode[this.steps.length];
+      for (int i = 0; i < steps.length; i++) {
+          res[i] = steps[i];
+      }
+      return res;
+   }
+
   public void walkGraph(Hashtable semNodesTable) {
     Integer uid = new Integer(myUID);
     if (semNodesTable.get(uid) != null) return;
