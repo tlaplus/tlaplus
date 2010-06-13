@@ -41,10 +41,12 @@ import org.lamport.tla.toolbox.spec.nature.TLAParsingBuilder;
 import org.lamport.tla.toolbox.spec.parser.IParseConstants;
 import org.lamport.tla.toolbox.spec.parser.ParseResult;
 import org.lamport.tla.toolbox.spec.parser.ParseResultBroadcaster;
+import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.ui.preference.EditorPreferencePage;
 import org.lamport.tla.toolbox.util.pref.IPreferenceConstants;
 import org.lamport.tla.toolbox.util.pref.PreferenceStoreHelper;
 
+import tla2sany.modanalyzer.SpecObj;
 import tla2sany.semantic.DefStepNode;
 import tla2sany.semantic.InstanceNode;
 import tla2sany.semantic.LeafProofNode;
@@ -455,6 +457,26 @@ public class ResourceHelper
         return getParentDirName(resource.getLocation().toOSString());
     }
 
+    /**
+     * Return the ModuleNode for the module named moduleName,
+     * if one exists from the last time the spec was parsed.
+     * Otherwise, it returns null.
+     * 
+     * There is no guarantee that this ModuleNode bears any
+     * relation to the current state of the module's .tla
+     * file.
+     * @param moduleName
+     * @return
+     */
+    public static ModuleNode getModuleNode(String moduleName) {
+        SpecObj specObj = ToolboxHandle.getSpecObj();
+        if (specObj == null) {
+            return null;
+        }
+        return specObj.getExternalModuleTable().getModuleNode(
+                UniqueString.uniqueStringOf(moduleName));
+    }
+    
     /**
      * Retrieves the name of the module (filename without extension)
      * 

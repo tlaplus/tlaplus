@@ -12,6 +12,7 @@ import org.eclipse.jface.text.hyperlink.AbstractHyperlinkDetector;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.eclipse.ui.editors.text.FileDocumentProvider;
 import org.eclipse.ui.part.FileEditorInput;
+import org.lamport.tla.toolbox.editor.basic.TLAEditor;
 import org.lamport.tla.toolbox.editor.basic.actions.OpenDeclarationAction;
 import org.lamport.tla.toolbox.editor.basic.util.DocumentHelper;
 import org.lamport.tla.toolbox.editor.basic.util.EditorUtil;
@@ -19,10 +20,13 @@ import org.lamport.tla.toolbox.editor.basic.util.EditorUtil.StringAndLocation;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 
+import tla2sany.modanalyzer.SpecObj;
 import tla2sany.parser.SyntaxTreeNode;
 import tla2sany.semantic.Context;
+import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.OpDefNode;
 import tla2sany.semantic.SymbolNode;
+import tla2sany.st.Location;
 import util.UniqueString;
 
 /**
@@ -82,9 +86,11 @@ public class TLAHyperlinkDetector extends AbstractHyperlinkDetector
         // else is the label computed by Simon's approximate method that just looks at
         // the actual text in the editor.
         String label = null;
+        Location location = null; // LL.
         if (goodLabelAndLoc != null)
         {
             label = goodLabelAndLoc.string;
+            location = goodLabelAndLoc.location;
             try
             {
                 region = DocumentHelper.locationToRegion(document, goodLabelAndLoc.location);
@@ -94,15 +100,11 @@ public class TLAHyperlinkDetector extends AbstractHyperlinkDetector
                 // If there's an exception, we just won't get
                 // a visible hyperlink.
             }
-        }
-        if (goodLabelAndLoc != null)
-        {
-            System.out.println("Label = " + label);
-
         } else
         {
-            System.out.println("getCurrentToken returned null");
+            location = EditorUtil.getLocationAt(document, region.getOffset(), region.getLength());
         }
+
         try
         {
             if (label == null)
@@ -117,8 +119,23 @@ public class TLAHyperlinkDetector extends AbstractHyperlinkDetector
             }
             // System.out.println("Hyperlink request at position " + region.getOffset() + " for '" + label + "'");
 
-            Context context = ToolboxHandle.getSpecObj().getExternalModuleTable().getRootModule().getContext();
-            SymbolNode resolvedSymbol = context.getSymbol(UniqueString.uniqueStringOf(label));
+            // Context context = ToolboxHandle.getSpecObj().getExternalModuleTable().getRootModule().getContext();
+            // SymbolNode resolvedSymbol = context.getSymbol(UniqueString.uniqueStringOf(label));
+
+            // Find the module editor and, if it exists, set moduleNode to 
+            // the ModuleNode of the module it is editing.  If that's not null,
+            // look up the label at its location in that module.
+            TLAEditor editor = EditorUtil.getTLAEditorWithFocus();
+            if (editor == null) {
+                return null;
+            }
+            String moduleName = editor.getModuleName();
+            ModuleNode moduleNode = ResourceHelper.getModuleNode(moduleName);
+            if (moduleNode == null) {
+                return null;
+            }
+            SymbolNode resolvedSymbol = EditorUtil.lookupSymbol(UniqueString.uniqueStringOf(label), moduleNode,
+                    location);
 
             // try symbols (does not work for module nodes)
             if (resolvedSymbol != null)
@@ -126,11 +143,13 @@ public class TLAHyperlinkDetector extends AbstractHyperlinkDetector
                 // If this symbol was imported by instantiation from
                 // another module, we set resolvedSymbol to its
                 // definition in that module.
-                if (resolvedSymbol instanceof OpDefNode) {
-                  OpDefNode opdef = (OpDefNode) resolvedSymbol;
-                  if (opdef.getSource() != null) {
-                      resolvedSymbol = opdef.getSource();
-                  }
+                if (resolvedSymbol instanceof OpDefNode)
+                {
+                    OpDefNode opdef = (OpDefNode) resolvedSymbol;
+                    if (opdef.getSource() != null)
+                    {
+                        resolvedSymbol = opdef.getSource();
+                    }
                 }
                 SyntaxTreeNode csNode = (SyntaxTreeNode) resolvedSymbol.getTreeNode();
                 for (int i = 0; i < csNode.getAttachedComments().length; i++)

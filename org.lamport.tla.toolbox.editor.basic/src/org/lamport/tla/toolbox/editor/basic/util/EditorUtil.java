@@ -332,7 +332,11 @@ public class EditorUtil
      * no such definition or declaration node is found.  
      * 
      * It is implemented by using the getChildren() method to walk down the semantic
-     * tree towards the symbol's location.
+     * tree towards the symbol's location.  The implementation is simplified by
+     * the fact that TLA+ does not allow local re-declaration of symbols, so it's
+     * safe to look for a definition outside of where it can occur--for example,
+     * in \A x \in S : P, it's OK to check if a symbol inside of S is declared
+     * by the x. 
      * 
      * @param symbol
      * @param module
@@ -375,14 +379,19 @@ public class EditorUtil
                     {
                         if (fpnA[i][j].getName() == name)
                         {
-                            return fpn[i];
+                            return fpnA[i][j];
                         }
                     }
                 }
             }
         } else if (curNode instanceof OpDefNode)
         {
-            // TODO add this processing.
+            FormalParamNode[] params = ((OpDefNode) curNode).getParams();
+            for (int i = 0; i < params.length; i++) {
+                if (name == params[i].getName()) {
+                    return params[i];
+                }
+            }
         }
         if (foundSymbol != null)
         {

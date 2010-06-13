@@ -759,6 +759,16 @@ public class TLAEditor extends TextEditor
         super.dispose();
     }
 
+    /**
+     * Gets the module name from the name of the file that
+     * this editor is editing.
+     *  
+     * @return
+     */
+    public String getModuleName() {
+        IFile moduleFile = ((FileEditorInput) this.getEditorInput()).getFile();
+       return ResourceHelper.getModuleName(moduleFile);
+    }
     public TextViewer getViewer()
     {
         return (TextViewer) getSourceViewer();
