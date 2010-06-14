@@ -527,11 +527,13 @@ public class TraceExplorerDataProvider extends TLCModelLaunchDataProvider
                     Arrays.sort(finalStateNewTraceVariables, varComparator);
                 } else if (finalStateOriginalTrace.isBackToState())
                 {
-                    error.addState(TLCState.BACK_TO_STATE(finalStateOriginalTrace.getStateNumber()));
+                    error.addState(TLCState.BACK_TO_STATE(finalStateOriginalTrace.getStateNumber(), ModelHelper
+                            .getModelName(getConfig().getFile())));
                 } else
                 {
                     // stuttering trace
-                    error.addState(TLCState.STUTTERING_STATE(finalStateOriginalTrace.getStateNumber()));
+                    error.addState(TLCState.STUTTERING_STATE(finalStateOriginalTrace.getStateNumber(), ModelHelper
+                            .getModelName(getConfig().getFile())));
                 }
 
             } else

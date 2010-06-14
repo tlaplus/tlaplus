@@ -41,7 +41,6 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.ScrollBar;
@@ -329,7 +328,7 @@ public class TLCErrorView extends ViewPart
 
             public void mouseDown(MouseEvent e)
             {
-                TLCUIHelper.openTLCLocationHyperlink(text, e);
+                TLCUIHelper.openTLCLocationHyperlink(text, e, getCurrentConfigFileHandle());
             }
 
             public void mouseDoubleClick(MouseEvent e)

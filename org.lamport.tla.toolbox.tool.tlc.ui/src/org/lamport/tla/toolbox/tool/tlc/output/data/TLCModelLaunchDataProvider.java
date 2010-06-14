@@ -1,8 +1,6 @@
 package org.lamport.tla.toolbox.tool.tlc.output.data;
 
-import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Vector;
@@ -109,7 +107,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
      *  that this time bears any relation to startTimeStamp.
      */
     private long startTime = 0;
-    
+
     /**
      * @return the startTime
      */
@@ -243,7 +241,8 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
             case MP.STATE:
                 Assert.isNotNull(this.lastDetectedError,
                         "The state encountered without the error describing the reason for it. This is a bug.");
-                this.lastDetectedError.addState(TLCState.parseState(outputMessage));
+                this.lastDetectedError.addState(TLCState.parseState(outputMessage, ModelHelper.getModelName(getConfig()
+                        .getFile())));
                 break;
             case MP.ERROR:
             case MP.TLCBUG:
@@ -350,7 +349,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                     isTLCStarted = true;
                     this.startTimestamp = GeneralOutputParsingHelper.parseTLCTimestamp(outputMessage);
                     this.startTime = System.currentTimeMillis();
-                    
+
                     informPresenter(ITLCModelLaunchDataPresenter.START_TIME);
                     break;
                 case EC.TLC_FINISHED:
@@ -373,7 +372,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                     informPresenter(ITLCModelLaunchDataPresenter.COVERAGE);
                     break;
                 case EC.TLC_COVERAGE_VALUE:
-                    CoverageInformationItem item = CoverageInformationItem.parse(outputMessage);
+                    CoverageInformationItem item = CoverageInformationItem.parse(outputMessage, null);
                     if (!item.getModule().equals(ModelHelper.MC_MODEL_NAME))
                     {
                         // only add coverage of the spec files
@@ -505,7 +504,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                     try
                     {
                         // this is the error text
-                        errorMessage = message;//tlcOutputDocument.get(tlcRegion.getOffset(), tlcRegion.getLength());
+                        errorMessage = message;// tlcOutputDocument.get(tlcRegion.getOffset(), tlcRegion.getLength());
 
                         // create the error document
                         Document errorDocument = new Document();

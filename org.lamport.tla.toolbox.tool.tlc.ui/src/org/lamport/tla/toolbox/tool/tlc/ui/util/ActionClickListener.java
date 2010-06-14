@@ -6,6 +6,7 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
+import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 import tla2sany.st.Location;
@@ -13,7 +14,8 @@ import tla2sany.st.Location;
 /**
  * A listener that will respond to the user double clicking or selecting
  * an action by opening the module containing that action and highlighting
- * the action
+ * the action. Can jump to the location in a saved module editor if such an editor
+ * is already open.
  * 
  * Currently, double clicking or selecting something in a viewer with this as
  * a listener will only do something if the selection is an instance
@@ -27,6 +29,10 @@ import tla2sany.st.Location;
  */
 public class ActionClickListener implements IDoubleClickListener, ISelectionChangedListener
 {
+
+    public ActionClickListener()
+    {
+    }
 
     public void doubleClick(DoubleClickEvent event)
     {
@@ -55,7 +61,17 @@ public class ActionClickListener implements IDoubleClickListener, ISelectionChan
                     Location location = moduleLocatable.getModuleLocation();
                     if (location != null)
                     {
-                        UIHelper.jumpToLocation(location);
+                        /*
+                         * jumpToNested will be true if the location could
+                         * be shown in a nested saved module editor. If it is false,
+                         * we jump to the regular TLA editor instead.
+                         */
+                        boolean jumpedToNested = TLCUIHelper.jumpToSavedLocation(location, ModelHelper
+                                .getModelByName(moduleLocatable.getModelName()));
+                        if (!jumpedToNested)
+                        {
+                            UIHelper.jumpToLocation(location);
+                        }
 
                         /*
                          * The following code was commented out by DR on May 6, 2010

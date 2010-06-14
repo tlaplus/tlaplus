@@ -4,6 +4,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.eclipse.core.runtime.Assert;
+import org.eclipse.debug.core.ILaunchConfiguration;
+import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.IRegion;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.custom.StyledText;
@@ -11,9 +14,13 @@ import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Event;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.texteditor.ITextEditor;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
+import org.lamport.tla.toolbox.util.AdapterFactory;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 import tla2sany.st.Location;
@@ -51,7 +58,7 @@ public class TLCUIHelper
      * This handles both creating the appearance of the hyperlink and storing
      * the module location that should be shown when the link is opened.
      * 
-     * When this method is used to create the links, {@link TLCUIHelper#openTLCLocationHyperlink(StyledText, Event)}
+     * When this method is used to create the links, {@link TLCUIHelper#openTLCLocationHyperlink(StyledText, Event, ILaunchConfiguration)}
      * should be used to open the link.
      * 
      * @param styledText
@@ -127,10 +134,14 @@ public class TLCUIHelper
      * is a link created by {@link TLCUIHelper#setTLCLocationHyperlinks(StyledText)}, then
      * this method jumps to the location in the module corresponding to the link.
      * 
+     * Passing in the launch configuration allows this to jump to the location in a saved
+     * module, if an editor is open on such a module.
+     * 
      * @param styledText
      * @param trigger
+     * @param config
      */
-    public static void openTLCLocationHyperlink(StyledText styledText, MouseEvent trigger)
+    public static void openTLCLocationHyperlink(StyledText styledText, MouseEvent trigger, ILaunchConfiguration config)
     {
         try
         {
@@ -141,7 +152,11 @@ public class TLCUIHelper
                 Object data = range.data;
                 if (data instanceof Location)
                 {
-                    UIHelper.jumpToLocation((Location) data);
+                    boolean jumpToSavedModule = jumpToSavedLocation((Location) data, config);
+                    if (!jumpToSavedModule)
+                    {
+                        UIHelper.jumpToLocation((Location) data);
+                    }
                 }
             }
         } catch (IllegalArgumentException e)
@@ -159,7 +174,7 @@ public class TLCUIHelper
      * Sets the data field of the hyperlink to location.
      * 
      * The data field can be used to jump to the location when the link
-     * is opened. Use {@link TLCUIHelper#openTLCLocationHyperlink(StyledText, MouseEvent)}
+     * is opened. Use {@link TLCUIHelper#openTLCLocationHyperlink(StyledText, MouseEvent, ILaunchConfiguration)}
      * to open such links.
      * 
      * @param location
@@ -184,6 +199,43 @@ public class TLCUIHelper
         // the hyperlink is opened
         style.data = location;
         return style;
+    }
+
+    /**
+     * Attempts to jump to the location in a saved version
+     * of the module for the given model. Returns true if successful.
+     * 
+     * @param location
+     * @param configuration
+     * @return
+     */
+    public static boolean jumpToSavedLocation(Location location, ILaunchConfiguration configuration)
+    {
+        IEditorPart editor = ModelHelper.getEditorWithModelOpened(configuration);
+        if (editor instanceof ModelEditor)
+        {
+            ModelEditor modelEditor = (ModelEditor) editor;
+
+            ITextEditor moduleEditor = modelEditor.getSavedModuleEditor(location.source());
+
+            if (moduleEditor != null)
+            {
+                try
+                {
+                    IRegion jumpToRegion = AdapterFactory.locationToRegion(moduleEditor.getDocumentProvider()
+                            .getDocument(moduleEditor.getEditorInput()), location);
+                    UIHelper.getActivePage().activate(modelEditor);
+                    modelEditor.setActiveEditor(moduleEditor);
+                    moduleEditor.selectAndReveal(jumpToRegion.getOffset(), jumpToRegion.getLength());
+                    return true;
+                } catch (BadLocationException e)
+                {
+                    TLCUIActivator.logError("Error converting location to region in saved module. The location is "
+                            + location, e);
+                }
+            }
+        }
+        return false;
     }
 
 }

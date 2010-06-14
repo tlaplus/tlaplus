@@ -24,22 +24,24 @@ public class TLCState implements IModuleLocatable
 
     /**
      * A factory for stuttering states
+     * @param modelName the name of the model for which this is a state
      */
-    protected static TLCState STUTTERING_STATE(int number)
+    protected static TLCState STUTTERING_STATE(int number, String modelName)
     {
-        TLCState state = new TLCState(number);
+        TLCState state = new TLCState(number, modelName);
         state.stuttering = true;
         return state;
     }
 
     /**
      * A factory for Back to state states
+     * @param modelName the name of the model for which this is a state
      * @param number2
      * @return
      */
-    protected static TLCState BACK_TO_STATE(int number)
+    protected static TLCState BACK_TO_STATE(int number, String modelName)
     {
-        TLCState state = new TLCState(number);
+        TLCState state = new TLCState(number, modelName);
         state.isBackToState = true;
         return state;
     }
@@ -47,9 +49,10 @@ public class TLCState implements IModuleLocatable
     /**
      * Parses the state information
      * @param input
+     * @param modelName the name of the model for which this is a state
      * @return
      */
-    public static TLCState parseState(String input)
+    public static TLCState parseState(String input, String modelName)
     {
         // state number
         int index = input.indexOf(COLON);
@@ -64,13 +67,13 @@ public class TLCState implements IModuleLocatable
         String label = input.substring(index + 1, index2);
         if (label.indexOf(STUTTERING) != -1)
         {
-            return STUTTERING_STATE(number);
+            return STUTTERING_STATE(number, modelName);
         } else if (label.indexOf(BACK_TO_STATE) != -1)
         {
-            return BACK_TO_STATE(number);
+            return BACK_TO_STATE(number, modelName);
         } else
         {
-            TLCState state = new TLCState(number);
+            TLCState state = new TLCState(number, modelName);
             state.label = label;
             state.variablesAsString = input.substring(index2 + 1);
             state.variables = TLCState.parseVariables(state.variablesAsString);
@@ -144,15 +147,26 @@ public class TLCState implements IModuleLocatable
     private String label;
     private String variablesAsString;
     private TLCVariable[] variables = new TLCVariable[0];
-    /*
+    /**
      * Contains the location of the action
      * which caused this state
      */
     private Location location;
+    /**
+     * The name of the model for which this
+     * is a state.
+     */
+    private String modelName;
 
-    public TLCState(int number)
+    /**
+     * 
+     * @param number the 1-based index of this state in the trace
+     * @param modelName the name of the model for which this is a state
+     */
+    public TLCState(int number, String modelName)
     {
         this.number = number;
+        this.modelName = modelName;
     }
 
     public boolean isStuttering()
@@ -250,10 +264,15 @@ public class TLCState implements IModuleLocatable
             {
                 result.append(var.getValue().toSimpleString());
             }
-            
+
             result.append("\n");
 
         }
         return result.toString();
+    }
+
+    public String getModelName()
+    {
+        return modelName;
     }
 }

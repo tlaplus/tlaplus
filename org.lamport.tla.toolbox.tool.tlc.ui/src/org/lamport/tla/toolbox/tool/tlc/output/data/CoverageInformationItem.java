@@ -17,20 +17,23 @@ public class CoverageInformationItem implements IModuleLocatable
 
     private String locationString;
     private Location location;
+    private String modelName;
     private long count;
 
     /**
      * Creates an simple item storing information about a coverage at a certain location
-     * @param module
      * @param location
      * @param count
+     * @param modelName the name of the model for which this is coverage information
+     * @param module
      */
 
-    public CoverageInformationItem(Location location, long count)
+    public CoverageInformationItem(Location location, long count, String modelName)
     {
         this.location = location;
         this.locationString = this.location.toString();
         this.count = count;
+        this.modelName = modelName;
     }
 
     public final String getModule()
@@ -51,16 +54,17 @@ public class CoverageInformationItem implements IModuleLocatable
     /**
      * Parses the coverage information item from a string
      * @param outputMessage
+     * @param modelName the name of the model for which this is coverage information
      * @return
      */
-    public static CoverageInformationItem parse(String outputMessage)
+    public static CoverageInformationItem parse(String outputMessage, String modelName)
     {
 
         // "  line 84, col 32 to line 85, col 73 of module AtomicBakery: 1012492"
         outputMessage = outputMessage.trim();
         int index = outputMessage.indexOf(COLON);
         return new CoverageInformationItem(Location.parseLocation(outputMessage.substring(0, index)), Long
-                .parseLong(outputMessage.substring(index + COLON.length())));
+                .parseLong(outputMessage.substring(index + COLON.length())), modelName);
     }
 
     /**
@@ -73,9 +77,23 @@ public class CoverageInformationItem implements IModuleLocatable
         return outputMessage.substring(outputMessage.lastIndexOf(AT) + AT.length());
     }
 
+    /**
+     * The {@link Location} in the module.
+     * @return
+     */
     public Location getModuleLocation()
     {
         return location;
+    }
+
+    /**
+     * The name of the model.
+     * 
+     * @return
+     */
+    public String getModelName()
+    {
+        return modelName;
     }
 
 }

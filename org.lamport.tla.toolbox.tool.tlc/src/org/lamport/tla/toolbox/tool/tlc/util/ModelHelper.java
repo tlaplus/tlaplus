@@ -585,7 +585,11 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
      */
     public static IEditorPart getEditorWithModelOpened(ILaunchConfiguration model)
     {
-        return UIHelper.getActivePage().findEditor(new FileEditorInput(model.getFile()));
+        if (model != null)
+        {
+            return UIHelper.getActivePage().findEditor(new FileEditorInput(model.getFile()));
+        }
+        return null;
     }
 
     /**

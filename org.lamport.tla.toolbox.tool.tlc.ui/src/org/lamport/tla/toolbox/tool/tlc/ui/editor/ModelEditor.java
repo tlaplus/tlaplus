@@ -897,6 +897,29 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
         }
     }
 
+    /**
+     * Returns the nested editor instance open on moduleName (without the .tla extension).
+     * Returns null if no such editor is open in this model editor.
+     * 
+     * @param moduleName
+     * @return
+     */
+    public ITextEditor getSavedModuleEditor(String moduleName)
+    {
+        for (int i = 0; i < getPageCount(); i++)
+        {
+            IEditorPart nestedEditor = getEditor(i);
+            if (nestedEditor != null
+                    && nestedEditor instanceof ITextEditor
+                    && ((FileEditorInput) nestedEditor.getEditorInput()).getName().equals(
+                            ResourceHelper.getModuleFileName(moduleName)))
+            {
+                return (ITextEditor) nestedEditor;
+            }
+        }
+        return null;
+    }
+
     /*
      * (non-Javadoc)
      * 
