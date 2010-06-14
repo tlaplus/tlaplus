@@ -39,6 +39,10 @@ import tla2sany.st.Location;
  * to locations. See {@link DefaultPositionUpdater} for the default implementation
  * of how sticky pointers are maintained for {@link Position}'s.
  * 
+ * Note that the positions of the proof and statement are not interpretted by eclipse
+ * in any way. Only the offset and length fields for this class (that are inherited
+ * from {@link Position}) are used by eclipse to determine how the fold is displayed.
+ * 
  * @author Daniel Ricketts
  *
  */
@@ -107,8 +111,8 @@ public class TLAProofPosition extends Position implements IProjectionPosition
          *      
          * In other words, it takes the offset of the fold and moves it back until it finds the start
          * of a line and takes the offset+length of a fold and moves it back until it finds the
-         * start of a line. It then expands all lines in between and including those two lines. See
-         * ProjectionViewer.addMasterDocumentRange() to see the exact implementation.
+         * start of a line. It then expands all lines in between and including the start line but excluding
+         * the end line. See ProjectionViewer.addMasterDocumentRange() to see the exact implementation.
          * 
          * I think this is a silly way of doing things. The interface IProjectionPosition
          * allows the position to compute what lines are collapsed using the method
@@ -231,6 +235,24 @@ public class TLAProofPosition extends Position implements IProjectionPosition
          */
         IRegion toFold = alignRegion(new Region(firstLineOffset, lastLineInfo.getOffset() + lastLineInfo.getLength()
                 - firstLineOffset), document);
+
+        /*
+         * The following line of code expands the position so that it ends at the end of the
+         * region being collapsed. If this wasn't done then it would be possible to create
+         * a situation in which a region that extends past the end of this position
+         * is collapsed. When the fold for this position is expanded, not all of
+         * it would be shown.
+         * 
+         * If the following line of code were removed, the following scenario
+         * would create disappearing text. Place the caret at the beginning of the
+         * line after a fold. Delete one character. Collapse the fold. Try to expand
+         * the fold. All of the text in the fold will not reappear.
+         * 
+         * This is necessary because of the way in which eclipse expands folds.
+         * Read the comment in the constructor to understand how eclipse
+         * expands folds.
+         */
+        length = toFold.getOffset() + toFold.getLength() - offset;
 
         if (toFold != null)
         {
