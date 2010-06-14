@@ -7,12 +7,28 @@ import java.util.Map.Entry;
 
 import tla2sany.st.Location;
 
+/**
+ * Contains data about the status of a proof step.
+ * 
+ * @author Daniel Ricketts
+ *
+ */
 public class StepStatusMessage extends TLAPMMessage
 {
 
     private Location location;
     private String status;
 
+    /**
+     * Returns the location describing the step.
+     * This location is consistent with SANY Locations
+     * in that the end column corresponds to the column before the last
+     * character in the location.
+     * For example, if the location described the string
+     * "ab", then begin column would be n and end column would be n+1.
+     * 
+     * @return
+     */
     public Location getLocation()
     {
         return location;
