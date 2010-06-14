@@ -4,14 +4,18 @@ import java.util.List;
 import java.util.Vector;
 
 /**
- * This class is responsible for the storage of the dependency information between the modules 
- * 
+ * This class is responsible for the storage of the dependency information between the modules.
+ * How it does it is made as obscure as possible.  It gratuitously introduces the
+ * DoubleHashedTable class, a class without documentation that could not possibly be used
+ * for anything except implementing this class.  The DoubleHashedTable class has two fields
+ * that somehow are storing the imported-by and imported-from relations.
  * 
  * @author Simon Zambrovski
  * @version $Id$
  */
 public class ParserDependencyStorage
 {
+    
     private DoubleHashedTable moduleStore = null;
 
     public ParserDependencyStorage()

@@ -1,3 +1,9 @@
+To find the methods that Eclipse is using to implement something:
+   Alt-Shift-F1:
+     Brings up information about active editor of view or dialog.
+   Alt-Shift-F2 + click on menu & click on menu item:
+     Brings up information about implementation of some menu items.
+     
 org.lamport.tla.toolbox.tool.tlc.ui
  ui/editor
   ModelEditor 

@@ -26,6 +26,7 @@ import tla2sany.semantic.Context;
 import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.OpDefNode;
 import tla2sany.semantic.SymbolNode;
+import tla2sany.semantic.ThmOrAssumpDefNode;
 import tla2sany.st.Location;
 import util.UniqueString;
 
@@ -135,7 +136,7 @@ public class TLAHyperlinkDetector extends AbstractHyperlinkDetector
                 return null;
             }
             SymbolNode resolvedSymbol = EditorUtil.lookupSymbol(UniqueString.uniqueStringOf(label), moduleNode,
-                    location);
+                    location, null);
 
             // try symbols (does not work for module nodes)
             if (resolvedSymbol != null)
@@ -190,7 +191,13 @@ public class TLAHyperlinkDetector extends AbstractHyperlinkDetector
 
                 try
                 {
-                    // find the line in the document
+                    // Get the location to highlight.  If it's an OpDefNode, just highlight the
+                    // left-hand side.
+                    if (resolvedSymbol instanceof OpDefNode) {
+                        csNode = csNode.getHeirs()[0];
+                    } else if (resolvedSymbol instanceof ThmOrAssumpDefNode) {
+                        csNode = csNode.getHeirs()[1];
+                    }
                     IRegion startLineRegion = document.getLineInformation(csNode.getLocation().beginLine() - 1);
                     IRegion endLineRegion = document.getLineInformation(csNode.getLocation().endLine() - 1);
 

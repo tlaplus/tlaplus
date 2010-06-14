@@ -251,6 +251,13 @@
             id="org.lamport.tla.toolbox.editor.basic.returnFromOpenDeclaration"
             name="Return From Open Declaration">
       </command>
+      <command
+            categoryId="org.eclipse.ui.category.textEditor"
+            defaultHandler="org.lamport.tla.toolbox.editor.basic.handlers.ShowDefinitionsHandler"
+            description="Displays a list of high-level definitions of the module."
+            id="org.lamport.tla.toolbox.editor.basic.showDefinitions"
+            name="Show Definitions">
+      </command>
 
    </extension>
    <extension
@@ -416,6 +423,12 @@
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="F4">
       </key>
+      <key
+            commandId="org.lamport.tla.toolbox.editor.basic.showDefinitions"
+            contextId="org.eclipse.ui.contexts.window"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="F5">
+      </key>
       
    </extension>
    <extension
@@ -425,6 +438,10 @@
 			</command>
    <command
          commandId="org.lamport.tla.toolbox.editor.basic.returnFromOpenDeclaration"
+         style="push">
+   </command>
+   <command
+         commandId="org.lamport.tla.toolbox.editor.basic.showDefinitions"
          style="push">
    </command>
 		</menuContribution>

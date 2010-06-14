@@ -5,21 +5,17 @@ import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IEditorReference;
-import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.part.FileEditorInput;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.editor.basic.TLAEditor;
 import org.lamport.tla.toolbox.editor.basic.TLAEditorAndPDFViewer;
 import org.lamport.tla.toolbox.spec.parser.IParseConstants;
-import org.lamport.tla.toolbox.spec.parser.ModuleParserLauncher;
 import org.lamport.tla.toolbox.spec.parser.ParseResult;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
@@ -342,9 +338,10 @@ public class EditorUtil
      * @param module
      * @param location
      */
-    public static SymbolNode lookupSymbol(UniqueString name, SemanticNode curNode, Location location)
+    public static SymbolNode lookupSymbol(UniqueString name, SemanticNode curNode, Location location,
+            SymbolNode defaultResult)
     {
-        SymbolNode foundSymbol = null;
+        SymbolNode foundSymbol =  null;
         boolean notDone = true;
         if (curNode instanceof ModuleNode)
         {
@@ -365,7 +362,9 @@ public class EditorUtil
                 {
                     if (fpn[i].getName() == name)
                     {
-                        return fpn[i];
+                        // return  fpn[i]; 
+                        foundSymbol = fpn[i];
+                        break;
                     }
                 }
             }
@@ -379,7 +378,10 @@ public class EditorUtil
                     {
                         if (fpnA[i][j].getName() == name)
                         {
-                            return fpnA[i][j];
+                            // return fpnA[i][j];
+                            foundSymbol = fpnA[i][j];
+                            i = fpnA.length;
+                            break;
                         }
                     }
                 }
@@ -389,27 +391,29 @@ public class EditorUtil
             FormalParamNode[] params = ((OpDefNode) curNode).getParams();
             for (int i = 0; i < params.length; i++) {
                 if (name == params[i].getName()) {
-                    return params[i];
+                    // return params[i];
+                    foundSymbol = params[i];
+                    break;
                 }
             }
         }
-        if (foundSymbol != null)
+        if (foundSymbol == null)
         {
-            return foundSymbol;
+            foundSymbol = defaultResult;
         }
         SemanticNode[] children = curNode.getChildren();
         if (children == null)
         {
-            return null;
+            return foundSymbol;
         }
         for (int i = 0; i < children.length; i++)
         {
             if (locationContainment(location, children[i].getLocation()))
             {
-                return lookupSymbol(name, children[i], location);
+                foundSymbol = lookupSymbol(name, children[i], location, foundSymbol);
             }
         }
-        return null;
+        return foundSymbol;
     }
 
     /**
