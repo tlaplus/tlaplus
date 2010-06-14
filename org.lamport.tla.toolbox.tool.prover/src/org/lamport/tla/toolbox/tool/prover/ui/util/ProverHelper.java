@@ -374,9 +374,9 @@ public class ProverHelper
             marker.setAttribute(IMarker.CHAR_START, locRegion.getOffset());
             /*
              * For marking a region that starts at offset o and has length l, the
-             * start character is o and the end character is o+l-1.
+             * start character is o and the end character is o+l.
              */
-            marker.setAttribute(IMarker.CHAR_END, locRegion.getOffset() + locRegion.getLength() - 1);
+            marker.setAttribute(IMarker.CHAR_END, locRegion.getOffset() + locRegion.getLength());
         }
 
         if (levelNode instanceof TheoremNode)
@@ -614,10 +614,10 @@ public class ProverHelper
                 IRegion obRegion = AdapterFactory.locationToRegion(document, location);
                 /*
                  * For marking a region that starts at offset o and has length l, the
-                 * start character is o and the end character is o+l-1.
+                 * start character is o and the end character is o+l.
                  */
                 marker.setAttribute(IMarker.CHAR_START, obRegion.getOffset());
-                marker.setAttribute(IMarker.CHAR_END, obRegion.getOffset() + obRegion.getLength() - 1);
+                marker.setAttribute(IMarker.CHAR_END, obRegion.getOffset() + obRegion.getLength());
 
                 // DEBUG
                 // System.out.println("Marker created for obligation from message \n" + message);
@@ -678,7 +678,21 @@ public class ProverHelper
             IMarker sanyMarker = findSANYMarker(module, location);
             try
             {
-                IMarker newMarker = module.createMarker(statusStringToMarkerType(status.getStatus()));
+                /*
+                 * If the status string does not correspond
+                 * to a marker type, then do not create a marker.
+                 */
+                String markerType = statusStringToMarkerType(status.getStatus());
+
+                if (markerType == null)
+                {
+                    ProverUIActivator
+                            .logDebug("Status of proof step does not correspond to an existing marker type. The status is "
+                                    + status.getStatus());
+                    return;
+                }
+
+                IMarker newMarker = module.createMarker(markerType);
                 Map markerAttributes = new HashMap(2);
                 // value based on whether a sany marker is found or not
                 int newCharStart;
@@ -695,10 +709,10 @@ public class ProverHelper
                     IRegion messageRegion = AdapterFactory.locationToRegion(location);
                     /*
                      * For marking a region that starts at offset o and has length l, the
-                     * start character is o and the end character is o+l-1.
+                     * start character is o and the end character is o+l.
                      */
                     newCharStart = messageRegion.getOffset();
-                    newCharEnd = messageRegion.getOffset() + messageRegion.getLength() - 1;
+                    newCharEnd = messageRegion.getOffset() + messageRegion.getLength();
                 }
 
                 /*
@@ -754,11 +768,11 @@ public class ProverHelper
         // IRegion stepRegion = AdapterFactory.locationToRegion(document, location);
         // /*
         // * For marking a region that starts at offset o and has length l, the
-        // * start character is o and the end character is o+l-1.
+        // * start character is o and the end character is o+l.
         // */
         // markerAttributes.put(IMarker.CHAR_START, new Integer(stepRegion.getOffset()));
         // markerAttributes
-        // .put(IMarker.CHAR_END, new Integer(stepRegion.getOffset() + stepRegion.getLength() - 1));
+        // .put(IMarker.CHAR_END, new Integer(stepRegion.getOffset() + stepRegion.getLength()));
         //
         // newMarker.setAttributes(markerAttributes);
         //
@@ -861,9 +875,9 @@ public class ProverHelper
              * In the following, we subtract 1 to get the end char.
              * 
              * For a marker representing a region that starts at offset o and has length l, the
-             * start character is o and the end character is o+l-1.
+             * start character is o and the end character is o+l.
              */
-            int treeEndChar = document.getLineOffset(endLine) + document.getLineLength(endLine) - 1;
+            int treeEndChar = document.getLineOffset(endLine) + document.getLineLength(endLine);
 
             // get all existing step status markers on the module
             IMarker[] markers = module.findMarkers(STEP_STATUS_MARKER, true, IResource.DEPTH_ZERO);

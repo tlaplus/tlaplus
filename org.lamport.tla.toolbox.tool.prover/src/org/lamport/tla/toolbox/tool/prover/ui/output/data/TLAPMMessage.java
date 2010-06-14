@@ -369,17 +369,28 @@ public abstract class TLAPMMessage
         {
             /*
              * Attempt to parse bl, bc, el, ec from
-             * the field value.
+             * the locString.
              * 
-             * fieldValue should be of the form:
+             * locString should be of the form:
              * 
              * "bl:bc:el:ec"
              * 
+             * For tlapm messages, ec corresponds to the
+             * column after the last character in the location.
+             * For example, if the location described the string
+             * "ab", then bc would be n and ec would be n+2.
+             * 
+             * This is not consistent with SANY Locations, in which
+             * the end column corresponds to the column before the last
+             * character in the location. In the previous example, bc
+             * would be n and ec would be n+1. We want the Locations to be
+             * consistent in the Toolbox, so we subtract 1 from the ec
+             * reported by the tlapm. 
              */
             String[] coordinates = locString.split(":");
             Assert.isTrue(coordinates.length >= 4, "Not enough coordinates found in location string : " + locString);
             return new Location(UniqueString.uniqueStringOf(moduleName), Integer.parseInt(coordinates[0]), Integer
-                    .parseInt(coordinates[1]), Integer.parseInt(coordinates[2]), Integer.parseInt(coordinates[3]));
+                    .parseInt(coordinates[1]), Integer.parseInt(coordinates[2]), Integer.parseInt(coordinates[3]) - 1);
         } catch (NumberFormatException e)
         {
             ProverUIActivator.logError("Error parsing location from TLAPM message. Location string : " + locString, e);
