@@ -30,8 +30,6 @@ import org.lamport.tla.toolbox.tool.prover.output.internal.ProverLaunchDescripti
 import org.lamport.tla.toolbox.tool.prover.ui.ProverUIActivator;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.ObligationStatusMessage;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.StepStatusMessage;
-import org.lamport.tla.toolbox.tool.prover.ui.output.data.TLAPMMessage;
-import org.lamport.tla.toolbox.tool.prover.ui.status.ProofStepStatus;
 import org.lamport.tla.toolbox.util.AdapterFactory;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
@@ -467,7 +465,7 @@ public class ProverHelper
                 if (!sanyLocString.isEmpty())
                 {
                     Location sanyLoc = stringToLoc(sanyLocString);
-                    if (sanyLoc.beginLine() == location.beginLine() && sanyLoc.endLine() == location.endLine())
+                    if (sanyLoc.beginLine() == location.beginLine()/* && sanyLoc.endLine() == location.endLine()*/)
                     {
                         return sanyMarkers[i];
                     }
@@ -481,38 +479,17 @@ public class ProverHelper
     }
 
     /**
-     * Converts a {@link TLAPMMessage} to a {@link ProofStepStatus}. Returns
-     * null if the message is not a message about the status of a proof step.
-     * The proof step status can be added as a marker to the module by calling
-     * {@link ProverHelper#newStepStatus(ProofStepStatus)}.
-     * 
-     * It seems unnecessary to convert from a message to this proof step
-     * status object, but I'm using this method in case we decide that the
-     * Toolbox has to compute the status of proof steps from messages rather
-     * than receiving the status of proof steps in the messages.
-     * 
-     * @param message
-     * @return
-     */
-    public static ProofStepStatus messageToStatus(TLAPMMessage message)
-    {
-        if (message instanceof StepStatusMessage)
-        {
-            StepStatusMessage stepMessage = (StepStatusMessage) message;
-            if (stepMessage.getLocation() != null && stepMessage.getStatus() != null)
-            {
-                return new ProofStepStatus(stepMessage.getStatus(), stepMessage.getLocation());
-            }
-        }
-        return null;
-
-    }
-
-    /**
      * Converts the status string to the correct marker type.
-     * The status string should be one of {@link ProofStepStatus#FULLY_CHECKED},
-     * {@link ProofStepStatus#CHECK_OR_EXPL_OMIT}, {@link ProofStepStatus#WRITTEN_PROOFS_CHECKED},
-     * or {@link ProofStepStatus#FAILED_OBS_FOR_STEP}. If the input is not one of these, this
+     * The status string should be one of : 
+     * 
+     * {@link #STEP_CHECKED_MARKER}
+     * {@link #STEP_CHECKING_FAILED}
+     * {@link #STEP_MISSING_MARKER}
+     * {@link #STEP_OMITTED_MARKER}
+     * {@link #STEP_PROVED_MARKER}
+     * {@link #STEP_PROVING_FAILED_MARKER}
+     * 
+     * If the input is not one of these, this
      * method will return null.
      * 
      * @param status
@@ -520,24 +497,24 @@ public class ProverHelper
      */
     public static String statusStringToMarkerType(String status)
     {
-        if (status.equals(ProofStepStatus.FULLY_CHECKED))
+        if (status.equals(StepStatusMessage.CHECKED))
         {
-            return ProverHelper.FULLY_CHECKED_MARKER;
-        } else if (status.equals(ProofStepStatus.CHECK_OR_EXPL_OMIT))
+            return STEP_CHECKED_MARKER;
+        } else if (status.equals(StepStatusMessage.CHECKING_FAILED))
         {
-            return ProverHelper.CHECK_OR_EXPL_OMIT_MARKER;
-        } else if (status.equals(ProofStepStatus.WRITTEN_PROOFS_CHECKED))
+            return STEP_CHECKING_FAILED;
+        } else if (status.equals(StepStatusMessage.MISSING_PROOFS))
         {
-            return ProverHelper.WRITTEN_PROOFS_CHECKED_MARKER;
-        } else if (status.equals(ProofStepStatus.FAILED_OBS_FOR_STEP))
+            return STEP_MISSING_MARKER;
+        } else if (status.equals(StepStatusMessage.OMITTED))
         {
-            return ProverHelper.FAILED_OBS_FOR_STEP_MARKER;
-        } else if (status.equals(ProofStepStatus.PROVED))
+            return STEP_OMITTED_MARKER;
+        } else if (status.equals(StepStatusMessage.PROVED))
         {
-            return ProverHelper.FULLY_CHECKED_MARKER;
-        } else if (status.equals(ProofStepStatus.OMITTED))
+            return STEP_PROVED_MARKER;
+        } else if (status.equals(StepStatusMessage.PROVING_FAILED))
         {
-            return ProverHelper.WRITTEN_PROOFS_CHECKED_MARKER;
+            return STEP_PROVING_FAILED_MARKER;
         }
         return null;
     }
@@ -649,7 +626,7 @@ public class ProverHelper
      * 
      * @param status
      */
-    public static void newStepStatus(ProofStepStatus status)
+    public static void newStepStatus(StepStatusMessage status)
     {
         if (status == null)
         {
@@ -713,6 +690,7 @@ public class ProverHelper
                      */
                     newCharStart = messageRegion.getOffset();
                     newCharEnd = messageRegion.getOffset() + messageRegion.getLength();
+                    return;
                 }
 
                 /*
@@ -951,21 +929,29 @@ public class ProverHelper
     }
 
     /**
-     * Marker type indicating that for a step, there exists an obligation that was rejected.
+     * Marker type corresponding to the status {@link StepStatusMessage#PROVING_FAILED}
      */
-    public static final String FAILED_OBS_FOR_STEP_MARKER = "org.lamport.tla.toolbox.tool.prover.ui.obligationFailedForStep";
+    public static final String STEP_PROVING_FAILED_MARKER = "org.lamport.tla.toolbox.tool.prover.ui.stepProvingFailed";
     /**
-     * Marker type indicating that for a step, all written proofs are checked.
+     * Marker type corresponding to the status {@link StepStatusMessage#CHECKING_FAILED}
      */
-    public static final String WRITTEN_PROOFS_CHECKED_MARKER = "org.lamport.tla.toolbox.tool.prover.ui.writtenProofsCheckedStep";
+    public static final String STEP_CHECKING_FAILED = "org.lamport.tla.toolbox.tool.prover.ui.stepCheckingFailed";
     /**
-     * Marker type indicating that for a step, all obligations have proofs or proof omitted that are checked.
+     * Marker type corresponding to the status {@link StepStatusMessage#MISSING_PROOFS}
      */
-    public static final String CHECK_OR_EXPL_OMIT_MARKER = "org.lamport.tla.toolbox.tool.prover.ui.checkedOrExplicitOmitStep";
+    public static final String STEP_MISSING_MARKER = "org.lamport.tla.toolbox.tool.prover.ui.stepMissing";
     /**
-     * Marker type indicating that for a step, all obligations have proofs that are checked
+     * Marker type corresponding to the status {@link StepStatusMessage#OMITTED}
      */
-    public static final String FULLY_CHECKED_MARKER = "org.lamport.tla.toolbox.tool.prover.ui.fullyCheckedStep";
+    public static final String STEP_OMITTED_MARKER = "org.lamport.tla.toolbox.tool.prover.ui.stepOmitted";
+    /**
+     * Marker type corresponding to the status {@link StepStatusMessage#CHECKED}
+     */
+    public static final String STEP_CHECKED_MARKER = "org.lamport.tla.toolbox.tool.prover.ui.stepChecked";
+    /**
+     * Marker type corresponding to the status {@link StepStatusMessage#PROVED}
+     */
+    public static final String STEP_PROVED_MARKER = "org.lamport.tla.toolbox.tool.prover.ui.stepProved";
     /**
      * Super type for the following four marker types for step status.
      */

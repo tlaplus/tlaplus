@@ -85,23 +85,23 @@
       </consoleFactory>
    </extension>
    <extension
-         id="org.lamport.tla.toolbox.tool.prover.ui.fullyCheckedStep"
-         name="All obligations have proofs that are checked"
+         id="org.lamport.tla.toolbox.tool.prover.ui.stepChecked"
+         name="Step checked"
          point="org.eclipse.core.resources.markers">
       <super
             type="org.lamport.tla.toolbox.tool.prover.ui.proofStepStatus">
       </super>
    </extension>
    <extension
-         id="org.lamport.tla.toolbox.tool.prover.ui.checkedOrExplicitOmitStep"
-         name="All obligations have proofs or explicit proof omitted that are checked"
+         id="org.lamport.tla.toolbox.tool.prover.ui.stepOmitted"
+         name="Step omitted"
          point="org.eclipse.core.resources.markers">
       <super
             type="org.lamport.tla.toolbox.tool.prover.ui.proofStepStatus">
       </super>
    </extension>
    <extension
-         id="org.lamport.tla.toolbox.tool.prover.ui.writtenProofsCheckedStep"
+         id="org.lamport.tla.toolbox.tool.prover.ui.stepMissing"
          name="All written proofs are checked for a step"
          point="org.eclipse.core.resources.markers">
       <super
@@ -109,8 +109,24 @@
       </super>
    </extension>
    <extension
-         id="org.lamport.tla.toolbox.tool.prover.ui.obligationFailedForStep"
-         name="There exists an obligation whose proof failed"
+         id="org.lamport.tla.toolbox.tool.prover.ui.stepProvingFailed"
+         name="Step proving failed"
+         point="org.eclipse.core.resources.markers">
+      <super
+            type="org.lamport.tla.toolbox.tool.prover.ui.proofStepStatus">
+      </super>
+   </extension>
+   <extension
+         id="org.lamport.tla.toolbox.tool.prover.ui.stepCheckingFailed"
+         name="Step checking failed"
+         point="org.eclipse.core.resources.markers">
+      <super
+            type="org.lamport.tla.toolbox.tool.prover.ui.proofStepStatus">
+      </super>
+   </extension>
+   <extension
+         id="org.lamport.tla.toolbox.tool.prover.ui.stepProved"
+         name="Step proved"
          point="org.eclipse.core.resources.markers">
       <super
             type="org.lamport.tla.toolbox.tool.prover.ui.proofStepStatus">
@@ -127,71 +143,115 @@
    <extension
          point="org.eclipse.ui.editors.annotationTypes">
       <type
-            markerType="org.lamport.tla.toolbox.tool.prover.ui.fullyCheckedStep"
-            name="org.lamport.tla.toolbox.tool.prover.ui.fullyCheckedStep">
+            markerType="org.lamport.tla.toolbox.tool.prover.ui.stepChecked"
+            name="org.lamport.tla.toolbox.tool.prover.ui.stepChecked">
       </type>
       <type
-            markerType="org.lamport.tla.toolbox.tool.prover.ui.checkedOrExplicitOmitStep"
-            name="org.lamport.tla.toolbox.tool.prover.ui.checkedOrExplicitOmitStep">
+            markerType="org.lamport.tla.toolbox.tool.prover.ui.stepOmitted"
+            name="org.lamport.tla.toolbox.tool.prover.ui.stepOmitted">
       </type>
       <type
-            markerType="org.lamport.tla.toolbox.tool.prover.ui.writtenProofsCheckedStep"
-            name="org.lamport.tla.toolbox.tool.prover.ui.writtenProofsCheckedStep">
+            markerType="org.lamport.tla.toolbox.tool.prover.ui.stepMissing"
+            name="org.lamport.tla.toolbox.tool.prover.ui.stepMissing">
       </type>
       <type
-            markerType="org.lamport.tla.toolbox.tool.prover.ui.obligationFailedForStep"
-            name="org.lamport.tla.toolbox.tool.prover.ui.obligationFailedForStep">
+            markerType="org.lamport.tla.toolbox.tool.prover.ui.stepProvingFailed"
+            name="org.lamport.tla.toolbox.tool.prover.ui.stepProvingFailed">
+      </type>
+      <type
+            markerType="org.lamport.tla.toolbox.tool.prover.ui.stepCheckingFailed"
+            name="org.lamport.tla.toolbox.tool.prover.ui.stepCheckingFailed">
+      </type>
+      <type
+            markerType="org.lamport.tla.toolbox.tool.prover.ui.stepProved"
+            name="org.lamport.tla.toolbox.tool.prover.ui.stepProved">
       </type>
    </extension>
    <extension
          point="org.eclipse.ui.editors.markerAnnotationSpecification">
       <specification
-            annotationType="org.lamport.tla.toolbox.tool.prover.ui.fullyCheckedStep"
+            annotationType="org.lamport.tla.toolbox.tool.prover.ui.stepChecked"
             colorPreferenceKey="fcsCPK"
-            colorPreferenceValue="0,255,0"
+            colorPreferenceValue="128,255,0"
             highlightPreferenceKey="fcsHPK"
             highlightPreferenceValue="true"
             includeOnPreferencePage="true"
-            label="Fully Checked Step"
+            label="Step Checked"
             overviewRulerPreferenceKey="fcsORPK"
             textPreferenceKey="fcsTPK"
-            textPreferenceValue="true">
+            textPreferenceValue="true"
+            textStylePreferenceKey="fcsSPK"
+            textStylePreferenceValue="BOX">
       </specification>
       <specification
-            annotationType="org.lamport.tla.toolbox.tool.prover.ui.checkedOrExplicitOmitStep"
+            annotationType="org.lamport.tla.toolbox.tool.prover.ui.stepOmitted"
             colorPreferenceKey="steoCPK"
-            colorPreferenceValue="255,255,0"
+            colorPreferenceValue="255,255,128"
             highlightPreferenceKey="steoHPK"
             highlightPreferenceValue="true"
             includeOnPreferencePage="true"
-            label="Step Checked or Explicit Omit"
+            label="Step Omit"
             overviewRulerPreferenceKey="steoORPK"
             textPreferenceKey="steoTPK"
-            textPreferenceValue="true">
+            textPreferenceValue="true"
+            textStylePreferenceKey="steoSPK"
+            textStylePreferenceValue="BOX">
       </specification>
       <specification
-            annotationType="org.lamport.tla.toolbox.tool.prover.ui.writtenProofsCheckedStep"
+            annotationType="org.lamport.tla.toolbox.tool.prover.ui.stepMissing"
             colorPreferenceKey="wpcCPK"
-            colorPreferenceValue="255, 200, 0"
+            colorPreferenceValue="255,200,128"
             highlightPreferenceKey="wpcHPK"
             highlightPreferenceValue="true"
             includeOnPreferencePage="true"
-            label="Written Proofs Checked"
+            label="Step Missing"
             overviewRulerPreferenceKey="wpcORPK"
             textPreferenceKey="wpcTPK"
-            textPreferenceValue="true">
+            textPreferenceValue="true"
+            textStylePreferenceKey="wpcSPK"
+            textStylePreferenceValue="BOX">
       </specification>
       <specification
-            annotationType="org.lamport.tla.toolbox.tool.prover.ui.obligationFailedForStep"
+            annotationType="org.lamport.tla.toolbox.tool.prover.ui.stepProvingFailed"
             colorPreferenceKey="offsCPK"
-            colorPreferenceValue="255,0,0"
+            colorPreferenceValue="255,128,128"
             highlightPreferenceKey="offsHPK"
             highlightPreferenceValue="true"
             includeOnPreferencePage="true"
-            label="Obligation Failed For Step"
+            label="Step Proving Failed"
             overviewRulerPreferenceKey="offsORPK"
             textPreferenceKey="offsTPK"
-            textPreferenceValue="true">
+            textPreferenceValue="true"
+            textStylePreferenceKey="offsSPK"
+            textStylePreferenceValue="BOX">
+      </specification>
+      <specification
+            annotationType="org.lamport.tla.toolbox.tool.prover.ui.stepCheckingFailed"
+            colorPreferenceKey="scfCPK"
+            colorPreferenceValue="255,128,128"
+            highlightPreferenceKey="scfHPK"
+            highlightPreferenceValue="true"
+            includeOnPreferencePage="true"
+            label="Step Checking Failed"
+            overviewRulerPreferenceKey="scfORPK"
+            textPreferenceKey="scfTPK"
+            textPreferenceValue="true"
+            textStylePreferenceKey="scfSPK"
+            textStylePreferenceValue="BOX">
+      </specification>
+      <specification
+            annotationType="org.lamport.tla.toolbox.tool.prover.ui.stepProved"
+            colorPreferenceKey="spCPK"
+            colorPreferenceValue="128,255,128"
+            highlightPreferenceKey="spHPK"
+            highlightPreferenceValue="true"
+            includeOnPreferencePage="true"
+            label="Step Proved"
+            overviewRulerPreferenceKey="spORPK"
+            textPreferenceKey="spTPK"
+            textPreferenceValue="true"
+            textStylePreferenceKey="spSPK"
+            textStylePreferenceValue="BOX">
       </specification>
    </extension>
    <extension

@@ -8,9 +8,9 @@ import org.lamport.tla.toolbox.tool.prover.output.IProverProcessOutputSink;
 import org.lamport.tla.toolbox.tool.prover.output.internal.ProverLaunchDescription;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.ObligationNumberMessage;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.ObligationStatusMessage;
+import org.lamport.tla.toolbox.tool.prover.ui.output.data.StepStatusMessage;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.TLAPMMessage;
 import org.lamport.tla.toolbox.tool.prover.ui.output.source.ITLAPMOutputSource;
-import org.lamport.tla.toolbox.tool.prover.ui.status.ProofStepStatus;
 import org.lamport.tla.toolbox.tool.prover.ui.util.ProverHelper;
 import org.lamport.tla.toolbox.tool.prover.ui.view.ObligationsView;
 import org.lamport.tla.toolbox.util.UIHelper;
@@ -139,11 +139,6 @@ public class TagBasedTLAPMOutputIncrementalParser implements IProverProcessOutpu
                          * the TLAPM is done processing the obligation in any
                          * way, then the monitor will reflect this fact.
                          */
-                        ProofStepStatus status = ProverHelper.messageToStatus(data);
-                        if (status != null)
-                        {
-                            ProverHelper.newStepStatus(status);
-                        }
 
                         if (data instanceof ObligationStatusMessage)
                         {
@@ -165,6 +160,9 @@ public class TagBasedTLAPMOutputIncrementalParser implements IProverProcessOutpu
                             ObligationNumberMessage numMessage = (ObligationNumberMessage) data;
                             monitor.beginTask("Processing Obligations : " + numMessage.getCount() + " total.",
                                     numMessage.getCount());
+                        } else if (data instanceof StepStatusMessage)
+                        {
+                            ProverHelper.newStepStatus((StepStatusMessage) data);
                         }
                     }
 

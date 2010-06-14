@@ -10,11 +10,49 @@ import tla2sany.st.Location;
 /**
  * Contains data about the status of a proof step.
  * 
+ * Proof step statuses follow this spec:
+ * 
+ * The status of a step is the max of status of its children,
+ * following the order:
+ * 
+ * Proved < Checked < Omitted < Missing < Checking Failed < Proving Failed
+ * 
  * @author Daniel Ricketts
  *
  */
 public class StepStatusMessage extends TLAPMMessage
 {
+
+    /**
+     * Status for a step. See the class description for an explanation of step
+     * statuses.
+     */
+    public static final String PROVED = "proved";
+    /**
+     * Status for a step. See the class description for an explanation of step
+     * statuses.
+     */
+    public static final String OMITTED = "omitted proofs";
+    /**
+     * Status for a step. See the class description for an explanation of step
+     * statuses.
+     */
+    public static final String MISSING_PROOFS = "missing proofs";
+    /**
+     * Status for a step. See the class description for an explanation of step
+     * statuses.
+     */
+    public static final String PROVING_FAILED = "proving failed";
+    /**
+     * Status for a step. See the class description for an explanation of step
+     * statuses.
+     */
+    public static final String CHECKING_FAILED = "checking failed";
+    /**
+     * Status for a step. See the class description for an explanation of step
+     * statuses.
+     */
+    public static final String CHECKED = "checked";
 
     private Location location;
     private String status;
