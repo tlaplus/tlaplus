@@ -228,10 +228,24 @@ public class TLAProofFoldingStructureProvider implements IParseResultListener, I
     /**
      * Called when there is a new parse result broadcast by
      * {@link ParseResultBroadcaster}. Updates the folding structure of the proofs
-     * in the editor.
+     * in the editor if the parse result points to the {@link ModuleNode} representing
+     * the file in the editor for this class.
      */
     public void newParseResult(ParseResult parseResult)
     {
+
+        /*
+         * If the parsed resource for parseResult is in a different
+         * directory than the file open in the editor, then parseResult
+         * does not contain the ModuleNode representing the file
+         * in the editor. This is because SANY only handles modules
+         * in the same directory.
+         */
+        if (!parseResult.getParsedResource().getLocation().removeLastSegments(1).equals(
+                ((FileEditorInput) editor.getEditorInput()).getFile().getLocation().removeLastSegments(1)))
+        {
+            return;
+        }
 
         String moduleName = ResourceHelper.getModuleName(((FileEditorInput) editor.getEditorInput()).getFile());
 
