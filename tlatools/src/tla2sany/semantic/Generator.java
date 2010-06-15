@@ -4868,7 +4868,8 @@ OpDefNode node = (OpDefNode) vec.elementAt(i);
           // "the same" or "different"
           newtaOdn = new ThmOrAssumpDefNode(qualifiedName, taOdn.isTheorem(),
                                 substInNode, cm, symbolTable, 
-                                 treeNode, params, instanceeModule);   
+                                 treeNode, params, instanceeModule,
+                                 taOdn.getSource());   
           /*****************************************************************
           * No recursion fields needed for a theorem or assumption         *
           * because it can't appear in a recursive section.                *
@@ -4881,7 +4882,8 @@ OpDefNode node = (OpDefNode) vec.elementAt(i);
           // deciding if two defs are "the same" or "different"
           newtaOdn = new ThmOrAssumpDefNode(qualifiedName, taOdn.isTheorem(),
                                  taOdn.getBody(), cm, symbolTable, 
-                                 treeNode, params, instanceeModule);   
+                                 treeNode, params, instanceeModule,
+                                 taOdn.getSource());   
           /*****************************************************************
           * No recursion fields needed for theorems or assumptions         *
           * because they can't appear in a recursive section.              *
@@ -5394,7 +5396,7 @@ OpDefNode node = (OpDefNode) vec.elementAt(i);
            newTadn = new ThmOrAssumpDefNode(tadn.getName(), tadn.isTheorem(),
                                   tasubstInTemplate, cm, symbolTable, 
                                   treeNode, tadn.getParams(), 
-                                  instanceeModuleNode);
+                                  instanceeModuleNode, tadn.getSource());
          }
        }
        else { 
@@ -5411,7 +5413,7 @@ OpDefNode node = (OpDefNode) vec.elementAt(i);
                          tadn.getBody(), 
                          tadn.getOriginallyDefinedInModuleNode(), 
                          symbolTable, treeNode, tadn.getParams(),
-                         instanceeModuleNode); 
+                         instanceeModuleNode, tadn.getSource()); 
        }
        if (topLevel) {cm.appendDef(newTadn);} ;
        /********************************************************************
@@ -5546,7 +5548,7 @@ OpDefNode node = (OpDefNode) vec.elementAt(i);
       **********************************************************************/
       UniqueString name = stn.heirs()[1].getUS() ;
       tadn = new ThmOrAssumpDefNode(name, false, expr, cm, symbolTable, stn,
-                                    null, null) ;
+                                    null, null, null) ;
       tadn.setLabels(popLabelNodeSet()) ;
       cm.appendDef(tadn) ;
      } ;

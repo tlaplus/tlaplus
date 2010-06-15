@@ -4,6 +4,7 @@
 // last modified on Fri 16 Mar 2007 at 17:22:54 PST by lamport
 package tla2sany.semantic;
 
+import java.util.Comparator;
 import java.util.Hashtable;
 
 import tla2sany.explorer.ExploreNode;
@@ -20,7 +21,7 @@ import util.ToolIO;
  * used to check for equality.
  */
 public abstract class SemanticNode
-implements ASTConstants, ExploreNode, LevelConstants {
+implements ASTConstants, ExploreNode, LevelConstants, Comparable {
 
   private static final Object[] EmptyArr = new Object[0];
 
@@ -142,17 +143,19 @@ implements ASTConstants, ExploreNode, LevelConstants {
 
   /**
    *  Returns the children of this node in the semantic tree.  For a
-   *  node that normally has no children, it should return null.  It may
-   *  not be obvious what the children should be for some kinds of semantic 
-   *  nodes; check the method for the particular kind of node to find
+   *  node that normally has no children, it should return null.  In
+   *  general, a child of a semantic node is a SemanticNode that describes 
+   *  a piece of the module whose location is within the location of that
+   *  node.  If it's not obvious what the children should be for some kinds 
+   *  of semantic node, check the method for the particular kind of node to find
    *  out what it actually returns.
-   *  
+   *  <p>
    *  Initially, this method is not implemented for all kinds of semantic
    *  nodes.  It will be implemented as needed for whatever we decide to
    *  use it for.  The initial implementation is for being able to 
    *  walk down the semantic tree to find the definition or declaration
    *  of a symbol.
-   *  
+   *  <p>
    *  This should probably be optimized by adding a field to a semantic
    *  node to cache the value of getChildren() when it's computed.
    *  However, perhaps that's only necessary for a ModuleNode.
@@ -192,6 +195,34 @@ implements ASTConstants, ExploreNode, LevelConstants {
     return this.stn.getLocation();
   }
 
+  /**
+   * This compareTo method is for use in sorting SemanticNodes in the
+   * same module according to their starting location.  It returns
+   * 0 (equal) iff they have the same starting location--that is,
+   * if getLocation() returns locations with equal values of 
+   * beginLine() and  beginColumn().  Thus, compare(s1, s2) == 0
+   * is NOT equivalent to equals(s1, s2).
+   * 
+   * @param s1
+   * @param s2
+   * @return
+   */
+  public int compareTo(Object s) {
+       Location loc1 = this.stn.getLocation();
+       Location loc2 = ((SemanticNode) s).stn.getLocation();
+       if (loc1.beginLine() < loc2.beginLine()) 
+        {
+           return -1;
+       }
+       if (loc1.beginLine() > loc2.beginLine()) {
+           return 1;
+       }
+       if (loc1.beginColumn() == loc2.beginColumn()) {
+           return 0;
+       }
+       return (loc1.beginColumn() < loc2.beginColumn())?-1:1;
+  }
+  
 /***************************************************************************
 * XXXXX A test for getLocation() returning null should be added            *
 *       to the following two toString methods.                             *

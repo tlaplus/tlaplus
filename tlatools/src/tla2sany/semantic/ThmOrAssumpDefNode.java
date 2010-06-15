@@ -96,7 +96,22 @@ public class ThmOrAssumpDefNode extends SymbolNode
     * If the theorem or assumption was obtained by instantiation, then     *
     * this is the module from which it was instantiated.                   *
     ***********************************************************************/
-    
+  
+  /**
+   *  The source field and its methods was added by LL on 15 June 2010.
+   *  I don't know why it wasn't added to this class when it was added
+   *  to OpDefNode.  However, it's needed by the Toolbox, so it's being
+   *  added now by trying to duplicate what was done for OpDefNode
+   */
+  private ThmOrAssumpDefNode source = null;
+  
+  public ThmOrAssumpDefNode getSource() {
+      if (source == null) {
+          return this;
+      }
+      return source;
+  }
+  
   /*************************************************************************
   * The Constructor.                                                      *
   *************************************************************************/
@@ -109,7 +124,8 @@ public class ThmOrAssumpDefNode extends SymbolNode
                                     // Generator.symbolTable
            TreeNode stn,            // The syntax node.
            FormalParamNode[] parms, // The parameters, or null if none.
-           ModuleNode   iFrom       // The instantiatedFrom field.
+           ModuleNode   iFrom,      // The instantiatedFrom field.
+           ThmOrAssumpDefNode src   // The source field.
                            ) {
     super(ThmOrAssumpDefKind, stn, name) ;
     this.theorem    = thm;
@@ -132,6 +148,7 @@ public class ThmOrAssumpDefNode extends SymbolNode
       this.arity = parms.length;
      } ;
     this.instantiatedFrom = iFrom ;
+    this.source = src;
   }   
 
   /*************************************************************************
