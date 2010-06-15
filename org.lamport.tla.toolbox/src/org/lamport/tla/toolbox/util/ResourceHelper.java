@@ -468,15 +468,16 @@ public class ResourceHelper
      * @param moduleName
      * @return
      */
-    public static ModuleNode getModuleNode(String moduleName) {
+    public static ModuleNode getModuleNode(String moduleName)
+    {
         SpecObj specObj = ToolboxHandle.getSpecObj();
-        if (specObj == null) {
+        if (specObj == null)
+        {
             return null;
         }
-        return specObj.getExternalModuleTable().getModuleNode(
-                UniqueString.uniqueStringOf(moduleName));
+        return specObj.getExternalModuleTable().getModuleNode(UniqueString.uniqueStringOf(moduleName));
     }
-    
+
     /**
      * Retrieves the name of the module (filename without extension)
      * 
@@ -831,9 +832,8 @@ public class ResourceHelper
      */
     public static ParseResult getValidParseResult(IFile file)
     {
-        String moduleName = ResourceHelper.getModuleName(file);
 
-        ParseResult parseResult = ParseResultBroadcaster.getParseResultBroadcaster().getParseResult(moduleName);
+        ParseResult parseResult = ParseResultBroadcaster.getParseResultBroadcaster().getParseResult(file.getLocation());
         if ((parseResult == null))
         {
             return null;

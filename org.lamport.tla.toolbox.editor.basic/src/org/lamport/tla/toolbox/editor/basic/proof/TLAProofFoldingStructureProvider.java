@@ -103,7 +103,7 @@ public class TLAProofFoldingStructureProvider implements IParseResultListener, I
 
         // get a parse result if the parse result broadcaster has already stored one
         ParseResult parseResult = ParseResultBroadcaster.getParseResultBroadcaster().getParseResult(
-                ResourceHelper.getModuleName(((FileEditorInput) editor.getEditorInput()).getFile()));
+                ((FileEditorInput) editor.getEditorInput()).getFile().getLocation());
 
         if (parseResult != null)
         {
