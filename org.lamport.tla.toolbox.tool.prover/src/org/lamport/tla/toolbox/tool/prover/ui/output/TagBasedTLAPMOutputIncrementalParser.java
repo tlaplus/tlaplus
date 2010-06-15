@@ -1,7 +1,6 @@
 package org.lamport.tla.toolbox.tool.prover.ui.output;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.text.BadLocationException;
 import org.lamport.tla.toolbox.tool.prover.output.IProverProcessOutputSink;
@@ -12,8 +11,6 @@ import org.lamport.tla.toolbox.tool.prover.ui.output.data.StepStatusMessage;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.TLAPMMessage;
 import org.lamport.tla.toolbox.tool.prover.ui.output.source.ITLAPMOutputSource;
 import org.lamport.tla.toolbox.tool.prover.ui.util.ProverHelper;
-import org.lamport.tla.toolbox.tool.prover.ui.view.ObligationsView;
-import org.lamport.tla.toolbox.util.UIHelper;
 
 /**
  * This class is used to parse raw output from
@@ -142,16 +139,10 @@ public class TagBasedTLAPMOutputIncrementalParser implements IProverProcessOutpu
 
                         if (data instanceof ObligationStatusMessage)
                         {
-                            final IMarker obMarker = ProverHelper.newObligationStatus((ObligationStatusMessage) data);
-                            UIHelper.runUIAsync(new Runnable() {
+                            ProverHelper.processObligationMessage((ObligationStatusMessage) data, description
+                                    .getLevelNode());
 
-                                public void run()
-                                {
-                                    ObligationsView.updateObligationView(obMarker);
-                                }
-                            });
-
-                            if (ProverHelper.isObligationFinished(obMarker, description))
+                            if (ProverHelper.isObligationFinished((ObligationStatusMessage) data, description))
                             {
                                 monitor.worked(1);
                             }

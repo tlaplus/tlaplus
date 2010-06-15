@@ -577,6 +577,7 @@ public class ProverJob extends Job
         description.setUseFP(useFP);
         description.setStatusCheck(checkStatus);
         description.setCheckProofs(checkProofs);
+        description.setLevelNode(nodeToProve);
 
         ArrayList command = new ArrayList();
         /*

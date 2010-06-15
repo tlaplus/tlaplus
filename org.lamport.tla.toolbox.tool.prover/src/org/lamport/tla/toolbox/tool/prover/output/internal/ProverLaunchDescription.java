@@ -1,5 +1,7 @@
 package org.lamport.tla.toolbox.tool.prover.output.internal;
 
+import tla2sany.semantic.LevelNode;
+
 /**
  * This class describes the parameters for the launch of a prover.
  * 
@@ -30,6 +32,11 @@ public class ProverLaunchDescription
      * if entire module was specified.
      */
     private int startLine;
+    /**
+     * The step or module node on which the
+     * prover was launched.
+     */
+    private LevelNode levelNode;
 
     public boolean isStatusCheck()
     {
@@ -79,6 +86,26 @@ public class ProverLaunchDescription
     public void setEndLine(int endLine)
     {
         this.endLine = endLine;
+    }
+
+    /**
+     * Sets the step or module node on which the
+     * prover was launched.
+     * @param levelNode the levelNode to set
+     */
+    public void setLevelNode(LevelNode levelNode)
+    {
+        this.levelNode = levelNode;
+    }
+
+    /**
+     * Gets the step or module node on which the
+     * prover was launched.
+     * @return the levelNode
+     */
+    public LevelNode getLevelNode()
+    {
+        return levelNode;
     }
 
     /**

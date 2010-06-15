@@ -30,6 +30,8 @@ import org.lamport.tla.toolbox.tool.prover.output.internal.ProverLaunchDescripti
 import org.lamport.tla.toolbox.tool.prover.ui.ProverUIActivator;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.ObligationStatusMessage;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.StepStatusMessage;
+import org.lamport.tla.toolbox.tool.prover.ui.output.data.StepTuple;
+import org.lamport.tla.toolbox.tool.prover.ui.view.ObligationsView;
 import org.lamport.tla.toolbox.util.AdapterFactory;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
@@ -152,7 +154,27 @@ public class ProverHelper
      * Obligation status indicating that the obligation
      * has been checked in a prior run of the prover.
      */
-    public static final String CHECKED_ALREADY = "checked (already processed";
+    public static final String CHECKED_ALREADY = "checked (already processed)";
+    /**
+     * Obligation status indicating that the obligation
+     * has not yet been sent anywhere to be proved.
+     */
+    public static final String TO_BE_PROVED = "to be proved";
+
+    /**
+     * Map from {@link Integer} ids of obligations
+     * to {@link StepTuple}s.
+     */
+    private static HashMap obsMap = new HashMap();
+    /**
+     * Map from {@link LevelNode}s to {@link StepTuple}s.
+     */
+    private static HashMap stepMap = new HashMap();
+    /**
+     * An array containing all possible statuses of proof steps.
+     */
+    private static final String[] statuses = new String[] { CHECKED, PROVED, StepStatusMessage.OMITTED,
+            StepStatusMessage.MISSING_PROOFS, CHECKING_FAILED, FAILED };
 
     /**
      * Removes all markers indicating obligation information on  a resource. Does
@@ -211,37 +233,30 @@ public class ProverHelper
      * The description gives information about the parameters used to launch
      * the prover.
      * 
-     * @param marker
+     * @param message
      * @param description
      * @return
      * @throws CoreException 
      */
-    public static boolean isObligationFinished(IMarker marker, ProverLaunchDescription description)
+    public static boolean isObligationFinished(ObligationStatusMessage message, ProverLaunchDescription description)
     {
-        try
+        if (!message.getStatus().equals(OBLIGATION_MARKER))
         {
-            if (!marker.getType().equals(OBLIGATION_MARKER))
-            {
-                return false;
-            }
+            return false;
+        }
 
-            String status = marker.getAttribute(OBLIGATION_STATUS, "");
+        String status = message.getStatus();
 
-            boolean isTrivial = status.equals(TRIVIAL) || status.equals(TRIVIAL_ALREADY);
+        boolean isTrivial = status.equals(TRIVIAL) || status.equals(TRIVIAL_ALREADY);
 
-            if (!description.isCheckProofs())
-            {
-                return isTrivial || status.equals(PROVED) || status.equals(PROVED_ALREADY);
-            }
-
-            if (description.isCheckProofs())
-            {
-                return isTrivial || status.equals(CHECKED) || status.equals(CHECKED_ALREADY);
-            }
-        } catch (CoreException e)
+        if (!description.isCheckProofs())
         {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            return isTrivial || status.equals(PROVED) || status.equals(PROVED_ALREADY);
+        }
+
+        if (description.isCheckProofs())
+        {
+            return isTrivial || status.equals(CHECKED) || status.equals(CHECKED_ALREADY);
         }
         return false;
     }
@@ -341,14 +356,19 @@ public class ProverHelper
      * See {@link ProverHelper#SANY_MARKER} for a description of
      * these markers.
      * 
+     * Creates and returns the {@link StepTuple} for levelNode if levelNode is an instance of
+     * {@link UseOrHideNode} or {@link TheoremNode}. Sets the marker for this tuple.
+     * Returns null otherwise. If levelNode is a {@link TheoremNode} then it sets levelNode
+     * as the parent of all non-null {@link StepTuple}s returned by calling this method on its children.
+     * 
      * @param theoremNode
      * @throws CoreException 
      */
-    public static void createSANYMarkersForTree(LevelNode levelNode, IResource module) throws CoreException
+    public static StepTuple createSANYMarkersForTree(LevelNode levelNode, IResource module) throws CoreException
     {
         if (levelNode == null)
         {
-            return;
+            return null;
         }
 
         if (levelNode instanceof UseOrHideNode || levelNode instanceof TheoremNode)
@@ -375,31 +395,47 @@ public class ProverHelper
              * start character is o and the end character is o+l.
              */
             marker.setAttribute(IMarker.CHAR_END, locRegion.getOffset() + locRegion.getLength());
-        }
 
-        if (levelNode instanceof TheoremNode)
-        {
+            /*
+             * Create the tuple and return the levelNode.
+             */
+            StepTuple stepTuple = new StepTuple();
+            stepTuple.setSanyMarker(marker);
+            stepMap.put(levelNode, stepTuple);
 
-            TheoremNode theoremNode = (TheoremNode) levelNode;
-            ProofNode proof = theoremNode.getProof();
-            if (proof != null)
+            if (levelNode instanceof TheoremNode)
             {
-                if (proof instanceof NonLeafProofNode)
-                {
-                    NonLeafProofNode nonLeafProof = (NonLeafProofNode) proof;
-                    LevelNode[] steps = nonLeafProof.getSteps();
 
-                    /*
-                     * Recursively put markers on each child node.
-                     */
-                    for (int i = 0; i < steps.length; i++)
+                TheoremNode theoremNode = (TheoremNode) levelNode;
+                ProofNode proof = theoremNode.getProof();
+                if (proof != null)
+                {
+                    if (proof instanceof NonLeafProofNode)
                     {
-                        createSANYMarkersForTree(steps[i], module);
+                        NonLeafProofNode nonLeafProof = (NonLeafProofNode) proof;
+                        LevelNode[] steps = nonLeafProof.getSteps();
+
+                        /*
+                         * Recursively put markers on each child node.
+                         */
+                        for (int i = 0; i < steps.length; i++)
+                        {
+                            StepTuple childTuple = createSANYMarkersForTree(steps[i], module);
+                            if (childTuple != null)
+                            {
+                                childTuple.setParent(stepTuple);
+                            }
+                        }
                     }
                 }
+
             }
 
+            return stepTuple;
         }
+
+        return null;
+
     }
 
     /**
@@ -517,6 +553,82 @@ public class ProverHelper
             return STEP_PROVING_FAILED_MARKER;
         }
         return null;
+    }
+
+    /**
+     * Process the obligation message. If the status of the message is not
+     * {@link #TO_BE_PROVED} then it creates a marker for that obligation
+     * by calling {@link #newObligationStatus(ObligationStatusMessage)}. Else, it prepares
+     * the necessary data structure for computing proof step statuses.
+     * 
+     * @param message
+     * @param nodeToProve the step or module on which the prover was launched
+     */
+    public static void processObligationMessage(ObligationStatusMessage message, LevelNode nodeToProve)
+    {
+        if (message.getStatus().equals(TO_BE_PROVED))
+        {
+            /*
+             * Find the LevelNode in the semantic tree containing
+             * the obligation.
+             */
+            Location obLoc = message.getLocation();
+            LevelNode levelNode = ResourceHelper.getLevelNodeFromTree(nodeToProve, obLoc.beginLine());
+            if (levelNode == null)
+            {
+                ProverUIActivator.logDebug("Cannot find level node containing obligation at " + obLoc
+                        + ". This is a bug.");
+                return;
+            }
+
+            // /*
+            // * Look for a step tuple in the values of obsMap
+            // * that already points to levelNode.
+            // *
+            // * If one is found, map to that. Else, create a new one.
+            // */
+            // Collection stepTuples = obsMap.values();
+            // // set to true if an existing step tuple is found
+            // boolean foundExisting = false;
+            // for (Iterator it = stepTuples.iterator(); it.hasNext();)
+            // {
+            // StepTuple stepTuple = (StepTuple) it.next();
+            // if (stepTuple.getStepNode().equals(levelNode))
+            // {
+            // obsMap.put(new Integer(message.getID()), stepTuple);
+            // foundExisting = true;
+            // break;
+            // }
+            // }
+
+            StepTuple stepTuple = (StepTuple) stepMap.get(levelNode);
+            if (stepTuple != null)
+            {
+                obsMap.put(new Integer(message.getID()), stepTuple);
+            } else
+            {
+                ProverUIActivator.logDebug("Cannot find a step tuple for level node at " + levelNode.getLocation()
+                        + ". This is a bug.");
+            }
+        } else
+        {
+            /*
+             * Update the step statuses. The call to stepTuple.updateStatus
+             * will update the status of that step and any ancestors.
+             */
+            StepTuple stepTuple = (StepTuple) obsMap.get(new Integer(message.getID()));
+            stepTuple.updateStatus();
+
+            // create the marker and update the obligations view
+            final IMarker obMarker = newObligationStatus(message);
+            UIHelper.runUIAsync(new Runnable() {
+
+                public void run()
+                {
+                    ObligationsView.updateObligationView(obMarker);
+                }
+            });
+        }
     }
 
     /**
@@ -1102,6 +1214,27 @@ public class ProverHelper
         proverJob.setUser(true);
         proverJob.setRule(new ProverJobRule());
         proverJob.schedule();
+    }
+
+    /**
+     * Returns the integer representation of the status.
+     * 
+     * @param status
+     * @return
+     */
+    public static int getIntFromStringStatus(String status)
+    {
+
+        for (int i = 0; i < statuses.length; i++)
+        {
+            if (statuses[i].equals(status))
+            {
+                return i;
+            }
+        }
+
+        return -1;
+
     }
 
 }
