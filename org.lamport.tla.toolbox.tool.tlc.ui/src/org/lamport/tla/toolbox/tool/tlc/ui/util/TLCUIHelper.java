@@ -203,7 +203,12 @@ public class TLCUIHelper
 
     /**
      * Attempts to jump to the location in a saved version
-     * of the module for the given model. Returns true if successful.
+     * of the module for the given model. It will jump to the location
+     * in a nested editor in the model editor for configuration if such
+     * a nested editor is already open. If a nested editor is not already
+     * open, it will not make the jump and will return false.
+     * Returns true if it successfully jumps to the location in the nested
+     * editor showing the saved module.
      * 
      * @param location
      * @param configuration
@@ -224,8 +229,11 @@ public class TLCUIHelper
                 {
                     IRegion jumpToRegion = AdapterFactory.locationToRegion(moduleEditor.getDocumentProvider()
                             .getDocument(moduleEditor.getEditorInput()), location);
+                    // bring the model editor into focus
                     UIHelper.getActivePage().activate(modelEditor);
+                    // set the nested module editor as the active page in the model editor
                     modelEditor.setActiveEditor(moduleEditor);
+                    // highlight the appropriate text
                     moduleEditor.selectAndReveal(jumpToRegion.getOffset(), jumpToRegion.getLength());
                     return true;
                 } catch (BadLocationException e)
