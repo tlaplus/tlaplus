@@ -20,10 +20,13 @@
  */
 package org.lamport.tla.toolbox.editor.basic.handlers;
 
+import java.util.List;
+
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IHandler;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.dialogs.PopupDialog;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
@@ -37,15 +40,18 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorReference;
+import org.eclipse.ui.part.FileEditorInput;
+import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.editor.basic.TLAEditor;
 import org.lamport.tla.toolbox.editor.basic.util.EditorUtil;
 import org.lamport.tla.toolbox.editor.basic.util.EditorUtil.StringAndLocation;
+import org.lamport.tla.toolbox.spec.parser.ParserDependencyStorage;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
+import tla2sany.modanalyzer.SpecObj;
 import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.SemanticNode;
 
@@ -86,8 +92,33 @@ public class CommandPrefixDigitHandler extends AbstractHandler implements IHandl
      */
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
+
+        ParserDependencyStorage pds = Activator.getModuleDependencyStorage();     
         String moduleName = EditorUtil.getTLAEditorWithFocus().getModuleName();
+        List vec = pds.getListOfExtendedModules(moduleName + ".tla");
+        System.out.println("ExtendedModules");
+        for (int i = 0; i < vec.size(); i++) {
+            System.out.println((String) vec.get(i));
+        }
+        vec = pds.getListOfModulesToReparse(moduleName + ".tla");
+        System.out.println("ModulesToReparse");
+        for (int i = 0; i < vec.size(); i++) {
+            System.out.println((String) vec.get(i));
+        }
         ModuleNode module = ResourceHelper.getModuleNode(moduleName);
+
+        TLAEditor editor = EditorUtil.getTLAEditorWithFocus(); // gets the editor to which command applies
+        if (editor == null)
+        {
+            return null;
+        }
+        IFile file = ((FileEditorInput) editor.getEditorInput()).getFile();
+
+        SpecObj spec = ResourceHelper.getValidParseResult(file).getSpecObj();
+        if (true) {
+            return null;
+        }
+
         System.out.println("ConstantDecls");
         SemanticNode[] nodes = module.getConstantDecls();
         for (int i = 0; i < nodes.length; i++)
@@ -118,7 +149,6 @@ public class CommandPrefixDigitHandler extends AbstractHandler implements IHandl
             System.out.println(" " // + nodes[i].getName()+ ": "
                     + nodes[i].getLocation().toString());
         }
-
         // IEditorReference[] references = UIHelper.getActivePage().getEditorReferences();
         //
         // StringAndLocation token = EditorUtil.getCurrentToken();
@@ -127,11 +157,14 @@ public class CommandPrefixDigitHandler extends AbstractHandler implements IHandl
         // } else {
         // System.out.println(token.toString());
         // }
-        TLAEditor editor = EditorUtil.getTLAEditorWithFocus(); // gets the editor to which command applies
+         editor = EditorUtil.getTLAEditorWithFocus(); // gets the editor to which command applies
         if (editor == null)
         {
             return null;
         }
+         file = ((FileEditorInput) editor.getEditorInput()).getFile();
+
+         spec = ResourceHelper.getValidParseResult(file).getSpecObj();
 
         // doc = editor.getDocumentProvider().getDocument(editor.getEditorInput()); // gets document being edited.
         ISelectionProvider selectionProvider = editor.getSelectionProvider();

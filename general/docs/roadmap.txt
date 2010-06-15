@@ -274,7 +274,25 @@ data is represented that it is to present.  The content provider takes
 instances of the class (Assignment for example) that represents the
 data and adds it to the viewer.  An ILabelProvider is used to
 determine how these instances are displayed in a viewer.
-
+-------------------------------------------------------------------
+HOW TO GET A...
+  SpecObj
+     From IFile: ResourceHelper.getValidParseResult(iFile).getSpecObj()
+  IFile
+     From TLAEditor: ((FileEditorInput) tlaEditor.getEditorInput()).getFile()
+     From String moduleName (IFile) ResourceHelper.getResourceByModuleName(moduleName)
+  ModuleNode
+     From String moduleName: ResourceHelper.getModuleNode(moduleName)
+  String moduleName
+     From TLAEditor: tlaEditor.getModuleName()
+     From ModuleNode: moduleNode.getName()
+  TLAEditor
+     with focus: EditorUtil.getTLAEditorWithFocus()
+     from IFile: See the comments preceding 
+                   IEditorPart editor = UIHelper...
+                 in UIHelper.
+  Shell
+    Of the currently active window: UIHelper.getShellProvider().getShell)  
 -------------------------------------------------------------------
 INDEX TO USEFUL COMMENTS IN THE CODE
 
@@ -290,3 +308,5 @@ Attaching a Listener to Something
   stuff is documented in ResultPageColumnListener subclass of 
   ResultPage.
 
+Popping up a dialog.
+  See ShowDefinitionsHandler.

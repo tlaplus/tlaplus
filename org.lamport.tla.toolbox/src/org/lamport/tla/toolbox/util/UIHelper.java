@@ -62,9 +62,12 @@ import org.lamport.tla.toolbox.ui.perspective.InitialPerspective;
 import org.lamport.tla.toolbox.ui.property.GenericSelectionProvider;
 import org.lamport.tla.toolbox.ui.view.ToolboxWelcomeView;
 
+import tla2sany.parser.SyntaxTreeNode;
 import tla2sany.semantic.LevelNode;
 import tla2sany.semantic.NonLeafProofNode;
+import tla2sany.semantic.OpDefNode;
 import tla2sany.semantic.ProofNode;
+import tla2sany.semantic.SymbolNode;
 import tla2sany.semantic.TheoremNode;
 import tla2sany.semantic.ThmOrAssumpDefNode;
 import tla2sany.st.Location;
@@ -814,7 +817,13 @@ public class UIHelper
                             int offset = region.getOffset();
                             int length = region.getLength();
 
-                            IEditorPart editor = UIHelper.openEditor(OpenSpecHandler.TLA_EDITOR_CURRENT,
+                            // The following code sets editor to an existing IEditorPart 
+                            // (which as of June 2010 is a TLAEditorAndPDFViewer) or,
+                            // if there is none, to a new one on the IFile representing
+                            // the module.  It then sets textEditor to the ITextEditor
+                            // (which as of June 2010 is the TLAEditor of that TLAEditorAndPDFViewer)
+                            // that is the TLAEditor open on the module.
+                           IEditorPart editor = UIHelper.openEditor(OpenSpecHandler.TLA_EDITOR_CURRENT,
                                     new FileEditorInput((IFile) moduleResource));
 
                             if (editor != null)
@@ -829,10 +838,17 @@ public class UIHelper
                                     textEditor = (ITextEditor) editor;
                                 } else
                                 {
+                                    // As of June 2010, this clause is always executed.
+                                    // It may succeed in setting textEditor to the TLAEditor
+                                    // or it may return null.  It should succeed iff
+                                    // the TLAEditor is the active editor in the
+                                    // TLAEditorAndPDFViewer.
                                     textEditor = (ITextEditor) editor.getAdapter(ITextEditor.class);
                                 }
-
-                                if (editor instanceof MultiPageEditorPart)
+                                
+                                // As of June 2010, the instanceof in following if condition 
+                                // is always true.
+                                if (textEditor == null && editor instanceof MultiPageEditorPart)
                                 {
                                     /*
                                      * In this case, get all editors that are
@@ -883,6 +899,29 @@ public class UIHelper
         }
     }
 
+    /**
+     * Calls jumpToLocation with the proper location for jumping to a
+     * SymbolNode that declares or defines a symbol.  For an OpDefNode 
+     * or ThmOrAssumpDefNode, this is not the same as the location 
+     * returned by the node's getLocation() method for two reasons:
+     * (i) it should jump to the node's source, and (ii) that location
+     * contains the entire definition.
+     *  
+     * @param node
+     * @return
+     */
+    public static void jumpToDefOrDecl(SymbolNode node) {
+        Location location;
+        if (node instanceof OpDefNode) {
+            location = ((SyntaxTreeNode) ((OpDefNode) node).getSource().getTreeNode()).getHeirs()[0].getLocation() ;
+        } else if (node instanceof ThmOrAssumpDefNode) {
+            location = ((SyntaxTreeNode) ((ThmOrAssumpDefNode) node).getSource().getTreeNode()).getHeirs()[1].getLocation() ;
+        } else {
+            location = node.getLocation();
+        }
+        jumpToLocation(location);
+    }
+    
     /**
      * For all {@link TheoremNode} in the tree rooted at theoremNode,
      * this returns the {@link TheoremNode} that is first on the line

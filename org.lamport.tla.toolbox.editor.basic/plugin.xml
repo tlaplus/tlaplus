@@ -425,7 +425,7 @@
       </key>
       <key
             commandId="org.lamport.tla.toolbox.editor.basic.showDefinitions"
-            contextId="org.eclipse.ui.contexts.window"
+            contextId="org.eclipse.ui.textEditorScope"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="F5">
       </key>

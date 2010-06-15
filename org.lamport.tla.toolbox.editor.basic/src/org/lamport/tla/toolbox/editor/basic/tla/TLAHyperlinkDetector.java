@@ -151,7 +151,14 @@ public class TLAHyperlinkDetector extends AbstractHyperlinkDetector
                     {
                         resolvedSymbol = opdef.getSource();
                     }
-                }
+                } else if (resolvedSymbol instanceof ThmOrAssumpDefNode)
+                {
+                    ThmOrAssumpDefNode opdef = (ThmOrAssumpDefNode) resolvedSymbol;
+                    if (opdef.getSource() != null)
+                    {
+                        resolvedSymbol = opdef.getSource();
+                    }
+                } 
                 SyntaxTreeNode csNode = (SyntaxTreeNode) resolvedSymbol.getTreeNode();
                 for (int i = 0; i < csNode.getAttachedComments().length; i++)
                 {

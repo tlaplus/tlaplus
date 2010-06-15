@@ -59,15 +59,16 @@ public class OpenDeclarationAction extends Action implements IHyperlink
     {
         System.out.println("Opening " + label + "(" + resource.getName() + " at " + location + ")");
 
-        // Find current location and store as a property of the spec for the
-        // Return from Open Declaration command.
-        TLAEditor srcEditor = EditorUtil.getTLAEditorWithFocus();
-        if (srcEditor != null)
-        {
-            Spec spec = ToolboxHandle.getCurrentSpec();
-            spec.setOpenDeclModuleName(srcEditor.getEditorInput().getName());
-            spec.setOpenDeclSelection((ITextSelection) srcEditor.getSelectionProvider().getSelection());
-        }
+        EditorUtil.setReturnFromOpenDecl();
+//        // Find current location and store as a property of the spec for the
+//        // Return from Open Declaration command.
+//        TLAEditor srcEditor = EditorUtil.getTLAEditorWithFocus();
+//        if (srcEditor != null)
+//        {
+//            Spec spec = ToolboxHandle.getCurrentSpec();
+//            spec.setOpenDeclModuleName(srcEditor.getEditorInput().getName());
+//            spec.setOpenDeclSelection((ITextSelection) srcEditor.getSelectionProvider().getSelection());
+//        }
 
         TLAEditorAndPDFViewer editor = (TLAEditorAndPDFViewer) UIHelper.openEditor(TLAEditorAndPDFViewer.ID,
                 new FileEditorInput((IFile) resource));

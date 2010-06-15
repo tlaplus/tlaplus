@@ -40,10 +40,13 @@ public class PreferenceStoreHelper
         if (projectPrefs != null)
         {
             String rootFileName = projectPrefs.get(IPreferenceConstants.P_PROJECT_ROOT_FILE, IPreferenceConstants.DEFAULT_NOT_SET);
+System.out.println("footFileName = " + rootFileName);
             if (!IPreferenceConstants.DEFAULT_NOT_SET.equals(rootFileName))
             {
                 return ResourceHelper.getLinkedFile(project, rootFileName);
             }
+        } else {
+            System.out.println("projectPrefs is null");
         }
         return null;
     }

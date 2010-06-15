@@ -47,13 +47,14 @@ import org.lamport.tla.toolbox.util.pref.IPreferenceConstants;
 import org.lamport.tla.toolbox.util.pref.PreferenceStoreHelper;
 
 import tla2sany.modanalyzer.SpecObj;
+import tla2sany.parser.SyntaxTreeNode;
 import tla2sany.semantic.DefStepNode;
 import tla2sany.semantic.InstanceNode;
-import tla2sany.semantic.LeafProofNode;
 import tla2sany.semantic.LevelNode;
 import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.NonLeafProofNode;
 import tla2sany.semantic.ProofNode;
+import tla2sany.semantic.SemanticNode;
 import tla2sany.semantic.TheoremNode;
 import tla2sany.semantic.UseOrHideNode;
 import tla2sany.st.Location;
@@ -1205,5 +1206,17 @@ public class ResourceHelper
             }
         }
         return size;
+    }
+    
+    /**
+     * Returns true if the node is not from a standard module.
+     * 
+     * @param node
+     * @return
+     */
+    public static boolean isFromUserModule(SemanticNode node) {
+        SyntaxTreeNode csNode = (SyntaxTreeNode) node.stn;
+        String name = ResourceHelper.getModuleFileName(csNode.getFilename());
+        return ToolboxHandle.isUserModule(name);
     }
 }

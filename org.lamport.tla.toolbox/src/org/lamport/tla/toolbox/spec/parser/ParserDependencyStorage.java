@@ -5,10 +5,11 @@ import java.util.Vector;
 
 /**
  * This class is responsible for the storage of the dependency information between the modules.
- * How it does it is made as obscure as possible.  It gratuitously introduces the
- * DoubleHashedTable class, a class without documentation that could not possibly be used
- * for anything except implementing this class.  The DoubleHashedTable class has two fields
- * that somehow are storing the imported-by and imported-from relations.
+ * It uses the DoubleHashedTable class to store the information in a rather obscure way.  My
+ * guess is that Simon originally intended for this to keep the two directed graphs with "imports" and
+ * "is imported by" edges.  However, a little experimentation suggests that the implementation
+ * degenerated into two trivial graphs saying only that the root module imports every other module,
+ * and every other module is imported by the root module.
  * 
  * @author Simon Zambrovski
  * @version $Id$
@@ -77,9 +78,15 @@ public class ParserDependencyStorage
     }
 
     /**
+     * The following documentation by Simon seems to be almost totally incorrect.
+     * A little experimentation suggests that this returns a list containing only the root module
+     * if changedModule is not the root Module, and an empty list otherwise.
+     * 
      * Retrieves the list of modules, that should be re-parsed, because a module has changed
-     * <br><b>Note:</b> The modules on the list returned EXTEND the changed module 
-     * @param changedModule the name of the changed module
+     * <br><b>Note:</b> The modules on the list returned EXTEND the changed module.
+     * 
+     *  
+     * @param changedModule the name of the changed module + ".tla"
      * @return list of modules to re-parse
      */
     public List getListOfModulesToReparse(String changedModule)
@@ -93,9 +100,13 @@ public class ParserDependencyStorage
     }
     
     /**
+     * The following documentation by Simon seems to be almost totally incorrect.
+     * A little experimentation suggests that this returns the the list of all
+     * imported modules if changedModule is the root module, and an empty list otherwise.
+
      * Retrieves the list of modules that are imported (directly
      * or indirectly) by current module
-     * @param rootModule, name of the module
+     * @param rootModule, name of the module + ".tla"
      * @return list of modules it depends (EXTEND) on
      */
     public List getListOfExtendedModules(String rootModule)

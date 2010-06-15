@@ -15,8 +15,10 @@ import org.eclipse.ui.part.FileEditorInput;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.editor.basic.TLAEditor;
 import org.lamport.tla.toolbox.editor.basic.TLAEditorAndPDFViewer;
+import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.spec.parser.IParseConstants;
 import org.lamport.tla.toolbox.spec.parser.ParseResult;
+import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
@@ -321,22 +323,30 @@ public class EditorUtil
     }
 
     /**
-     * Returns the definition or declaration node that the symbol with name
-     * `name' would have if it appeared within `node' at the position
-     * given by `location', or if `node' has a getContext() method and
-     * `name' is defined in that context.   It returns null if
-     * no such definition or declaration node is found.  
+     * This method is called externally with <code>curNode</code> equal to
+     * a ModuleNode and <code>defaultResult</code> equal to <code>null</code>.
+     * It then returns the SymbolNode that defines or declares the symbol
+     * named <code>name</code> located at <code>location</code>.  For example,
+     * in
+     * <pre>
+     *    foo == \A s \in {s \in T : Find(s)} : AnotherInstance(s)
+     *    s == SomeDefinition
+     * </pre>
+     * if <code>name</code> is the UniqueString of "s" and <code>location</code>
+     * is the position of the s in Find(s), then it returns the SymbolNode for
+     * the s declared in the set constructor. <p>
+     * 
+     * If no declaration is found, it returns <code>null</code>.<p>
      * 
      * It is implemented by using the getChildren() method to walk down the semantic
-     * tree towards the symbol's location.  The implementation is simplified by
-     * the fact that TLA+ does not allow local re-declaration of symbols, so it's
-     * safe to look for a definition outside of where it can occur--for example,
-     * in \A x \in S : P, it's OK to check if a symbol inside of S is declared
-     * by the x. 
+     * tree towards the symbol's location.  In the recursive call, <code>curNode</code>
+     * is the node within which we are looking, and <code>defaultResult</code> is the
+     * lowest-level SymbolNode defining <code>name</code> that has been found.
      * 
-     * @param symbol
-     * @param module
+     * @param name
+     * @param curNode
      * @param location
+     * @param defaultResult
      */
     public static SymbolNode lookupSymbol(UniqueString name, SemanticNode curNode, Location location,
             SymbolNode defaultResult)
@@ -536,7 +546,30 @@ public class EditorUtil
         }
 
     }
+    
+    /**
+     *  Finds the current editor and calls 
+     *  setReturnFromOpenDecl(TLAEditor)
+     */
+    public static void setReturnFromOpenDecl() {
+           TLAEditor srcEditor = EditorUtil.getTLAEditorWithFocus();
+           setReturnFromOpenDecl(srcEditor);
+       }
 
+    /**
+     * Sets the location to which the ReturnFromOpenDeclaration command
+     * should return to be the current selection of srcEditor.
+     * 
+     * @param srcEditor
+     */
+    public static void setReturnFromOpenDecl(TLAEditor srcEditor) {
+        if (srcEditor != null)
+        {
+            Spec spec = ToolboxHandle.getCurrentSpec();
+            spec.setOpenDeclModuleName(srcEditor.getEditorInput().getName());
+            spec.setOpenDeclSelection((ITextSelection) srcEditor.getSelectionProvider().getSelection());
+        }
+    }
     /**
      * Returns true iff the module has been set to read only using
      * the method {@link EditorUtil#setReadOnly(IResource, boolean)}.
