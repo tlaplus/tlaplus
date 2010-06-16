@@ -15,7 +15,7 @@ import tla2sany.st.Location;
  * The status of a step is the max of status of its children,
  * following the order:
  * 
- * Proved < Checked < Omitted < Missing < Checking Failed < Proving Failed
+ * Proved < Checked < Being proved < Omitted < Missing < Checking Failed < Proving Failed
  * 
  * @author Daniel Ricketts
  *
@@ -28,6 +28,11 @@ public class StepStatusMessage extends TLAPMMessage
      * statuses.
      */
     public static final String PROVED = "proved";
+    /**
+     * Status for a step. See the class description for an explanation of step
+     * statuses.
+     */
+    public static final String BEING_PROVED = "being proved";
     /**
      * Status for a step. See the class description for an explanation of step
      * statuses.

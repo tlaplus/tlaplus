@@ -202,6 +202,10 @@ public class ProverHelper
      */
     public static final String STEP_PROVED_MARKER = "org.lamport.tla.toolbox.tool.prover.ui.stepProved";
     /**
+     * Marker type corresponding to the status {@link StepStatusMessage#BEING_PROVED}.
+     */
+    public static final String STEP_BEING_PROVED_MARKER = "org.lamport.tla.toolbox.tool.prover.ui.stepBeingProved";
+    /**
      * Super type for the following four marker types for step status.
      */
     public static final String STEP_STATUS_MARKER = "org.lamport.tla.toolbox.tool.prover.ui.proofStepStatus";
@@ -623,6 +627,9 @@ public class ProverHelper
         } else if (status.equals(StepStatusMessage.PROVING_FAILED))
         {
             return STEP_PROVING_FAILED_MARKER;
+        } else if (status.equals(StepStatusMessage.BEING_PROVED))
+        {
+            return STEP_BEING_PROVED_MARKER;
         }
         return null;
     }
@@ -637,6 +644,7 @@ public class ProverHelper
      * {@link #STEP_PROOF_OMITTED_INT}
      * {@link #STEP_PROVED_INT}
      * {@link #STEP_PROVING_FAILED_INT}
+     * {@link #STEP_BEING_PROVED_INT}
      * 
      * Else, this method returns null.
      * 
@@ -658,6 +666,8 @@ public class ProverHelper
             return StepStatusMessage.PROVED;
         case STEP_PROVING_FAILED_INT:
             return StepStatusMessage.PROVING_FAILED;
+        case STEP_BEING_PROVED_INT:
+            return StepStatusMessage.BEING_PROVED;
         default:
             return null;
         }

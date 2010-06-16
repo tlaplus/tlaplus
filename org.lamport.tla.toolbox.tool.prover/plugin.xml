@@ -133,6 +133,14 @@
       </super>
    </extension>
    <extension
+         id="org.lamport.tla.toolbox.tool.prover.ui.stepBeingProved"
+         name="Step Being Proved"
+         point="org.eclipse.core.resources.markers">
+      <super
+            type="org.lamport.tla.toolbox.tool.prover.ui.proofStepStatus">
+      </super>
+   </extension>
+   <extension
          id="org.lamport.tla.toolbox.tool.prover.ui.proofStepStatus"
          name="Super type representing the status of a proof step"
          point="org.eclipse.core.resources.markers">
@@ -165,6 +173,10 @@
       <type
             markerType="org.lamport.tla.toolbox.tool.prover.ui.stepProved"
             name="org.lamport.tla.toolbox.tool.prover.ui.stepProved">
+      </type>
+      <type
+            markerType="org.lamport.tla.toolbox.tool.prover.ui.stepBeingProved"
+            name="org.lamport.tla.toolbox.tool.prover.ui.stepBeingProved">
       </type>
    </extension>
    <extension
@@ -251,6 +263,20 @@
             textPreferenceKey="spTPK"
             textPreferenceValue="true"
             textStylePreferenceKey="spSPK"
+            textStylePreferenceValue="BOX">
+      </specification>
+      <specification
+            annotationType="org.lamport.tla.toolbox.tool.prover.ui.stepBeingProved"
+            colorPreferenceKey="sbpCPK"
+            colorPreferenceValue="200,255,128"
+            highlightPreferenceKey="sbpHPK"
+            highlightPreferenceValue="true"
+            includeOnPreferencePage="true"
+            label="Step Being Proved"
+            overviewRulerPreferenceKey="sbpORPK"
+            textPreferenceKey="sbpTPK"
+            textPreferenceValue="true"
+            textStylePreferenceKey="sbpTSPK"
             textStylePreferenceValue="BOX">
       </specification>
    </extension>
