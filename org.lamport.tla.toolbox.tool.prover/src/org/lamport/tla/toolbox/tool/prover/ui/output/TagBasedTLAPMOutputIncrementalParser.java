@@ -216,6 +216,7 @@ public class TagBasedTLAPMOutputIncrementalParser implements IProverProcessOutpu
      */
     public void processFinished()
     {
+        ProverHelper.compareStepStatusComputations();
     }
 
 }

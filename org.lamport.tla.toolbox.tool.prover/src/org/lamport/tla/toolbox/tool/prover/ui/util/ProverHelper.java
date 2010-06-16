@@ -1000,6 +1000,7 @@ public class ProverHelper
      */
     public static void compareStepStatusComputations()
     {
+        System.out.println("------------------Comparing TLAPM and Toolbox Step Status------------");
         Collection stepTuples = stepMap.values();
         for (Iterator it = stepTuples.iterator(); it.hasNext();)
         {
@@ -1023,6 +1024,8 @@ public class ProverHelper
             System.out.println("NO STATUS BUG :\n No Toolbox step status message found for the step at "
                     + message.getLocation());
         }
+        
+        System.out.println("------------------Done Comparing TLAPM and Toolbox Step Status------------");
     }
 
     public static void newStepStatusMarker(IMarker sanyMarker, String status)

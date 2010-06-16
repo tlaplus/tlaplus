@@ -7,8 +7,6 @@ import java.util.List;
 import org.eclipse.core.resources.IMarker;
 import org.lamport.tla.toolbox.tool.prover.ui.util.ProverHelper;
 
-import tla2sany.st.Location;
-
 /**
  * A class containing information about a proof step that is
  * needed for updating the status of proof steps.
@@ -125,11 +123,11 @@ public class StepTuple implements IStatusProvider
         if (this.status != newStatus)
         {
             // DEBUG
-            Location stepLoc = ProverHelper.stringToLoc(sanyMarker.getAttribute(ProverHelper.SANY_LOC_ATR, ""));
-            System.out.println("The status of the step located at " + stepLoc + " is now "
-                    + ProverHelper.statusIntToStatusString(newStatus));
+            // Location stepLoc = ProverHelper.stringToLoc(sanyMarker.getAttribute(ProverHelper.SANY_LOC_ATR, ""));
+            // System.out.println("The status of the step located at " + stepLoc + " is now "
+            // + ProverHelper.statusIntToStatusString(newStatus));
             // END DEBUG
-            
+
             this.status = newStatus;
             ProverHelper.newStepStatusMarker(sanyMarker, ProverHelper.statusIntToStatusString(newStatus));
             if (parent != null)
@@ -138,7 +136,7 @@ public class StepTuple implements IStatusProvider
             }
         }
     }
-    
+
     /**
      * Returns the SANY marker associated with this step.
      * @return
