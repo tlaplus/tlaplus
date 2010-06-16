@@ -5789,6 +5789,11 @@ OpDefNode node = (OpDefNode) vec.elementAt(i);
 
         case N_UseOrHide :
           UseOrHideNode uohn = generateUseOrHide(stepBodySTN, cm) ;
+
+          // Added by LL on 16 Jun 2010 so location returnedby getLocation() will
+          // include the step number.
+          uohn.stn = pfStepSTN; 
+
           uohn.setStepName(stepNum);  // Added 6 June 2010 by LL.
           
           if (uohn.facts.length + uohn.defs.length == 0) {
@@ -6179,6 +6184,11 @@ OpDefNode node = (OpDefNode) vec.elementAt(i);
          * For an ASSUME/PROVE, set the inProof field to false.            *
          ******************************************************************/
        TheoremNode thm = new TheoremNode(stepBodySTN, body, cm, proof, tadn);
+       
+       // Added by LL on 16 Jun 2010 so location returnedby getLocation() will
+       // include the step number.
+       thm.stn = pfStepSTN; 
+
        thm.suffices = isSuffices ;
        steps[i - offset] = thm; 
        }; // switch
@@ -6202,6 +6212,7 @@ OpDefNode node = (OpDefNode) vec.elementAt(i);
           symbolTable.addSymbol(sym.getName(), sym) ;
          }
        }
+
 
      } ; // for i
     InstanceNode[] insts = new InstanceNode[iVec.size()] ;
