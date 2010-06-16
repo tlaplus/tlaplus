@@ -28,6 +28,7 @@ import org.lamport.tla.toolbox.tool.prover.job.ProverJobRule;
 import org.lamport.tla.toolbox.tool.prover.job.ProverJob.ProverJobMatcher;
 import org.lamport.tla.toolbox.tool.prover.output.internal.ProverLaunchDescription;
 import org.lamport.tla.toolbox.tool.prover.ui.ProverUIActivator;
+import org.lamport.tla.toolbox.tool.prover.ui.output.data.ObligationStatus;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.ObligationStatusMessage;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.StepStatusMessage;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.StepTuple;
@@ -36,6 +37,7 @@ import org.lamport.tla.toolbox.util.AdapterFactory;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
+import tla2sany.semantic.LeafProofNode;
 import tla2sany.semantic.LevelNode;
 import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.NonLeafProofNode;
@@ -46,13 +48,17 @@ import tla2sany.st.Location;
 import util.UniqueString;
 
 /**
- * Helper methods for the launching of the prover.
+ * Helper methods for the launching of the prover. There are 
  * 
  * @author Daniel Ricketts
  *
  */
 public class ProverHelper
 {
+
+    /*********************************************************************
+     * Obligation marker and marker attribute constants.                 *
+     *********************************************************************/
     /**
      * Type of a marker that contains information about an obligation. 
      */
@@ -74,6 +80,9 @@ public class ProverHelper
      */
     public static final String OBLIGATION_STRING = "org.lamport.tla.toolbox.tool.prover.obString";
 
+    /******************************************************************************
+     * SANY marker and marker attribute constants.                                *
+     ******************************************************************************/
     /**
      * Type of marker that contains SANY information about a proof step.
      * In particular, it contains the location of the proof step as reported
@@ -89,12 +98,16 @@ public class ProverHelper
      * status check.
      */
     public static final String SANY_LOC_ATR = "org.lamport.tla.toolbox.tool.prover.ui.sanyLoc";
+
     /**
      * Delimiter used for representing
      * locations as strings.
      */
     public static final String LOC_DELIM = ":";
 
+    /******************************************************************************
+     * Obligation string status constants as returned by the TLAPM                *
+     ******************************************************************************/
     /**
      * Obligation status that occurs when
      * zenon or isabelle "takes time" to prove an obligation.
@@ -161,20 +174,60 @@ public class ProverHelper
      */
     public static final String TO_BE_PROVED = "to be proved";
 
+    /***********************************************************************************
+     * Step status marker types.                                                       *
+     ***********************************************************************************/
+    /**
+     * Marker type corresponding to the status {@link StepStatusMessage#PROVING_FAILED}
+     */
+    public static final String STEP_PROVING_FAILED_MARKER = "org.lamport.tla.toolbox.tool.prover.ui.stepProvingFailed";
+    /**
+     * Marker type corresponding to the status {@link StepStatusMessage#CHECKING_FAILED}
+     */
+    public static final String STEP_CHECKING_FAILED_MARKER = "org.lamport.tla.toolbox.tool.prover.ui.stepCheckingFailed";
+    /**
+     * Marker type corresponding to the status {@link StepStatusMessage#MISSING_PROOFS}
+     */
+    public static final String STEP_MISSING_MARKER = "org.lamport.tla.toolbox.tool.prover.ui.stepMissing";
+    /**
+     * Marker type corresponding to the status {@link StepStatusMessage#OMITTED}
+     */
+    public static final String STEP_OMITTED_MARKER = "org.lamport.tla.toolbox.tool.prover.ui.stepOmitted";
+    /**
+     * Marker type corresponding to the status {@link StepStatusMessage#CHECKED}
+     */
+    public static final String STEP_CHECKED_MARKER = "org.lamport.tla.toolbox.tool.prover.ui.stepChecked";
+    /**
+     * Marker type corresponding to the status {@link StepStatusMessage#PROVED}
+     */
+    public static final String STEP_PROVED_MARKER = "org.lamport.tla.toolbox.tool.prover.ui.stepProved";
+    /**
+     * Super type for the following four marker types for step status.
+     */
+    public static final String STEP_STATUS_MARKER = "org.lamport.tla.toolbox.tool.prover.ui.proofStepStatus";
+
+    /**************************************************************************************
+     * Step status integers. Used for easy computation of max status.                     *
+     **************************************************************************************/
+    public static final int STEP_CHECKED_INT = 0;
+    public static final int STEP_PROVED_INT = 1;
+    public static final int STEP_TO_BE_PROVED_INT = 2;
+    public static final int STEP_BEING_PROVED_INT = 3;
+    public static final int STEP_PROOF_OMITTED_INT = 4;
+    public static final int STEP_PROOF_MISSING_INT = 5;
+    public static final int STEP_PROVING_FAILED_INT = 6;
+    public static final int STEP_CHECKING_FAILED_INT = 100;
+    public static final int STEP_UNKNOWN_INT = -1;
+
     /**
      * Map from {@link Integer} ids of obligations
-     * to {@link StepTuple}s.
+     * to {@link ObligationStatus}
      */
     private static HashMap obsMap = new HashMap();
     /**
      * Map from {@link LevelNode}s to {@link StepTuple}s.
      */
     private static HashMap stepMap = new HashMap();
-    /**
-     * An array containing all possible statuses of proof steps.
-     */
-    private static final String[] statuses = new String[] { CHECKED, PROVED, StepStatusMessage.OMITTED,
-            StepStatusMessage.MISSING_PROOFS, CHECKING_FAILED, FAILED };
 
     /**
      * Removes all markers indicating obligation information on  a resource. Does
@@ -240,10 +293,6 @@ public class ProverHelper
      */
     public static boolean isObligationFinished(ObligationStatusMessage message, ProverLaunchDescription description)
     {
-        if (!message.getStatus().equals(OBLIGATION_MARKER))
-        {
-            return false;
-        }
 
         String status = message.getStatus();
 
@@ -311,10 +360,13 @@ public class ProverHelper
      * See {@link ProverHelper#SANY_MARKER} for a description of
      * these markers.
      * 
+     * This method also creates the tree of {@link StepTuple}s for
+     * this module.
+     * 
      * @param module
      * @throws CoreException 
      */
-    public static void createSANYMarkers(IFile module) throws CoreException
+    public static void prepareModuleForProverLaunch(IFile module) throws CoreException
     {
         ParseResult parseResult = ResourceHelper.getValidParseResult(module);
         if (parseResult == null)
@@ -338,7 +390,7 @@ public class ProverHelper
             if (topLevelNodes[i].getLocation().source().equals(moduleName))
             {
                 // found a theorem in the module
-                createSANYMarkersForTree(topLevelNodes[i], module);
+                prepareTreeForProverLaunch(topLevelNodes[i], module);
             }
         }
     }
@@ -364,7 +416,7 @@ public class ProverHelper
      * @param theoremNode
      * @throws CoreException 
      */
-    public static StepTuple createSANYMarkersForTree(LevelNode levelNode, IResource module) throws CoreException
+    public static StepTuple prepareTreeForProverLaunch(LevelNode levelNode, IResource module) throws CoreException
     {
         if (levelNode == null)
         {
@@ -381,11 +433,16 @@ public class ProverHelper
                 locForAttr = levelNode.getLocation();
             } else
             {
+                TheoremNode theoremNode = (TheoremNode) levelNode;
                 /*
-                 * The location of a theorem node is the location of its statement,
-                 * The statement is returned by theoremNode.getTheorem().
+                 * The location of a theorem node is the location beginning at the
+                 * step number or keyword THEOREM and ending at the end of the statement
+                 * of the step or theorem.
                  */
-                locForAttr = ((TheoremNode) levelNode).getTheorem().getLocation();
+                Location beginLoc = theoremNode.getLocation();
+                Location statementLoc = theoremNode.getTheorem().getLocation();
+                locForAttr = new Location(UniqueString.uniqueStringOf(statementLoc.source()), beginLoc.beginLine(),
+                        beginLoc.beginColumn(), statementLoc.endLine(), statementLoc.endColumn());
             }
             marker.setAttribute(SANY_LOC_ATR, locToString(locForAttr));
             IRegion locRegion = AdapterFactory.locationToRegion(locForAttr);
@@ -420,13 +477,28 @@ public class ProverHelper
                          */
                         for (int i = 0; i < steps.length; i++)
                         {
-                            StepTuple childTuple = createSANYMarkersForTree(steps[i], module);
+                            StepTuple childTuple = prepareTreeForProverLaunch(steps[i], module);
+                            // child tuple will be null if the step
+                            // is not a TheoremNode or UseOrHideNode
                             if (childTuple != null)
                             {
                                 childTuple.setParent(stepTuple);
+                                stepTuple.addChild(childTuple);
                             }
                         }
+                    } else
+                    {
+                        // leaf proof
+                        LeafProofNode leafProof = (LeafProofNode) proof;
+                        if (leafProof.getOmitted())
+                        {
+                            stepTuple.setStatus(getIntFromStringStatus(StepStatusMessage.OMITTED));
+                        }
                     }
+                } else
+                {
+                    // missing proof
+                    stepTuple.setStatus(getIntFromStringStatus(StepStatusMessage.MISSING_PROOFS));
                 }
 
             }
@@ -519,7 +591,7 @@ public class ProverHelper
      * The status string should be one of : 
      * 
      * {@link #STEP_CHECKED_MARKER}
-     * {@link #STEP_CHECKING_FAILED}
+     * {@link #STEP_CHECKING_FAILED_MARKER}
      * {@link #STEP_MISSING_MARKER}
      * {@link #STEP_OMITTED_MARKER}
      * {@link #STEP_PROVED_MARKER}
@@ -538,7 +610,7 @@ public class ProverHelper
             return STEP_CHECKED_MARKER;
         } else if (status.equals(StepStatusMessage.CHECKING_FAILED))
         {
-            return STEP_CHECKING_FAILED;
+            return STEP_CHECKING_FAILED_MARKER;
         } else if (status.equals(StepStatusMessage.MISSING_PROOFS))
         {
             return STEP_MISSING_MARKER;
@@ -553,6 +625,42 @@ public class ProverHelper
             return STEP_PROVING_FAILED_MARKER;
         }
         return null;
+    }
+
+    /**
+     * Converts from an integer status of a step to
+     * the marker type. The int should be one of
+     * 
+     * {@link #STEP_CHECKED_INT}
+     * {@link #STEP_CHECKING_FAILED_INT}
+     * {@link #STEP_PROOF_MISSING_INT}
+     * {@link #STEP_PROOF_OMITTED_INT}
+     * {@link #STEP_PROVED_INT}
+     * {@link #STEP_PROVING_FAILED_INT}
+     * 
+     * Else, this method returns null.
+     * 
+     * @param status
+     * @return
+     */
+    public static String statusIntToStatusString(int status)
+    {
+        switch (status) {
+        case STEP_CHECKED_INT:
+            return StepStatusMessage.CHECKED;
+        case STEP_CHECKING_FAILED_INT:
+            return StepStatusMessage.CHECKING_FAILED;
+        case STEP_PROOF_MISSING_INT:
+            return StepStatusMessage.MISSING_PROOFS;
+        case STEP_PROOF_OMITTED_INT:
+            return StepStatusMessage.OMITTED;
+        case STEP_PROVED_INT:
+            return StepStatusMessage.PROVED;
+        case STEP_PROVING_FAILED_INT:
+            return StepStatusMessage.PROVING_FAILED;
+        default:
+            return null;
+        }
     }
 
     /**
@@ -581,30 +689,20 @@ public class ProverHelper
                 return;
             }
 
-            // /*
-            // * Look for a step tuple in the values of obsMap
-            // * that already points to levelNode.
-            // *
-            // * If one is found, map to that. Else, create a new one.
-            // */
-            // Collection stepTuples = obsMap.values();
-            // // set to true if an existing step tuple is found
-            // boolean foundExisting = false;
-            // for (Iterator it = stepTuples.iterator(); it.hasNext();)
-            // {
-            // StepTuple stepTuple = (StepTuple) it.next();
-            // if (stepTuple.getStepNode().equals(levelNode))
-            // {
-            // obsMap.put(new Integer(message.getID()), stepTuple);
-            // foundExisting = true;
-            // break;
-            // }
-            // }
-
+            /*
+             * Get the step tuple for the level node containing
+             * the obligation. This is the parent of the obligation.
+             * Create a new ObligationStatus with the step tuple as the
+             * parent and the message status as the initial status, add
+             * the obligation as a child of the step tuple. Adding
+             * the obligation as a child will update the status of the parent.
+             */
             StepTuple stepTuple = (StepTuple) stepMap.get(levelNode);
             if (stepTuple != null)
             {
-                obsMap.put(new Integer(message.getID()), stepTuple);
+                ObligationStatus obStatus = new ObligationStatus(stepTuple, getIntFromStringStatus(message.getStatus()));
+                stepTuple.addChild(obStatus);
+                obsMap.put(new Integer(message.getID()), obStatus);
             } else
             {
                 ProverUIActivator.logDebug("Cannot find a step tuple for level node at " + levelNode.getLocation()
@@ -613,11 +711,16 @@ public class ProverHelper
         } else
         {
             /*
-             * Update the step statuses. The call to stepTuple.updateStatus
-             * will update the status of that step and any ancestors.
+             * Update the status of the obligation. The obligation will
+             * inform its parents step that its status should be updated.
+             * 
+             * Don't update the status if the status is checking interrupted.
              */
-            StepTuple stepTuple = (StepTuple) obsMap.get(new Integer(message.getID()));
-            stepTuple.updateStatus();
+            if (!message.getStatus().equals(CHECKING_INTERUPTED))
+            {
+                ObligationStatus obStatus = (ObligationStatus) obsMap.get(new Integer(message.getID()));
+                obStatus.setStatus(getIntFromStringStatus(message.getStatus()));
+            }
 
             // create the marker and update the obligations view
             final IMarker obMarker = newObligationStatus(message);
@@ -837,74 +940,64 @@ public class ProverHelper
             ProverUIActivator.logDebug("A module could not be located for a step status.\n" + "Status : "
                     + status.getStatus() + "\nLocation : " + location);
         }
+    }
 
-        // if (module != null && module instanceof IFile && module.exists())
-        // {
-        // /*
-        // * We need a document to convert the 4-int location to a 2-int
-        // * region. We use a FileDocumentProvider. It is disconnected
-        // * from the input in the finally block to avoid a memory leak.
-        // */
-        // FileEditorInput fileEditorInput = new FileEditorInput((IFile) module);
-        // FileDocumentProvider fileDocumentProvider = new FileDocumentProvider();
-        // try
-        // {
-        // fileDocumentProvider.connect(fileEditorInput);
-        // IDocument document = fileDocumentProvider.getDocument(fileEditorInput);
-        //
-        // IMarker newMarker = module.createMarker(statusStringToMarkerType(status.getStatus()));
-        // Map markerAttributes = new HashMap(2);
-        //
-        // IRegion stepRegion = AdapterFactory.locationToRegion(document, location);
-        // /*
-        // * For marking a region that starts at offset o and has length l, the
-        // * start character is o and the end character is o+l.
-        // */
-        // markerAttributes.put(IMarker.CHAR_START, new Integer(stepRegion.getOffset()));
-        // markerAttributes
-        // .put(IMarker.CHAR_END, new Integer(stepRegion.getOffset() + stepRegion.getLength()));
-        //
-        // newMarker.setAttributes(markerAttributes);
-        //
-        // // The following was commentted out
-        // // because there should not longer be any overlapping
-        // // markers. Any overlapping markers should be removed before
-        // // launching the prover.
-        // // /*
-        // // * Remove any overlapping existing markers.
-        // // */
-        // // IMarker[] existingMarkers = module.findMarkers(ProverHelper.STEP_STATUS_MARKER, true,
-        // // IResource.DEPTH_ZERO);
-        // // for (int i = 0; i < existingMarkers.length; i++)
-        // // {
-        // // IMarker existingMarker = existingMarkers[i];
-        // // int startChar = existingMarker.getAttribute(IMarker.CHAR_START, -1);
-        // // int endChar = existingMarker.getAttribute(IMarker.CHAR_END, -1);
-        // //
-        // // if (stepRegion.getOffset() < startChar && stepRegion.getLength() + stepRegion.getOffset() > endChar)
-        // // {
-        // // // new marker overlaps with old marker
-        // // // remove old marker
-        // // existingMarker.delete();
-        // // }
-        // // }
-        // } catch (CoreException e)
-        // {
-        // ProverUIActivator.logError("Error creating marker for new status.\n" + "Status : " + status.getStatus()
-        // + "\nLocation : " + location, e);
-        // } catch (BadLocationException e)
-        // {
-        // ProverUIActivator.logError("Could not convert location to region for a step status.\n" + "Status : "
-        // + status.getStatus() + "\nLocation : " + location, e);
-        // } finally
-        // {
-        // fileDocumentProvider.disconnect(fileEditorInput);
-        // }
-        // } else
-        // {
-        // ProverUIActivator.logDebug("A module could not be located for a step status.\n" + "Status : "
-        // + status.getStatus() + "\nLocation : " + location);
-        // }
+    public static void newStepStatusMarker(IMarker sanyMarker, String status)
+    {
+        if (status == null)
+        {
+            return;
+        }
+
+        try
+        {
+            IResource module = sanyMarker.getResource();
+            /*
+             * If the status string does not correspond
+             * to a marker type, then do not create a marker.
+             */
+            String markerType = statusStringToMarkerType(status);
+
+            if (markerType == null)
+            {
+                ProverUIActivator
+                        .logDebug("Status of proof step does not correspond to an existing marker type. The status is "
+                                + status);
+                return;
+            }
+
+            IMarker newMarker = module.createMarker(markerType);
+            Map markerAttributes = new HashMap(2);
+            // char start and end of the marker to be created
+            int newCharStart = sanyMarker.getAttribute(IMarker.CHAR_START, 0);
+            int newCharEnd = sanyMarker.getAttribute(IMarker.CHAR_END, 0);
+
+            /*
+             * Remove any existing step status markers that overlap
+             * with the new step status marker.
+             */
+            IMarker[] existingMarkers = module.findMarkers(ProverHelper.STEP_STATUS_MARKER, true, IResource.DEPTH_ZERO);
+            for (int i = 0; i < existingMarkers.length; i++)
+            {
+                IMarker existingMarker = existingMarkers[i];
+                int existingCharStart = existingMarker.getAttribute(IMarker.CHAR_START, -1);
+                int existingCharEnd = existingMarker.getAttribute(IMarker.CHAR_END, -1);
+
+                // conditions for overlapping
+                if (existingCharStart < newCharEnd && existingCharEnd > newCharStart)
+                {
+                    existingMarker.delete();
+                }
+            }
+
+            markerAttributes.put(IMarker.CHAR_START, new Integer(newCharStart));
+            markerAttributes.put(IMarker.CHAR_END, new Integer(newCharEnd));
+            newMarker.setAttributes(markerAttributes);
+
+        } catch (CoreException e)
+        {
+            ProverUIActivator.logError("Error creating new status marker.", e);
+        }
     }
 
     /**
@@ -1039,35 +1132,6 @@ public class ProverHelper
             ProverUIActivator.logError("Error removing status markers from tree rooted at " + root, e);
         }
     }
-
-    /**
-     * Marker type corresponding to the status {@link StepStatusMessage#PROVING_FAILED}
-     */
-    public static final String STEP_PROVING_FAILED_MARKER = "org.lamport.tla.toolbox.tool.prover.ui.stepProvingFailed";
-    /**
-     * Marker type corresponding to the status {@link StepStatusMessage#CHECKING_FAILED}
-     */
-    public static final String STEP_CHECKING_FAILED = "org.lamport.tla.toolbox.tool.prover.ui.stepCheckingFailed";
-    /**
-     * Marker type corresponding to the status {@link StepStatusMessage#MISSING_PROOFS}
-     */
-    public static final String STEP_MISSING_MARKER = "org.lamport.tla.toolbox.tool.prover.ui.stepMissing";
-    /**
-     * Marker type corresponding to the status {@link StepStatusMessage#OMITTED}
-     */
-    public static final String STEP_OMITTED_MARKER = "org.lamport.tla.toolbox.tool.prover.ui.stepOmitted";
-    /**
-     * Marker type corresponding to the status {@link StepStatusMessage#CHECKED}
-     */
-    public static final String STEP_CHECKED_MARKER = "org.lamport.tla.toolbox.tool.prover.ui.stepChecked";
-    /**
-     * Marker type corresponding to the status {@link StepStatusMessage#PROVED}
-     */
-    public static final String STEP_PROVED_MARKER = "org.lamport.tla.toolbox.tool.prover.ui.stepProved";
-    /**
-     * Super type for the following four marker types for step status.
-     */
-    public static final String STEP_STATUS_MARKER = "org.lamport.tla.toolbox.tool.prover.ui.proofStepStatus";
 
     /**
      * Requests cancellation of all running prover jobs. If wait
@@ -1217,24 +1281,51 @@ public class ProverHelper
     }
 
     /**
-     * Returns the integer representation of the status.
+     * Takes the String representation of the status of a step
+     * or obligation and translates to the integer representation
+     * of the status of a proof step.
+     * 
+     * This can be used to translate the String status of an obligation
+     * to the integer status that can be used to compute the status of
+     * the proof step containing that obligation.
+     * 
+     * Returns -1 if no known status is passed in. Returns 100 if
+     * {@link #CHECKING_FAILED} is the status.
      * 
      * @param status
      * @return
      */
     public static int getIntFromStringStatus(String status)
     {
-
-        for (int i = 0; i < statuses.length; i++)
+        if (status.equals(CHECKED) || status.equals(CHECKED_ALREADY))
         {
-            if (statuses[i].equals(status))
-            {
-                return i;
-            }
+            return STEP_CHECKED_INT;
+        } else if (status.equals(PROVED) || status.equals(PROVED_ALREADY) || status.equals(SKIPPED)
+                || status.equals(TRIVIAL) || status.equals(TRIVIAL_ALREADY))
+        {
+            return STEP_PROVED_INT;
+        } else if (status.equals(TO_BE_PROVED))
+        {
+            return STEP_TO_BE_PROVED_INT;
+        } else if (status.equals(BEING_PROVED))
+        {
+            return STEP_BEING_PROVED_INT;
+        } else if (status.equals(StepStatusMessage.OMITTED))
+        {
+            return STEP_PROOF_OMITTED_INT;
+        } else if (status.equals(StepStatusMessage.MISSING_PROOFS))
+        {
+            return STEP_PROOF_MISSING_INT;
+        } else if (status.equals(FAILED) || status.equals(FAILED_ALREADY))
+        {
+            return STEP_PROVING_FAILED_INT;
+        } else if (status.equals(CHECKING_FAILED))
+        {
+            return STEP_CHECKING_FAILED_INT;
         }
 
-        return -1;
+        System.out.println("Unknown status : " + status);
+        return STEP_UNKNOWN_INT;
 
     }
-
 }

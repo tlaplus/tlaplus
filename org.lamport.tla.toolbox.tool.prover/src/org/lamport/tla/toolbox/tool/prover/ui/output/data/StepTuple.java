@@ -1,6 +1,5 @@
 package org.lamport.tla.toolbox.tool.prover.ui.output.data;
 
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -8,7 +7,7 @@ import java.util.List;
 import org.eclipse.core.resources.IMarker;
 import org.lamport.tla.toolbox.tool.prover.ui.util.ProverHelper;
 
-import tla2sany.semantic.LevelNode;
+import tla2sany.st.Location;
 
 /**
  * A class containing information about a proof step that is
@@ -20,6 +19,10 @@ import tla2sany.semantic.LevelNode;
 public class StepTuple implements IStatusProvider
 {
 
+    /**
+     * The parent of this step. Will be null
+     * if the step has no parent.
+     */
     private StepTuple parent;
     /**
      * The SANY marker for the step. See
@@ -32,8 +35,18 @@ public class StepTuple implements IStatusProvider
      * are the children of this step.
      */
     private List children;
-    private int status;
+    /**
+     * The status of the step. This is initially set to
+     * unknown. If children are added, the status will
+     * then be updated.
+     */
+    private int status = ProverHelper.STEP_UNKNOWN_INT;
 
+    /**
+     * Updates the status of this step. Creates a new status
+     * marker if the status has changed. Calls {@link #updateStatus()}
+     * on its parent if the parent is not null and the status has changed.
+     */
     public void updateStatus()
     {
 
@@ -43,12 +56,12 @@ public class StepTuple implements IStatusProvider
             IStatusProvider statusProvider = (IStatusProvider) it.next();
             maxStatus = Math.max(maxStatus, statusProvider.getStatus());
         }
+        
+        setStatus(maxStatus);
 
-        if (maxStatus != status)
-        {
-            status = maxStatus;
-            parent.updateStatus();
-        }
+        // DEBUG
+        Location stepLoc = ProverHelper.stringToLoc(sanyMarker.getAttribute(ProverHelper.SANY_LOC_ATR, ""));
+        System.out.println("The status of the step located at " + stepLoc + " is now " + status);
 
     }
 
@@ -65,11 +78,14 @@ public class StepTuple implements IStatusProvider
     }
 
     /**
+     * Adds a child to this step. Updates the status.
+     * 
      * @param obligations the obligations to set
      */
     public void addChild(IStatusProvider statusProvider)
     {
         children.add(statusProvider);
+        updateStatus();
     }
 
     /**
@@ -85,18 +101,6 @@ public class StepTuple implements IStatusProvider
     }
 
     /**
-     * Returns the SANY marker for the step. See
-     * {@link ProverHelper#SANY_MARKER} for a description
-     * of these markers.
-     * 
-     * @return the sanyMarker
-     */
-    public IMarker getSanyMarker()
-    {
-        return sanyMarker;
-    }
-
-    /**
      * @param parent the parent to set
      */
     public void setParent(StepTuple parent)
@@ -104,9 +108,33 @@ public class StepTuple implements IStatusProvider
         this.parent = parent;
     }
 
+    /**
+     * Returns the current status of this step.
+     */
     public int getStatus()
     {
         return status;
+    }
+
+    /**
+     * Sets the current status of this step. Updates
+     * the status marker for this step if the status has changed.
+     * Updates the parent if the parent is not null and the status
+     * has changed for this step.
+     * 
+     * @param newStatus
+     */
+    public void setStatus(int newStatus)
+    {
+        if (this.status != newStatus)
+        {
+            this.status = newStatus;
+            ProverHelper.newStepStatusMarker(sanyMarker, ProverHelper.statusIntToStatusString(newStatus));
+            if (parent != null)
+            {
+                parent.updateStatus();
+            }
+        }
     }
 
 }

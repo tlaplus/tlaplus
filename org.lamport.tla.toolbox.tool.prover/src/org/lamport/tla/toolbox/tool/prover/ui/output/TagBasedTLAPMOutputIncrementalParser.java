@@ -153,7 +153,7 @@ public class TagBasedTLAPMOutputIncrementalParser implements IProverProcessOutpu
                                     numMessage.getCount());
                         } else if (data instanceof StepStatusMessage)
                         {
-                            ProverHelper.newStepStatus((StepStatusMessage) data);
+                            // ProverHelper.newStepStatus((StepStatusMessage) data);
                         }
                     }
 
