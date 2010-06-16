@@ -51,6 +51,11 @@ public abstract class TLAPMMessage
      */
     public static final String STEP_STATUS_TYPE = "proof-step";
     /**
+     * Type of message containing information on the status
+     * of a theorem.
+     */
+    public static final String THEOREM_STATUS_TYPE = "theorem";
+    /**
      * Type of message containing the number of obligations
      * in the region being proved or checked.
      */
@@ -158,7 +163,7 @@ public abstract class TLAPMMessage
                         moduleName);
                 // System.out.println(message);
                 return message;
-            } else if (type.equals(STEP_STATUS_TYPE))
+            } else if (type.equals(STEP_STATUS_TYPE) || type.equals(THEOREM_STATUS_TYPE))
             {
                 StepStatusMessage message = StepStatusMessage.getStepMessage(fieldPairs.entrySet(), moduleName);
                 return message;
