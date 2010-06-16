@@ -56,12 +56,8 @@ public class StepTuple implements IStatusProvider
             IStatusProvider statusProvider = (IStatusProvider) it.next();
             maxStatus = Math.max(maxStatus, statusProvider.getStatus());
         }
-        
-        setStatus(maxStatus);
 
-        // DEBUG
-        Location stepLoc = ProverHelper.stringToLoc(sanyMarker.getAttribute(ProverHelper.SANY_LOC_ATR, ""));
-        System.out.println("The status of the step located at " + stepLoc + " is now " + status);
+        setStatus(maxStatus);
 
     }
 
@@ -128,6 +124,12 @@ public class StepTuple implements IStatusProvider
     {
         if (this.status != newStatus)
         {
+            // DEBUG
+            Location stepLoc = ProverHelper.stringToLoc(sanyMarker.getAttribute(ProverHelper.SANY_LOC_ATR, ""));
+            System.out.println("The status of the step located at " + stepLoc + " is now "
+                    + ProverHelper.statusIntToStatusString(status));
+            // END DEBUG
+            
             this.status = newStatus;
             ProverHelper.newStepStatusMarker(sanyMarker, ProverHelper.statusIntToStatusString(newStatus));
             if (parent != null)
