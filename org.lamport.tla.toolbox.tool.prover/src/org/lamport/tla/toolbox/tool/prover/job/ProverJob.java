@@ -237,28 +237,10 @@ public class ProverJob extends Job
                 });
 
                 /*
-                 * Remove all existing proof step status markers in the tree
-                 * or module for which the launch is being performed. If there is a marker
-                 * that overlaps with the tree for which the launch is being performed, shorten
-                 * that marker so that it does not overlap.
-                 * 
-                 * Remove any existing SANY proof step markers
-                 * and put a new SANY marker on every place that can
-                 * receive a status. This should be done only for
-                 * nodeToProve if it is non-null. If it is null, the launch
-                 * is on the entire module, so it should be done on the entire
-                 * module.
+                 * Perform the necessary work to prepare for the launch of the prover.
+                 * See the method comments to understand what is done.
                  */
-                ProverHelper.removeSANYStepMarkers(module);
-                if (nodeToProve == null)
-                {
-                    ProverHelper.removeStatusFromModule(module);
-                    ProverHelper.prepareModuleForProverLaunch(module);
-                } else
-                {
-                    ProverHelper.removeStatusFromTree(module, nodeToProve);
-                    ProverHelper.prepareTreeForProverLaunch(nodeToProve, module);
-                }
+                ProverHelper.prepareModuleForProverLaunch(module, nodeToProve);
             } catch (CoreException e1)
             {
                 ProverUIActivator.logError("Error clearing obligation markers for project of module " + modulePath, e1);

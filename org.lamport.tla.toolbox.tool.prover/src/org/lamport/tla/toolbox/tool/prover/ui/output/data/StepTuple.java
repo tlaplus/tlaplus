@@ -127,7 +127,7 @@ public class StepTuple implements IStatusProvider
             // DEBUG
             Location stepLoc = ProverHelper.stringToLoc(sanyMarker.getAttribute(ProverHelper.SANY_LOC_ATR, ""));
             System.out.println("The status of the step located at " + stepLoc + " is now "
-                    + ProverHelper.statusIntToStatusString(status));
+                    + ProverHelper.statusIntToStatusString(newStatus));
             // END DEBUG
             
             this.status = newStatus;
@@ -137,6 +137,15 @@ public class StepTuple implements IStatusProvider
                 parent.updateStatus();
             }
         }
+    }
+    
+    /**
+     * Returns the SANY marker associated with this step.
+     * @return
+     */
+    public IMarker getSanyMarker()
+    {
+        return sanyMarker;
     }
 
 }

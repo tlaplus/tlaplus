@@ -1,6 +1,8 @@
 package org.lamport.tla.toolbox.tool.prover.ui.util;
 
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import org.eclipse.core.resources.IFile;
@@ -232,6 +234,12 @@ public class ProverHelper
      * Map from {@link LevelNode}s to {@link StepTuple}s.
      */
     private static HashMap stepMap = new HashMap();
+    /**
+     * Map from {@link Integer} line numbers of steps to
+     * the last {@link StepStatusMessage} reported by the prover
+     * for that step.
+     */
+    private static HashMap stepMessageMap = new HashMap();
 
     /**
      * Removes all markers indicating obligation information on  a resource. Does
@@ -350,7 +358,16 @@ public class ProverHelper
     }
 
     /**
-     * Creates SANY markers on all nodes in the module for which there can be
+     * This method prepares the module for the launch of the prover.
+     * It takes the following steps:
+     * 
+     * 1.) Call {@link #removeSANYStepMarkers(IResource)} on the module.
+     * 2.) If level node is not null, call {@link #removeStatusFromTree(IFile, LevelNode)}. Else
+     *     call {@link #removeStatusFromModule(IResource)}.
+     * 3.) If levelNode is null, then the following is done for the entire module.
+     *     If it is not null, the following is only done for the tree rooted at levelNode:
+     * 
+     * Create SANY markers on all nodes for which there can be
      * a prover status. A SANY marker stores the location of the node as returned
      * by SANY when the marker is created. Since markers are "sticky", SANY markers
      * can be used to map from locations returned by the prover to the current
@@ -358,20 +375,42 @@ public class ProverHelper
      * the SANY location of a SANY marker.
      * 
      * This currently puts SANY markers on all step or top level
-     * USE node markers on the module. If there is no
-     * valid parse result for the module, this method does nothing.
+     * USE nodes. If levelNode is null and there is no valid parse result for the module,
+     * this method does nothing.
      * 
      * See {@link ProverHelper#SANY_MARKER} for a description of
      * these markers.
      * 
      * This method also creates the tree of {@link StepTuple}s for
-     * this module.
+     * this module or LevelNode.
      * 
      * @param module
      * @throws CoreException 
      */
-    public static void prepareModuleForProverLaunch(IFile module) throws CoreException
+    public static void prepareModuleForProverLaunch(IFile module, LevelNode levelNode) throws CoreException
     {
+        removeSANYStepMarkers(module);
+        if (levelNode == null)
+        {
+            removeStatusFromModule(module);
+        } else
+        {
+            removeStatusFromTree(module, levelNode);
+        }
+        /*
+         * Clear the maps that hold information about obligations
+         * and steps.
+         */
+        obsMap.clear();
+        stepMap.clear();
+        stepMessageMap.clear();
+
+        if (levelNode != null)
+        {
+            prepareTreeForProverLaunch(levelNode, module);
+            return;
+        }
+
         ParseResult parseResult = ResourceHelper.getValidParseResult(module);
         if (parseResult == null)
         {
@@ -851,104 +890,138 @@ public class ProverHelper
      * 
      * @param status
      */
-    public static void newStepStatus(StepStatusMessage status)
+    public static void newStepStatusMessage(StepStatusMessage status)
     {
-        if (status == null)
+        stepMessageMap.put(new Integer(status.getLocation().beginLine()), status);
+
+        // if (status == null)
+        // {
+        // return;
+        // }
+        // /*
+        // * Create a marker located at the proof step.
+        // *
+        // * The type of the marker depends on the status.
+        // */
+        // Location location = status.getLocation();
+        // IResource module = ResourceHelper.getResourceByModuleName(location.source());
+        // if (module != null && module instanceof IFile && module.exists())
+        // {
+        // /*
+        // * Try to find an existing SANY marker.
+        // *
+        // * For the moment, if an existing SANY marker is not
+        // * found, put a marker at the location given by the
+        // * message location. Also log a debug message saying
+        // * a sany marker has not been found.
+        // *
+        // * If a sany marker is found, put a marker at the current location
+        // * of the sany marker (not at the SANY location attribute of the sany marker).
+        // */
+        // IMarker sanyMarker = findSANYMarker(module, location);
+        // try
+        // {
+        // /*
+        // * If the status string does not correspond
+        // * to a marker type, then do not create a marker.
+        // */
+        // String markerType = statusStringToMarkerType(status.getStatus());
+        //
+        // if (markerType == null)
+        // {
+        // ProverUIActivator
+        // .logDebug("Status of proof step does not correspond to an existing marker type. The status is "
+        // + status.getStatus());
+        // return;
+        // }
+        //
+        // IMarker newMarker = module.createMarker(markerType);
+        // Map markerAttributes = new HashMap(2);
+        // // value based on whether a sany marker is found or not
+        // int newCharStart;
+        // int newCharEnd;
+        // if (sanyMarker != null)
+        // {
+        // newCharStart = sanyMarker.getAttribute(IMarker.CHAR_START, 0);
+        // newCharEnd = sanyMarker.getAttribute(IMarker.CHAR_END, 0);
+        // } else
+        // {
+        // ProverUIActivator.logDebug("Existing SANY marker not found for location " + location
+        // + ". This is a bug.");
+        // // the region from the tlapm message
+        // IRegion messageRegion = AdapterFactory.locationToRegion(location);
+        // /*
+        // * For marking a region that starts at offset o and has length l, the
+        // * start character is o and the end character is o+l.
+        // */
+        // newCharStart = messageRegion.getOffset();
+        // newCharEnd = messageRegion.getOffset() + messageRegion.getLength();
+        // return;
+        // }
+        //
+        // /*
+        // * Remove any existing step status markers that overlap
+        // * with the new step status marker.
+        // */
+        // IMarker[] existingMarkers = module.findMarkers(ProverHelper.STEP_STATUS_MARKER, true,
+        // IResource.DEPTH_ZERO);
+        // for (int i = 0; i < existingMarkers.length; i++)
+        // {
+        // IMarker existingMarker = existingMarkers[i];
+        // int existingCharStart = existingMarker.getAttribute(IMarker.CHAR_START, -1);
+        // int existingCharEnd = existingMarker.getAttribute(IMarker.CHAR_END, -1);
+        //
+        // // conditions for overlapping
+        // if (existingCharStart < newCharEnd && existingCharEnd > newCharStart)
+        // {
+        // existingMarker.delete();
+        // }
+        // }
+        //
+        // markerAttributes.put(IMarker.CHAR_START, new Integer(newCharStart));
+        // markerAttributes.put(IMarker.CHAR_END, new Integer(newCharEnd));
+        // newMarker.setAttributes(markerAttributes);
+        //
+        // } catch (CoreException e)
+        // {
+        // ProverUIActivator.logError("Error creating new status marker.", e);
+        // }
+        // } else
+        // {
+        // ProverUIActivator.logDebug("A module could not be located for a step status.\n" + "Status : "
+        // + status.getStatus() + "\nLocation : " + location);
+        // }
+    }
+
+    /**
+     * Compares the step status computations of the TLAPM and the toolbox.
+     * Any discrepancies are reported. Currently the reporting is to the
+     * console.
+     */
+    public static void compareStepStatusComputations()
+    {
+        Collection stepTuples = stepMap.values();
+        for (Iterator it = stepTuples.iterator(); it.hasNext();)
         {
-            return;
-        }
-        /*
-         * Create a marker located at the proof step.
-         * 
-         * The type of the marker depends on the status.
-         */
-        Location location = status.getLocation();
-        IResource module = ResourceHelper.getResourceByModuleName(location.source());
-        if (module != null && module instanceof IFile && module.exists())
-        {
-            /*
-             * Try to find an existing SANY marker.
-             * 
-             * For the moment, if an existing SANY marker is not
-             * found, put a marker at the location given by the
-             * message location. Also log a debug message saying
-             * a sany marker has not been found.
-             * 
-             * If a sany marker is found, put a marker at the current location
-             * of the sany marker (not at the SANY location attribute of the sany marker).
-             */
-            IMarker sanyMarker = findSANYMarker(module, location);
-            try
+            StepTuple stepTuple = (StepTuple) it.next();
+            Location stepLoc = stringToLoc(stepTuple.getSanyMarker().getAttribute(SANY_LOC_ATR, ""));
+            StepStatusMessage stepMessage = (StepStatusMessage) stepMessageMap.remove(new Integer(stepLoc.beginLine()));
+            if (stepMessage == null)
             {
-                /*
-                 * If the status string does not correspond
-                 * to a marker type, then do not create a marker.
-                 */
-                String markerType = statusStringToMarkerType(status.getStatus());
-
-                if (markerType == null)
-                {
-                    ProverUIActivator
-                            .logDebug("Status of proof step does not correspond to an existing marker type. The status is "
-                                    + status.getStatus());
-                    return;
-                }
-
-                IMarker newMarker = module.createMarker(markerType);
-                Map markerAttributes = new HashMap(2);
-                // value based on whether a sany marker is found or not
-                int newCharStart;
-                int newCharEnd;
-                if (sanyMarker != null)
-                {
-                    newCharStart = sanyMarker.getAttribute(IMarker.CHAR_START, 0);
-                    newCharEnd = sanyMarker.getAttribute(IMarker.CHAR_END, 0);
-                } else
-                {
-                    ProverUIActivator.logDebug("Existing SANY marker not found for location " + location
-                            + ". This is a bug.");
-                    // the region from the tlapm message
-                    IRegion messageRegion = AdapterFactory.locationToRegion(location);
-                    /*
-                     * For marking a region that starts at offset o and has length l, the
-                     * start character is o and the end character is o+l.
-                     */
-                    newCharStart = messageRegion.getOffset();
-                    newCharEnd = messageRegion.getOffset() + messageRegion.getLength();
-                    return;
-                }
-
-                /*
-                 * Remove any existing step status markers that overlap
-                 * with the new step status marker.
-                 */
-                IMarker[] existingMarkers = module.findMarkers(ProverHelper.STEP_STATUS_MARKER, true,
-                        IResource.DEPTH_ZERO);
-                for (int i = 0; i < existingMarkers.length; i++)
-                {
-                    IMarker existingMarker = existingMarkers[i];
-                    int existingCharStart = existingMarker.getAttribute(IMarker.CHAR_START, -1);
-                    int existingCharEnd = existingMarker.getAttribute(IMarker.CHAR_END, -1);
-
-                    // conditions for overlapping
-                    if (existingCharStart < newCharEnd && existingCharEnd > newCharStart)
-                    {
-                        existingMarker.delete();
-                    }
-                }
-
-                markerAttributes.put(IMarker.CHAR_START, new Integer(newCharStart));
-                markerAttributes.put(IMarker.CHAR_END, new Integer(newCharEnd));
-                newMarker.setAttributes(markerAttributes);
-
-            } catch (CoreException e)
+                System.out.println("NO STATUS BUG :\n No TLAPM step status message found for the step at " + stepLoc);
+            } else if (!stepMessage.getStatus().equals(statusIntToStatusString(stepTuple.getStatus())))
             {
-                ProverUIActivator.logError("Error creating new status marker.", e);
+                System.out.println("DIFFERENT STATUS BUG : \n Loc : " + stepLoc + "\n TLAPM : "
+                        + stepMessage.getStatus() + "\n Toolbox : " + statusIntToStatusString(stepTuple.getStatus()));
             }
-        } else
+        }
+
+        Collection remainingMessages = stepMessageMap.values();
+        for (Iterator it = remainingMessages.iterator(); it.hasNext();)
         {
-            ProverUIActivator.logDebug("A module could not be located for a step status.\n" + "Status : "
-                    + status.getStatus() + "\nLocation : " + location);
+            StepStatusMessage message = (StepStatusMessage) it.next();
+            System.out.println("NO STATUS BUG :\n No Toolbox step status message found for the step at "
+                    + message.getLocation());
         }
     }
 
