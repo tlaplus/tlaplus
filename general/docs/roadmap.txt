@@ -275,6 +275,40 @@ instances of the class (Assignment for example) that represents the
 data and adds it to the viewer.  An ILabelProvider is used to
 determine how these instances are displayed in a viewer.
 -------------------------------------------------------------------
+STRUCTURE OF THE prover plugin
+
+Command handlers that launch a proof construct and schedule a 
+
+ProverJob.
+  The running ProverJob streams the prover's output to a
+  
+BroadcastStreamListener.
+   This calls the constructors to create
+      ConsoleProverProcessOutputSink and TagBasedTLAPMOutputIncrementalParser
+   objects and calls their initializeSink methods to initialize them
+   and then calls appendText methods when prover's input arrives.
+   
+TagBasedTLAPMOutputIncrementalParser
+    The appendText() method creates TLAPMMessage objects and calls
+    appropriate methods in ProverHelper to process the messages, according
+    to their type, which is one of:
+      ObligationNumberMessage: reports total number of obligations.
+      ObligationStatusMessage: reports status of obligation, starting with
+                               status TO_BE_PROVED
+      StepStatusMessage: Reports status of a step.
+      
+Specifying color preferences is done through two extension points:
+  org.eclipse.core.resources.marker 
+     specifies the type of a marker (by declaring a new type)
+  org.eclipse.ui.editors.annotationTypes 
+     declares a new type of annotation and maps it to a marker type
+  org.eclipse.ui.editors.markerAnnotationSpecification
+    Have field for the annotationTypes, and a bunch of fields
+    for declaring the default appearance of an annotation in the editor.
+    
+
+
+-----------------------------------------------------------------------
 HOW TO GET A...
   SpecObj
      From IFile: ResourceHelper.getValidParseResult(iFile).getSpecObj()

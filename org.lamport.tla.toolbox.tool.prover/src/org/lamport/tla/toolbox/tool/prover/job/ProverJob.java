@@ -72,7 +72,7 @@ public class ProverJob extends Job
      */
     private TLAPMBroadcastStreamListener listener;
     /**
-     * The timeout used when waiting for cancelation
+     * The timeout used when waiting for cancellation
      * of this job.
      */
     protected static final long TIMEOUT = 1000 * 1;

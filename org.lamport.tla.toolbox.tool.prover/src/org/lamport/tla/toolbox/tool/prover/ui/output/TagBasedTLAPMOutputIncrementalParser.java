@@ -76,8 +76,7 @@ public class TagBasedTLAPMOutputIncrementalParser implements IProverProcessOutpu
      * Called to stream text into this parser.
      * 
      * This method creates instances of {@link TLAPMMessage} and
-     * sends them to the {@link ITLAPMOutputSource} for this
-     * class.
+     * process them according to their type.  
      * 
      * @param text
      * @throws BadLocationException

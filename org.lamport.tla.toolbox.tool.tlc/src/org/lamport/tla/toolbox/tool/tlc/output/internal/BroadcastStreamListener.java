@@ -51,7 +51,7 @@ public class BroadcastStreamListener implements IStreamListener
     }
 
     /**
-     * Inform about completion
+     * Called to inform us that it has been completed.
      */
     public synchronized void streamClosed()
     {
