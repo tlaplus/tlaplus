@@ -27,6 +27,17 @@ public class OpenModuleHandler extends AbstractHandler implements IHandler
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
         String moduleName = event.getParameter(PARAM_MODULE);
+        openModule(moduleName);
+        return null;
+    }
+
+    /**
+     * This was the body of the <code>execute</code>, but was pulled out so it could be
+     * used in other places to open a module.
+     * 
+     * @param moduleName
+     */
+    public static void openModule(String moduleName) {
         if (moduleName == null)
         {
             throw new RuntimeException("Module was null" );
@@ -51,7 +62,6 @@ public class OpenModuleHandler extends AbstractHandler implements IHandler
                 } 
             }
         });
-        return null;
-    }
 
+    }
 }

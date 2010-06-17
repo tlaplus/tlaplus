@@ -253,10 +253,10 @@
       </command>
       <command
             categoryId="org.eclipse.ui.category.textEditor"
-            defaultHandler="org.lamport.tla.toolbox.editor.basic.handlers.ShowDefinitionsHandler"
-            description="Displays a list of high-level definitions of the module."
+            defaultHandler="org.lamport.tla.toolbox.editor.basic.handlers.ShowDeclarationsHandler"
+            description="Displays a list of high-level declarations and definitions of the module."
             id="org.lamport.tla.toolbox.editor.basic.showDefinitions"
-            name="Show Definitions">
+            name="Show Declarations">
       </command>
 
    </extension>

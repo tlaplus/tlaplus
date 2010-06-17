@@ -18,6 +18,7 @@ import org.lamport.tla.toolbox.editor.basic.util.DocumentHelper;
 import org.lamport.tla.toolbox.editor.basic.util.EditorUtil;
 import org.lamport.tla.toolbox.editor.basic.util.EditorUtil.StringAndLocation;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
+import org.lamport.tla.toolbox.ui.handler.OpenModuleHandler;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 
 import tla2sany.modanalyzer.SpecObj;
@@ -219,6 +220,15 @@ public class TLAHyperlinkDetector extends AbstractHyperlinkDetector
                 {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
+                }
+            } else {
+                // Did not find a declared symbol.  See if it is a module name and, if
+                // so, open the module.
+                region = DocumentHelper.getRegionExpandedBoth(document, region.getOffset(), DocumentHelper
+                           .getDefaultWordDetector());
+                label = document.get(region.getOffset(), region.getLength());
+                if (ToolboxHandle.isUserModule(label + ".tla")) {
+                    OpenModuleHandler.openModule(label);
                 }
             }
         } catch (BadLocationException e)
