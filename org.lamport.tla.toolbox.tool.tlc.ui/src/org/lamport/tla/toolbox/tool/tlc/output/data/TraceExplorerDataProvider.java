@@ -547,8 +547,19 @@ public class TraceExplorerDataProvider extends TLCModelLaunchDataProvider
 
     /**
      * Creates an error without any replacement of text from the error message reported by TLC.
+     * 
+     * This overrides the method in TLCModelLaunchDataProvider because that method does a lot
+     * of work to search for Strings such as inv_2354234343434 in the error message and replace
+     * them with the actual invariant from the MC.tla file. The user should never see anything from
+     * the TE file, so this work is unnecessary for the trace explorer.
+     * 
+     * <br>This is a factory method
+     * 
+     * @param tlcRegion a region marking the error information in the document
+     * @param message the message represented by the region
+     * @return the TLC Error representing the error
      */
-    protected TLCError createError(TLCRegion tlcRegion, IDocument tlcOutputDocument)
+    protected TLCError createError(TLCRegion tlcRegion, String message)
     {
         // the root of the error trace
         TLCError topError = new TLCError();
@@ -568,20 +579,14 @@ public class TraceExplorerDataProvider extends TLCModelLaunchDataProvider
                 // the region itself is a TLC region, detect the child error
                 if (regions[i] instanceof TLCRegion)
                 {
-                    TLCError cause = createError((TLCRegion) regions[i], tlcOutputDocument);
+                    TLCError cause = createError((TLCRegion) regions[i], message);
                     topError.setCause(cause);
                 } else
                 {
-                    try
-                    {
-                        // set error text
-                        topError.setMessage(tlcOutputDocument.get(tlcRegion.getOffset(), tlcRegion.getLength()));
-                        // set error code
-                        topError.setErrorCode(tlcRegion.getMessageCode());
-                    } catch (BadLocationException e)
-                    {
-                        TLCUIActivator.logError("Error parsing the error message", e);
-                    }
+                    // set error text
+                    topError.setMessage(message);
+                    // set error code
+                    topError.setErrorCode(tlcRegion.getMessageCode());
                 }
             }
         }
