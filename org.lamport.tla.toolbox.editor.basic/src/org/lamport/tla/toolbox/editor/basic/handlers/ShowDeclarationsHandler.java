@@ -34,7 +34,20 @@ import tla2sany.semantic.ThmOrAssumpDefNode;
 
 /**
  * The handler for the Shows Declarations operation, which pops up a list
- * of top-level definitions and declarations of the module.
+ * of top-level definitions and declarations of the module.  The popup has an
+ * option of showing or hiding instantiated definitions--which includes all instantiations
+ * that involve name changing or substitution of parameters.  It also allows the user
+ * to type the prefix of what he's looking for, which does the appropriate filtering of
+ * what's displayed.
+ * 
+ * Popping up the dialog is easy.  Handling typed input isn't.  The problem is that typing
+ * ordinarily changes the selection, which triggers the selection listener's code for
+ * jumping to the selected declaration.  Keeping this from happening required: (1) adding the
+ * listeners in the right order so the key listener gets called first, (2) always keeping 
+ * some item selected so typing doesn't necessarily cause an item to be selected, and 
+ * (3) having the key listener disable other key listeners by the magical 
+ * <code>e.doit = false</code> statement in it.
+ * 
  * 
  * @author lamport
  *
@@ -55,30 +68,46 @@ public class ShowDeclarationsHandler extends AbstractHandler implements IHandler
         return null;
     }
 
-    public static String infoText(String prefix, boolean showAll)
+    /**
+     * The text for telling the user to choose hiding/showing instantiated definitions.
+     * 
+     * @param showAll
+     * @return
+     */
+    public static String infoText(boolean showAll)
     {
-//        if (prefix.equals(""))
-//        {
-            return "Type space to " + (showAll ? "hide" : "show") + " instantiated definitions";
-//        } else
-//        {
-//            return prefix;
-//        }
-    }
-    
-    public static String titleText(String prefix) {
-        if (prefix == "") {
-            return "Definitions and Declarations";
-        } else {
-            return prefix;
-        }
-          
+        return "Type space to " + (showAll ? "hide" : "show") + " instantiated definitions";
     }
 
+    /**
+     * The text at the top of the popup.  It shows the prefix string typed if that's
+     * not empty, otherwise just the standard title.
+     * 
+     * @param prefix
+     * @return
+     */
+    public static String titleText(String prefix)
+    {
+        if (prefix == "")
+        {
+            return "Definitions and Declarations";
+        } else
+        {
+            return prefix;
+        }
+
+    }
+
+    /**
+     * The class of which the pop dialog is an object.  It contains fields that the listeners
+     * need to get hold of.
+     * 
+     * @author lamport
+     */
     public static class ShowDeclarationsPopupDialog extends PopupDialog
     {
         Shell parent; // The dialog's parent shell.
-        List list; // The List being displayed.
+        List list; // The org.eclipse.swt.widgets.List (not ordinary Java List) being displayed.
         boolean showAll = true; // True iff displaying definitions imported by instantiation.
         String filterPrefix = ""; // For filtering displayed declarations as user types prefix.
 
@@ -109,7 +138,7 @@ public class ShowDeclarationsHandler extends AbstractHandler implements IHandler
                     ""); // infoText
             this.parent = parent;
             this.showAll = true;
-            this.setInfoText(ShowDeclarationsHandler.infoText(filterPrefix, showAll));
+            this.setInfoText(ShowDeclarationsHandler.infoText(showAll));
             this.editor = EditorUtil.getTLAEditorWithFocus();
             ;
             if (this.editor != null)
@@ -120,18 +149,30 @@ public class ShowDeclarationsHandler extends AbstractHandler implements IHandler
 
         }
 
+        /**
+         * This is just to make setInfoText a public method so the handlers
+         * can call it.
+         */
         public void setInfoText(String str)
         {
             super.setInfoText(str);
         }
-        
+
+        /**
+         * This is just to make setTitleText a public method so the handlers
+         * can call it.
+         */
         public void setTitleText(String str)
         {
             super.setTitleText(str);
         }
 
         /**
-         *  Sets the class's <code>list</code> field.
+         *  Sets the class's <code>list</code> field, which contains the
+         *  org.eclipse.swt.widgets.List object with the actual items to be displayed.
+         *  It also sets the data for each item to be the node to jump to, so
+         *  list.getData(list.getSelection()[0]) gets that node for the selected
+         *  item.
          */
         protected void setList()
         {
@@ -199,7 +240,6 @@ public class ShowDeclarationsHandler extends AbstractHandler implements IHandler
             {
                 list.add(symbols[i].getName().toString());
                 list.setData(symbols[i].getName().toString(), symbols[i]);
-
             }
         }
 
@@ -288,11 +328,17 @@ public class ShowDeclarationsHandler extends AbstractHandler implements IHandler
     }
 
     /**
-     * The following class is unused.  I was hoping to put a KeyListener
-     * on the popup dialog and allow the user to enter whether to show or
-     * hide instantiated definitions.  However, I don't know how to recreate
-     * the contents of the List widget, so I didn't do anything with this.
-     * 
+     * The Key Listener for keyboard input to the popup dialog.  The following
+     * kinds of keyboard input are handled:
+     * <ul>
+     * <li> Return, which is equivalent to clicking on the selected item.
+     * <li> Space, which toggles between showing and hiding instantiated declarations.
+     * <li> Arrow keys, which move the selection.
+     * <li> Letters, numbers, "_", and "!", which are added to the prefix used for
+     *      filtering what is shown.
+     * <li> Delete/backspace, which deletes one character from the filtering prefix.
+     * </ul>
+     * Other typed input is ignored.
      * @author lamport
      *
      */
@@ -317,12 +363,13 @@ public class ShowDeclarationsHandler extends AbstractHandler implements IHandler
             // This prevents the KeyEvent from changing the selection and triggering
             // execution of the SelectionListener.
             e.doit = false;
-            System.out.println("Character typed: " + keyPressed + ", keyCode = " + keyCode);
+
+            // Check which key was pressed and handle it appropriately.
             if (keyPressed == ' ')
             {
                 popup.showAll = !popup.showAll;
                 popup.setList();
-                popup.setInfoText(ShowDeclarationsHandler.infoText(popup.filterPrefix, popup.showAll));
+                popup.setInfoText(ShowDeclarationsHandler.infoText(popup.showAll));
                 if (list.getItemCount() > 0)
                 {
                     list.select(0);
@@ -347,14 +394,12 @@ public class ShowDeclarationsHandler extends AbstractHandler implements IHandler
                 EditorUtil.setReturnFromOpenDecl(popup.editor);
                 UIHelper.jumpToDefOrDecl(node);
                 popup.close();
-                
-                
             } else if (Character.isLetterOrDigit(keyPressed) || (keyPressed == '_') || (keyPressed == '!'))
             {
                 popup.filterPrefix = popup.filterPrefix + keyPressed;
                 popup.setList();
                 popup.setTitleText(ShowDeclarationsHandler.titleText(popup.filterPrefix));
-                popup.setInfoText(ShowDeclarationsHandler.infoText(popup.filterPrefix, popup.showAll));
+                popup.setInfoText(ShowDeclarationsHandler.infoText(popup.showAll));
                 if (list.getItemCount() > 0)
                 {
                     list.select(0);
@@ -365,7 +410,7 @@ public class ShowDeclarationsHandler extends AbstractHandler implements IHandler
                 popup.filterPrefix = popup.filterPrefix.substring(0, popup.filterPrefix.length() - 1);
                 popup.setList();
                 popup.setTitleText(ShowDeclarationsHandler.titleText(popup.filterPrefix));
-                popup.setInfoText(ShowDeclarationsHandler.infoText(popup.filterPrefix, popup.showAll));
+                popup.setInfoText(ShowDeclarationsHandler.infoText(popup.showAll));
                 if (list.getItemCount() > 0)
                 {
                     list.select(0);

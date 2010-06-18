@@ -139,6 +139,12 @@ public class TLAHyperlinkDetector extends AbstractHyperlinkDetector
             SymbolNode resolvedSymbol = EditorUtil.lookupSymbol(UniqueString.uniqueStringOf(label), moduleNode,
                     location, null);
 
+            // If it didn't find the symbol, check if this is a module name and, if so, set
+            // resolvedSymbol to the module node.
+            if (resolvedSymbol == null && label != null) {
+                resolvedSymbol = ResourceHelper.getModuleNode(label);
+            }
+            
             // try symbols (does not work for module nodes)
             if (resolvedSymbol != null)
             {
@@ -161,6 +167,14 @@ public class TLAHyperlinkDetector extends AbstractHyperlinkDetector
                     }
                 } 
                 SyntaxTreeNode csNode = (SyntaxTreeNode) resolvedSymbol.getTreeNode();
+                
+                // If this is a module, we want csNode to be the SyntaxTreeNode of just the name.
+                // However, for some reason, that node doesn't have a file name.  So we set
+                // csNode to be the node representing the whole "---- MODULE foo -----",
+                // which works and is perhaps even better.
+                if (resolvedSymbol instanceof ModuleNode) {
+                    csNode = (SyntaxTreeNode) resolvedSymbol.stn.heirs()[0]; // .heirs()[1];
+                }
                 for (int i = 0; i < csNode.getAttachedComments().length; i++)
                 {
                     System.out.println(csNode.getAttachedComments()[i]);
@@ -221,16 +235,7 @@ public class TLAHyperlinkDetector extends AbstractHyperlinkDetector
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
-            } else {
-                // Did not find a declared symbol.  See if it is a module name and, if
-                // so, open the module.
-                region = DocumentHelper.getRegionExpandedBoth(document, region.getOffset(), DocumentHelper
-                           .getDefaultWordDetector());
-                label = document.get(region.getOffset(), region.getLength());
-                if (ToolboxHandle.isUserModule(label + ".tla")) {
-                    OpenModuleHandler.openModule(label);
-                }
-            }
+            } 
         } catch (BadLocationException e)
         {
             e.printStackTrace();
