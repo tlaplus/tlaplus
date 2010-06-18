@@ -815,7 +815,21 @@ public class TLAEditor extends TextEditor
             getSourceViewer().setEditable(!EditorUtil.isReadOnly(((FileEditorInput) getEditorInput()).getFile()));
         }
     }
-
+    
+    /**
+     * Simon put OpenDeclarationHandler as a subclass of TLAEditor because
+     * that handler needed to use AbstractTextEditor's getSourceViewer
+     * method, inherited by TLAEditor, but that's a private method.  To
+     * avoid having to put ShowUsesHandler and all other classes that
+     * might want to use getSourceViewer() in TLAEditor, LL defined 
+     * the following method that provides it to the public at large.
+     * 
+     * @return
+     */
+    public ISourceViewer publicGetSourceViewer() {
+        return this.getSourceViewer();
+    }
+    
     /**
      * Simon's comments, explaining exactly what this class is doing:
      * The class is located here, because editor does not expose the source viewer (method protected)

@@ -3,6 +3,8 @@ package org.lamport.tla.toolbox.util;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.util.Date;
+import java.util.List;
+import java.util.Vector;
 
 import org.eclipse.core.resources.ICommand;
 import org.eclipse.core.resources.IContainer;
@@ -53,8 +55,10 @@ import tla2sany.semantic.InstanceNode;
 import tla2sany.semantic.LevelNode;
 import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.NonLeafProofNode;
+import tla2sany.semantic.OpApplNode;
 import tla2sany.semantic.ProofNode;
 import tla2sany.semantic.SemanticNode;
+import tla2sany.semantic.SymbolNode;
 import tla2sany.semantic.TheoremNode;
 import tla2sany.semantic.UseOrHideNode;
 import tla2sany.st.Location;
@@ -1207,16 +1211,66 @@ public class ResourceHelper
         }
         return size;
     }
-    
+
     /**
      * Returns true if the node is not from a standard module.
      * 
      * @param node
      * @return
      */
-    public static boolean isFromUserModule(SemanticNode node) {
+    public static boolean isFromUserModule(SemanticNode node)
+    {
         SyntaxTreeNode csNode = (SyntaxTreeNode) node.stn;
         String name = ResourceHelper.getModuleFileName(csNode.getFilename());
         return ToolboxHandle.isUserModule(name);
+    }
+
+    /**
+     * Return all the <code>OpApplNode</code>s in <code>module</code> whose
+     * operator node equals <code>symbol</code>.
+     * 
+     * @param symbol
+     * @param module
+     * @return
+     */
+    public static OpApplNode[] getUsesOfSymbol(SymbolNode symbol, ModuleNode module)
+    {
+        Vector found = new Vector(20); // For some reason, Eclipse doesn't let me use a List here.
+        // If I write
+        // List found = new List(20);
+        // Eclipse mysteriously complains that it can't find the second "List".
+
+        innerGetUsesOfSymbol(symbol, module, found);
+        OpApplNode[] value = new OpApplNode[found.size()];
+        for (int i = 0; i < value.length; i++)
+        {
+            value[i] = (OpApplNode) found.elementAt(i);
+        }
+        return value;
+    }
+
+    /**
+     * The inner recursive method used by get UsesOfSymbol.  It appends all the appropriate
+     * OpApplNodes  to <code>found</code>.
+     * 
+     * @param symbol
+     * @param node
+     * @param found
+     * @return
+     */
+    private static void innerGetUsesOfSymbol(SymbolNode symbol, SemanticNode node, Vector found)
+    {
+        if ((node instanceof OpApplNode) && (((OpApplNode) node).getOperator() == symbol))
+        {
+            found.add(node);
+        }
+        SemanticNode[] children = node.getChildren();
+        if (children == null) {
+            return;
+        }
+        for (int i = 0; i < children.length; i++) {
+            innerGetUsesOfSymbol(symbol, children[i], found);
+        }
+        return;
     }
 }

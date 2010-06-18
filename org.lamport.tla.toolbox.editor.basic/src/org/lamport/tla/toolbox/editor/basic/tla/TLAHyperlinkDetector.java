@@ -136,7 +136,7 @@ public class TLAHyperlinkDetector extends AbstractHyperlinkDetector
             if (moduleNode == null) {
                 return null;
             }
-            SymbolNode resolvedSymbol = EditorUtil.lookupSymbol(UniqueString.uniqueStringOf(label), moduleNode,
+            SymbolNode resolvedSymbol = EditorUtil.lookupOriginalSymbol(UniqueString.uniqueStringOf(label), moduleNode,
                     location, null);
 
             // If it didn't find the symbol, check if this is a module name and, if so, set
@@ -151,21 +151,7 @@ public class TLAHyperlinkDetector extends AbstractHyperlinkDetector
                 // If this symbol was imported by instantiation from
                 // another module, we set resolvedSymbol to its
                 // definition in that module.
-                if (resolvedSymbol instanceof OpDefNode)
-                {
-                    OpDefNode opdef = (OpDefNode) resolvedSymbol;
-                    if (opdef.getSource() != null)
-                    {
-                        resolvedSymbol = opdef.getSource();
-                    }
-                } else if (resolvedSymbol instanceof ThmOrAssumpDefNode)
-                {
-                    ThmOrAssumpDefNode opdef = (ThmOrAssumpDefNode) resolvedSymbol;
-                    if (opdef.getSource() != null)
-                    {
-                        resolvedSymbol = opdef.getSource();
-                    }
-                } 
+                
                 SyntaxTreeNode csNode = (SyntaxTreeNode) resolvedSymbol.getTreeNode();
                 
                 // If this is a module, we want csNode to be the SyntaxTreeNode of just the name.

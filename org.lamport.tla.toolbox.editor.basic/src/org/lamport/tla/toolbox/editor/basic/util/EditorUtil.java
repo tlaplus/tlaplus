@@ -22,6 +22,7 @@ import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
+import tla2sany.parser.Operators;
 import tla2sany.parser.SyntaxTreeNode;
 import tla2sany.semantic.FormalParamNode;
 import tla2sany.semantic.LetInNode;
@@ -32,6 +33,7 @@ import tla2sany.semantic.OpDefNode;
 import tla2sany.semantic.SemanticNode;
 import tla2sany.semantic.SymbolNode;
 import tla2sany.semantic.TheoremNode;
+import tla2sany.semantic.ThmOrAssumpDefNode;
 import tla2sany.st.Location;
 import tla2sany.st.SyntaxTreeConstants;
 import util.UniqueString;
@@ -335,9 +337,9 @@ public class EditorUtil
      * if <code>name</code> is the UniqueString of "s" and <code>location</code>
      * is the position of the s in Find(s), then it returns the SymbolNode for
      * the s declared in the set constructor. <p>
-     * 
+     * <p>
      * If no declaration is found, it returns <code>null</code>.<p>
-     * 
+     * <p>
      * It is implemented by using the getChildren() method to walk down the semantic
      * tree towards the symbol's location.  In the recursive call, <code>curNode</code>
      * is the node within which we are looking, and <code>defaultResult</code> is the
@@ -351,7 +353,7 @@ public class EditorUtil
     public static SymbolNode lookupSymbol(UniqueString name, SemanticNode curNode, Location location,
             SymbolNode defaultResult)
     {
-        SymbolNode foundSymbol =  null;
+        SymbolNode foundSymbol = null;
         boolean notDone = true;
         if (curNode instanceof ModuleNode)
         {
@@ -372,7 +374,7 @@ public class EditorUtil
                 {
                     if (fpn[i].getName() == name)
                     {
-                        // return  fpn[i]; 
+                        // return fpn[i];
                         foundSymbol = fpn[i];
                         break;
                     }
@@ -399,8 +401,10 @@ public class EditorUtil
         } else if (curNode instanceof OpDefNode)
         {
             FormalParamNode[] params = ((OpDefNode) curNode).getParams();
-            for (int i = 0; i < params.length; i++) {
-                if (name == params[i].getName()) {
+            for (int i = 0; i < params.length; i++)
+            {
+                if (name == params[i].getName())
+                {
                     // return params[i];
                     foundSymbol = params[i];
                     break;
@@ -424,6 +428,44 @@ public class EditorUtil
             }
         }
         return foundSymbol;
+    }
+
+    /**
+     *  Like lookupSymbol except that for definitions that were obtained by instantiation
+     *  from a definition in another module, it returns the definition from that other module.
+     *  
+     * @param name
+     * @param curNode
+     * @param location
+     * @param defaultResult
+     * @return
+     */
+    public static SymbolNode lookupOriginalSymbol(UniqueString name, SemanticNode curNode, Location location,
+            SymbolNode defaultResult)
+    {
+        // In case this is a synonym for something else.
+        name = Operators.resolveSynonym(name); 
+                
+        SymbolNode resolvedSymbol = lookupSymbol(name, curNode, location, defaultResult);
+        if (resolvedSymbol == null) {
+            return null;
+        }
+        if (resolvedSymbol instanceof OpDefNode)
+        {
+            OpDefNode opdef = (OpDefNode) resolvedSymbol;
+            if (opdef.getSource() != null)
+            {
+                resolvedSymbol = opdef.getSource();
+            }
+        } else if (resolvedSymbol instanceof ThmOrAssumpDefNode)
+        {
+            ThmOrAssumpDefNode opdef = (ThmOrAssumpDefNode) resolvedSymbol;
+            if (opdef.getSource() != null)
+            {
+                resolvedSymbol = opdef.getSource();
+            }
+        } 
+        return resolvedSymbol;
     }
 
     /**
@@ -546,15 +588,16 @@ public class EditorUtil
         }
 
     }
-    
+
     /**
      *  Finds the current editor and calls 
      *  setReturnFromOpenDecl(TLAEditor)
      */
-    public static void setReturnFromOpenDecl() {
-           TLAEditor srcEditor = EditorUtil.getTLAEditorWithFocus();
-           setReturnFromOpenDecl(srcEditor);
-       }
+    public static void setReturnFromOpenDecl()
+    {
+        TLAEditor srcEditor = EditorUtil.getTLAEditorWithFocus();
+        setReturnFromOpenDecl(srcEditor);
+    }
 
     /**
      * Sets the location to which the ReturnFromOpenDeclaration command
@@ -562,7 +605,8 @@ public class EditorUtil
      * 
      * @param srcEditor
      */
-    public static void setReturnFromOpenDecl(TLAEditor srcEditor) {
+    public static void setReturnFromOpenDecl(TLAEditor srcEditor)
+    {
         if (srcEditor != null)
         {
             Spec spec = ToolboxHandle.getCurrentSpec();
@@ -570,6 +614,7 @@ public class EditorUtil
             spec.setOpenDeclSelection((ITextSelection) srcEditor.getSelectionProvider().getSelection());
         }
     }
+
     /**
      * Returns true iff the module has been set to read only using
      * the method {@link EditorUtil#setReadOnly(IResource, boolean)}.

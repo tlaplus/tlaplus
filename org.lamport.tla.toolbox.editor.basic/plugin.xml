@@ -258,6 +258,17 @@
             id="org.lamport.tla.toolbox.editor.basic.showDefinitions"
             name="Show Declarations">
       </command>
+      <command
+            categoryId="org.eclipse.ui.category.textEditor"
+            defaultHandler="ShowUsesHandler"
+            description="Show all uses of selected symbol"
+            id="org.lamport.tla.toolbox.editor.basic.showUses"
+            name="Show Uses">
+      </command>
+      <command
+            id="org.lamport.tla.toolbox.editor.basic.command1"
+            name="name">
+      </command>
 
    </extension>
    <extension
@@ -429,6 +440,12 @@
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="F5">
       </key>
+      <key
+            commandId="org.lamport.tla.toolbox.editor.basic.showUses"
+            contextId="org.eclipse.ui.textEditorScope"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="F6">
+      </key>
       
    </extension>
    <extension
@@ -442,6 +459,10 @@
    </command>
    <command
          commandId="org.lamport.tla.toolbox.editor.basic.showDefinitions"
+         style="push">
+   </command>
+   <command
+         commandId="org.lamport.tla.toolbox.editor.basic.showUses"
          style="push">
    </command>
 		</menuContribution>
