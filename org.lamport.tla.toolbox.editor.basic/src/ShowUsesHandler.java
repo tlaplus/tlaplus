@@ -1,3 +1,6 @@
+import java.util.HashMap;
+import java.util.Map;
+
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -117,14 +120,18 @@ public class ShowUsesHandler extends AbstractHandler implements IHandler
         System.out.println("Number of uses found: " + uses.length);
         
         IFile ifile = ((FileEditorInput) tlaEditor.getEditorInput()).getFile();
-        
+        System.out.println("Resource path: " + ifile.getFullPath().toString());
         IResource resource = ifile; 
         try
         {
             System.out.println("Starting marker code;");
             IMarker marker = resource.createMarker("org.lamport.tla.toolbox.editor.basic.showUse");
-            marker.setAttribute(IMarker.CHAR_START, new Integer(0));
-            marker.setAttribute(IMarker.CHAR_START, new Integer(100));
+            Map markerAttributes = new HashMap(2);
+            markerAttributes.put(IMarker.CHAR_START, new Integer(0));
+            markerAttributes.put(IMarker.CHAR_END, new Integer(50));
+            marker.setAttributes(markerAttributes);
+            System.out.println("Ending marker code;");
+            
 
         } catch (CoreException e)
         {

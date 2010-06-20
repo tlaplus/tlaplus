@@ -184,7 +184,7 @@
       <specification
             annotationType="org.lamport.tla.toolbox.tool.prover.ui.stepChecked"
             colorPreferenceKey="fcsCPK"
-            colorPreferenceValue="128,255,0"
+            colorPreferenceValue="113,255,113"
             highlightPreferenceKey="fcsHPK"
             highlightPreferenceValue="true"
             includeOnPreferencePage="true"
@@ -198,7 +198,7 @@
       <specification
             annotationType="org.lamport.tla.toolbox.tool.prover.ui.stepOmitted"
             colorPreferenceKey="steoCPK"
-            colorPreferenceValue="255,255,128"
+            colorPreferenceValue="217,250,174"
             highlightPreferenceKey="steoHPK"
             highlightPreferenceValue="true"
             includeOnPreferencePage="true"
@@ -212,7 +212,7 @@
       <specification
             annotationType="org.lamport.tla.toolbox.tool.prover.ui.stepMissing"
             colorPreferenceKey="wpcCPK"
-            colorPreferenceValue="255,200,128"
+            colorPreferenceValue="255,255,183"
             highlightPreferenceKey="wpcHPK"
             highlightPreferenceValue="true"
             includeOnPreferencePage="true"
@@ -226,7 +226,7 @@
       <specification
             annotationType="org.lamport.tla.toolbox.tool.prover.ui.stepProvingFailed"
             colorPreferenceKey="offsCPK"
-            colorPreferenceValue="255,128,128"
+            colorPreferenceValue="255,187,187"
             highlightPreferenceKey="offsHPK"
             highlightPreferenceValue="true"
             includeOnPreferencePage="true"
@@ -254,7 +254,7 @@
       <specification
             annotationType="org.lamport.tla.toolbox.tool.prover.ui.stepProved"
             colorPreferenceKey="spCPK"
-            colorPreferenceValue="128,255,128"
+            colorPreferenceValue="174,255,174"
             highlightPreferenceKey="spHPK"
             highlightPreferenceValue="true"
             includeOnPreferencePage="true"
@@ -268,7 +268,7 @@
       <specification
             annotationType="org.lamport.tla.toolbox.tool.prover.ui.stepBeingProved"
             colorPreferenceKey="sbpCPK"
-            colorPreferenceValue="200,255,128"
+            colorPreferenceValue="133,133,133"
             highlightPreferenceKey="sbpHPK"
             highlightPreferenceValue="true"
             includeOnPreferencePage="true"

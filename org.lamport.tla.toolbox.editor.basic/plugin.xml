@@ -569,4 +569,37 @@
             name="org.lamport.tla.toolbox.editor.basic.isReadOnly">
       </attribute>
    </extension>
+   
+   
+   <extension
+         id="org.lamport.tla.toolbox.editor.basic.showUse"
+         name="Type representing a use of a symbol"
+         point="org.eclipse.core.resources.markers">
+      <super type="org.eclipse.core.resources.bookmark"/>
+   </extension>
+   <extension
+         point="org.eclipse.ui.editors.annotationTypes">
+      <type
+            markerType="org.lamport.tla.toolbox.editor.basic.showUse"
+            name="org.lamport.tla.toolbox.editor.basic.showUse">
+      </type>
+   </extension>
+   <extension
+         point="org.eclipse.ui.editors.markerAnnotationSpecification">
+      <specification
+            annotationType="org.lamport.tla.toolbox.editor.basic.showUse"
+            colorPreferenceKey="fcsCPK"
+            colorPreferenceValue="183,235,255"
+            highlightPreferenceKey="fcsHPK"
+            highlightPreferenceValue="true"
+            includeOnPreferencePage="true"
+            label="Show Use"
+            overviewRulerPreferenceKey="fcsORPK"
+            textPreferenceKey="fcsTPK"
+            textPreferenceValue="true"
+            textStylePreferenceKey="fcsSPK"
+            textStylePreferenceValue="BOX">
+      </specification>"
+   </extension>
+   
 </plugin>
