@@ -320,6 +320,7 @@ HOW TO GET A...
   String moduleName
      From TLAEditor: tlaEditor.getModuleName()
      From ModuleNode: moduleNode.getName()
+     ResourceHelper.getModuleNames() returns all user-module names
   TLAEditor
      with focus: EditorUtil.getTLAEditorWithFocus()
      from IFile: See the comments preceding 

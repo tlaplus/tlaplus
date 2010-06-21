@@ -7,6 +7,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.Assert;
@@ -29,6 +30,16 @@ import tla2sany.modanalyzer.SpecObj;
 
 /**
  * Represents a specification handle in the toolbox
+ * 
+ * In June 2010, LL added some fields by which handlers of different commands
+ * could communicate with one another.  I'm sure there's a more elegant way to
+ * do this that involves another few levels of indirection, but I have the old-fashioned
+ * belief that doing things the easy way and commenting what you do is better than
+ * doing things the correct way that makes it impossible to figure out what
+ * the hell is going on without learning yet another almost but not quite completely
+ * undocumented Eclipse feature.
+ * 
+ * 
  * @version $Id$
  * @author Simon Zambrovski
  */
@@ -43,7 +54,32 @@ public class Spec implements IAdaptable
      */
     private String openDeclModuleName;
     private ITextSelection openDeclSelection;
-      
+    
+    /**
+     * The following fields are used to remember the result of a Show Uses command so
+     * the Goto Next Use and Goto Previous Use commands know where to go.  
+     *
+     * The name of the module whose instances are being shown.  If there
+     * are more than one, this is set by user selection from a pop-up 
+     * dialog.
+     */
+    private String moduleToShow = null;
+    
+    /**
+     * The markers to be shown, sorted by the locations in which they
+     * originally appeared.  I don't think that order can change,
+     * but what do I know?
+     */
+    private IMarker[] markersToShow = null;
+
+    /**
+     * The index of the marker in markersToShow that is currently being 
+     * shown. 
+     */
+    private int currentSelection = 0;
+    
+
+    
     /* project handle */
     private IProject project;
 
@@ -290,5 +326,54 @@ public class Spec implements IAdaptable
     {
         return openDeclSelection;
     }
+
+    /**
+     * @param moduleToShow the moduleToShow to set
+     */
+    public void setModuleToShow(String moduleToShow)
+    {
+        this.moduleToShow = moduleToShow;
+    }
+
+    /**
+     * @return the moduleToShow
+     */
+    public String getModuleToShow()
+    {
+        return moduleToShow;
+    }
+
+    /**
+     * @param markersToShow the markersToShow to set
+     */
+    public void setMarkersToShow(IMarker[] markersToShow)
+    {
+        this.markersToShow = markersToShow;
+    }
+
+    /**
+     * @return the markersToShow
+     */
+    public IMarker[] getMarkersToShow()
+    {
+        return markersToShow;
+    }
+
+    /**
+     * @param currentSelection the currentSelection to set
+     */
+    public void setCurrentSelection(int currentSelection)
+    {
+        this.currentSelection = currentSelection;
+    }
+
+    /**
+     * @return the currentSelection
+     */
+    public int getCurrentSelection()
+    {
+        return currentSelection;
+    }
+
 
 }

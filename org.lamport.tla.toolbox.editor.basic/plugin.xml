@@ -260,14 +260,24 @@
       </command>
       <command
             categoryId="org.eclipse.ui.category.textEditor"
-            defaultHandler="ShowUsesHandler"
+            defaultHandler="org.lamport.tla.toolbox.editor.basic.handlers.ShowUsesHandler"
             description="Show all uses of selected symbol"
             id="org.lamport.tla.toolbox.editor.basic.showUses"
             name="Show Uses">
       </command>
       <command
-            id="org.lamport.tla.toolbox.editor.basic.command1"
-            name="name">
+            categoryId="org.eclipse.ui.category.textEditor"
+            defaultHandler="org.lamport.tla.toolbox.editor.basic.handlers.GotoNextUseHandler"
+            description="Goes to the next use from the last Show Uses command"
+            id="org.lamport.tla.toolbox.editor.basic.gotoNextUse"
+            name="Goto Next Use">
+      </command>
+      <command
+            categoryId="org.eclipse.ui.category.textEditor"
+            defaultHandler="org.lamport.tla.toolbox.editor.basic.handlers.GotoPrevUseHandler"
+            description="Goes to the previous use from the last Show Uses command"
+            id="org.lamport.tla.toolbox.editor.basic.gotoPrevUse"
+            name="Goto Prev Use">
       </command>
 
    </extension>
@@ -446,6 +456,18 @@
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="F6">
       </key>
+      <key
+            commandId="org.lamport.tla.toolbox.editor.basic.gotoNextUse"
+            contextId="org.eclipse.ui.textEditorScope"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="F8">
+      </key>
+      <key
+            commandId="org.lamport.tla.toolbox.editor.basic.gotoPrevUse"
+            contextId="org.eclipse.ui.textEditorScope"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="F7">
+      </key>
       
    </extension>
    <extension
@@ -463,6 +485,14 @@
    </command>
    <command
          commandId="org.lamport.tla.toolbox.editor.basic.showUses"
+         style="push">
+   </command>
+   <command
+         commandId="org.lamport.tla.toolbox.editor.basic.gotoNextUse"
+         style="push">
+   </command>
+   <command
+         commandId="org.lamport.tla.toolbox.editor.basic.gotoPrevUse"
          style="push">
    </command>
 		</menuContribution>

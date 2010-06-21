@@ -23,12 +23,14 @@ import org.lamport.tla.toolbox.util.ResourceHelper;
 
 import tla2sany.modanalyzer.SpecObj;
 import tla2sany.parser.SyntaxTreeNode;
+import tla2sany.parser.TLAplusParserConstants;
 import tla2sany.semantic.Context;
 import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.OpDefNode;
 import tla2sany.semantic.SymbolNode;
 import tla2sany.semantic.ThmOrAssumpDefNode;
 import tla2sany.st.Location;
+import tla2sany.st.SyntaxTreeConstants;
 import util.UniqueString;
 
 /**
@@ -124,16 +126,18 @@ public class TLAHyperlinkDetector extends AbstractHyperlinkDetector
             // Context context = ToolboxHandle.getSpecObj().getExternalModuleTable().getRootModule().getContext();
             // SymbolNode resolvedSymbol = context.getSymbol(UniqueString.uniqueStringOf(label));
 
-            // Find the module editor and, if it exists, set moduleNode to 
-            // the ModuleNode of the module it is editing.  If that's not null,
+            // Find the module editor and, if it exists, set moduleNode to
+            // the ModuleNode of the module it is editing. If that's not null,
             // look up the label at its location in that module.
             TLAEditor editor = EditorUtil.getTLAEditorWithFocus();
-            if (editor == null) {
+            if (editor == null)
+            {
                 return null;
             }
             String moduleName = editor.getModuleName();
             ModuleNode moduleNode = ResourceHelper.getModuleNode(moduleName);
-            if (moduleNode == null) {
+            if (moduleNode == null)
+            {
                 return null;
             }
             SymbolNode resolvedSymbol = EditorUtil.lookupOriginalSymbol(UniqueString.uniqueStringOf(label), moduleNode,
@@ -141,24 +145,26 @@ public class TLAHyperlinkDetector extends AbstractHyperlinkDetector
 
             // If it didn't find the symbol, check if this is a module name and, if so, set
             // resolvedSymbol to the module node.
-            if (resolvedSymbol == null && label != null) {
+            if (resolvedSymbol == null && label != null)
+            {
                 resolvedSymbol = ResourceHelper.getModuleNode(label);
             }
-            
+
             // try symbols (does not work for module nodes)
             if (resolvedSymbol != null)
             {
                 // If this symbol was imported by instantiation from
                 // another module, we set resolvedSymbol to its
                 // definition in that module.
-                
+
                 SyntaxTreeNode csNode = (SyntaxTreeNode) resolvedSymbol.getTreeNode();
-                
+
                 // If this is a module, we want csNode to be the SyntaxTreeNode of just the name.
-                // However, for some reason, that node doesn't have a file name.  So we set
+                // However, for some reason, that node doesn't have a file name. So we set
                 // csNode to be the node representing the whole "---- MODULE foo -----",
                 // which works and is perhaps even better.
-                if (resolvedSymbol instanceof ModuleNode) {
+                if (resolvedSymbol instanceof ModuleNode)
+                {
                     csNode = (SyntaxTreeNode) resolvedSymbol.stn.heirs()[0]; // .heirs()[1];
                 }
                 for (int i = 0; i < csNode.getAttachedComments().length; i++)
@@ -199,11 +205,29 @@ public class TLAHyperlinkDetector extends AbstractHyperlinkDetector
 
                 try
                 {
-                    // Get the location to highlight.  If it's an OpDefNode, just highlight the
-                    // left-hand side.
-                    if (resolvedSymbol instanceof OpDefNode) {
+                    // Get the location to highlight. If it's an OpDefNode, want
+                    // to get just the symbol from the left-hand side.  (Otherwise,
+                    // the user can't execute Open Declaration immediately followed
+                    // by Show Uses.)
+                    if (resolvedSymbol instanceof OpDefNode)
+                    {
+                        // Need to pick out the symbol from the left-hand side of
+                        // the definition.
                         csNode = csNode.getHeirs()[0];
-                    } else if (resolvedSymbol instanceof ThmOrAssumpDefNode) {
+                        if (csNode.getKind() == SyntaxTreeConstants.N_IdentLHS)
+                        {
+                            csNode = csNode.getHeirs()[0];
+                        } else
+                        {
+                            if ((csNode.getKind() == SyntaxTreeConstants.N_InfixLHS)
+                                    || (csNode.getKind() == SyntaxTreeConstants.N_PostfixLHS))
+                            {
+                                csNode = csNode.getHeirs()[1];
+                            }
+                        }
+                    } else if ((resolvedSymbol instanceof ThmOrAssumpDefNode)
+                            && ((csNode.getKind() == SyntaxTreeConstants.N_Theorem) || (csNode.getKind() == SyntaxTreeConstants.N_Assumption)))
+                    {
                         csNode = csNode.getHeirs()[1];
                     }
                     IRegion startLineRegion = document.getLineInformation(csNode.getLocation().beginLine() - 1);
@@ -221,7 +245,7 @@ public class TLAHyperlinkDetector extends AbstractHyperlinkDetector
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
-            } 
+            }
         } catch (BadLocationException e)
         {
             e.printStackTrace();

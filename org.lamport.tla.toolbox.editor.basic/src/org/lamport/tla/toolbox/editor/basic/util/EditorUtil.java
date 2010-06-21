@@ -114,6 +114,7 @@ public class EditorUtil
      * wisdom chose not to declare an ISelection to implement an IRegion,
      * and I didn't feel like creating an interface that implements both
      * of them.
+
      * 
      * @param document
      * @param offset
@@ -147,6 +148,14 @@ public class EditorUtil
         return getTokenAtLocation(location);
     }
 
+    /**
+     * On 21 June 2010 LL discovered the following bug.  For a proof-step number of the form "<2>3.", the token in the
+     * syntax tree contains the ".".  This seems to be a reasonable place to fix it by returning just the "<2>3" and
+     * its location.
+     *  
+     * @param location
+     * @return
+     */
     public static StringAndLocation getTokenAtLocation(Location location)
     {
         TLAEditor editor = EditorUtil.getTLAEditorWithFocus();
@@ -187,7 +196,18 @@ public class EditorUtil
         {
             return null;
         }
-        return innerGetCurrentToken(stn, location);
+        
+        StringAndLocation stl = innerGetCurrentToken(stn, location);
+         if (stl == null) {
+             return null;
+         }
+         if ((stl.string.charAt(0) == '<') && (stl.string.indexOf('.') != -1)) {
+            Location loc = stl.location;
+            stl = new StringAndLocation(stl.string.substring(0, stl.string.indexOf('.')), 
+                                        new Location(UniqueString.uniqueStringOf(loc.source()), loc.beginLine(), loc.beginColumn(), 
+                                                loc.endLine(), loc.beginColumn()+stl.string.indexOf('.')));
+        }
+         return stl;
     }
 
     /**

@@ -2,7 +2,9 @@ package org.lamport.tla.toolbox.util;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Vector;
 
@@ -43,11 +45,13 @@ import org.lamport.tla.toolbox.spec.nature.TLAParsingBuilder;
 import org.lamport.tla.toolbox.spec.parser.IParseConstants;
 import org.lamport.tla.toolbox.spec.parser.ParseResult;
 import org.lamport.tla.toolbox.spec.parser.ParseResultBroadcaster;
+import org.lamport.tla.toolbox.spec.parser.ParserDependencyStorage;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.ui.preference.EditorPreferencePage;
 import org.lamport.tla.toolbox.util.pref.IPreferenceConstants;
 import org.lamport.tla.toolbox.util.pref.PreferenceStoreHelper;
 
+import tla2sany.modanalyzer.ModulePointer;
 import tla2sany.modanalyzer.SpecObj;
 import tla2sany.parser.SyntaxTreeNode;
 import tla2sany.semantic.DefStepNode;
@@ -484,7 +488,9 @@ public class ResourceHelper
     }
 
     /**
-     * Retrieves the name of the module (filename without extension)
+     * Retrieves the name of the module (filename without extension).
+     * And what is it retrieving it from: the name of the modulefrom the name of the module.
+     * That's really helpful documentation, Simon.
      * 
      * @param moduleFilename
      *            filename of a module
@@ -1239,7 +1245,7 @@ public class ResourceHelper
         // If I write
         // List found = new List(20);
         // Eclipse mysteriously complains that it can't find the second "List".
-
+        System.out.println("OUTER CALL AT MODULE " + module.getName());
         innerGetUsesOfSymbol(symbol, module, found);
         OpApplNode[] value = new OpApplNode[found.size()];
         for (int i = 0; i < value.length; i++)
@@ -1265,12 +1271,69 @@ public class ResourceHelper
             found.add(node);
         }
         SemanticNode[] children = node.getChildren();
-        if (children == null) {
+        if (children == null)
+        {
             return;
         }
-        for (int i = 0; i < children.length; i++) {
-            innerGetUsesOfSymbol(symbol, children[i], found);
+        for (int i = 0; i < children.length; i++)
+        {
+            if (node.getLocation().source().equals(children[i].getLocation().source()))
+            {
+                innerGetUsesOfSymbol(symbol, children[i], found);
+            }
         }
         return;
+    }
+
+    /**
+     * Returns an array of all the user modules of the current 
+     * specification.  Returns null if anything goes wrong, which
+     * I don't think it should (but I don't know what will happen
+     * if this is called with the spec unparsed).
+     * 
+     * @return
+     */
+    public static String[] getModuleNames()
+    {
+        // first we get the spec object.
+        Spec spec = ToolboxHandle.getCurrentSpec();
+        if (spec == null)
+        {
+            return null;
+        }
+        // then we get the full path name of the root module file
+        String rootFileName = spec.getRootFilename();
+        if (rootFileName == null)
+        {
+            return null;
+        }
+
+        // then we get the name of the root module
+        String rootModuleName = getModuleNameChecked(rootFileName, false);
+        if (rootModuleName == null)
+        {
+            return null;
+        }
+
+        // then we get the names of all user modules (with ".tla" appended)
+        // imported (directly or indirectly) by the root file.
+        ParserDependencyStorage pds = Activator.getModuleDependencyStorage();
+        if (pds == null)
+        {
+            return null;
+        }
+        List listOfImportedModules = pds.getListOfExtendedModules(rootModuleName + ".tla");
+
+        // Then we put them in an array and sort them.
+        String[] value = new String[listOfImportedModules.size() + 1];
+        for (int i = 0; i < listOfImportedModules.size(); i++)
+        {
+            String element = (String) listOfImportedModules.get(i);
+            value[i] = element.substring(0, element.length() - 4);
+            System.out.println("next module: " + value[i]);
+        }
+        value[listOfImportedModules.size()] = rootModuleName;
+        Arrays.sort(value);
+        return value;
     }
 }

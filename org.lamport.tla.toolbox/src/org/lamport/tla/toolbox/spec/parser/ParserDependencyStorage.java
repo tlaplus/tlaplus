@@ -46,6 +46,7 @@ public class ParserDependencyStorage
      * Saves the new module dependency list, returns the old
      * list. 
      *  
+     *  
      * @param parsedModule the module on which the parse has been invoked 
      * @param listOfParsedModules a list of modules, found during the parse operation, excluding the standard modules
      */
@@ -103,6 +104,7 @@ public class ParserDependencyStorage
      * The following documentation by Simon seems to be almost totally incorrect.
      * A little experimentation suggests that this returns the the list of all
      * imported modules if changedModule is the root module, and an empty list otherwise.
+     * By "module", of course, we mean the module name + ".tla".
 
      * Retrieves the list of modules that are imported (directly
      * or indirectly) by current module
