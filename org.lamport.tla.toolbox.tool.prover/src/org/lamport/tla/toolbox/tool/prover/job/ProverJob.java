@@ -612,7 +612,8 @@ public class ProverJob extends Job
 
         if (checkStatus)
         {
-            // TODO add status check argument
+            // Denis reported adding this tlapm switch on 19 Jun 2010
+            command.add("--noproving");
         }
 
         if (checkProofs)
