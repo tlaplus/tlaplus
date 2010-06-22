@@ -1352,7 +1352,7 @@ public class ProverHelper
         {
             // ask user if he wants to check the entire module
             MessageDialog.openWarning(UIHelper.getShellProvider().getShell(), "Cannot launch prover",
-                    "The caret is not at a step or USE node. It must be to launch this command.");
+                    "The caret is not at a theorem, proof step, or USE statement. It must be to launch this command.");
             return;
         }
 
