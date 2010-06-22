@@ -11,7 +11,7 @@ import org.lamport.tla.toolbox.tool.prover.ui.util.ProverHelper;
  * Checks the proof step currently containing the caret. Does
  * not launch the prover if the caret is not at a step. Instead,
  * it shows a message to the user explaining this. See the comments
- * in the execute method for how it works.
+ * for ProverHelper.runProverForActiveSelection to see how it works.
  * 
  * Does nothing if the module has parse errors.
  * 
