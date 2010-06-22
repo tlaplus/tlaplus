@@ -22,8 +22,6 @@ import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.Shell;
 import org.lamport.tla.toolbox.editor.basic.TLAEditor;
 import org.lamport.tla.toolbox.editor.basic.util.EditorUtil;
-import org.lamport.tla.toolbox.spec.Spec;
-import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
@@ -140,7 +138,6 @@ public class ShowDeclarationsHandler extends AbstractHandler implements IHandler
             this.showAll = true;
             this.setInfoText(ShowDeclarationsHandler.infoText(showAll));
             this.editor = EditorUtil.getTLAEditorWithFocus();
-            ;
             if (this.editor != null)
             {
                 module = ResourceHelper.getModuleNode(editor.getModuleName());

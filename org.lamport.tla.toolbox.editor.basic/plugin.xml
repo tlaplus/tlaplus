@@ -625,10 +625,12 @@
             includeOnPreferencePage="true"
             label="Show Use"
             overviewRulerPreferenceKey="fcsORPK"
+            overviewRulerPreferenceValue="true"
             textPreferenceKey="fcsTPK"
             textPreferenceValue="true"
             textStylePreferenceKey="fcsSPK"
-            textStylePreferenceValue="BOX">
+            textStylePreferenceValue="BOX"
+            verticalRulerPreferenceValue="true">
       </specification>"
    </extension>
    

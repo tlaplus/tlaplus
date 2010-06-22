@@ -305,7 +305,24 @@ Specifying color preferences is done through two extension points:
   org.eclipse.ui.editors.markerAnnotationSpecification
     Have field for the annotationTypes, and a bunch of fields
     for declaring the default appearance of an annotation in the editor.
-    
+------------------------------------------------------------------------
+MARKERS
+  To see how the Show Uses marker type is declared, see
+  org.lamport.tla.tool.editor.basic/plugin.xml and search backwards
+  from the end for showUse.  You can then go to the Extensions to see
+  where those declarations appear.
+  
+  The properties of the Show Uses marker are specified in its entry
+  under org.eclipse.ui.editors.markerAnnotationSpecification.  In 
+  addition to the color, note the overviewRulerPreferenceValue.  Setting
+  that true makes the markers appear in the right-hand overview
+  column.
+  
+  See HowUsesHandler for the code needed to create and display
+  the markers.  Note that for some unknown reason, you have to
+  use the IMarker.setAttributes(Map) method to set the location.
+  Just using the methods to set a single attribute at a time
+  sets those attributes but doesn't cause the marker to be shown. 
 
 
 -----------------------------------------------------------------------
