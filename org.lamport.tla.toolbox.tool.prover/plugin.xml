@@ -202,7 +202,7 @@
             highlightPreferenceKey="steoHPK"
             highlightPreferenceValue="true"
             includeOnPreferencePage="true"
-            label="Step Omit"
+            label="Step Omitted"
             overviewRulerPreferenceKey="steoORPK"
             textPreferenceKey="steoTPK"
             textPreferenceValue="true"
