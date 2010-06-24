@@ -260,9 +260,13 @@ public class ProverJob extends Job
              **************************************************************/
 
             /*
-             * Set the module to be read-only.
+             * Set the module to be read-only only if this is
+             * not a status check launch.
              */
-            EditorUtil.setReadOnly(module, true);
+            if (!checkStatus)
+            {
+                EditorUtil.setReadOnly(module, true);
+            }
 
             /*
              * Launch the prover. The path to the tlapm is set in the

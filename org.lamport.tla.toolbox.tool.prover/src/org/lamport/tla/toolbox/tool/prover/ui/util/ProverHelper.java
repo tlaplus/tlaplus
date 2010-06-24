@@ -8,14 +8,18 @@ import java.util.Map;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IWorkspace;
+import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextSelection;
+import org.eclipse.jface.text.Position;
 import org.eclipse.ui.editors.text.FileDocumentProvider;
 import org.eclipse.ui.part.FileEditorInput;
 import org.lamport.tla.toolbox.editor.basic.TLAEditor;
@@ -593,8 +597,9 @@ public class ProverHelper
     }
 
     /**
-     * Takes a string produced by {@link ProverHelper#locToString(Location)}
-     * and produces a {@link Location}.
+     * Takes a string produced by {@link #locToString(Location)}
+     * and produces a {@link Location}. Will throw a number format exception if
+     * the string was not produced by {@link #locToString(Location)}.
      * 
      * @param locString
      * @return
@@ -1098,7 +1103,7 @@ public class ProverHelper
      * @param sanyMarker
      * @param status
      */
-    public static void newStepStatusMarker(IMarker sanyMarker, String status)
+    public static void newStepStatusMarker(final IMarker sanyMarker, String status)
     {
         if (status == null)
         {
@@ -1113,12 +1118,12 @@ public class ProverHelper
 
         try
         {
-            IResource module = sanyMarker.getResource();
+            final IResource module = sanyMarker.getResource();
             /*
              * If the status string does not correspond
              * to a marker type, then do not create a marker.
              */
-            String markerType = statusStringToMarkerType(status);
+            final String markerType = statusStringToMarkerType(status);
 
             if (markerType == null)
             {
@@ -1128,33 +1133,81 @@ public class ProverHelper
                 return;
             }
 
-            IMarker newMarker = module.createMarker(markerType);
-            Map markerAttributes = new HashMap(2);
-            // char start and end of the marker to be created
-            int newCharStart = sanyMarker.getAttribute(IMarker.CHAR_START, 0);
-            int newCharEnd = sanyMarker.getAttribute(IMarker.CHAR_END, 0);
-
             /*
-             * Remove any existing step status markers that overlap
-             * with the new step status marker.
+             * We wrap the marker creation and deletion operation
+             * in a runnable that tells the workspace to avoid
+             * sending resource change notifications while
+             * the run method is executing.
              */
-            IMarker[] existingMarkers = module.findMarkers(ProverHelper.STEP_STATUS_MARKER, true, IResource.DEPTH_ZERO);
-            for (int i = 0; i < existingMarkers.length; i++)
-            {
-                IMarker existingMarker = existingMarkers[i];
-                int existingCharStart = existingMarker.getAttribute(IMarker.CHAR_START, -1);
-                int existingCharEnd = existingMarker.getAttribute(IMarker.CHAR_END, -1);
+            IWorkspaceRunnable runnable = new IWorkspaceRunnable() {
 
-                // conditions for overlapping
-                if (existingCharStart < newCharEnd && existingCharEnd > newCharStart)
+                public void run(IProgressMonitor monitor) throws CoreException
                 {
-                    existingMarker.delete();
-                }
-            }
+                    IMarker newMarker = module.createMarker(markerType);
+                    Map markerAttributes = new HashMap(2);
 
-            markerAttributes.put(IMarker.CHAR_START, new Integer(newCharStart));
-            markerAttributes.put(IMarker.CHAR_END, new Integer(newCharEnd));
-            newMarker.setAttributes(markerAttributes);
+                    /*
+                     * Its important to note that the location of the marker
+                     * obtained by sanyMarker.getAttribute(IMarker.CHAR_START, 0)
+                     * and sanyMarker.getAttribute(IMarker.CHAR_END, 0) can be different
+                     * than the location of the marker in the editor if the editor is
+                     * currently dirty. It seems that the eclipse text editors update
+                     * the CHAR_START and CHAR_END attributes of markers only on save.
+                     * The current position of the marker in the editor can be obtained
+                     * through the editor's annotation model. The code for doing this
+                     * is in the method EditorUtil.getMarkerPosition(sanyMarker).
+                     */
+
+                    // The current position of the sany marker in the editor
+                    // if there is at least one editor open on the module.
+                    Position curPosition = EditorUtil.getMarkerPosition(sanyMarker);
+                    // char start and end of the marker to be created
+                    int newCharStart;
+                    int newCharEnd;
+
+                    if (curPosition != null)
+                    {
+                        newCharStart = curPosition.getOffset();
+                        newCharEnd = curPosition.getOffset() + curPosition.getLength();
+                    } else
+                    {
+                        /*
+                         * We cannot get the position, which means there may not be
+                         * an editor open on the module, so we just use the marker's location
+                         * attributes.
+                         */
+                        newCharStart = sanyMarker.getAttribute(IMarker.CHAR_START, 0);
+                        newCharEnd = sanyMarker.getAttribute(IMarker.CHAR_END, 0);
+                    }
+
+                    /*
+                     * Remove any existing step status markers that overlap
+                     * with the new step status marker.
+                     */
+                    IMarker[] existingMarkers = module.findMarkers(ProverHelper.STEP_STATUS_MARKER, true,
+                            IResource.DEPTH_ZERO);
+                    for (int i = 0; i < existingMarkers.length; i++)
+                    {
+                        IMarker existingMarker = existingMarkers[i];
+                        int existingCharStart = existingMarker.getAttribute(IMarker.CHAR_START, -1);
+                        int existingCharEnd = existingMarker.getAttribute(IMarker.CHAR_END, -1);
+
+                        // conditions for overlapping
+                        if (existingCharStart < newCharEnd && existingCharEnd > newCharStart)
+                        {
+                            existingMarker.delete();
+                        }
+                    }
+
+                    markerAttributes.put(IMarker.CHAR_START, new Integer(newCharStart));
+                    markerAttributes.put(IMarker.CHAR_END, new Integer(newCharEnd));
+                    markerAttributes.put(IMarker.LINE_NUMBER, new Integer(stringToLoc(
+                            sanyMarker.getAttribute(SANY_LOC_ATR, "")).beginLine()));
+                    newMarker.setAttributes(markerAttributes);
+                }
+            };
+
+            module.getWorkspace().run(runnable, null, IWorkspace.AVOID_UPDATE, null);
 
         } catch (CoreException e)
         {
