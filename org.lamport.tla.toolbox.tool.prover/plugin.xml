@@ -6,16 +6,16 @@
       <command
             categoryId="org.eclipse.debug.ui.category.run"
             defaultHandler="org.lamport.tla.toolbox.tool.prover.ui.handler.CheckProofHandler"
-            description="Checks the proof step containing the caret in the active editor"
+            description="Checks the proof step containing the caret in the active editor or the entire module if the caret is not at a step"
             id="org.lamport.tla.toolbox.tool.prover.ui.checkStep.delegate"
-            name="Check Proof Step">
+            name="Prove Step or Module">
       </command>
       <command
             categoryId="org.eclipse.debug.ui.category.run"
             defaultHandler="org.lamport.tla.toolbox.tool.prover.ui.handler.StatusStepHandler"
-            description="Gets the status of the proof step (and sub-steps) containing the caret in the active editor"
+            description="Gets the status of the proof step (and sub-steps) containing the caret in the active editor or the entire module if the caret is not at a step"
             id="org.lamport.tla.toolbox.tool.prover.ui.statusStep"
-            name="Status Of Step">
+            name="Check Status of Step or Module">
       </command>
    </extension>
    <extension
