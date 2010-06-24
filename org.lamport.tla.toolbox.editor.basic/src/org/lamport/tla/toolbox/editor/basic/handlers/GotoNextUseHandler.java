@@ -14,12 +14,14 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
+import org.eclipse.jface.text.Position;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.editors.text.FileDocumentProvider;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.lamport.tla.toolbox.Activator;
+import org.lamport.tla.toolbox.editor.basic.util.EditorUtil;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.ui.handler.OpenSpecHandler;
@@ -104,9 +106,15 @@ public class GotoNextUseHandler extends AbstractHandler implements IHandler
                     // The following gets the location information for the position at which
                     // the marker was created, not at its current position.  Is there any way
                     // to get the marker's current position?
-                    int offset = ((Integer) marker.getAttribute(IMarker.CHAR_START)).intValue();
-                    int length = ((Integer) marker.getAttribute(IMarker.CHAR_END)).intValue() - offset;
-
+                    // int offset = ((Integer) marker.getAttribute(IMarker.CHAR_START)).intValue();
+                    // int length = ((Integer) marker.getAttribute(IMarker.CHAR_END)).intValue() - offset;
+                    
+                    // Yes.  Dan provided the following method and LL incorporated it into the
+                    // code on 24 Jun 2010.
+                    Position pos =EditorUtil.getMarkerPosition(marker);
+                    int offset = pos.getOffset();
+                    int length = pos.getLength();
+                    
                     IEditorPart editor = UIHelper.openEditor(OpenSpecHandler.TLA_EDITOR_CURRENT, new FileEditorInput(
                             (IFile) moduleResource));
 
