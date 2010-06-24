@@ -95,6 +95,9 @@
       <super
             type="org.lamport.tla.toolbox.tool.prover.ui.proofStepStatus">
       </super>
+      <persistent
+            value="true">
+      </persistent>
    </extension>
    <extension
          id="org.lamport.tla.toolbox.tool.prover.ui.stepOmitted"
@@ -103,6 +106,9 @@
       <super
             type="org.lamport.tla.toolbox.tool.prover.ui.proofStepStatus">
       </super>
+      <persistent
+            value="true">
+      </persistent>
    </extension>
    <extension
          id="org.lamport.tla.toolbox.tool.prover.ui.stepMissing"
@@ -111,6 +117,9 @@
       <super
             type="org.lamport.tla.toolbox.tool.prover.ui.proofStepStatus">
       </super>
+      <persistent
+            value="true">
+      </persistent>
    </extension>
    <extension
          id="org.lamport.tla.toolbox.tool.prover.ui.stepProvingFailed"
@@ -119,6 +128,9 @@
       <super
             type="org.lamport.tla.toolbox.tool.prover.ui.proofStepStatus">
       </super>
+      <persistent
+            value="true">
+      </persistent>
    </extension>
    <extension
          id="org.lamport.tla.toolbox.tool.prover.ui.stepCheckingFailed"
@@ -127,6 +139,9 @@
       <super
             type="org.lamport.tla.toolbox.tool.prover.ui.proofStepStatus">
       </super>
+      <persistent
+            value="true">
+      </persistent>
    </extension>
    <extension
          id="org.lamport.tla.toolbox.tool.prover.ui.stepProved"
@@ -135,6 +150,9 @@
       <super
             type="org.lamport.tla.toolbox.tool.prover.ui.proofStepStatus">
       </super>
+      <persistent
+            value="true">
+      </persistent>
    </extension>
    <extension
          id="org.lamport.tla.toolbox.tool.prover.ui.stepBeingProved"
@@ -143,6 +161,9 @@
       <super
             type="org.lamport.tla.toolbox.tool.prover.ui.proofStepStatus">
       </super>
+      <persistent
+            value="true">
+      </persistent>
    </extension>
    <extension
          id="org.lamport.tla.toolbox.tool.prover.ui.proofStepStatus"
