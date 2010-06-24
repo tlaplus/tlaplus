@@ -8,10 +8,13 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextSelection;
+import org.eclipse.jface.text.Position;
+import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.part.FileEditorInput;
+import org.eclipse.ui.texteditor.ResourceMarkerAnnotationModel;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.editor.basic.TLAEditor;
 import org.lamport.tla.toolbox.editor.basic.TLAEditorAndPDFViewer;
@@ -196,18 +199,20 @@ public class EditorUtil
         {
             return null;
         }
-        
+
         StringAndLocation stl = innerGetCurrentToken(stn, location);
-         if (stl == null) {
-             return null;
-         }
-         if ((stl.string.charAt(0) == '<') && (stl.string.indexOf('.') != -1)) {
-            Location loc = stl.location;
-            stl = new StringAndLocation(stl.string.substring(0, stl.string.indexOf('.')), 
-                                        new Location(UniqueString.uniqueStringOf(loc.source()), loc.beginLine(), loc.beginColumn(), 
-                                                loc.endLine(), loc.beginColumn()+stl.string.indexOf('.')));
+        if (stl == null)
+        {
+            return null;
         }
-         return stl;
+        if ((stl.string.charAt(0) == '<') && (stl.string.indexOf('.') != -1))
+        {
+            Location loc = stl.location;
+            stl = new StringAndLocation(stl.string.substring(0, stl.string.indexOf('.')), new Location(UniqueString
+                    .uniqueStringOf(loc.source()), loc.beginLine(), loc.beginColumn(), loc.endLine(), loc.beginColumn()
+                    + stl.string.indexOf('.')));
+        }
+        return stl;
     }
 
     /**
@@ -464,10 +469,11 @@ public class EditorUtil
             SymbolNode defaultResult)
     {
         // In case this is a synonym for something else.
-        name = Operators.resolveSynonym(name); 
-                
+        name = Operators.resolveSynonym(name);
+
         SymbolNode resolvedSymbol = lookupSymbol(name, curNode, location, defaultResult);
-        if (resolvedSymbol == null) {
+        if (resolvedSymbol == null)
+        {
             return null;
         }
         if (resolvedSymbol instanceof OpDefNode)
@@ -484,7 +490,7 @@ public class EditorUtil
             {
                 resolvedSymbol = opdef.getSource();
             }
-        } 
+        }
         return resolvedSymbol;
     }
 
@@ -501,6 +507,29 @@ public class EditorUtil
         if (module != null && module instanceof IFile)
         {
             IEditorPart editor = UIHelper.openEditor(TLAEditor.ID, (IFile) module);
+            if (editor instanceof TLAEditorAndPDFViewer)
+            {
+                return ((TLAEditorAndPDFViewer) editor).getTLAEditor();
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Tries to find and return a {@link TLAEditor} already open
+     * on module. Returns null if one is not found. If there
+     * are multiple editors open, this just returns one of them.
+     * Which one is unspecified.
+     * 
+     * @param module
+     * @return
+     */
+    public static TLAEditor findTLAEditor(IResource module)
+    {
+        if (module != null && module instanceof IFile)
+        {
+            IEditorPart editor = UIHelper.getActivePage().findEditor(new FileEditorInput((IFile) module));
             if (editor instanceof TLAEditorAndPDFViewer)
             {
                 return ((TLAEditorAndPDFViewer) editor).getTLAEditor();
@@ -681,6 +710,42 @@ public class EditorUtil
         }
         return false;
 
+    }
+
+    /**
+     * Gets the current {@link Position} of the marker in the
+     * {@link TLAEditor} showing the module that contains the
+     * marker. Returns null if there is no editor open on that module.
+     * This method assumes that {@link TLAEditor}s are synchronized. That
+     * is, multiple editors on the same module are synchronized. At the time
+     * of writing this method (June 2010), they are synchronized.
+     * 
+     * @param marker
+     * @return
+     */
+    public static Position getMarkerPosition(IMarker marker)
+    {
+        TLAEditor editor = findTLAEditor(marker.getResource());
+        if (editor != null)
+        {
+            IAnnotationModel annotationModel = editor.getDocumentProvider().getAnnotationModel(editor.getEditorInput());
+            /*
+             * From exploration of eclipse's code, I've determined that this
+             * should be an instance of ResourceMarkerAnnotationModel. If this is
+             * not always true, then we need to figure out a way to get a hold of the
+             * annotation model that manages positions of markers in the editor.
+             */
+            if (annotationModel instanceof ResourceMarkerAnnotationModel)
+            {
+                return ((ResourceMarkerAnnotationModel) annotationModel).getMarkerPosition(marker);
+            } else
+            {
+                Activator.logDebug("Cannot get the annotation model that manages marker positions for the marker on "
+                        + marker.getResource());
+            }
+        }
+
+        return null;
     }
 
     /**
