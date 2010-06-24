@@ -358,13 +358,16 @@ public class ProverHelper
 
     /**
      * This method prepares the module for the launch of the prover.
-     * It takes the following steps:
+     * If levelNode or module is null, it prints debugging info and returns.
+     * If not, it takes the following steps:
      * 
      * 1.) Call {@link #removeSANYStepMarkers(IResource)} on the module.
-     * 2.) If level node is not null, call {@link #removeStatusFromTree(IFile, LevelNode)}. Else
+     * 2.) If level node is not an instance of {@link ModuleNode},
+     *     call {@link #removeStatusFromTree(IFile, LevelNode)}. Else
      *     call {@link #removeStatusFromModule(IResource)}.
-     * 3.) If levelNode is null, then the following is done for the entire module.
-     *     If it is not null, the following is only done for the tree rooted at levelNode:
+     * 3.) If levelNode is an instance of {@link ModuleNode}, then the following
+     *     is done for the entire module. If it is not an instance, the following is
+     *     only done for the tree rooted at levelNode:
      * 
      * Create SANY markers on all nodes for which there can be
      * a prover status. A SANY marker stores the location of the node as returned
@@ -388,8 +391,23 @@ public class ProverHelper
      */
     public static void prepareModuleForProverLaunch(IFile module, LevelNode levelNode) throws CoreException
     {
-        removeSANYStepMarkers(module);
+        if (module == null)
+        {
+            ProverUIActivator.logDebug("Module is null in method prepareModuleForProverLaunch. This is a bug.");
+            return;
+        }
+
         if (levelNode == null)
+        {
+            ProverUIActivator.logDebug("Module is null in method prepareModuleForProverLaunch. This is a bug.");
+            return;
+        }
+
+        /*
+         * Remove existing sany markers and step status markers.
+         */
+        removeSANYStepMarkers(module);
+        if (levelNode instanceof ModuleNode)
         {
             removeStatusFromModule(module);
         } else
@@ -404,36 +422,40 @@ public class ProverHelper
         stepMap.clear();
         stepMessageMap.clear();
 
-        if (levelNode != null)
+        /*
+         * Create new SANY markers and prepare the data structures for computing step statuses.
+         */
+        if (levelNode instanceof ModuleNode)
+        {
+            ParseResult parseResult = ResourceHelper.getValidParseResult(module);
+            if (parseResult == null)
+            {
+                return;
+            }
+
+            String moduleName = ResourceHelper.getModuleName(module);
+
+            ModuleNode moduleNode = parseResult.getSpecObj().getExternalModuleTable().getModuleNode(
+                    UniqueString.uniqueStringOf(moduleName));
+            if (module == null)
+            {
+                return;
+            }
+            LevelNode[] topLevelNodes = moduleNode.getTopLevel();
+
+            for (int i = 0; i < topLevelNodes.length; i++)
+            {
+
+                if (topLevelNodes[i].getLocation().source().equals(moduleName))
+                {
+                    // found a theorem in the module
+                    prepareTreeForProverLaunch(topLevelNodes[i], module);
+                }
+            }
+        } else
         {
             prepareTreeForProverLaunch(levelNode, module);
             return;
-        }
-
-        ParseResult parseResult = ResourceHelper.getValidParseResult(module);
-        if (parseResult == null)
-        {
-            return;
-        }
-
-        String moduleName = ResourceHelper.getModuleName(module);
-
-        ModuleNode moduleNode = parseResult.getSpecObj().getExternalModuleTable().getModuleNode(
-                UniqueString.uniqueStringOf(moduleName));
-        if (module == null)
-        {
-            return;
-        }
-        LevelNode[] topLevelNodes = moduleNode.getTopLevel();
-
-        for (int i = 0; i < topLevelNodes.length; i++)
-        {
-
-            if (topLevelNodes[i].getLocation().source().equals(moduleName))
-            {
-                // found a theorem in the module
-                prepareTreeForProverLaunch(topLevelNodes[i], module);
-            }
         }
     }
 
@@ -717,6 +739,9 @@ public class ProverHelper
      * by calling {@link #newObligationStatus(ObligationStatusMessage)}. Else, it prepares
      * the necessary data structure for computing proof step statuses.
      * 
+     * nodeToProve should be an instance of {@link ModuleNode} (if the launch was on the
+     * entire module), {@link TheoremNode}, or {@link UseOrHideNode}.
+     * 
      * @param message
      * @param nodeToProve the step or module on which the prover was launched
      */
@@ -729,7 +754,25 @@ public class ProverHelper
              * the obligation.
              */
             Location obLoc = message.getLocation();
-            LevelNode levelNode = ResourceHelper.getLevelNodeFromTree(nodeToProve, obLoc.beginLine());
+            /*
+             * If nodeToProver is not null, then the prover was launched on that node, and so we
+             * can search in the tree rooted at that node for the step containing the obligation.
+             * If nodeToProve is false, the prover was launched on the entire module, so we have to search
+             * through the entire module for the step containing the obligation.
+             */
+            LevelNode levelNode = null;
+            if (nodeToProve != null)
+            {
+                if (nodeToProve instanceof ModuleNode)
+                {
+                    levelNode = ResourceHelper.getPfStepOrUseHideFromModuleNode((ModuleNode) nodeToProve, obLoc
+                            .beginLine());
+                } else
+                {
+                    levelNode = ResourceHelper.getLevelNodeFromTree(nodeToProve, obLoc.beginLine());
+                }
+            }
+
             if (levelNode == null)
             {
                 ProverUIActivator.logDebug("Cannot find level node containing obligation at " + obLoc
@@ -1390,7 +1433,8 @@ public class ProverHelper
         if (nodeToProve == null)
         {
             // launch the prover on the entire module
-            ProverJob proverJob = new ProverJob(moduleFile, checkStatus, null, checkProofs);
+            ProverJob proverJob = new ProverJob(moduleFile, checkStatus, parseResult.getSpecObj()
+                    .getExternalModuleTable().getModuleNode(UniqueString.uniqueStringOf(moduleName)), checkProofs);
             proverJob.setUser(true);
             proverJob.setRule(new ProverJobRule());
             proverJob.schedule();

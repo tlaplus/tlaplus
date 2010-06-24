@@ -28,7 +28,9 @@ import org.lamport.tla.toolbox.tool.prover.ui.view.ObligationsView;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 import tla2sany.semantic.LevelNode;
+import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.TheoremNode;
+import tla2sany.semantic.UseOrHideNode;
 
 /**
  * Long running job for launching the prover.
@@ -113,8 +115,11 @@ public class ProverJob extends Job
      * launched
      * @param checkStatus true iff the prover should be launched for status checking
      * only, not proving.
-     * @param node the node on which the prover should be launched or null if it
-     * should be launched on the entire module.
+     * @param node the node on which the prover should be launched. If the prover is to be
+     * launched on the entire module, then this should be an instance of {@link ModuleNode}. Else
+     * it should be an instance of {@link TheoremNode} or {@link UseOrHideNode} representing
+     * the step.
+     * 
      * @param checkProofs true iff proofs should be checked. Should not be set
      * to true if checkStatus is also set to true.
      */
@@ -586,7 +591,7 @@ public class ProverJob extends Job
 
         command.add("--toolbox");
 
-        if (nodeToProve == null)
+        if (nodeToProve instanceof ModuleNode)
         {
             command.add("all");
             description.setStartLine(-1);
