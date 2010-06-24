@@ -217,10 +217,20 @@ public class TagBasedTLAPMOutputIncrementalParser implements IProverProcessOutpu
     /**
      * Called when no more text is to be
      * sent to this parser.
+     * 
+     * If the prover was not launched for status
+     * checking, then this method compares the step statuses
+     * computed by the toolbox to the step statuses reported
+     * by the tlapm. If the prover was launched for status checking,
+     * then the toolbox does not compute step status information,
+     * so this cannot be done.
      */
     public void processFinished()
     {
-        ProverHelper.compareStepStatusComputations();
+        if (!description.isStatusCheck())
+        {
+            ProverHelper.compareStepStatusComputations();
+        }
     }
 
 }
