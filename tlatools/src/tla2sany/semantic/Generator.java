@@ -6212,8 +6212,6 @@ OpDefNode node = (OpDefNode) vec.elementAt(i);
           symbolTable.addSymbol(sym.getName(), sym) ;
          }
        }
-
-
      } ; // for i
     InstanceNode[] insts = new InstanceNode[iVec.size()] ;
     for (int i = 0 ; i < insts.length; i++) {
@@ -6225,6 +6223,15 @@ OpDefNode node = (OpDefNode) vec.elementAt(i);
     * ASSUME/PROVE steps.                                                  *
     ***********************************************************************/
     for (int i = 0; i < numberOfPops; i++) {
+      // Added by LL on 24 June 2010
+      // Need to add the symbols in the context being popped to pfCtxt
+      // so they will be put into the context of the NonLeafProofNode.
+      Context topContext = symbolTable.getContext();
+      Enumeration e = topContext.content() ;
+      while (e.hasMoreElements()) {
+        SymbolNode sym = ((Context.Pair)(e.nextElement())).getSymbol();
+        pfCtxt.addSymbolToContext(sym.getName(), sym) ;
+       }
       symbolTable.popContext(); 
      };
     symbolTable.popContext();
