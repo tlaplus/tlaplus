@@ -4,7 +4,6 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.Vector;
 
@@ -51,7 +50,6 @@ import org.lamport.tla.toolbox.ui.preference.EditorPreferencePage;
 import org.lamport.tla.toolbox.util.pref.IPreferenceConstants;
 import org.lamport.tla.toolbox.util.pref.PreferenceStoreHelper;
 
-import tla2sany.modanalyzer.ModulePointer;
 import tla2sany.modanalyzer.SpecObj;
 import tla2sany.parser.SyntaxTreeNode;
 import tla2sany.semantic.DefStepNode;
@@ -922,8 +920,10 @@ public class ResourceHelper
     /**
      * If parseResult's status is not equal to PARSED, returns null.  Else, it tries to find a {@link LevelNode}
      * representing a proof step or a top level USE/HIDE node in module moduleName "at" the point textSelection. 
-     * More precisely, the caret is at a LevelNode if the level node is the first proof step or USE/HIDE node
-     * on the line containing the offset of textSelection.  
+     * More precisely, the caret is at a LevelNode if the level node is the innermost proof step or USE/HIDE node
+     * whose step or proof contains the line with the caret and that is first on the line containing the caret. That
+     * is, if there is more than one proof and/or step on the line with the caret, this method returns the first on
+     * the line.
      * 
      * The method assumes that document is the document for the module.
      * 
@@ -980,8 +980,11 @@ public class ResourceHelper
     }
 
     /**
-     * Returns the {@link LevelNode} in the tree rooted at levelNode that is the first
-     * on the line lineNum. Returns null if no such node found. Assumes that levelNode is one of
+     * Returns the {@link LevelNode} in the tree rooted at levelNode that is the innermost
+     * step such that lineNum is between the begin and end lines of the step or its proof.
+     * If there is more than one step or proof on lineNum, then this method returns the step
+     * that is first on lineNum (or whose proof is first on lineNum).
+     * Returns null if no such node found. Assumes that levelNode is one of
      * 
      * {@link UseOrHideNode}
      * {@link InstanceNode}
@@ -990,15 +993,15 @@ public class ResourceHelper
      * 
      * If that is not true, this method returns null.
      * 
-     * This method was modified by LL on 11 June 2010 so that if the line is in a leaf proof,
-     * then it returns the step that proof is proving.  More precisely, it returns that step
-     * if lineNum is between the lines on which the leaf proof begins and ends.  In this example:
+     * In this example:
      * 
-     *   line 10 : <2>1. X
-     *   line 11 :   OBVIOUS <2>2. Y
-     *   
-     * if lineNum = 11 then the method returns the step <2>1.  This is weird, but it always does
-     * the right thing if a step always begins a line, which it should.
+     * line 10: <2>1. X
+     * line 11: \* The following proof is simple
+     * line 12:    <3>1. Y
+     * line 13:       OBVIOUS <3>2. Z
+     * 
+     * if lineNum = 10, this method returns <2>1. If lineNum = 11, this method again returns <2>1.
+     * If lineNum = 12, this method returns <3>1. If lineNum = 13, this method again returns <3>1.
      * 
      * @param levelNode
      * @param lineNum
@@ -1058,7 +1061,7 @@ public class ResourceHelper
             if (proof != null)
             {
                 Location proofLoc = proof.getLocation();
-                if (lineNum >= proofLoc.beginLine() && lineNum <= proofLoc.endLine())
+                if (lineNum >= nodeBeginLine && lineNum <= proofLoc.endLine())
                 {
                     if (proof instanceof NonLeafProofNode)
                     {
@@ -1074,6 +1077,14 @@ public class ResourceHelper
                             }
 
                         }
+
+                        /*
+                         * If we reach this point, none of the steps of the proof contain
+                         * the line number, but the proof of levelNode contains the line number.
+                         * This means that levelNode is the innermost step whose step or proof
+                         * contains line number, so we return levelNode.
+                         */
+                        return levelNode;
                     }
 
                     else
