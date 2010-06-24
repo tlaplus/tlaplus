@@ -927,6 +927,8 @@ public class ResourceHelper
      * 
      * The method assumes that document is the document for the module.
      * 
+     * Returns null if no step is found.
+     * 
      * @param parseResult
      * @param moduleName
      * @param textSelection
@@ -945,38 +947,88 @@ public class ResourceHelper
             }
             ModuleNode module = parseResult.getSpecObj().getExternalModuleTable().getModuleNode(
                     UniqueString.uniqueStringOf(moduleName));
-            if (module == null)
-            {
-                return null;
-            }
 
-            LevelNode[] topLevelNodes = module.getTopLevel();
-
-            for (int i = 0; i < topLevelNodes.length; i++)
-            {
-
-                if (topLevelNodes[i].getLocation().source().equals(moduleName))
-                {
-                    /*
-                     * If the level node is a use or hide node search to see if the
-                     * caret is at that node. If the node is a theorem node, see if
-                     * the caret is at a node in the tree rooted at the theorem node.
-                     */
-                    LevelNode node = getLevelNodeFromTree(topLevelNodes[i], document.getLineOfOffset(textSelection
-                            .getOffset()) + 1);
-                    if (node != null)
-                    {
-                        return node;
-                    }
-                }
-
-            }
+            return getPfStepOrUseHideFromModuleNode(module, document.getLineOfOffset(textSelection.getOffset()) + 1);
+            // if (module == null)
+            // {
+            // return null;
+            // }
+            //
+            // LevelNode[] topLevelNodes = module.getTopLevel();
+            //
+            // for (int i = 0; i < topLevelNodes.length; i++)
+            // {
+            //
+            // if (topLevelNodes[i].getLocation().source().equals(moduleName))
+            // {
+            // /*
+            // * If the level node is a use or hide node search to see if the
+            // * caret is at that node. If the node is a theorem node, see if
+            // * the caret is at a node in the tree rooted at the theorem node.
+            // */
+            // LevelNode node = getLevelNodeFromTree(topLevelNodes[i], document.getLineOfOffset(textSelection
+            // .getOffset()) + 1);
+            // if (node != null)
+            // {
+            // return node;
+            // }
+            // }
+            //
+            // }
         } catch (BadLocationException e)
         {
             Activator.logError("Error getting line number of caret.", e);
         }
         return null;
 
+    }
+
+    /**
+     * It tries to find a {@link LevelNode} representing a proof step or a top level
+     * USE/HIDE node in module "at" the lineNum. More precisely, the lineNum is at a
+     * LevelNode if the level node is the innermost proof step or USE/HIDE node
+     * whose step or proof contains the lineNum and that is first on lineNum. That
+     * is, if there is more than one proof and/or step on lineNum, this method returns the first on
+     * the line.
+     * 
+     * Returns null if module is null or if no step is found.
+     * 
+     * @param module
+     * @param lineNum
+     * @return
+     */
+    public static LevelNode getPfStepOrUseHideFromModuleNode(ModuleNode module, int lineNum)
+    {
+        if (module == null)
+        {
+            return null;
+        }
+
+        LevelNode[] topLevelNodes = module.getTopLevel();
+
+        for (int i = 0; i < topLevelNodes.length; i++)
+        {
+
+            /*
+             * Top level nodes can be ones imported from extended modules.
+             * We only want to look at those in the module.
+             */
+            if (topLevelNodes[i].getLocation().source().equals(module.getName().toString()))
+            {
+                /*
+                 * If the level node is a use or hide node search to see if the
+                 * caret is at that node. If the node is a theorem node, see if
+                 * the caret is at a node in the tree rooted at the theorem node.
+                 */
+                LevelNode node = getLevelNodeFromTree(topLevelNodes[i], lineNum);
+                if (node != null)
+                {
+                    return node;
+                }
+            }
+
+        }
+        return null;
     }
 
     /**
