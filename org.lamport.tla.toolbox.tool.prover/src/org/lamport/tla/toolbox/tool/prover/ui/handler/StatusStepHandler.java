@@ -6,12 +6,22 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IHandler;
 import org.lamport.tla.toolbox.tool.prover.ui.util.ProverHelper;
 
+/**
+ * Runs the prover to simply get the status of the step containg
+ * the current selection in the active TLA Editor.
+ * 
+ * See {@link ProverHelper#runProverForActiveSelection(boolean, boolean)}
+ * for more information.
+ * 
+ * @author Daniel Ricketts
+ *
+ */
 public class StatusStepHandler extends AbstractHandler implements IHandler
 {
 
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
-        ProverHelper.runProverForActiveSelection(true);
+        ProverHelper.runProverForActiveSelection(true, false);
 
         return null;
     }

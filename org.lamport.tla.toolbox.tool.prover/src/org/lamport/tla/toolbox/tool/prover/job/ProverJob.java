@@ -120,8 +120,8 @@ public class ProverJob extends Job
      */
     public ProverJob(IFile module, boolean checkStatus, LevelNode node, boolean checkProofs)
     {
-        super("Prover Job on module " + module.getName() + " from line " + getBeginLine(node) + " to line "
-                + getEndLine(node));
+        super("Prover Job on module " + module.getName()
+                + (node == null ? "" : "from line " + getBeginLine(node) + " to line " + getEndLine(node)));
         this.module = module;
         this.checkStatus = checkStatus;
         this.nodeToProve = node;

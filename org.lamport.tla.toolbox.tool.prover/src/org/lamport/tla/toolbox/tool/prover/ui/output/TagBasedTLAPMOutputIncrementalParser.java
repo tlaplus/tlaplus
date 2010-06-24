@@ -9,7 +9,6 @@ import org.lamport.tla.toolbox.tool.prover.ui.output.data.ObligationNumberMessag
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.ObligationStatusMessage;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.StepStatusMessage;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.TLAPMMessage;
-import org.lamport.tla.toolbox.tool.prover.ui.output.source.ITLAPMOutputSource;
 import org.lamport.tla.toolbox.tool.prover.ui.util.ProverHelper;
 
 /**
@@ -124,8 +123,14 @@ public class TagBasedTLAPMOutputIncrementalParser implements IProverProcessOutpu
 
                         /*
                          * Create the appropriate marker for the
-                         * message. If the message is step status, create
-                         * a step status marker. If the message is an obligation
+                         * message. If the message is step status inform ProverHelper
+                         * using ProverHelper.newStepStatusMessage(). If this is a
+                         * launch for status checking, then the toolbox does not compute
+                         * step statuses itself, so the step status messages must be used
+                         * to update status markers. This means that the flag addMarker
+                         * in the method newStepStatusMessage should be set to true.
+                         * 
+                         * If the message is an obligation
                          * status, create an obligation status marker.
                          * 
                          * If the message gives the number of obligations
@@ -152,7 +157,7 @@ public class TagBasedTLAPMOutputIncrementalParser implements IProverProcessOutpu
                                     numMessage.getCount());
                         } else if (data instanceof StepStatusMessage)
                         {
-                            ProverHelper.newStepStatusMessage((StepStatusMessage) data);
+                            ProverHelper.newStepStatusMessage((StepStatusMessage) data, description.isStatusCheck());
                         }
                     }
 

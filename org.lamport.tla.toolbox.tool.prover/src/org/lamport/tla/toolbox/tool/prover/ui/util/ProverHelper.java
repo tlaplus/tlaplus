@@ -12,7 +12,6 @@ import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
@@ -882,115 +881,132 @@ public class ProverHelper
 
     /**
      * Should be called to update the status of a proof
-     * step. Searches for an existing SANY marker
+     * step using a message from the tlapm. This method always
+     * stores the message in a map for later use comparing messages
+     * from the tlapm to step status computed by the toolbox.
+     * 
+     * If addMarker is true, this searches for an existing SANY marker
      * with the same location as the status. If found, replaces
      * this marker with the appropriate step status marker. If
      * a SANY marker is not found, this is a bug and will be
      * printed out on the console.
      * 
      * @param status
+     * @param addMarker true iff a marker should be added on the step
+     * indicating its status
      */
-    public static void newStepStatusMessage(StepStatusMessage status)
+    public static void newStepStatusMessage(StepStatusMessage status, boolean addMarker)
     {
         stepMessageMap.put(new Integer(status.getLocation().beginLine()), status);
 
-        // if (status == null)
-        // {
-        // return;
-        // }
-        // /*
-        // * Create a marker located at the proof step.
-        // *
-        // * The type of the marker depends on the status.
-        // */
-        // Location location = status.getLocation();
-        // IResource module = ResourceHelper.getResourceByModuleName(location.source());
-        // if (module != null && module instanceof IFile && module.exists())
-        // {
-        // /*
-        // * Try to find an existing SANY marker.
-        // *
-        // * For the moment, if an existing SANY marker is not
-        // * found, put a marker at the location given by the
-        // * message location. Also log a debug message saying
-        // * a sany marker has not been found.
-        // *
-        // * If a sany marker is found, put a marker at the current location
-        // * of the sany marker (not at the SANY location attribute of the sany marker).
-        // */
-        // IMarker sanyMarker = findSANYMarker(module, location);
-        // try
-        // {
-        // /*
-        // * If the status string does not correspond
-        // * to a marker type, then do not create a marker.
-        // */
-        // String markerType = statusStringToMarkerType(status.getStatus());
-        //
-        // if (markerType == null)
-        // {
-        // ProverUIActivator
-        // .logDebug("Status of proof step does not correspond to an existing marker type. The status is "
-        // + status.getStatus());
-        // return;
-        // }
-        //
-        // IMarker newMarker = module.createMarker(markerType);
-        // Map markerAttributes = new HashMap(2);
-        // // value based on whether a sany marker is found or not
-        // int newCharStart;
-        // int newCharEnd;
-        // if (sanyMarker != null)
-        // {
-        // newCharStart = sanyMarker.getAttribute(IMarker.CHAR_START, 0);
-        // newCharEnd = sanyMarker.getAttribute(IMarker.CHAR_END, 0);
-        // } else
-        // {
-        // ProverUIActivator.logDebug("Existing SANY marker not found for location " + location
-        // + ". This is a bug.");
-        // // the region from the tlapm message
-        // IRegion messageRegion = AdapterFactory.locationToRegion(location);
-        // /*
-        // * For marking a region that starts at offset o and has length l, the
-        // * start character is o and the end character is o+l.
-        // */
-        // newCharStart = messageRegion.getOffset();
-        // newCharEnd = messageRegion.getOffset() + messageRegion.getLength();
-        // return;
-        // }
-        //
-        // /*
-        // * Remove any existing step status markers that overlap
-        // * with the new step status marker.
-        // */
-        // IMarker[] existingMarkers = module.findMarkers(ProverHelper.STEP_STATUS_MARKER, true,
-        // IResource.DEPTH_ZERO);
-        // for (int i = 0; i < existingMarkers.length; i++)
-        // {
-        // IMarker existingMarker = existingMarkers[i];
-        // int existingCharStart = existingMarker.getAttribute(IMarker.CHAR_START, -1);
-        // int existingCharEnd = existingMarker.getAttribute(IMarker.CHAR_END, -1);
-        //
-        // // conditions for overlapping
-        // if (existingCharStart < newCharEnd && existingCharEnd > newCharStart)
-        // {
-        // existingMarker.delete();
-        // }
-        // }
-        //
-        // markerAttributes.put(IMarker.CHAR_START, new Integer(newCharStart));
-        // markerAttributes.put(IMarker.CHAR_END, new Integer(newCharEnd));
-        // newMarker.setAttributes(markerAttributes);
-        //
-        // } catch (CoreException e)
-        // {
-        // ProverUIActivator.logError("Error creating new status marker.", e);
-        // }
-        // } else
-        // {
-        // ProverUIActivator.logDebug("A module could not be located for a step status.\n" + "Status : "
-        // + status.getStatus() + "\nLocation : " + location);
-        // }
+        if (addMarker)
+        {
+
+            if (status == null)
+            {
+                return;
+            }
+            /*
+            * Create a marker located at the proof step. The current location
+            * of the proof step is determined by finding an existing SANY marker
+            * whose attribute matches the location according to the method
+            * findSANYMarker().
+            */
+            Location location = status.getLocation();
+            IResource module = ResourceHelper.getResourceByModuleName(location.source());
+            if (module != null && module instanceof IFile && module.exists())
+            {
+                /*
+                * Try to find an existing SANY marker.
+                *
+                * If a sany marker is found, put a marker at the current location
+                * of the sany marker (not at the SANY location attribute of the sany marker).
+                */
+                IMarker sanyMarker = findSANYMarker(module, location);
+
+                if (sanyMarker == null)
+                {
+                    ProverUIActivator.logDebug("Existing SANY marker not found for location " + location
+                            + ". This is a bug.");
+                }
+
+                newStepStatusMarker(sanyMarker, status.getStatus());
+
+                // the following code was commented out because it is basically
+                // done in newStepStatusMarker().
+                // try
+                // {
+                // /*
+                // * If the status string does not correspond
+                // * to a marker type, then do not create a marker.
+                // */
+                // String markerType = statusStringToMarkerType(status.getStatus());
+                //
+                // if (markerType == null)
+                // {
+                // ProverUIActivator
+                // .logDebug("Status of proof step does not correspond to an existing marker type. The status is "
+                // + status.getStatus());
+                // return;
+                // }
+                //
+                // IMarker newMarker = module.createMarker(markerType);
+                // Map markerAttributes = new HashMap(2);
+                // // value based on whether a sany marker is found or not
+                // int newCharStart;
+                // int newCharEnd;
+                // if (sanyMarker != null)
+                // {
+                // newCharStart = sanyMarker.getAttribute(IMarker.CHAR_START, 0);
+                // newCharEnd = sanyMarker.getAttribute(IMarker.CHAR_END, 0);
+                // } else
+                // {
+                // ProverUIActivator.logDebug("Existing SANY marker not found for location " + location
+                // + ". This is a bug.");
+                // // the region from the tlapm message
+                // IRegion messageRegion = AdapterFactory.locationToRegion(location);
+                // /*
+                // * For marking a region that starts at offset o and has length l, the
+                // * start character is o and the end character is o+l.
+                // */
+                // newCharStart = messageRegion.getOffset();
+                // newCharEnd = messageRegion.getOffset() + messageRegion.getLength();
+                // return;
+                // }
+                //
+                // /*
+                // * Remove any existing step status markers that overlap
+                // * with the new step status marker.
+                // */
+                // IMarker[] existingMarkers = module.findMarkers(ProverHelper.STEP_STATUS_MARKER, true,
+                // IResource.DEPTH_ZERO);
+                // for (int i = 0; i < existingMarkers.length; i++)
+                // {
+                // IMarker existingMarker = existingMarkers[i];
+                // int existingCharStart = existingMarker.getAttribute(IMarker.CHAR_START, -1);
+                // int existingCharEnd = existingMarker.getAttribute(IMarker.CHAR_END, -1);
+                //
+                // // conditions for overlapping
+                // if (existingCharStart < newCharEnd && existingCharEnd > newCharStart)
+                // {
+                // existingMarker.delete();
+                // }
+                // }
+                //
+                // markerAttributes.put(IMarker.CHAR_START, new Integer(newCharStart));
+                // markerAttributes.put(IMarker.CHAR_END, new Integer(newCharEnd));
+                // newMarker.setAttributes(markerAttributes);
+                //
+                // } catch (CoreException e)
+                // {
+                // ProverUIActivator.logError("Error creating new status marker.", e);
+                // }
+            } else
+            {
+                ProverUIActivator.logDebug("A module could not be located for a step status.\n" + "Status : "
+                        + status.getStatus() + "\nLocation : " + location);
+            }
+        }
     }
 
     /**
@@ -1024,14 +1040,31 @@ public class ProverHelper
             System.out.println("NO STATUS BUG :\n No Toolbox step status message found for the step at "
                     + message.getLocation());
         }
-        
+
         System.out.println("------------------Done Comparing TLAPM and Toolbox Step Status------------");
     }
 
+    /**
+     * Creates a new marker at the current location of sanyMarker indicating the
+     * status given by status. If status is not a known type (the method
+     * {@link #statusStringToMarkerType(String)} returns null) then this prints
+     * some debugging message and returns. If sanyMarker is null, this also
+     * prints some debugging message and returns. If status is null, this method
+     * just returns without doing anything.
+     * 
+     * @param sanyMarker
+     * @param status
+     */
     public static void newStepStatusMarker(IMarker sanyMarker, String status)
     {
         if (status == null)
         {
+            return;
+        }
+
+        if (sanyMarker == null)
+        {
+            ProverUIActivator.logDebug("Null sanyMarker passed to newStepStatusMarker. This is a bug.");
             return;
         }
 
@@ -1249,11 +1282,12 @@ public class ProverHelper
      * Runs the prover on the active selection in the {@link TLAEditor} with
      * focus. The active selection is the position of the caret. This method
      * runs the prover on the step at the caret, where step is either a proof
-     * step or a top level USE node. A step is at the caret if it is the first
-     * step on the line containing the caret.
+     * step or a top level USE node. A step is at the caret if the method
+     * {@link ResourceHelper#getPfStepOrUseHideFromMod(ParseResult, String, ITextSelection, IDocument)}
+     * returns that node for the text selection representing the caret position.
      * 
-     * If there is not a step at the caret, this method will show a message
-     * indicating this to the user and will not launch the prover.
+     * If there is not a step at the caret, this method will launch the prover
+     * on the entire module.
      * 
      * If there are dirty editors open, this method will prompt the user
      * to save them before continuing. If there is not a valid parse result
@@ -1262,11 +1296,17 @@ public class ProverHelper
      * error window will show the errors.
      * 
      * If statusCheck is true, this tells prover job to launch the prover
-     * for status checking, not proving.
+     * for status checking, not proving. If checkProofs is true, the prover
+     * will check proofs.
+     * 
+     * Note that checkProofs and checkStatus should not both be true.
+     * 
+     * @param checkProofs true iff proofs should be checked
+     * @param checkStatus true iff the prover should only be run for status checking
      * 
      * @return
      */
-    public static void runProverForActiveSelection(boolean statusCheck)
+    public static void runProverForActiveSelection(boolean checkStatus, boolean checkProofs)
     {
         /*
          * This method works by scheduling a ProverJob. The ProverJob
@@ -1287,8 +1327,7 @@ public class ProverHelper
          *     to the user in this case because the parse errors view will pop open anyway.
          * 5.) Get the LevelNode representing a step or top level use/hide containing the caret,
          *     if the caret is at such a node.
-         * 6.) If a LevelNode is not found in step 5, show a message to the user saying
-         *     the caret is not at a step and return on this method.
+         * 6.) If a LevelNode is not found in step 5, launch the prover on the entire module.
          * 7.) Create and schedule a prover job if a level node is found in step 5.
          * 
          * Note that at step 6 ,there are some other possibilities:
@@ -1315,7 +1354,7 @@ public class ProverHelper
          * Step 2                                                 *
          **********************************************************/
         TLAEditor editor = EditorUtil.getTLAEditorWithFocus();
-        Assert.isNotNull(editor, "CheckProofStepHandler was executed without a tla editor in focus. This is a bug.");
+        Assert.isNotNull(editor, "User attempted to run prover without a tla editor in focus. This is a bug.");
 
         /**********************************************************
          * Step 3                                                 *
@@ -1350,17 +1389,55 @@ public class ProverHelper
 
         if (nodeToProve == null)
         {
+            // launch the prover on the entire module
+            ProverJob proverJob = new ProverJob(moduleFile, checkStatus, null, checkProofs);
+            proverJob.setUser(true);
+            proverJob.setRule(new ProverJobRule());
+            proverJob.schedule();
+
             // ask user if he wants to check the entire module
-            MessageDialog.openWarning(UIHelper.getShellProvider().getShell(), "Cannot launch prover",
-                    "The caret is not at a theorem, proof step, or USE statement. It must be to launch this command.");
+            // MessageDialog.openWarning(UIHelper.getShellProvider().getShell(), "Cannot launch prover",
+            // "The caret is not at a theorem, proof step, or USE statement. It must be to launch this command.");
             return;
         }
 
         /***********************************************************
          * Step 7                                                  *
          ***********************************************************/
-        ProverJob proverJob = new ProverJob(moduleFile, statusCheck, nodeToProve, false);
-        // proverJob.setLocation(beginLine, 0, endLine, 0);
+        ProverJob proverJob = new ProverJob(moduleFile, checkStatus, nodeToProve, checkProofs);
+        proverJob.setUser(true);
+        proverJob.setRule(new ProverJobRule());
+        proverJob.schedule();
+    }
+
+    /**
+     * Runs the prover on the entire module in the active editor. If checkStatus is true,
+     * the prover is launched only for status checking. If it is false,
+     * the prover is launched for proving. If checkProofs is true, the prover
+     * also checks the proofs.
+     * 
+     * Note that checkProofs and checkStatus should not both be true.
+     * 
+     * If there are dirty editors, this method first prompts the user to save them.
+     * 
+     * @param checkStatus true iff the prover should only be run for status checking
+     * @param checkProofs true iff proofs should be checked
+     */
+    public static void runProverForEntireModule(boolean checkStatus, boolean checkProofs)
+    {
+        boolean proceed = UIHelper.promptUserForDirtyModules();
+        if (!proceed)
+        {
+            // the user cancelled
+            return;
+        }
+
+        TLAEditor editor = EditorUtil.getTLAEditorWithFocus();
+        Assert.isNotNull(editor, "User attempted to run prover without a tla editor in focus. This is a bug.");
+
+        IFile moduleFile = ((FileEditorInput) editor.getEditorInput()).getFile();
+
+        ProverJob proverJob = new ProverJob(moduleFile, checkStatus, null, checkProofs);
         proverJob.setUser(true);
         proverJob.setRule(new ProverJobRule());
         proverJob.schedule();
