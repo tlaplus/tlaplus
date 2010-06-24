@@ -981,7 +981,8 @@ public class ResourceHelper
 
     /**
      * Returns the {@link LevelNode} in the tree rooted at levelNode that is the innermost
-     * step such that lineNum is between the begin and end lines of the step or its proof.
+     * step such that lineNum is between the begin line of the step and the end line of the proof
+     * if there is a proof or the begin and end lines of the step if there is no proof.
      * If there is more than one step or proof on lineNum, then this method returns the step
      * that is first on lineNum (or whose proof is first on lineNum).
      * Returns null if no such node found. Assumes that levelNode is one of
@@ -1050,10 +1051,12 @@ public class ResourceHelper
         if (levelNode instanceof TheoremNode)
         {
             /*
-             * If the theorem has a proof and the lineNum is in it,
+             * If the theorem has a proof and the lineNum is between
+             * the end of the statement and the end of the proof,
              * then if it is a non-leaf proof, recursively search for 
-             * a substep.  Otherwise, it is a leaf proof containing
-             * the lineNum and we return the theorem node.
+             * a substep. If none of these substeps are returned for containing
+             * lineNum, return levelNode.  Otherwise, it is a leaf proof containing
+             * the lineNum and we return levelNode.
              */
             TheoremNode theoremNode = (TheoremNode) levelNode;
 
@@ -1061,7 +1064,7 @@ public class ResourceHelper
             if (proof != null)
             {
                 Location proofLoc = proof.getLocation();
-                if (lineNum >= nodeBeginLine && lineNum <= proofLoc.endLine())
+                if (lineNum >= nodeEndLine && lineNum <= proofLoc.endLine())
                 {
                     if (proof instanceof NonLeafProofNode)
                     {
