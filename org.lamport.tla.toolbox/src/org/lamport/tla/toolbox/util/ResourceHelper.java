@@ -1311,7 +1311,7 @@ public class ResourceHelper
         // If I write
         // List found = new List(20);
         // Eclipse mysteriously complains that it can't find the second "List".
-        System.out.println("OUTER CALL AT MODULE " + module.getName());
+        // System.out.println("OUTER CALL AT MODULE " + module.getName());
         innerGetUsesOfSymbol(symbol, module, found);
         OpApplNode[] value = new OpApplNode[found.size()];
         for (int i = 0; i < value.length; i++)
