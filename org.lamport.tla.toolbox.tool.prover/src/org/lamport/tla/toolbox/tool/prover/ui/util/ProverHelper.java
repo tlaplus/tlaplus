@@ -659,12 +659,13 @@ public class ProverHelper
      * Converts the status string to the correct marker type.
      * The status string should be one of : 
      * 
-     * {@link #STEP_CHECKED_MARKER}
-     * {@link #STEP_CHECKING_FAILED_MARKER}
-     * {@link #STEP_MISSING_MARKER}
-     * {@link #STEP_OMITTED_MARKER}
-     * {@link #STEP_PROVED_MARKER}
-     * {@link #STEP_PROVING_FAILED_MARKER}
+     * {@link StepStatusMessage#CHECKED}
+     * {@link StepStatusMessage#CHECKING_FAILED}
+     * {@link StepStatusMessage.MISSING_PROOFS}
+     * {@link StepStatusMessage.OMITTED}
+     * {@link StepStatusMessage.PROVED}
+     * {@link StepStatusMessage.PROVING_FAILED}
+     * {@link StepStatusMessage.BEING_PROVED}
      * 
      * If the input is not one of these, this
      * method will return null.
