@@ -14,7 +14,7 @@
 <pre>
 Contents
   <a href="#module">Module Editors</a>
-  <a href="#finding">Finding Definitions and Declarations</a>
+  <a href="#finding">Finding Definitions and Declarations and Their Uses</a>
   <a href="#comments">Editing Comments</a>
   <a href="#proofs">Editing and Viewing Proofs</a>
   <a href="#key-bindings">Module Editor Key Bindings</a>
@@ -55,36 +55,108 @@ menu provides a few familiar commands.&nbsp;
 
 </p>
 
-<h2><a name="finding">Finding Definitions and Declarations</a></h2>
+<h2><a name="finding">Finding Definitions and Declarations and Their Uses</a></h2>
+<p>
+The module editor provides commands for finding the definition or declaration of a user-defined symbol, 
+for finding all uses of that definition or declaration, and for finding all symbols defined and declared 
+in the module.&nbsp; 
+
+
+For brevity, the names of all of these commands use the term <em>declaration</em> instead of <em>declaration
+or definition</em>.
+
+These commands can be executed by right-clicking on the editor and selecting the command from the
+popped-up menu, or with the keystroke indicated on the menu.&nbsp;  
+
+The <samp>General/Keys</samp> item on
+the <a href="../gettingstarted/preferences.html">Preference</a> menu allows you to change those
+key bindings.&nbsp; 
+
+The <em>Goto Declaration</em>
+command can also be executed by <em>control + click</em>, as explained below.  
+</p>
 
 <p>
-If your module is successfully <a href="">parsed</a>, you can find the definition or declaration
-of a symbol (such as an operator name) in any of the following ways: 
-<ul>
-<li>Hold  down the <code>Control</code> key and move the mouse's cursor to an occurrence of the symbol.&nbsp;  When the cursor changes to a hand
-with index finger extended,  click on the left mouse button.</li><br></br>
-<li>Select an occurrence of the symbol in the editor and then either (a)&nbsp;type <code>F3</code></li> or (b)&nbsp;right click and 
-select <code>Open Declaration</code>
+For the commands that find the declaration or uses of a symbol, the symbol is the one containing the cursor (caret) 
+or that the cursor is right before.&nbsp;  
 
-</ul>   
-This will take you to the symbol's definition or declaration, which will be highlighted.&nbsp;  
-This feature currently has the following limitations:
-<ul>
-<li>No matter where or in what module you select the symbol, you will be taken to the declaration or definition
-as if the occurrence of that symbol were at the end of the root module. </li><br></br>
+It is not the one being pointed at by the mouse--except when using the <em>control + click</em> version of
+the <em>Goto Declaration</em> command.
+</p> 
 
-<li>If the symbol's definition is imported through an <code>INSTANCE</code> of a module with parameters,
-then you will be taken to the <code>INSTANCE</code> statement.</li><br></br>
+<p>
+Most of these commands work only if the spec is successfully parsed--that is, if its status (indicated at the bottom 
+of the window) is <em>parsed</em> (green).&nbsp;
 
-<li>If the file has changed since it was parsed, this may take you to the wrong place.</li><br></br>
+If the module has been modified since the spec was parsed, a command may not work properly.  The <em>Goto Declaration</em>
+command may not recognize the symbol, and a command that should highlight and/or jump to someplace in the module may highlight
+or jump to the wrong place.&nbsp;
 
-<li> It works only for globally defined symbols of the spec.&nbsp;  It does not work for a symbol defined in a <code>LET</code> statement, 
-for a definition parameter, or for any other locally declared symbol. </li><br></br>
-
-<li> It doesn't work for symbols defined in standard modules.</li>
-</ul>
+However, if the <em>Show Uses</em> command is executed before the module is modified, then the highlighting and subsequent
+<em>Goto Prev/Next Use</em> commands will work properly.
 </p>
-     
+
+<h3>Goto Declaration (F3)</h3>
+
+<p>
+This command jumps to the definition or declaration of the chosen symbol, which must not be a built-in TLA+ symbol or
+a symbol defined in a standard module.&nbsp;  
+
+This could mean jumping to a different module.&nbsp;  
+
+In addition to executing the command from a menu or by typing <code>F3</code>, you can also hold down the <code>Control</code> key
+and move the mouse over the symbol.&nbsp;  
+
+When the mouse is over a declared or user-defined symbol, the symbol will change appearance and turn into
+a link that you can left-click on to jump to the symbol's declaration or definition.
+</p>
+
+
+<h3>Return From Goto Declaration (F4)</h3>
+
+This command jumps back to the location from which the most recent <em>Goto Declaration</em> command was executed.
+
+<h3>Show Declarations (F5)</h3>
+
+<p>
+This command raises a menu containing a list of all the symbols defined and declared in the current module.&nbsp;
+
+You can jump to a symbol's definition or declaration by selecting that symbol from the list.&nbsp;
+
+You can select an item from the list by clicking on it, or by selecting the desired item--with a combination of the
+arrow keys and typing the first few letters of its name--and then typing <code>Enter</code>.&nbsp;
+</p>
+
+<p>Typing <code>space</code> causes the menu to toggle between showing and hiding definitions that are
+imported by instantiation.&nbsp;  
+
+(More precisely, it applies to definitions that are imported with renaming and/or with substitution
+for module parameters.)
+</p>
+
+<h3><a name ="showUses">Show Uses (F6)</a></h3>
+<p>
+This command highlights all uses of the selected symbol and enables the <em>Goto Next Use</em>
+and <em>Goto Prev Use</em> commands.&nbsp;  
+
+If the symbol is used in more than one module, it
+raises a menu allowing you to select the desired module from a list.&nbsp;  
+
+You can select a module from the list by clicking on it, or by selecting it--with a combination of the
+arrow keys and typing the first few letters of its name--and then typing <code>Enter</code>.
+</p>
+<p>
+The highlighting of the uses is cleared by executing another <em>Show Uses</em> command or by re-parsing
+the specification.&nbsp;  
+
+Whether or not re-parsing the specification  clears the highlighting is controlled by an editor
+<a href="../gettingstarted/preferences.html">preference</a>.
+</p>
+
+<h3>Goto Prev/Next Use (F7/F8)</h3>
+
+These commands jump to the previous or next (earlier or later in the module) use of the
+symbol selected by the most recent <em>Show Uses</em> command.
 
 <h2><a name="comments">Editing Comments</a></h2>
 
@@ -140,16 +212,18 @@ between them in the first column.&nbsp;
 
 Type your comment like ordinary text, with all paragraph lines
 starting in column 1, like this:
+
 <pre>
 Beauty == TRUE  (***********************************
-This is a very interesting formula, because it 
-expresses Keats' famous formula
+This is 
+a
+very interesting formula, 
+because it expresses Keats' famous dictum
 
   Beauty is truth
   and truth beauty.
          
-How much more than this do you really 
-need to know?
+How much more than this do you really need to know?
                ***********************************)</pre>
 When you have finished the contents of the comment, execute
 the <em>Format Comment</em> command by typing 
@@ -161,14 +235,14 @@ comment box--like this:&nbsp;
 
 <pre>
 Beauty == TRUE  (***********************************
-This is a very interesting
+This is a very interesting 
 formula, because it expresses
-Keats' famous formula
+Keats' famous dictum
 
   Beauty is truth
   and truth beauty.
          
-How much more than this do you
+How much more than this do you 
 really need to know?
                ***********************************)</pre>
 
@@ -176,13 +250,13 @@ really need to know?
 Note that lines that do not begin in column 1 are not changed.&nbsp;
 
 If it looks right, execute the <em>Box Comment</em> command by
-typing <samp>Ctl+O Ctl+B</samp> to create the box.
+typing <samp>Ctl+O Ctl+B</samp> to create the box, like this:
 
 <pre>
 Beauty == TRUE  (**********************************)
                 (* This is a very interesting     *)
                 (* formula, because it expresses  *)
-                (* Keats' famous formula          *)
+                (* Keats' famous dictum           *)
                 (*                                *)
                 (*   Beauty is truth              *)
                 (*   and truth beauty.            *)
@@ -190,6 +264,7 @@ Beauty == TRUE  (**********************************)
                 (* How much more than this do you *)
                 (* really need to know?           *)
                 (**********************************)</pre>
+
 
 
 If the result doesn't look right, type <samp>Ctl+Z</samp> to undo the <em>Box
@@ -285,7 +360,6 @@ Insert, Delete, and Move Text</font></TH>
 
 <TR> <TD><CODE>Ctl+Q</CODE></TD> <TD> Go to last edit location</TD></TR>
 
-<TR> <TD><CODE>F3</CODE></TD> <TD> <a href="#finding">Find definition or declaration</a></TD></TR>
 
 <TR> <TD><CODE>Ctl+Up/DownArrow</CODE></TD> <TD> Scroll up/down one line</TD></TR>
 <TR> <TD colspan=2 align=left>The arrow and page-up/down keys behave as usual.</TD>
@@ -309,9 +383,20 @@ Insert, Delete, and Move Text</font></TH>
 <TR> <TD><CODE>Ctl+Shift+J</CODE></TD> <TD> Incremental backwards find</TD></TR>
 
 
+
 <TR> <TD colspan=2> <BR> </TD></TR>
 
-<TR> <TH colspan=2 align=left> <font color=000000>Editing Comments</font></TH>
+<TR> <TH colspan=2 align=left> <font color=000000><a href="#finding">Finding Definitions and Declarations and Their Uses</a></font></TH>
+<TR> <TD><CODE>F3</CODE></TD> <TD> Goto declaration or definition</TD></TR>
+<TR> <TD><CODE>F4</CODE></TD> <TD> Return from goto declaration or definition</TD></TR>
+<TR> <TD><CODE>F5</CODE></TD> <TD> Show declarations and definitions</TD></TR>
+<TR> <TD><CODE>F6</CODE></TD> <TD> Show uses of declaration or definition</TD></TR>
+<TR> <TD><CODE>F7</CODE></TD> <TD> Goto previous use of declaration or definition</TD></TR>
+<TR> <TD><CODE>F7</CODE></TD> <TD> Goto next use of declaration or definition</TD></TR>
+
+<TR> <TD colspan=2> <BR> </TD></TR>
+
+<TR> <TH colspan=2 align=left> <font color=000000><a href="#comments">Editing Comments</a></font></TH>
 <TR> <TD><CODE>Ctl+O Ctl+S</CODE></TD> <TD> Begin comment</TD></TR>
 
 <TR> <TD><CODE>Ctl+O Ctl+F</CODE></TD> <TD>Format comment</TD></TR>
@@ -354,7 +439,7 @@ Insert, Delete, and Move Text</font></TH>
 
 <TR> <TD><CODE>F1</CODE></TD> <TD> Raise Help view</TD></TR>
 
-<TR> <TD><CODE>Ctl+PageUp/Down</CODE></TD> <TD> Go to next/previous editor view </TD></TR>
+<TR> <TD><CODE>Ctl+PageUp/Down</CODE></TD> <TD> Go to previous/next editor view </TD></TR>
 
 <TR> <TD><CODE>Ctl+F6</CODE></TD> <TD> Go to another editor view  (Use up/down arrow to select view, 
   then type Enter.)</TD></TR>

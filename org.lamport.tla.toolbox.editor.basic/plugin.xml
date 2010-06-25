@@ -50,7 +50,7 @@
             categoryId="org.eclipse.ui.category.textEditor"
             description="Opens the declaration for the currently selected cross reference"
             id="org.lamport.tla.toolbox.tla.editor.hyperlinking.OpenDeclaration"
-            name="Open Declaration">
+            name="Goto Declaration">
       </command>
       <command
             categoryId="org.eclipse.ui.category.textEditor"
@@ -249,7 +249,7 @@
             categoryId="org.eclipse.ui.category.textEditor"
             defaultHandler="org.lamport.tla.toolbox.editor.basic.handlers.ReturnFromOpenDeclarationHandler"
             id="org.lamport.tla.toolbox.editor.basic.returnFromOpenDeclaration"
-            name="Return From Open Declaration">
+            name="Return From Goto Declaration">
       </command>
       <command
             categoryId="org.eclipse.ui.category.textEditor"

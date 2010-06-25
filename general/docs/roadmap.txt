@@ -321,6 +321,12 @@ There are two ways to listen for new parse results.
    instance of ParseResultBroadcaster can be obtained by calling
    ParseResultBroadcaster.getParseResultBroadcaster() .
 -----------------------------------------------------------------------------
+GOTO vs. OPEN DECLARATION
+  On 25 Jun 2010, LL renamed the Open Declaration command to be
+  Goto Declaration.  However, the classes and methods are still
+  named as if the command were called Open Declaration.  It doesn't
+  seem to be worth the effort to refactor everything.
+-------------------------------------------------------------------------------
 PREFERENCES
 
 Defining a New Preference  

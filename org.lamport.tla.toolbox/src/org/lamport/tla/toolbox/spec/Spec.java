@@ -48,8 +48,8 @@ public class Spec implements IAdaptable
 
     /**
      *  The following fields are used for remembering the jumping-off
-     *  point for an Open Declaration or ShowDefinitions command, so we can return to it
-     *  with a Return from Open Declaration command.  They should probably
+     *  point for a Goto Declaration or ShowDefinitions command, so we can return to it
+     *  with a Return from Goto Declaration command.  They should probably
      *  be changed to arrays so we can call return from a Sequence of such commands.  
      */
     private String openDeclModuleName;

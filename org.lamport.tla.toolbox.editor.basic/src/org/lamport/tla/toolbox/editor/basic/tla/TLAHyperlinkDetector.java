@@ -207,7 +207,7 @@ public class TLAHyperlinkDetector extends AbstractHyperlinkDetector
                 {
                     // Get the location to highlight. If it's an OpDefNode, want
                     // to get just the symbol from the left-hand side.  (Otherwise,
-                    // the user can't execute Open Declaration immediately followed
+                    // the user can't execute Goto Declaration immediately followed
                     // by Show Uses.)
                     if (resolvedSymbol instanceof OpDefNode)
                     {

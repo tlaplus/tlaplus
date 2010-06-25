@@ -61,7 +61,7 @@ public class OpenDeclarationAction extends Action implements IHyperlink
 
         EditorUtil.setReturnFromOpenDecl();
 //        // Find current location and store as a property of the spec for the
-//        // Return from Open Declaration command.
+//        // Return from Goto Declaration command.
 //        TLAEditor srcEditor = EditorUtil.getTLAEditorWithFocus();
 //        if (srcEditor != null)
 //        {
