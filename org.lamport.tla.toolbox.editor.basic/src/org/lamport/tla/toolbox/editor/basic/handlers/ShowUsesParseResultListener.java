@@ -11,6 +11,14 @@ import org.lamport.tla.toolbox.tool.SpecLifecycleParticipant;
 import org.lamport.tla.toolbox.ui.preference.EditorPreferencePage;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 
+/**
+ * This class implements a listener that, when the module is reparsed, checks the LEAR_DECLARATION_USE_MARKERS_ON_PARSE
+ * Editor preference and, if selected, should delete any Use markers.  The spec objects' getModuleToShow() value indicates
+ * the module on which those markers should be, and they are retrieved from that name. 
+ * 
+ * @author lamport
+ *
+ */
 public class ShowUsesParseResultListener extends SpecLifecycleParticipant implements IParseResultListener
 {
 
@@ -55,17 +63,22 @@ public class ShowUsesParseResultListener extends SpecLifecycleParticipant implem
             resource.deleteMarkers(ShowUsesHandler.SHOW_USE_MARKER_TYPE, false, 99);
         } catch (CoreException e)
         {
-            // Nothing to be done if marker deletion fails.
+            // I don't know why this should ever fail, but there's nothing to be done 
+            // if marker deletion fails except to hope that it's because there 
+            // weren't any.
         }
         
         return true;
 
     }
-
+    /**
+     * I have no idea when this method is supposed to be called, but I have not
+     * seen it ever called.
+     */
     public void newParseResult(ParseResult parseResult)
     {
         System.out.println("newParseResult called with status: " + parseResult.getStatus());
-        // TODO Auto-generated method stub
+     
 
     }
 
