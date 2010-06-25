@@ -12,7 +12,8 @@ public interface IParseResultListener
 {
 
     /**
-     * Called when there is a new parse result broadcasted.
+     * This method is called when a new {@link ParseResult} is created by
+     * a call to SANY. The object parseResult is that new {@link ParseResult}.
      * 
      * @param parseResult
      */

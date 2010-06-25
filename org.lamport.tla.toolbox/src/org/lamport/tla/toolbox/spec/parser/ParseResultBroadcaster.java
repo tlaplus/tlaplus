@@ -79,6 +79,9 @@ public class ParseResultBroadcaster
      * Classes that want to broadcast the result of parsing should
      * call this method with an instance of {@link ParseResult}.
      * 
+     * This will send the {@link ParseResult} to all listeners that have
+     * previously been added through a call to the method {@link #addParseResultListener(IParseResultListener)}.
+     * 
      * @param parseResult
      */
     public void broadcastParseResult(ParseResult parseResult)
@@ -113,8 +116,8 @@ public class ParseResultBroadcaster
     }
 
     /**
-     * Add an {@link IParseResultListener} that will be notified whenever a class wants
-     * to broadcast the result of parsing.
+     * Add an {@link IParseResultListener} that will be notified whenever a new {@link ParseResult}
+     * is created by a launch of SANY.
      * 
      * Adding a listener that has already been added will have no effect.
      * 
