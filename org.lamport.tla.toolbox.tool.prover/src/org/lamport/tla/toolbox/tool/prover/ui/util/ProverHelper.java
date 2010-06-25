@@ -393,74 +393,92 @@ public class ProverHelper
      * @param module
      * @throws CoreException 
      */
-    public static void prepareModuleForProverLaunch(IFile module, LevelNode levelNode) throws CoreException
+    public static void prepareModuleForProverLaunch(final IFile module, final LevelNode levelNode) throws CoreException
     {
-        if (module == null)
-        {
-            ProverUIActivator.logDebug("Module is null in method prepareModuleForProverLaunch. This is a bug.");
-            return;
-        }
-
-        if (levelNode == null)
-        {
-            ProverUIActivator.logDebug("Module is null in method prepareModuleForProverLaunch. This is a bug.");
-            return;
-        }
-
         /*
-         * Remove existing sany markers and step status markers.
+         * This does a lot of stuff creating, deleting, and modifying
+         * markers. Each of these operations results in a separate resource change
+         * notification sent to all listeners unless the operations are wrapped
+         * in an IWorkspaceRunnable(). If they are wrapped in an IWorkspaceRunnable
+         * and the flag IWorkspace.AVOID_UPDATE is specified when running the runnable,
+         * the resource change notifications will be delayed until after the runnables run method
+         * has completed. The notification will then be batched as a single notification. This
+         * seems to be more efficient.
          */
-        removeSANYStepMarkers(module);
-        if (levelNode instanceof ModuleNode)
-        {
-            removeStatusFromModule(module);
-        } else
-        {
-            removeStatusFromTree(module, levelNode);
-        }
-        /*
-         * Clear the maps that hold information about obligations
-         * and steps.
-         */
-        obsMap.clear();
-        stepMap.clear();
-        stepMessageMap.clear();
+        IWorkspaceRunnable runnable = new IWorkspaceRunnable() {
 
-        /*
-         * Create new SANY markers and prepare the data structures for computing step statuses.
-         */
-        if (levelNode instanceof ModuleNode)
-        {
-            ParseResult parseResult = ResourceHelper.getValidParseResult(module);
-            if (parseResult == null)
+            public void run(IProgressMonitor monitor) throws CoreException
             {
-                return;
-            }
-
-            String moduleName = ResourceHelper.getModuleName(module);
-
-            ModuleNode moduleNode = parseResult.getSpecObj().getExternalModuleTable().getModuleNode(
-                    UniqueString.uniqueStringOf(moduleName));
-            if (module == null)
-            {
-                return;
-            }
-            LevelNode[] topLevelNodes = moduleNode.getTopLevel();
-
-            for (int i = 0; i < topLevelNodes.length; i++)
-            {
-
-                if (topLevelNodes[i].getLocation().source().equals(moduleName))
+                if (module == null)
                 {
-                    // found a theorem in the module
-                    prepareTreeForProverLaunch(topLevelNodes[i], module);
+                    ProverUIActivator.logDebug("Module is null in method prepareModuleForProverLaunch. This is a bug.");
+                    return;
+                }
+
+                if (levelNode == null)
+                {
+                    ProverUIActivator.logDebug("Module is null in method prepareModuleForProverLaunch. This is a bug.");
+                    return;
+                }
+
+                /*
+                 * Remove existing sany markers and step status markers.
+                 */
+                removeSANYStepMarkers(module);
+                if (levelNode instanceof ModuleNode)
+                {
+                    removeStatusFromModule(module);
+                } else
+                {
+                    removeStatusFromTree(module, levelNode);
+                }
+                /*
+                 * Clear the maps that hold information about obligations
+                 * and steps.
+                 */
+                obsMap.clear();
+                stepMap.clear();
+                stepMessageMap.clear();
+
+                /*
+                 * Create new SANY markers and prepare the data structures for computing step statuses.
+                 */
+                if (levelNode instanceof ModuleNode)
+                {
+                    ParseResult parseResult = ResourceHelper.getValidParseResult(module);
+                    if (parseResult == null)
+                    {
+                        return;
+                    }
+
+                    String moduleName = ResourceHelper.getModuleName(module);
+
+                    ModuleNode moduleNode = parseResult.getSpecObj().getExternalModuleTable().getModuleNode(
+                            UniqueString.uniqueStringOf(moduleName));
+                    if (module == null)
+                    {
+                        return;
+                    }
+                    LevelNode[] topLevelNodes = moduleNode.getTopLevel();
+
+                    for (int i = 0; i < topLevelNodes.length; i++)
+                    {
+
+                        if (topLevelNodes[i].getLocation().source().equals(moduleName))
+                        {
+                            // found a theorem in the module
+                            prepareTreeForProverLaunch(topLevelNodes[i], module);
+                        }
+                    }
+                } else
+                {
+                    prepareTreeForProverLaunch(levelNode, module);
+                    return;
                 }
             }
-        } else
-        {
-            prepareTreeForProverLaunch(levelNode, module);
-            return;
-        }
+        };
+
+        module.getWorkspace().run(runnable, null, IWorkspace.AVOID_UPDATE, null);
     }
 
     /**
