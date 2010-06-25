@@ -633,5 +633,11 @@
             verticalRulerPreferenceValue="true">
       </specification>"
    </extension>
+   <extension
+         point="org.lamport.tla.toolbox.spec">
+      <participant
+            class="org.lamport.tla.toolbox.editor.basic.handlers.ShowUsesParseResultListener">
+      </participant>
+   </extension>
    
 </plugin>

@@ -18,7 +18,7 @@ public class SpecEvent
     public static final int TYPE_RENAME = 4;
     public static final int TYPE_OPEN = 8;
     public static final int TYPE_CLOSE = 16;
-    public static final int TYPE_PARSE = 32;
+    public static final int TYPE_PARSE = 32;  // This means that the spec has been parsed, not just a submodule.
     /**
      * All events
      */

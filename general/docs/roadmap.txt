@@ -306,6 +306,69 @@ Specifying color preferences is done through two extension points:
     Have field for the annotationTypes, and a bunch of fields
     for declaring the default appearance of an annotation in the editor.
 ------------------------------------------------------------------------
+PARSE LISTENERS
+
+There are two ways to listen for new parse results.
+
+1. Listen for spec parses.  This requires extending the class
+   SpecLifecycleParticipant and declaring the extending class to the
+   extension point org.lamport.tla.toolbox.spec.
+
+2. Listen for any new parse results.  This requires implementing the
+   interface IParseResultListener and adding the listener to the
+   singleton instance of the class ParseResultBroadcaster using the
+   method ParseResultBroadcaster.addParseResultListener().  The singleton
+   instance of ParseResultBroadcaster can be obtained by calling
+   ParseResultBroadcaster.getParseResultBroadcaster() .
+-----------------------------------------------------------------------------
+PREFERENCES
+
+Defining a New Preference  
+--------------------------
+1. In IXPreferenceConstants, for
+
+     X = Editor, TLA2TeX, ...
+
+   give the preference a name that is a string and then give that name 
+   a name such as
+
+      public static final String PREFERENCE_NAME = "preferenceName";
+
+   For the Editor, there is no IXPreferenceConstants page, and
+   the name is defined in EditorPreferencePage
+
+2. In XPreferencePage 
+   
+   add the appropraite Field editor in the createFieldEditors() method by
+
+      addField(new YFieldEditor(IXPreferenceConstants.PREFERENCE_NAME,
+                                "&Text on preference page", 
+                                 getFieldEditorFParent()))
+
+   for Y = Boolean, String, Double, etc.  For some values of Y, there
+   are additional arguments to the constructor.
+
+3. In XPreferenceInitializer, set its default value by adding
+
+       store.setDefault(PREFERENCE_NAME, default value)
+ 
+    to the initializeDefaultPreferences() method, where
+    store is the IPreferenceStore object obtained by calling
+
+      Activator.getDefault().getPreferenceStore()
+
+   or the equivalent
+
+      PreferenceStoreHelper.getInstancePreferenceStore()
+
+  For the editor, there is no EditorInitializer, and the 
+  initializeDefaultPreferences() method is in PreferenceInitializer
+
+Getting the Value of a Preference
+---------------------------------
+   store.getY(IXPreferenceConstants.PREFERENCE_NAME);
+
+------------------------------------------------------------------------
 MARKERS
   To see how the Show Uses marker type is declared, see
   org.lamport.tla.tool.editor.basic/plugin.xml and search backwards
@@ -323,8 +386,16 @@ MARKERS
   use the IMarker.setAttributes(Map) method to set the location.
   Just using the methods to set a single attribute at a time
   sets those attributes but doesn't cause the marker to be shown. 
-
-
+  Note also the EditorUtil.getMarkerPosition(IMarker) method to
+  find the current location of a marker.
+  
+  Here's how to make markers persistent (so they are remembered
+  when the Toolbox is closed):
+  On the extension point org.eclipse.core.resources.markers, which
+  declares a new marker type, you can right click to select New >
+  persistent.  Set the value to be true to make that type persistent.
+  Note that this value is not inherited by subtypes of markers.
+  
 -----------------------------------------------------------------------
 HOW TO GET A...
   SpecObj

@@ -37,6 +37,9 @@ import org.lamport.tla.toolbox.editor.basic.util.DocumentHelper;
 import org.lamport.tla.toolbox.editor.basic.util.EditorUtil;
 import org.lamport.tla.toolbox.editor.basic.util.EditorUtil.StringAndLocation;
 import org.lamport.tla.toolbox.spec.Spec;
+import org.lamport.tla.toolbox.spec.parser.IParseResultListener;
+import org.lamport.tla.toolbox.spec.parser.ParseResult;
+import org.lamport.tla.toolbox.spec.parser.ParseResultBroadcaster;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.util.AdapterFactory;
 import org.lamport.tla.toolbox.util.ResourceHelper;
@@ -441,7 +444,7 @@ public class ShowUsesHandler extends AbstractHandler implements IHandler, Syntax
         {
             return null;
         }
-        System.out.println("We found symbol node named " + resolvedSymbol.getName());
+        // System.out.println("We found symbol node named " + resolvedSymbol.getName());
 
         // Set tempModuleNames to the sorted array of all user module names.
         String[] tempModuleNames = ResourceHelper.getModuleNames();
@@ -517,36 +520,36 @@ public class ShowUsesHandler extends AbstractHandler implements IHandler, Syntax
         } else
         {
             moduleToShow = moduleName;
-        }
-        spec.setModuleToShow(moduleToShow);
 
-        int moduleIndex = -1;
-        for (int i = 0; i < moduleNames.length; i++)
-        {
-            if (moduleNames[i].equals(moduleToShow))
+            spec.setModuleToShow(moduleToShow);
+
+            int moduleIndex = -1;
+            for (int i = 0; i < moduleNames.length; i++)
             {
-                moduleIndex = i;
-                break;
+                if (moduleNames[i].equals(moduleToShow))
+                {
+                    moduleIndex = i;
+                    break;
+                }
             }
-        }
-        if (moduleIndex < 0)
-        {
-            Activator.logDebug("Could not find module name in array in which it should be." + "This is a bug.");
-            return null;
-        }
+            if (moduleIndex < 0)
+            {
+                Activator.logDebug("Could not find module name in array in which it should be.  " + "This is a bug.");
+                return null;
+            }
 
-        // Set locations to the array of Locations of the uses. To do this, we
-        // look at the OpApplNode's syntax node tree and check for the following cases:
-        // Foo(...) : the node is an N_OpApplication node, it's
-        // first child is an N_GeneralID whose location is good.
-        // ... %% ... : the node is an N_InfixExpr node, whose 2nd child is
-        // an N_GenInfixOp whose location is good.
-        // x : the node is an N_GeneralID node whose location is good
-        // ...^+ : the node is an N_PostfixExpr node whose second heir
-        // is an N_GeneralPostfixOp whose location is good
-        OpApplNode[] uses = usesArray[moduleIndex];
-        setUseMarkers(uses, moduleName, spec);
-
+            // Set locations to the array of Locations of the uses. To do this, we
+            // look at the OpApplNode's syntax node tree and check for the following cases:
+            // Foo(...) : the node is an N_OpApplication node, it's
+            // first child is an N_GeneralID whose location is good.
+            // ... %% ... : the node is an N_InfixExpr node, whose 2nd child is
+            // an N_GenInfixOp whose location is good.
+            // x : the node is an N_GeneralID node whose location is good
+            // ...^+ : the node is an N_PostfixExpr node whose second heir
+            // is an N_GeneralPostfixOp whose location is good
+            OpApplNode[] uses = usesArray[moduleIndex];
+            setUseMarkers(uses, moduleName, spec);
+        }
         // Location[] locations = new Location[uses.length];
         // for (int i = 0; i < locations.length; i++)
         // {
@@ -630,6 +633,8 @@ public class ShowUsesHandler extends AbstractHandler implements IHandler, Syntax
             case N_InfixExpr:
             case N_PostfixExpr:
                 stn = (SyntaxTreeNode) stn.heirs()[1];
+                break;
+            case N_GeneralId:
                 break;
             default:
                 System.out.println("Found unexpected kind " + stn.getKind() + " for stn node of symbol use.");

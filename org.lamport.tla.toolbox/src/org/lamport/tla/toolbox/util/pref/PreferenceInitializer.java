@@ -31,6 +31,9 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer
         // set editor page preference defaults
         store.setDefault(EditorPreferencePage.EDITOR_RIGHT_MARGIN, 
                 EditorPreferencePage.EDITOR_RIGHT_MARGIN_DEFAULT);
+        
+        store.setDefault(EditorPreferencePage.CLEAR_DECLARATION_USE_MARKERS_ON_PARSE, 
+                EditorPreferencePage.CLEAR_DECLARATION_USE_MARKERS_ON_PARSE_DEFAULT);
     }
 
 }
