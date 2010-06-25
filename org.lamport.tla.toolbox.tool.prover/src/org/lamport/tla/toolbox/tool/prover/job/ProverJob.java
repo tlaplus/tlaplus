@@ -377,6 +377,7 @@ public class ProverJob extends Job
                          * steps to shut down.
                          */
                         proverProcess.getStreamsProxy().write("kill\n");
+                        System.out.println("Sent kill to tlapm.");
 
                         /*
                          * Wait for the process to actually
