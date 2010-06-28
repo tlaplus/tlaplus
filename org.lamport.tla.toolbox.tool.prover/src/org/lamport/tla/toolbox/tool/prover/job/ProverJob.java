@@ -387,7 +387,7 @@ public class ProverJob extends Job
                          */
                         while (checkAndSleep())
                         {
-                            System.out.println("Cancel requested. The toolbox still thinks the prover is running.");
+                            // System.out.println("Cancel requested. The toolbox still thinks the prover is running.");
                         }
 
                         // cancellation termination
