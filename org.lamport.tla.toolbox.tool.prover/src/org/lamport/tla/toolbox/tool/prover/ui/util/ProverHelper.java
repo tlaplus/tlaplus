@@ -15,6 +15,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
@@ -37,6 +38,7 @@ import org.lamport.tla.toolbox.tool.prover.ui.output.data.ObligationStatus;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.ObligationStatusMessage;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.StepStatusMessage;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.StepTuple;
+import org.lamport.tla.toolbox.tool.prover.ui.output.data.WarningMessage;
 import org.lamport.tla.toolbox.tool.prover.ui.view.ObligationsView;
 import org.lamport.tla.toolbox.util.AdapterFactory;
 import org.lamport.tla.toolbox.util.ResourceHelper;
@@ -1606,5 +1608,16 @@ public class ProverHelper
         System.out.println("Unknown status : " + status);
         return STEP_UNKNOWN_INT;
 
+    }
+
+    /**
+     * Processes a warning message from the tlapm. This simply displays
+     * a warning to the user.
+     * 
+     * @param message
+     */
+    public static void processWarningMessage(WarningMessage message)
+    {
+        MessageDialog.openWarning(UIHelper.getShellProvider().getShell(), "TLAPM Warning", message.getMessage());
     }
 }

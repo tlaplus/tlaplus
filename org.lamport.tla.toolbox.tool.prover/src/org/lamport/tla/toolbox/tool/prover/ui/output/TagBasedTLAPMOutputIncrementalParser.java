@@ -9,6 +9,7 @@ import org.lamport.tla.toolbox.tool.prover.ui.output.data.ObligationNumberMessag
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.ObligationStatusMessage;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.StepStatusMessage;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.TLAPMMessage;
+import org.lamport.tla.toolbox.tool.prover.ui.output.data.WarningMessage;
 import org.lamport.tla.toolbox.tool.prover.ui.util.ProverHelper;
 
 /**
@@ -191,6 +192,9 @@ public class TagBasedTLAPMOutputIncrementalParser implements IProverProcessOutpu
                      * ObligationStatusMessage that indicates that
                      * the TLAPM is done processing the obligation in any
                      * way, then the monitor will reflect this fact.
+                     * 
+                     * If the message is a warning message, call the appropriate
+                     * method in prover helper that processes warning messages.
                      */
 
                     if (data instanceof ObligationStatusMessage)
@@ -210,6 +214,9 @@ public class TagBasedTLAPMOutputIncrementalParser implements IProverProcessOutpu
                     } else if (data instanceof StepStatusMessage)
                     {
                         ProverHelper.newStepStatusMessage((StepStatusMessage) data, description.isStatusCheck());
+                    } else if (data instanceof WarningMessage)
+                    {
+                        ProverHelper.processWarningMessage((WarningMessage) data);
                     }
                 }
 

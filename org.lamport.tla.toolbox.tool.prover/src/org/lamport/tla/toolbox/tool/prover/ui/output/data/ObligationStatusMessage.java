@@ -145,7 +145,7 @@ public class ObligationStatusMessage extends TLAPMMessage
                     message.method = fieldValue;
                 } else
                 {
-                    ProverUIActivator.logDebug("Unknown field name : " + fieldName + ".");
+                    ProverUIActivator.logDebug("Unknown field name for obligation status message : " + fieldName + ".");
                 }
             }
         }

@@ -60,6 +60,10 @@ public abstract class TLAPMMessage
      * in the region being proved or checked.
      */
     public static final String OB_NUMBER_TYPE = "obligationsnumber";
+    /**
+     * Type of message containing some sort of warning.
+     */
+    public static final String WARNING_TYPE = "warning";
 
     /**
      * Returns a {@link TLAPMMessage} representing the information
@@ -161,7 +165,6 @@ public abstract class TLAPMMessage
             {
                 ObligationStatusMessage message = ObligationStatusMessage.getObMessage(fieldPairs.entrySet(),
                         moduleName);
-                // System.out.println(message);
                 return message;
             } else if (type.equals(STEP_STATUS_TYPE) || type.equals(THEOREM_STATUS_TYPE))
             {
@@ -171,6 +174,10 @@ public abstract class TLAPMMessage
             {
                 ObligationNumberMessage message = ObligationNumberMessage.getObNumMessage(fieldPairs.entrySet(),
                         moduleName);
+                return message;
+            } else if (type.equals(WARNING_TYPE))
+            {
+                WarningMessage message = WarningMessage.getWarningMessage(fieldPairs.entrySet(), moduleName);
                 return message;
             } else
             {
