@@ -274,9 +274,15 @@ public class TLAProofFoldingStructureProvider implements IParseResultListener, I
 
         SpecObj specObj = parseResult.getSpecObj();
 
-        if (specObj == null)
+        if (specObj == null || (parseResult.getParseErrors() != null && parseResult.getParseErrors().isFailure())
+                || (parseResult.getSemanticErrors() != null && parseResult.getSemanticErrors().isFailure()))
         {
-            // module not successfully parsed
+            /*
+             * Module not successfully parsed.
+             * The information from the spec obj cannot
+             * reliably be used to update the folding structure, so
+             * just return.
+             */
             return;
         }
 
