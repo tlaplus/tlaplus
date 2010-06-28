@@ -47,7 +47,7 @@ import org.lamport.tla.toolbox.util.UIHelper;
  * same run of the prover and are from the most recent run of the prover on any module
  * in the project. If any markers are found from the currently opened project, the expand bar
  * is populated with one item for each marker that has information about an "interesting"
- * obligation. If no such markers are found, the view is left empty.
+ * obligation.
  * 
  * 2.) The method {@link ObligationsView#refreshObligationView()} is called at the appropriate times.
  *
@@ -57,6 +57,10 @@ import org.lamport.tla.toolbox.util.UIHelper;
  *     has been launched, causing the previous obligation markers to be removed. Calling refreshObligationView()
  *     will clear the information from these previous markers from the view, if the view is currently open.
  *     If the view is not currently open, it doesn't matter because the view stores no information.
+ *     
+ * The methods {@link #refreshObligationView()} and {@link #updateObligationView(IMarker)} ensure that when the
+ * obligation view is empty, it is hidden. The only way to open an empty obligation view is to select the menu item
+ * opening the view.
  *     
  * The font and syntax coloring of the items in the view is the same as that of the tla editor. The
  * syntax coloring is done by configuring the obligation items with the {@link ObligationSourceViewerConfiguration}
@@ -162,6 +166,9 @@ public class ObligationsView extends ViewPart
      * recent run of the prover on any module in the project. For each such marker,
      * call {@link ObligationsView#newMarker(IMarker)}. This has the effect of repopulating
      * the expand bar with items if any of markers are for an interesting obligation.
+     * 
+     * 3.) If there are no interesting obligations in the view after steps 1 and 2, then
+     * the view is hidden.
      */
     public static void refreshObligationView()
     {
@@ -188,11 +195,12 @@ public class ObligationsView extends ViewPart
 
             /*
              * Fill the obligation view with markers from the current spec.
-             * If there are no such markers, hide the view.
+             * If the obligations view is empty after doing this (there are
+             * no interesting obligations) then hide the view.
              */
-            boolean hide = !oblView.fillFromCurrentSpec();
+            oblView.fillFromCurrentSpec();
 
-            if (hide)
+            if (oblView.isEmpty())
             {
                 UIHelper.getActivePage().hideView(oblView);
             }
@@ -204,10 +212,9 @@ public class ObligationsView extends ViewPart
     /**
      * Fills the obligation view with information
      * from all obligation markers in the currently
-     * opened spec. Returns true iff the current spec
-     * has obligation markers.
+     * opened spec.
      */
-    private boolean fillFromCurrentSpec()
+    private void fillFromCurrentSpec()
     {
         try
         {
@@ -219,23 +226,23 @@ public class ObligationsView extends ViewPart
                     updateItem(markers[i]);
                 }
 
-                return markers.length > 0;
             }
 
-            return false;
         } catch (CoreException e)
         {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
 
-        return false;
     }
 
     /**
      * Updates the view with the information in this marker. If the marker is not
      * of the type {@link ProverHelper#OBLIGATION_MARKER} then this method will have
      * no effect.
+     * 
+     * This method hides the view if after updating the item, the view is empty (there are no
+     * more interesting obligations).
      * 
      * Must be run from the UI thread.
      * 
@@ -271,6 +278,14 @@ public class ObligationsView extends ViewPart
             }
 
             oblView.updateItem(marker);
+
+            /*
+             * If after updating the item, the obligations view is empty, it should be hidden.
+             */
+            if (oblView.isEmpty())
+            {
+                UIHelper.getActivePage().hideView(oblView);
+            }
 
         }
 
@@ -434,6 +449,11 @@ public class ObligationsView extends ViewPart
             e.printStackTrace();
         }
 
+    }
+
+    private boolean isEmpty()
+    {
+        return bar.getItemCount() == 0;
     }
 
     public void setFocus()
