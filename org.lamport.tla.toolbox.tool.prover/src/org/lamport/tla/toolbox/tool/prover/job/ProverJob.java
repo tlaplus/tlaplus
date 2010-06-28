@@ -536,15 +536,7 @@ public class ProverJob extends Job
             // e.printStackTrace();
         }
         // return true if tlapm is still running
-        try
-        {
-            proverProcess.getExitValue();
-            return false;
-        } catch (DebugException e)
-        {
-            return true;
-        }
-        // return (proverProcess != null && !proverProcess.isTerminated());
+        return (proverProcess != null && !proverProcess.isTerminated());
     }
 
     /**
