@@ -1,5 +1,7 @@
 package org.lamport.tla.toolbox.tool.prover.output.internal;
 
+import org.lamport.tla.toolbox.tool.prover.job.ProverJob;
+
 import tla2sany.semantic.LevelNode;
 
 /**
@@ -28,24 +30,28 @@ public class ProverLaunchDescription
      */
     private boolean useFP;
     /**
-     * Start line sent to the prover. -1
-     * if entire module was specified.
-     */
-    private int startLine;
-    /**
      * The step or module node on which the
      * prover was launched.
      */
     private LevelNode levelNode;
+    /**
+     * The instance of the job used to launch the prover.
+     */
+    private ProverJob proverJob;
+
+    public ProverLaunchDescription(ProverJob proverJob, boolean useFP, boolean statusCheck, boolean checkProofs,
+            LevelNode nodeToProve)
+    {
+        this.proverJob = proverJob;
+        this.useFP = useFP;
+        this.statusCheck = statusCheck;
+        this.checkProofs = checkProofs;
+        this.levelNode = nodeToProve;
+    }
 
     public boolean isStatusCheck()
     {
         return statusCheck;
-    }
-
-    public void setStatusCheck(boolean statusCheck)
-    {
-        this.statusCheck = statusCheck;
     }
 
     public boolean isCheckProofs()
@@ -53,49 +59,9 @@ public class ProverLaunchDescription
         return checkProofs;
     }
 
-    public void setCheckProofs(boolean checkProofs)
-    {
-        this.checkProofs = checkProofs;
-    }
-
     public boolean isUseFP()
     {
         return useFP;
-    }
-
-    public void setUseFP(boolean useFP)
-    {
-        this.useFP = useFP;
-    }
-
-    public int getStartLine()
-    {
-        return startLine;
-    }
-
-    public void setStartLine(int startLine)
-    {
-        this.startLine = startLine;
-    }
-
-    public int getEndLine()
-    {
-        return endLine;
-    }
-
-    public void setEndLine(int endLine)
-    {
-        this.endLine = endLine;
-    }
-
-    /**
-     * Sets the step or module node on which the
-     * prover was launched.
-     * @param levelNode the levelNode to set
-     */
-    public void setLevelNode(LevelNode levelNode)
-    {
-        this.levelNode = levelNode;
     }
 
     /**
@@ -109,9 +75,12 @@ public class ProverLaunchDescription
     }
 
     /**
-     * End line sent to the prover. -1
-     * if entire module was was specified.
+     * Returns the instance of the job used to launch the prover.
+     * @return the proverJob
      */
-    private int endLine;
+    public ProverJob getProverJob()
+    {
+        return proverJob;
+    }
 
 }

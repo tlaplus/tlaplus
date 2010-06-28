@@ -2,6 +2,7 @@ package org.lamport.tla.toolbox.tool.prover.job;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.Assert;
@@ -23,6 +24,9 @@ import org.lamport.tla.toolbox.editor.basic.util.EditorUtil;
 import org.lamport.tla.toolbox.tool.prover.output.internal.ProverLaunchDescription;
 import org.lamport.tla.toolbox.tool.prover.output.internal.TLAPMBroadcastStreamListener;
 import org.lamport.tla.toolbox.tool.prover.ui.ProverUIActivator;
+import org.lamport.tla.toolbox.tool.prover.ui.output.data.ObligationStatus;
+import org.lamport.tla.toolbox.tool.prover.ui.output.data.StepStatusMessage;
+import org.lamport.tla.toolbox.tool.prover.ui.output.data.StepTuple;
 import org.lamport.tla.toolbox.tool.prover.ui.util.ProverHelper;
 import org.lamport.tla.toolbox.tool.prover.ui.view.ObligationsView;
 import org.lamport.tla.toolbox.util.UIHelper;
@@ -107,6 +111,21 @@ public class ProverJob extends Job
      * not be set anywhere else.
      */
     private ProverLaunchDescription description;
+    /**
+     * Map from {@link Integer} line numbers of steps to
+     * the last {@link StepStatusMessage} reported by the prover
+     * for that step.
+     */
+    public HashMap stepMessageMap = new HashMap();
+    /**
+     * Map from {@link LevelNode}s to {@link StepTuple}s.
+     */
+    public HashMap stepMap = new HashMap();
+    /**
+     * Map from {@link Integer} ids of obligations
+     * to {@link ObligationStatus}
+     */
+    public HashMap obsMap = new HashMap();
 
     /**
      * Constructor. 
@@ -136,6 +155,7 @@ public class ProverJob extends Job
         this.checkStatus = checkStatus;
         this.nodeToProve = node;
         this.checkProofs = checkProofs;
+        this.description = new ProverLaunchDescription(this, useFP, checkStatus, checkProofs, this.nodeToProve);
 
         /*
          * The following sets the path to tlapm.
@@ -250,7 +270,7 @@ public class ProverJob extends Job
                  * Perform the necessary work to prepare for the launch of the prover.
                  * See the method comments to understand what is done.
                  */
-                ProverHelper.prepareModuleForProverLaunch(module, nodeToProve);
+                ProverHelper.prepareModuleForProverLaunch(module, description);
             } catch (CoreException e1)
             {
                 ProverUIActivator.logError("Error clearing obligation markers for project of module " + modulePath, e1);
@@ -570,17 +590,10 @@ public class ProverJob extends Job
     /**
      * Constructs and returns the command to launch the prover.
      * 
-     * Also sets the field {@link #description}.
-     * 
      * @return
      */
     private String[] constructCommand()
     {
-        description = new ProverLaunchDescription();
-        description.setUseFP(useFP);
-        description.setStatusCheck(checkStatus);
-        description.setCheckProofs(checkProofs);
-        description.setLevelNode(nodeToProve);
 
         ArrayList command = new ArrayList();
         /*
@@ -612,8 +625,6 @@ public class ProverJob extends Job
         if (nodeToProve instanceof ModuleNode)
         {
             command.add("all");
-            description.setStartLine(-1);
-            description.setEndLine(-1);
         } else
         {
             /*
@@ -623,9 +634,6 @@ public class ProverJob extends Job
             int endLine = getEndLine(nodeToProve);
 
             command.add(beginLine + ":" + endLine);
-
-            description.setStartLine(beginLine);
-            description.setEndLine(endLine);
         }
 
         if (!useFP)

@@ -231,25 +231,10 @@ public class ProverHelper
     public static final int STEP_UNKNOWN_INT = -1;
 
     /**
-     * Map from {@link Integer} ids of obligations
-     * to {@link ObligationStatus}
-     */
-    private static HashMap obsMap = new HashMap();
-    /**
-     * Map from {@link LevelNode}s to {@link StepTuple}s.
-     */
-    private static HashMap stepMap = new HashMap();
-    /**
-     * Map from {@link Integer} line numbers of steps to
-     * the last {@link StepStatusMessage} reported by the prover
-     * for that step.
-     */
-    private static HashMap stepMessageMap = new HashMap();
-
-    /**
      * Removes all markers indicating obligation information on  a resource. Does
      * nothing if the resource does not exist. It deletes these markers only at one level
-     * under the resource.
+     * under the resource. That is, if the resource is a directory, it deletes markers
+     * on its children.
      * 
      * @param resource
      * @throws CoreException 
@@ -364,7 +349,8 @@ public class ProverHelper
 
     /**
      * This method prepares the module for the launch of the prover.
-     * If levelNode or module is null, it prints debugging info and returns.
+     * In the following, levelNode is the levelNode in launchDescription.
+     * If levelNode or module, it prints debugging info and returns.
      * If not, it takes the following steps:
      * 
      * 1.) Call {@link #removeSANYStepMarkers(IResource)} on the module.
@@ -392,10 +378,15 @@ public class ProverHelper
      * This method also creates the tree of {@link StepTuple}s for
      * this module or LevelNode.
      * 
+     * The launchDescription is the instance of {@link ProverLaunchDescription} passed
+     * to listeners of the tlapm output by the {@link ProverJob} that launched the
+     * tlapm.
+     * 
      * @param module
      * @throws CoreException 
      */
-    public static void prepareModuleForProverLaunch(final IFile module, final LevelNode levelNode) throws CoreException
+    public static void prepareModuleForProverLaunch(final IFile module, final ProverLaunchDescription launchDescription)
+            throws CoreException
     {
         /*
          * This does a lot of stuff creating, deleting, and modifying
@@ -417,7 +408,7 @@ public class ProverHelper
                     return;
                 }
 
-                if (levelNode == null)
+                if (launchDescription.getLevelNode() == null)
                 {
                     ProverUIActivator.logDebug("Module is null in method prepareModuleForProverLaunch. This is a bug.");
                     return;
@@ -427,25 +418,25 @@ public class ProverHelper
                  * Remove existing sany markers and step status markers.
                  */
                 removeSANYStepMarkers(module);
-                if (levelNode instanceof ModuleNode)
+                if (launchDescription.getLevelNode() instanceof ModuleNode)
                 {
                     removeStatusFromModule(module);
                 } else
                 {
-                    removeStatusFromTree(module, levelNode);
+                    removeStatusFromTree(module, launchDescription.getLevelNode());
                 }
                 /*
                  * Clear the maps that hold information about obligations
                  * and steps.
                  */
-                obsMap.clear();
-                stepMap.clear();
-                stepMessageMap.clear();
+                launchDescription.getProverJob().obsMap.clear();
+                launchDescription.getProverJob().stepMap.clear();
+                launchDescription.getProverJob().stepMessageMap.clear();
 
                 /*
                  * Create new SANY markers and prepare the data structures for computing step statuses.
                  */
-                if (levelNode instanceof ModuleNode)
+                if (launchDescription.getLevelNode() instanceof ModuleNode)
                 {
                     ParseResult parseResult = ResourceHelper.getValidParseResult(module);
                     if (parseResult == null)
@@ -469,12 +460,12 @@ public class ProverHelper
                         if (topLevelNodes[i].getLocation().source().equals(moduleName))
                         {
                             // found a theorem in the module
-                            prepareTreeForProverLaunch(topLevelNodes[i], module);
+                            prepareTreeForProverLaunch(topLevelNodes[i], module, launchDescription);
                         }
                     }
                 } else
                 {
-                    prepareTreeForProverLaunch(levelNode, module);
+                    prepareTreeForProverLaunch(launchDescription.getLevelNode(), module, launchDescription);
                     return;
                 }
             }
@@ -501,10 +492,15 @@ public class ProverHelper
      * Returns null otherwise. If levelNode is a {@link TheoremNode} then it sets levelNode
      * as the parent of all non-null {@link StepTuple}s returned by calling this method on its children.
      * 
+     * The launchDescription is the instance of {@link ProverLaunchDescription} passed
+     * to listeners of the tlapm output by the {@link ProverJob} that launched the
+     * tlapm.
+     * 
      * @param theoremNode
      * @throws CoreException 
      */
-    public static StepTuple prepareTreeForProverLaunch(LevelNode levelNode, IResource module) throws CoreException
+    public static StepTuple prepareTreeForProverLaunch(LevelNode levelNode, IResource module,
+            ProverLaunchDescription launchDescription) throws CoreException
     {
         if (levelNode == null)
         {
@@ -546,7 +542,7 @@ public class ProverHelper
              */
             StepTuple stepTuple = new StepTuple();
             stepTuple.setSanyMarker(marker);
-            stepMap.put(levelNode, stepTuple);
+            launchDescription.getProverJob().stepMap.put(levelNode, stepTuple);
 
             if (levelNode instanceof TheoremNode)
             {
@@ -565,7 +561,7 @@ public class ProverHelper
                          */
                         for (int i = 0; i < steps.length; i++)
                         {
-                            StepTuple childTuple = prepareTreeForProverLaunch(steps[i], module);
+                            StepTuple childTuple = prepareTreeForProverLaunch(steps[i], module, launchDescription);
                             // child tuple will be null if the step
                             // is not a TheoremNode or UseOrHideNode
                             if (childTuple != null)
@@ -765,13 +761,16 @@ public class ProverHelper
      * by calling {@link #newObligationStatus(ObligationStatusMessage)}. Else, it prepares
      * the necessary data structure for computing proof step statuses.
      * 
-     * nodeToProve should be an instance of {@link ModuleNode} (if the launch was on the
-     * entire module), {@link TheoremNode}, or {@link UseOrHideNode}.
+     * launchDescription should give access to objects and data the describe
+     * the launch. This is the instance of {@link ProverLaunchDescription} passed
+     * to listeners of the tlapm output by the {@link ProverJob} that launched the
+     * tlapm.
      * 
      * @param message
      * @param nodeToProve the step or module on which the prover was launched
      */
-    public static void processObligationMessage(ObligationStatusMessage message, LevelNode nodeToProve)
+    public static void processObligationMessage(ObligationStatusMessage message,
+            ProverLaunchDescription launchDescription)
     {
         if (message.getStatus().equals(TO_BE_PROVED))
         {
@@ -787,15 +786,16 @@ public class ProverHelper
              * through the entire module for the step containing the obligation.
              */
             LevelNode levelNode = null;
-            if (nodeToProve != null)
+            if (launchDescription.getLevelNode() != null)
             {
-                if (nodeToProve instanceof ModuleNode)
+                if (launchDescription.getLevelNode() instanceof ModuleNode)
                 {
-                    levelNode = ResourceHelper.getPfStepOrUseHideFromModuleNode((ModuleNode) nodeToProve, obLoc
-                            .beginLine());
+                    levelNode = ResourceHelper.getPfStepOrUseHideFromModuleNode((ModuleNode) launchDescription
+                            .getLevelNode(), obLoc.beginLine());
                 } else
                 {
-                    levelNode = ResourceHelper.getLevelNodeFromTree(nodeToProve, obLoc.beginLine());
+                    levelNode = ResourceHelper
+                            .getLevelNodeFromTree(launchDescription.getLevelNode(), obLoc.beginLine());
                 }
             }
 
@@ -814,12 +814,12 @@ public class ProverHelper
              * the obligation as a child of the step tuple. Adding
              * the obligation as a child will update the status of the parent.
              */
-            StepTuple stepTuple = (StepTuple) stepMap.get(levelNode);
+            StepTuple stepTuple = (StepTuple) launchDescription.getProverJob().stepMap.get(levelNode);
             if (stepTuple != null)
             {
                 ObligationStatus obStatus = new ObligationStatus(stepTuple, getIntFromStringStatus(message.getStatus()));
                 stepTuple.addChild(obStatus);
-                obsMap.put(new Integer(message.getID()), obStatus);
+                launchDescription.getProverJob().obsMap.put(new Integer(message.getID()), obStatus);
             } else
             {
                 ProverUIActivator.logDebug("Cannot find a step tuple for level node at " + levelNode.getLocation()
@@ -835,7 +835,8 @@ public class ProverHelper
              */
             if (!message.getStatus().equals(CHECKING_INTERUPTED))
             {
-                ObligationStatus obStatus = (ObligationStatus) obsMap.get(new Integer(message.getID()));
+                ObligationStatus obStatus = (ObligationStatus) launchDescription.getProverJob().obsMap.get(new Integer(
+                        message.getID()));
                 obStatus.setStatus(getIntFromStringStatus(message.getStatus()));
             }
 
@@ -960,15 +961,19 @@ public class ProverHelper
      * a SANY marker is not found, this is a bug and will be
      * printed out on the console.
      * 
+     * The launchDescription is the instance of {@link ProverLaunchDescription} passed
+     * to listeners of the tlapm output by the {@link ProverJob} that launched the
+     * tlapm.
+     * 
      * @param status
-     * @param addMarker true iff a marker should be added on the step
+     * @param launchDescription the description of the launch of the prover
      * indicating its status
      */
-    public static void newStepStatusMessage(StepStatusMessage status, boolean addMarker)
+    public static void newStepStatusMessage(StepStatusMessage status, ProverLaunchDescription launchDescription)
     {
-        stepMessageMap.put(new Integer(status.getLocation().beginLine()), status);
+        launchDescription.getProverJob().stepMessageMap.put(new Integer(status.getLocation().beginLine()), status);
 
-        if (addMarker)
+        if (launchDescription.isStatusCheck())
         {
 
             if (status == null)
@@ -1082,16 +1087,23 @@ public class ProverHelper
      * Compares the step status computations of the TLAPM and the toolbox.
      * Any discrepancies are reported. Currently the reporting is to the
      * console.
+     * 
+     * This method does the comparison for the step statuses computed
+     * for the launch of the prover described by launchDescription.
+     * This is the instance of {@link ProverLaunchDescription} passed
+     * to listeners of the tlapm output by the {@link ProverJob} that launched the
+     * tlapm.
      */
-    public static void compareStepStatusComputations()
+    public static void compareStepStatusComputations(ProverLaunchDescription launchDescription)
     {
         System.out.println("------------------Comparing TLAPM and Toolbox Step Status------------");
-        Collection stepTuples = stepMap.values();
+        Collection stepTuples = launchDescription.getProverJob().stepMap.values();
         for (Iterator it = stepTuples.iterator(); it.hasNext();)
         {
             StepTuple stepTuple = (StepTuple) it.next();
             Location stepLoc = stringToLoc(stepTuple.getSanyMarker().getAttribute(SANY_LOC_ATR, ""));
-            StepStatusMessage stepMessage = (StepStatusMessage) stepMessageMap.remove(new Integer(stepLoc.beginLine()));
+            StepStatusMessage stepMessage = (StepStatusMessage) launchDescription.getProverJob().stepMessageMap
+                    .remove(new Integer(stepLoc.beginLine()));
             if (stepMessage == null)
             {
                 System.out.println("NO STATUS BUG :\n No TLAPM step status message found for the step at " + stepLoc);
@@ -1102,7 +1114,7 @@ public class ProverHelper
             }
         }
 
-        Collection remainingMessages = stepMessageMap.values();
+        Collection remainingMessages = launchDescription.getProverJob().stepMessageMap.values();
         for (Iterator it = remainingMessages.iterator(); it.hasNext();)
         {
             StepStatusMessage message = (StepStatusMessage) it.next();

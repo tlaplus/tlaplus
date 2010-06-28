@@ -199,8 +199,7 @@ public class TagBasedTLAPMOutputIncrementalParser implements IProverProcessOutpu
 
                     if (data instanceof ObligationStatusMessage)
                     {
-                        ProverHelper.processObligationMessage((ObligationStatusMessage) data, description
-                                .getLevelNode());
+                        ProverHelper.processObligationMessage((ObligationStatusMessage) data, description);
 
                         if (ProverHelper.isObligationFinished((ObligationStatusMessage) data, description))
                         {
@@ -213,7 +212,7 @@ public class TagBasedTLAPMOutputIncrementalParser implements IProverProcessOutpu
                                 .getCount());
                     } else if (data instanceof StepStatusMessage)
                     {
-                        ProverHelper.newStepStatusMessage((StepStatusMessage) data, description.isStatusCheck());
+                        ProverHelper.newStepStatusMessage((StepStatusMessage) data, description);
                     } else if (data instanceof WarningMessage)
                     {
                         ProverHelper.processWarningMessage((WarningMessage) data);
@@ -284,7 +283,7 @@ public class TagBasedTLAPMOutputIncrementalParser implements IProverProcessOutpu
     {
         if (!description.isStatusCheck())
         {
-            ProverHelper.compareStepStatusComputations();
+            ProverHelper.compareStepStatusComputations(description);
         }
     }
 
