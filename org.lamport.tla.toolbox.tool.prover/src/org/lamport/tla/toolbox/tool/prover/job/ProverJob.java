@@ -77,7 +77,7 @@ public class ProverJob extends Job
      * The timeout used when waiting for cancellation
      * of this job.
      */
-    protected static final long TIMEOUT = 1000 * 1;
+    protected static final long TIMEOUT = 100 * 1;
     /**
      * True iff fingerprints should be used for
      * the run of the prover.
