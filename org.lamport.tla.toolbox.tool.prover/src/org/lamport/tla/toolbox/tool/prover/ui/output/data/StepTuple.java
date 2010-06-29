@@ -125,7 +125,7 @@ public class StepTuple implements IStatusProvider
             // DEBUG
             // Location stepLoc = ProverHelper.stringToLoc(sanyMarker.getAttribute(ProverHelper.SANY_LOC_ATR, ""));
             // System.out.println("The status of the step located at " + stepLoc + " is now "
-            // + ProverHelper.statusIntToStatusString(newStatus));
+            // + ProverHelper.statusIntToStatusString(newStatus) + " from status int " + newStatus);
             // END DEBUG
 
             this.status = newStatus;

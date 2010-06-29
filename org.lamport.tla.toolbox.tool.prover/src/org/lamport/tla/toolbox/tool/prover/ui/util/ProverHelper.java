@@ -701,8 +701,10 @@ public class ProverHelper
      * {@link StepStatusMessage.PROVING_FAILED}
      * {@link StepStatusMessage.BEING_PROVED}
      * 
-     * If the input is not one of these, this
+     * If status is not one of these, this
      * method will return null.
+     * 
+     * If status is null, this method returns null.
      * 
      * The marker type for proving failed steps is different depending
      * on whether it is a leaf step or not.
@@ -714,6 +716,11 @@ public class ProverHelper
      */
     public static String statusStringToMarkerType(String status, boolean isLeafStep)
     {
+        if (status == null)
+        {
+            return null;
+        }
+
         if (status.equals(StepStatusMessage.CHECKED))
         {
             return STEP_CHECKED_MARKER;
@@ -1126,8 +1133,8 @@ public class ProverHelper
         {
             StepTuple stepTuple = (StepTuple) it.next();
             Location stepLoc = stringToLoc(stepTuple.getSanyMarker().getAttribute(SANY_LOC_ATR, ""));
-            StepStatusMessage stepMessage = (StepStatusMessage) proverJob.getStepMessageMap().remove(new Integer(stepLoc
-                    .beginLine()));
+            StepStatusMessage stepMessage = (StepStatusMessage) proverJob.getStepMessageMap().remove(
+                    new Integer(stepLoc.beginLine()));
             if (stepMessage == null)
             {
                 System.out.println("NO STATUS BUG :\n No TLAPM step status message found for the step at " + stepLoc);
@@ -1155,18 +1162,14 @@ public class ProverHelper
      * {@link #statusStringToMarkerType(String, boolean)} returns null) then this prints
      * some debugging message and returns. If sanyMarker is null, this also
      * prints some debugging message and returns. If status is null, this method
-     * just returns without doing anything.
+     * removes any step status markers that overlap with sanyMarker. A null status
+     * means that no color should be shown on the editor.
      * 
      * @param sanyMarker
      * @param status
      */
     public static void newStepStatusMarker(final IMarker sanyMarker, String status)
     {
-        if (status == null)
-        {
-            return;
-        }
-
         if (sanyMarker == null)
         {
             ProverUIActivator.logDebug("Null sanyMarker passed to newStepStatusMarker. This is a bug.");
@@ -1182,13 +1185,16 @@ public class ProverHelper
              */
             final String markerType = statusStringToMarkerType(status, sanyMarker.getAttribute(SANY_IS_LEAF_ATR, false));
 
-            if (markerType == null)
-            {
-                ProverUIActivator
-                        .logDebug("Status of proof step does not correspond to an existing marker type. The status is "
-                                + status);
-                return;
-            }
+            // This is commented out because we now will not create a marker if
+            // marker type is null. A null marker type indicates that all overlapping markers
+            // should be deleted and a new one not created.
+            // if (markerType == null)
+            // {
+            // ProverUIActivator
+            // .logDebug("Status of proof step does not correspond to an existing marker type. The status is "
+            // + status);
+            // return;
+            // }
 
             /*
              * We wrap the marker creation and deletion operation
@@ -1200,9 +1206,6 @@ public class ProverHelper
 
                 public void run(IProgressMonitor monitor) throws CoreException
                 {
-                    IMarker newMarker = module.createMarker(markerType);
-                    Map markerAttributes = new HashMap(2);
-
                     /*
                      * Its important to note that the location of the marker
                      * obtained by sanyMarker.getAttribute(IMarker.CHAR_START, 0)
@@ -1256,11 +1259,19 @@ public class ProverHelper
                         }
                     }
 
-                    markerAttributes.put(IMarker.CHAR_START, new Integer(newCharStart));
-                    markerAttributes.put(IMarker.CHAR_END, new Integer(newCharEnd));
-                    markerAttributes.put(IMarker.LINE_NUMBER, new Integer(stringToLoc(
-                            sanyMarker.getAttribute(SANY_LOC_ATR, "")).beginLine()));
-                    newMarker.setAttributes(markerAttributes);
+                    if (markerType != null)
+                    {
+                        // the attributes for the new marker to be created
+                        Map markerAttributes = new HashMap(2);
+                        markerAttributes.put(IMarker.CHAR_START, new Integer(newCharStart));
+                        markerAttributes.put(IMarker.CHAR_END, new Integer(newCharEnd));
+                        markerAttributes.put(IMarker.LINE_NUMBER, new Integer(stringToLoc(
+                                sanyMarker.getAttribute(SANY_LOC_ATR, "")).beginLine()));
+
+                        // create the new marker and set its attributes
+                        IMarker newMarker = module.createMarker(markerType);
+                        newMarker.setAttributes(markerAttributes);
+                    }
                 }
             };
 
