@@ -707,7 +707,7 @@ public class ProverJob extends Job
     }
 
     /**
-     * Returns the map from {@link Integer} line numbers of steps to
+     * Returns the map from {@link Integer} begin line numbers of steps to
      * the last {@link StepStatusMessage} reported by the prover
      * for that step.
      */
