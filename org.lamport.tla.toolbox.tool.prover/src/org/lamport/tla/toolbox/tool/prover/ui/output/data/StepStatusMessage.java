@@ -15,7 +15,7 @@ import tla2sany.st.Location;
  * The status of a step is the max of status of its children,
  * following the order:
  * 
- * Proved < Checked < Being proved < Omitted < Missing < Checking Failed < Proving Failed
+ * Proved < Checked < To be proved < Being proved < Omitted < Missing < Checking Failed < Proving Failed
  * 
  * @author Daniel Ricketts
  *
@@ -58,6 +58,19 @@ public class StepStatusMessage extends TLAPMMessage
      * statuses.
      */
     public static final String CHECKED = "checked";
+    /**
+     * Status for a step. See the class description for an explanation of step
+     * statuses.
+     * 
+     * Note that the tlapm does not report this status in its messages, but
+     * the Toolbox assigns this status to steps. This status does not appear
+     * in the UI, so from the user's perspective it doesn't matter. It helps
+     * in the computation of the current status of a step. If there are 3 obligations
+     * for a leaf step, two proved and one "to be proved", the max status of the step
+     * is "to be proved". We use ints in the computation of this max status, and we
+     * provide the string form here for debugging messages.
+     */
+    public static final String TO_BE_PROVED = "to be proved";
 
     private Location location;
     private String status;

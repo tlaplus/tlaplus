@@ -804,6 +804,8 @@ public class ProverHelper
             return StepStatusMessage.PROVING_FAILED;
         case STEP_BEING_PROVED_INT:
             return StepStatusMessage.BEING_PROVED;
+        case STEP_TO_BE_PROVED_INT:
+            return StepStatusMessage.TO_BE_PROVED;
         default:
             return null;
         }
@@ -1155,7 +1157,8 @@ public class ProverHelper
                     new Integer(stepLoc.beginLine()));
             if (stepMessage == null)
             {
-                System.out.println("NO STATUS BUG :\n No TLAPM step status message found for the step at " + stepLoc);
+                System.out.println("NO STATUS BUG :\n No TLAPM step status message found for the step at " + stepLoc
+                        + " . The Toolbox thinks the status is " + statusIntToStatusString(stepTuple.getStatus()));
             } else if (!stepMessage.getStatus().equals(statusIntToStatusString(stepTuple.getStatus())))
             {
                 System.out.println("DIFFERENT STATUS BUG : \n Loc : " + stepLoc + "\n TLAPM : "
@@ -1168,7 +1171,7 @@ public class ProverHelper
         {
             StepStatusMessage message = (StepStatusMessage) it.next();
             System.out.println("NO STATUS BUG :\n No Toolbox step status message found for the step at "
-                    + message.getLocation());
+                    + message.getLocation() + " . The TLAPM reports the status " + message.getStatus());
         }
 
         System.out.println("------------------Done Comparing TLAPM and Toolbox Step Status------------");
