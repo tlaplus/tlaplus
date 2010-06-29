@@ -548,7 +548,21 @@ public class ProverHelper
             marker.setAttribute(IMarker.CHAR_END, locRegion.getOffset() + locRegion.getLength());
 
             /*
-             * Create the tuple and return the levelNode.
+             * Create the tuple. Eventually return this tuple.
+             * 
+             * Note that for this step tuple, we do not initialize
+             * the status unless it is a leaf step with a PROOF OMITTED
+             * or a step with no proof. In that case we set the status
+             * to omitted or missing. There are some steps with missing
+             * proofs that still have obligations. When the prover sends
+             * information about these obligations, the status of the step
+             * tuple will be updated to reflect the maximum status of the
+             * obligations. Thus, leaf steps with a missing proof and with obligations
+             * will only briefly have the status "missing proof".
+             * 
+             * As is noted in the constructor for step tuple, all other
+             * step tuples created here will be initialized with status
+             * STEP_UNKNOWN_INT.
              */
             StepTuple stepTuple = new StepTuple();
             stepTuple.setSanyMarker(marker);

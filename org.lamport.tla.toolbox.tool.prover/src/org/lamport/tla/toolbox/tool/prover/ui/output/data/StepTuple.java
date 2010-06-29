@@ -60,11 +60,8 @@ public class StepTuple implements IStatusProvider
     }
 
     /**
-     * Sets the step node from which this obligation
-     * was generated. Also creates all step tuples
-     * for parents.
-     * 
-     * @param stepNode the stepNode to set
+     * Creates the step tuple with initial status
+     * {@link ProverHelper#STEP_UNKNOWN_INT}.
      */
     public StepTuple()
     {
