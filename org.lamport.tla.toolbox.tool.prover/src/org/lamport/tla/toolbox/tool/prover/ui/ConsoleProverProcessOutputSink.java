@@ -6,8 +6,8 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.ui.console.IOConsoleOutputStream;
 import org.eclipse.ui.console.MessageConsole;
+import org.lamport.tla.toolbox.tool.prover.job.ProverJob;
 import org.lamport.tla.toolbox.tool.prover.output.IProverProcessOutputSink;
-import org.lamport.tla.toolbox.tool.prover.output.internal.ProverLaunchDescription;
 
 /**
  * This output sink sends text to the TLAPM console.
@@ -44,7 +44,7 @@ public class ConsoleProverProcessOutputSink implements IProverProcessOutputSink
         }
     }
 
-    public void initializeSink(IFile moduleFile, ProverLaunchDescription description, IProgressMonitor monitor)
+    public void initializeSink(IFile moduleFile, ProverJob proverJob, IProgressMonitor monitor)
     {
         // TODO Auto-generated method stub
 

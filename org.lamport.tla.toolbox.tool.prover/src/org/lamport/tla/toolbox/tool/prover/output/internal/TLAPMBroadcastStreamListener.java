@@ -4,6 +4,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.debug.core.IStreamListener;
 import org.eclipse.debug.core.model.IStreamMonitor;
+import org.lamport.tla.toolbox.tool.prover.job.ProverJob;
 import org.lamport.tla.toolbox.tool.prover.output.IProverProcessOutputSink;
 import org.lamport.tla.toolbox.tool.prover.ui.ConsoleProverProcessOutputSink;
 import org.lamport.tla.toolbox.tool.prover.ui.ProverUIActivator;
@@ -23,22 +24,27 @@ public class TLAPMBroadcastStreamListener implements IStreamListener
     private IProverProcessOutputSink[] listeners = null;
 
     /**
-     * Constructs a stream listener for output for the given modulePath.
-     * This is the module that will be sent to all listeners for TLAPM
-     * output.
+     * Constructs a stream listener for output for the given module. This will be passed
+     * to listeners of TLAPM output.
      * 
      * The constructor also takes a progress monitor. This monitor can be sent to listeners
-     * to TLC output so that they can report progress.
+     * to TLAPM output so that they can report progress.
+     * 
+     * The prover job will also be sent to listeners so that they can have access to information
+     * and useful data structures pertaining to the launch of the prover.
+     * 
+     * See {@link #getRegisteredStreamManagers(IFile, ProverJob, IProgressMonitor)} for the creation
+     * of listeners.
      * 
      * @param monitor
      * 
      * @param module
-     * @param description the description of the prover launch. Contains information about
-     * the parameters used to launch the prover.
+     * @param proverJob the job provides access to the description of the prover launch and other
+     * useful fields
      */
-    public TLAPMBroadcastStreamListener(IFile module, ProverLaunchDescription description, IProgressMonitor monitor)
+    public TLAPMBroadcastStreamListener(IFile module, ProverJob proverJob, IProgressMonitor monitor)
     {
-        this.listeners = getRegisteredStreamManagers(module, description, monitor);
+        this.listeners = getRegisteredStreamManagers(module, proverJob, monitor);
     }
 
     /* (non-Javadoc)
@@ -63,7 +69,9 @@ public class TLAPMBroadcastStreamListener implements IStreamListener
     }
 
     /**
-     * Inform the listeners about completion.
+     * When the stream is closed, this method tells all listeners created in
+     * {@link #getRegisteredStreamManagers(IFile, ProverJob, IProgressMonitor)} that
+     * the stream is closed.
      */
     public synchronized void streamClosed()
     {
@@ -87,20 +95,20 @@ public class TLAPMBroadcastStreamListener implements IStreamListener
     /**
      * Creates a {@link ConsoleProverProcessOutputSink} and a {@link TagBasedTLAPMOutputIncrementalParser}.
      * 
-     * Calls {@link IProverProcessOutputSink#initializeSink(IFile, ProverLaunchDescription, IProgressMonitor)} for each of those sinks
-     * with the module, description, and monitor. The monitor can be used to report progress on TLC's output.
+     * Calls {@link IProverProcessOutputSink#initializeSink(IFile, ProverJob, IProgressMonitor)} for each of those sinks
+     * with the module, job, and monitor. The monitor can be used to report progress on TLAPM's output.
      * 
      * @param monitor TODO
      * 
      * @return an array of the instantiated sinks.
      */
     public static IProverProcessOutputSink[] getRegisteredStreamManagers(IFile module,
-            ProverLaunchDescription description, IProgressMonitor monitor)
+            ProverJob proverJob, IProgressMonitor monitor)
     {
         IProverProcessOutputSink[] outputSinks = new IProverProcessOutputSink[] { new ConsoleProverProcessOutputSink(),
                 new TagBasedTLAPMOutputIncrementalParser() };
-        outputSinks[0].initializeSink(module, description, monitor);
-        outputSinks[1].initializeSink(module, description, monitor);
+        outputSinks[0].initializeSink(module, proverJob, monitor);
+        outputSinks[1].initializeSink(module, proverJob, monitor);
         return outputSinks;
     }
 }

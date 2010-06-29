@@ -3,8 +3,8 @@ package org.lamport.tla.toolbox.tool.prover.ui.output;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.text.BadLocationException;
+import org.lamport.tla.toolbox.tool.prover.job.ProverJob;
 import org.lamport.tla.toolbox.tool.prover.output.IProverProcessOutputSink;
-import org.lamport.tla.toolbox.tool.prover.output.internal.ProverLaunchDescription;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.ObligationNumberMessage;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.ObligationStatusMessage;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.StepStatusMessage;
@@ -59,7 +59,7 @@ public class TagBasedTLAPMOutputIncrementalParser implements IProverProcessOutpu
      * Contains information about
      * the parameters used to launch the prover.
      */
-    private ProverLaunchDescription description;
+    private ProverJob proverJob;
     /**
      * The monitor that can
      * be used to report information about progress.
@@ -199,9 +199,9 @@ public class TagBasedTLAPMOutputIncrementalParser implements IProverProcessOutpu
 
                     if (data instanceof ObligationStatusMessage)
                     {
-                        ProverHelper.processObligationMessage((ObligationStatusMessage) data, description);
+                        ProverHelper.processObligationMessage((ObligationStatusMessage) data, proverJob);
 
-                        if (ProverHelper.isObligationFinished((ObligationStatusMessage) data, description))
+                        if (ProverHelper.isObligationFinished((ObligationStatusMessage) data, proverJob))
                         {
                             monitor.worked(1);
                         }
@@ -212,7 +212,7 @@ public class TagBasedTLAPMOutputIncrementalParser implements IProverProcessOutpu
                                 .getCount());
                     } else if (data instanceof StepStatusMessage)
                     {
-                        ProverHelper.newStepStatusMessage((StepStatusMessage) data, description);
+                        ProverHelper.newStepStatusMessage((StepStatusMessage) data, proverJob);
                     } else if (data instanceof WarningMessage)
                     {
                         ProverHelper.processWarningMessage((WarningMessage) data);
@@ -256,16 +256,16 @@ public class TagBasedTLAPMOutputIncrementalParser implements IProverProcessOutpu
      * 
      * @param moduleFile
      * @param monitor
-     * @param description the description of the prover launch. Contains information about
+     * @param proverJob the description of the prover launch. Contains information about
      * the parameters used to launch the prover.
      */
-    public void initializeSink(IFile moduleFile, ProverLaunchDescription description, IProgressMonitor monitor)
+    public void initializeSink(IFile moduleFile, ProverJob proverJob, IProgressMonitor monitor)
     {
         currentSearchTextBuffer = new StringBuilder();
 
         this.moduleFile = moduleFile;
         this.monitor = monitor;
-        this.description = description;
+        this.proverJob = proverJob;
     }
 
     /**
@@ -281,9 +281,9 @@ public class TagBasedTLAPMOutputIncrementalParser implements IProverProcessOutpu
      */
     public void processFinished()
     {
-        if (!description.isStatusCheck())
+        if (!proverJob.isStatusCheck())
         {
-            ProverHelper.compareStepStatusComputations(description);
+            ProverHelper.compareStepStatusComputations(proverJob);
         }
     }
 

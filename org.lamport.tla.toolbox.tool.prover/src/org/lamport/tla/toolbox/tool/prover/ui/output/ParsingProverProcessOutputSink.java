@@ -4,8 +4,8 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
+import org.lamport.tla.toolbox.tool.prover.job.ProverJob;
 import org.lamport.tla.toolbox.tool.prover.output.IProverProcessOutputSink;
-import org.lamport.tla.toolbox.tool.prover.output.internal.ProverLaunchDescription;
 
 /**
  * This class receives streaming output from the TLAPM
@@ -50,7 +50,7 @@ public class ParsingProverProcessOutputSink implements IProverProcessOutputSink
      * {@link IPath#toPortableString()} and so the original {@link IPath} can
      * be retrieved by calling {@link Path#fromPortableString(String)}.
      */
-    public void initializeSink(IFile moduleFile, ProverLaunchDescription description, IProgressMonitor monitor)
+    public void initializeSink(IFile moduleFile, ProverJob proverJob, IProgressMonitor monitor)
     {
         // this.parser = new TagBasedTLAPMOutputIncrementalParser(moduleFile, monitor, description);
         // this.name = moduleFile;

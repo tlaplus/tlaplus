@@ -32,7 +32,6 @@ import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.tool.prover.job.ProverJob;
 import org.lamport.tla.toolbox.tool.prover.job.ProverJobRule;
 import org.lamport.tla.toolbox.tool.prover.job.ProverJob.ProverJobMatcher;
-import org.lamport.tla.toolbox.tool.prover.output.internal.ProverLaunchDescription;
 import org.lamport.tla.toolbox.tool.prover.ui.ProverUIActivator;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.ObligationStatus;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.ObligationStatusMessage;
@@ -297,27 +296,27 @@ public class ProverHelper
      * Returns true iff the marker represents an obligation that is
      * finished being processed in any way (proving or checking).
      * 
-     * The description gives information about the parameters used to launch
+     * The proverJob gives information about the parameters used to launch
      * the prover.
      * 
      * @param message
-     * @param description
+     * @param proverJob
      * @return
      * @throws CoreException 
      */
-    public static boolean isObligationFinished(ObligationStatusMessage message, ProverLaunchDescription description)
+    public static boolean isObligationFinished(ObligationStatusMessage message, ProverJob proverJob)
     {
 
         String status = message.getStatus();
 
         boolean isTrivial = status.equals(TRIVIAL) || status.equals(TRIVIAL_ALREADY);
 
-        if (!description.isCheckProofs())
+        if (!proverJob.isCheckProofs())
         {
             return isTrivial || status.equals(PROVED) || status.equals(PROVED_ALREADY);
         }
 
-        if (description.isCheckProofs())
+        if (proverJob.isCheckProofs())
         {
             return isTrivial || status.equals(CHECKED) || status.equals(CHECKED_ALREADY);
         }
@@ -390,15 +389,14 @@ public class ProverHelper
      * This method also creates the tree of {@link StepTuple}s for
      * this module or LevelNode.
      * 
-     * The launchDescription is the instance of {@link ProverLaunchDescription} passed
-     * to listeners of the tlapm output by the {@link ProverJob} that launched the
-     * tlapm.
+     * The proverJob is the instance of {@link ProverJob} used to launch the prover
+     * and passed to listeners of TLAPM output for that launch. It provides access
+     * to information about launch parameters and other useful data structures.
      * 
      * @param module
      * @throws CoreException 
      */
-    public static void prepareModuleForProverLaunch(final IFile module, final ProverLaunchDescription launchDescription)
-            throws CoreException
+    public static void prepareModuleForProverLaunch(final IFile module, final ProverJob proverJob) throws CoreException
     {
         /*
          * This does a lot of stuff creating, deleting, and modifying
@@ -420,7 +418,7 @@ public class ProverHelper
                     return;
                 }
 
-                if (launchDescription.getLevelNode() == null)
+                if (proverJob.getLevelNode() == null)
                 {
                     ProverUIActivator.logDebug("Module is null in method prepareModuleForProverLaunch. This is a bug.");
                     return;
@@ -430,25 +428,25 @@ public class ProverHelper
                  * Remove existing sany markers and step status markers.
                  */
                 removeSANYStepMarkers(module);
-                if (launchDescription.getLevelNode() instanceof ModuleNode)
+                if (proverJob.getLevelNode() instanceof ModuleNode)
                 {
                     removeStatusFromModule(module);
                 } else
                 {
-                    removeStatusFromTree(module, launchDescription.getLevelNode());
+                    removeStatusFromTree(module, proverJob.getLevelNode());
                 }
                 /*
                  * Clear the maps that hold information about obligations
                  * and steps.
                  */
-                launchDescription.getProverJob().obsMap.clear();
-                launchDescription.getProverJob().stepMap.clear();
-                launchDescription.getProverJob().stepMessageMap.clear();
+                proverJob.getObsMap().clear();
+                proverJob.getStepMap().clear();
+                proverJob.getStepMessageMap().clear();
 
                 /*
                  * Create new SANY markers and prepare the data structures for computing step statuses.
                  */
-                if (launchDescription.getLevelNode() instanceof ModuleNode)
+                if (proverJob.getLevelNode() instanceof ModuleNode)
                 {
                     ParseResult parseResult = ResourceHelper.getValidParseResult(module);
                     if (parseResult == null)
@@ -472,12 +470,12 @@ public class ProverHelper
                         if (topLevelNodes[i].getLocation().source().equals(moduleName))
                         {
                             // found a theorem in the module
-                            prepareTreeForProverLaunch(topLevelNodes[i], module, launchDescription);
+                            prepareTreeForProverLaunch(topLevelNodes[i], module, proverJob);
                         }
                     }
                 } else
                 {
-                    prepareTreeForProverLaunch(launchDescription.getLevelNode(), module, launchDescription);
+                    prepareTreeForProverLaunch(proverJob.getLevelNode(), module, proverJob);
                     return;
                 }
             }
@@ -504,15 +502,15 @@ public class ProverHelper
      * Returns null otherwise. If levelNode is a {@link TheoremNode} then it sets levelNode
      * as the parent of all non-null {@link StepTuple}s returned by calling this method on its children.
      * 
-     * The launchDescription is the instance of {@link ProverLaunchDescription} passed
-     * to listeners of the tlapm output by the {@link ProverJob} that launched the
-     * tlapm.
+     * The proverJob is the instance of {@link ProverJob} used to launch the prover
+     * and passed to listeners of TLAPM output for that launch. It provides access
+     * to information about launch parameters and other useful data structures.
      * 
      * @param theoremNode
      * @throws CoreException 
      */
-    public static StepTuple prepareTreeForProverLaunch(LevelNode levelNode, IResource module,
-            ProverLaunchDescription launchDescription) throws CoreException
+    public static StepTuple prepareTreeForProverLaunch(LevelNode levelNode, IResource module, ProverJob proverJob)
+            throws CoreException
     {
         if (levelNode == null)
         {
@@ -554,7 +552,7 @@ public class ProverHelper
              */
             StepTuple stepTuple = new StepTuple();
             stepTuple.setSanyMarker(marker);
-            launchDescription.getProverJob().stepMap.put(levelNode, stepTuple);
+            proverJob.getStepMap().put(levelNode, stepTuple);
 
             if (levelNode instanceof TheoremNode)
             {
@@ -575,7 +573,7 @@ public class ProverHelper
                          */
                         for (int i = 0; i < steps.length; i++)
                         {
-                            StepTuple childTuple = prepareTreeForProverLaunch(steps[i], module, launchDescription);
+                            StepTuple childTuple = prepareTreeForProverLaunch(steps[i], module, proverJob);
                             // child tuple will be null if the step
                             // is not a TheoremNode or UseOrHideNode
                             if (childTuple != null)
@@ -792,16 +790,14 @@ public class ProverHelper
      * by calling {@link #newObligationStatus(ObligationStatusMessage)}. Else, it prepares
      * the necessary data structure for computing proof step statuses.
      * 
-     * launchDescription should give access to objects and data the describe
-     * the launch. This is the instance of {@link ProverLaunchDescription} passed
-     * to listeners of the tlapm output by the {@link ProverJob} that launched the
-     * tlapm.
+     * The proverJob is the instance of {@link ProverJob} used to launch the prover
+     * and passed to listeners of TLAPM output for that launch. It provides access
+     * to information about launch parameters and other useful data structures.
      * 
      * @param message
      * @param nodeToProve the step or module on which the prover was launched
      */
-    public static void processObligationMessage(ObligationStatusMessage message,
-            ProverLaunchDescription launchDescription)
+    public static void processObligationMessage(ObligationStatusMessage message, ProverJob proverJob)
     {
         if (message.getStatus().equals(TO_BE_PROVED))
         {
@@ -817,16 +813,15 @@ public class ProverHelper
              * through the entire module for the step containing the obligation.
              */
             LevelNode levelNode = null;
-            if (launchDescription.getLevelNode() != null)
+            if (proverJob.getLevelNode() != null)
             {
-                if (launchDescription.getLevelNode() instanceof ModuleNode)
+                if (proverJob.getLevelNode() instanceof ModuleNode)
                 {
-                    levelNode = ResourceHelper.getPfStepOrUseHideFromModuleNode((ModuleNode) launchDescription
-                            .getLevelNode(), obLoc.beginLine());
+                    levelNode = ResourceHelper.getPfStepOrUseHideFromModuleNode((ModuleNode) proverJob.getLevelNode(),
+                            obLoc.beginLine());
                 } else
                 {
-                    levelNode = ResourceHelper
-                            .getLevelNodeFromTree(launchDescription.getLevelNode(), obLoc.beginLine());
+                    levelNode = ResourceHelper.getLevelNodeFromTree(proverJob.getLevelNode(), obLoc.beginLine());
                 }
             }
 
@@ -845,12 +840,12 @@ public class ProverHelper
              * the obligation as a child of the step tuple. Adding
              * the obligation as a child will update the status of the parent.
              */
-            StepTuple stepTuple = (StepTuple) launchDescription.getProverJob().stepMap.get(levelNode);
+            StepTuple stepTuple = (StepTuple) proverJob.getStepMap().get(levelNode);
             if (stepTuple != null)
             {
                 ObligationStatus obStatus = new ObligationStatus(stepTuple, getIntFromStringStatus(message.getStatus()));
                 stepTuple.addChild(obStatus);
-                launchDescription.getProverJob().obsMap.put(new Integer(message.getID()), obStatus);
+                proverJob.getObsMap().put(new Integer(message.getID()), obStatus);
             } else
             {
                 ProverUIActivator.logDebug("Cannot find a step tuple for level node at " + levelNode.getLocation()
@@ -866,8 +861,7 @@ public class ProverHelper
              */
             if (!message.getStatus().equals(CHECKING_INTERUPTED))
             {
-                ObligationStatus obStatus = (ObligationStatus) launchDescription.getProverJob().obsMap.get(new Integer(
-                        message.getID()));
+                ObligationStatus obStatus = (ObligationStatus) proverJob.getObsMap().get(new Integer(message.getID()));
                 obStatus.setStatus(getIntFromStringStatus(message.getStatus()));
             }
 
@@ -992,19 +986,19 @@ public class ProverHelper
      * a SANY marker is not found, this is a bug and will be
      * printed out on the console.
      * 
-     * The launchDescription is the instance of {@link ProverLaunchDescription} passed
-     * to listeners of the tlapm output by the {@link ProverJob} that launched the
-     * tlapm.
+     * The proverJob is the instance of {@link ProverJob} used to launch the prover
+     * and passed to listeners of TLAPM output for that launch. It provides access
+     * to information about launch parameters and other useful data structures.
      * 
      * @param status
-     * @param launchDescription the description of the launch of the prover
+     * @param proverJob the description of the launch of the prover
      * indicating its status
      */
-    public static void newStepStatusMessage(StepStatusMessage status, ProverLaunchDescription launchDescription)
+    public static void newStepStatusMessage(StepStatusMessage status, ProverJob proverJob)
     {
-        launchDescription.getProverJob().stepMessageMap.put(new Integer(status.getLocation().beginLine()), status);
+        proverJob.getStepMessageMap().put(new Integer(status.getLocation().beginLine()), status);
 
-        if (launchDescription.isStatusCheck())
+        if (proverJob.isStatusCheck())
         {
 
             if (status == null)
@@ -1120,21 +1114,20 @@ public class ProverHelper
      * console.
      * 
      * This method does the comparison for the step statuses computed
-     * for the launch of the prover described by launchDescription.
-     * This is the instance of {@link ProverLaunchDescription} passed
-     * to listeners of the tlapm output by the {@link ProverJob} that launched the
-     * tlapm.
+     * for the launch of the prover described by proverJob.
+     * This is the instance of {@link ProverJob} used to launch the prover
+     * and passed to listeners of TLAPM output for that launch.
      */
-    public static void compareStepStatusComputations(ProverLaunchDescription launchDescription)
+    public static void compareStepStatusComputations(ProverJob proverJob)
     {
         System.out.println("------------------Comparing TLAPM and Toolbox Step Status------------");
-        Collection stepTuples = launchDescription.getProverJob().stepMap.values();
+        Collection stepTuples = proverJob.getStepMap().values();
         for (Iterator it = stepTuples.iterator(); it.hasNext();)
         {
             StepTuple stepTuple = (StepTuple) it.next();
             Location stepLoc = stringToLoc(stepTuple.getSanyMarker().getAttribute(SANY_LOC_ATR, ""));
-            StepStatusMessage stepMessage = (StepStatusMessage) launchDescription.getProverJob().stepMessageMap
-                    .remove(new Integer(stepLoc.beginLine()));
+            StepStatusMessage stepMessage = (StepStatusMessage) proverJob.getStepMessageMap().remove(new Integer(stepLoc
+                    .beginLine()));
             if (stepMessage == null)
             {
                 System.out.println("NO STATUS BUG :\n No TLAPM step status message found for the step at " + stepLoc);
@@ -1145,7 +1138,7 @@ public class ProverHelper
             }
         }
 
-        Collection remainingMessages = launchDescription.getProverJob().stepMessageMap.values();
+        Collection remainingMessages = proverJob.getStepMessageMap().values();
         for (Iterator it = remainingMessages.iterator(); it.hasNext();)
         {
             StepStatusMessage message = (StepStatusMessage) it.next();

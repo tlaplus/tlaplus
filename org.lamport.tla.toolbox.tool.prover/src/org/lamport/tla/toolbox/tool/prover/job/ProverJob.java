@@ -21,7 +21,6 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.Launch;
 import org.eclipse.debug.core.model.IProcess;
 import org.lamport.tla.toolbox.editor.basic.util.EditorUtil;
-import org.lamport.tla.toolbox.tool.prover.output.internal.ProverLaunchDescription;
 import org.lamport.tla.toolbox.tool.prover.output.internal.TLAPMBroadcastStreamListener;
 import org.lamport.tla.toolbox.tool.prover.ui.ProverUIActivator;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.ObligationStatus;
@@ -105,27 +104,20 @@ public class ProverJob extends Job
      */
     private LevelNode nodeToProve;
     /**
-     * Description of the parameters used to
-     * launch the prover. This field is set
-     * in {@link #constructCommand()}. It should
-     * not be set anywhere else.
-     */
-    private ProverLaunchDescription description;
-    /**
      * Map from {@link Integer} line numbers of steps to
      * the last {@link StepStatusMessage} reported by the prover
      * for that step.
      */
-    public HashMap stepMessageMap = new HashMap();
+    private HashMap stepMessageMap = new HashMap();
     /**
      * Map from {@link LevelNode}s to {@link StepTuple}s.
      */
-    public HashMap stepMap = new HashMap();
+    private HashMap stepMap = new HashMap();
     /**
      * Map from {@link Integer} ids of obligations
      * to {@link ObligationStatus}
      */
-    public HashMap obsMap = new HashMap();
+    private HashMap obsMap = new HashMap();
 
     /**
      * Constructor. 
@@ -155,7 +147,6 @@ public class ProverJob extends Job
         this.checkStatus = checkStatus;
         this.nodeToProve = node;
         this.checkProofs = checkProofs;
-        this.description = new ProverLaunchDescription(this, useFP, checkStatus, checkProofs, this.nodeToProve);
 
         /*
          * The following sets the path to tlapm.
@@ -270,7 +261,7 @@ public class ProverJob extends Job
                  * Perform the necessary work to prepare for the launch of the prover.
                  * See the method comments to understand what is done.
                  */
-                ProverHelper.prepareModuleForProverLaunch(module, description);
+                ProverHelper.prepareModuleForProverLaunch(module, this);
             } catch (CoreException e1)
             {
                 ProverUIActivator.logError("Error clearing obligation markers for project of module " + modulePath, e1);
@@ -366,7 +357,7 @@ public class ProverJob extends Job
                  * We pass in the progress monitor to allow listeners
                  * to report progress.
                  */
-                listener = new TLAPMBroadcastStreamListener(module, description, monitor);
+                listener = new TLAPMBroadcastStreamListener(module, this, monitor);
 
                 /*
                  * Send a string to the listener indicating
@@ -675,5 +666,70 @@ public class ProverJob extends Job
         {
             return nodeToProve.getLocation().endLine();
         }
+    }
+
+    /**
+     * If true, the prover will be launched for
+     * status checking only, not proving.
+     */
+    public boolean isStatusCheck()
+    {
+        return checkStatus;
+    }
+
+    /**
+     * If true, the prover will be told
+     * to check proofs. Should not be true
+     * if {@link #isStatusCheck()} is also true.
+     */
+    public boolean isCheckProofs()
+    {
+        return checkProofs;
+    }
+
+    /**
+     * True iff fingerprints should be used for
+     * the run of the prover.
+     */
+    public boolean isUseFP()
+    {
+        return useFP;
+    }
+
+    /**
+     * Gets the step or module node on which the
+     * prover was launched.
+     * @return the levelNode
+     */
+    public LevelNode getLevelNode()
+    {
+        return nodeToProve;
+    }
+
+    /**
+     * Returns the map from {@link Integer} line numbers of steps to
+     * the last {@link StepStatusMessage} reported by the prover
+     * for that step.
+     */
+    public HashMap getStepMessageMap()
+    {
+        return stepMessageMap;
+    }
+
+    /**
+     * Returns the map from {@link LevelNode}s to {@link StepTuple}s.
+     */
+    public HashMap getStepMap()
+    {
+        return stepMap;
+    }
+
+    /**
+     * Returns the map from {@link Integer} ids of obligations
+     * to {@link ObligationStatus}
+     */
+    public HashMap getObsMap()
+    {
+        return obsMap;
     }
 }
