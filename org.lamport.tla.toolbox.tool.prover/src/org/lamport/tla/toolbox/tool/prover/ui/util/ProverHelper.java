@@ -100,11 +100,17 @@ public class ProverHelper
      */
     public static final String SANY_MARKER = "org.lamport.tla.toolbox.tool.prover.ui.sanyMarker";
     /**
-     * Attribute on a SANY marker giving the location of the proof
+     * String attribute on a SANY marker giving the location of the proof
      * step the last time the prover was launched for a proof step
-     * status check.
+     * status check. The string value should be set from a {@link Location}
+     * using {@link #locToString(Location)}.
      */
     public static final String SANY_LOC_ATR = "org.lamport.tla.toolbox.tool.prover.ui.sanyLoc";
+    /**
+     * Boolean attribute on a SANY marker that should be true iff the step is
+     * a step with no children or with only a leaf proof.
+     */
+    public static final String SANY_IS_LEAF_ATR = "org.lamport.tla.toolbox.tool.prover.ui.isLeafStep";
 
     /**
      * Delimiter used for representing
@@ -185,7 +191,8 @@ public class ProverHelper
      * Step status marker types.                                                       *
      ***********************************************************************************/
     /**
-     * Marker type corresponding to the status {@link StepStatusMessage#PROVING_FAILED}
+     * Marker type corresponding to the status {@link StepStatusMessage#PROVING_FAILED} for non-leaf
+     * steps (steps with children).
      */
     public static final String STEP_PROVING_FAILED_MARKER = "org.lamport.tla.toolbox.tool.prover.ui.stepProvingFailed";
     /**
@@ -212,6 +219,11 @@ public class ProverHelper
      * Marker type corresponding to the status {@link StepStatusMessage#BEING_PROVED}.
      */
     public static final String STEP_BEING_PROVED_MARKER = "org.lamport.tla.toolbox.tool.prover.ui.stepBeingProved";
+    /**
+     * Marker type corresponding to the status {@link StepStatusMessage#PROVING_FAILED} for leaf
+     * steps (steps with a leaf proof or with no children.
+     */
+    public static final String STEP_LEAF_FAILED = "org.lamport.tla.toolbox.tool.prover.ui.leafFailed";
     /**
      * Super type for the following four marker types for step status.
      */
@@ -555,6 +567,8 @@ public class ProverHelper
                     {
                         NonLeafProofNode nonLeafProof = (NonLeafProofNode) proof;
                         LevelNode[] steps = nonLeafProof.getSteps();
+                        // the step is not a leaf iff it has at least 1 step
+                        marker.setAttribute(SANY_IS_LEAF_ATR, steps.length == 0);
 
                         /*
                          * Recursively put markers on each child node.
@@ -578,13 +592,19 @@ public class ProverHelper
                         {
                             stepTuple.setStatus(getIntFromStringStatus(StepStatusMessage.OMITTED));
                         }
+
+                        marker.setAttribute(SANY_IS_LEAF_ATR, true);
                     }
                 } else
                 {
                     // missing proof
                     stepTuple.setStatus(getIntFromStringStatus(StepStatusMessage.MISSING_PROOFS));
+                    marker.setAttribute(SANY_IS_LEAF_ATR, true);
                 }
 
+            } else
+            {
+                marker.setAttribute(SANY_IS_LEAF_ATR, true);
             }
 
             return stepTuple;
@@ -686,10 +706,15 @@ public class ProverHelper
      * If the input is not one of these, this
      * method will return null.
      * 
+     * The marker type for proving failed steps is different depending
+     * on whether it is a leaf step or not.
+     * 
      * @param status
+     * @param isLeafStep true iff the status is for a leaf step (a step with no
+     * children or with a leaf proof).
      * @return
      */
-    public static String statusStringToMarkerType(String status)
+    public static String statusStringToMarkerType(String status, boolean isLeafStep)
     {
         if (status.equals(StepStatusMessage.CHECKED))
         {
@@ -708,7 +733,13 @@ public class ProverHelper
             return STEP_PROVED_MARKER;
         } else if (status.equals(StepStatusMessage.PROVING_FAILED))
         {
-            return STEP_PROVING_FAILED_MARKER;
+            if (isLeafStep)
+            {
+                return STEP_LEAF_FAILED;
+            } else
+            {
+                return STEP_PROVING_FAILED_MARKER;
+            }
         } else if (status.equals(StepStatusMessage.BEING_PROVED))
         {
             return STEP_BEING_PROVED_MARKER;
@@ -1128,7 +1159,7 @@ public class ProverHelper
     /**
      * Creates a new marker at the current location of sanyMarker indicating the
      * status given by status. If status is not a known type (the method
-     * {@link #statusStringToMarkerType(String)} returns null) then this prints
+     * {@link #statusStringToMarkerType(String, boolean)} returns null) then this prints
      * some debugging message and returns. If sanyMarker is null, this also
      * prints some debugging message and returns. If status is null, this method
      * just returns without doing anything.
@@ -1156,7 +1187,7 @@ public class ProverHelper
              * If the status string does not correspond
              * to a marker type, then do not create a marker.
              */
-            final String markerType = statusStringToMarkerType(status);
+            final String markerType = statusStringToMarkerType(status, sanyMarker.getAttribute(SANY_IS_LEAF_ATR, false));
 
             if (markerType == null)
             {

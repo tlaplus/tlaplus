@@ -166,6 +166,17 @@
       </persistent>
    </extension>
    <extension
+         id="org.lamport.tla.toolbox.tool.prover.ui.leafFailed"
+         name="Failed Leaf Step"
+         point="org.eclipse.core.resources.markers">
+      <super
+            type="org.lamport.tla.toolbox.tool.prover.ui.proofStepStatus">
+      </super>
+      <persistent
+            value="true">
+      </persistent>
+   </extension>
+   <extension
          id="org.lamport.tla.toolbox.tool.prover.ui.proofStepStatus"
          name="Super type representing the status of a proof step"
          point="org.eclipse.core.resources.markers">
@@ -202,6 +213,10 @@
       <type
             markerType="org.lamport.tla.toolbox.tool.prover.ui.stepBeingProved"
             name="org.lamport.tla.toolbox.tool.prover.ui.stepBeingProved">
+      </type>
+      <type
+            markerType="org.lamport.tla.toolbox.tool.prover.ui.leafFailed"
+            name="org.lamport.tla.toolbox.tool.prover.ui.leafFailed">
       </type>
    </extension>
    <extension
@@ -304,6 +319,22 @@
             textStylePreferenceKey="sbpTSPK"
             textStylePreferenceValue="BOX">
       </specification>
+      <specification
+            annotationType="org.lamport.tla.toolbox.tool.prover.ui.leafFailed"
+            colorPreferenceKey="lspfCPK"
+            colorPreferenceValue="255,187,187"
+            contributesToHeader="false"
+            highlightPreferenceKey="lspfHPK"
+            highlightPreferenceValue="true"
+            includeOnPreferencePage="true"
+            label="Leaf Step Proving Failed"
+            overviewRulerPreferenceKey="lspfORPK"
+            overviewRulerPreferenceValue="true"
+            textPreferenceKey="lspfTPK"
+            textPreferenceValue="true"
+            textStylePreferenceKey="lspfSPK"
+            textStylePreferenceValue="BOX">
+      </specification>
    </extension>
    <extension
          point="org.eclipse.ui.views">
@@ -370,6 +401,9 @@
       </super>
       <attribute
             name="org.lamport.tla.toolbox.tool.prover.ui.sanyLoc">
+      </attribute>
+      <attribute
+            name="org.lamport.tla.toolbox.tool.prover.ui.isLeafStep">
       </attribute>
    </extension>
 
