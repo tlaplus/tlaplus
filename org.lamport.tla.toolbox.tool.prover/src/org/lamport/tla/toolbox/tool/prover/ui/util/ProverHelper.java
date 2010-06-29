@@ -563,6 +563,10 @@ public class ProverHelper
              * As is noted in the constructor for step tuple, all other
              * step tuples created here will be initialized with status
              * STEP_UNKNOWN_INT.
+             * 
+             * See the method processObligationMessage() for information
+             * on how information about the status of obligations
+             * is used to update the status of steps.
              */
             StepTuple stepTuple = new StepTuple();
             stepTuple.setSanyMarker(marker);
