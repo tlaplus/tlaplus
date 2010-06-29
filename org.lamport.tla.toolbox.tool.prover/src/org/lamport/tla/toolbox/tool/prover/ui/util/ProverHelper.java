@@ -54,7 +54,7 @@ import tla2sany.st.Location;
 import util.UniqueString;
 
 /**
- * Helper methods for the launching of the prover. There are 
+ * Helper methods for the launching of the prover.
  * 
  * @author Daniel Ricketts
  *
