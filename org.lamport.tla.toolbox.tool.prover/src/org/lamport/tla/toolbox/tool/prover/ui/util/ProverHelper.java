@@ -360,7 +360,7 @@ public class ProverHelper
 
     /**
      * This method prepares the module for the launch of the prover.
-     * In the following, levelNode is the levelNode in launchDescription.
+     * In the following, levelNode is the levelNode in proverJob.
      * If levelNode or module, it prints debugging info and returns.
      * If not, it takes the following steps:
      * 
