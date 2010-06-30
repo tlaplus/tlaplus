@@ -65,6 +65,9 @@ public class EditorUtil
      * Returns the {@link TLAEditor} with focus or null if
      * there is none.
      * 
+     * This must be run in a a UI thread. See {@link UIHelper#runUIAsync(Runnable)}
+     * and {@link UIHelper#runUISync(Runnable)}.
+     * 
      * @return
      */
     public static TLAEditor getTLAEditorWithFocus()
