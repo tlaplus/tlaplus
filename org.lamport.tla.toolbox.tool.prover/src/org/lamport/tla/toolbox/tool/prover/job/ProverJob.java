@@ -10,6 +10,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
@@ -20,7 +21,14 @@ import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.Launch;
 import org.eclipse.debug.core.model.IProcess;
+import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.ITextSelection;
+import org.eclipse.ui.part.FileEditorInput;
+import org.lamport.tla.toolbox.editor.basic.TLAEditor;
 import org.lamport.tla.toolbox.editor.basic.util.EditorUtil;
+import org.lamport.tla.toolbox.spec.parser.IParseConstants;
+import org.lamport.tla.toolbox.spec.parser.ModuleParserLauncher;
+import org.lamport.tla.toolbox.spec.parser.ParseResult;
 import org.lamport.tla.toolbox.tool.prover.output.internal.TLAPMBroadcastStreamListener;
 import org.lamport.tla.toolbox.tool.prover.ui.ProverUIActivator;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.ObligationStatus;
@@ -28,12 +36,14 @@ import org.lamport.tla.toolbox.tool.prover.ui.output.data.StepStatusMessage;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.StepTuple;
 import org.lamport.tla.toolbox.tool.prover.ui.util.ProverHelper;
 import org.lamport.tla.toolbox.tool.prover.ui.view.ObligationsView;
+import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 import tla2sany.semantic.LevelNode;
 import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.TheoremNode;
 import tla2sany.semantic.UseOrHideNode;
+import util.UniqueString;
 
 /**
  * Long running job for launching the prover.
@@ -120,33 +130,28 @@ public class ProverJob extends Job
     private HashMap obsMap = new HashMap();
 
     /**
-     * Constructor. 
+     * Constructor. This constructor sets the appropriate scheduling rule for this job, so there is no
+     * need to call {@link #setRule(org.eclipse.core.runtime.jobs.ISchedulingRule)}.
      * 
-     * @param module the {@link IFile} pointing to the module on which the prover is being
-     * launched
      * @param checkStatus true iff the prover should be launched for status checking
      * only, not proving.
      * @param node the node on which the prover should be launched. If the prover is to be
      * launched on the entire module, then this should be an instance of {@link ModuleNode}. Else
      * it should be an instance of {@link TheoremNode} or {@link UseOrHideNode} representing
-     * the step.
-     * 
+     * the step. If this argument is null, then the prover will be launched on the active selection,
+     * where the active selection is a step if the caret is at a step, and the entire module if the
+     * caret is not at a step.
      * @param checkProofs true iff proofs should be checked. Should not be set
      * to true if checkStatus is also set to true.
      */
-    public ProverJob(IFile module, boolean checkStatus, LevelNode node, boolean checkProofs)
+    public ProverJob(boolean checkStatus, LevelNode node, boolean checkProofs)
     {
-        super(
-                "Prover launched on "
-                        + (node instanceof ModuleNode ? "entire" : "")
-                        + " module "
-                        + module.getName()
-                        + (node instanceof ModuleNode ? "" : "from line " + getBeginLine(node) + " to line "
-                                + getEndLine(node)));
-        this.module = module;
+        super("Prover Launch");
         this.checkStatus = checkStatus;
         this.nodeToProve = node;
         this.checkProofs = checkProofs;
+
+        setRule(new ProverJobRule());
 
         /*
          * The following sets the path to tlapm.
@@ -209,6 +214,25 @@ public class ProverJob extends Job
 
     protected IStatus run(IProgressMonitor monitor)
     {
+        /*
+         * Initialize the fields nodeToProve and module.
+         * 
+         * See the comments for initialize fields for more information
+         * on what it does.
+         */
+        initializeFields();
+
+        /*
+         * This sets the name that appears at the top of the progress dialog
+         * for the job, and in other places that list the job.
+         */
+        setName("Prover launched on "
+                + (nodeToProve instanceof ModuleNode ? "entire" : "")
+                + " module "
+                + module.getName()
+                + (nodeToProve instanceof ModuleNode ? "" : "from line " + getBeginLine(nodeToProve) + " to line "
+                        + getEndLine(nodeToProve)));
+
         try
         {
 
@@ -731,5 +755,127 @@ public class ProverJob extends Job
     public HashMap getObsMap()
     {
         return obsMap;
+    }
+
+    /**
+     * This method sets the values for the fields module and nodeToProve.
+     * If the value of nodeToProve is not null before this method is called,
+     * then the value of nodeToProve is not changed by this method. If
+     * nodeToProve is null when this method is called, then the nodeToProve
+     * is found by looking at the active selection in the active module
+     * editor. If the active editor is not a {@link TLAEditor}, this
+     * method will throw an exception.
+     * 
+     * The active selection is the position of the caret. This method
+     * sets nodeToProve to be the step at the caret, where step is either a proof
+     * step or a top level USE node. A step is at the caret if the method
+     * {@link ResourceHelper#getPfStepOrUseHideFromMod(ParseResult, String, ITextSelection, IDocument)}
+     * returns that node for the text selection representing the caret position.
+     * 
+     * If there is not a step at the caret, this method will set nodeToProve
+     * to be the {@link ModuleNode} pointing to the entire module.
+     * 
+     * The value of module is always set to the {@link IFile} pointing to
+     * the module in which nodeToProve is located.
+     */
+    private void initializeFields()
+    {
+        /*
+         * Some of the following code must be run in a UI
+         * thread. We run it in a synchronous UI thread, because
+         * we need the thread that calls this method to wait until
+         * this code is finished. We do not want the thread that calls
+         * this method to continue running while the fields are still being
+         * set.
+         */
+        UIHelper.runUISync(new Runnable() {
+
+            public void run()
+            {
+
+                /*
+                 * This method takes the following steps:
+                 * 
+                 * 1.) If nodeToProve is not null when this method is called, set module
+                 *     to be the IFile pointing to the module containing nodeToProve and return.
+                 *     Else, continue with the following steps.
+                 * 2.) Get the active module editor.
+                 * 3.) Try to obtain a valid parse result for the module in the active editor.
+                 *     A valid parse result is one that was created since the module was last
+                 *     written. If there is no valid parse result available, then parse the module. This creates
+                 *     a valid parse result.
+                 * 4.) Check if there are errors in the valid parse result obtained in step 3. If
+                 *     there are errors, return on this method. There is no need to show a message
+                 *     to the user in this case because the parse errors view will pop open anyway.
+                 * 5.) Get the LevelNode representing a step or top level use/hide containing the caret,
+                 *     if the caret is at such a node. Set nodeToProve to this node.
+                 * 6.) If nodeToProve is still null, set nodeToProve to be the ModuleNode for the module.
+                 * 
+                 * Note that at step 6 ,there are some other possibilities:
+                 *     -If the caret is not at any proof step, check the whole module.
+                 *     -If the caret is at a step without a proof, check the whole module.
+                 *     -If the caret is at a step without a proof, show a message to the user.
+                 *     -If the caret is at a step without a proof, disable this handler.
+                 *     -If the caret is not at any proof step, disable this handler.
+                 *     -If the caret is not at a step with a proof, ask the user if he wants
+                 *      to check the entire module.
+                 */
+
+                /**********************************************************
+                 * Step 1                                                 *
+                 **********************************************************/
+                if (nodeToProve != null)
+                {
+                    module = (IFile) ResourceHelper.getResourceByModuleName(nodeToProve.getLocation().source());
+                    return;
+                }
+
+                /**********************************************************
+                 * Step 2                                                 *
+                 **********************************************************/
+                TLAEditor editor = EditorUtil.getTLAEditorWithFocus();
+                Assert.isNotNull(editor, "User attempted to run prover without a tla editor in focus. This is a bug.");
+
+                /**********************************************************
+                 * Step 3                                                 *
+                 **********************************************************/
+                module = ((FileEditorInput) editor.getEditorInput()).getFile();
+
+                ParseResult parseResult = ResourceHelper.getValidParseResult(module);
+
+                if (parseResult == null)
+                {
+                    parseResult = new ModuleParserLauncher().parseModule(module, new NullProgressMonitor());
+                }
+
+                /**********************************************************
+                 * Step 4                                                 *
+                 **********************************************************/
+                if (parseResult.getStatus() != IParseConstants.PARSED)
+                {
+                    return;
+                }
+
+                /**********************************************************
+                 * Step 5                                                 *
+                 **********************************************************/
+                String moduleName = ResourceHelper.getModuleName(module);
+                IDocument document = editor.getDocumentProvider().getDocument(editor.getEditorInput());
+                nodeToProve = ResourceHelper.getPfStepOrUseHideFromMod(parseResult, moduleName, (ITextSelection) editor
+                        .getSelectionProvider().getSelection(), document);
+
+                /**********************************************************
+                 * Step 6                                                 *
+                 **********************************************************/
+
+                if (nodeToProve == null)
+                {
+                    nodeToProve = parseResult.getSpecObj().getExternalModuleTable().getModuleNode(
+                            UniqueString.uniqueStringOf(moduleName));
+                    return;
+                }
+
+            }
+        });
     }
 }
