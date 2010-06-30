@@ -580,7 +580,7 @@ public class UIHelper
     {
         return getActiveWindow().getShell();
     }
-    
+
     /**
      * Added by LL on 11 June 2010.  This snippet of code
      * was used in several places, so I turned it into a method.
@@ -588,7 +588,8 @@ public class UIHelper
      * 
      * @return The current display, whatever that means.
      */
-    public static Display getCurrentDisplay() {
+    public static Display getCurrentDisplay()
+    {
         Display display = Display.getCurrent();
         if (display == null)
         {
@@ -598,7 +599,11 @@ public class UIHelper
     }
 
     /**
-     * Runs a task in synchronous UI thread 
+     * Runs a task in synchronous UI thread.
+     * 
+     * See {@link Display#syncExec(Runnable)} for
+     * an explanation of what this method really does.
+     * 
      * @param task
      */
     public static void runUISync(Runnable task)
@@ -608,7 +613,10 @@ public class UIHelper
     }
 
     /**
-     * Runs a task in asynchronous UI thread 
+     * Runs a task in asynchronous UI thread.
+     * 
+     * See {@link Display#asyncExec(Runnable)} for
+     * an explanation of what this method really does.
      * @param task
      */
     public static void runUIAsync(Runnable task)
@@ -817,13 +825,13 @@ public class UIHelper
                             int offset = region.getOffset();
                             int length = region.getLength();
 
-                            // The following code sets editor to an existing IEditorPart 
+                            // The following code sets editor to an existing IEditorPart
                             // (which as of June 2010 is a TLAEditorAndPDFViewer) or,
                             // if there is none, to a new one on the IFile representing
-                            // the module.  It then sets textEditor to the ITextEditor
+                            // the module. It then sets textEditor to the ITextEditor
                             // (which as of June 2010 is the TLAEditor of that TLAEditorAndPDFViewer)
                             // that is the TLAEditor open on the module.
-                           IEditorPart editor = UIHelper.openEditor(OpenSpecHandler.TLA_EDITOR_CURRENT,
+                            IEditorPart editor = UIHelper.openEditor(OpenSpecHandler.TLA_EDITOR_CURRENT,
                                     new FileEditorInput((IFile) moduleResource));
 
                             if (editor != null)
@@ -840,13 +848,13 @@ public class UIHelper
                                 {
                                     // As of June 2010, this clause is always executed.
                                     // It may succeed in setting textEditor to the TLAEditor
-                                    // or it may return null.  It should succeed iff
+                                    // or it may return null. It should succeed iff
                                     // the TLAEditor is the active editor in the
                                     // TLAEditorAndPDFViewer.
                                     textEditor = (ITextEditor) editor.getAdapter(ITextEditor.class);
                                 }
-                                
-                                // As of June 2010, the instanceof in following if condition 
+
+                                // As of June 2010, the instanceof in following if condition
                                 // is always true.
                                 if (textEditor == null && editor instanceof MultiPageEditorPart)
                                 {
@@ -910,18 +918,23 @@ public class UIHelper
      * @param node
      * @return
      */
-    public static void jumpToDefOrDecl(SymbolNode node) {
+    public static void jumpToDefOrDecl(SymbolNode node)
+    {
         Location location;
-        if (node instanceof OpDefNode) {
-            location = ((SyntaxTreeNode) ((OpDefNode) node).getSource().getTreeNode()).getHeirs()[0].getLocation() ;
-        } else if (node instanceof ThmOrAssumpDefNode) {
-            location = ((SyntaxTreeNode) ((ThmOrAssumpDefNode) node).getSource().getTreeNode()).getHeirs()[1].getLocation() ;
-        } else {
+        if (node instanceof OpDefNode)
+        {
+            location = ((SyntaxTreeNode) ((OpDefNode) node).getSource().getTreeNode()).getHeirs()[0].getLocation();
+        } else if (node instanceof ThmOrAssumpDefNode)
+        {
+            location = ((SyntaxTreeNode) ((ThmOrAssumpDefNode) node).getSource().getTreeNode()).getHeirs()[1]
+                    .getLocation();
+        } else
+        {
             location = node.getLocation();
         }
         jumpToLocation(location);
     }
-    
+
     /**
      * For all {@link TheoremNode} in the tree rooted at theoremNode,
      * this returns the {@link TheoremNode} that is first on the line
