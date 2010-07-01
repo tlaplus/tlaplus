@@ -208,8 +208,17 @@ public class TagBasedTLAPMOutputIncrementalParser implements IProverProcessOutpu
                     } else if (data instanceof ObligationNumberMessage)
                     {
                         ObligationNumberMessage numMessage = (ObligationNumberMessage) data;
-                        monitor.beginTask("Processing Obligations : " + numMessage.getCount() + " total.", numMessage
-                                .getCount());
+                        /*
+                         * The call to begin task sets the text that appears above the progress
+                         * bar. It also sets the total number of units of work. In this case, one
+                         * unit of work is 1 obligation "finished". Then, when this class later
+                         * calls monitor.worked(1), the progress bar will move 1/totalNumObs percent
+                         * to the right.
+                         * 
+                         * The call to subtask sets the text that appears below the progress bar.
+                         */
+                        monitor.beginTask(proverJob.getProverJobTaskName(), numMessage.getCount());
+                        monitor.subTask("Processing Obligations : " + numMessage.getCount() + " total.");
                     } else if (data instanceof StepStatusMessage)
                     {
                         ProverHelper.newStepStatusMessage((StepStatusMessage) data, proverJob);

@@ -31,6 +31,7 @@ import org.lamport.tla.toolbox.spec.parser.ModuleParserLauncher;
 import org.lamport.tla.toolbox.spec.parser.ParseResult;
 import org.lamport.tla.toolbox.tool.prover.output.internal.TLAPMBroadcastStreamListener;
 import org.lamport.tla.toolbox.tool.prover.ui.ProverUIActivator;
+import org.lamport.tla.toolbox.tool.prover.ui.output.TagBasedTLAPMOutputIncrementalParser;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.ObligationStatus;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.StepStatusMessage;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.StepTuple;
@@ -221,17 +222,6 @@ public class ProverJob extends Job
          * on what it does.
          */
         initializeFields();
-
-        /*
-         * This sets the name that appears at the top of the progress dialog
-         * for the job, and in other places that list the job.
-         */
-        setName("Prover launched on "
-                + (nodeToProve instanceof ModuleNode ? "entire" : "")
-                + " module "
-                + module.getName()
-                + (nodeToProve instanceof ModuleNode ? "" : "from line " + getBeginLine(nodeToProve) + " to line "
-                        + getEndLine(nodeToProve)));
 
         try
         {
@@ -877,5 +867,28 @@ public class ProverJob extends Job
 
             }
         });
+    }
+
+    /**
+     * Returns the name of the task that this prover job performs. This
+     * should be used to set the name of the task in the call of
+     * {@link IProgressMonitor#beginTask(String, int)} for the progress monitor
+     * passed to this job's run method.
+     * 
+     * This method is public so that other classes can call begin task on the progress
+     * monitor. We cannot call begin task until we know the total number of obligations.
+     * The {@link TagBasedTLAPMOutputIncrementalParser} gets this information when it
+     * is sent by the tlapm, so it makes sense for that class to call begin task.
+     * 
+     * @return
+     */
+    public String getProverJobTaskName()
+    {
+        return "Prover launched on "
+                + (nodeToProve instanceof ModuleNode ? "entire" : "")
+                + " module "
+                + module.getName()
+                + (nodeToProve instanceof ModuleNode ? "" : "from line " + getBeginLine(nodeToProve) + " to line "
+                        + getEndLine(nodeToProve));
     }
 }
