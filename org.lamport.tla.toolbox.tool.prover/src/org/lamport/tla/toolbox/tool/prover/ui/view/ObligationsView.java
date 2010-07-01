@@ -9,15 +9,18 @@ import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.ExpandBar;
 import org.eclipse.swt.widgets.ExpandItem;
 import org.eclipse.swt.widgets.Listener;
-import org.eclipse.swt.widgets.ScrollBar;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.part.ViewPart;
 import org.lamport.tla.toolbox.spec.Spec;
@@ -113,7 +116,7 @@ public class ObligationsView extends ViewPart
      * newMarker(), we set the widget data to be the marker
      * for widgets that should jump to that marker.
      */
-    private Listener listener = new Listener() {
+    private Listener obClickListener = new Listener() {
 
         public void handleEvent(Event event)
         {
@@ -124,6 +127,21 @@ public class ObligationsView extends ViewPart
                 {
                     TLAMarkerHelper.gotoMarker((IMarker) event.widget.getData());
                 }
+            }
+        }
+    };
+
+    /**
+     * A listener for the stop obligation button for an obligation.
+     * This sends a signal to the prover indicating that the proving
+     * of that obligation should stop.
+     */
+    private SelectionListener stopObListener = new SelectionAdapter() {
+        public void widgetSelected(SelectionEvent e)
+        {
+            if (e.widget instanceof Button && e.widget.getData() instanceof IMarker)
+            {
+                ProverHelper.stopObligation((IMarker) e.widget.getData());
             }
         }
     };
@@ -375,6 +393,20 @@ public class ObligationsView extends ViewPart
                     // item maps to viewer for later access
                     viewers.put(item, viewer);
 
+                    /*
+                     * Add a button for stopping the obligation.
+                     * 
+                     * The data field for the button stores a pointer to the
+                     * marker for the obligation. This allows a listener
+                     * to retrieve the id of the obligation, or any other information
+                     * which it must send to the prover to stop the proof.
+                     */
+                    Button stopButton = new Button(oblWidget, SWT.PUSH);
+                    stopButton.setText("Stop Proving");
+                    stopButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+                    stopButton.setData(marker);
+                    stopButton.addSelectionListener(stopObListener);
+
                     item.setControl(oblWidget);
                     item.setExpanded(true);
 
@@ -388,9 +420,9 @@ public class ObligationsView extends ViewPart
                     viewer.getTextWidget().setData(marker);
                     oblWidget.setData(marker);
                     // adding the listener to the item seems to have no effect.
-                    item.addListener(SWT.MouseDown, listener);
-                    viewer.getTextWidget().addListener(SWT.MouseDown, listener);
-                    oblWidget.addListener(SWT.MouseDown, listener);
+                    item.addListener(SWT.MouseDown, obClickListener);
+                    viewer.getTextWidget().addListener(SWT.MouseDown, obClickListener);
+                    oblWidget.addListener(SWT.MouseDown, obClickListener);
 
                     items.put(new Integer(id), item);
                 }
@@ -403,6 +435,19 @@ public class ObligationsView extends ViewPart
                 String status = marker.getAttribute(ProverHelper.OBLIGATION_STATUS, "Unknown");
                 String method = marker.getAttribute(ProverHelper.OBLIGATION_METHOD, "");
                 item.setText("Obligation " + id + " - status : " + status + " - method : " + method);
+
+                /*
+                 * Create or remove the stop proving button depending on whether
+                 * the obligation is being proved or not.
+                 * 
+                 * To be completed later...
+                 */
+                Composite oblWidget = (Composite) item.getControl();
+                Control[] children = oblWidget.getChildren();
+                if (status.equals(ProverHelper.BEING_PROVED))
+                {
+
+                }
 
                 /*
                  * Get the item's viewer. If the viewer's document does not contain
@@ -418,16 +463,24 @@ public class ObligationsView extends ViewPart
                 {
                     // set the viewers document to the obligation.
                     viewer.setDocument(new Document(oblString.trim()));
-                    StyledText text = viewer.getTextWidget();
 
                     /*
+                     * The following explanation for computing the height
+                     * of each expand item is no longer used. Instead, we
+                     * simply ask the expand item's control for its preferred height.
+                     * This seems to work. However, we leave the old code and comments
+                     * just in case.
+                     * 
                      * Give the item the appropriate height to show
                      * the obligation. This includes both the height
                      * of the text of the obligation and the height
                      * of the horizontal scroll bar, if there is one.
                      */
-                    ScrollBar hBar = text.getHorizontalBar();
-                    item.setHeight(text.getLineHeight() * text.getLineCount() + (hBar != null ? hBar.getSize().y : 0));
+                    // StyledText text = viewer.getTextWidget();
+                    // ScrollBar hBar = text.getHorizontalBar();
+                    // item.setHeight(text.getLineHeight() * text.getLineCount() + (hBar != null ? hBar.getSize().y :
+                    // 0));
+                    item.setHeight(item.getControl().computeSize(SWT.DEFAULT, SWT.DEFAULT, true).y);
                 } else if (oblString.isEmpty()
                         && (viewer.getDocument() == null || viewer.getDocument().get().isEmpty()))
                 {

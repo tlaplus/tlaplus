@@ -891,4 +891,24 @@ public class ProverJob extends Job
                 + (nodeToProve instanceof ModuleNode ? "" : "from line " + getBeginLine(nodeToProve) + " to line "
                         + getEndLine(nodeToProve));
     }
+
+    /**
+     * Sends a signal to the tlapm indicating that the obligation
+     * with the given id should be stopped.
+     * 
+     * @param id
+     */
+    public void stopObligation(int id)
+    {
+        if (proverProcess != null && !proverProcess.isTerminated())
+        {
+            try
+            {
+                proverProcess.getStreamsProxy().write("stop " + id + "\n");
+            } catch (IOException e)
+            {
+                ProverUIActivator.logError("Error sending signal to tlapm to stop obligation " + id, e);
+            }
+        }
+    }
 }

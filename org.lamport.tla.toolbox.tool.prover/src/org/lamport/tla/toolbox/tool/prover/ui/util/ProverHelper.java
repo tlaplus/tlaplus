@@ -1706,4 +1706,43 @@ public class ProverHelper
     {
         MessageDialog.openWarning(UIHelper.getShellProvider().getShell(), "TLAPM Warning", message.getMessage());
     }
+
+    /**
+     * Sends a signal to the prover indicating that the obligation,
+     * whose status is represented by marker, should be stopped.
+     * 
+     * The marker should by of the type {@link #OBLIGATION_MARKER}.
+     * 
+     * This method assumes that there is at most one prover job currently
+     * running and that this marker is for an obligation from that prover
+     * job.
+     * 
+     * @param marker
+     */
+    public static void stopObligation(IMarker marker)
+    {
+
+        System.out.println("Stop obligation " + marker.getAttribute(OBLIGATION_ID, -1));
+
+        // a count of running prover jobs for debugging
+        // check to see that there is at most 1
+        int numProverJobs = 0;
+        Job[] jobs = Job.getJobManager().find(new ProverJob.ProverJobMatcher());
+        for (int i = 0; i < jobs.length; i++)
+        {
+            if (jobs[i] instanceof ProverJob && jobs[i].getState() == Job.RUNNING)
+            {
+                numProverJobs++;
+                ProverJob proverJob = (ProverJob) jobs[i];
+                proverJob.stopObligation(marker.getAttribute(OBLIGATION_ID, -1));
+            }
+        }
+
+        if (numProverJobs > 1)
+        {
+            ProverUIActivator.logDebug("We found " + numProverJobs + " running when obligation "
+                    + marker.getAttribute(OBLIGATION_ID, -1) + " was stopped. This is a bug.");
+        }
+
+    }
 }
