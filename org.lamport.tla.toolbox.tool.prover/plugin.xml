@@ -17,6 +17,13 @@
             id="org.lamport.tla.toolbox.tool.prover.ui.statusStep"
             name="Check Status of Step or Module">
       </command>
+      <command
+            categoryId="org.eclipse.debug.ui.category.run"
+            defaultHandler="org.lamport.tla.toolbox.tool.prover.ui.handler.GeneralLaunchProverHandler"
+            description="Opens a dialog with a variety of options with which to launch the prover"
+            id="org.lamport.tla.toolbox.tool.prover.ui.launchProver"
+            name="Launch Prover...">
+      </command>
    </extension>
    <extension
          point="org.eclipse.ui.menus">
@@ -28,6 +35,10 @@
          </command>
          <command
                commandId="org.lamport.tla.toolbox.tool.prover.ui.statusStep"
+               style="push">
+         </command>
+         <command
+               commandId="org.lamport.tla.toolbox.tool.prover.ui.launchProver"
                style="push">
          </command>
       </menuContribution>
@@ -384,6 +395,12 @@
             contextId="org.eclipse.ui.textEditorScope"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="M1+G M1+T">
+      </key>
+      <key
+            commandId="org.lamport.tla.toolbox.tool.prover.ui.launchProver"
+            contextId="org.eclipse.ui.textEditorScope"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+G M1+R">
       </key>
    </extension>
    <extension
