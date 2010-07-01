@@ -203,6 +203,10 @@ public class TagBasedTLAPMOutputIncrementalParser implements IProverProcessOutpu
 
                         if (ProverHelper.isObligationFinished((ObligationStatusMessage) data, proverJob))
                         {
+                            /*
+                             * Indicate to the progress monitor to move 1/totalNumObligations fraction
+                             * to the right.
+                             */
                             monitor.worked(1);
                         }
                     } else if (data instanceof ObligationNumberMessage)
@@ -212,8 +216,8 @@ public class TagBasedTLAPMOutputIncrementalParser implements IProverProcessOutpu
                          * The call to begin task sets the text that appears above the progress
                          * bar. It also sets the total number of units of work. In this case, one
                          * unit of work is 1 obligation "finished". Then, when this class later
-                         * calls monitor.worked(1), the progress bar will move 1/totalNumObs percent
-                         * to the right.
+                         * calls monitor.worked(1), the progress bar will move 1/totalNumObligations
+                         * fraction to the right.
                          * 
                          * The call to subtask sets the text that appears below the progress bar.
                          */
