@@ -658,11 +658,19 @@ public class ModelWriter
             tlaBuffer.append(nextId).append(DEFINES_CR);
 
             SimpleTLCState nextState = null;
-
-            while (it.hasNext())
+            boolean isSingleState;
+            if (it.hasNext())
             {
                 nextState = (SimpleTLCState) it.next();
+                isSingleState = false;
+            } else
+            {
+                nextState = currentState;
+                isSingleState = true;
+            }
 
+            while (nextState != null)
+            {
                 /*
                  * Handle Back to state and stuttering.
                  * 
@@ -716,6 +724,19 @@ public class ModelWriter
                     SimpleTLCVariable currentStateVar = currentStateVars[i];
                     tlaBuffer.append(currentStateVar.getVarName()).append(EQ).append(L_PAREN).append(CR).append(
                             currentStateVar.getValueAsString()).append(CR).append(R_PAREN).append(TLA_AND).append(CR);
+                }
+
+                /*
+                 * If the trace is a single state, make the next state
+                 * action never enabled. The model will deadlock in the initial state.
+                 * This adds:
+                 * 
+                 * FALSE
+                 * /\
+                 */
+                if (isSingleState)
+                {
+                    tlaBuffer.append("FALSE").append(CR).append(TLA_AND).append(CR);
                 }
 
                 /*
@@ -776,6 +797,14 @@ public class ModelWriter
                 }
 
                 currentState = nextState;
+
+                if (it.hasNext())
+                {
+                    nextState = (SimpleTLCState) it.next();
+                } else
+                {
+                    nextState = null;
+                }
             }
 
             tlaBuffer.append(CR).append(SEP).append(CR).append(CR);

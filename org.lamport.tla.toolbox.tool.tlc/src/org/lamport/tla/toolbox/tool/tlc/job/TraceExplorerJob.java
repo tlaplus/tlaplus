@@ -1,5 +1,8 @@
 package org.lamport.tla.toolbox.tool.tlc.job;
 
+import java.util.Vector;
+
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.swt.widgets.Display;
 
@@ -66,6 +69,30 @@ public class TraceExplorerJob extends TLCProcessJob
         }
         // return true if the TLC is still calculating
         return (!process.isTerminated());
+    }
+
+    /**
+     * We override this method in order to always
+     * make sure that deadlock is always checked.
+     * This method simply removes "-deadlock" from the
+     * array of arguments, if it is present in the super class
+     * implementation of this method.
+     * 
+     * @throws CoreException 
+     */
+    public String[] constructProgramArguments() throws CoreException
+    {
+        Vector args = new Vector();
+        String[] argsFromSuper = super.constructProgramArguments();
+        for (int i = 0; i < argsFromSuper.length; i++)
+        {
+            if (!argsFromSuper[i].equals("-deadlock"))
+            {
+                args.add(argsFromSuper[i]);
+            }
+        }
+
+        return (String[]) args.toArray(new String[args.size()]);
     }
 
 }

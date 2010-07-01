@@ -616,7 +616,8 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
                     (SimpleTLCState) trace.get(finalState.getStateNumber() - 1));
         } else
         {
-            writer.addInvariantForTraceExplorer(finalState);
+            // checking deadlock eliminates the need for the following
+            // writer.addInvariantForTraceExplorer(finalState);
         }
 
         writer.writeFiles(tlaFile, cfgFile, monitor);
