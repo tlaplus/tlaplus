@@ -78,7 +78,7 @@ public class BoxedCommentHandler extends AbstractHandler implements IHandler
     public final String unboxCommentId = "org.lamport.tla.toolbox.editor.basic.unboxComment";
     public final String formatCommentId = "org.lamport.tla.toolbox.editor.basic.formatComment";
     public final String formatAndBoxCommentId = "org.lamport.tla.toolbox.editor.basic.formatAndBoxComment";
-    
+
     /* (non-Javadoc)
      * @see org.eclipse.core.commands.IHandler#execute(org.eclipse.core.commands.ExecutionEvent)
      */
@@ -97,7 +97,7 @@ public class BoxedCommentHandler extends AbstractHandler implements IHandler
         selectionProvider = editor.getSelectionProvider();
         selection = (TextSelection) selectionProvider.getSelection();
         offset = selection.getOffset();
-        
+
         RightMargin = Activator.getDefault().getPreferenceStore().getInt(EditorPreferencePage.EDITOR_RIGHT_MARGIN);
         if (offset < 0)
         {
@@ -132,16 +132,16 @@ public class BoxedCommentHandler extends AbstractHandler implements IHandler
         } catch (org.eclipse.jface.text.BadLocationException e)
         {
             Activator.logError("Error executing comment-boxing command", e);
-            // just do nothing 
+            // just do nothing
         }
-        
-        // free the space.  (Probably not worth doing.)
+
+        // free the space. (Probably not worth doing.)
         doc = null;
         text = null;
         selectionProvider = null;
         selection = null;
         lineInfo = null;
-       
+
         return null;
     }
 
@@ -157,14 +157,12 @@ public class BoxedCommentHandler extends AbstractHandler implements IHandler
     private void startBoxedComment() throws org.eclipse.jface.text.BadLocationException
     {
         int indent = offset - lineInfo.getOffset() + 1;
-        String asterisks = StringHelper.copyString("*", 
-                               Math.max(3, RightMargin - indent - 1));
-        String newText = "(" + asterisks + StringHelper.newline + StringHelper.newline + 
-                              StringHelper.copyString(" ", indent) + 
-                              asterisks + ")" + StringHelper.newline;
+        String asterisks = StringHelper.copyString("*", Math.max(3, RightMargin - indent - 1));
+        String newText = "(" + asterisks + StringHelper.newline + StringHelper.newline
+                + StringHelper.copyString(" ", indent) + asterisks + ")" + StringHelper.newline;
         doc.replace(selection.getOffset(), selection.getLength(), newText);
-        selectionProvider.setSelection(new 
-                 TextSelection(offset + 1 + asterisks.length() + StringHelper.newline.length(), 0));
+        selectionProvider.setSelection(new TextSelection(offset + 1 + asterisks.length()
+                + StringHelper.newline.length(), 0));
     }
 
     private void formatAndBoxComment() throws org.eclipse.jface.text.BadLocationException
@@ -308,45 +306,58 @@ public class BoxedCommentHandler extends AbstractHandler implements IHandler
     {
         // Check if the cursor is right before ')', or right before '*)',
         // and modify offset to put it before '**)'.
-        if ((offset > 2) && (text.charAt(offset) == ')')) {
+        if ((offset > 2) && (text.charAt(offset) == ')'))
+        {
             offset--;
         }
-        if ((offset > 1) && (text.charAt(offset) == '*')) {
+        if ((offset > 1) && (text.charAt(offset) == '*'))
+        {
             offset--;
         }
         String errorMsg = "Unbox Coment command called when not inside a boxed comment.";
         int startOffset = text.lastIndexOf("(**", offset);
         int endOffset = text.indexOf("**)", offset) + 3;
-        if ((startOffset < 0) || (endOffset < 0)) {
+        if ((startOffset < 0) || (endOffset < 0))
+        {
             displayNotInBoxedCommentError(errorMsg);
             return;
-        } 
-         
-        int startIndent = startOffset - 
-                            doc.getLineOffset(
-                              doc.getLineOfOffset(startOffset));
+        }
+
+        int startIndent = startOffset - doc.getLineOffset(doc.getLineOfOffset(startOffset));
         int asteriskLength = RightMargin - startIndent - 1;
         String asterisks = StringHelper.copyString("*", asteriskLength);
-        
-        
+
         int beginLine = doc.getLineOfOffset(startOffset);
         int endLine = doc.getLineOfOffset(endOffset);
-        
-        if (beginLine == endLine) {
-            if (text.substring(startOffset+1, endOffset-1).equals(
-                 StringHelper.copyString("*",endOffset - startOffset - 2))){
-                displayNotInBoxedCommentError("You are at the beginning or ending line of a boxed comment,\n" +
-                                              "not inside the boxed comment");
-            } else {
+
+        if (beginLine == endLine)
+        {
+            if (text.substring(startOffset + 1, endOffset - 1).equals(
+                    StringHelper.copyString("*", endOffset - startOffset - 2)))
+            {
+                displayNotInBoxedCommentError("You are at the beginning or ending line of a boxed comment,\n"
+                        + "not inside the boxed comment");
+            } else
+            {
                 displayNotInBoxedCommentError(errorMsg);
             }
             return;
         }
 
         // we need to compute the indent of the final *);
-        // int finalIndent = startOffset - doc.getLineOffset(beginLine) + 1;
-
-        StringBuffer buffer = new StringBuffer(endOffset - startOffset - 6 * (endLine - beginLine));
+        // We compute how big a StringBuffer is needed.  If the command is
+        // issued outside a boxed comment, this value can be zero.
+        // In that case, we ignore the value and let some later test
+        // or exception figure out what to do.
+        StringBuffer buffer = null;
+        int bufferSize = endOffset - startOffset - 6 * (endLine - beginLine);
+        if (bufferSize > 0)
+        {
+            buffer = new StringBuffer(bufferSize);
+        } else
+        {
+            buffer = new StringBuffer();
+        }
         // We replace everything from the starting (
         // and the ending ) . We must therefore begin
         // with asterisks and a StringHelper.newline;
@@ -364,7 +375,8 @@ public class BoxedCommentHandler extends AbstractHandler implements IHandler
             {
                 buffer.append(StringHelper.trimEnd(currentLine.substring(beginTokenIndex + 3, endTokenIndex)));
                 buffer.append(StringHelper.newline);
-            } else {
+            } else
+            {
                 buffer.append(currentLine);
                 buffer.append(StringHelper.newline);
             }
@@ -372,17 +384,18 @@ public class BoxedCommentHandler extends AbstractHandler implements IHandler
         }
         buffer.append(StringHelper.copyString(" ", startIndent));
         buffer.append(asterisks);
-        doc.replace(startOffset+1, endOffset - 2 - startOffset, buffer.toString());
+        doc.replace(startOffset + 1, endOffset - 2 - startOffset, buffer.toString());
         return;
 
     }
 
-    void displayNotInBoxedCommentError(String msg) {
+    void displayNotInBoxedCommentError(String msg)
+    {
         Shell shell = UIHelper.getShellProvider().getShell();
-        MessageDialog.openError(shell, "Not inside a boxed comment",
-                                 msg);
-        return; 
+        MessageDialog.openError(shell, "Not inside a boxed comment", msg);
+        return;
     }
+
     /*
      * Formats comments for boxing. It just formats the lines after the
      * line containing the starting (* and before the line containing the
