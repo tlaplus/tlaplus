@@ -147,7 +147,7 @@ public class ProverJob extends Job
      */
     public ProverJob(boolean checkStatus, LevelNode node, boolean checkProofs)
     {
-        super("Prover Launch");
+        super(checkStatus ? "Status Checking Launch" : "Prover Launch");
         this.checkStatus = checkStatus;
         this.nodeToProve = node;
         this.checkProofs = checkProofs;
@@ -884,7 +884,8 @@ public class ProverJob extends Job
      */
     public String getProverJobTaskName()
     {
-        return "Prover launched on "
+        return  (checkStatus ? "Status check" : "Prover")
+                + " launched on "
                 + (nodeToProve instanceof ModuleNode ? "entire" : "")
                 + " module "
                 + module.getName()
