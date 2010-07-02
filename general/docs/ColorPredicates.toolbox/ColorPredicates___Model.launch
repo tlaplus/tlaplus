@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<launchConfiguration type="org.lamport.tla.toolbox.tool.tlc.modelCheck">
+<intAttribute key="autoLockTime" value="15"/>
+<stringAttribute key="configurationName" value="Model"/>
+<intAttribute key="dfidDepth" value="100"/>
+<booleanAttribute key="dfidMode" value="false"/>
+<intAttribute key="maxHeapSize" value="500"/>
+<booleanAttribute key="mcMode" value="true"/>
+<stringAttribute key="modelBehaviorInit" value=""/>
+<stringAttribute key="modelBehaviorNext" value=""/>
+<stringAttribute key="modelBehaviorSpec" value=""/>
+<intAttribute key="modelBehaviorSpecType" value="0"/>
+<stringAttribute key="modelBehaviorVars" value=""/>
+<booleanAttribute key="modelCorrectnessCheckDeadlock" value="true"/>
+<listAttribute key="modelCorrectnessInvariants"/>
+<listAttribute key="modelCorrectnessProperties"/>
+<stringAttribute key="modelExpressionEval" value="&lt;&lt;UnionTheorem, VectorComputation&gt;&gt;"/>
+<stringAttribute key="modelParameterActionConstraint" value=""/>
+<listAttribute key="modelParameterConstants">
+<listEntry value="State;;{a1, a2, a3, a4};1;0"/>
+<listEntry value="StateEnumeration;; [i \in VectorDomain |-&gt;&#13;&#10;   CASE i = 0 -&gt; a1&#13;&#10;     [] i = 1 -&gt; a2&#13;&#10;     [] i = 2 -&gt; a3&#13;&#10;     [] i = 3 -&gt; a4 ];0;0"/>
+</listAttribute>
+<stringAttribute key="modelParameterContraint" value=""/>
+<listAttribute key="modelParameterDefinitions"/>
+<stringAttribute key="modelParameterModelValues" value="{}"/>
+<stringAttribute key="modelParameterNewDefinitions" value="&#13;&#10;"/>
+<intAttribute key="numberOfWorkers" value="1"/>
+<booleanAttribute key="recover" value="false"/>
+<intAttribute key="simuAril" value="-1"/>
+<intAttribute key="simuDepth" value="100"/>
+<intAttribute key="simuSeed" value="-1"/>
+<stringAttribute key="specName" value="ColorPredicates"/>
+<stringAttribute key="view" value=""/>
+</launchConfiguration>
