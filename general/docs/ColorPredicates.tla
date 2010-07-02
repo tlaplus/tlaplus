@@ -76,7 +76,8 @@ THEOREM VectorComputation ==
                       Satisfies(S, pred) = (And(VectorEncoding(S), VectorEncoding(pred.set))
                                               # ZeroVector)
 
+
 =============================================================================
 \* Modification History
-\* Last modified Fri Jul 02 08:54:08 PDT 2010 by lamport
+\* Last modified Fri Jul 02 09:46:14 PDT 2010 by lamport
 \* Created Thu Jul 01 07:55:00 PDT 2010 by lamport

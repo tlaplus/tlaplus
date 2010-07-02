@@ -192,7 +192,9 @@ NumberToState[i \in 0..(Cardinality(ObligationState)-1)] ==
 (***************************************************************************)
 INSTANCE ColorPredicates WITH State <- ObligationState, 
                               StateEnumeration <- NumberToState
+                              
+
 ============================================================================
 \* Modification History
-\* Last modified Fri Jul 02 09:23:06 PDT 2010 by lamport
+\* Last modified Fri Jul 02 09:37:08 PDT 2010 by lamport
 \* Created Wed Jun 30 01:51:58 PDT 2010 by lamport
