@@ -14,7 +14,7 @@
 <booleanAttribute key="modelCorrectnessCheckDeadlock" value="true"/>
 <listAttribute key="modelCorrectnessInvariants"/>
 <listAttribute key="modelCorrectnessProperties"/>
-<stringAttribute key="modelExpressionEval" value="&lt;&lt; Sum( &lt;&lt;2, 3, 4&gt;&gt; ),&#13;&#10;   Product (&lt;&lt; 4, 3, 2 &gt;&gt;),&#13;&#10;   IsNumbering,&#13;&#10;   StateEnumerationAssumption &gt;&gt;&#13;&#10; "/>
+<stringAttribute key="modelExpressionEval" value="&lt;&lt; Sum( &lt;&lt;2, 3, 4&gt;&gt; ),&#13;&#10;   Product (&lt;&lt; 4, 3, 2 &gt;&gt;),&#13;&#10;   IsNumbering,&#13;&#10;   StateEnumerationAssumption &gt;&gt;&#13;&#10;   &#13;&#10;   \* werwerwrwelkjk werwerwrwr&#13;&#10;   \* wwe lkjl werwer l&#13;&#10;   &#13;&#10;   \* werlw wwwewrel lkjlkjwer&#13;&#10; "/>
 <stringAttribute key="modelParameterActionConstraint" value=""/>
 <listAttribute key="modelParameterConstants">
 <listEntry value="ProofStatesSpec;;&lt;&lt; &lt;&lt; &quot;s1&quot;, &quot;s2&quot; &gt;&gt;, &#13;&#10;   &lt;&lt; &quot;s3&quot; &gt;&gt;, &#13;&#10;   &lt;&lt;&quot;s1&quot;, &quot;s2&quot;, &quot;s4&quot; &gt;&gt;,&#13;&#10;   &lt;&lt;&quot;s3&quot;, &quot;s4&quot;&gt;&gt;&#13;&#10;&gt;&gt;;0;0"/>
