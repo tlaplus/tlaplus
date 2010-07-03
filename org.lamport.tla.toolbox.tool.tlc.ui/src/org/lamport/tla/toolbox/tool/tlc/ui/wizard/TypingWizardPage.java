@@ -102,7 +102,9 @@ public class TypingWizardPage extends WizardPage
         typeCombo.setLayoutData(gd);
 
         // select the typed option
-        optionTyped.setSelection(true);
+        // Changed by LL on 3 July 2010 to select
+        // the untyped option
+        optionUntyped.setSelection(true);
         typeCombo.setText("A");
         // setUntypedOption();
         UIHelper.setHelp(container, helpId);
