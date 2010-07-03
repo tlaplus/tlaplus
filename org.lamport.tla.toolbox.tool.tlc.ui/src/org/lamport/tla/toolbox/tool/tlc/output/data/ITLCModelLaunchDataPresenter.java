@@ -21,9 +21,10 @@ public interface ITLCModelLaunchDataPresenter
     public final static int LAST_CHECKPOINT_TIME = 256;
     public final static int CURRENT_STATUS = 512;
     public final static int CONST_EXPR_EVAL_OUTPUT = 1024;
+    public final static int FINGERPRINT_COLLISION_PROBABILITY = 2048;
 
     public final static int[] ALL_FIELDS = { USER_OUTPUT, PROGRESS_OUTPUT, START_TIME, END_TIME, LAST_CHECKPOINT_TIME,
-            COVERAGE_TIME, COVERAGE, PROGRESS, ERRORS, CONST_EXPR_EVAL_OUTPUT };
+            COVERAGE_TIME, COVERAGE, PROGRESS, ERRORS, CONST_EXPR_EVAL_OUTPUT, FINGERPRINT_COLLISION_PROBABILITY };
 
     /**
      * Retrieves the model 

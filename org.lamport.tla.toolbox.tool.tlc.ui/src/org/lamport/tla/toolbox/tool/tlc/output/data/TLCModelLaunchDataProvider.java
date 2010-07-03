@@ -76,6 +76,8 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
     private String coverageTimestamp;
     // reports current status of model checking
     private String currentStatus;
+    // reports the probability of a fingerprint collision
+    private String fingerprintCollisionProbability;
     // coverage items
     private List coverageInfo;
     // progress information
@@ -147,6 +149,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
         lastCheckpointTimeStamp = "";
         coverageTimestamp = "";
         setCurrentStatus(NOT_RUNNING);
+        setFingerprintCollisionProbability("");
         progressOutput = new Document(NO_OUTPUT_AVAILABLE);
         userOutput = new Document(NO_OUTPUT_AVAILABLE);
         constantExprEvalOutput = "";
@@ -291,7 +294,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                 case EC.TLC_MODE_MC:
                 case EC.TLC_MODE_SIMU:
                 case EC.TLC_SANY_END:
-                case EC.TLC_SUCCESS:
+                    // case EC.TLC_SUCCESS:
                 case EC.TLC_PROGRESS_START_STATS_DFID:
                 case EC.TLC_INITIAL_STATE:
                 case EC.TLC_STATS:
@@ -300,6 +303,10 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                 case EC.TLC_SEARCH_DEPTH:
                 case EC.TLC_LIVE_IMPLIED:
                     setDocumentText(this.progressOutput, outputMessage, true);
+                    break;
+                case EC.TLC_SUCCESS:
+                    this.setFingerprintCollisionProbability(extractCollisionProbability(outputMessage));
+                    informPresenter(ITLCModelLaunchDataPresenter.FINGERPRINT_COLLISION_PROBABILITY);
                     break;
                 case EC.TLC_COMPUTING_INIT:
                     this.setCurrentStatus(COMPUTING_INIT);
@@ -855,9 +862,63 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
         return currentStatus;
     }
 
+    /**
+     * @param fingerprintCollisionProbability the fingerprintCollisionProbability to set
+     */
+    public void setFingerprintCollisionProbability(String fingerprintCollisionProbability)
+    {
+        this.fingerprintCollisionProbability = fingerprintCollisionProbability;
+    }
+
+    /**
+     * @return the fingerprintCollisionProbability
+     */
+    public String getFingerprintCollisionProbability()
+    {
+        return fingerprintCollisionProbability;
+    }
+
     public String getCalcOutput()
     {
         return constantExprEvalOutput;
     }
 
+    /**
+     * Extracts the fingerprint collision probability information line
+     * from the TLC_SUCCESS message output by TLC when it finishes.
+     * This is a hack that must be recoded if TLC's output format
+     * changes.
+     * 
+     * @param outputMessage
+     * @return
+     */
+    private String extractCollisionProbability(String outputMessage)
+    {
+        String result = "";
+        int valIndex;
+        int endValIndex;
+        int startIndex = 0;
+        String[] labels = { "calculated: ", ",  observed: " };
+        for (int i = 0; i < 2; i++)
+        {
+            result = result + labels[i];
+            valIndex = outputMessage.indexOf(" val = ", startIndex);
+            if (valIndex > 0)
+            {
+                startIndex = valIndex + 7;
+                endValIndex = outputMessage.indexOf("\n", startIndex);
+                if (endValIndex > 0)
+                {
+                    result = result + outputMessage.substring(startIndex, endValIndex);
+
+                } else
+                {
+                    result = result + outputMessage.substring(startIndex);
+
+                }
+            }
+            endValIndex = outputMessage.indexOf("\n", valIndex);
+        }
+        return result;
+    }
 }

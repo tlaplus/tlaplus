@@ -85,6 +85,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
     private Text lastCheckpointTimeText;
     private Text coverageTimestampText;
     private Text currentStatusText;
+    private Text fingerprintCollisionProbabilityText;
     private TableViewer coverage;
     private TableViewer stateSpace;
 
@@ -151,6 +152,9 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
                     break;
                 case CURRENT_STATUS:
                     ResultPage.this.currentStatusText.setText(dataProvider.getCurrentStatus());
+                    break;
+                case FINGERPRINT_COLLISION_PROBABILITY:
+                    ResultPage.this.fingerprintCollisionProbabilityText.setText(dataProvider.getFingerprintCollisionProbability());
                     break;
                 case COVERAGE_TIME:
                     ResultPage.this.coverageTimestampText.setText(dataProvider.getCoverageTimestamp());
@@ -354,6 +358,10 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         // toolkit.createLabel(statusComposite, "Errors detected:");
         // this.errorStatusHyperLink = toolkit.createHyperlink(statusComposite, "", SWT.RIGHT);
         this.errorStatusHyperLink = FormHelper.createHyperlinkLeft("Errors detected:", statusComposite, toolkit);
+        // fingerprint collision probability
+        this.fingerprintCollisionProbabilityText = FormHelper.createTextLeft("Fingerprint collision probability:", statusComposite, toolkit);
+        this.fingerprintCollisionProbabilityText.setEditable(false);
+        this.fingerprintCollisionProbabilityText.setText("");
 
         // -------------------------------------------------------------------
         // statistics section
