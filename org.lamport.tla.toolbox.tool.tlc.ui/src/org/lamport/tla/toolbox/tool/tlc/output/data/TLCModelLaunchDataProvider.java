@@ -906,18 +906,15 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
             if (valIndex > 0)
             {
                 startIndex = valIndex + 7;
-                endValIndex = outputMessage.indexOf("\n", startIndex);
-                if (endValIndex > 0)
+                endValIndex = startIndex;
+                while (endValIndex < outputMessage.length()
+                        && (! Character.isWhitespace(outputMessage.charAt(endValIndex))))
                 {
-                    result = result + outputMessage.substring(startIndex, endValIndex);
-
-                } else
-                {
-                    result = result + outputMessage.substring(startIndex);
-
+                    endValIndex++;
                 }
+                result = result + outputMessage.substring(startIndex, endValIndex);
+                startIndex = endValIndex;
             }
-            endValIndex = outputMessage.indexOf("\n", valIndex);
         }
         return result;
     }
