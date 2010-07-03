@@ -342,7 +342,15 @@ public class FormHelper
     }
 
     /**
-     * Creates a hyperlink with left aligned text
+     * Supposed to create a hyperlink with left aligned text.  It doesn't.  On
+     * Windows Vista Version 6.0 (Build 6002: Service Pack 2) last patched in
+     * June 2010, it puts the hyperlink in the center.  The arguments of the
+     * GridData constructor are obviously bogus, since the second argument is
+     * supposed to control the vertical positioning, not the horizontal 
+     * positioning.  However, every combination of arguments that I tried
+     * either produced the same result, or produced nothing or something unreadable.
+     * Apparently, another Eclipse feature.
+     * 
      * @param title
      * @param parent
      * @param toolkit
