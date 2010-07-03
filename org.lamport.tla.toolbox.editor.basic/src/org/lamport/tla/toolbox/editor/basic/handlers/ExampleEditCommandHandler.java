@@ -42,12 +42,36 @@ public class ExampleEditCommandHandler extends AbstractHandler implements Verify
 
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
+        /********
+        String[] testName = { ColorPredicate.PROVED_STATUS, ColorPredicate.PROVED_STATUS, ColorPredicate.PROVED_STATUS };
+        System.out.println(testName[0]);
+        System.out.println(testName[1]);
+        System.out.println(testName[2]);
+
+        System.out.println(testName[0] + ", " + testName[1] + ", " + testName[2] + " -> "
+                + ColorPredicate.numberOfState(testName));
+         System.out.println("Inverse of number = " +
+         ColorPredicate.numberToState(ColorPredicate.numberOfState(testName)));
+         
+         System.out.println("BitVector Test");
+         String[][] test = { {"untried", "proved"}, {"untried", "proving"}, {"untried"}};
+         long bitVector = ColorPredicate.bitVectorOfStates(test);
+         ColorPredicate.printBitVectorOfStates(bitVector);
+         *****/
+        
+        ColorPredicate cp = new ColorPredicate(
+         "leaf some (untried, failed proving , proved)" //  (untried, proving, )         
+        );
+        System.out.println(cp.toString());
+        
+        System.out.println("Number of state: " + ColorPredicate.numberOfState(new String[] {"untried", "proving", "proved"}));
+         /***
         editor = EditorUtil.getTLAEditorWithFocus();
         if (editor != null)
         {
             install();
         }
-
+        **/
         return null;
     }
 
@@ -174,4 +198,386 @@ public class ExampleEditCommandHandler extends AbstractHandler implements Verify
         editor.setStatusMessage("");
     }
 
+    // TESTING
+    public static class ColorPredicate
+    {
+        public boolean leaf; // true iff this predicate is true only for leaf proof steps
+        public boolean isSome;
+        public long set; // meaningful only if this.type = SET_TYPE
+
+        // The possible types of color predicate.
+        public static final int MISSING_TYPE = 0;
+        public static final int OMITTED_TYPE = 1;
+        public static final int SET_TYPE = 2;
+
+        // The prover names are used only for error messages. Provers are generally
+        // referred to by number, where PROVER_NAMES[i] is the name of prover number i.
+        public static final String[] PROVER_NAMES = { "isabelle", "other_backend", "tlapm" };
+
+        // We name the possible prover statuses, so Java can catch misspellings.
+        public static final String UNTRIED_STATUS = "untried";
+        public static final String PROVING_STATUS = "proving";
+        public static final String PROVED_STATUS = "proved";
+        public static final String FAILED_STATUS = "failed";
+        public static final String STOPPED_STATUS = "stopped";
+
+        // The constant PROVER_STATUSES determines the set of possible obligation states.
+        public static final String[] ISABELLE_STATUSES = { UNTRIED_STATUS, PROVING_STATUS, PROVED_STATUS,
+                FAILED_STATUS, STOPPED_STATUS };
+        public static final String[] OTHER_PROVER_STATUSES = ISABELLE_STATUSES;
+        public static final String[] TLAPM_STATUSES = { UNTRIED_STATUS, PROVED_STATUS };
+        public static final String[][] PROVER_STATUSES = { ISABELLE_STATUSES, OTHER_PROVER_STATUSES, TLAPM_STATUSES };
+
+        public static final int NUMBER_OF_PROVERS = PROVER_NAMES.length;
+
+        /**
+         * Returns the number of the status named statusName for prover numbered
+         * proverNumber.  
+         * 
+         * @param proverNumber
+         * @param statusName
+         * @return
+         * @throws IllegalArgumentException
+         */
+        public static final int numberOfProverStatus(int proverNumber, String statusName)
+                throws IllegalArgumentException
+        {
+            if (proverNumber > NUMBER_OF_PROVERS || proverNumber < 0)
+            {
+                throw new IllegalArgumentException("No prover number " + proverNumber);
+            }
+            for (int i = 0; i < NUMBER_OF_PROVERS; i++)
+            {
+                if (statusName.equals(PROVER_STATUSES[proverNumber][i]))
+                {
+                    return i;
+                }
+            }
+            throw new IllegalArgumentException("Prover " + PROVER_NAMES[proverNumber] + " has no status " + statusName);
+        }
+
+        /*
+         * An obligation state is either Missing, Omitted, or an array indexed by
+         * provers of prover statuses.  Each state has a unique number in the range
+         * from 0 to one less than the total number of states.  Tge numbers of the 
+         * Missing and Omitted states are: 
+         */
+        public static final int NUMBER_OF_MISSING_STATE = 0;
+        public static final int NUMBER_OF_OMITTED_STATE = 1;
+
+        /*
+         * For other states, that number is returned by the following methods.
+         */
+
+        /**
+         * Returns the obligation-state number for a state specified by an
+         * array indexed by provers of of prover-status numbers.
+         * 
+         * @param statuses
+         * @return
+         * @throws IllegalArgumentException
+         */
+        public static final int numberOfState(int[] statuses) throws IllegalArgumentException
+        {
+            if (statuses.length != NUMBER_OF_PROVERS)
+            {
+                throw new IllegalArgumentException("Wrong number of provers specified");
+            }
+            int multiplier = 1;
+            int result = 2;
+            for (int i = 0; i < NUMBER_OF_PROVERS; i++)
+            {
+                if (statuses[i] >= PROVER_STATUSES[i].length || statuses[i] < 0)
+                {
+                    throw new IllegalArgumentException("Prover " + PROVER_NAMES[i] + " does not have status number "
+                            + statuses[i]);
+                }
+                result = result + multiplier * statuses[i];
+                multiplier = multiplier * PROVER_STATUSES[i].length;
+            }
+            return result;
+        }
+
+        /**
+         * Returns the obligation-state number for a state specified by an
+         * array indexed by provers of prover-status names.
+         * 
+         * @param statuses
+         * @return
+         * @throws IllegalArgumentException
+         */
+        public static final int numberOfState(String[] statuses) throws IllegalArgumentException
+        {
+            int[] statusNumbers = new int[statuses.length];
+            for (int i = 0; i < statuses.length; i++)
+            {
+                statusNumbers[i] = numberOfProverStatus(i, statuses[i]);
+            }
+            return numberOfState(statusNumbers);
+        }
+
+        /** 
+         * Returns a printable version of the state with number stateNumber.
+         * Assumes that NUMBER_OF_PROVERS = 3.
+         * 
+         * @param stateNumber
+         * @return
+         */
+
+        public static final String numberToState(int stateNumber)
+        {
+            if (stateNumber == NUMBER_OF_MISSING_STATE)
+            {
+                return "Missing";
+            }
+            if (stateNumber == NUMBER_OF_OMITTED_STATE)
+            {
+                return "Omitted";
+            }
+            int[] array = new int[3];
+            for (int i = 0; i < PROVER_STATUSES[0].length; i++)
+            {
+                array[0] = i;
+                for (int j = 0; j < PROVER_STATUSES[1].length; j++)
+                {
+                    array[1] = j;
+                    for (int k = 0; k < PROVER_STATUSES[2].length; k++)
+                    {
+                        array[2] = k;
+                        if (numberOfState(array) == stateNumber)
+                        {
+                            return "(" + PROVER_STATUSES[0][i] + ", " + PROVER_STATUSES[1][j] + ", "
+                                    + PROVER_STATUSES[2][k] + ")";
+                        }
+                    }
+                }
+            }
+            return "No state with number " + stateNumber;
+        }
+        
+        public static final long bitVectorOfStates(int[][] statuses) {
+            long result = 0;
+            int[] array = new int[3];
+            for (int i = 0 ; i < statuses[0].length; i++) {
+                array[0] = statuses[0][i];
+                for (int j = 0 ; j < statuses[1].length; j++) {
+                    array[1] = statuses[1][j];
+                    for (int k = 0 ; k < statuses[2].length; k++) {
+                        array[2] = statuses[2][k];
+                        result = result | ((long) (1 << numberOfState(array))) ;
+                        
+                    }
+                }
+            }
+            return result;
+         }
+         
+         public static final long bitVectorOfStates(String[][] statuses) {
+             int[][] arg = new int[statuses.length][] ;
+             for (int i = 0; i < arg.length; i++) {
+                 arg[i] = new int[statuses[i].length];
+                 for (int j = 0; j < arg[i].length; j++) {
+                     arg[i][j] = numberOfProverStatus(i, statuses[i][j]);
+                 }
+             }
+             return bitVectorOfStates(arg);
+         }
+         
+         /**
+          * For debugging.  Prints the list of states represented by a bit vector.
+          * @param vector
+          */
+         public static final void printBitVectorOfStates(long vector) {
+            long rest = vector;
+            for (int i = 0; i < 60; i++) {
+                if ((rest & 1) == 1) {
+                    System.out.println(numberToState(i));
+                }
+                rest = rest >>> 1;
+            }
+         }
+         
+         /**
+          * Returns a ColorPredicate obtained by parsing its argument.
+          * See the beginning of ProofStatus.tla for the grammar of
+          * the input.
+          * 
+          * @param input
+          */
+         public ColorPredicate(String input) throws IllegalArgumentException
+         {
+             String rest = input.trim().toLowerCase();
+             if (rest.startsWith("leaf"))
+             {
+                 this.leaf = true;
+                 rest = rest.substring(4).trim();
+             } else
+             {
+                 this.leaf = false;
+             }
+
+             if (rest.startsWith("some"))
+             {
+                 this.isSome = true;
+                 rest = rest.substring(4).trim();
+             } else if (rest.startsWith("every"))
+             {
+                 this.isSome = false;
+                 rest = rest.substring(5).trim();
+             } else
+             {
+                 throw new IllegalArgumentException("Color predicate must have `every' or `some' specifier.");
+             }
+
+             this.set = 0;
+             while (!rest.equals(""))
+             {
+                 if (rest.startsWith("omitted"))
+                 {
+                     this.set = this.set | (1 << NUMBER_OF_OMITTED_STATE);
+                     rest = rest.substring(7).trim();
+                 } else if (rest.startsWith("missing"))
+                 {
+                     this.set = this.set | (1 << NUMBER_OF_MISSING_STATE);
+                     rest = rest.substring(7).trim();
+                 } else if (rest.startsWith("("))
+                 {
+                     rest = rest.substring(1).trim();
+                     // stateSetSpec[i] is set to the array of proof-status numbers
+                     // specified for prover number i.
+                     int[][] stateSetSpec = new int[NUMBER_OF_PROVERS][];
+                     for (int i = 0; i < NUMBER_OF_PROVERS; i++)
+                     {
+                         // The body of the for loop computes stateSetSpec[i].
+
+                         // Set invert to true iff there is a "=" specifier.
+                         boolean invert = false;
+                         if (rest.startsWith("-"))
+                         {
+                             invert = true;
+                             rest = rest.substring(1).trim();
+                         }
+                         // We set appears[j] = true iff proof-status number
+                         // j for prover i is to be included in stateSetSpec[i].
+                         boolean[] appears = new boolean[PROVER_STATUSES[i].length];
+                         for (int j = 0; j < appears.length; j++)
+                         {
+                             appears[j] = invert;
+                         }
+                         // endChar is the ending character for this prover's list of statuses.
+                         String endChar = (i == NUMBER_OF_PROVERS - 1) ? ")" : ",";
+                         // loop until the end character is found
+                         while (rest.length() > 0 && !rest.startsWith(endChar))
+                         {
+                             // set token to the beginning string delimited by a
+                             // non-letter
+                             int endOfToken = 0;
+                             while (endOfToken < rest.length() && Character.isLetter(rest.charAt(endOfToken)))
+                             {
+                                 endOfToken++;
+                             }
+                             String token = rest.substring(0, endOfToken);
+                             rest = rest.substring(endOfToken).trim();
+
+                             // set statusNumber to number of status for prover i;
+                             int statusNumber;
+                             try
+                             {
+                                 statusNumber = numberOfProverStatus(i, token);
+                             } catch (IllegalArgumentException e)
+                             {
+                                 String errorMsg = "Was expecting status of prover " + PROVER_NAMES[i] + " but found `"
+                                         + token + " followed by: \n `" + rest + "'";
+                                 throw new IllegalArgumentException(errorMsg);
+                             }
+
+                             // set appears[statusNumber]
+                             appears[statusNumber] = !invert;
+                         }
+
+                         if (rest.length() == 0)
+                         {
+                             throw new IllegalArgumentException(
+                                     "Color predicate specifier ended before `(...)' expression complete");
+                         }
+
+                         // Mustn't forget to remove the endChar
+                         rest = rest.substring(1).trim();
+
+                         // set count to the number of j for which appears[j] = true
+                         int count = 0;
+                         for (int j = 0; j < appears.length; j++)
+                         {
+                             if (appears[j])
+                             {
+                                 count++;
+                             }
+                         }
+                         
+                         // If no status was specified, then treat it as if every status
+                         // was specified.
+                         if (count == 0) {
+                             if (invert) {
+                                 throw new IllegalArgumentException(
+                                         "A `-' must be followed by one or more statuses");
+                             } else {
+                                 count = appears.length;
+                                 for (int j = 0; j < count; j++) {
+                                     appears[j] = true;
+                                 }
+                             }
+                         }
+                         
+                         // Finally, set stateSetSpec[i]
+                         stateSetSpec[i] = new int[count];
+                         int k = 0;
+                         for (int j = 0; j < appears.length; j++) {
+                             if (appears[j]) {
+                                 stateSetSpec[i][k] = j;
+                                 k++;
+                             }
+                         }
+                     }
+                     // Having now computed stateSetSpec, we now convert it to
+                     // a bit vector and OR it to this.set
+                     this.set = this.set | bitVectorOfStates(stateSetSpec);
+
+                 } else
+                 {
+                     throw new IllegalArgumentException("Unexpected token at: `" + rest + "'");
+                 }
+             }
+         }
+         
+         public static final String bitVectorOfStatesToString(long vector)
+         {
+             long rest = vector;
+             String result = "";
+             for (int i = 0; i < 60; i++)
+             {
+                 if ((rest & 1) == 1)
+                 {
+                     result = result + numberToState(i) + "\n";
+                 }
+                 rest = rest >>> 1;
+             }
+             return result;
+         }
+         public  String toString() {
+             String result = "leaf: " + this.leaf + "\n";
+             result = result + "type: " + ((this.isSome) ? "some" : "every") + "\n";
+             result = result + "set of states:\n";
+             try
+             {
+                 result = result + bitVectorOfStatesToString(this.set);
+             } catch (IllegalArgumentException e)
+             {
+                 result = result + "Illegal Bit Vector\n";
+             }
+             
+             return result;
+         }
+
+
+    }
 }
