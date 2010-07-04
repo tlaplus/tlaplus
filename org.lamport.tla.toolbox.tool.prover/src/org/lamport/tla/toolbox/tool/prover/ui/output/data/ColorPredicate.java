@@ -3,8 +3,69 @@
  *  in the comments in ProofStatus.tla and formally in the module ProofStatus
  *  and its instantiated module ColorPredicates.  Both these files are appended
  *  in comments at the end of this file.
+ *  
+ *  Here is how Color Predicates are used by the Toolbox's Prover Plugin. 
+ *  
+ *  It must provide marker types numbered 1 through MAX_PROOF_COLOR whose color and
+ *  whether or not they are displayed in the right-column can be set by the user.
+ *  
+ *  It must allow the user to provide a color predicate as a string for each
+ *  marker type.  It uses the ColorPredicate constructor to turn that string
+ *  into a ColorPredicate object.  (It should catch the IllegalArgumentException
+ *  and use its message as an error message for the user.)  
+ *  
+ *  The user will usually specify a ColorPredicate with a string that
+ *  begins with the optional string "leaf", indicating that the predicate 
+ *  is true only for leaf proof steps followed by a predefined macro name. 
+ *  The list of predefined macros is specified by the array
+ *  PREDEFINED_MACROS.  You can probably figure out the syntax of macro
+ *  definitions from that array; it is described in the comments at the
+ *  end of this file.  The user should be given the option either of
+ *  defining his own macros or of specifying a ColorPredicate in terms of
+ *  the primitive language in which the macros are defined.  The constructor
+ *  accepts them written either way.  However, if user-defined macros are
+ *  introduced, then the getMacro method must be re-implemented so it can
+ *  find their definitions. 
+ *  
+ *  Theorems and proof steps are colored by placing markers on them.  A marker 
+ *  placed on a proof step will be of marker type i iff the i-th color predicate 
+ *  is true and no lower-numbered color predicate is true.  (There should probably
+ *  be a default marker that is uncolored for proofs in which all the
+ *  color predicates are false.
+ *  
+ *  Here is how the Toolbox methods are used to determine the truth value 
+ *  of a color predicate.
+ *  
+ *  A proof obligation has a state which is an array indexed by prover numbers of
+ *  prover statuses.  There are currently 3 provers, numbered 0-2, of provers
+ *  with names "isabelle", "other_backend", and "tlapm".  The possible statuses
+ *  of those whose names and numbers are given by the arrays ISABELLE_STATUSES,
+ *  OTHER_PROVER_STATUSES, and TLAPM_STATUSES.  (The status's number is the
+ *  position of its name in the appropriate array, numbers of course starting
+ *  at 0.)  
+ *  
+ *  In addition, a step that takes a proof but has none has a dummy obligation
+ *  with the special state Missing or Omitted.
+ *  
+ *  Obligation states are passed to the methods in this class by their numbers.
+ *  The Missing and Omitted status have numbers NUMBER_OF_MISSING_STATE and
+ *  NUMBER_OF_OMITTED_STATE.  The number of any other proof-obligation state
+ *  is obtained by calling one of the static methods named numberOfState
+ *  (one takes the prover statuses as an array of status names [strings] and the
+ *  other as an array of status numbers).
+ *  
+ *  To obtain the truth-value of a color predicate on a leaf step, you call
+ *  satisfiedByObligations with argument an array of obligation state numbers--the
+ *  numbers of the states of all the step's obligations.
+ *  
+ *  To obtain the truth-value of a color predicate on a leaf step, you call
+ *  satisfiedBasedOnChildren with argument an array of the (truth) values of
+ *  the color predicate on all the children of the step.
+ *
  */
 package org.lamport.tla.toolbox.tool.prover.ui.output.data;
+
+import org.lamport.tla.toolbox.Activator;
 
 /**
  * @author lamport
@@ -12,7 +73,7 @@ package org.lamport.tla.toolbox.tool.prover.ui.output.data;
  */
 public class ColorPredicate
 {
-    public boolean leaf; // true iff this predicate is true only for leaf proof steps
+    public boolean isLeaf; // true iff this predicate is true only for leaf proof steps
     public boolean isSome;
     public long set;
 
@@ -36,6 +97,82 @@ public class ColorPredicate
 
     public static final int NUMBER_OF_PROVERS = PROVER_NAMES.length;
 
+    // The array of predefined macros, the i-th macro having name
+    // PREDEFINED_MACROS[i][0] and definition PREDEFINED_MACROS[i][1]
+    public static final String[][] PREDEFINED_MACROS = {
+            { "None", "some" }, // always false
+            { "All", "every (,,)" }, // always true
+            
+            // every obligation proved
+            { "Proved", "every (proved, , ) (,proved,) (,,proved)" },
+            
+            // every obligation either proved or OMITTED
+            { "ProvedOrOmitted", "every omitted (proved, , ) (,proved,) (,,proved)" },
+            
+            // Some obligation has not been proved.
+            { "NotProved", "some (-proved, -proved, -proved)" },
+            
+            // Some obligation has failed on one prover and not been proved by another.
+            { "FailedUnproved", "some (failed,-proved,-proved) (-proved,failed,-proved)" },
+            
+            // Some obligation has failed or been stopped on one prover and not been proved by another.
+            { "FailedOrStoppedUnproved", "some (failed stopped,-proved,-proved) (-proved,failed stopped,-proved)" },
+            
+            // Some obligation has failed on some prover.
+            { "Failed", "some (failed,,) (,failed,)" },
+            
+            // Some obligation has failed or been stopped on some prover.
+            { "FailedOrStopped", "some (failed stopped,,) (,failed stopped,)" },
+            
+            // Some obligation is still being proved
+            { "BeingProved", "some (proving,,) (,proving,)" }, 
+            
+            // Some obligation is missing.            
+            { "Missing", "some missing" },
+            
+            // Some obligation is OMITTED
+            { "Omitted", "some omitted" }, 
+            
+            // Some obligation is either missing or OMITTED
+            { "MissingOrOmitted", "some missing omitted" },
+            
+            // Every obligation has been proved by Isabelle (aka proved in paranoid mode)
+            { "ProvedByIsabelle", "every (proved,,)" },
+            
+            // Every nontrivial obligation has been proved by Isabelle 
+            { "ProvedByIsabelleOrTrivial", "every (proved,,) (,,proved)" },
+            
+            // The proof of some obligation was stopped.
+            { "Stopped", "some (stopped,,) (,stopped,)" }, 
+            
+            // The proof of some obligation that has not been proved was stopped.
+            { "StoppedUnproved", "some (stopped,-proved,-proved) (-proved,stopped,-proved)" }, 
+            
+            // Every obligation was found by TLAPM to be trivial.
+            { "Trivial", "every (,,proved)" }, //
+    };
+
+    /**
+     * Returns the macro with name macroName, else returns null if there
+     * is none.  (Case of names is ignored.)  This implementation searches
+     * only in the PREDEFINE_MACROS.  If users can define macros with
+     * preferences, then we need to reimplement this.
+     * 
+     * @param macroName
+     * @return
+     */
+    public static final String getMacro(String macroName)
+    {
+        for (int i = 0; i < PREDEFINED_MACROS.length; i++)
+        {
+            if (macroName.equalsIgnoreCase(PREDEFINED_MACROS[i][0]))
+            {
+                return PREDEFINED_MACROS[i][1];
+            }
+        }
+        return null;
+    }
+
     /**
      * Returns the number of the status named statusName for prover numbered
      * proverNumber.  
@@ -51,7 +188,7 @@ public class ColorPredicate
         {
             throw new IllegalArgumentException("No prover number " + proverNumber);
         }
-        for (int i = 0; i < NUMBER_OF_PROVERS; i++)
+        for (int i = 0; i < PROVER_STATUSES[proverNumber].length; i++)
         {
             if (statusName.equals(PROVER_STATUSES[proverNumber][i]))
             {
@@ -140,6 +277,11 @@ public class ColorPredicate
             return "Omitted";
         }
         int[] array = new int[3];
+        if (3 != NUMBER_OF_PROVERS)
+        {
+            Activator.logDebug("Method ColorPredicate.numberToState must be reimplemented"
+                    + " when number of provers changes");
+        }
         for (int i = 0; i < PROVER_STATUSES[0].length; i++)
         {
             array[0] = i;
@@ -165,13 +307,18 @@ public class ColorPredicate
      * such that i = numberOfState(array) where array[0] = statuses[0][j_0],
      * array[1] = statuses[1][j_1], etc.
      * 
-     * This implementation only works for 3 provers.
+     * This implementation works only for 3 provers.
      * 
      * @param statuses
      * @return
      */
     public static final long bitVectorOfStates(int[][] statuses) throws IllegalArgumentException
     {
+        if (statuses.length != NUMBER_OF_PROVERS)
+        {
+            Activator.logDebug("Method ColorPredicate.bitVectorOfStates must be reimplemented"
+                    + " when number of provers changes");
+        }
         long result = 0;
         int[] array = new int[3];
         for (int i = 0; i < statuses[0].length; i++)
@@ -183,8 +330,7 @@ public class ColorPredicate
                 for (int k = 0; k < statuses[2].length; k++)
                 {
                     array[2] = statuses[2][k];
-                    result = result | ((long) (1 << numberOfState(array)));
-
+                    result = result | (1L << numberOfState(array));
                 }
             }
         }
@@ -230,6 +376,70 @@ public class ColorPredicate
     }
 
     /**
+     * Returns true iff this color predicate is satisfied by a set of
+     * obligations whose states have the numbers in the array
+     * obligationStateNumbers.
+     * 
+     * @param obligationStateNumbers
+     * @return
+     */
+    public boolean satisfiedByObligations(int[] obligationStateNumbers)
+    {
+        // Sets childValues[i] to true iff the i-th obligation state
+        // is in this.set; then calls satisfiedBasedOnChildrenValues.
+        //
+        boolean[] childValues = new boolean[obligationStateNumbers.length];
+        for (int i = 0; i < obligationStateNumbers.length; i++)
+        {
+            long bit = 1L << obligationStateNumbers[i];
+            childValues[i] = (bit & this.set) != 0;
+        }
+        return this.satisfiedBasedOnChildrenValues(childValues);
+    }
+
+    /**
+     * Computes the value of this color predicate for a non-leaf proof
+     * based on the values of the color predicate for its children.
+     * 
+     * @param childValues
+     * @return
+     */
+    public boolean satisfiedBasedOnChildren(boolean[] childValues)
+    {
+        if (this.isLeaf)
+        {
+            return false;
+        }
+        return satisfiedBasedOnChildrenValues(childValues);
+    }
+
+    /**
+     * Inner method for satisfiedBasedOnChildren for a non-leaf
+     * color predicate.
+     * 
+     * @param childValues
+     * @return
+     */
+    public boolean satisfiedBasedOnChildrenValues(boolean[] childValues)
+    {
+        boolean result = !this.isSome;
+        if (this.isSome)
+        {
+            for (int i = 0; i < childValues.length; i++)
+            {
+                result = result || childValues[i];
+            }
+        } else
+        {
+            for (int i = 0; i < childValues.length; i++)
+            {
+                result = result && childValues[i];
+            }
+        }
+        return result;
+    }
+
+    /**
      * Returns a ColorPredicate obtained by parsing its argument.
      * See the beginning of ProofStatus.tla for the grammar of
      * the input.
@@ -241,11 +451,25 @@ public class ColorPredicate
         String rest = input.trim().toLowerCase();
         if (rest.startsWith("leaf"))
         {
-            this.leaf = true;
+            this.isLeaf = true;
             rest = rest.substring(4).trim();
         } else
         {
-            this.leaf = false;
+            this.isLeaf = false;
+        }
+
+        // if the next token is a macro name, set rest to the
+        // macro definition
+        int endOfStartToken = 0;
+        while (endOfStartToken < rest.length() && Character.isLetter(rest.charAt(endOfStartToken)))
+        {
+            endOfStartToken++;
+        }
+        String startToken = rest.substring(0, endOfStartToken);
+        String macro = getMacro(startToken);
+        if (macro != null)
+        {
+            rest = macro;
         }
 
         if (rest.startsWith("some"))
@@ -274,7 +498,7 @@ public class ColorPredicate
                 rest = rest.substring(7).trim();
             } else if (rest.startsWith("("))
             {
-                rest = rest.substring(1).trim();                
+                rest = rest.substring(1).trim();
                 // stateSetSpec[i] is set to the array of proof-status numbers
                 // specified for prover number i.
                 int[][] stateSetSpec = new int[NUMBER_OF_PROVERS][];
@@ -319,7 +543,7 @@ public class ColorPredicate
                         } catch (IllegalArgumentException e)
                         {
                             String errorMsg = "Was expecting status of prover " + PROVER_NAMES[i] + " but found `"
-                                    + token + " followed by: \n `" + rest + "'";
+                                    + token + "' followed by: \n `" + rest + "'";
                             throw new IllegalArgumentException(errorMsg);
                         }
 
@@ -345,26 +569,31 @@ public class ColorPredicate
                             count++;
                         }
                     }
-                    
+
                     // If no status was specified, then treat it as if every status
                     // was specified.
-                    if (count == 0) {
-                        if (invert) {
-                            throw new IllegalArgumentException(
-                                    "A `-' must be followed by one or more statuses");
-                        } else {
+                    if (count == 0)
+                    {
+                        if (invert)
+                        {
+                            throw new IllegalArgumentException("A `-' must be followed by one or more statuses");
+                        } else
+                        {
                             count = appears.length;
-                            for (int j = 0; j < count; j++) {
+                            for (int j = 0; j < count; j++)
+                            {
                                 appears[j] = true;
                             }
                         }
                     }
-                    
+
                     // Finally, set stateSetSpec[i]
                     stateSetSpec[i] = new int[count];
                     int k = 0;
-                    for (int j = 0; j < appears.length; j++) {
-                        if (appears[j]) {
+                    for (int j = 0; j < appears.length; j++)
+                    {
+                        if (appears[j])
+                        {
                             stateSetSpec[i][k] = j;
                             k++;
                         }
@@ -380,9 +609,10 @@ public class ColorPredicate
             }
         }
     }
-    
-    public String toString() {
-        String result = "leaf: " + leaf + "\n";
+
+    public String toString()
+    {
+        String result = "leaf: " + isLeaf + "\n";
         result = result + "type: " + ((isSome) ? "some" : "every") + "\n";
         result = result + "set of states:\n";
         try
@@ -392,7 +622,7 @@ public class ColorPredicate
         {
             result = result + "Illegal Bit Vector\n";
         }
-        
+
         return result;
     }
 }
@@ -500,6 +730,13 @@ or the Other prover, or is found trivial by TLAPM. The predicate
 is true for a leaf node if, for some obligation, one of Isabelle's and
 the Other prover's status is failed, and the other one's status is not
 proved, and TLAPM has not found it to be trivial.
+
+We also allow 
+
+  <color-specification> ::= ["leaf"]? <macro-name>
+  
+where <macro-name> is the name of a macro whose expansion is
+a legal color specification not beginning with "leaf". 
 
 ----------------------------------------------------------------------------
 The following spec shows how all the information needed to specify
