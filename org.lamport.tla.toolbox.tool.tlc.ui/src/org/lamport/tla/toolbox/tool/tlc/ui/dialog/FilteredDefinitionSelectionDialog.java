@@ -1,6 +1,8 @@
 package org.lamport.tla.toolbox.tool.tlc.ui.dialog;
 
 import java.util.Comparator;
+import java.util.List;
+import java.util.Vector;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -16,6 +18,7 @@ import org.eclipse.ui.IMemento;
 import org.eclipse.ui.dialogs.FilteredItemsSelectionDialog;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
+import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 
 import tla2sany.modanalyzer.SpecObj;
 import tla2sany.semantic.ModuleNode;
@@ -114,7 +117,30 @@ public class FilteredDefinitionSelectionDialog extends FilteredItemsSelectionDia
      * This raised a null-pointer exception if it was called when the spec is unparsed,
      * because then specObj is null.  I hacked a fix to this, but I think
      * there are more bugs lurking because the user can edit the model when the spec
-     * is unparsed.  LL 20 Sep 2009   
+     * is unparsed.  LL 20 Sep 2009  
+     * 
+     *  This should be modified so it provides (apparently through its call of contentProvider.add)
+     *  only OpDefNodes for definitions that have not already been overridden.  (The ItemsFilter
+     *  argument to contentProvider.add is useless.)  However, the location of the list of already
+     *  overridden items seems to be harder to get hold of than NSA crypto-keys.
+     *  TLCModelLaunchDelegate.buildForLaunch gets hold of it by calling
+     *  
+     *    ModelHelper.deserializeAssignmentList(config.getAttribute(MODEL_PARAMETER_DEFINITIONS,
+     *              new Vector()))
+     *              
+     *  where config is an ILaunchConfiguration passed in as an argument.  But of course,
+     *  buildForLaunch is called from deep inside the stinking bowels of the Eclipse code.
+     *  However, I can't find out how the ILaunchConfiguration is slipped 
+     *  to the Eclipse code without my being able to find it.
+     *  
+     *  AdvancedModelPage.loadData() gets them by 
+     *  
+     *     List definitions = getConfig().getAttribute(MODEL_PARAMETER_DEFINITIONS, new Vector());
+     *
+     *  where getConfig() is in BasicFormPage, which AdvancedModelPage extends.  But of course,
+     *  by the time we're down in this method, we've lost all information about what page
+     *  we're working on.
+     *  
      */
     protected void fillContentProvider(AbstractContentProvider contentProvider, ItemsFilter itemsFilter,
             IProgressMonitor progressMonitor) throws CoreException

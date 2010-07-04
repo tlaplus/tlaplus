@@ -32,7 +32,7 @@ public class ValidateableConstantSectionPart extends ValidateableTableSectionPar
         super(composite, title, description, toolkit, flags, page, sectionName);
     }
 
-    protected Assignment doEditFormula(Assignment formula)
+    protected Assignment doEditFormula(Assignment formula) // gets called when editing a constant and ...
     {
         Assert.isNotNull(formula);
 
@@ -50,12 +50,13 @@ public class ValidateableConstantSectionPart extends ValidateableTableSectionPar
             return wizard.getFormula();
         } else
         {
-            return null;
+            return null;  // We get here if the user cancels.
         }
     }
 
     /**
-     * Add assignment to the list
+     * Add assignment to the list -- Despite Simon's comments, this is actually called when clicking on ADD 
+     * for  Definition Override
      */
     protected void doAdd()
     {
@@ -64,14 +65,15 @@ public class ValidateableConstantSectionPart extends ValidateableTableSectionPar
         // add a formula
         if (formula != null)
         {
-            Vector input = ((Vector) tableViewer.getInput());
+            Vector input = ((Vector) tableViewer.getInput()); // this seems to be the place to check for duplicate overrides.
             input.add(formula);
             tableViewer.setInput(input);
             this.doMakeDirty();
         }
     }
 
-    protected void doEdit()
+    // This is called when hitting EDIT or double clicking to enter a Constant's value or to change a Definition override.
+    protected void doEdit()  
     {
         IStructuredSelection selection = (IStructuredSelection) tableViewer.getSelection();
         Assignment formula = (Assignment) selection.getFirstElement();

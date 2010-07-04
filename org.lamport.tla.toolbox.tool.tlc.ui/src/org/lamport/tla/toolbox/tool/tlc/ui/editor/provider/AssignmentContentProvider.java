@@ -7,6 +7,8 @@ import org.eclipse.jface.viewers.Viewer;
 import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
 
 /**
+ * Boy.  You could spend days studying Simon's documentation of this class.
+ * 
  * @author Simon Zambrovski
  * @version $Id$
  */

@@ -32,7 +32,7 @@ public class ValidateableOverridesSectionPart extends ValidateableConstantSectio
         super(composite, title, description, toolkit, flags, page, DataBindingManager.SEC_DEFINITION_OVERRIDE);
     }
 
-    protected Assignment doEditFormula(Assignment formula)
+    protected Assignment doEditFormula(Assignment formula) 
     {
         // add -> let the user select the definition to override
         if (formula == null)
@@ -50,7 +50,7 @@ public class ValidateableOverridesSectionPart extends ValidateableConstantSectio
             definitionSelection
                     .setMessage("Type definition to override or select from the list below\n(?= any character, *= any string)");
             definitionSelection.setInitialPattern("?");
-            if (Window.OK == definitionSelection.open())
+            if (Window.OK == definitionSelection.open()) // this raises the Window for selecting a definition to override
             {
                 OpDefNode result = (OpDefNode) (definitionSelection.getResult())[0];
                 formula = new Assignment(result.getName().toString(), Assignment.getArrayOfEmptyStrings(result
@@ -64,6 +64,9 @@ public class ValidateableOverridesSectionPart extends ValidateableConstantSectio
         // check if number of params defined in modules still matches number of
         // params in definition override
         // if it does not, change number of params to match
+        
+        //  The following is pretty weird.  The variable result above appears to be the OpDefNode
+        //  that Simon is now computing.
         OpDefNode opDefNode = (OpDefNode) ModelHelper.getOpDefNode(formula.getLabel());
         if (opDefNode != null && opDefNode.getSource().getNumberOfArgs() != formula.getParams().length)
         {
@@ -82,7 +85,7 @@ public class ValidateableOverridesSectionPart extends ValidateableConstantSectio
         WizardDialog dialog = new WizardDialog(getTableViewer().getTable().getShell(), wizard);
         dialog.setHelpAvailable(true);
 
-        // Open the wizard dialog
+        // Open the wizard dialog that asks for the overriding definition
         if (Window.OK == dialog.open())
         {
             return wizard.getFormula();
