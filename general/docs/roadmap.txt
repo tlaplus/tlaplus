@@ -227,6 +227,9 @@ container as the control associated with the wizard page.
 To implement the help button on the dialog, we need to set the help on
 the container.
 
+Further information on how definition overrides are managed can be
+found in the comments for 
+FilteredDefinitionSelectionDialog.fillContentProvider.
 
 -------------------------------------------------------------------
 Explanation of various items in no particular order by DR

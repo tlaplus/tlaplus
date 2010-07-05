@@ -31,6 +31,12 @@ import tla2sany.semantic.OpDefNode;
  * 
  * This seems to be implementing the Definition Override section of the Advanced Options model 
  * page.
+ * 
+ * Modified on 5 July 2010 by LL not to allow the same definition to be overridden more
+ * than once.  This required adding a private field, set by the constructor, that equals the array
+ * of all names of already overridden operators, and modifying the fillContentProvider method
+ * so it did not add those operator definitions to the dialog.  See the constructor comments for
+ * more details.
  */
 public class FilteredDefinitionSelectionDialog extends FilteredItemsSelectionDialog
 {
@@ -38,20 +44,28 @@ public class FilteredDefinitionSelectionDialog extends FilteredItemsSelectionDia
     private static final String SETTINGS = "org.lamport.tla.toolbox.tool.tlc.ui.dialog.FilteredDefinitionSelectionDialog";
     // specification handle
     private SpecObj specObj;
+    // the names of all operators that have already been overridden.
+    // These are the names by which they are known to the root module, such
+    // as "foo!bar!id".
+    private String[] names;
 
     /**
      * Constructs new dialog instance
      * @param shell shell to open dialog
      * @param multi true if multiple selection should be allowed
      * @param specObj the specObject holding the content
+     * @param names the names of all operators that have already been overridden.
+     *        These are the names by which they are known to the root module, such
+     *        as "foo!bar!id". 
      */
-    public FilteredDefinitionSelectionDialog(Shell shell, boolean multi, SpecObj specObj)
+    public FilteredDefinitionSelectionDialog(Shell shell, boolean multi, SpecObj specObj, String[] names)
     {
         super(shell, multi);
         this.specObj = specObj;
         setListLabelProvider(getListLabelProvider());
         setDetailsLabelProvider(getDetailLabelProvider());
         setSelectionHistory(new DefinitionHistory());
+        this.names = names;
     }
 
     /**
@@ -118,28 +132,32 @@ public class FilteredDefinitionSelectionDialog extends FilteredItemsSelectionDia
      * because then specObj is null.  I hacked a fix to this, but I think
      * there are more bugs lurking because the user can edit the model when the spec
      * is unparsed.  LL 20 Sep 2009  
-     * 
-     *  This should be modified so it provides (apparently through its call of contentProvider.add)
-     *  only OpDefNodes for definitions that have not already been overridden.  (The ItemsFilter
-     *  argument to contentProvider.add is useless.)  However, the location of the list of already
-     *  overridden items seems to be harder to get hold of than NSA crypto-keys.
-     *  TLCModelLaunchDelegate.buildForLaunch gets hold of it by calling
+
+     * Here is what I learned when trying to figure out how to get hold of the names of already-overridden
+     * operators, which are now contained in this.names.  When the model is saved, these names are
+     * saved as an attribute for an ILaunchConfiguration object.
+     *  
+     * TLCModelLaunchDelegate.buildForLaunch gets hold of the names by calling
      *  
      *    ModelHelper.deserializeAssignmentList(config.getAttribute(MODEL_PARAMETER_DEFINITIONS,
      *              new Vector()))
      *              
-     *  where config is an ILaunchConfiguration passed in as an argument.  But of course,
-     *  buildForLaunch is called from deep inside the stinking bowels of the Eclipse code.
-     *  However, I can't find out how the ILaunchConfiguration is slipped 
-     *  to the Eclipse code without my being able to find it.
+     *  where config is an ILaunchConfiguration passed in as an argument.  But 
+     *  buildForLaunch is called from deep inside the  bowels of the Eclipse code, and I
+     *  don't know how the ILaunchConfiguration is given to the Eclipse code.
      *  
-     *  AdvancedModelPage.loadData() gets them by 
+     *  AdvancedModelPage.loadData() gets the names  by 
      *  
      *     List definitions = getConfig().getAttribute(MODEL_PARAMETER_DEFINITIONS, new Vector());
      *
      *  where getConfig() is in BasicFormPage, which AdvancedModelPage extends.  But of course,
      *  by the time we're down in this method, we've lost all information about what page
      *  we're working on.
+     *  
+     *  However, that list doesn't contain the names of definitions that have been overridden
+     *  since the model was last saved.  Those are held by the TableViewer that is created
+     *  by the ValidateableOverridesSectionPart through its supersupersuperclass
+     *  org.eclipse.ui.forms.SectionPart.
      *  
      */
     protected void fillContentProvider(AbstractContentProvider contentProvider, ItemsFilter itemsFilter,
@@ -154,10 +172,28 @@ public class FilteredDefinitionSelectionDialog extends FilteredItemsSelectionDia
 
         for (int i = 0; i < opDefs.length; i++)
         {
+            if (isNotInArray(opDefs[i].getName().toString(), this.names)) {
             contentProvider.add(opDefs[i], itemsFilter);
             progressMonitor.worked(1);
+            }
         }
         progressMonitor.done();
+    }
+    
+    /**
+     * Returns true iff str is not an element of array.
+     * 
+     * @param str
+     * @param array
+     * @return
+     */
+    private boolean isNotInArray(String str, String[] array) {
+        for (int i = 0; i < array.length; i++) {
+            if (str.equals(array[i])) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /* (non-Javadoc)

@@ -40,6 +40,12 @@ import org.lamport.tla.toolbox.tool.tlc.ui.wizard.FormulaWizard;
 public class ValidateableTableSectionPart extends SectionPart implements IValidateble
 {
     private BasicFormPage page;
+    
+    // A TableViewer is the JFace object that seems to implement the
+    // thing that gets displayed on the screen.  It has methods for
+    // adding and removing items and returning the list of all items
+    // (the latter is the getInput() method, which seems to be a weird
+    // name because it's the list of things added with the add() method).
     protected TableViewer tableViewer;
     private Button buttonAdd;
     private Button buttonEdit;

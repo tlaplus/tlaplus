@@ -1,5 +1,7 @@
 package org.lamport.tla.toolbox.tool.tlc.ui.editor.part;
 
+import java.util.Vector;
+
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.window.Window;
@@ -32,13 +34,44 @@ public class ValidateableOverridesSectionPart extends ValidateableConstantSectio
         super(composite, title, description, toolkit, flags, page, DataBindingManager.SEC_DEFINITION_OVERRIDE);
     }
 
-    protected Assignment doEditFormula(Assignment formula) 
+    protected Assignment doEditFormula(Assignment formula)
     {
         // add -> let the user select the definition to override
         if (formula == null)
         {
+            // Set names to an array of names of definitions that have already
+            // been overridden. Note that this is the name by which the operator
+            // is known in the root module, which may be something like
+            // "foo!bar!Id"
+            String[] names = null;
+            Object input = this.getTableViewer().getInput();
+            // I think that input is a Vector of Assignment objects.
+            // If I'm wrong, we just set names[] to a zero-length array.
+            if ((input != null) && (input instanceof Vector))
+            {
+                Vector inputVec = (Vector) input;
+                names = new String[inputVec.size()];
+                for (int i = 0; i < names.length; i++)
+                {
+                    Object next = inputVec.elementAt(i);
+                    // next should be a non-null Assignment object,
+                    // but if it isn't, we just set names[i] to ""
+                    if ((next != null) && (next instanceof Assignment))
+                    {
+                        Assignment nextAss = (Assignment) next;
+                        names[i] = nextAss.getLabel();
+                    } else
+                    {
+                        names[i] = "";
+                    }
+                }
+            } else
+            {
+                names = new String[0];
+            }
+
             FilteredDefinitionSelectionDialog definitionSelection = new FilteredDefinitionSelectionDialog(this
-                    .getSection().getShell(), false, ToolboxHandle.getCurrentSpec().getValidRootModule());
+                    .getSection().getShell(), false, ToolboxHandle.getCurrentSpec().getValidRootModule(), names);
 
             definitionSelection.setTitle("Select Definition to Override");
             // It would be nice to add help to this dialog. The following command will
@@ -50,7 +83,8 @@ public class ValidateableOverridesSectionPart extends ValidateableConstantSectio
             definitionSelection
                     .setMessage("Type definition to override or select from the list below\n(?= any character, *= any string)");
             definitionSelection.setInitialPattern("?");
-            if (Window.OK == definitionSelection.open()) // this raises the Window for selecting a definition to override
+            if (Window.OK == definitionSelection.open()) // this raises the Window for selecting a definition to
+                                                         // override
             {
                 OpDefNode result = (OpDefNode) (definitionSelection.getResult())[0];
                 formula = new Assignment(result.getName().toString(), Assignment.getArrayOfEmptyStrings(result
@@ -64,9 +98,9 @@ public class ValidateableOverridesSectionPart extends ValidateableConstantSectio
         // check if number of params defined in modules still matches number of
         // params in definition override
         // if it does not, change number of params to match
-        
-        //  The following is pretty weird.  The variable result above appears to be the OpDefNode
-        //  that Simon is now computing.
+
+        // The following is pretty weird. The variable result above appears to be the OpDefNode
+        // that Simon is now computing.
         OpDefNode opDefNode = (OpDefNode) ModelHelper.getOpDefNode(formula.getLabel());
         if (opDefNode != null && opDefNode.getSource().getNumberOfArgs() != formula.getParams().length)
         {
