@@ -77,6 +77,13 @@ public class ColorPredicate
     public boolean isSome;
     public long set;
 
+    /**
+     * The index into {@link #PROVER_STATUSES}.
+     */
+    public static final int ISABELLE_NUM = 0;
+    public static final int OTHER_BACKEND_NUM = 1;
+    public static final int TLAPM_NUM = 2;
+
     // The prover names are used only for error messages. Provers are generally
     // referred to by number, where PROVER_NAMES[i] is the name of prover number i.
     public static final String[] PROVER_NAMES = { "isabelle", "other_backend", "tlapm" };
@@ -97,58 +104,60 @@ public class ColorPredicate
 
     public static final int NUMBER_OF_PROVERS = PROVER_NAMES.length;
 
+    public static final int TO_BE_PROVED_STATE = numberOfState(new String[] { UNTRIED_STATUS, UNTRIED_STATUS,
+            UNTRIED_STATUS });
+
     // The array of predefined macros, the i-th macro having name
     // PREDEFINED_MACROS[i][0] and definition PREDEFINED_MACROS[i][1]
-    public static final String[][] PREDEFINED_MACROS = {
-            { "None", "some" }, // always false
+    public static final String[][] PREDEFINED_MACROS = { { "None", "some" }, // always false
             { "All", "every (,,)" }, // always true
-            
+
             // every obligation proved
             { "Proved", "every (proved, , ) (,proved,) (,,proved)" },
-            
+
             // every obligation either proved or OMITTED
             { "ProvedOrOmitted", "every omitted (proved, , ) (,proved,) (,,proved)" },
-            
+
             // Some obligation has not been proved.
             { "NotProved", "some (-proved, -proved, -proved)" },
-            
+
             // Some obligation has failed on one prover and not been proved by another.
             { "Failed", "some (failed,-proved,-proved) (-proved,failed,-proved)" },
-            
+
             // Some obligation has failed or been stopped on one prover and not been proved by another.
             { "FailedOrStopped", "some (failed stopped,-proved,-proved) (-proved,failed stopped,-proved)" },
-            
+
             // Some obligation has failed on some prover, but could yet be proved by Isabelle.
             { "FailedSoFar", "some (failed,-failed,)" },
-            
+
             // Some obligation has failed or been stopped on some prover.
             { "FailedOrStopped", "some (failed stopped,,) (,failed stopped,)" },
-            
+
             // Some obligation is still being proved or has failed a secondary prover
             // but not yet tried by Isabelle
-            { "BeingProved", "some (proving,,) (failed,untried proving,)" }, 
-            
-            // Some obligation is missing.            
+            { "BeingProved", "some (proving,,) (failed,untried proving,)" },
+
+            // Some obligation is missing.
             { "Missing", "some missing" },
-            
+
             // Some obligation has PROOF OMITTED
-            { "Omitted", "some omitted" }, 
-            
+            { "Omitted", "some omitted" },
+
             // Some obligation is either missing or has PROOF OMITTED
             { "MissingOrOmitted", "some missing omitted" },
-            
+
             // Every obligation has been proved by Isabelle (aka proved in paranoid mode)
             { "ProvedByIsabelle", "every (proved,,)" },
-            
-            // Every nontrivial obligation has been proved by Isabelle 
+
+            // Every nontrivial obligation has been proved by Isabelle
             { "ProvedByIsabelleOrTrivial", "every (proved,,) (,,proved)" },
-            
+
             // The proof of some obligation was stopped.
-            { "Stopped", "some (stopped,,) (,stopped,)" }, 
-            
+            { "Stopped", "some (stopped,,) (,stopped,)" },
+
             // The proof of some obligation that has not been proved was stopped.
-            { "StoppedUnproved", "some (stopped,-proved,-proved) (-proved,stopped,-proved)" }, 
-            
+            { "StoppedUnproved", "some (stopped,-proved,-proved) (-proved,stopped,-proved)" },
+
             // Every obligation was found by TLAPM to be trivial.
             { "Trivial", "every (,,proved)" }, //
     };
@@ -377,6 +386,21 @@ public class ColorPredicate
     }
 
     /**
+     * Returns the number of the new state from the old state and the new status
+     * of a prover.
+     * 
+     * @param oldStateNumber
+     * @param proverNumber
+     * @param proverStatus
+     * @return
+     */
+    public static final int newStateNumber(int oldStateNumber, int proverNumber, int proverStatus)
+    {
+        return proverStatus;
+
+    }
+
+    /**
      * Returns true iff this color predicate is satisfied by a set of
      * obligations whose states have the numbers in the array
      * obligationStateNumbers.
@@ -483,8 +507,7 @@ public class ColorPredicate
             rest = rest.substring(5).trim();
         } else
         {
-            throw new IllegalArgumentException("" +
-            		" Color predicate must start with the optional keyword `leaf'\n"
+            throw new IllegalArgumentException("" + " Color predicate must start with the optional keyword `leaf'\n"
                     + " followed by a legal macro name or `every' or `some'.");
         }
 
