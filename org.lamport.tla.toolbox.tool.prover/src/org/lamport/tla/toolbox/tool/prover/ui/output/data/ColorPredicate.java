@@ -387,7 +387,9 @@ public class ColorPredicate
 
     /**
      * Returns the number of the new state from the old state and the new status
-     * of a prover.
+     * of a prover.  Returns -1 if it's called with oldStateNumber the number
+     * of an omitted or missing dummy obligation, or with a number larger than
+     * any state number.
      * 
      * @param oldStateNumber
      * @param proverNumber
@@ -396,8 +398,34 @@ public class ColorPredicate
      */
     public static final int newStateNumber(int oldStateNumber, int proverNumber, int proverStatus)
     {
-        return proverStatus;
-
+        if ((oldStateNumber == NUMBER_OF_MISSING_STATE) || (oldStateNumber == NUMBER_OF_OMITTED_STATE))
+        {
+            return -1;
+        }
+        int[] array = new int[3];
+        if (3 != NUMBER_OF_PROVERS)
+        {
+            Activator.logDebug("Method ColorPredicate.newStateNumber must be reimplemented"
+                    + " when number of provers changes");
+        }
+        for (int i = 0; i < PROVER_STATUSES[0].length; i++)
+        {
+            array[0] = i;
+            for (int j = 0; j < PROVER_STATUSES[1].length; j++)
+            {
+                array[1] = j;
+                for (int k = 0; k < PROVER_STATUSES[2].length; k++)
+                {
+                    array[2] = k;
+                    if (numberOfState(array) == oldStateNumber)
+                    {
+                        array[proverNumber] = proverStatus;
+                        return numberOfState(array);
+                    }
+                }
+            }
+        }
+        return -1;
     }
 
     /**
