@@ -100,251 +100,485 @@
       </consoleFactory>
    </extension>
    <extension
-         id="org.lamport.tla.toolbox.tool.prover.ui.stepChecked"
-         name="Step checked"
-         point="org.eclipse.core.resources.markers">
-      <super
-            type="org.lamport.tla.toolbox.tool.prover.ui.proofStepStatus">
-      </super>
-      <persistent
-            value="true">
-      </persistent>
-   </extension>
-   <extension
-         id="org.lamport.tla.toolbox.tool.prover.ui.stepOmitted"
-         name="Step omitted"
-         point="org.eclipse.core.resources.markers">
-      <super
-            type="org.lamport.tla.toolbox.tool.prover.ui.proofStepStatus">
-      </super>
-      <persistent
-            value="true">
-      </persistent>
-   </extension>
-   <extension
-         id="org.lamport.tla.toolbox.tool.prover.ui.stepMissing"
-         name="All written proofs are checked for a step"
-         point="org.eclipse.core.resources.markers">
-      <super
-            type="org.lamport.tla.toolbox.tool.prover.ui.proofStepStatus">
-      </super>
-      <persistent
-            value="true">
-      </persistent>
-   </extension>
-   <extension
-         id="org.lamport.tla.toolbox.tool.prover.ui.stepProvingFailed"
-         name="Step proving failed"
-         point="org.eclipse.core.resources.markers">
-      <super
-            type="org.lamport.tla.toolbox.tool.prover.ui.proofStepStatus">
-      </super>
-      <persistent
-            value="true">
-      </persistent>
-   </extension>
-   <extension
-         id="org.lamport.tla.toolbox.tool.prover.ui.stepCheckingFailed"
-         name="Step checking failed"
-         point="org.eclipse.core.resources.markers">
-      <super
-            type="org.lamport.tla.toolbox.tool.prover.ui.proofStepStatus">
-      </super>
-      <persistent
-            value="true">
-      </persistent>
-   </extension>
-   <extension
-         id="org.lamport.tla.toolbox.tool.prover.ui.stepProved"
-         name="Step proved"
-         point="org.eclipse.core.resources.markers">
-      <super
-            type="org.lamport.tla.toolbox.tool.prover.ui.proofStepStatus">
-      </super>
-      <persistent
-            value="true">
-      </persistent>
-   </extension>
-   <extension
-         id="org.lamport.tla.toolbox.tool.prover.ui.stepBeingProved"
-         name="Step Being Proved"
-         point="org.eclipse.core.resources.markers">
-      <super
-            type="org.lamport.tla.toolbox.tool.prover.ui.proofStepStatus">
-      </super>
-      <persistent
-            value="true">
-      </persistent>
-   </extension>
-   <extension
-         id="org.lamport.tla.toolbox.tool.prover.ui.leafFailed"
-         name="Failed Leaf Step"
-         point="org.eclipse.core.resources.markers">
-      <super
-            type="org.lamport.tla.toolbox.tool.prover.ui.proofStepStatus">
-      </super>
-      <persistent
-            value="true">
-      </persistent>
-   </extension>
-   <extension
-         id="org.lamport.tla.toolbox.tool.prover.ui.proofStepStatus"
-         name="Super type representing the status of a proof step"
-         point="org.eclipse.core.resources.markers">
-      <super
-            type="org.eclipse.core.resources.marker">
-      </super>
-   </extension>
-   <extension
          point="org.eclipse.ui.editors.annotationTypes">
       <type
-            markerType="org.lamport.tla.toolbox.tool.prover.ui.stepChecked"
-            name="org.lamport.tla.toolbox.tool.prover.ui.stepChecked">
+            markerType="org.lamport.tla.toolbox.tool.prover.ui.stepColor1A"
+            name="org.lamport.tla.toolbox.tool.prover.ui.StepColor1A">
       </type>
       <type
-            markerType="org.lamport.tla.toolbox.tool.prover.ui.stepOmitted"
-            name="org.lamport.tla.toolbox.tool.prover.ui.stepOmitted">
+            markerType="org.lamport.tla.toolbox.tool.prover.ui.stepColor1B"
+            name="org.lamport.tla.toolbox.tool.prover.ui.StepColor1B">
       </type>
       <type
-            markerType="org.lamport.tla.toolbox.tool.prover.ui.stepMissing"
-            name="org.lamport.tla.toolbox.tool.prover.ui.stepMissing">
+            markerType="org.lamport.tla.toolbox.tool.prover.ui.stepColor2A"
+            name="org.lamport.tla.toolbox.tool.prover.ui.StepColor2A">
       </type>
       <type
-            markerType="org.lamport.tla.toolbox.tool.prover.ui.stepProvingFailed"
-            name="org.lamport.tla.toolbox.tool.prover.ui.stepProvingFailed">
+            markerType="org.lamport.tla.toolbox.tool.prover.ui.stepColor2B"
+            name="org.lamport.tla.toolbox.tool.prover.ui.StepColor2B">
+      </type>
+ 
+       <type
+            markerType="org.lamport.tla.toolbox.tool.prover.ui.stepColor3A"
+            name="org.lamport.tla.toolbox.tool.prover.ui.StepColor3A">
       </type>
       <type
-            markerType="org.lamport.tla.toolbox.tool.prover.ui.stepCheckingFailed"
-            name="org.lamport.tla.toolbox.tool.prover.ui.stepCheckingFailed">
+            markerType="org.lamport.tla.toolbox.tool.prover.ui.stepColor3B"
+            name="org.lamport.tla.toolbox.tool.prover.ui.StepColor3B">
+      </type>
+ 
+       <type
+            markerType="org.lamport.tla.toolbox.tool.prover.ui.stepColor4A"
+            name="org.lamport.tla.toolbox.tool.prover.ui.StepColor4A">
       </type>
       <type
-            markerType="org.lamport.tla.toolbox.tool.prover.ui.stepProved"
-            name="org.lamport.tla.toolbox.tool.prover.ui.stepProved">
+            markerType="org.lamport.tla.toolbox.tool.prover.ui.stepColor4B"
+            name="org.lamport.tla.toolbox.tool.prover.ui.StepColor4B">
+      </type>
+ 
+       <type
+            markerType="org.lamport.tla.toolbox.tool.prover.ui.stepColor5A"
+            name="org.lamport.tla.toolbox.tool.prover.ui.StepColor5A">
       </type>
       <type
-            markerType="org.lamport.tla.toolbox.tool.prover.ui.stepBeingProved"
-            name="org.lamport.tla.toolbox.tool.prover.ui.stepBeingProved">
+            markerType="org.lamport.tla.toolbox.tool.prover.ui.stepColor5B"
+            name="org.lamport.tla.toolbox.tool.prover.ui.StepColor5B">
+      </type>
+ 
+       <type
+            markerType="org.lamport.tla.toolbox.tool.prover.ui.stepColor6A"
+            name="org.lamport.tla.toolbox.tool.prover.ui.StepColor6A">
       </type>
       <type
-            markerType="org.lamport.tla.toolbox.tool.prover.ui.leafFailed"
-            name="org.lamport.tla.toolbox.tool.prover.ui.leafFailed">
+            markerType="org.lamport.tla.toolbox.tool.prover.ui.stepColor6B"
+            name="org.lamport.tla.toolbox.tool.prover.ui.StepColor6B">
+      </type>
+ 
+       <type
+            markerType="org.lamport.tla.toolbox.tool.prover.ui.stepColor7A"
+            name="org.lamport.tla.toolbox.tool.prover.ui.StepColor7A">
+      </type>
+      <type
+            markerType="org.lamport.tla.toolbox.tool.prover.ui.stepColor7B"
+            name="org.lamport.tla.toolbox.tool.prover.ui.StepColor7B">
+      </type>
+ 
+       <type
+            markerType="org.lamport.tla.toolbox.tool.prover.ui.stepColor8A"
+            name="org.lamport.tla.toolbox.tool.prover.ui.StepColor8A">
+      </type>
+      <type
+            markerType="org.lamport.tla.toolbox.tool.prover.ui.stepColor8B"
+            name="org.lamport.tla.toolbox.tool.prover.ui.StepColor8B">
+      </type>
+ 
+       <type
+            markerType="org.lamport.tla.toolbox.tool.prover.ui.stepColor9A"
+            name="org.lamport.tla.toolbox.tool.prover.ui.StepColor9A">
+      </type>
+      <type
+            markerType="org.lamport.tla.toolbox.tool.prover.ui.stepColor9B"
+            name="org.lamport.tla.toolbox.tool.prover.ui.StepColor9B">
+      </type>
+ 
+       <type
+            markerType="org.lamport.tla.toolbox.tool.prover.ui.stepColor10A"
+            name="org.lamport.tla.toolbox.tool.prover.ui.StepColor10A">
+      </type>
+      <type
+            markerType="org.lamport.tla.toolbox.tool.prover.ui.stepColor10B"
+            name="org.lamport.tla.toolbox.tool.prover.ui.StepColor10B">
+      </type>
+ 
+       <type
+            markerType="org.lamport.tla.toolbox.tool.prover.ui.stepColor11A"
+            name="org.lamport.tla.toolbox.tool.prover.ui.StepColor11A">
+      </type>
+      <type
+            markerType="org.lamport.tla.toolbox.tool.prover.ui.stepColor11B"
+            name="org.lamport.tla.toolbox.tool.prover.ui.StepColor11B">
+      </type>
+ 
+       <type
+            markerType="org.lamport.tla.toolbox.tool.prover.ui.stepColor12A"
+            name="org.lamport.tla.toolbox.tool.prover.ui.StepColor12A">
+      </type>
+      <type
+            markerType="org.lamport.tla.toolbox.tool.prover.ui.stepColor12B"
+            name="org.lamport.tla.toolbox.tool.prover.ui.StepColor12B">
       </type>
    </extension>
    <extension
          point="org.eclipse.ui.editors.markerAnnotationSpecification">
       <specification
-            annotationType="org.lamport.tla.toolbox.tool.prover.ui.stepChecked"
-            colorPreferenceKey="fcsCPK"
-            colorPreferenceValue="113,255,113"
-            highlightPreferenceKey="fcsHPK"
+            annotationType="org.lamport.tla.toolbox.tool.prover.ui.StepColor1A"
+            colorPreferenceKey="stepStatusColor1"
+            colorPreferenceValue="0,0,0"
+            highlightPreferenceKey="stepStatusHighlight1A"
             highlightPreferenceValue="true"
-            includeOnPreferencePage="true"
-            label="Step Checked"
-            overviewRulerPreferenceKey="fcsORPK"
-            textPreferenceKey="fcsTPK"
+            includeOnPreferencePage="false"
+            label="Color 1A"
+            overviewRulerPreferenceKey="stepStatusOverview1A"
+            overviewRulerPreferenceValue="false"
+            textPreferenceKey="stepStatusText1A"
             textPreferenceValue="true"
-            textStylePreferenceKey="fcsSPK"
-            textStylePreferenceValue="BOX">
+            verticalRulerPreferenceKey="stepStatusVertical1A"
+            verticalRulerPreferenceValue="false">
       </specification>
       <specification
-            annotationType="org.lamport.tla.toolbox.tool.prover.ui.stepOmitted"
-            colorPreferenceKey="steoCPK"
-            colorPreferenceValue="217,250,174"
-            highlightPreferenceKey="steoHPK"
+            annotationType="org.lamport.tla.toolbox.tool.prover.ui.StepColor1B"
+            colorPreferenceKey="stepStatusColor1"
+            colorPreferenceValue="0,0,0"
+            highlightPreferenceKey="stepStatusHighlight1B"
             highlightPreferenceValue="true"
-            includeOnPreferencePage="true"
-            label="Step Omitted"
-            overviewRulerPreferenceKey="steoORPK"
-            textPreferenceKey="steoTPK"
+            includeOnPreferencePage="false"
+            label="Color 1B"
+            overviewRulerPreferenceKey="stepStatusOverview1B"
+            overviewRulerPreferenceValue="false"
+            textPreferenceKey="stepStatusText1B"
             textPreferenceValue="true"
-            textStylePreferenceKey="steoSPK"
-            textStylePreferenceValue="BOX">
+            verticalRulerPreferenceKey="stepStatusVertical1B"
+            verticalRulerPreferenceValue="false">
       </specification>
       <specification
-            annotationType="org.lamport.tla.toolbox.tool.prover.ui.stepMissing"
-            colorPreferenceKey="wpcCPK"
-            colorPreferenceValue="255,255,183"
-            highlightPreferenceKey="wpcHPK"
+            annotationType="org.lamport.tla.toolbox.tool.prover.ui.StepColor2A"
+            colorPreferenceKey="stepStatusColor2"
+            colorPreferenceValue="0,0,0"
+            highlightPreferenceKey="stepStatusHighlight2A"
             highlightPreferenceValue="true"
-            includeOnPreferencePage="true"
-            label="Step Missing"
-            overviewRulerPreferenceKey="wpcORPK"
-            textPreferenceKey="wpcTPK"
+            includeOnPreferencePage="false"
+            label="Color 2A"
+            overviewRulerPreferenceKey="stepStatusOverview2A"
+            overviewRulerPreferenceValue="false"
+            textPreferenceKey="stepStatusText2A"
             textPreferenceValue="true"
-            textStylePreferenceKey="wpcSPK"
-            textStylePreferenceValue="BOX">
+            verticalRulerPreferenceKey="stepStatusVertical2A"
+            verticalRulerPreferenceValue="false">
       </specification>
       <specification
-            annotationType="org.lamport.tla.toolbox.tool.prover.ui.stepProvingFailed"
-            colorPreferenceKey="offsCPK"
-            colorPreferenceValue="255,187,187"
-            highlightPreferenceKey="offsHPK"
+            annotationType="org.lamport.tla.toolbox.tool.prover.ui.StepColor2B"
+            colorPreferenceKey="stepStatusColor2"
+            colorPreferenceValue="0,0,0"
+            highlightPreferenceKey="stepStatusHighlight2B"
             highlightPreferenceValue="true"
-            includeOnPreferencePage="true"
-            label="Step Proving Failed"
-            overviewRulerPreferenceKey="offsORPK"
-            textPreferenceKey="offsTPK"
+            includeOnPreferencePage="false"
+            label="Color 2B"
+            overviewRulerPreferenceKey="stepStatusOverview2B"
+            overviewRulerPreferenceValue="false"
+            textPreferenceKey="stepStatusText2B"
             textPreferenceValue="true"
-            textStylePreferenceKey="offsSPK"
-            textStylePreferenceValue="BOX">
+            verticalRulerPreferenceKey="stepStatusVertical2B"
+            verticalRulerPreferenceValue="false">
+      </specification>
+ 
+     <specification
+            annotationType="org.lamport.tla.toolbox.tool.prover.ui.StepColor3A"
+            colorPreferenceKey="stepStatusColor3"
+            colorPreferenceValue="0,0,0"
+            highlightPreferenceKey="stepStatusHighlight3A"
+            highlightPreferenceValue="true"
+            includeOnPreferencePage="false"
+            label="Color 3A"
+            overviewRulerPreferenceKey="stepStatusOverview3A"
+            overviewRulerPreferenceValue="false"
+            textPreferenceKey="stepStatusText3A"
+            textPreferenceValue="true"
+            verticalRulerPreferenceKey="stepStatusVertical3A"
+            verticalRulerPreferenceValue="false">
       </specification>
       <specification
-            annotationType="org.lamport.tla.toolbox.tool.prover.ui.stepCheckingFailed"
-            colorPreferenceKey="scfCPK"
-            colorPreferenceValue="255,128,128"
-            highlightPreferenceKey="scfHPK"
+            annotationType="org.lamport.tla.toolbox.tool.prover.ui.StepColor3B"
+            colorPreferenceKey="stepStatusColor3"
+            colorPreferenceValue="0,0,0"
+            highlightPreferenceKey="stepStatusHighlight3B"
             highlightPreferenceValue="true"
-            includeOnPreferencePage="true"
-            label="Step Checking Failed"
-            overviewRulerPreferenceKey="scfORPK"
-            textPreferenceKey="scfTPK"
+            includeOnPreferencePage="false"
+            label="Color 3B"
+            overviewRulerPreferenceKey="stepStatusOverview3B"
+            overviewRulerPreferenceValue="false"
+            textPreferenceKey="stepStatusText3B"
             textPreferenceValue="true"
-            textStylePreferenceKey="scfSPK"
-            textStylePreferenceValue="BOX">
+            verticalRulerPreferenceKey="stepStatusVertical3B"
+            verticalRulerPreferenceValue="false">
+      </specification>
+ 
+     <specification
+            annotationType="org.lamport.tla.toolbox.tool.prover.ui.StepColor4A"
+            colorPreferenceKey="stepStatusColor4"
+            colorPreferenceValue="0,0,0"
+            highlightPreferenceKey="stepStatusHighlight4A"
+            highlightPreferenceValue="true"
+            includeOnPreferencePage="false"
+            label="Color 4A"
+            overviewRulerPreferenceKey="stepStatusOverview4A"
+            overviewRulerPreferenceValue="false"
+            textPreferenceKey="stepStatusText4A"
+            textPreferenceValue="true"
+            verticalRulerPreferenceKey="stepStatusVertical4A"
+            verticalRulerPreferenceValue="false">
       </specification>
       <specification
-            annotationType="org.lamport.tla.toolbox.tool.prover.ui.stepProved"
-            colorPreferenceKey="spCPK"
-            colorPreferenceValue="174,255,174"
-            highlightPreferenceKey="spHPK"
+            annotationType="org.lamport.tla.toolbox.tool.prover.ui.StepColor4B"
+            colorPreferenceKey="stepStatusColor4"
+            colorPreferenceValue="0,0,0"
+            highlightPreferenceKey="stepStatusHighlight4B"
             highlightPreferenceValue="true"
-            includeOnPreferencePage="true"
-            label="Step Proved"
-            overviewRulerPreferenceKey="spORPK"
-            textPreferenceKey="spTPK"
+            includeOnPreferencePage="false"
+            label="Color 4B"
+            overviewRulerPreferenceKey="stepStatusOverview4B"
+            overviewRulerPreferenceValue="false"
+            textPreferenceKey="stepStatusText4B"
             textPreferenceValue="true"
-            textStylePreferenceKey="spSPK"
-            textStylePreferenceValue="BOX">
+            verticalRulerPreferenceKey="stepStatusVertical4B"
+            verticalRulerPreferenceValue="false">
+      </specification>
+ 
+     <specification
+            annotationType="org.lamport.tla.toolbox.tool.prover.ui.StepColor5A"
+            colorPreferenceKey="stepStatusColor5"
+            colorPreferenceValue="0,0,0"
+            highlightPreferenceKey="stepStatusHighlight5A"
+            highlightPreferenceValue="true"
+            includeOnPreferencePage="false"
+            label="Color 5A"
+            overviewRulerPreferenceKey="stepStatusOverview5A"
+            overviewRulerPreferenceValue="false"
+            textPreferenceKey="stepStatusText5A"
+            textPreferenceValue="true"
+            verticalRulerPreferenceKey="stepStatusVertical5A"
+            verticalRulerPreferenceValue="false">
       </specification>
       <specification
-            annotationType="org.lamport.tla.toolbox.tool.prover.ui.stepBeingProved"
-            colorPreferenceKey="sbpCPK"
-            colorPreferenceValue="133,133,133"
-            highlightPreferenceKey="sbpHPK"
+            annotationType="org.lamport.tla.toolbox.tool.prover.ui.StepColor5B"
+            colorPreferenceKey="stepStatusColor5"
+            colorPreferenceValue="0,0,0"
+            highlightPreferenceKey="stepStatusHighlight5B"
             highlightPreferenceValue="true"
-            includeOnPreferencePage="true"
-            label="Step Being Proved"
-            overviewRulerPreferenceKey="sbpORPK"
-            textPreferenceKey="sbpTPK"
+            includeOnPreferencePage="false"
+            label="Color 5B"
+            overviewRulerPreferenceKey="stepStatusOverview5B"
+            overviewRulerPreferenceValue="false"
+            textPreferenceKey="stepStatusText5B"
             textPreferenceValue="true"
-            textStylePreferenceKey="sbpTSPK"
-            textStylePreferenceValue="BOX">
+            verticalRulerPreferenceKey="stepStatusVertical5B"
+            verticalRulerPreferenceValue="false">
+      </specification>
+ 
+     <specification
+            annotationType="org.lamport.tla.toolbox.tool.prover.ui.StepColor6A"
+            colorPreferenceKey="stepStatusColor6"
+            colorPreferenceValue="0,0,0"
+            highlightPreferenceKey="stepStatusHighlight6A"
+            highlightPreferenceValue="true"
+            includeOnPreferencePage="false"
+            label="Color 6A"
+            overviewRulerPreferenceKey="stepStatusOverview6A"
+            overviewRulerPreferenceValue="false"
+            textPreferenceKey="stepStatusText6A"
+            textPreferenceValue="true"
+            verticalRulerPreferenceKey="stepStatusVertical6A"
+            verticalRulerPreferenceValue="false">
       </specification>
       <specification
-            annotationType="org.lamport.tla.toolbox.tool.prover.ui.leafFailed"
-            colorPreferenceKey="lspfCPK"
-            colorPreferenceValue="255,187,187"
-            contributesToHeader="false"
-            highlightPreferenceKey="lspfHPK"
+            annotationType="org.lamport.tla.toolbox.tool.prover.ui.StepColor6B"
+            colorPreferenceKey="stepStatusColor6"
+            colorPreferenceValue="0,0,0"
+            highlightPreferenceKey="stepStatusHighlight6B"
             highlightPreferenceValue="true"
-            includeOnPreferencePage="true"
-            label="Leaf Step Proving Failed"
-            overviewRulerPreferenceKey="lspfORPK"
-            overviewRulerPreferenceValue="true"
-            textPreferenceKey="lspfTPK"
+            includeOnPreferencePage="false"
+            label="Color 6B"
+            overviewRulerPreferenceKey="stepStatusOverview6B"
+            overviewRulerPreferenceValue="false"
+            textPreferenceKey="stepStatusText6B"
             textPreferenceValue="true"
-            textStylePreferenceKey="lspfSPK"
-            textStylePreferenceValue="BOX">
+            verticalRulerPreferenceKey="stepStatusVertical6B"
+            verticalRulerPreferenceValue="false">
+      </specification>
+ 
+     <specification
+            annotationType="org.lamport.tla.toolbox.tool.prover.ui.StepColor7A"
+            colorPreferenceKey="stepStatusColor7"
+            colorPreferenceValue="0,0,0"
+            highlightPreferenceKey="stepStatusHighlight7A"
+            highlightPreferenceValue="true"
+            includeOnPreferencePage="false"
+            label="Color 7A"
+            overviewRulerPreferenceKey="stepStatusOverview7A"
+            overviewRulerPreferenceValue="false"
+            textPreferenceKey="stepStatusText7A"
+            textPreferenceValue="true"
+            verticalRulerPreferenceKey="stepStatusVertical7A"
+            verticalRulerPreferenceValue="false">
+      </specification>
+      <specification
+            annotationType="org.lamport.tla.toolbox.tool.prover.ui.StepColor7B"
+            colorPreferenceKey="stepStatusColor7"
+            colorPreferenceValue="0,0,0"
+            highlightPreferenceKey="stepStatusHighlight7B"
+            highlightPreferenceValue="true"
+            includeOnPreferencePage="false"
+            label="Color 7B"
+            overviewRulerPreferenceKey="stepStatusOverview7B"
+            overviewRulerPreferenceValue="false"
+            textPreferenceKey="stepStatusText7B"
+            textPreferenceValue="true"
+            verticalRulerPreferenceKey="stepStatusVertical7B"
+            verticalRulerPreferenceValue="false">
+      </specification>
+ 
+     <specification
+            annotationType="org.lamport.tla.toolbox.tool.prover.ui.StepColor8A"
+            colorPreferenceKey="stepStatusColor8"
+            colorPreferenceValue="0,0,0"
+            highlightPreferenceKey="stepStatusHighlight8A"
+            highlightPreferenceValue="true"
+            includeOnPreferencePage="false"
+            label="Color 8A"
+            overviewRulerPreferenceKey="stepStatusOverview8A"
+            overviewRulerPreferenceValue="false"
+            textPreferenceKey="stepStatusText8A"
+            textPreferenceValue="true"
+            verticalRulerPreferenceKey="stepStatusVertical8A"
+            verticalRulerPreferenceValue="false">
+      </specification>
+      <specification
+            annotationType="org.lamport.tla.toolbox.tool.prover.ui.StepColor8B"
+            colorPreferenceKey="stepStatusColor8"
+            colorPreferenceValue="0,0,0"
+            highlightPreferenceKey="stepStatusHighlight8B"
+            highlightPreferenceValue="true"
+            includeOnPreferencePage="false"
+            label="Color 8B"
+            overviewRulerPreferenceKey="stepStatusOverview8B"
+            overviewRulerPreferenceValue="false"
+            textPreferenceKey="stepStatusText8B"
+            textPreferenceValue="true"
+            verticalRulerPreferenceKey="stepStatusVertical8B"
+            verticalRulerPreferenceValue="false">
+      </specification>
+ 
+     <specification
+            annotationType="org.lamport.tla.toolbox.tool.prover.ui.StepColor9A"
+            colorPreferenceKey="stepStatusColor9"
+            colorPreferenceValue="0,0,0"
+            highlightPreferenceKey="stepStatusHighlight9A"
+            highlightPreferenceValue="true"
+            includeOnPreferencePage="false"
+            label="Color 9A"
+            overviewRulerPreferenceKey="stepStatusOverview9A"
+            overviewRulerPreferenceValue="false"
+            textPreferenceKey="stepStatusText9A"
+            textPreferenceValue="true"
+            verticalRulerPreferenceKey="stepStatusVertical9A"
+            verticalRulerPreferenceValue="false">
+      </specification>
+      <specification
+            annotationType="org.lamport.tla.toolbox.tool.prover.ui.StepColor9B"
+            colorPreferenceKey="stepStatusColor9"
+            colorPreferenceValue="0,0,0"
+            highlightPreferenceKey="stepStatusHighlight9B"
+            highlightPreferenceValue="true"
+            includeOnPreferencePage="false"
+            label="Color 9B"
+            overviewRulerPreferenceKey="stepStatusOverview9B"
+            overviewRulerPreferenceValue="false"
+            textPreferenceKey="stepStatusText9B"
+            textPreferenceValue="true"
+            verticalRulerPreferenceKey="stepStatusVertical9B"
+            verticalRulerPreferenceValue="false">
+      </specification>
+ 
+     <specification
+            annotationType="org.lamport.tla.toolbox.tool.prover.ui.StepColor10A"
+            colorPreferenceKey="stepStatusColor10"
+            colorPreferenceValue="0,0,0"
+            highlightPreferenceKey="stepStatusHighlight10A"
+            highlightPreferenceValue="true"
+            includeOnPreferencePage="false"
+            label="Color 10A"
+            overviewRulerPreferenceKey="stepStatusOverview10A"
+            overviewRulerPreferenceValue="false"
+            textPreferenceKey="stepStatusText10A"
+            textPreferenceValue="true"
+            verticalRulerPreferenceKey="stepStatusVertical10A"
+            verticalRulerPreferenceValue="false">
+      </specification>
+      <specification
+            annotationType="org.lamport.tla.toolbox.tool.prover.ui.StepColor10B"
+            colorPreferenceKey="stepStatusColor10"
+            colorPreferenceValue="0,0,0"
+            highlightPreferenceKey="stepStatusHighlight10B"
+            highlightPreferenceValue="true"
+            includeOnPreferencePage="false"
+            label="Color 10B"
+            overviewRulerPreferenceKey="stepStatusOverview10B"
+            overviewRulerPreferenceValue="false"
+            textPreferenceKey="stepStatusText10B"
+            textPreferenceValue="true"
+            verticalRulerPreferenceKey="stepStatusVertical10B"
+            verticalRulerPreferenceValue="false">
+      </specification>
+ 
+     <specification
+            annotationType="org.lamport.tla.toolbox.tool.prover.ui.StepColor11A"
+            colorPreferenceKey="stepStatusColor11"
+            colorPreferenceValue="0,0,0"
+            highlightPreferenceKey="stepStatusHighlight11A"
+            highlightPreferenceValue="true"
+            includeOnPreferencePage="false"
+            label="Color 11A"
+            overviewRulerPreferenceKey="stepStatusOverview11A"
+            overviewRulerPreferenceValue="false"
+            textPreferenceKey="stepStatusText11A"
+            textPreferenceValue="true"
+            verticalRulerPreferenceKey="stepStatusVertical11A"
+            verticalRulerPreferenceValue="false">
+      </specification>
+      <specification
+            annotationType="org.lamport.tla.toolbox.tool.prover.ui.StepColor11B"
+            colorPreferenceKey="stepStatusColor11"
+            colorPreferenceValue="0,0,0"
+            highlightPreferenceKey="stepStatusHighlight11B"
+            highlightPreferenceValue="true"
+            includeOnPreferencePage="false"
+            label="Color 11B"
+            overviewRulerPreferenceKey="stepStatusOverview11B"
+            overviewRulerPreferenceValue="false"
+            textPreferenceKey="stepStatusText11B"
+            textPreferenceValue="true"
+            verticalRulerPreferenceKey="stepStatusVertical11B"
+            verticalRulerPreferenceValue="false">
+      </specification>
+ 
+     <specification
+            annotationType="org.lamport.tla.toolbox.tool.prover.ui.StepColor12A"
+            colorPreferenceKey="stepStatusColor12"
+            colorPreferenceValue="0,0,0"
+            highlightPreferenceKey="stepStatusHighlight12A"
+            highlightPreferenceValue="true"
+            includeOnPreferencePage="false"
+            label="Color 12A"
+            overviewRulerPreferenceKey="stepStatusOverview12A"
+            overviewRulerPreferenceValue="false"
+            textPreferenceKey="stepStatusText12A"
+            textPreferenceValue="true"
+            verticalRulerPreferenceKey="stepStatusVertical12A"
+            verticalRulerPreferenceValue="false">
+      </specification>
+      <specification
+            annotationType="org.lamport.tla.toolbox.tool.prover.ui.StepColor12B"
+            colorPreferenceKey="stepStatusColor12"
+            colorPreferenceValue="0,0,0"
+            highlightPreferenceKey="stepStatusHighlight12B"
+            highlightPreferenceValue="true"
+            includeOnPreferencePage="false"
+            label="Color 12B"
+            overviewRulerPreferenceKey="stepStatusOverview12B"
+            overviewRulerPreferenceValue="false"
+            textPreferenceKey="stepStatusText12B"
+            textPreferenceValue="true"
+            verticalRulerPreferenceKey="stepStatusVertical12B"
+            verticalRulerPreferenceValue="false">
       </specification>
    </extension>
    <extension
@@ -422,6 +656,296 @@
       <attribute
             name="org.lamport.tla.toolbox.tool.prover.ui.isLeafStep">
       </attribute>
+   </extension>
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            class="org.lamport.tla.toolbox.tool.prover.ui.preference.ProverPreferencePage"
+            id="org.lamport.tla.toolbox.tool.prover.ProverPreferencePage"
+            name="TLAPS Preferences">
+      </page>
+   </extension>
+   <extension
+         id="org.lamport.tla.toolbox.tool.prover.ui.proofStepStatus"
+         name="Super type representing the status of a proof step"
+         point="org.eclipse.core.resources.markers">
+      <super
+            type="org.eclipse.core.resources.marker">
+      </super>
+   </extension>
+   <extension
+         id="org.lamport.tla.toolbox.tool.prover.ui.stepColor1A"
+         name="Logical color 1 for non-leaf step statuses"
+         point="org.eclipse.core.resources.markers">
+      <super
+            type="org.lamport.tla.toolbox.tool.prover.ui.proofStepStatus">
+      </super>
+      <persistent
+            value="true">
+      </persistent>
+   </extension>
+   <extension
+         id="org.lamport.tla.toolbox.tool.prover.ui.stepColor1B"
+         name="Logical color 1 for leaf step statuses"
+         point="org.eclipse.core.resources.markers">
+      <super
+            type="org.lamport.tla.toolbox.tool.prover.ui.proofStepStatus">
+      </super>
+      <persistent
+            value="true">
+      </persistent>
+   </extension>
+   <extension
+         id="org.lamport.tla.toolbox.tool.prover.ui.stepColor2A"
+         name="Logical color 2 for non-leaf step statuses"
+         point="org.eclipse.core.resources.markers">
+      <super
+            type="org.lamport.tla.toolbox.tool.prover.ui.proofStepStatus">
+      </super>
+      <persistent
+            value="true">
+      </persistent>
+   </extension>
+   <extension
+         id="org.lamport.tla.toolbox.tool.prover.ui.stepColor2B"
+         name="Logical color 2 for leaf step statuses"
+         point="org.eclipse.core.resources.markers">
+      <super
+            type="org.lamport.tla.toolbox.tool.prover.ui.proofStepStatus">
+      </super>
+      <persistent
+            value="true">
+      </persistent>
+   </extension>
+ 
+   <extension
+         id="org.lamport.tla.toolbox.tool.prover.ui.stepColor3A"
+         name="Logical color 3 for non-leaf step statuses"
+         point="org.eclipse.core.resources.markers">
+      <super
+            type="org.lamport.tla.toolbox.tool.prover.ui.proofStepStatus">
+      </super>
+      <persistent
+            value="true">
+      </persistent>
+   </extension>
+   <extension
+         id="org.lamport.tla.toolbox.tool.prover.ui.stepColor3B"
+         name="Logical color 3 for leaf step statuses"
+         point="org.eclipse.core.resources.markers">
+      <super
+            type="org.lamport.tla.toolbox.tool.prover.ui.proofStepStatus">
+      </super>
+      <persistent
+            value="true">
+      </persistent>
+   </extension>
+ 
+   <extension
+         id="org.lamport.tla.toolbox.tool.prover.ui.stepColor4A"
+         name="Logical color 4 for non-leaf step statuses"
+         point="org.eclipse.core.resources.markers">
+      <super
+            type="org.lamport.tla.toolbox.tool.prover.ui.proofStepStatus">
+      </super>
+      <persistent
+            value="true">
+      </persistent>
+   </extension>
+   <extension
+         id="org.lamport.tla.toolbox.tool.prover.ui.stepColor4B"
+         name="Logical color 4 for leaf step statuses"
+         point="org.eclipse.core.resources.markers">
+      <super
+            type="org.lamport.tla.toolbox.tool.prover.ui.proofStepStatus">
+      </super>
+      <persistent
+            value="true">
+      </persistent>
+   </extension>
+ 
+   <extension
+         id="org.lamport.tla.toolbox.tool.prover.ui.stepColor5A"
+         name="Logical color 5 for non-leaf step statuses"
+         point="org.eclipse.core.resources.markers">
+      <super
+            type="org.lamport.tla.toolbox.tool.prover.ui.proofStepStatus">
+      </super>
+      <persistent
+            value="true">
+      </persistent>
+   </extension>
+   <extension
+         id="org.lamport.tla.toolbox.tool.prover.ui.stepColor5B"
+         name="Logical color 5 for leaf step statuses"
+         point="org.eclipse.core.resources.markers">
+      <super
+            type="org.lamport.tla.toolbox.tool.prover.ui.proofStepStatus">
+      </super>
+      <persistent
+            value="true">
+      </persistent>
+   </extension>
+ 
+   <extension
+         id="org.lamport.tla.toolbox.tool.prover.ui.stepColor6A"
+         name="Logical color 6 for non-leaf step statuses"
+         point="org.eclipse.core.resources.markers">
+      <super
+            type="org.lamport.tla.toolbox.tool.prover.ui.proofStepStatus">
+      </super>
+      <persistent
+            value="true">
+      </persistent>
+   </extension>
+   <extension
+         id="org.lamport.tla.toolbox.tool.prover.ui.stepColor6B"
+         name="Logical color 6 for leaf step statuses"
+         point="org.eclipse.core.resources.markers">
+      <super
+            type="org.lamport.tla.toolbox.tool.prover.ui.proofStepStatus">
+      </super>
+      <persistent
+            value="true">
+      </persistent>
+   </extension>
+ 
+   <extension
+         id="org.lamport.tla.toolbox.tool.prover.ui.stepColor7A"
+         name="Logical color 7 for non-leaf step statuses"
+         point="org.eclipse.core.resources.markers">
+      <super
+            type="org.lamport.tla.toolbox.tool.prover.ui.proofStepStatus">
+      </super>
+      <persistent
+            value="true">
+      </persistent>
+   </extension>
+   <extension
+         id="org.lamport.tla.toolbox.tool.prover.ui.stepColor7B"
+         name="Logical color 7 for leaf step statuses"
+         point="org.eclipse.core.resources.markers">
+      <super
+            type="org.lamport.tla.toolbox.tool.prover.ui.proofStepStatus">
+      </super>
+      <persistent
+            value="true">
+      </persistent>
+   </extension>
+ 
+   <extension
+         id="org.lamport.tla.toolbox.tool.prover.ui.stepColor8A"
+         name="Logical color 8 for non-leaf step statuses"
+         point="org.eclipse.core.resources.markers">
+      <super
+            type="org.lamport.tla.toolbox.tool.prover.ui.proofStepStatus">
+      </super>
+      <persistent
+            value="true">
+      </persistent>
+   </extension>
+   <extension
+         id="org.lamport.tla.toolbox.tool.prover.ui.stepColor8B"
+         name="Logical color 8 for leaf step statuses"
+         point="org.eclipse.core.resources.markers">
+      <super
+            type="org.lamport.tla.toolbox.tool.prover.ui.proofStepStatus">
+      </super>
+      <persistent
+            value="true">
+      </persistent>
+   </extension>
+ 
+   <extension
+         id="org.lamport.tla.toolbox.tool.prover.ui.stepColor9A"
+         name="Logical color 9 for non-leaf step statuses"
+         point="org.eclipse.core.resources.markers">
+      <super
+            type="org.lamport.tla.toolbox.tool.prover.ui.proofStepStatus">
+      </super>
+      <persistent
+            value="true">
+      </persistent>
+   </extension>
+   <extension
+         id="org.lamport.tla.toolbox.tool.prover.ui.stepColor9B"
+         name="Logical color 9 for leaf step statuses"
+         point="org.eclipse.core.resources.markers">
+      <super
+            type="org.lamport.tla.toolbox.tool.prover.ui.proofStepStatus">
+      </super>
+      <persistent
+            value="true">
+      </persistent>
+   </extension>
+ 
+   <extension
+         id="org.lamport.tla.toolbox.tool.prover.ui.stepColor10A"
+         name="Logical color 10 for non-leaf step statuses"
+         point="org.eclipse.core.resources.markers">
+      <super
+            type="org.lamport.tla.toolbox.tool.prover.ui.proofStepStatus">
+      </super>
+      <persistent
+            value="true">
+      </persistent>
+   </extension>
+   <extension
+         id="org.lamport.tla.toolbox.tool.prover.ui.stepColor10B"
+         name="Logical color 10 for leaf step statuses"
+         point="org.eclipse.core.resources.markers">
+      <super
+            type="org.lamport.tla.toolbox.tool.prover.ui.proofStepStatus">
+      </super>
+      <persistent
+            value="true">
+      </persistent>
+   </extension>
+ 
+   <extension
+         id="org.lamport.tla.toolbox.tool.prover.ui.stepColor11A"
+         name="Logical color 11 for non-leaf step statuses"
+         point="org.eclipse.core.resources.markers">
+      <super
+            type="org.lamport.tla.toolbox.tool.prover.ui.proofStepStatus">
+      </super>
+      <persistent
+            value="true">
+      </persistent>
+   </extension>
+   <extension
+         id="org.lamport.tla.toolbox.tool.prover.ui.stepColor11B"
+         name="Logical color 11 for leaf step statuses"
+         point="org.eclipse.core.resources.markers">
+      <super
+            type="org.lamport.tla.toolbox.tool.prover.ui.proofStepStatus">
+      </super>
+      <persistent
+            value="true">
+      </persistent>
+   </extension>
+ 
+   <extension
+         id="org.lamport.tla.toolbox.tool.prover.ui.stepColor12A"
+         name="Logical color 12 for non-leaf step statuses"
+         point="org.eclipse.core.resources.markers">
+      <super
+            type="org.lamport.tla.toolbox.tool.prover.ui.proofStepStatus">
+      </super>
+      <persistent
+            value="true">
+      </persistent>
+   </extension>
+   <extension
+         id="org.lamport.tla.toolbox.tool.prover.ui.stepColor12B"
+         name="Logical color 12 for leaf step statuses"
+         point="org.eclipse.core.resources.markers">
+      <super
+            type="org.lamport.tla.toolbox.tool.prover.ui.proofStepStatus">
+      </super>
+      <persistent
+            value="true">
+      </persistent>
    </extension>
 
 </plugin>

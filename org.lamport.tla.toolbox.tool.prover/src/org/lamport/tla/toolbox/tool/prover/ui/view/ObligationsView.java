@@ -543,4 +543,17 @@ public class ObligationsView extends ViewPart
         item.getControl().dispose();
         item.dispose();
     }
+    
+    /**
+     * The c
+     * @author drickett
+     *
+     */
+    private class ObligationComposite
+    {
+        
+        SourceViewer viewer;
+        
+        
+    }
 }

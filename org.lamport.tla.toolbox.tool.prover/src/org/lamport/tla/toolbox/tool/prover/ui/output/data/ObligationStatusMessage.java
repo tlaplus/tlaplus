@@ -6,11 +6,16 @@ import java.util.Set;
 import java.util.Map.Entry;
 
 import org.lamport.tla.toolbox.tool.prover.ui.ProverUIActivator;
+import org.lamport.tla.toolbox.tool.prover.ui.util.ProverHelper;
 
 import tla2sany.st.Location;
 
 /**
  * Contains data about the status of an obligation.
+ * 
+ * An obligation status message contains an id, method, status,
+ * and potentially the pretty printed obligation string. These attributes
+ * can be accessed by their respective get methods.
  * 
  * @author drickett
  *
@@ -67,6 +72,13 @@ public class ObligationStatusMessage extends TLAPMMessage
     {
     }
 
+    /**
+     * Gets the string representing what the latest
+     * status for this obligation is for the prover given
+     * by {@link #getMethod()}.
+     * 
+     * @return
+     */
     public String getStatus()
     {
         return status;
@@ -87,16 +99,40 @@ public class ObligationStatusMessage extends TLAPMMessage
         return location;
     }
 
+    /**
+     * Returns the pretty printed form of the obligation
+     * if that is part of the message. Otherwise returns
+     * null.
+     * 
+     * @return
+     */
     public String getObString()
     {
         return obString;
     }
 
+    /**
+     * Returns the id of the obligation.
+     * 
+     * @return
+     */
     public int getID()
     {
         return id;
     }
 
+    /**
+     * Returns the name of the backend for which this
+     * is a message. Cooper, isabelle, zenon, etc.
+     * 
+     * Returns null if there is no method associated
+     * with this message. This currently only occurs
+     * when the status is {@link ProverHelper#TO_BE_PROVED}.
+     * That is the first message that arrives for every
+     * obligation.
+     * 
+     * @return
+     */
     public String getMethod()
     {
         return method;

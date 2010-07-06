@@ -1,8 +1,6 @@
 package org.lamport.tla.toolbox.tool.prover.ui.util;
 
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 import org.eclipse.core.resources.IFile;
@@ -30,6 +28,7 @@ import org.lamport.tla.toolbox.tool.prover.job.ProverJob;
 import org.lamport.tla.toolbox.tool.prover.job.ProverJobRule;
 import org.lamport.tla.toolbox.tool.prover.job.ProverJob.ProverJobMatcher;
 import org.lamport.tla.toolbox.tool.prover.ui.ProverUIActivator;
+import org.lamport.tla.toolbox.tool.prover.ui.output.data.ColorPredicate;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.ObligationStatus;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.ObligationStatusMessage;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.StepStatusMessage;
@@ -182,6 +181,11 @@ public class ProverHelper
      * has not yet been sent anywhere to be proved.
      */
     public static final String TO_BE_PROVED = "to be proved";
+    /**
+     * Dummy obligation status indicating that the user has not
+     * provided a user provided proof.
+     */
+    public static final String MISSING = "missing";
 
     /***********************************************************************************
      * Step status marker types.                                                       *
@@ -237,6 +241,10 @@ public class ProverHelper
     public static final int STEP_PROVING_FAILED_INT = 6;
     public static final int STEP_CHECKING_FAILED_INT = 100;
     public static final int STEP_UNKNOWN_INT = -1;
+
+    /****************************************************************************************
+     * Names of methods in obligation status messages.
+     ***************************************************************************************/
 
     /**
      * Removes all markers indicating obligation information on  a resource. Does
@@ -547,25 +555,19 @@ public class ProverHelper
             /*
              * Create the tuple. Eventually return this tuple.
              * 
-             * Note that for this step tuple, we do not initialize
-             * the status unless it is a leaf step with a PROOF OMITTED
-             * or a step with no proof. In that case we set the status
-             * to omitted or missing. There are some steps with missing
-             * proofs that still have obligations. When the prover sends
-             * information about these obligations, the status of the step
-             * tuple will be updated to reflect the maximum status of the
-             * obligations. Thus, leaf steps with a missing proof and with obligations
-             * will only briefly have the status "missing proof".
-             * 
-             * As is noted in the constructor for step tuple, all other
-             * step tuples created here will be initialized with status
-             * STEP_UNKNOWN_INT.
+             * For step tuples with PROOF OMITTED, we add a dummy child obligation
+             * indicating that the proof is explicitly omitted. For all other
+             * steps that have something to prove, the tlapm will send either
+             * a "to be proved" message for each obligation that it will try to
+             * prove for that step.  If the step can take a user-provide proof, but
+             * the user does not provide it, then tlapm will send a "missing" message
+             * and will not try to prove any obligations for that step.
              * 
              * See the method processObligationMessage() for information
              * on how information about the status of obligations
              * is used to update the status of steps.
              */
-            StepTuple stepTuple = new StepTuple();
+            StepTuple stepTuple = new StepTuple(proverJob);
             stepTuple.setSanyMarker(marker);
             proverJob.getStepMap().put(levelNode, stepTuple);
 
@@ -599,19 +601,20 @@ public class ProverHelper
                         }
                     } else
                     {
+                        marker.setAttribute(SANY_IS_LEAF_ATR, true);
+
                         // leaf proof
                         LeafProofNode leafProof = (LeafProofNode) proof;
                         if (leafProof.getOmitted())
                         {
-                            stepTuple.setStatus(getIntFromStringStatus(StepStatusMessage.OMITTED));
+                            stepTuple.addChild(new ObligationStatus(stepTuple, ColorPredicate.NUMBER_OF_OMITTED_STATE));
                         }
 
-                        marker.setAttribute(SANY_IS_LEAF_ATR, true);
                     }
                 } else
                 {
                     // missing proof
-                    stepTuple.setStatus(getIntFromStringStatus(StepStatusMessage.MISSING_PROOFS));
+                    // stepTuple.setStatus(getIntFromStringStatus(StepStatusMessage.MISSING_PROOFS, 0, null));
                     marker.setAttribute(SANY_IS_LEAF_ATR, true);
                 }
 
@@ -768,6 +771,19 @@ public class ProverHelper
     }
 
     /**
+     * Returns the marker type corresponding to the predicate given
+     * by predNum. The marker type depends on whether the marker
+     * is for a leaf step or not.
+     * 
+     * @param predNum
+     * @return
+     */
+    public static String colorPredNumToMarkerType(int predNum, boolean isLeaf)
+    {
+        return "org.lamport.tla.toolbox.tool.prover.ui.stepColor" + predNum + (isLeaf ? "B" : "A");
+    }
+
+    /**
      * Converts from an integer status of a step to
      * the marker type. The int should be one of
      * 
@@ -823,7 +839,7 @@ public class ProverHelper
      */
     public static void processObligationMessage(ObligationStatusMessage message, ProverJob proverJob)
     {
-        if (message.getStatus().equals(TO_BE_PROVED))
+        if (message.getStatus().equals(TO_BE_PROVED) || message.getStatus().equals(MISSING))
         {
             /*
              * Find the LevelNode in the semantic tree containing
@@ -867,7 +883,9 @@ public class ProverHelper
             StepTuple stepTuple = (StepTuple) proverJob.getStepMap().get(levelNode);
             if (stepTuple != null)
             {
-                ObligationStatus obStatus = new ObligationStatus(stepTuple, getIntFromStringStatus(message.getStatus()));
+                ObligationStatus obStatus = new ObligationStatus(stepTuple,
+                        (message.getStatus().equals(TO_BE_PROVED) ? ColorPredicate.TO_BE_PROVED_STATE
+                                : ColorPredicate.NUMBER_OF_MISSING_STATE));
                 stepTuple.addChild(obStatus);
                 proverJob.getObsMap().put(new Integer(message.getID()), obStatus);
             } else
@@ -886,7 +904,8 @@ public class ProverHelper
             if (!message.getStatus().equals(CHECKING_INTERUPTED))
             {
                 ObligationStatus obStatus = (ObligationStatus) proverJob.getObsMap().get(new Integer(message.getID()));
-                obStatus.setStatus(getIntFromStringStatus(message.getStatus()));
+                obStatus.setStatus(getIntFromStringStatus(message.getStatus(), obStatus.getObligationState(), message
+                        .getMethod()));
             }
 
             // create the marker and update the obligations view
@@ -1148,49 +1167,50 @@ public class ProverHelper
      */
     public static void compareStepStatusComputations(ProverJob proverJob)
     {
-        System.out.println("------------------Comparing TLAPM and Toolbox Step Status------------");
-        Collection stepTuples = proverJob.getStepMap().values();
-        for (Iterator it = stepTuples.iterator(); it.hasNext();)
-        {
-            StepTuple stepTuple = (StepTuple) it.next();
-            Location stepLoc = stringToLoc(stepTuple.getSanyMarker().getAttribute(SANY_LOC_ATR, ""));
-            StepStatusMessage stepMessage = (StepStatusMessage) proverJob.getStepMessageMap().remove(
-                    new Integer(stepLoc.beginLine()));
-            if (stepMessage == null)
-            {
-                System.out.println("NO STATUS BUG :\n No TLAPM step status message found for the step at " + stepLoc
-                        + " . The Toolbox thinks the status is " + statusIntToStatusString(stepTuple.getStatus()));
-            } else if (!stepMessage.getStatus().equals(statusIntToStatusString(stepTuple.getStatus())))
-            {
-                System.out.println("DIFFERENT STATUS BUG : \n Loc : " + stepLoc + "\n TLAPM : "
-                        + stepMessage.getStatus() + "\n Toolbox : " + statusIntToStatusString(stepTuple.getStatus()));
-            }
-        }
-
-        Collection remainingMessages = proverJob.getStepMessageMap().values();
-        for (Iterator it = remainingMessages.iterator(); it.hasNext();)
-        {
-            StepStatusMessage message = (StepStatusMessage) it.next();
-            System.out.println("NO STATUS BUG :\n No Toolbox step status message found for the step at "
-                    + message.getLocation() + " . The TLAPM reports the status " + message.getStatus());
-        }
-
-        System.out.println("------------------Done Comparing TLAPM and Toolbox Step Status------------");
+        // System.out.println("------------------Comparing TLAPM and Toolbox Step Status------------");
+        // Collection stepTuples = proverJob.getStepMap().values();
+        // for (Iterator it = stepTuples.iterator(); it.hasNext();)
+        // {
+        // StepTuple stepTuple = (StepTuple) it.next();
+        // Location stepLoc = stringToLoc(stepTuple.getSanyMarker().getAttribute(SANY_LOC_ATR, ""));
+        // StepStatusMessage stepMessage = (StepStatusMessage) proverJob.getStepMessageMap().remove(
+        // new Integer(stepLoc.beginLine()));
+        // if (stepMessage == null)
+        // {
+        // System.out.println("NO STATUS BUG :\n No TLAPM step status message found for the step at " + stepLoc
+        // + " . The Toolbox thinks the status is "
+        // + statusIntToStatusString(stepTuple.getColorPredicateValues()));
+        // } else if (!stepMessage.getStatus().equals(statusIntToStatusString(stepTuple.getColorPredicateValues())))
+        // {
+        // System.out.println("DIFFERENT STATUS BUG : \n Loc : " + stepLoc + "\n TLAPM : "
+        // + stepMessage.getStatus() + "\n Toolbox : "
+        // + statusIntToStatusString(stepTuple.getColorPredicateValues()));
+        // }
+        // }
+        //
+        // Collection remainingMessages = proverJob.getStepMessageMap().values();
+        // for (Iterator it = remainingMessages.iterator(); it.hasNext();)
+        // {
+        // StepStatusMessage message = (StepStatusMessage) it.next();
+        // System.out.println("NO STATUS BUG :\n No Toolbox step status message found for the step at "
+        // + message.getLocation() + " . The TLAPM reports the status " + message.getStatus());
+        // }
+        //
+        // System.out.println("------------------Done Comparing TLAPM and Toolbox Step Status------------");
     }
 
     /**
      * Creates a new marker at the current location of sanyMarker indicating the
      * status given by status. If status is not a known type (the method
-     * {@link #statusStringToMarkerType(String, boolean)} returns null) then this prints
+     * {@link #colorPredNumToMarkerType(int, boolean) returns null) then this prints
      * some debugging message and returns. If sanyMarker is null, this also
-     * prints some debugging message and returns. If status is null, this method
-     * removes any step status markers that overlap with sanyMarker. A null status
-     * means that no color should be shown on the editor.
+     * prints some debugging message and returns. This method removes any step status markers
+     * overlapping with the new marker that is created.
      * 
      * @param sanyMarker
-     * @param status
+     * @param predNum TODO
      */
-    public static void newStepStatusMarker(final IMarker sanyMarker, String status)
+    public static void newStepStatusMarker(final IMarker sanyMarker, int predNum)
     {
         if (sanyMarker == null)
         {
@@ -1205,7 +1225,8 @@ public class ProverHelper
              * If the status string does not correspond
              * to a marker type, then do not create a marker.
              */
-            final String markerType = statusStringToMarkerType(status, sanyMarker.getAttribute(SANY_IS_LEAF_ATR, false));
+            final String markerType = colorPredNumToMarkerType(predNum, sanyMarker
+                    .getAttribute(SANY_IS_LEAF_ATR, false));
 
             // This is commented out because we now will not create a marker if
             // marker type is null. A null marker type indicates that all overlapping markers
@@ -1652,48 +1673,67 @@ public class ProverHelper
      * or obligation and translates to the integer representation
      * of the status of a proof step.
      * 
-     * This can be used to translate the String status of an obligation
-     * to the integer status that can be used to compute the status of
-     * the proof step containing that obligation.
+     * This can be used to map from the current state of an obligation
+     * and the new status of the obligation for a prover into the new state
+     * of the obligation. See {@link ColorPredicate} for explanation of
+     * obligation states.
      * 
-     * Returns -1 if no known status is passed in. Returns 100 if
-     * {@link #CHECKING_FAILED} is the status.
+     * Returns currentStatus if status is not a known status.
      * 
-     * @param status
+     * @param status the new status string from tlapm
+     * @param currentState the current state of the obligation
+     * @param method the method, e.g. isabelle
      * @return
      */
-    public static int getIntFromStringStatus(String status)
+    public static int getIntFromStringStatus(String status, int currentState, String method)
     {
-        if (status.equals(CHECKED) || status.equals(CHECKED_ALREADY))
+        int methodNum;
+        if (method == null)
         {
-            return STEP_CHECKED_INT;
-        } else if (status.equals(PROVED) || status.equals(PROVED_ALREADY) || status.equals(SKIPPED)
-                || status.equals(TRIVIAL) || status.equals(TRIVIAL_ALREADY))
+            Assert.isTrue(status.equals(TRIVIAL) || status.equals(TRIVIAL_ALREADY),
+                    "Method is null but status is not trivial. This is unexpected.");
+            methodNum = ColorPredicate.TLAPM_NUM;
+        } else
         {
-            return STEP_PROVED_INT;
-        } else if (status.equals(TO_BE_PROVED))
-        {
-            return STEP_TO_BE_PROVED_INT;
-        } else if (status.equals(BEING_PROVED))
-        {
-            return STEP_BEING_PROVED_INT;
-        } else if (status.equals(StepStatusMessage.OMITTED))
-        {
-            return STEP_PROOF_OMITTED_INT;
-        } else if (status.equals(StepStatusMessage.MISSING_PROOFS))
-        {
-            return STEP_PROOF_MISSING_INT;
-        } else if (status.equals(FAILED) || status.equals(FAILED_ALREADY))
-        {
-            return STEP_PROVING_FAILED_INT;
-        } else if (status.equals(CHECKING_FAILED))
-        {
-            return STEP_CHECKING_FAILED_INT;
+            methodNum = getNumOfMethod(method);
         }
 
-        System.out.println("Unknown status : " + status);
-        return STEP_UNKNOWN_INT;
+        if (status.equals(PROVED) || status.equals(PROVED_ALREADY) || status.equals(SKIPPED) || status.equals(TRIVIAL)
+                || status.equals(TRIVIAL_ALREADY))
+        {
+            return ColorPredicate.newStateNumber(currentState, methodNum, ColorPredicate.numberOfProverStatus(
+                    methodNum, ColorPredicate.PROVED_STATUS));
+        } else if (status.equals(BEING_PROVED))
+        {
+            return ColorPredicate.newStateNumber(currentState, methodNum, ColorPredicate.numberOfProverStatus(
+                    methodNum, ColorPredicate.PROVING_STATUS));
+        } else if (status.equals(FAILED) || status.equals(FAILED_ALREADY))
+        {
+            return ColorPredicate.newStateNumber(currentState, methodNum, ColorPredicate.numberOfProverStatus(
+                    methodNum, ColorPredicate.FAILED_STATUS));
+        }
 
+        Assert.isTrue(false, "Unknown status : " + status);
+        return currentState;
+
+    }
+
+    /**
+     * Returns the number in {@link ColorPredicate} corresponding
+     * to the method reported by tlapm.
+     * 
+     * @param method
+     * @return
+     */
+    public static int getNumOfMethod(String method)
+    {
+        if (method.equals("isabelle"))
+        {
+            return ColorPredicate.ISABELLE_NUM;
+        } else
+        {
+            return ColorPredicate.OTHER_BACKEND_NUM;
+        }
     }
 
     /**

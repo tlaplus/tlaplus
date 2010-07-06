@@ -21,8 +21,10 @@ import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.Launch;
 import org.eclipse.debug.core.model.IProcess;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextSelection;
+import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.part.FileEditorInput;
 import org.lamport.tla.toolbox.editor.basic.TLAEditor;
 import org.lamport.tla.toolbox.editor.basic.util.EditorUtil;
@@ -32,9 +34,11 @@ import org.lamport.tla.toolbox.spec.parser.ParseResult;
 import org.lamport.tla.toolbox.tool.prover.output.internal.TLAPMBroadcastStreamListener;
 import org.lamport.tla.toolbox.tool.prover.ui.ProverUIActivator;
 import org.lamport.tla.toolbox.tool.prover.ui.output.TagBasedTLAPMOutputIncrementalParser;
+import org.lamport.tla.toolbox.tool.prover.ui.output.data.ColorPredicate;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.ObligationStatus;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.StepStatusMessage;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.StepTuple;
+import org.lamport.tla.toolbox.tool.prover.ui.preference.ProverPreferencePage;
 import org.lamport.tla.toolbox.tool.prover.ui.util.ProverHelper;
 import org.lamport.tla.toolbox.tool.prover.ui.view.ObligationsView;
 import org.lamport.tla.toolbox.util.ResourceHelper;
@@ -129,6 +133,7 @@ public class ProverJob extends Job
      * to {@link ObligationStatus}
      */
     private HashMap obsMap = new HashMap();
+    private ColorPredicate[] colorPredicates;
 
     /**
      * Constructor. This constructor sets the appropriate scheduling rule for this job, so there is no
@@ -215,6 +220,22 @@ public class ProverJob extends Job
 
     protected IStatus run(IProgressMonitor monitor)
     {
+
+        /*
+         * Create the ColorPredicate objects.
+         * 
+         * Note that color numbers for the preference page are 1-based.
+         */
+        colorPredicates = new ColorPredicate[ProverPreferencePage.NUM_STATUS_COLORS];
+        // the preference store containing color predicate preferences
+        IPreferenceStore preferenceStore = EditorsUI.getPreferenceStore();
+        for (int i = 1; i <= colorPredicates.length; i++)
+        {
+            String predicate = preferenceStore.getString(ProverPreferencePage.getColorPredPrefName(i));
+            boolean appliesToLeafOnly = preferenceStore.getBoolean(ProverPreferencePage.getAppliesToLeafPrefName(i));
+            colorPredicates[i - 1] = new ColorPredicate((appliesToLeafOnly ? "leaf " : "") + predicate);
+        }
+
         /*
          * Initialize the fields nodeToProve and module.
          * 
@@ -748,6 +769,18 @@ public class ProverJob extends Job
     }
 
     /**
+     * Returns the {@link ColorPredicate}s that were
+     * in the user's preferences at the time of the running
+     * of this job.
+     * 
+     * @return
+     */
+    public ColorPredicate[] getColorPredicates()
+    {
+        return colorPredicates;
+    }
+
+    /**
      * This method sets the values for the fields module and nodeToProve.
      * If the value of nodeToProve is not null before this method is called,
      * then the value of nodeToProve is not changed by this method. If
@@ -884,7 +917,7 @@ public class ProverJob extends Job
      */
     public String getProverJobTaskName()
     {
-        return  (checkStatus ? "Status check" : "Prover")
+        return (checkStatus ? "Status check" : "Prover")
                 + " launched on "
                 + (nodeToProve instanceof ModuleNode ? "entire" : "")
                 + " module "
