@@ -113,27 +113,28 @@ public class ColorPredicate
             { "NotProved", "some (-proved, -proved, -proved)" },
             
             // Some obligation has failed on one prover and not been proved by another.
-            { "FailedUnproved", "some (failed,-proved,-proved) (-proved,failed,-proved)" },
+            { "Failed", "some (failed,-proved,-proved) (-proved,failed,-proved)" },
             
             // Some obligation has failed or been stopped on one prover and not been proved by another.
-            { "FailedOrStoppedUnproved", "some (failed stopped,-proved,-proved) (-proved,failed stopped,-proved)" },
+            { "FailedOrStopped", "some (failed stopped,-proved,-proved) (-proved,failed stopped,-proved)" },
             
-            // Some obligation has failed on some prover.
-            { "Failed", "some (failed,,) (,failed,)" },
+            // Some obligation has failed on some prover, but could yet be proved by Isabelle.
+            { "FailedSoFar", "some (failed,-failed,)" },
             
             // Some obligation has failed or been stopped on some prover.
             { "FailedOrStopped", "some (failed stopped,,) (,failed stopped,)" },
             
-            // Some obligation is still being proved
-            { "BeingProved", "some (proving,,) (,proving,)" }, 
+            // Some obligation is still being proved or has failed a secondary prover
+            // but not yet tried by Isabelle
+            { "BeingProved", "some (proving,,) (failed,untried proving,)" }, 
             
             // Some obligation is missing.            
             { "Missing", "some missing" },
             
-            // Some obligation is OMITTED
+            // Some obligation has PROOF OMITTED
             { "Omitted", "some omitted" }, 
             
-            // Some obligation is either missing or OMITTED
+            // Some obligation is either missing or has PROOF OMITTED
             { "MissingOrOmitted", "some missing omitted" },
             
             // Every obligation has been proved by Isabelle (aka proved in paranoid mode)
@@ -482,7 +483,9 @@ public class ColorPredicate
             rest = rest.substring(5).trim();
         } else
         {
-            throw new IllegalArgumentException("Color predicate must have `every' or `some' specifier.");
+            throw new IllegalArgumentException("" +
+            		" Color predicate must start with the optional keyword `leaf'\n"
+                    + " followed by a legal macro name or `every' or `some'.");
         }
 
         this.set = 0;
