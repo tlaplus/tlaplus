@@ -44,6 +44,7 @@ import tla2sany.semantic.LeafProofNode;
 import tla2sany.semantic.LevelNode;
 import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.NonLeafProofNode;
+import tla2sany.semantic.OpApplNode;
 import tla2sany.semantic.ProofNode;
 import tla2sany.semantic.TheoremNode;
 import tla2sany.semantic.UseOrHideNode;
@@ -619,9 +620,24 @@ public class ProverHelper
                     }
                 } else
                 {
-                    // missing proof
-                    // stepTuple.setStatus(getIntFromStringStatus(StepStatusMessage.MISSING_PROOFS, 0, null));
                     marker.setAttribute(SANY_IS_LEAF_ATR, true);
+
+                    // Add a missing dummy obligation unless this is a Have, Take, or Witness step
+                    LevelNode assertion = theoremNode.getTheorem();
+                    boolean shouldHaveProof = true;
+                    if (assertion instanceof OpApplNode)
+                    {
+                        OpApplNode opApplAss = (OpApplNode) assertion;
+                        String name = opApplAss.getOperator().getName().toString();
+                        if (name.equals("$Have") || name.equals("$Take") || name.equals("$Witness"))
+                            shouldHaveProof = false;
+                    }
+
+                    if (shouldHaveProof)
+                    {
+                        stepTuple.addChild(new ObligationStatus(stepTuple, ColorPredicate.NUMBER_OF_MISSING_STATE));
+                    }
+
                 }
 
             } else
