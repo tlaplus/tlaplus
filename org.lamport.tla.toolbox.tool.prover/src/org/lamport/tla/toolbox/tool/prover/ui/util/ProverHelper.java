@@ -158,6 +158,11 @@ public class ProverHelper
      */
     public static final String CHECKING_INTERUPTED = "checking interrupted";
     /**
+     * Obligation status indicating that proving the obligation
+     * was interrupted.
+     */
+    public static final String INTERUPTED = "interrupted";
+    /**
      * Obligation status indicating that the obligation
      * has been proved in a prior run of the prover.
      */
@@ -1717,6 +1722,10 @@ public class ProverHelper
         {
             return ColorPredicate.newStateNumber(currentState, methodNum, ColorPredicate.numberOfProverStatus(
                     methodNum, ColorPredicate.FAILED_STATUS));
+        } else if (status.equals(INTERUPTED))
+        {
+            return ColorPredicate.newStateNumber(currentState, methodNum, ColorPredicate.numberOfProverStatus(
+                    methodNum, ColorPredicate.STOPPED_STATUS));
         }
 
         Assert.isTrue(false, "Unknown status : " + status);
