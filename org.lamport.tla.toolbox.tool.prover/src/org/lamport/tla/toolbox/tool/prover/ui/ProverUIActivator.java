@@ -40,7 +40,9 @@ public class ProverUIActivator extends AbstractUIPlugin
         IPreferenceStore store = EditorsUI.getPreferenceStore();
 
         /*
-         * The following sets the default color predicates for some of the colors.
+         * The following sets the default color predicates for the colors. First argument
+         * is the key for each predicate for the logical color, and the second argument is
+         * the predicate string (not the macro name).
          */
         store.setDefault(ProverPreferencePage.getColorPredPrefName(1), ColorPredicate.PREDEFINED_MACROS[0][1]);
         store.setDefault(ProverPreferencePage.getColorPredPrefName(2), ColorPredicate.PREDEFINED_MACROS[0][1]);
@@ -55,6 +57,10 @@ public class ProverUIActivator extends AbstractUIPlugin
         store.setDefault(ProverPreferencePage.getColorPredPrefName(11), ColorPredicate.PREDEFINED_MACROS[0][1]);
         store.setDefault(ProverPreferencePage.getColorPredPrefName(12), ColorPredicate.PREDEFINED_MACROS[0][1]);
 
+        /*
+         * DR commented out the following because default colors are now set in the plugin.xml file for this
+         * plug-in.
+         */
         //
         // /*
         // * The following sets the default colors values.
