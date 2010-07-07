@@ -619,8 +619,8 @@ public class ProverJob extends Job
          * 
          * > <tlapm-command> --isaprove --toolbox <loc> moduleName
          * 
-         * where <loc> is "bl:el" or "all" if the entire module
-         * is to be checked.
+         * where <loc> is "bl el". If the entire module
+         * is to be checked, bl = el = 0.
          * 
          * Optionally --nofp can be specified to not use fingerprinting.
          * 

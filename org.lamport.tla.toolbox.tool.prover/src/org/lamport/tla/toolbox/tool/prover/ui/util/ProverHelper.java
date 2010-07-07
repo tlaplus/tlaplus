@@ -34,6 +34,7 @@ import org.lamport.tla.toolbox.tool.prover.ui.output.data.ObligationStatusMessag
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.StepStatusMessage;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.StepTuple;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.WarningMessage;
+import org.lamport.tla.toolbox.tool.prover.ui.preference.ProverPreferencePage;
 import org.lamport.tla.toolbox.tool.prover.ui.view.ObligationsView;
 import org.lamport.tla.toolbox.util.AdapterFactory;
 import org.lamport.tla.toolbox.util.ResourceHelper;
@@ -775,6 +776,9 @@ public class ProverHelper
      * by predNum. The marker type depends on whether the marker
      * is for a leaf step or not.
      * 
+     * Color predicate numbers begin at 1 and end at
+     * {@link ProverPreferencePage#NUM_STATUS_COLORS}.
+     * 
      * @param predNum
      * @return
      */
@@ -904,7 +908,7 @@ public class ProverHelper
             if (!message.getStatus().equals(CHECKING_INTERUPTED))
             {
                 ObligationStatus obStatus = (ObligationStatus) proverJob.getObsMap().get(new Integer(message.getID()));
-                obStatus.setStatus(getIntFromStringStatus(message.getStatus(), obStatus.getObligationState(), message
+                obStatus.setState(getIntFromStringStatus(message.getStatus(), obStatus.getObligationState(), message
                         .getMethod()));
             }
 
@@ -1202,13 +1206,15 @@ public class ProverHelper
     /**
      * Creates a new marker at the current location of sanyMarker indicating the
      * status given by status. If status is not a known type (the method
-     * {@link #colorPredNumToMarkerType(int, boolean) returns null) then this prints
-     * some debugging message and returns. If sanyMarker is null, this also
+     * {@link #colorPredNumToMarkerType(int, boolean) returns null) then this deletes
+     * any markers overlapping with sanyMarker but does not create a new marker. If sanyMarker is null, this also
      * prints some debugging message and returns. This method removes any step status markers
      * overlapping with the new marker that is created.
      * 
+     * Color predicate numbers begin at 1 and end at {@link ProverPreferencePage#NUM_STATUS_COLORS}.
+     * 
      * @param sanyMarker
-     * @param predNum TODO
+     * @param predNum
      */
     public static void newStepStatusMarker(final IMarker sanyMarker, int predNum)
     {
