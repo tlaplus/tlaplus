@@ -660,9 +660,10 @@
    <extension
          point="org.eclipse.ui.preferencePages">
       <page
+            category="toolbox.ui.preferences.GeneralPreferencePage"
             class="org.lamport.tla.toolbox.tool.prover.ui.preference.ProverPreferencePage"
             id="org.lamport.tla.toolbox.tool.prover.ProverPreferencePage"
-            name="TLAPS Preferences">
+            name="TLAPS">
       </page>
    </extension>
    <extension
