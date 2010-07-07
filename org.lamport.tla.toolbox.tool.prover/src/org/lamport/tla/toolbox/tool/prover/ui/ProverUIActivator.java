@@ -2,7 +2,11 @@ package org.lamport.tla.toolbox.tool.prover.ui;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.lamport.tla.toolbox.tool.prover.ui.output.data.ColorPredicate;
+import org.lamport.tla.toolbox.tool.prover.ui.preference.ProverPreferencePage;
 import org.osgi.framework.BundleContext;
 
 /**
@@ -32,6 +36,41 @@ public class ProverUIActivator extends AbstractUIPlugin
     {
         super.start(context);
         plugin = this;
+
+        IPreferenceStore store = EditorsUI.getPreferenceStore();
+
+        /*
+         * The following sets the default color predicates for some of the colors.
+         */
+        store.setDefault(ProverPreferencePage.getColorPredPrefName(1), ColorPredicate.PREDEFINED_MACROS[0][1]);
+        store.setDefault(ProverPreferencePage.getColorPredPrefName(2), ColorPredicate.PREDEFINED_MACROS[0][1]);
+        store.setDefault(ProverPreferencePage.getColorPredPrefName(3), ColorPredicate.PREDEFINED_MACROS[5][1]);
+        store.setDefault(ProverPreferencePage.getColorPredPrefName(4), ColorPredicate.PREDEFINED_MACROS[10][1]);
+        store.setDefault(ProverPreferencePage.getColorPredPrefName(5), ColorPredicate.PREDEFINED_MACROS[11][1]);
+        store.setDefault(ProverPreferencePage.getColorPredPrefName(6), ColorPredicate.PREDEFINED_MACROS[9][1]);
+        store.setDefault(ProverPreferencePage.getColorPredPrefName(7), ColorPredicate.PREDEFINED_MACROS[2][1]);
+        store.setDefault(ProverPreferencePage.getColorPredPrefName(8), ColorPredicate.PREDEFINED_MACROS[0][1]);
+        store.setDefault(ProverPreferencePage.getColorPredPrefName(9), ColorPredicate.PREDEFINED_MACROS[0][1]);
+        store.setDefault(ProverPreferencePage.getColorPredPrefName(10), ColorPredicate.PREDEFINED_MACROS[0][1]);
+        store.setDefault(ProverPreferencePage.getColorPredPrefName(11), ColorPredicate.PREDEFINED_MACROS[0][1]);
+        store.setDefault(ProverPreferencePage.getColorPredPrefName(12), ColorPredicate.PREDEFINED_MACROS[0][1]);
+
+        //
+        // /*
+        // * The following sets the default colors values.
+        // */
+        // PreferenceConverter.setDefault(store, ProverPreferencePage.getColorPrefName(1), new RGB(255, 187, 187));
+        // PreferenceConverter.setDefault(store, ProverPreferencePage.getColorPrefName(2), new RGB(255, 255, 183));
+        // PreferenceConverter.setDefault(store, ProverPreferencePage.getColorPrefName(3), new RGB(217, 250, 174));
+        // PreferenceConverter.setDefault(store, ProverPreferencePage.getColorPrefName(4), new RGB(133, 133, 133));
+        // PreferenceConverter.setDefault(store, ProverPreferencePage.getColorPrefName(5), new RGB(174, 255, 174));
+        // PreferenceConverter.setDefault(store, ProverPreferencePage.getColorPrefName(6), new RGB(0, 0, 0));
+        // PreferenceConverter.setDefault(store, ProverPreferencePage.getColorPrefName(7), new RGB(0, 0, 0));
+        // PreferenceConverter.setDefault(store, ProverPreferencePage.getColorPrefName(8), new RGB(0, 0, 0));
+        // PreferenceConverter.setDefault(store, ProverPreferencePage.getColorPrefName(9), new RGB(0, 0, 0));
+        // PreferenceConverter.setDefault(store, ProverPreferencePage.getColorPrefName(10), new RGB(0, 0, 0));
+        // PreferenceConverter.setDefault(store, ProverPreferencePage.getColorPrefName(11), new RGB(0, 0, 0));
+        // PreferenceConverter.setDefault(store, ProverPreferencePage.getColorPrefName(12), new RGB(0, 0, 0));
 
         /*
          * The following was commented out by DR to make it easier to
@@ -103,6 +142,7 @@ public class ProverUIActivator extends AbstractUIPlugin
         //
         // }
         // }, IResourceChangeEvent.POST_CHANGE);
+
     }
 
     /*
