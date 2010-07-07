@@ -301,6 +301,8 @@ TagBasedTLAPMOutputIncrementalParser
       StepStatusMessage: Reports status of a step.
       
 Specifying color preferences is done through two extension points:
+(This may be somewhat obsolete with the introduction of ColorPredicate
+objects.)
   org.eclipse.core.resources.marker 
      specifies the type of a marker (by declaring a new type)
   org.eclipse.ui.editors.annotationTypes 
@@ -308,6 +310,9 @@ Specifying color preferences is done through two extension points:
   org.eclipse.ui.editors.markerAnnotationSpecification
     Have field for the annotationTypes, and a bunch of fields
     for declaring the default appearance of an annotation in the editor.
+    
+The status of a proof is maintained with a tree of StepTuple objects.
+ 
 ------------------------------------------------------------------------
 PARSE LISTENERS
 
