@@ -108,10 +108,13 @@ public class ColorPredicate
             UNTRIED_STATUS });
 
     // The array of predefined macros, the i-th macro having name
-    // PREDEFINED_MACROS[i][0] and definition PREDEFINED_MACROS[i][1]
+    // PREDEFINED_MACROS[i][0] and definition PREDEFINED_MACROS[i][1].
+    // We may or may not change the names to be descriptive, depending on
+    // how we resolve the ComboFieldEditor mess.
     public static final String[][] PREDEFINED_MACROS = { { "None", "some" }, // always false
-            { "All", "every (,,)" }, // always true
 
+            { "All", "every (,,)" }, // always true
+            
             // every obligation proved
             { "Proved", "every (proved, , ) (,proved,) (,,proved)" },
 

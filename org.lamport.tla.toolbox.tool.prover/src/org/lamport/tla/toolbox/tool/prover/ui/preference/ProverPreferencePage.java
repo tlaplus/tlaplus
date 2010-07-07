@@ -50,11 +50,18 @@ public class ProverPreferencePage extends FieldEditorPreferencePage implements I
      * the common GUI blocks needed to manipulate various types
      * of preferences. Each field editor knows how to save and
      * restore itself.
+     * 
+     * When creating the ComboFieldEditor for a color predicate
+     * would seem to be a good time to set the predicate's default
+     * value.  However, we can set its default value, but not in
+     * a useful way because it doesn't affect what the user sees
+     * in the ComboFieldEditor area.  So, the ComboFieldEditor
+     * is a loser.
      */
     protected void createFieldEditors()
     {
         for (int i = 1; i <= NUM_STATUS_COLORS; i++)
-        {
+        {   
             addField(new ColorFieldEditor(getColorPrefName(i), "Color " + i, getFieldEditorParent()));
             addField(new ComboFieldEditor(getColorPredPrefName(i), "Predicate", ColorPredicate.PREDEFINED_MACROS,
                     getFieldEditorParent()));
@@ -62,6 +69,9 @@ public class ProverPreferencePage extends FieldEditorPreferencePage implements I
                     getFieldEditorParent()));
             addField(new BooleanFieldEditor(getAppliesToLeafPrefName(i), "Applies to Leaf Steps Only",
                     getFieldEditorParent()));
+            // Temporarily set the color predicate to the value for "None", so it corresponds to what the
+            // ComboFieldEditor shows.
+            EditorsUI.getPreferenceStore().setDefault(getColorPredPrefName(i), "some");
         }
     }
 
