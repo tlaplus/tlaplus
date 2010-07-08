@@ -114,7 +114,7 @@ public class ColorPredicate
     public static final String[][] PREDEFINED_MACROS = { { "None", "some" }, // always false
 
             { "All", "every (,,)" }, // always true
-            
+
             // every obligation proved
             { "Proved", "every (proved, , ) (,proved,) (,,proved)" },
 
@@ -254,6 +254,50 @@ public class ColorPredicate
     }
 
     /**
+     * Returns an array giving the String status of each prover for the obligation
+     * state. The statuses are in the order of the provers in {@link #PROVER_NAMES}.
+     * 
+     * Returns null if the stateNum is {@link #NUMBER_OF_MISSING_STATE}
+     * or {@value #NUMBER_OF_OMITTED_STATE}
+     * 
+     * @param obligationState
+     * @return
+     */
+    public static final String[] proverStatuses(int stateNum)
+    {
+
+        if (stateNum == NUMBER_OF_MISSING_STATE || stateNum == NUMBER_OF_OMITTED_STATE)
+        {
+            return null;
+        }
+
+        int[] array = new int[3];
+        if (3 != NUMBER_OF_PROVERS)
+        {
+            Activator.logDebug("Method ColorPredicate.numberToState must be reimplemented"
+                    + " when number of provers changes");
+        }
+        for (int i = 0; i < PROVER_STATUSES[0].length; i++)
+        {
+            array[0] = i;
+            for (int j = 0; j < PROVER_STATUSES[1].length; j++)
+            {
+                array[1] = j;
+                for (int k = 0; k < PROVER_STATUSES[2].length; k++)
+                {
+                    array[2] = k;
+                    if (numberOfState(array) == stateNum)
+                    {
+                        return new String[] { PROVER_STATUSES[0][i], PROVER_STATUSES[1][j], PROVER_STATUSES[2][k] };
+                    }
+                }
+            }
+        }
+        return null;
+
+    }
+
+    /**
      * Returns the obligation-state number for a state specified by an
      * array indexed by provers of prover-status names.
      * 
@@ -306,8 +350,8 @@ public class ColorPredicate
                     array[2] = k;
                     if (numberOfState(array) == stateNumber)
                     {
-                        return "(" + PROVER_STATUSES[0][i] + ", " + PROVER_STATUSES[1][j] + ", "
-                                + PROVER_STATUSES[2][k] + ")";
+                        return PROVER_NAMES[0] + " : " + PROVER_STATUSES[0][i] + ", " + PROVER_NAMES[1] + " : "
+                                + PROVER_STATUSES[1][j] + ", " + PROVER_NAMES[2] + " : " + PROVER_STATUSES[2][k];
                     }
                 }
             }

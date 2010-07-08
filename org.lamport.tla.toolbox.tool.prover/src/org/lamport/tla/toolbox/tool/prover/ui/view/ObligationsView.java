@@ -24,6 +24,7 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.part.ViewPart;
 import org.lamport.tla.toolbox.spec.Spec;
+import org.lamport.tla.toolbox.tool.prover.ui.output.data.ColorPredicate;
 import org.lamport.tla.toolbox.tool.prover.ui.util.ProverHelper;
 import org.lamport.tla.toolbox.util.FontPreferenceChangeListener;
 import org.lamport.tla.toolbox.util.TLAMarkerHelper;
@@ -432,9 +433,8 @@ public class ObligationsView extends ViewPart
                  * item or a new item, we always update the title of the
                  * item to display the current status of the obligation.
                  */
-                String status = marker.getAttribute(ProverHelper.OBLIGATION_STATUS, "Unknown");
-                String method = marker.getAttribute(ProverHelper.OBLIGATION_METHOD, "");
-                item.setText("Obligation " + id + " - status : " + status + " - method : " + method);
+                item.setText("Obligation " + id + " - status : "
+                        + ColorPredicate.numberToState(marker.getAttribute(ProverHelper.OBLIGATION_STATE, -1)));
 
                 /*
                  * Create or remove the stop proving button depending on whether
@@ -444,10 +444,6 @@ public class ObligationsView extends ViewPart
                  */
                 Composite oblWidget = (Composite) item.getControl();
                 Control[] children = oblWidget.getChildren();
-                if (status.equals(ProverHelper.BEING_PROVED))
-                {
-
-                }
 
                 /*
                  * Get the item's viewer. If the viewer's document does not contain
@@ -543,7 +539,7 @@ public class ObligationsView extends ViewPart
         item.getControl().dispose();
         item.dispose();
     }
-    
+
     /**
      * The c
      * @author drickett
@@ -551,9 +547,8 @@ public class ObligationsView extends ViewPart
      */
     private class ObligationComposite
     {
-        
+
         SourceViewer viewer;
-        
-        
+
     }
 }

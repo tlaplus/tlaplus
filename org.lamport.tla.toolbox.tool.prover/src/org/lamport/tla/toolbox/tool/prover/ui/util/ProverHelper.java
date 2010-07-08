@@ -72,17 +72,14 @@ public class ProverHelper
      */
     public static final String OBLIGATION_ID = "org.lamport.tla.toolbox.tool.prover.obId";
     /**
-     * Attribute on an obligation marker giving the String status of the obligation.
-     */
-    public static final String OBLIGATION_STATUS = "org.lamport.tla.toolbox.tool.prover.obStatus";
-    /**
-     * Attribute on an obligation marker giving the String method of the obligation.
-     */
-    public static final String OBLIGATION_METHOD = "org.lamport.tla.toolbox.tool.prover.obMethod";
-    /**
      * Attribute on an obligation marker giving the formatted String of the obligation.
      */
     public static final String OBLIGATION_STRING = "org.lamport.tla.toolbox.tool.prover.obString";
+    /**
+     * Attribute on an obligation marker giving the current state of the obligation. This is
+     * an int corresponding to a state. Obligation states are explained in {@link ColorPredicate}.
+     */
+    public static final String OBLIGATION_STATE = "org.lamport.tla.toolbox.tool.prover.obState";
 
     /******************************************************************************
      * SANY marker and marker attribute constants.                                *
@@ -278,14 +275,7 @@ public class ProverHelper
     /**
      * Returns true iff the marker is of the type
      * {@link ProverHelper#OBLIGATION_MARKER} and represents
-     * an obligation that is in an "interesting" state. Interesting
-     * currently means one of:
-     * 
-     * {@link #BEING_PROVED}
-     * {@link #FAILED}
-     * {@link #FAILED_ALREADY}
-     * {@link #CHECKING_FAILED}
-     * {@link #CHECKING_INTERUPTED}
+     * an obligation that is in an "interesting" state.
      * 
      * @param marker
      * @return
@@ -293,15 +283,30 @@ public class ProverHelper
      */
     public static boolean isInterestingObligation(IMarker marker)
     {
+        int obState = marker.getAttribute(OBLIGATION_STATE, -1);
+        String[] proverStatuses = ColorPredicate.proverStatuses(obState);
         /*
-         * Should return true iff that status is one of some collection of strings.
-         * 
-         * A status is interesting if it contains the string "beingproved",
-         * e.g. "beingproved(3s)".
+         * An obligation is interesting if the status of at least one prover
+         * is currently trying to prove it, or if isabelle has not succeeded and at least
+         * one has failed.
          */
-        String obStatus = marker.getAttribute(OBLIGATION_STATUS, "");
-        return obStatus.contains(BEING_PROVED) || obStatus.equals(FAILED) || obStatus.equals(FAILED_ALREADY)
-                || obStatus.equals(CHECKING_FAILED) || obStatus.equals(CHECKING_INTERUPTED);
+        for (int i = 0; i < proverStatuses.length; i++)
+        {
+            if (proverStatuses[i].equals(ColorPredicate.PROVING_STATUS))
+            {
+                return true;
+            }
+        }
+
+        for (int i = 0; i < proverStatuses.length; i++)
+        {
+            if (proverStatuses[i].equals(ColorPredicate.FAILED_STATUS))
+            {
+                return !proverStatuses[ColorPredicate.ISABELLE_NUM].equals(ColorPredicate.PROVED_STATUS);
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -614,7 +619,16 @@ public class ProverHelper
                         LeafProofNode leafProof = (LeafProofNode) proof;
                         if (leafProof.getOmitted())
                         {
-                            stepTuple.addChild(new ObligationStatus(stepTuple, ColorPredicate.NUMBER_OF_OMITTED_STATE));
+                            // We create a dummy marker for this dummy obligation
+                            // because ObligationStatus stores information
+                            // about the obligation in a marker.
+                            // The marker can have id -1 because the id
+                            // is meaningless for a dummy marker. The location
+                            // simply must be in the correct module so that the marker
+                            // is put on the correct resource. The exact start
+                            // and end positions don't matter.
+                            stepTuple.addChild(new ObligationStatus(stepTuple, createObligationMarker(-1,
+                                    ColorPredicate.NUMBER_OF_OMITTED_STATE, theoremNode.getLocation())));
                         }
 
                     }
@@ -635,7 +649,16 @@ public class ProverHelper
 
                     if (shouldHaveProof)
                     {
-                        stepTuple.addChild(new ObligationStatus(stepTuple, ColorPredicate.NUMBER_OF_MISSING_STATE));
+                        // We create a dummy marker for this dummy obligation
+                        // because ObligationStatus stores information
+                        // about the obligation in a marker.
+                        // The marker can have id -1 because the id
+                        // is meaningless for a dummy marker. The location
+                        // simply must be in the correct module so that the marker
+                        // is put on the correct resource. The exact start
+                        // and end positions don't matter.
+                        stepTuple.addChild(new ObligationStatus(stepTuple, createObligationMarker(-1,
+                                ColorPredicate.NUMBER_OF_MISSING_STATE, theoremNode.getLocation())));
                     }
 
                 }
@@ -852,7 +875,7 @@ public class ProverHelper
     /**
      * Process the obligation message. If the status of the message is not
      * {@link #TO_BE_PROVED} then it creates a marker for that obligation
-     * by calling {@link #newObligationStatus(ObligationStatusMessage)}. Else, it prepares
+     * by calling {@link #createObligationMarker(ObligationStatusMessage)}. Else, it prepares
      * the necessary data structure for computing proof step statuses.
      * 
      * The proverJob is the instance of {@link ProverJob} used to launch the prover
@@ -864,7 +887,7 @@ public class ProverHelper
      */
     public static void processObligationMessage(ObligationStatusMessage message, ProverJob proverJob)
     {
-        if (message.getStatus().equals(TO_BE_PROVED) || message.getStatus().equals(MISSING))
+        if (message.getStatus().equals(TO_BE_PROVED))
         {
             /*
              * Find the LevelNode in the semantic tree containing
@@ -908,9 +931,9 @@ public class ProverHelper
             StepTuple stepTuple = (StepTuple) proverJob.getStepMap().get(levelNode);
             if (stepTuple != null)
             {
-                ObligationStatus obStatus = new ObligationStatus(stepTuple,
-                        (message.getStatus().equals(TO_BE_PROVED) ? ColorPredicate.TO_BE_PROVED_STATE
-                                : ColorPredicate.NUMBER_OF_MISSING_STATE));
+                IMarker obMarker = createObligationMarker(message.getID(), ColorPredicate.TO_BE_PROVED_STATE, message
+                        .getLocation());
+                ObligationStatus obStatus = new ObligationStatus(stepTuple, obMarker);
                 stepTuple.addChild(obStatus);
                 proverJob.getObsMap().put(new Integer(message.getID()), obStatus);
             } else
@@ -921,45 +944,37 @@ public class ProverHelper
         } else
         {
             /*
-             * Update the status of the obligation. The obligation will
+             * Update the state of the obligation. The obligation will
              * inform its parents step that its status should be updated.
-             * 
-             * Don't update the status if the status is checking interrupted.
              */
-            if (!message.getStatus().equals(CHECKING_INTERUPTED))
-            {
-                ObligationStatus obStatus = (ObligationStatus) proverJob.getObsMap().get(new Integer(message.getID()));
-                obStatus.setState(getIntFromStringStatus(message.getStatus(), obStatus.getObligationState(), message
-                        .getMethod()));
-            }
+            final ObligationStatus obStatus = (ObligationStatus) proverJob.getObsMap()
+                    .get(new Integer(message.getID()));
+            obStatus.updateObligation(message);
 
-            // create the marker and update the obligations view
-            final IMarker obMarker = newObligationStatus(message);
+            // update the obligations view with the new information
             UIHelper.runUIAsync(new Runnable() {
 
                 public void run()
                 {
-                    ObligationsView.updateObligationView(obMarker);
+                    ObligationsView.updateObligationView(obStatus.getObMarker());
                 }
             });
         }
     }
 
     /**
-     * Installs a new marker on the obligation in the message or updates the existing
-     * marker on that obligation (if there is one) with the information contained in
-     * message.
+     * Installs a new marker for the obligation with the given input information.
      * 
      * The message location should be for a module in the currently opened spec. If no
      * such module exists, this method returns null.
      * 
-     * Returns the marker created or updated.
+     * The initialState is the state of the obligation at the time of creation
+     * of this marker. Obligation states are explained in {@link ColorPredicate}.
      * 
-     * @param message must not be null
+     * Returns the marker created.
      */
-    public static IMarker newObligationStatus(ObligationStatusMessage message)
+    public static IMarker createObligationMarker(int id, int initialState, Location location)
     {
-        Location location = message.getLocation();
         IResource module = ResourceHelper.getResourceByModuleName(location.source());
         if (module != null && module instanceof IFile && module.exists())
         {
@@ -974,43 +989,11 @@ public class ProverHelper
 
             try
             {
-                /*
-                 * First try to find an existing marker with the same id
-                 * and update it.
-                 */
-                IMarker[] markers = module.findMarkers(OBLIGATION_MARKER, false, IResource.DEPTH_ZERO);
 
-                // the marker to be updated or created from the message
-                IMarker marker = null;
-                for (int i = 0; i < markers.length; i++)
-                {
-                    if (markers[i].getAttribute(OBLIGATION_ID, -1) == message.getID())
-                    {
-
-                        // DEBUG
-                        // System.out.println("Marker updated for obligation from message \n" + message);
-                        marker = markers[i];
-                        break;
-                    }
-                }
-
-                if (marker == null)
-                {
-                    // marker not found, create new one
-                    marker = module.createMarker(OBLIGATION_MARKER);
-                    marker.setAttribute(OBLIGATION_ID, message.getID());
-                }
-
-                marker.setAttribute(OBLIGATION_METHOD, message.getMethod());
-                marker.setAttribute(OBLIGATION_STATUS, message.getStatus());
-                /*
-                 * The obligation string is not sent by the prover for every message.
-                 * It is only sent once when the obligation is first interesting.
-                 * Thus, message.getObString() can be null. Everytime a new message comes
-                 * in for a given id, we set the obligation string. This way, when the obligation
-                 * string is actually sent by the prover, it is set on the marker.
-                 */
-                marker.setAttribute(OBLIGATION_STRING, message.getObString());
+                // the marker created
+                Map markerAttributes = new HashMap();
+                markerAttributes.put(OBLIGATION_ID, new Integer(id));
+                markerAttributes.put(OBLIGATION_STATE, new Integer(initialState));
 
                 fileDocumentProvider.connect(fileEditorInput);
                 IDocument document = fileDocumentProvider.getDocument(fileEditorInput);
@@ -1019,8 +1002,11 @@ public class ProverHelper
                  * For marking a region that starts at offset o and has length l, the
                  * start character is o and the end character is o+l.
                  */
-                marker.setAttribute(IMarker.CHAR_START, obRegion.getOffset());
-                marker.setAttribute(IMarker.CHAR_END, obRegion.getOffset() + obRegion.getLength());
+                markerAttributes.put(IMarker.CHAR_START, new Integer(obRegion.getOffset()));
+                markerAttributes.put(IMarker.CHAR_END, new Integer(obRegion.getOffset() + obRegion.getLength()));
+
+                IMarker marker = module.createMarker(OBLIGATION_MARKER);
+                marker.setAttributes(markerAttributes);
 
                 // DEBUG
                 // System.out.println("Marker created for obligation from message \n" + message);

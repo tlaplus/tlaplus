@@ -607,13 +607,10 @@
             name="org.lamport.tla.toolbox.tool.prover.obId">
       </attribute>
       <attribute
-            name="org.lamport.tla.toolbox.tool.prover.obStatus">
-      </attribute>
-      <attribute
-            name="org.lamport.tla.toolbox.tool.prover.obMethod">
-      </attribute>
-      <attribute
             name="org.lamport.tla.toolbox.tool.prover.obString">
+      </attribute>
+      <attribute
+            name="org.lamport.tla.toolbox.tool.prover.obState">
       </attribute>
    </extension>
    <extension
