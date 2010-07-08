@@ -451,13 +451,8 @@ public class ProverJob extends Job
                     if (proverProcess.isTerminated() && proverProcess.getExitValue() != 0
                             && proverProcess.getExitValue() != 1)
                     {
-                        return new Status(
-                                IStatus.ERROR,
-                                ProverUIActivator.PLUGIN_ID,
-                                "Error running tlapm. If this "
-                                        + "is Windows, make sure the path to cygwin is in the system path or that the path "
-                                        + "to cygwin is specified in the prover preference page. If this does not solve the problem "
-                                        + "then report a bug with the error code to the developers at http://bugzilla.tlaplus.net/."
+                        return new Status(IStatus.ERROR, ProverUIActivator.PLUGIN_ID,
+                                "Error running tlapm. Report a bug with the error code to the developers at http://bugzilla.tlaplus.net/."
                                         + "\n \n Error code: " + proverProcess.getExitValue());
                     }
                 } catch (DebugException e)
@@ -640,9 +635,21 @@ public class ProverJob extends Job
 
         command.add("--toolbox");
 
+        /*
+         * The following adds the location to the
+         * command. The location is given by "bl el"
+         * or "0 0" for the entire module. However, adding
+         * the string "<bl> <el>" to the command will not
+         * work because java will tell the prover that
+         * "12 14" is one argument rather than two separated
+         * by a space. Thus, the prover will try to parse
+         * "12 14" into an integer instead of into two integers.
+         * Adding the two integers as separate arguments works.
+         */
         if (nodeToProve instanceof ModuleNode)
         {
-            command.add("all");
+            command.add("0");
+            command.add("0");
         } else
         {
             /*
@@ -651,7 +658,8 @@ public class ProverJob extends Job
             int beginLine = getBeginLine(nodeToProve);
             int endLine = getEndLine(nodeToProve);
 
-            command.add(beginLine + ":" + endLine);
+            command.add("" + beginLine);
+            command.add("" + endLine);
         }
 
         if (!useFP)
