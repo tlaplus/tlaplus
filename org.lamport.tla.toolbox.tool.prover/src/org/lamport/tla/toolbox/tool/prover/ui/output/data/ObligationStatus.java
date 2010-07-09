@@ -1,5 +1,10 @@
 package org.lamport.tla.toolbox.tool.prover.ui.output.data;
 
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
 import org.lamport.tla.toolbox.tool.prover.ui.ProverUIActivator;
@@ -37,6 +42,12 @@ public class ObligationStatus
      * of the obligation.
      */
     private IMarker obMarker;
+    /**
+     * A map from the name of backends
+     * to the String representing the most
+     * recent status of the backend on this obligation.
+     */
+    private Map proverStatuses;
 
     /**
      * Create an obligation with the parent step
@@ -55,6 +66,7 @@ public class ObligationStatus
     {
         this.parent = parent;
         this.obMarker = obMarker;
+        this.proverStatuses = new HashMap();
     }
 
     /**
@@ -69,24 +81,55 @@ public class ObligationStatus
         return obMarker.getAttribute(ProverHelper.OBLIGATION_STATE, -1);
     }
 
-    // /**
-    // * This method sets the current state of the
-    // * obligation.
-    // *
-    // * If the value of the state has changed, this method
-    // * calls {@link StepTuple#updateStatus()} on the parent
-    // * of this obligation.
-    // *
-    // * @param newState
-    // */
-    // public void setState(int newState)
-    // {
-    // if (newState != obState)
-    // {
-    // obState = newState;
-    // parent.updateStatus();
-    // }
-    // }
+    /**
+     * Returns a map from the name of backends
+     * to the String representing the most
+     * recent status of the backend on this obligation.
+     * @return
+     */
+    public Map getProverStatuses()
+    {
+        return proverStatuses;
+    }
+
+    /**
+     * Returns the id of the obligation.
+     * @return
+     */
+    public int getId()
+    {
+        return obMarker.getAttribute(ProverHelper.OBLIGATION_ID, -1);
+    }
+
+    public String getObligationString()
+    {
+        return getObMarker().getAttribute(ProverHelper.OBLIGATION_STRING, "");
+    }
+
+    /**
+     * Returns a string description of the most
+     * recent status of each prover on each backend.
+     * 
+     * @return
+     */
+    public String getProverStatusString()
+    {
+        StringBuilder buffer = new StringBuilder();
+        Set entrySet = proverStatuses.entrySet();
+        for (Iterator it = entrySet.iterator(); it.hasNext();)
+        {
+            Map.Entry nextEntry = (Map.Entry) it.next();
+            // the key is the name of the backend, the value is the status
+            // on that backend
+            buffer.append(nextEntry.getKey() + " : " + nextEntry.getValue());
+            if (it.hasNext())
+            {
+                buffer.append(" , ");
+            }
+        }
+
+        return buffer.toString();
+    }
 
     /**
      * Updates the obligation with information
@@ -114,10 +157,17 @@ public class ObligationStatus
              */
             obMarker.setAttribute(ProverHelper.OBLIGATION_STRING, message.getObString());
 
-            // the old state of the obligation
-            int oldState = obMarker.getAttribute(ProverHelper.OBLIGATION_STATE, -1);
+            /*
+             * Update the most recent status of the given backend.
+             */
+            if (message.getBackend() != null && message.getStatus() != null)
+            {
+                proverStatuses.put(message.getBackend(), message.getStatus());
+            }
+
+            int oldState = getObligationState();
             // the new state of the obligation
-            int newState = ProverHelper.getIntFromStringStatus(message.getStatus(), oldState, message.getMethod());
+            int newState = ProverHelper.getIntFromStringStatus(message.getStatus(), oldState, message.getBackend());
             if (oldState != newState)
             {
                 obMarker.setAttribute(ProverHelper.OBLIGATION_STATE, newState);

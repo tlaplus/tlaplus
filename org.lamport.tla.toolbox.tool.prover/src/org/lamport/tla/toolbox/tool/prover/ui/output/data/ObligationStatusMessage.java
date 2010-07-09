@@ -26,19 +26,8 @@ public class ObligationStatusMessage extends TLAPMMessage
     public static final String ID_FIELD = "id";
     public static final String METH_FIELD = "meth";
     public static final String OBL_FIELD = "obl";
-
-    /**
-     * Constant for verified status.
-     */
-    public static final int STATUS_VERIFIED = 0;
-    /**
-     * Constant for rejected status.
-     */
-    public static final int STATUS_REJECTED = 1;
-    /**
-     * Constant for unknown status.
-     */
-    public static final int STATUS_UNKNOWN = -1;
+    public static final String PROVER_FIELD = "prover";
+    public static final String ALREADY_FIELD = "already";
 
     /**
      * Status of the obligation.
@@ -53,13 +42,22 @@ public class ObligationStatusMessage extends TLAPMMessage
      */
     private String obString;
     /**
-     * The method used.
+     * The name of the backend used.
+     */
+    private String prover;
+    /**
+     * The method used by prover.
      */
     private String method;
     /**
      * The id of the obligation.
      */
     private int id;
+    /**
+     * True iff this status comes
+     * from the fingerprints file.
+     */
+    private boolean alreadyProcessed = false;
 
     /**
      * 
@@ -122,20 +120,45 @@ public class ObligationStatusMessage extends TLAPMMessage
     }
 
     /**
-     * Returns the name of the backend for which this
-     * is a message. Cooper, isabelle, zenon, etc.
+     * Returns the name of the backend for which this is
+     * a message. tlapm, isabelle, zenon, etc.
+     * 
+     * Returns null if there is no prover associated
+     * with this message. This occurs if the status
+     * is {@link ProverHelper#TO_BE_PROVED}.
+     * That is the first message that arrives for every
+     * obligation.
+     * 
+     * @return
+     */
+    public String getBackend()
+    {
+        return prover;
+    }
+
+    /**
+     * Returns the method used by the prover whose name is given
+     * by {@link #getBackend()}. Cooper, auto, etc.
      * 
      * Returns null if there is no method associated
      * with this message. This currently only occurs
-     * when the status is {@link ProverHelper#TO_BE_PROVED}.
-     * That is the first message that arrives for every
-     * obligation.
+     * when the status is {@link ProverHelper#TO_BE_PROVED}
+     * or {@link ProverHelper#TRIVIAL}.
      * 
      * @return
      */
     public String getMethod()
     {
         return method;
+    }
+
+    /**
+     * Returns true iff this status comes
+     * from the fingerprints file.
+     */
+    public boolean isAlreadyProcessed()
+    {
+        return alreadyProcessed;
     }
 
     /**
@@ -179,6 +202,12 @@ public class ObligationStatusMessage extends TLAPMMessage
                 } else if (fieldName.equals(METH_FIELD))
                 {
                     message.method = fieldValue;
+                } else if (fieldName.equals(PROVER_FIELD))
+                {
+                    message.prover = fieldValue;
+                } else if (fieldName.equals(ALREADY_FIELD))
+                {
+                    message.alreadyProcessed = Boolean.parseBoolean(fieldName.trim());
                 } else
                 {
                     ProverUIActivator.logDebug("Unknown field name for obligation status message : " + fieldName + ".");

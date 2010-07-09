@@ -1,5 +1,6 @@
 package org.lamport.tla.toolbox.tool.prover.ui.util;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -9,6 +10,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.runtime.Assert;
+import org.eclipse.core.runtime.AssertionFailedException;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.jobs.Job;
@@ -135,61 +137,56 @@ public class ProverHelper
      * is considered trivial.
      */
     public static final String TRIVIAL = "trivial";
-    /**
-     * Obligation status indicating that the obligation
-     * has been skipped by the value of the "meth" field.
-     */
-    public static final String SKIPPED = "skipped";
-    /**
-     * Obligation status indicating that the obligation
-     * has been checked.
-     */
-    public static final String CHECKED = "checked";
-    /**
-     * Obligation status indicating that the checking
-     * has failed on the obligation.
-     */
-    public static final String CHECKING_FAILED = "checking failed";
-    /**
-     * Obligation status indicating that checking an obligation
-     * was interrupted.
-     */
-    public static final String CHECKING_INTERUPTED = "checking interrupted";
+    // /**
+    // * Obligation status indicating that the obligation
+    // * has been skipped by the value of the "meth" field.
+    // */
+    // public static final String SKIPPED = "skipped";
+    // /**
+    // * Obligation status indicating that the obligation
+    // * has been checked.
+    // */
+    // public static final String CHECKED = "checked";
+    // /**
+    // * Obligation status indicating that the checking
+    // * has failed on the obligation.
+    // */
+    // public static final String CHECKING_FAILED = "checking failed";
+    // /**
+    // * Obligation status indicating that checking an obligation
+    // * was interrupted.
+    // */
+    // public static final String CHECKING_INTERUPTED = "checking interrupted";
     /**
      * Obligation status indicating that proving the obligation
      * was interrupted.
      */
     public static final String INTERUPTED = "interrupted";
-    /**
-     * Obligation status indicating that the obligation
-     * has been proved in a prior run of the prover.
-     */
-    public static final String PROVED_ALREADY = "proved (already processed)";
-    /**
-     * Obligation status indicating that the obligation
-     * was determined to be trivial in a prior run of the prover.
-     */
-    public static final String TRIVIAL_ALREADY = "trivial (already processed)";
-    /**
-     * Obligation status indicating that proving the obligation
-     * failed in a prior run of the prover.
-     */
-    public static final String FAILED_ALREADY = "failed (already processed)";
-    /**
-     * Obligation status indicating that the obligation
-     * has been checked in a prior run of the prover.
-     */
-    public static final String CHECKED_ALREADY = "checked (already processed)";
+    // /**
+    // * Obligation status indicating that the obligation
+    // * has been proved in a prior run of the prover.
+    // */
+    // public static final String PROVED_ALREADY = "proved (already processed)";
+    // /**
+    // * Obligation status indicating that the obligation
+    // * was determined to be trivial in a prior run of the prover.
+    // */
+    // public static final String TRIVIAL_ALREADY = "trivial (already processed)";
+    // /**
+    // * Obligation status indicating that proving the obligation
+    // * failed in a prior run of the prover.
+    // */
+    // public static final String FAILED_ALREADY = "failed (already processed)";
+    // /**
+    // * Obligation status indicating that the obligation
+    // * has been checked in a prior run of the prover.
+    // */
+    // public static final String CHECKED_ALREADY = "checked (already processed)";
     /**
      * Obligation status indicating that the obligation
      * has not yet been sent anywhere to be proved.
      */
     public static final String TO_BE_PROVED = "to be proved";
-    /**
-     * Dummy obligation status indicating that the user has not
-     * provided a user provided proof.
-     */
-    public static final String MISSING = "missing";
 
     /***********************************************************************************
      * Step status marker types.                                                       *
@@ -281,9 +278,9 @@ public class ProverHelper
      * @return
      * @throws CoreException 
      */
-    public static boolean isInterestingObligation(IMarker marker)
+    public static boolean isInterestingObligation(ObligationStatus status)
     {
-        int obState = marker.getAttribute(OBLIGATION_STATE, -1);
+        int obState = status.getObligationState();
         String[] proverStatuses = ColorPredicate.proverStatuses(obState);
         /*
          * An obligation is interesting if the status of at least one prover
@@ -352,17 +349,18 @@ public class ProverHelper
 
         String status = message.getStatus();
 
-        boolean isTrivial = status.equals(TRIVIAL) || status.equals(TRIVIAL_ALREADY);
+        boolean isTrivial = status.equals(TRIVIAL);
 
         if (!proverJob.isCheckProofs())
         {
-            return isTrivial || status.equals(PROVED) || status.equals(PROVED_ALREADY);
+            return isTrivial || status.equals(PROVED);
         }
 
-        if (proverJob.isCheckProofs())
-        {
-            return isTrivial || status.equals(CHECKED) || status.equals(CHECKED_ALREADY);
-        }
+        // we no longer consider checked to be a status distinct from proved
+        // if (proverJob.isCheckProofs())
+        // {
+        // return isTrivial || status.equals(CHECKED) || status.equals(CHECKED_ALREADY);
+        // }
         return false;
     }
 
@@ -386,6 +384,24 @@ public class ProverHelper
 
         return null;
 
+    }
+
+    /**
+     * Returns the {@link Collection} of {@link ObligationStatus}s
+     * from the most recent run of the prover. Returns null if the
+     * prover has not yet been launched during this instance of the
+     * toolbox.
+     * 
+     * @return
+     */
+    public static ObligationStatus[] getObligationStatuses()
+    {
+        if (ProverJob.getLastJob() == null)
+        {
+            return null;
+        }
+        Collection statuses = ProverJob.getLastJob().getObsMap().values();
+        return (ObligationStatus[]) statuses.toArray(new ObligationStatus[statuses.size()]);
     }
 
     /**
@@ -982,7 +998,7 @@ public class ProverHelper
 
                 public void run()
                 {
-                    ObligationsView.updateObligationView(obStatus.getObMarker());
+                    ObligationsView.updateObligationView(obStatus);
                 }
             });
         }
@@ -1717,43 +1733,34 @@ public class ProverHelper
      * of the obligation. See {@link ColorPredicate} for explanation of
      * obligation states.
      * 
-     * Returns currentStatus if status is not a known status.
+     * Returns currentStatus if status is not a known status. Also throws
+     * an {@link AssertionFailedException} in that case.
      * 
      * @param status the new status string from tlapm
      * @param currentState the current state of the obligation
-     * @param method the method, e.g. isabelle
+     * @param backEndName the name of the backend, e.g. isabelle, tlapm, zenon
      * @return
      */
-    public static int getIntFromStringStatus(String status, int currentState, String method)
+    public static int getIntFromStringStatus(String status, int currentState, String backEndName)
     {
-        int methodNum;
-        if (method == null)
-        {
-            Assert.isTrue(status.equals(TRIVIAL) || status.equals(TRIVIAL_ALREADY),
-                    "Method is null but status is not trivial. This is unexpected.");
-            methodNum = ColorPredicate.TLAPM_NUM;
-        } else
-        {
-            methodNum = getNumOfMethod(method);
-        }
+        int backendNum = getNumOfBackend(backEndName);
 
-        if (status.equals(PROVED) || status.equals(PROVED_ALREADY) || status.equals(SKIPPED) || status.equals(TRIVIAL)
-                || status.equals(TRIVIAL_ALREADY))
+        if (status.equals(PROVED) || status.equals(TRIVIAL))
         {
-            return ColorPredicate.newStateNumber(currentState, methodNum, ColorPredicate.numberOfProverStatus(
-                    methodNum, ColorPredicate.PROVED_STATUS));
+            return ColorPredicate.newStateNumber(currentState, backendNum, ColorPredicate.numberOfProverStatus(
+                    backendNum, ColorPredicate.PROVED_STATUS));
         } else if (status.equals(BEING_PROVED))
         {
-            return ColorPredicate.newStateNumber(currentState, methodNum, ColorPredicate.numberOfProverStatus(
-                    methodNum, ColorPredicate.PROVING_STATUS));
-        } else if (status.equals(FAILED) || status.equals(FAILED_ALREADY))
+            return ColorPredicate.newStateNumber(currentState, backendNum, ColorPredicate.numberOfProverStatus(
+                    backendNum, ColorPredicate.PROVING_STATUS));
+        } else if (status.equals(FAILED))
         {
-            return ColorPredicate.newStateNumber(currentState, methodNum, ColorPredicate.numberOfProverStatus(
-                    methodNum, ColorPredicate.FAILED_STATUS));
+            return ColorPredicate.newStateNumber(currentState, backendNum, ColorPredicate.numberOfProverStatus(
+                    backendNum, ColorPredicate.FAILED_STATUS));
         } else if (status.equals(INTERUPTED))
         {
-            return ColorPredicate.newStateNumber(currentState, methodNum, ColorPredicate.numberOfProverStatus(
-                    methodNum, ColorPredicate.STOPPED_STATUS));
+            return ColorPredicate.newStateNumber(currentState, backendNum, ColorPredicate.numberOfProverStatus(
+                    backendNum, ColorPredicate.STOPPED_STATUS));
         }
 
         Assert.isTrue(false, "Unknown status : " + status);
@@ -1763,16 +1770,19 @@ public class ProverHelper
 
     /**
      * Returns the number in {@link ColorPredicate} corresponding
-     * to the method reported by tlapm.
+     * to the backend reported by tlapm.
      * 
-     * @param method
+     * @param backend
      * @return
      */
-    public static int getNumOfMethod(String method)
+    public static int getNumOfBackend(String backend)
     {
-        if (method.equals("isabelle"))
+        if (backend.equals("isabelle"))
         {
             return ColorPredicate.ISABELLE_NUM;
+        } else if (backend.equals("tlapm"))
+        {
+            return ColorPredicate.TLAPM_NUM;
         } else
         {
             return ColorPredicate.OTHER_BACKEND_NUM;

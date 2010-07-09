@@ -4,7 +4,6 @@ import java.util.HashMap;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.Assert;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.source.SourceViewer;
@@ -24,7 +23,7 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.part.ViewPart;
 import org.lamport.tla.toolbox.spec.Spec;
-import org.lamport.tla.toolbox.tool.prover.ui.output.data.ColorPredicate;
+import org.lamport.tla.toolbox.tool.prover.ui.output.data.ObligationStatus;
 import org.lamport.tla.toolbox.tool.prover.ui.util.ProverHelper;
 import org.lamport.tla.toolbox.util.FontPreferenceChangeListener;
 import org.lamport.tla.toolbox.util.TLAMarkerHelper;
@@ -178,13 +177,8 @@ public class ObligationsView extends ViewPart
      * 
      * 1.) Removes all items from the expand bar for this view.
      * 
-     * 2.) Retrieve all obligation markers on any module in the
-     * currently opened project, where the currently opened project is the project returned
-     * by {@link Spec#getProject()} for the currently opened spec. This view assumes
-     * that all such markers are from the same run of the prover and are from the most
-     * recent run of the prover on any module in the project. For each such marker,
-     * call {@link ObligationsView#newMarker(IMarker)}. This has the effect of repopulating
-     * the expand bar with items if any of markers are for an interesting obligation.
+     * 2.) Retrieve all obligation statuses by calling {@link ProverHelper#getObligationStatuses()}.
+     *     Fills the view with information from these statuses.
      * 
      * 3.) If there are no interesting obligations in the view after steps 1 and 2, then
      * the view is hidden.
@@ -230,35 +224,24 @@ public class ObligationsView extends ViewPart
 
     /**
      * Fills the obligation view with information
-     * from all obligation markers in the currently
-     * opened spec.
+     * from the most recent launch of the prover.
      */
     private void fillFromCurrentSpec()
     {
-        try
+        ObligationStatus[] statuses = ProverHelper.getObligationStatuses();
+        if (statuses != null)
         {
-            IMarker[] markers = ProverHelper.getObMarkersCurSpec();
-            if (markers != null)
+            for (int i = 0; i < statuses.length; i++)
             {
-                for (int i = 0; i < markers.length; i++)
-                {
-                    updateItem(markers[i]);
-                }
-
+                updateItem(statuses[i]);
             }
 
-        } catch (CoreException e)
-        {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
         }
 
     }
 
     /**
-     * Updates the view with the information in this marker. If the marker is not
-     * of the type {@link ProverHelper#OBLIGATION_MARKER} then this method will have
-     * no effect.
+     * Updates the view with the information in this obligation status message.
      * 
      * This method hides the view if after updating the item, the view is empty (there are no
      * more interesting obligations).
@@ -267,7 +250,7 @@ public class ObligationsView extends ViewPart
      * 
      * @param marker
      */
-    public static void updateObligationView(IMarker marker)
+    public static void updateObligationView(ObligationStatus status)
     {
         /*
          * If the marker is not interesting, try to find the view.
@@ -279,7 +262,7 @@ public class ObligationsView extends ViewPart
          * If the marker is interesting, open the view and update it.
          */
         ObligationsView oblView;
-        if (!ProverHelper.isInterestingObligation(marker))
+        if (!ProverHelper.isInterestingObligation(status))
         {
             oblView = (ObligationsView) UIHelper.findView(VIEW_ID);
         } else
@@ -290,13 +273,13 @@ public class ObligationsView extends ViewPart
         if (oblView != null)
         {
 
-            String moduleName = marker.getResource().getName();
+            String moduleName = status.getObMarker().getResource().getName();
             if (!oblView.getPartName().equals(PART_NAME_BASE + moduleName))
             {
                 oblView.setPartName(PART_NAME_BASE + moduleName);
             }
 
-            oblView.updateItem(marker);
+            oblView.updateItem(status);
 
             /*
              * If after updating the item, the obligations view is empty, it should be hidden.
@@ -311,198 +294,176 @@ public class ObligationsView extends ViewPart
     }
 
     /**
-     * Adds the information from the marker to the view. Should be
-     * a marker of type {@link ProverHelper#OBLIGATION_METHOD}.
+     * Adds the information from the obligation status to the view.
      * 
      * If there is already an item with information of the same
-     * obligation as the marker, that item is updated. If no
+     * obligation as the status, that item is updated. If no
      * such item exists, a new one is created.
      */
-    private void updateItem(IMarker marker)
+    private void updateItem(ObligationStatus status)
     {
-        try
+        int id = status.getId();
+        if (id != -1)
         {
+            /*
+             * Try to retrieve an existing item with the same id.
+             */
+            InterestingObligationExpandItem item = (InterestingObligationExpandItem) items.get(new Integer(id));
 
-            Assert.isTrue(marker.getType().equals(ProverHelper.OBLIGATION_MARKER),
-                    "Non obligation marker passed to newMarker method. This is a bug.");
-            int id = marker.getAttribute(ProverHelper.OBLIGATION_ID, -1);
-            if (id != -1)
+            /*
+             * If the marker represents an obligation that is
+             * not interesting, we dispose of the existing item
+             * (if there is one) and then return. There is nothing
+             * more to do.
+             */
+            if (!ProverHelper.isInterestingObligation(status))
+            {
+                if (item != null)
+                {
+                    removeItem(item);
+                }
+
+                return;
+            }
+
+            /*
+             * If there is no existing item, create
+             * a new one.
+             */
+            if (item == null)
+            {
+                item = new InterestingObligationExpandItem(bar, SWT.None, 0);
+                ;
+
+                /*
+                 * Create the widget that will appear when the
+                 * item is expanded.
+                 */
+                Composite oblWidget = new Composite(bar, SWT.LINE_SOLID);
+                GridLayout gl = new GridLayout(1, true);
+                // no margin around the widget.
+                gl.marginWidth = 0;
+                gl.marginHeight = 0;
+                oblWidget.setLayout(gl);
+
+                /*
+                 * We use a source viewer to display the
+                 * obligation. This allows us to easily do
+                 * syntax highlighting by configuring the source
+                 * viewer with a source viewer configuration
+                 * that basically takes some code from the editor
+                 * plug-in. This code does the syntax highlighting.
+                 * See ObligationSourceViewerConfiguration.
+                 * 
+                 * For the style bits, we want the source viewer to be read
+                 * only, multiline, and have a horizontal scroll bar. We
+                 * don't want the text to wrap because that makes the
+                 * obligations difficult to read, so a horizontal scroll
+                 * bar is necessary.
+                 */
+                SourceViewer viewer = new SourceViewer(oblWidget, null, SWT.READ_ONLY | SWT.MULTI | SWT.H_SCROLL);
+                viewer.getTextWidget().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+                viewer.configure(new ObligationSourceViewerConfiguration());
+                viewer.getControl().setFont(JFaceResources.getTextFont());
+                // add the control to the list of controls to be notified when the
+                // text editor font changes.
+                fontListener.addControl(viewer.getControl());
+
+                // item maps to viewer for later access
+                viewers.put(item, viewer);
+
+                /*
+                 * Add a button for stopping the obligation. This button is
+                     * later disabled if the obligation is not being proved.
+                 * 
+                 * The data field for the button stores a pointer to the
+                 * marker for the obligation. This allows a listener
+                 * to retrieve the id of the obligation, or any other information
+                 * which it must send to the prover to stop the proof.
+                 */
+                Button stopButton = new Button(oblWidget, SWT.PUSH);
+                stopButton.setText("Stop Proving");
+                stopButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+                stopButton.setData(status.getObMarker());
+                stopButton.addSelectionListener(stopObListener);
+                item.setButton(stopButton);
+
+                item.setControl(oblWidget);
+                item.setExpanded(true);
+
+                /*
+                 * Set the data to be the marker so that when
+                 * the user clicks on the item, we can jump to that marker.
+                 * 
+                 * See the documentation for listener.
+                 */
+                item.setData(status.getObMarker());
+                viewer.getTextWidget().setData(status.getObMarker());
+                oblWidget.setData(status.getObMarker());
+                // adding the listener to the item seems to have no effect.
+                item.addListener(SWT.MouseDown, obClickListener);
+                viewer.getTextWidget().addListener(SWT.MouseDown, obClickListener);
+                oblWidget.addListener(SWT.MouseDown, obClickListener);
+
+                items.put(new Integer(id), item);
+            }
+
+            /*
+             * Whether this marker gives information for an existing
+             * item or a new item, we always update the title of the
+             * item to display the current status of the obligation.
+             */
+            item.setText("Obligation " + id + " - status : " + status.getProverStatusString());
+
+            /*
+             * Enable the "Being Proved" button iff the obligation is being proved.
+             */
+            item.getButton().setEnabled(ProverHelper.isBeingProvedObligation(status.getObMarker()));
+
+            /*
+             * Get the item's viewer. If the viewer's document does not contain
+             * the obligation string and the obligation string in the marker is not empty,
+             * set the viewer's document to a new document containing
+             * the obligation string.
+             */
+            SourceViewer viewer = (SourceViewer) viewers.get(item);
+            Assert.isNotNull(viewer, "Expand item has been created without a source viewer. This is a bug.");
+            String oblString = status.getObligationString();
+            if ((viewer.getDocument() == null || !viewer.getDocument().get().equals(oblString)) && !oblString.isEmpty())
+            {
+                // set the viewers document to the obligation.
+                viewer.setDocument(new Document(oblString.trim()));
+
+                /*
+                 * The following explanation for computing the height
+                 * of each expand item is no longer used. Instead, we
+                 * simply ask the expand item's control for its preferred height.
+                 * This seems to work. However, we leave the old code and comments
+                 * just in case.
+                 * 
+                 * Give the item the appropriate height to show
+                 * the obligation. This includes both the height
+                 * of the text of the obligation and the height
+                 * of the horizontal scroll bar, if there is one.
+                 */
+                // StyledText text = viewer.getTextWidget();
+                // ScrollBar hBar = text.getHorizontalBar();
+                // item.setHeight(text.getLineHeight() * text.getLineCount() + (hBar != null ? hBar.getSize().y :
+                // 0));
+                item.setHeight(item.getControl().computeSize(SWT.DEFAULT, SWT.DEFAULT, true).y);
+            } else if (oblString.isEmpty() && (viewer.getDocument() == null || viewer.getDocument().get().isEmpty()))
             {
                 /*
-                 * Try to retrieve an existing item with the same id.
+                 * A slight hack. For some interesting obligations, the prover
+                 * does not send back the pretty printed obligation. This is
+                 * a bug. In the meantime, we need the source viewer to be visible
+                 * so that the user can click on it to jump to the obligation.
+                 * The following does that.
                  */
-                InterestingObligationExpandItem item = (InterestingObligationExpandItem) items.get(new Integer(id));
-
-                /*
-                 * If the marker represents an obligation that is
-                 * not interesting, we dispose of the existing item
-                 * (if there is one) and then return. There is nothing
-                 * more to do.
-                 */
-                if (!ProverHelper.isInterestingObligation(marker))
-                {
-                    if (item != null)
-                    {
-                        removeItem(item);
-                    }
-
-                    return;
-                }
-
-                /*
-                 * If there is no existing item, create
-                 * a new one.
-                 */
-                if (item == null)
-                {
-                    item = new InterestingObligationExpandItem(bar, SWT.None, 0);
-
-                    /*
-                     * Create the widget that will appear when the
-                     * item is expanded.
-                     */
-                    Composite oblWidget = new Composite(bar, SWT.LINE_SOLID);
-                    GridLayout gl = new GridLayout(1, true);
-                    // no margin around the widget.
-                    gl.marginWidth = 0;
-                    gl.marginHeight = 0;
-                    oblWidget.setLayout(gl);
-
-                    /*
-                     * We use a source viewer to display the
-                     * obligation. This allows us to easily do
-                     * syntax highlighting by configuring the source
-                     * viewer with a source viewer configuration
-                     * that basically takes some code from the editor
-                     * plug-in. This code does the syntax highlighting.
-                     * See ObligationSourceViewerConfiguration.
-                     * 
-                     * For the style bits, we want the source viewer to be read
-                     * only, multiline, and have a horizontal scroll bar. We
-                     * don't want the text to wrap because that makes the
-                     * obligations difficult to read, so a horizontal scroll
-                     * bar is necessary.
-                     */
-                    SourceViewer viewer = new SourceViewer(oblWidget, null, SWT.READ_ONLY | SWT.MULTI | SWT.H_SCROLL);
-                    viewer.getTextWidget().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-                    viewer.configure(new ObligationSourceViewerConfiguration());
-                    viewer.getControl().setFont(JFaceResources.getTextFont());
-                    // add the control to the list of controls to be notified when the
-                    // text editor font changes.
-                    fontListener.addControl(viewer.getControl());
-
-                    // item maps to viewer for later access
-                    viewers.put(item, viewer);
-
-                    /*
-                     * Add a button for stopping the proof.  This button is
-                     * later disabled if the obligation is not being proved.
-                     * 
-                     * The data field for the button stores a pointer to the
-                     * marker for the obligation. This allows a listener
-                     * to retrieve the id of the obligation, or any other information
-                     * which it must send to the prover to stop the proof.
-                     */
-
-                        Button stopButton = new Button(oblWidget, SWT.PUSH);
-                        stopButton.setText("Stop Proving");
-                        stopButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-                        stopButton.setData(marker);
-                        stopButton.addSelectionListener(stopObListener);
-                        item.setButton(stopButton);
-                    item.setControl(oblWidget);
-                    item.setExpanded(true);
-
-                    /*
-                     * Set the data to be the marker so that when
-                     * the user clicks on the item, we can jump to that marker.
-                     * 
-                     * See the documentation for listener.
-                     */
-                    item.setData(marker);
-                    viewer.getTextWidget().setData(marker);
-                    oblWidget.setData(marker);
-                    // adding the listener to the item seems to have no effect.
-                    item.addListener(SWT.MouseDown, obClickListener);
-                    viewer.getTextWidget().addListener(SWT.MouseDown, obClickListener);
-                    oblWidget.addListener(SWT.MouseDown, obClickListener);
-
-                    items.put(new Integer(id), item);
-                }
-
-                /*
-                 * Whether this marker gives information for an existing
-                 * item or a new item, we always update the title of the
-                 * item to display the current status of the obligation.
-                 */
-                item.setText("Obligation " + id + " - status : "
-                        + ColorPredicate.numberToState(marker.getAttribute(ProverHelper.OBLIGATION_STATE, -1)));
-                
-                /*
-                 * Enable the "Being Proved" button iff the obligation is being proved.
-                 */
-                item.getButton().setEnabled(ProverHelper.isBeingProvedObligation(marker));
-
-                /*
-                 * Create or remove the stop proving button depending on whether
-                 * the obligation is being proved or not.
-                 * 
-                 * To be completed later...
-                 */
-                Composite oblWidget = (Composite) item.getControl();
-                Control[] children = oblWidget.getChildren();
-
-                /*
-                 * Get the item's viewer. If the viewer's document does not contain
-                 * the obligation string and the obligation string in the marker is not empty,
-                 * set the viewer's document to a new document containing
-                 * the obligation string.
-                 */
-                SourceViewer viewer = (SourceViewer) viewers.get(item);
-                Assert.isNotNull(viewer, "Expand item has been created without a source viewer. This is a bug.");
-                String oblString = marker.getAttribute(ProverHelper.OBLIGATION_STRING, "");
-                if ((viewer.getDocument() == null || !viewer.getDocument().get().equals(oblString))
-                        && !oblString.isEmpty())
-                {
-                    // set the viewers document to the obligation.
-                    viewer.setDocument(new Document(oblString.trim()));
-
-                    /*
-                     * The following explanation for computing the height
-                     * of each expand item is no longer used. Instead, we
-                     * simply ask the expand item's control for its preferred height.
-                     * This seems to work. However, we leave the old code and comments
-                     * just in case.
-                     * 
-                     * Give the item the appropriate height to show
-                     * the obligation. This includes both the height
-                     * of the text of the obligation and the height
-                     * of the horizontal scroll bar, if there is one.
-                     */
-                    // StyledText text = viewer.getTextWidget();
-                    // ScrollBar hBar = text.getHorizontalBar();
-                    // item.setHeight(text.getLineHeight() * text.getLineCount() + (hBar != null ? hBar.getSize().y :
-                    // 0));
-                    item.setHeight(item.getControl().computeSize(SWT.DEFAULT, SWT.DEFAULT, true).y);
-                } else if (oblString.isEmpty()
-                        && (viewer.getDocument() == null || viewer.getDocument().get().isEmpty()))
-                {
-                    /*
-                     * A slight hack. For some interesting obligations, the prover
-                     * does not send back the pretty printed obligation. This is
-                     * a bug. In the meantime, we need the source viewer to be visible
-                     * so that the user can click on it to jump to the obligation.
-                     * The following does that.
-                     */
-                    viewer.setDocument(new Document("No obligation text available."));
-                    item.setHeight(100);
-                }
-
+                viewer.setDocument(new Document("No obligation text available."));
+                item.setHeight(100);
             }
-        } catch (CoreException e)
-        {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+
         }
 
     }
@@ -548,18 +509,6 @@ public class ObligationsView extends ViewPart
     }
 
     /**
-     * The c
-     * @author drickett
-     *
-     */
-    private class ObligationComposite
-    {
-
-        SourceViewer viewer;
-
-    }
-    
-    /**
      * A subclass of ExpandItem that contains a Button.  Used so that
      * the "Stop Proving" button can be disabled for an interesting
      * obligation that is not being proved.
@@ -567,28 +516,31 @@ public class ObligationsView extends ViewPart
      * @author lamport
      *
      */
-    public static class InterestingObligationExpandItem extends ExpandItem {
- 
+    public static class InterestingObligationExpandItem extends ExpandItem
+    {
+
         private Button button;
-        
-        public Button getButton() {
+
+        public Button getButton()
+        {
             return button;
         }
-        
-        public void setButton(Button button) {
+
+        public void setButton(Button button)
+        {
             this.button = button;
         }
-        
-//        public InterestingObligationExpandItem(ExpandBar parent, int style)
-//        {
-//            super(parent, style);
-//            //  Auto-generated constructor stub
-//        }
-        
+
+        // public InterestingObligationExpandItem(ExpandBar parent, int style)
+        // {
+        // super(parent, style);
+        // // Auto-generated constructor stub
+        // }
+
         public InterestingObligationExpandItem(ExpandBar parent, int style, int index)
         {
             super(parent, style, index);
-            //  Auto-generated constructor stub
+            // Auto-generated constructor stub
         }
     }
 }

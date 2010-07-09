@@ -60,6 +60,11 @@ import util.UniqueString;
  */
 public class ProverJob extends Job
 {
+    /**
+     * The most prover job that led to the most
+     * recent successful launch of the prover.
+     */
+    private static ProverJob lastJob;
 
     /**
      * the IPath pointing to the module to be checked, e.g.
@@ -400,6 +405,7 @@ public class ProverJob extends Job
 
             if (proverProcess != null)
             {
+                lastJob = this;
                 /*
                  * Setup the broadcasting of the prover output stream.
                  * We pass in the progress monitor to allow listeners
@@ -967,5 +973,14 @@ public class ProverJob extends Job
                 ProverUIActivator.logError("Error sending signal to tlapm to stop obligation " + id, e);
             }
         }
+    }
+
+    /**
+     * Returns the most prover job that led to the most
+     * recent successful launch of the prover.
+     */
+    public static ProverJob getLastJob()
+    {
+        return lastJob;
     }
 }
