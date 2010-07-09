@@ -213,7 +213,7 @@
       <specification
             annotationType="org.lamport.tla.toolbox.tool.prover.ui.StepColor1A"
             colorPreferenceKey="stepStatusColor1A"
-            colorPreferenceValue="133,133,133"
+            colorPreferenceValue="255,111,255"
             highlightPreferenceKey="stepStatusHighlight1A"
             highlightPreferenceValue="true"
             includeOnPreferencePage="false"
@@ -228,7 +228,7 @@
       <specification
             annotationType="org.lamport.tla.toolbox.tool.prover.ui.StepColor1B"
             colorPreferenceKey="stepStatusColor1B"
-            colorPreferenceValue="133,133,133"
+            colorPreferenceValue="255,111,255"
             highlightPreferenceKey="stepStatusHighlight1B"
             highlightPreferenceValue="true"
             includeOnPreferencePage="false"
@@ -243,7 +243,7 @@
       <specification
             annotationType="org.lamport.tla.toolbox.tool.prover.ui.StepColor2A"
             colorPreferenceKey="stepStatusColor2A"
-            colorPreferenceValue="133,133,133"
+            colorPreferenceValue="255,62,62"
             highlightPreferenceKey="stepStatusHighlight2A"
             highlightPreferenceValue="true"
             includeOnPreferencePage="false"
@@ -258,7 +258,7 @@
       <specification
             annotationType="org.lamport.tla.toolbox.tool.prover.ui.StepColor2B"
             colorPreferenceKey="stepStatusColor2B"
-            colorPreferenceValue="133,133,133"
+            colorPreferenceValue="255,100,100"
             highlightPreferenceKey="stepStatusHighlight2B"
             highlightPreferenceValue="true"
             includeOnPreferencePage="false"
@@ -274,7 +274,7 @@
      <specification
             annotationType="org.lamport.tla.toolbox.tool.prover.ui.StepColor3A"
             colorPreferenceKey="stepStatusColor3A"
-            colorPreferenceValue="255,187,187"
+            colorPreferenceValue="133,133,133"
             highlightPreferenceKey="stepStatusHighlight3A"
             highlightPreferenceValue="true"
             includeOnPreferencePage="false"
@@ -289,7 +289,7 @@
       <specification
             annotationType="org.lamport.tla.toolbox.tool.prover.ui.StepColor3B"
             colorPreferenceKey="stepStatusColor3B"
-            colorPreferenceValue="255,187,187"
+            colorPreferenceValue="133,133,133"
             highlightPreferenceKey="stepStatusHighlight3B"
             highlightPreferenceValue="true"
             includeOnPreferencePage="false"
@@ -336,7 +336,7 @@
      <specification
             annotationType="org.lamport.tla.toolbox.tool.prover.ui.StepColor5A"
             colorPreferenceKey="stepStatusColor5A"
-            colorPreferenceValue="255,255,183"
+            colorPreferenceValue="255,187,187"
             highlightPreferenceKey="stepStatusHighlight5A"
             highlightPreferenceValue="true"
             includeOnPreferencePage="false"
@@ -367,7 +367,7 @@
      <specification
             annotationType="org.lamport.tla.toolbox.tool.prover.ui.StepColor6A"
             colorPreferenceKey="stepStatusColor6A"
-            colorPreferenceValue="255,255,183"
+            colorPreferenceValue="174,255,174"
             highlightPreferenceKey="stepStatusHighlight6A"
             highlightPreferenceValue="true"
             includeOnPreferencePage="false"
@@ -382,7 +382,7 @@
       <specification
             annotationType="org.lamport.tla.toolbox.tool.prover.ui.StepColor6B"
             colorPreferenceKey="stepStatusColor6B"
-            colorPreferenceValue="255,255,183"
+            colorPreferenceValue="174,255,174"
             highlightPreferenceKey="stepStatusHighlight6B"
             highlightPreferenceValue="true"
             includeOnPreferencePage="false"
@@ -429,7 +429,7 @@
      <specification
             annotationType="org.lamport.tla.toolbox.tool.prover.ui.StepColor8A"
             colorPreferenceKey="stepStatusColor8A"
-            colorPreferenceValue="217,250,174"
+            colorPreferenceValue="255,255,183"
             highlightPreferenceKey="stepStatusHighlight8A"
             highlightPreferenceValue="true"
             includeOnPreferencePage="false"
@@ -444,7 +444,7 @@
       <specification
             annotationType="org.lamport.tla.toolbox.tool.prover.ui.StepColor8B"
             colorPreferenceKey="stepStatusColor8B"
-            colorPreferenceValue="217,250,174"
+            colorPreferenceValue="255,255,183"
             highlightPreferenceKey="stepStatusHighlight8B"
             highlightPreferenceValue="true"
             includeOnPreferencePage="false"
@@ -460,7 +460,7 @@
      <specification
             annotationType="org.lamport.tla.toolbox.tool.prover.ui.StepColor9A"
             colorPreferenceKey="stepStatusColor9A"
-            colorPreferenceValue="174,255,174"
+            colorPreferenceValue="255,255,255"
             highlightPreferenceKey="stepStatusHighlight9A"
             highlightPreferenceValue="true"
             includeOnPreferencePage="false"
@@ -475,7 +475,7 @@
       <specification
             annotationType="org.lamport.tla.toolbox.tool.prover.ui.StepColor9B"
             colorPreferenceKey="stepStatusColor9B"
-            colorPreferenceValue="174,255,174"
+            colorPreferenceValue="255,255,255"
             highlightPreferenceKey="stepStatusHighlight9B"
             highlightPreferenceValue="true"
             includeOnPreferencePage="false"
@@ -491,7 +491,7 @@
      <specification
             annotationType="org.lamport.tla.toolbox.tool.prover.ui.StepColor10A"
             colorPreferenceKey="stepStatusColor10A"
-            colorPreferenceValue="0,0,0"
+            colorPreferenceValue="255,255,255"
             highlightPreferenceKey="stepStatusHighlight10A"
             highlightPreferenceValue="true"
             includeOnPreferencePage="false"
@@ -506,7 +506,7 @@
       <specification
             annotationType="org.lamport.tla.toolbox.tool.prover.ui.StepColor10B"
             colorPreferenceKey="stepStatusColor10B"
-            colorPreferenceValue="0,0,0"
+            colorPreferenceValue="255,255,255"
             highlightPreferenceKey="stepStatusHighlight10B"
             highlightPreferenceValue="true"
             includeOnPreferencePage="false"
@@ -522,7 +522,7 @@
      <specification
             annotationType="org.lamport.tla.toolbox.tool.prover.ui.StepColor11A"
             colorPreferenceKey="stepStatusColor11A"
-            colorPreferenceValue="0,0,0"
+            colorPreferenceValue="255,255,255"
             highlightPreferenceKey="stepStatusHighlight11A"
             highlightPreferenceValue="true"
             includeOnPreferencePage="false"
@@ -537,7 +537,7 @@
       <specification
             annotationType="org.lamport.tla.toolbox.tool.prover.ui.StepColor11B"
             colorPreferenceKey="stepStatusColor11B"
-            colorPreferenceValue="0,0,0"
+            colorPreferenceValue="255,255,255"
             highlightPreferenceKey="stepStatusHighlight11B"
             highlightPreferenceValue="true"
             includeOnPreferencePage="false"
@@ -553,7 +553,7 @@
      <specification
             annotationType="org.lamport.tla.toolbox.tool.prover.ui.StepColor12A"
             colorPreferenceKey="stepStatusColor12A"
-            colorPreferenceValue="0,0,0"
+            colorPreferenceValue="255,255,255"
             highlightPreferenceKey="stepStatusHighlight12A"
             highlightPreferenceValue="true"
             includeOnPreferencePage="false"
@@ -568,7 +568,7 @@
       <specification
             annotationType="org.lamport.tla.toolbox.tool.prover.ui.StepColor12B"
             colorPreferenceKey="stepStatusColor12B"
-            colorPreferenceValue="0,0,0"
+            colorPreferenceValue="255,255,255"
             highlightPreferenceKey="stepStatusHighlight12B"
             highlightPreferenceValue="true"
             includeOnPreferencePage="false"
