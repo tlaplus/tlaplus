@@ -61,9 +61,13 @@ public abstract class TLAPMMessage
      */
     public static final String OB_NUMBER_TYPE = "obligationsnumber";
     /**
-     * Type of message containing some sort of warning.
+     * Type of message containing some sort of warning message.
      */
     public static final String WARNING_TYPE = "warning";
+    /**
+     * Type of message containing some sort of error message.
+     */
+    public static final String ERROR_TYPE = "error";
 
     /**
      * Returns a {@link TLAPMMessage} representing the information
@@ -175,7 +179,7 @@ public abstract class TLAPMMessage
                 ObligationNumberMessage message = ObligationNumberMessage.getObNumMessage(fieldPairs.entrySet(),
                         moduleName);
                 return message;
-            } else if (type.equals(WARNING_TYPE))
+            } else if (type.equals(WARNING_TYPE) || type.equals(ERROR_TYPE))
             {
                 WarningMessage message = WarningMessage.getWarningMessage(fieldPairs.entrySet(), moduleName);
                 return message;
