@@ -4,9 +4,8 @@ import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.ColorFieldEditor;
 import org.eclipse.jface.preference.ComboFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
-import org.eclipse.jface.preference.PreferenceConverter;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.util.PropertyChangeEvent;
-import org.eclipse.swt.graphics.RGB;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.editors.text.EditorsUI;
@@ -213,15 +212,59 @@ public class ProverPreferencePage extends FieldEditorPreferencePage implements I
     /**
      * This method makes sure pairs of annotation types corresponding
      * to a given logical color are always bound to the same physical color.
+     * When the color preference is changed for the key which is bound to the color
+     * field editors for this page, this method sets the value for the partner key
+     * to be the same.
      * See the documentation for this class to read more about this.
      */
     public void propertyChange(PropertyChangeEvent event)
     {
         if (event.getProperty().contains(COLOR_PREF_KEY_PREFIX) && event.getProperty().endsWith("A"))
         {
+            /*
+             * Setting preferences is a bit strange. The strangeness occurs
+             * when calling IPreferenceStore.setValue(name,value) when the value
+             * is equal to the default value for that name.
+             * 
+             * When the value is NOT equal to the default value and is not equal to the old
+             * value, the preference store sets name to map to the new value and
+             * informs all interested listeners of the change. I believe that
+             * the eclipse text editors are among these interested listeners. This
+             * is how they update the colors used for annotations.
+             * 
+             * However, when the value is equal to the default value for name, the preference
+             * store removes the preference mapping for name (I assume the defaults are stored
+             * somewhere else in the store) and informs all listeners that the preference
+             * for name has been removed and does not inform them that it has been set to
+             * the default value. The method comments for setValue() indicate that the correct
+             * way to restore default preference values is to call store.setToDefault(). Thus,
+             * it appears that we have to check whether the value we are setting is the default
+             * value. If it is, we use setToDefault(). If it isn't, we use setValue().
+             * 
+             * Note that this strange behavior only seems to be for ScopedPreferenceStore, which
+             * is the type of preference store used for this page.
+             */
             int colorNum = getNumFromMainColorPref(event.getProperty());
-            PreferenceConverter.setValue(getPreferenceStore(), getPartnerColorPrefName(colorNum), (RGB) event
-                    .getNewValue());
+            IPreferenceStore store = getPreferenceStore();
+            String partnerPrefName = getPartnerColorPrefName(colorNum);
+            /*
+             * You might be wondering why in the following I did not use event.getNewValue() to
+             * retrieve the new color value. It turns out that sometimes
+             * that method returns an object of type RGB and sometimes a String.
+             * For all I know, it could return another type entirely in certain
+             * situations. Thus, it seems that the best thing is to get the value
+             * directly from the preference store instead of from the event. The preference
+             * store keeps the value of a color as a String, so the type returned is a string
+             * and the type to set for the partner preference name is also a String.
+             */
+            String newValue = getPreferenceStore().getString(event.getProperty());
+            if (store.getDefaultString(partnerPrefName).equals(newValue))
+            {
+                store.setToDefault(partnerPrefName);
+            } else
+            {
+                getPreferenceStore().setValue(partnerPrefName, newValue);
+            }
         }
 
         super.propertyChange(event);
