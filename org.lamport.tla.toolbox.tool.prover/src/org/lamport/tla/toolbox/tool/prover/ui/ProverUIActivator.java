@@ -44,20 +44,23 @@ public class ProverUIActivator extends AbstractUIPlugin
          * is the key for each predicate for the logical color, and the second argument is
          * the predicate string (not the macro name).
          */
-        store.setDefault(ProverPreferencePage.getColorPredPrefName(1), ColorPredicate.PREDEFINED_MACROS[0][1]);
-        store.setDefault(ProverPreferencePage.getColorPredPrefName(2), ColorPredicate.PREDEFINED_MACROS[0][1]);
-        store.setDefault(ProverPreferencePage.getColorPredPrefName(3), ColorPredicate.PREDEFINED_MACROS[5][1]);
-        store.setDefault(ProverPreferencePage.getColorPredPrefName(4), ColorPredicate.PREDEFINED_MACROS[10][1]);
-        store.setDefault(ProverPreferencePage.getColorPredPrefName(5), ColorPredicate.PREDEFINED_MACROS[11][1]);
-        store.setDefault(ProverPreferencePage.getColorPredPrefName(6), ColorPredicate.PREDEFINED_MACROS[9][1]);
-        store.setDefault(ProverPreferencePage.getColorPredPrefName(7), ColorPredicate.PREDEFINED_MACROS[2][1]);
-        store.setDefault(ProverPreferencePage.getColorPredPrefName(8), ColorPredicate.PREDEFINED_MACROS[0][1]);
-        store.setDefault(ProverPreferencePage.getColorPredPrefName(9), ColorPredicate.PREDEFINED_MACROS[0][1]);
-        store.setDefault(ProverPreferencePage.getColorPredPrefName(10), ColorPredicate.PREDEFINED_MACROS[0][1]);
-        store.setDefault(ProverPreferencePage.getColorPredPrefName(11), ColorPredicate.PREDEFINED_MACROS[0][1]);
-        store.setDefault(ProverPreferencePage.getColorPredPrefName(12), ColorPredicate.PREDEFINED_MACROS[0][1]);
+        store.setDefault(ProverPreferencePage.getColorPredPrefName(1), ColorPredicate.PREDICATE_NONE);
+        store.setDefault(ProverPreferencePage.getColorPredPrefName(2), ColorPredicate.PREDICATE_NONE);
+        store.setDefault(ProverPreferencePage.getColorPredPrefName(3), ColorPredicate.PREDICATE_BEING_PROVED);
+        store.setDefault(ProverPreferencePage.getColorPredPrefName(4), ColorPredicate.PREDICATE_STOPPED);
+        store.setDefault(ProverPreferencePage.getColorPredPrefName(5), ColorPredicate.PREDICATE_FAILED);
+        store.setDefault(ProverPreferencePage.getColorPredPrefName(6), ColorPredicate.PREDICATE_PROVED);
+        store.setDefault(ProverPreferencePage.getColorPredPrefName(7), ColorPredicate.PREDICATE_PROVED_OR_OMITTED);
+        store.setDefault(ProverPreferencePage.getColorPredPrefName(8), ColorPredicate.PREDICATE_PROVED_OR_OMITTED_OR_MISSING);
+        store.setDefault(ProverPreferencePage.getColorPredPrefName(9), ColorPredicate.PREDICATE_NONE);
+        store.setDefault(ProverPreferencePage.getColorPredPrefName(10), ColorPredicate.PREDICATE_NONE);
+        store.setDefault(ProverPreferencePage.getColorPredPrefName(11), ColorPredicate.PREDICATE_NONE);
+        store.setDefault(ProverPreferencePage.getColorPredPrefName(12), ColorPredicate.PREDICATE_NONE);
 
-        /*
+        store.setDefault(ProverPreferencePage.getLeafSideBarPrefName(3), true);
+        store.setDefault(ProverPreferencePage.getLeafSideBarPrefName(4), true);
+        store.setDefault(ProverPreferencePage.getLeafSideBarPrefName(5), true);
+         /*
          * DR commented out the following because default colors are now set in the plugin.xml file for this
          * plug-in.
          */
