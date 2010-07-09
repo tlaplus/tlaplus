@@ -395,10 +395,8 @@ public class ObligationsView extends ViewPart
                     viewers.put(item, viewer);
 
                     /*
-                     * Add a button for stopping the proof.  This button should
-                     * say "Stop Proving" iff the obligation is currently being proved.
-                     * However, there is currently no way to find that button once the
-                     * obligation composite has been created.
+                     * Add a button for stopping the proof.  This button is
+                     * later disabled if the obligation is not being proved.
                      * 
                      * The data field for the button stores a pointer to the
                      * marker for the obligation. This allows a listener
