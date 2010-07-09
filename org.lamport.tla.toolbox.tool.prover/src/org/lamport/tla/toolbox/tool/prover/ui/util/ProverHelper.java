@@ -1795,9 +1795,17 @@ public class ProverHelper
      * 
      * @param message
      */
-    public static void processWarningMessage(WarningMessage message)
+    public static void processWarningMessage(final WarningMessage message)
     {
-        MessageDialog.openWarning(UIHelper.getShellProvider().getShell(), "TLAPM Warning", message.getMessage());
+        UIHelper.runUIAsync(new Runnable() {
+
+            public void run()
+            {
+                MessageDialog
+                        .openWarning(UIHelper.getShellProvider().getShell(), "TLAPM Warning", message.getMessage());
+            }
+        });
+
     }
 
     /**

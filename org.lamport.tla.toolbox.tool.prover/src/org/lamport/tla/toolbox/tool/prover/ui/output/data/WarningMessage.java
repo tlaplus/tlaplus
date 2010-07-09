@@ -50,7 +50,7 @@ public class WarningMessage extends TLAPMMessage
             String fieldValue = (String) nextEntry.getValue();
             if (fieldName != null && fieldValue != null)
             {
-                if (fieldName.equals(LOC_FIELD))
+                if (fieldName.equals(MSG_FIELD))
                 {
                     message.message = fieldValue;
                 } else
