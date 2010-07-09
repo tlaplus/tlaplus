@@ -128,7 +128,7 @@ public class ColorPredicate
     public static final String PREDICATE_MISSING_OR_OMITTED = "some missing omitted";
     public static final String PREDICATE_PROVED_BY_ISABELLE = "every (proved,,)";
     public static final String PREDICATE_PROVED_BY_ISABELLE_OR_TRIVIAL = "every (proved,,) (,,proved)";
-    public static final String PREDICATE_STOPPED = "some (stopped,,) (,stopped,) (failed, untried)";
+    public static final String PREDICATE_STOPPED = "some (stopped,,) (,stopped,) (failed, untried,)";
     public static final String PREDICATE_STOPPED_UNPROVED = "some (stopped,-proved,-proved) (-proved,stopped,-proved)";
     public static final String PREDICATE_TRIVIAL = "every (,,proved)";
 
