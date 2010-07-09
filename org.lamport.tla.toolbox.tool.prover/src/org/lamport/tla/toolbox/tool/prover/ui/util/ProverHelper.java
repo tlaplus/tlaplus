@@ -310,6 +310,32 @@ public class ProverHelper
     }
 
     /**
+     * Returns true iff the marker is of the type
+     * {@link ProverHelper#OBLIGATION_MARKER} and represents
+     * an obligation that is currently being proved.
+     * 
+     * Implemented by trivially modifying isInterestingObligation
+     * 
+     * @param marker
+     * @return
+     * @throws CoreException 
+     */
+    public static boolean isBeingProvedObligation(IMarker marker)
+    {
+        int obState = marker.getAttribute(OBLIGATION_STATE, -1);
+        String[] proverStatuses = ColorPredicate.proverStatuses(obState);
+        for (int i = 0; i < proverStatuses.length; i++)
+        {
+            if (proverStatuses[i].equals(ColorPredicate.PROVING_STATUS))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Returns true iff the marker represents an obligation that is
      * finished being processed in any way (proving or checking).
      * 

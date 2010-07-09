@@ -331,7 +331,7 @@ public class ObligationsView extends ViewPart
                 /*
                  * Try to retrieve an existing item with the same id.
                  */
-                ExpandItem item = (ExpandItem) items.get(new Integer(id));
+                InterestingObligationExpandItem item = (InterestingObligationExpandItem) items.get(new Integer(id));
 
                 /*
                  * If the marker represents an obligation that is
@@ -355,7 +355,7 @@ public class ObligationsView extends ViewPart
                  */
                 if (item == null)
                 {
-                    item = new ExpandItem(bar, SWT.None, 0);
+                    item = new InterestingObligationExpandItem(bar, SWT.None, 0);
 
                     /*
                      * Create the widget that will appear when the
@@ -395,19 +395,23 @@ public class ObligationsView extends ViewPart
                     viewers.put(item, viewer);
 
                     /*
-                     * Add a button for stopping the obligation.
+                     * Add a button for stopping the proof.  This button should
+                     * say "Stop Proving" iff the obligation is currently being proved.
+                     * However, there is currently no way to find that button once the
+                     * obligation composite has been created.
                      * 
                      * The data field for the button stores a pointer to the
                      * marker for the obligation. This allows a listener
                      * to retrieve the id of the obligation, or any other information
                      * which it must send to the prover to stop the proof.
                      */
-                    Button stopButton = new Button(oblWidget, SWT.PUSH);
-                    stopButton.setText("Stop Proving");
-                    stopButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-                    stopButton.setData(marker);
-                    stopButton.addSelectionListener(stopObListener);
 
+                        Button stopButton = new Button(oblWidget, SWT.PUSH);
+                        stopButton.setText("Stop Proving");
+                        stopButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+                        stopButton.setData(marker);
+                        stopButton.addSelectionListener(stopObListener);
+                        item.setButton(stopButton);
                     item.setControl(oblWidget);
                     item.setExpanded(true);
 
@@ -435,6 +439,11 @@ public class ObligationsView extends ViewPart
                  */
                 item.setText("Obligation " + id + " - status : "
                         + ColorPredicate.numberToState(marker.getAttribute(ProverHelper.OBLIGATION_STATE, -1)));
+                
+                /*
+                 * Enable the "Being Proved" button iff the obligation is being proved.
+                 */
+                item.getButton().setEnabled(ProverHelper.isBeingProvedObligation(marker));
 
                 /*
                  * Create or remove the stop proving button depending on whether
@@ -550,5 +559,38 @@ public class ObligationsView extends ViewPart
 
         SourceViewer viewer;
 
+    }
+    
+    /**
+     * A subclass of ExpandItem that contains a Button.  Used so that
+     * the "Stop Proving" button can be disabled for an interesting
+     * obligation that is not being proved.
+     * 
+     * @author lamport
+     *
+     */
+    public static class InterestingObligationExpandItem extends ExpandItem {
+ 
+        private Button button;
+        
+        public Button getButton() {
+            return button;
+        }
+        
+        public void setButton(Button button) {
+            this.button = button;
+        }
+        
+//        public InterestingObligationExpandItem(ExpandBar parent, int style)
+//        {
+//            super(parent, style);
+//            //  Auto-generated constructor stub
+//        }
+        
+        public InterestingObligationExpandItem(ExpandBar parent, int style, int index)
+        {
+            super(parent, style, index);
+            //  Auto-generated constructor stub
+        }
     }
 }
