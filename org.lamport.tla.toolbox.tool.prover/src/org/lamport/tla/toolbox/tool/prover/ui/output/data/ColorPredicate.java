@@ -122,13 +122,13 @@ public class ColorPredicate
     public static final String PREDICATE_FAILED_OR_STOPPED_UNPROVED = "some (failed stopped,-proved,-proved) (-proved,failed stopped,-proved)";
     public static final String PREDICATE_FAILED_SO_FAR = "some (failed,-failed,)";
     public static final String PREDICATE_FAILED_OR_STOPPED = "some (failed stopped,,) (,failed stopped,)";
-    public static final String PREDICATE_BEING_PROVED = "some (proving,,) (failed,stopped untried proving,)";
+    public static final String PREDICATE_BEING_PROVED = "some (proving,,) (,proving,)";
     public static final String PREDICATE_MISSING = "some missing";
     public static final String PREDICATE_OMITTED = "some omitted";
     public static final String PREDICATE_MISSING_OR_OMITTED = "some missing omitted";
     public static final String PREDICATE_PROVED_BY_ISABELLE = "every (proved,,)";
     public static final String PREDICATE_PROVED_BY_ISABELLE_OR_TRIVIAL = "every (proved,,) (,,proved)";
-    public static final String PREDICATE_STOPPED = "some (stopped,,) (,stopped,)";
+    public static final String PREDICATE_STOPPED = "some (stopped,,) (,stopped,) (failed, untried)";
     public static final String PREDICATE_STOPPED_UNPROVED = "some (stopped,-proved,-proved) (-proved,stopped,-proved)";
     public static final String PREDICATE_TRIVIAL = "every (,,proved)";
 
