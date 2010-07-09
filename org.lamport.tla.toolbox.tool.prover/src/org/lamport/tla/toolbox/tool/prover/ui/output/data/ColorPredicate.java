@@ -111,59 +111,87 @@ public class ColorPredicate
     // PREDEFINED_MACROS[i][0] and definition PREDEFINED_MACROS[i][1].
     // We may or may not change the names to be descriptive, depending on
     // how we resolve the ComboFieldEditor mess.
-    public static final String[][] PREDEFINED_MACROS = { { "None", "some" }, // always false
 
-            { "All", "every (,,)" }, // always true
+    public static final String PREDICATE_NONE = "some";
+    public static final String PREDICATE_ALL = "every (,,)";
+    public static final String PREDICATE_PROVED = "every (proved, , ) (,proved,) (,,proved)";
+    public static final String PREDICATE_PROVED_OR_OMITTED = "every omitted (proved, , ) (,proved,) (,,proved)";
+    public static final String PREDICATE_PROVED_OR_OMITTED_OR_MISSING = "every omitted missing (proved, , ) (,proved,) (,,proved)";
+    public static final String PREDICATE_UNPROVED = "some (-proved, -proved, -proved)";
+    public static final String PREDICATE_FAILED = "some (failed,-proved,-proved) (-proved,failed,-proved)";
+    public static final String PREDICATE_FAILED_OR_STOPPED_UNPROVED = "some (failed stopped,-proved,-proved) (-proved,failed stopped,-proved)";
+    public static final String PREDICATE_FAILED_SO_FAR = "some (failed,-failed,)";
+    public static final String PREDICATE_FAILED_OR_STOPPED = "some (failed stopped,,) (,failed stopped,)";
+    public static final String PREDICATE_BEING_PROVED = "some (proving,,) (failed,stopped untried proving,)";
+    public static final String PREDICATE_MISSING = "some missing";
+    public static final String PREDICATE_OMITTED = "some omitted";
+    public static final String PREDICATE_MISSING_OR_OMITTED = "some missing omitted";
+    public static final String PREDICATE_PROVED_BY_ISABELLE = "every (proved,,)";
+    public static final String PREDICATE_PROVED_BY_ISABELLE_OR_TRIVIAL = "every (proved,,) (,,proved)";
+    public static final String PREDICATE_STOPPED = "some (stopped,,) (,stopped,)";
+    public static final String PREDICATE_STOPPED_UNPROVED = "some (stopped,-proved,-proved) (-proved,stopped,-proved)";
+    public static final String PREDICATE_TRIVIAL = "every (,,proved)";
 
-            // every obligation proved
-            { "Proved", "every (proved, , ) (,proved,) (,,proved)" },
 
-            // every obligation either proved or OMITTED
-            { "ProvedOrOmitted", "every omitted (proved, , ) (,proved,) (,,proved)" },
+     public static final String[][] PREDEFINED_MACROS = {  //
 
-            // Some obligation has not been proved.
-            { "NotProved", "some (-proved, -proved, -proved)" },
+             { "none", PREDICATE_NONE }, // always false
 
-            // Some obligation has failed on one prover and not been proved by another.
-            { "Failed", "some (failed,-proved,-proved) (-proved,failed,-proved)" },
+             { "all proved", PREDICATE_PROVED },
 
-            // Some obligation has failed or been stopped on one prover and not been proved by another.
-            { "FailedOrStopped", "some (failed stopped,-proved,-proved) (-proved,failed stopped,-proved)" },
+             // every obligation either proved or OMITTED
+             { "all proved or omitted", PREDICATE_PROVED_OR_OMITTED },
+         
+             // every obligation either proved or OMITTED    
+             {"all proved, omitted, or missing", PREDICATE_PROVED_OR_OMITTED_OR_MISSING},
+             
+             // Some obligation has not been proved.
+             { "some not proved", PREDICATE_UNPROVED },
 
-            // Some obligation has failed on some prover, but could yet be proved by Isabelle.
-            { "FailedSoFar", "some (failed,-failed,)" },
+             // The proof of some obligation was stopped.
+             { "some stopped", PREDICATE_STOPPED },
 
-            // Some obligation has failed or been stopped on some prover.
-            { "FailedOrStopped", "some (failed stopped,,) (,failed stopped,)" },
+             // The proof of some obligation that has not been proved was stopped.
+             { "some stopped and unproven", PREDICATE_STOPPED_UNPROVED },
 
-            // Some obligation is still being proved or has failed a secondary prover
-            // but not yet tried by Isabelle
-            { "BeingProved", "some (proving,,) (failed,untried proving,)" },
+             // Some obligation has failed on one prover and not been proved by another.
+             { "some failed", PREDICATE_FAILED },
 
-            // Some obligation is missing.
-            { "Missing", "some missing" },
+             // Some obligation has failed or been stopped on one prover and not been proved by another.
+             { "some failed or stopped", PREDICATE_FAILED_OR_STOPPED },
 
-            // Some obligation has PROOF OMITTED
-            { "Omitted", "some omitted" },
+             // Some obligation has failed on some prover, but could yet be proved by Isabelle.
+             { "Some failed on non-isabelle prover", PREDICATE_FAILED_SO_FAR },
 
-            // Some obligation is either missing or has PROOF OMITTED
-            { "MissingOrOmitted", "some missing omitted" },
+             // Some obligation has failed or been stopped on some prover.
+             { "Some failed or stopped", PREDICATE_FAILED_OR_STOPPED_UNPROVED },
 
-            // Every obligation has been proved by Isabelle (aka proved in paranoid mode)
-            { "ProvedByIsabelle", "every (proved,,)" },
+             // Some obligation is still being proved or has failed a secondary prover
+             // but not yet tried by Isabelle
+             { "Some being proved", PREDICATE_BEING_PROVED },
 
-            // Every nontrivial obligation has been proved by Isabelle
-            { "ProvedByIsabelleOrTrivial", "every (proved,,) (,,proved)" },
+             // Some obligation is missing.
+             { "some missing", PREDICATE_MISSING },
 
-            // The proof of some obligation was stopped.
-            { "Stopped", "some (stopped,,) (,stopped,)" },
+             // Some obligation has PROOF OMITTED
+             { "some omitted", PREDICATE_OMITTED },
 
-            // The proof of some obligation that has not been proved was stopped.
-            { "StoppedUnproved", "some (stopped,-proved,-proved) (-proved,stopped,-proved)" },
+             // Some obligation is either missing or has PROOF OMITTED
+             { "some missing or omitted", PREDICATE_MISSING_OR_OMITTED },
 
-            // Every obligation was found by TLAPM to be trivial.
-            { "Trivial", "every (,,proved)" }, //
-    };
+             // Every obligation has been proved by Isabelle (aka proved in paranoid mode)
+             { "all proved by isabelle", PREDICATE_PROVED_BY_ISABELLE },
+
+             // Every nontrivial obligation has been proved by Isabelle
+             { "all proved by isabelle or trivial", PREDICATE_PROVED_BY_ISABELLE_OR_TRIVIAL },
+
+             // Every obligation was found by TLAPM to be trivial.
+             { "all trivial", PREDICATE_TRIVIAL }, //
+
+             { "all", PREDICATE_ALL }, // always true
+             
+             // every obligation proved
+     };
 
     /**
      * Returns the macro with name macroName, else returns null if there
