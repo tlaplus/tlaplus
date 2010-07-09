@@ -113,7 +113,7 @@ public class ColorPredicate
     // how we resolve the ComboFieldEditor mess.
 
     public static final String PREDICATE_NONE = "some";
-    public static final String PREDICATE_ALL = "every (,,)";
+    public static final String PREDICATE_ALL = "every missing omitted ( , , )";
     public static final String PREDICATE_PROVED = "every (proved, , ) (,proved,) (,,proved)";
     public static final String PREDICATE_PROVED_OR_OMITTED = "every omitted (proved, , ) (,proved,) (,,proved)";
     public static final String PREDICATE_PROVED_OR_OMITTED_OR_MISSING = "every omitted missing (proved, , ) (,proved,) (,,proved)";
