@@ -39,10 +39,11 @@ public class StepTuple
      */
     private List children;
     /**
-     * The ith element of the array gives
-     * the value of the (i+1)st color predicate
-     * for this step. Color predicates
-     * are numbered starting at 1.
+     * The ith element of the array gives the value of the (i+1)st color 
+     * predicate for this step. Color predicates are numbered starting at 1.
+     * This array has to be initialized so that its value is correct if
+     * the StepTuple has no children, meaning that its ith element is 
+     * set true iff the corresponding predicate is an "every" predicate.
      */
     private boolean[] colorPredicateValues;
     /**
@@ -160,7 +161,11 @@ public class StepTuple
     }
 
     /**
-     * Creates the step tuple with initial status
+     * Creates the step tuple with initial status, setting colorPredicateValues
+     * to the correct value in case there are children.  If there are children,
+     * the initial value doesn't matter because the value is computed from the
+     * values of its children.  (I think.)
+     * 
      * {@link ProverHelper#STEP_UNKNOWN_INT}.
      * @param proverJob the job which launched the prover.
      */
@@ -168,7 +173,11 @@ public class StepTuple
     {
         this.proverJob = proverJob;
         children = new ArrayList();
+        ColorPredicate[] colorPredicates = proverJob.getColorPredicates();
         colorPredicateValues = new boolean[ProverPreferencePage.NUM_STATUS_COLORS];
+        for (int i = 0; i < colorPredicateValues.length; i++) {
+            colorPredicateValues[i] = ! colorPredicates[i].isSome;
+        }
     }
 
     /**
