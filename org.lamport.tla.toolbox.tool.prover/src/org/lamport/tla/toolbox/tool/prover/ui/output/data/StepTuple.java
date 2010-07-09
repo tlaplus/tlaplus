@@ -56,7 +56,6 @@ public class StepTuple
      * computes the value of all color predicates for this step.
      * If the value of one of the color predicates changes,
      * at least one of the color predicates is true for this step,
-     * and the new minimum number true color predicate has changed,
      * then this method creates a new sany step marker.
      * 
      * This method calls {@link #updateStatus()}
@@ -70,19 +69,6 @@ public class StepTuple
         // depends one whether this step is a leaf step or not
         boolean isLeaf = sanyMarker.getAttribute(ProverHelper.SANY_IS_LEAF_ATR, false);
         ColorPredicate[] colorPredicates = proverJob.getColorPredicates();
-
-        // CurrentMinimum will be set to the value of the current minimum
-        // true color predicate for this step, or numberOfPredicates+1
-        // if no color predicates are true.
-        int oldMinimum = ProverPreferencePage.NUM_STATUS_COLORS + 1;
-        for (int i = 0; i < ProverPreferencePage.NUM_STATUS_COLORS; i++)
-        {
-            if (colorPredicateValues[i])
-            {
-                oldMinimum = i + 1;
-                break;
-            }
-        }
 
         // will be set to true if the value of at least one color predicate has changed
         boolean predicateChanged = false;
@@ -144,9 +130,8 @@ public class StepTuple
 
         /*
          * If at least one color predicate has changed then recompute the
-         * minimum true color predicate. If the new minimum true color predicate
-         * is less than the old minimum, then create a new step status marker
-         * and delete the old one.
+         * minimum true color predicate. Create a new step status marker
+         * and delete the old one for the new minimum true color predicate.
          * 
          * If the parent is not null and at least one color predicate has changed,
          * then update the status of the parent.
@@ -163,10 +148,7 @@ public class StepTuple
                 }
             }
 
-            if (newMinimum < oldMinimum)
-            {
-                ProverHelper.newStepStatusMarker(sanyMarker, newMinimum);
-            }
+            ProverHelper.newStepStatusMarker(sanyMarker, newMinimum);
 
             if (parent != null)
             {
