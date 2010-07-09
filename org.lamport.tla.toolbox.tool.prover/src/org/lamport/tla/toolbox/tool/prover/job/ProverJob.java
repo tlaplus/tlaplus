@@ -44,6 +44,8 @@ import org.lamport.tla.toolbox.tool.prover.ui.view.ObligationsView;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
+import tla2sany.semantic.DefStepNode;
+import tla2sany.semantic.InstanceNode;
 import tla2sany.semantic.LevelNode;
 import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.TheoremNode;
@@ -243,6 +245,17 @@ public class ProverJob extends Job
          * on what it does.
          */
         initializeFields();
+
+        /*
+         * If nodeToProve is null after this, then this means
+         * that the module was not parsed successfully, so
+         * the prover cannot be run.
+         */
+        if (nodeToProve == null)
+        {
+            return new Status(IStatus.INFO, ProverUIActivator.PLUGIN_ID,
+                    "The module has parse errors. The prover cannot be run.");
+        }
 
         try
         {
@@ -840,7 +853,9 @@ public class ProverJob extends Job
                  *     to the user in this case because the parse errors view will pop open anyway.
                  * 5.) Get the LevelNode representing a step or top level use/hide containing the caret,
                  *     if the caret is at such a node. Set nodeToProve to this node.
-                 * 6.) If nodeToProve is still null, set nodeToProve to be the ModuleNode for the module.
+                 * 6.) If nodeToProve is still null or it is an instance of DefStepNode or InstanceNode,
+                 * set nodeToProve to be the ModuleNode for the module. InstanceNodes and DefStepNodes do
+                 * not generate obligations.
                  * 
                  * Note that at step 6 ,there are some other possibilities:
                  *     -If the caret is not at any proof step, check the whole module.
@@ -899,7 +914,7 @@ public class ProverJob extends Job
                  * Step 6                                                 *
                  **********************************************************/
 
-                if (nodeToProve == null)
+                if (nodeToProve == null || nodeToProve instanceof InstanceNode || nodeToProve instanceof DefStepNode)
                 {
                     nodeToProve = parseResult.getSpecObj().getExternalModuleTable().getModuleNode(
                             UniqueString.uniqueStringOf(moduleName));
