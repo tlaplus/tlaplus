@@ -2,7 +2,10 @@ package org.lamport.tla.toolbox.tool.prover.job;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.TreeMap;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.Assert;
@@ -132,14 +135,23 @@ public class ProverJob extends Job
      */
     private HashMap stepMessageMap = new HashMap();
     /**
-     * Map from {@link LevelNode}s to {@link StepTuple}s.
+     * Map from {@link Integer}s to {@link StepTuple}s.
+     * The integer keys give the begin line of the step
+     * tuple. This is the begin line reported by sany
+     * for that step at the time that this job was run.
+     * This is only for step tuples that represent leaf
+     * steps.
      */
-    private HashMap stepMap = new HashMap();
+    private Map leafStepMap = new TreeMap();
     /**
      * Map from {@link Integer} ids of obligations
      * to {@link ObligationStatus}
      */
-    private HashMap obsMap = new HashMap();
+    private Map obsMap = new HashMap();
+    /**
+     * The color predicates that were set in preferences at the
+     * time of the launch of the prover by this job.
+     */
     private ColorPredicate[] colorPredicates;
 
     /**
@@ -779,20 +791,51 @@ public class ProverJob extends Job
     }
 
     /**
-     * Returns the map from {@link LevelNode}s to {@link StepTuple}s.
+     * Returns a map from {@link Integer}s to {@link StepTuple}s.
+     * The integer keys give the begin line of the step
+     * tuple. This is the begin line reported by sany
+     * for that step at the time that this job was run.
+     * This is only for step tuples that represent leaf
+     * steps.
      */
-    public HashMap getStepMap()
+    public Map getLeafStepMap()
     {
-        return stepMap;
+        return leafStepMap;
+    }
+
+    /**
+     * Returns the {@link Collection} of {@link StepTuple}s
+     * corresponding to leaf steps considered in this launch of
+     * the prover. The iterator for this collection will return
+     * the steps in ascending order of their start line. If multiple
+     * steps are on the same line, there is no guarantee about the
+     * order of steps on the same line. If this is the case, then other
+     * stuff will probably break anyway, so don't worry about it.
+     * @return
+     */
+    public Collection getLeafSteps()
+    {
+        return leafStepMap.values();
     }
 
     /**
      * Returns the map from {@link Integer} ids of obligations
      * to {@link ObligationStatus}
      */
-    public HashMap getObsMap()
+    public Map getObsMap()
     {
         return obsMap;
+    }
+
+    /**
+     * Returns a {@link Collection} of {@link ObligationStatus}s generated
+     * by this launch of the prover.
+     * 
+     * @return
+     */
+    public Collection getObs()
+    {
+        return obsMap.values();
     }
 
     /**

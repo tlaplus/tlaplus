@@ -10,6 +10,8 @@ import org.lamport.tla.toolbox.tool.prover.job.ProverJob;
 import org.lamport.tla.toolbox.tool.prover.ui.preference.ProverPreferencePage;
 import org.lamport.tla.toolbox.tool.prover.ui.util.ProverHelper;
 
+import tla2sany.st.Location;
+
 /**
  * A class containing information about a proof step that is
  * needed for updating the status of proof steps.
@@ -175,8 +177,9 @@ public class StepTuple
         children = new ArrayList();
         ColorPredicate[] colorPredicates = proverJob.getColorPredicates();
         colorPredicateValues = new boolean[ProverPreferencePage.NUM_STATUS_COLORS];
-        for (int i = 0; i < colorPredicateValues.length; i++) {
-            colorPredicateValues[i] = ! colorPredicates[i].isSome;
+        for (int i = 0; i < colorPredicateValues.length; i++)
+        {
+            colorPredicateValues[i] = !colorPredicates[i].isSome;
         }
     }
 
@@ -239,6 +242,19 @@ public class StepTuple
     public IMarker getSanyMarker()
     {
         return sanyMarker;
+    }
+
+    /**
+     * Returns the location of this step as reported
+     * by SANY when the prover was launched. This location
+     * is the beginning of the step to the end of the statement
+     * of the step.
+     * 
+     * @return
+     */
+    public Location getSANYLocation()
+    {
+        return ProverHelper.stringToLoc(sanyMarker.getAttribute(ProverHelper.SANY_LOC_ATR, null));
     }
 
 }

@@ -612,6 +612,9 @@
       <attribute
             name="org.lamport.tla.toolbox.tool.prover.obState">
       </attribute>
+      <attribute
+            name="org.lamport.tla.toolbox.tool.prover.obLoc">
+      </attribute>
    </extension>
    <extension
          point="org.eclipse.ui.bindings">

@@ -10,6 +10,8 @@ import org.eclipse.core.runtime.CoreException;
 import org.lamport.tla.toolbox.tool.prover.ui.ProverUIActivator;
 import org.lamport.tla.toolbox.tool.prover.ui.util.ProverHelper;
 
+import tla2sany.st.Location;
+
 /**
  * A class that represents the current state of an obligation.
  * 
@@ -51,10 +53,13 @@ public class ObligationStatus
 
     /**
      * Create an obligation with the parent step
-     * and the marker for the obligation.
+     * and the marker for the obligation. The parent step
+     * can be null if the parent is to be set later using
+     * {@link #setParent(StepTuple)}.
      * Calls {@link #setState(long)} on the initialState
      * 
-     * @param parent the parent step of the obligation.
+     * @param parent the parent step of the obligation. Can be null
+     * if the parent is to be set later using {@link #setParent(StepTuple)}.
      * @param obMarker the marker for this obligation
      * which should already have the attributes
      * {@link ProverHelper#OBLIGATION_ID} and
@@ -90,6 +95,26 @@ public class ObligationStatus
     public Map getProverStatuses()
     {
         return proverStatuses;
+    }
+
+    /**
+     * Returns the parent {@link StepTuple} of this
+     * obligation. Will be null if it has not yet been
+     * set using {@link #setParent(StepTuple)}.
+     * @return
+     */
+    public StepTuple getParent()
+    {
+        return parent;
+    }
+
+    /**
+     * Sets the parent step of this obligation.
+     * @param parentStep
+     */
+    public void setParent(StepTuple parentStep)
+    {
+        this.parent = parentStep;
     }
 
     /**
@@ -201,5 +226,17 @@ public class ObligationStatus
     public IMarker getObMarker()
     {
         return obMarker;
+    }
+
+    /**
+     * Returns the location of the obligation that was reported by tlapm.
+     * Note that this is not necessarily the current locaion of the marker
+     * representing this obligation.
+     * 
+     * @return
+     */
+    public Location getTLAPMLocation()
+    {
+        return ProverHelper.stringToLoc(obMarker.getAttribute(ProverHelper.OBLIGATION_LOCATION, ""));
     }
 }

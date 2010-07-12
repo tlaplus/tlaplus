@@ -2,6 +2,7 @@ package org.lamport.tla.toolbox.tool.prover.ui.util;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import org.eclipse.core.resources.IFile;
@@ -82,6 +83,18 @@ public class ProverHelper
      * an int corresponding to a state. Obligation states are explained in {@link ColorPredicate}.
      */
     public static final String OBLIGATION_STATE = "org.lamport.tla.toolbox.tool.prover.obState";
+    /**
+     * String attribute on an obligation marker giving the location of the obligation as reported by
+     * tlapm. Note that this location is not necessarily the same as the markers current location
+     * in the editor, nor is it necessarily the same location as reported by the markers
+     * {@link IMarker#CHAR_END} and {@link IMarker#CHAR_START} attributes. These attributes are
+     * somewhat "sticky". They can change with some user editing.
+     * 
+     * The string value should be set from a {@link Location}
+     * using {@link #locToString(Location)}. The {@link Location} object
+     * can be retreived using {@link #stringToLoc(String)}.
+     */
+    public static final String OBLIGATION_LOCATION = "org.lamport.tla.toolbox.tool.prover.obLoc";
 
     /******************************************************************************
      * SANY marker and marker attribute constants.                                *
@@ -99,7 +112,9 @@ public class ProverHelper
      * String attribute on a SANY marker giving the location of the proof
      * step the last time the prover was launched for a proof step
      * status check. The string value should be set from a {@link Location}
-     * using {@link #locToString(Location)}.
+     * using {@link #locToString(Location)}. This location
+     * is the beginning of the step to the end of the statement
+     * of the step.
      */
     public static final String SANY_LOC_ATR = "org.lamport.tla.toolbox.tool.prover.ui.sanyLoc";
     /**
@@ -499,7 +514,7 @@ public class ProverHelper
                  * and steps.
                  */
                 proverJob.getObsMap().clear();
-                proverJob.getStepMap().clear();
+                proverJob.getLeafStepMap().clear();
                 proverJob.getStepMessageMap().clear();
 
                 /*
@@ -623,7 +638,6 @@ public class ProverHelper
              */
             StepTuple stepTuple = new StepTuple(proverJob);
             stepTuple.setSanyMarker(marker);
-            proverJob.getStepMap().put(levelNode, stepTuple);
 
             if (levelNode instanceof TheoremNode)
             {
@@ -708,6 +722,11 @@ public class ProverHelper
             } else
             {
                 marker.setAttribute(SANY_IS_LEAF_ATR, true);
+            }
+
+            if (marker.getAttribute(SANY_IS_LEAF_ATR, false))
+            {
+                proverJob.getLeafStepMap().put(new Integer(locForAttr.beginLine()), stepTuple);
             }
 
             return stepTuple;
@@ -931,58 +950,22 @@ public class ProverHelper
     {
         if (message.getStatus().equals(TO_BE_PROVED))
         {
-            /*
-             * Find the LevelNode in the semantic tree containing
-             * the obligation.
-             */
-            Location obLoc = message.getLocation();
-            /*
-             * If nodeToProver is not null, then the prover was launched on that node, and so we
-             * can search in the tree rooted at that node for the step containing the obligation.
-             * If nodeToProve is false, the prover was launched on the entire module, so we have to search
-             * through the entire module for the step containing the obligation.
-             */
-            LevelNode levelNode = null;
-            if (proverJob.getLevelNode() != null)
-            {
-                if (proverJob.getLevelNode() instanceof ModuleNode)
-                {
-                    levelNode = ResourceHelper.getPfStepOrUseHideFromModuleNode((ModuleNode) proverJob.getLevelNode(),
-                            obLoc.beginLine());
-                } else
-                {
-                    levelNode = ResourceHelper.getLevelNodeFromTree(proverJob.getLevelNode(), obLoc.beginLine());
-                }
-            }
-
-            if (levelNode == null)
-            {
-                ProverUIActivator.logDebug("Cannot find level node containing obligation at " + obLoc
-                        + ". This is a bug.");
-                return;
-            }
 
             /*
-             * Get the step tuple for the level node containing
-             * the obligation. This is the parent of the obligation.
-             * Create a new ObligationStatus with the step tuple as the
-             * parent and the message status as the initial status, add
-             * the obligation as a child of the step tuple. Adding
-             * the obligation as a child will update the status of the parent.
+             * Create a new ObligationStatus with null as the initial status and
+             * to be proved as the initial state.
+             * 
+             * The parent is initially null because we set it later. We set the parent
+             * of all non-dummy obligations when the first obligation message arrives that
+             * does not have status "to be proved". This condition is captured below in the
+             * if block with condition obStatus.getParent() == null. This condition should
+             * only be true once, because the code in that if block sets the parent
+             * for every obligation.
              */
-            StepTuple stepTuple = (StepTuple) proverJob.getStepMap().get(levelNode);
-            if (stepTuple != null)
-            {
-                IMarker obMarker = createObligationMarker(message.getID(), ColorPredicate.TO_BE_PROVED_STATE, message
-                        .getLocation());
-                ObligationStatus obStatus = new ObligationStatus(stepTuple, obMarker);
-                stepTuple.addChild(obStatus);
-                proverJob.getObsMap().put(new Integer(message.getID()), obStatus);
-            } else
-            {
-                ProverUIActivator.logDebug("Cannot find a step tuple for level node at " + levelNode.getLocation()
-                        + ". This is a bug.");
-            }
+            IMarker obMarker = createObligationMarker(message.getID(), ColorPredicate.TO_BE_PROVED_STATE, message
+                    .getLocation());
+            ObligationStatus obStatus = new ObligationStatus(null, obMarker);
+            proverJob.getObsMap().put(new Integer(message.getID()), obStatus);
         } else
         {
             /*
@@ -991,6 +974,44 @@ public class ProverHelper
              */
             final ObligationStatus obStatus = (ObligationStatus) proverJob.getObsMap()
                     .get(new Integer(message.getID()));
+
+            /*
+             * If the obligation does not yet have a parent, then
+             * set parents for all obligations. This should only occur
+             * once.
+             */
+            if (obStatus.getParent() == null)
+            {
+                /*
+                 * The following iterates through all non-dummy
+                 * obligations. For each obligation, we search through
+                 * the map of leaf steps until we find a parent. We search
+                 * by line numbers (because that is the key of the leaf step
+                 * map). We search upward in the file (decreasing the line number)
+                 * until we find a step that begins on that line number. This
+                 * assumes only one step per line. This is hopefully efficient
+                 * because obligations should be only a few lines below their parent
+                 * step.
+                 */
+                for (Iterator it = proverJob.getObs().iterator(); it.hasNext();)
+                {
+                    ObligationStatus obligation = (ObligationStatus) it.next();
+                    int searchLine = obligation.getTLAPMLocation().beginLine();
+                    while (true)
+                    {
+                        StepTuple stepTuple = (StepTuple) proverJob.getLeafStepMap().get(new Integer(searchLine));
+                        if (stepTuple != null)
+                        {
+                            obligation.setParent(stepTuple);
+                            stepTuple.addChild(obligation);
+                            break;
+                        }
+                        searchLine--;
+                    }
+                }
+
+            }
+
             obStatus.updateObligation(message);
 
             // update the obligations view with the new information
@@ -1036,6 +1057,7 @@ public class ProverHelper
                 Map markerAttributes = new HashMap();
                 markerAttributes.put(OBLIGATION_ID, new Integer(id));
                 markerAttributes.put(OBLIGATION_STATE, new Integer(initialState));
+                markerAttributes.put(OBLIGATION_LOCATION, locToString(location));
 
                 fileDocumentProvider.connect(fileEditorInput);
                 IDocument document = fileDocumentProvider.getDocument(fileEditorInput);
