@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -64,6 +66,21 @@ import util.UniqueString;
 public class ProverJob extends Job
 {
     /**
+     * A flag used strictly for debugging
+     * that is true iff no obligation status
+     * messages with status "to be proved" have been
+     * processed yet.
+     */
+    public boolean noToBeProved = true;
+    /**
+     * A flag that is true iff the only
+     * obligation status messages to be
+     * sent to the toolbox so far for
+     * this launch of the prover have
+     * status {@link ProverHelper#TO_BE_PROVED}.
+     */
+    private boolean toBeProvedOnly = true;
+    /**
      * The most prover job that led to the most
      * recent successful launch of the prover.
      */
@@ -73,7 +90,7 @@ public class ProverJob extends Job
      * the IPath pointing to the module to be checked, e.g.
      *    new Path("C:/Users/drickett/work/svn-repository/examples/HourClock/HourClock.tla")
      */
-    private IFile module;
+    public IFile module;
     /**
      * Path to the tlapm executable.
      */
@@ -148,6 +165,12 @@ public class ProverJob extends Job
      * to {@link ObligationStatus}
      */
     private Map obsMap = new HashMap();
+    /**
+     * A list of all obligation message with
+     * status {@link ProverHelper#TO_BE_PROVED} that
+     * have been sent so far.
+     */
+    private List obMessageList = new LinkedList();
     /**
      * The color predicates that were set in preferences at the
      * time of the launch of the prover by this job.
@@ -239,6 +262,7 @@ public class ProverJob extends Job
 
     protected IStatus run(IProgressMonitor monitor)
     {
+        System.out.println("Run method called " + System.currentTimeMillis());
 
         /*
          * Create the ColorPredicate objects.
@@ -413,6 +437,7 @@ public class ProverJob extends Job
              * wraps the java.lang.Process in an IProcess with some
              * convenience methods.
              */
+            System.out.println("TLAPM launched " + System.currentTimeMillis());
             proverProcess = DebugPlugin.newProcess(launch, pb.start(), getName());
 
             if (proverProcess != null)
@@ -550,6 +575,7 @@ public class ProverJob extends Job
                 proverProcess.getStreamsProxy().getErrorStreamMonitor().removeListener(listener);
                 proverProcess.getStreamsProxy().getOutputStreamMonitor().removeListener(listener);
             }
+            System.out.println("Done with proving " + System.currentTimeMillis());
 
             EditorUtil.setReadOnly(module, false);
 
@@ -1025,5 +1051,43 @@ public class ProverJob extends Job
     public static ProverJob getLastJob()
     {
         return lastJob;
+    }
+
+    /**
+     * Returns a list of all obligation message with
+     * status {@link ProverHelper#TO_BE_PROVED} that
+     * have been sent so far.
+     * @return the obMessageList
+     */
+    public List getObMessageList()
+    {
+        return obMessageList;
+    }
+
+    /**
+     * Sets the flag indicating that should be true
+     * iff the only obligation status messages to be
+     * sent to the toolbox so far for
+     * this launch of the prover have
+     * status {@link ProverHelper#TO_BE_PROVED}.
+     * @param toBeProvedOnly the toBeProvedOnly to set
+     */
+    public void setToBeProvedOnly(boolean toBeProvedOnly)
+    {
+        this.toBeProvedOnly = toBeProvedOnly;
+    }
+
+    /**
+     * Returns a flag that is true iff the only
+     * obligation status messages to be
+     * sent to the toolbox so far for
+     * this launch of the prover have
+     * status {@link ProverHelper#TO_BE_PROVED}.
+     * 
+     * @return the toBeProvedOnly
+     */
+    public boolean isToBeProvedOnly()
+    {
+        return toBeProvedOnly;
     }
 }

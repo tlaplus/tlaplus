@@ -417,7 +417,7 @@ public class ObligationsView extends ViewPart
             /*
              * Enable the "Being Proved" button iff the obligation is being proved.
              */
-            item.getButton().setEnabled(ProverHelper.isBeingProvedObligation(status.getObMarker()));
+            item.getButton().setEnabled(ProverHelper.isBeingProvedObligation(status));
 
             /*
              * Get the item's viewer. If the viewer's document does not contain

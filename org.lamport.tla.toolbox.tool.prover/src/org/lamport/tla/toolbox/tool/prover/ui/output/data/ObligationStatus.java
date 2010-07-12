@@ -6,8 +6,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.runtime.CoreException;
-import org.lamport.tla.toolbox.tool.prover.ui.ProverUIActivator;
 import org.lamport.tla.toolbox.tool.prover.ui.util.ProverHelper;
 
 import tla2sany.st.Location;
@@ -31,17 +29,10 @@ public class ObligationStatus
      * obligation. The attributes
      * 
      * {@link ProverHelper#OBLIGATION_ID}
-     * {@link ProverHelper#OBLIGATION_STATE}
      * 
      * should always be present. However, for
      * dummy missing and omitted obligations,
-     * the id is meaningless. The attribute
-     * 
-     * {@link ProverHelper#OBLIGATION_STRING}
-     * 
-     * may or may not be set depending on whether the
-     * prover has sent the pretty printed form
-     * of the obligation.
+     * the id is meaningless.
      */
     private IMarker obMarker;
     /**
@@ -50,10 +41,31 @@ public class ObligationStatus
      * recent status of the backend on this obligation.
      */
     private Map proverStatuses;
+    /**
+     * The pretty printed form of the obligation. This
+     * can be null if the obligation string has not been sent.
+     */
+    private String obligationString;
+    /**
+     * The current obligation state. See
+     * {@link ColorPredicate} for an explanation
+     * of obligation states.
+     */
+    private int obState;
+    /**
+     * The id of the obligation given by tlapm.
+     */
+    private int id;
+    /**
+     * The location of the obligation that was reported by tlapm.
+     * Note that this is not necessarily the current location of the marker
+     * representing this obligation.
+     */
+    private Location location;
 
     /**
-     * Create an obligation with the parent step
-     * and the marker for the obligation. The parent step
+     * Create an obligation with the parent step,
+     * the marker for the obligation, and initial state. The parent step
      * can be null if the parent is to be set later using
      * {@link #setParent(StepTuple)}.
      * Calls {@link #setState(long)} on the initialState
@@ -62,16 +74,19 @@ public class ObligationStatus
      * if the parent is to be set later using {@link #setParent(StepTuple)}.
      * @param obMarker the marker for this obligation
      * which should already have the attributes
-     * {@link ProverHelper#OBLIGATION_ID} and
-     * {@link ProverHelper#OBLIGATION_STATE} set.
-     * The attribute {@link ProverHelper#OBLIGATION_STRING}
-     * need not be set yet.
+     * {@link ProverHelper#OBLIGATION_ID} set.
+     * @param initialState the initial state of the obligation. See
+     * {@link ColorPredicate} for an explanation of obligation states.
+     * @param location the location of the obligation as reported by tlapm
+     * @param id the id of the obligation as given by tlapm
      */
-    public ObligationStatus(StepTuple parent, IMarker obMarker)
+    public ObligationStatus(StepTuple parent, IMarker obMarker, int initialState, Location location, int id)
     {
         this.parent = parent;
-        this.obMarker = obMarker;
         this.proverStatuses = new HashMap();
+        this.obState = initialState;
+        this.id = id;
+        this.location = location;
     }
 
     /**
@@ -83,7 +98,7 @@ public class ObligationStatus
      */
     public int getObligationState()
     {
-        return obMarker.getAttribute(ProverHelper.OBLIGATION_STATE, -1);
+        return obState;
     }
 
     /**
@@ -123,12 +138,16 @@ public class ObligationStatus
      */
     public int getId()
     {
-        return obMarker.getAttribute(ProverHelper.OBLIGATION_ID, -1);
+        return id;
     }
 
+    /**
+     * Returns the pretty printed form of the obligation. This
+     * can be null if the obligation string has not been sent.
+     */
     public String getObligationString()
     {
-        return getObMarker().getAttribute(ProverHelper.OBLIGATION_STRING, "");
+        return obligationString;
     }
 
     /**
@@ -170,37 +189,32 @@ public class ObligationStatus
      */
     public void updateObligation(ObligationStatusMessage message)
     {
+        /*
+         * The obligation string is not sent by the prover for every message.
+         * It is only sent once when the obligation is first interesting.
+         * Thus, message.getObString() can be null. Everytime a new message comes
+         * in for a given id, we set the obligation string.
+         */
+        this.obligationString = message.getObString();
+        // obMarker.setAttribute(ProverHelper.OBLIGATION_STRING, message.getObString());
 
-        try
+        /*
+         * Update the most recent status of the given backend.
+         */
+        if (message.getBackend() != null && message.getStatus() != null)
         {
-            /*
-             * The obligation string is not sent by the prover for every message.
-             * It is only sent once when the obligation is first interesting.
-             * Thus, message.getObString() can be null. Everytime a new message comes
-             * in for a given id, we set the obligation string. This way, when the obligation
-             * string is actually sent by the prover, it is set on the marker.
-             */
-            obMarker.setAttribute(ProverHelper.OBLIGATION_STRING, message.getObString());
+            proverStatuses.put(message.getBackend(), message.getStatus());
+        }
 
-            /*
-             * Update the most recent status of the given backend.
-             */
-            if (message.getBackend() != null && message.getStatus() != null)
-            {
-                proverStatuses.put(message.getBackend(), message.getStatus());
-            }
-
-            int oldState = getObligationState();
-            // the new state of the obligation
-            int newState = ProverHelper.getIntFromStringStatus(message.getStatus(), oldState, message.getBackend());
-            if (oldState != newState)
-            {
-                obMarker.setAttribute(ProverHelper.OBLIGATION_STATE, newState);
-                parent.updateStatus();
-            }
-        } catch (CoreException e)
+        int oldState = getObligationState();
+        // the new state of the obligation
+        int newState = ProverHelper.getIntFromStringStatus(message.getStatus(), oldState, message.getBackend());
+        if (oldState != newState)
         {
-            ProverUIActivator.logError("Error setting attributes for an obligation marker.", e);
+            // obMarker.setAttribute(ProverHelper.OBLIGATION_STATE, newState);
+            obState = newState;
+
+            parent.updateStatus();
         }
 
     }
@@ -210,17 +224,10 @@ public class ObligationStatus
      * obligation. The attributes
      * 
      * {@link ProverHelper#OBLIGATION_ID}
-     * {@link ProverHelper#OBLIGATION_STATE}
      * 
      * should always be present. However, for
      * dummy missing and omitted obligations,
-     * the id is meaningless. The attribute
-     * 
-     * {@link ProverHelper#OBLIGATION_STRING}
-     * 
-     * may or may not be set depending on whether the
-     * prover has sent the pretty printed form
-     * of the obligation.
+     * the id is meaningless.
      * @return
      */
     public IMarker getObMarker()
@@ -237,6 +244,6 @@ public class ObligationStatus
      */
     public Location getTLAPMLocation()
     {
-        return ProverHelper.stringToLoc(obMarker.getAttribute(ProverHelper.OBLIGATION_LOCATION, ""));
+        return location;
     }
 }

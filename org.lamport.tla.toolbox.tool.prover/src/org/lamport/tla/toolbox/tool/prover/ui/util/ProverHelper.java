@@ -74,27 +74,27 @@ public class ProverHelper
      * Attribute on an obligation marker giving the integer id of the obligation.
      */
     public static final String OBLIGATION_ID = "org.lamport.tla.toolbox.tool.prover.obId";
-    /**
-     * Attribute on an obligation marker giving the formatted String of the obligation.
-     */
-    public static final String OBLIGATION_STRING = "org.lamport.tla.toolbox.tool.prover.obString";
-    /**
-     * Attribute on an obligation marker giving the current state of the obligation. This is
-     * an int corresponding to a state. Obligation states are explained in {@link ColorPredicate}.
-     */
-    public static final String OBLIGATION_STATE = "org.lamport.tla.toolbox.tool.prover.obState";
-    /**
-     * String attribute on an obligation marker giving the location of the obligation as reported by
-     * tlapm. Note that this location is not necessarily the same as the markers current location
-     * in the editor, nor is it necessarily the same location as reported by the markers
-     * {@link IMarker#CHAR_END} and {@link IMarker#CHAR_START} attributes. These attributes are
-     * somewhat "sticky". They can change with some user editing.
-     * 
-     * The string value should be set from a {@link Location}
-     * using {@link #locToString(Location)}. The {@link Location} object
-     * can be retreived using {@link #stringToLoc(String)}.
-     */
-    public static final String OBLIGATION_LOCATION = "org.lamport.tla.toolbox.tool.prover.obLoc";
+    // /**
+    // * Attribute on an obligation marker giving the formatted String of the obligation.
+    // */
+    // public static final String OBLIGATION_STRING = "org.lamport.tla.toolbox.tool.prover.obString";
+    // /**
+    // * Attribute on an obligation marker giving the current state of the obligation. This is
+    // * an int corresponding to a state. Obligation states are explained in {@link ColorPredicate}.
+    // */
+    // public static final String OBLIGATION_STATE = "org.lamport.tla.toolbox.tool.prover.obState";
+    // /**
+    // * String attribute on an obligation marker giving the location of the obligation as reported by
+    // * tlapm. Note that this location is not necessarily the same as the markers current location
+    // * in the editor, nor is it necessarily the same location as reported by the markers
+    // * {@link IMarker#CHAR_END} and {@link IMarker#CHAR_START} attributes. These attributes are
+    // * somewhat "sticky". They can change with some user editing.
+    // *
+    // * The string value should be set from a {@link Location}
+    // * using {@link #locToString(Location)}. The {@link Location} object
+    // * can be retreived using {@link #stringToLoc(String)}.
+    // */
+    // public static final String OBLIGATION_LOCATION = "org.lamport.tla.toolbox.tool.prover.obLoc";
 
     /******************************************************************************
      * SANY marker and marker attribute constants.                                *
@@ -322,19 +322,16 @@ public class ProverHelper
     }
 
     /**
-     * Returns true iff the marker is of the type
-     * {@link ProverHelper#OBLIGATION_MARKER} and represents
+     * Returns true iff the status represents
      * an obligation that is currently being proved.
      * 
-     * Implemented by trivially modifying isInterestingObligation
-     * 
-     * @param marker
+     * @param status the current obligation status
      * @return
      * @throws CoreException 
      */
-    public static boolean isBeingProvedObligation(IMarker marker)
+    public static boolean isBeingProvedObligation(ObligationStatus status)
     {
-        int obState = marker.getAttribute(OBLIGATION_STATE, -1);
+        int obState = status.getObligationState();
         String[] proverStatuses = ColorPredicate.proverStatuses(obState);
         for (int i = 0; i < proverStatuses.length; i++)
         {
@@ -683,8 +680,9 @@ public class ProverHelper
                             // simply must be in the correct module so that the marker
                             // is put on the correct resource. The exact start
                             // and end positions don't matter.
-                            stepTuple.addChild(new ObligationStatus(stepTuple, createObligationMarker(-1,
-                                    ColorPredicate.NUMBER_OF_OMITTED_STATE, theoremNode.getLocation())));
+                            stepTuple.addChild(new ObligationStatus(stepTuple, createObligationMarker(-1, theoremNode
+                                    .getLocation()), ColorPredicate.NUMBER_OF_OMITTED_STATE, theoremNode.getLocation(),
+                                    0));
                         }
 
                     }
@@ -713,8 +711,8 @@ public class ProverHelper
                         // simply must be in the correct module so that the marker
                         // is put on the correct resource. The exact start
                         // and end positions don't matter.
-                        stepTuple.addChild(new ObligationStatus(stepTuple, createObligationMarker(-1,
-                                ColorPredicate.NUMBER_OF_MISSING_STATE, theoremNode.getLocation())));
+                        stepTuple.addChild(new ObligationStatus(stepTuple, createObligationMarker(-1, theoremNode
+                                .getLocation()), ColorPredicate.NUMBER_OF_MISSING_STATE, theoremNode.getLocation(), 0));
                     }
 
                 }
@@ -946,10 +944,22 @@ public class ProverHelper
      * @param message
      * @param nodeToProve the step or module on which the prover was launched
      */
-    public static void processObligationMessage(ObligationStatusMessage message, ProverJob proverJob)
+    public static void processObligationMessage(ObligationStatusMessage message, final ProverJob proverJob)
     {
         if (message.getStatus().equals(TO_BE_PROVED))
         {
+            if (proverJob.noToBeProved)
+            {
+                System.out.println("First to be proved " + System.currentTimeMillis());
+                proverJob.noToBeProved = false;
+            }
+
+            /*
+             * Simply add all to be proved messages to a list.
+             * They will be processed later. This is done once
+             * the first non "to be proved" message is sent. See below.
+             */
+            proverJob.getObMessageList().add(message);
 
             /*
              * Create a new ObligationStatus with null as the initial status and
@@ -962,12 +972,48 @@ public class ProverHelper
              * only be true once, because the code in that if block sets the parent
              * for every obligation.
              */
-            IMarker obMarker = createObligationMarker(message.getID(), ColorPredicate.TO_BE_PROVED_STATE, message
-                    .getLocation());
-            ObligationStatus obStatus = new ObligationStatus(null, obMarker);
-            proverJob.getObsMap().put(new Integer(message.getID()), obStatus);
+            // IMarker obMarker = createObligationMarker(message.getID(), ColorPredicate.TO_BE_PROVED_STATE, message
+            // .getLocation());
+            // ObligationStatus obStatus = new ObligationStatus(null, obMarker);
+            // proverJob.getObsMap().put(new Integer(message.getID()), obStatus);
         } else
         {
+            /*
+             * When the first message arrives that is not "to be proved"
+             * we create all obligation markers at once. Batching marker creation
+             * and wrapping the creation in an IWorkspaceRunnable sends one batch
+             * resource change notification instead of one notification for each
+             * marker modification. This is significantly faster than not wrapping the
+             * creation in an IWorkspaceRunnable.
+             */
+            if (proverJob.isToBeProvedOnly())
+            {
+                System.out.println("Before obligation marker creation " + System.currentTimeMillis());
+                IWorkspaceRunnable runnable = new IWorkspaceRunnable() {
+
+                    public void run(IProgressMonitor monitor) throws CoreException
+                    {
+                        for (Iterator it = proverJob.getObMessageList().iterator(); it.hasNext();)
+                        {
+                            ObligationStatusMessage message = (ObligationStatusMessage) it.next();
+                            IMarker obMarker = createObligationMarker(message.getID(), message.getLocation());
+                            ObligationStatus obStatus = new ObligationStatus(null, obMarker,
+                                    ColorPredicate.TO_BE_PROVED_STATE, message.getLocation(), 0);
+                            proverJob.getObsMap().put(new Integer(message.getID()), obStatus);
+                        }
+                    }
+                };
+
+                try
+                {
+                    proverJob.module.getWorkspace().run(runnable, null, IWorkspace.AVOID_UPDATE, null);
+                } catch (CoreException e)
+                {
+                    ProverUIActivator.logError("Error creating marker obligations", e);
+                }
+                proverJob.setToBeProvedOnly(false);
+                System.out.println("After obligation marker creation " + System.currentTimeMillis());
+            }
             /*
              * Update the state of the obligation. The obligation will
              * inform its parents step that its status should be updated.
@@ -982,6 +1028,7 @@ public class ProverHelper
              */
             if (obStatus.getParent() == null)
             {
+                System.out.println("Before ob parenting creation " + System.currentTimeMillis());
                 /*
                  * The following iterates through all non-dummy
                  * obligations. For each obligation, we search through
@@ -1010,6 +1057,8 @@ public class ProverHelper
                     }
                 }
 
+                System.out.println("After ob parenting creation " + System.currentTimeMillis());
+
             }
 
             obStatus.updateObligation(message);
@@ -1036,7 +1085,7 @@ public class ProverHelper
      * 
      * Returns the marker created.
      */
-    public static IMarker createObligationMarker(int id, int initialState, Location location)
+    public static IMarker createObligationMarker(int id, Location location)
     {
         IResource module = ResourceHelper.getResourceByModuleName(location.source());
         if (module != null && module instanceof IFile && module.exists())
@@ -1056,8 +1105,8 @@ public class ProverHelper
                 // the marker created
                 Map markerAttributes = new HashMap();
                 markerAttributes.put(OBLIGATION_ID, new Integer(id));
-                markerAttributes.put(OBLIGATION_STATE, new Integer(initialState));
-                markerAttributes.put(OBLIGATION_LOCATION, locToString(location));
+                // markerAttributes.put(OBLIGATION_STATE, new Integer(initialState));
+                // markerAttributes.put(OBLIGATION_LOCATION, locToString(location));
 
                 fileDocumentProvider.connect(fileEditorInput);
                 IDocument document = fileDocumentProvider.getDocument(fileEditorInput);
