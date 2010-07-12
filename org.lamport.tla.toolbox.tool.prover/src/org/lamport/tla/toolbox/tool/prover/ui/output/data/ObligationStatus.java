@@ -74,7 +74,8 @@ public class ObligationStatus
      * if the parent is to be set later using {@link #setParent(StepTuple)}.
      * @param obMarker the marker for this obligation
      * which should already have the attributes
-     * {@link ProverHelper#OBLIGATION_ID} set.
+     * {@link ProverHelper#OBLIGATION_ID} set. Can be null if this
+     * is a dummy obligation because the marker is never used.
      * @param initialState the initial state of the obligation. See
      * {@link ColorPredicate} for an explanation of obligation states.
      * @param location the location of the obligation as reported by tlapm
@@ -87,6 +88,7 @@ public class ObligationStatus
         this.obState = initialState;
         this.id = id;
         this.location = location;
+        this.obMarker = obMarker;
     }
 
     /**
@@ -225,9 +227,9 @@ public class ObligationStatus
      * 
      * {@link ProverHelper#OBLIGATION_ID}
      * 
-     * should always be present. However, for
-     * dummy missing and omitted obligations,
-     * the id is meaningless.
+     * should always be present. This marker
+     * will be null for dummy obligations.
+     * 
      * @return
      */
     public IMarker getObMarker()

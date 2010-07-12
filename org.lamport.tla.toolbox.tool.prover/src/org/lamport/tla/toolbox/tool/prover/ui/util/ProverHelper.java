@@ -682,7 +682,7 @@ public class ProverHelper
                             // and end positions don't matter.
                             stepTuple.addChild(new ObligationStatus(stepTuple, createObligationMarker(-1, theoremNode
                                     .getLocation()), ColorPredicate.NUMBER_OF_OMITTED_STATE, theoremNode.getLocation(),
-                                    0));
+                                    -1));
                         }
 
                     }
@@ -711,8 +711,10 @@ public class ProverHelper
                         // simply must be in the correct module so that the marker
                         // is put on the correct resource. The exact start
                         // and end positions don't matter.
-                        stepTuple.addChild(new ObligationStatus(stepTuple, createObligationMarker(-1, theoremNode
-                                .getLocation()), ColorPredicate.NUMBER_OF_MISSING_STATE, theoremNode.getLocation(), 0));
+                        stepTuple
+                                .addChild(new ObligationStatus(stepTuple, createObligationMarker(-1, theoremNode
+                                        .getLocation()), ColorPredicate.NUMBER_OF_MISSING_STATE, theoremNode
+                                        .getLocation(), -1));
                     }
 
                 }
@@ -998,7 +1000,7 @@ public class ProverHelper
                             ObligationStatusMessage message = (ObligationStatusMessage) it.next();
                             IMarker obMarker = createObligationMarker(message.getID(), message.getLocation());
                             ObligationStatus obStatus = new ObligationStatus(null, obMarker,
-                                    ColorPredicate.TO_BE_PROVED_STATE, message.getLocation(), 0);
+                                    ColorPredicate.TO_BE_PROVED_STATE, message.getLocation(), message.getID());
                             proverJob.getObsMap().put(new Integer(message.getID()), obStatus);
                         }
                     }
