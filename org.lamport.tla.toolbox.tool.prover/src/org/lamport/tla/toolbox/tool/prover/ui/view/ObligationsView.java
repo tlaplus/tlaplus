@@ -15,7 +15,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.ExpandBar;
 import org.eclipse.swt.widgets.ExpandItem;
@@ -347,6 +346,22 @@ public class ObligationsView extends ViewPart
                 oblWidget.setLayout(gl);
 
                 /*
+                 * Add a button for stopping the obligation. This button is
+                 * later disabled if the obligation is not being proved.
+                 * 
+                 * The data field for the button stores a pointer to the
+                 * marker for the obligation. This allows a listener
+                 * to retrieve the id of the obligation, or any other information
+                 * which it must send to the prover to stop the proof.
+                 */
+                Button stopButton = new Button(oblWidget, SWT.PUSH);
+                stopButton.setText("Stop Proving");
+                stopButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+                stopButton.setData(status.getObMarker());
+                stopButton.addSelectionListener(stopObListener);
+                item.setButton(stopButton);
+
+                /*
                  * We use a source viewer to display the
                  * obligation. This allows us to easily do
                  * syntax highlighting by configuring the source
@@ -371,22 +386,6 @@ public class ObligationsView extends ViewPart
 
                 // item maps to viewer for later access
                 viewers.put(item, viewer);
-
-                /*
-                 * Add a button for stopping the obligation. This button is
-                     * later disabled if the obligation is not being proved.
-                 * 
-                 * The data field for the button stores a pointer to the
-                 * marker for the obligation. This allows a listener
-                 * to retrieve the id of the obligation, or any other information
-                 * which it must send to the prover to stop the proof.
-                 */
-                Button stopButton = new Button(oblWidget, SWT.PUSH);
-                stopButton.setText("Stop Proving");
-                stopButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-                stopButton.setData(status.getObMarker());
-                stopButton.addSelectionListener(stopObListener);
-                item.setButton(stopButton);
 
                 item.setControl(oblWidget);
                 item.setExpanded(true);
