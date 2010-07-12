@@ -19,7 +19,7 @@
    </license>
 
    <plugin
-         id="org.lamport.tla.toolbox.tool.prover.ui"
+         id="org.lamport.tla.toolbox.tool.prover"
          download-size="0"
          install-size="0"
          version="0.0.0"
