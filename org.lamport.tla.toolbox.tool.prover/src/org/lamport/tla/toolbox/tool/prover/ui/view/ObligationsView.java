@@ -223,7 +223,9 @@ public class ObligationsView extends ViewPart
 
     /**
      * Fills the obligation view with information
-     * from the most recent launch of the prover.
+     * from the most recent launch of the prover on the
+     * current spec if the most recent launch of the prover was on the current
+     * spec. Otherwise, does nothing.
      */
     private void fillFromCurrentSpec()
     {

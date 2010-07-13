@@ -87,10 +87,9 @@ public class ProverJob extends Job
     private static ProverJob lastJob;
 
     /**
-     * the IPath pointing to the module to be checked, e.g.
-     *    new Path("C:/Users/drickett/work/svn-repository/examples/HourClock/HourClock.tla")
+     * The {@link IFile} pointing to the module to be checked.
      */
-    public IFile module;
+    private IFile module;
     /**
      * Path to the tlapm executable.
      */
@@ -1089,5 +1088,13 @@ public class ProverJob extends Job
     public boolean isToBeProvedOnly()
     {
         return toBeProvedOnly;
+    }
+
+    /**
+     * Returns the {@link IFile} pointing to the module to be checked.
+     */
+    public IFile getModule()
+    {
+        return module;
     }
 }

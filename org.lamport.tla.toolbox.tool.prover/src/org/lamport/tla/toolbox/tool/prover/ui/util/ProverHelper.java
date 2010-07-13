@@ -259,10 +259,6 @@ public class ProverHelper
     public static final int STEP_CHECKING_FAILED_INT = 100;
     public static final int STEP_UNKNOWN_INT = -1;
 
-    /****************************************************************************************
-     * Names of methods in obligation status messages.
-     ***************************************************************************************/
-
     /**
      * Removes all markers indicating obligation information on  a resource. Does
      * nothing if the resource does not exist. It deletes these markers only at one level
@@ -401,9 +397,11 @@ public class ProverHelper
 
     /**
      * Returns the {@link Collection} of {@link ObligationStatus}s
-     * from the most recent run of the prover. Returns null if the
+     * from the most recent run of the prover if the most recent run
+     * of the prover is on the current spec. Returns null if the
      * prover has not yet been launched during this instance of the
-     * toolbox.
+     * toolbox or if the most recent run of the prover is not
+     * on the current spec.
      * 
      * @return
      */
@@ -413,7 +411,14 @@ public class ProverHelper
         {
             return null;
         }
-        Collection statuses = ProverJob.getLastJob().getObsMap().values();
+        ProverJob lastJob = ProverJob.getLastJob();
+        if (ToolboxHandle.getCurrentSpec() == null
+                || !lastJob.getModule().getProject().equals(ToolboxHandle.getCurrentSpec().getProject()))
+        {
+            // most recent prover job not from the current spec
+            return null;
+        }
+        Collection statuses = lastJob.getObsMap().values();
         return (ObligationStatus[]) statuses.toArray(new ObligationStatus[statuses.size()]);
     }
 
@@ -1009,7 +1014,7 @@ public class ProverHelper
 
                 try
                 {
-                    proverJob.module.getWorkspace().run(runnable, null, IWorkspace.AVOID_UPDATE, null);
+                    proverJob.getModule().getWorkspace().run(runnable, null, IWorkspace.AVOID_UPDATE, null);
                 } catch (CoreException e)
                 {
                     ProverUIActivator.logError("Error creating marker obligations", e);
