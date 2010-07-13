@@ -1020,7 +1020,7 @@ public class ProverJob extends Job
                 + (nodeToProve instanceof ModuleNode ? "entire" : "")
                 + " module "
                 + module.getName()
-                + (nodeToProve instanceof ModuleNode ? "" : "from line " + getBeginLine(nodeToProve) + " to line "
+                + (nodeToProve instanceof ModuleNode ? "" : " from line " + getBeginLine(nodeToProve) + " to line "
                         + getEndLine(nodeToProve));
     }
 
