@@ -82,7 +82,7 @@ public class ProverJob extends Job
     private boolean toBeProvedOnly = true;
     /**
      * The most prover job that led to the most
-     * recent successful launch of the prover.
+     * recent launch of the prover.
      */
     private static ProverJob lastJob;
 
@@ -325,6 +325,13 @@ public class ProverJob extends Job
                         + " does not exist.");
             }
 
+            /*
+             * Set the last run prover job to be this one.
+             * We have to be careful where we set the pointer to the
+             * last run prover job.
+             */
+            lastJob = this;
+
             /**************************************************************
              * The following performs some cleanup and preparation work   *
              * on markers.                                                *
@@ -441,7 +448,6 @@ public class ProverJob extends Job
 
             if (proverProcess != null)
             {
-                lastJob = this;
                 /*
                  * Setup the broadcasting of the prover output stream.
                  * We pass in the progress monitor to allow listeners
@@ -1045,7 +1051,7 @@ public class ProverJob extends Job
 
     /**
      * Returns the most prover job that led to the most
-     * recent successful launch of the prover.
+     * recent launch of the prover.
      */
     public static ProverJob getLastJob()
     {
