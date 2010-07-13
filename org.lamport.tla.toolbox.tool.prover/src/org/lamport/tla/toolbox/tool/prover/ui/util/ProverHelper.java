@@ -32,6 +32,7 @@ import org.lamport.tla.toolbox.tool.prover.job.ProverJobRule;
 import org.lamport.tla.toolbox.tool.prover.job.ProverJob.ProverJobMatcher;
 import org.lamport.tla.toolbox.tool.prover.ui.ProverUIActivator;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.ColorPredicate;
+import org.lamport.tla.toolbox.tool.prover.ui.output.data.ErrorMessage;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.ObligationStatus;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.ObligationStatusMessage;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.StepStatusMessage;
@@ -1878,6 +1879,16 @@ public class ProverHelper
                         .openWarning(UIHelper.getShellProvider().getShell(), "TLAPM Warning", message.getMessage());
             }
         });
+
+    }
+
+    /**
+     * Processes an error message from the tlapm.
+     * 
+     * @param message
+     */
+    public static void processErrorMessage(ErrorMessage message)
+    {
 
     }
 

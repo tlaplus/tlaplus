@@ -179,9 +179,13 @@ public abstract class TLAPMMessage
                 ObligationNumberMessage message = ObligationNumberMessage.getObNumMessage(fieldPairs.entrySet(),
                         moduleName);
                 return message;
-            } else if (type.equals(WARNING_TYPE) || type.equals(ERROR_TYPE))
+            } else if (type.equals(WARNING_TYPE))
             {
                 WarningMessage message = WarningMessage.getWarningMessage(fieldPairs.entrySet(), moduleName);
+                return message;
+            } else if (type.equals(ERROR_TYPE))
+            {
+                ErrorMessage message = ErrorMessage.getErrorMessage(fieldPairs.entrySet(), moduleName);
                 return message;
             } else
             {

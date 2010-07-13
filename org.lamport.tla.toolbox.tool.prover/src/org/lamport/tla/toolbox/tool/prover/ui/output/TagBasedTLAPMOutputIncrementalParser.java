@@ -5,6 +5,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.text.BadLocationException;
 import org.lamport.tla.toolbox.tool.prover.job.ProverJob;
 import org.lamport.tla.toolbox.tool.prover.output.IProverProcessOutputSink;
+import org.lamport.tla.toolbox.tool.prover.ui.output.data.ErrorMessage;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.ObligationNumberMessage;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.ObligationStatusMessage;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.StepStatusMessage;
@@ -229,6 +230,9 @@ public class TagBasedTLAPMOutputIncrementalParser implements IProverProcessOutpu
                     } else if (data instanceof WarningMessage)
                     {
                         ProverHelper.processWarningMessage((WarningMessage) data);
+                    } else if (data instanceof ErrorMessage)
+                    {
+                        ProverHelper.processErrorMessage((ErrorMessage) data);
                     }
                 }
 
