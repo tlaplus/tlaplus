@@ -194,10 +194,16 @@ public class ObligationStatus
         /*
          * The obligation string is not sent by the prover for every message.
          * It is only sent once when the obligation is first interesting.
-         * Thus, message.getObString() can be null. Everytime a new message comes
-         * in for a given id, we set the obligation string.
+         * Thus, message.getObString() can be null. If the obligation string
+         * has not yet been sent, we set it to the value of the obligation string
+         * in the message. After the first time the obligation string has been set,
+         * we do not set it again. Subsequent messages may not contain the obligation string
+         * after the first one that does.
          */
-        this.obligationString = message.getObString();
+        if (this.obligationString == null || this.obligationString.isEmpty())
+        {
+            this.obligationString = message.getObString();
+        }
         // obMarker.setAttribute(ProverHelper.OBLIGATION_STRING, message.getObString());
 
         /*
@@ -247,5 +253,11 @@ public class ObligationStatus
     public Location getTLAPMLocation()
     {
         return location;
+    }
+
+    public String toString()
+    {
+        return "ID : " + id + "\nLocation : " + location + "\nStatus : " + getProverStatusString() + "\nState : "
+                + obState + "\nObligation : " + obligationString;
     }
 }

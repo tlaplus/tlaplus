@@ -430,6 +430,10 @@ public class ObligationsView extends ViewPart
             SourceViewer viewer = (SourceViewer) viewers.get(item);
             Assert.isNotNull(viewer, "Expand item has been created without a source viewer. This is a bug.");
             String oblString = status.getObligationString();
+            Assert
+                    .isNotNull(oblString,
+                            "No obligation string for an interesting obligation. This is a bug. The obligation is :\n"
+                                    + status);
             if ((viewer.getDocument() == null || !viewer.getDocument().get().equals(oblString)) && !oblString.isEmpty())
             {
                 // set the viewers document to the obligation.
