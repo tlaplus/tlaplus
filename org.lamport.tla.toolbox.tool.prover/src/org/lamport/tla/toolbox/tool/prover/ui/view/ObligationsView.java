@@ -202,7 +202,7 @@ public class ObligationsView extends ViewPart
             ExpandItem[] expandItems = oblView.bar.getItems();
             for (int i = 0; i < expandItems.length; i++)
             {
-                oblView.removeItem(expandItems[i]);
+                oblView.removeItem((InterestingObligationExpandItem) expandItems[i]);
             }
 
             /*
@@ -331,7 +331,7 @@ public class ObligationsView extends ViewPart
              */
             if (item == null)
             {
-                item = new InterestingObligationExpandItem(bar, SWT.None, 0);
+                item = new InterestingObligationExpandItem(bar, SWT.None, 0, id);
                 ;
 
                 /*
@@ -490,7 +490,7 @@ public class ObligationsView extends ViewPart
      * 
      * @param item
      */
-    private void removeItem(ExpandItem item)
+    private void removeItem(InterestingObligationExpandItem item)
     {
         // remove the source viewer's control from the
         // font listener since it no longer needs to be
@@ -500,8 +500,7 @@ public class ObligationsView extends ViewPart
         // retrieve the id for the item
         // the id is stored in the item's data, which should be a marker,
         // as set in the updateItem method
-        Integer id = new Integer(((IMarker) item.getData()).getAttribute(ProverHelper.OBLIGATION_ID, -1));
-        items.remove(id);
+        items.remove(new Integer(item.getId()));
 
         item.getControl().dispose();
         item.dispose();
@@ -517,6 +516,20 @@ public class ObligationsView extends ViewPart
      */
     public static class InterestingObligationExpandItem extends ExpandItem
     {
+        /**
+         * The obligation id.
+         */
+        private int id;
+
+        /**
+         * Returns the id of the obligation.
+         * 
+         * @return
+         */
+        public int getId()
+        {
+            return id;
+        }
 
         private Button button;
 
@@ -536,10 +549,15 @@ public class ObligationsView extends ViewPart
         // // Auto-generated constructor stub
         // }
 
-        public InterestingObligationExpandItem(ExpandBar parent, int style, int index)
+        /**
+         * Creates an expand bar item for the obligation with the given id. The parent style
+         * and index are the arguments used for the constructor {@link ExpandItem#ExpandItem(ExpandBar, int, int)}.
+         */
+        public InterestingObligationExpandItem(ExpandBar parent, int style, int index, int id)
         {
             super(parent, style, index);
             // Auto-generated constructor stub
+            this.id = id;
         }
     }
 }
