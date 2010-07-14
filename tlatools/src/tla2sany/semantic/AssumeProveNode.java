@@ -120,6 +120,9 @@ public class AssumeProveNode extends LevelNode {
   protected boolean suffices = false ;
   protected boolean isSuffices()  {return this.suffices ;}; 
             void    setSuffices() {this.suffices = true;}; 
+  public boolean getSuffices() {
+      return suffices;
+  }
 
 
   private ThmOrAssumpDefNode goal = null ;

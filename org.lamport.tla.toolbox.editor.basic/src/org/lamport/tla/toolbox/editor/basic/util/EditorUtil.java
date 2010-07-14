@@ -27,11 +27,15 @@ import org.lamport.tla.toolbox.util.UIHelper;
 
 import tla2sany.parser.Operators;
 import tla2sany.parser.SyntaxTreeNode;
+import tla2sany.semantic.AssumeProveNode;
 import tla2sany.semantic.FormalParamNode;
 import tla2sany.semantic.LetInNode;
+import tla2sany.semantic.LevelNode;
 import tla2sany.semantic.ModuleNode;
+import tla2sany.semantic.NewSymbNode;
 import tla2sany.semantic.NonLeafProofNode;
 import tla2sany.semantic.OpApplNode;
+import tla2sany.semantic.OpDeclNode;
 import tla2sany.semantic.OpDefNode;
 import tla2sany.semantic.SemanticNode;
 import tla2sany.semantic.SymbolNode;
@@ -436,6 +440,32 @@ public class EditorUtil
                     // return params[i];
                     foundSymbol = params[i];
                     break;
+                }
+            }
+        } else if (curNode instanceof TheoremNode)
+        {
+            TheoremNode thm = (TheoremNode) curNode;
+            LevelNode assertion = thm.getTheorem();
+
+            if (assertion instanceof AssumeProveNode)
+            {
+                AssumeProveNode apn = (AssumeProveNode) assertion;
+                SemanticNode[] assumes = apn.getAssumes();
+                if (!apn.getSuffices())
+                {
+                    for (int i = 0; i < assumes.length; i++)
+                    {
+                        if (assumes[i] instanceof NewSymbNode)
+                        {
+                            NewSymbNode newSymb = (NewSymbNode) assumes[i];
+                            OpDeclNode opDecl = newSymb.getOpDeclNode();
+                            if (name == opDecl.getName())
+                            {
+                                foundSymbol = opDecl;
+                                break;
+                            }
+                        }
+                    }
                 }
             }
         }
