@@ -177,6 +177,7 @@ public class ShowDeclarationsHandler extends AbstractHandler implements IHandler
             // come from the module's contant decls, variable decls,
             // opdef nodes, ThmOrAssumpDefNodes.
 
+            String lcFilterPrefix = filterPrefix.toLowerCase();
             list.removeAll();
             // Get the current module.
             if (module == null)
@@ -187,7 +188,7 @@ public class ShowDeclarationsHandler extends AbstractHandler implements IHandler
             SymbolNode[] syms = module.getConstantDecls();
             for (int i = 0; i < syms.length; i++)
             {
-                if (syms[i].getName().toString().startsWith(filterPrefix))
+                if (syms[i].getName().toString().toLowerCase().startsWith(lcFilterPrefix))
                 {
                     symVec.add(syms[i]);
                 }
@@ -196,7 +197,7 @@ public class ShowDeclarationsHandler extends AbstractHandler implements IHandler
             syms = module.getVariableDecls();
             for (int i = 0; i < syms.length; i++)
             {
-                if (syms[i].getName().toString().startsWith(filterPrefix))
+                if (syms[i].getName().toString().toLowerCase().toLowerCase().startsWith(lcFilterPrefix))
                 {
                     symVec.add(syms[i]);
                 }
@@ -207,7 +208,7 @@ public class ShowDeclarationsHandler extends AbstractHandler implements IHandler
             {
                 if (ResourceHelper.isFromUserModule(symsOpD[i].getSource())
                         && (showAll || (symsOpD[i].getSource() == symsOpD[i]))
-                        && symsOpD[i].getName().toString().startsWith(filterPrefix))
+                        && symsOpD[i].getName().toString().toLowerCase().startsWith(lcFilterPrefix))
                 {
                     symVec.add(symsOpD[i]);
                 }
@@ -218,7 +219,7 @@ public class ShowDeclarationsHandler extends AbstractHandler implements IHandler
             {
                 if (ResourceHelper.isFromUserModule(symsTAD[i].getSource())
                         && (showAll || (symsTAD[i].getSource() == symsTAD[i]))
-                        && symsTAD[i].getName().toString().startsWith(filterPrefix))
+                        && symsTAD[i].getName().toString().toLowerCase().startsWith(lcFilterPrefix))
                 {
                     symVec.add(symsTAD[i]);
                 }
