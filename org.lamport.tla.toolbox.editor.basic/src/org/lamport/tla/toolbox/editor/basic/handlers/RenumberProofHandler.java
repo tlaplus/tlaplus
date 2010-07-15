@@ -40,6 +40,11 @@ import util.UniqueString;
  */
 public class RenumberProofHandler extends AbstractHandler implements IHandler
 {
+    /*
+     * The following fields are actually used only in the execute method
+     * and could be local to that method.  See the setFields method for
+     * an explanation of why they are made fields.
+     */
     private IDocument doc; // The document in the editor.
     private String text; // The document as a string.
     private ISelectionProvider selectionProvider; // 
@@ -54,7 +59,7 @@ public class RenumberProofHandler extends AbstractHandler implements IHandler
     {
         // Set the fields and return if we didn't get
         // a TheoremNode.
-        if (!setFields())
+        if (!setFields(true))
         {
             return null;
         }
@@ -95,11 +100,14 @@ public class RenumberProofHandler extends AbstractHandler implements IHandler
 
                     // Get the step name.
                     uname = ((TheoremNode) steps[i]).getName();
-                } else if (steps[i] instanceof DefStepNode) {
+                } else if (steps[i] instanceof DefStepNode)
+                {
                     uname = ((DefStepNode) steps[i]).getStepNumber();
-                } else if (steps[i] instanceof UseOrHideNode) {
+                } else if (steps[i] instanceof UseOrHideNode)
+                {
                     uname = ((UseOrHideNode) steps[i]).getStepName();
-                } else if (steps[i] instanceof InstanceNode) {
+                } else if (steps[i] instanceof InstanceNode)
+                {
                     uname = ((InstanceNode) steps[i]).getStepName();
                 }
                 if (uname != null)
@@ -178,6 +186,17 @@ public class RenumberProofHandler extends AbstractHandler implements IHandler
             {
                 IntPair pair = (IntPair) replacementOffsets.get(i);
                 StringReplacement rep = replaceArray[pair.two];
+                // Turn the editor into a private field.
+                // TLAEditor editor;
+                // editor = EditorUtil.getTLAEditorWithFocus();
+                // // gets the editor to which command applies
+                // if (editor == null)
+                // {
+                // System.out.println("Editor is null as well as doc");
+                // }
+                // doc = editor.getDocumentProvider().getDocument(editor.getEditorInput());
+                // For some unknown reason, executing the following command
+                // sets doc to null.
                 doc.replace(pair.one, rep.oldStr.length(), rep.newStr);
             }
 
@@ -194,22 +213,34 @@ public class RenumberProofHandler extends AbstractHandler implements IHandler
         return null;
     }
 
-    /* Reprogram to disable or enable the command depending on whether the 
-     * cursor is in a step that has a non-leaf proof.
+    /* Disables or enables the command depending on whether the 
+     * cursor is in a step that has a non-leaf proof.  
      * (non-Javadoc)
      * @see org.eclipse.core.commands.AbstractHandler#setEnabled(java.lang.Object)
      */
     public void setEnabled(Object context)
     {
-        setBaseEnabled(setFields());
-        resetFields();
+        setBaseEnabled(setFields(false));
     }
 
     /*
-     * Sets the fields used by execute and setEnabled methods.  Returns false
-     * iff it failed to set some field to a useful value;
+     * This method started out as code within execute to set the fields it
+     * needs.  However, the checks it makes to see if it can do this are
+     * exactly the same as the ones needed to see if the Renumber Proof
+     * command should be enabled.  So, this code was put to dual purpose.
+     * After setEnabled called the method, it then called resetFields
+     * to reset them.  However, this doesn't work because it turns out 
+     * that setEnabled can be called during the execution of 
+     * IDocument.replace by execute.  The reallySet argument was then
+     * added to allow the testing to be done without actually setting
+     * the fields.  So, here's what the method does.
+     * 
+     * Checks if it can set the fields used by execute.  If it can't, it
+     * returns false.  If it can and reallySet = true, then it sets those
+     * fields.  It is called by execute with reallySet = true and by 
+     * setEnabled with setFields = false.   
      */
-    private boolean setFields()
+    private boolean setFields(boolean reallySet)
     {
         // The following code copied with minor modifications from BoxedCommentHandler
         TLAEditor editor;
@@ -219,11 +250,11 @@ public class RenumberProofHandler extends AbstractHandler implements IHandler
         {
             return false;
         }
-        doc = editor.getDocumentProvider().getDocument(editor.getEditorInput());
-        text = doc.get();
-        selectionProvider = editor.getSelectionProvider();
-        selection = (TextSelection) selectionProvider.getSelection();
-        node = EditorUtil.getCurrentTheoremNode();
+        IDocument doc = editor.getDocumentProvider().getDocument(editor.getEditorInput());
+        String text = doc.get();
+        ISelectionProvider selectionProvider = editor.getSelectionProvider();
+        TextSelection selection = (TextSelection) selectionProvider.getSelection();
+        TheoremNode node = EditorUtil.getCurrentTheoremNode();
         if (node == null)
         {
             return false;
@@ -234,8 +265,17 @@ public class RenumberProofHandler extends AbstractHandler implements IHandler
             pfNode = (NonLeafProofNode) pf;
         } else
         {
-            pfNode = null;
             return false;
+        }
+        if (reallySet)
+        {
+            this.doc = doc;
+            this.text = text;
+            this.selectionProvider = selectionProvider;
+            this.selection = selection;
+            this.node = node;
+            
+
         }
         return true;
     }
