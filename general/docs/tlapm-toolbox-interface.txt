@@ -1,0 +1,217 @@
+---------------------- Toolbox-TLAPM interface ----------------------------
+
+************ What the toolbox sends to TLAPM ************
+
+--toolbox <bl> <el> [options] FILE
+
+<bl> and <el> are both integers that give the begin line and end line of the part of the 
+file to be considered by the prover. If the arguments are both equal to 0, the entire module 
+will be considered.
+
+
+########## Options:
+
+### Proving options:
+
+--meth          changes the default method for proving 
+		(the default is zenon with 10 second time-out and isabelle auto fallback)
+
+--solver        which smt solver to use
+
+--paranoid      asks isabelle to check trivial obligations
+
+--isaprove      sends obligations to isabelle to be proved as soon as zenon fails 
+		or when isabelle is called by a pragma.
+
+--noproving     does not send any obligations to backends. Checks if an obligation is 
+		trivial or not and considers previous results in the fingerprint files. 
+		If an obligation is not trivial and does not appear in the fingerprints 
+		file, then the only message sent to the toolbox has a status "to be proved".
+
+--threads       <num> num is an integer giving the number of worker backend threads used. 
+		Default is the number of cores.
+
+-C              sends all obligations to isabelle for checking except trivial obligations 
+		(if --paranoid is not called), already checked obligations, and obligations 
+		on which isabelle has already failed or succeeded.
+
+
+### Display options:
+
+--wait <t>      t is an integer. After sending an obligation to a backend, the pm waits 
+		t seconds. If the backend has not finished on that obligation after those 
+		t seconds, the pm sends an obligation message with status "being proved" 
+		to the toolbox for that obligation. The default value is 3.
+
+
+### Fingerprint options:
+
+--cleanfp       erase the fingerprint file before processing the module. Adds new fingerprints.
+
+--nofp          erase fingerprints of obligations considered by the present launch of 
+		the toolbox (i.e. located between bl and el). Adds new fingerprints.
+
+--nofpl b e     erase fingerprints of obligations both (considered by the present launch of 
+		the toolbox) and (located between lines b and e). Adds new fingerprints.
+
+--fpdir <dir>   sets to dir the directory from which the fingerprints file is loaded and to 
+		which it is saved. (accepts both complete and relative pathnames)
+
+--safefp        checks isabelle and zenon versions before loading fingerprints. Only uses 
+		fingerprints whose zenon and isabelle versions equal the zenon and isabelle 
+		versions currently used by tlapm.
+
+
+
+### Other options (not yet used by the toolbox):
+
+ --help                 show this help message and exit
+  --version              show version number and exit
+  --verbose              produce verbose messages
+  -v                     (synonym for --verbose)
+
+  --where                show location of standard library and exit
+  --config               show configuration and exit
+  --summary              show summary of theorems (implies -N and not -C)
+  --timing               show runtime statistics
+
+  -I <dir>               add <dir> to search path
+  -d <dir>               send generated output to <dir>
+
+  -k                     keep going on backend failures
+  -N                     do not run any backend verifiers      (-> similar to --noproving)
+
+  --method <meth>        set default method to <meth> (try --method help)
+  --solver <solver>      set SMT solver to <solver>
+
+
+  --trust {[-]<backend>} enable/disable trust on backends (see --trust list)
+  --noflatten            do not flatten obligations
+  --nonormal             do not normalize obligations before printing
+  --debug {[-]<flag>}    enable/disable debugging flags
+
+
+
+
+######### While proving:
+
+While tlapm is running, the Toolbox can send the following two strings to the tlapm:
+
+1.) "kill\n" - this tells the pm to stop all backends and kill itself.
+2.) "stop <id>\n" - this tells the pm to stop processing the obligation with id <id>.
+
+
+
+************ What TLAPM sends to the Toolbox ************ 
+
+Each message comes in the following form:
+@!!BEGIN
+@!!type:<type>
+...
+@!!END
+
+Obligation Status Messages:
+
+@!!BEGIN
+@!!type:obligation
+@!!id:<id>
+@!!loc:<loc>
+@!!status:<status>
+@!!prover:<prover>
+@!!method:<method>
+@!!already:<alreadyProcessed>
+@!!obl:<obligation-string>
+@!!END
+
+
+######### Fields:
+
+<id> 		is a integer that is unique for that obligation for that run of the tlapm.
+
+<loc>   	is a string giving the location of the obligation. 
+		It takes the form <beginLine>:<beginColumn>:<endLine>:<endColumn>
+
+<status> 	can be "to be proved" | "proved" | "failed" | "trivial" | "being proved" | "interrupted"
+
+<prover> 	optional field. This field gives the prover on which the obligation has <status>. T
+		his field does not appear iff <status> is "to be proved".
+
+<method> 	optional field. This field gives the method used by <prover> to produce <status>. 
+		This field is not sent iff <status> is "to be proved" or "trivial".
+
+<alreadyProcessed> 	optional field. It appears iff <status> is not "to be proved" or "being proved". 
+			It is "true" iff the result comes from the fingerprints file. It is "false" otherwise.
+
+<obligation-string> 	optional field. It appears iff <status> is "failed" or "being proved" or "interrupted". 
+			It gives the pretty printed string of the obligation.
+
+
+######### Behavior:
+
+For every obligation between the begin line and end line passed to the prover, the tlapm will return an 
+obligation status message with status "to be proved". All such messages will be sent before any other 
+obligation status messages are sent and before the obligation count message is sent.
+
+The obligation count message gives the total number of obligations being considered by the tlapm. 
+This number is equal to the number of obligation status message with status "to be proved". 
+It takes the following form where <num> is the total number of obligations:
+
+@!!BEGIN
+@!!type:obligationsnumber
+@!!count:<num>
+@!!END
+
+After the obligation count message has been sent, obligation status messages are sent as obligations are processed. 
+The following specifies which statuses can be sent for which provers:
+
+1.) <prover> is "tlapm"
+     <status> = "trivial" | "proved" | "failed"
+     The statuses "proved" and "failed" can only be sent for tlapm if the method is "cooper".
+2.) <prover> is not "tlapm"
+     <status> = "proved" | "failed" | "being proved" | "interrupted"
+
+The status "being proved" is sent iff the prover has been working on the obligation for at least 3 seconds 
+(or t seconds if the option --wait <t>) is called.
+
+The status "interrupted" is sent if an individual obligation is stopped by sending the stop string.
+
+
+### Warning Messages:
+
+@!!BEGIN
+@!!type:warning
+@!!msg:<message>
+@!!END
+
+These messages report potentially bad behavior that should probably be shown to the user. 
+The PM is not stopped.
+Examples:
+
+1.) bad fingerprints zenon version - zenon fingerprints not loaded 
+2.) bad fingerprints isabelle version - isabelle fingerprints not loaded 
+3.) bad fingerprints format - not loaded  (moved to ./TLA_<moduleName>.fp.corrupted)
+3.) Location (of the problematic obligation). TLAPM does not handle yet (real numbers, temporal logic, etc...)
+4.) Location. Illegal HAVE, WITNESS, SELECT... (in that case, the PM is stopped).
+
+### Error Messages:
+
+@!!BEGIN
+@!!type:error
+@!!msg:<message>
+@!!END
+
+Used to report tlapm behavior that should be reported to the tlapm developer(s).
+The PM is stopped.
+
+Examples:
+
+1.) Bug raised by the PM.
+
+
+######### Exit codes
+
+0 - successful completion
+1 - error of the pm. Normally a module parsing error.
+2 - problem reading command line arguments
+255 - tlapm interrupted
+
