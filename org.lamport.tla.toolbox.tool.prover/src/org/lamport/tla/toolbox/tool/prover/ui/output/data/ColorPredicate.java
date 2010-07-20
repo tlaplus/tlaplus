@@ -131,9 +131,9 @@ public class ColorPredicate
     public static final String PREDICATE_STOPPED = "some (stopped,,) (,stopped,) (failed, untried,)";
     public static final String PREDICATE_STOPPED_UNPROVED = "some (stopped,-proved,-proved) (-proved,stopped,-proved)";
     public static final String PREDICATE_TRIVIAL = "every (,,proved)";
+    public static final String PREDICATE_UNTRIED = "some (untried, untried, untried)";
 
-
-     public static final String[][] PREDEFINED_MACROS = {  //
+    public static final String[][] PREDEFINED_MACROS = {  //
 
              { "none", PREDICATE_NONE }, // always false
 
@@ -147,6 +147,9 @@ public class ColorPredicate
              
              // Some obligation has not been proved.
              { "some not proved", PREDICATE_UNPROVED },
+             
+             // Some obligation has not been tried.
+             { "some not tried", PREDICATE_UNTRIED },
 
              // The proof of some obligation was stopped.
              { "some stopped", PREDICATE_STOPPED },
