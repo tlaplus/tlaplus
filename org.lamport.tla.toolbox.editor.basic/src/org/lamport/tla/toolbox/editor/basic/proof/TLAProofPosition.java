@@ -20,7 +20,8 @@ import tla2sany.st.Location;
  * Represents a proof and its statement (step/theorem) for folding.
  * 
  * The offset and length of this class describe the region from the beginning
- * of the statement of the proof to the end of the proof. There are some
+ * of the statement of the proof to the end of the proof. The line containing
+ * the offset is where the (+) or (-) symbol appears. There are some
  * modifications done to the exact offset and length because
  * of the way in which eclipse displays, collapses, and expands folds. This
  * is explained in comments in the constructor for this class.
@@ -33,7 +34,8 @@ import tla2sany.st.Location;
  * and the {@link Position} of the proof. This can be used to determine if a certain
  * offset is contained specifically within the proof or within the statement. There
  * are methods in this class for computing this. These positions are also used
- * to compute the correct foldable regions.
+ * to compute the correct foldable regions because when a {@link TLAProofPosition} is collapsed
+ * we want to hide just the proof, not the statement.
  * 
  * Note that {@link Position}'s are added to a document to become sticky pointers
  * to locations. See {@link DefaultPositionUpdater} for the default implementation
@@ -41,7 +43,8 @@ import tla2sany.st.Location;
  * 
  * Note that the positions of the proof and statement are not interpretted by eclipse
  * in any way. Only the offset and length fields for this class (that are inherited
- * from {@link Position}) are used by eclipse to determine how the fold is displayed.
+ * from {@link Position}) and the method {@link #computeProjectionRegions(IDocument)}
+ * are used by eclipse to determine how the fold is displayed.
  * 
  * @author Daniel Ricketts
  *
@@ -227,11 +230,11 @@ public class TLAProofPosition extends Position implements IProjectionPosition
          * In particular, for each region r returned by this method,
          * eclipse will fold all lines line such that
          * 
-         * line.offset >= r.offset && line.offset + line.length < r.offset + r.length
+         * (line.offset >= r.offset) && ((line.offset + line.length) < (r.offset + r.length))
          * 
          * Notice that the second inequality is strictly less than. This forces
          * us to use the method alignRegion, stolen from the code used for Java
-         * code folding and slightly modified.
+         * code folding and slightly modified. Read the method comments to see what it does.
          */
         IRegion toFold = alignRegion(new Region(firstLineOffset, lastLineInfo.getOffset() + lastLineInfo.getLength()
                 - firstLineOffset), document);
@@ -392,8 +395,8 @@ public class TLAProofPosition extends Position implements IProjectionPosition
      * @param region the region to align, may be <code>null</code>
      * @param document
      * @return a region equal or greater than <code>region</code> that is aligned with line
-     *         offsets, <code>null</code> if the region is too small to be foldable (e.g. covers
-     *         only one line)
+     *         offsets, <code>null</code> if <code>region</code> is
+     * <code>null</code> itself or if region's end line is less than its start line.
      */
     protected final IRegion alignRegion(IRegion region, IDocument document)
     {
