@@ -1818,7 +1818,6 @@ public class ProverHelper
         ProverJob proverJob = new ProverJob(checkStatus, ResourceHelper.getModuleNode(ResourceHelper
                 .getModuleName(((FileEditorInput) editor.getEditorInput()).getFile())), checkProofs);
         proverJob.setUser(true);
-        proverJob.setRule(new ProverJobRule());
         proverJob.schedule();
     }
 
