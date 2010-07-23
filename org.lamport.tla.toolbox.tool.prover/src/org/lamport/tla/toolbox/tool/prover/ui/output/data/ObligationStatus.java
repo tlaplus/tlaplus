@@ -36,9 +36,11 @@ public class ObligationStatus
      */
     private IMarker obMarker;
     /**
-     * A map from the name of backends
+     * A map from the String name of backends
      * to the String representing the most
      * recent status of the backend on this obligation.
+     * Constants representing possible obligation
+     * statuses on backends appear in {@link ProverHelper}.
      */
     private Map proverStatuses;
     /**
@@ -191,6 +193,26 @@ public class ObligationStatus
      */
     public void updateObligation(ObligationStatusMessage message)
     {
+
+        /*
+         * If the backend in the message already has a status of "proved" for this obligation,
+         * then this message should be ignored. All subsequent messages should also be ignored.
+         * This is done because there is no guarantee of the order in which obligation
+         * status messages will be sent. For example, if the user
+         * interrupts a backend in the middle of proving an obligation, then runs the prover again
+         * and that same backend succeeds on the obligation, then the fingerprint file stores the information
+         * that the obligation was interrupted on that backend and that it succeeded on that backend.
+         * When a status check is done, the prover will send the message that the backend was interrupted
+         * and that it succeeded, but there is no guarantee about the order in which that will happen.
+         * Thus, we ignore all messages for a given backend for a given obligation once we receive the message
+         * that that backend has proved that obligation.
+         */
+        String oldStatusOnBackend = (String) proverStatuses.get(message.getBackend());
+        if (oldStatusOnBackend != null && oldStatusOnBackend.equals(ProverHelper.PROVED))
+        {
+            return;
+        }
+
         /*
          * The obligation string is not sent by the prover for every message.
          * It is only sent once when the obligation is first interesting.
@@ -204,7 +226,6 @@ public class ObligationStatus
         {
             this.obligationString = message.getObString();
         }
-        // obMarker.setAttribute(ProverHelper.OBLIGATION_STRING, message.getObString());
 
         /*
          * Update the most recent status of the given backend.
@@ -219,7 +240,6 @@ public class ObligationStatus
         int newState = ProverHelper.getIntFromStringStatus(message.getStatus(), oldState, message.getBackend());
         if (oldState != newState)
         {
-            // obMarker.setAttribute(ProverHelper.OBLIGATION_STATE, newState);
             obState = newState;
 
             parent.updateStatus();
@@ -245,7 +265,7 @@ public class ObligationStatus
 
     /**
      * Returns the location of the obligation that was reported by tlapm.
-     * Note that this is not necessarily the current locaion of the marker
+     * Note that this is not necessarily the current location of the marker
      * representing this obligation.
      * 
      * @return
