@@ -282,9 +282,15 @@ public class ProverHelper
     }
 
     /**
-     * Returns true iff the marker is of the type
-     * {@link ProverHelper#OBLIGATION_MARKER} and represents
+     * Returns true iff the status represents
      * an obligation that is in an "interesting" state.
+     * 
+     * An obligation is interesting if
+     * 
+     * \/ At least one backend is trying to prove it.
+     * \/ /\ No backends have succeeded.
+     *    /\ \/ At least one backend has failed.
+     *       \/ At least one backend has been stopped.
      * 
      * @param marker
      * @return
@@ -294,28 +300,42 @@ public class ProverHelper
     {
         int obState = status.getObligationState();
         String[] proverStatuses = ColorPredicate.proverStatuses(obState);
-        /*
-         * An obligation is interesting if the status of at least one prover
-         * is currently trying to prove it, or if isabelle has not succeeded and at least
-         * one has failed.
-         */
+
+        // will be set to true if at least one backend has succeeded
+        boolean oneSucceeded = false;
+        // will be set to true if at least one backend has failed
+        boolean oneFailed = false;
+        // will be set to true if at least one backend has been stopped
+        boolean oneStopped = false;
+
         for (int i = 0; i < proverStatuses.length; i++)
         {
             if (proverStatuses[i].equals(ColorPredicate.PROVING_STATUS))
             {
+                // At least one backend is trying to prove it.
                 return true;
-            }
-        }
-
-        for (int i = 0; i < proverStatuses.length; i++)
-        {
-            if (proverStatuses[i].equals(ColorPredicate.FAILED_STATUS))
+            } else if (proverStatuses[i].equals(ColorPredicate.FAILED_STATUS))
             {
-                return !proverStatuses[ColorPredicate.ISABELLE_NUM].equals(ColorPredicate.PROVED_STATUS);
+                oneFailed = true;
+            } else if (proverStatuses[i].equals(ColorPredicate.STOPPED_STATUS))
+            {
+                oneStopped = true;
+            } else if (proverStatuses[i].equals(ColorPredicate.PROVED_STATUS))
+            {
+                oneSucceeded = true;
             }
         }
 
-        return false;
+        /*
+         * The condition "At least one backend is trying to prove it." is false.
+         * Return the value of
+         * 
+         * /\ No backends have succeeded.
+         * /\ \/ At least one backend has failed.
+         *    \/ At least one backend has been stopped.
+         */
+        return !oneSucceeded && (oneFailed || oneStopped);
+
     }
 
     /**
