@@ -140,7 +140,7 @@ public class ProverHelper
     public static final String BEING_PROVED = "being proved";
     /**
      * Obligation status indicating that the obligation
-     * has been proved by the value of the "meth" field.
+     * has been proved by the value of the "prover" field.
      */
     public static final String PROVED = "proved";
     /**
