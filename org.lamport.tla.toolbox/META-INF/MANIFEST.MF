@@ -34,6 +34,7 @@ Export-Package: org.lamport.tla.toolbox,
    org.lamport.tla.toolbox.spec,
    org.eclipse.core.resources,
    tla2sany.modanalyzer",
+ org.lamport.tla.toolbox.ui.dialog,
  org.lamport.tla.toolbox.ui.handler,
  org.lamport.tla.toolbox.ui.preference,
  org.lamport.tla.toolbox.ui.provider;

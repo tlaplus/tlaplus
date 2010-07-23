@@ -15,7 +15,6 @@ import org.eclipse.core.runtime.AssertionFailedException;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
@@ -40,6 +39,7 @@ import org.lamport.tla.toolbox.tool.prover.ui.output.data.StepTuple;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.WarningMessage;
 import org.lamport.tla.toolbox.tool.prover.ui.preference.ProverPreferencePage;
 import org.lamport.tla.toolbox.tool.prover.ui.view.ObligationsView;
+import org.lamport.tla.toolbox.ui.dialog.InformationDialog;
 import org.lamport.tla.toolbox.util.AdapterFactory;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
@@ -1872,16 +1872,15 @@ public class ProverHelper
      * Processes a warning message from the tlapm. This simply displays
      * a warning to the user.
      * 
-     * @param message
+     * @param warningMessage
      */
-    public static void processWarningMessage(final WarningMessage message)
+    public static void processWarningMessage(final WarningMessage warningMessage)
     {
         UIHelper.runUIAsync(new Runnable() {
 
             public void run()
             {
-                MessageDialog
-                        .openWarning(UIHelper.getShellProvider().getShell(), "TLAPM Warning", message.getMessage());
+                InformationDialog.openWarning(warningMessage.getMessage(), "TLAPM Warning");
             }
         });
 
@@ -1892,8 +1891,16 @@ public class ProverHelper
      * 
      * @param message
      */
-    public static void processErrorMessage(ErrorMessage message)
+    public static void processErrorMessage(final ErrorMessage message)
     {
+
+        UIHelper.runUIAsync(new Runnable() {
+
+            public void run()
+            {
+                InformationDialog.openError(message.getMessage(), "TLAPM Error");
+            }
+        });
 
     }
 

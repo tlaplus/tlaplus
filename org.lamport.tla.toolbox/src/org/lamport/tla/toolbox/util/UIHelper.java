@@ -18,6 +18,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.jface.dialogs.IconAndMessageDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.text.BadLocationException;
@@ -31,6 +32,7 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.window.IShellProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.BusyIndicator;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Control;
@@ -1079,6 +1081,44 @@ public class UIHelper
                 }
             }
         }
+    }
+
+    /**
+     * This method returns a built in SWT image. This method
+     * was mostly copied directly from {@link IconAndMessageDialog}.
+     * The argument should be an icon constant defined in
+     * {@link SWT}. These constants begin with "ICON".
+     * This method returns null if the argument
+     * is not such a constant or if the platform does not define
+     * and image corresponding to that constant. I would assume you figure
+     * that one out by trial and error.
+     * 
+     * @param imageID
+     * @return
+     */
+    public static Image getSWTImage(final int imageID)
+    {
+
+        Shell shell = getShell();
+        final Display display;
+        if (shell == null || shell.isDisposed())
+        {
+            display = Display.getCurrent();
+        } else
+        {
+            display = shell.getDisplay();
+        }
+
+        final Image[] image = new Image[1];
+        display.syncExec(new Runnable() {
+            public void run()
+            {
+                image[0] = display.getSystemImage(imageID);
+            }
+        });
+
+        return image[0];
+
     }
 
 }
