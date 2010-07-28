@@ -14,7 +14,7 @@ import org.eclipse.swt.widgets.Text;
 
 /**
  * A dialog that allows the user to launch the prover
- * with an arbitrary set of options selected.
+ * with a general set of options selected.
  * 
  * @author Daniel Ricketts
  *
@@ -112,7 +112,7 @@ public class LaunchProverDialog extends Dialog
         gd = new GridData();
         left.setLayoutData(gd);
         left.setLayout(new GridLayout(1, true));
-        
+
         /*
          * Now we create some regular old check boxes.
          */

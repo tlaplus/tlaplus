@@ -7,6 +7,14 @@ import org.eclipse.core.commands.IHandler;
 import org.lamport.tla.toolbox.tool.prover.ui.dialog.LaunchProverDialog;
 import org.lamport.tla.toolbox.util.UIHelper;
 
+/**
+ * Executing this handler opens a dialog that shows a general list of options
+ * for launching the prover. The dialog is {@link LaunchProverDialog}. See that
+ * class for a more detailed explanation of the dialog.
+ * 
+ * @author Daniel Ricketts
+ *
+ */
 public class GeneralLaunchProverHandler extends AbstractHandler implements IHandler
 {
 
