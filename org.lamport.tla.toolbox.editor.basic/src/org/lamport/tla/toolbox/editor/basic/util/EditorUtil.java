@@ -91,6 +91,28 @@ public class EditorUtil
     }
 
     /**
+     * Returns the currently active {@link TLAEditor}
+     * in the toolbox. This {@link TLAEditor} may not have focus
+     * or may not even be visible. If there is an editor showing
+     * in the toolbox and the editor is a {@link TLAEditorAndPDFViewer},
+     * then the {@link TLAEditor} from that multipage editor
+     * will be returned. Else, this method returns null.
+     * 
+     * @return
+     */
+    public static TLAEditor getActiveTLAEditor()
+    {
+        IEditorPart activeEditor = UIHelper.getActivePage().getActiveEditor();
+        // activeEditor.getAdapter(ITexto)
+        if (activeEditor instanceof TLAEditorAndPDFViewer)
+        {
+            return ((TLAEditorAndPDFViewer) activeEditor).getTLAEditor();
+        }
+
+        return null;
+    }
+
+    /**
      * returns true iff the location loc1 is contained within location loc2,
      * where the file names of the locations are ignored.
      * 
