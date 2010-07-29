@@ -122,21 +122,16 @@ public class ProverJob extends Job
      */
     protected static final long TIMEOUT = 100 * 1;
     /**
-     * True iff fingerprints should be used for
-     * the run of the prover.
-     */
-    private boolean useFP = true;
-    /**
-     * If true, the prover will be launched for
+     * If true, the PM will be launched for
      * status checking only, not proving.
      */
     private boolean checkStatus = false;
     /**
-     * If true, the prover will be told
-     * to check proofs. Should not be true
-     * if checkStatus is also true.
+     * The options used to launch the PM in an array, e.g. {"--paranoid","--threads","2"}.
+     * The elements in the array would normally be separated by a space in the command line. This
+     * array should NOT contain the --toolbox option or the --noproving option.
      */
-    private boolean checkProofs = false;
+    private String[] options;
     /**
      * The node on which the prover will be launched.
      * Set in the constructor. If left null, the prover
@@ -185,25 +180,26 @@ public class ProverJob extends Job
     /**
      * Constructor. This constructor sets the appropriate scheduling rule for this job, so there is no
      * need to call {@link #setRule(org.eclipse.core.runtime.jobs.ISchedulingRule)}.
-     * 
-     * @param checkStatus true iff the prover should be launched for status checking
-     * only, not proving.
-     * @param checkProofs true iff proofs should be checked. Should not be set
-     * to true if checkStatus is also set to true.
      * @param module the module on which the prover is being launched.
      * @param offset a character offset on the line of the step or leaf proof on which the prover will be launched. This will
      * launch the prover on the first step on that line, or if the line contains only a leaf proof, it will launch
      * the prover on the step for which that is a leaf proof. If the line does not contain a leaf proof or a step,
      * the prover will be launched on the entire module. Setting the offset to -1 will cause the PM to be launched
      * on the entire module.
+     * @param checkStatus true iff the PM should be launched for status checking only
+     * @param options the options used to launch the PM in an array, e.g. {"--paranoid","--threads","2"}.
+     * The elements in the array would normally be separated by a space in the command line. This
+     * array should NOT contain the --toolbox option or the --noproving option. This job will put
+     * those options in. The --noproving options should be specified using the checkStatus argument.
+     * This argument can be null if no additional options are to be used.
      */
-    public ProverJob(boolean checkStatus, boolean checkProofs, IFile module, int offset)
+    public ProverJob(IFile module, int offset, boolean checkStatus, String[] options)
     {
         super(checkStatus ? "Status Checking Launch" : "Prover Launch");
         this.checkStatus = checkStatus;
-        this.checkProofs = checkProofs;
         this.module = module;
         this.offset = offset;
+        this.options = options;
 
         setRule(new ProverJobRule());
 
@@ -636,16 +632,6 @@ public class ProverJob extends Job
     }
 
     /**
-     * Set to false if fingerprints should not be used.
-     * Default is true.
-     * @param useFP
-     */
-    public void setUseFP(boolean useFP)
-    {
-        this.useFP = useFP;
-    }
-
-    /**
      * This class is used for finding running
      * ProverJobs. One can find all such jobs
      * by calling
@@ -687,26 +673,16 @@ public class ProverJob extends Job
         /*
          * Launch from the command line:
          * 
-         * > <tlapm-command> --isaprove --toolbox <loc> moduleName
+         * > <tlapm-command> --toolbox <loc> <options> moduleName
          * 
          * where <loc> is "bl el". If the entire module
          * is to be checked, bl = el = 0.
-         * 
-         * Optionally --nofp can be specified to not use fingerprinting.
-         * 
-         * If no path has been specified (probably in the preferences
-         * by the user, then we assume the path to the tlapm has been
-         * put in the system Path, and <tlapm-command> is tlapm. If a path
-         * has been specified, <tlapm-command> is the path to the tlapm
-         * executable.
          * 
          * Module name should end with .tla
          * such as HourClock.tla
          */
 
         command.add(tlapmPath.toOSString());
-
-        command.add("--isaprove");
 
         command.add("--toolbox");
 
@@ -737,20 +713,19 @@ public class ProverJob extends Job
             command.add("" + endLine);
         }
 
-        if (!useFP)
-        {
-            command.add("--nofp");
-        }
-
         if (checkStatus)
         {
             // Denis reported adding this tlapm switch on 19 Jun 2010
             command.add("--noproving");
         }
 
-        if (checkProofs)
+        // put in additional options
+        if (options != null)
         {
-            command.add("-C");
+            for (int i = 0; i < options.length; i++)
+            {
+                command.add(options[i]);
+            }
         }
 
         command.add(module.getLocation().lastSegment());
@@ -793,25 +768,6 @@ public class ProverJob extends Job
     public boolean isStatusCheck()
     {
         return checkStatus;
-    }
-
-    /**
-     * If true, the prover will be told
-     * to check proofs. Should not be true
-     * if {@link #isStatusCheck()} is also true.
-     */
-    public boolean isCheckProofs()
-    {
-        return checkProofs;
-    }
-
-    /**
-     * True iff fingerprints should be used for
-     * the run of the prover.
-     */
-    public boolean isUseFP()
-    {
-        return useFP;
     }
 
     /**
@@ -1100,4 +1056,5 @@ public class ProverJob extends Job
     {
         return null;
     }
+
 }

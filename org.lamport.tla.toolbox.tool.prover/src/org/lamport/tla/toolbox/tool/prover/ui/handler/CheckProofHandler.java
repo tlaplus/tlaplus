@@ -24,7 +24,7 @@ public class CheckProofHandler extends AbstractHandler implements IHandler
          * See the comments for the following method for its
          * effect and implementation.
          */
-        ProverHelper.runProverForActiveSelection(false, false);
+        ProverHelper.runProverForActiveSelection(false, true);
 
         return null;
     }

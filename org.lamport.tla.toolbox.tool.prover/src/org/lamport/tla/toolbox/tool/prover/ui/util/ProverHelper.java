@@ -379,17 +379,8 @@ public class ProverHelper
 
         boolean isTrivial = status.equals(TRIVIAL);
 
-        if (!proverJob.isCheckProofs())
-        {
-            return isTrivial || status.equals(PROVED);
-        }
+        return isTrivial || status.equals(PROVED);
 
-        // we no longer consider checked to be a status distinct from proved
-        // if (proverJob.isCheckProofs())
-        // {
-        // return isTrivial || status.equals(CHECKED) || status.equals(CHECKED_ALREADY);
-        // }
-        return false;
     }
 
     /**
@@ -1656,17 +1647,15 @@ public class ProverHelper
      * error window will show the errors.
      * 
      * If statusCheck is true, this tells prover job to launch the prover
-     * for status checking, not proving. If checkProofs is true, the prover
-     * will check proofs.
+     * for status checking, not proving. If isaprove is true, the PM will
+     * be launched with the --isaprove option.
      * 
-     * Note that checkProofs and checkStatus should not both be true.
-     * 
-     * @param checkProofs true iff proofs should be checked
      * @param checkStatus true iff the prover should only be run for status checking
+     * @param isaprove true iff the PM should be called with the isaprove option
      * 
      * @return
      */
-    public static void runProverForActiveSelection(boolean checkStatus, boolean checkProofs)
+    public static void runProverForActiveSelection(boolean checkStatus, boolean isaprove)
     {
         boolean proceed = UIHelper.promptUserForDirtyModules();
         if (!proceed)
@@ -1678,8 +1667,8 @@ public class ProverHelper
         TLAEditor editor = EditorUtil.getTLAEditorWithFocus();
         Assert.isNotNull(editor, "User attempted to run prover without a tla editor in focus. This is a bug.");
 
-        ProverJob proverJob = new ProverJob(checkStatus, checkProofs, ((FileEditorInput) editor.getEditorInput())
-                .getFile(), ((ITextSelection) editor.getSelectionProvider().getSelection()).getOffset());
+        ProverJob proverJob = new ProverJob(((FileEditorInput) editor.getEditorInput()).getFile(),
+                ((ITextSelection) editor.getSelectionProvider().getSelection()).getOffset(), checkStatus, null);
 
         proverJob.setUser(true);
         proverJob.schedule();
@@ -1689,17 +1678,15 @@ public class ProverHelper
     /**
      * Runs the prover on the entire module in the active editor. If checkStatus is true,
      * the prover is launched only for status checking. If it is false,
-     * the prover is launched for proving. If checkProofs is true, the prover
-     * also checks the proofs.
-     * 
-     * Note that checkProofs and checkStatus should not both be true.
+     * the prover is launched for proving. If isaprove is true, the PM will
+     * be launched with the --isaprove option.
      * 
      * If there are dirty editors, this method first prompts the user to save them.
      * 
      * @param checkStatus true iff the prover should only be run for status checking
-     * @param checkProofs true iff proofs should be checked
+     * @param isaprove true iff the PM should be called with the isaprove option
      */
-    public static void runProverForEntireModule(boolean checkStatus, boolean checkProofs)
+    public static void runProverForEntireModule(boolean checkStatus, boolean isaprove)
     {
         boolean proceed = UIHelper.promptUserForDirtyModules();
         if (!proceed)
@@ -1711,8 +1698,8 @@ public class ProverHelper
         TLAEditor editor = EditorUtil.getTLAEditorWithFocus();
         Assert.isNotNull(editor, "User attempted to run prover without a tla editor in focus. This is a bug.");
 
-        ProverJob proverJob = new ProverJob(checkStatus, checkProofs, ((FileEditorInput) editor.getEditorInput())
-                .getFile(), -1);
+        ProverJob proverJob = new ProverJob(((FileEditorInput) editor.getEditorInput()).getFile(), -1, checkStatus,
+                null);
         proverJob.setUser(true);
         proverJob.schedule();
     }

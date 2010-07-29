@@ -7,7 +7,7 @@ import org.eclipse.core.commands.IHandler;
 import org.lamport.tla.toolbox.tool.prover.ui.util.ProverHelper;
 
 /**
- * Runs the prover to simply get the status of the step containg
+ * Runs the prover to simply get the status of the step containing
  * the current selection in the active TLA Editor.
  * 
  * See {@link ProverHelper#runProverForActiveSelection(boolean, boolean)}
