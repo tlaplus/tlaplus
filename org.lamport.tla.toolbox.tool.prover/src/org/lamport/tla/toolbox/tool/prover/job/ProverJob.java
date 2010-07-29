@@ -941,6 +941,17 @@ public class ProverJob extends Job
 
         if (parseResult == null)
         {
+            /*
+             * Its necessary to call this parsing within the job's run method.
+             * Its a bad idea to have two calls to SANY executing at the same time,
+             * and its possible for a launch of the prover to trigger background
+             * parsing. For example, the user might have dirty editors open
+             * when launching the prover. He will be prompted to save them. This
+             * could trigger background parsing. The run method will not be
+             * executed until the background parsing completes. This ensures
+             * that the following parsing will not occur while the background parsing
+             * executes.
+             */
             parseResult = new ModuleParserLauncher().parseModule(module, new NullProgressMonitor());
         }
 
