@@ -1675,7 +1675,12 @@ public class ProverHelper
             return;
         }
 
-        ProverJob proverJob = new ProverJob(checkStatus, null, checkProofs);
+        TLAEditor editor = EditorUtil.getTLAEditorWithFocus();
+        Assert.isNotNull(editor, "User attempted to run prover without a tla editor in focus. This is a bug.");
+
+        ProverJob proverJob = new ProverJob(checkStatus, checkProofs, ((FileEditorInput) editor.getEditorInput())
+                .getFile(), ((ITextSelection) editor.getSelectionProvider().getSelection()).getOffset());
+
         proverJob.setUser(true);
         proverJob.schedule();
 
@@ -1814,8 +1819,8 @@ public class ProverHelper
         TLAEditor editor = EditorUtil.getTLAEditorWithFocus();
         Assert.isNotNull(editor, "User attempted to run prover without a tla editor in focus. This is a bug.");
 
-        ProverJob proverJob = new ProverJob(checkStatus, ResourceHelper.getModuleNode(ResourceHelper
-                .getModuleName(((FileEditorInput) editor.getEditorInput()).getFile())), checkProofs);
+        ProverJob proverJob = new ProverJob(checkStatus, checkProofs, ((FileEditorInput) editor.getEditorInput())
+                .getFile(), -1);
         proverJob.setUser(true);
         proverJob.schedule();
     }

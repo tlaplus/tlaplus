@@ -29,9 +29,8 @@ import org.eclipse.debug.core.model.IProcess;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextSelection;
+import org.eclipse.jface.text.TextSelection;
 import org.eclipse.ui.editors.text.EditorsUI;
-import org.eclipse.ui.part.FileEditorInput;
-import org.lamport.tla.toolbox.editor.basic.TLAEditor;
 import org.lamport.tla.toolbox.editor.basic.util.EditorUtil;
 import org.lamport.tla.toolbox.spec.parser.IParseConstants;
 import org.lamport.tla.toolbox.spec.parser.ModuleParserLauncher;
@@ -54,7 +53,6 @@ import tla2sany.semantic.InstanceNode;
 import tla2sany.semantic.LevelNode;
 import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.TheoremNode;
-import tla2sany.semantic.UseOrHideNode;
 import util.UniqueString;
 
 /**
@@ -146,6 +144,13 @@ public class ProverJob extends Job
      */
     private LevelNode nodeToProve;
     /**
+     * A character offset on the line of the step or leaf proof on which the prover will be launched. This will
+     * launch the prover on the first step on that line, or if the line contains only a leaf proof, it will launch
+     * the prover on the step for which that is a leaf proof. If the line does not contain a leaf proof or a step,
+     * the prover will be launched on the entire module.
+     */
+    private int offset;
+    /**
      * Map from {@link Integer} line numbers of steps to
      * the last {@link StepStatusMessage} reported by the prover
      * for that step.
@@ -183,21 +188,22 @@ public class ProverJob extends Job
      * 
      * @param checkStatus true iff the prover should be launched for status checking
      * only, not proving.
-     * @param node the node on which the prover should be launched. If the prover is to be
-     * launched on the entire module, then this should be an instance of {@link ModuleNode}. Else
-     * it should be an instance of {@link TheoremNode} or {@link UseOrHideNode} representing
-     * the step. If this argument is null, then the prover will be launched on the active selection,
-     * where the active selection is a step if the caret is at a step, and the entire module if the
-     * caret is not at a step.
      * @param checkProofs true iff proofs should be checked. Should not be set
      * to true if checkStatus is also set to true.
+     * @param module the module on which the prover is being launched.
+     * @param offset a character offset on the line of the step or leaf proof on which the prover will be launched. This will
+     * launch the prover on the first step on that line, or if the line contains only a leaf proof, it will launch
+     * the prover on the step for which that is a leaf proof. If the line does not contain a leaf proof or a step,
+     * the prover will be launched on the entire module. Setting the offset to -1 will cause the PM to be launched
+     * on the entire module.
      */
-    public ProverJob(boolean checkStatus, LevelNode node, boolean checkProofs)
+    public ProverJob(boolean checkStatus, boolean checkProofs, IFile module, int offset)
     {
         super(checkStatus ? "Status Checking Launch" : "Prover Launch");
         this.checkStatus = checkStatus;
-        this.nodeToProve = node;
         this.checkProofs = checkProofs;
+        this.module = module;
+        this.offset = offset;
 
         setRule(new ProverJobRule());
 
@@ -889,127 +895,89 @@ public class ProverJob extends Job
     }
 
     /**
-     * This method sets the values for the fields module and nodeToProve.
-     * If the value of nodeToProve is not null before this method is called,
-     * then the value of nodeToProve is not changed by this method. If
-     * nodeToProve is null when this method is called, then the nodeToProve
-     * is found by looking at the active selection in the active module
-     * editor. If the active editor is not a {@link TLAEditor}, this
-     * method will throw an exception.
-     * 
-     * The active selection is the position of the caret. This method
-     * sets nodeToProve to be the step at the caret, where step is either a proof
-     * step or a top level USE node. A step is at the caret if the method
+     * This method sets the values for the field nodeToProve
+     * to be the step at the offset, where step is either a proof
+     * step or a top level USE node. A step is at the offset if the method
      * {@link ResourceHelper#getPfStepOrUseHideFromMod(ParseResult, String, ITextSelection, IDocument)}
-     * returns that node for the text selection representing the caret position.
+     * returns that node for the text selection representing the offset.
      * 
-     * If there is not a step at the caret, this method will set nodeToProve
+     * If there is not a step at the offset, this method will set nodeToProve
      * to be the {@link ModuleNode} pointing to the entire module.
-     * 
-     * The value of module is always set to the {@link IFile} pointing to
-     * the module in which nodeToProve is located.
      */
     private void initializeFields()
     {
         /*
-         * Some of the following code must be run in a UI
-         * thread. We run it in a synchronous UI thread, because
-         * we need the thread that calls this method to wait until
-         * this code is finished. We do not want the thread that calls
-         * this method to continue running while the fields are still being
-         * set.
+         * This method takes the following steps:
+         * 
+         * 1.) Try to obtain a valid parse result for the module passed in to the constructor.
+         *     A valid parse result is one that was created since the module was last
+         *     written. If there is no valid parse result available, then parse the module. This creates
+         *     a valid parse result.
+         * 2.) Check if there are errors in the valid parse result obtained in step 3. If
+         *     there are errors, return on this method. There is no need to show a message
+         *     to the user in this case because the parse errors view will pop open anyway.
+         * 3.) Get the LevelNode representing a step or top level use/hide containing the offset,
+         *     if the offset is at such a node. Set nodeToProve to this node. The offset is passed
+         *     in to the constructor.
+         * 4.) If nodeToProve is still null or it is an instance of DefStepNode or InstanceNode,
+         * set nodeToProve to be the ModuleNode for the module. InstanceNodes and DefStepNodes do
+         * not generate obligations.
+         * 
+         * Note that at step 4 ,there are some other possibilities:
+         *     -If the caret is not at any proof step, check the whole module.
+         *     -If the caret is at a step without a proof, check the whole module.
+         *     -If the caret is at a step without a proof, show a message to the user.
+         *     -If the caret is at a step without a proof, disable this handler.
+         *     -If the caret is not at any proof step, disable this handler.
+         *     -If the caret is not at a step with a proof, ask the user if he wants
+         *      to check the entire module.
          */
-        UIHelper.runUISync(new Runnable() {
 
-            public void run()
-            {
+        /**********************************************************
+         * Step 1                                                 *
+         **********************************************************/
 
-                /*
-                 * This method takes the following steps:
-                 * 
-                 * 1.) If nodeToProve is not null when this method is called, set module
-                 *     to be the IFile pointing to the module containing nodeToProve and return.
-                 *     Else, continue with the following steps.
-                 * 2.) Get the active module editor.
-                 * 3.) Try to obtain a valid parse result for the module in the active editor.
-                 *     A valid parse result is one that was created since the module was last
-                 *     written. If there is no valid parse result available, then parse the module. This creates
-                 *     a valid parse result.
-                 * 4.) Check if there are errors in the valid parse result obtained in step 3. If
-                 *     there are errors, return on this method. There is no need to show a message
-                 *     to the user in this case because the parse errors view will pop open anyway.
-                 * 5.) Get the LevelNode representing a step or top level use/hide containing the caret,
-                 *     if the caret is at such a node. Set nodeToProve to this node.
-                 * 6.) If nodeToProve is still null or it is an instance of DefStepNode or InstanceNode,
-                 * set nodeToProve to be the ModuleNode for the module. InstanceNodes and DefStepNodes do
-                 * not generate obligations.
-                 * 
-                 * Note that at step 6 ,there are some other possibilities:
-                 *     -If the caret is not at any proof step, check the whole module.
-                 *     -If the caret is at a step without a proof, check the whole module.
-                 *     -If the caret is at a step without a proof, show a message to the user.
-                 *     -If the caret is at a step without a proof, disable this handler.
-                 *     -If the caret is not at any proof step, disable this handler.
-                 *     -If the caret is not at a step with a proof, ask the user if he wants
-                 *      to check the entire module.
-                 */
+        ParseResult parseResult = ResourceHelper.getValidParseResult(module);
 
-                /**********************************************************
-                 * Step 1                                                 *
-                 **********************************************************/
-                if (nodeToProve != null)
-                {
-                    module = (IFile) ResourceHelper.getResourceByModuleName(nodeToProve.getLocation().source());
-                    return;
-                }
+        if (parseResult == null)
+        {
+            parseResult = new ModuleParserLauncher().parseModule(module, new NullProgressMonitor());
+        }
 
-                /**********************************************************
-                 * Step 2                                                 *
-                 **********************************************************/
-                TLAEditor editor = EditorUtil.getTLAEditorWithFocus();
-                Assert.isNotNull(editor, "User attempted to run prover without a tla editor in focus. This is a bug.");
+        /**********************************************************
+         * Step 2                                                 *
+         **********************************************************/
+        if (parseResult.getStatus() != IParseConstants.PARSED)
+        {
+            return;
+        }
 
-                /**********************************************************
-                 * Step 3                                                 *
-                 **********************************************************/
-                module = ((FileEditorInput) editor.getEditorInput()).getFile();
+        /**********************************************************
+         * Step 3                                                 *
+         **********************************************************/
+        String moduleName = ResourceHelper.getModuleName(module);
+        /*
+         * An offset of -1 indicates that the PM should be launched
+         * on the entire module. Leave nodeToProve null in this case
+         * and Step 4 will set nodeToProve to the ModuleNode.
+         */
+        if (offset != -1)
+        {
+            nodeToProve = ResourceHelper.getPfStepOrUseHideFromMod(parseResult, moduleName,
+                    new TextSelection(offset, 0), ResourceHelper.getDocFromFile(module));
+        }
 
-                ParseResult parseResult = ResourceHelper.getValidParseResult(module);
+        /**********************************************************
+         * Step 4                                                 *
+         **********************************************************/
 
-                if (parseResult == null)
-                {
-                    parseResult = new ModuleParserLauncher().parseModule(module, new NullProgressMonitor());
-                }
+        if (nodeToProve == null || nodeToProve instanceof InstanceNode || nodeToProve instanceof DefStepNode)
+        {
+            nodeToProve = parseResult.getSpecObj().getExternalModuleTable().getModuleNode(
+                    UniqueString.uniqueStringOf(moduleName));
+            return;
+        }
 
-                /**********************************************************
-                 * Step 4                                                 *
-                 **********************************************************/
-                if (parseResult.getStatus() != IParseConstants.PARSED)
-                {
-                    return;
-                }
-
-                /**********************************************************
-                 * Step 5                                                 *
-                 **********************************************************/
-                String moduleName = ResourceHelper.getModuleName(module);
-                IDocument document = editor.getDocumentProvider().getDocument(editor.getEditorInput());
-                nodeToProve = ResourceHelper.getPfStepOrUseHideFromMod(parseResult, moduleName, (ITextSelection) editor
-                        .getSelectionProvider().getSelection(), document);
-
-                /**********************************************************
-                 * Step 6                                                 *
-                 **********************************************************/
-
-                if (nodeToProve == null || nodeToProve instanceof InstanceNode || nodeToProve instanceof DefStepNode)
-                {
-                    nodeToProve = parseResult.getSpecObj().getExternalModuleTable().getModuleNode(
-                            UniqueString.uniqueStringOf(moduleName));
-                    return;
-                }
-
-            }
-        });
     }
 
     /**
