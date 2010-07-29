@@ -14,6 +14,14 @@ public interface ITLAPMOptions
 {
 
     /**
+     * --toolbox <bl> <el> [options] FILE
+     * 
+     * <bl> and <el> are both integers that give the begin line and end line of the part of the 
+     * file to be considered by the prover. If the arguments are both equal to 0, the entire module 
+     * will be considered.
+     */
+    public static final String TOOLBOX = "--toolbox";
+    /**
      * --meth
      * 
      * Changes the default method for proving 

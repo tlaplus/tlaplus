@@ -948,5 +948,11 @@
             value="true">
       </persistent>
    </extension>
+   <extension
+         point="org.eclipse.core.runtime.preferences">
+      <initializer
+            class="org.lamport.tla.toolbox.tool.prover.ProverPreferenceInitializer">
+      </initializer>
+   </extension>
 
 </plugin>

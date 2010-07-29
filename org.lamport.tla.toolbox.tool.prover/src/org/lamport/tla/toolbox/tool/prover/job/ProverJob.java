@@ -127,6 +127,12 @@ public class ProverJob extends Job
      */
     private boolean checkStatus = false;
     /**
+     * True iff the PM should be launched
+     * with the {@link ITLAPMOptions#TOOLBOX}
+     * option.
+     */
+    private boolean toolboxMode = true;
+    /**
      * The options used to launch the PM in an array, e.g. {"--paranoid","--threads","2"}.
      * The elements in the array would normally be separated by a space in the command line. This
      * array should NOT contain the --toolbox option or the --noproving option.
@@ -196,11 +202,13 @@ public class ProverJob extends Job
      * array should NOT contain the --toolbox option or the --noproving option. This job will put
      * those options in. The --noproving options should be specified using the checkStatus argument.
      * This argument can be null if no additional options are to be used.
+     * @param toolboxMode true iff the
      */
-    public ProverJob(IFile module, int offset, boolean checkStatus, String[] options)
+    public ProverJob(IFile module, int offset, boolean checkStatus, String[] options, boolean toolboxMode)
     {
         super(checkStatus ? "Status Checking Launch" : "Prover Launch");
         this.checkStatus = checkStatus;
+        this.toolboxMode = toolboxMode;
         this.module = module;
         this.offset = offset;
         this.options = options;
@@ -688,33 +696,36 @@ public class ProverJob extends Job
 
         command.add(tlapmPath.toOSString());
 
-        command.add("--toolbox");
+        if (toolboxMode)
+        {
+            command.add("--toolbox");
 
-        /*
-         * The following adds the location to the
-         * command. The location is given by "bl el"
-         * or "0 0" for the entire module. However, adding
-         * the string "<bl> <el>" to the command will not
-         * work because java will tell the prover that
-         * "12 14" is one argument rather than two separated
-         * by a space. Thus, the prover will try to parse
-         * "12 14" into an integer instead of into two integers.
-         * Adding the two integers as separate arguments works.
-         */
-        if (nodeToProve instanceof ModuleNode)
-        {
-            command.add("0");
-            command.add("0");
-        } else
-        {
             /*
-             * Get the begin line and end line of the node.
+             * The following adds the location to the
+             * command. The location is given by "bl el"
+             * or "0 0" for the entire module. However, adding
+             * the string "<bl> <el>" to the command will not
+             * work because java will tell the prover that
+             * "12 14" is one argument rather than two separated
+             * by a space. Thus, the prover will try to parse
+             * "12 14" into an integer instead of into two integers.
+             * Adding the two integers as separate arguments works.
              */
-            int beginLine = getBeginLine(nodeToProve);
-            int endLine = getEndLine(nodeToProve);
+            if (nodeToProve instanceof ModuleNode)
+            {
+                command.add("0");
+                command.add("0");
+            } else
+            {
+                /*
+                 * Get the begin line and end line of the node.
+                 */
+                int beginLine = getBeginLine(nodeToProve);
+                int endLine = getEndLine(nodeToProve);
 
-            command.add("" + beginLine);
-            command.add("" + endLine);
+                command.add("" + beginLine);
+                command.add("" + endLine);
+            }
         }
 
         if (checkStatus)
