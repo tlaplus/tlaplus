@@ -32,6 +32,10 @@ public class LaunchProverDialog extends Dialog
     private Button button3;
     private Button button4;
     private Button button5;
+    /**
+     * The widget for entering the number of threads.
+     */
+    private Text numThreads;
 
     /**
      * Creates a general prover launch dialog that allows
@@ -150,6 +154,19 @@ public class LaunchProverDialog extends Dialog
         gd = new GridData();
         right.setLayoutData(gd);
         right.setLayout(new GridLayout(1, true));
+
+        /*
+         * Create the widget for entering the number of threads.
+         * This widget will be a composite consisting of a Label
+         * and a Text.
+         */
+        Composite threadsComposite = new Composite(right, SWT.NONE);
+        gd = new GridData();
+        threadsComposite.setLayoutData(gd);
+        threadsComposite.setLayout(new GridLayout(2, false));
+        Label threadsLabel = new Label(threadsComposite, SWT.NONE);
+        threadsLabel.setText("Number of threads : ");
+        numThreads = new Text(threadsComposite, SWT.SINGLE);
 
         return topComposite;
 

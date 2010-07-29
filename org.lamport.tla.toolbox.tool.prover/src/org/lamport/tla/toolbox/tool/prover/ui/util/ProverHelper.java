@@ -26,6 +26,7 @@ import org.lamport.tla.toolbox.editor.basic.TLAEditor;
 import org.lamport.tla.toolbox.editor.basic.util.EditorUtil;
 import org.lamport.tla.toolbox.spec.parser.ParseResult;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
+import org.lamport.tla.toolbox.tool.prover.job.ITLAPMOptions;
 import org.lamport.tla.toolbox.tool.prover.job.ProverJob;
 import org.lamport.tla.toolbox.tool.prover.job.ProverJob.ProverJobMatcher;
 import org.lamport.tla.toolbox.tool.prover.ui.ProverUIActivator;
@@ -1667,8 +1668,14 @@ public class ProverHelper
         TLAEditor editor = EditorUtil.getTLAEditorWithFocus();
         Assert.isNotNull(editor, "User attempted to run prover without a tla editor in focus. This is a bug.");
 
+        String[] options = null;
+        if (isaprove)
+        {
+            options = new String[] { ITLAPMOptions.ISAPROVE };
+        }
+
         ProverJob proverJob = new ProverJob(((FileEditorInput) editor.getEditorInput()).getFile(),
-                ((ITextSelection) editor.getSelectionProvider().getSelection()).getOffset(), checkStatus, null);
+                ((ITextSelection) editor.getSelectionProvider().getSelection()).getOffset(), checkStatus, options);
 
         proverJob.setUser(true);
         proverJob.schedule();
@@ -1695,11 +1702,17 @@ public class ProverHelper
             return;
         }
 
+        String[] options = null;
+        if (isaprove)
+        {
+            options = new String[] { ITLAPMOptions.ISAPROVE };
+        }
+
         TLAEditor editor = EditorUtil.getTLAEditorWithFocus();
         Assert.isNotNull(editor, "User attempted to run prover without a tla editor in focus. This is a bug.");
 
         ProverJob proverJob = new ProverJob(((FileEditorInput) editor.getEditorInput()).getFile(), -1, checkStatus,
-                null);
+                options);
         proverJob.setUser(true);
         proverJob.schedule();
     }
