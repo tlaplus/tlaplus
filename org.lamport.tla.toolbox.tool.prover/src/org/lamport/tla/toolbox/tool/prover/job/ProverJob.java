@@ -58,7 +58,8 @@ import tla2sany.semantic.UseOrHideNode;
 import util.UniqueString;
 
 /**
- * Long running job for launching the prover.
+ * Long running job for launching the prover. Look at the constructor
+ * and the run method for information about this job.
  * 
  * @author Daniel Ricketts
  *
@@ -259,6 +260,16 @@ public class ProverJob extends Job
         this.launch = new Launch(null, "", null);
     }
 
+    /**
+     * This method is called by eclipse at some appropriate point after
+     * the job is scheduled. Check out
+     * http://www.eclipse.org/articles/Article-Concurrency/jobs-api.html
+     * for more information on eclipse jobs.
+     * 
+     * This method performs the necessary preparation for running the PM, launches
+     * the PM, and attaches the appropriate listener to the output of the PM. It
+     * also handles cancellation of the job.
+     */
     protected IStatus run(IProgressMonitor monitor)
     {
         System.out.println("Run method called " + System.currentTimeMillis());
@@ -333,8 +344,7 @@ public class ProverJob extends Job
             lastJob = this;
 
             /**************************************************************
-             * The following performs some cleanup and preparation work   *
-             * on markers.                                                *
+             * The following performs some cleanup and preparation work   *                                                *
              **************************************************************/
             try
             {
@@ -362,7 +372,7 @@ public class ProverJob extends Job
                 ProverUIActivator.logError("Error clearing obligation markers for project of module " + modulePath, e1);
             }
             /**************************************************************
-             * Finished with marker work.                                 *
+             * Finished with preparation work.                            *
              **************************************************************/
 
             /*
@@ -509,6 +519,12 @@ public class ProverJob extends Job
                  */
                 try
                 {
+                    if (proverProcess.isTerminated() && proverProcess.getExitValue() == 2)
+                    {
+                        return new Status(IStatus.ERROR, ProverUIActivator.PLUGIN_ID,
+                                "Incorrect arguments to the PM. The command to launch the PM was :\n"
+                                        + getLaunchProverCommand());
+                    }
                     if (proverProcess.isTerminated() && proverProcess.getExitValue() != 0
                             && proverProcess.getExitValue() != 1)
                     {
@@ -534,25 +550,16 @@ public class ProverJob extends Job
         } catch (IOException e)
         {
             /*
-             * Handle errors properly.
-             * 
-             * This should definitely show an error to the user
-             * if the tlapm executable is not found or if this is
-             * Windows and tlapm crashes because cygwin is not found.
+             * Handle errors. I don't know what errors can occur here, so for now
+             * we will just use the message from the exception.
              * 
              * Returning an error status shows a message to the user.
              * We may decide that we want to customize the appearance of the
              * message in which case we would not return a status, but instead
              * we would probably use the MessageDialog class.
              */
-            return new Status(
-                    IStatus.ERROR,
-                    ProverUIActivator.PLUGIN_ID,
-                    e.getMessage()
-                            + "\n The following could resolve this issue: \n"
-                            + "1.) If you did not specify in preferences the path to the tlapm executable, make sure it is in your system path.\n"
-                            + "2.) If you specified the absolute path to the tlapm executable in preferences, verify that it is correct.",
-                    e);
+            return new Status(IStatus.ERROR, ProverUIActivator.PLUGIN_ID,
+                    "The following error occurred while running the PM : \n" + e.getMessage(), e);
 
         } finally
         {
@@ -1102,5 +1109,16 @@ public class ProverJob extends Job
     public IFile getModule()
     {
         return module;
+    }
+
+    /**
+     * Returns the command used to launch the prover
+     * as a single string.
+     *  
+     * @return
+     */
+    public String getLaunchProverCommand()
+    {
+        return null;
     }
 }
