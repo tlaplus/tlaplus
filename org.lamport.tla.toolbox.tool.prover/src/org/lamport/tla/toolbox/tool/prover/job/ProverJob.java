@@ -133,6 +133,10 @@ public class ProverJob extends Job
      */
     private String[] options;
     /**
+     * The full command used to launch the PM.
+     */
+    private String[] command;
+    /**
      * The node on which the prover will be launched.
      * Set in the constructor. If left null, the prover
      * will be launched on the entire module.
@@ -394,13 +398,13 @@ public class ProverJob extends Job
             /*
              * Launch the prover command:
              */
-            String[] commandArray = constructCommand();
-            ProcessBuilder pb = new ProcessBuilder(commandArray);
+            command = constructCommand();
+            ProcessBuilder pb = new ProcessBuilder(command);
 
             System.out.println("---------------Start Prover Command-----------");
-            for (int i = 0; i < commandArray.length; i++)
+            for (int i = 0; i < command.length; i++)
             {
-                System.out.println(commandArray[i]);
+                System.out.println(command[i]);
             }
             System.out.println("---------------End Prover Command-----------");
 
@@ -1049,12 +1053,35 @@ public class ProverJob extends Job
     /**
      * Returns the command used to launch the prover
      * as a single string.
+     * 
+     * Returns null if {@link #command} is null.
      *  
      * @return
      */
     public String getLaunchProverCommand()
     {
-        return null;
+        if (command == null)
+        {
+            return "";
+        }
+
+        StringBuilder buffer = new StringBuilder();
+        for (int i = 0; i < command.length; i++)
+        {
+            buffer.append(command[i]).append(" ");
+        }
+        return buffer.toString();
+    }
+
+    /**
+     * Returns the String[] representing the full command
+     * used to launch the prover.
+     * 
+     * @return
+     */
+    public String[] getProverCommandArray()
+    {
+        return command;
     }
 
 }
