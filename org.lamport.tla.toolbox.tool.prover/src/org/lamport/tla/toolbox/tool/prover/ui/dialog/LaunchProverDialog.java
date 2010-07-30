@@ -154,8 +154,8 @@ public class LaunchProverDialog extends Dialog
         /*
          * Below the text field there will be two columns of options
          * that the user should select if he doesn't want to use
-         * the text field. Both of these columns are organized into
-         * their own separate group. Group is a subclass of composite
+         * the text field. These two columns are organized into
+         * a Group. Group is a subclass of composite
          * that provides a border. Within this group, we create a
          * composite for each column, named
          * left and right.
@@ -179,7 +179,7 @@ public class LaunchProverDialog extends Dialog
         left.setLayout(new GridLayout(1, true));
 
         /*
-         * Now we create some regular old check boxes
+         * Now we create some regular old check boxes in the left column
          * for launching in toolbox mode and checking
          * status.
          */
@@ -246,16 +246,11 @@ public class LaunchProverDialog extends Dialog
         right.setLayout(new GridLayout(1, true));
 
         /*
-         * Create the label and check button for paranoid proving.
+         * Create a check button for paranoid proving.
          * These two widgets are contained within a composite.
          */
-        Composite paranoidComposite = new Composite(right, SWT.NONE);
-        gd = new GridData();
-        paranoidComposite.setLayoutData(gd);
-        paranoidComposite.setLayout(new GridLayout(2, false));
-        Label paranoidLabel = new Label(paranoidComposite, SWT.NONE);
-        paranoidLabel.setText("Paranoid checking ");
-        paranoid = new Button(paranoidComposite, SWT.CHECK);
+        paranoid = new Button(right, SWT.CHECK);
+        paranoid.setText("Paranoid checking");
         paranoid.setSelection(store.getBoolean(PARANOID_KEY));
 
         /*
