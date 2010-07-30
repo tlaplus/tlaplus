@@ -969,7 +969,7 @@ public class ProverHelper
         {
             if (proverJob.noToBeProved)
             {
-                System.out.println("First to be proved " + System.currentTimeMillis());
+                System.out.println("First to be proved " + proverJob.getCurRelTime());
                 proverJob.noToBeProved = false;
             }
 
@@ -1007,7 +1007,7 @@ public class ProverHelper
              */
             if (proverJob.isToBeProvedOnly())
             {
-                System.out.println("Before obligation marker creation " + System.currentTimeMillis());
+                System.out.println("Before obligation marker creation " + proverJob.getCurRelTime());
                 IWorkspaceRunnable runnable = new IWorkspaceRunnable() {
 
                     public void run(IProgressMonitor monitor) throws CoreException
@@ -1031,7 +1031,7 @@ public class ProverHelper
                     ProverUIActivator.logError("Error creating marker obligations", e);
                 }
                 proverJob.setToBeProvedOnly(false);
-                System.out.println("After obligation marker creation " + System.currentTimeMillis());
+                System.out.println("After obligation marker creation " + proverJob.getCurRelTime());
             }
             /*
              * Update the state of the obligation. The obligation will
@@ -1047,7 +1047,7 @@ public class ProverHelper
              */
             if (obStatus.getParent() == null)
             {
-                System.out.println("Before ob parenting creation " + System.currentTimeMillis());
+                System.out.println("Before ob parenting creation " + proverJob.getCurRelTime());
                 /*
                  * The following iterates through all non-dummy
                  * obligations. For each obligation, we search through
@@ -1076,7 +1076,7 @@ public class ProverHelper
                     }
                 }
 
-                System.out.println("After ob parenting creation " + System.currentTimeMillis());
+                System.out.println("After ob parenting creation " + proverJob.getCurRelTime());
 
             }
 

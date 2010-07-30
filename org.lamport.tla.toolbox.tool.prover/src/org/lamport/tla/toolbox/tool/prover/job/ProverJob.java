@@ -65,6 +65,12 @@ import util.UniqueString;
 public class ProverJob extends Job
 {
     /**
+     * The time that the run method was called.
+     * This is the time in milliseconds returned
+     * by {@link System#currentTimeMillis()}.
+     */
+    public long startTime;
+    /**
      * A flag used strictly for debugging
      * that is true iff no obligation status
      * messages with status "to be proved" have been
@@ -286,7 +292,8 @@ public class ProverJob extends Job
      */
     protected IStatus run(IProgressMonitor monitor)
     {
-        System.out.println("Run method called " + System.currentTimeMillis());
+        this.startTime = System.currentTimeMillis();
+        System.out.println("Run method called " + getCurRelTime());
 
         /*
          * Create the ColorPredicate objects.
@@ -467,7 +474,7 @@ public class ProverJob extends Job
              * wraps the java.lang.Process in an IProcess with some
              * convenience methods.
              */
-            System.out.println("TLAPM launched " + System.currentTimeMillis());
+            System.out.println("TLAPM launched " + getCurRelTime());
             proverProcess = DebugPlugin.newProcess(launch, pb.start(), getName());
 
             if (proverProcess != null)
@@ -601,7 +608,7 @@ public class ProverJob extends Job
                 proverProcess.getStreamsProxy().getErrorStreamMonitor().removeListener(listener);
                 proverProcess.getStreamsProxy().getOutputStreamMonitor().removeListener(listener);
             }
-            System.out.println("Done with proving " + System.currentTimeMillis());
+            System.out.println("Done with proving " + getCurRelTime());
 
             EditorUtil.setReadOnly(module, false);
 
@@ -1093,6 +1100,11 @@ public class ProverJob extends Job
     public String[] getProverCommandArray()
     {
         return command;
+    }
+
+    public long getCurRelTime()
+    {
+        return System.currentTimeMillis() - startTime;
     }
 
 }
