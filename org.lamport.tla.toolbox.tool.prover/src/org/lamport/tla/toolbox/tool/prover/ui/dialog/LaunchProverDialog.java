@@ -167,7 +167,7 @@ public class LaunchProverDialog extends Dialog
         nonCommandLineGroup.setLayoutData(gd);
         nonCommandLineGroup.setLayout(new GridLayout(2, true));
         // sets the title of the group
-        nonCommandLineGroup.setText("Or choose from this list of options for launching the prover:");
+        nonCommandLineGroup.setText("And/Or choose from this list of options for launching the prover:");
 
         /*
          * Now we create the left column composite and fill it
