@@ -6,6 +6,7 @@ import org.eclipse.jface.preference.ComboFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.util.PropertyChangeEvent;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.editors.text.EditorsUI;
@@ -51,6 +52,9 @@ import org.lamport.tla.toolbox.tool.prover.ui.output.data.ColorPredicate;
  * can be bound to the color field editor on the preference page. This page listens
  * for changes to the value of that key. When the value is changed, it sets the value
  * of its partner key to be the same. This is done in the method {@link #propertyChange(PropertyChangeEvent)}.
+ * 
+ * There is also a slight hack involved in laying out the field editors as we want them.
+ * Check out {@link #adjustGridLayout()} to read more about this.
  * 
  * @author Daniel Ricketts
  *
@@ -268,5 +272,30 @@ public class ProverPreferencePage extends FieldEditorPreferencePage implements I
         }
 
         super.propertyChange(event);
+    }
+
+    /**
+     * This overrides the method in {@link FieldEditorPreferencePage} in order
+     * to place multiple field editors on a single line. The superclass implementation
+     * of this method puts one field editor per line of preference page. However,
+     * we want to put all the field editors for each logical color on a single
+     * line so that the page is a little more compact.
+     */
+    protected void adjustGridLayout()
+    {
+        /*
+         * All that needs to be done is adjusting the number of columns of the layout
+         * of widgets on the page. Each logical color seems to have 6 widgets:
+         * 
+         * 1.) Color label
+         * 2.) Color selection widget
+         * 3.) Predicate label
+         * 4.) Predicate selection widget
+         * 5.) Show leaf steps in side bar (the label and check box are somehow one widget)
+         * 6.) Applies to leaf steps (the label and check box are somehow one widget)
+         * 
+         * If the field editors change on this page, this method will have to change.
+         */
+        ((GridLayout) getFieldEditorParent().getLayout()).numColumns = 6;
     }
 }
