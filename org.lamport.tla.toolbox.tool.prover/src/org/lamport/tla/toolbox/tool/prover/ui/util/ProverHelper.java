@@ -30,6 +30,7 @@ import org.lamport.tla.toolbox.tool.prover.job.ITLAPMOptions;
 import org.lamport.tla.toolbox.tool.prover.job.ProverJob;
 import org.lamport.tla.toolbox.tool.prover.job.ProverJob.ProverJobMatcher;
 import org.lamport.tla.toolbox.tool.prover.ui.ProverUIActivator;
+import org.lamport.tla.toolbox.tool.prover.ui.dialog.TLAPMErrorDialog;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.ColorPredicate;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.ErrorMessage;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.ObligationStatus;
@@ -1813,7 +1814,7 @@ public class ProverHelper
 
             public void run()
             {
-                InformationDialog.openError(message.getMessage(), "TLAPM Error");
+                TLAPMErrorDialog.open(message.getMessage(), "TLAPM Error", message.getURL());
             }
         });
 
