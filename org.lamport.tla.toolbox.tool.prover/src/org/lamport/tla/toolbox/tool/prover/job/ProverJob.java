@@ -19,7 +19,9 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.core.runtime.jobs.MultiRule;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunch;
@@ -219,7 +221,18 @@ public class ProverJob extends Job
         this.offset = offset;
         this.options = options;
 
-        setRule(new ProverJobRule());
+        /*
+         * Running this job can potentially result in parsing
+         * the module. This can result in changes to the workspace (because
+         * of markers removed from or placed on parse errors). This must
+         * be indicated in the scheduling rule for this job. We do this
+         * by using a multi rule that includes the ProverJobRule and the
+         * rule associated with the root of the workspace. If this is not done,
+         * an exception can be thrown. See the comments for MultiRule
+         * and read the article http://www.eclipse.org/articles/Article-Concurrency/jobs-api.html
+         * for more information on eclipse Jobs.
+         */
+        setRule(new MultiRule(new ISchedulingRule[] { new ProverJobRule(), this.module.getWorkspace().getRoot() }));
 
         /*
          * The following sets the path to tlapm.
@@ -926,7 +939,7 @@ public class ProverJob extends Job
              * parsing. For example, the user might have dirty editors open
              * when launching the prover. He will be prompted to save them. This
              * could trigger background parsing. The run method will not be
-             * executed until the background parsing completes. This ensures
+             * executed while the background parsing completes. This ensures
              * that the following parsing will not occur while the background parsing
              * executes.
              */

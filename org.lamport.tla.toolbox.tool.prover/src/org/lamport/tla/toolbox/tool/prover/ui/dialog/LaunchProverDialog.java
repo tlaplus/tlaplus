@@ -292,6 +292,12 @@ public class LaunchProverDialog extends Dialog
 
         /*
          * Launch the prover with the arguments given.
+         * 
+         * The list command will accumate a list of the arguments
+         * to be given to the PM. First, we add the options from the
+         * button widgets, and then we add any options the user has entered
+         * in the text field at the top of the dialog. Of course, this could
+         * be redundant,  so maybe there should be some check for that.
          */
         ArrayList command = new ArrayList();
 
@@ -322,6 +328,10 @@ public class LaunchProverDialog extends Dialog
             }
         }
 
+        /*
+         * This adds the extra options from the text field at the top
+         * of the dialog.
+         */
         String[] extraOptions = extraOptionsText.getText().trim().split(" ");
         for (int i = 0; i < extraOptions.length; i++)
         {
@@ -332,6 +342,9 @@ public class LaunchProverDialog extends Dialog
         Assert.isNotNull(editor,
                 "User attempted to run general prover dialog without a tla editor active. This is a bug.");
 
+        /*
+         * This launches the prover.
+         */
         ProverJob proverJob = new ProverJob(((FileEditorInput) editor.getEditorInput()).getFile(),
                 ((ITextSelection) editor.getSelectionProvider().getSelection()).getOffset(), noProving.getSelection(),
                 (String[]) command.toArray(new String[command.size()]), toolboxMode.getSelection());
