@@ -634,7 +634,7 @@
             commandId="org.lamport.tla.toolbox.tool.prover.ui.launchProver"
             contextId="org.eclipse.ui.textEditorScope"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            sequence="M1+G M1+R">
+            sequence="M1+G M1+P">
       </key>
    </extension>
    <extension
