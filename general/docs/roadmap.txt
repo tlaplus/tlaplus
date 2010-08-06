@@ -337,6 +337,9 @@ GOTO vs. OPEN DECLARATION
 -------------------------------------------------------------------------------
 PREFERENCES
 
+Defining a New Preference Page
+------------------------------
+
 Defining a New Preference  
 --------------------------
 1. In IXPreferenceConstants, for
@@ -353,7 +356,7 @@ Defining a New Preference
 
 2. In XPreferencePage 
    
-   add the appropraite Field editor in the createFieldEditors() method by
+   add the appropriate Field editor in the createFieldEditors() method by
 
       addField(new YFieldEditor(IXPreferenceConstants.PREFERENCE_NAME,
                                 "&Text on preference page", 
@@ -382,6 +385,100 @@ Getting the Value of a Preference
 ---------------------------------
    store.getY(IXPreferenceConstants.PREFERENCE_NAME);
 
+-----
+
+NOTE: The following email from Dan gives some additional information about
+preferences
+
+The initializeDefaultPreferences() method for a particular plugin
+should be called the first time the preference store for that plugin
+is created.  Remember that each plugin automatically has its own
+preference store.  I believe that the preference store for a plugin is
+not created when the plugin is loaded.  I think that instead, the
+preference store is created the first time that it is needed.  For the
+prover plugin preference store, the creation of the launch prover
+dialog is the first time that it is needed because that store is used
+to store the value of the widgets in that dialog.  I would guess, and
+correct me if I'm wrong, that the initializeDefaultPreferences()
+method of TLCPreferenceInitializer would be called if you launch TLC
+before ever opening the TLC preference page.  In general, search for
+when the method getPreferenceStore() is called for a particular
+plugin's activator.  I think that the first time this is called, the
+preference store is created and initializeDefaultPreferences() will be
+called for that plugin's preference initializer.
+ 
+The ProverUIActivator is used to initialize default values for the
+prover preference page for a different reason.  The prover preference
+page must use the preference store from the class EditorUI (I think
+this is the class, but check the constructor for ProverPreferencePage
+to be sure).  It must use thid preference store because the eclipse
+editors know to look there for the colors of markers.  This is a
+different preference store than the one provided by the prover plugin.
+Since the preferences on ProverPreferencePage are not stored in the
+prover plugin preference store, the prover preference store may not
+have been created before the prover is launched from the toolbox.  As
+a result, the initializeDefaultPreferences() method of
+ProverPreferenceInitializer may not be called before the prover is
+launched.  We need to initialize the default values for the
+ProverPreferencePage elsewhere.  Since the prover cannot be launched
+until after the start method of ProverUIActivator is called, that
+method seems like a reasonable place to initialize the default
+preferences for ProverPreferencePage.
+ 
+If you put additional TLAPM preferences on a subpage of
+ProverPreferencePage, then you can use the preference store provided
+by the prover plugin.  Then you can initialize the default preferences
+in the initializeDefaultPreferences() method of
+ProverPreferenceInitializer.  This is a confusing design.  I should
+have noted all of this in comments.
+
+------
+
+NOTE: Prover color preferences are done differently.  See Dan's comments
+in the start method of ProverUIActivator.  Also, here is what Dan wrote
+about it in an email about a bug that was undiagnosed when he wrote it:
+
+The problem seems to be that the editor is not being notified when the
+color of a leaf step marker is restored to the default value.  I think
+that when you restore default values, the editor is notified that the
+color of non leaf steps has changed but is not notified that the color
+of leaf steps has changed.  Closing and reopening the editor forces
+the editor to check the preferences for the correct color of leaf and
+non leaf steps so that the correct color is displayed.  I thought I
+had fixed this problem, but apparently not.
+ 
+The step coloring markers are set up in the following way.  There are
+two marker types for each logical color.  One marker type for a given
+logical color is put on leaf steps that should have that logical
+color.  The other marker type is put on non leaf steps that should
+have that logical color.  Each marker type has a key in the editor
+preference store that maps to the physical color that the marker
+should take.
+ 
+The color field editor for logical color x on the TLAPS preference
+page corresponds to the color preference key for the non leaf marker
+type for logical color x.  This means that when the value of that
+field editor is changed, the value of the color preference key for the
+non leaf marker type for logical color x is changed in the preference
+store.  Listeners are notified of such a change.  The editor is
+automatically one of the listeners, so it is notified that non leaf
+markers for logical color x should change physical colors.
+ 
+However, this does not yet change the physical color value of the
+color preference key for the leaf steps of logical color x.  We do
+this by making the ProverPreferencePage a listener to changes to
+preference values.  When ProverPreferencePage is notified of a change
+to the value of the non leaf color for logical color x, it changes the
+value of the leaf color for logical color x.  The editor should again
+be notified, so that the value of leaf markers changes.  However,
+there is something strange that occurs when restoring default values.
+It sounds like the editor is not being notified.  Much of this is
+explained in the class comments for ProverPreferencePage and the
+comments for the method propertyChange(), which is called when a
+preference value in the editor preference store changes.  These
+comments should explain what I thought the fix was.  Perhaps that
+could provide some evidence into what is really going on.
+
 ------------------------------------------------------------------------
 MARKERS
   To see how the Show Uses marker type is declared, see
@@ -409,7 +506,16 @@ MARKERS
   declares a new marker type, you can right click to select New >
   persistent.  Set the value to be true to make that type persistent.
   Note that this value is not inherited by subtypes of markers.
-  
+
+------------------------------------------------------------------
+PLATFORM-DEPENDENT CODE
+
+To put in platform dependent code, you use the method
+org.eclipse.core.runtime.Platform.getOS().  It returns one of the
+string constants in the Platform class.  That method is used elsewhere
+in the Toolbox.  I cannot remember where off the top of my head, so
+just search for it if you want to look at examples.
+
 -----------------------------------------------------------------------
 HOW TO GET A...
   SpecObj
