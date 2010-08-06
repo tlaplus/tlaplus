@@ -9,6 +9,7 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.editors.text.EditorsUI;
 import org.lamport.tla.toolbox.Activator;
+import org.lamport.tla.toolbox.tool.prover.ui.ProverUIActivator;
 
 /**
  * @author lamport
@@ -17,11 +18,17 @@ import org.lamport.tla.toolbox.Activator;
 public class ProverSecondPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage
 {
 
+    /*
+     * The names of the preferences for the user-defined predicates.
+     */
+    public static final String[] USER_DEFINED_PREDICATE = {"UserDefinedPredicateA", "UserDefinedPredicateB", "UserDefinedPredicateC", "UserDefinedPredicateC"};
+    public static final String[] UPPER_CASE_LETTERS = {"A", "B", "C", "D", "E", "F"};
+    
     public ProverSecondPreferencePage()
     {
         super(GRID);
-        setPreferenceStore(EditorsUI.getPreferenceStore());
-        setDescription("Color Precicates");
+        setPreferenceStore(ProverUIActivator.getDefault().getPreferenceStore());
+        setDescription("User-Defined Color Precicates");
     }
 
     /* (non-Javadoc)
@@ -30,8 +37,9 @@ public class ProverSecondPreferencePage extends FieldEditorPreferencePage implem
     protected void createFieldEditors()
     {
         System.out.println("adding Test PReference Field");
-        addField(new ColorPredicateFieldEditor("TestPreferenceName", "Label", getFieldEditorParent()));
-
+        for (int i = 0; i < USER_DEFINED_PREDICATE.length; i++) {
+            addField(new ColorPredicateFieldEditor(USER_DEFINED_PREDICATE[i], UPPER_CASE_LETTERS[i], getFieldEditorParent()));
+        }
     }
 
     /* (non-Javadoc)

@@ -351,7 +351,7 @@
       <specification
             annotationType="org.lamport.tla.toolbox.tool.prover.ui.StepColor5B"
             colorPreferenceKey="stepStatusColor5B"
-            colorPreferenceValue="255,255,183"
+            colorPreferenceValue="255,187,187"
             highlightPreferenceKey="stepStatusHighlight5B"
             highlightPreferenceValue="true"
             includeOnPreferencePage="false"
@@ -664,6 +664,12 @@
             class="org.lamport.tla.toolbox.tool.prover.ui.preference.ProverPreferencePage"
             id="org.lamport.tla.toolbox.tool.prover.ProverPreferencePage"
             name="TLAPS">
+      </page>
+      <page
+            category="org.lamport.tla.toolbox.tool.prover.ProverPreferencePage"
+            class="org.lamport.tla.toolbox.tool.prover.ui.preference.ProverSecondPreferencePage"
+            id="org.lamport.tla.toolbox.tool.prover.ProverSecondPreferencePage"
+            name="Color Predicates">
       </page>
    </extension>
    <extension

@@ -4,6 +4,7 @@ import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.lamport.tla.toolbox.tool.prover.ui.ProverUIActivator;
 import org.lamport.tla.toolbox.tool.prover.ui.dialog.LaunchProverDialog;
+import org.lamport.tla.toolbox.tool.prover.ui.preference.ProverSecondPreferencePage;
 
 /**
  * This class can be used to set default preferences for any preference
@@ -29,6 +30,13 @@ public class ProverPreferenceInitializer extends AbstractPreferenceInitializer
         store.setDefault(LaunchProverDialog.NUM_THREADS_KEY, 1);
         store.setDefault(LaunchProverDialog.PARANOID_KEY, false);
         store.setDefault(LaunchProverDialog.STATUS_CHECK_KEY, false);
+        
+       /*
+        * Set the defaults for the user-specified color predicates
+        */
+        for (int i = 0; i < ProverSecondPreferencePage.USER_DEFINED_PREDICATE.length; i++) {
+            store.setDefault(ProverSecondPreferencePage.USER_DEFINED_PREDICATE[i], "some");
+        }     
     }
 
 }

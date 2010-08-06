@@ -54,7 +54,38 @@ import org.lamport.tla.toolbox.tool.prover.ui.output.data.ColorPredicate;
  * of its partner key to be the same. This is done in the method {@link #propertyChange(PropertyChangeEvent)}.
  * 
  * There is also a slight hack involved in laying out the field editors as we want them.
- * Check out {@link #adjustGridLayout()} to read more about this.
+ * Check out {@link #adjustGridLayout()} to read more about this.  This hack works only
+ * because there are no other preferences besides the 12 color-predicate ones.  If we
+ * want to put other preferences on the page, the obvious thing to do is to put the
+ * color-predicate preferences inside a Composite that is formatted appropriately.
+ * Experimentation shows that this doesn't work in the obvious way.  Instead, each
+ * field editor has to be put inside a separate composite inside the multi-column
+ * composite.  The following code seems to work:
+ *     protected void createFieldEditors()
+ *    {
+ *        Composite composite = new Composite(getFieldEditorParent(), SWT.NONE);
+ *        GridLayout layout = new GridLayout();
+ *        layout.numColumns = 4;
+ *        layout.horizontalSpacing = 20;
+ *        composite.setLayout(layout);
+ *
+ *        for (int i = 1; i <= NUM_STATUS_COLORS; i++)
+ *        {
+ *            Composite c = new Composite(composite, SWT.NONE);
+ *            addField(new ColorFieldEditor(getMainColorPrefName(i), "Color "  + i + (i>9?"":"  "), c));
+ *            c = new Composite(composite, SWT.NONE);
+ *            addField(new ComboFieldEditor(getColorPredPrefName(i), "Predicate", ColorPredicate.PREDEFINED_MACROS, c));
+ *            c = new Composite(composite, SWT.NONE);
+ *            addField(new BooleanFieldEditor(getLeafSideBarPrefName(i), "Show Leaf Steps in Side Bar", c));
+ *            c = new Composite(composite, SWT.NONE);
+ *            addField(new BooleanFieldEditor(getAppliesToLeafPrefName(i), "Applies to Leaf Steps Only", c));
+ *        }
+ *    }
+ *
+ * However, the documentation warns that getFieldEditorParent() should be called 
+ * separately for each field.  This doesn't seem to be necessary for a GRID layout,
+ * but Dan & LL decided not to risk it and instead to put other preferences on a
+ * separate page.
  * 
  * @author Daniel Ricketts
  *

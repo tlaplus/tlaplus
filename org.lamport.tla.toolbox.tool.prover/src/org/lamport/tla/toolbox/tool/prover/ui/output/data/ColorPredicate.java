@@ -66,6 +66,8 @@
 package org.lamport.tla.toolbox.tool.prover.ui.output.data;
 
 import org.lamport.tla.toolbox.Activator;
+import org.lamport.tla.toolbox.tool.prover.ui.ProverUIActivator;
+import org.lamport.tla.toolbox.tool.prover.ui.preference.ProverSecondPreferencePage;
 
 /**
  * @author lamport
@@ -133,74 +135,77 @@ public class ColorPredicate
     public static final String PREDICATE_TRIVIAL = "every (,,proved)";
     public static final String PREDICATE_UNTRIED = "some (untried, untried, untried)";
 
-    public static final String[][] PREDEFINED_MACROS = {  //
+    public static final String[] USER_DEFINED = { "userdefinedA", "userdefinedB", "userdefinedC", "userdefinedD" };
 
-             { "none", PREDICATE_NONE }, // always false
+    public static final String[][] PREDEFINED_MACROS = { //
 
-             { "all proved", PREDICATE_PROVED },
+            { "none", PREDICATE_NONE }, // always false
 
-             // every obligation either proved or OMITTED
-             { "all proved or omitted", PREDICATE_PROVED_OR_OMITTED },
-         
-             // every obligation either proved or OMITTED    
-             {"all proved, omitted, or missing", PREDICATE_PROVED_OR_OMITTED_OR_MISSING},
-             
-             // Some obligation has not been proved.
-             { "some not proved", PREDICATE_UNPROVED },
-             
-             // Some obligation has not been tried.
-             { "some not tried", PREDICATE_UNTRIED },
+            { "all proved", PREDICATE_PROVED },
 
-             // The proof of some obligation was stopped.
-             { "some stopped", PREDICATE_STOPPED },
+            // every obligation either proved or OMITTED
+            { "all proved or omitted", PREDICATE_PROVED_OR_OMITTED },
 
-             // The proof of some obligation that has not been proved was stopped.
-             { "some stopped and unproven", PREDICATE_STOPPED_UNPROVED },
+            // every obligation either proved or OMITTED
+            { "all proved, omitted, or missing", PREDICATE_PROVED_OR_OMITTED_OR_MISSING },
 
-             // Some obligation has failed on one prover and not been proved by another.
-             { "some failed", PREDICATE_FAILED },
+            // Some obligation has not been proved.
+            { "some not proved", PREDICATE_UNPROVED },
 
-             // Some obligation has failed or been stopped on one prover and not been proved by another.
-             { "some failed or stopped", PREDICATE_FAILED_OR_STOPPED },
+            // Some obligation has not been tried.
+            { "some not tried", PREDICATE_UNTRIED },
 
-             // Some obligation has failed on some prover, but could yet be proved by Isabelle.
-             { "Some failed on non-isabelle prover", PREDICATE_FAILED_SO_FAR },
+            // The proof of some obligation was stopped.
+            { "some stopped", PREDICATE_STOPPED },
 
-             // Some obligation has failed or been stopped on some prover.
-             { "Some failed or stopped", PREDICATE_FAILED_OR_STOPPED_UNPROVED },
+            // The proof of some obligation that has not been proved was stopped.
+            { "some stopped and unproven", PREDICATE_STOPPED_UNPROVED },
 
-             // Some obligation is still being proved or has failed a secondary prover
-             // but not yet tried by Isabelle
-             { "Some being proved", PREDICATE_BEING_PROVED },
+            // Some obligation has failed on one prover and not been proved by another.
+            { "some failed", PREDICATE_FAILED },
 
-             // Some obligation is missing.
-             { "some missing", PREDICATE_MISSING },
+            // Some obligation has failed or been stopped on one prover and not been proved by another.
+            { "some failed or stopped", PREDICATE_FAILED_OR_STOPPED },
 
-             // Some obligation has PROOF OMITTED
-             { "some omitted", PREDICATE_OMITTED },
+            // Some obligation has failed on some prover, but could yet be proved by Isabelle.
+            { "Some failed on non-isabelle prover", PREDICATE_FAILED_SO_FAR },
 
-             // Some obligation is either missing or has PROOF OMITTED
-             { "some missing or omitted", PREDICATE_MISSING_OR_OMITTED },
+            // Some obligation has failed or been stopped on some prover.
+            { "Some failed or stopped", PREDICATE_FAILED_OR_STOPPED_UNPROVED },
 
-             // Every obligation has been proved by Isabelle (aka proved in paranoid mode)
-             { "all proved by isabelle", PREDICATE_PROVED_BY_ISABELLE },
+            // Some obligation is still being proved or has failed a secondary prover
+            // but not yet tried by Isabelle
+            { "Some being proved", PREDICATE_BEING_PROVED },
 
-             // Every nontrivial obligation has been proved by Isabelle
-             { "all proved by isabelle or trivial", PREDICATE_PROVED_BY_ISABELLE_OR_TRIVIAL },
+            // Some obligation is missing.
+            { "some missing", PREDICATE_MISSING },
 
-             // Every obligation was found by TLAPM to be trivial.
-             { "all trivial", PREDICATE_TRIVIAL }, //
+            // Some obligation has PROOF OMITTED
+            { "some omitted", PREDICATE_OMITTED },
 
-             { "all", PREDICATE_ALL }, // always true
-             
-             // every obligation proved
-     };
+            // Some obligation is either missing or has PROOF OMITTED
+            { "some missing or omitted", PREDICATE_MISSING_OR_OMITTED },
+
+            // Every obligation has been proved by Isabelle (aka proved in paranoid mode)
+            { "all proved by isabelle", PREDICATE_PROVED_BY_ISABELLE },
+
+            // Every nontrivial obligation has been proved by Isabelle
+            { "all proved by isabelle or trivial", PREDICATE_PROVED_BY_ISABELLE_OR_TRIVIAL },
+
+            // Every obligation was found by TLAPM to be trivial.
+            { "all trivial", PREDICATE_TRIVIAL }, //
+
+            { "all", PREDICATE_ALL }, // always true
+
+            { "user-defined A", USER_DEFINED[0] }, { "user-defined B", USER_DEFINED[1] },
+            { "user-defined C", USER_DEFINED[2] }, { "user-defined D", USER_DEFINED[3] },
+
+    };
 
     /**
      * Returns the macro with name macroName, else returns null if there
      * is none.  (Case of names is ignored.)  This implementation searches
-     * only in the PREDEFINE_MACROS.  If users can define macros with
-     * preferences, then we need to reimplement this.
+     * in the PREDEFINE_MACROS and then for user-defined macros.  
      * 
      * @param macroName
      * @return
@@ -212,6 +217,14 @@ public class ColorPredicate
             if (macroName.equalsIgnoreCase(PREDEFINED_MACROS[i][0]))
             {
                 return PREDEFINED_MACROS[i][1];
+            }
+        }
+        for (int i = 0; i < USER_DEFINED.length; i++)
+        {
+            if (macroName.equalsIgnoreCase(USER_DEFINED[i]))
+            {
+                return ProverUIActivator.getDefault().getPreferenceStore().getString(
+                        ProverSecondPreferencePage.USER_DEFINED_PREDICATE[i]);
             }
         }
         return null;
