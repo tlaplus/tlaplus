@@ -15,10 +15,19 @@ will be considered.
 
 --meth          changes the default method for proving 
 		(the default is zenon with 10 second time-out and isabelle auto fallback)
+		        According to the documentation obtained with --meth help, the
+		        possible values are:		      
+                   auto      Isabelle's "auto" tactic (requires -C)
+                   blast     Isabelle's "blast" tactic (requires -C)
+                   force     Isabelle's "force" tactic (requires -C)
+                   fail      Fake method that always fails
+                   sorry     Fake method that accepts all proofs (use with caution!)
 
 --solver        which smt solver to use
 
 --paranoid      asks isabelle to check trivial obligations
+                Experimentation suggests that this is a no-op if --noproving
+                is chosen.
 
 --isaprove      sends obligations to isabelle to be proved as soon as zenon fails 
 		or when isabelle is called by a pragma.
@@ -35,6 +44,9 @@ will be considered.
 		(if --paranoid is not called), already checked obligations, and obligations 
 		on which isabelle has already failed or succeeded.
 
+NOTE: If neither --isaprove nor --noproving (or -N) nor -C is specified, then tlapm will
+      use any prover (such as Zenon or the Cooper algorithm or an SMT solver) except
+      Isabelle--even if an Isabelle tactic is explicitly specified by a proof.
 
 ### Display options:
 
@@ -73,15 +85,20 @@ will be considered.
   --where                show location of standard library and exit
   --config               show configuration and exit
   --summary              show summary of theorems (implies -N and not -C)
+                         experimentation shows that it prints the number
+                         of obligations and the number and locations of
+                         missing and omitted obligations.
   --timing               show runtime statistics
 
   -I <dir>               add <dir> to search path
   -d <dir>               send generated output to <dir>
 
   -k                     keep going on backend failures
-  -N                     do not run any backend verifiers      (-> similar to --noproving)
+  -N                     do not run any backend verifiers      
+                         similar to --noproving, but experimentation shows that, when
+                         used with --toolbox, --noproving generates status reports based
+                         on fingerprints while -N does not.
 
-  --method <meth>        set default method to <meth> (try --method help)
   --solver <solver>      set SMT solver to <solver>
 
 
