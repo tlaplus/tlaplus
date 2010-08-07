@@ -669,7 +669,7 @@
             category="org.lamport.tla.toolbox.tool.prover.ProverPreferencePage"
             class="org.lamport.tla.toolbox.tool.prover.ui.preference.ProverSecondPreferencePage"
             id="org.lamport.tla.toolbox.tool.prover.ProverSecondPreferencePage"
-            name="Color Predicates">
+            name="Additional Preferences">
       </page>
    </extension>
    <extension

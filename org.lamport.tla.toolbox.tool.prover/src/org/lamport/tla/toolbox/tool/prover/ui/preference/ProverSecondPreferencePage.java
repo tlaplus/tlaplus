@@ -5,10 +5,11 @@ package org.lamport.tla.toolbox.tool.prover.ui.preference;
 
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.StringFieldEditor;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
-import org.eclipse.ui.editors.text.EditorsUI;
-import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.tool.prover.ui.ProverUIActivator;
 
 /**
@@ -21,14 +22,17 @@ public class ProverSecondPreferencePage extends FieldEditorPreferencePage implem
     /*
      * The names of the preferences for the user-defined predicates.
      */
-    public static final String[] USER_DEFINED_PREDICATE = {"UserDefinedPredicateA", "UserDefinedPredicateB", "UserDefinedPredicateC", "UserDefinedPredicateC"};
-    public static final String[] UPPER_CASE_LETTERS = {"A", "B", "C", "D", "E", "F"};
-    
+    public static final String[] USER_DEFINED_PREDICATE = { "UserDefinedPredicateA", "UserDefinedPredicateB",
+            "UserDefinedPredicateC", "UserDefinedPredicateC" };
+    public static final String[] UPPER_CASE_LETTERS = { "A", "B", "C", "D", "E", "F" };
+    public static final String NUM_THREADS_KEY = "num_threads";
+    public static final String SOLVER_KEY = "solver";
+
     public ProverSecondPreferencePage()
     {
         super(GRID);
         setPreferenceStore(ProverUIActivator.getDefault().getPreferenceStore());
-        setDescription("User-Defined Color Precicates");
+        setDescription("User-Defined Color Predicates");
     }
 
     /* (non-Javadoc)
@@ -36,10 +40,32 @@ public class ProverSecondPreferencePage extends FieldEditorPreferencePage implem
      */
     protected void createFieldEditors()
     {
-        System.out.println("adding Test PReference Field");
-        for (int i = 0; i < USER_DEFINED_PREDICATE.length; i++) {
-            addField(new ColorPredicateFieldEditor(USER_DEFINED_PREDICATE[i], UPPER_CASE_LETTERS[i], getFieldEditorParent()));
+        // Label threadsLabel = new Label(threadsComposite, SWT.NONE);
+        // threadsLabel.setText("Number of threads : ");
+        // numThreadsText = new Text(threadsComposite, SWT.SINGLE);
+
+        // numThreadsText.setText(store.getString(NUM_THREADS_KEY));
+
+        // Label cpLabel = new Label(getFieldEditorParent(), SWT.NONE);
+        // cpLabel.setText("");
+        // Label cp2Label = new Label(getFieldEditorParent(), SWT.NONE);
+        // cp2Label.setText("User-Defined Color Predicates");
+        for (int i = 0; i < USER_DEFINED_PREDICATE.length; i++)
+        {
+            addField(new ColorPredicateFieldEditor(USER_DEFINED_PREDICATE[i], "Predicate " + UPPER_CASE_LETTERS[i],
+                    getFieldEditorParent()));
         }
+
+        /*
+         * Add some space.  We seem to need to add two labels to avoid screwing
+         * up the formatting.
+         */
+        
+        new Label(getFieldEditorParent(), SWT.NONE);
+        new Label(getFieldEditorParent(), SWT.NONE);
+        
+        addField(new ThreadsFieldEditor(NUM_THREADS_KEY, "Number of Threads", getFieldEditorParent()));
+        addField(new SolverFieldEditor(SOLVER_KEY, "SMT Solver", getFieldEditorParent()));
     }
 
     /* (non-Javadoc)
@@ -49,6 +75,45 @@ public class ProverSecondPreferencePage extends FieldEditorPreferencePage implem
     {
         // TODO Auto-generated method stub
 
+    }
+
+    public class ThreadsFieldEditor extends StringFieldEditor
+    {
+        public ThreadsFieldEditor(String arg0, String arg1, Composite arg2) {
+            super(arg0, arg1, arg2);
+        }
+        
+        public boolean doCheckState()
+        {
+            String value = this.getStringValue();
+            value = value.trim();
+            if (value.length() == 0)
+            {
+                return true;
+            }
+            try
+            {
+                int numThreads = Integer.parseInt(value);
+                return numThreads > 0;
+            } catch (NumberFormatException e)
+            {
+                return false;
+            }
+        }
+    }
+    
+    public class SolverFieldEditor extends StringFieldEditor
+
+    {
+        public SolverFieldEditor(String arg0, String arg1, Composite arg2) {
+            super(arg0, arg1, arg2);
+        }
+        
+        public boolean doCheckState()
+        {
+            String value = this.getStringValue();
+            return value.indexOf('"') == -1;
+        }
     }
 
 }

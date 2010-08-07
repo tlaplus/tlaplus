@@ -26,6 +26,8 @@ import org.lamport.tla.toolbox.tool.prover.ProverPreferenceInitializer;
 import org.lamport.tla.toolbox.tool.prover.job.ITLAPMOptions;
 import org.lamport.tla.toolbox.tool.prover.job.ProverJob;
 import org.lamport.tla.toolbox.tool.prover.ui.ProverUIActivator;
+import org.lamport.tla.toolbox.tool.prover.ui.preference.ProverSecondPreferencePage;
+import org.lamport.tla.toolbox.tool.prover.ui.util.ProverHelper;
 
 /**
  * A dialog that allows the user to launch the prover
@@ -81,7 +83,7 @@ public class LaunchProverDialog extends Dialog
     /**
      * The widget for entering the number of threads.
      */
-    private Text numThreadsText;
+//    private Text numThreadsText;
 
     /**
      * Button to be checked for normal fingerprint use.
@@ -112,7 +114,7 @@ public class LaunchProverDialog extends Dialog
     public static final String ISACHECK_KEY = "isacheck";
     public static final String NOISA_KEY = "noisa";
     public static final String PARANOID_KEY = "paranoid";
-    public static final String NUM_THREADS_KEY = "num_threads";
+//    public static final String NUM_THREADS_KEY = "num_threads";
     public static final String FP_NORMAL_KEY = "fpnormal";
     public static final String FP_FORGET_ALL_KEY = "fpforgetall";
     public static final String FP_FORGET_CURRENT_KEY = "fpforgetcurrent";
@@ -321,10 +323,10 @@ public class LaunchProverDialog extends Dialog
         gd = new GridData();
         threadsComposite.setLayoutData(gd);
         threadsComposite.setLayout(new GridLayout(2, false));
-        Label threadsLabel = new Label(threadsComposite, SWT.NONE);
-        threadsLabel.setText("Number of threads : ");
-        numThreadsText = new Text(threadsComposite, SWT.SINGLE);
-        numThreadsText.setText(store.getString(NUM_THREADS_KEY));
+//        Label threadsLabel = new Label(threadsComposite, SWT.NONE);
+//        threadsLabel.setText("Number of threads : ");
+//        numThreadsText = new Text(threadsComposite, SWT.SINGLE);
+//        numThreadsText.setText(store.getString(NUM_THREADS_KEY));
         
         /**
          * Field for additional command-line arguments
@@ -367,7 +369,7 @@ public class LaunchProverDialog extends Dialog
         store.setValue(ISACHECK_KEY, isacheck.getSelection());
         store.setValue(NOISA_KEY, noisa.getSelection());
         store.setValue(PARANOID_KEY, paranoid.getSelection());
-        store.setValue(NUM_THREADS_KEY, numThreadsText.getText());
+//        store.setValue(NUM_THREADS_KEY, numThreadsText.getText());
         store.setValue(FP_NORMAL_KEY, fpNormal.getSelection());
         store.setValue(FP_FORGET_ALL_KEY, fpForgetAll.getSelection());
         store.setValue(FP_FORGET_CURRENT_KEY, fpForgetCurrent.getSelection());
@@ -409,28 +411,16 @@ public class LaunchProverDialog extends Dialog
             command.add(ITLAPMOptions.PARANOID);
         }
 
-        if (numThreadsText.getText().trim().length() > 0)
-        {
-            try
-            {
-                int numThreads = Integer.parseInt(numThreadsText.getText().trim());
-                command.add(ITLAPMOptions.THREADS);
-                command.add("" + numThreads);
-            } catch (NumberFormatException e)
-            {
-                /*
-                 * If the user enters something that is not an integer
-                 * in number of threads and presses OK then this will show
-                 * an error dialog. By returning on this method after showing the error dialog,
-                 * the user will be returned to the original launch prover dialog and
-                 * will have an opportunity to correct his mistake or cancel.
-                 */
-                MessageDialog.openError(getShell(), "Number of threads error.",
-                        "The string in the number of threads field is not an integer.");
-                return;
-            }
-        }
+        /*
+         * Add threads option, if there is one.
+         */
+        ProverHelper.setThreadsOption(command);
 
+        /*
+         * Add solver option, if there is one.
+         */
+        ProverHelper.setSolverOption(command);
+        
         /*
          * This adds the extra options from the text field at the top
          * of the dialog.

@@ -748,6 +748,16 @@ public class ProverJob extends Job
             }
         }
 
+        /*
+         * Add threads option, if there is one.
+         */
+        ProverHelper.setThreadsOption(command);
+    
+        /*
+         * Add solver option, if there is one.
+         */
+        ProverHelper.setSolverOption(command);
+
         if (checkStatus)
         {
             // Denis reported adding this tlapm switch on 19 Jun 2010

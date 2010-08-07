@@ -1,5 +1,6 @@
 package org.lamport.tla.toolbox.tool.prover.ui.util;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -39,6 +40,7 @@ import org.lamport.tla.toolbox.tool.prover.ui.output.data.StepStatusMessage;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.StepTuple;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.WarningMessage;
 import org.lamport.tla.toolbox.tool.prover.ui.preference.ProverPreferencePage;
+import org.lamport.tla.toolbox.tool.prover.ui.preference.ProverSecondPreferencePage;
 import org.lamport.tla.toolbox.tool.prover.ui.view.ObligationsView;
 import org.lamport.tla.toolbox.ui.dialog.InformationDialog;
 import org.lamport.tla.toolbox.util.AdapterFactory;
@@ -1857,5 +1859,33 @@ public class ProverHelper
                     + marker.getAttribute(OBLIGATION_ID, -1) + " was stopped. This is a bug.");
         }
 
+    }
+    
+    /**
+     * If the user has specified a number of threads preference of i,
+     * then adds the appropriate entries to the list command of arguments.
+     * @return
+     */
+    public static void setThreadsOption(ArrayList command) {
+        String numThreadsText = ProverUIActivator.getDefault().getPreferenceStore().getString(ProverSecondPreferencePage.NUM_THREADS_KEY);
+        if (numThreadsText.trim().length() == 0) {
+            return ;
+        }
+        command.add(ITLAPMOptions.THREADS); 
+        command.add(numThreadsText); 
+    }
+    
+    /**
+     * If the user has specified a solver preference pref,
+     * then adds the appropriate entries to the list command of arguments.
+     * @return
+     */
+    public static void setSolverOption(ArrayList command) {
+        String solverText = ProverUIActivator.getDefault().getPreferenceStore().getString(ProverSecondPreferencePage.SOLVER_KEY);
+        if (solverText.trim().length() == 0) {
+            return;
+        }
+        command.add(ITLAPMOptions.SOLVER);
+        command.add("\"" + solverText + "\""); 
     }
 }

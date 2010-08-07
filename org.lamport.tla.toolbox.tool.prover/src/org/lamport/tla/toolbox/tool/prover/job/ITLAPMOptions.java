@@ -27,7 +27,7 @@ public interface ITLAPMOptions
      * Changes the default method for proving 
      * (the default is zenon with 10 second time-out and isabelle auto fallback)
      */
-    public static final String METH = "--meth";
+    public static final String METH = "--method";
     /**
      * --solver
      * 
@@ -47,17 +47,17 @@ public interface ITLAPMOptions
      * or when isabelle is called by a pragma.
      */
     public static final String ISAPROVE = "--isaprove";
-    
+
     /**
      * --cleanfp : Erase fingerprint file
      */
     public static final String FORGET_ALL = "--cleanfp";
-    
+
     /**
      * --nofp : Erase fingerprints from currently selected proof region.
      */
     public static final String FORGET_CURRENT = "--nofp";
-    
+
     /**
      * -C
      * 
