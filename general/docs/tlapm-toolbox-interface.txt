@@ -13,7 +13,7 @@ will be considered.
 
 ### Proving options:
 
---meth          changes the default method for proving 
+--method        changes the default method for proving 
 		(the default is zenon with 10 second time-out and isabelle auto fallback)
 		        According to the documentation obtained with --meth help, the
 		        possible values are:		      
