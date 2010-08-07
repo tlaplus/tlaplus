@@ -47,6 +47,23 @@ public interface ITLAPMOptions
      * or when isabelle is called by a pragma.
      */
     public static final String ISAPROVE = "--isaprove";
+    
+    /**
+     * --cleanfp : Erase fingerprint file
+     */
+    public static final String FORGET_ALL = "--cleanfp";
+    
+    /**
+     * --nofp : Erase fingerprints from currently selected proof region.
+     */
+    public static final String FORGET_CURRENT = "--nofp";
+    
+    /**
+     * -C
+     * 
+     * Tells tlapm to call Isabelle to check Zenon proofs.
+     */
+    public static final String ISACHECK = "-C";
     /**
      * --noproving
      * 

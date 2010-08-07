@@ -29,7 +29,13 @@ public class ProverPreferenceInitializer extends AbstractPreferenceInitializer
         store.setDefault(LaunchProverDialog.EXTRA_OPTIONS_KEY, "");
         store.setDefault(LaunchProverDialog.NUM_THREADS_KEY, 1);
         store.setDefault(LaunchProverDialog.PARANOID_KEY, false);
+        store.setDefault(LaunchProverDialog.ISATOOL_KEY, true);
         store.setDefault(LaunchProverDialog.STATUS_CHECK_KEY, false);
+        store.setDefault(LaunchProverDialog.ISACHECK_KEY, false);
+        store.setDefault(LaunchProverDialog.NOISA_KEY, false);
+        store.setDefault(LaunchProverDialog.FP_NORMAL_KEY, true);
+        store.setDefault(LaunchProverDialog.FP_FORGET_ALL_KEY, false);
+        store.setDefault(LaunchProverDialog.FP_FORGET_CURRENT_KEY, false);
         
        /*
         * Set the defaults for the user-specified color predicates

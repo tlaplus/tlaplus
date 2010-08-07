@@ -51,9 +51,19 @@ public class LaunchProverDialog extends Dialog
      * for the tlapm.
      */
     private Text extraOptionsText;
-    private Button button1;
-    private Button button2;
-    private Button button3;
+
+    /*
+     * Buttons that control what prover to use.
+     */
+    private Button isatool;
+    private Button isacheck;
+    private Button noisa;
+    /**
+     * Button that should be checked if
+     * the user wants the PM to be launched
+     * for status checking only.
+     */
+    private Button noProving;
     /**
      * Button that should be checked if
      * the user wants the PM to
@@ -61,12 +71,7 @@ public class LaunchProverDialog extends Dialog
      * {@link ITLAPMOptions#TOOLBOX} option.
      */
     private Button toolboxMode;
-    /**
-     * Button that should be checked if
-     * the user wants the PM to be launched
-     * for status checking only.
-     */
-    private Button noProving;
+
     /**
      * Button that should be checked if the user
      * wants the PM to be launched with
@@ -78,6 +83,22 @@ public class LaunchProverDialog extends Dialog
      */
     private Text numThreadsText;
 
+    /**
+     * Button to be checked for normal fingerprint use.
+     */
+    private Button fpNormal;
+    /**
+     * Button to be checked to erase all fingerprints and
+     * start fresh.
+     */
+    private Button fpForgetAll;
+    /**
+     * Button to be checked to erase all fingerprints in
+     * the currently selected region.
+     */
+    private Button fpForgetCurrent;
+
+    
     /******************************************************
      * The following are the keys for storing             *
      * the values of the dialog when the user presses OK  *
@@ -86,9 +107,16 @@ public class LaunchProverDialog extends Dialog
      ******************************************************/
     public static final String EXTRA_OPTIONS_KEY = "extra_options";
     public static final String TOOLBOX_MODE_KEY = "toolbox_mode";
+    public static final String ISATOOL_KEY = "isatool";
     public static final String STATUS_CHECK_KEY = "status_check";
+    public static final String ISACHECK_KEY = "isacheck";
+    public static final String NOISA_KEY = "noisa";
     public static final String PARANOID_KEY = "paranoid";
     public static final String NUM_THREADS_KEY = "num_threads";
+    public static final String FP_NORMAL_KEY = "fpnormal";
+    public static final String FP_FORGET_ALL_KEY = "fpforgetall";
+    public static final String FP_FORGET_CURRENT_KEY = "fpforgetcurrent";
+    
 
     /**
      * Creates a general prover launch dialog that allows
@@ -134,7 +162,7 @@ public class LaunchProverDialog extends Dialog
          * both columns.
          */
         Label label = new Label(topComposite, SWT.NONE);
-        label.setText("Enter the command line arguments to launch the prover.");
+        label.setText("Enter the prover options.");
         gd = new GridData();
         // spans both columns
         gd.horizontalSpan = 2;
@@ -144,12 +172,12 @@ public class LaunchProverDialog extends Dialog
          * This creates the text field for entering arbitrary
          * command line arguments. It is set to span both columns.
          */
-        extraOptionsText = new Text(topComposite, SWT.SINGLE);
-        gd = new GridData(SWT.FILL, SWT.FILL, true, true);
-        // spans both columns
-        gd.horizontalSpan = 2;
-        extraOptionsText.setLayoutData(gd);
-        extraOptionsText.setText(store.getString(EXTRA_OPTIONS_KEY));
+//        extraOptionsText = new Text(topComposite, SWT.SINGLE);
+//        gd = new GridData(SWT.FILL, SWT.FILL, true, true);
+//        // spans both columns
+//        gd.horizontalSpan = 2;
+//        extraOptionsText.setLayoutData(gd);
+//        extraOptionsText.setText(store.getString(EXTRA_OPTIONS_KEY));
 
         /*
          * Below the text field there will be two columns of options
@@ -167,7 +195,7 @@ public class LaunchProverDialog extends Dialog
         nonCommandLineGroup.setLayoutData(gd);
         nonCommandLineGroup.setLayout(new GridLayout(2, true));
         // sets the title of the group
-        nonCommandLineGroup.setText("And/Or choose from this list of options for launching the prover:");
+        // nonCommandLineGroup.setText("And/Or choose from this list of options for launching the prover:");
 
         /*
          * Now we create the left column composite and fill it
@@ -186,12 +214,66 @@ public class LaunchProverDialog extends Dialog
         toolboxMode = new Button(left, SWT.CHECK);
         toolboxMode.setText(" Launch in toolbox mode");
         toolboxMode.setSelection(store.getBoolean(TOOLBOX_MODE_KEY));
-        noProving = new Button(left, SWT.CHECK);
-        noProving.setText(" No proving");
+
+        
+        
+        /*
+         * We create a set of three mutually exclusive options.
+         * Buttons are made mutually exclusive by setting
+         * the style bit SWT.RADIO. I believe that for all radio buttons that
+         * are immediate children of a given composite, at most one
+         * is selectable at a given time. Thus, we put the three
+         * mutually exclusive options in a composite. A group is a
+         * subclass of composite that has a border.
+         * 
+         * I don't know if this is useful for prover options, but
+         * just in case, I put it here.
+         */
+        Group proverGroup = new Group(left, SWT.NONE);
+        proverGroup.setLayout(new GridLayout(1, false));
+        // sets the title of the group
+        proverGroup.setText("Choose prover(s) to use:");
+
+        isatool  = new Button(proverGroup, SWT.RADIO);
+        isatool.setText(" Use Isabelle only if necessary.");
+        isatool.setSelection(store.getBoolean(ISATOOL_KEY));
+        
+        noProving = new Button(proverGroup, SWT.RADIO);
+        noProving.setText(" No proving.");
         noProving.setSelection(store.getBoolean(STATUS_CHECK_KEY));
+
+        
+        isacheck = new Button(proverGroup, SWT.RADIO);
+        isacheck.setText(" Check Zenon proofs with Isabelle.");
+        isacheck.setSelection(store.getBoolean(ISACHECK_KEY));
+        
+        noisa = new Button(proverGroup, SWT.RADIO);
+        noisa.setText(" Do not use Isabelle.");
+        noisa.setSelection(store.getBoolean(NOISA_KEY));
+        
+        Group fpGroup = new Group(left, SWT.NONE);
+        fpGroup.setLayout(new GridLayout(1, false));
+        // sets the title of the group
+        fpGroup.setText("Using previous results:");
+        
+        fpNormal  = new Button(fpGroup, SWT.RADIO);
+        fpNormal.setText(" Use previous results.");
+        fpNormal.setSelection(store.getBoolean(FP_NORMAL_KEY));
+        
+        fpForgetAll  = new Button(fpGroup, SWT.RADIO);
+        fpForgetAll.setText(" Forget all previous results.");
+        fpForgetAll.setSelection(store.getBoolean(FP_FORGET_ALL_KEY));
+        
+        fpForgetCurrent  = new Button(fpGroup, SWT.RADIO);
+        fpForgetCurrent.setText(" Forget currently selected previous results.");
+        fpForgetCurrent.setSelection(store.getBoolean(FP_FORGET_CURRENT_KEY));
+        
+        
         /*
          * Add a listener that disables the paranoid button
-         * whenever the no proving button is selected.
+         * whenever the no proving button is selected.  Unfortunately,
+         * this doesn't disable when the dialog is first created and
+         * "no proving" is selected.
          */
         noProving.addSelectionListener(new SelectionListener() {
 
@@ -213,30 +295,6 @@ public class LaunchProverDialog extends Dialog
         });
 
         /*
-         * We create a set of three mutually exclusive options.
-         * Buttons are made mutually exclusive by setting
-         * the style bit SWT.RADIO. I believe that for all radio buttons that
-         * are immediate children of a given composite, at most one
-         * is selectable at a given time. Thus, we put the three
-         * mutually exclusive options in a composite. A group is a
-         * subclass of composite that has a border.
-         * 
-         * I don't know if this is useful for prover options, but
-         * just in case, I put it here.
-         */
-        Group mutex = new Group(left, SWT.NONE);
-        mutex.setLayout(new GridLayout(1, false));
-        // sets the title of the group
-        mutex.setText("Choose only one of the following options:");
-
-        button1 = new Button(mutex, SWT.RADIO);
-        button1.setText("Option 1");
-        button2 = new Button(mutex, SWT.RADIO);
-        button2.setText("Option 2");
-        button3 = new Button(mutex, SWT.RADIO);
-        button3.setText("Option 3");
-
-        /*
          * Now we create the composite for the right column
          * and fill it with widgets.
          */
@@ -252,6 +310,7 @@ public class LaunchProverDialog extends Dialog
         paranoid = new Button(right, SWT.CHECK);
         paranoid.setText("Paranoid checking");
         paranoid.setSelection(store.getBoolean(PARANOID_KEY));
+        paranoid.setEnabled(!noProving.getSelection());
 
         /*
          * Create the widget for entering the number of threads.
@@ -266,6 +325,23 @@ public class LaunchProverDialog extends Dialog
         threadsLabel.setText("Number of threads : ");
         numThreadsText = new Text(threadsComposite, SWT.SINGLE);
         numThreadsText.setText(store.getString(NUM_THREADS_KEY));
+        
+        /**
+         * Field for additional command-line arguments
+         */
+        label = new Label(topComposite, SWT.NONE);
+        label.setText("Enter additional tlapm command-line arguments.");
+        gd = new GridData();
+        // spans both columns
+        gd.horizontalSpan = 2;
+        label.setLayoutData(gd);
+
+        extraOptionsText = new Text(topComposite, SWT.SINGLE);
+        gd = new GridData(SWT.FILL, SWT.FILL, true, true);
+        // spans both columns
+        gd.horizontalSpan = 2;
+        extraOptionsText.setLayoutData(gd);
+        extraOptionsText.setText(store.getString(EXTRA_OPTIONS_KEY));
 
         return topComposite;
 
@@ -286,9 +362,16 @@ public class LaunchProverDialog extends Dialog
         IPreferenceStore store = ProverUIActivator.getDefault().getPreferenceStore();
         store.setValue(EXTRA_OPTIONS_KEY, extraOptionsText.getText());
         store.setValue(TOOLBOX_MODE_KEY, toolboxMode.getSelection());
+        store.setValue(ISATOOL_KEY, isatool.getSelection());
         store.setValue(STATUS_CHECK_KEY, noProving.getSelection());
+        store.setValue(ISACHECK_KEY, isacheck.getSelection());
+        store.setValue(NOISA_KEY, noisa.getSelection());
         store.setValue(PARANOID_KEY, paranoid.getSelection());
         store.setValue(NUM_THREADS_KEY, numThreadsText.getText());
+        store.setValue(FP_NORMAL_KEY, fpNormal.getSelection());
+        store.setValue(FP_FORGET_ALL_KEY, fpForgetAll.getSelection());
+        store.setValue(FP_FORGET_CURRENT_KEY, fpForgetCurrent.getSelection());
+        
 
         /*
          * Launch the prover with the arguments given.
@@ -300,7 +383,27 @@ public class LaunchProverDialog extends Dialog
          * be redundant,  so maybe there should be some check for that.
          */
         ArrayList command = new ArrayList();
-
+        
+        /**
+         * Set option for which prover to use.  Note that the no --proving option
+         * is added by the ProverJob constructor, and the "Don't use Isabelle"
+         * option is indicated by the absence of a command-line option.
+         */
+        if (isatool.getSelection()) {
+            command.add(ITLAPMOptions.ISAPROVE);
+        } else if (isacheck.getSelection()) {
+            command.add(ITLAPMOptions.ISACHECK);
+        }
+        
+        /*
+         * Set option for fingerprint use.  Note that normal fingerprint
+         * use is specified by no fingerprint option.
+         */
+        if (fpForgetAll.getSelection()) {
+            command.add(ITLAPMOptions.FORGET_ALL);
+        } else if (fpForgetCurrent.getSelection()) {
+            command.add(ITLAPMOptions.FORGET_CURRENT);
+        }
         if (paranoid.isEnabled() && paranoid.getSelection())
         {
             command.add(ITLAPMOptions.PARANOID);
