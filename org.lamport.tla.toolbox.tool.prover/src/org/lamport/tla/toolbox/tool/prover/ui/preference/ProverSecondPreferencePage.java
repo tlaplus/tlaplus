@@ -3,9 +3,11 @@
  */
 package org.lamport.tla.toolbox.tool.prover.ui.preference;
 
+import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.StringFieldEditor;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IWorkbench;
@@ -27,6 +29,7 @@ public class ProverSecondPreferencePage extends FieldEditorPreferencePage implem
     public static final String[] UPPER_CASE_LETTERS = { "A", "B", "C", "D", "E", "F" };
     public static final String NUM_THREADS_KEY = "num_threads";
     public static final String SOLVER_KEY = "solver";
+    public static final String SAFEFP_KEY = "safefp";
 
     public ProverSecondPreferencePage()
     {
@@ -52,7 +55,7 @@ public class ProverSecondPreferencePage extends FieldEditorPreferencePage implem
         // cp2Label.setText("User-Defined Color Predicates");
         for (int i = 0; i < USER_DEFINED_PREDICATE.length; i++)
         {
-            addField(new ColorPredicateFieldEditor(USER_DEFINED_PREDICATE[i], "Predicate " + UPPER_CASE_LETTERS[i],
+            addField(new ColorPredicateFieldEditor(USER_DEFINED_PREDICATE[i], "     Predicate " + UPPER_CASE_LETTERS[i],
                     getFieldEditorParent()));
         }
 
@@ -60,12 +63,23 @@ public class ProverSecondPreferencePage extends FieldEditorPreferencePage implem
          * Add some space.  We seem to need to add two labels to avoid screwing
          * up the formatting.
          */
-        
+
         new Label(getFieldEditorParent(), SWT.NONE);
         new Label(getFieldEditorParent(), SWT.NONE);
-        
-        addField(new ThreadsFieldEditor(NUM_THREADS_KEY, "Number of Threads", getFieldEditorParent()));
+
+        addField(new ThreadsFieldEditor(NUM_THREADS_KEY, "Num. of Threads", getFieldEditorParent()));
         addField(new SolverFieldEditor(SOLVER_KEY, "SMT Solver", getFieldEditorParent()));
+//        Label cpLabel = new Label(getFieldEditorParent(), SWT.NONE);
+//        cpLabel.setText("Do not use previous results from earlier versions of provers?");
+//        GridData gd = new GridData();
+//        gd.horizontalSpan = 2;
+//        cpLabel.setLayoutData(gd);
+        
+        new Label(getFieldEditorParent(), SWT.NONE);
+        new Label(getFieldEditorParent(), SWT.NONE);
+
+        addField(new BooleanFieldEditor(SAFEFP_KEY, "Do not use previous results from earlier versions of provers.", getFieldEditorParent()));
+
     }
 
     /* (non-Javadoc)
@@ -79,10 +93,11 @@ public class ProverSecondPreferencePage extends FieldEditorPreferencePage implem
 
     public class ThreadsFieldEditor extends StringFieldEditor
     {
-        public ThreadsFieldEditor(String arg0, String arg1, Composite arg2) {
+        public ThreadsFieldEditor(String arg0, String arg1, Composite arg2)
+        {
             super(arg0, arg1, arg2);
         }
-        
+
         public boolean doCheckState()
         {
             String value = this.getStringValue();
@@ -101,14 +116,15 @@ public class ProverSecondPreferencePage extends FieldEditorPreferencePage implem
             }
         }
     }
-    
+
     public class SolverFieldEditor extends StringFieldEditor
 
     {
-        public SolverFieldEditor(String arg0, String arg1, Composite arg2) {
+        public SolverFieldEditor(String arg0, String arg1, Composite arg2)
+        {
             super(arg0, arg1, arg2);
         }
-        
+
         public boolean doCheckState()
         {
             String value = this.getStringValue();

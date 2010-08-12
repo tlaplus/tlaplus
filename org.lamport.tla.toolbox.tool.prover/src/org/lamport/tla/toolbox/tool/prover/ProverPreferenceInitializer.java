@@ -37,6 +37,7 @@ public class ProverPreferenceInitializer extends AbstractPreferenceInitializer
         store.setDefault(LaunchProverDialog.FP_FORGET_CURRENT_KEY, false);
         store.setDefault(ProverSecondPreferencePage.NUM_THREADS_KEY, "");
         store.setDefault(ProverSecondPreferencePage.SOLVER_KEY, "");
+        store.setDefault(ProverSecondPreferencePage.SAFEFP_KEY, false);
         
         
        /*

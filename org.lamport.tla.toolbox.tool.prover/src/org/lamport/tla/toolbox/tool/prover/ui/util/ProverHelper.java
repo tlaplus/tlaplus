@@ -1888,4 +1888,16 @@ public class ProverHelper
         command.add(ITLAPMOptions.SOLVER);
         command.add("\"" + solverText + "\""); 
     }
+    
+    /**
+     * If the user has specified a solver preference pref,
+     * then adds the appropriate entries to the list command of arguments.
+     * @return
+     */
+    public static void setSafeFPOption(ArrayList command) {
+        boolean safefp = ProverUIActivator.getDefault().getPreferenceStore().getBoolean(ProverSecondPreferencePage.SAFEFP_KEY);
+        if (safefp) {
+            command.add(ITLAPMOptions.SAFEFP); 
+        }    
+    }
 }

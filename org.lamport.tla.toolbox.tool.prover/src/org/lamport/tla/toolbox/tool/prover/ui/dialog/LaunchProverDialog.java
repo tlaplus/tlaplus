@@ -425,6 +425,12 @@ public class LaunchProverDialog extends Dialog
          * This adds the extra options from the text field at the top
          * of the dialog.
          */
+        
+        /*
+         * Add --safefp option, if there is one.
+         */
+        ProverHelper.setSafeFPOption(command);
+
         String[] extraOptions = extraOptionsText.getText().trim().split(" ");
         for (int i = 0; i < extraOptions.length; i++)
         {

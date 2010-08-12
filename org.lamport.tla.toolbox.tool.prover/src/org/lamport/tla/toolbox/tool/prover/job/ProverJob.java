@@ -758,6 +758,11 @@ public class ProverJob extends Job
          */
         ProverHelper.setSolverOption(command);
 
+        /*
+         * Add --safefp option, if there is one.
+         */
+        ProverHelper.setSafeFPOption(command);
+
         if (checkStatus)
         {
             // Denis reported adding this tlapm switch on 19 Jun 2010
