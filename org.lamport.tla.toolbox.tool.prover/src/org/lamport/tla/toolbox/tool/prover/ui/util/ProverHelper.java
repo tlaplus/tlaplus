@@ -15,6 +15,7 @@ import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.AssertionFailedException;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
@@ -1899,5 +1900,16 @@ public class ProverHelper
         if (safefp) {
             command.add(ITLAPMOptions.SAFEFP); 
         }    
+    }
+    /**
+     * Returns true iff this is a MAC.  This is made a separate method
+     * to make it easier to test on a non-MAC machine.
+     * @return
+     */
+    public static boolean isMac() {
+//        if (1+1==2) {
+//            return true;
+//        }
+        return Platform.getOS().equals(Platform.OS_MACOSX);
     }
 }

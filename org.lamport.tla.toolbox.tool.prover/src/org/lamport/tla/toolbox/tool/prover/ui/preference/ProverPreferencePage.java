@@ -1,16 +1,34 @@
 package org.lamport.tla.toolbox.tool.prover.ui.preference;
 
+import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.ColorFieldEditor;
 import org.eclipse.jface.preference.ComboFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.preference.PreferenceConverter;
 import org.eclipse.jface.util.PropertyChangeEvent;
+import org.eclipse.jface.window.IShellProvider;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.events.VerifyEvent;
+import org.eclipse.swt.events.VerifyListener;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.RGB;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.editors.text.EditorsUI;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.ColorPredicate;
+import org.lamport.tla.toolbox.tool.prover.ui.util.ProverHelper;
+import org.lamport.tla.toolbox.util.UIHelper;
 
 /**
  * This class represents the prover preference page that
@@ -108,7 +126,7 @@ public class ProverPreferencePage extends FieldEditorPreferencePage implements I
         super(GRID);
         setPreferenceStore(EditorsUI.getPreferenceStore());
         getPreferenceStore().addPropertyChangeListener(this);
-        setDescription("TLAPS preferences");
+        setDescription("Color Predicates");
     }
 
     /**
@@ -122,13 +140,40 @@ public class ProverPreferencePage extends FieldEditorPreferencePage implements I
 
         for (int i = 1; i <= NUM_STATUS_COLORS; i++)
         {
+            // if (ProverHelper.isMac())
+            // {
+            // Label testLabel = new Label(getFieldEditorParent(), SWT.NONE);
+            // testLabel.setText("Color " + i);
+            // } else
+            // {
+
             addField(new ColorFieldEditor(getMainColorPrefName(i), "Color " + i, getFieldEditorParent()));
+            // }
             addField(new ComboFieldEditor(getColorPredPrefName(i), "Predicate", ColorPredicate.PREDEFINED_MACROS,
                     getFieldEditorParent()));
             addField(new BooleanFieldEditor(getLeafSideBarPrefName(i), "Show Leaf Steps in Side Bar",
                     getFieldEditorParent()));
             addField(new BooleanFieldEditor(getAppliesToLeafPrefName(i), "Applies to Leaf Steps Only",
                     getFieldEditorParent()));
+
+        }
+
+        if (ProverHelper.isMac())
+        {
+            Button macColorButton = new Button(getFieldEditorParent(), SWT.PUSH);
+            macColorButton.setText("Set Colors");
+            macColorButton.addSelectionListener(new MacColorButtonSelectionListener());
+            // Label lbl = new Label(getFieldEditorParent(), SWT.NONE);
+            // GridData gd = new GridData();
+            // gd.horizontalSpan = 5;
+            // lbl.setLayoutData(gd);
+            // lbl = new Label(getFieldEditorParent(), SWT.NONE);
+            // lbl.setText("Set color-predicate colors");
+            // lbl.setLayoutData(gd);
+            // IPreferenceStore store = EditorsUI.getPreferenceStore();
+            // PreferenceConverter.setValue(store, getMainColorPrefName(12), new RGB(255, 0, 0));
+            // ...
+            // RBG bgColor = PreferenceConverter.getValue(store, "bg");
 
         }
 
@@ -327,6 +372,241 @@ public class ProverPreferencePage extends FieldEditorPreferencePage implements I
          * 
          * If the field editors change on this page, this method will have to change.
          */
+        // if (ProverHelper.isMac())
+        // {
+        // ((GridLayout) getFieldEditorParent().getLayout()).numColumns = 5;
+        // } else
+        // {
         ((GridLayout) getFieldEditorParent().getLayout()).numColumns = 6;
+        // }
+    }
+
+    static class MacColorButtonSelectionListener implements SelectionListener
+    {
+        public void widgetDefaultSelected(SelectionEvent e)
+        {
+            // TODO Auto-generated method stub
+
+        }
+
+        public void widgetSelected(SelectionEvent e)
+        {
+            MacColorSelectionDialog dialog = new MacColorSelectionDialog(UIHelper.getShellProvider());
+            dialog.open();
+        }
+
+    }
+
+    public static class MacColorSelectionDialog extends Dialog
+    {
+        /*
+         * Text[i][1] is the Text area for the green component of color i
+         */
+        public Text[][] rgbText = new Text[12][];
+        /*
+         * colorNumber[i] labels color i+1, and color[i] is the Color resource that
+         * colors this label.  That resource is disposed() when the dialog is closed.
+         */
+        public Label[] colorNumber = new Label[12];
+        public Color[] color = new Color[12];
+
+        public MacColorSelectionDialog(IShellProvider parentShell)
+        {
+            super(parentShell);
+            setBlockOnOpen(true);
+            // this.page = page;
+        }
+
+        protected Control createDialogArea(Composite parent)
+        {
+            Composite topComposite = new Composite(parent, SWT.NONE);
+            GridData gd = new GridData();
+            topComposite.setLayoutData(gd);
+            topComposite.setLayout(new GridLayout(7, false));
+
+            IPreferenceStore store = EditorsUI.getPreferenceStore();
+            /*
+             * Set up the Text fields and their labels for selecting the colors.
+             */
+            for (int i = 0; i < 12; i++)
+            {
+                RGB bgColor = PreferenceConverter.getColor(store, getMainColorPrefName(i + 1));
+
+                colorNumber[i] = new Label(topComposite, SWT.NONE);
+                colorNumber[i].setText("Color " + (i + 1));
+                color[i] = new Color(null, bgColor);
+                colorNumber[i].setBackground(color[i]);
+
+                Label[] rgbLabel = new Label[3];
+                rgbText[i] = new Text[3];
+                for (int j = 0; j < 3; j++)
+                {
+                    rgbLabel[j] = new Label(topComposite, SWT.None);
+                    rgbText[i][j] = new Text(topComposite, SWT.None);
+
+                }
+                rgbText[i][0].setText(makeAtLeastThreeDigitsWide(bgColor.red));
+                rgbText[i][1].setText(makeAtLeastThreeDigitsWide(bgColor.green));
+                rgbText[i][2].setText(makeAtLeastThreeDigitsWide(bgColor.blue));
+                rgbLabel[0].setText("    r:");
+                rgbLabel[1].setText("    g:");
+                rgbLabel[2].setText("    b:");
+                
+                /*
+                 * Have to add the VerifyListeners after the Text areas are set to valid
+                 * values.
+                 */
+                for (int j = 0; j < 3; j++)
+                {
+                    rgbText[i][j].addVerifyListener(new MacColorVerifyListener(this, i, j));
+                }
+
+                // rgbText[i][1] = new Text(topComposite, SWT.None);
+                //                
+                // rgbLabel = new Label(topComposite, SWT.None);
+                // rgbLabel.setText("    b:");
+                // rgbText[i][2] = new Text(topComposite, SWT.None);
+
+            }
+            Label spacer = new Label(topComposite, SWT.NONE);
+            GridData spacerData = new GridData();
+            spacerData.horizontalSpan = 7;
+            spacer.setLayoutData(spacerData);
+            Label instructions = new Label(topComposite, SWT.NONE);
+            instructions.setLayoutData(spacerData);
+            instructions.setText("To change colors, click on OK then click on");
+            instructions = new Label(topComposite, SWT.NONE);
+            instructions.setLayoutData(spacerData);
+            instructions.setText("the Cancel button of the preference page.");
+            return topComposite;
+        }
+
+        protected void okPressed()
+        {
+            IPreferenceStore store = EditorsUI.getPreferenceStore();
+
+            for (int i = 0; i < 12; i++)
+            {
+                int[] newrgb = new int[3];
+                for (int j = 0; j < 3; j++)
+                {
+                    newrgb[j] = Integer.valueOf(rgbText[i][j].getText()).intValue();
+                }
+                RGB bgColor = PreferenceConverter.getColor(store, getMainColorPrefName(i + 1));
+                if (bgColor.red != newrgb[0] || bgColor.green != newrgb[1] || bgColor.blue != newrgb[2])
+                {
+                    PreferenceConverter.setValue(store, getMainColorPrefName(i + 1), new RGB(newrgb[0], newrgb[1],
+                            newrgb[2]));
+                }
+
+                this.color[i].dispose();
+            }
+            super.okPressed();
+        }
+
+        protected void cancelPressed()
+        {
+            for (int i = 0; i < 12; i++)
+            {
+                this.color[i].dispose();
+            }
+            super.okPressed();
+        }
+
+    }
+
+    public static class MacColorVerifyListener implements VerifyListener
+    {
+        MacColorSelectionDialog dialog;
+        int colorNum;
+        int rgbNum;
+
+        public MacColorVerifyListener(MacColorSelectionDialog dialog, int colorNum, int rgbNum)
+        {
+            super();
+            this.dialog = dialog;
+            this.colorNum = colorNum;
+            this.rgbNum = rgbNum;
+        }
+
+        /*
+         * (non-Javadoc)
+         * This method is called before the typed character is added to the
+         * Text field.  Setting e.doit to false will prevent the keystroke
+         * from being typed.  Setting e.text will change the character being 
+         * entered.
+         * @see org.eclipse.swt.events.VerifyListener#verifyText(org.eclipse.swt.events.VerifyEvent)
+         */
+        public void verifyText(VerifyEvent e)
+        {
+            // System.out.println("VerifyEventCalled" + e.toString());
+            String oldText = this.dialog.rgbText[colorNum][rgbNum].getText();
+            String newText = oldText.substring(0, e.start) + e.text + oldText.substring(e.end);
+            if (newText.length() > 3)
+            {
+                e.doit = false;
+                return;
+            }
+            int redVal;
+            if (newText.equals(""))
+            {
+                redVal = 0;
+            } else
+            {
+                try
+                {
+                    redVal = Integer.valueOf(newText).intValue();
+
+                } catch (Exception e2)
+                {
+                    e.doit = false;
+                    return;
+                }
+            }
+            if (redVal > 255 || redVal < 0)
+            {
+                e.doit = false;
+                return;
+            }
+
+            // System.out.println("oldText = " + this.dialog.rgbText[0].getText() + " , newText = `" + newText + "'");
+            int[] rgbVals = new int[3];
+
+            for (int i = 0; i < 3; i++)
+            {
+                if (i == rgbNum)
+                {
+                    rgbVals[i] = redVal;
+                } else
+                {
+                    rgbVals[i] = Integer.valueOf(this.dialog.rgbText[colorNum][i].getText()).intValue();
+                }
+            }
+            try
+            {
+                RGB rgb = new RGB(rgbVals[0], rgbVals[1], rgbVals[2]);
+
+                dialog.color[colorNum] = new Color(null, rgb);
+                dialog.colorNumber[colorNum].setBackground(dialog.color[colorNum]);
+            } catch (IllegalArgumentException ee)
+            {
+                // TODO: handle exception
+            }
+        }
+
+    }
+
+    public static String makeAtLeastThreeDigitsWide(int value)
+    {
+        String result = "";
+        if (value < 100)
+        {
+            result = result + "0";
+            if (value < 10)
+            {
+                result = result + "0";
+            }
+        }
+        return result + value;
     }
 }

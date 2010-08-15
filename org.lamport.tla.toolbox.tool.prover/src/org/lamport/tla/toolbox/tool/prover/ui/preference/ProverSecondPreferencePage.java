@@ -7,7 +7,6 @@ import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.StringFieldEditor;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IWorkbench;
@@ -70,7 +69,7 @@ public class ProverSecondPreferencePage extends FieldEditorPreferencePage implem
         addField(new ThreadsFieldEditor(NUM_THREADS_KEY, "Num. of Threads", getFieldEditorParent()));
         addField(new SolverFieldEditor(SOLVER_KEY, "SMT Solver", getFieldEditorParent()));
 //        Label cpLabel = new Label(getFieldEditorParent(), SWT.NONE);
-//        cpLabel.setText("Do not use previous results from earlier versions of provers?");
+//        cpLabel.setText("Do not trust previous results from earlier versions of provers?");
 //        GridData gd = new GridData();
 //        gd.horizontalSpan = 2;
 //        cpLabel.setLayoutData(gd);
@@ -78,7 +77,7 @@ public class ProverSecondPreferencePage extends FieldEditorPreferencePage implem
         new Label(getFieldEditorParent(), SWT.NONE);
         new Label(getFieldEditorParent(), SWT.NONE);
 
-        addField(new BooleanFieldEditor(SAFEFP_KEY, "Do not use previous results from earlier versions of provers.", getFieldEditorParent()));
+        addField(new BooleanFieldEditor(SAFEFP_KEY, "Do not trust previous results from earlier versions of provers.", getFieldEditorParent()));
 
     }
 
