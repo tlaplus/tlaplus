@@ -339,6 +339,13 @@ PREFERENCES
 
 Defining a New Preference Page
 ------------------------------
+Use the extension org.eclipse.ui.preferencePages.  The category specifies
+the preference page within which is appears in the hierarchical
+preferences menu.  The top-level TLA+ preference pages have
+category toolbox.ui.preferences.GeneralPreferencePage.  The class
+needs to implement IWorkbenchPreferencePage.  All the Toolbox preference
+pages also extend FieldEditorPreferencePage.
+
 
 Defining a New Preference  
 --------------------------

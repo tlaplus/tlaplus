@@ -1861,55 +1861,65 @@ public class ProverHelper
         }
 
     }
-    
+
     /**
      * If the user has specified a number of threads preference of i,
      * then adds the appropriate entries to the list command of arguments.
      * @return
      */
-    public static void setThreadsOption(ArrayList command) {
-        String numThreadsText = ProverUIActivator.getDefault().getPreferenceStore().getString(ProverSecondPreferencePage.NUM_THREADS_KEY);
-        if (numThreadsText.trim().length() == 0) {
-            return ;
+    public static void setThreadsOption(ArrayList command)
+    {
+        String numThreadsText = ProverUIActivator.getDefault().getPreferenceStore().getString(
+                ProverSecondPreferencePage.NUM_THREADS_KEY);
+        if (numThreadsText.trim().length() == 0)
+        {
+            return;
         }
-        command.add(ITLAPMOptions.THREADS); 
-        command.add(numThreadsText); 
+        command.add(ITLAPMOptions.THREADS);
+        command.add(numThreadsText);
     }
-    
+
     /**
      * If the user has specified a solver preference pref,
      * then adds the appropriate entries to the list command of arguments.
      * @return
      */
-    public static void setSolverOption(ArrayList command) {
-        String solverText = ProverUIActivator.getDefault().getPreferenceStore().getString(ProverSecondPreferencePage.SOLVER_KEY);
-        if (solverText.trim().length() == 0) {
+    public static void setSolverOption(ArrayList command)
+    {
+        String solverText = ProverUIActivator.getDefault().getPreferenceStore().getString(
+                ProverSecondPreferencePage.SOLVER_KEY);
+        if (solverText.trim().length() == 0)
+        {
             return;
         }
         command.add(ITLAPMOptions.SOLVER);
-        command.add("\"" + solverText + "\""); 
+        command.add("\"" + solverText + "\"");
     }
-    
+
     /**
      * If the user has specified a solver preference pref,
      * then adds the appropriate entries to the list command of arguments.
      * @return
      */
-    public static void setSafeFPOption(ArrayList command) {
-        boolean safefp = ProverUIActivator.getDefault().getPreferenceStore().getBoolean(ProverSecondPreferencePage.SAFEFP_KEY);
-        if (safefp) {
-            command.add(ITLAPMOptions.SAFEFP); 
-        }    
+    public static void setSafeFPOption(ArrayList command)
+    {
+        boolean safefp = ProverUIActivator.getDefault().getPreferenceStore().getBoolean(
+                ProverSecondPreferencePage.SAFEFP_KEY);
+        if (safefp)
+        {
+            command.add(ITLAPMOptions.SAFEFP);
+        }
     }
+
     /**
      * Returns true iff this is a MAC.  This is made a separate method
-     * to make it easier to test on a non-MAC machine.
+     * to make it easier to test MAC features on a non-MAC machine.
      * @return
      */
-    public static boolean isMac() {
-//        if (1+1==2) {
-//            return true;
-//        }
+    public static boolean isMac()
+    {
+        // Uncomment the following for testing.
+        // if (1+1==2) {return true;}
         return Platform.getOS().equals(Platform.OS_MACOSX);
     }
 }

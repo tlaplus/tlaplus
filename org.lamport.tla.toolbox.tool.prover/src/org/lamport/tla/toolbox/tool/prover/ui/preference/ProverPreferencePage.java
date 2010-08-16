@@ -140,29 +140,33 @@ public class ProverPreferencePage extends FieldEditorPreferencePage implements I
 
         for (int i = 1; i <= NUM_STATUS_COLORS; i++)
         {
-            // if (ProverHelper.isMac())
-            // {
-            // Label testLabel = new Label(getFieldEditorParent(), SWT.NONE);
-            // testLabel.setText("Color " + i);
-            // } else
-            // {
-
             addField(new ColorFieldEditor(getMainColorPrefName(i), "Color " + i, getFieldEditorParent()));
-            // }
             addField(new ComboFieldEditor(getColorPredPrefName(i), "Predicate", ColorPredicate.PREDEFINED_MACROS,
                     getFieldEditorParent()));
             addField(new BooleanFieldEditor(getLeafSideBarPrefName(i), "Show Leaf Steps in Side Bar",
                     getFieldEditorParent()));
             addField(new BooleanFieldEditor(getAppliesToLeafPrefName(i), "Applies to Leaf Steps Only",
                     getFieldEditorParent()));
-
         }
 
+        /*
+         * Because of an Eclipse bug reported at
+         *    https://bugs.eclipse.org/bugs/show_bug.cgi?id=279840
+         * a ColorFieldEditor doesn't work on the Mac.  For the Mac, we
+         * add a dialog for choosing color-predicate colors.  Here we add the
+         * button that raises this dialog, which is a MacColorSelectionDialog,
+         * where that class is declared below.
+         */
         if (ProverHelper.isMac())
         {
             Button macColorButton = new Button(getFieldEditorParent(), SWT.PUSH);
             macColorButton.setText("Set Colors");
             macColorButton.addSelectionListener(new MacColorButtonSelectionListener());
+            Label warning = new Label(getFieldEditorParent(), SWT.NONE);
+            GridData gd = new GridData();
+            gd.horizontalSpan = 5;
+            warning.setLayoutData(gd);
+            warning.setText("If you have made any changes, click Apply before setting colors.");
             // Label lbl = new Label(getFieldEditorParent(), SWT.NONE);
             // GridData gd = new GridData();
             // gd.horizontalSpan = 5;
@@ -372,20 +376,16 @@ public class ProverPreferencePage extends FieldEditorPreferencePage implements I
          * 
          * If the field editors change on this page, this method will have to change.
          */
-        // if (ProverHelper.isMac())
-        // {
-        // ((GridLayout) getFieldEditorParent().getLayout()).numColumns = 5;
-        // } else
-        // {
         ((GridLayout) getFieldEditorParent().getLayout()).numColumns = 6;
-        // }
     }
 
     static class MacColorButtonSelectionListener implements SelectionListener
     {
         public void widgetDefaultSelected(SelectionEvent e)
         {
-            // TODO Auto-generated method stub
+            /*
+             * This never seems to be called.
+             */
 
         }
 
@@ -397,6 +397,50 @@ public class ProverPreferencePage extends FieldEditorPreferencePage implements I
 
     }
 
+    /**
+     * This is a Dialog for choosing color-predicate colors.  Each color's rgb
+     * values are specified by 3 Text fields, all on one line, with the line
+     * labeled with a Label containing the color number whose background color
+     * is the specified color.  These values are initialized to the appropriate
+     * values in the preference store.  When the OK button is pressed, the
+     * preference store's values are updated appropriately.  
+     * 
+     * There is one problem.  On the PC, I observe the following behavior.  When 
+     * the OK (or Apply) button is pressed on the preference page, the preference store
+     * values are set to the colors currently specified by the ColorFieldEditors
+     * on that page.  Those colors aren't changed by pressing the Dialog's OK
+     * button.  Hence, to avoid the color's the user has just chosen from being
+     * replaced by their previous values, the user must hit the Cancel button
+     * on the preference page.
+     * 
+     * Note: It would seem that this problem could be solved by raising this
+     * dialog with a button a different preference page.  However, I have observed
+     * that if this is done, the color predicate preference page's colors still
+     * have their previous values when that page is next raised.  Hitting the 
+     * Cancel button on that page then seems to make the page have the right
+     * colors the next time it is raised.  Hitting OK reverts the preference
+     * store to contain the previous colors.  This makes no sense, because my
+     * experience says that the preference page's createFieldEditors() method is 
+     * called every time the page is raised, and method sets the ColorFieldEditors'
+     * colors from the preference store, which must have been changed because
+     * the new colors appear on the proof's markers.  However, we don't
+     * expect the actions of Eclipse methods to make sense.  In other circumstances
+     * as well, we have observed the Eclipse preference store doing totally
+     * inexplicable things.  When using the preference store, one has to just
+     * find what works and hope that it also works on other systems.
+     * 
+     * The other non-obvious thing that the dialog does is to dispose of
+     * all Color objects that it creates by calling the dispose() method.
+     * On some computers, there is a maximum number of different colors that
+     * can be displayed on the screen, and dispose() must be called on a
+     * Color object (even after it's not allocated) to free up the resource
+     * it occupies.  For that reason, the Colors are kept as fields of the
+     * MacColorSelectionDialog object, and that object is passed to the
+     * listeners which must dispose of the colors.
+     * 
+     * @author lamport
+     *
+     */
     public static class MacColorSelectionDialog extends Dialog
     {
         /*
@@ -445,13 +489,21 @@ public class ProverPreferencePage extends FieldEditorPreferencePage implements I
                     rgbText[i][j] = new Text(topComposite, SWT.None);
 
                 }
+                /*
+                 * I have been unable to set the size of a Text area to an
+                 * explicit value.  The setSize method doesn't seem to do
+                 * anything.  The Text area seems to size itself so its initial
+                 * text just fits.  So, we use the makeAtLeastThreeDigitsWide
+                 * method to make the value (which should be between 0 and 255)
+                 * contain exactly three digits.
+                 */
                 rgbText[i][0].setText(makeAtLeastThreeDigitsWide(bgColor.red));
                 rgbText[i][1].setText(makeAtLeastThreeDigitsWide(bgColor.green));
                 rgbText[i][2].setText(makeAtLeastThreeDigitsWide(bgColor.blue));
                 rgbLabel[0].setText("    r:");
                 rgbLabel[1].setText("    g:");
                 rgbLabel[2].setText("    b:");
-                
+
                 /*
                  * Have to add the VerifyListeners after the Text areas are set to valid
                  * values.
@@ -460,13 +512,6 @@ public class ProverPreferencePage extends FieldEditorPreferencePage implements I
                 {
                     rgbText[i][j].addVerifyListener(new MacColorVerifyListener(this, i, j));
                 }
-
-                // rgbText[i][1] = new Text(topComposite, SWT.None);
-                //                
-                // rgbLabel = new Label(topComposite, SWT.None);
-                // rgbLabel.setText("    b:");
-                // rgbText[i][2] = new Text(topComposite, SWT.None);
-
             }
             Label spacer = new Label(topComposite, SWT.NONE);
             GridData spacerData = new GridData();
@@ -531,17 +576,28 @@ public class ProverPreferencePage extends FieldEditorPreferencePage implements I
 
         /*
          * (non-Javadoc)
-         * This method is called before the typed character is added to the
-         * Text field.  Setting e.doit to false will prevent the keystroke
-         * from being typed.  Setting e.text will change the character being 
+         * This method is called before the change is made to the
+         * Text field.  The fields of the VerifyEvent e indicates what the
+         * change will be.  Setting e.doit to false prevents the change
+         * from occurring.  Setting e.text will change the character(s) being 
          * entered.
          * @see org.eclipse.swt.events.VerifyListener#verifyText(org.eclipse.swt.events.VerifyEvent)
          */
         public void verifyText(VerifyEvent e)
         {
-            // System.out.println("VerifyEventCalled" + e.toString());
+            /*
+             * Sets newText to the new value of the field if the keystroke is acted on.
+             */
             String oldText = this.dialog.rgbText[colorNum][rgbNum].getText();
             String newText = oldText.substring(0, e.start) + e.text + oldText.substring(e.end);
+            /*
+             * Since the Text field is only 3 characters wide, we don't want the contents
+             * to have more than 3 characters.  So, we abort the action if it would make
+             * the field have more than 3 characters.  I'd like to just remove leading zeros
+             * if that would bring the text down to 3 characters, but that doesn't seem to
+             * be possible except in certain circumstances, which I haven't bothered to
+             * handle.
+             */
             if (newText.length() > 3)
             {
                 e.doit = false;

@@ -128,14 +128,14 @@ public class ColorPredicate
     public static final String PREDICATE_MISSING = "some missing";
     public static final String PREDICATE_OMITTED = "some omitted";
     public static final String PREDICATE_MISSING_OR_OMITTED = "some missing omitted";
-    public static final String PREDICATE_PROVED_BY_ISABELLE = "every (proved,,)";
-    public static final String PREDICATE_PROVED_BY_ISABELLE_OR_TRIVIAL = "every (proved,,) (,,proved)";
+    // public static final String PREDICATE_PROVED_BY_ISABELLE = "every (proved,,)";
+    // public static final String PREDICATE_PROVED_BY_ISABELLE_OR_TRIVIAL = "every (proved,,) (,,proved)";
     public static final String PREDICATE_STOPPED = "some (stopped,,) (,stopped,) (failed, untried,)";
     public static final String PREDICATE_STOPPED_UNPROVED = "some (stopped,-proved,-proved) (-proved,stopped,-proved)";
-    public static final String PREDICATE_TRIVIAL = "every (,,proved)";
+    // public static final String PREDICATE_TRIVIAL = "every (,,proved)";
     public static final String PREDICATE_UNTRIED = "some (untried, untried, untried)";
 
-    public static final String[] USER_DEFINED = { "userdefinedA", "userdefinedB", "userdefinedC", "userdefinedD" };
+    public static final String[] USER_DEFINED = { "userdefinedA", "userdefinedB", "userdefinedC", "userdefinedD", "userdefinedE", "userdefinedF"};
 
     public static final String[][] PREDEFINED_MACROS = { //
 
@@ -168,14 +168,14 @@ public class ColorPredicate
             { "some failed or stopped", PREDICATE_FAILED_OR_STOPPED },
 
             // Some obligation has failed on some prover, but could yet be proved by Isabelle.
-            { "Some failed on non-isabelle prover", PREDICATE_FAILED_SO_FAR },
+            { "some failed on non-isabelle prover", PREDICATE_FAILED_SO_FAR },
 
             // Some obligation has failed or been stopped on some prover.
-            { "Some failed or stopped", PREDICATE_FAILED_OR_STOPPED_UNPROVED },
+            { "some failed or stopped", PREDICATE_FAILED_OR_STOPPED_UNPROVED },
 
             // Some obligation is still being proved or has failed a secondary prover
             // but not yet tried by Isabelle
-            { "Some being proved", PREDICATE_BEING_PROVED },
+            { "some being proved", PREDICATE_BEING_PROVED },
 
             // Some obligation is missing.
             { "some missing", PREDICATE_MISSING },
@@ -187,18 +187,19 @@ public class ColorPredicate
             { "some missing or omitted", PREDICATE_MISSING_OR_OMITTED },
 
             // Every obligation has been proved by Isabelle (aka proved in paranoid mode)
-            { "all proved by isabelle", PREDICATE_PROVED_BY_ISABELLE },
+            // { "all proved by isabelle", PREDICATE_PROVED_BY_ISABELLE },
 
             // Every nontrivial obligation has been proved by Isabelle
-            { "all proved by isabelle or trivial", PREDICATE_PROVED_BY_ISABELLE_OR_TRIVIAL },
+            // { "all proved by isabelle or trivial", PREDICATE_PROVED_BY_ISABELLE_OR_TRIVIAL },
 
             // Every obligation was found by TLAPM to be trivial.
-            { "all trivial", PREDICATE_TRIVIAL }, //
+            // { "all trivial", PREDICATE_TRIVIAL }, //
 
             { "all", PREDICATE_ALL }, // always true
 
             { "user-defined A", USER_DEFINED[0] }, { "user-defined B", USER_DEFINED[1] },
             { "user-defined C", USER_DEFINED[2] }, { "user-defined D", USER_DEFINED[3] },
+            { "user-defined E", USER_DEFINED[4] }, { "user-defined F", USER_DEFINED[5] },
 
     };
 

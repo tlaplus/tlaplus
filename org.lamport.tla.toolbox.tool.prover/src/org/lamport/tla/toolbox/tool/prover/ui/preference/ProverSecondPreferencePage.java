@@ -24,8 +24,8 @@ public class ProverSecondPreferencePage extends FieldEditorPreferencePage implem
      * The names of the preferences for the user-defined predicates.
      */
     public static final String[] USER_DEFINED_PREDICATE = { "UserDefinedPredicateA", "UserDefinedPredicateB",
-            "UserDefinedPredicateC", "UserDefinedPredicateC" };
-    public static final String[] UPPER_CASE_LETTERS = { "A", "B", "C", "D", "E", "F" };
+            "UserDefinedPredicateC", "UserDefinedPredicateD", "UserDefinedPredicateE", "UserDefinedPredicateF"};
+    public static final String[] UPPER_CASE_LETTERS = { "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L" };
     public static final String NUM_THREADS_KEY = "num_threads";
     public static final String SOLVER_KEY = "solver";
     public static final String SAFEFP_KEY = "safefp";
@@ -42,20 +42,12 @@ public class ProverSecondPreferencePage extends FieldEditorPreferencePage implem
      */
     protected void createFieldEditors()
     {
-        // Label threadsLabel = new Label(threadsComposite, SWT.NONE);
-        // threadsLabel.setText("Number of threads : ");
-        // numThreadsText = new Text(threadsComposite, SWT.SINGLE);
-
-        // numThreadsText.setText(store.getString(NUM_THREADS_KEY));
-
-        // Label cpLabel = new Label(getFieldEditorParent(), SWT.NONE);
-        // cpLabel.setText("");
-        // Label cp2Label = new Label(getFieldEditorParent(), SWT.NONE);
-        // cp2Label.setText("User-Defined Color Predicates");
+        // To change the number of user-defined predicates, look up all uses of
+        // USER_DEFINED_PREDICATE and USER_DEFINED.
         for (int i = 0; i < USER_DEFINED_PREDICATE.length; i++)
         {
-            addField(new ColorPredicateFieldEditor(USER_DEFINED_PREDICATE[i], "     Predicate " + UPPER_CASE_LETTERS[i],
-                    getFieldEditorParent()));
+            addField(new ColorPredicateFieldEditor(USER_DEFINED_PREDICATE[i],
+                    "     Predicate " + UPPER_CASE_LETTERS[i], getFieldEditorParent()));
         }
 
         /*
@@ -68,16 +60,17 @@ public class ProverSecondPreferencePage extends FieldEditorPreferencePage implem
 
         addField(new ThreadsFieldEditor(NUM_THREADS_KEY, "Num. of Threads", getFieldEditorParent()));
         addField(new SolverFieldEditor(SOLVER_KEY, "SMT Solver", getFieldEditorParent()));
-//        Label cpLabel = new Label(getFieldEditorParent(), SWT.NONE);
-//        cpLabel.setText("Do not trust previous results from earlier versions of provers?");
-//        GridData gd = new GridData();
-//        gd.horizontalSpan = 2;
-//        cpLabel.setLayoutData(gd);
-        
+        // Label cpLabel = new Label(getFieldEditorParent(), SWT.NONE);
+        // cpLabel.setText("Do not trust previous results from earlier versions of provers?");
+        // GridData gd = new GridData();
+        // gd.horizontalSpan = 2;
+        // cpLabel.setLayoutData(gd);
+
         new Label(getFieldEditorParent(), SWT.NONE);
         new Label(getFieldEditorParent(), SWT.NONE);
 
-        addField(new BooleanFieldEditor(SAFEFP_KEY, "Do not trust previous results from earlier versions of provers.", getFieldEditorParent()));
+        addField(new BooleanFieldEditor(SAFEFP_KEY, "Do not trust previous results from earlier versions of provers.",
+                getFieldEditorParent()));
 
     }
 
