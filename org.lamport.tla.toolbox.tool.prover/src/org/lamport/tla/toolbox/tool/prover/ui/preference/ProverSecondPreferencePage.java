@@ -7,6 +7,7 @@ import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.StringFieldEditor;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IWorkbench;
@@ -51,23 +52,29 @@ public class ProverSecondPreferencePage extends FieldEditorPreferencePage implem
         }
 
         /*
-         * Add some space.  We seem to need to add two labels to avoid screwing
+         * Add some space and a heading. We seem to need to add two labels to avoid screwing
          * up the formatting.
          */
 
-        new Label(getFieldEditorParent(), SWT.NONE);
-        new Label(getFieldEditorParent(), SWT.NONE);
+        Label lbl = new Label(getFieldEditorParent(), SWT.NONE);
+        GridData gd = new GridData();
+        gd.horizontalSpan = 2;
+        lbl.setLayoutData(gd);
+        
+        lbl = new Label(getFieldEditorParent(), SWT.NONE);
+        lbl.setLayoutData(gd);
+        lbl.setText("Advanced Execution Preferences");
 
-        addField(new ThreadsFieldEditor(NUM_THREADS_KEY, "Num. of Threads", getFieldEditorParent()));
-        addField(new SolverFieldEditor(SOLVER_KEY, "SMT Solver", getFieldEditorParent()));
+        addField(new ThreadsFieldEditor(NUM_THREADS_KEY, "  Num. of Threads", getFieldEditorParent()));
+        addField(new SolverFieldEditor(SOLVER_KEY, "  SMT Solver", getFieldEditorParent()));
         // Label cpLabel = new Label(getFieldEditorParent(), SWT.NONE);
         // cpLabel.setText("Do not trust previous results from earlier versions of provers?");
         // GridData gd = new GridData();
         // gd.horizontalSpan = 2;
         // cpLabel.setLayoutData(gd);
 
-        new Label(getFieldEditorParent(), SWT.NONE);
-        new Label(getFieldEditorParent(), SWT.NONE);
+        // new Label(getFieldEditorParent(), SWT.NONE);
+        // new Label(getFieldEditorParent(), SWT.NONE);
 
         addField(new BooleanFieldEditor(SAFEFP_KEY, "Do not trust previous results from earlier versions of provers.",
                 getFieldEditorParent()));
