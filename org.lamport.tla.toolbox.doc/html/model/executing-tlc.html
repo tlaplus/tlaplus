@@ -241,6 +241,7 @@ as a disembodied process.&nbsp;  In that case, you should kill the TLC process.&
 Otherwise, strange things will happen if you restart 
 the Toolbox and try to run TLC from it on the model.   
 </p>
+
 <h2><a name="MC">How TLC is Run</a></h2>
 <p>
 The Toolbox runs TLC on a module named&nbsp; <code>MC</code>&nbsp; that it constructs
@@ -254,9 +255,12 @@ files are written in the subfolder&nbsp; <code>SpecName.toolbox/ModName</code>&n
 
 <p>
 At the same time that it writes those files, the Toolbox also writes into the same
-folder a copy of each of the spec's module files.&nbsp;  These allow you to see the version
-of the spec on which TLC was run, even after you have modified the spec.&nbsp;  (You cannot
-yet view those copies from the Toolbox.)
+folder a copy of each of the spec's module files.&nbsp;  
+These allow you to see the version
+of the spec on which TLC was run, even after you have modified the spec.&nbsp;  
+You can view that version of the spec by selecting the (any page of) the model,
+clicking on the <code>TLC Model Checker</code> menu at the top of the Toolbox window,
+and then clicking on <code>Open Saved Module</code>.
 </p>
 
 <h2><a name="console">The TLC Console View</a></h2>
