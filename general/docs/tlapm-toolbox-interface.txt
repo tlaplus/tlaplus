@@ -190,7 +190,7 @@ The following specifies which statuses can be sent for which provers:
      -- no <method> field
 
 3.) <prover> is "zenon" or "isabelle"
-     -- <status> = "proved" | "failed" | "being proved" | "interrupted" (<method 
+     -- <status> = "proved" | "failed" | "being proved" | "interrupted"  
      -- <method> is either the timeout of Zenon, or the tactic used by Isabelle
 
 The status "being proved" is sent iff the prover has been working on the obligation for at least 3 seconds 
