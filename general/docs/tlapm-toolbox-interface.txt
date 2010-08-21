@@ -182,11 +182,16 @@ After the obligation count message has been sent, obligation status messages are
 The following specifies which statuses can be sent for which provers:
 
 1.) <prover> is "tlapm"
-     <status> = "trivial"
+    -- <status> = "trivial" 
+    -- no <method> field
+
 2.) <prover> is "cooper" or "smt"
-     <status> = "proved" | "failed"
+     -- <status> = "proved" | "failed"
+     -- no <method> field
+
 3.) <prover> is "zenon" or "isabelle"
-     <status> = "proved" | "failed" | "being proved" | "interrupted"
+     -- <status> = "proved" | "failed" | "being proved" | "interrupted" (<method 
+     -- <method> is either the timeout of Zenon, or the tactic used by Isabelle
 
 The status "being proved" is sent iff the prover has been working on the obligation for at least 3 seconds 
 (or t seconds if the option --wait <t>) is called.
