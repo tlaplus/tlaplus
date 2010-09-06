@@ -296,7 +296,13 @@ public class TLAplusParser implements tla2sany.st.SyntaxTreeConstants, ParseTree
     currentT.next = previousT;
     while (   nextT.kind != EOF 
            && nextT.kind != THEOREM 
-//           && nextT.kind != ASSUME
+           && nextT.kind != PROPOSITION
+            /***************************************************************
+            * This test for PROPOSITION added by LL on 5 Sep 2010 to get   *
+            * the parser to handle a named PROPOSITION, LEMMA, or          *
+            * COROLLARY.                                                   *
+            ***************************************************************/
+           && nextT.kind != ASSUME
            /****************************************************************
            * This test for ASSUME removed on 26 June 2007.                 *
            * It made belchDEF get hung up on nested ASSUME/PROVEs.         *

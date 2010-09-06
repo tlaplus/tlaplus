@@ -203,7 +203,13 @@ public class TLAplusParser implements tla2sany.st.SyntaxTreeConstants, ParseTree
     currentT.next = previousT;
     while (   nextT.kind != EOF
            && nextT.kind != THEOREM
-//           && nextT.kind != ASSUME
+           && nextT.kind != PROPOSITION
+            /***************************************************************
+            * This test for PROPOSITION added by LL on 5 Sep 2010 to get   *
+            * the parser to handle a named PROPOSITION, LEMMA, or          *
+            * COROLLARY.                                                   *
+            ***************************************************************/
+           && nextT.kind != ASSUME
            /****************************************************************
            * This test for ASSUME removed on 26 June 2007.                 *
            * It made belchDEF get hung up on nested ASSUME/PROVEs.         *
@@ -8387,21 +8393,6 @@ ClosedStart() : {
     finally { jj_save(76, xla); }
   }
 
-  final private boolean jj_3R_103() {
-    if (jj_3R_150()) return true;
-    return false;
-  }
-
-  final private boolean jj_3_65() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_103()) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(192)) return true;
-    }
-    return false;
-  }
-
   final private boolean jj_3R_267() {
     if (jj_3R_104()) return true;
     return false;
@@ -11612,6 +11603,21 @@ ClosedStart() : {
 
   final private boolean jj_3R_102() {
     if (jj_3R_64()) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_103() {
+    if (jj_3R_150()) return true;
+    return false;
+  }
+
+  final private boolean jj_3_65() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_103()) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(192)) return true;
+    }
     return false;
   }
 
