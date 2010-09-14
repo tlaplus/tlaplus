@@ -635,6 +635,22 @@ public class ShowUsesHandler extends AbstractHandler implements IHandler, Syntax
                 stn = (SyntaxTreeNode) stn.heirs()[1];
                 break;
             case N_GeneralId:
+                // Following code added by LL on 14 Sep 2010 as part of fix
+                // for handling uses of a defined symbol in a subexpression name.
+                // For a use of Foo in a subexpression name like Foo!..., the
+                // OpApplNode uses[i] will have as its subExpressionOf field
+                // non-null and a SyntaxTreeNode representing a tree whose
+                // left-most leaf SyntaxTreeNode is a syntactic element 
+                // representing "Foo".  We recognize this SyntaxTreeNode because
+                // if has a kind representing a syntactic element, which means
+                // a kind less than NULL_ID. 
+                if (uses[i].subExpressionOf != null)
+                {
+                    while (stn.getKind() > NULL_ID && stn.heirs() != null && stn.heirs().length > 0)
+                    {
+                        stn = (SyntaxTreeNode) stn.heirs()[0];
+                    }
+                }
                 break;
             default:
                 System.out.println("Found unexpected kind " + stn.getKind() + " for stn node of symbol use.");

@@ -167,6 +167,7 @@ public class EditorUtil
      * is no useful information in the parse tree) or if there is no token
      * contained within the indicated region.
      * 
+     * THIS METHOD DOES NOT SEEM TO BE USED.
      * @return
      */
     public static StringAndLocation getCurrentToken()
@@ -183,7 +184,7 @@ public class EditorUtil
     /**
      * On 21 June 2010 LL discovered the following bug.  For a proof-step number of the form "<2>3.", the token in the
      * syntax tree contains the ".".  This seems to be a reasonable place to fix it by returning just the "<2>3" and
-     * its location.
+     * its location.  Apparently, it has been fixed here.
      *  
      * @param location
      * @return
@@ -262,7 +263,6 @@ public class EditorUtil
         {
             // System.out.println("Returning concatenation of heirs: " + concatHeirTokens(stn));
             return new StringAndLocation(concatHeirTokens(stn), stn.getLocation());
-
         }
         // System.out.println("Called on node kind = " + stn.getKind() +
         // ", image = `" + stn.getImage() + "'");
