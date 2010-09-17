@@ -617,7 +617,18 @@ public class ShowUsesHandler extends AbstractHandler implements IHandler, Syntax
 
         return null;
     }
-
+    
+    /**
+     * TODO: This method has the following minor bug.  When Foo is defined in module
+     * M, which is instantiated by  I == INSTANCE M, then when one of the OpApplNodes
+     * in uses represents a subexpression name like I!Foo!2, then just the "I" rather
+     * than the "I!Foo" is marked.  This is pretty harmless and is probably not worth
+     * fixing.
+     * 
+     * @param uses
+     * @param moduleName
+     * @param spec
+     */
     private static void setUseMarkers(OpApplNode[] uses, String moduleName, Spec spec)
     {
         Location[] locations = new Location[uses.length];
@@ -644,7 +655,12 @@ public class ShowUsesHandler extends AbstractHandler implements IHandler, Syntax
                 // representing "Foo".  We recognize this SyntaxTreeNode because
                 // if has a kind representing a syntactic element, which means
                 // a kind less than NULL_ID. 
-                if (uses[i].subExpressionOf != null)
+                // Following code modified by LL on 17 Sep 2010 by adding second
+                // conjunct of `if' test.  It appears that, if an OpApplNode represents
+                // the application of a defined operator, and not a subexpression name,
+                // then its subExpression field equals (==) its operator field, rather
+                // than being null.
+                if (uses[i].subExpressionOf != null && uses[i].subExpressionOf != uses[i].getOperator())
                 {
                     while (stn.getKind() > NULL_ID && stn.heirs() != null && stn.heirs().length > 0)
                     {
