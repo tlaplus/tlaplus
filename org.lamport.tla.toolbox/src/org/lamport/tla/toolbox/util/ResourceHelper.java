@@ -1267,6 +1267,13 @@ public class ResourceHelper
         } else
         {
             File[] subFiles = dir.listFiles();
+            // The following null pointer test added by LL on 25 Sep 2010.
+            // I have no idea what's causing it to be null, but there seems
+            // to be no point having it throw the exception, which might
+            // conceivably be causing problems.
+            if (subFiles == null) {
+                return 0;
+            }
             size += dir.length();
             for (int i = 0; i < subFiles.length; i++)
             {
