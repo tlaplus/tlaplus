@@ -844,6 +844,9 @@ public class TLAEditor extends TextEditor
      * That method calls the getHyperlinkDetectors method of the editor,
      * which will return an array IHyperLinkDetector objects, that
      * currently contains only a single TLAHyperlinkDetector object.  
+     * (This is apparently controlled by the extension of
+     * org.eclipse.ui.workbench.texteditor.hyperlinkDetectors
+     * in org.lamport.tla.toolbox.editor.basic.plugin.xml.)
      * It then calls that detector, which will return an array of 
      * 0 or 1 OpenDeclarationAction objects (the hyperlinks).  
      * If one such object is returned, its open method is called to

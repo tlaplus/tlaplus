@@ -72,6 +72,10 @@ public class TLAHyperlinkDetector extends AbstractHyperlinkDetector
      * 
      * This was modified by LL on 12 June 2010 so that, for identifiers like Foo!bar!X, 
      * it produces a hyperlink to the definition of X in the source module.
+     * 
+     * It was completely modified again by LL in Sep 2010 to use TokenSpec.findTokenSpecs,
+     * so it handles approximately all symbol occurrences using only the text and the last 
+     * module parse.
      */
     public IHyperlink[] detectHyperlinks(ITextViewer textViewer, IRegion region, boolean canShowMultipleHyperlinks)
     {
@@ -83,6 +87,45 @@ public class TLAHyperlinkDetector extends AbstractHyperlinkDetector
 
         IDocument document = textViewer.getDocument();
 
+//        // Sets currentLine to the line of text of the module containing the beginning of the
+//        // current region, and sets currentPos to the position of the beginning of the
+//        // current region in that line.  The Document.getLineLength method seems to include
+//        // the length of the line's delimeter, which should not be included in currentLine.
+//        String currentLine;
+//        int currentPos;
+//        
+//        try
+//        {
+//            int lineNumber = document.getLineOfOffset(region.getOffset());
+//            int lineDelimLength = 0;
+//            String delim = document.getLineDelimiter(lineNumber);
+//            if (delim != null) {
+//                lineDelimLength = delim.length();
+//            };
+//            int offsetOfLine = document.getLineOffset(lineNumber);
+//            currentLine = document.get(offsetOfLine, 
+//                                       document.getLineLength(lineNumber) - lineDelimLength);
+//            currentPos = region.getOffset() - offsetOfLine;
+//            System.out.println("`" + currentLine + "'");
+//            System.out.println(currentLine.substring(currentPos));
+//            for (int j = 0; j < currentLine.length(); j++){
+//            System.out.println("curPos = " + j);
+//            TokenSpec[] ts = TokenSpec.findTokenSpecs(currentLine, j); // currentPos);
+//            if (ts.length == 0) {System.out.println("empty"); }
+//            else {
+//                for (int i = 0; i < ts.length; i++) {
+//                    System.out.println("  " + i + ": " + ts[i].toString() + " `" + currentLine.substring(ts[i].leftPos, ts[i].rightPos) + "'");
+//                }
+//            }
+//            }
+//        } catch (BadLocationException e)
+//        {
+//            System.out.println("Exception thrown");
+//            return null;
+//        }
+        
+        System.out.println(TokenSpec.findCurrentTokenSpec().toString());
+        
         // Set goodLabel to the real label, obtained from the syntax tree.
         StringAndLocation goodLabelAndLoc = EditorUtil.getTokenAt(document, region.getOffset(), region.getLength());
 
@@ -206,7 +249,7 @@ public class TLAHyperlinkDetector extends AbstractHyperlinkDetector
                 try
                 {
                     // Get the location to highlight. If it's an OpDefNode, want
-                    // to get just the symbol from the left-hand side.  (Otherwise,
+                    // to get just the symbol from the left-hand side. (Otherwise,
                     // the user can't execute Goto Declaration immediately followed
                     // by Show Uses.)
                     if (resolvedSymbol instanceof OpDefNode)
