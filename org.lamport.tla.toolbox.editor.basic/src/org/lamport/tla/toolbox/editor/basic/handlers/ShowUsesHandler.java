@@ -33,6 +33,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.editor.basic.TLAEditor;
 import org.lamport.tla.toolbox.editor.basic.TLAEditorAndPDFViewer;
+import org.lamport.tla.toolbox.editor.basic.tla.TokenSpec;
 import org.lamport.tla.toolbox.editor.basic.util.DocumentHelper;
 import org.lamport.tla.toolbox.editor.basic.util.EditorUtil;
 import org.lamport.tla.toolbox.editor.basic.util.EditorUtil.StringAndLocation;
@@ -379,54 +380,7 @@ public class ShowUsesHandler extends AbstractHandler implements IHandler, Syntax
             }
         }
 
-        // Get the token currently being pointed at.
-        // The following code was copied from TLAHyperlinkDetector.detectHyperlinks
-        // and from the code in TLAEditor$OpenDeclarationHandler.execute
-        // that calls it.
-        // First, we get the arguments we need for EditorUtil.getTokenAt
-        TLAEditorAndPDFViewer editor = (TLAEditorAndPDFViewer) HandlerUtil.getActiveEditor(event);
-        ISourceViewer internalSourceViewer = editor.getTLAEditor().publicGetSourceViewer();
-        IDocument document = internalSourceViewer.getDocument();
-
-        ITextSelection selection = (ITextSelection) editor.getTLAEditor().getSelectionProvider().getSelection();
-        IRegion region = new Region(selection.getOffset(), selection.getLength());
-
-        // We now try to get the label (the name of the symbol we are looking for)
-        // from EditorUtil.getTokenAt
-        StringAndLocation goodLabelAndLoc = EditorUtil.getTokenAt(document, region.getOffset(), region.getLength());
-        String label = null;
-        Location location = null;
-
-        // If we failed to get the token, it could be because the editor
-        // is dirty. In that case, we use Simon's code to get it directly
-        // from the document.
-        if (goodLabelAndLoc == null)
-        {
-            if (region.getLength() == 0)
-            {
-                region = DocumentHelper.getRegionExpandedBoth(document, region.getOffset(), DocumentHelper
-                        .getDefaultWordDetector());
-                location = EditorUtil.getLocationAt(document, region.getOffset(), region.getLength());
-            }
-            try
-            {
-                label = document.get(region.getOffset(), region.getLength());
-            } catch (BadLocationException e)
-            {
-                return null;
-            }
-
-        } else
-        {
-            label = goodLabelAndLoc.string;
-            location = goodLabelAndLoc.location;
-        }
-        if (label == null || location == null)
-        {
-            return null;
-        }
-        System.out.println("We are searching for `" + label + "'");
-
+        // We will need the module name, which we get from the editor.
         TLAEditor tlaEditor = EditorUtil.getTLAEditorWithFocus();
         if (tlaEditor == null)
         {
@@ -438,12 +392,16 @@ public class ShowUsesHandler extends AbstractHandler implements IHandler, Syntax
         {
             return null;
         }
-        SymbolNode resolvedSymbol = EditorUtil.lookupSymbol(UniqueString.uniqueStringOf(label), moduleNode, location,
-                null);
-        if (resolvedSymbol == null)
+       
+        // We now get the SymbolNode that is the definition or declaration
+        // of the symbol at which the TLA Editor's cursor is.
+        TokenSpec currentTokenSpec = TokenSpec.findCurrentTokenSpec();
+        if (currentTokenSpec == null || currentTokenSpec.resolvedSymbol == null)
         {
             return null;
         }
+        SymbolNode resolvedSymbol = currentTokenSpec.resolvedSymbol;
+
         // System.out.println("We found symbol node named " + resolvedSymbol.getName());
 
         // Set tempModuleNames to the sorted array of all user module names.

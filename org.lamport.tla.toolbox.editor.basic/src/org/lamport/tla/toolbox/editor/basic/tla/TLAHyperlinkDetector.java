@@ -76,6 +76,11 @@ public class TLAHyperlinkDetector extends AbstractHyperlinkDetector
      * It was completely modified again by LL in Sep 2010 to use TokenSpec.findTokenSpecs,
      * so it handles approximately all symbol occurrences using only the text and the last 
      * module parse.
+     * 
+     * Note: This method is called by the Eclipse infrastructure to show hyperlinks 
+     * when the user holds down the Control key and moves the mouse.  It is called
+     * by TLAEditor$OpenDeclarationHandler.execute to implement the Open Declaration
+     * command.
      */
     public IHyperlink[] detectHyperlinks(ITextViewer textViewer, IRegion region, boolean canShowMultipleHyperlinks)
     {
@@ -87,108 +92,26 @@ public class TLAHyperlinkDetector extends AbstractHyperlinkDetector
 
         IDocument document = textViewer.getDocument();
 
-//        // Sets currentLine to the line of text of the module containing the beginning of the
-//        // current region, and sets currentPos to the position of the beginning of the
-//        // current region in that line.  The Document.getLineLength method seems to include
-//        // the length of the line's delimeter, which should not be included in currentLine.
-//        String currentLine;
-//        int currentPos;
-//        
-//        try
-//        {
-//            int lineNumber = document.getLineOfOffset(region.getOffset());
-//            int lineDelimLength = 0;
-//            String delim = document.getLineDelimiter(lineNumber);
-//            if (delim != null) {
-//                lineDelimLength = delim.length();
-//            };
-//            int offsetOfLine = document.getLineOffset(lineNumber);
-//            currentLine = document.get(offsetOfLine, 
-//                                       document.getLineLength(lineNumber) - lineDelimLength);
-//            currentPos = region.getOffset() - offsetOfLine;
-//            System.out.println("`" + currentLine + "'");
-//            System.out.println(currentLine.substring(currentPos));
-//            for (int j = 0; j < currentLine.length(); j++){
-//            System.out.println("curPos = " + j);
-//            TokenSpec[] ts = TokenSpec.findTokenSpecs(currentLine, j); // currentPos);
-//            if (ts.length == 0) {System.out.println("empty"); }
-//            else {
-//                for (int i = 0; i < ts.length; i++) {
-//                    System.out.println("  " + i + ": " + ts[i].toString() + " `" + currentLine.substring(ts[i].leftPos, ts[i].rightPos) + "'");
-//                }
-//            }
-//            }
-//        } catch (BadLocationException e)
-//        {
-//            System.out.println("Exception thrown");
-//            return null;
-//        }
-        
-        System.out.println(TokenSpec.findCurrentTokenSpec().toString());
-        
-        // Set goodLabel to the real label, obtained from the syntax tree.
-        StringAndLocation goodLabelAndLoc = EditorUtil.getTokenAt(document, region.getOffset(), region.getLength());
-
-        // Set label to the label to be used, which is goodLabel if that is not null,
-        // else is the label computed by Simon's approximate method that just looks at
-        // the actual text in the editor.
-        String label = null;
-        Location location = null; // LL.
-        if (goodLabelAndLoc != null)
+        // set currentTokenSpec to the TokenSpec object specifying the
+        // currently selected symbol and its resolution.
+        TokenSpec currentTokenSpec = TokenSpec.findCurrentTokenSpec(region);
+        if (currentTokenSpec == null)
         {
-            label = goodLabelAndLoc.string;
-            location = goodLabelAndLoc.location;
-            try
-            {
-                region = DocumentHelper.locationToRegion(document, goodLabelAndLoc.location);
-            } catch (BadLocationException e)
-            {
-                System.out.println("Bad location");
-                // If there's an exception, we just won't get
-                // a visible hyperlink.
-            }
-        } else
-        {
-            location = EditorUtil.getLocationAt(document, region.getOffset(), region.getLength());
+            return null;
         }
 
+        // Set region to the Region of the document described by currentTokenSpec
+        // (this ugly re-use of a parameter name is kept from Simon's original
+        // code), set label to the found symbol name, and set resolvedSymbol to
+        // the SymbolNode.
+        region = new Region(currentTokenSpec.leftPos, currentTokenSpec.rightPos - currentTokenSpec.leftPos);
+        String label = currentTokenSpec.token;
+        SymbolNode resolvedSymbol = currentTokenSpec.resolvedSymbol;
         try
         {
-            if (label == null)
-            {
-
-                if (region.getLength() == 0)
-                {
-                    region = DocumentHelper.getRegionExpandedBoth(document, region.getOffset(), DocumentHelper
-                            .getDefaultWordDetector());
-                }
-                label = document.get(region.getOffset(), region.getLength());
-            }
-            // System.out.println("Hyperlink request at position " + region.getOffset() + " for '" + label + "'");
-
-            // Context context = ToolboxHandle.getSpecObj().getExternalModuleTable().getRootModule().getContext();
-            // SymbolNode resolvedSymbol = context.getSymbol(UniqueString.uniqueStringOf(label));
-
-            // Find the module editor and, if it exists, set moduleNode to
-            // the ModuleNode of the module it is editing. If that's not null,
-            // look up the label at its location in that module.
-            TLAEditor editor = EditorUtil.getTLAEditorWithFocus();
-            if (editor == null)
-            {
-                return null;
-            }
-            String moduleName = editor.getModuleName();
-            ModuleNode moduleNode = ResourceHelper.getModuleNode(moduleName);
-            if (moduleNode == null)
-            {
-                return null;
-            }
-            SymbolNode resolvedSymbol = EditorUtil.lookupOriginalSymbol(UniqueString.uniqueStringOf(label), moduleNode,
-                    location, null);
-
-            // If it didn't find the symbol, check if this is a module name and, if so, set
-            // resolvedSymbol to the module node.
-            if (resolvedSymbol == null && label != null)
+            // If it didn't find the symbol, check if this is a module name and, if
+            // so, set resolvedSymbol to the module node.
+            if (resolvedSymbol == null /* && label != null */)
             {
                 resolvedSymbol = ResourceHelper.getModuleNode(label);
             }
@@ -199,7 +122,9 @@ public class TLAHyperlinkDetector extends AbstractHyperlinkDetector
                 // If this symbol was imported by instantiation from
                 // another module, we set resolvedSymbol to its
                 // definition in that module.
-
+                // LL Sep 2010: The comment above doesn't make sense since we're
+                // not setting resolvedSymbol. I suppose the code was changed
+                // at some point without changing the comment.
                 SyntaxTreeNode csNode = (SyntaxTreeNode) resolvedSymbol.getTreeNode();
 
                 // If this is a module, we want csNode to be the SyntaxTreeNode of just the name.
@@ -289,10 +214,6 @@ public class TLAHyperlinkDetector extends AbstractHyperlinkDetector
                     e.printStackTrace();
                 }
             }
-        } catch (BadLocationException e)
-        {
-            e.printStackTrace();
-            // error reading the target
         } catch (CoreException e)
         {
             // TODO Auto-generated catch block
