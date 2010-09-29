@@ -54,10 +54,13 @@ import tla2sany.modanalyzer.SpecObj;
 import tla2sany.parser.SyntaxTreeNode;
 import tla2sany.semantic.DefStepNode;
 import tla2sany.semantic.InstanceNode;
+import tla2sany.semantic.LeafProofNode;
 import tla2sany.semantic.LevelNode;
 import tla2sany.semantic.ModuleNode;
+import tla2sany.semantic.NewSymbNode;
 import tla2sany.semantic.NonLeafProofNode;
 import tla2sany.semantic.OpApplNode;
+import tla2sany.semantic.OpArgNode;
 import tla2sany.semantic.ProofNode;
 import tla2sany.semantic.SemanticNode;
 import tla2sany.semantic.SymbolNode;
@@ -1312,7 +1315,7 @@ public class ResourceHelper
      * @param module
      * @return
      */
-    public static OpApplNode[] getUsesOfSymbol(SymbolNode symbol, ModuleNode module)
+    public static SemanticNode[] getUsesOfSymbol(SymbolNode symbol, ModuleNode module)
     {
         Vector found = new Vector(20); // For some reason, Eclipse doesn't let me use a List here.
         // If I write
@@ -1320,10 +1323,10 @@ public class ResourceHelper
         // Eclipse mysteriously complains that it can't find the second "List".
         // System.out.println("OUTER CALL AT MODULE " + module.getName());
         innerGetUsesOfSymbol(symbol, module, found);
-        OpApplNode[] value = new OpApplNode[found.size()];
+        SemanticNode[] value = new SemanticNode[found.size()];
         for (int i = 0; i < value.length; i++)
         {
-            value[i] = (OpApplNode) found.elementAt(i);
+            value[i] = (SemanticNode) found.elementAt(i);
         }
         return value;
     }
@@ -1345,13 +1348,69 @@ public class ResourceHelper
      */
     private static void innerGetUsesOfSymbol(SymbolNode symbol, SemanticNode node, Vector found)
     {
+        SymbolNode[] defs = null;
+        
         if ((node instanceof OpApplNode) && ((((OpApplNode) node).getOperator() == symbol) ||
         // following disjunct added 14 Sep 2010 by LL 
                 ((OpApplNode) node).subExpressionOf == symbol))
 
         {
             found.add(node);
+        } else if ((node instanceof OpArgNode) && ((((OpArgNode) node).getOp() == symbol))){
+            // This else clause added byy LL on 29 Sep 2010
+            found.add(node);
+        } else 
+        // We now check if this is a BY proof or a USE or HIDE step, in which case
+        // we need set defs to the node's def clause so if there's a DEF clause, we
+        // can check it for an occurrence of the symbol.
+            if (node instanceof LeafProofNode){
+            // This else clause added by LL on 29 Sep 2010
+            defs = ((LeafProofNode) node).getDefs();
+        } else if (node instanceof UseOrHideNode){
+            // This else clause added by LL on 29 Sep 2010
+            defs = ((UseOrHideNode) node).defs;
+        }  
+        
+        // There is a defs clause, so let's check it.
+        if (defs != null) {
+          // set defIdx to the index of the "DEF" in the
+          // node's syntax tree.
+          UniqueString defStr = UniqueString.uniqueStringOf("DEF");
+          int defIdx = -1;
+          SyntaxTreeNode stn = ((SyntaxTreeNode) node.stn);
+          for (int i = 0; i < stn.getHeirs().length; i++) {
+              SyntaxTreeNode nd = stn.getHeirs()[i];
+              if (nd.image == defStr) {
+                  defIdx = i;
+                  break;
+              }
+          }
+          // There should de a "DEF" token if defs != null, but
+          // it doesn't hurt to check.
+          if (defIdx != -1) {
+              // For every instance of the symbol that we find,
+              // we add to found a dummy SemanticNode whose location
+              // is the location field of the corresponding syntax-tree
+              // node.
+              for (int i = 0; i < defs.length; i++) {
+                  if (defs[i] == symbol) {
+                      // Because of the commas separating items, the i-th DEF
+                      // item (in Java counting) should be 2*i + 1 position to
+                      // the right of the "DEF"
+                      if (defIdx + 2*i + 1 < stn.getHeirs().length) {
+                          // NewSymbNode is the simplest SemanticNode that has a public
+                          // constructor, so we use one as our dummy SemanticNode.
+                         found.add(new NewSymbNode(null, null, stn.getHeirs()[defIdx + 2*i + 1]));
+                      } else {
+                          // If we get here, it means that there's no syntax
+                          // tree node corresponding to defs[i].
+                          System.out.println("Bug at ResourceHelper line 1399");
+                      }
+                  }
+              }
+          }
         }
+            
         SemanticNode[] children = node.getChildren();
         if (children == null)
         {

@@ -14,12 +14,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.PopupDialog;
-import org.eclipse.jface.text.BadLocationException;
-import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
-import org.eclipse.jface.text.ITextSelection;
-import org.eclipse.jface.text.Region;
-import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
@@ -29,18 +24,11 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.handlers.HandlerUtil;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.editor.basic.TLAEditor;
-import org.lamport.tla.toolbox.editor.basic.TLAEditorAndPDFViewer;
 import org.lamport.tla.toolbox.editor.basic.tla.TokenSpec;
-import org.lamport.tla.toolbox.editor.basic.util.DocumentHelper;
 import org.lamport.tla.toolbox.editor.basic.util.EditorUtil;
-import org.lamport.tla.toolbox.editor.basic.util.EditorUtil.StringAndLocation;
 import org.lamport.tla.toolbox.spec.Spec;
-import org.lamport.tla.toolbox.spec.parser.IParseResultListener;
-import org.lamport.tla.toolbox.spec.parser.ParseResult;
-import org.lamport.tla.toolbox.spec.parser.ParseResultBroadcaster;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.util.AdapterFactory;
 import org.lamport.tla.toolbox.util.ResourceHelper;
@@ -49,10 +37,10 @@ import org.lamport.tla.toolbox.util.UIHelper;
 import tla2sany.parser.SyntaxTreeNode;
 import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.OpApplNode;
+import tla2sany.semantic.SemanticNode;
 import tla2sany.semantic.SymbolNode;
 import tla2sany.st.Location;
 import tla2sany.st.SyntaxTreeConstants;
-import util.UniqueString;
 
 /**
  * 
@@ -119,7 +107,7 @@ public class ShowUsesHandler extends AbstractHandler implements IHandler, Syntax
          * showUses[i] is an array of all uses in module moduleList[i].
          */
         String[] moduleList;
-        OpApplNode[][] showUses;
+        SemanticNode[][] showUses;
 
         List list; // The org.eclipse.swt.widgets.List (not ordinary Java List) being displayed.
         boolean showAll = true; // True iff displaying definitions imported by instantiation.
@@ -132,7 +120,7 @@ public class ShowUsesHandler extends AbstractHandler implements IHandler, Syntax
         TLAEditor editor;
         ModuleNode module;
 
-        public ShowUsesPopupDialog(Shell parent, String[] moduleList, OpApplNode[][] showUses)
+        public ShowUsesPopupDialog(Shell parent, String[] moduleList, SemanticNode[][] usesArray)
         {
             super(parent, SWT.NO_TRIM, true, // takeFocusOnOpen
                     false, // persistSize
@@ -143,7 +131,7 @@ public class ShowUsesHandler extends AbstractHandler implements IHandler, Syntax
                     "Click or choose by typing prefix or arrow keys and enter."); // infoText
             this.parent = parent;
             this.moduleList = moduleList;
-            this.showUses = showUses;
+            this.showUses = usesArray;
             this.editor = EditorUtil.getTLAEditorWithFocus();
             if (this.editor != null)
             {
@@ -204,13 +192,13 @@ public class ShowUsesHandler extends AbstractHandler implements IHandler, Syntax
     public static class ShowUsesSelectionListener implements SelectionListener
     {
         // Copies of the arrays from ShowUsesHandler
-        OpApplNode[][] showUses;
+        SemanticNode[][] showUses;
         String[] moduleNames;
 
-        public ShowUsesSelectionListener(OpApplNode[][] showUses, String[] moduleNames) // TLAEditor editor)
+        public ShowUsesSelectionListener(SemanticNode[][] showUses2, String[] moduleNames) // TLAEditor editor)
         {
             super();
-            this.showUses = showUses;
+            this.showUses = showUses2;
             this.moduleNames = moduleNames;
         }
 
@@ -392,7 +380,7 @@ public class ShowUsesHandler extends AbstractHandler implements IHandler, Syntax
         {
             return null;
         }
-       
+
         // We now get the SymbolNode that is the definition or declaration
         // of the symbol at which the TLA Editor's cursor is.
         TokenSpec currentTokenSpec = TokenSpec.findCurrentTokenSpec();
@@ -412,7 +400,7 @@ public class ShowUsesHandler extends AbstractHandler implements IHandler, Syntax
         // to the number of values of i for which usesArray[i] is neither null
         // nor a zero-length array.
         int numberOfModulesUsedIn = 0;
-        OpApplNode[][] tempUsesArray = new OpApplNode[tempModuleNames.length][];
+        SemanticNode[][] tempUsesArray = new SemanticNode[tempModuleNames.length][];
         for (int i = 0; i < tempModuleNames.length; i++)
         {
             tempUsesArray[i] = ResourceHelper.getUsesOfSymbol(resolvedSymbol, ResourceHelper
@@ -434,7 +422,7 @@ public class ShowUsesHandler extends AbstractHandler implements IHandler, Syntax
         // Set usesArray and moduleNames to the subarrays of of tempUsesArray and
         // tempModuleNames for which there are instances of the symbols, with the
         // currently selected module's name put first if it is one of them.
-        OpApplNode[][] usesArray = new OpApplNode[numberOfModulesUsedIn][];
+        SemanticNode[][] usesArray = new SemanticNode[numberOfModulesUsedIn][];
         String[] moduleNames = new String[numberOfModulesUsedIn];
         int j = 0;
         for (int i = 0; i < tempModuleNames.length; i++)
@@ -457,7 +445,7 @@ public class ShowUsesHandler extends AbstractHandler implements IHandler, Syntax
         }
         if (j > 0)
         {
-            OpApplNode[] savedUses = usesArray[j];
+            SemanticNode[] savedUses = usesArray[j];
             for (int i = j - 1; i > -1; i--)
             {
                 usesArray[i + 1] = usesArray[i];
@@ -505,7 +493,7 @@ public class ShowUsesHandler extends AbstractHandler implements IHandler, Syntax
             // x : the node is an N_GeneralID node whose location is good
             // ...^+ : the node is an N_PostfixExpr node whose second heir
             // is an N_GeneralPostfixOp whose location is good
-            OpApplNode[] uses = usesArray[moduleIndex];
+            SemanticNode[] uses = usesArray[moduleIndex];
             setUseMarkers(uses, moduleName, spec);
         }
         // Location[] locations = new Location[uses.length];
@@ -575,7 +563,7 @@ public class ShowUsesHandler extends AbstractHandler implements IHandler, Syntax
 
         return null;
     }
-    
+
     /**
      * TODO: This method has the following minor bug.  When Foo is defined in module
      * M, which is instantiated by  I == INSTANCE M, then when one of the OpApplNodes
@@ -587,7 +575,7 @@ public class ShowUsesHandler extends AbstractHandler implements IHandler, Syntax
      * @param moduleName
      * @param spec
      */
-    private static void setUseMarkers(OpApplNode[] uses, String moduleName, Spec spec)
+    private static void setUseMarkers(SemanticNode[] uses, String moduleName, Spec spec)
     {
         Location[] locations = new Location[uses.length];
         for (int i = 0; i < locations.length; i++)
@@ -609,20 +597,24 @@ public class ShowUsesHandler extends AbstractHandler implements IHandler, Syntax
                 // For a use of Foo in a subexpression name like Foo!..., the
                 // OpApplNode uses[i] will have as its subExpressionOf field
                 // non-null and a SyntaxTreeNode representing a tree whose
-                // left-most leaf SyntaxTreeNode is a syntactic element 
-                // representing "Foo".  We recognize this SyntaxTreeNode because
+                // left-most leaf SyntaxTreeNode is a syntactic element
+                // representing "Foo". We recognize this SyntaxTreeNode because
                 // if has a kind representing a syntactic element, which means
-                // a kind less than NULL_ID. 
+                // a kind less than NULL_ID.
                 // Following code modified by LL on 17 Sep 2010 by adding second
-                // conjunct of `if' test.  It appears that, if an OpApplNode represents
+                // conjunct of `if' test. It appears that, if an OpApplNode represents
                 // the application of a defined operator, and not a subexpression name,
                 // then its subExpression field equals (==) its operator field, rather
                 // than being null.
-                if (uses[i].subExpressionOf != null && uses[i].subExpressionOf != uses[i].getOperator())
+                if (uses[i] instanceof OpApplNode)
                 {
-                    while (stn.getKind() > NULL_ID && stn.heirs() != null && stn.heirs().length > 0)
+                    OpApplNode oan = (OpApplNode) uses[i];
+                    if (oan.subExpressionOf != null && oan.subExpressionOf != oan.getOperator())
                     {
-                        stn = (SyntaxTreeNode) stn.heirs()[0];
+                        while (stn.getKind() > NULL_ID && stn.heirs() != null && stn.heirs().length > 0)
+                        {
+                            stn = (SyntaxTreeNode) stn.heirs()[0];
+                        }
                     }
                 }
                 break;
