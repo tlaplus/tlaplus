@@ -395,7 +395,7 @@ public class ShowUsesHandler extends AbstractHandler implements IHandler, Syntax
         // Set tempModuleNames to the sorted array of all user module names.
         String[] tempModuleNames = ResourceHelper.getModuleNames();
 
-        // Set tempUsesArray[i] to the array of OpAplNode[] nodes at are uses of
+        // Set tempUsesArray[i] to the array of SemanticNode[] nodes that are uses of
         // resolvedSymbol in module moduleNames[i], and sets numberOfModulesUsedIn
         // to the number of values of i for which usesArray[i] is neither null
         // nor a zero-length array.

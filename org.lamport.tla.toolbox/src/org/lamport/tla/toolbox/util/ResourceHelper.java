@@ -61,12 +61,15 @@ import tla2sany.semantic.NewSymbNode;
 import tla2sany.semantic.NonLeafProofNode;
 import tla2sany.semantic.OpApplNode;
 import tla2sany.semantic.OpArgNode;
+import tla2sany.semantic.OpDefNode;
 import tla2sany.semantic.ProofNode;
 import tla2sany.semantic.SemanticNode;
 import tla2sany.semantic.SymbolNode;
 import tla2sany.semantic.TheoremNode;
+import tla2sany.semantic.ThmOrAssumpDefNode;
 import tla2sany.semantic.UseOrHideNode;
 import tla2sany.st.Location;
+import tla2sany.st.SyntaxTreeConstants;
 import util.UniqueString;
 
 /**
@@ -1274,7 +1277,8 @@ public class ResourceHelper
             // I have no idea what's causing it to be null, but there seems
             // to be no point having it throw the exception, which might
             // conceivably be causing problems.
-            if (subFiles == null) {
+            if (subFiles == null)
+            {
                 return 0;
             }
             size += dir.length();
@@ -1331,6 +1335,30 @@ public class ResourceHelper
         return value;
     }
 
+    /** 
+     * Returns true iff either node = symbol or node is an OpDefNode or ThmOrAssumpDefNode whose
+     * source equals symbol. 
+     * @param node
+     * @param symbol
+     * @return
+     */
+    private static boolean sourceEquals(SemanticNode node, SymbolNode symbol)
+    {
+        if (node == symbol)
+        {
+            return true;
+        }
+        if (((node instanceof OpDefNode) && ((OpDefNode) node).getSource() == symbol))
+        {
+            return true;
+        }
+        if ((node instanceof ThmOrAssumpDefNode) && ((ThmOrAssumpDefNode) node).getSource() == symbol)
+        {
+            return true;
+        }
+        return false;
+    }
+
     /**
      * The inner recursive method used by get UsesOfSymbol.  It appends all the appropriate
      * OpApplNodes  to <code>found</code>.
@@ -1349,68 +1377,108 @@ public class ResourceHelper
     private static void innerGetUsesOfSymbol(SymbolNode symbol, SemanticNode node, Vector found)
     {
         SymbolNode[] defs = null;
-        
-        if ((node instanceof OpApplNode) && ((((OpApplNode) node).getOperator() == symbol) ||
-        // following disjunct added 14 Sep 2010 by LL 
-                ((OpApplNode) node).subExpressionOf == symbol))
 
-        {
+        // We have to detect the following instances in which we get a use directly from
+        // this node. There are three basic cases:
+        // 1. This is an OpApplNode and the operator is a use. There are three subcases:
+        // (a) The operator equals symbol
+        // (b) The operator is an OpDefNode that represents a subexpression of the
+        // the definition of symbol.
+        // (c) The operator is either an OpDefNode or a ThmOrAssumpDefNode whose
+        // source (in another module) is symbol.
+        // 2. This is an OpArgNode whose operator either
+        // (a) equals symbol, or
+        // (b) is an OpDefNode whose source (in another module) is symbol
+        // 3. This is a LeafProofNode or UseOrHideNode and one of the DEF entries either
+        // (a) equals symbol, or
+        // (b) is an OpDefNode or a ThmOrAssumpDefNode whose
+        // source (in another module) is symbol
+        if (node instanceof OpApplNode)
+        { // check for case 1
+            OpApplNode oan = (OpApplNode) node;
+            if (sourceEquals(oan.getOperator(), symbol)
+                    || ((oan.subExpressionOf != null) && sourceEquals(oan.subExpressionOf, symbol)))
+            {
+                found.add(node);
+            }
+        } else if ((node instanceof OpArgNode) && sourceEquals(((OpArgNode) node).getOp(), symbol))
+        { // Case 2
             found.add(node);
-        } else if ((node instanceof OpArgNode) && ((((OpArgNode) node).getOp() == symbol))){
-            // This else clause added byy LL on 29 Sep 2010
-            found.add(node);
-        } else 
-        // We now check if this is a BY proof or a USE or HIDE step, in which case
-        // we need set defs to the node's def clause so if there's a DEF clause, we
-        // can check it for an occurrence of the symbol.
-            if (node instanceof LeafProofNode){
-            // This else clause added by LL on 29 Sep 2010
-            defs = ((LeafProofNode) node).getDefs();
-        } else if (node instanceof UseOrHideNode){
-            // This else clause added by LL on 29 Sep 2010
-            defs = ((UseOrHideNode) node).defs;
-        }  
-        
-        // There is a defs clause, so let's check it.
-        if (defs != null) {
-          // set defIdx to the index of the "DEF" in the
-          // node's syntax tree.
-          UniqueString defStr = UniqueString.uniqueStringOf("DEF");
-          int defIdx = -1;
-          SyntaxTreeNode stn = ((SyntaxTreeNode) node.stn);
-          for (int i = 0; i < stn.getHeirs().length; i++) {
-              SyntaxTreeNode nd = stn.getHeirs()[i];
-              if (nd.image == defStr) {
-                  defIdx = i;
-                  break;
-              }
-          }
-          // There should de a "DEF" token if defs != null, but
-          // it doesn't hurt to check.
-          if (defIdx != -1) {
-              // For every instance of the symbol that we find,
-              // we add to found a dummy SemanticNode whose location
-              // is the location field of the corresponding syntax-tree
-              // node.
-              for (int i = 0; i < defs.length; i++) {
-                  if (defs[i] == symbol) {
-                      // Because of the commas separating items, the i-th DEF
-                      // item (in Java counting) should be 2*i + 1 position to
-                      // the right of the "DEF"
-                      if (defIdx + 2*i + 1 < stn.getHeirs().length) {
-                          // NewSymbNode is the simplest SemanticNode that has a public
-                          // constructor, so we use one as our dummy SemanticNode.
-                         found.add(new NewSymbNode(null, null, stn.getHeirs()[defIdx + 2*i + 1]));
-                      } else {
-                          // If we get here, it means that there's no syntax
-                          // tree node corresponding to defs[i].
-                          System.out.println("Bug at ResourceHelper line 1399");
-                      }
-                  }
-              }
-          }
+        } else
+        { // Check for case 3
+            if (node instanceof LeafProofNode)
+            {
+                defs = ((LeafProofNode) node).getDefs();
+            } else if (node instanceof UseOrHideNode)
+            {
+                defs = ((UseOrHideNode) node).defs;
+            }
+
+            // If defs is non-null, there is a defs clause to be checked.
+            if (defs != null)
+            {
+                // Set stn to the syntax tree of the actual BY, USE or HIDE.
+                // I believe that's equal to node.sty except for a USE or HIDE
+                // HIDE that's a proof step, in which case it seems to be
+                // stn.getHeirs()[1]. Set defIdx to the index of the "DEF" in the
+                // node's syntax tree.
+                UniqueString defStr = UniqueString.uniqueStringOf("DEF");
+                int defIdx = -1;
+                SyntaxTreeNode stn = ((SyntaxTreeNode) node.stn);
+                if (stn.getKind() == SyntaxTreeConstants.N_ProofStep)
+                {
+                    if (stn.getHeirs().length > 1)
+                    {
+                        stn = stn.getHeirs()[1];
+                    } else
+                    {
+                        System.out.println("Bug in ResourceHelper line 1435");
+                    }
+                }
+                for (int i = 0; i < stn.getHeirs().length; i++)
+                {
+                    SyntaxTreeNode nd = stn.getHeirs()[i];
+                    if (nd.image == defStr)
+                    {
+                        defIdx = i;
+                        break;
+                    }
+                }
+                // There should be a "DEF" token if defs != null, but
+                // it doesn't hurt to check.
+                if (defIdx != -1)
+                {
+                    // For every instance of the symbol that we find,
+                    // we add to found a dummy SemanticNode whose location
+                    // is the location field of the corresponding syntax-tree
+                    // node.
+                    for (int i = 0; i < defs.length; i++)
+                    {
+                        if (sourceEquals(defs[i], symbol))
+                        {
+                            // Because of the commas separating items, the i-th DEF
+                            // item (in Java counting) should be 2*i + 1 position to
+                            // the right of the "DEF"
+                            if (defIdx + 2 * i + 1 < stn.getHeirs().length)
+                            {
+                                // NewSymbNode is the simplest SemanticNode that has a public
+                                // constructor, so we use one as our dummy SemanticNode.
+                                found.add(new NewSymbNode(null, null, stn.getHeirs()[defIdx + 2 * i + 1]));
+                            } else
+                            {
+                                // If we get here, it means that there's no syntax
+                                // tree node corresponding to defs[i].
+                                System.out.println("Bug at ResourceHelper line 1471");
+                            }
+                        }
+                    }
+                } else
+                {
+                    System.out.println("Bug at ResourceHelper line 1477");
+                }
+            }
         }
-            
+
         SemanticNode[] children = node.getChildren();
         if (children == null)
         {
