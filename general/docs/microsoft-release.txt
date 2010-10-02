@@ -32,6 +32,9 @@ In org.lamport.tla.toolbox.product.standalone.product
  Hitting Finish then puts the zip files into:
      c:\users\lamport\tla\toolbox-release
 
+TO PREPARE THE STAND-ALONE TLA RELEASE
+  Run the Ant default-release option.  This will put the release in
+     C:\lamport\tla\newtools\tla2-inria\tlatools\dist\tla.zip
 
 TO GENERATE THE RELEASE:
   Go to  Code Posting Tool - My Requests
