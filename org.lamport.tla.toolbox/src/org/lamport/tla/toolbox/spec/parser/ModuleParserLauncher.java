@@ -345,7 +345,8 @@ public class ModuleParserLauncher
         // userModules = null;
 
         // broadcast new parse result
-        ParseResult parseResult = new ParseResult(specStatus, moduleSpec, parseResource, parseErrors, semanticErrors, parserCallTime);
+        ParseResult parseResult = new ParseResult(specStatus, moduleSpec, parseResource, parseErrors, semanticErrors,
+                parserCallTime);
         ParseResultBroadcaster.getParseResultBroadcaster().broadcastParseResult(parseResult);
 
         return parseResult;/*new ParseResult(specStatus, moduleSpec, parseResource, parseErrors, semanticErrors);*/
@@ -682,6 +683,22 @@ public class ModuleParserLauncher
      * number it doesn't find, and may leave val[3] off the end of the array. It works (but of course finds nothing if
      * idx >= str.length(). This is a kludge that assumes that the line number is preceded either by " line " or by
      * "line " that begins the error message, and that the column number is preceded by either " column " or " col ".
+     * 
+     * Bug found on 17 Oct 2010:  On some errors, SANY returns an error message with location
+     * 
+     *    line 2147483647, col 2147483647 to line -2147483648, col -2147483648
+     *    
+     * One such error is caused by
+     * 
+     *    BY DEF Foo.x'
+     *    
+     * in a proof.  Such a line or column number produces a java.lang.NumberFormatException
+     * when Integer.parseInt is called to parse it.  Perhaps this should be fixed in SANY.  
+     * However, even if that were to be fixed, it seems like a good idea to catch the 
+     * exception here in case there are other cases in which SANY produces a malformed
+     * location.  So this was done by LL on 17 Oct 2010.  The fix is to return values
+     * of -1 when an exception is thrown, hoping that the comment is accurate and the
+     * return value of -1 is expected by the caller.
      */
     private static final int[] findLineAndColumn(final int idx, final String message)
     {
@@ -726,7 +743,13 @@ public class ModuleParserLauncher
                  * for the column number. 
                  *
                  *******************************************************************/
-                val[0] = Integer.parseInt(message.substring(beginIndex, endIndex));
+                try
+                {
+                    val[0] = Integer.parseInt(message.substring(beginIndex, endIndex));
+                } catch (Exception e)
+                {
+                    val[0] = -1;
+                }
                 beginIndex = message.indexOf(" column ", endIndex);
                 int colOffset = 0; // to keep compiler happy.
                 if (beginIndex != -1)
@@ -762,7 +785,13 @@ public class ModuleParserLauncher
                         /***************************************************************
                          * Valid values of beginIndex and endIndex, so set val[1] and val[2].
                          ***************************************************************/
-                        val[1] = Integer.parseInt(message.substring(beginIndex, endIndex));
+                        try
+                        {
+                            val[1] = Integer.parseInt(message.substring(beginIndex, endIndex));
+                        } catch (Exception e)
+                        {
+                            val[1] = -1;
+                        }
                         val[2] = endIndex;
                     } // if (beginIndex < str.length())
                 } // if (beginIndex != -1)
