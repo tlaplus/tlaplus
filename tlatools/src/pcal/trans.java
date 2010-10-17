@@ -39,15 +39,15 @@ import util.ToolIO;
 *   Version 1.3: (February 2008)                                           *
 *                Added "await" as a synonym for "when"                     *
 *                                                                          *
-*   Version 1.31: (December 2009)                                          *
-*                Added .pcal file, and -lineWidth option.                  *
+*   Version 1.4: (June 2010)                                               *
+*                Added the options statement and the -lineWidth option.    *
 * -----------------------------------------------------------------        *
 *                                                                          *
 * This is the main method of the +CAL to TLA+ translation program.         *
 * the program has the following command-line options. Only the ones        *
-     * marked with ** besides them can be specified in the .pcal file's    *
-     * options statement.  The "-" can be omitted when the option is in    *
-     * the .pcal file's options statement.                                 *
+* marked with ** besides them can be specified in the file's               *
+* options statement.  The "-" can be omitted when the option is in         *
+* the options statement.                                                   *
 *                                                                          *
 *   -help  : Type a help file instead of running the program.              *
 *                                                                          *
