@@ -32,13 +32,18 @@ PlusCal Algorithm Language</a>.
     instead produce parsing errors in the TLA<sup>+</sup> module.&nbsp;  Those are displayed as ordinary TLA<sup>+</sup> parsing errors.
  </p>
  
- <p>Currently, the only way to control the translator options is to state explicitly
- the options with which the translator is called.&nbsp;  This is done by opening the&nbsp;
+ <p>The current version of Pluscal allows you to specify most translator options in an
+ <samp>options</samp> statement within the module's <code>.tla</code> file.&nbsp;
+ 
+ You can also set translator options by opening the&nbsp;
  <samp>Spec Explorer</samp>&nbsp; view (see the 
  <a href="../spec/opening-closing.html"><em>Manipulating Specs</em></a>  help page), right-clicking on the spec,
  choosing&nbsp; <samp>Properties</samp>, and entering the desired options in
- the&nbsp; <samp>PlusCal call arguments</samp>&nbsp; field.&nbsp;  For example, to specify
- weak fairness, you would enter&nbsp; <code>-wf</code>&nbsp;.
+ the&nbsp; <samp>PlusCal call arguments</samp>&nbsp; field.&nbsp;  
+ 
+ This is the only way to specify translator options that cannot be put in
+ the <samp>options</samp> statement.&nbsp;  (However, you are unlikely to want
+ to use those options.)
  </p>
  <!--  
  <p>

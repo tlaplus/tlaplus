@@ -21,6 +21,7 @@ Contents
      <a href="#colors">Logical Colors and Color Predicates</a>
      <a href="#interesting">Interesting Obligations</a>
      <a href="#updating">Updating Proof Statuses</a>
+  <a href="#errors">Finding Errors</a>
   <a href="#advanced-topics">Advanced Topics</a>
      <a href="#advanced">Advanced Execution Preferences</a>
      <a href="#launch">The Launch Prover Command</a>
@@ -349,6 +350,24 @@ command was issued.&nbsp;
 
 </p>
 
+<h2><a name="errors">Finding Errors</a></h2>
+<p>
+There are some errors in a proof that are detected by the PM before sending a proof, or a proof obligation,
+to the back-end provers.&nbsp;
+
+These can be actual mistakes in the proof--for example, using a <code>TAKE</code> step when the
+current goal is not a universally quantified formula.&nbsp;  
+
+They can also be TLA+ features not supported by TLAPS, such as quantification over tuples, as in 
+&nbsp;<code> \A &lt;&lt;x, y, z&gt;&gt; \in S : ...</x></code>&nbsp;.
+</p>
+
+<p>
+Currently, the Toolbox does not always properly report errors found by the PM.&nbsp;
+
+When you encounter a problem whose cause you can't figure out, try looking at the <em>TLAPS Console Log</em>,
+which can be displayed from the <em>TLA Proof Manager</em> menu.
+</p>
 
 <h2><a name="advanced-topics">Advanced Topics</a></h2>
 <h3><a name="advanced">Advanced Execution Preferences</a></h3>
@@ -361,7 +380,7 @@ options.
 <dd>
 The PM normally uses as many processors (cores) as your computer possesses.&nbsp;
 
-You may want to tell it to use fewere processors, which you can do by
+You may want to tell it to use fewer processors, which you can do by
 setting this field appropriately.
 </dd>
 <br></br>
