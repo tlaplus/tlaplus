@@ -133,7 +133,7 @@ THEOREM RuleINV1 == ASSUME STATE I, STATE F,  ACTION N,
                     PROVE  I /\ [][N]_F => []I
 
 THEOREM RuleINV2 == ASSUME STATE I, STATE f, ACTION N
-                   PROVE  []I => ([][N]_f <=> [][N /\ I /\ I']_f)
+                    PROVE  []I => ([][N]_f <=> [][N /\ I /\ I']_f)
 
 THEOREM RuleWF1 == ASSUME STATE P, STATE Q, STATE f, ACTION N, ACTION A,
                           P /\ [N]_f => (P' \/ Q'),

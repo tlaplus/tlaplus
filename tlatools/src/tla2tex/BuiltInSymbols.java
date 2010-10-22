@@ -167,7 +167,10 @@ public final class BuiltInSymbols
         add("TEMPORAL",   "{\\TEMPORAL}",    Symbol.KEYWORD, 0);
         add("ONLY",       "{\\ONLY}",        Symbol.KEYWORD, 0);  // added by LL on 2 Oct 2009
         add("OMITTED",    "{\\OMITTED}",     Symbol.KEYWORD, 0);  // added by LL on 31 Oct 2009
-
+        add("ONLY",       "{\\ONLY}",        Symbol.KEYWORD, 0);  // added by LL on 2 Oct 2009
+        add("LEMMA",      "{\\LEMMA}",       Symbol.KEYWORD, 0);  // added by LL on 22 Oct 2010
+        add("PROPOSITION", "{\\PROPOSITION}", Symbol.KEYWORD, 0);  // added by LL on 22 Oct 2010
+        add("COROLLARY",  "{\\COROLLARY}",   Symbol.KEYWORD, 0);  // added by LL on 22 Oct 2010
         add("WF_", "{\\WF}",        Symbol.SUBSCRIPTED, 0);
         add("SF_", "{\\SF}",        Symbol.SUBSCRIPTED, 0);
         add(">>_", "{\\rangle}",    Symbol.SUBSCRIPTED, 0);
