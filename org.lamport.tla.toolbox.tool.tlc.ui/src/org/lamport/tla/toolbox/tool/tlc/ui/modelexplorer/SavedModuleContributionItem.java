@@ -20,14 +20,12 @@ import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 /**
- * This class is used to populate a menu
- * with items that represent the versions
- * of modules saved in a run of TLC. Selecting
- * an item opens the module in a read-only
- * editor as a page in the model editor.
+ * This class is used to populate a menu with items that represent the versions
+ * of modules saved in a run of TLC. Selecting an item opens the module in a
+ * read-only editor as a page in the model editor.
  * 
  * @author Daniel Ricketts
- *
+ * 
  */
 public class SavedModuleContributionItem extends CompoundContributionItem
 {
@@ -46,12 +44,12 @@ public class SavedModuleContributionItem extends CompoundContributionItem
     protected IContributionItem[] getContributionItems()
     {
         /*
-         * Does nothing if the active editor is not a model
-         * editor. The following code gets the config
-         * file for the active model editor (if it is the active editor),
-         * gets the model folder for that config, iterates through all members
-         * of the model folder, adding a contribution item for each member
-         * that has extension .tla and is not TE.tla or MC.tla.
+         * Does nothing if the active editor is not a model editor. The
+         * following code gets the config file for the active model editor (if
+         * it is the active editor), gets the model folder for that config,
+         * iterates through all members of the model folder, adding a
+         * contribution item for each member that has extension .tla and is not
+         * TE.tla or MC.tla.
          */
         IEditorPart editor = UIHelper.getActivePage().getActiveEditor();
         if (editor instanceof ModelEditor)
@@ -63,9 +61,9 @@ public class SavedModuleContributionItem extends CompoundContributionItem
                 try
                 {
                     /*
-                     * The collection of command contribution items that
-                     * will populate the menu and contain the command
-                     * to be run when selected.
+                     * The collection of command contribution items that will
+                     * populate the menu and contain the command to be run when
+                     * selected.
                      */
                     ArrayList contributions = new ArrayList();
 
@@ -74,11 +72,15 @@ public class SavedModuleContributionItem extends CompoundContributionItem
                     for (int i = 0; i < members.length; i++)
                     {
                         /*
-                         * We add to the menu an option to open every file
-                         * that has exists, has extension .tla, and is
-                         * not the TE or MC file.
+                         * We add to the menu an option to open every file that
+                         * has exists, has extension .tla, and is not the TE or
+                         * MC file.
+                         * 
+                         * On Nov 2011, DR added a null check to members[i].getFileExtension() which
+                         * can return null for directories.
                          */
-                        if (members[i].exists() && members[i].getFileExtension().equals(ResourceHelper.TLA_EXTENSION)
+                        if (members[i].exists() && members[i].getFileExtension() != null
+                                && members[i].getFileExtension().equals(ResourceHelper.TLA_EXTENSION)
                                 && !members[i].getName().equals(ModelHelper.FILE_TLA)
                                 && !members[i].getName().equals(ModelHelper.TE_FILE_TLA))
                         {
