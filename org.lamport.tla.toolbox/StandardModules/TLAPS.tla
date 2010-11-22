@@ -162,7 +162,7 @@ THEOREM RuleWF2 == ASSUME STATE P, STATE f, STATE g, STATE EM,
                           P /\ P' /\ <<N /\ A>>_f /\ EM => B,
                           P /\ EM => ENABLED A,
                           [][N /\ ~B]_f /\ WF_f(A) /\ []F /\ <>[]EM => <>[]P
-                   PROVE  [][N]_f /\ WF_f(A) /\ []F => []<><<B>>_g \/ []<>(~EM)
+                   PROVE  [][N]_f /\ WF_f(A) /\ []F => []<><<M>>_g \/ []<>(~EM)
 
 THEOREM RuleSF2 == ASSUME STATE P, STATE f, STATE g, STATE EM,
                           ACTION A, ACTION B, ACTION N, ACTION M,
@@ -171,7 +171,7 @@ THEOREM RuleSF2 == ASSUME STATE P, STATE f, STATE g, STATE EM,
                           P /\ P' /\ <<N /\ A>>_f /\ EM => B,
                           P /\ EM => ENABLED A,
                           [][N /\ ~B]_f /\ SF_f(A) /\ []F /\ []<>EM => <>[]P
-                   PROVE  [][N]_f /\ SF_f(A) /\ []F => []<><<B>>_g \/ <>[](~EM)
+                   PROVE  [][N]_f /\ SF_f(A) /\ []F => []<><<M>>_g \/ <>[](~EM)
 
 
 (***************************************************************************)
