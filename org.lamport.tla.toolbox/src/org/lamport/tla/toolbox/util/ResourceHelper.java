@@ -100,8 +100,12 @@ public class ResourceHelper
      *   modificationHistory +
      *   (lastModified + date + modifiedBy +
      *      username + newline)*
+     *      
+     * Note: The StringHelper.newline string wasn't being found on my 64-bit
+     * Windows 7 machine.  So on 8 Dec 2010 I removed it from here, and added
+     * a "\n" before it when writing a new file.
      */
-    public static String modificationHistory = StringHelper.newline + "\\* Modification History";
+    public static String modificationHistory = /* StringHelper.newline + */ "\\* Modification History";
 
     public static String lastModified = StringHelper.newline + "\\* Last modified ";
 
@@ -596,7 +600,7 @@ public class ResourceHelper
         StringBuffer buffer = new StringBuffer();
         buffer.append(
                 StringHelper.copyString("=", Activator.getDefault().getPreferenceStore().getInt(
-                        EditorPreferencePage.EDITOR_RIGHT_MARGIN))).append(modificationHistory).append(
+                        EditorPreferencePage.EDITOR_RIGHT_MARGIN))).append("\n"+modificationHistory).append(
                 StringHelper.newline).append("\\* Created ").append(new Date()).append(" by ").append(
                 System.getProperty("user.name")).append(StringHelper.newline);
         return buffer;
@@ -609,7 +613,7 @@ public class ResourceHelper
     public static StringBuffer getConfigClosingTag()
     {
         StringBuffer buffer = new StringBuffer();
-        buffer.append("\\* Generated at ").append(new Date());
+        buffer.append("\\* Generated on ").append(new Date());
         return buffer;
     }
 
