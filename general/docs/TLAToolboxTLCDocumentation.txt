@@ -1,0 +1,248 @@
+Note: References to things like WB5 are to whiteboard photos that
+are in general/docs/screenshots.
+
+>>>>>>Some Toolbox-TLC Documentation<<<<<<<<
+ 
+This will provide an overview of the code that interfaces between the
+Toolbox and TLC. I will describe the launching of TLC, the parsing of
+its output, and briefly touch on the display of TLC's output
+to the user.  There also exists a series of pictures depicting the
+interface.  These pictures are whiteboard images drawn by Simon in the
+fall of 2009.  They currently reside in the repository in
+general/docs/screenshots.  The images that are relevant to TLC are WB5
+through WB10.
+ 
+>>The Model
+ 
+A TLC model is stored as an instance of ILaunchConfiguration, an
+Eclipse interface.  The launch configuration stores invariants, init
+and next predicates, definition overrides, etc.  Eclipse launch
+configurations provide a mechanism for storing this information as a
+map from keys to values.  In order to set an aspect of the model, the
+Toolbox calls ILaunchConfiguration.setAttribute(key,value).  The set
+of keys used for TLC models can be found in
+IModelConfigurationConstants.  For example, the Toolbox calls
+ILaunchConfiguration.setAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT, 
+   initFormula) in order to set the init predicate.
+ 
+In order to retrieve values stored in an ILaunchConfiguration, the
+Toolbox calls ILaunchConfiguration.getAttribute(key,defaultValue).
+ 
+>>Launching A Model
+ 
+A model stored as an ILaunchConfiguration can be run by calling
+ILaunchConfiguration.launch().  This executes some Eclipse code and
+then eventually calls Toolbox code.  The particular class whose code
+is eventually run is specified via several extension points.  We will
+start with the extension point
+org.eclipse.debug.core.launchConfigurationTypes.  This extension point
+associates an ILaunchConfiguration type with an
+ILaunchConfigurationDelegate.  When ILaunchConfiguration.launch() is
+called, Eclipse calls code from the ILaunchConfigurationDelegate
+associated with that type.  The relationship between launch
+configurations and launch delegates is depicted in WB5.
+ 
+Take a look in plugin.xml for org.lamport.tla.toolbox.tool.tlc.  In
+the launchConfigurationTypes extension point, we specify that the type
+org.lamport.tla.toolbox.tool.tlc.modelCheck is associated with the
+ILaunchConfigurationDelegate implemented by the class
+TLCModelLaunchDelegate.  This means that the ILaunchConfigurations
+representing TLC models are of type
+org.lamport.tla.toolbox.tool.tlc.modelCheck, and when such a launch
+configuration is launched, code from TLCModelLaunchDelegate is called
+by default.  I say that it is called by default, because it is
+possible for another delegate to be called.  I'll explain that
+in a second.
+ 
+First, let me explain launch modes.  An ILaunchConfiguration can be
+launched in different modes.  TLC models can be launched in a model
+for validating the model, launching TLC for model checking, or
+launching TLC for trace exploration.  Possible launch modes are
+specified in the extension point org.eclipse.debug.core.launchModes
+extension point.  Note that there are three launch modes specified for
+the three different functions I just listed.  When
+ILaunchConfiguration.launch() is called, it is called with the
+appropriate launch mode id string.  The launch mode is provided to the
+ILaunchConfigurationDelegate when its code is called.
+ 
+As I said before, TLCModelLaunchDelegate is called by default when a
+TLC launch configuration is launched.  However, it is possible to call
+a different delegate for specific launch modes.  In the Toolbox, this
+is done for trace exploration.  When a TLC launch configuration is
+launched in `exploreTrace' mode, code from
+TraceExplorerDelegate is called.  This is specified through the
+extension point org.eclipse.debug.core.launchDelegates.  Note that
+TraceExplorerDelegate is associated with the id for a TLC model and
+the mode `exploreTrace.'
+ 
+>>Launching TLC
+ 
+I'll now describe the sequence of code that is called when a
+TLC launch configuration is launched.  I'll focus on the
+default launch modes, not on trace exploration, though the process is
+fairly similar.  When a TLC launch configuration is launched in one of
+the default launch modes, `modelcheck' or
+`generate', code from TLCModelLaunchDelegate is
+called.  Up to five methods from this class are called in the
+following order:
+ 
+getLaunch()
+preLaunchCheck()
+buildForLaunch()
+finalLaunchCheck()
+launch()
+ 
+The methods getLaunch() simply calls the method in the superclass, and
+preLaunchCheck() sets some fields for later use.  The method
+buildForLaunch() prepares the files MC.tla, MC.cfg, and MC.out and
+copies all TLA modules into the same directory as those three files.
+The method finalLaunchCheck() runs SANY on MC.tla.  Any parsing errors
+are indicated using IMarkers placed on the ILaunchConfiguration.  I
+won't describe in detail here what is done with these markers
+in order to display them to the user.  To be brief, the class
+ModelEditor, which represents the editor in which the user specifies
+TLC models, has a resource change listener called
+modelFileChangeListener which reacts to the installation of these
+markers.
+ 
+The method finalLaunchCheck() acts as a gate that determines whether
+or not TLC should be launched.  If the launch configuration is being
+launched in modelcheck mode and there are no parse errors, then TLC
+should be launched.  Otherwise, TLC should not be launched (because
+the mode was only for validation of the model or because there are
+parse errors).  The return value of the method finalLaunchCheck()
+indicates whether TLC should be launched.  A return value of true will
+call the method launch(), which launches TLC. A return value of false
+will cause no more methods from TLCModelLaunchDelegate to be called,
+and TLC will not be launched.
+ 
+The method launch() initiates the launching of TLC by scheduling a
+TLCProcessJob.  Eclipse Jobs provide a means for executing tasks
+concurrently and for reporting progress of those jobs.  For more
+information on Eclipse jobs, see
+http://www.eclipse.org/articles/Article-Concurrency/jobs-api.html.  At
+some point after a TLCProcessJob is scheduled, it is run.  When it is
+run, the method TLCProcessJob.run() is called.  This method does the
+appropriate work for launching TLC as an external process with the
+correct arguments.  It periodically checks to see if the process has
+ended, either because TLC has stopped or because the user has
+cancelled, and does the necessary cleanup work when this happens.
+Check out the implementation for more details.  The run() method also
+sets up the mechanism for listening to TLC's output.
+I'll explain that in the next section.
+ 
+>>Listening To TLC's Output
+ 
+The following description is depicted in WB6.  The Toolbox listens to
+the output of TLC using an IStreamListener.  The particular
+implementation used by the Toolbox is BroadcastStreamListener.  In the
+run method of TLCProcessJob, after TLC is launched, an instance of
+BroadcastStreamListener is created.  The BroadcastStreamListener is
+attached to the error and normal output streams of TLC. As far as I
+know, the error output stream is not used.  However, it
+doesn't matter because the Toolbox same code is called for
+both streams.
+ 
+When a string of output is added to the output stream of TLC, the
+method BroadcastStreamListener.streamAppended() is called with that
+string.  BroadcastStreamListener sends this string to all interested
+listeners.  These listeners are created in the constructor of
+BroadcastStreamListener.  The constructor calls the method
+getRegisteredStreamManagers(), which returns an array of listeners.
+This array of listeners is created by calling some Eclipse code that
+creates listeners based on classes specified to an extension point.
+This extension point is org.lamport.tla.toolbox.tlc.processOutputSink.
+Check out plugin.xml for org.lamport.tla.toolbox.tool.tlc.ui.  Notice
+that it provides two extensions to the processOutputSink extension
+point.  Each extension specifies a class that implements the interface
+IProcessOutputSink.  When the method getRegisteredStreamManagers() is
+called, Eclipse creates an instance of every class specified to this
+extension point.  The two currently specified classes are
+ConsoleProcessOutputSink and ParsingTLCOutputSink.
+ 
+Thus, whenever a string is appended to TLC's output stream, it
+is sent to BroadcastStreamListener via the method streamAppended(),
+and this method sends the string to all interested listeners via the
+listeners' appendText() method.  The ConsoleProcessOutputSink
+simply displays TLC's output in a console for debugging
+purposes.  The ParsingTLCOutputSink parses the output so that it can
+be displayed to the user.  I will explain this in the next section.
+ 
+>>Parsing TLC's Output
+ 
+The following description is depicted in WB7.  The class
+ParsingTLCOutputSink sets up the mechanism for parsing TLC's
+output.  When the ParsingTLCOutputSink is initialized, it creates an
+instance of TagBasedTLCOutputIncrementalParser which actually parses
+TLC's output.  Whenever the appendText() method of
+ParsingTLCOutputSink is called with a string of text from
+TLC's output, the method
+TagBasedTLCOutputIncrementalParser.addIncrement() is called with that
+string.  The class TagBasedTLCOutputIncrementalParser is somewhat well
+documented.  Check the comments in that class for a description of
+what's going on.  Essentially, the parser determines when it
+has found a piece of TLC output that is an un-nested message and sends
+the message information to another class, CachingTLCOutputSource.  The
+next section will describe how that class is used.
+ 
+>>Using TLC's Output
+ 
+The following is depicted in WB8.  TLC's parsed output is
+stored so that it can be used by some part of the Toolbox at any point
+in the future.  The output of runs of TLC are stored in the class
+TLCOutputSourceRegistry.  That class is a doubleton.  It has one
+instance for runs of TLC for trace exploration, and one instance for
+runs of TLC for model checking.  These two instances can be accessed
+using the methods
+TLCOutputSourceRegistry.getTraceExploreSourceRegistry() and
+TLCOutputSourceRegistry.getModelCheckSourceRegistry().
+ 
+When TagBasedTLCOutputIncrementalParser is created to parse
+TLC's output, it creates an instance of CachingTLCOutputSource
+and adds that source to the appropriate instance of
+TLCOutputSourceRegistry.  This source will replace a previous source
+for the same model, if one is already in the registry.  Then, as the
+parser detects new un-nested TLC messages, it sends them to its
+instance of CachingTLCOutputSource, which saves them.
+ 
+Meanwhile, parts of the Toolbox will be interested in retrieving this
+parsed TLC output.  They can do this by calling
+TLCOutputSourceRegistry.getProvider() for a particular TLC launch
+configuration.  The first time that this method is called for a
+particular launch configuration, it will create a new instance of
+TLCModelLaunchDataProvider (for model checking) or
+TraceExplorerDataProvider (for trace exploration).  This data provider
+will connect itself to the source of parsed TLC output by calling the
+method TLCOutputSourceRegistry.connect() on itself.  The connect()
+method will add the data provider to the CachingTLCOutputSource for
+the appropriate model, if such a source exists in the registry.  The
+CachingTLCOutputSource will then send all parsed TLC output to the
+data provider using the method TLCModelLaunchDataProvider.onOutput().
+ 
+The TLCOutputSourceRegistry provides the mechanism for parsing output
+of runs of TLC from previous instances of the Toolbox.  This output is
+stored in a file MC.out for each model.  When the method
+TLCOutputSourceRegistry.connect() is called and cannot find an
+existing source, it searches for the file MC.out.  If it finds this
+file, it creates an instance of LogFileReader, which reads in the
+contents of the file and sends it to a
+TagBasedTLCOutputIncrementalParser.  This parser does the same thing
+as if it were being sent output from a live run of TLC. It adds a
+CachingTLCOutputSource to the registry, parses the output, and sends
+it to the caching source.
+ 
+>>The Data Provider
+ 
+All classes the display TLC output to the user use either
+TLCModelLaunchDataProvider or TraceExplorerDataProvider.  These
+classes store the parsed TLC output in fields that make it convenient
+for those classes that display output.  They have methods for
+accessing these fields, such as getStartTimestamp(), getErrors(), etc.
+ 
+In addition to providing methods for arbitrary classes to access the
+output of TLC, the TLCModelLaunchDataProvider also informs the
+ResultPage (the third page of the model editor) of TLC output as it is
+parsed.  TLCModelLaunchDataProvider has a field pointing to a
+ITLCModelLaunchDataPresenter (implemented by ResultPage).  When it
+receives parsed TLC output, it informs the presenter using the method
+ITLCModelLaunchDataPresenter.modelChanged().
