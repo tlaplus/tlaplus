@@ -20,6 +20,15 @@ public class GeneralLaunchProverHandler extends AbstractHandler implements IHand
 
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
+    	/*
+    	 * Check for dirty module added by LL on 14 Dec 2010
+    	 */
+        boolean proceed = UIHelper.promptUserForDirtyModules();
+        if (!proceed)
+        {
+            // the user cancelled
+            return null;
+        }
         LaunchProverDialog dialog = new LaunchProverDialog(UIHelper.getShellProvider());
         dialog.open();
         return null;
