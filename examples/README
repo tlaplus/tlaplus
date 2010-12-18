@@ -1,30 +1,18 @@
 This is a directory of examples, containing the following 
 subdirectories.
 
-SpecifyingSystems
-  Examples to accompany the book Specifying Systems
-  
+ 
 allocator
    Specification of a resource allocator, written by Stephan
    Merz.
 
 DieHard
    A very elementary example based on a puzzle from a movie.
-   I provides a good first introduction to TLA+.
+   It provides a good first introduction to TLA+.
 
-Prisoners
-   A simple specification that solves a puzzle that was 
-   presented on an American radio program.  The solution
-   is rather subtle, and hence it's not so easy to understand
-   why the solution is correct.
-   
-TwoPhase
-   A specification of a very simple hardware protocol and of 
-   the problem it solves.  This is a nice example of the use
-   of instantiation to describe a refinement mapping, and
-   of the use of constant operator parameters to describe
-   unspecified actions.  There is also a TLA+ proof of 
-   correctness that has been checked by the TLAPS proof system.
+N-Queens
+   TLA+ and PlusCal descriptions of a solution to the N queens
+   problem.  Written by Stephan Merz.
    
 Paxos
    A high-level specification of the Paxos consensus algorithm,
@@ -32,6 +20,23 @@ Paxos
    level spec of the algorithm (with no messages) that 
    implements consensus and is implemented by the Paxos
    algorithm.  
+
+Prisoners
+   A simple specification that solves a puzzle that was 
+   presented on an American radio program.  The solution
+   is rather subtle, and hence it's not so easy to understand
+   why the solution is correct.
+      
+SpecifyingSystems
+  Examples to accompany the book Specifying Systems
+ 
+TwoPhase
+   A specification of a very simple hardware protocol and of 
+   the problem it solves.  This is a nice example of the use
+   of instantiation to describe a refinement mapping, and
+   of the use of constant operator parameters to describe
+   unspecified actions.  There is also a TLA+ proof of 
+   correctness that has been checked by the TLAPS proof system.
    
 Voting
    Ignore this spec.  It seems to be obsolete, but it will be

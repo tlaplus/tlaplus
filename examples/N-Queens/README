@@ -1,0 +1,12 @@
+These two specification were received from Stephan Merz on 17 December
+2010, along with the following email:
+
+A colleague asked me how I'd write a solution to the N-queens problem
+in TLA+.  The result is attached.  The idea is straightforward, and I
+assume that you may already have written something similar at some
+point, but I'm still sending it to you in case you think it's useful.
+(Maybe we could put up some such examples on tlaplus.net and/or
+encourage people to contribute their models, though that would require
+some validation?)  TLC can execute the algorithm in no time for 4
+queens, but I killed it after an hour for N=5 -- however, it could
+still evaluate the definition of Solutions for N=5 in no time.
