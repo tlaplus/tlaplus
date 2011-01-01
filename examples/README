@@ -6,6 +6,10 @@ allocator
    Specification of a resource allocator, written by Stephan
    Merz.
 
+dijkstra-mutex
+   A PlusCal version of the first published mutual exclusion
+   algorithm, written by Edsger Dijkstra.
+
 DieHard
    A very elementary example based on a puzzle from a movie.
    It provides a good first introduction to TLA+.

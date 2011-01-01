@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<projectDescription>
+	<name>DijkstraMutex</name>
+	<comment></comment>
+	<projects>
+	</projects>
+	<buildSpec>
+		<buildCommand>
+			<name>toolbox.builder.TLAParserBuilder</name>
+			<arguments>
+			</arguments>
+		</buildCommand>
+		<buildCommand>
+			<name>toolbox.builder.PCalAlgorithmSearchingBuilder</name>
+			<arguments>
+			</arguments>
+		</buildCommand>
+	</buildSpec>
+	<natures>
+		<nature>toolbox.natures.TLANature</nature>
+	</natures>
+	<linkedResources>
+		<link>
+			<name>DijkstraMutex.tla</name>
+			<type>1</type>
+			<location>C:/lamport/books/hyper-tla/specs/dijkstra-mutex/DijkstraMutex.tla</location>
+		</link>
+	</linkedResources>
+</projectDescription>

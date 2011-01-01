@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<launchConfiguration type="org.lamport.tla.toolbox.tool.tlc.modelCheck">
+<intAttribute key="autoLockTime" value="15"/>
+<stringAttribute key="configurationName" value="LSpec-model"/>
+<intAttribute key="dfidDepth" value="100"/>
+<booleanAttribute key="dfidMode" value="false"/>
+<intAttribute key="maxHeapSize" value="500"/>
+<booleanAttribute key="mcMode" value="true"/>
+<stringAttribute key="modelBehaviorInit" value=""/>
+<stringAttribute key="modelBehaviorNext" value=""/>
+<stringAttribute key="modelBehaviorSpec" value="LSpec"/>
+<intAttribute key="modelBehaviorSpecType" value="1"/>
+<stringAttribute key="modelBehaviorVars" value="temp, b, c, k, pc"/>
+<booleanAttribute key="modelCorrectnessCheckDeadlock" value="true"/>
+<listAttribute key="modelCorrectnessInvariants">
+<listEntry value="1MutualExclusion"/>
+</listAttribute>
+<listAttribute key="modelCorrectnessProperties">
+<listEntry value="0Termination"/>
+<listEntry value="1DeadlockFreedom"/>
+</listAttribute>
+<stringAttribute key="modelExpressionEval" value=""/>
+<stringAttribute key="modelParameterActionConstraint" value=""/>
+<listAttribute key="modelParameterConstants">
+<listEntry value="Proc;;{p1, p2, p3};1;0"/>
+<listEntry value="defaultInitValue;;defaultInitValue;1;0"/>
+</listAttribute>
+<stringAttribute key="modelParameterContraint" value=""/>
+<listAttribute key="modelParameterDefinitions"/>
+<stringAttribute key="modelParameterModelValues" value="{}"/>
+<stringAttribute key="modelParameterNewDefinitions" value=""/>
+<stringAttribute key="modelPropertiesExpand" value=""/>
+<intAttribute key="numberOfWorkers" value="1"/>
+<booleanAttribute key="recover" value="false"/>
+<intAttribute key="simuAril" value="-1"/>
+<intAttribute key="simuDepth" value="100"/>
+<intAttribute key="simuSeed" value="-1"/>
+<stringAttribute key="specName" value="DijkstraMutex"/>
+<stringAttribute key="view" value=""/>
+</launchConfiguration>

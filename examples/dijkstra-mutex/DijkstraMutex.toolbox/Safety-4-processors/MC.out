@@ -1,0 +1,3547 @@
+@!@!@STARTMSG 2262:0 @!@!@
+TLC2 Version 2.03 of 26 May 2010
+@!@!@ENDMSG 2262 @!@!@
+@!@!@STARTMSG 2187:0 @!@!@
+Running in Model-Checking mode.
+@!@!@ENDMSG 2187 @!@!@
+@!@!@STARTMSG 2220:0 @!@!@
+Starting SANY...
+@!@!@ENDMSG 2220 @!@!@
+Parsing file MC.tla
+Parsing file DijkstraMutex.tla
+Parsing file C:\lamport\tla\newtools\tla2-inria\org.lamport.tla.toolbox\StandardModules\TLC.tla
+Parsing file C:\lamport\tla\newtools\tla2-inria\org.lamport.tla.toolbox\StandardModules\Integers.tla
+Parsing file C:\lamport\tla\newtools\tla2-inria\org.lamport.tla.toolbox\StandardModules\Naturals.tla
+Parsing file C:\lamport\tla\newtools\tla2-inria\org.lamport.tla.toolbox\StandardModules\Sequences.tla
+Semantic processing of module Naturals
+Semantic processing of module Integers
+Semantic processing of module DijkstraMutex
+Semantic processing of module Sequences
+Semantic processing of module TLC
+Semantic processing of module MC
+@!@!@STARTMSG 2219:0 @!@!@
+SANY finished.
+@!@!@ENDMSG 2219 @!@!@
+@!@!@STARTMSG 2185:0 @!@!@
+Starting... (2011-01-01 07:58:28)
+@!@!@ENDMSG 2185 @!@!@
+@!@!@STARTMSG 2189:0 @!@!@
+Computing initial states...
+@!@!@ENDMSG 2189 @!@!@
+@!@!@STARTMSG 2190:0 @!@!@
+Finished computing initial states: 4 distinct states generated.
+@!@!@ENDMSG 2190 @!@!@
+@!@!@STARTMSG 2200:0 @!@!@
+Progress(17) at 2011-01-01 07:58:31: 152897 states generated, 49158 distinct states found, 14927 states left on queue.
+@!@!@ENDMSG 2200 @!@!@
+@!@!@STARTMSG 2200:0 @!@!@
+Progress(26) at 2011-01-01 07:59:31: 3572051 states generated, 1024738 distinct states found, 258575 states left on queue.
+@!@!@ENDMSG 2200 @!@!@
+@!@!@STARTMSG 2200:0 @!@!@
+Progress(29) at 2011-01-01 08:00:31: 7004101 states generated, 1968463 distinct states found, 470190 states left on queue.
+@!@!@ENDMSG 2200 @!@!@
+@!@!@STARTMSG 2195:0 @!@!@
+Checkpointing of run C:\lamport\books\hyper-tla\specs\dijkstra-mutex\DijkstraMutex.toolbox\Safety-4-processors\11-01-01-07-58-28
+@!@!@ENDMSG 2195 @!@!@
+@!@!@STARTMSG 2196:0 @!@!@
+Checkpointing completed at (2011-01-01 08:01:32)
+@!@!@ENDMSG 2196 @!@!@
+@!@!@STARTMSG 2200:0 @!@!@
+Progress(30) at 2011-01-01 08:01:32: 10641032 states generated, 2946655 distinct states found, 668085 states left on queue.
+@!@!@ENDMSG 2200 @!@!@
+@!@!@STARTMSG 2201:0 @!@!@
+The coverage statistics at 2011-01-01 08:01:32
+@!@!@ENDMSG 2201 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 100, col 12 to line 100, col 12 of module DijkstraMutex: 0
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 100, col 15 to line 100, col 15 of module DijkstraMutex: 0
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 100, col 18 to line 100, col 18 of module DijkstraMutex: 0
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 100, col 21 to line 100, col 22 of module DijkstraMutex: 0
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 100, col 25 to line 100, col 28 of module DijkstraMutex: 0
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 113, col 17 to line 113, col 47 of module DijkstraMutex: 580652
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 114, col 17 to line 114, col 49 of module DijkstraMutex: 580652
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 115, col 30 to line 115, col 30 of module DijkstraMutex: 580652
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 115, col 33 to line 115, col 33 of module DijkstraMutex: 580652
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 115, col 36 to line 115, col 39 of module DijkstraMutex: 580652
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 119, col 28 to line 119, col 60 of module DijkstraMutex: 1400945
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 120, col 28 to line 120, col 61 of module DijkstraMutex: 587651
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 121, col 30 to line 121, col 30 of module DijkstraMutex: 1988596
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 121, col 33 to line 121, col 33 of module DijkstraMutex: 1988596
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 121, col 36 to line 121, col 36 of module DijkstraMutex: 1988596
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 121, col 39 to line 121, col 42 of module DijkstraMutex: 1988596
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 124, col 17 to line 124, col 46 of module DijkstraMutex: 1067240
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 125, col 17 to line 125, col 50 of module DijkstraMutex: 1067240
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 126, col 30 to line 126, col 30 of module DijkstraMutex: 1067240
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 126, col 33 to line 126, col 33 of module DijkstraMutex: 1067240
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 126, col 36 to line 126, col 39 of module DijkstraMutex: 1067240
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 129, col 18 to line 129, col 50 of module DijkstraMutex: 805384
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 130, col 18 to line 130, col 51 of module DijkstraMutex: 805384
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 131, col 31 to line 131, col 31 of module DijkstraMutex: 805384
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 131, col 34 to line 131, col 34 of module DijkstraMutex: 805384
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 131, col 37 to line 131, col 37 of module DijkstraMutex: 805384
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 135, col 29 to line 135, col 62 of module DijkstraMutex: 26711
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 136, col 29 to line 136, col 62 of module DijkstraMutex: 657423
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 137, col 31 to line 137, col 31 of module DijkstraMutex: 684134
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 137, col 34 to line 137, col 34 of module DijkstraMutex: 684134
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 137, col 37 to line 137, col 37 of module DijkstraMutex: 684134
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 137, col 40 to line 137, col 43 of module DijkstraMutex: 684134
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 140, col 18 to line 140, col 26 of module DijkstraMutex: 228761
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 141, col 18 to line 141, col 51 of module DijkstraMutex: 228761
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 142, col 31 to line 142, col 31 of module DijkstraMutex: 228761
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 142, col 34 to line 142, col 34 of module DijkstraMutex: 228761
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 142, col 37 to line 142, col 40 of module DijkstraMutex: 228761
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 145, col 18 to line 145, col 50 of module DijkstraMutex: 881844
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 146, col 31 to line 146, col 31 of module DijkstraMutex: 881844
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 146, col 34 to line 146, col 34 of module DijkstraMutex: 881844
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 146, col 37 to line 146, col 37 of module DijkstraMutex: 881844
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 146, col 40 to line 146, col 43 of module DijkstraMutex: 881844
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 149, col 18 to line 149, col 48 of module DijkstraMutex: 751744
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 150, col 18 to line 150, col 62 of module DijkstraMutex: 751744
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 151, col 18 to line 151, col 51 of module DijkstraMutex: 751744
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 152, col 31 to line 152, col 31 of module DijkstraMutex: 751744
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 152, col 34 to line 152, col 34 of module DijkstraMutex: 751744
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 157, col 34 to line 158, col 71 of module DijkstraMutex: 3236174
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 160, col 45 to line 161, col 69 of module DijkstraMutex: 1023363
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 162, col 45 to line 163, col 70 of module DijkstraMutex: 2212811
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 164, col 29 to line 164, col 60 of module DijkstraMutex: 130510
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 165, col 39 to line 165, col 42 of module DijkstraMutex: 130510
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 166, col 31 to line 166, col 31 of module DijkstraMutex: 3366684
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 166, col 34 to line 166, col 34 of module DijkstraMutex: 3366684
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 166, col 37 to line 166, col 37 of module DijkstraMutex: 3366684
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 170, col 16 to line 170, col 48 of module DijkstraMutex: 98446
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 171, col 29 to line 171, col 29 of module DijkstraMutex: 98446
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 171, col 32 to line 171, col 32 of module DijkstraMutex: 98446
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 171, col 35 to line 171, col 35 of module DijkstraMutex: 98446
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 171, col 38 to line 171, col 41 of module DijkstraMutex: 98446
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 174, col 17 to line 174, col 46 of module DijkstraMutex: 73537
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 175, col 17 to line 175, col 49 of module DijkstraMutex: 73537
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 176, col 30 to line 176, col 30 of module DijkstraMutex: 73537
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 176, col 33 to line 176, col 33 of module DijkstraMutex: 73537
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 176, col 36 to line 176, col 39 of module DijkstraMutex: 73537
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 179, col 17 to line 179, col 46 of module DijkstraMutex: 64725
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 180, col 17 to line 180, col 49 of module DijkstraMutex: 64725
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 181, col 30 to line 181, col 30 of module DijkstraMutex: 64725
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 181, col 33 to line 181, col 33 of module DijkstraMutex: 64725
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 181, col 36 to line 181, col 39 of module DijkstraMutex: 64725
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 185, col 17 to line 185, col 49 of module DijkstraMutex: 49281
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 186, col 30 to line 186, col 30 of module DijkstraMutex: 49281
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 186, col 33 to line 186, col 33 of module DijkstraMutex: 49281
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 186, col 36 to line 186, col 36 of module DijkstraMutex: 49281
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 186, col 39 to line 186, col 42 of module DijkstraMutex: 49281
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2202:0 @!@!@
+End of statistics.
+@!@!@ENDMSG 2202 @!@!@
+@!@!@STARTMSG 2200:0 @!@!@
+Progress(31) at 2011-01-01 08:02:32: 14273867 states generated, 3901358 distinct states found, 835700 states left on queue.
+@!@!@ENDMSG 2200 @!@!@
+@!@!@STARTMSG 2200:0 @!@!@
+Progress(32) at 2011-01-01 08:03:32: 17948425 states generated, 4860751 distinct states found, 1000452 states left on queue.
+@!@!@ENDMSG 2200 @!@!@
+@!@!@STARTMSG 2195:0 @!@!@
+Checkpointing of run C:\lamport\books\hyper-tla\specs\dijkstra-mutex\DijkstraMutex.toolbox\Safety-4-processors\11-01-01-07-58-28
+@!@!@ENDMSG 2195 @!@!@
+@!@!@STARTMSG 2196:0 @!@!@
+Checkpointing completed at (2011-01-01 08:04:32)
+@!@!@ENDMSG 2196 @!@!@
+@!@!@STARTMSG 2200:0 @!@!@
+Progress(33) at 2011-01-01 08:04:32: 21621803 states generated, 5807671 distinct states found, 1150646 states left on queue.
+@!@!@ENDMSG 2200 @!@!@
+@!@!@STARTMSG 2200:0 @!@!@
+Progress(34) at 2011-01-01 08:05:32: 25289550 states generated, 6737372 distinct states found, 1277651 states left on queue.
+@!@!@ENDMSG 2200 @!@!@
+@!@!@STARTMSG 2201:0 @!@!@
+The coverage statistics at 2011-01-01 08:05:32
+@!@!@ENDMSG 2201 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 100, col 12 to line 100, col 12 of module DijkstraMutex: 0
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 100, col 15 to line 100, col 15 of module DijkstraMutex: 0
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 100, col 18 to line 100, col 18 of module DijkstraMutex: 0
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 100, col 21 to line 100, col 22 of module DijkstraMutex: 0
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 100, col 25 to line 100, col 28 of module DijkstraMutex: 0
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 113, col 17 to line 113, col 47 of module DijkstraMutex: 943758
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 114, col 17 to line 114, col 49 of module DijkstraMutex: 943758
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 115, col 30 to line 115, col 30 of module DijkstraMutex: 943758
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 115, col 33 to line 115, col 33 of module DijkstraMutex: 943758
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 115, col 36 to line 115, col 39 of module DijkstraMutex: 943758
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 119, col 28 to line 119, col 60 of module DijkstraMutex: 3383208
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 120, col 28 to line 120, col 61 of module DijkstraMutex: 1529695
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 121, col 30 to line 121, col 30 of module DijkstraMutex: 4912903
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 121, col 33 to line 121, col 33 of module DijkstraMutex: 4912903
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 121, col 36 to line 121, col 36 of module DijkstraMutex: 4912903
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 121, col 39 to line 121, col 42 of module DijkstraMutex: 4912903
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 124, col 17 to line 124, col 46 of module DijkstraMutex: 2702860
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 125, col 17 to line 125, col 50 of module DijkstraMutex: 2702860
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 126, col 30 to line 126, col 30 of module DijkstraMutex: 2702860
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 126, col 33 to line 126, col 33 of module DijkstraMutex: 2702860
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 126, col 36 to line 126, col 39 of module DijkstraMutex: 2702860
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 129, col 18 to line 129, col 50 of module DijkstraMutex: 2136275
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 130, col 18 to line 130, col 51 of module DijkstraMutex: 2136275
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 131, col 31 to line 131, col 31 of module DijkstraMutex: 2136275
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 131, col 34 to line 131, col 34 of module DijkstraMutex: 2136275
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 131, col 37 to line 131, col 37 of module DijkstraMutex: 2136275
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 135, col 29 to line 135, col 62 of module DijkstraMutex: 54997
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 136, col 29 to line 136, col 62 of module DijkstraMutex: 1446816
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 137, col 31 to line 137, col 31 of module DijkstraMutex: 1501813
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 137, col 34 to line 137, col 34 of module DijkstraMutex: 1501813
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 137, col 37 to line 137, col 37 of module DijkstraMutex: 1501813
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 137, col 40 to line 137, col 43 of module DijkstraMutex: 1501813
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 140, col 18 to line 140, col 26 of module DijkstraMutex: 537007
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 141, col 18 to line 141, col 51 of module DijkstraMutex: 537007
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 142, col 31 to line 142, col 31 of module DijkstraMutex: 537007
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 142, col 34 to line 142, col 34 of module DijkstraMutex: 537007
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 142, col 37 to line 142, col 40 of module DijkstraMutex: 537007
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 145, col 18 to line 145, col 50 of module DijkstraMutex: 1932215
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 146, col 31 to line 146, col 31 of module DijkstraMutex: 1932215
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 146, col 34 to line 146, col 34 of module DijkstraMutex: 1932215
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 146, col 37 to line 146, col 37 of module DijkstraMutex: 1932215
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 146, col 40 to line 146, col 43 of module DijkstraMutex: 1932215
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 149, col 18 to line 149, col 48 of module DijkstraMutex: 2123631
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 150, col 18 to line 150, col 62 of module DijkstraMutex: 2123631
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 151, col 18 to line 151, col 51 of module DijkstraMutex: 2123631
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 152, col 31 to line 152, col 31 of module DijkstraMutex: 2123631
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 152, col 34 to line 152, col 34 of module DijkstraMutex: 2123631
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 157, col 34 to line 158, col 71 of module DijkstraMutex: 7369761
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 160, col 45 to line 161, col 69 of module DijkstraMutex: 2894825
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 162, col 45 to line 163, col 70 of module DijkstraMutex: 4474936
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 164, col 29 to line 164, col 60 of module DijkstraMutex: 319618
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 165, col 39 to line 165, col 42 of module DijkstraMutex: 319618
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 166, col 31 to line 166, col 31 of module DijkstraMutex: 7689379
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 166, col 34 to line 166, col 34 of module DijkstraMutex: 7689379
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 166, col 37 to line 166, col 37 of module DijkstraMutex: 7689379
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 170, col 16 to line 170, col 48 of module DijkstraMutex: 255088
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 171, col 29 to line 171, col 29 of module DijkstraMutex: 255088
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 171, col 32 to line 171, col 32 of module DijkstraMutex: 255088
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 171, col 35 to line 171, col 35 of module DijkstraMutex: 255088
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 171, col 38 to line 171, col 41 of module DijkstraMutex: 255088
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 174, col 17 to line 174, col 46 of module DijkstraMutex: 200368
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 175, col 17 to line 175, col 49 of module DijkstraMutex: 200368
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 176, col 30 to line 176, col 30 of module DijkstraMutex: 200368
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 176, col 33 to line 176, col 33 of module DijkstraMutex: 200368
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 176, col 36 to line 176, col 39 of module DijkstraMutex: 200368
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 179, col 17 to line 179, col 46 of module DijkstraMutex: 195347
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 180, col 17 to line 180, col 49 of module DijkstraMutex: 195347
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 181, col 30 to line 181, col 30 of module DijkstraMutex: 195347
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 181, col 33 to line 181, col 33 of module DijkstraMutex: 195347
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 181, col 36 to line 181, col 39 of module DijkstraMutex: 195347
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 185, col 17 to line 185, col 49 of module DijkstraMutex: 158902
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 186, col 30 to line 186, col 30 of module DijkstraMutex: 158902
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 186, col 33 to line 186, col 33 of module DijkstraMutex: 158902
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 186, col 36 to line 186, col 36 of module DijkstraMutex: 158902
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 186, col 39 to line 186, col 42 of module DijkstraMutex: 158902
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2202:0 @!@!@
+End of statistics.
+@!@!@ENDMSG 2202 @!@!@
+@!@!@STARTMSG 2200:0 @!@!@
+Progress(35) at 2011-01-01 08:06:33: 28904065 states generated, 7633600 distinct states found, 1372832 states left on queue.
+@!@!@ENDMSG 2200 @!@!@
+@!@!@STARTMSG 2195:0 @!@!@
+Checkpointing of run C:\lamport\books\hyper-tla\specs\dijkstra-mutex\DijkstraMutex.toolbox\Safety-4-processors\11-01-01-07-58-28
+@!@!@ENDMSG 2195 @!@!@
+@!@!@STARTMSG 2196:0 @!@!@
+Checkpointing completed at (2011-01-01 08:07:33)
+@!@!@ENDMSG 2196 @!@!@
+@!@!@STARTMSG 2200:0 @!@!@
+Progress(35) at 2011-01-01 08:07:33: 32249103 states generated, 8465120 distinct states found, 1469800 states left on queue.
+@!@!@ENDMSG 2200 @!@!@
+@!@!@STARTMSG 2200:0 @!@!@
+Progress(36) at 2011-01-01 08:08:33: 35159302 states generated, 9181078 distinct states found, 1536593 states left on queue.
+@!@!@ENDMSG 2200 @!@!@
+@!@!@STARTMSG 2200:0 @!@!@
+Progress(36) at 2011-01-01 08:09:33: 38116134 states generated, 9913728 distinct states found, 1621622 states left on queue.
+@!@!@ENDMSG 2200 @!@!@
+@!@!@STARTMSG 2201:0 @!@!@
+The coverage statistics at 2011-01-01 08:09:33
+@!@!@ENDMSG 2201 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 100, col 12 to line 100, col 12 of module DijkstraMutex: 0
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 100, col 15 to line 100, col 15 of module DijkstraMutex: 0
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 100, col 18 to line 100, col 18 of module DijkstraMutex: 0
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 100, col 21 to line 100, col 22 of module DijkstraMutex: 0
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 100, col 25 to line 100, col 28 of module DijkstraMutex: 0
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 113, col 17 to line 113, col 47 of module DijkstraMutex: 1166588
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 114, col 17 to line 114, col 49 of module DijkstraMutex: 1166588
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 115, col 30 to line 115, col 30 of module DijkstraMutex: 1166588
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 115, col 33 to line 115, col 33 of module DijkstraMutex: 1166588
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 115, col 36 to line 115, col 39 of module DijkstraMutex: 1166588
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 119, col 28 to line 119, col 60 of module DijkstraMutex: 5139580
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 120, col 28 to line 120, col 61 of module DijkstraMutex: 2395977
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 121, col 30 to line 121, col 30 of module DijkstraMutex: 7535557
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 121, col 33 to line 121, col 33 of module DijkstraMutex: 7535557
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 121, col 36 to line 121, col 36 of module DijkstraMutex: 7535557
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 121, col 39 to line 121, col 42 of module DijkstraMutex: 7535557
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 124, col 17 to line 124, col 46 of module DijkstraMutex: 4233633
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 125, col 17 to line 125, col 50 of module DijkstraMutex: 4233633
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 126, col 30 to line 126, col 30 of module DijkstraMutex: 4233633
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 126, col 33 to line 126, col 33 of module DijkstraMutex: 4233633
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 126, col 36 to line 126, col 39 of module DijkstraMutex: 4233633
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 129, col 18 to line 129, col 50 of module DijkstraMutex: 3454169
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 130, col 18 to line 130, col 51 of module DijkstraMutex: 3454169
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 131, col 31 to line 131, col 31 of module DijkstraMutex: 3454169
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 131, col 34 to line 131, col 34 of module DijkstraMutex: 3454169
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 131, col 37 to line 131, col 37 of module DijkstraMutex: 3454169
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 135, col 29 to line 135, col 62 of module DijkstraMutex: 77952
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 136, col 29 to line 136, col 62 of module DijkstraMutex: 2032654
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 137, col 31 to line 137, col 31 of module DijkstraMutex: 2110606
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 137, col 34 to line 137, col 34 of module DijkstraMutex: 2110606
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 137, col 37 to line 137, col 37 of module DijkstraMutex: 2110606
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 137, col 40 to line 137, col 43 of module DijkstraMutex: 2110606
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 140, col 18 to line 140, col 26 of module DijkstraMutex: 821330
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 141, col 18 to line 141, col 51 of module DijkstraMutex: 821330
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 142, col 31 to line 142, col 31 of module DijkstraMutex: 821330
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 142, col 34 to line 142, col 34 of module DijkstraMutex: 821330
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 142, col 37 to line 142, col 40 of module DijkstraMutex: 821330
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 145, col 18 to line 145, col 50 of module DijkstraMutex: 2798382
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 146, col 31 to line 146, col 31 of module DijkstraMutex: 2798382
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 146, col 34 to line 146, col 34 of module DijkstraMutex: 2798382
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 146, col 37 to line 146, col 37 of module DijkstraMutex: 2798382
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 146, col 40 to line 146, col 43 of module DijkstraMutex: 2798382
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 149, col 18 to line 149, col 48 of module DijkstraMutex: 3520235
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 150, col 18 to line 150, col 62 of module DijkstraMutex: 3520235
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 151, col 18 to line 151, col 51 of module DijkstraMutex: 3520235
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 152, col 31 to line 152, col 31 of module DijkstraMutex: 3520235
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 152, col 34 to line 152, col 34 of module DijkstraMutex: 3520235
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 157, col 34 to line 158, col 71 of module DijkstraMutex: 10638254
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 160, col 45 to line 161, col 69 of module DijkstraMutex: 4507485
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 162, col 45 to line 163, col 70 of module DijkstraMutex: 6130769
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 164, col 29 to line 164, col 60 of module DijkstraMutex: 485742
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 165, col 39 to line 165, col 42 of module DijkstraMutex: 485742
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 166, col 31 to line 166, col 31 of module DijkstraMutex: 11123996
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 166, col 34 to line 166, col 34 of module DijkstraMutex: 11123996
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 166, col 37 to line 166, col 37 of module DijkstraMutex: 11123996
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 170, col 16 to line 170, col 48 of module DijkstraMutex: 400357
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 171, col 29 to line 171, col 29 of module DijkstraMutex: 400357
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 171, col 32 to line 171, col 32 of module DijkstraMutex: 400357
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 171, col 35 to line 171, col 35 of module DijkstraMutex: 400357
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 171, col 38 to line 171, col 41 of module DijkstraMutex: 400357
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 174, col 17 to line 174, col 46 of module DijkstraMutex: 324755
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 175, col 17 to line 175, col 49 of module DijkstraMutex: 324755
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 176, col 30 to line 176, col 30 of module DijkstraMutex: 324755
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 176, col 33 to line 176, col 33 of module DijkstraMutex: 324755
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 176, col 36 to line 176, col 39 of module DijkstraMutex: 324755
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 179, col 17 to line 179, col 46 of module DijkstraMutex: 340318
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 180, col 17 to line 180, col 49 of module DijkstraMutex: 340318
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 181, col 30 to line 181, col 30 of module DijkstraMutex: 340318
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 181, col 33 to line 181, col 33 of module DijkstraMutex: 340318
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 181, col 36 to line 181, col 39 of module DijkstraMutex: 340318
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 185, col 17 to line 185, col 49 of module DijkstraMutex: 286204
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 186, col 30 to line 186, col 30 of module DijkstraMutex: 286204
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 186, col 33 to line 186, col 33 of module DijkstraMutex: 286204
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 186, col 36 to line 186, col 36 of module DijkstraMutex: 286204
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 186, col 39 to line 186, col 42 of module DijkstraMutex: 286204
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2202:0 @!@!@
+End of statistics.
+@!@!@ENDMSG 2202 @!@!@
+@!@!@STARTMSG 2195:0 @!@!@
+Checkpointing of run C:\lamport\books\hyper-tla\specs\dijkstra-mutex\DijkstraMutex.toolbox\Safety-4-processors\11-01-01-07-58-28
+@!@!@ENDMSG 2195 @!@!@
+@!@!@STARTMSG 2196:0 @!@!@
+Checkpointing completed at (2011-01-01 08:10:33)
+@!@!@ENDMSG 2196 @!@!@
+@!@!@STARTMSG 2200:0 @!@!@
+Progress(36) at 2011-01-01 08:10:33: 41089170 states generated, 10622220 distinct states found, 1658502 states left on queue.
+@!@!@ENDMSG 2200 @!@!@
+@!@!@STARTMSG 2200:0 @!@!@
+Progress(37) at 2011-01-01 08:11:33: 44077509 states generated, 11344111 distinct states found, 1720724 states left on queue.
+@!@!@ENDMSG 2200 @!@!@
+@!@!@STARTMSG 2200:0 @!@!@
+Progress(37) at 2011-01-01 08:12:33: 47058502 states generated, 12052176 distinct states found, 1759101 states left on queue.
+@!@!@ENDMSG 2200 @!@!@
+@!@!@STARTMSG 2195:0 @!@!@
+Checkpointing of run C:\lamport\books\hyper-tla\specs\dijkstra-mutex\DijkstraMutex.toolbox\Safety-4-processors\11-01-01-07-58-28
+@!@!@ENDMSG 2195 @!@!@
+@!@!@STARTMSG 2196:0 @!@!@
+Checkpointing completed at (2011-01-01 08:13:33)
+@!@!@ENDMSG 2196 @!@!@
+@!@!@STARTMSG 2200:0 @!@!@
+Progress(38) at 2011-01-01 08:13:33: 49987007 states generated, 12751808 distinct states found, 1802401 states left on queue.
+@!@!@ENDMSG 2200 @!@!@
+@!@!@STARTMSG 2201:0 @!@!@
+The coverage statistics at 2011-01-01 08:13:33
+@!@!@ENDMSG 2201 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 100, col 12 to line 100, col 12 of module DijkstraMutex: 0
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 100, col 15 to line 100, col 15 of module DijkstraMutex: 0
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 100, col 18 to line 100, col 18 of module DijkstraMutex: 0
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 100, col 21 to line 100, col 22 of module DijkstraMutex: 0
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 100, col 25 to line 100, col 28 of module DijkstraMutex: 0
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 113, col 17 to line 113, col 47 of module DijkstraMutex: 1366936
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 114, col 17 to line 114, col 49 of module DijkstraMutex: 1366936
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 115, col 30 to line 115, col 30 of module DijkstraMutex: 1366936
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 115, col 33 to line 115, col 33 of module DijkstraMutex: 1366936
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 115, col 36 to line 115, col 39 of module DijkstraMutex: 1366936
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 119, col 28 to line 119, col 60 of module DijkstraMutex: 6756168
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 120, col 28 to line 120, col 61 of module DijkstraMutex: 3221176
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 121, col 30 to line 121, col 30 of module DijkstraMutex: 9977344
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 121, col 33 to line 121, col 33 of module DijkstraMutex: 9977344
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 121, col 36 to line 121, col 36 of module DijkstraMutex: 9977344
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 121, col 39 to line 121, col 42 of module DijkstraMutex: 9977344
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 124, col 17 to line 124, col 46 of module DijkstraMutex: 5720164
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 125, col 17 to line 125, col 50 of module DijkstraMutex: 5720164
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 126, col 30 to line 126, col 30 of module DijkstraMutex: 5720164
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 126, col 33 to line 126, col 33 of module DijkstraMutex: 5720164
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 126, col 36 to line 126, col 39 of module DijkstraMutex: 5720164
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 129, col 18 to line 129, col 50 of module DijkstraMutex: 4796473
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 130, col 18 to line 130, col 51 of module DijkstraMutex: 4796473
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 131, col 31 to line 131, col 31 of module DijkstraMutex: 4796473
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 131, col 34 to line 131, col 34 of module DijkstraMutex: 4796473
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 131, col 37 to line 131, col 37 of module DijkstraMutex: 4796473
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 135, col 29 to line 135, col 62 of module DijkstraMutex: 99452
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 136, col 29 to line 136, col 62 of module DijkstraMutex: 2469238
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 137, col 31 to line 137, col 31 of module DijkstraMutex: 2568690
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 137, col 34 to line 137, col 34 of module DijkstraMutex: 2568690
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 137, col 37 to line 137, col 37 of module DijkstraMutex: 2568690
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 137, col 40 to line 137, col 43 of module DijkstraMutex: 2568690
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 140, col 18 to line 140, col 26 of module DijkstraMutex: 1069000
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 141, col 18 to line 141, col 51 of module DijkstraMutex: 1069000
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 142, col 31 to line 142, col 31 of module DijkstraMutex: 1069000
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 142, col 34 to line 142, col 34 of module DijkstraMutex: 1069000
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 142, col 37 to line 142, col 40 of module DijkstraMutex: 1069000
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 145, col 18 to line 145, col 50 of module DijkstraMutex: 3541967
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 146, col 31 to line 146, col 31 of module DijkstraMutex: 3541967
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 146, col 34 to line 146, col 34 of module DijkstraMutex: 3541967
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 146, col 37 to line 146, col 37 of module DijkstraMutex: 3541967
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 146, col 40 to line 146, col 43 of module DijkstraMutex: 3541967
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 149, col 18 to line 149, col 48 of module DijkstraMutex: 5014050
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 150, col 18 to line 150, col 62 of module DijkstraMutex: 5014050
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 151, col 18 to line 151, col 51 of module DijkstraMutex: 5014050
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 152, col 31 to line 152, col 31 of module DijkstraMutex: 5014050
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 152, col 34 to line 152, col 34 of module DijkstraMutex: 5014050
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 157, col 34 to line 158, col 71 of module DijkstraMutex: 13381055
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 160, col 45 to line 161, col 69 of module DijkstraMutex: 5887085
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 162, col 45 to line 163, col 70 of module DijkstraMutex: 7493970
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 164, col 29 to line 164, col 60 of module DijkstraMutex: 636616
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 165, col 39 to line 165, col 42 of module DijkstraMutex: 636616
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 166, col 31 to line 166, col 31 of module DijkstraMutex: 14017671
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 166, col 34 to line 166, col 34 of module DijkstraMutex: 14017671
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 166, col 37 to line 166, col 37 of module DijkstraMutex: 14017671
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 170, col 16 to line 170, col 48 of module DijkstraMutex: 538927
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 171, col 29 to line 171, col 29 of module DijkstraMutex: 538927
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 171, col 32 to line 171, col 32 of module DijkstraMutex: 538927
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 171, col 35 to line 171, col 35 of module DijkstraMutex: 538927
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 171, col 38 to line 171, col 41 of module DijkstraMutex: 538927
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 174, col 17 to line 174, col 46 of module DijkstraMutex: 448718
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 175, col 17 to line 175, col 49 of module DijkstraMutex: 448718
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 176, col 30 to line 176, col 30 of module DijkstraMutex: 448718
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 176, col 33 to line 176, col 33 of module DijkstraMutex: 448718
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 176, col 36 to line 176, col 39 of module DijkstraMutex: 448718
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 179, col 17 to line 179, col 46 of module DijkstraMutex: 495382
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 180, col 17 to line 180, col 49 of module DijkstraMutex: 495382
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 181, col 30 to line 181, col 30 of module DijkstraMutex: 495382
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 181, col 33 to line 181, col 33 of module DijkstraMutex: 495382
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 181, col 36 to line 181, col 39 of module DijkstraMutex: 495382
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 185, col 17 to line 185, col 49 of module DijkstraMutex: 431681
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 186, col 30 to line 186, col 30 of module DijkstraMutex: 431681
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 186, col 33 to line 186, col 33 of module DijkstraMutex: 431681
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 186, col 36 to line 186, col 36 of module DijkstraMutex: 431681
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 186, col 39 to line 186, col 42 of module DijkstraMutex: 431681
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2202:0 @!@!@
+End of statistics.
+@!@!@ENDMSG 2202 @!@!@
+@!@!@STARTMSG 2200:0 @!@!@
+Progress(38) at 2011-01-01 08:14:34: 52912500 states generated, 13445915 distinct states found, 1848935 states left on queue.
+@!@!@ENDMSG 2200 @!@!@
+@!@!@STARTMSG 2200:0 @!@!@
+Progress(38) at 2011-01-01 08:15:34: 55827947 states generated, 14101608 distinct states found, 1831541 states left on queue.
+@!@!@ENDMSG 2200 @!@!@
+@!@!@STARTMSG 2195:0 @!@!@
+Checkpointing of run C:\lamport\books\hyper-tla\specs\dijkstra-mutex\DijkstraMutex.toolbox\Safety-4-processors\11-01-01-07-58-28
+@!@!@ENDMSG 2195 @!@!@
+@!@!@STARTMSG 2196:0 @!@!@
+Checkpointing completed at (2011-01-01 08:16:34)
+@!@!@ENDMSG 2196 @!@!@
+@!@!@STARTMSG 2200:0 @!@!@
+Progress(39) at 2011-01-01 08:16:34: 58733319 states generated, 14800014 distinct states found, 1893283 states left on queue.
+@!@!@ENDMSG 2200 @!@!@
+@!@!@STARTMSG 2200:0 @!@!@
+Progress(39) at 2011-01-01 08:17:34: 61580044 states generated, 15444630 distinct states found, 1890220 states left on queue.
+@!@!@ENDMSG 2200 @!@!@
+@!@!@STARTMSG 2201:0 @!@!@
+The coverage statistics at 2011-01-01 08:17:34
+@!@!@ENDMSG 2201 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 100, col 12 to line 100, col 12 of module DijkstraMutex: 0
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 100, col 15 to line 100, col 15 of module DijkstraMutex: 0
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 100, col 18 to line 100, col 18 of module DijkstraMutex: 0
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 100, col 21 to line 100, col 22 of module DijkstraMutex: 0
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 100, col 25 to line 100, col 28 of module DijkstraMutex: 0
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 113, col 17 to line 113, col 47 of module DijkstraMutex: 1551814
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 114, col 17 to line 114, col 49 of module DijkstraMutex: 1551814
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 115, col 30 to line 115, col 30 of module DijkstraMutex: 1551814
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 115, col 33 to line 115, col 33 of module DijkstraMutex: 1551814
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 115, col 36 to line 115, col 39 of module DijkstraMutex: 1551814
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 119, col 28 to line 119, col 60 of module DijkstraMutex: 8337124
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 120, col 28 to line 120, col 61 of module DijkstraMutex: 4031295
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 121, col 30 to line 121, col 30 of module DijkstraMutex: 12368419
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 121, col 33 to line 121, col 33 of module DijkstraMutex: 12368419
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 121, col 36 to line 121, col 36 of module DijkstraMutex: 12368419
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 121, col 39 to line 121, col 42 of module DijkstraMutex: 12368419
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 124, col 17 to line 124, col 46 of module DijkstraMutex: 7231420
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 125, col 17 to line 125, col 50 of module DijkstraMutex: 7231420
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 126, col 30 to line 126, col 30 of module DijkstraMutex: 7231420
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 126, col 33 to line 126, col 33 of module DijkstraMutex: 7231420
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 126, col 36 to line 126, col 39 of module DijkstraMutex: 7231420
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 129, col 18 to line 129, col 50 of module DijkstraMutex: 6210227
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 130, col 18 to line 130, col 51 of module DijkstraMutex: 6210227
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 131, col 31 to line 131, col 31 of module DijkstraMutex: 6210227
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 131, col 34 to line 131, col 34 of module DijkstraMutex: 6210227
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 131, col 37 to line 131, col 37 of module DijkstraMutex: 6210227
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 135, col 29 to line 135, col 62 of module DijkstraMutex: 122412
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 136, col 29 to line 136, col 62 of module DijkstraMutex: 2823723
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 137, col 31 to line 137, col 31 of module DijkstraMutex: 2946135
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 137, col 34 to line 137, col 34 of module DijkstraMutex: 2946135
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 137, col 37 to line 137, col 37 of module DijkstraMutex: 2946135
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 137, col 40 to line 137, col 43 of module DijkstraMutex: 2946135
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 140, col 18 to line 140, col 26 of module DijkstraMutex: 1271792
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 141, col 18 to line 141, col 51 of module DijkstraMutex: 1271792
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 142, col 31 to line 142, col 31 of module DijkstraMutex: 1271792
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 142, col 34 to line 142, col 34 of module DijkstraMutex: 1271792
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 142, col 37 to line 142, col 40 of module DijkstraMutex: 1271792
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 145, col 18 to line 145, col 50 of module DijkstraMutex: 4155403
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 146, col 31 to line 146, col 31 of module DijkstraMutex: 4155403
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 146, col 34 to line 146, col 34 of module DijkstraMutex: 4155403
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 146, col 37 to line 146, col 37 of module DijkstraMutex: 4155403
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 146, col 40 to line 146, col 43 of module DijkstraMutex: 4155403
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 149, col 18 to line 149, col 48 of module DijkstraMutex: 6536207
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 150, col 18 to line 150, col 62 of module DijkstraMutex: 6536207
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 151, col 18 to line 151, col 51 of module DijkstraMutex: 6536207
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 152, col 31 to line 152, col 31 of module DijkstraMutex: 6536207
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 152, col 34 to line 152, col 34 of module DijkstraMutex: 6536207
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 157, col 34 to line 158, col 71 of module DijkstraMutex: 15981416
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 160, col 45 to line 161, col 69 of module DijkstraMutex: 7303994
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 162, col 45 to line 163, col 70 of module DijkstraMutex: 8677422
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 164, col 29 to line 164, col 60 of module DijkstraMutex: 788754
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 165, col 39 to line 165, col 42 of module DijkstraMutex: 788754
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 166, col 31 to line 166, col 31 of module DijkstraMutex: 16770170
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 166, col 34 to line 166, col 34 of module DijkstraMutex: 16770170
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 166, col 37 to line 166, col 37 of module DijkstraMutex: 16770170
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 170, col 16 to line 170, col 48 of module DijkstraMutex: 683105
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 171, col 29 to line 171, col 29 of module DijkstraMutex: 683105
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 171, col 32 to line 171, col 32 of module DijkstraMutex: 683105
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 171, col 35 to line 171, col 35 of module DijkstraMutex: 683105
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 171, col 38 to line 171, col 41 of module DijkstraMutex: 683105
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 174, col 17 to line 174, col 46 of module DijkstraMutex: 582409
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 175, col 17 to line 175, col 49 of module DijkstraMutex: 582409
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 176, col 30 to line 176, col 30 of module DijkstraMutex: 582409
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 176, col 33 to line 176, col 33 of module DijkstraMutex: 582409
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 176, col 36 to line 176, col 39 of module DijkstraMutex: 582409
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 179, col 17 to line 179, col 46 of module DijkstraMutex: 676561
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 180, col 17 to line 180, col 49 of module DijkstraMutex: 676561
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 181, col 30 to line 181, col 30 of module DijkstraMutex: 676561
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 181, col 33 to line 181, col 33 of module DijkstraMutex: 676561
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 181, col 36 to line 181, col 39 of module DijkstraMutex: 676561
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 185, col 17 to line 185, col 49 of module DijkstraMutex: 596378
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 186, col 30 to line 186, col 30 of module DijkstraMutex: 596378
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 186, col 33 to line 186, col 33 of module DijkstraMutex: 596378
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 186, col 36 to line 186, col 36 of module DijkstraMutex: 596378
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 186, col 39 to line 186, col 42 of module DijkstraMutex: 596378
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2202:0 @!@!@
+End of statistics.
+@!@!@ENDMSG 2202 @!@!@
+@!@!@STARTMSG 2200:0 @!@!@
+Progress(39) at 2011-01-01 08:18:34: 64402715 states generated, 16063735 distinct states found, 1849702 states left on queue.
+@!@!@ENDMSG 2200 @!@!@
+@!@!@STARTMSG 2195:0 @!@!@
+Checkpointing of run C:\lamport\books\hyper-tla\specs\dijkstra-mutex\DijkstraMutex.toolbox\Safety-4-processors\11-01-01-07-58-28
+@!@!@ENDMSG 2195 @!@!@
+@!@!@STARTMSG 2196:0 @!@!@
+Checkpointing completed at (2011-01-01 08:19:34)
+@!@!@ENDMSG 2196 @!@!@
+@!@!@STARTMSG 2200:0 @!@!@
+Progress(40) at 2011-01-01 08:19:34: 67247557 states generated, 16732401 distinct states found, 1892993 states left on queue.
+@!@!@ENDMSG 2200 @!@!@
+@!@!@STARTMSG 2200:0 @!@!@
+Progress(40) at 2011-01-01 08:20:34: 67530144 states generated, 16792638 distinct states found, 1887249 states left on queue.
+@!@!@ENDMSG 2200 @!@!@
+@!@!@STARTMSG 2200:0 @!@!@
+Progress(40) at 2011-01-01 08:21:35: 69636897 states generated, 17270852 distinct states found, 1887549 states left on queue.
+@!@!@ENDMSG 2200 @!@!@
+@!@!@STARTMSG 2201:0 @!@!@
+The coverage statistics at 2011-01-01 08:21:35
+@!@!@ENDMSG 2201 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 100, col 12 to line 100, col 12 of module DijkstraMutex: 0
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 100, col 15 to line 100, col 15 of module DijkstraMutex: 0
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 100, col 18 to line 100, col 18 of module DijkstraMutex: 0
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 100, col 21 to line 100, col 22 of module DijkstraMutex: 0
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 100, col 25 to line 100, col 28 of module DijkstraMutex: 0
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 113, col 17 to line 113, col 47 of module DijkstraMutex: 1688295
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 114, col 17 to line 114, col 49 of module DijkstraMutex: 1688295
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 115, col 30 to line 115, col 30 of module DijkstraMutex: 1688295
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 115, col 33 to line 115, col 33 of module DijkstraMutex: 1688295
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 115, col 36 to line 115, col 39 of module DijkstraMutex: 1688295
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 119, col 28 to line 119, col 60 of module DijkstraMutex: 9409832
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 120, col 28 to line 120, col 61 of module DijkstraMutex: 4606008
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 121, col 30 to line 121, col 30 of module DijkstraMutex: 14015840
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 121, col 33 to line 121, col 33 of module DijkstraMutex: 14015840
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 121, col 36 to line 121, col 36 of module DijkstraMutex: 14015840
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 121, col 39 to line 121, col 42 of module DijkstraMutex: 14015840
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 124, col 17 to line 124, col 46 of module DijkstraMutex: 8301896
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 125, col 17 to line 125, col 50 of module DijkstraMutex: 8301896
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 126, col 30 to line 126, col 30 of module DijkstraMutex: 8301896
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 126, col 33 to line 126, col 33 of module DijkstraMutex: 8301896
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 126, col 36 to line 126, col 39 of module DijkstraMutex: 8301896
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 129, col 18 to line 129, col 50 of module DijkstraMutex: 7249993
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 130, col 18 to line 130, col 51 of module DijkstraMutex: 7249993
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 131, col 31 to line 131, col 31 of module DijkstraMutex: 7249993
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 131, col 34 to line 131, col 34 of module DijkstraMutex: 7249993
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 131, col 37 to line 131, col 37 of module DijkstraMutex: 7249993
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 135, col 29 to line 135, col 62 of module DijkstraMutex: 137554
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 136, col 29 to line 136, col 62 of module DijkstraMutex: 3044264
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 137, col 31 to line 137, col 31 of module DijkstraMutex: 3181818
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 137, col 34 to line 137, col 34 of module DijkstraMutex: 3181818
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 137, col 37 to line 137, col 37 of module DijkstraMutex: 3181818
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 137, col 40 to line 137, col 43 of module DijkstraMutex: 3181818
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 140, col 18 to line 140, col 26 of module DijkstraMutex: 1418015
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 141, col 18 to line 141, col 51 of module DijkstraMutex: 1418015
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 142, col 31 to line 142, col 31 of module DijkstraMutex: 1418015
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 142, col 34 to line 142, col 34 of module DijkstraMutex: 1418015
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 142, col 37 to line 142, col 40 of module DijkstraMutex: 1418015
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 145, col 18 to line 145, col 50 of module DijkstraMutex: 4552072
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 146, col 31 to line 146, col 31 of module DijkstraMutex: 4552072
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 146, col 34 to line 146, col 34 of module DijkstraMutex: 4552072
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 146, col 37 to line 146, col 37 of module DijkstraMutex: 4552072
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 146, col 40 to line 146, col 43 of module DijkstraMutex: 4552072
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 149, col 18 to line 149, col 48 of module DijkstraMutex: 7689825
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 150, col 18 to line 150, col 62 of module DijkstraMutex: 7689825
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 151, col 18 to line 151, col 51 of module DijkstraMutex: 7689825
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 152, col 31 to line 152, col 31 of module DijkstraMutex: 7689825
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 152, col 34 to line 152, col 34 of module DijkstraMutex: 7689825
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 157, col 34 to line 158, col 71 of module DijkstraMutex: 17645164
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 160, col 45 to line 161, col 69 of module DijkstraMutex: 8179378
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 162, col 45 to line 163, col 70 of module DijkstraMutex: 9465786
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 164, col 29 to line 164, col 60 of module DijkstraMutex: 893352
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 165, col 39 to line 165, col 42 of module DijkstraMutex: 893352
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 166, col 31 to line 166, col 31 of module DijkstraMutex: 18538516
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 166, col 34 to line 166, col 34 of module DijkstraMutex: 18538516
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 166, col 37 to line 166, col 37 of module DijkstraMutex: 18538516
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 170, col 16 to line 170, col 48 of module DijkstraMutex: 785127
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 171, col 29 to line 171, col 29 of module DijkstraMutex: 785127
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 171, col 32 to line 171, col 32 of module DijkstraMutex: 785127
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 171, col 35 to line 171, col 35 of module DijkstraMutex: 785127
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 171, col 38 to line 171, col 41 of module DijkstraMutex: 785127
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 174, col 17 to line 174, col 46 of module DijkstraMutex: 679247
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 175, col 17 to line 175, col 49 of module DijkstraMutex: 679247
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 176, col 30 to line 176, col 30 of module DijkstraMutex: 679247
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 176, col 33 to line 176, col 33 of module DijkstraMutex: 679247
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 176, col 36 to line 176, col 39 of module DijkstraMutex: 679247
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 179, col 17 to line 179, col 46 of module DijkstraMutex: 812907
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 180, col 17 to line 180, col 49 of module DijkstraMutex: 812907
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 181, col 30 to line 181, col 30 of module DijkstraMutex: 812907
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 181, col 33 to line 181, col 33 of module DijkstraMutex: 812907
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 181, col 36 to line 181, col 39 of module DijkstraMutex: 812907
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 185, col 17 to line 185, col 49 of module DijkstraMutex: 723342
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 186, col 30 to line 186, col 30 of module DijkstraMutex: 723342
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 186, col 33 to line 186, col 33 of module DijkstraMutex: 723342
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 186, col 36 to line 186, col 36 of module DijkstraMutex: 723342
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 186, col 39 to line 186, col 42 of module DijkstraMutex: 723342
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2202:0 @!@!@
+End of statistics.
+@!@!@ENDMSG 2202 @!@!@
+@!@!@STARTMSG 2195:0 @!@!@
+Checkpointing of run C:\lamport\books\hyper-tla\specs\dijkstra-mutex\DijkstraMutex.toolbox\Safety-4-processors\11-01-01-07-58-28
+@!@!@ENDMSG 2195 @!@!@
+@!@!@STARTMSG 2196:0 @!@!@
+Checkpointing completed at (2011-01-01 08:22:35)
+@!@!@ENDMSG 2196 @!@!@
+@!@!@STARTMSG 2200:0 @!@!@
+Progress(40) at 2011-01-01 08:22:35: 72445002 states generated, 17880033 distinct states found, 1838812 states left on queue.
+@!@!@ENDMSG 2200 @!@!@
+@!@!@STARTMSG 2200:0 @!@!@
+Progress(41) at 2011-01-01 08:23:35: 75302563 states generated, 18535021 distinct states found, 1857780 states left on queue.
+@!@!@ENDMSG 2200 @!@!@
+@!@!@STARTMSG 2200:0 @!@!@
+Progress(41) at 2011-01-01 08:24:35: 78129549 states generated, 19156809 distinct states found, 1829428 states left on queue.
+@!@!@ENDMSG 2200 @!@!@
+@!@!@STARTMSG 2195:0 @!@!@
+Checkpointing of run C:\lamport\books\hyper-tla\specs\dijkstra-mutex\DijkstraMutex.toolbox\Safety-4-processors\11-01-01-07-58-28
+@!@!@ENDMSG 2195 @!@!@
+@!@!@STARTMSG 2196:0 @!@!@
+Checkpointing completed at (2011-01-01 08:25:36)
+@!@!@ENDMSG 2196 @!@!@
+@!@!@STARTMSG 2200:0 @!@!@
+Progress(42) at 2011-01-01 08:25:36: 80907037 states generated, 19764496 distinct states found, 1787527 states left on queue.
+@!@!@ENDMSG 2200 @!@!@
+@!@!@STARTMSG 2201:0 @!@!@
+The coverage statistics at 2011-01-01 08:25:36
+@!@!@ENDMSG 2201 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 100, col 12 to line 100, col 12 of module DijkstraMutex: 0
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 100, col 15 to line 100, col 15 of module DijkstraMutex: 0
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 100, col 18 to line 100, col 18 of module DijkstraMutex: 0
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 100, col 21 to line 100, col 22 of module DijkstraMutex: 0
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 100, col 25 to line 100, col 28 of module DijkstraMutex: 0
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 113, col 17 to line 113, col 47 of module DijkstraMutex: 1930840
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 114, col 17 to line 114, col 49 of module DijkstraMutex: 1930840
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 115, col 30 to line 115, col 30 of module DijkstraMutex: 1930840
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 115, col 33 to line 115, col 33 of module DijkstraMutex: 1930840
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 115, col 36 to line 115, col 39 of module DijkstraMutex: 1930840
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 119, col 28 to line 119, col 60 of module DijkstraMutex: 10832549
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 120, col 28 to line 120, col 61 of module DijkstraMutex: 5398905
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 121, col 30 to line 121, col 30 of module DijkstraMutex: 16231454
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 121, col 33 to line 121, col 33 of module DijkstraMutex: 16231454
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 121, col 36 to line 121, col 36 of module DijkstraMutex: 16231454
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 121, col 39 to line 121, col 42 of module DijkstraMutex: 16231454
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 124, col 17 to line 124, col 46 of module DijkstraMutex: 9788382
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 125, col 17 to line 125, col 50 of module DijkstraMutex: 9788382
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 126, col 30 to line 126, col 30 of module DijkstraMutex: 9788382
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 126, col 33 to line 126, col 33 of module DijkstraMutex: 9788382
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 126, col 36 to line 126, col 39 of module DijkstraMutex: 9788382
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 129, col 18 to line 129, col 50 of module DijkstraMutex: 8757543
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 130, col 18 to line 130, col 51 of module DijkstraMutex: 8757543
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 131, col 31 to line 131, col 31 of module DijkstraMutex: 8757543
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 131, col 34 to line 131, col 34 of module DijkstraMutex: 8757543
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 131, col 37 to line 131, col 37 of module DijkstraMutex: 8757543
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 135, col 29 to line 135, col 62 of module DijkstraMutex: 159687
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 136, col 29 to line 136, col 62 of module DijkstraMutex: 3357996
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 137, col 31 to line 137, col 31 of module DijkstraMutex: 3517683
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 137, col 34 to line 137, col 34 of module DijkstraMutex: 3517683
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 137, col 37 to line 137, col 37 of module DijkstraMutex: 3517683
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 137, col 40 to line 137, col 43 of module DijkstraMutex: 3517683
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 140, col 18 to line 140, col 26 of module DijkstraMutex: 1659009
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 141, col 18 to line 141, col 51 of module DijkstraMutex: 1659009
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 142, col 31 to line 142, col 31 of module DijkstraMutex: 1659009
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 142, col 34 to line 142, col 34 of module DijkstraMutex: 1659009
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 142, col 37 to line 142, col 40 of module DijkstraMutex: 1659009
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 145, col 18 to line 145, col 50 of module DijkstraMutex: 5126187
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 146, col 31 to line 146, col 31 of module DijkstraMutex: 5126187
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 146, col 34 to line 146, col 34 of module DijkstraMutex: 5126187
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 146, col 37 to line 146, col 37 of module DijkstraMutex: 5126187
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 146, col 40 to line 146, col 43 of module DijkstraMutex: 5126187
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 149, col 18 to line 149, col 48 of module DijkstraMutex: 9416099
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 150, col 18 to line 150, col 62 of module DijkstraMutex: 9416099
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 151, col 18 to line 151, col 51 of module DijkstraMutex: 9416099
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 152, col 31 to line 152, col 31 of module DijkstraMutex: 9416099
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 152, col 34 to line 152, col 34 of module DijkstraMutex: 9416099
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 157, col 34 to line 158, col 71 of module DijkstraMutex: 19695883
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 160, col 45 to line 161, col 69 of module DijkstraMutex: 9113624
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 162, col 45 to line 163, col 70 of module DijkstraMutex: 10582259
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 164, col 29 to line 164, col 60 of module DijkstraMutex: 1035519
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 165, col 39 to line 165, col 42 of module DijkstraMutex: 1035519
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 166, col 31 to line 166, col 31 of module DijkstraMutex: 20731402
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 166, col 34 to line 166, col 34 of module DijkstraMutex: 20731402
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 166, col 37 to line 166, col 37 of module DijkstraMutex: 20731402
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 170, col 16 to line 170, col 48 of module DijkstraMutex: 932580
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 171, col 29 to line 171, col 29 of module DijkstraMutex: 932580
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 171, col 32 to line 171, col 32 of module DijkstraMutex: 932580
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 171, col 35 to line 171, col 35 of module DijkstraMutex: 932580
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 171, col 38 to line 171, col 41 of module DijkstraMutex: 932580
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 174, col 17 to line 174, col 46 of module DijkstraMutex: 828363
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 175, col 17 to line 175, col 49 of module DijkstraMutex: 828363
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 176, col 30 to line 176, col 30 of module DijkstraMutex: 828363
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 176, col 33 to line 176, col 33 of module DijkstraMutex: 828363
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 176, col 36 to line 176, col 39 of module DijkstraMutex: 828363
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 179, col 17 to line 179, col 46 of module DijkstraMutex: 1033213
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 180, col 17 to line 180, col 49 of module DijkstraMutex: 1033213
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 181, col 30 to line 181, col 30 of module DijkstraMutex: 1033213
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 181, col 33 to line 181, col 33 of module DijkstraMutex: 1033213
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 181, col 36 to line 181, col 39 of module DijkstraMutex: 1033213
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 185, col 17 to line 185, col 49 of module DijkstraMutex: 954278
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 186, col 30 to line 186, col 30 of module DijkstraMutex: 954278
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 186, col 33 to line 186, col 33 of module DijkstraMutex: 954278
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 186, col 36 to line 186, col 36 of module DijkstraMutex: 954278
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 186, col 39 to line 186, col 42 of module DijkstraMutex: 954278
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2202:0 @!@!@
+End of statistics.
+@!@!@ENDMSG 2202 @!@!@
+@!@!@STARTMSG 2200:0 @!@!@
+Progress(42) at 2011-01-01 08:26:36: 83706123 states generated, 20374343 distinct states found, 1762611 states left on queue.
+@!@!@ENDMSG 2200 @!@!@
+@!@!@STARTMSG 2200:0 @!@!@
+Progress(42) at 2011-01-01 08:27:36: 86466351 states generated, 20975329 distinct states found, 1725156 states left on queue.
+@!@!@ENDMSG 2200 @!@!@
+@!@!@STARTMSG 2195:0 @!@!@
+Checkpointing of run C:\lamport\books\hyper-tla\specs\dijkstra-mutex\DijkstraMutex.toolbox\Safety-4-processors\11-01-01-07-58-28
+@!@!@ENDMSG 2195 @!@!@
+@!@!@STARTMSG 2196:0 @!@!@
+Checkpointing completed at (2011-01-01 08:28:37)
+@!@!@ENDMSG 2196 @!@!@
+@!@!@STARTMSG 2200:0 @!@!@
+Progress(43) at 2011-01-01 08:28:37: 89218611 states generated, 21584736 distinct states found, 1693736 states left on queue.
+@!@!@ENDMSG 2200 @!@!@
+@!@!@STARTMSG 2200:0 @!@!@
+Progress(43) at 2011-01-01 08:29:37: 92030723 states generated, 22177163 distinct states found, 1640472 states left on queue.
+@!@!@ENDMSG 2200 @!@!@
+@!@!@STARTMSG 2201:0 @!@!@
+The coverage statistics at 2011-01-01 08:29:37
+@!@!@ENDMSG 2201 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 100, col 12 to line 100, col 12 of module DijkstraMutex: 0
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 100, col 15 to line 100, col 15 of module DijkstraMutex: 0
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 100, col 18 to line 100, col 18 of module DijkstraMutex: 0
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 100, col 21 to line 100, col 22 of module DijkstraMutex: 0
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 100, col 25 to line 100, col 28 of module DijkstraMutex: 0
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 113, col 17 to line 113, col 47 of module DijkstraMutex: 2165434
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 114, col 17 to line 114, col 49 of module DijkstraMutex: 2165434
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 115, col 30 to line 115, col 30 of module DijkstraMutex: 2165434
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 115, col 33 to line 115, col 33 of module DijkstraMutex: 2165434
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 115, col 36 to line 115, col 39 of module DijkstraMutex: 2165434
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 119, col 28 to line 119, col 60 of module DijkstraMutex: 12243265
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 120, col 28 to line 120, col 61 of module DijkstraMutex: 6189010
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 121, col 30 to line 121, col 30 of module DijkstraMutex: 18432275
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 121, col 33 to line 121, col 33 of module DijkstraMutex: 18432275
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 121, col 36 to line 121, col 36 of module DijkstraMutex: 18432275
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 121, col 39 to line 121, col 42 of module DijkstraMutex: 18432275
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 124, col 17 to line 124, col 46 of module DijkstraMutex: 11304108
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 125, col 17 to line 125, col 50 of module DijkstraMutex: 11304108
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 126, col 30 to line 126, col 30 of module DijkstraMutex: 11304108
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 126, col 33 to line 126, col 33 of module DijkstraMutex: 11304108
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 126, col 36 to line 126, col 39 of module DijkstraMutex: 11304108
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 129, col 18 to line 129, col 50 of module DijkstraMutex: 10384360
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 130, col 18 to line 130, col 51 of module DijkstraMutex: 10384360
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 131, col 31 to line 131, col 31 of module DijkstraMutex: 10384360
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 131, col 34 to line 131, col 34 of module DijkstraMutex: 10384360
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 131, col 37 to line 131, col 37 of module DijkstraMutex: 10384360
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 135, col 29 to line 135, col 62 of module DijkstraMutex: 174719
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 136, col 29 to line 136, col 62 of module DijkstraMutex: 3611409
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 137, col 31 to line 137, col 31 of module DijkstraMutex: 3786128
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 137, col 34 to line 137, col 34 of module DijkstraMutex: 3786128
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 137, col 37 to line 137, col 37 of module DijkstraMutex: 3786128
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 137, col 40 to line 137, col 43 of module DijkstraMutex: 3786128
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 140, col 18 to line 140, col 26 of module DijkstraMutex: 1863461
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 141, col 18 to line 141, col 51 of module DijkstraMutex: 1863461
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 142, col 31 to line 142, col 31 of module DijkstraMutex: 1863461
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 142, col 34 to line 142, col 34 of module DijkstraMutex: 1863461
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 142, col 37 to line 142, col 40 of module DijkstraMutex: 1863461
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 145, col 18 to line 145, col 50 of module DijkstraMutex: 5587132
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 146, col 31 to line 146, col 31 of module DijkstraMutex: 5587132
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 146, col 34 to line 146, col 34 of module DijkstraMutex: 5587132
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 146, col 37 to line 146, col 37 of module DijkstraMutex: 5587132
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 146, col 40 to line 146, col 43 of module DijkstraMutex: 5587132
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 149, col 18 to line 149, col 48 of module DijkstraMutex: 11078514
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 150, col 18 to line 150, col 62 of module DijkstraMutex: 11078514
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 151, col 18 to line 151, col 51 of module DijkstraMutex: 11078514
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 152, col 31 to line 152, col 31 of module DijkstraMutex: 11078514
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 152, col 34 to line 152, col 34 of module DijkstraMutex: 11078514
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 157, col 34 to line 158, col 71 of module DijkstraMutex: 21730556
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 160, col 45 to line 161, col 69 of module DijkstraMutex: 10094157
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 162, col 45 to line 163, col 70 of module DijkstraMutex: 11636399
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 164, col 29 to line 164, col 60 of module DijkstraMutex: 1181170
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 165, col 39 to line 165, col 42 of module DijkstraMutex: 1181170
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 166, col 31 to line 166, col 31 of module DijkstraMutex: 22911726
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 166, col 34 to line 166, col 34 of module DijkstraMutex: 22911726
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 166, col 37 to line 166, col 37 of module DijkstraMutex: 22911726
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 170, col 16 to line 170, col 48 of module DijkstraMutex: 1084693
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 171, col 29 to line 171, col 29 of module DijkstraMutex: 1084693
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 171, col 32 to line 171, col 32 of module DijkstraMutex: 1084693
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 171, col 35 to line 171, col 35 of module DijkstraMutex: 1084693
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 171, col 38 to line 171, col 41 of module DijkstraMutex: 1084693
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 174, col 17 to line 174, col 46 of module DijkstraMutex: 981850
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 175, col 17 to line 175, col 49 of module DijkstraMutex: 981850
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 176, col 30 to line 176, col 30 of module DijkstraMutex: 981850
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 176, col 33 to line 176, col 33 of module DijkstraMutex: 981850
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 176, col 36 to line 176, col 39 of module DijkstraMutex: 981850
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 179, col 17 to line 179, col 46 of module DijkstraMutex: 1269328
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 180, col 17 to line 180, col 49 of module DijkstraMutex: 1269328
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 181, col 30 to line 181, col 30 of module DijkstraMutex: 1269328
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 181, col 33 to line 181, col 33 of module DijkstraMutex: 1269328
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 181, col 36 to line 181, col 39 of module DijkstraMutex: 1269328
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 185, col 17 to line 185, col 49 of module DijkstraMutex: 1181710
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 186, col 30 to line 186, col 30 of module DijkstraMutex: 1181710
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 186, col 33 to line 186, col 33 of module DijkstraMutex: 1181710
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 186, col 36 to line 186, col 36 of module DijkstraMutex: 1181710
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 186, col 39 to line 186, col 42 of module DijkstraMutex: 1181710
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2202:0 @!@!@
+End of statistics.
+@!@!@ENDMSG 2202 @!@!@
+@!@!@STARTMSG 2200:0 @!@!@
+Progress(43) at 2011-01-01 08:30:38: 94809443 states generated, 22765040 distinct states found, 1579985 states left on queue.
+@!@!@ENDMSG 2200 @!@!@
+@!@!@STARTMSG 2195:0 @!@!@
+Checkpointing of run C:\lamport\books\hyper-tla\specs\dijkstra-mutex\DijkstraMutex.toolbox\Safety-4-processors\11-01-01-07-58-28
+@!@!@ENDMSG 2195 @!@!@
+@!@!@STARTMSG 2196:0 @!@!@
+Checkpointing completed at (2011-01-01 08:31:38)
+@!@!@ENDMSG 2196 @!@!@
+@!@!@STARTMSG 2200:0 @!@!@
+Progress(44) at 2011-01-01 08:31:38: 97590917 states generated, 23355864 distinct states found, 1525134 states left on queue.
+@!@!@ENDMSG 2200 @!@!@
+@!@!@STARTMSG 2200:0 @!@!@
+Progress(44) at 2011-01-01 08:32:38: 100415699 states generated, 23956876 distinct states found, 1474762 states left on queue.
+@!@!@ENDMSG 2200 @!@!@
+@!@!@STARTMSG 2200:0 @!@!@
+Progress(45) at 2011-01-01 08:33:38: 103163346 states generated, 24556320 distinct states found, 1434761 states left on queue.
+@!@!@ENDMSG 2200 @!@!@
+@!@!@STARTMSG 2201:0 @!@!@
+The coverage statistics at 2011-01-01 08:33:38
+@!@!@ENDMSG 2201 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 100, col 12 to line 100, col 12 of module DijkstraMutex: 0
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 100, col 15 to line 100, col 15 of module DijkstraMutex: 0
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 100, col 18 to line 100, col 18 of module DijkstraMutex: 0
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 100, col 21 to line 100, col 22 of module DijkstraMutex: 0
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 100, col 25 to line 100, col 28 of module DijkstraMutex: 0
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 113, col 17 to line 113, col 47 of module DijkstraMutex: 2466189
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 114, col 17 to line 114, col 49 of module DijkstraMutex: 2466189
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 115, col 30 to line 115, col 30 of module DijkstraMutex: 2466189
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 115, col 33 to line 115, col 33 of module DijkstraMutex: 2466189
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 115, col 36 to line 115, col 39 of module DijkstraMutex: 2466189
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 119, col 28 to line 119, col 60 of module DijkstraMutex: 13582822
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 120, col 28 to line 120, col 61 of module DijkstraMutex: 6973940
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 121, col 30 to line 121, col 30 of module DijkstraMutex: 20556762
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 121, col 33 to line 121, col 33 of module DijkstraMutex: 20556762
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 121, col 36 to line 121, col 36 of module DijkstraMutex: 20556762
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 121, col 39 to line 121, col 42 of module DijkstraMutex: 20556762
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 124, col 17 to line 124, col 46 of module DijkstraMutex: 12763114
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 125, col 17 to line 125, col 50 of module DijkstraMutex: 12763114
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 126, col 30 to line 126, col 30 of module DijkstraMutex: 12763114
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 126, col 33 to line 126, col 33 of module DijkstraMutex: 12763114
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 126, col 36 to line 126, col 39 of module DijkstraMutex: 12763114
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 129, col 18 to line 129, col 50 of module DijkstraMutex: 11941195
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 130, col 18 to line 130, col 51 of module DijkstraMutex: 11941195
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 131, col 31 to line 131, col 31 of module DijkstraMutex: 11941195
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 131, col 34 to line 131, col 34 of module DijkstraMutex: 11941195
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 131, col 37 to line 131, col 37 of module DijkstraMutex: 11941195
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 135, col 29 to line 135, col 62 of module DijkstraMutex: 189223
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 136, col 29 to line 136, col 62 of module DijkstraMutex: 3849564
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 137, col 31 to line 137, col 31 of module DijkstraMutex: 4038787
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 137, col 34 to line 137, col 34 of module DijkstraMutex: 4038787
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 137, col 37 to line 137, col 37 of module DijkstraMutex: 4038787
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 137, col 40 to line 137, col 43 of module DijkstraMutex: 4038787
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 140, col 18 to line 140, col 26 of module DijkstraMutex: 2127999
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 141, col 18 to line 141, col 51 of module DijkstraMutex: 2127999
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 142, col 31 to line 142, col 31 of module DijkstraMutex: 2127999
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 142, col 34 to line 142, col 34 of module DijkstraMutex: 2127999
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 142, col 37 to line 142, col 40 of module DijkstraMutex: 2127999
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 145, col 18 to line 145, col 50 of module DijkstraMutex: 6071603
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 146, col 31 to line 146, col 31 of module DijkstraMutex: 6071603
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 146, col 34 to line 146, col 34 of module DijkstraMutex: 6071603
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 146, col 37 to line 146, col 37 of module DijkstraMutex: 6071603
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 146, col 40 to line 146, col 43 of module DijkstraMutex: 6071603
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 149, col 18 to line 149, col 48 of module DijkstraMutex: 12960316
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 150, col 18 to line 150, col 62 of module DijkstraMutex: 12960316
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 151, col 18 to line 151, col 51 of module DijkstraMutex: 12960316
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 152, col 31 to line 152, col 31 of module DijkstraMutex: 12960316
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 152, col 34 to line 152, col 34 of module DijkstraMutex: 12960316
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 157, col 34 to line 158, col 71 of module DijkstraMutex: 23560492
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 160, col 45 to line 161, col 69 of module DijkstraMutex: 10904058
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 162, col 45 to line 163, col 70 of module DijkstraMutex: 12656434
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 164, col 29 to line 164, col 60 of module DijkstraMutex: 1314412
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 165, col 39 to line 165, col 42 of module DijkstraMutex: 1314412
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 166, col 31 to line 166, col 31 of module DijkstraMutex: 24874904
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 166, col 34 to line 166, col 34 of module DijkstraMutex: 24874904
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 166, col 37 to line 166, col 37 of module DijkstraMutex: 24874904
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 170, col 16 to line 170, col 48 of module DijkstraMutex: 1231885
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 171, col 29 to line 171, col 29 of module DijkstraMutex: 1231885
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 171, col 32 to line 171, col 32 of module DijkstraMutex: 1231885
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 171, col 35 to line 171, col 35 of module DijkstraMutex: 1231885
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 171, col 38 to line 171, col 41 of module DijkstraMutex: 1231885
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 174, col 17 to line 174, col 46 of module DijkstraMutex: 1139802
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 175, col 17 to line 175, col 49 of module DijkstraMutex: 1139802
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 176, col 30 to line 176, col 30 of module DijkstraMutex: 1139802
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 176, col 33 to line 176, col 33 of module DijkstraMutex: 1139802
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 176, col 36 to line 176, col 39 of module DijkstraMutex: 1139802
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 179, col 17 to line 179, col 46 of module DijkstraMutex: 1523944
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 180, col 17 to line 180, col 49 of module DijkstraMutex: 1523944
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 181, col 30 to line 181, col 30 of module DijkstraMutex: 1523944
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 181, col 33 to line 181, col 33 of module DijkstraMutex: 1523944
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 181, col 36 to line 181, col 39 of module DijkstraMutex: 1523944
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 185, col 17 to line 185, col 49 of module DijkstraMutex: 1466842
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 186, col 30 to line 186, col 30 of module DijkstraMutex: 1466842
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 186, col 33 to line 186, col 33 of module DijkstraMutex: 1466842
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 186, col 36 to line 186, col 36 of module DijkstraMutex: 1466842
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 186, col 39 to line 186, col 42 of module DijkstraMutex: 1466842
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2202:0 @!@!@
+End of statistics.
+@!@!@ENDMSG 2202 @!@!@
+@!@!@STARTMSG 2195:0 @!@!@
+Checkpointing of run C:\lamport\books\hyper-tla\specs\dijkstra-mutex\DijkstraMutex.toolbox\Safety-4-processors\11-01-01-07-58-28
+@!@!@ENDMSG 2195 @!@!@
+@!@!@STARTMSG 2196:0 @!@!@
+Checkpointing completed at (2011-01-01 08:34:40)
+@!@!@ENDMSG 2196 @!@!@
+@!@!@STARTMSG 2200:0 @!@!@
+Progress(45) at 2011-01-01 08:34:40: 105981719 states generated, 25136179 distinct states found, 1359712 states left on queue.
+@!@!@ENDMSG 2200 @!@!@
+@!@!@STARTMSG 2200:0 @!@!@
+Progress(45) at 2011-01-01 08:35:40: 106193335 states generated, 25175387 distinct states found, 1348920 states left on queue.
+@!@!@ENDMSG 2200 @!@!@
+@!@!@STARTMSG 2200:0 @!@!@
+Progress(45) at 2011-01-01 08:36:40: 108256602 states generated, 25602838 distinct states found, 1290627 states left on queue.
+@!@!@ENDMSG 2200 @!@!@
+@!@!@STARTMSG 2195:0 @!@!@
+Checkpointing of run C:\lamport\books\hyper-tla\specs\dijkstra-mutex\DijkstraMutex.toolbox\Safety-4-processors\11-01-01-07-58-28
+@!@!@ENDMSG 2195 @!@!@
+@!@!@STARTMSG 2196:0 @!@!@
+Checkpointing completed at (2011-01-01 08:37:41)
+@!@!@ENDMSG 2196 @!@!@
+@!@!@STARTMSG 2200:0 @!@!@
+Progress(46) at 2011-01-01 08:37:41: 111062226 states generated, 26196511 distinct states found, 1236462 states left on queue.
+@!@!@ENDMSG 2200 @!@!@
+@!@!@STARTMSG 2201:0 @!@!@
+The coverage statistics at 2011-01-01 08:37:41
+@!@!@ENDMSG 2201 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 100, col 12 to line 100, col 12 of module DijkstraMutex: 0
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 100, col 15 to line 100, col 15 of module DijkstraMutex: 0
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 100, col 18 to line 100, col 18 of module DijkstraMutex: 0
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 100, col 21 to line 100, col 22 of module DijkstraMutex: 0
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 100, col 25 to line 100, col 28 of module DijkstraMutex: 0
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 113, col 17 to line 113, col 47 of module DijkstraMutex: 2684127
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 114, col 17 to line 114, col 49 of module DijkstraMutex: 2684127
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 115, col 30 to line 115, col 30 of module DijkstraMutex: 2684127
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 115, col 33 to line 115, col 33 of module DijkstraMutex: 2684127
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 115, col 36 to line 115, col 39 of module DijkstraMutex: 2684127
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 119, col 28 to line 119, col 60 of module DijkstraMutex: 14546604
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 120, col 28 to line 120, col 61 of module DijkstraMutex: 7523185
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 121, col 30 to line 121, col 30 of module DijkstraMutex: 22069789
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 121, col 33 to line 121, col 33 of module DijkstraMutex: 22069789
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 121, col 36 to line 121, col 36 of module DijkstraMutex: 22069789
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 121, col 39 to line 121, col 42 of module DijkstraMutex: 22069789
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 124, col 17 to line 124, col 46 of module DijkstraMutex: 13834270
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 125, col 17 to line 125, col 50 of module DijkstraMutex: 13834270
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 126, col 30 to line 126, col 30 of module DijkstraMutex: 13834270
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 126, col 33 to line 126, col 33 of module DijkstraMutex: 13834270
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 126, col 36 to line 126, col 39 of module DijkstraMutex: 13834270
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 129, col 18 to line 129, col 50 of module DijkstraMutex: 13115639
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 130, col 18 to line 130, col 51 of module DijkstraMutex: 13115639
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 131, col 31 to line 131, col 31 of module DijkstraMutex: 13115639
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 131, col 34 to line 131, col 34 of module DijkstraMutex: 13115639
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 131, col 37 to line 131, col 37 of module DijkstraMutex: 13115639
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 135, col 29 to line 135, col 62 of module DijkstraMutex: 197547
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 136, col 29 to line 136, col 62 of module DijkstraMutex: 3972804
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 137, col 31 to line 137, col 31 of module DijkstraMutex: 4170351
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 137, col 34 to line 137, col 34 of module DijkstraMutex: 4170351
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 137, col 37 to line 137, col 37 of module DijkstraMutex: 4170351
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 137, col 40 to line 137, col 43 of module DijkstraMutex: 4170351
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 140, col 18 to line 140, col 26 of module DijkstraMutex: 2302699
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 141, col 18 to line 141, col 51 of module DijkstraMutex: 2302699
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 142, col 31 to line 142, col 31 of module DijkstraMutex: 2302699
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 142, col 34 to line 142, col 34 of module DijkstraMutex: 2302699
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 142, col 37 to line 142, col 40 of module DijkstraMutex: 2302699
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 145, col 18 to line 145, col 50 of module DijkstraMutex: 6341754
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 146, col 31 to line 146, col 31 of module DijkstraMutex: 6341754
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 146, col 34 to line 146, col 34 of module DijkstraMutex: 6341754
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 146, col 37 to line 146, col 37 of module DijkstraMutex: 6341754
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 146, col 40 to line 146, col 43 of module DijkstraMutex: 6341754
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 149, col 18 to line 149, col 48 of module DijkstraMutex: 14261625
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 150, col 18 to line 150, col 62 of module DijkstraMutex: 14261625
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 151, col 18 to line 151, col 51 of module DijkstraMutex: 14261625
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 152, col 31 to line 152, col 31 of module DijkstraMutex: 14261625
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 152, col 34 to line 152, col 34 of module DijkstraMutex: 14261625
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 157, col 34 to line 158, col 71 of module DijkstraMutex: 24836587
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 160, col 45 to line 161, col 69 of module DijkstraMutex: 11501919
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 162, col 45 to line 163, col 70 of module DijkstraMutex: 13334668
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 164, col 29 to line 164, col 60 of module DijkstraMutex: 1411573
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 165, col 39 to line 165, col 42 of module DijkstraMutex: 1411573
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 166, col 31 to line 166, col 31 of module DijkstraMutex: 26248160
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 166, col 34 to line 166, col 34 of module DijkstraMutex: 26248160
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 166, col 37 to line 166, col 37 of module DijkstraMutex: 26248160
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 170, col 16 to line 170, col 48 of module DijkstraMutex: 1341361
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 171, col 29 to line 171, col 29 of module DijkstraMutex: 1341361
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 171, col 32 to line 171, col 32 of module DijkstraMutex: 1341361
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 171, col 35 to line 171, col 35 of module DijkstraMutex: 1341361
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 171, col 38 to line 171, col 41 of module DijkstraMutex: 1341361
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 174, col 17 to line 174, col 46 of module DijkstraMutex: 1263417
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 175, col 17 to line 175, col 49 of module DijkstraMutex: 1263417
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 176, col 30 to line 176, col 30 of module DijkstraMutex: 1263417
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 176, col 33 to line 176, col 33 of module DijkstraMutex: 1263417
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 176, col 36 to line 176, col 39 of module DijkstraMutex: 1263417
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 179, col 17 to line 179, col 46 of module DijkstraMutex: 1751921
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 180, col 17 to line 180, col 49 of module DijkstraMutex: 1751921
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 181, col 30 to line 181, col 30 of module DijkstraMutex: 1751921
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 181, col 33 to line 181, col 33 of module DijkstraMutex: 1751921
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 181, col 36 to line 181, col 39 of module DijkstraMutex: 1751921
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 185, col 17 to line 185, col 49 of module DijkstraMutex: 1677109
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 186, col 30 to line 186, col 30 of module DijkstraMutex: 1677109
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 186, col 33 to line 186, col 33 of module DijkstraMutex: 1677109
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 186, col 36 to line 186, col 36 of module DijkstraMutex: 1677109
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 186, col 39 to line 186, col 42 of module DijkstraMutex: 1677109
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2202:0 @!@!@
+End of statistics.
+@!@!@ENDMSG 2202 @!@!@
+@!@!@STARTMSG 2200:0 @!@!@
+Progress(46) at 2011-01-01 08:38:41: 113764500 states generated, 26757531 distinct states found, 1163014 states left on queue.
+@!@!@ENDMSG 2200 @!@!@
+@!@!@STARTMSG 2200:0 @!@!@
+Progress(47) at 2011-01-01 08:39:41: 116357293 states generated, 27299276 distinct states found, 1102644 states left on queue.
+@!@!@ENDMSG 2200 @!@!@
+@!@!@STARTMSG 2195:0 @!@!@
+Checkpointing of run C:\lamport\books\hyper-tla\specs\dijkstra-mutex\DijkstraMutex.toolbox\Safety-4-processors\11-01-01-07-58-28
+@!@!@ENDMSG 2195 @!@!@
+@!@!@STARTMSG 2196:0 @!@!@
+Checkpointing completed at (2011-01-01 08:40:42)
+@!@!@ENDMSG 2196 @!@!@
+@!@!@STARTMSG 2200:0 @!@!@
+Progress(48) at 2011-01-01 08:40:42: 119006129 states generated, 27851290 distinct states found, 1031899 states left on queue.
+@!@!@ENDMSG 2200 @!@!@
+@!@!@STARTMSG 2200:0 @!@!@
+Progress(48) at 2011-01-01 08:41:42: 121737897 states generated, 28413581 distinct states found, 954327 states left on queue.
+@!@!@ENDMSG 2200 @!@!@
+@!@!@STARTMSG 2201:0 @!@!@
+The coverage statistics at 2011-01-01 08:41:42
+@!@!@ENDMSG 2201 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 100, col 12 to line 100, col 12 of module DijkstraMutex: 0
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 100, col 15 to line 100, col 15 of module DijkstraMutex: 0
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 100, col 18 to line 100, col 18 of module DijkstraMutex: 0
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 100, col 21 to line 100, col 22 of module DijkstraMutex: 0
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 100, col 25 to line 100, col 28 of module DijkstraMutex: 0
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 113, col 17 to line 113, col 47 of module DijkstraMutex: 3046522
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 114, col 17 to line 114, col 49 of module DijkstraMutex: 3046522
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 115, col 30 to line 115, col 30 of module DijkstraMutex: 3046522
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 115, col 33 to line 115, col 33 of module DijkstraMutex: 3046522
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 115, col 36 to line 115, col 39 of module DijkstraMutex: 3046522
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 119, col 28 to line 119, col 60 of module DijkstraMutex: 15813449
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 120, col 28 to line 120, col 61 of module DijkstraMutex: 8265332
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 121, col 30 to line 121, col 30 of module DijkstraMutex: 24078781
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 121, col 33 to line 121, col 33 of module DijkstraMutex: 24078781
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 121, col 36 to line 121, col 36 of module DijkstraMutex: 24078781
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 121, col 39 to line 121, col 42 of module DijkstraMutex: 24078781
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 124, col 17 to line 124, col 46 of module DijkstraMutex: 15265798
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 125, col 17 to line 125, col 50 of module DijkstraMutex: 15265798
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 126, col 30 to line 126, col 30 of module DijkstraMutex: 15265798
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 126, col 33 to line 126, col 33 of module DijkstraMutex: 15265798
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 126, col 36 to line 126, col 39 of module DijkstraMutex: 15265798
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 129, col 18 to line 129, col 50 of module DijkstraMutex: 14547505
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 130, col 18 to line 130, col 51 of module DijkstraMutex: 14547505
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 131, col 31 to line 131, col 31 of module DijkstraMutex: 14547505
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 131, col 34 to line 131, col 34 of module DijkstraMutex: 14547505
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 131, col 37 to line 131, col 37 of module DijkstraMutex: 14547505
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 135, col 29 to line 135, col 62 of module DijkstraMutex: 209587
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 136, col 29 to line 136, col 62 of module DijkstraMutex: 4128753
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 137, col 31 to line 137, col 31 of module DijkstraMutex: 4338340
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 137, col 34 to line 137, col 34 of module DijkstraMutex: 4338340
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 137, col 37 to line 137, col 37 of module DijkstraMutex: 4338340
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 137, col 40 to line 137, col 43 of module DijkstraMutex: 4338340
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 140, col 18 to line 140, col 26 of module DijkstraMutex: 2642831
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 141, col 18 to line 141, col 51 of module DijkstraMutex: 2642831
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 142, col 31 to line 142, col 31 of module DijkstraMutex: 2642831
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 142, col 34 to line 142, col 34 of module DijkstraMutex: 2642831
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 142, col 37 to line 142, col 40 of module DijkstraMutex: 2642831
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 145, col 18 to line 145, col 50 of module DijkstraMutex: 6713081
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 146, col 31 to line 146, col 31 of module DijkstraMutex: 6713081
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 146, col 34 to line 146, col 34 of module DijkstraMutex: 6713081
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 146, col 37 to line 146, col 37 of module DijkstraMutex: 6713081
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 146, col 40 to line 146, col 43 of module DijkstraMutex: 6713081
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 149, col 18 to line 149, col 48 of module DijkstraMutex: 16195262
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 150, col 18 to line 150, col 62 of module DijkstraMutex: 16195262
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 151, col 18 to line 151, col 51 of module DijkstraMutex: 16195262
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 152, col 31 to line 152, col 31 of module DijkstraMutex: 16195262
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 152, col 34 to line 152, col 34 of module DijkstraMutex: 16195262
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 157, col 34 to line 158, col 71 of module DijkstraMutex: 26444511
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 160, col 45 to line 161, col 69 of module DijkstraMutex: 12194545
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 162, col 45 to line 163, col 70 of module DijkstraMutex: 14249966
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 164, col 29 to line 164, col 60 of module DijkstraMutex: 1538273
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 165, col 39 to line 165, col 42 of module DijkstraMutex: 1538273
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 166, col 31 to line 166, col 31 of module DijkstraMutex: 27982784
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 166, col 34 to line 166, col 34 of module DijkstraMutex: 27982784
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 166, col 37 to line 166, col 37 of module DijkstraMutex: 27982784
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 170, col 16 to line 170, col 48 of module DijkstraMutex: 1483106
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 171, col 29 to line 171, col 29 of module DijkstraMutex: 1483106
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 171, col 32 to line 171, col 32 of module DijkstraMutex: 1483106
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 171, col 35 to line 171, col 35 of module DijkstraMutex: 1483106
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 171, col 38 to line 171, col 41 of module DijkstraMutex: 1483106
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 174, col 17 to line 174, col 46 of module DijkstraMutex: 1421044
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 175, col 17 to line 175, col 49 of module DijkstraMutex: 1421044
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 176, col 30 to line 176, col 30 of module DijkstraMutex: 1421044
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 176, col 33 to line 176, col 33 of module DijkstraMutex: 1421044
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 176, col 36 to line 176, col 39 of module DijkstraMutex: 1421044
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 179, col 17 to line 179, col 46 of module DijkstraMutex: 2024632
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 180, col 17 to line 180, col 49 of module DijkstraMutex: 2024632
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 181, col 30 to line 181, col 30 of module DijkstraMutex: 2024632
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 181, col 33 to line 181, col 33 of module DijkstraMutex: 2024632
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 181, col 36 to line 181, col 39 of module DijkstraMutex: 2024632
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 185, col 17 to line 185, col 49 of module DijkstraMutex: 1998207
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 186, col 30 to line 186, col 30 of module DijkstraMutex: 1998207
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 186, col 33 to line 186, col 33 of module DijkstraMutex: 1998207
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 186, col 36 to line 186, col 36 of module DijkstraMutex: 1998207
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 186, col 39 to line 186, col 42 of module DijkstraMutex: 1998207
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2202:0 @!@!@
+End of statistics.
+@!@!@ENDMSG 2202 @!@!@
+@!@!@STARTMSG 2200:0 @!@!@
+Progress(49) at 2011-01-01 08:42:42: 124457322 states generated, 28973729 distinct states found, 872168 states left on queue.
+@!@!@ENDMSG 2200 @!@!@
+@!@!@STARTMSG 2195:0 @!@!@
+Checkpointing of run C:\lamport\books\hyper-tla\specs\dijkstra-mutex\DijkstraMutex.toolbox\Safety-4-processors\11-01-01-07-58-28
+@!@!@ENDMSG 2195 @!@!@
+@!@!@STARTMSG 2196:0 @!@!@
+Checkpointing completed at (2011-01-01 08:43:43)
+@!@!@ENDMSG 2196 @!@!@
+@!@!@STARTMSG 2200:0 @!@!@
+Progress(49) at 2011-01-01 08:43:43: 126920204 states generated, 29476642 distinct states found, 790810 states left on queue.
+@!@!@ENDMSG 2200 @!@!@
+@!@!@STARTMSG 2200:0 @!@!@
+Progress(50) at 2011-01-01 08:44:43: 129418363 states generated, 29978361 distinct states found, 698463 states left on queue.
+@!@!@ENDMSG 2200 @!@!@
+@!@!@STARTMSG 2200:0 @!@!@
+Progress(51) at 2011-01-01 08:45:43: 131931867 states generated, 30494112 distinct states found, 615219 states left on queue.
+@!@!@ENDMSG 2200 @!@!@
+@!@!@STARTMSG 2201:0 @!@!@
+The coverage statistics at 2011-01-01 08:45:43
+@!@!@ENDMSG 2201 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 100, col 12 to line 100, col 12 of module DijkstraMutex: 0
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 100, col 15 to line 100, col 15 of module DijkstraMutex: 0
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 100, col 18 to line 100, col 18 of module DijkstraMutex: 0
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 100, col 21 to line 100, col 22 of module DijkstraMutex: 0
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 100, col 25 to line 100, col 28 of module DijkstraMutex: 0
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 113, col 17 to line 113, col 47 of module DijkstraMutex: 3403133
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 114, col 17 to line 114, col 49 of module DijkstraMutex: 3403133
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 115, col 30 to line 115, col 30 of module DijkstraMutex: 3403133
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 115, col 33 to line 115, col 33 of module DijkstraMutex: 3403133
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 115, col 36 to line 115, col 39 of module DijkstraMutex: 3403133
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 119, col 28 to line 119, col 60 of module DijkstraMutex: 16973189
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 120, col 28 to line 120, col 61 of module DijkstraMutex: 8964101
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 121, col 30 to line 121, col 30 of module DijkstraMutex: 25937290
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 121, col 33 to line 121, col 33 of module DijkstraMutex: 25937290
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 121, col 36 to line 121, col 36 of module DijkstraMutex: 25937290
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 121, col 39 to line 121, col 42 of module DijkstraMutex: 25937290
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 124, col 17 to line 124, col 46 of module DijkstraMutex: 16639405
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 125, col 17 to line 125, col 50 of module DijkstraMutex: 16639405
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 126, col 30 to line 126, col 30 of module DijkstraMutex: 16639405
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 126, col 33 to line 126, col 33 of module DijkstraMutex: 16639405
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 126, col 36 to line 126, col 39 of module DijkstraMutex: 16639405
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 129, col 18 to line 129, col 50 of module DijkstraMutex: 15888981
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 130, col 18 to line 130, col 51 of module DijkstraMutex: 15888981
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 131, col 31 to line 131, col 31 of module DijkstraMutex: 15888981
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 131, col 34 to line 131, col 34 of module DijkstraMutex: 15888981
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 131, col 37 to line 131, col 37 of module DijkstraMutex: 15888981
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 135, col 29 to line 135, col 62 of module DijkstraMutex: 217032
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 136, col 29 to line 136, col 62 of module DijkstraMutex: 4293506
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 137, col 31 to line 137, col 31 of module DijkstraMutex: 4510538
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 137, col 34 to line 137, col 34 of module DijkstraMutex: 4510538
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 137, col 37 to line 137, col 37 of module DijkstraMutex: 4510538
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 137, col 40 to line 137, col 43 of module DijkstraMutex: 4510538
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 140, col 18 to line 140, col 26 of module DijkstraMutex: 3017667
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 141, col 18 to line 141, col 51 of module DijkstraMutex: 3017667
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 142, col 31 to line 142, col 31 of module DijkstraMutex: 3017667
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 142, col 34 to line 142, col 34 of module DijkstraMutex: 3017667
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 142, col 37 to line 142, col 40 of module DijkstraMutex: 3017667
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 145, col 18 to line 145, col 50 of module DijkstraMutex: 7119476
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 146, col 31 to line 146, col 31 of module DijkstraMutex: 7119476
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 146, col 34 to line 146, col 34 of module DijkstraMutex: 7119476
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 146, col 37 to line 146, col 37 of module DijkstraMutex: 7119476
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 146, col 40 to line 146, col 43 of module DijkstraMutex: 7119476
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 149, col 18 to line 149, col 48 of module DijkstraMutex: 18254926
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 150, col 18 to line 150, col 62 of module DijkstraMutex: 18254926
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 151, col 18 to line 151, col 51 of module DijkstraMutex: 18254926
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 152, col 31 to line 152, col 31 of module DijkstraMutex: 18254926
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 152, col 34 to line 152, col 34 of module DijkstraMutex: 18254926
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 157, col 34 to line 158, col 71 of module DijkstraMutex: 27710423
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 160, col 45 to line 161, col 69 of module DijkstraMutex: 12631127
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 162, col 45 to line 163, col 70 of module DijkstraMutex: 15079296
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 164, col 29 to line 164, col 60 of module DijkstraMutex: 1656648
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 165, col 39 to line 165, col 42 of module DijkstraMutex: 1656648
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 166, col 31 to line 166, col 31 of module DijkstraMutex: 29367071
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 166, col 34 to line 166, col 34 of module DijkstraMutex: 29367071
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 166, col 37 to line 166, col 37 of module DijkstraMutex: 29367071
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 170, col 16 to line 170, col 48 of module DijkstraMutex: 1623286
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 171, col 29 to line 171, col 29 of module DijkstraMutex: 1623286
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 171, col 32 to line 171, col 32 of module DijkstraMutex: 1623286
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 171, col 35 to line 171, col 35 of module DijkstraMutex: 1623286
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 171, col 38 to line 171, col 41 of module DijkstraMutex: 1623286
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 174, col 17 to line 174, col 46 of module DijkstraMutex: 1582204
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 175, col 17 to line 175, col 49 of module DijkstraMutex: 1582204
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 176, col 30 to line 176, col 30 of module DijkstraMutex: 1582204
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 176, col 33 to line 176, col 33 of module DijkstraMutex: 1582204
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 176, col 36 to line 176, col 39 of module DijkstraMutex: 1582204
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 179, col 17 to line 179, col 46 of module DijkstraMutex: 2289213
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 180, col 17 to line 180, col 49 of module DijkstraMutex: 2289213
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 181, col 30 to line 181, col 30 of module DijkstraMutex: 2289213
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 181, col 33 to line 181, col 33 of module DijkstraMutex: 2289213
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 181, col 36 to line 181, col 39 of module DijkstraMutex: 2289213
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 185, col 17 to line 185, col 49 of module DijkstraMutex: 2298673
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 186, col 30 to line 186, col 30 of module DijkstraMutex: 2298673
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 186, col 33 to line 186, col 33 of module DijkstraMutex: 2298673
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 186, col 36 to line 186, col 36 of module DijkstraMutex: 2298673
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 186, col 39 to line 186, col 42 of module DijkstraMutex: 2298673
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2202:0 @!@!@
+End of statistics.
+@!@!@ENDMSG 2202 @!@!@
+@!@!@STARTMSG 2195:0 @!@!@
+Checkpointing of run C:\lamport\books\hyper-tla\specs\dijkstra-mutex\DijkstraMutex.toolbox\Safety-4-processors\11-01-01-07-58-28
+@!@!@ENDMSG 2195 @!@!@
+@!@!@STARTMSG 2196:0 @!@!@
+Checkpointing completed at (2011-01-01 08:46:44)
+@!@!@ENDMSG 2196 @!@!@
+@!@!@STARTMSG 2200:0 @!@!@
+Progress(52) at 2011-01-01 08:46:44: 134533277 states generated, 31029208 distinct states found, 530591 states left on queue.
+@!@!@ENDMSG 2200 @!@!@
+@!@!@STARTMSG 2200:0 @!@!@
+Progress(53) at 2011-01-01 08:47:44: 137087382 states generated, 31557652 distinct states found, 451111 states left on queue.
+@!@!@ENDMSG 2200 @!@!@
+@!@!@STARTMSG 2200:0 @!@!@
+Progress(55) at 2011-01-01 08:48:44: 139685633 states generated, 32084826 distinct states found, 358821 states left on queue.
+@!@!@ENDMSG 2200 @!@!@
+@!@!@STARTMSG 2195:0 @!@!@
+Checkpointing of run C:\lamport\books\hyper-tla\specs\dijkstra-mutex\DijkstraMutex.toolbox\Safety-4-processors\11-01-01-07-58-28
+@!@!@ENDMSG 2195 @!@!@
+@!@!@STARTMSG 2196:0 @!@!@
+Checkpointing completed at (2011-01-01 08:49:45)
+@!@!@ENDMSG 2196 @!@!@
+@!@!@STARTMSG 2200:0 @!@!@
+Progress(57) at 2011-01-01 08:49:45: 142371026 states generated, 32606067 distinct states found, 236068 states left on queue.
+@!@!@ENDMSG 2200 @!@!@
+@!@!@STARTMSG 2201:0 @!@!@
+The coverage statistics at 2011-01-01 08:49:45
+@!@!@ENDMSG 2201 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 100, col 12 to line 100, col 12 of module DijkstraMutex: 0
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 100, col 15 to line 100, col 15 of module DijkstraMutex: 0
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 100, col 18 to line 100, col 18 of module DijkstraMutex: 0
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 100, col 21 to line 100, col 22 of module DijkstraMutex: 0
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 100, col 25 to line 100, col 28 of module DijkstraMutex: 0
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 113, col 17 to line 113, col 47 of module DijkstraMutex: 3747373
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 114, col 17 to line 114, col 49 of module DijkstraMutex: 3747373
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 115, col 30 to line 115, col 30 of module DijkstraMutex: 3747373
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 115, col 33 to line 115, col 33 of module DijkstraMutex: 3747373
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 115, col 36 to line 115, col 39 of module DijkstraMutex: 3747373
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 119, col 28 to line 119, col 60 of module DijkstraMutex: 18146093
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 120, col 28 to line 120, col 61 of module DijkstraMutex: 9700116
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 121, col 30 to line 121, col 30 of module DijkstraMutex: 27846209
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 121, col 33 to line 121, col 33 of module DijkstraMutex: 27846209
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 121, col 36 to line 121, col 36 of module DijkstraMutex: 27846209
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 121, col 39 to line 121, col 42 of module DijkstraMutex: 27846209
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 124, col 17 to line 124, col 46 of module DijkstraMutex: 18006528
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 125, col 17 to line 125, col 50 of module DijkstraMutex: 18006528
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 126, col 30 to line 126, col 30 of module DijkstraMutex: 18006528
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 126, col 33 to line 126, col 33 of module DijkstraMutex: 18006528
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 126, col 36 to line 126, col 39 of module DijkstraMutex: 18006528
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 129, col 18 to line 129, col 50 of module DijkstraMutex: 17184970
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 130, col 18 to line 130, col 51 of module DijkstraMutex: 17184970
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 131, col 31 to line 131, col 31 of module DijkstraMutex: 17184970
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 131, col 34 to line 131, col 34 of module DijkstraMutex: 17184970
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 131, col 37 to line 131, col 37 of module DijkstraMutex: 17184970
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 135, col 29 to line 135, col 62 of module DijkstraMutex: 222345
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 136, col 29 to line 136, col 62 of module DijkstraMutex: 4431456
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 137, col 31 to line 137, col 31 of module DijkstraMutex: 4653801
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 137, col 34 to line 137, col 34 of module DijkstraMutex: 4653801
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 137, col 37 to line 137, col 37 of module DijkstraMutex: 4653801
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 137, col 40 to line 137, col 43 of module DijkstraMutex: 4653801
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 140, col 18 to line 140, col 26 of module DijkstraMutex: 3378091
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 141, col 18 to line 141, col 51 of module DijkstraMutex: 3378091
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 142, col 31 to line 142, col 31 of module DijkstraMutex: 3378091
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 142, col 34 to line 142, col 34 of module DijkstraMutex: 3378091
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 142, col 37 to line 142, col 40 of module DijkstraMutex: 3378091
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 145, col 18 to line 145, col 50 of module DijkstraMutex: 7565933
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 146, col 31 to line 146, col 31 of module DijkstraMutex: 7565933
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 146, col 34 to line 146, col 34 of module DijkstraMutex: 7565933
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 146, col 37 to line 146, col 37 of module DijkstraMutex: 7565933
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 146, col 40 to line 146, col 43 of module DijkstraMutex: 7565933
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 149, col 18 to line 149, col 48 of module DijkstraMutex: 20786567
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 150, col 18 to line 150, col 62 of module DijkstraMutex: 20786567
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 151, col 18 to line 151, col 51 of module DijkstraMutex: 20786567
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 152, col 31 to line 152, col 31 of module DijkstraMutex: 20786567
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 152, col 34 to line 152, col 34 of module DijkstraMutex: 20786567
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 157, col 34 to line 158, col 71 of module DijkstraMutex: 28850971
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 160, col 45 to line 161, col 69 of module DijkstraMutex: 13047774
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 162, col 45 to line 163, col 70 of module DijkstraMutex: 15803197
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 164, col 29 to line 164, col 60 of module DijkstraMutex: 1755230
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 165, col 39 to line 165, col 42 of module DijkstraMutex: 1755230
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 166, col 31 to line 166, col 31 of module DijkstraMutex: 30606201
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 166, col 34 to line 166, col 34 of module DijkstraMutex: 30606201
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 166, col 37 to line 166, col 37 of module DijkstraMutex: 30606201
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 170, col 16 to line 170, col 48 of module DijkstraMutex: 1743277
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 171, col 29 to line 171, col 29 of module DijkstraMutex: 1743277
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 171, col 32 to line 171, col 32 of module DijkstraMutex: 1743277
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 171, col 35 to line 171, col 35 of module DijkstraMutex: 1743277
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 171, col 38 to line 171, col 41 of module DijkstraMutex: 1743277
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 174, col 17 to line 174, col 46 of module DijkstraMutex: 1729748
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 175, col 17 to line 175, col 49 of module DijkstraMutex: 1729748
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 176, col 30 to line 176, col 30 of module DijkstraMutex: 1729748
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 176, col 33 to line 176, col 33 of module DijkstraMutex: 1729748
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 176, col 36 to line 176, col 39 of module DijkstraMutex: 1729748
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 179, col 17 to line 179, col 46 of module DijkstraMutex: 2545805
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 180, col 17 to line 180, col 49 of module DijkstraMutex: 2545805
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 181, col 30 to line 181, col 30 of module DijkstraMutex: 2545805
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 181, col 33 to line 181, col 33 of module DijkstraMutex: 2545805
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 181, col 36 to line 181, col 39 of module DijkstraMutex: 2545805
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 185, col 17 to line 185, col 49 of module DijkstraMutex: 2576519
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 186, col 30 to line 186, col 30 of module DijkstraMutex: 2576519
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 186, col 33 to line 186, col 33 of module DijkstraMutex: 2576519
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 186, col 36 to line 186, col 36 of module DijkstraMutex: 2576519
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 186, col 39 to line 186, col 42 of module DijkstraMutex: 2576519
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2202:0 @!@!@
+End of statistics.
+@!@!@ENDMSG 2202 @!@!@
+@!@!@STARTMSG 2200:0 @!@!@
+Progress(61) at 2011-01-01 08:50:45: 145097992 states generated, 33091403 distinct states found, 58226 states left on queue.
+@!@!@ENDMSG 2200 @!@!@
+@!@!@STARTMSG 2193:0 @!@!@
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+  calculated (optimistic):  val = 0
+  based on the actual fingerprints:  val = 0
+@!@!@ENDMSG 2193 @!@!@
+@!@!@STARTMSG 2201:0 @!@!@
+The coverage statistics at 2011-01-01 08:51:27
+@!@!@ENDMSG 2201 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 100, col 12 to line 100, col 12 of module DijkstraMutex: 0
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 100, col 15 to line 100, col 15 of module DijkstraMutex: 0
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 100, col 18 to line 100, col 18 of module DijkstraMutex: 0
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 100, col 21 to line 100, col 22 of module DijkstraMutex: 0
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 100, col 25 to line 100, col 28 of module DijkstraMutex: 0
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 113, col 17 to line 113, col 47 of module DijkstraMutex: 3859612
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 114, col 17 to line 114, col 49 of module DijkstraMutex: 3859612
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 115, col 30 to line 115, col 30 of module DijkstraMutex: 3859612
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 115, col 33 to line 115, col 33 of module DijkstraMutex: 3859612
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 115, col 36 to line 115, col 39 of module DijkstraMutex: 3859612
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 119, col 28 to line 119, col 60 of module DijkstraMutex: 18502488
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 120, col 28 to line 120, col 61 of module DijkstraMutex: 9959576
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 121, col 30 to line 121, col 30 of module DijkstraMutex: 28462064
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 121, col 33 to line 121, col 33 of module DijkstraMutex: 28462064
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 121, col 36 to line 121, col 36 of module DijkstraMutex: 28462064
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 121, col 39 to line 121, col 42 of module DijkstraMutex: 28462064
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 124, col 17 to line 124, col 46 of module DijkstraMutex: 18502488
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 125, col 17 to line 125, col 50 of module DijkstraMutex: 18502488
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 126, col 30 to line 126, col 30 of module DijkstraMutex: 18502488
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 126, col 33 to line 126, col 33 of module DijkstraMutex: 18502488
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 126, col 36 to line 126, col 39 of module DijkstraMutex: 18502488
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 129, col 18 to line 129, col 50 of module DijkstraMutex: 17777940
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 130, col 18 to line 130, col 51 of module DijkstraMutex: 17777940
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 131, col 31 to line 131, col 31 of module DijkstraMutex: 17777940
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 131, col 34 to line 131, col 34 of module DijkstraMutex: 17777940
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 131, col 37 to line 131, col 37 of module DijkstraMutex: 17777940
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 135, col 29 to line 135, col 62 of module DijkstraMutex: 223176
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 136, col 29 to line 136, col 62 of module DijkstraMutex: 4462056
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 137, col 31 to line 137, col 31 of module DijkstraMutex: 4685232
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 137, col 34 to line 137, col 34 of module DijkstraMutex: 4685232
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 137, col 37 to line 137, col 37 of module DijkstraMutex: 4685232
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 137, col 40 to line 137, col 43 of module DijkstraMutex: 4685232
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 140, col 18 to line 140, col 26 of module DijkstraMutex: 3483756
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 141, col 18 to line 141, col 51 of module DijkstraMutex: 3483756
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 142, col 31 to line 142, col 31 of module DijkstraMutex: 3483756
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 142, col 34 to line 142, col 34 of module DijkstraMutex: 3483756
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 142, col 37 to line 142, col 40 of module DijkstraMutex: 3483756
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 145, col 18 to line 145, col 50 of module DijkstraMutex: 7693260
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 146, col 31 to line 146, col 31 of module DijkstraMutex: 7693260
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 146, col 34 to line 146, col 34 of module DijkstraMutex: 7693260
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 146, col 37 to line 146, col 37 of module DijkstraMutex: 7693260
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 146, col 40 to line 146, col 43 of module DijkstraMutex: 7693260
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 149, col 18 to line 149, col 48 of module DijkstraMutex: 21861944
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 150, col 18 to line 150, col 62 of module DijkstraMutex: 21861944
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 151, col 18 to line 151, col 51 of module DijkstraMutex: 21861944
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 152, col 31 to line 152, col 31 of module DijkstraMutex: 21861944
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 152, col 34 to line 152, col 34 of module DijkstraMutex: 21861944
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 157, col 34 to line 158, col 71 of module DijkstraMutex: 29147088
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 160, col 45 to line 161, col 69 of module DijkstraMutex: 13115184
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 162, col 45 to line 163, col 70 of module DijkstraMutex: 16031904
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 164, col 29 to line 164, col 60 of module DijkstraMutex: 1791248
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 165, col 39 to line 165, col 42 of module DijkstraMutex: 1791248
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 166, col 31 to line 166, col 31 of module DijkstraMutex: 30938336
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 166, col 34 to line 166, col 34 of module DijkstraMutex: 30938336
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 166, col 37 to line 166, col 37 of module DijkstraMutex: 30938336
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 170, col 16 to line 170, col 48 of module DijkstraMutex: 1791248
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 171, col 29 to line 171, col 29 of module DijkstraMutex: 1791248
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 171, col 32 to line 171, col 32 of module DijkstraMutex: 1791248
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 171, col 35 to line 171, col 35 of module DijkstraMutex: 1791248
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 171, col 38 to line 171, col 41 of module DijkstraMutex: 1791248
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 174, col 17 to line 174, col 46 of module DijkstraMutex: 1791248
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 175, col 17 to line 175, col 49 of module DijkstraMutex: 1791248
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 176, col 30 to line 176, col 30 of module DijkstraMutex: 1791248
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 176, col 33 to line 176, col 33 of module DijkstraMutex: 1791248
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 176, col 36 to line 176, col 39 of module DijkstraMutex: 1791248
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 179, col 17 to line 179, col 46 of module DijkstraMutex: 2646208
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 180, col 17 to line 180, col 49 of module DijkstraMutex: 2646208
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 181, col 30 to line 181, col 30 of module DijkstraMutex: 2646208
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 181, col 33 to line 181, col 33 of module DijkstraMutex: 2646208
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 181, col 36 to line 181, col 39 of module DijkstraMutex: 2646208
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 185, col 17 to line 185, col 49 of module DijkstraMutex: 2664376
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 186, col 30 to line 186, col 30 of module DijkstraMutex: 2664376
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 186, col 33 to line 186, col 33 of module DijkstraMutex: 2664376
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 186, col 36 to line 186, col 36 of module DijkstraMutex: 2664376
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 186, col 39 to line 186, col 42 of module DijkstraMutex: 2664376
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2202:0 @!@!@
+End of statistics.
+@!@!@ENDMSG 2202 @!@!@
+@!@!@STARTMSG 2200:0 @!@!@
+Progress(89) at 2011-01-01 08:51:28: 146157716 states generated, 33288512 distinct states found, 0 states left on queue.
+@!@!@ENDMSG 2200 @!@!@
+@!@!@STARTMSG 2199:0 @!@!@
+146157716 states generated, 33288512 distinct states found, 0 states left on queue.
+@!@!@ENDMSG 2199 @!@!@
+@!@!@STARTMSG 2194:0 @!@!@
+The depth of the complete state graph search is 89.
+@!@!@ENDMSG 2194 @!@!@
+@!@!@STARTMSG 2186:0 @!@!@
+Finished. (2011-01-01 08:51:30)
+@!@!@ENDMSG 2186 @!@!@
