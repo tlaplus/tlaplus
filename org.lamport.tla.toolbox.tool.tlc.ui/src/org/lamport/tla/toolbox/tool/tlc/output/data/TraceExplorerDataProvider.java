@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -267,10 +268,23 @@ public class TraceExplorerDataProvider extends TLCModelLaunchDataProvider
 
     <Back to state 1>
 
-     * 6.) If the trace explorer ran successfully, this method replaces the error message
-     * associated with the trace produced by the trace explorer with
-     * the error message produced by the last run of model checking on
+     * 6.) If the trace explorer ran successfully, this method changes several attributes
+     * of the error trace produced by the trace explorer. It changes
+     * the following three attributes:
+     *  - error message
+     *  - error code
+     *  - cause
+     * 
+     * It sets these attributes equal to those attributes for
+     * the error trace produced by the last run of model checking on
      * the model for which the trace explorer was run.
+     * 
+     * 7.) If the run of the trace explorer was successful, then we set the list
+     * of errors for this data provider in the following way :
+     * 
+     *  - Copy the list of errors from the original run of TLC.
+     *  - In the copied list, replace the original trace error with the new trace
+     *    error created by the successful run of the trace explorer.
      */
     private void processTraceForTraceExplorer()
     {
@@ -283,6 +297,17 @@ public class TraceExplorerDataProvider extends TLCModelLaunchDataProvider
             getErrors().clear();
             return;
         }
+
+        /*
+         * The following will point to the error containing the trace for the
+         * run of the trace explorer, iff the run of the trace explorer was successful.
+         * The run was successful if TLC was able to evaluate the trace explorer
+         * expressions at every possible state of the original trace.
+         * 
+         * The value of successfulTEError is set in the following while loop, if the
+         * run was successful.
+         */
+        TLCError successfulTEError = null;
 
         // retrieve the original trace
         // this is necessary for items (3) and (5) from the list in the
@@ -311,6 +336,8 @@ public class TraceExplorerDataProvider extends TLCModelLaunchDataProvider
                     error.setErrorCode(originalErrorWithTrace.getErrorCode());
                     error.setMessage(originalErrorWithTrace.getMessage());
                     error.setCause(originalErrorWithTrace.getCause());
+
+                    successfulTEError = error;
                 } else
                 {
                     error.setMessage(TE_ERROR_HEADER + error.getMessage());
@@ -543,6 +570,31 @@ public class TraceExplorerDataProvider extends TLCModelLaunchDataProvider
                 error.setMessage(TE_ERROR_HEADER + error.getMessage());
             }
         }
+
+        /*
+         * The following accomplishes item 7 from the above documentation.
+         */
+        if (successfulTEError != null)
+        {
+            List originalErrors = TLCOutputSourceRegistry.getModelCheckSourceRegistry().getProvider(getConfig())
+                    .getErrors();
+            List newErrors = new LinkedList();
+            Iterator iterator = originalErrors.iterator();
+            while (iterator.hasNext())
+            {
+                Object next = iterator.next();
+                if (next == originalErrorWithTrace)
+                {
+                    newErrors.add(successfulTEError);
+                } else
+                {
+                    newErrors.add(next);
+                }
+            }
+
+            setErrors(newErrors);
+        }
+
     }
 
     /**
