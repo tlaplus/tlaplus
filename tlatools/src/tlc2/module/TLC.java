@@ -175,7 +175,7 @@ public class TLC implements ValueConstants
             for (int i = intv1.low; i <= intv1.high; i++)
             {
                 dom.addElement(IntValue.gen(i));
-                vals.addElement(vals1[i]);
+                vals.addElement(vals1[i-intv1.low]);
             }
         } else
         {
