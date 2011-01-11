@@ -513,6 +513,11 @@ MARKERS
   declares a new marker type, you can right click to select New >
   persistent.  Set the value to be true to make that type persistent.
   Note that this value is not inherited by subtypes of markers.
+------------------------------------------------------------------
+THE TRACE EXPLORER AND TLC ERROR WINDOW
+
+Some information about how error information is generated is contained
+in an email from Dan Ricketts to LL on 11 Jan 2011.
 
 ------------------------------------------------------------------
 PLATFORM-DEPENDENT CODE
