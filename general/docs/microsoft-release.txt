@@ -1,10 +1,13 @@
 TO PREPARE THE ZIP FILES FOR THE RELEASE
 
 In org.lamport.tla.toolbox.product.standalone
-  plugin.xml : line 32, update date and version
+  plugin.xml : line 32 (the "aboutText" property), update date and version 
+               and other stuff that appears in the Help/About window.  
   standalone.product: 
-     Branding tab: update date and version
-     Overview: update version
+     Branding tab: update date and version (I don't know if this is
+                   actually used anywhere.)
+     Overview: update version.  (I don't know if this is used anywhere.)
+
 
 In org.lamport.tla.toolbox/welcome/welcomeView.html
    Update date and version

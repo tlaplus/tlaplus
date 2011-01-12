@@ -7,8 +7,15 @@
       <image path="splash_small.bmp"/>
       <text>
          TLA+ Toolbox provides a user interface for TLA+ Tools. 
-Version 1.2.1 of 29 September 2010
+
+This is Version 1.2.1 of 29 September 2010 and includes:
+  - SANY Version 2.0 of 9 March 2010
+  - TLC Version 2.03 of 26 May 2010
+  - PlusCal Version 1.4 of 11 January 2011
+  - TLATeX Version .9 of 19 September 2007
+
 Don&apos;t forget to click on help.  You can learn about features that you never knew about or have forgotten.
+
 Please send us reports of problems or suggestions; see http://www.tlaplus.net .
       </text>
    </aboutInfo>
