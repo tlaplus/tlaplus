@@ -235,12 +235,12 @@ public class ParseAlgorithm
    public static AST getAlgorithm(PcalCharReader charR) throws ParseAlgorithmException
      /**********************************************************************
      * Assumes that the char reader charR is just past the string          *
-     * PcalParams.BeginAlg that marks the beginning of the algorithm.        *
+     * PcalParams.BeginAlg that marks the beginning of the algorithm.      *
      *                                                                     *
-     * The AST that is returns does not have the col and line fields set.  *
+     * The AST that it returns does not have the col and line fields set.  *
      * If those fields might ever be used in an error message, they        *
      * should be set to the position of the PcalParams.BeginAlg string by  *
-     * whatever method finds that string and calls GetAlgorithm.             *
+     * whatever method finds that string and calls GetAlgorithm.           *
      **********************************************************************/
      { Init(charR) ;
        String name = GetAlgToken() ;
@@ -579,7 +579,7 @@ public class ParseAlgorithm
 
    /* OBSOLETE */ public static Vector GetLabeledStmtSeq() throws ParseAlgorithmException
      /**********************************************************************
-     * Returns a (possibly null) sequence of LabeledStmt elemetns.  This   *
+     * Returns a (possibly null) sequence of LabeledStmt elements.  This   *
      * is the obvious iterative call of GetLabeledStmt that stops when     *
      * it's not at a label.                                                *
      **********************************************************************/

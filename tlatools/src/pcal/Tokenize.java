@@ -1071,7 +1071,17 @@ public class Tokenize
                             };
                           token = token.substring(0, token.length()-1);
                         } ;
-                        nextChar = reader.getNextChar();
+                        // On 11 Jan 2011, LL changed
+                        //
+                        //     nextChar = reader.getNextChar();
+                        //
+                        // to the following so ncol gets set to the correct value in 
+                        // case multiple reader.backspace calls occurred.  This fixed
+                        // a bug that caused parsing "(\E x...)" to put the "\E" token
+                        // one column too far to the right, causing it to be output
+                        // as "( \Ex...)".
+                        skipNextChar();
+                       
                       } ;
                       TokenOut(Token.BUILTIN) ;
                       gotoStart();
