@@ -25,6 +25,7 @@ public interface IPCalReservedWords
     public final static String PRINT = "print";
     public final static String PROCEDURE = "procedure";
     public final static String PROCESS = "process";
+    public final static String FAIR = "fair";
     public final static String RETURN = "return";
     public final static String SKIP = "skip";
     public final static String THEN = "then";
@@ -35,6 +36,6 @@ public interface IPCalReservedWords
     // public final static String WHEN = "";
 
     public final static String[] ALL_WORDS_ARRAY = new String[] { ASSERT, BEGIN, CALL, DO, EITHER, ELSE, ELSEIF, END,
-            GOTO, IF, MACRO, OR, PRINT, PROCEDURE, PROCESS, RETURN, SKIP, THEN, VARIABLE, VARIABLES, WHILE, WITH };
+            GOTO, IF, MACRO, OR, PRINT, PROCEDURE, PROCESS, FAIR, RETURN, SKIP, THEN, VARIABLE, VARIABLES, WHILE, WITH };
 
 }

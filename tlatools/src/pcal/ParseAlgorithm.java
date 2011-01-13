@@ -130,6 +130,15 @@ public class ParseAlgorithm
      * body.)                                                              *
      **********************************************************************/
 
+   /*
+    * plusLabels and minusLabels are vectors of labels that appear within the
+    * current process or procedure with + or - modifiers, respectively.
+    * Added in Version 1.5.
+    */
+   public static Vector plusLabels;
+   
+   public static Vector minusLabels;
+   
    public static boolean hasDefaultInitialization;
      /**********************************************************************
      * Set true if any variable has a default initialization.              *
@@ -216,6 +225,13 @@ public class ParseAlgorithm
     pSyntax = false;
     cSyntax = false; 
     
+    // The following initializations are redundant, but a little redundancy
+    // never hurt.
+    // The following initializations are redundant, but a little redundancy
+    // never hurt.
+    plusLabels = new Vector(0);
+    minusLabels = new Vector(0);
+    
    /******************************************************************
    * Initialize charReader.                                          *
    ******************************************************************/
@@ -269,7 +285,8 @@ public class ParseAlgorithm
          { macros.addElement(GetMacro()) ; } ;
        while (PeekAtAlgToken(1).equals("procedure"))
          { procedures.addElement(GetProcedure()) ; } ;
-       if (PeekAtAlgToken(1).equals("process"))
+       if (PeekAtAlgToken(1).equals("fair") ||
+    		   PeekAtAlgToken(1).equals("process")   )
          { AST.Multiprocess multiproc = new AST.Multiprocess() ;
            multiproc.name   = name ;
            multiproc.decls  = vdecls ;
@@ -277,8 +294,23 @@ public class ParseAlgorithm
            multiproc.macros = macros ;
            multiproc.prcds  = procedures ;
            multiproc.procs  = new Vector() ;
-           while (PeekAtAlgToken(1).equals("process"))
-             { multiproc.procs.addElement(GetProcess()) ; } ;
+           while (PeekAtAlgToken(1).equals("fair") ||
+        		   PeekAtAlgToken(1).equals("process"))
+             { int fairness = AST.UNFAIR_PROC;
+              if (PeekAtAlgToken(1).equals("fair")) {
+        		   MustGobbleThis("fair");
+        		   fairness = AST.WF_PROC;
+                } else 
+                { if (PcalParams.FairnessOption.equals("wf")) {
+                	fairness = AST.WF_PROC;
+                    } else if (PcalParams.FairnessOption.equals("sf")) {
+                    	fairness = AST.SF_PROC;
+                    }
+                };        	   
+        	   AST.Process proc =  GetProcess() ;
+        	   proc.fairness = fairness ;
+        	   multiproc.procs.addElement(proc) ; 
+             } ;
            if (pSyntax)
              { GobbleThis("end") ;
                GobbleThis("algorithm") ; }
@@ -411,6 +443,8 @@ public class ParseAlgorithm
        result.line = lastTokLine ;
        result.name = GetAlgToken() ;
        currentProcedure = result.name ;
+       plusLabels = new Vector(0);
+       minusLabels = new Vector(0);
        GobbleThis("(") ;
        result.params = new Vector() ;
        boolean lookForComma = false ;
@@ -433,6 +467,8 @@ public class ParseAlgorithm
          { String tok = GetAlgToken() ; } ;
 //       CheckLabeledStmtSeq(result.body) ;
        currentProcedure = null ;
+       result.plusLabels = plusLabels;
+       result.minusLabels = minusLabels;
        return result ;
      }
 
@@ -444,7 +480,9 @@ public class ParseAlgorithm
        if (cSyntax) { GobbleThis("(") ; } ;
        result.name = GetAlgToken() ;
        result.isEq = GobbleEqualOrIf() ;
-       result.id   = GetExpr() ;       
+       result.id   = GetExpr() ; 
+       plusLabels = new Vector(0);
+       minusLabels = new Vector(0);
        if (cSyntax) { GobbleThis(")") ; } ;
        if (result.id.tokens.size()==0)
          { ParsingError("Empty process id at ") ;}
@@ -459,6 +497,8 @@ public class ParseAlgorithm
        if (PeekAtAlgToken(1).equals(";"))
          { String tok = GetAlgToken() ; } ;
 //       CheckLabeledStmtSeq(result.body) ;
+       result.plusLabels = plusLabels;
+       result.minusLabels = minusLabels;
        return result ;
      }
 
@@ -528,6 +568,7 @@ public class ParseAlgorithm
                  || PeekAtAlgToken(1).equals("{")
                  || PeekAtAlgToken(1).equals("procedure")
                  || PeekAtAlgToken(1).equals("process")  
+                 || PeekAtAlgToken(1).equals("fair")  
                  || PeekAtAlgToken(1).equals("define")  
                  || PeekAtAlgToken(1).equals("macro")   ) )
          { result.addElement(GetVarDecl());
@@ -554,7 +595,7 @@ public class ParseAlgorithm
          * Changed on 24 Mar 2006 from GobbleThis(";") to allow            *
          * declarations to be separated by commas.                         *
          ******************************************************************/
-       return pv ;
+        return pv ;
      }
 
    public static TLAExpr GetExpr() throws ParseAlgorithmException
@@ -670,6 +711,18 @@ public class ParseAlgorithm
            GobbleThis(":") ;
            hasLabel = true ;
            allLabels.put(nextLabel, "") ;
+           // The following code added by LL on 12 Jan 2011 as part of
+           // implementation of the fairness modifiers on labels introduced
+           // in Version 1.5.
+           if (PeekAtAlgToken(1).equals("+")) {
+        	   GobbleThis("+") ;
+        	   plusLabels.addElement(nextLabel) ;
+           } else {
+        	  if (PeekAtAlgToken(1).equals("-")) {
+        		  GobbleThis("-") ;
+           	      minusLabels.addElement(nextLabel) ; 
+        	  }
+           }
          } ;
        return nextLabel;
      }     
@@ -2801,6 +2854,7 @@ public class ParseAlgorithm
                 || nxt.equals("macro")
                 || nxt.equals("procedure")
                 || nxt.equals("process")
+                || nxt.equals("fair")
                 || nxt.equals("define")
                 || nxt.equals("}")
                 || nxt.equals("{")

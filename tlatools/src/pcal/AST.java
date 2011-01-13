@@ -252,8 +252,22 @@ public class AST
           }
       }
 
+    /**
+     * The minusLabels and plusLabels fields were added by LL in 
+     * January 2011 to implement the Version 1.5 enhancement that allows
+     * fairness modifiers on labels.  These Vectors contain the labels
+     * in the process that have the indicated modifier.  They are initially
+     * set in the GetProcedure method of ParseAlgorithm, with the help of 
+     * the GetLabel method.  They are then fixed to correct for label
+     * conflicts by the FixProcedure method of PcalFixIDs.
+     * 
+     * @author lamport
+     *
+     */
     public static class Procedure extends AST
       { public String name   = "" ;
+        public Vector minusLabels = new Vector();
+        public Vector plusLabels = new Vector();
         public Vector params = null ; // of PVarDecl
         public Vector decls  = null ; // of PVarDecl 
         public Vector body   = null ; // of LabeledStmt
@@ -261,6 +275,10 @@ public class AST
           { return
              Indent(lineCol()) +
                "[name   |-> \"" + name + "\", " + NewLine() +
+               "minusLabels |-> "
+               + VectorToSeqQuotedString(minusLabels) + ", plusLabels |->"
+               + VectorToSeqQuotedString(plusLabels) + ","
+             + NewLine() +
                Indent(" params |-> ") + VectorToSeqString(params) + "," + 
                EndIndent() + NewLine() +
                Indent(" decls  |-> ") + VectorToSeqString(decls) + "," + 
@@ -270,9 +288,29 @@ public class AST
              EndIndent() ;
           }
       }
-
+    
+    /***********************************************************************
+    * Constants used to describe a process's fairness assumption.          *
+    ***********************************************************************/
+    public static final int UNFAIR_PROC = 0;
+    public static final int WF_PROC = 1;
+    public static final int SF_PROC = 2;
+    public static final String[] FairnessString = {"unfair", "wf", "sf"} ;
+    
+    /**
+     * The minusLabels and plusLabels fields were added by LL in 
+     * January 2011 to implement the Version 1.5 enhancement that allows
+     * fairness modifiers on labels.  They are set much like the corresponding
+     * fields of an AST.Procedure object, as described above.
+     * 
+     * @author lamport
+     *
+     */
     public static class Process extends AST
       { public String    name  = "" ;
+        public int fairness = UNFAIR_PROC ;
+        public Vector minusLabels = new Vector();
+        public Vector plusLabels = new Vector();
         public boolean   isEq  = true ; // true means "=", false means "\\in"
         public TLAExpr   id    = null ;
         public Vector    decls = null ; // of VarDecl
@@ -280,7 +318,13 @@ public class AST
         public String toString() 
           { return
              Indent(lineCol()) +
-               "[name   |-> \"" + name + "\", " + NewLine() +
+               "[name   |-> \"" + name + "\"," 
+               + NewLine() +
+               " fairness |-> \"" 
+                 + FairnessString[fairness] + "\", minusLabels |-> "
+                 + VectorToSeqQuotedString(minusLabels) + ", plusLabels |->"
+                 + VectorToSeqQuotedString(plusLabels) + ","
+               + NewLine() +
                " eqOrIn |-> " + boolToEqOrIn(isEq) + "," + NewLine() +
                " id     |-> " + id.toString() + "," + NewLine() +
                Indent(" decls  |-> ") + 
@@ -327,7 +371,8 @@ public class AST
           /*****************************************************************
           * An optional While prepended to a LabelSeq.                     *
           *****************************************************************/
-         public String toString() 
+
+        public String toString() 
           {return 
              Indent(lineCol()) + 
                     "[label |-> \"" + label + "\"," + NewLine() +
@@ -734,6 +779,24 @@ public class AST
          } ;
        return result + ">>" + EndIndent();
      }
+   
+   public static String VectorToSeqQuotedString(Vector vec)
+   /**********************************************************************
+   * Returns the TLA+ representation of vec as a sequence of quoted      *
+   * elements, where toString() is used to produce the elements'         *
+   * representation to be quoted.                                        *
+   **********************************************************************/
+   { if (vec == null) {return "null" ;} ;
+     String result = Indent("<<") ;
+     int i = 0 ;
+     while (i < vec.size())
+       { if (i > 0)
+           { result = result + ", " /* + NewLine() */ ; } ;
+         result = result + "\"" + vec.elementAt(i).toString() + "\"" ;
+         i = i + 1 ;
+       } ;
+     return result + ">>" + EndIndent();
+   }
 
    public static String VectorOfVectorsToSeqString(Vector vecvec)
      /**********************************************************************

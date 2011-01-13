@@ -1676,29 +1676,32 @@ public class PcalTLAGen
                 }
                 sb = new StringBuffer(NSpaces(col) + " \\/ ");
             }
-        sb.append("(* Disjunct to prevent deadlock on termination *)");
-        tlacode.addElement(sb.toString());
-        sb = new StringBuffer(NSpaces(col + 4));
-        if (mp)
-            /*****************************************************************
-            * Bug fix by LL on 6 Sep 2007.  Added parentheses to change      *
-            *                                                                *
-            * (*)    \A self \in ProcSet: ... /\ UNCHANGED vars              *
-            *                                                                *
-            * to                                                             *
-            *                                                                *
-            * (**)   (\A self \in ProcSet: ...)  /\ UNCHANGED vars           *
-            *                                                                *
-            * thus moving the UNCHANGED vars outside the quantifier.         *
-            * Since self does not appear in UNCHANGED vars, the two          *
-            * expressions are equivalent except when ProcSet is the empty    *
-            * set, in which case (*) equals TRUE and (**) equals             *
-            * UNCHANGED vars.                                                *
-            *****************************************************************/
-            sb.append("((\\A self \\in ProcSet: pc[self] = \"Done\") /\\ " + "UNCHANGED vars)");
-        else
-            sb.append("(pc = \"Done\" /\\ UNCHANGED vars)");
-        tlacode.addElement(sb.toString());
+        if (! PcalParams.NoDoneDisjunct)
+         { sb.append("(* Disjunct to prevent deadlock on termination *)");
+           tlacode.addElement(sb.toString());
+           sb = new StringBuffer(NSpaces(col + 4));
+           if (mp)
+               /************************************************************
+               * Bug fix by LL on 6 Sep 2007.  Added parentheses to        *
+               * change                                                    *
+               *                                                           *
+               * (*)    \A self \in ProcSet: ... /\ UNCHANGED vars         *
+               *                                                           *
+               * to                                                        *
+               *                                                           *
+               * (**)   (\A self \in ProcSet: ...)  /\ UNCHANGED vars      *
+               *                                                           *
+               * thus moving the UNCHANGED vars outside the quantifier.    *
+               * Since self does not appear in UNCHANGED vars, the two     *
+               * expressions are equivalent except when ProcSet is the     *
+               * empty set, in which case (*) equals TRUE and (**) equals  *
+               * UNCHANGED vars.                                           *
+               ************************************************************/
+               sb.append("((\\A self \\in ProcSet: pc[self] = \"Done\") /\\ " + "UNCHANGED vars)");
+           else
+               sb.append("(pc = \"Done\" /\\ UNCHANGED vars)");
+               tlacode.addElement(sb.toString());
+         } ;
         tlacode.addElement("");
     }
 

@@ -1,6 +1,7 @@
 /***************************************************************************
 * CLASS PcalFixIDs                                                         *
-* last modified on Tue 24 Jan 2006 at 13:21:20 PST by lamport               *
+* last modified on Wed 12 January 2011 at 18:33:34 PST by lamport          *
+*      modified on Tue 24 Jan 2006 at 13:21:20 PST by lamport              *
 *      modified on Tue 30 Aug 2005 at 19:30:45 UT by keith                 *
 *                                                                          *
 * Given an AST (not necessarily exploded), change the ids to ther          *
@@ -10,6 +11,9 @@
 *                                                                          *
 * This also fixes the tables st.procs and st.processes.                    *
 *                                                                          *
+* In Jan 2011, modified the FixProcedure and FixProcess methods as         *
+* part of the enhancement of Version 1.5 to allow fairness                 *
+* modifiers on labels.                                                     *
 ****************************************************************************/
 
 package pcal;
@@ -100,6 +104,13 @@ public class PcalFixIDs {
             FixProcess((AST.Process) ast.procs.elementAt(i), "");
     }
 
+    /**
+     * FixProcedure modified by LL on 12 January 2011 so it also fixes the
+     * plusLabels and minusLabels entries.
+     * @param ast
+     * @param context
+     * @throws PcalFixIDException
+     */
     private static void FixProcedure (AST.Procedure ast, String context) throws PcalFixIDException {
         for (int i = 0; i < ast.decls.size(); i++)
             FixPVarDecl((AST.PVarDecl) ast.decls.elementAt(i), ast.name);
@@ -110,11 +121,28 @@ public class PcalFixIDs {
         PcalSymTab.ProcedureEntry p = 
             (PcalSymTab.ProcedureEntry)
             st.procs.elementAt(st.FindProc(ast.name));
+        for (int i = 0; i < ast.plusLabels.size(); i++) {
+        	String lbl = (String) ast.plusLabels.elementAt(i);
+        	String newLbl = st.UseThis(PcalSymTab.LABEL, lbl, ast.name);
+        	ast.plusLabels.setElementAt(newLbl, i) ;
+        }
+       for (int i = 0; i < ast.minusLabels.size(); i++) {
+	       String lbl = (String) ast.minusLabels.elementAt(i);
+	       String newLbl = st.UseThis(PcalSymTab.LABEL, lbl, ast.name);
+	       ast.minusLabels.setElementAt(newLbl, i) ;
+         }
         p.iPC = st.UseThis(PcalSymTab.LABEL, p.iPC, ast.name);
         ast.name = st.UseThis(PcalSymTab.PROCEDURE, ast.name, "");
         p.name = ast.name;
     }
         
+    /**
+     * FixProcess modified by LL on 12 January 2011 so it also fixes the
+     * plusLabels and minusLabels entries.
+     * @param ast
+     * @param context
+     * @throws PcalFixIDException
+     */
     private static void FixProcess(AST.Process ast, String context) throws PcalFixIDException {
         for (int i = 0; i < ast.decls.size(); i++)
             FixVarDecl((AST.VarDecl) ast.decls.elementAt(i), ast.name);
@@ -123,6 +151,16 @@ public class PcalFixIDs {
         PcalSymTab.ProcessEntry p = 
             (PcalSymTab.ProcessEntry)
             st.processes.elementAt(st.FindProcess(ast.name));
+        for (int i = 0; i < ast.plusLabels.size(); i++) {
+        	String lbl = (String) ast.plusLabels.elementAt(i);
+        	String newLbl = st.UseThis(PcalSymTab.LABEL, lbl, ast.name);
+        	ast.plusLabels.setElementAt(newLbl, i) ;
+        }
+       for (int i = 0; i < ast.minusLabels.size(); i++) {
+         String lbl = (String) ast.minusLabels.elementAt(i);
+         String newLbl = st.UseThis(PcalSymTab.LABEL, lbl, ast.name);
+         ast.minusLabels.setElementAt(newLbl, i) ;
+         }
         p.iPC = st.UseThis(PcalSymTab.LABEL, p.iPC, ast.name);
         ast.name = st.UseThis(PcalSymTab.PROCESS, ast.name, "");
         p.name = ast.name;

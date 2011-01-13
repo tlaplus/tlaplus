@@ -339,7 +339,7 @@ IsName(name) ==
                     "WITH", "WF_", "SF_",
                     "assert", "begin", "call", "do", "either", "else",
                     "elsif", "end", "goto", "if", "macro", "or",
-                    "print", "procedure", "process", "return", "skip",
+                    "print", "procedure", "process", "fair", "return", "skip",
                     "then", "variable", "variables", "while", "with"} )
 
 IsLabel(label) == /\ IsName(label)

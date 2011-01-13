@@ -46,6 +46,7 @@ public final class PcalParams
         FairnessOption = "";
         CheckTermination = false;
         Nocfg = false;
+        NoDoneDisjunct = false;
         optionsInFile = false;
         versionOption = null;
         inputVersionNumber = VersionToNumber(PcalParams.version);
@@ -126,6 +127,11 @@ public final class PcalParams
       * True iff there is a -nocfg option.                                 *
       *********************************************************************/
       
+    public static boolean NoDoneDisjunct = false ;
+     /*********************************************************************
+     * True iff there is a -noDoneDisjunct option.                        *
+     *********************************************************************/
+    
   /*************************************************************************
   * Parameters related to language definition.                             *
   *************************************************************************/

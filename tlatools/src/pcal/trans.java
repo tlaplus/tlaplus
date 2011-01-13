@@ -41,6 +41,9 @@ import util.ToolIO;
 *                                                                          *
 *   Version 1.4: (June 2010)                                               *
 *                Added the options statement and the -lineWidth option.    *
+*                                                                          *               
+*   Version 1.5: (Jan 2011)                                                *
+*                 Added the -noDoneDisjunct option                         *
 * -----------------------------------------------------------------        *
 *                                                                          *
 * This is the main method of the +CAL to TLA+ translation program.         *
@@ -99,6 +102,10 @@ import util.ToolIO;
 *                  becomes -wf.                                            *
 *                                                                          *
 *   -nocfg : Suppress writing of the .cfg file.                            *
+*                                                                          *
+*** -noDoneDisjunct : Suppress the disjunct of the next-state              *
+*                     relation that describes stuttering steps taken       *
+*                     when the algorithm has halted.                       *
 *                                                                          *
 *** -label : Tells the translator to add missing labels.  This is          *
 *            the default only for a uniprocess algorithm in which          *
@@ -1190,9 +1197,9 @@ class trans
          *<pre>
          * Get the command-line arguments and set the appropriate parameters.  *
          * The following command line arguments are handled.  Only the ones    *
-         * marked with ** besides them can be specified in the .pcal file's    *
+         * marked with ** besides them can be specified in the module file's   *
          * options statement.  The "-" can be omitted when the option is in    *
-         * the .pcal file's options statement.                                 *
+         * the module file's options statement.                                *
          *                                                                     *
          *   -help  : Type a help file instead of running the program.         *
          *                                                                     *
@@ -1243,6 +1250,11 @@ class trans
          *                     PROPERTY Termination                            *
          *                                                                     *
          *   -nocfg : Suppress writing of the .cfg file.                       *
+         *                                                                     *
+         *                                                                     *
+         *** -noDoneDisjunct : Suppress the disjunct of the next-state         *
+         *                     relation that describes stuttering steps taken  *
+         *                     when the algorithm has halted.                  *
          *                                                                     *
          *** -label : Tells the translator to add missing labels.  This is     *
          *            the default only for a uniprocess algorithm in which     *
@@ -1407,6 +1419,9 @@ class trans
             } else if (option.equals("-nocfg"))
             {
                 PcalParams.Nocfg = true;
+            } else if (option.equals("-noDoneDisjunct") || (inFile && option.equals("noDoneDisjunct")))
+            {
+                PcalParams.NoDoneDisjunct = true;
             } else if (option.equals("-wf") || (inFile && option.equals("wf")))
             {
                 if (firstFairness)
