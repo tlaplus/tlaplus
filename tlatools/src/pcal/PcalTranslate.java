@@ -1037,9 +1037,12 @@ public class PcalTranslate {
         ;
 
         int from = st.FindProc(ast.from);
+        // The following added by LL on 13 Jan 2011.
+        if (!(from < st.procs.size())) {
+        	throw new PcalTranslateException("Error in procedure (perhaps name used elsewhere)", ast);
+        }
         PcalSymTab.ProcedureEntry pe =
             (PcalSymTab.ProcedureEntry) st.procs.elementAt(from);
-        PcalDebug.Assert(from < st.procs.size());
         /*********************************************************
          * With h being the head of stack                        *
          *   pc := h.pc                                          *

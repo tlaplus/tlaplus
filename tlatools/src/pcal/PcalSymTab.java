@@ -128,11 +128,14 @@ public class PcalSymTab {
         public Vector params;  // of PVarDecl
         public Vector decls;   // of PVarDecl
         public String iPC;     // initial label of procedure
-
+        public AST.Procedure ast; // AST of the procedure
+                                  // Added 13 Jan 2011 by LL 
+        
         public ProcedureEntry(AST.Procedure p) {
             this.name = p.name;
             this.params = p.params;
             this.decls = p.decls;
+            this.ast = p;
             if (p.body.size() == 0) this.iPC = null;
             else {
                 AST.LabeledStmt ls = (AST.LabeledStmt) p.body.elementAt(0);
@@ -148,12 +151,15 @@ public class PcalSymTab {
         public TLAExpr id;       // set of identifiers or identifier
         public Vector decls;     // of ParDecl
         public String iPC;       // Initial pc of this process
+        public AST.Process ast; // AST of the procedure
+        // Added 13 Jan 2011 by LL 
 
         public ProcessEntry(AST.Process p) {
             this.name = p.name;
             this.isEq = p.isEq;
             this.id = p.id;
             this.decls = p.decls;
+            this.ast = p;
             if (p.body.size() == 0) this.iPC = null;
             else {
                 AST.LabeledStmt ls = (AST.LabeledStmt) p.body.elementAt(0);

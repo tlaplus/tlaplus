@@ -139,6 +139,13 @@ public class ParseAlgorithm
    
    public static Vector minusLabels;
    
+   /**
+    * proceduresCalled is the vector of distinct names of 
+    * procedures called within the current process.
+    */
+   
+   public static Vector proceduresCalled;
+   
    public static boolean hasDefaultInitialization;
      /**********************************************************************
      * Set true if any variable has a default initialization.              *
@@ -231,6 +238,7 @@ public class ParseAlgorithm
     // never hurt.
     plusLabels = new Vector(0);
     minusLabels = new Vector(0);
+    proceduresCalled = new Vector(0);
     
    /******************************************************************
    * Initialize charReader.                                          *
@@ -483,6 +491,7 @@ public class ParseAlgorithm
        result.id   = GetExpr() ; 
        plusLabels = new Vector(0);
        minusLabels = new Vector(0);
+       proceduresCalled = new Vector(0);
        if (cSyntax) { GobbleThis(")") ; } ;
        if (result.id.tokens.size()==0)
          { ParsingError("Empty process id at ") ;}
@@ -499,6 +508,7 @@ public class ParseAlgorithm
 //       CheckLabeledStmtSeq(result.body) ;
        result.plusLabels = plusLabels;
        result.minusLabels = minusLabels;
+       result.proceduresCalled = proceduresCalled;
        return result ;
      }
 
@@ -1149,6 +1159,18 @@ public class ParseAlgorithm
           } ;
        GobbleThis(")") ;
        GobbleThis(";") ;
+       /*
+        * Add the called procedure's name to proceduresCalled if it
+        * is not already in it.
+        */
+       int i = 0 ;
+       while (    (i < proceduresCalled.size()) 
+    		   && ! result.to.equals(proceduresCalled.elementAt(i))) {
+    	   i++ ;
+       };
+       if (i == proceduresCalled.size()) {
+    	   proceduresCalled.addElement(result.to);
+       }
        return result ;
      }
 

@@ -302,6 +302,7 @@ public class AST
      * January 2011 to implement the Version 1.5 enhancement that allows
      * fairness modifiers on labels.  They are set much like the corresponding
      * fields of an AST.Procedure object, as described above.
+     * The proceduresCalled field was also added then.
      * 
      * @author lamport
      *
@@ -311,6 +312,7 @@ public class AST
         public int fairness = UNFAIR_PROC ;
         public Vector minusLabels = new Vector();
         public Vector plusLabels = new Vector();
+        public Vector proceduresCalled = new Vector();
         public boolean   isEq  = true ; // true means "=", false means "\\in"
         public TLAExpr   id    = null ;
         public Vector    decls = null ; // of VarDecl
@@ -323,7 +325,8 @@ public class AST
                " fairness |-> \"" 
                  + FairnessString[fairness] + "\", minusLabels |-> "
                  + VectorToSeqQuotedString(minusLabels) + ", plusLabels |->"
-                 + VectorToSeqQuotedString(plusLabels) + ","
+                 + VectorToSeqQuotedString(plusLabels) + ", proceduresCalled |->"
+                 + VectorToSeqQuotedString(proceduresCalled) + ","
                + NewLine() +
                " eqOrIn |-> " + boolToEqOrIn(isEq) + "," + NewLine() +
                " id     |-> " + id.toString() + "," + NewLine() +

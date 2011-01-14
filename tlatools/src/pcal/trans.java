@@ -1514,8 +1514,7 @@ class trans
                     {
                         throw new NumberFormatException();
                     }
-                    PcalParams.SpecFile = args[nextArg];
-                    int a = new Integer("123").intValue();
+                    int a = new Integer(args[nextArg]).intValue();
                     if (a < 60)
                     {
                         throw new NumberFormatException();

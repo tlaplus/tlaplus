@@ -3,6 +3,7 @@ package pcal;
 import java.util.Vector;
 
 import pcal.exception.PcalTLAGenException;
+import pcal.exception.PcalTranslateException;
 import pcal.exception.TLAExprException;
 
 /****************************************************************************
@@ -1708,17 +1709,146 @@ public class PcalTLAGen
     /****************************************/
     /* Generate the Spec == ... definition. */
     /****************************************/
+    /***********************************************************************
+    * The spec can contain the following conjuncts                         *
+    *                                                                      *
+    * 1. Init /\ [][Next]_vars                                             *
+    *    Always present                                                    *
+    *                                                                      *
+    * 2. WF_var(Next)                                                      *
+    *    present if (a) The wfNext option is specified, or                 *
+    *               (b) It is a uniprocess algorithm and one of the        *
+    *                   options -wf, -sf, -termination is specified.       *
+    *                                                                      *
+    * 3. A sequence of process fairness formulas, containing               *
+    *    one for each process for which there is a fairness condition.     *
+    *                                                                      *
+    * A process has                                                        *
+    *    (a) a WF fairness condition iff                                   *
+    *         (i) it is preceded by the keyword "fair" and the -nof        *
+    *             option is not specified, or                              *
+    *        (ii) the -wf option is specified.                             *
+    *    (b) an SF fairness condition iff it is not preceded               *
+    *        by the keyword "fair" and the -sf option is specified.        *
+    *                                                                      *
+    * Let P be a process specified by either                               *
+    *                                                                      *
+    *     [fair] process (P = exp) ...                                     *
+    *     [fair] process (P \in exp) ...                                   *
+    *                                                                      *
+    * In the first case we say that P is a single process, in the second   *
+    * that it is a process set.  Let                                       *
+    *                                                                      *
+    *   - p_1, ... , p_Np  be the labels of P modified by "+"              *
+    *                                                                      *
+    *   - m_1, ... , m_Nm  be the set of labels of P modified by "-"       *
+    *                                                                      *
+    *   - pSelf = IF P is a single process THEN "pname"                    *
+    *                                       ELSE "self"                    *
+    *                                                                      *
+    *   - pName = IF P is a single process THEN "P"                        *
+    *                                       ELSE  "P(self)"                *
+    *                                                                      *
+    * A process fairness formula is described by the following:            *
+    *                                                                      *
+    *    XF:                                                               *
+    *       either WF or SF depending on P's fairness condition            *
+    *                                                                      *
+    *    prefix:                                                           *
+    *       if P is a single process                                       *
+    *         then ""                                                      *
+    *         else "\A self \in exp"                                       *
+    *                                                                      *
+    *    wfFormula:                                                        *
+    *       "XF( (pc[pSelf] \notin {"m_1", ... , "m_Np"}) /\ pName )"      *
+    *                                                                      *
+    *    sfFormula:                                                        *
+    *       if XF = SF                                                     *
+    *         then null                                                    *
+    *         else if P a single process                                   *
+    *                then "SF_vars(p_1) /\ ... /\ SF_vars(p_Np)"           *
+    *                else "SF_vars(p_1(self)) /\ ...                       *
+    *                         /\ SF_vars(p_Np(self))"                      *
+    *                                                                      *
+    *    prcdFormulas:                                                     *
+    *       A sequence consisting of the following two formulas for each   *
+    *       procedure D called within P.  Let                              *
+    *                                                                      *
+    *         - pd_1, ... , pd_Npd  be the labels of D modified by "+"     *
+    *         - md_1, ... , md_Nmd  be the labels of D modified by "-"     *
+    *                                                                      *
+    *       in the formulas:                                               *
+    *                                                                      *
+    *         wfFormula:                                                   *
+    *           "XF( (pc[pSelf] \notin {"md_1", ... , "md_Nmd"})           *
+    *                    /\ D(pName) )"                                    *
+    *                                                                      *
+    *         sfFormula:                                                   *
+    *            if XF = SF                                                *
+    *              then null                                               *
+    *              else "SF_vars(pd_1(self)) /\ ...                        *
+    *                            /\ SF_vars(pd_Npd(self))"                 *
+    *                                                                      *
+    * -------                                                              *
+    *                                                                      *
+    * If there is at least one fairness formula, the definition of Spec    *
+    * will be formatted in one of two ways.  If there is either a          *
+    * WF_vars(Next) condition or a process fairness formula, then it may   *
+    * be formatted as:                                                     *
+    *                                                                      *
+    *   Spec == Init /\ [][Next]_vars                                      *
+    *                                                                      *
+    * otherwise, it will be formatted as                                   *
+    *                                                                      *
+    *   Spec == /\ Init /\ [][Next]_vars                                   *
+    *          [/\ WF_vars(Next)]                                          *
+    *           /\ F_1                                                     *
+    *           ...                                                        *
+    *           /\ F_n                                                     *
+    *                                                                      *
+    * where each F_i is a process fairness formulas.                       *
+    ***********************************************************************/
     private void GenSpec()
-    {
-        StringBuffer sb = new StringBuffer("Spec == Init /\\ [][Next]_vars");
+    {   String safetyFormula = "Init /\\ [][Next]_vars" ;
+    	
+        if (    PcalParams.FairnessOption.equals("nof")
+             || (!mp && PcalParams.FairnessOption.equals(""))) {
+        	tlacode.addElement("Spec == " + safetyFormula + "\n");
+        	return;
+        }
+//System.out.println("foo |-> " + st.UseThis(PcalSymTab.PROCEDURE, "foo", ""));
+//int to = st.FindProc("foo");
+//PcalSymTab.ProcedureEntry pe =
+//    (PcalSymTab.ProcedureEntry) st.procs.elementAt(to);
+//AST.Procedure procAst = pe.ast;
+
+    	StringBuffer sb = new StringBuffer("Spec == ");
         // Generate the reqeusted fairness conjuncts
-        if (PcalParams.FairnessOption.equals("wfNext") || (!mp && PcalParams.FairnessOption.equals("wf")))
+
+    	String wfNextConj = null; 
+    	if (   PcalParams.FairnessOption.equals("wfNext") 
+        	|| (!mp && (   PcalParams.FairnessOption.equals("wf")
+        			    || PcalParams.FairnessOption.equals("sf"))))
         {
-            // If uniprocess then wf is the same as wfNext
-            sb.append(" /\\ WF_vars(Next)");
-            tlacode.addElement(sb.toString());
-        } else if (mp && (PcalParams.FairnessOption.equals("wf") || PcalParams.FairnessOption.equals("sf")))
-        {
+            // If uniprocess then wf and sf are the same as wfNext
+        	wfNextConj = " /\\ WF_vars(Next)";
+        }         
+    	
+    	Vector <ProcessFairness> procFairnessFormulas = new Vector() ;
+    	
+        if (mp) {
+           for (int i = 0; i < st.processes.size(); i++) {
+        	   PcalSymTab.ProcessEntry p = (PcalSymTab.ProcessEntry) st.processes.elementAt(i);
+        	   AST.Process pAst = p.ast ;
+        	   int fairness = pAst.fairness;
+        	   if (fairness != AST.UNFAIR_PROC) {
+        		   String xf = (fairness == AST.WF_PROC) ? "WF_vars" : "SF_vars";
+// This is buggy because the prefix comes from a TLAExpr, which can be multiline
+// and therefore must have its indentation preserved.
+        		   String prefix = (p.isEq) ? "" : "\\A self \\in " ;
+        	   }
+        	   
+        }
             // Fairness for each process
             String fairness = ((PcalParams.FairnessOption.equals("wf")) ? "WF" : "SF");
             Vector lines = new Vector(); // For procedures and processes
@@ -2203,5 +2333,157 @@ public class PcalTLAGen
         }
         ;
         return vec;
+    }
+    
+    /*
+     * The following methods and classes of objects are used in GenSpec().
+     * See the comments preceding that method above.
+     */
+    
+    /**
+     * A FormulaPair should never have wf = null, but might have sf = null.
+     */
+    public static class FormulaPair {
+    	public String wf ;
+    	public String sf ;
+    	
+    	public FormulaPair(String wfVal, String sfVal) {
+    		this.wf = wfVal;
+    		this.sf = sfVal;
+    	}
+    	
+    	/**
+    	 * The string  wf /\ sf , or just wf if sf is null.
+    	 * @return
+    	 */
+    	public String singleLine() {
+    		if (sf == null) {
+    			return wf ;
+    		} 
+    		return wf + " /\\ " + sf ;
+    	}
+    	
+    	/**
+    	 * The width of the singleLine representation of the 
+    	 * conjunction of the formlas.
+    	 * 
+    	 * @return
+    	 */
+    	public int singleLineWidth() {
+    		return singleLine().length();   		
+    	}
+    	
+    	/**
+    	 * The representation of the conjunction of the formulas with
+    	 * prefix /\s, where the first /\ appears in column col (Java
+    	 * numbering), ending with a "\n"
+    	 * 
+    	 * @return
+    	 */
+    	public String multiLine(int col) {
+    		String val = "/\\ " + wf ;
+    		if (sf == null) {
+    			return val;
+    		}
+    		return val + "\n" + NSpaces(col) + "/\\ " + sf + "\n" ;
+    	}
+    }
+    
+    /**
+     * Describes a process fairness formula, as described in the comments
+     * preceding the  GetSpec() method above.
+     * @author lamport
+     *
+     */
+    public static class ProcessFairness {
+    	public String xf ; // either "WF" or "SF"
+    	public String prefix ; // either "\A self \in exp : " (note
+    	                       // the ending space) or ""
+    	public FormulaPair bodyFormulas ; // fairness conditions for the proc's body
+    	public Vector <FormulaPair> prcdFormulas ; // fairness conditions for the procedure
+
+    	/** 
+    	 * The constructor
+    	 * @param xfVal
+    	 * @param prefixVal
+    	 * @param bodyWF : can be null if bodySF is also null
+    	 * @param bodySF : can be null
+    	 * @param prcdVal
+    	 */
+    	public ProcessFairness (String xfVal, String prefixVal, String bodyWF,
+    			                String bodySF, Vector <FormulaPair> prcdVal) {
+    		xf = xfVal;
+    		prefix = prefixVal;
+    		bodyFormulas = null ;
+    		if (bodyWF != null) {
+    			bodyFormulas = new FormulaPair(bodyWF, bodySF);
+    		}
+    		prcdFormulas = prcdVal;
+    	}
+    	
+    	/**
+    	 * The process fairness condition written as a single-line formula
+    	 * @return
+    	 */
+    	public StringBuffer singleLine() {
+    		StringBuffer val = new StringBuffer(prefix + bodyFormulas.wf);
+    		if (bodyFormulas.sf != null) {
+    			val.append(" /\\ " + bodyFormulas.sf);
+    		} 
+    		if (prcdFormulas != null) {
+    			for (int i = 0 ; i < prcdFormulas.size(); i++) {
+    				val.append(prcdFormulas.elementAt(i).singleLine());
+    			}
+    		}
+    		return val ;
+    	}
+    	
+    	/**
+    	 * The process fairness condition written as a formula that
+    	 * begins in column col (Java numbering) and ends with "\n".
+    	 * It is formatted to try to extend no further than column 
+    	 * PcalTLAGen.wrapColumn, but no individual formula is split
+    	 * across lines.
+    	 * 
+    	 * @param col
+    	 * @return
+    	 */
+    	public StringBuffer Format(int col) {
+    		StringBuffer val = this.singleLine();
+    		/*
+    		 * Return the single-line form if either it fits on the
+    		 * line or if it consists of only the wf formula (so it can't
+    		 * be put on multiple lines).
+    		 */
+    		if (   (col + val.length() <= PcalTLAGen.wrapColumn)
+    		     || (bodyFormulas.sf == null 
+    		          && (prcdFormulas == null || prcdFormulas.size() == 0))) {
+    			val.append("\n");
+    			return val;
+    		}
+    		val = new StringBuffer(prefix);
+    		int curCol = col + val.length();
+    		String line = this.bodyFormulas.singleLine();
+    		if (curCol + line.length() + 3 <= PcalTLAGen.wrapColumn) {
+    		   val.append("/\\ " + line + "\n");
+    		} else {
+    			val.append(this.bodyFormulas.multiLine(curCol));
+    		}
+    		if (prcdFormulas == null) {
+    			return val;
+    		}
+    		for (int i = 0; i < this.prcdFormulas.size(); i++) {
+    		    FormulaPair form = this.prcdFormulas.elementAt(i) ;
+    		    line = form.singleLine();
+    		    if (curCol + line.length() + 3 <= PcalTLAGen.wrapColumn) {
+    	    		   val.append("/\\ " + line + "\n");
+    	    		} else {
+    	    			val.append(form.multiLine(curCol));
+    	    		}
+    		}
+    		return val;
+    	}
+
+    	
     }
 }
