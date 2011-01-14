@@ -310,9 +310,9 @@ public class AST
     public static class Process extends AST
       { public String    name  = "" ;
         public int fairness = UNFAIR_PROC ;
-        public Vector minusLabels = new Vector();
-        public Vector plusLabels = new Vector();
-        public Vector proceduresCalled = new Vector();
+        public Vector <String> minusLabels = new Vector();
+        public Vector <String> plusLabels = new Vector();
+        public Vector <String> proceduresCalled = new Vector();
         public boolean   isEq  = true ; // true means "=", false means "\\in"
         public TLAExpr   id    = null ;
         public Vector    decls = null ; // of VarDecl

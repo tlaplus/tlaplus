@@ -1744,10 +1744,15 @@ public class PcalTLAGen
     *   - m_1, ... , m_Nm  be the set of labels of P modified by "-"       *
     *                                                                      *
     *   - pSelf = IF P is a single process THEN "pname"                    *
-    *                                       ELSE "self"                    *
+    *                                      ELSE "self"                     *
+    *                                                                      *
+    *   - qSelf = IF /\ P is a single process                              *
+    *                /\ pSelf a multi-line formula                         *
+    *               THEN "self"                                            *
+    *               ELSE pSelf                                             *
     *                                                                      *
     *   - pName = IF P is a single process THEN "P"                        *
-    *                                       ELSE  "P(self)"                *
+    *                                      ELSE  "P(self)"                 *
     *                                                                      *
     * A process fairness formula is described by the following:            *
     *                                                                      *
@@ -1755,12 +1760,14 @@ public class PcalTLAGen
     *       either WF or SF depending on P's fairness condition            *
     *                                                                      *
     *    prefix:                                                           *
-    *       if P is a single process                                       *
-    *         then ""                                                      *
-    *         else "\A self \in exp"                                       *
+    *       IF P is a single process                                       *
+    *         THEN IF pSelf a multi-line formula                           *
+    *                THEN "LET self = pSelf IN"                            *
+    *                ELSE ""                                               *
+    *         ELSE "\A self \in exp"                                       *
     *                                                                      *
     *    wfFormula:                                                        *
-    *       "XF( (pc[pSelf] \notin {"m_1", ... , "m_Np"}) /\ pName )"      *
+    *       "XF( (pc[qSelf] \notin {"m_1", ... , "m_Np"}) /\ pName )"      *
     *                                                                      *
     *    sfFormula:                                                        *
     *       if XF = SF                                                     *
@@ -1780,14 +1787,14 @@ public class PcalTLAGen
     *       in the formulas:                                               *
     *                                                                      *
     *         wfFormula:                                                   *
-    *           "XF( (pc[pSelf] \notin {"md_1", ... , "md_Nmd"})           *
-    *                    /\ D(pName) )"                                    *
+    *           "XF( (pc[qSelf] \notin {"md_1", ... , "md_Nmd"})           *
+    *                    /\ D(qSelf) )"                                    *
     *                                                                      *
     *         sfFormula:                                                   *
     *            if XF = SF                                                *
     *              then null                                               *
-    *              else "SF_vars(pd_1(self)) /\ ...                        *
-    *                            /\ SF_vars(pd_Npd(self))"                 *
+    *              else "SF_vars(pd_1(qSelf)) /\ ...                       *
+    *                            /\ SF_vars(pd_Npd(qSelf))"                *
     *                                                                      *
     * -------                                                              *
     *                                                                      *
@@ -1813,7 +1820,8 @@ public class PcalTLAGen
     	
         if (    PcalParams.FairnessOption.equals("nof")
              || (!mp && PcalParams.FairnessOption.equals(""))) {
-        	tlacode.addElement("Spec == " + safetyFormula + "\n");
+        	tlacode.addElement("Spec == " + safetyFormula );
+        	tlacode.addElement("");
         	return;
         }
 //System.out.println("foo |-> " + st.UseThis(PcalSymTab.PROCEDURE, "foo", ""));
@@ -1823,8 +1831,9 @@ public class PcalTLAGen
 //AST.Procedure procAst = pe.ast;
 
     	StringBuffer sb = new StringBuffer("Spec == ");
-        // Generate the reqeusted fairness conjuncts
+        // Generate the requested fairness conjuncts
 
+    	// wfNextConj is either null or  " /\ WF_(Next)" 
     	String wfNextConj = null; 
     	if (   PcalParams.FairnessOption.equals("wfNext") 
         	|| (!mp && (   PcalParams.FairnessOption.equals("wf")
@@ -1834,102 +1843,195 @@ public class PcalTLAGen
         	wfNextConj = " /\\ WF_vars(Next)";
         }         
     	
-    	Vector <ProcessFairness> procFairnessFormulas = new Vector() ;
-    	
+    	// Now compute procFairnessFormulas to equal the processes' fairness 
+    	// formulas, which is never null but may have zero length.
+    	Vector <ProcessFairness> procFairnessFormulas = new Vector<ProcessFairness>() ;
         if (mp) {
            for (int i = 0; i < st.processes.size(); i++) {
         	   PcalSymTab.ProcessEntry p = (PcalSymTab.ProcessEntry) st.processes.elementAt(i);
         	   AST.Process pAst = p.ast ;
         	   int fairness = pAst.fairness;
         	   if (fairness != AST.UNFAIR_PROC) {
-        		   String xf = (fairness == AST.WF_PROC) ? "WF_vars" : "SF_vars";
-// This is buggy because the prefix comes from a TLAExpr, which can be multiline
-// and therefore must have its indentation preserved.
-        		   String prefix = (p.isEq) ? "" : "\\A self \\in " ;
-        	   }
+        		   String xf = (fairness == AST.WF_PROC) ? "WF" : "SF";
+        		   
+                   Vector pSelf = p.id.toStringVector();
+                   
+                   // makeLetIn is true iff prefix will be LET self == ... IN
+                   boolean makeLetIn = false ;
+                   
+                   String qSelf = "self";
+                   if (p.isEq) {
+                       if (pSelf.size() > 1) {
+                           makeLetIn = true ;
+                       } else {
+                           qSelf = (String) pSelf.elementAt(0);
+                       }  
+                   }
+                   
+                   Vector <String> prefix = new Vector();
+        		   if (makeLetIn || !p.isEq) {
+                       int prefixSize = pSelf.size();
+                       String prefixBegin;
+                       String prefixEnd;
+                       if (p.isEq) {
+                           prefixBegin = "LET self == ";
+                           prefixEnd = "";
+                       } else {
+                           prefixBegin = "\\A self \\in ";
+                           prefixEnd = " : ";
+                       }
+                       String padding = NSpaces(prefixBegin.length());
+                       for (int j = 0; j < prefixSize; j++) {
+                           String line = (String) pSelf.elementAt(j);
+                           if (j == 0) {
+                               line = prefixBegin + line;
+                           } else {
+                               line = padding + line;
+                           }
+                           if (j == prefixSize - 1) {
+                               line = line + prefixEnd;
+                           }
+                           prefix.addElement(line);
+                       }
+                       if (makeLetIn) {
+                           prefix.addElement("IN ");
+                       }
+        		   } // end if (makeLetIn || !p.isEq)
+        		   
+        		   StringBuffer wfSB = new StringBuffer(xf + "_vars(");
+        		   if (pAst.minusLabels != null && pAst.minusLabels.size() > 0) {
+        		       wfSB.append("(pc[");
+        		       wfSB.append(qSelf);
+        		       if (pAst.minusLabels.size() == 1) {
+        		           wfSB.append("] # \"");
+        		           wfSB.append(pAst.minusLabels.elementAt(0));
+        		           wfSB.append("\"");
+        		       } else {
+        		           wfSB.append("] \\notin {\"");
+        		           for (int j = 0; j < pAst.minusLabels.size(); j++) {
+        		               wfSB.append(pAst.minusLabels.elementAt(j));
+        		               if (j == pAst.minusLabels.size() - 1) {
+        		                   wfSB.append("\"}");
+        		               } else {
+        		                   wfSB.append("\", \"");
+        		               }
+        		           }
+        		       }
+        		       wfSB.append(") /\\ ");
+        		   }
+        		   
+        		   String pName = p.name;
+                   if (!p.isEq) {
+                       pName = p.name + "(self)";
+                   }
+                   wfSB.append(pName);
+        		   wfSB.append(")");
+        		   
+        		   StringBuffer sfSB = null ;
+        		   if (    xf.equals("WF") 
+        		       && (pAst.plusLabels != null) 
+        		       && (pAst.plusLabels.size() != 0)) {
+        		       sfSB = new StringBuffer() ;
+        		       for (int j = 0; j < pAst.plusLabels.size(); j++) {
+        		           if (j != 0) {
+        		               sfSB.append(" /\\ ");
+        		           }
+        		           sfSB.append("SF_vars(");
+        		           sfSB.append(pAst.plusLabels.elementAt(j));
+        		           if (!p.isEq) {
+        		               sfSB.append("(self)");
+        		           }
+        		           sfSB.append(")");
+        		       }
+        		   }
         	   
+        	       Vector <FormulaPair> prcdFormulas = new Vector<FormulaPair>();
+        	       Vector <String> procedures = pAst.proceduresCalled;
+                   for (int k = 0; k < procedures.size(); k++) {
+                       String originalName = procedures.elementAt(k);
+                       String name = st.UseThis(PcalSymTab.PROCEDURE, originalName, "");
+                       int procedureIndex = st.FindProc(name);
+                       PcalSymTab.ProcedureEntry pe =
+                          (PcalSymTab.ProcedureEntry) st.procs.elementAt(procedureIndex);
+                       AST.Procedure prcAst = pe.ast;
+
+                       StringBuffer wfPrcSB = new StringBuffer(xf + "_vars(");
+                       if (prcAst.minusLabels != null && prcAst.minusLabels.size() > 0) {
+                           wfPrcSB.append("(pc[");
+                           wfPrcSB.append(qSelf);
+                           if (prcAst.minusLabels.size() == 1) {
+                               wfPrcSB.append("] # \"");
+                               wfPrcSB.append(prcAst.minusLabels.elementAt(0));
+                               wfPrcSB.append("\"");
+                           } else {
+                               wfPrcSB.append("] \\notin {\"");
+                               for (int j = 0; j < prcAst.minusLabels.size(); j++) {
+                                   wfPrcSB.append(prcAst.minusLabels.elementAt(j));
+                                   if (j == prcAst.minusLabels.size() - 1) {
+                                       wfPrcSB.append("\"}");
+                                   } else {
+                                       wfPrcSB.append("\", \"");
+                                   }
+                               }
+                           }
+                           wfPrcSB.append(") /\\ ");
+                       }
+    
+                       String prcName = pe.name + "(" + qSelf + ")";
+                       wfPrcSB.append(prcName);
+                       wfPrcSB.append(")");
+                                          
+                       StringBuffer sfPrcSB = null;
+                       if (    xf.equals("WF") 
+                           && (prcAst.plusLabels != null) 
+                           && (prcAst.plusLabels.size() != 0)) {
+                           sfPrcSB = new StringBuffer() ;
+                           for (int j = 0; j < prcAst.plusLabels.size(); j++) {
+                               if (j != 0) {
+                                   sfPrcSB.append(" /\\ ");
+                               }
+                               sfPrcSB.append("SF_vars(");
+                               sfPrcSB.append(prcAst.plusLabels.elementAt(j));
+                               sfPrcSB.append("(" + qSelf + ")") ;
+                               sfPrcSB.append(")");
+                           }
+                       }
+                       prcdFormulas.addElement(
+                            new FormulaPair(
+                                    wfPrcSB.toString(), 
+                                    (sfPrcSB == null) ? null : sfPrcSB.toString())
+                          ) ;
+                     } // end construction of prcdFormulas
+        	       
+        	       procFairnessFormulas.addElement(
+        	         new ProcessFairness(
+        	                 xf, 
+        	                 prefix, 
+        	                 wfSB.toString(), 
+        	                 (sfSB == null) ? null : sfSB.toString(), 
+        	                 prcdFormulas)
+        	              ) ;
+               } // end if (fairness != AST.UNFAIR_PROC)
+           } 	   
+        } // ends construction of procFairnessFormulas
+           
+        if (wfNextConj == null && procFairnessFormulas.size() == 0) {
+            tlacode.addElement("Spec == " + safetyFormula);
+            tlacode.addElement("");
+            return;
         }
-            // Fairness for each process
-            String fairness = ((PcalParams.FairnessOption.equals("wf")) ? "WF" : "SF");
-            Vector lines = new Vector(); // For procedures and processes
-            Vector setLines = new Vector(); // For process sets
-            // lines is a vector of strings
-            // setLines is a vector of vectors of strings
-            // Procedures
-            for (int i = 0; i < st.procs.size(); i++)
-            {
-                PcalSymTab.ProcedureEntry p = (PcalSymTab.ProcedureEntry) st.procs.elementAt(i);
-                StringBuffer sbl = new StringBuffer("\\A self \\in ProcSet: ");
-                sbl.append(fairness);
-                sbl.append("_vars(");
-                sbl.append(p.name);
-                sbl.append("(self))");
-                lines.addElement(sbl.toString());
-            }
-            // Processes
-            for (int i = 0; i < st.processes.size(); i++)
-            {
-                PcalSymTab.ProcessEntry p = (PcalSymTab.ProcessEntry) st.processes.elementAt(i);
-                if (!p.isEq)
-                    continue;
-                StringBuffer sbl = new StringBuffer(fairness);
-                sbl.append("_vars(");
-                sbl.append(p.name);
-                sbl.append(")");
-                lines.addElement(sbl.toString());
-            }
-            // Process sets
-            for (int i = 0; i < st.processes.size(); i++)
-            {
-                PcalSymTab.ProcessEntry p = (PcalSymTab.ProcessEntry) st.processes.elementAt(i);
-                if (p.isEq)
-                    continue;
-                Vector v = new Vector();
-                StringBuffer sbl = new StringBuffer("\\A self \\in ");
-                Vector sv = p.id.toStringVector();
-                int colV = sbl.length();
-                sbl.append((String) sv.elementAt(0));
-                for (int j = 1; j < sv.size(); j++)
-                {
-                    v.addElement(sbl.toString());
-                    sbl = new StringBuffer(NSpaces(colV));
-                    sbl.append((String) sv.elementAt(j));
-                }
-                sbl.append(": ");
-                sbl.append(fairness);
-                sbl.append("_vars(");
-                sbl.append(p.name);
-                sbl.append("(self))");
-                v.addElement(sbl.toString());
-                setLines.addElement(v);
-            }
-            // Put the generated code with proper indentation
-            if (lines.size() + setLines.size() > 1)
-                sb.append(" /\\");
-            int col = sb.length();
-            for (int i = 0; i < lines.size(); i++)
-            {
-                sb.append(" /\\ ");
-                sb.append((String) lines.elementAt(i));
-                tlacode.addElement(sb.toString());
-                sb = new StringBuffer(NSpaces(col));
-            }
-            for (int i = 0; i < setLines.size(); i++)
-            {
-                sb.append(" /\\ ");
-                int colV = sb.length();
-                Vector v = (Vector) setLines.elementAt(i);
-                for (int j = 0; j < v.size(); j++)
-                {
-                    sb.append((String) v.elementAt(j));
-                    tlacode.addElement(sb.toString());
-                    sb = new StringBuffer(NSpaces(colV));
-                }
-                sb = new StringBuffer(NSpaces(col));
-            }
-        } else
-            tlacode.addElement(sb.toString());
+        
+        tlacode.addElement("Spec == /\\ " + safetyFormula) ;
+        int indent = "Spec == /\\ ".length();
+        
+        for (int i = 0; i < procFairnessFormulas.size(); i++) {
+                tlacode.addElement(
+                        "        /\\ " +
+                        procFairnessFormulas.elementAt(i).format(indent)
+                         );
+        }
         tlacode.addElement("");
+        return;
     }
 
     /************************************/
@@ -2370,13 +2472,16 @@ public class PcalTLAGen
     	 * @return
     	 */
     	public int singleLineWidth() {
-    		return singleLine().length();   		
+    	    if (sf == null) {
+                return wf.length() ;
+            } 
+            return wf.length() + " /\\ ".length() + sf.length() ;   		
     	}
     	
     	/**
     	 * The representation of the conjunction of the formulas with
     	 * prefix /\s, where the first /\ appears in column col (Java
-    	 * numbering), ending with a "\n"
+    	 * numbering), witout any ending "\n"
     	 * 
     	 * @return
     	 */
@@ -2385,7 +2490,7 @@ public class PcalTLAGen
     		if (sf == null) {
     			return val;
     		}
-    		return val + "\n" + NSpaces(col) + "/\\ " + sf + "\n" ;
+    		return val + "\n" + NSpaces(col) + "/\\ " + sf;
     	}
     }
     
@@ -2397,8 +2502,9 @@ public class PcalTLAGen
      */
     public static class ProcessFairness {
     	public String xf ; // either "WF" or "SF"
-    	public String prefix ; // either "\A self \in exp : " (note
-    	                       // the ending space) or ""
+    	public Vector <String> prefix ; 
+    	    // StringVector either "\A self \in exp : " or
+    	    // "LET self == exp \n IN " (note the ending space) or ""
     	public FormulaPair bodyFormulas ; // fairness conditions for the proc's body
     	public Vector <FormulaPair> prcdFormulas ; // fairness conditions for the procedure
 
@@ -2410,7 +2516,7 @@ public class PcalTLAGen
     	 * @param bodySF : can be null
     	 * @param prcdVal
     	 */
-    	public ProcessFairness (String xfVal, String prefixVal, String bodyWF,
+    	public ProcessFairness (String xfVal, Vector <String> prefixVal, String bodyWF,
     			                String bodySF, Vector <FormulaPair> prcdVal) {
     		xf = xfVal;
     		prefix = prefixVal;
@@ -2420,24 +2526,102 @@ public class PcalTLAGen
     		}
     		prcdFormulas = prcdVal;
     	}
-    	
     	/**
-    	 * The process fairness condition written as a single-line formula
+    	 * The width of the fairness formula written as a "single-line"
+    	 * formula.  Single-line means that it is not written as a 
+    	 * conjunction list (with a leading /\).  It will actually
+    	 * occupy multiple lines if prefix is a multi-line formula.
+    	 * 
     	 * @return
     	 */
-    	public StringBuffer singleLine() {
-    		StringBuffer val = new StringBuffer(prefix + bodyFormulas.wf);
+    	public int singleLineWidth() {
+    	    // Set maxPrefixWidth to length of longest non-final
+    	    // line of prefix, width to lenght of final line
+    	    int maxPrefixWidth = 0 ;
+    	    int width = 0  ;
+    	    if (prefix != null && prefix.size() > 0) {
+    	        for (int i = 0; i < prefix.size() - 1; i++) {
+    	            String line =  prefix.elementAt(i);
+    	            if (line.length() > maxPrefixWidth) {
+    	                maxPrefixWidth = line.length();
+    	            }
+    	            String lastLine = prefix.elementAt(prefix.size()-1);
+    	            width = lastLine.length();
+    	        }
+    	    }
+    	    width = width + bodyFormulas.wf.length();
+            if (bodyFormulas.sf != null) {
+                 width = width + bodyFormulas.sf.length();
+            } 
+            if (prcdFormulas != null) {
+                for (int i = 0 ; i < prcdFormulas.size(); i++) {
+                    width = width + prcdFormulas.elementAt(i).singleLineWidth();
+                }
+            }
+            if (maxPrefixWidth > width) {
+                return maxPrefixWidth;
+            }
+            return width ;
+    	}
+    	
+    	/**
+    	 * Returns the prefix as a StringBuffer, assuming it starts
+    	 * in column col.  That is, all but the first line is indented
+    	 * with col spaces, and all but the last line is ended with
+    	 * a \n .
+    	 * 
+    	 * @param col
+    	 * @return
+    	 */
+    	private StringBuffer prefixAsStringBuffer(int col) {
+    	    StringBuffer val = new StringBuffer();
+            if (prefix != null && prefix.size() > 0) {
+                for (int i = 0; i < prefix.size(); i++) {
+                    String line =  prefix.elementAt(i);
+                    if (i != 0) {
+                        val.append(NSpaces(col));
+                    }
+                    val.append(line) ;
+                    if (i != prefix.size()-1) {
+                        val.append("\n") ;
+                    }                   
+                }
+            }
+            return val;
+    	}
+    	/**
+    	 * The process fairness condition written as a single-line formula,
+    	 * starting in column col.
+    	 * @return
+    	 */
+    	public StringBuffer singleLine(int col) {
+    	    StringBuffer val = prefixAsStringBuffer(col);
+    	    val.append(bodyFormulas.wf);
     		if (bodyFormulas.sf != null) {
-    			val.append(" /\\ " + bodyFormulas.sf);
+    			val.append(" /\\ ");
+    			val.append(bodyFormulas.sf);
     		} 
     		if (prcdFormulas != null) {
     			for (int i = 0 ; i < prcdFormulas.size(); i++) {
+    			    val.append(" /\\ ");
     				val.append(prcdFormulas.elementAt(i).singleLine());
     			}
     		}
     		return val ;
     	}
     	
+    	/**
+    	 * Returns true iff format(col) should return a single-line version
+    	 * of the formula.
+    	 * 
+    	 * @param col
+    	 * @return
+    	 */
+    	private boolean fitsAsSingleLine(int col) {
+    	    return     (col + singleLineWidth() <= PcalTLAGen.wrapColumn)
+                    || (bodyFormulas.sf == null 
+                        && (prcdFormulas == null || prcdFormulas.size() == 0));
+    	}
     	/**
     	 * The process fairness condition written as a formula that
     	 * begins in column col (Java numbering) and ends with "\n".
@@ -2448,24 +2632,25 @@ public class PcalTLAGen
     	 * @param col
     	 * @return
     	 */
-    	public StringBuffer Format(int col) {
-    		StringBuffer val = this.singleLine();
+    	public StringBuffer format(int col) {
+    		int singleLineWidth = this.singleLineWidth();
     		/*
     		 * Return the single-line form if either it fits on the
     		 * line or if it consists of only the wf formula (so it can't
     		 * be put on multiple lines).
     		 */
-    		if (   (col + val.length() <= PcalTLAGen.wrapColumn)
-    		     || (bodyFormulas.sf == null 
-    		          && (prcdFormulas == null || prcdFormulas.size() == 0))) {
-    			val.append("\n");
-    			return val;
+    		if (fitsAsSingleLine(col)) {
+    		    return this.singleLine(col);
     		}
-    		val = new StringBuffer(prefix);
-    		int curCol = col + val.length();
+    		StringBuffer val = prefixAsStringBuffer(col);
+    		int prefixWidth = 0;
+    		if (prefix != null && prefix.size() > 0) {
+    		    prefixWidth = ((String) prefix.elementAt(prefix.size()-1)).length();
+    		}
+    		int curCol = col + prefixWidth;
     		String line = this.bodyFormulas.singleLine();
     		if (curCol + line.length() + 3 <= PcalTLAGen.wrapColumn) {
-    		   val.append("/\\ " + line + "\n");
+    		   val.append("/\\ " + line);
     		} else {
     			val.append(this.bodyFormulas.multiLine(curCol));
     		}
@@ -2475,6 +2660,8 @@ public class PcalTLAGen
     		for (int i = 0; i < this.prcdFormulas.size(); i++) {
     		    FormulaPair form = this.prcdFormulas.elementAt(i) ;
     		    line = form.singleLine();
+    		    val.append("\n");
+    		    val.append(NSpaces(curCol));
     		    if (curCol + line.length() + 3 <= PcalTLAGen.wrapColumn) {
     	    		   val.append("/\\ " + line + "\n");
     	    		} else {
