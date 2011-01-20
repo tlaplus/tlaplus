@@ -2024,6 +2024,9 @@ public class PcalTLAGen
         tlacode.addElement("Spec == /\\ " + safetyFormula) ;
         int indent = "Spec == /\\ ".length();
         
+        if (wfNextConj != null) {
+            tlacode.addElement("        /\\ WF_vars(Next)");
+        }
         for (int i = 0; i < procFairnessFormulas.size(); i++) {
                 tlacode.addElement(
                         "        /\\ " +

@@ -43,7 +43,10 @@ import util.ToolIO;
 *                Added the options statement and the -lineWidth option.    *
 *                                                                          *               
 *   Version 1.5: (Jan 2011)                                                *
-*                 Added the -noDoneDisjunct option                         *
+*                 Added the -noDoneDisjunct option.                        *
+*                 Added the new way of specifying fairness, with           *
+*                 the "fair" keyword and the "+" and "-" label             *
+*                 modifiers.                                               *
 * -----------------------------------------------------------------        *
 *                                                                          *
 * This is the main method of the +CAL to TLA+ translation program.         *

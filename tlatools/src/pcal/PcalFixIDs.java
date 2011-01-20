@@ -98,15 +98,114 @@ public class PcalFixIDs {
     private static void FixMultiprocess (AST.Multiprocess ast, String context) throws PcalFixIDException {
         for (int i = 0; i < ast.decls.size(); i++)
             FixVarDecl((AST.VarDecl) ast.decls.elementAt(i), "");
-        for (int i = 0; i < ast.prcds.size(); i++)
-            FixProcedure((AST.Procedure) ast.prcds.elementAt(i), "");
-        for (int i = 0; i < ast.procs.size(); i++)
-            FixProcess((AST.Process) ast.procs.elementAt(i), "");
+        
+        // procedureNames and proceduresCalled represents the mapping
+        // from procedure Names to the set of names of procedures that
+        // they call.
+        Vector <String> procedureNames = new Vector();
+        Vector <Vector <String>> proceduresCalled = new Vector();
+        for (int i = 0; i < ast.prcds.size(); i++) {
+            AST.Procedure prcd = (AST.Procedure) ast.prcds.elementAt(i);
+            FixProcedure(prcd, "");
+// System.out.println("Start\n" + prcd.toString());
+            procedureNames.addElement(prcd.name);
+            proceduresCalled.addElement(prcd.proceduresCalled);
+        }
+        // We now use the Floyd-Warshall algorithm to compute the transitive
+        //  closure of the procedures' call graph, as represented by
+        // the proceduresNames and proceduresCalled vectors.  This algorithm
+        // is in the file FloydWarshall.tla, appended to the end of this
+        // file.
+        
+        // We first initialize the algorithm's main variable, path, where
+        // path[i][j] will be true iff the i-th procedure calls (perhaps
+        // indirectly the j-th procedure.  (Java counting.)  
+        int n = procedureNames.size();
+        boolean path[][] = new boolean[n][] ;
+        for (int i=0; i < n; i++) {
+            path[i] = new boolean[n];
+            String nm = procedureNames.elementAt(i);
+            for (int j = 0; j < n; j++) {
+                path[i][j] = (-1 != nameToNum(nm, proceduresCalled.elementAt(j)));
+            }
+        }
+        
+        // Here is the main loop of the Floyd-Warshall algorithm.
+        for (int k=0 ; k < n; k++) {
+            for (int i = 0; i < n ; i++) {
+                for (int j = 0; j < n; j++) {
+                    path[i][j] = path[i][j] || (path[i][k] && path[k][j]); 
+                }
+            }
+        }
+        
+        // We now set the procedures' proceduresCalled fields to the
+        // set of procedures called directly or indirectly.  This is
+        // unnecessary, and should be commented out.
+        for (int i = 0; i < ast.prcds.size(); i++) {
+            AST.Procedure prcd = (AST.Procedure) ast.prcds.elementAt(i);
+            Vector <String> pCalled = new Vector();
+            for (int j = 0; j < n; j++) {
+                if (path[i][j]) {
+                    pCalled.addElement(procedureNames.elementAt(j));
+                }
+            }
+            prcd.proceduresCalled = pCalled;
+// System.out.println(prcd.toString());            
+        }
+        
+        for (int i = 0; i < ast.procs.size(); i++) {
+            AST.Process proc = (AST.Process) ast.procs.elementAt(i);
+            FixProcess(proc, "");
+            
+            // We now fix proc.proceduresCalled by, for each procedure p in
+            // it, we add all the procedures that p calls.
+            Vector <String> pCalled = proc.proceduresCalled;
+            for (int j = 0; j < pCalled.size(); j++) {
+                // Set idx to the value such that pCalled.elementAt(j)
+                // is the name of the idx-th element in procedureNames.
+                String pName = pCalled.elementAt(j);
+                int pNum = nameToNum(pName, procedureNames);
+                if (pNum == -1) {
+                    PcalDebug.ReportBug(
+                     "Could not find procedure name `" + pName +
+                     "' in method FixMultiprocess");
+                }
+                // For each k such that path[pNum][k] is true
+                // (meaning that procedure number pNum calls
+                // procedure number k), add 
+                // procedureNames.elementAt(k) to proc.proceduresCalled
+                // if it is not already in it.
+                for (int k = 0; k < n; k++) {
+                  if (path[pNum][k]) {
+                      String callee = procedureNames.elementAt(k);
+                      if (! InVector(callee, proc.proceduresCalled)) {
+                          proc.proceduresCalled.addElement(callee); 
+                      }
+                  }
+                }
+//          System.out.println(proc.toString());                
+            }
+        }
     }
 
     /**
+     * If nm is the i-th element of names, then return i.  Otherwise,
+     * return -1 if nm is not any element of names.
+     * @return
+     */
+    private static int nameToNum(String nm, Vector <String> names) {
+        for (int i = 0; i < names.size(); i++) {
+            if (names.elementAt(i).equals(nm)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+    /**
      * FixProcedure modified by LL on 12 January 2011 so it also fixes the
      * plusLabels and minusLabels entries.
+     * 
      * @param ast
      * @param context
      * @throws PcalFixIDException
@@ -333,11 +432,114 @@ public class PcalFixIDs {
     /****************************************************************/
     /* Returns whether the string is present in a vector of string. */
     /****************************************************************/
-    private static boolean InVector(String var, Vector v) {
+    private static boolean InVector(String var, Vector <String> v) {
         for (int i = 0; i < v.size(); i++)
             if (var.equals((String) v.elementAt(i))) return true;
         return false;
     }
 
 }
+
+/***************************  the file FloydWarshall *************************************
+
+--------------------------- MODULE FloydWarshall ---------------------------
+(***************************************************************************)
+(*                                                                         *)
+(* The following is the Floyd-Warshall algorithm for computing the path    *)
+(* with the smallest total weight of all paths between any two nodes in a  *)
+(* completely connected graph, where edgeCost(i,j) is the weight on the    *)
+(* edge from i to j.  At the end of the computation, path[i][j] is the     *)
+(* minimum path weight of all paths from i to j.  It assumes that the      *)
+(* nodes are numbers in 1..n.  This algorith comes from Wikipedia          *)
+(*                                                                         *)
+(*   1 (* Assume a function edgeCost(i,j) which returns the cost           *)
+(*   2    of the edge from i to j (infinity if there is none).             *)
+(*   3    Also assume that n is the number of vertices and                 *)
+(*   4    edgeCost(i,i) = 0 *)                                             *)
+(*   5                                                                     *)
+(*   6 int path[][];                                                       *)
+(*   7 (* A 2-dimensional matrix. At each step in the algorithm,           *)
+(*   8    path[i][j] is the shortest path from i to j using intermediate   *)
+(*   9    vertices (1..k-1).  Each path[i][j] is initialized to            *)
+(*  10    edgeCost(i,j). *)                                                *)
+(*  11                                                                     *)
+(*  12 procedure FloydWarshall ()                                          *)
+(*  13    for k := 1 to n                                                  *)
+(*  14       for i := 1 to n                                               *)
+(*  15          for j := 1 to n                                            *)
+(*  16             path[i][j] = min ( path[i][j], path[i][k]+path[k][j] ); *)
+(*                                                                         *)
+(* We use modify it to an algorithm for computing connectivity in a        *)
+(* directed graph.  As observed in the Wikipedia page, we just replace     *)
+(* weights by Booleans, where FALSE is equivalent to a weight of infinity  *)
+(* (not connected) and TRUE is equivalent to a weight of zero (connected). *)
+(* Then min becomes disjunction and + becomes conjunction                  *)
+(***************************************************************************)
+EXTENDS Naturals, Sequences, TLC
+(***************************************************************************)
+(* We let 1..n be the set of nodes, and Nbrs be a function such that       *)
+(* Nbrs[i] is the set of neighbors of node i, which is the set of nodes j  *)
+(* such that there is an edge from i to j.                                 *)
+(***************************************************************************)
+CONSTANT n, Nbrs
+
+ASSUME /\ n \in Nat 
+       /\ Nbrs \in [1..n -> SUBSET (1..n)]
+
+(***************************************************************************)
+(* To be able to express correctness, we define Connected(i, j) to be true *)
+(* for nodes i and j if there is a path from i to j.  Correctness of the   *)
+(* algorithm then means that it terminates with                            *)
+(*                                                                         *)
+(*    path[i][j] = Connected(i, j)                                         *)
+(*                                                                         *)
+(* for all nodes i and j.                                                  *)
+(*                                                                         *)
+(* To define Connected, we observe that for a directed graph with n nodes, *)
+(* there is a path from node i to node j iff there is a path from i to j   *)
+(* of length at most n.  (A path of length k is a sequence of k+1 nodes,   *)
+(* each of which has an edge from it to the next one.) We therefore define *)
+(* Paths to be the set of all paths of length between 1 and n.  (In the    *)
+(* definition, P(m) is the set of all paths with m nodes, and hence of     *)
+(* length m-1.) We then define Connected in terms of Paths.                *)
+(***************************************************************************)
+Paths == LET P(m) == { f \in [1..m -> 1..n] : 
+                         \A q \in 1..(m-1) : f[q+1] \in Nbrs[f[q]] }
+         IN  UNION {P(m) : m \in 2..(n+1)}
+                       
+Connected(i, j) ==  \E p \in Paths : p[1] = i /\ p[Len(p)] = j
+
+(***********************************
+options (termination)
+--algorithm FloydWarshall {
+    variables path = [a \in 1..n |-> 
+                       [b \in 1..n |-> b \in Nbrs[a]]],
+    i, j, k;
+    { k := 1;
+      while (k =< n) {
+        i := 1 ;
+        while (i =< n) {
+          j := 1;
+          while (j =< n) {
+            path[i][j] := path[i][j] \/ (path[i][k] /\ path[k][j]); 
+            j := j+1;
+          } ;
+          i := i+1;
+        } ;
+        k := k+1
+      } ;
+      assert \A a, b \in 1..n : path[a][b] = Connected(a, b)
+    }
+}
+***********************************)
+\* BEGIN TRANSLATION
+\* END TRANSLATION
+=============================================================================
+\* Modification History
+\* Last modified Thu Jan 20 08:48:36 PST 2011 by lamport
+\* Created Wed Jan 19 10:05:18 PST 2011 by lamport
+
+
+*****************************************************************************************/
+
 

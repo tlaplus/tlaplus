@@ -261,6 +261,13 @@ public class AST
      * the GetLabel method.  They are then fixed to correct for label
      * conflicts by the FixProcedure method of PcalFixIDs.
      * 
+     * The proceduresCalled field was added later in Jan 2011 by LL because,
+     * since procedures can call other procedures, a transitive closure
+     * is required to compute the procedures called by a process.  (Those
+     * procedures need to be known to compute the fairness conditions, since
+     * a fairness requirement on a process implies a fairness requirement on
+     * all the procedures that the process calls.)
+     * 
      * @author lamport
      *
      */
@@ -268,6 +275,7 @@ public class AST
       { public String name   = "" ;
         public Vector minusLabels = new Vector();
         public Vector plusLabels = new Vector();
+        public Vector <String> proceduresCalled = new Vector();
         public Vector params = null ; // of PVarDecl
         public Vector decls  = null ; // of PVarDecl 
         public Vector body   = null ; // of LabeledStmt
@@ -277,7 +285,8 @@ public class AST
                "[name   |-> \"" + name + "\", " + NewLine() +
                "minusLabels |-> "
                + VectorToSeqQuotedString(minusLabels) + ", plusLabels |->"
-               + VectorToSeqQuotedString(plusLabels) + ","
+               + VectorToSeqQuotedString(plusLabels) + ", proceduresCalled |->"
+               + VectorToSeqQuotedString(proceduresCalled) + ","
              + NewLine() +
                Indent(" params |-> ") + VectorToSeqString(params) + "," + 
                EndIndent() + NewLine() +

@@ -124,7 +124,7 @@ public class ParseAlgorithm
    public static String currentProcedure;
      /**********************************************************************
      * This is set by GetProcedure to the procedure's name before the      *
-     * procedure body is parsed, and is reset to null aftewards.  Hence,   *
+     * procedure body is parsed, and is reset to null afterwards.  Hence,  *
      * its value is null unless in the middle of parsing a procedure.      *
      * (Its value is used to check for a <Return> not in a procedure       *
      * body.)                                                              *
@@ -141,7 +141,7 @@ public class ParseAlgorithm
    
    /**
     * proceduresCalled is the vector of distinct names of 
-    * procedures called within the current process.
+    * procedures called within the current process or procedure.
     */
    
    public static Vector proceduresCalled;
@@ -453,6 +453,7 @@ public class ParseAlgorithm
        currentProcedure = result.name ;
        plusLabels = new Vector(0);
        minusLabels = new Vector(0);
+       proceduresCalled = new Vector(0);
        GobbleThis("(") ;
        result.params = new Vector() ;
        boolean lookForComma = false ;
@@ -477,6 +478,7 @@ public class ParseAlgorithm
        currentProcedure = null ;
        result.plusLabels = plusLabels;
        result.minusLabels = minusLabels;
+       result.proceduresCalled = proceduresCalled ;
        return result ;
      }
 
