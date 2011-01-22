@@ -42,8 +42,8 @@ public class PcalTLAGen
     private Vector psV = new Vector(); /* list of process set vars */
     private PcalSymTab st = null; /* symbol table */
     private boolean mp = false; /* true if multiprocess, else unip */
-    private Vector nextStep = new Vector(); /* unparam actions */
-    private Vector nextStepSelf = new Vector(); /* param actions */
+    private Vector nextStep = new Vector(); /* unparam actions */ // For multiprocess alg, these are the individual (=) processes
+    private Vector nextStepSelf = new Vector(); /* param actions */ // These are process sets (\in processes) and procedures
 
     /**
      * The public method: generate TLA+ as a vector of strings. 
@@ -386,6 +386,14 @@ public class PcalTLAGen
     /* the right hand side are primed.                               */
     /**
      * ***************************************************************/
+    /**
+     * @param ast
+     * @param c
+     * @param context
+     * @param prefix
+     * @param col
+     * @throws PcalTLAGenException
+     */
     private void GenAssign(AST.Assign ast, Changed c, String context, String prefix, int col)
             throws PcalTLAGenException
     {
@@ -540,9 +548,15 @@ public class PcalTLAGen
                     TLAExpr sub = AddSubscriptsToExpr(sass.lhs.sub, SubExpr(Self(context)), c);
                     TLAExpr rhs = AddSubscriptsToExpr(sass.rhs, SubExpr(Self(context)), c);
                     sb.append("!");
-                    int here = sb.length();
-                    if (subscript)
+                    
+                    // On 21 Jan 2011, LL moved the following statement to below the if
+                    // to correct part 3 of bug_11_01_13.
+                    //
+                    // int here = sb.length();
+                    if (subscript) {
                         sb.append("[" + Self(context) + "]");
+                    }
+                    int here = sb.length();
                     Vector sv = sub.toStringVector();
                     if (sv.size() > 0)
                     {
@@ -1673,7 +1687,19 @@ public class PcalTLAGen
                     String line = (String) v.elementAt(j);
                     sb.append(line);
                     tlacode.addElement(sb.toString());
-                    sb = new StringBuffer(NSpaces(col + 4));
+                    
+                    // The following if case was added by LL on 22 Jan 2011
+                    // to correct part 1 of bug bug_11_01_13.  This  bug occurs
+                    // when an "\in" process's set is multi-line and that
+                    // process's next-state action comes immediately after 
+                    // the Next == ..., with no " \/ " preceding it.  To fix the
+                    // problem, we must add 6 fewer spaces to all lines after
+                    // the first in that process's set than in other such sets. 
+                    if ((nextSS.size() == 0) && (i == 0)) {
+                        sb = new StringBuffer(NSpaces(col - 2));
+                    } else {
+                        sb = new StringBuffer(NSpaces(col + 4));
+                    }
                 }
                 sb = new StringBuffer(NSpaces(col) + " \\/ ");
             }
