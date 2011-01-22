@@ -2,6 +2,8 @@ package pcal;
 
 import java.util.Vector;
 
+import com.sun.xml.internal.messaging.saaj.packaging.mime.internet.HeaderTokenizer.Token;
+
 import pcal.exception.PcalTLAGenException;
 import pcal.exception.PcalTranslateException;
 import pcal.exception.TLAExprException;
@@ -36,7 +38,8 @@ public class PcalTLAGen
 
     // Private class variables
     private Vector tlacode = new Vector(); /* of lines */
-    private String self = null; /* for current process */
+    private boolean selfIsSelf = false; 
+    private TLAExpr self = null; // changed by LL on 22 jan 2011 from: private String self = null; /* for current process */
     private Vector vars = new Vector(); /* list of disamb. vars */
     private Vector pcV = new Vector(); /* list of proc vars, params */
     private Vector psV = new Vector(); /* list of process set vars */
@@ -44,7 +47,12 @@ public class PcalTLAGen
     private boolean mp = false; /* true if multiprocess, else unip */
     private Vector nextStep = new Vector(); /* unparam actions */ // For multiprocess alg, these are the individual (=) processes
     private Vector nextStepSelf = new Vector(); /* param actions */ // These are process sets (\in processes) and procedures
-
+    // Following added to keep track of the length of the "lbl... == /\ "
+    // that precedes all the statements in the definition of a label's action
+    // because Keith screwed up and handled the assignment to the pc different 
+    // from that of all other variables, forgetting that the subscript exp
+    // in pc[exp] := ... can be multi-line.
+    private int kludgeToFixPCHandlingBug ;
     /**
      * The public method: generate TLA+ as a vector of strings. 
      * @param ast the AST of the PCal
@@ -177,7 +185,8 @@ public class PcalTLAGen
         int nsC = ast.name.length() + ((mp) ? "(self)".length() : 0) + " == ".length();
         if (mp)
         {
-            self = "self"; // subscript for variables is "self"
+            self = selfAsExpr(); // subscript for variables is "self"
+            selfIsSelf = true;
             /* Add this step to the disjunct of steps with (self) */
             nextStepSelf.addElement(ast.name + "(self)");
         } else
@@ -232,13 +241,14 @@ public class PcalTLAGen
         /************************************************************/
         if (ast.isEq)
         {
-            self = "";
-            Vector sv = ast.id.toStringVector();
-            for (int v = 0; v < sv.size(); v++)
-                self = self + ((String) sv.elementAt(v));
+            self = ast.id ;
+            selfIsSelf = false;
             isSet = false;
-        } else
-            self = "self";
+        } else {
+            self = selfAsExpr();
+            selfIsSelf = true;
+        }
+        
         int nsC = ast.name.length() + ((isSet) ? "(self)".length() : 0) + " == ".length();
         if (isSet)
         {
@@ -289,12 +299,16 @@ public class PcalTLAGen
         StringBuffer sb = new StringBuffer(ast.label);
         /* c is used to determine which vars are in UNCHANGED. */
         Changed c = new Changed(vars);
-        if (mp && (context.equals("procedure") || self.equals("self")))
+        if (mp && (context.equals("procedure") || selfIsSelf)) { // self.equals("self")))
             sb.append("(self)");
+        }   
         sb.append(" == ");
         int col = sb.length();
-        if (ast.stmts.size() > 1)
+        kludgeToFixPCHandlingBug = col;
+        if (ast.stmts.size() > 1) {
             sb.append("/\\ ");
+            kludgeToFixPCHandlingBug = kludgeToFixPCHandlingBug + 3;
+        }
         for (int i = 0; i < ast.stmts.size(); i++)
         {
             GenStmt((AST) ast.stmts.elementAt(i), c, context, sb.toString(), sb.length());
@@ -394,6 +408,22 @@ public class PcalTLAGen
      * @param col
      * @throws PcalTLAGenException
      */
+    /**
+     * @param ast
+     * @param c
+     * @param context
+     * @param prefix
+     * @param col
+     * @throws PcalTLAGenException
+     */
+    /**
+     * @param ast
+     * @param c
+     * @param context
+     * @param prefix
+     * @param col
+     * @throws PcalTLAGenException
+     */
     private void GenAssign(AST.Assign ast, Changed c, String context, String prefix, int col)
             throws PcalTLAGenException
     {
@@ -443,15 +473,35 @@ public class PcalTLAGen
                     int wrapCol = sb.length() + 2;
                     sb.append(sass.lhs.var);
                     sb.append(" EXCEPT ");
-                    if (sb.length() + prefix.length() > ssWrapColumn)
+                    
+                    Vector selfAsSV = self.toStringVector();
+                    
+                    // The test for selfAsSV size added by LL on 22 Jan 2011
+                    // because wrapping screws up the kludgeToFixPCHandlingBug
+                    // hack.
+                    if ( (sb.length() + prefix.length() > ssWrapColumn)
+                         && (selfAsSV.size() == 0))
                     {
                         lines.addElement(sb.toString());
                         sb = new StringBuffer(NSpaces(wrapCol));
                     }
                     sb.append("![");
-                    sb.append(self);
-                    sb.append("]");
+                    
+                    // following code was modified by LL on 22 Jan 2011 as part of
+                    // fixing bug 11_01_13, which required modifications to handle
+                    // the case where self is a multi-line formula, which can happen
+                    // for a "process (P = exp)" when exp is multi-line.
                     int here = sb.length();
+                    for (int idx = 0; idx < selfAsSV.size(); idx++) {
+                        if (idx > 0) {
+                            sb.append("\n");
+                            sb.append(NSpaces(here + kludgeToFixPCHandlingBug));
+                        }
+                        sb.append((String) selfAsSV.elementAt(idx)) ;
+                    }
+//                    sb.append(self);
+                    sb.append("]");
+                    here = here + ((String) selfAsSV.elementAt(selfAsSV.size()-1)).length() + 1;
                     Vector sv = sub.toStringVector();
                     /*****************************************************
                     * Was                                                *
@@ -552,11 +602,22 @@ public class PcalTLAGen
                     // On 21 Jan 2011, LL moved the following statement to below the if
                     // to correct part 3 of bug_11_01_13.
                     //
-                    // int here = sb.length();
-                    if (subscript) {
-                        sb.append("[" + Self(context) + "]");
-                    }
                     int here = sb.length();
+                    if (subscript) {
+                        Vector selfAsSV = Self(context).toStringVector();
+                        for (int idx = 0; idx < selfAsSV.size(); idx++) {
+                          String start = " ";
+                          if (idx == 0) {
+                              sb.append("[");
+                          } else {
+                              sb.append("\n");
+                              sb.append(NSpaces(here + 1));
+                          }
+                          sb.append((String) selfAsSV.elementAt(idx));
+                        }
+                        sb.append("]");
+                        here = here + ((String) selfAsSV.elementAt(selfAsSV.size()-1)).length() + 2;
+                    }
                     Vector sv = sub.toStringVector();
                     if (sv.size() > 0)
                     {
@@ -948,7 +1009,7 @@ public class PcalTLAGen
         sb.append(", ");
         sc.append("\"Failure of assertion at ");
         sc.append(ast.location());
-        // modified on 23 Mar 2006 by LL to use locatinn() instead of
+        // modified on 23 Mar 2006 by LL to use location() instead of
         // ast.line and ast.col
         sc.append(".\")");
         if (sb.length() + sc.length() < wrapColumn)
@@ -1695,7 +1756,7 @@ public class PcalTLAGen
                     // the Next == ..., with no " \/ " preceding it.  To fix the
                     // problem, we must add 6 fewer spaces to all lines after
                     // the first in that process's set than in other such sets. 
-                    if ((nextSS.size() == 0) && (i == 0)) {
+                    if ((nextS.size() == 0) && (nextSS.size() == 0) && (i == 0)) {
                         sb = new StringBuffer(NSpaces(col - 2));
                     } else {
                         sb = new StringBuffer(NSpaces(col + 4));
@@ -2151,33 +2212,33 @@ public class PcalTLAGen
         return expr;
     }
 
-    /**************************************************/
-    /* Given a string, make it into a subscript expr. */
-    /* If string is null, then returns null.          */
-    /**************************************************/
-    private static TLAExpr SubExpr(String sub)
+    /***********************************************************************
+     * Given an expression, makes it into a subscript expr.  It is called   *
+     * only with argument Self(context), which means that it is called      *
+     * only for a single subscript.                                         *
+     *                                                                      *
+     * If string is null, then returns null.                                *
+     ***********************************************************************/
+    private static TLAExpr SubExpr(TLAExpr sub)
     {
-        TLAExpr expr = new TLAExpr();
         if (sub != null)
-        {
-            expr.addLine();
-            expr.addToken(new TLAToken("[", 0, TLAToken.BUILTIN));
-            /***************************************************************
-            * Change made by LL 30 Aug 2007.  The following two calls to   *
-            * addTokenOffset were originally calls to addToken.            *
-            ***************************************************************/
-            expr.addTokenOffset(new TLAToken(sub, 0, TLAToken.IDENT), 0);
+        { 
+            TLAExpr expr = sub.cloneAndNormalize();
+            for (int i = 0; i < expr.tokens.size(); i++) {
+                Vector tokenVec = (Vector) expr.tokens.elementAt(i);
+                for (int j = 0; j < tokenVec.size(); j++) {
+                   TLAToken tok = (TLAToken) tokenVec.elementAt(j);
+                   tok.column = tok.column + 1;
+                }
+                if (i == 0) {
+                    tokenVec.insertElementAt(new TLAToken("[", 0, TLAToken.BUILTIN), 0);
+                }
+            }
             expr.addTokenOffset(new TLAToken("]", 0, TLAToken.BUILTIN), 0);
-            /***************************************************************
-            * Comment added by LL: The following call of MakeExprPretty    *
-            * is harmless because SubExpr is called only with argument     *
-            * Self(context), so it is a no-op.                             *
-            ***************************************************************/
-            MakeExprPretty(expr);
-            expr.normalize();
             return expr;
-        } else
+        } else {
             return null;
+        }
     }
 
     /*********************************************************/
@@ -2186,19 +2247,33 @@ public class PcalTLAGen
     // LL comment: This makes no sense to me, since why should one use
     // a null subscript for a variable in the context of a process?
     // What the ... is going on here?
-    private String Self(String context)
+    private TLAExpr Self(String context)
     {
-        String s = null;
+        TLAExpr s = null;
         if (mp)
         {
             if (context.equals("procedure"))
-                s = "self";
+                s = selfAsExpr();
             else
                 s = self;
         }
         return s;
     }
 
+    private static TLAExpr  selfAsExpr() {
+        TLAToken selfToken = new TLAToken("self", 0, TLAToken.IDENT);
+        Vector <TLAToken> tokenVec = new Vector();
+        tokenVec.addElement(selfToken);
+        Vector tokens = new Vector();
+        tokens.addElement(tokenVec);
+        TLAExpr expr = new TLAExpr(tokens);
+//        expr.anchorTokens = new TLAToken[1];
+//        expr.anchorTokens[0] = selfToken;
+//        expr.anchorTokCol = new int[1];
+//        expr.anchorTokCol[0] = 0;
+        expr.normalize();
+        return expr ;
+    }
     /***********************************************************************
     * Comment added by LL: MakeExprPretty should never be called on an     *
     * expression any part of which was an expression in the input.         *
