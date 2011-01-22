@@ -102,8 +102,8 @@ public class PcalFixIDs {
         // procedureNames and proceduresCalled represents the mapping
         // from procedure Names to the set of names of procedures that
         // they call.
-        Vector <String> procedureNames = new Vector();
-        Vector <Vector <String>> proceduresCalled = new Vector();
+        Vector  procedureNames = new Vector();   // Vector of Strings
+        Vector  proceduresCalled = new Vector(); // Vector of Vectors of Strings
         for (int i = 0; i < ast.prcds.size(); i++) {
             AST.Procedure prcd = (AST.Procedure) ast.prcds.elementAt(i);
             FixProcedure(prcd, "");
@@ -124,9 +124,9 @@ public class PcalFixIDs {
         boolean path[][] = new boolean[n][] ;
         for (int i=0; i < n; i++) {
             path[i] = new boolean[n];
-            String nm = procedureNames.elementAt(i);
+            String nm = (String) procedureNames.elementAt(i);
             for (int j = 0; j < n; j++) {
-                path[i][j] = (-1 != nameToNum(nm, proceduresCalled.elementAt(j)));
+                path[i][j] = (-1 != nameToNum(nm, (Vector) proceduresCalled.elementAt(j)));
             }
         }
         
@@ -144,7 +144,7 @@ public class PcalFixIDs {
         // unnecessary, and should be commented out.
         for (int i = 0; i < ast.prcds.size(); i++) {
             AST.Procedure prcd = (AST.Procedure) ast.prcds.elementAt(i);
-            Vector <String> pCalled = new Vector();
+            Vector pCalled = new Vector();
             for (int j = 0; j < n; j++) {
                 if (path[i][j]) {
                     pCalled.addElement(procedureNames.elementAt(j));
@@ -160,11 +160,11 @@ public class PcalFixIDs {
             
             // We now fix proc.proceduresCalled by, for each procedure p in
             // it, we add all the procedures that p calls.
-            Vector <String> pCalled = proc.proceduresCalled;
+            Vector pCalled = proc.proceduresCalled;
             for (int j = 0; j < pCalled.size(); j++) {
                 // Set idx to the value such that pCalled.elementAt(j)
                 // is the name of the idx-th element in procedureNames.
-                String pName = pCalled.elementAt(j);
+                String pName = (String) pCalled.elementAt(j);
                 int pNum = nameToNum(pName, procedureNames);
                 if (pNum == -1) {
                     PcalDebug.ReportBug(
@@ -178,7 +178,7 @@ public class PcalFixIDs {
                 // if it is not already in it.
                 for (int k = 0; k < n; k++) {
                   if (path[pNum][k]) {
-                      String callee = procedureNames.elementAt(k);
+                      String callee = (String) procedureNames.elementAt(k);
                       if (! InVector(callee, proc.proceduresCalled)) {
                           proc.proceduresCalled.addElement(callee); 
                       }
@@ -194,7 +194,7 @@ public class PcalFixIDs {
      * return -1 if nm is not any element of names.
      * @return
      */
-    private static int nameToNum(String nm, Vector <String> names) {
+    private static int nameToNum(String nm, Vector names) {
         for (int i = 0; i < names.size(); i++) {
             if (names.elementAt(i).equals(nm)) {
                 return i;
@@ -432,7 +432,7 @@ public class PcalFixIDs {
     /****************************************************************/
     /* Returns whether the string is present in a vector of string. */
     /****************************************************************/
-    private static boolean InVector(String var, Vector <String> v) {
+    private static boolean InVector(String var, Vector v) {
         for (int i = 0; i < v.size(); i++)
             if (var.equals((String) v.elementAt(i))) return true;
         return false;

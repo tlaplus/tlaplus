@@ -1,11 +1,7 @@
 package pcal;
 
 import java.util.Vector;
-
-import com.sun.xml.internal.messaging.saaj.packaging.mime.internet.HeaderTokenizer.Token;
-
 import pcal.exception.PcalTLAGenException;
-import pcal.exception.PcalTranslateException;
 import pcal.exception.TLAExprException;
 
 /****************************************************************************
@@ -1932,7 +1928,7 @@ public class PcalTLAGen
     	
     	// Now compute procFairnessFormulas to equal the processes' fairness 
     	// formulas, which is never null but may have zero length.
-    	Vector <ProcessFairness> procFairnessFormulas = new Vector<ProcessFairness>() ;
+    	Vector procFairnessFormulas = new Vector() ;
         if (mp) {
            for (int i = 0; i < st.processes.size(); i++) {
         	   PcalSymTab.ProcessEntry p = (PcalSymTab.ProcessEntry) st.processes.elementAt(i);
@@ -1955,7 +1951,7 @@ public class PcalTLAGen
                        }  
                    }
                    
-                   Vector <String> prefix = new Vector();
+                   Vector prefix = new Vector();
         		   if (makeLetIn || !p.isEq) {
                        int prefixSize = pSelf.size();
                        String prefixBegin;
@@ -2032,10 +2028,10 @@ public class PcalTLAGen
         		       }
         		   }
         	   
-        	       Vector <FormulaPair> prcdFormulas = new Vector<FormulaPair>();
-        	       Vector <String> procedures = pAst.proceduresCalled;
+        	       Vector  prcdFormulas = new Vector();
+        	       Vector  procedures = pAst.proceduresCalled;
                    for (int k = 0; k < procedures.size(); k++) {
-                       String originalName = procedures.elementAt(k);
+                       String originalName = (String) procedures.elementAt(k);
                        String name = st.UseThis(PcalSymTab.PROCEDURE, originalName, "");
                        int procedureIndex = st.FindProc(name);
                        PcalSymTab.ProcedureEntry pe =
@@ -2117,7 +2113,7 @@ public class PcalTLAGen
         for (int i = 0; i < procFairnessFormulas.size(); i++) {
                 tlacode.addElement(
                         "        /\\ " +
-                        procFairnessFormulas.elementAt(i).format(indent)
+                      ((ProcessFairness) procFairnessFormulas.elementAt(i)).format(indent)
                          );
         }
         tlacode.addElement("");
@@ -2262,7 +2258,7 @@ public class PcalTLAGen
 
     private static TLAExpr  selfAsExpr() {
         TLAToken selfToken = new TLAToken("self", 0, TLAToken.IDENT);
-        Vector <TLAToken> tokenVec = new Vector();
+        Vector tokenVec = new Vector();
         tokenVec.addElement(selfToken);
         Vector tokens = new Vector();
         tokens.addElement(tokenVec);
@@ -2606,11 +2602,11 @@ public class PcalTLAGen
      */
     public static class ProcessFairness {
     	public String xf ; // either "WF" or "SF"
-    	public Vector <String> prefix ; 
+    	public Vector  prefix ; 
     	    // StringVector either "\A self \in exp : " or
     	    // "LET self == exp \n IN " (note the ending space) or ""
     	public FormulaPair bodyFormulas ; // fairness conditions for the proc's body
-    	public Vector <FormulaPair> prcdFormulas ; // fairness conditions for the procedure
+    	public Vector prcdFormulas ; // fairness conditions for the procedure
 
     	/** 
     	 * The constructor
@@ -2620,8 +2616,8 @@ public class PcalTLAGen
     	 * @param bodySF : can be null
     	 * @param prcdVal
     	 */
-    	public ProcessFairness (String xfVal, Vector <String> prefixVal, String bodyWF,
-    			                String bodySF, Vector <FormulaPair> prcdVal) {
+    	public ProcessFairness (String xfVal, Vector  prefixVal, String bodyWF,
+    			                String bodySF, Vector  prcdVal) {
     		xf = xfVal;
     		prefix = prefixVal;
     		bodyFormulas = null ;
@@ -2645,11 +2641,11 @@ public class PcalTLAGen
     	    int width = 0  ;
     	    if (prefix != null && prefix.size() > 0) {
     	        for (int i = 0; i < prefix.size() - 1; i++) {
-    	            String line =  prefix.elementAt(i);
+    	            String line =  (String) prefix.elementAt(i);
     	            if (line.length() > maxPrefixWidth) {
     	                maxPrefixWidth = line.length();
     	            }
-    	            String lastLine = prefix.elementAt(prefix.size()-1);
+    	            String lastLine = (String) prefix.elementAt(prefix.size()-1);
     	            width = lastLine.length();
     	        }
     	    }
@@ -2659,7 +2655,7 @@ public class PcalTLAGen
             } 
             if (prcdFormulas != null) {
                 for (int i = 0 ; i < prcdFormulas.size(); i++) {
-                    width = width + prcdFormulas.elementAt(i).singleLineWidth();
+                    width = width + ((FormulaPair) prcdFormulas.elementAt(i)).singleLineWidth();
                 }
             }
             if (maxPrefixWidth > width) {
@@ -2681,7 +2677,7 @@ public class PcalTLAGen
     	    StringBuffer val = new StringBuffer();
             if (prefix != null && prefix.size() > 0) {
                 for (int i = 0; i < prefix.size(); i++) {
-                    String line =  prefix.elementAt(i);
+                    String line =  (String) prefix.elementAt(i);
                     if (i != 0) {
                         val.append(NSpaces(col));
                     }
@@ -2708,7 +2704,7 @@ public class PcalTLAGen
     		if (prcdFormulas != null) {
     			for (int i = 0 ; i < prcdFormulas.size(); i++) {
     			    val.append(" /\\ ");
-    				val.append(prcdFormulas.elementAt(i).singleLine());
+    				val.append(((FormulaPair) prcdFormulas.elementAt(i)).singleLine());
     			}
     		}
     		return val ;
@@ -2762,7 +2758,7 @@ public class PcalTLAGen
     			return val;
     		}
     		for (int i = 0; i < this.prcdFormulas.size(); i++) {
-    		    FormulaPair form = this.prcdFormulas.elementAt(i) ;
+    		    FormulaPair form = (FormulaPair) this.prcdFormulas.elementAt(i) ;
     		    line = form.singleLine();
     		    val.append("\n");
     		    val.append(NSpaces(curCol));
