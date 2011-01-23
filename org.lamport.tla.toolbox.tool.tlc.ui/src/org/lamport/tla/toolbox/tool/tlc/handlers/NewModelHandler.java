@@ -8,6 +8,7 @@ import java.util.Vector;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.DebugPlugin;
@@ -17,7 +18,14 @@ import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.jface.dialogs.IInputValidator;
 import org.eclipse.jface.dialogs.InputDialog;
+import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.FindReplaceDocumentAdapter;
+import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.window.Window;
+import org.eclipse.ui.editors.text.FileDocumentProvider;
+import org.eclipse.ui.part.FileEditorInput;
+import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
@@ -78,6 +86,7 @@ public class NewModelHandler extends AbstractHandler implements IModelConfigurat
             System.out.println("BUG: no spec");
             return null;
         }
+
         // project
         IProject specProject = spec.getProject();
 
@@ -142,8 +151,7 @@ public class NewModelHandler extends AbstractHandler implements IModelConfigurat
         while ((!done) && iter.hasNext())
         {
             Assignment assign = (Assignment) iter.next();
-            if (assign.getLabel().equals("defaultInitValue") && 
-                    (assign.getParams().length == 0))
+            if (assign.getLabel().equals("defaultInitValue") && (assign.getParams().length == 0))
             {
                 assign.setRight("defaultInitValue");
                 done = true;
@@ -179,14 +187,19 @@ public class NewModelHandler extends AbstractHandler implements IModelConfigurat
             //
             // Also, if Spec is found and Termination is defined to be a
             // temporal formula, then add it to the list of temporal properties,
-            // except not checked. It should be checked iff the root file
-            // contains a PlusCal spec and the -termination option has been
-            // selected, either as a property or in the file.
+            // except not checked. It is checked iff the root file
+            // contains a PlusCal spec and the termination option has been
+            // selected in the PlusCal options statement within the root file.
+            // (It should probably also be set if the -termination option is
+            // set in the preferences, but few users will set that preference.)
             OpDefNode[] defs = moduleNode.getOpDefs();
             boolean foundSpec = false;
             boolean foundInit = false;
             boolean foundNext = false;
             boolean foundTermination = false;
+            // Following added by LL on 23 Jan 2011. If true, it sets
+            // checking of termination detection true if fountTermination = true.
+            boolean checkTermination = false;
             for (int i = 0; i < defs.length; i++)
             {
                 if (defs[i].getNumberOfArgs() == 0)
@@ -210,6 +223,50 @@ public class NewModelHandler extends AbstractHandler implements IModelConfigurat
                     {
                         foundTermination = true;
 
+                        // The following code added by LL on 23 Jan 2011
+                        // to set checkTermination true iff the root module
+                        // contains "PlusCal options ( ... termination "
+                        // I don't really understand it, but I copied it from
+                        // the code in PCalPropertyTester that searches for
+                        // "--algorithm" in a module to determine if the module
+                        // has a PlusCal algorithm
+                        IFile ifile = spec.getRootFile();
+                        FileEditorInput fileEditorInput = new FileEditorInput(ifile);
+                        FileDocumentProvider fileDocumentProvider = new FileDocumentProvider();
+                        try
+                        {
+                            fileDocumentProvider.connect(fileEditorInput);
+                            IDocument document = fileDocumentProvider.getDocument(fileEditorInput);
+                            FindReplaceDocumentAdapter searchAdapter = new FindReplaceDocumentAdapter(document);
+                            IRegion matchRegionx = searchAdapter.find(0,
+                                    "PlusCal[\\s]*options[\\s]*\\([^\\)]*termination", true, true, false, true);
+                            if (matchRegionx != null)
+                            {
+                                checkTermination = true;
+                                Activator.logDebug("Set checkTermination true for " + ifile.getName());
+                            }
+                        } catch (CoreException e)
+                        {
+                            // I have no idea what can cause this exception, but if an
+                            // exception occurs, we just don't set checkTermination true.
+                        } catch (BadLocationException e)
+                        {
+                            // I have no idea what can cause this exception, but if an
+                            // exception occurs, we just don't set checkTermination true.
+                        } finally
+                        {
+                            /*
+                             * The code I copied this from says:
+                             * 
+                             * The document provider is not needed. Always disconnect it to avoid a memory leak.
+                             * 
+                             * Keeping it connected only seems to provide synchronization of
+                             * the document with file changes. That is not necessary in this context.
+                             */
+                            fileDocumentProvider.disconnect(fileEditorInput);
+                        }
+                        // end code added by LL on 23 Jan 2011
+
                     }
                 }
             }
@@ -222,7 +279,7 @@ public class NewModelHandler extends AbstractHandler implements IModelConfigurat
                 {
                     Vector vec = new Vector();
                     launchCopy.setAttribute(MODEL_PROPERTIES_EXPAND, "set");
-                    vec.add("0Termination");
+                    vec.add((checkTermination ? "1" : "0") + "Termination");
                     // The first character should be 1 or 0 depending
                     // on whether or not the box enabling the property should be checked.
                     launchCopy.setAttribute(IModelConfigurationConstants.MODEL_CORRECTNESS_PROPERTIES, vec);
