@@ -1699,8 +1699,9 @@ class trans
     * explanation and halt.                                              *
     *********************************************************************/
     {
-        ToolIO.out.println("Command-line error: " + msg + ".");
-        ToolIO.out.println("Use -help option for more information.");
+          PcalDebug.reportError("Command-line error: " + msg + ".");
+//        ToolIO.out.println("Command-line error: " + msg + ".");
+//        ToolIO.out.println("Use -help option for more information.");
         return STATUS_EXIT_WITH_ERRORS;
     }
 
