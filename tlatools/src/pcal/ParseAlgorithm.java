@@ -307,7 +307,12 @@ public class ParseAlgorithm
              { int fairness = AST.UNFAIR_PROC;
               if (PeekAtAlgToken(1).equals("fair")) {
         		   MustGobbleThis("fair");
+        		   if (PeekAtAlgToken(1).equals("+")) {
+        		       MustGobbleThis("+");
+        		       fairness = AST.SF_PROC;
+        		   } else {
         		   fairness = AST.WF_PROC;
+        		   }
                 } else 
                 { if (PcalParams.FairnessOption.equals("wf")) {
                 	fairness = AST.WF_PROC;
