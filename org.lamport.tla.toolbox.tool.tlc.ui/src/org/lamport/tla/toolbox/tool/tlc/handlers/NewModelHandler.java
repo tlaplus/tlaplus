@@ -18,6 +18,7 @@ import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.jface.dialogs.IInputValidator;
 import org.eclipse.jface.dialogs.InputDialog;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.FindReplaceDocumentAdapter;
 import org.eclipse.jface.text.IDocument;
@@ -36,6 +37,8 @@ import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelNameValidator;
 import org.lamport.tla.toolbox.util.UIHelper;
+import org.lamport.tla.toolbox.util.pref.IPreferenceConstants;
+import org.lamport.tla.toolbox.util.pref.PreferenceStoreHelper;
 
 import tla2sany.modanalyzer.SpecObj;
 import tla2sany.semantic.LevelNode;
@@ -244,6 +247,15 @@ public class NewModelHandler extends AbstractHandler implements IModelConfigurat
                             {
                                 checkTermination = true;
                                 Activator.logDebug("Set checkTermination true for " + ifile.getName());
+                            } else {
+                                // search for "termination" option in properties added by LL
+                                // on 24 Jan 2011.  This code was copied with little understanding from
+                                // the constructor of the TranslatorJob class.
+                                IPreferenceStore projectPreferenceStore = PreferenceStoreHelper.getProjectPreferenceStore(ifile
+                                        .getProject());
+                                String paramString = projectPreferenceStore.getString(IPreferenceConstants.PCAL_CAL_PARAMS);
+                                checkTermination = (paramString.indexOf("-termination") != -1);
+System.out.println("checkTermination = " + checkTermination);                               
                             }
                         } catch (CoreException e)
                         {
