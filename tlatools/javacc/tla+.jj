@@ -2361,6 +2361,11 @@ AssumeProve () : {
   * If there is a label "foo::", it returns an N_Label node.               *
   *                                                                        *
   * Changed 18 May 2008 by LL to allow a label.                            *
+  *                                                                        *
+  * Comment by LL on 25 May 2010: I don't understand this "label"          *
+  * business.  Testing shows that an ASSUME/PROVE can't have a label.  I   *
+  * have no idea what the code that apparently is looking for a label is   *
+  * supposed to do, but it never seems to do anything.                     *
   *************************************************************************/
   SyntaxTreeNode tn;
   Token t;
