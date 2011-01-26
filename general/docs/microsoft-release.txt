@@ -23,7 +23,9 @@ In org.lamport.tla.toolbox.product.standalone.product
       Synchronize before exporting
     Destination:
       Archive file:
-        c:\users\lamport\tla\toolbox-release\toolbox-i.j.k
+        c:\lamport\tla\toolbox-release\toolbox-i.j.k  or
+        c:\users\lamport\tla\toolbox-release\toolbox-i.j.k on svc-lamport-4
+        
     Export Options
       Export for muliple platforms
       Allow for binary cycles in target platform
