@@ -534,6 +534,7 @@ public class PcalTranslate {
             else if (last.getClass().equals(AST.GotoObj.getClass())) {
                 AST.Goto g = (AST.Goto) last;
                 result1.removeElementAt(result1.size()-1);
+                // Note: if there's a GotoObj, then omitPC should be false.
                 result1.addElement(UpdatePC(g.to));
             }
             else if (last.getClass().equals(AST.CallObj.getClass())) {
@@ -556,16 +557,18 @@ public class PcalTranslate {
                 result2.addAll((Vector) p2.elementAt(1));
                 If.Then = (Vector) p1.elementAt(0);
                 If.Else = (Vector) p2.elementAt(0);
-                boolean thenNeedsGoto = ((BoolObj) p1.elementAt(2)).val ;
-                boolean elseNeedsGoto = ((BoolObj) p2.elementAt(2)).val ;
-                needsGoto = thenNeedsGoto && elseNeedsGoto ;
-                if (! needsGoto){
-                  if (thenNeedsGoto) {
-                     If.Then.addElement(UpdatePC(next));
-                    } ;                
-                  if (elseNeedsGoto) {
-                     If.Else.addElement(UpdatePC(next));
-                    } ;                
+                if (! ParseAlgorithm.omitPC) {
+                  boolean thenNeedsGoto = ((BoolObj) p1.elementAt(2)).val ;
+                  boolean elseNeedsGoto = ((BoolObj) p2.elementAt(2)).val ;
+                  needsGoto = thenNeedsGoto && elseNeedsGoto ;
+                  if (! needsGoto){
+                    if (thenNeedsGoto) {
+                       If.Then.addElement(UpdatePC(next));
+                      } ;                
+                    if (elseNeedsGoto) {
+                       If.Else.addElement(UpdatePC(next));
+                     } ;                
+                  }
                 }
             }
             // EitherObj added by LL on 25 Jan 2006
@@ -582,16 +585,18 @@ public class PcalTranslate {
                   needsGoto = needsGoto && ((BoolObj) thisP.elementAt(2)).val ;
                   needsGotoVec.addElement(thisP.elementAt(2)) ;
                 } ;
-                if (! needsGoto) {
-                  /* Each `or' clause needs a goto. */
-                  for (int i = 0; i < Either.ors.size(); i++) {
-                    if ( ((BoolObj) needsGotoVec.elementAt(i)).val ) {
-                      ((Vector) 
-                         Either.ors.elementAt(i)).addElement(
-                              UpdatePC(next));  
-                    }
-                   }
-                } ;
+                if (! ParseAlgorithm.omitPC) {
+                  if (! needsGoto) {
+                    /* Each `or' clause needs a goto. */
+                    for (int i = 0; i < Either.ors.size(); i++) {
+                      if ( ((BoolObj) needsGotoVec.elementAt(i)).val ) {
+                        ((Vector) 
+                           Either.ors.elementAt(i)).addElement(
+                                UpdatePC(next));  
+                      }
+                     }
+                  }
+                };
             }
             else if (last.getClass().equals(AST.WithObj.getClass())) {
                 AST.With with = (AST.With) last;
@@ -612,6 +617,9 @@ public class PcalTranslate {
           needsGoto = true ;
         }  ;
 //        else  result1.addElement(UpdatePC(next));
+        if (ParseAlgorithm.omitPC) {
+            needsGoto = false;
+        }
         return Triple(result1, result2, BO(needsGoto));
     }
 
@@ -619,6 +627,10 @@ public class PcalTranslate {
     private static Vector 
           CopyAndExplodeLastStmtWithGoto(Vector stmts, String next) throws PcalTranslateException {
       /*********************************************************************
+      * Added by LL on 5 Feb 2011: The following comment seems to be       *
+      * wrong, and the method adds a goto iff the 3rd element of the       *
+      * value returned by CopyAndExplodeLastStmt equals true.              *
+      *                                                                    *
       * Like CopyAndExplodeLastStmt, but it always adds a goto and         *
       * returns only a pair consisting of the first two elements of the    *
       * triple returned by CopyAndExplodeLastStmt.                         *
@@ -660,9 +672,11 @@ public class PcalTranslate {
         newast.label = ast.label;
         /* add the statements with last exploded */
         newast.stmts = (Vector) pair.elementAt(0);
-        /* prepend pc check */
-        newast.stmts.insertElementAt(CheckPC(newast.label), 0);
-        result.addElement(newast);
+        if (! ParseAlgorithm.omitPC) {
+           /* prepend pc check */
+           newast.stmts.insertElementAt(CheckPC(newast.label), 0);
+           result.addElement(newast);
+        }
         /* add recursively generated labeled statements */
         result.addAll((Vector) pair.elementAt(1));
         return result;
@@ -720,7 +734,9 @@ public class PcalTranslate {
         newast.label = ast.label;
         newast.stmts = new Vector();
 
-        newast.stmts.addElement(CheckPC(ast.label));   // pc test
+        if (! ParseAlgorithm.omitPC) {
+           newast.stmts.addElement(CheckPC(ast.label));   // pc test
+        }
 
         /* determine where control goes after unlabDo is executed */
         AST.LabeledStmt firstLS = (w.labDo.size() == 0)
@@ -1001,6 +1017,8 @@ public class PcalTranslate {
         * Add assignment to set pc:                                        *
         *   pc := entry point of ast.to                                    *
         *******************************************************************/
+        // Note: omitPC must be false if there's a call statement (and hence
+        // a procedure being called).
         result.addElement(UpdatePC(pe.iPC));
         return result;
     }

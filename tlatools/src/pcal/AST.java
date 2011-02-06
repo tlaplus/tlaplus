@@ -280,7 +280,23 @@ public class AST
         public Vector decls  = null ; // of PVarDecl 
         public Vector body   = null ; // of LabeledStmt
         public String toString() 
-          { return
+          { 
+            // For versions earlier than 1.5 need to return those versions'
+            // value since toString() is used to generate the AST module
+            // used when TLC is doing the translation.
+            if (PcalParams.inputVersionNumber < PcalParams.VersionToNumber("1.5")){
+              return
+                Indent(lineCol()) +
+                  "[name   |-> \"" + name + "\", " + NewLine() +
+                  Indent(" params |-> ") + VectorToSeqString(params) + "," + 
+                  EndIndent() + NewLine() +
+                  Indent(" decls  |-> ") + VectorToSeqString(decls) + "," + 
+                  EndIndent() + NewLine() +
+                  Indent(" body   |-> ") + VectorToSeqString(body) + "]" +
+                  EndIndent() + 
+                EndIndent() ;
+            } 
+            return
              Indent(lineCol()) +
                "[name   |-> \"" + name + "\", " + NewLine() +
                "minusLabels |-> "
@@ -327,7 +343,26 @@ public class AST
         public Vector    decls = null ; // of VarDecl
         public Vector    body  = null ; // of LabeledStmt
         public String toString() 
-          { return
+          { 
+            // For versions earlier than 1.5 need to return those versions'
+            // value since toString() is used to generate the AST module
+            // used when TLC is doing the translation.
+            if (PcalParams.inputVersionNumber < PcalParams.VersionToNumber("1.5")){
+              return
+               Indent(lineCol()) +
+                 "[name   |-> \"" + name + "\", " + NewLine() +
+                 " eqOrIn |-> " + boolToEqOrIn(isEq) + "," + NewLine() +
+                 " id     |-> " + id.toString() + "," + NewLine() +
+                 Indent(" decls  |-> ") + 
+                    VectorToSeqString(decls) + "," + 
+                 EndIndent() + NewLine() +
+                 Indent(" body   |-> ") + 
+                    VectorToSeqString(body) + "]" +
+                 EndIndent() + 
+              EndIndent() ;
+            } 
+            
+            return
              Indent(lineCol()) +
                "[name   |-> \"" + name + "\"," 
                + NewLine() +

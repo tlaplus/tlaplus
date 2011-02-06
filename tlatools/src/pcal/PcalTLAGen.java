@@ -33,6 +33,10 @@ public class PcalTLAGen
        // to do something cleverer or else make it a user option.
 
     // Private class variables
+    /* The tlacode field accumulates the translation as it is constructed.  It is
+     * a vector of separate lines.  (I hope, but am not sure, that there
+     * is no "\n" character inside a line.)
+     */
     private Vector tlacode = new Vector(); /* of lines */
     private boolean selfIsSelf = false; 
     private TLAExpr self = null; // changed by LL on 22 jan 2011 from: private String self = null; /* for current process */
@@ -56,6 +60,20 @@ public class PcalTLAGen
      * @return the vector of strings with TLA+ code
      * @throws PcalTLAGenException on any unrecoverable methods
      */
+    
+    /*
+     * The  string currentProcName is the name of the current process (for a multiprocess algorithm)
+     * or "Next" for a uniprocess algorithm.  When ParseAlgorithm.omitPC is true, this is used
+     * instead of the label when generating the process's or the entire algorithm's next-state
+     * action.  Thus, with a single label lbl, this generates
+     *    Next == Xlation
+     * instead of
+     *    lbl == Xlation
+     *    Next == lbl
+     */
+    private String currentProcName ;
+    
+    
     public Vector generate(AST ast, PcalSymTab symtab) throws PcalTLAGenException
     {
         st = symtab;
@@ -142,6 +160,7 @@ public class PcalTLAGen
     private void GenUniprocess(AST.Uniprocess ast, String context) throws PcalTLAGenException
     {
         mp = false;
+        currentProcName = "Next";
         GenVarsAndDefs(ast.decls, ast.prcds, null, ast.defs);
         GenInit(ast.decls, ast.prcds, null);
         for (int i = 0; i < ast.prcds.size(); i++)
@@ -227,6 +246,7 @@ public class PcalTLAGen
 
     private void GenProcess(AST.Process ast, String context) throws PcalTLAGenException
     {
+        currentProcName = ast.name; 
         /* ns accumulates the disjunt of the steps of the process */
         StringBuffer ns = new StringBuffer();
         Vector nsV = new Vector();
@@ -269,19 +289,27 @@ public class PcalTLAGen
         }
         nsV.addElement(ns.toString());
         // Generate definition of process steps
-        ns = new StringBuffer();
-        ns.append(ast.name);
-        if (isSet)
-            ns.append("(self)");
-        ns.append(" == ");
-        ns.append((String) nsV.elementAt(0));
-        tlacode.addElement(ns.toString());
-        for (int i = 1; i < nsV.size(); i++)
-        {
-            ns = new StringBuffer(NSpaces(nsC + 2));
-            ns.append(" \\/ ");
-            ns.append((String) nsV.elementAt(i));
-            tlacode.addElement(ns.toString());
+        // This apparently defines the process name
+        // to equal the disjunction of all the individual
+        // label-named actions.  If we are omitting
+        // the pc, we have already defined the process name
+        // to equal the only label action, so we skip
+        // this.
+        if (! ParseAlgorithm.omitPC) {
+          ns = new StringBuffer();
+          ns.append(ast.name);
+          if (isSet)
+              ns.append("(self)");
+          ns.append(" == ");
+          ns.append((String) nsV.elementAt(0));
+          tlacode.addElement(ns.toString());
+          for (int i = 1; i < nsV.size(); i++)
+          {
+              ns = new StringBuffer(NSpaces(nsC + 2));
+              ns.append(" \\/ ");
+              ns.append((String) nsV.elementAt(i));
+              tlacode.addElement(ns.toString());
+          }
         }
         tlacode.addElement("");
     }
@@ -292,7 +320,15 @@ public class PcalTLAGen
      ****************************************************/
     private void GenLabeledStmt(AST.LabeledStmt ast, String context) throws PcalTLAGenException
     {
-        StringBuffer sb = new StringBuffer(ast.label);
+        // Set actionName to the name of the action being defined.
+        // This is the label, except when we are omitting the PC,
+        // in which case it is "Next" for a uniprocess algorithm
+        // and the process name for a multiprocess algorithm.
+        String actionName = ast.label;
+        if (ParseAlgorithm.omitPC) {
+            actionName = currentProcName;
+        }
+        StringBuffer sb = new StringBuffer(actionName);
         /* c is used to determine which vars are in UNCHANGED. */
         Changed c = new Changed(vars);
         if (mp && (context.equals("procedure") || selfIsSelf)) { // self.equals("self")))
@@ -301,10 +337,34 @@ public class PcalTLAGen
         sb.append(" == ");
         int col = sb.length();
         kludgeToFixPCHandlingBug = col;
-        if (ast.stmts.size() > 1) {
+        // There's a problem here.  If ast.stmts.size() = 1, then we don't preface
+        // the statement's translation with "/\".  However, that means that if we 
+        // then add an UNCHANGED conjunct, we wind up with  
+        //   A
+        //    /\ UNCHANGED ...
+        // where A is the statement's translation.  This looks bad and could wind up
+        // putting the UNCHANGED inside prefix operator--e.g.,
+        //   x' = CHOOSE t : ...
+        //     /\ UNCHANGED ...
+        // This is seems to be a problem only when omitPC = true, since otherwise the
+        // testing and setting of pc ensures that there is more than one element in ast.stmts.
+        // What we do is always add the "/\ ", but remove it afterwards if there's only
+        // a single statement in ast.stmts and there is no UNCHANGED clause.
+        // The code for doing this is based on the observation that the contents of
+        // StringBuffer sb begin the next line added to tlacode.
+        //
+        /* if (ast.stmts.size() > 1) {  */
             sb.append("/\\ ");
             kludgeToFixPCHandlingBug = kludgeToFixPCHandlingBug + 3;
-        }
+        /* } */
+            
+        // We set defStartLine to the index of the next line added to tlacode and
+        // colAfterAnd to the column position in that line immediately following
+        // the added "/\ ".  This gives us the information needed to remove the
+        // "/\ " later from tlacode.
+        int defStartLine = tlacode.size();
+        int colAfterAnd = sb.length();
+        
         for (int i = 0; i < ast.stmts.size(); i++)
         {
             GenStmt((AST) ast.stmts.elementAt(i), c, context, sb.toString(), sb.length());
@@ -326,8 +386,32 @@ public class PcalTLAGen
             }
             sb.append(" >>");
             tlacode.addElement(sb.toString());
-        } else if (c.NumUnchanged() == 1)
+        } else if (c.NumUnchanged() == 1) {
             tlacode.addElement(NSpaces(col) + "/\\ UNCHANGED " + c.Unchanged());
+        } else {
+           // No unchanged.  If there was only one conjunction, remove it.
+           // To do that, we must remove the "/\ " and then remove three spaces
+           // from all other lines that were added.
+           if (ast.stmts.size() == 1) {
+               for (int i = defStartLine; i < tlacode.size(); i++) {
+                  String line = (String) tlacode.elementAt(i);
+                  if (i == defStartLine) {
+                     // remove the "/\ " added                      
+                     tlacode.setElementAt(line.substring(0, colAfterAnd-3) +
+                                          line.substring(colAfterAnd, line.length()) , i);
+                  } else {
+                     // Remove three blanks from any following lines.  We test the length 
+                     // of the line just in case one or more short (hopefully blank) lines 
+                     // have been added.
+                      if (line.length() > 3) {
+                          tlacode.setElementAt(line.substring(3, line.length()) , i);
+                      }
+                  }
+               }
+           }
+        }
+            
+            ;
         tlacode.addElement("");
     }
 
@@ -1055,9 +1139,10 @@ public class PcalTLAGen
                 gVars.addElement(decl.var);
                 vars.addElement(decl.var);
             }
-
-        gVars.addElement("pc");
-        vars.addElement("pc");
+        if (! ParseAlgorithm.omitPC) {
+          gVars.addElement("pc");
+          vars.addElement("pc");
+        }
         if (procs != null && procs.size() > 0)
         {
             gVars.addElement("stack");
@@ -1577,58 +1662,60 @@ public class PcalTLAGen
             is = new StringBuffer(NSpaces(col));
         }
         /* pc initial value */
-        if (mp)
-        {
-            is.append("/\\ pc = [self \\in ProcSet |-> CASE ");
-            int colPC = is.length();
-            if (boxUnderCASE)
-                colPC = colPC - 3;
-            for (int p = 0; p < st.processes.size(); p++)
-            {
-                PcalSymTab.ProcessEntry pe = (PcalSymTab.ProcessEntry) st.processes.elementAt(p);
-                is.append("self ");
-                if (pe.isEq)
-                {
-                    is.append("= ");
-                    int colExpr = is.length();
-                    Vector sv = pe.id.toStringVector();
-                    is.append((String) sv.elementAt(0));
-                    for (int v = 1; v < sv.size(); v++)
-                    {
-                        tlacode.addElement(is.toString());
-                        is = new StringBuffer(NSpaces(colExpr));
-                        is.append((String) sv.elementAt(v));
-                    }
-                } else
-                {
-                    is.append("\\in ");
-                    int colExpr = is.length();
-                    Vector sv = pe.id.toStringVector();
-                    is.append((String) sv.elementAt(0));
-                    for (int v = 1; v < sv.size(); v++)
-                    {
-                        tlacode.addElement(is.toString());
-                        is = new StringBuffer(NSpaces(colExpr));
-                        is.append((String) sv.elementAt(v));
-                    }
-                }
-                is.append(" -> \"");
-                is.append(pe.iPC);
-                if (p == st.processes.size() - 1)
-                    is.append("\"]");
-                else if (!boxUnderCASE)
-                    is.append("\" []");
-                else
-                    is.append("\"");
-                tlacode.addElement(is.toString());
-                is = new StringBuffer(NSpaces(colPC));
-                if (boxUnderCASE && p < st.processes.size() - 1)
-                    is.append("[] ");
-            }
-        } else
-        {
-            is.append("/\\ pc = \"" + st.iPC + "\"");
-            tlacode.addElement(is.toString());
+        if (! ParseAlgorithm.omitPC) {
+          if (mp)
+          {
+              is.append("/\\ pc = [self \\in ProcSet |-> CASE ");
+              int colPC = is.length();
+              if (boxUnderCASE)
+                  colPC = colPC - 3;
+              for (int p = 0; p < st.processes.size(); p++)
+              {
+                  PcalSymTab.ProcessEntry pe = (PcalSymTab.ProcessEntry) st.processes.elementAt(p);
+                  is.append("self ");
+                  if (pe.isEq)
+                  {
+                      is.append("= ");
+                      int colExpr = is.length();
+                      Vector sv = pe.id.toStringVector();
+                      is.append((String) sv.elementAt(0));
+                      for (int v = 1; v < sv.size(); v++)
+                      {
+                          tlacode.addElement(is.toString());
+                          is = new StringBuffer(NSpaces(colExpr));
+                          is.append((String) sv.elementAt(v));
+                      }
+                  } else
+                  {
+                      is.append("\\in ");
+                      int colExpr = is.length();
+                      Vector sv = pe.id.toStringVector();
+                      is.append((String) sv.elementAt(0));
+                      for (int v = 1; v < sv.size(); v++)
+                      {
+                          tlacode.addElement(is.toString());
+                          is = new StringBuffer(NSpaces(colExpr));
+                          is.append((String) sv.elementAt(v));
+                      } 
+                  }
+                  is.append(" -> \"");
+                  is.append(pe.iPC);
+                  if (p == st.processes.size() - 1)
+                      is.append("\"]");
+                  else if (!boxUnderCASE)
+                      is.append("\" []");
+                  else
+                      is.append("\"");
+                  tlacode.addElement(is.toString());
+                  is = new StringBuffer(NSpaces(colPC));
+                  if (boxUnderCASE && p < st.processes.size() - 1)
+                      is.append("[] ");
+             }
+          } else
+          {
+              is.append("/\\ pc = \"" + st.iPC + "\"");
+              tlacode.addElement(is.toString());
+          }
         }
         tlacode.addElement("");
     }
@@ -1638,6 +1725,12 @@ public class PcalTLAGen
     /************************************/
     private void GenNext()
     {
+        // It we are omitting pc and this is a uniprocess
+        // algorithm, then the definition of Next has
+        // already been added.
+        if (ParseAlgorithm.omitPC && !mp) {
+            return;
+        }
         Vector nextS = new Vector();
         StringBuffer sb = new StringBuffer();
         int max, col;
@@ -1760,7 +1853,7 @@ public class PcalTLAGen
                 }
                 sb = new StringBuffer(NSpaces(col) + " \\/ ");
             }
-        if (! PcalParams.NoDoneDisjunct)
+        if (! (PcalParams.NoDoneDisjunct || ParseAlgorithm.omitStutteringWhenDone))
          { sb.append("(* Disjunct to prevent deadlock on termination *)");
            tlacode.addElement(sb.toString());
            sb = new StringBuffer(NSpaces(col + 4));
@@ -2125,6 +2218,11 @@ public class PcalTLAGen
     /************************************/
     private void GenTermination()
     {
+        // if we're omitting the pc, then we shouldn't
+        // generate the Termination definition.
+        if (ParseAlgorithm.omitPC) {
+            return;
+        }
         StringBuffer sb = new StringBuffer();
         sb.append("Termination == <>(");
         if (mp)

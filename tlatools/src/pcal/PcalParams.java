@@ -18,7 +18,7 @@ public final class PcalParams
     /**
      * Parameters to be updated on each new release.
      */
-    public static final String modDate = "23 January 2011";
+    public static final String modDate = "6 February 2011";
     public static final String version = "1.5";
     /**
      * SZ Mar 9, 2009:
@@ -235,7 +235,7 @@ public final class PcalParams
      // The input file's version number * 1000
   public static boolean readOnly = false; 
      // True iff this is a .pcal input file and the .tla file should 
-     // not be writable.
+     // not be writable.  This is obsolete and is not used.
 
   /**
    * If str is a version number like 3.17, then this returns 1000 times

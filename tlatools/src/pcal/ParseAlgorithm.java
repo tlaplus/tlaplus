@@ -144,6 +144,28 @@ public class ParseAlgorithm
     * procedures called within the current process or procedure.
     */
    
+   /*
+    * The following are added to record whether or not the translation needs
+    * (a) the variable pc and (b) the stuttering-when-done disjunct of Next.
+    * The gotoDoneUsed flag is set true if the algorithm contains a `goto Done' 
+    * statement, in which case omitPC and omitStutteringWhenDone should be
+    * set false.  The gotoUsed flag is set true if any goto is used, in which
+    * case omitPC should be set false.  The gotoUsed and gotoDoneUsed flags
+    * are set by the getGoto method; the omitPC and  omitStutteringWhenDone
+    * flags are set by getAlgorithm, though most of the work is done by the 
+    * checkBody method.
+    * 
+    * In a more elegant implementation, this information would
+    * be saved as part of the AST object for the complete algorithm.  However,
+    * since omitting these things is an addition made for Version 1.5, it's
+    * easier to modify the "code" generation by having the information
+    * available in global variables.
+    */
+   public static boolean gotoUsed;
+   public static boolean gotoDoneUsed;
+   public static boolean omitPC;
+   public static boolean omitStutteringWhenDone;
+   
    public static Vector proceduresCalled;
    
    public static boolean hasDefaultInitialization;
@@ -240,6 +262,21 @@ public class ParseAlgorithm
     minusLabels = new Vector(0);
     proceduresCalled = new Vector(0);
     
+    gotoUsed = false;
+    gotoDoneUsed = false;
+    // The following two field settings are used because the checks
+    // for omitting these things are done in the checkBody method
+    // and in getAlgorithm by making them false if they can't be
+    // omitted.
+    omitPC = true; 
+    omitStutteringWhenDone = true;
+    // if the user has specified an earlier version than 1.5, then
+    // don't omit the pc variable or stuttering-when-done clause.
+    if (PcalParams.inputVersionNumber < PcalParams.VersionToNumber("1.5")){
+        omitPC = false; 
+        omitStutteringWhenDone = false;
+    }
+    
    /******************************************************************
    * Initialize charReader.                                          *
    ******************************************************************/
@@ -292,7 +329,11 @@ public class ParseAlgorithm
        while (PeekAtAlgToken(1).equals("macro"))
          { macros.addElement(GetMacro()) ; } ;
        while (PeekAtAlgToken(1).equals("procedure"))
-         { procedures.addElement(GetProcedure()) ; } ;
+         { procedures.addElement(GetProcedure()) ;
+           // if there's a procedure, we assume that it's
+           // called, so we must not omit the pc variable.
+           omitPC = false;
+         } ;
        if (PeekAtAlgToken(1).equals("fair") ||
     		   PeekAtAlgToken(1).equals("process")   )
          { AST.Multiprocess multiproc = new AST.Multiprocess() ;
@@ -341,6 +382,7 @@ public class ParseAlgorithm
                ExpandMacrosInStmtSeq(proc.body, multiproc.macros) ;
                AddLabelsToStmtSeq(proc.body) ;
                proc.body = MakeLabeledStmtSeq(proc.body);
+               checkBody(proc.body);
                i = i + 1 ;
              } ;
            i = 0 ;
@@ -365,6 +407,13 @@ public class ParseAlgorithm
                    // SZ March 11, 2009: info reporting using PcalDebug added
                 { PcalDebug.reportInfo("Labels added.") ; } ;
               } ;
+           if (gotoDoneUsed) {
+                  omitPC = false;
+                  omitStutteringWhenDone = false;
+              }
+           if (gotoUsed) {
+               omitPC = false;
+           }
            return multiproc ;
          }
        else
@@ -415,10 +464,102 @@ public class ParseAlgorithm
                    // SZ March 11, 2009: info reporting using PcalDebug added
                 { PcalDebug.reportInfo("Labels added.") ; } ;
               } ;
+           
+           if (gotoUsed) {
+                  omitPC = false;
+              }
+           if (gotoDoneUsed) {
+               omitPC = false;
+               omitStutteringWhenDone = false;
+           } else {
+               checkBody(uniproc.body);
+           }
            return uniproc ;
          }
      }
 
+   /**
+    * The argument body is either the body of a uniprocess alorithm or of a process in
+    * a multiprocess algorithm.  This procedure sets omitPC or omitStutteringWhenDone
+    * to false if this body implies that the pc or stuttering-when-done disjunct
+    * cannot be omitted.  This is the case unless the body consists of a single
+    * `while (TRUE)' statement.  In that case, the pc cannot be omitted
+    * iff there is a label in the body, which is the case iff either the AST.While 
+    * object has a non-empty labDo field, or the unlabDo field contains a 
+    * LabelIf or LabelEither. (The pc also cannot be omitted if
+    * the body has a procedure call, but that is checked elsewhere.)
+    * 
+    * @param body
+    */
+   private static void checkBody(Vector body) {
+       // The body should not be empty, so the following
+       // test should be redundant.  But just in case the
+       // error is being found elsewhere...
+       if (body == null || (body.size() == 0)) {
+           return;
+       }
+       if ((body.size() > 1) || 
+               ! body.elementAt(0).getClass().equals(AST.LabeledStmtObj.getClass()) ){
+           omitPC = false;
+           omitStutteringWhenDone = false;
+           return;
+       } ;
+       AST.LabeledStmt lblStmt = (AST.LabeledStmt) body.elementAt(0);
+       if ( (lblStmt.stmts == null) || (lblStmt.stmts.size() == 0)) {
+           // Again, this shouldn't happen.
+           return;
+       }
+       if ((lblStmt.stmts.size() > 1) || 
+               ! lblStmt.stmts.elementAt(0).getClass().equals(AST.WhileObj.getClass()) ){
+           omitPC = false;
+           omitStutteringWhenDone = false;
+           return;
+       } ;
+       
+       AST.While whileStmt = (AST.While) lblStmt.stmts.elementAt(0);
+       Vector tokens = whileStmt.test.tokens;
+       if (tokens.size() != 1) {
+           omitPC = false;
+           omitStutteringWhenDone = false;
+           return;
+       }
+       Vector line = (Vector) tokens.elementAt(0);
+       if (line.size() != 1) {
+           omitPC = false;
+           omitStutteringWhenDone = false;
+           return;
+       }
+       TLAToken tok = (TLAToken) line.elementAt(0);
+       if (! tok.string.equals("TRUE")) {
+           omitPC = false;
+           omitStutteringWhenDone = false;
+           return;
+       }
+       if ((whileStmt.labDo != null) && (whileStmt.labDo.size() > 0)) {
+           omitPC = false;
+       }
+       
+       if (whileStmt.unlabDo == null) {
+           return;
+       }
+       
+       for (int i = 0; i < whileStmt.unlabDo.size(); i++) {
+           Object obj = whileStmt.unlabDo.elementAt(i);
+           // in the following test, I think the LabeledStmt test
+           // is unnecessary, because there can only be a LabeledStmt
+           // in a while statements unlabDo field if it is preceded by
+           // a LabelIf or LabelEither
+           if (obj.getClass().equals(AST.LabelIfObj.getClass()) ||
+                   obj.getClass().equals(AST.LabelEitherObj.getClass()) ||
+                   obj.getClass().equals(AST.LabeledStmtObj.getClass())                   
+               ) {
+               omitPC = false;
+               return;
+           }
+       }
+       return;
+   }
+   
    public static void AddedMessagesError() throws ParseAlgorithmException 
      { String msg = null ;
        if (addedLabels.size() > 1)
@@ -1224,6 +1365,14 @@ public class ParseAlgorithm
        result.col  = lastTokCol ;
        result.line = lastTokLine ;
        result.to   = GetAlgToken() ;
+       gotoUsed = true ;
+       // The translator accepts `goto "Done"' and treats it like
+       // `goto Done'.  Testing reveals that the outer
+       // parentheses seem to be removed before we get here, but I
+       // don't trust my tests, so let's check for both.
+       if (result.to.equals("Done") || result.to.equals("\"Done\"")) {
+           gotoDoneUsed = true;
+       }
        GobbleThis(";") ;
        return result ;
      }

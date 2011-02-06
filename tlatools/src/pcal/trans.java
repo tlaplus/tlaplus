@@ -43,10 +43,21 @@ import util.ToolIO;
 *                Added the options statement and the -lineWidth option.    *
 *                                                                          *               
 *   Version 1.5: (Jan 2011)                                                *
-*                 Added the -noDoneDisjunct option.                        *
-*                 Added the new way of specifying fairness, with           *
-*                 the "fair" keyword with "+" modifier, and the "+" and    *
-*                 "-" label modifiers.                                     *                           *
+*                 1. Added the -noDoneDisjunct option.                     *
+*                 2. Added the new way of specifying fairness, with        *
+*                    the "fair" keyword with "+" modifier, and the "+"     *
+*                    and "-" label modifiers.                              *
+*                 3. Automatically removes the stuttering-on-termination   *
+*                    disjunction if all processes are "while (TRUE)"       *
+*                    statements with no gotos to "Done".                   *
+*                 4. In addition, if the "while (TRUE)"s have no           *
+*                    internal labels, it removes the pc variable.          *
+*                 5. Changed the representation of Process and Procedure   *
+*                    nodes in the abstract syntax tree produced by         *
+*                    the -writeAST option and used when TLC is producing   *
+*                    the translation.                                      *
+*                 The changes 3-5 are not implemented when the -version    *
+*                 option specifies an earlier version.                     *
 * -----------------------------------------------------------------        *
 *                                                                          *
 * This is the main method of the +CAL to TLA+ translation program.         *
@@ -554,6 +565,14 @@ class trans
         try
         {
             ast = ParseAlgorithm.getAlgorithm(reader);
+// System.out.println(ast.toString());
+// For testing, we print out when the new code for eliminating the 
+// suttering-on-done and pc is used.
+// if (ParseAlgorithm.omitPC || ParseAlgorithm.omitStutteringWhenDone) {
+//  System.out.println("omit pc = " + ParseAlgorithm.omitPC + 
+//          ", omitStutteringWhenDone = " + ParseAlgorithm.omitStutteringWhenDone);
+// }
+
         } catch (ParseAlgorithmException e)
         {
             PcalDebug.reportError(e);
