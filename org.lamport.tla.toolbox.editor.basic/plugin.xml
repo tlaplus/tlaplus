@@ -346,61 +346,61 @@
             commandId="org.lamport.tla.toolbox.editor.basic.alt1"
             contextId="org.eclipse.ui.contexts.window"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            sequence="M3+1">
+            sequence="M1+M2+M3+1">
       </key>
       <key
             commandId="org.lamport.tla.toolbox.editor.basic.alt2"
             contextId="org.eclipse.ui.contexts.window"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            sequence="M3+2">
+            sequence="M1+M2+M3+2">
       </key>
       <key
             commandId="org.lamport.tla.toolbox.editor.basic.alt3"
             contextId="org.eclipse.ui.contexts.window"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            sequence="M3+3">
+            sequence="M1+M2+M3+3">
       </key>
       <key
             commandId="org.lamport.tla.toolbox.editor.basic.alt4"
             contextId="org.eclipse.ui.contexts.window"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            sequence="M3+4">
+            sequence="M1+M2+M3+4">
       </key>
       <key
             commandId="org.lamport.tla.toolbox.editor.basic.alt5"
             contextId="org.eclipse.ui.contexts.window"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            sequence="M3+5">
+            sequence="M1+M2+M3+5">
       </key>
       <key
             commandId="org.lamport.tla.toolbox.editor.basic.alt6"
             contextId="org.eclipse.ui.contexts.window"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            sequence="M3+6">
+            sequence="M1+M2+M3+6">
       </key>
       <key
             commandId="org.lamport.tla.toolbox.editor.basic.alt7"
             contextId="org.eclipse.ui.contexts.window"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            sequence="M3+7">
+            sequence="M1+M2+M3+7">
       </key>
       <key
             commandId="org.lamport.tla.toolbox.editor.basic.alt8"
             contextId="org.eclipse.ui.contexts.window"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            sequence="M3+8">
+            sequence="M1+M2+M3+8">
       </key>
       <key
             commandId="org.lamport.tla.toolbox.editor.basic.alt9"
             contextId="org.eclipse.ui.contexts.window"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            sequence="M3+9">
+            sequence="M1+M2+M3+9">
       </key>
       <key
             commandId="org.lamport.tla.toolbox.editor.basic.alt0"
             contextId="org.eclipse.ui.contexts.window"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            sequence="M3+0">
+            sequence="M1+M2+M3+0">
       </key>
       <key
             commandId="org.lamport.tla.toolbox.editor.basic.startBoxedComment"
