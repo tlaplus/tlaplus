@@ -358,11 +358,6 @@ public class ProverJob extends Job
             {
                 ProverUIActivator.logDebug("Module file given to ProverJob does not exist.");
                 return new Status(IStatus.ERROR, ProverUIActivator.PLUGIN_ID, "Module file does not exist.");
-            } else if (tlapmPath != null && !tlapmPath.toFile().exists())
-            {
-                ProverUIActivator.logDebug("The given tlapm path does not exist.");
-                // TODO show error message to user
-                return new Status(IStatus.ERROR, ProverUIActivator.PLUGIN_ID, "The given tlapm path does not exist.");
             } else if (Platform.getOS().equals(Platform.OS_WIN32) && cygwinPath != null
                     && !cygwinPath.toFile().exists())
             {
