@@ -27,7 +27,9 @@ import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.Launch;
+import org.eclipse.debug.core.model.IFlushableStreamMonitor;
 import org.eclipse.debug.core.model.IProcess;
+import org.eclipse.debug.core.model.IStreamMonitor;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextSelection;
@@ -483,32 +485,14 @@ public class ProverJob extends Job
             pb.redirectErrorStream(true);
 
             /*
-             * Start the process. Calling DebugPlugin.newProcess()
-             * wraps the java.lang.Process in an IProcess with some
-             * convenience methods.
+             * Start the prover process.
              */
             System.out.println("TLAPM launched " + getCurRelTime());
-            proverProcess = DebugPlugin.newProcess(launch, pb.start(), getName());
+            Process process = pb.start();
+            setUpStreamListening(process, monitor);
 
             if (proverProcess != null)
             {
-                /*
-                 * Setup the broadcasting of the prover output stream.
-                 * We pass in the progress monitor to allow listeners
-                 * to report progress.
-                 */
-                listener = new TLAPMBroadcastStreamListener(module, this, monitor);
-
-                /*
-                 * Send a string to the listener indicating
-                 * that a new prover job is starting. This makes
-                 * it easier to read the console.
-                 */
-                listener.streamAppended("---------------- New Prover Launch --------------\n", null);
-
-                proverProcess.getStreamsProxy().getErrorStreamMonitor().addListener(listener);
-                proverProcess.getStreamsProxy().getOutputStreamMonitor().addListener(listener);
-
                 /*
                  * The following loop checks for job cancellation while
                  * the process is running and terminates the process
@@ -752,7 +736,7 @@ public class ProverJob extends Job
          * Add threads option, if there is one.
          */
         ProverHelper.setThreadsOption(command);
-    
+
         /*
          * Add solver option, if there is one.
          */
@@ -995,6 +979,76 @@ public class ProverJob extends Job
             return;
         }
 
+    }
+
+    /**
+     * This method sets up the mechanism for listening to the error and output streams
+     * of the prover. It also sets the value of the field proverProcess.
+     * 
+     * @param process
+     * @param monitor
+     */
+    private void setUpStreamListening(Process process, IProgressMonitor monitor)
+    {
+        /*
+         * This code proceeds as follows. First, we wrap the java.lang.Process in an IProcess by calling
+         * DebugPlugin.newProcess(). An IProcess is an eclipse object with some
+         * convenience methods. Then we create a TLAPMBroadcastStreamListener and add it as
+         * a listener to the output and error streams of the IProcess.
+         * 
+         * The code is wrapped in two synchronized blocks to avoid a race condition on the
+         * prover's output. The race condition can occur as follows. Calling DebugPlugin.newProcess()
+         * creates instances of IStreamMonitor to monitor the output and error streams
+         * of the prover. These monitors immediately start monitoring the streams and passing the
+         * text from the streams to registered listeners. This means that they can potentially read
+         * text from the prover's streams before the TLAPMBroadcastStreamListener is added as a listener.
+         * This text would be lost. To solve this, this thread locks access to the prover's output and error
+         * streams until after the TLAPMBroadcastStreamListener has been added as a listener.
+         */
+        if (process != null)
+        {
+            synchronized (process.getInputStream())
+            {
+                synchronized (process.getErrorStream())
+                {
+                    /* 
+                     * Calling DebugPlugin.newProcess()
+                     * wraps the java.lang.Process in an IProcess with some
+                     * convenience methods.
+                     */
+                    proverProcess = DebugPlugin.newProcess(launch, process, getName());
+                    /*
+                     * Setup the broadcasting of the prover output stream.
+                     * We pass in the progress monitor to allow listeners
+                     * to report progress.
+                     */
+                    listener = new TLAPMBroadcastStreamListener(module, this, monitor);
+
+                    /*
+                     * Send a string to the listener indicating
+                     * that a new prover job is starting. This makes
+                     * it easier to read the console.
+                     */
+                    listener.streamAppended("---------------- New Prover Launch --------------\n", null);
+
+                    IStreamMonitor esMonitor = proverProcess.getStreamsProxy().getErrorStreamMonitor();
+                    IStreamMonitor osMonitor = proverProcess.getStreamsProxy().getOutputStreamMonitor();
+
+                    esMonitor.addListener(listener);
+                    osMonitor.addListener(listener);
+
+                    /*
+                     * The output from the prover can be long, so buffering it can lead to an
+                     * OutOfMemoryError. The following code turns off buffering.
+                     */
+                    if (esMonitor instanceof IFlushableStreamMonitor && osMonitor instanceof IFlushableStreamMonitor)
+                    {
+                        ((IFlushableStreamMonitor) esMonitor).setBuffered(false);
+                        ((IFlushableStreamMonitor) osMonitor).setBuffered(false);
+                    }
+                }
+            }
+        }
     }
 
     /**
