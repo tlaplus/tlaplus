@@ -124,6 +124,18 @@ public class AssumeProveNode extends LevelNode {
       return suffices;
   }
 
+  /**
+   * The following field is set true iff this is a []ASSUME/[]PROVE node.
+   * This flag is not used by SANY or any current tool, but it's
+   * here just in case it will ever be used by a future tool.
+   */
+  protected boolean isBoxAssumeProve ;
+  public boolean getIsBoxAssumeProve() {
+      return isBoxAssumeProve;
+  }
+  protected void setIsBoxAssumeProve(boolean value) {
+      isBoxAssumeProve = value;
+  }
 
   private ThmOrAssumpDefNode goal = null ;
     /***********************************************************************
@@ -361,8 +373,8 @@ public class AssumeProveNode extends LevelNode {
     return "\n*AssumeProveNode: " 
              + super.toString(depth)  // Seems to print stn.getLocation() where stn is the 
                                       // corresponding syntax tree node.
-             + "\n  Assumes: " + assumeStr
-             + "\n  Prove: " + Strings.indent(4, prove.toString(depth-1))
+             + "\n  " + (isBoxAssumeProve ? "[]" : "") + "Assumes: " + assumeStr
+             + "\n  " + (isBoxAssumeProve ? "[]" : "") + "Prove: " + Strings.indent(4, prove.toString(depth-1))
              + "\n  Goal: "  + goalStr 
              + ((suffices) ? "\n  SUFFICES" : "") ;
   }

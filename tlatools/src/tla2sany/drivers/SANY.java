@@ -42,7 +42,7 @@ public class SANY {
     * The following string is inserted by an Emacs macro when a new        *
     * version is saved.                                                    *
     ***********************************************************************/
-    "last modified on Tue  9 March 2010 at 11:49:54 PST by lamport";
+    "last modified on Tue  10 February 2011 at 11:49:54 PST by lamport";
 
   private static String modDate = 
                 lastModified.substring(21, lastModified.indexOf(" at"));

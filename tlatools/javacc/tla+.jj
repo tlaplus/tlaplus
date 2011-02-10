@@ -1140,6 +1140,7 @@ TOKEN: {
 <SPEC> TOKEN : {
   < ACTION: "ACTION" | "ACTIONS" >
 | < ASSUME: "ASSUME" >
+| < BOXASSUME: "[]ASSUME" >  // added by LL 9 Feb 2011
 | < ASSUMPTION: "ASSUMPTION" | "AXIOM" >
 | < CASE: "CASE" >
 | < CHOOSE: "CHOOSE" >
@@ -1184,6 +1185,7 @@ TOKEN: {
 | < TAKE: "TAKE">
 | < PROOF: "PROOF" > // | "Proof" > removed by LL 22 Jul 2007
 | < PROVE: "PROVE" >
+| < BOXPROVE: "[]PROVE" > // added by LL 9 Feb 2011
 | < QED: "QED" >
 | < RECURSIVE: "RECURSIVE" >
 | < STATE: "STATE" >
@@ -2349,9 +2351,10 @@ SyntaxTreeNode
 AssumeProve () : {
   /*************************************************************************
   * AssumeProve ::= (<IDENTIFIER> <COLONCOLON>)?                           *
-  *                 <ASSUME> (AssumeProve | NewDecl | Expression)          *
-  *                  (<COMMA> (AssumeProve  | NewDecl | Expression))+      *
-  *                 <PROVE> Expression                                     *
+  *                 (<ASSUME> | <BOXASSUME>)                               *
+  *                   (AssumeProve | NewDecl | Expression)                 *
+  *                 (<COMMA> (AssumeProve  | NewDecl | Expression))+       *
+  *                 (<PROVE> | <BOXPROVE>) Expression                      *
   *                                                                        *
   * For ASSUME A1, A2 PROVE B, it constructs an AssumeProve node tn with   *
   * tn.zero equal to the array containing the 6 elements                   *
@@ -2366,6 +2369,11 @@ AssumeProve () : {
   * business.  Testing shows that an ASSUME/PROVE can't have a label.  I   *
   * have no idea what the code that apparently is looking for a label is   *
   * supposed to do, but it never seems to do anything.                     *
+  *                                                                        *
+  * The []ASSUME / []PROVE added by LL on 9 Feb 2011.  This grammar        *
+  * allows []ASSUME and []PROVE to be used interchangably with ASSUME and  *
+  * PROVE. The semantic processing should report an error if []ASSUME is   *
+  * used with PROVE and vice-versa.                                        *
   *************************************************************************/
   SyntaxTreeNode tn;
   Token t;
@@ -2397,12 +2405,12 @@ AssumeProve () : {
     }
   )?
 
-  t = <ASSUME>  { addHeir( new SyntaxTreeNode(mn, t) );
+  ( t = <ASSUME> | t = <BOXASSUME>) { addHeir( new SyntaxTreeNode(mn, t) );
 expecting = "Expression, Declaration, or AssumeProve"; }
 
-  (  LOOKAHEAD ({(getToken(1).kind == ASSUME)
+  (  LOOKAHEAD ({(getToken(1).kind == ASSUME || getToken(1).kind == BOXASSUME)
                    || ((getToken(2).kind == COLONCOLON) && 
-                       (getToken(3).kind == ASSUME)  )})
+                       (getToken(3).kind == ASSUME || getToken(3).kind == BOXASSUME)  )})
                       /*****************************************************
                       * Check for COLONCOLON added by LL 17 Feb 2009.      *
                       *****************************************************/
@@ -2413,9 +2421,9 @@ expecting = "Expression, Declaration, or AssumeProve"; }
 expecting = "PROVE or `,'"; }
   ( t = <COMMA> { addHeir( new SyntaxTreeNode(mn, t) );
 expecting = "Expression, Declaration, or AssumeProve"; }
-    (  LOOKAHEAD({    (getToken(1).kind == ASSUME)
+    (  LOOKAHEAD({    (getToken(1).kind == ASSUME || getToken(1).kind == BOXASSUME)
                    || ((getToken(2).kind == COLONCOLON) && 
-                       (getToken(3).kind == ASSUME)  )})
+                       (getToken(3).kind == ASSUME || getToken(3).kind == BOXASSUME)  )})
                       /*****************************************************
                       * Check for COLONCOLON added by LL 17 Feb 2009.      *
                       *****************************************************/
@@ -2426,7 +2434,7 @@ expecting = "Expression, Declaration, or AssumeProve"; }
     { addHeir(tn); 
 expecting = "PROVE or `,'"; }
   )*
-  t = <PROVE> { addHeir( new SyntaxTreeNode(mn, t) );
+  (t = <PROVE> | t = <BOXPROVE>) { addHeir( new SyntaxTreeNode(mn, t) );
 expecting = "Expression"; }
   tn = Expression() { addHeir( tn ); }
   { sn = getLastHeirs();
@@ -2595,7 +2603,7 @@ expecting = "=="; }
   ]
   { belchDEF(); }
   (  LOOKAHEAD (3)
-     LOOKAHEAD({getToken(1).kind == ASSUME})     
+     LOOKAHEAD({getToken(1).kind == ASSUME || getToken(1).kind == BOXASSUME})     
      tn = AssumeProve() 
    | tn = Expression() )
   { addHeir(tn); }
@@ -3119,7 +3127,7 @@ AssertStep() : {
     ) ? 
     (  tn = Expression() 
      | 
-       LOOKAHEAD({getToken(1).kind == ASSUME}) 
+       LOOKAHEAD({getToken(1).kind == ASSUME || getToken(1).kind == BOXASSUME}) 
        tn = AssumeProve()
     )
     { addHeir(tn) ;    

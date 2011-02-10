@@ -3539,12 +3539,22 @@ OpDefNode node = (OpDefNode) vec.elementAt(i);
 //    return false ;  
 //    }         
 
+  // The following objects added 10 Feb 2011 by LL are used to check that
+  // a []ASSUME does not lie within the scope of (the assumptions of)
+  // an ordinary ASSUME.  It does this by declaring the dummy OpDeclNode
+  // InAssumeDummyNode as if it were declared within the ASSUME and then
+  // checking if it's defined where the []ASSUME is used.
+  private final static UniqueString S_InAssume = UniqueString.uniqueStringOf("$$InAssume");
+  private final static OpDeclNode InAssumeDummyNode = 
+     new OpDeclNode(S_InAssume, 0, 0, 0, null, null, null) ;
+
   private final AssumeProveNode 
                    generateAssumeProve(TreeNode treeNode, ModuleNode cm)
     /***********************************************************************
     * Added by LL on 17 Mar 2007.                                          *
     ***********************************************************************/
      throws AbortException { 
+       // The following flag is used to record if this is a
        // Following code added on 9 Nov 2009 so that the goal
        // field of the AssumeProveNode is null unless this is
        // a top-level Assume/Prove.
@@ -3559,6 +3569,24 @@ OpDefNode node = (OpDefNode) vec.elementAt(i);
        if (numOfChildren % 2 != 0) { 
            throw new WrongInvocationException("AssumeProve has odd number of children"); } ;
        int numOfAssumptions = (numOfChildren - 2) / 2 ;
+       // Check if this is a []ASSUME and that the PROVE matches
+       // the ASSUME.  
+       boolean isBoxAssumeProve = false;
+       String proveString = children[children.length -2].getImage();
+       if (children[0].getImage().equals("[]ASSUME")) {
+           isBoxAssumeProve = true;
+           if (!proveString.equals("[]PROVE")) {
+               errors.addError(children[0].getLocation(), 
+               "[]ASSUME matched by PROVE instead of []PROVE");
+           } 
+       } else {
+           if (!proveString.equals("PROVE")) {
+               errors.addError(children[0].getLocation(), 
+               "ASSUME matched by []PROVE instead of PROVE");
+           } 
+       }
+       apn.setIsBoxAssumeProve(isBoxAssumeProve);
+       
        apn.assumes = new LevelNode[numOfAssumptions] ;
        boolean inDeclScope = false ;
          /******************************************************************
@@ -3581,6 +3609,18 @@ OpDefNode node = (OpDefNode) vec.elementAt(i);
          * in the "prove" expression.                                      *
          ******************************************************************/
         } // if
+       
+       if (isBoxAssumeProve) {
+           if (symbolTable.resolveSymbol(S_InAssume) != null) {
+               errors.addError(children[0].getLocation(), 
+               "[]ASSUME used within the scope of an ordinary ASSUME's assumptions"); 
+           }
+       } else {
+           if (symbolTable.resolveSymbol(S_InAssume) == null) {
+               symbolTable.addSymbol(S_InAssume, InAssumeDummyNode); 
+           } 
+       }
+       
        if (assumeProveDepth == 1) {currentGoalClause = 0 ; } ;
        for (int i = 0 ; i < numOfAssumptions ; i++) {
          /******************************************************************

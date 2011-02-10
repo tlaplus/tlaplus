@@ -136,22 +136,39 @@ public final boolean levelCheck(int iter) {
     * Check that only a non-temporal theorem cannot have a temporal-level  *
     * formula in its proof.                                                *
     * Modified 3 Mar 2009:                                                 *
+    *                                                                      *
+    * This code was commented out by LL on 10 Feb 2011.  I decided to      *
+    * eliminate all checks for a temporal formula appearing inside the     *
+    * proof of a non-temporal formula.  In discussions of temporal proofs  *
+    * during 2010-2011, it was deemed necessary to allow a temporal fact   *
+    * (like []I) to appear in the leaf proof of a non-temporal formula     *
+    * (like I).  However, it was not resolved whether or not to allow a    *
+    * temporal step to appear in the proof of a non-temporal step.  We     *
+    * (a) couldn't think of why this should be allowed and (b) didn't      *
+    * think that outlawing it in the parser would be terribly helpful.     *
+    * So, for simplicity in the implementation, I decided to permit it.    *
+    * If we want to outlaw it, we need to both uncomment the following     *
+    * code and also make some additional changes so the level of a         *
+    * temporal fact does not influence the level of a step having that     *
+    * fact as its proof.  The easiest such change is probably to change    *
+    * the levelCheck method of the LeafProofNode so it set's that node's   *
+    * level to zero.                                                       *
     ***********************************************************************/
-    if (   (this.proof != null)  
-           /****************************************************************
-           * Must not check if this is a QED or CASE.                      *
-           ****************************************************************/
-        && ! (   (oanOp != null)
-              && (   (oanOp.getName() == OP_qed)
-                  || (oanOp.getName() == OP_pfcase)))) {
-      if(   (this.proof.level == TemporalLevel)
-         && (this.theoremExprOrAssumeProve.level < TemporalLevel)) {
-          errors.addError(
-            stn.getLocation(),
-            "Non-temporal theorem has temporal-level proof.");
-          return false;
-        };
-     };
+//    if (   (this.proof != null)  
+//           /****************************************************************
+//           * Must not check if this is a QED or CASE.                      *
+//           ****************************************************************/
+//        && ! (   (oanOp != null)
+//              && (   (oanOp.getName() == OP_qed)
+//                  || (oanOp.getName() == OP_pfcase)))) {
+//      if(   (this.proof.level == TemporalLevel)
+//         && (this.theoremExprOrAssumeProve.level < TemporalLevel)) {
+//          errors.addError(
+//            stn.getLocation(),
+//            "Non-temporal theorem has temporal-level proof.");
+//          return false;
+//        };
+//     };
 
    /************************************************************************
    * The following code checks that a PICK step whose body is a            *
