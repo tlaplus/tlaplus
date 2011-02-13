@@ -42,8 +42,3 @@ TwoPhase
    unspecified actions.  There is also a TLA+ proof of 
    correctness that has been checked by the TLAPS proof system.
    
-Voting
-   Ignore this spec.  It seems to be obsolete, but it will be
-   deleted only when we can figure out how it got into this
-   directory.
-   
