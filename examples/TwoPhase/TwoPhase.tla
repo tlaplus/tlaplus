@@ -19,7 +19,7 @@
 (* specification under a suitable refinement mapping (substitution for the *)
 (* variable v).                                                            *)
 (***************************************************************************)
-EXTENDS Naturals, TLAProofRules
+EXTENDS Naturals, TLAPS
 
 CONSTANT XInit(_), XAct(_, _, _)
  
@@ -117,18 +117,22 @@ THEOREM Implementation == Spec => A!Spec
   <2>2. Inv /\ [Next]_<<p, c, x>> => Inv'
     BY Mod2 DEF Inv, Next, ProducerStep, ConsumerStep
   <2>3. QED
-    <3>1. Inv /\ [][Next]_<<p, c, x>> => []Inv
-       BY <2>2, Inv1 
-    <3>2. QED
-       BY <3>1, <2>1 DEF Spec
+\*    <3>1. Inv /\ [][Next]_<<p, c, x>> => []Inv
+\*       BY <2>2, Inv1 
+\*    <3>2. QED
+\*       BY <3>1, <2>1 DEF Spec
+   PROOF OMITTED  \* TLAPS does not yet do temporal-logic reasoning
 <1>2. QED
   <2>1. Init => A!Init
     BY Mod2 DEF Init, A!Init, vBar
   <2>2. Inv /\ [Next]_<<p, c, x>>  => [A!Next]_<<vBar, x>>
     BY Mod2 DEF Inv, Next, ProducerStep, ConsumerStep, A!Next, vBar
   <2>3. []Inv /\ [][Next]_<<p, c, x>>  => [][A!Next]_<<vBar, x>>  
-     BY <2>2, StepSimulation
+\*     BY <2>2, StepSimulation
+     PROOF OMITTED  \* TLAPS does not yet do temporal-logic reasoning
   <2>4. QED
-     BY <2>1, <2>3, <1>1 DEF Spec, A!Spec
+\*     BY <2>1, <2>3, <1>1 DEF Spec, A!Spec
+     PROOF OMITTED  \* TLAPS does not yet do temporal-logic reasoning
+  
 ==============================================================
 \* Generated at Sat Oct 31 03:15:55 PDT 2009

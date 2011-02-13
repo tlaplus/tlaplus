@@ -9,5 +9,5 @@ TwoPhase
   A specification of a very simple hardware protocol called 
   two-phase handshaking, and a theorem asserting that it
   implements the Alternate spec under a refinement mapping.  
-  It contains a TLA+ proof that this theorem that has been 
+  It contains a TLA+ proof of this theorem, most of which that has been 
   checked by the TLAPS proof system.
