@@ -51,7 +51,7 @@ public class SANY {
     ***********************************************************************/
 
   public static String version = 
-    "Version 2.0 created " + modDate ; 
+    "Version 2.1 created " + modDate ; 
 
   private static boolean doParsing          = true;  
     // true <=> parsing should be done
