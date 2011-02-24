@@ -513,6 +513,15 @@ MARKERS
   declares a new marker type, you can right click to select New >
   persistent.  Set the value to be true to make that type persistent.
   Note that this value is not inherited by subtypes of markers.
+  
+HANDLING OF PARSING ERRORS WITH MARKERS
+
+The handling of parsing errors and the hyperlinking of TLC errors is
+fairly simple.  Parsing errors are handled using IMarkers that are
+specified in the main plugin's plugin.xml file.  Hyperlinking of TLC
+errors is done using all of the static methods in the class
+TLCUIHelper (except for setHelp()). 
+
 ------------------------------------------------------------------
 THE TRACE EXPLORER AND TLC ERROR WINDOW
 
