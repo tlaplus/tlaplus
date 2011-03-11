@@ -1,0 +1,38 @@
+@!@!@STARTMSG 2262:0 @!@!@
+TLC2 Version 2.03 of 26 May 2010
+@!@!@ENDMSG 2262 @!@!@
+@!@!@STARTMSG 2187:0 @!@!@
+Running in Model-Checking mode.
+@!@!@ENDMSG 2187 @!@!@
+@!@!@STARTMSG 2220:0 @!@!@
+Starting SANY...
+@!@!@ENDMSG 2220 @!@!@
+Parsing file MC.tla
+Parsing file Promises.tla
+Parsing file C:\lamport\tla\newtools\tla2-inria\org.lamport.tla.toolbox\StandardModules\TLC.tla
+Parsing file C:\lamport\tla\newtools\tla2-inria\org.lamport.tla.toolbox\StandardModules\Integers.tla
+Parsing file C:\lamport\tla\newtools\tla2-inria\org.lamport.tla.toolbox\StandardModules\Sequences.tla
+Parsing file C:\lamport\tla\newtools\tla2-inria\org.lamport.tla.toolbox\StandardModules\FiniteSets.tla
+Parsing file C:\lamport\tla\newtools\tla2-inria\org.lamport.tla.toolbox\StandardModules\Naturals.tla
+Semantic processing of module Naturals
+Semantic processing of module Integers
+Semantic processing of module Sequences
+Semantic processing of module FiniteSets
+Semantic processing of module TLC
+Semantic processing of module Promises
+Semantic processing of module MC
+@!@!@STARTMSG 2219:0 @!@!@
+SANY finished.
+@!@!@ENDMSG 2219 @!@!@
+@!@!@STARTMSG 2185:0 @!@!@
+Starting... (2011-03-10 15:56:19)
+@!@!@ENDMSG 2185 @!@!@
+@!@!@STARTMSG 2105:1 @!@!@
+Evaluating assumption line 73, col 8 to line 73, col 66 of module MC failed.
+Attempted to apply function:
+(id1 :> [f1 |-> id2, f2 |-> <<v1, id3>>] @@ id2 :> <<>> @@ id3 :> <<>>)
+to argument {}, which is not in the domain of the function.
+@!@!@ENDMSG 2105 @!@!@
+@!@!@STARTMSG 2186:0 @!@!@
+Finished. (2011-03-10 15:56:19)
+@!@!@ENDMSG 2186 @!@!@

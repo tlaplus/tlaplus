@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<launchConfiguration type="org.lamport.tla.toolbox.tool.tlc.modelCheck">
+<intAttribute key="autoLockTime" value="15"/>
+<stringAttribute key="configurationName" value="Model_1"/>
+<intAttribute key="dfidDepth" value="100"/>
+<booleanAttribute key="dfidMode" value="false"/>
+<intAttribute key="maxHeapSize" value="500"/>
+<booleanAttribute key="mcMode" value="true"/>
+<stringAttribute key="modelBehaviorInit" value=""/>
+<stringAttribute key="modelBehaviorNext" value=""/>
+<stringAttribute key="modelBehaviorSpec" value=""/>
+<intAttribute key="modelBehaviorSpecType" value="0"/>
+<stringAttribute key="modelBehaviorVars" value=""/>
+<booleanAttribute key="modelCorrectnessCheckDeadlock" value="true"/>
+<listAttribute key="modelCorrectnessInvariants"/>
+<listAttribute key="modelCorrectnessProperties"/>
+<stringAttribute key="modelExpressionEval" value="&lt;&lt;TestObj \in Object,&#13;&#10; ReachableFrom(TestObj, TestHeap)&#13;&#10;&gt;&gt;"/>
+<stringAttribute key="modelParameterActionConstraint" value=""/>
+<listAttribute key="modelParameterConstants">
+<listEntry value="Id;;{id1, id2, id3};1;0"/>
+<listEntry value="Exception;;{exc1, exc2};1;0"/>
+<listEntry value="Value;;{v1, v2};1;0"/>
+<listEntry value="Type;;{EventualType};0;0"/>
+<listEntry value="Field;;{&quot;type&quot;, &quot;f1&quot;, &quot;f2&quot;};0;0"/>
+<listEntry value="EventualType;;EventualType;1;0"/>
+</listAttribute>
+<stringAttribute key="modelParameterContraint" value=""/>
+<listAttribute key="modelParameterDefinitions">
+<listEntry value="Nat;;0..5;0;0"/>
+<listEntry value="Seq;S:;UNION { [1..n -&gt; S] : n \in 0..2 };0;0"/>
+</listAttribute>
+<stringAttribute key="modelParameterModelValues" value="{}"/>
+<stringAttribute key="modelParameterNewDefinitions" value="TestHeap ==&#13;&#10;(id1 :&gt; [ f1 |-&gt; id2, &#13;&#10;          f2 |-&gt; &lt;&lt;v1, id3&gt;&gt;])&#13;&#10;  @@&#13;&#10;(id2 :&gt; &lt;&lt; &gt;&gt;)&#13;&#10;  @@&#13;&#10;(id3 :&gt; &lt;&lt; &gt;&gt;)&#13;&#10;&#13;&#10;TestObj ==&#13;&#10;[type |-&gt; EventualType,&#13;&#10; f1 |-&gt; id1]"/>
+<intAttribute key="numberOfWorkers" value="1"/>
+<booleanAttribute key="recover" value="false"/>
+<intAttribute key="simuAril" value="-1"/>
+<intAttribute key="simuDepth" value="100"/>
+<intAttribute key="simuSeed" value="-1"/>
+<stringAttribute key="specName" value="Promises"/>
+<stringAttribute key="view" value=""/>
+</launchConfiguration>
