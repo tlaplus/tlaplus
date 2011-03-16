@@ -387,7 +387,15 @@ public class PcalTLAGen
             sb.append(" >>");
             tlacode.addElement(sb.toString());
         } else if (c.NumUnchanged() == 1) {
-            tlacode.addElement(NSpaces(col) + "/\\ UNCHANGED " + c.Unchanged());
+        	// Change made by LL on 16 Mar 2011 so that, if there is a single
+        	// unchanged variable v, it produces v' = v if v is a short variable,
+        	// otherwise it produces UNCHANGED v
+        	if (c.Unchanged().length() > 5) {
+              tlacode.addElement(NSpaces(col) + "/\\ UNCHANGED " + c.Unchanged());
+        	} else {
+        		tlacode.addElement(NSpaces(col) + "/\\ " + c.Unchanged() + "' = "
+        				+ c.Unchanged());
+        	}
         } else {
            // No unchanged.  If there was only one conjunction, remove it.
            // To do that, we must remove the "/\ " and then remove three spaces
@@ -840,8 +848,17 @@ public class PcalTLAGen
             sb.append(" >>");
             tlacode.addElement(sb.toString());
         } else if (cElse.NumUnchanged(cThen) == 1)
-        {
-            sb.append("UNCHANGED " + cElse.Unchanged(cThen));
+        {   // Change made by LL on 16 Mar 2011 so that, if there is a single
+        	// unchanged variable v, it produces v' = v if v is a short variable,
+        	// otherwise it produces UNCHANGED v
+        	//
+            // sb.append("UNCHANGED " + cElse.Unchanged(cThen));
+        	String uc = cElse.Unchanged(cThen);
+        	if (uc.length() > 5) {
+        		sb.append("UNCHANGED " + uc);
+        	} else {
+        		sb.append(uc + "' = " + uc);
+        	}
             tlacode.addElement(sb.toString());
         }
 
@@ -864,9 +881,18 @@ public class PcalTLAGen
             sb.append(" >>");
             tlacode.insertElementAt(sb.toString(), lineUncThen);
         } else if (cThen.NumUnchanged(cElse) == 1)
-        {
-            sb.append("UNCHANGED ");
-            sb.append(cThen.Unchanged(cElse));
+        {   // Change made by LL on 16 Mar 2011 so that, if there is a single
+        	// unchanged variable v, it produces v' = v if v is a short variable,
+        	// otherwise it produces UNCHANGED v
+        	//
+            // sb.append("UNCHANGED ");
+            // sb.append(cThen.Unchanged(cElse));
+        	String uc = cThen.Unchanged(cElse);
+        	if (uc.length() > 5) {
+        		sb.append("UNCHANGED " + uc);
+        	} else {
+        		sb.append(uc + "' = " + uc);
+        	}
             tlacode.insertElementAt(sb.toString(), lineUncThen);
         }
 
@@ -965,8 +991,17 @@ public class PcalTLAGen
             {
                 tlacode.insertElementAt(NSpaces(here) + "/\\ UNCHANGED <<" + NotChanged + ">>", ucLocs[i]);
             } else if (numUnchanged == 1)
-            {
-                tlacode.insertElementAt(NSpaces(here) + "/\\ UNCHANGED " + NotChanged, ucLocs[i]);
+            {   // Change made by LL on 16 Mar 2011 so that, if there is a single
+            	// unchanged variable v, it produces v' = v if v is a short variable,
+            	// otherwise it produces UNCHANGED v
+            	//
+                // tlacode.insertElementAt(NSpaces(here) + "/\\ UNCHANGED " + NotChanged, ucLocs[i]);
+            	if (NotChanged.length() > 5) {
+                  tlacode.insertElementAt(NSpaces(here) + "/\\ UNCHANGED " + NotChanged, ucLocs[i]);
+            	} else {
+            		tlacode.insertElementAt(NSpaces(here) + "/\\ " + NotChanged + "' = "
+            				+ NotChanged, ucLocs[i]);
+            	}
             }
         }
         ;
