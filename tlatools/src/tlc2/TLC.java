@@ -597,8 +597,8 @@ public class TLC
                 MP.printMessage(EC.TLC_MODE_SIMU, String.valueOf(seed));
                 Simulator simulator = new Simulator(mainFile, configFile, null, deadlock, traceDepth, 
                         Long.MAX_VALUE, rng, seed, true, resolver, specObj);
-                
-                MP.printMessage(EC.TLC_STARTING);
+// The following statement moved to Spec.processSpec by LL on 10 March 2011               
+//                MP.printMessage(EC.TLC_STARTING);
                 instance = simulator;
                 simulator.simulate();
             } else
@@ -615,7 +615,8 @@ public class TLC
                 {
                     mc = new DFIDModelChecker(mainFile, configFile, dumpFile, deadlock, fromChkpt, true, resolver, specObj);
                 }
-                MP.printMessage(EC.TLC_STARTING);
+// The following statement moved to Spec.processSpec by LL on 10 March 2011               
+//                MP.printMessage(EC.TLC_STARTING);
                 instance = mc;
                 mc.modelCheck();
                 
