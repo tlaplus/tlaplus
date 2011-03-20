@@ -885,13 +885,18 @@ public class ParseAlgorithm
            // The following code added by LL on 12 Jan 2011 as part of
            // implementation of the fairness modifiers on labels introduced
            // in Version 1.5.
+           // Modified by LL on 20 Mar 2011 to set omitPC false if there's
+           // a + or - modifier, since this modifier creates a reference
+           // to the label in the fairness condition.
            if (PeekAtAlgToken(1).equals("+")) {
         	   GobbleThis("+") ;
         	   plusLabels.addElement(nextLabel) ;
+        	   omitPC = false;
            } else {
         	  if (PeekAtAlgToken(1).equals("-")) {
         		  GobbleThis("-") ;
            	      minusLabels.addElement(nextLabel) ; 
+                  omitPC = false;
         	  }
            }
          } ;
