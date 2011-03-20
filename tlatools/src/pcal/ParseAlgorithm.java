@@ -334,8 +334,14 @@ public class ParseAlgorithm
            // called, so we must not omit the pc variable.
            omitPC = false;
          } ;
-       if (PeekAtAlgToken(1).equals("fair") ||
-    		   PeekAtAlgToken(1).equals("process")   )
+       if (     (   PeekAtAlgToken(1).equals("fair") 
+                 && (   PeekAtAlgToken(2).equals("process")
+                     || (   PeekAtAlgToken(2).equals("+")
+                         && PeekAtAlgToken(3).equals("process")
+                        )
+                    )
+                )
+    		 || PeekAtAlgToken(1).equals("process")   )
          { AST.Multiprocess multiproc = new AST.Multiprocess() ;
            multiproc.name   = name ;
            multiproc.decls  = vdecls ;
@@ -423,6 +429,13 @@ public class ParseAlgorithm
            uniproc.defs  = defs ;
            uniproc.macros = macros ;
            uniproc.prcds  = procedures ;
+           if (PeekAtAlgToken(1).equals("fair")) {
+             GobbleThis("fair");
+             if (PeekAtAlgToken(1).equals("+")) {
+                 GobbleThis("+");
+             } 
+             PcalParams.FairnessOption = "wf";
+           }
            GobbleBeginOrLeftBrace() ;
            uniproc.body = GetStmtSeq() ;
            CheckForDuplicateMacros(uniproc.macros) ;
