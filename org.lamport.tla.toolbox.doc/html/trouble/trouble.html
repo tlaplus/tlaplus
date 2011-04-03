@@ -4,7 +4,7 @@
  
 <html>
 <head>
-	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
  <LINK href="../style.css" rel="stylesheet" type="text/css">
 
 <title>In Case of Trouble</title>
@@ -56,14 +56,40 @@ too has problems, try backing out of the spec.
 
 <h3>Backing Out of a Spec</h3>
 <p>
-If the Toolbox gets into a bad state when you're editing a module, or when you have problem
-with a TLC model that can't be solved by backing out of the model, you should try backing out of the
-spec.&nbsp;  The first thing to try is closing and re-opening the spec.&nbsp;  
-(See the <a href="../spec/opening-closing.html"><em>Maniputating Specs</em></a> help page.)&nbsp;
-If that doesn't work, try exiting from and then restarting the Toolbox.&nbsp;  If that fails, try creating
-a new spec with the same root module.&nbsp;  If that works, delete the original spec.&nbsp;  If not, see if the
-problem exists with other specs.&nbsp;  If it does, you will probably have to back out of the Toolbox.&nbsp;
-If not, see if you can figure out what it is about that particular spec that is causing the problem.
+
+If the Toolbox gets into a bad state when you're editing a module, or
+when you have problem with a TLC model that can't be solved by backing
+out of the model, you should try backing out of the spec.&nbsp; 
+
+The first thing to try is closing and re-opening the spec.&nbsp; 
+(See the <a href="../spec/opening-closing.html"><em>Manipulating
+Specs</em></a> help page.)&nbsp; 
+
+If that doesn't work, try exiting from and then restarting the
+Toolbox.&nbsp; 
+
+If that fails, delete the original spec.&nbsp; 
+
+However, if you have models that you don't want to lose, first make a
+copy of the <code>.toolbox</code> directory under some other name.&nbsp;
+
+If that works, try creating a new spec with the same root
+module.&nbsp;  
+
+If you have saved a copy of the old <code>.toolbox</code> directory,
+you can first restore that directory and see if you can open it with
+the <code>Import existing</code> option.&nbsp;  
+
+If not, you will have to try creating a new spec with the same modules
+but without your saved models.&nbsp;
+
+If you can't restore the spec, see if the problem exists with other
+specs.&nbsp;
+
+If it does, you will probably have to back out of the Toolbox.&nbsp;
+
+If not, see if you can figure out what it is about that particular
+spec that is causing the problem.
 
 </p>
 
