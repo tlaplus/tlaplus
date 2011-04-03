@@ -54,7 +54,7 @@ public class Spec implements IAdaptable
      */
     private String openDeclModuleName;
     private ITextSelection openDeclSelection;
-    
+
     /**
      * The following fields are used to remember the result of a Show Uses command so
      * the Goto Next Use and Goto Previous Use commands know where to go.  
@@ -64,7 +64,7 @@ public class Spec implements IAdaptable
      * dialog.
      */
     private String moduleToShow = null;
-    
+
     /**
      * The markers to be shown, sorted by the locations in which they
      * originally appeared.  I don't think that order can change,
@@ -77,9 +77,7 @@ public class Spec implements IAdaptable
      * shown. 
      */
     private int currentSelection = 0;
-    
 
-    
     /* project handle */
     private IProject project;
 
@@ -130,12 +128,33 @@ public class Spec implements IAdaptable
         this.rootFile = PreferenceStoreHelper.readProjectRootFile(project);
         this.specObj = null;
         this.status = IParseConstants.UNPARSED;
-        
+
         // Initialize the spec's ToolboxDirSize property.
         // Added by LL and Dan on 21 May 2010
         ResourceHelper.setToolboxDirSize(this.project);
-        
-        Assert.isNotNull(this.rootFile);
+
+        // Assert.isNotNull(this.rootFile);
+        // This assertion was preventing the Toolbox from starting, so LL
+        // comented it out on 19 Mar 2011 and added the log message
+        // on 3 Apr 2011.
+        // To report this problem to the user, one can do the following:
+        //   - Add a failed field to the Spec object, initialized to false
+        //   - Set this field to true when the error occurs.
+        // After the statement
+        //
+        //   spec = new Spec(projects[i]);
+        //
+        // in the constructor of WorkspaceSpecManager, test this field and,
+        // if true, take the appropriate action--probably popping up a warning
+        // (if that's possible) or else putting the name of the spec in the
+        // log, and also probably not executing the addSpec command that follows
+        // this statement.
+        // 
+        if (this.rootFile == null)
+        {
+            Activator.logError("A spec did not load correctly, probably because it was modified outside the Toolbox." +
+                               "\n Error occurred in toolbox/spec/Spec.initProjectProperties()", null);
+        }
     }
 
     /**
@@ -374,6 +393,5 @@ public class Spec implements IAdaptable
     {
         return currentSelection;
     }
-
 
 }
