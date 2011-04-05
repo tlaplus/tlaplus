@@ -140,6 +140,17 @@ import util.ToolIO;
 *                lines have this maximum width.  (It will often            *
 *                fail.)  Default is 78, minimum value is 60.               *
 *                                                                          *
+*  THE FOLLOWING OPTIONS ADDED IN VERSION 1.4                              *
+*                                                                          *
+*** -lineWidth : The translation tries to perform the translation so       *
+*                lines have this maximum width.  (It will often            *
+*                fail.)  Default is 78, minimum value is 60.               *
+*                                                                          *
+*** -version : The version of PlusCal for which this algorithm is          *
+*              written.  If the language is ever changed to make           *
+*              algorithms written for earlier versions no longer           *
+*              legal, then the translator should do the appropriate        *
+*              thing when the earlier version number is specified.         *
 * ------------------------------------------------------------------------ *
 *                                                                          *
 * The program uses vector objects from the Vector class to implement       *
