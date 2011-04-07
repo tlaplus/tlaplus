@@ -107,8 +107,19 @@ public class Spec implements IAdaptable
      * Factory method Creates a new specification, the underlying IProject link the root file
      * 
      * @param name the name of the specification
-     * @param rootFilename the path to the root file name
+     * @param rootFilename the path to the root file name 
      * @param importExisting
+     * 
+     * Note: when importing an existing spec, the contents of the .toolbox directory needs to
+     * be fixed because it contains absolute path names, which may be incorrect if the
+     * spec was moved from someplace else.  Here are the files that seem to need changing:
+     * 
+     *    .toolbox/.project : <location> entries
+     *    .toolbox/.setting/... .prefs  : ProjectRootFile entry.
+     *    
+     * Experiment shows that the rootFilename argument contains the complete path name,
+     * from which one could extract the path names of those files and then rewrite them
+     * as needed.
      */
     public static Spec createNewSpec(String name, String rootFilename, boolean importExisting)
     {
