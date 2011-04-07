@@ -112,10 +112,13 @@ public class Spec implements IAdaptable
      * 
      * Note: when importing an existing spec, the contents of the .toolbox directory needs to
      * be fixed because it contains absolute path names, which may be incorrect if the
-     * spec was moved from someplace else.  Here are the files that seem to need changing:
+     * spec was moved from someplace else.  Here are the files that may need changing:
      * 
-     *    .toolbox/.project : <location> entries
+     *    .toolbox/.project : <location> entries  
+     *         This definitely needs to be changed.
      *    .toolbox/.setting/... .prefs  : ProjectRootFile entry.
+     *         This file is rewritten when the spec is created, so it may not need
+     *         to be changed.
      *    
      * Experiment shows that the rootFilename argument contains the complete path name,
      * from which one could extract the path names of those files and then rewrite them
