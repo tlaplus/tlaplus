@@ -311,7 +311,27 @@ System.out.println("checkTermination = " + checkTermination);
                             "Next");
                 }
             }
-            // Set a test initial property to check.
+            // The following code added by LL on 9 Apr 2011 as a beginning of adding 
+            // overriding for  constant definitions of the form 
+            //
+            //    Foo == CHOOSE v : v \notin exp
+            // 
+            // It was dropped pending a solution to the TLC bug with overriding definitions
+            // in instantiated modules (which it led me to discover).
+            // 
+//            Vector overrides = new Vector();
+//            for (int i = 0; i < defs.length; i++) {
+//                OpDefNode node = defs[i];
+//             // Replace this by a real test:
+//                String defName = node.getName().toString();
+//                if (defName.indexOf("Foo") != -1)
+//                {
+//                    overrides.addElement(defName + ";;" + defName + ";1;0");
+//                }
+//                if (overrides.size() != 0) {
+//                    launchCopy.setAttribute(MODEL_PARAMETER_DEFINITIONS, overrides);
+//                }
+//            }
 
             ILaunchConfiguration launchSaved = launchCopy.doSave();
 
