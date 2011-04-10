@@ -41,9 +41,14 @@ import org.lamport.tla.toolbox.util.pref.IPreferenceConstants;
 import org.lamport.tla.toolbox.util.pref.PreferenceStoreHelper;
 
 import tla2sany.modanalyzer.SpecObj;
+import tla2sany.semantic.ExprNode;
+import tla2sany.semantic.ExprOrOpArgNode;
+import tla2sany.semantic.FormalParamNode;
 import tla2sany.semantic.LevelNode;
 import tla2sany.semantic.ModuleNode;
+import tla2sany.semantic.OpApplNode;
 import tla2sany.semantic.OpDefNode;
+import tla2sany.semantic.SubstInNode;
 
 /**
  * Handler for creation of new models
@@ -247,15 +252,17 @@ public class NewModelHandler extends AbstractHandler implements IModelConfigurat
                             {
                                 checkTermination = true;
                                 Activator.logDebug("Set checkTermination true for " + ifile.getName());
-                            } else {
+                            } else
+                            {
                                 // search for "termination" option in properties added by LL
-                                // on 24 Jan 2011.  This code was copied with little understanding from
+                                // on 24 Jan 2011. This code was copied with little understanding from
                                 // the constructor of the TranslatorJob class.
-                                IPreferenceStore projectPreferenceStore = PreferenceStoreHelper.getProjectPreferenceStore(ifile
-                                        .getProject());
-                                String paramString = projectPreferenceStore.getString(IPreferenceConstants.PCAL_CAL_PARAMS);
+                                IPreferenceStore projectPreferenceStore = PreferenceStoreHelper
+                                        .getProjectPreferenceStore(ifile.getProject());
+                                String paramString = projectPreferenceStore
+                                        .getString(IPreferenceConstants.PCAL_CAL_PARAMS);
                                 checkTermination = (paramString.indexOf("-termination") != -1);
-System.out.println("checkTermination = " + checkTermination);                               
+                                System.out.println("checkTermination = " + checkTermination);
                             }
                         } catch (CoreException e)
                         {
@@ -311,27 +318,85 @@ System.out.println("checkTermination = " + checkTermination);
                             "Next");
                 }
             }
-            // The following code added by LL on 9 Apr 2011 as a beginning of adding 
-            // overriding for  constant definitions of the form 
+            // The following code added by LL on 10 Apr 2011 to add overriding for constant 
+            // definitions of the form
             //
-            //    Foo == CHOOSE v : v \notin exp
+            //      Foo == CHOOSE v : v \notin exp  or  Foo == CHOOSE V : ~(v \in exp)
             // 
-            // It was dropped pending a solution to the TLC bug with overriding definitions
-            // in instantiated modules (which it led me to discover).
-            // 
-//            Vector overrides = new Vector();
-//            for (int i = 0; i < defs.length; i++) {
-//                OpDefNode node = defs[i];
-//             // Replace this by a real test:
-//                String defName = node.getName().toString();
-//                if (defName.indexOf("Foo") != -1)
-//                {
-//                    overrides.addElement(defName + ";;" + defName + ";1;0");
-//                }
-//                if (overrides.size() != 0) {
-//                    launchCopy.setAttribute(MODEL_PARAMETER_DEFINITIONS, overrides);
-//                }
-//            }
+            Vector overrides = new Vector();
+            for (int i = 0; i < defs.length; i++)
+            {
+                OpDefNode node = defs[i];
+                ExprNode nodeBody = node.getBody();
+                // Need to skip over any SubstInNodes at top of definition body's tree.
+                while (nodeBody instanceof SubstInNode) {
+                    nodeBody = ((SubstInNode) nodeBody).getBody();
+                }
+                if (nodeBody instanceof OpApplNode)
+                {
+                    OpApplNode nodeBodyA = (OpApplNode) nodeBody;
+                    if (nodeBodyA.getOperator().getName().toString().equals("$UnboundedChoose"))
+                    {
+                        // The OpDefNode node's body has the form CHOOSE v : ...
+                        FormalParamNode chooseParam = nodeBodyA.getUnbdedQuantSymbols()[0];
+                        ExprOrOpArgNode chooseBody = nodeBodyA.getArgs()[0];
+                        if (chooseBody instanceof OpApplNode)
+                        {
+                            OpApplNode chooseBodyA = (OpApplNode) chooseBody;
+                            boolean toOverride = false;
+                            String topOpName = chooseBodyA.getOperator().getName().toString();
+                            if (topOpName.equals("\\notin"))
+                            {
+                                // this is CHOOSE v : exp \notin exp . Set to override iff
+                                // exp is the CHOOSE's bound variable
+                                ExprOrOpArgNode leftArg = chooseBodyA.getArgs()[0];
+                                if (leftArg instanceof OpApplNode)
+                                {
+                                    OpApplNode leftArgA = (OpApplNode) leftArg;
+                                    if (leftArgA.getOperator() == chooseParam)
+                                    {
+                                        toOverride = true;
+                                    }
+                                }
+                            } else if (topOpName.equals("\\lnot"))
+                            {
+                                // This is CHOOSE v : ~(exp). Set to override iff
+                                // exp is v \in ...
+                                ExprOrOpArgNode notArg = chooseBodyA.getArgs()[0];
+                                if (notArg instanceof OpApplNode)
+                                {
+                                    OpApplNode notArgA = (OpApplNode) notArg;
+                                    if (notArgA.getOperator().getName().equals("\\in"))
+                                    {
+                                        // This is CHOOSE v : ~(expa \in expb). Set to override
+                                        // iff expa equals v.
+                                        ExprOrOpArgNode leftArg = notArgA.getArgs()[0];
+                                        if (leftArg instanceof OpApplNode)
+                                        {
+                                            OpApplNode leftArgA = (OpApplNode) leftArg;
+                                            if (leftArgA.getOperator() == chooseParam)
+                                            {
+                                                toOverride = true;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            if (toOverride)
+                            {
+                                String defName = node.getName().toString();
+                                overrides.addElement(defName + ";;" + defName + ";1;0");
+                            }
+                        }
+                    }
+                }
+            }
+            if (overrides.size() != 0)
+            {
+                launchCopy.setAttribute(MODEL_PARAMETER_DEFINITIONS, overrides);
+            }
+
+            // End code for adding overrides.
 
             ILaunchConfiguration launchSaved = launchCopy.doSave();
 

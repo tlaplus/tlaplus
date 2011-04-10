@@ -53,12 +53,29 @@ TO GENERATE THE RELEASE:
 
 Queries to msrcpx or Chuck Needham (chuckne)
 -------------------------------------------------------------
- Version 1.1.0 -  5 Feb 2010 : 
-    initial release
- Version 1.1.1 - 22 Mar 2010 : 
-    Fixes TLC bug that made restarting from a checkpoint not work,
-    plus minor fixes.
+Version 1.3.2 of 10 April 2011
+    Added default overriding of definitions like Foo == CHOOSE v : v \notin S.
+    Made advanced model page open with definition overriding section opened  
+      if there are overrides.
+    Fixed TLC bug in overriding instantiated definitions.
+Version 1.3.1 of 5 April 2011
+    Includes PlusCal Version 1.5, which adds fairness and improved translation.
+    Contains a number of minor bug fixes.
+Version 1.2.1 of 2 October 2010
+    Added a sophisticated interface for running the TLAPS proof checker.
+    Added a command for displaying all globally defined symbols.
+    Added commands for displaying all uses of a symbol.
+    The Goto Declaration command now works for locally defined symbols.
+    Added commands for formatting boxed comments.
+    Made some additional minor changes.
  Version 1.1.2 - 6 May 2010
     Added trace Explorer, which evaluates expressions on an error trace.
     Added folding of proofs to permit reading them hierarchically.
     Added TLA Proof Manager menu item that currently does nothing. 
+ Version 1.1.1 - 22 Mar 2010 : 
+    Fixes TLC bug that made restarting from a checkpoint not work,
+    plus minor fixes.
+ Version 1.1.0 -  5 Feb 2010 : 
+    initial release
+
+ 

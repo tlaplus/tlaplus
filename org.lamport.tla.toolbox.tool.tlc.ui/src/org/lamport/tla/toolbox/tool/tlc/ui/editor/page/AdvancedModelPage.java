@@ -511,10 +511,25 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
 
         // ---------------------------------------------------------------
         // definition overwrite
-
+        // Change added by LL on 10 April 2011 to cause model page to be created with the 
+        // definitions override section open iff there are overridden definitions.  This is
+        // done so the user will be aware of automatically generated overrides.
+        // 
+        int expand = 0;
+        try
+        {
+           List definitions = getConfig().getAttribute(MODEL_PARAMETER_DEFINITIONS, new Vector());
+            if ((definitions != null) && (definitions.size() != 0)) {
+                expand = Section.EXPANDED;
+            }
+        } catch (CoreException e)
+        {
+            // Just ignore this since I have no idea what an exception might mean.
+        }
+        
         ValidateableOverridesSectionPart definitionsPart = new ValidateableOverridesSectionPart(right,
                 "Definition Override", "Directs TLC to use alternate definitions for operators.", toolkit,
-                sectionFlags, this);
+                sectionFlags | expand, this);
 
         managedForm.addPart(definitionsPart);
         // layout

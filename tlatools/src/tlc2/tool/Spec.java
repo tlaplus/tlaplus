@@ -1594,6 +1594,33 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
     /**
      * This method gets the value of a symbol from the enviroment. We
      * look up in the context c, its tool object, and the state s.
+     * 
+     * It and the lookup method that follows it were modified by LL
+     * on 10 April 2011 to fix the following bug.  When a constant definition
+     *    Foo == ...
+     * is overridden to substitute Bar for Foo, the TLC tool object for
+     * the body of Foo's OpDef node is set to the OpDefNode for Bar.
+     * When evaluating a use of Foo, the lookup method is apparently
+     * supposed to return the OpDefNode for Bar.  (I don't understand
+     * how the callers make use of the returned value.) That's what it
+     * does for uses of Foo in the module in which Foo is defined.
+     * However, if Foo is imported by instantiation with renaming as 
+     * X!Foo, then it appears that looking up X!Foo should also return 
+     * the OpDefNode for Bar.  If the instantiated module had no
+     * parameters, then that's what happened because the body of the
+     * OpDefNode for X!Foo is the same (contains a pointer to the
+     * same object) as the body of Foo's OpDefNode.  However, that
+     * wasn't the case if the instantiated module had parameters,
+     * because then X!Foo's OpDefNode consists of a sequence of
+     * nested SubstInNode objects, the last of which points to
+     * the body of Foo's OpDefNode.  So, LL modified the lookup
+     * methods so they follow the sequence of SubstInNode bodies
+     * down to the body of Foo's OpDefNode when looking up the result.  
+     * (If a SubstInNode has a non-null TLC tool object for a
+     * SubstInNode, then it returns that object.  I don't think this 
+     * should ever be the case, and if it is, I have no idea what the
+     * lookup method should do.)
+     * 
      */
     public final Object lookup(SymbolNode opNode, Context c, TLCState s, boolean cutoff)
     {
@@ -1608,7 +1635,19 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
 
         if (opNode.getKind() == UserDefinedOpKind)
         {
-            result = ((OpDefNode) opNode).getBody().getToolObject(TLCGlobals.ToolId);
+            // Changed by LL on 10 Apr 2011 from
+            //
+            //    result = ((OpDefNode) opNode).getBody().getToolObject(TLCGlobals.ToolId);
+            //
+            // to the following
+            ExprNode body = ((OpDefNode) opNode).getBody();
+            result = body.getToolObject(TLCGlobals.ToolId);
+            while ((result == null) && (body.getKind() == SubstInKind)) {
+                body = ((SubstInNode) body).getBody();
+                result = body.getToolObject(TLCGlobals.ToolId);
+            }
+            // end change
+
             if (result != null)
                 return result;
         }
@@ -1632,7 +1671,18 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
 
         if (opNode.getKind() == UserDefinedOpKind)
         {
-            result = ((OpDefNode) opNode).getBody().getToolObject(TLCGlobals.ToolId);
+            // Changed by LL on 10 Apr 2011 from
+            //
+            //    result = ((OpDefNode) opNode).getBody().getToolObject(TLCGlobals.ToolId);
+            //
+            // to the following
+            ExprNode body = ((OpDefNode) opNode).getBody();
+            result = body.getToolObject(TLCGlobals.ToolId);
+            while ((result == null) && (body.getKind() == SubstInKind)) {
+                body = ((SubstInNode) body).getBody();
+                result = body.getToolObject(TLCGlobals.ToolId);
+            }
+            // end change
             if (result != null)
                 return result;
         }
