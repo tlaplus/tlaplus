@@ -430,10 +430,18 @@ public class ObligationsView extends ViewPart
             SourceViewer viewer = (SourceViewer) viewers.get(item);
             Assert.isNotNull(viewer, "Expand item has been created without a source viewer. This is a bug.");
             String oblString = status.getObligationString();
-            Assert
-                    .isNotNull(oblString,
-                            "No obligation string for an interesting obligation. This is a bug. The obligation is :\n"
-                                    + status);
+
+            // On 14 April 2011, Denis changed tlapm so it does not include an
+            // interesting obligation if a later message will indicate that
+            // the obligation is proved.  On 16 April 2011, LL removed the assert
+            // and had it treat a missing obligation as one with the null string.
+            if (oblString == null) {
+                oblString = "";
+            }
+            // Assert
+            //       .isNotNull(oblString,
+            //               "No obligation string for an interesting obligation. This is a bug. The obligation is :\n"
+            //                       + status);
             if ((viewer.getDocument() == null || !viewer.getDocument().get().equals(oblString)) && !oblString.isEmpty())
             {
                 // set the viewers document to the obligation.
