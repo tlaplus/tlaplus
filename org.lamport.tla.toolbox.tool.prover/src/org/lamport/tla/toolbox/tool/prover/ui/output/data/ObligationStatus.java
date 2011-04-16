@@ -43,6 +43,12 @@ public class ObligationStatus
      * statuses on backends appear in {@link ProverHelper}.
      */
     private Map proverStatuses;
+    
+    /**
+     * A map from the String name of backends to the
+     * most recent reason given for the backend.
+     */
+    private Map proverReasons;
     /**
      * The pretty printed form of the obligation. This
      * can be null if the obligation string has not been sent.
@@ -87,6 +93,7 @@ public class ObligationStatus
     {
         this.parent = parent;
         this.proverStatuses = new HashMap();
+        this.proverReasons = new HashMap();
         this.obState = initialState;
         this.id = id;
         this.location = location;
@@ -158,6 +165,10 @@ public class ObligationStatus
      * Returns a string description of the most
      * recent status of each prover on each backend.
      * 
+     * Modified by LL on 16 April 2011 to add the reasons to the string.
+     * This may have to be changed when the final exact form of the reason
+     * field returned by tlapm is determined.
+     * 
      * @return
      */
     public String getProverStatusString()
@@ -169,7 +180,14 @@ public class ObligationStatus
             Map.Entry nextEntry = (Map.Entry) it.next();
             // the key is the name of the backend, the value is the status
             // on that backend
-            buffer.append(nextEntry.getKey() + " : " + nextEntry.getValue());
+            String key = (String) nextEntry.getKey();
+            String reason = (String) proverReasons.get(key);
+            if (reason != null && !reason.equals("") && !reason.equals("false")) {
+                reason = " (" + reason + ")";
+            } else {
+                reason = "";
+            }
+            buffer.append(key + " : " + nextEntry.getValue() + reason );
             if (it.hasNext())
             {
                 buffer.append(" , ");
@@ -233,6 +251,15 @@ public class ObligationStatus
         if (message.getBackend() != null && message.getStatus() != null)
         {
             proverStatuses.put(message.getBackend(), message.getStatus());
+        }
+        
+        /*
+         * The following code added by LL on 16 April 2011.
+         * Update the most recent reason of the given backend.
+         */
+        if (message.getBackend() != null && message.getReason() != null)
+        {
+            proverReasons.put(message.getBackend(), message.getReason());
         }
 
         int oldState = getObligationState();

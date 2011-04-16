@@ -28,6 +28,7 @@ import org.lamport.tla.toolbox.ui.handler.OpenParseErrorViewHandler;
 import org.lamport.tla.toolbox.ui.handler.OpenSpecHandler;
 import org.lamport.tla.toolbox.ui.property.GenericSelectionProvider;
 import org.lamport.tla.toolbox.util.AdapterFactory;
+import org.lamport.tla.toolbox.util.PopupMessage;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.SpecLifecycleManager;
 import org.lamport.tla.toolbox.util.UIHelper;
@@ -76,8 +77,27 @@ public class WorkspaceSpecManager extends GenericSelectionProvider implements IS
                     if (projects[i].hasNature(TLANature.ID))
                     {
                         spec = new Spec(projects[i]);
-                        addSpec(spec);
-
+                        IProject foo = null;
+                        // Added by LL on 12 Apr 2011
+                        // If spec.rootFile = null, then this is a bad spec. So
+                        // we should report it and not perform addSpec(spec).  It
+                        // would be nice if we could report it to the user, but
+                        // it seems to be impossible to popup a window at this point
+                        // in the code.
+                        if (spec.getRootFile() == null)
+                        {
+                            Activator.logError("The bad spec is: `" + projects[i].getName() + "'", null);
+                            foo = spec.getProject();
+                            
+                        } else
+                        {
+                            // This to threw a null pointer exception for Tom, probably causing the abortion
+                            // of the Toolbox start. But it started on the next attempt.  Should we catch the
+                            // and perhaps report the bad spec?
+                            addSpec(spec);
+                        }
+                        
+                        IProject bar = foo;
                         // load the spec if found
                         if (spec.getName().equals(specLoadedName))
                         {
@@ -176,9 +196,18 @@ public class WorkspaceSpecManager extends GenericSelectionProvider implements IS
             while (specI.hasNext())
             {
                 Spec spec = (Spec) specI.next();
-                if (spec.getRootFilename().equals(rootModulePath))
+                // try/catch added by LL on 12 April 2011 because
+                // corrupted database can cause the call of getRootFileName() to
+                // throw a null pointer exception.
+                try
                 {
-                    return spec;
+                    if (spec.getRootFilename().equals(rootModulePath))
+                    {
+                        return spec;
+                    }
+                } catch (Exception e)
+                {
+                    // Just ignore the exception and pray.
                 }
             }
         }

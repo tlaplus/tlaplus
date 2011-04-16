@@ -19,6 +19,7 @@ import tla2sany.st.Location;
  * 
  * @author drickett
  *
+ * Modified 16 April 2011 to add `reason' field.
  */
 public class ObligationStatusMessage extends TLAPMMessage
 {
@@ -28,6 +29,7 @@ public class ObligationStatusMessage extends TLAPMMessage
     public static final String OBL_FIELD = "obl";
     public static final String PROVER_FIELD = "prover";
     public static final String ALREADY_FIELD = "already";
+    public static final String REASON_FIELD = "reason";
 
     /**
      * Status of the obligation.
@@ -59,6 +61,11 @@ public class ObligationStatusMessage extends TLAPMMessage
      */
     private boolean alreadyProcessed = false;
 
+    /**
+     * The reason field either indicates a timeout value
+     * or equals "false".
+     */
+    private String reason;
     /**
      * 
      * @param offset
@@ -161,6 +168,9 @@ public class ObligationStatusMessage extends TLAPMMessage
         return alreadyProcessed;
     }
 
+    public String getReason() {
+        return reason;
+    }
     /**
      * Creates a new {@link ObligationStatusMessage} from the {@link Set}
      * of {@link Entry} where the key of each {@link Entry} is the field
@@ -208,6 +218,8 @@ public class ObligationStatusMessage extends TLAPMMessage
                 } else if (fieldName.equals(ALREADY_FIELD))
                 {
                     message.alreadyProcessed = Boolean.parseBoolean(fieldName.trim());
+                } else if (fieldName.equals(REASON_FIELD)) {
+                    message.reason = fieldValue;
                 } else
                 {
                     ProverUIActivator.logDebug("Unknown field name for obligation status message : " + fieldName + ".");
