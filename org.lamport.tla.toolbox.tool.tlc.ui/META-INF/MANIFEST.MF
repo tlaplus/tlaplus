@@ -19,4 +19,5 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.expressions;bundle-version="3.4.100"
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
 Bundle-ActivationPolicy: lazy
-Import-Package: org.lamport.tla.toolbox.editor.basic
+Import-Package: junit.framework;version="3.8.0";resolution:=optional,
+ org.lamport.tla.toolbox.editor.basic
