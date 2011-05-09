@@ -818,7 +818,7 @@ public class ProverHelper
             for (int i = 0; i < sanyMarkers.length; i++)
             {
                 String sanyLocString = sanyMarkers[i].getAttribute(SANY_LOC_ATR, "");
-                if (!sanyLocString.isEmpty())
+                if (!(sanyLocString.length() == 0))
                 {
                     Location sanyLoc = stringToLoc(sanyLocString);
                     if (sanyLoc.beginLine() == location.beginLine()/* && sanyLoc.endLine() == location.endLine()*/)

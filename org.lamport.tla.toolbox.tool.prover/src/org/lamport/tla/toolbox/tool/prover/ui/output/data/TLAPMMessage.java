@@ -122,7 +122,7 @@ public abstract class TLAPMMessage
             /*
              * The first element of the array may be the empty string.
              */
-            if (!fieldStrings[i].trim().isEmpty())
+            if (!(fieldStrings[i].trim().length() == 0))
             {
                 /*
                  * The trimmed field string should be of the form

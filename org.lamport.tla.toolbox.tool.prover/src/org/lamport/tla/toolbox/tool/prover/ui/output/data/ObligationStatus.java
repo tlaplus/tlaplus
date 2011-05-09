@@ -240,7 +240,7 @@ public class ObligationStatus
          * we do not set it again. Subsequent messages may not contain the obligation string
          * after the first one that does.
          */
-        if (this.obligationString == null || this.obligationString.isEmpty())
+        if (this.obligationString == null || this.obligationString.length() == 0)
         {
             this.obligationString = message.getObString();
         }

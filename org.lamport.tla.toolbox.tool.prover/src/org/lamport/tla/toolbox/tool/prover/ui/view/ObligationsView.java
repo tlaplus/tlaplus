@@ -442,7 +442,7 @@ public class ObligationsView extends ViewPart
             //       .isNotNull(oblString,
             //               "No obligation string for an interesting obligation. This is a bug. The obligation is :\n"
             //                       + status);
-            if ((viewer.getDocument() == null || !viewer.getDocument().get().equals(oblString)) && !oblString.isEmpty())
+            if ((viewer.getDocument() == null || !viewer.getDocument().get().equals(oblString)) && !(oblString.length() == 0))
             {
                 // set the viewers document to the obligation.
                 viewer.setDocument(new Document(oblString.trim()));
@@ -464,7 +464,7 @@ public class ObligationsView extends ViewPart
                 // item.setHeight(text.getLineHeight() * text.getLineCount() + (hBar != null ? hBar.getSize().y :
                 // 0));
                 item.setHeight(item.getControl().computeSize(SWT.DEFAULT, SWT.DEFAULT, true).y);
-            } else if (oblString.isEmpty() && (viewer.getDocument() == null || viewer.getDocument().get().isEmpty()))
+            } else if (oblString.length() == 0 && (viewer.getDocument() == null || viewer.getDocument().get().length() == 0))
             {
                 /*
                  * A slight hack. For some interesting obligations, the prover
