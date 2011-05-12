@@ -10,6 +10,9 @@
 
   <modules>
 
+    <!-- non-OSGi jars -->
+    <module>tlatools</module>
+
     <!-- bundles -->
     <module>org.lamport.tla.toolbox</module>
     <module>org.lamport.tla.toolbox.doc</module>
