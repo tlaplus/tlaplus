@@ -2,7 +2,7 @@
 <feature
       id="org.lamport.tla.toolbox.feature.tlc"
       label="TLC Tool Feature"
-      version="1.0.0"
+      version="1.0.0.qualifier"
       provider-name="Yuan Yu, Leslie Lamport, Simon Zambrovski">
 
    <description url="http://www.example.com/description">

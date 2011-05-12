@@ -2,7 +2,7 @@
 <feature
       id="org.lamport.tla.toolbox.feature.standalone"
       label="TLA+ Toolbox Standalone Feature"
-      version="1.0.0"
+      version="1.0.0.qualifier"
       provider-name="Simon Zambrovski, Leslie Lamport"
       plugin="org.lamport.tla.toolbox.product.standalone">
 
@@ -13,9 +13,9 @@
    <includes
          id="org.lamport.tla.toolbox.feature.base"
          version="0.0.0"
-         os=""
-         ws=""
-         arch=""/>
+         os="*"
+         ws="*"
+         arch="*"/>
 
    <includes
          id="org.lamport.tla.toolbox.feature.editor"
@@ -48,12 +48,5 @@
    <includes
          id="org.lamport.tla.toolbox.feature.prover"
          version="0.0.0"/>
-
-   <plugin
-         id="org.lamport.tla.toolbox.product.standalone"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
 
 </feature>

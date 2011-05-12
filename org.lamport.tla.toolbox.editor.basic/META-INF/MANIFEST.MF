@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: TLA+ Basic Editor
 Bundle-SymbolicName: org.lamport.tla.toolbox.editor.basic;singleton:=true
-Bundle-Version: 1.0.0
+Bundle-Version: 1.0.0.qualifier
 Bundle-Activator: org.lamport.tla.toolbox.editor.basic.TLAEditorActivator
 Bundle-Vendor: Simon Zambrovski, Leslie Lamport
 Require-Bundle: org.eclipse.ui,

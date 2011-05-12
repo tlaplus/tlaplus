@@ -2,7 +2,7 @@
 <feature
       id="org.lamport.tla.toolbox.feature.base"
       label="TLA+ Toolbox Base Feature"
-      version="1.0.0"
+      version="1.0.0.qualifier"
       provider-name="Simon Zambrovski, Leslie Lamport"
       plugin="org.lamport.tla.toolbox">
 

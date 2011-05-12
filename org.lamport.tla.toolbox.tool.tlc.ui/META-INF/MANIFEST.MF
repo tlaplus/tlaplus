@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: TLC UI Plugin
 Bundle-SymbolicName: org.lamport.tla.toolbox.tool.tlc.ui;singleton:=true
-Bundle-Version: 1.0.0
+Bundle-Version: 1.0.0.qualifier
 Bundle-Activator: org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator
 Bundle-Vendor: Simon Zambrovski, Leslie Lamport
 Require-Bundle: org.eclipse.core.runtime,
