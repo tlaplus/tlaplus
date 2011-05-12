@@ -3,4 +3,5 @@ class/
 test-class/
 dist/
 test-bin/
+*/target/
 *.jar

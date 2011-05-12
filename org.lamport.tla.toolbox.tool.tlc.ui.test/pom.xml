@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+  xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <artifactId>parent</artifactId>
+    <groupId>tlatoolbox</groupId>
+    <version>0.0.1-SNAPSHOT</version>
+    <relativePath>../org.lamport.tla.toolbox.product.standalone/parent-pom.xml</relativePath>
+  </parent>
+  <groupId>tlatoolbox</groupId>
+  <artifactId>org.lamport.tla.toolbox.tool.tlc.ui.test</artifactId>
+  <version>1.0.0-SNAPSHOT</version>
+  <packaging>eclipse-test-plugin</packaging>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.sonatype.tycho</groupId>
+        <artifactId>maven-osgi-test-plugin</artifactId>
+        <version>${tycho-version}</version>
+        <configuration>
+          <useUIHarness>true</useUIHarness>
+          <useUIThread>false</useUIThread>
+          <!-- use our product and application to launch the tests -->
+          <product>org.lamport.tla.toolbox.product.standalone.product</product>
+          <application>org.lamport.tla.toolbox..application</application>
+          <dependencies>
+            <dependency>
+              <!-- explicit dependency is only needed because SWTbot brings 
+                its own hamcrest bundle which conflicts with the one from junit in the eclipse 
+                platform -->
+              <type>p2-installable-unit</type>
+              <artifactId>org.hamcrest</artifactId>
+              <version>0.0.0</version>
+            </dependency>
+          </dependencies>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+</project>
