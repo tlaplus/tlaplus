@@ -7,7 +7,10 @@ import org.eclipse.core.commands.IHandler;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -59,23 +62,28 @@ public class ParseSpecHandler extends AbstractHandler implements IHandler
             return null;
         }
 
-        Spec spec = Activator.getSpecManager().getSpecLoaded();
+        final Spec spec = Activator.getSpecManager().getSpecLoaded();
 
         if (spec != null)
         {
-
-            try
-            {
-                // this only cleans up
-                spec.getProject().build(IncrementalProjectBuilder.CLEAN_BUILD, monitor);
-                // this starts the build process
-                spec.getProject().build(IncrementalProjectBuilder.FULL_BUILD, monitor);
-            } catch (CoreException e)
-            {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-
+            	Job job = new Job("Parsing spec...") {
+					@Override
+					protected IStatus run(IProgressMonitor monitor) {
+						try
+						{
+			            	// this only cleans up
+			                spec.getProject().build(IncrementalProjectBuilder.CLEAN_BUILD, monitor);
+			                // this starts the build process
+			                spec.getProject().build(IncrementalProjectBuilder.FULL_BUILD, monitor);
+						} catch (CoreException e)
+						{
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+						return Status.OK_STATUS;
+					}
+            	};
+            	job.schedule();
         } else
         {
             // TODO handle this case (could it occur?, declare in plugin.xml to activate the parse button on active

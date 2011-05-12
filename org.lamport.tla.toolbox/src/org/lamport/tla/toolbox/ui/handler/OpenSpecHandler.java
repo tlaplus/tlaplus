@@ -4,7 +4,11 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IHandler;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.ui.part.FileEditorInput;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.spec.Spec;
@@ -63,7 +67,14 @@ public class OpenSpecHandler extends AbstractHandler implements IHandler
         UIHelper.openEditor(TLA_EDITOR, new FileEditorInput(spec.getRootFile()));
 
         // rebuild current spec
-        ParserHelper.rebuildSpec(new NullProgressMonitor());
+        Job job = new Job("Parsing spec...") {
+			@Override
+			protected IStatus run(IProgressMonitor monitor) {
+				ParserHelper.rebuildSpec(new NullProgressMonitor());
+				return Status.OK_STATUS;
+			}
+        };
+        job.schedule();
 
         return null;
     }
