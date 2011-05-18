@@ -89,4 +89,5 @@ Export-Package: org.lamport.tla.toolbox,
  tlc2.tool,
  util;uses:="tla2sany.semantic"
 Import-Package: junit.framework;version="3.8.0";resolution:=optional
+Eclipse-BundleShape: dir
 
