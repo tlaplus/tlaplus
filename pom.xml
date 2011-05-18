@@ -49,7 +49,7 @@
   </prerequisites>
 
   <properties>
-    <tycho-version>0.11.0</tycho-version>
+    <tycho-version>0.11.1</tycho-version>
   </properties>
   <repositories>
     <!-- configure p2 repository to resolve against -->
