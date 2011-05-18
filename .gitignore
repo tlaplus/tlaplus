@@ -3,5 +3,8 @@ class/
 test-class/
 dist/
 test-bin/
+*/screenshots
 */target/
 *.jar
+*/farsite/*.pdf
+*.toolbox
