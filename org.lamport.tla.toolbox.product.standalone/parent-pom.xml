@@ -21,7 +21,10 @@
     <repository>
       <id>helios</id>
       <layout>p2</layout>
-      <url>http://download.eclipse.org/releases/helios</url>
+      <url>http://download.eclipse.org/eclipse/updates/3.6/R-3.6.2-201102101200/</url>
+      <!-- 
+      <url>http://download.eclipse.org/eclipse/updates/3.5/R-3.5.2-201002111343/</url>
+       -->
             <!-- file URL for faster and offline builds -->
       <!-- <url>file:/${basedir}/../../helios-rcp/</url> -->
     </repository>
@@ -68,20 +71,6 @@
             </environment>
           </environments>
         </configuration>
-      </plugin>
-      <!-- enable source bundle generation -->
-      <plugin>
-        <groupId>org.sonatype.tycho</groupId>
-        <artifactId>maven-osgi-source-plugin</artifactId>
-        <version>${tycho-version}</version>
-        <executions>
-          <execution>
-            <id>plugin-source</id>
-            <goals>
-              <goal>plugin-source</goal>
-            </goals>
-          </execution>
-        </executions>
       </plugin>
     </plugins>
   </build>
