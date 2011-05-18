@@ -5,13 +5,12 @@ import java.io.File;
 import junit.framework.Assert;
 
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
-import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotView;
 import org.eclipse.swtbot.swt.finder.junit.SWTBotJunit4ClassRunner;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotMenu;
-import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.lamport.tla.toolbox.tool.tlc.ui.test.RCPTestSetupHelper;
 
 @RunWith(SWTBotJunit4ClassRunner.class)
 public class HandlerThreadingTest {
@@ -25,6 +24,10 @@ public class HandlerThreadingTest {
 	
 	@BeforeClass
 	public static void beforeClass() throws Exception {
+		
+		// Reset the workbench
+		RCPTestSetupHelper.beforeClass();
+		
 		// check to make sure the given spec files exist
 		Assert.assertTrue("Given spec file does not exist: " + specA, new File(
 				specA).exists());
@@ -32,12 +35,8 @@ public class HandlerThreadingTest {
 				specB).exists());
 		
 		bot = new SWTWorkbenchBot();
-		
-		// just close the welcome screen
-		SWTBotView welcomeView = bot.viewByTitle("Welcome");
-		welcomeView.close();
 	}
-	
+
 	/**
 	 * Adds a new spec to the toolbox, opens it
 	 * and tests if parsing is done on a non-UI thread
@@ -70,11 +69,6 @@ public class HandlerThreadingTest {
 		openSpecMenu.menu(getSpecName(specA));
 
 		assertNoBackendCodeInUIThread();
-	}
-
-	@AfterClass
-	public static void sleep() {
-		bot.sleep(2000);
 	}
 
 	/**
