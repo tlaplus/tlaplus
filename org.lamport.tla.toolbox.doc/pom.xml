@@ -7,7 +7,7 @@
     <artifactId>parent</artifactId>
     <groupId>tlatoolbox</groupId>
     <version>0.0.1-SNAPSHOT</version>
-    <relativePath>../org.lamport.tla.toolbox.product.standalone/parent-pom.xml</relativePath>
+    <relativePath>../pom.xml</relativePath>
   </parent>
   <groupId>tlatoolbox</groupId>
   <artifactId>org.lamport.tla.toolbox.doc</artifactId>
