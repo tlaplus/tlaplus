@@ -21,21 +21,80 @@
         <artifactId>maven-osgi-test-plugin</artifactId>
         <version>${tycho-version}</version>
         <configuration>
+          <showEclipseLog>true</showEclipseLog>
           <useUIHarness>true</useUIHarness>
           <useUIThread>false</useUIThread>
           <!-- use our product and application to launch the tests -->
           <product>org.lamport.tla.toolbox.product.standalone.product</product>
-          <application>org.lamport.tla.toolbox..application</application>
+          <application>org.lamport.tla.toolbox.application</application>
+          <argLine>
+			-Dorg.lamport.tla.toolbox.tool.tlc.ui.test.PathToSpecA=${project.build.directory}/../farsite/DistributedSystemModule.tla -Dorg.lamport.tla.toolbox.tool.tlc.ui.test.PathToSpecB=${project.build.directory}/../../examples/DieHard/DieHard.tla -Dorg.aspectj.osgi.verbose=true -Daj.weaving.verbose=true
+          </argLine>
           <dependencies>
+            <!-- explicit dependency is only needed because SWTbot brings its own hamcrest bundle which conflicts with the one from junit in the eclipse platform -->
             <dependency>
-              <!-- explicit dependency is only needed because SWTbot brings 
-                its own hamcrest bundle which conflicts with the one from junit in the eclipse 
-                platform -->
               <type>p2-installable-unit</type>
               <artifactId>org.hamcrest</artifactId>
               <version>0.0.0</version>
             </dependency>
+            <!-- explicit dependency is needed because product/app is provided by this bundle -->
+            <dependency>
+              <type>p2-installable-unit</type>
+              <artifactId>org.lamport.tla.toolbox.product.standalone</artifactId>
+              <version>0.0.0</version>
+            </dependency>
+            <!-- explicit dependency toward AspectJ  -->
+            <dependency>
+              <type>p2-installable-unit</type>
+              <artifactId>org.aspectj.runtime</artifactId>
+              <version>0.0.0</version>
+            </dependency>
+            <dependency>
+              <type>p2-installable-unit</type>
+              <artifactId>org.aspectj.weaver</artifactId>
+              <version>0.0.0</version>
+            </dependency>
+            <dependency>
+              <type>p2-installable-unit</type>
+              <artifactId>org.eclipse.equinox.weaving.aspectj</artifactId>
+              <version>0.0.0</version>
+            </dependency>
           </dependencies>
+          
+         <!-- Enable JDT weaving -->
+         <!-- 
+         <systemProperties combine.children="append">
+           <aj.weaving.verbose>true</aj.weaving.verbose>
+           <org.aspectj.weaver.showWeaveInfo>true</org.aspectj.weaver.showWeaveInfo>
+           <org.aspectj.osgi.verbose>true</org.aspectj.osgi.verbose>
+         </systemProperties>
+
+         <frameworkExtensions>
+           <frameworkExtension>
+             <groupId>p2.osgi.bundle</groupId>
+             <artifactId>org.eclipse.equinox.weaving.hook</artifactId>
+             <version>1.0.0.v20100108</version>
+           </frameworkExtension>
+         </frameworkExtensions>    
+         -->  
+
+          <bundleStartLevel>
+						<bundle>
+							<id>org.eclipse.equinox.weaving.aspectj</id>
+							<level>3</level>
+							<autoStart>true</autoStart>
+						</bundle>
+						<bundle>
+							<id>org.aspectj.weaver</id>
+							<level>3</level>
+							<autoStart>true</autoStart>
+						</bundle>
+						<bundle>
+							<id>org.aspectj.runtime</id>
+							<level>3</level>
+							<autoStart>true</autoStart>
+						</bundle>
+		 </bundleStartLevel>
         </configuration>
       </plugin>
     </plugins>
