@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="TLA+ Toolbox" uid="org.lamport.tla.toolbox.product.standalone" id="org.lamport.tla.toolbox.product.standalone.product" application="org.lamport.tla.toolbox.application" version="1.3.1" useFeatures="true" includeLaunchers="true">
+<product name="TLA+ Toolbox" uid="org.lamport.tla.toolbox.product.product" id="org.lamport.tla.toolbox.product.standalone.product" application="org.lamport.tla.toolbox.application" version="1.0.0.qualifier" useFeatures="true" includeLaunchers="true">
 
    <aboutInfo>
       <image path="splash_small.bmp"/>
@@ -49,8 +49,13 @@ Please send us reports of problems or suggestions; see http://www.tlaplus.net .
    </plugins>
 
    <features>
-      <feature id="org.lamport.tla.toolbox.feature.standalone" version="1.0.0.qualifier"/>
+      <feature id="org.lamport.tla.toolbox.feature.standalone"/>
    </features>
 
+   <configurations>
+      <plugin id="org.eclipse.core.runtime" autoStart="true" startLevel="4" />
+      <plugin id="org.eclipse.equinox.common" autoStart="true" startLevel="2" />
+      <plugin id="org.eclipse.equinox.ds" autoStart="true" startLevel="2" />
+   </configurations>
 
 </product>

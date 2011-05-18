@@ -12,40 +12,5 @@
   <groupId>tlatoolbox</groupId>
   <artifactId>org.lamport.tla.toolbox.product.standalone</artifactId>
   <version>1.0.0-SNAPSHOT</version>
-  <packaging>eclipse-repository</packaging>
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.sonatype.tycho</groupId>
-        <artifactId>tycho-p2-director-plugin</artifactId>
-        <version>${tycho-version}</version>
-        <executions>
-          <execution>
-            <!-- install the product for all configured os/ws/arch environments 
-              using p2 director -->
-            <id>materialize-products</id>
-            <goals>
-              <goal>materialize-products</goal>
-            </goals>
-          </execution>
-          <execution>
-            <!-- (optional) create product zips (one per os/ws/arch) -->
-            <id>archive-products</id>
-            <goals>
-              <goal>archive-products</goal>
-            </goals>
-          </execution>
-        </executions>
-        <!-- (optional) customize the root folder name of the product zip -->
-        <configuration>
-          <products>
-            <product>
-              <id>org.lamport.tla.toolbox.product.standalone</id>
-              <rootFolder>TLA+Toolobx</rootFolder>
-            </product>
-          </products>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
+  <packaging>eclipse-plugin</packaging>
 </project>
