@@ -21,6 +21,7 @@
     <module>org.lamport.tla.toolbox.tool.tla2tex</module>
     <module>org.lamport.tla.toolbox.tool.tlc</module>
     <module>org.lamport.tla.toolbox.tool.tlc.ui</module>
+    <module>org.lamport.tla.toolbox.product.standalone</module>
 
     <!-- SWTBot tests --> 
     <!--<module>org.lamport.tla.toolbox.tool.tlc.ui.test</module>-->
@@ -38,7 +39,7 @@
     <module>org.lamport.tla.toolbox.p2repository</module>
 
     <!-- product related -->
-    <module>org.lamport.tla.toolbox.product.standalone</module>
+    <module>org.lamport.tla.toolbox.product.product</module>
 
   </modules>
 
