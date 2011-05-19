@@ -1,113 +1,162 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
-  xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>tlatoolbox</groupId>
-  <artifactId>parent</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
-  <packaging>pom</packaging>
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>tlatoolbox</groupId>
+	<artifactId>parent</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<packaging>pom</packaging>
 
-  <modules>
+	<organization>
+		<name>Microsoft Research Inria Joint Centre</name>
+		<url>http://msr-inria.inria.fr/</url>
+	</organization>
 
-    <!-- non-OSGi jars -->
-    <module>tlatools</module>
+	<issueManagement>
+		<system>Bugzilla</system>
+		<url>http://bugzilla.tlaplus.net</url>
+	</issueManagement>
 
-    <!-- bundles -->
-    <module>org.lamport.tla.toolbox</module>
-    <module>org.lamport.tla.toolbox.doc</module>
-    <module>org.lamport.tla.toolbox.editor.basic</module>
-    <module>org.lamport.tla.toolbox.tool.prover</module>
-    <module>org.lamport.tla.toolbox.tool.tla2tex</module>
-    <module>org.lamport.tla.toolbox.tool.tlc</module>
-    <module>org.lamport.tla.toolbox.tool.tlc.ui</module>
-    <module>org.lamport.tla.toolbox.product.standalone</module>
+	<scm>
+		<connection>scm:svn:svn+ssh://svn.msr-inria.inria.fr/var/lib/svn/repository</connection>
+		<developerConnection>scm:svn:svn+ssh://svn.msr-inria.inria.fr/var/lib/svn/repository</developerConnection>
+		<tag>HEAD</tag>
+	</scm>
 
-    <!-- SWTBot tests --> 
-    <!--<module>org.lamport.tla.toolbox.tool.tlc.ui.test</module>-->
+	<modules>
 
-    <!-- features -->
-    <module>org.lamport.tla.toolbox.feature.base</module>
-    <module>org.lamport.tla.toolbox.feature.editor</module>
-    <module>org.lamport.tla.toolbox.feature.help</module>
-    <module>org.lamport.tla.toolbox.feature.prover</module>
-    <module>org.lamport.tla.toolbox.feature.tla2tex</module>
-    <module>org.lamport.tla.toolbox.feature.tlc</module>
-    <module>org.lamport.tla.toolbox.feature.standalone</module>
+		<!-- non-OSGi jars -->
+		<module>tlatools</module>
 
-    <!-- p2 repository for updates -->
-    <module>org.lamport.tla.toolbox.p2repository</module>
+		<!-- bundles -->
+		<module>org.lamport.tla.toolbox</module>
+		<module>org.lamport.tla.toolbox.doc</module>
+		<module>org.lamport.tla.toolbox.editor.basic</module>
+		<module>org.lamport.tla.toolbox.tool.prover</module>
+		<module>org.lamport.tla.toolbox.tool.tla2tex</module>
+		<module>org.lamport.tla.toolbox.tool.tlc</module>
+		<module>org.lamport.tla.toolbox.tool.tlc.ui</module>
+		<module>org.lamport.tla.toolbox.product.standalone</module>
 
-    <!-- product related -->
-    <module>org.lamport.tla.toolbox.product.product</module>
+		<!-- SWTBot tests -->
+		<!--<module>org.lamport.tla.toolbox.tool.tlc.ui.test</module> -->
 
-  </modules>
+		<!-- features -->
+		<module>org.lamport.tla.toolbox.feature.base</module>
+		<module>org.lamport.tla.toolbox.feature.editor</module>
+		<module>org.lamport.tla.toolbox.feature.help</module>
+		<module>org.lamport.tla.toolbox.feature.prover</module>
+		<module>org.lamport.tla.toolbox.feature.tla2tex</module>
+		<module>org.lamport.tla.toolbox.feature.tlc</module>
+		<module>org.lamport.tla.toolbox.feature.standalone</module>
 
-  <!-- tycho requires maven >= 3.0 -->
-  <prerequisites>
-    <maven>3.0</maven>
-  </prerequisites>
+		<!-- p2 repository for updates -->
+		<module>org.lamport.tla.toolbox.p2repository</module>
 
-  <properties>
-    <tycho-version>0.11.1</tycho-version>
-  </properties>
-  <repositories>
-    <!-- configure p2 repository to resolve against -->
-    <repository>
-      <id>helios</id>
-      <layout>p2</layout>
-      <url>http://download.eclipse.org/eclipse/updates/3.6/R-3.6.2-201102101200/</url>
-      <!-- 
-      <url>http://download.eclipse.org/eclipse/updates/3.5/R-3.5.2-201002111343/</url>
-       -->
-            <!-- file URL for faster and offline builds -->
-      <!-- <url>file:/${basedir}/../../helios-rcp/</url> -->
-    </repository>
-    <!-- SWTbot is not part of the helios update site -->
-    <repository>
-      <id>swtbot</id>
-      <layout>p2</layout>
-      <url>http://download.eclipse.org/technology/swtbot/helios/dev-build/update-site/</url>
-    </repository>
-    <!-- AJDT is not part of the helios update site -->
-    <repository>
-      <id>ajdt</id>
-      <layout>p2</layout>
-      <url>http://download.eclipse.org/tools/ajdt/36/update</url>
-    </repository>
-  </repositories>
-  <build>
-    <plugins>
-      <plugin>
-        <!-- enable tycho build extension -->
-        <groupId>org.sonatype.tycho</groupId>
-        <artifactId>tycho-maven-plugin</artifactId>
-        <version>${tycho-version}</version>
-        <extensions>true</extensions>
-      </plugin>
-      <plugin>
-        <groupId>org.sonatype.tycho</groupId>
-        <artifactId>target-platform-configuration</artifactId>
-        <version>${tycho-version}</version>
-        <configuration>
-          <!-- recommended: use p2-based target platform resolver -->
-          <resolver>p2</resolver>
-          <!-- configure the p2 target environments for multi-platform build -->
-          <environments>
-            <environment>
-              <os>linux</os>
-              <ws>gtk</ws>
-              <arch>x86_64</arch>
-            </environment>
-            <environment>
-              <os>win32</os>
-              <ws>win32</ws>
-              <arch>x86</arch>
-            </environment>
-          </environments>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
+		<!-- product related -->
+		<module>org.lamport.tla.toolbox.product.product</module>
+
+	</modules>
+
+	<!-- tycho requires maven >= 3.0 -->
+	<prerequisites>
+		<maven>3.0</maven>
+	</prerequisites>
+
+	<!-- Minimum tycho version build work with -->
+	<properties>
+		<tycho-version>0.11.1</tycho-version>
+	</properties>
+
+	<!-- configure p2 repository to resolve against -->
+	<repositories>
+	
+		<!-- Main eclipse repository (SR2 directly referenced to speed up build) -->
+		<repository>
+			<id>helios</id>
+			<layout>p2</layout>
+			<url>http://download.eclipse.org/eclipse/updates/3.6/R-3.6.2-201102101200/</url>
+		</repository>
+
+		<!-- SWTbot is not part of the helios update site (Used for UI testing) -->
+		<repository>
+			<id>swtbot</id>
+			<layout>p2</layout>
+			<url>http://download.eclipse.org/technology/swtbot/helios/dev-build/update-site/</url>
+		</repository>
+		
+		<!-- AJDT is not part of the helios update site (Used to check thread invocations) -->
+		<repository>
+			<id>ajdt</id>
+			<layout>p2</layout>
+			<url>http://download.eclipse.org/tools/ajdt/36/update</url>
+		</repository>
+		
+	</repositories>
+	
+	<build>
+		<plugins>
+			<!-- enable tycho build extension -->
+			<plugin>
+				<groupId>org.sonatype.tycho</groupId>
+				<artifactId>tycho-maven-plugin</artifactId>
+				<version>${tycho-version}</version>
+				<extensions>true</extensions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.sonatype.tycho</groupId>
+				<artifactId>target-platform-configuration</artifactId>
+				<version>${tycho-version}</version>
+				<configuration>
+					<!-- recommended: use p2-based target platform resolver -->
+					<resolver>p2</resolver>
+					<!-- configure the p2 target environments for multi-platform build -->
+					<environments>
+					
+						<!-- Linux -->
+						<environment>
+							<os>linux</os>
+							<ws>gtk</ws>
+							<arch>x86</arch>
+						</environment>
+						<environment>
+							<os>linux</os>
+							<ws>gtk</ws>
+							<arch>x86_64</arch>
+						</environment>
+						
+						<!-- Windows -->
+						<environment>
+							<os>win32</os>
+							<ws>win32</ws>
+							<arch>x86</arch>
+						</environment>
+						<environment>
+							<os>win32</os>
+							<ws>win32</ws>
+							<arch>x86_64</arch>
+						</environment>
+						
+						<!-- Mac (turned off ATM due to https://issues.sonatype.org/browse/TYCHO-520) -->
+						<!-- 
+						<environment>
+							<os>macosx</os>
+							<ws>cocoa</ws>
+							<arch>x86</arch>
+						</environment>
+						<environment>
+							<os>macosx</os>
+							<ws>cocoa</ws>
+							<arch>x86_64</arch>
+						</environment>
+						 -->
+					</environments>
+				</configuration>
+			</plugin>
+
+		</plugins>
+	</build>
 </project>
 
