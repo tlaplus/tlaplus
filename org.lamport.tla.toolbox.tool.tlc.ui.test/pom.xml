@@ -16,7 +16,17 @@
 
 	<build>
 		<plugins>
-			<plugin>
+	      <plugin>
+	        <groupId>org.codehaus.tycho</groupId>
+	        <artifactId>maven-osgi-compiler-plugin</artifactId>
+	        <version>${tycho-version}</version>
+	        <configuration>
+	          <excludeResources>
+	            <exludeResource>**/*.aj</exludeResource>
+	          </excludeResources>
+	        </configuration>
+	      </plugin> 
+      		<plugin>
 				<groupId>org.sonatype.tycho</groupId>
 				<artifactId>maven-osgi-test-plugin</artifactId>
 				<version>${tycho-version}</version>
