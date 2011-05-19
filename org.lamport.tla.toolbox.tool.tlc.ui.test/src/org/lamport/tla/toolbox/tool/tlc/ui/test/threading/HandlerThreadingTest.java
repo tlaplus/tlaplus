@@ -25,6 +25,12 @@ public class HandlerThreadingTest {
 	@BeforeClass
 	public static void beforeClass() throws Exception {
 		
+		// If this assert fails see http://wiki.eclipse.org/JDT_weaving_features
+		final String osgiFrameworkExtensions = System.getProperty("osgi.framework.extensions");
+		Assert.assertNotNull(
+				"Test requires Aspectj weaving hook property to be present as an indicator for active weaving support",
+				osgiFrameworkExtensions);
+		
 		// Reset the workbench
 		RCPTestSetupHelper.beforeClass();
 		
@@ -75,6 +81,10 @@ public class HandlerThreadingTest {
 	 * Checks how many invocations of backend code have happend inside the UI thread
 	 */
 	private void assertNoBackendCodeInUIThread() {
+		
+		// Check if MonitorAspect has been enabled
+		Assert.assertTrue("Test requires active MonitorAspect aspect!", MonitorAdaptor.aspectIsActive());
+
 		Assert.assertFalse(
 				"Backend code (e.g. parsing must not be executed in UI thread) times executed: "
 						+ MonitorAdaptor.getTriggeredJoinPoints().size(),

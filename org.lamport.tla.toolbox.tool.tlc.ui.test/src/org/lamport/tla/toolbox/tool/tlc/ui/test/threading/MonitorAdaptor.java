@@ -9,6 +9,9 @@ import org.eclipse.swtbot.swt.finder.utils.SWTUtils;
 
 public class MonitorAdaptor {
 
+	/**
+	 * Set of all triggered join points
+	 */
 	private static Set<JoinPoint> joinPoints = new HashSet<JoinPoint>();
 
 	/**
@@ -37,5 +40,18 @@ public class MonitorAdaptor {
 
 	public static void reset() {
 		joinPoints.clear();
+	}
+
+	/**
+	 * Holder for the aspect
+	 */
+	private static Object aspect;
+	
+	public static void setAspect(Object o) {
+		aspect = o;
+	}
+	
+	public static boolean aspectIsActive() {
+		return aspect != null;
 	}
 }

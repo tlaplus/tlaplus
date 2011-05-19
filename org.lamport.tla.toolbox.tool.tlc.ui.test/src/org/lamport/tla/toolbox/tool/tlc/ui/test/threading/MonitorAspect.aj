@@ -8,6 +8,10 @@ package org.lamport.tla.toolbox.tool.tlc.ui.test.threading;
  */
 public aspect MonitorAspect {
 
+	public MonitorAspect() {
+		MonitorAdaptor.setAspect(this);
+	}
+	
 	before(): (execution(* tlc2..*.*(..))
 			|| execution(* tla2sany..*.*(..))
 			|| execution(* tla2tex..*.*(..))
