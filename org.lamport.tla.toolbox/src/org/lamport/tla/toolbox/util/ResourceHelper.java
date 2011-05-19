@@ -51,7 +51,10 @@ import org.lamport.tla.toolbox.util.pref.IPreferenceConstants;
 import org.lamport.tla.toolbox.util.pref.PreferenceStoreHelper;
 
 import tla2sany.modanalyzer.SpecObj;
+import tla2sany.parser.ParseException;
 import tla2sany.parser.SyntaxTreeNode;
+import tla2sany.parser.TLAplusParser;
+import tla2sany.parser.TLAplusParserConstants;
 import tla2sany.semantic.DefStepNode;
 import tla2sany.semantic.InstanceNode;
 import tla2sany.semantic.LeafProofNode;
@@ -1549,4 +1552,28 @@ public class ResourceHelper
         Arrays.sort(value);
         return value;
     }
+
+	public static boolean isValidSpecName(final String aSpecName) {
+		// in memory stream of spec name
+		final ByteArrayInputStream stream = new ByteArrayInputStream(
+				aSpecName.getBytes());
+		
+		// create a parser that operates on the spec name
+		TLAplusParser tlaParser = new TLAplusParser(stream);
+
+		// switch parser into spec mode
+		tlaParser.token_source.SwitchTo(TLAplusParserConstants.SPEC);
+
+		// try to consume an identifier
+		String identifier;
+		try {
+			identifier = tlaParser.Identifier().getImage();
+		} catch (ParseException e) {
+			// not expected to happen but handle anyway
+			return false;
+		}
+		
+		// verify given spec name and parsed spec name are the same
+		return aSpecName.equals(identifier);
+	}
 }

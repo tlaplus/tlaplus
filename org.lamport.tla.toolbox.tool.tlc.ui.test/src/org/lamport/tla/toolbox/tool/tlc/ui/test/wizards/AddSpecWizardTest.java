@@ -6,6 +6,7 @@ import junit.framework.Assert;
 
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
 import org.eclipse.swtbot.swt.finder.junit.SWTBotJunit4ClassRunner;
+import org.eclipse.swtbot.swt.finder.widgets.SWTBotButton;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotMenu;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -37,7 +38,9 @@ public class AddSpecWizardTest {
 		SWTBotMenu addNewSpecMenu = openSpecMenu.menu("Add New Spec...");
 		addNewSpecMenu.click();
 
-		//TODO what are invalid spec names?
+		// get a handle for the button before invoking the UI (widget not found exception otherwise)
+		SWTBotButton button = bot.button("Finish");
+		
 		// create a valid path
 		String path = System.getProperty("java.io.tmpdir");
 		path += File.separator + "Invalid-Name.tla";
@@ -48,7 +51,9 @@ public class AddSpecWizardTest {
 		// check if the wizard can finish
 		Assert.assertTrue(
 				"Finish button must not be enabled with invalid spec name",
-				!bot.button("Finish").isEnabled());
+				!button.isEnabled());
+		
+		//TODO could change the wizard marker/error area for the correct string too
 	}
 
 	@AfterClass
