@@ -1553,6 +1553,11 @@ public class ResourceHelper
         return value;
     }
 
+    /**
+     * Checks a specification name for its validity WRT the parser identifier definition
+     * @param aSpecName The intended specification name to check for validity
+     * @return true if the given spec name is a valid identifier
+     */
 	public static boolean isValidSpecName(final String aSpecName) {
 		// in memory stream of spec name
 		final ByteArrayInputStream stream = new ByteArrayInputStream(

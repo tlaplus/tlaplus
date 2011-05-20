@@ -238,6 +238,11 @@ public class NewSpecWizardPage extends WizardPage
             {
                 reportError("Root file name should have a file-system path");
                 return;
+                // make sure module name does not violate valid spec name rules
+                // see http://bugzilla.tlaplus.net/show_bug.cgi?id=112
+            } else if(!ResourceHelper.isValidSpecName(ResourceHelper.getModuleNameChecked(rootfilePath, false))) {
+                	reportError("Module name is not valid. The module name '" + ResourceHelper.getModuleNameChecked(rootfilePath, false) + "' is not a valid identifier");
+                	return;
             } else
             {
                 Spec existingSpec = Activator.getSpecManager().getSpecByRootModule(rootfilePath);
@@ -258,7 +263,7 @@ public class NewSpecWizardPage extends WizardPage
                 reportError("Please provide a specification name");
                 return;
             } else if(!ResourceHelper.isValidSpecName(specName)) {
-            	reportError("Specification name is not valid. The Specification name '" + specName + "' is not a valid identifier");
+            	reportError("Specification name is not valid. The specification name '" + specName + "' is not a valid identifier");
                 return;
             } else
             {
@@ -282,13 +287,6 @@ public class NewSpecWizardPage extends WizardPage
                 // just use the module name as a spec name
                 String moduleName = ResourceHelper.getModuleNameChecked(getRootFilename(), false);
 
-                // make sure module name does not violate valid spec name rules
-                // see http://bugzilla.tlaplus.net/show_bug.cgi?id=112
-                if(!ResourceHelper.isValidSpecName(moduleName)) {
-                	reportError("Specification name is not valid. The Specification name '" + moduleName + "' is not a valid identifier");
-                	return;
-                }
-                
                 Spec existingSpec = Activator.getSpecManager().getSpecByName(moduleName);
                 if (existingSpec != null)
                 {
