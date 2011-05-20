@@ -14,8 +14,17 @@
   <version>1.0.0-SNAPSHOT</version>
   <packaging>eclipse-test-plugin</packaging>
 
+	<dependencies>
+  		<dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjrt</artifactId>
+            <version>1.6.11</version>
+        </dependency>
+   	</dependencies>
+
 	<build>
 		<plugins>
+			<!-- Compile java sources and exclude aspects -->
 	      <plugin>
 	        <groupId>org.codehaus.tycho</groupId>
 	        <artifactId>maven-osgi-compiler-plugin</artifactId>
@@ -26,6 +35,23 @@
 	          </excludeResources>
 	        </configuration>
 	      </plugin> 
+			<!-- Compile aspects -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>aspectj-maven-plugin</artifactId>
+                <version>1.3.1</version>
+                <configuration>
+                    <ajdtBuildDefFile>build.ajproperties</ajdtBuildDefFile>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                    </execution>
+               </executions>
+           </plugin>
+			<!-- Run JUnit tests -->
       		<plugin>
 				<groupId>org.sonatype.tycho</groupId>
 				<artifactId>maven-osgi-test-plugin</artifactId>
@@ -45,8 +71,8 @@
 						<org.lamport.tla.toolbox.tool.tlc.ui.test.PathToSpecB>${project.build.directory}/../../examples/DieHard/DieHard.tla</org.lamport.tla.toolbox.tool.tlc.ui.test.PathToSpecB>
 						<!-- JDT weaving debug output -->
 						<aj.weaving.verbose>true</aj.weaving.verbose>
-						<org.aspectj.weaver.showWeaveInfo>true</org.aspectj.weaver.showWeaveInfo>
-						<org.aspectj.osgi.verbose>true</org.aspectj.osgi.verbose>
+						<org.aspectj.weaver.showWeaveInfo>false</org.aspectj.weaver.showWeaveInfo>
+						<org.aspectj.osgi.verbose>false</org.aspectj.osgi.verbose>
 					</systemProperties>
 
 					<dependencies>
