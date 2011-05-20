@@ -57,8 +57,8 @@ public class DiskFPSet extends FPSet {
     private boolean flusherChosen;    // has a flusher thread been selected?
     private long[][] tbl;             // in-memory buffer of new entries
     private int tblCnt;               // number of entries in "tbl"
-    private BufferedRandomAccessFile[] braf;     // one per worker thread
-    private BufferedRandomAccessFile[] brafPool; // a pool of available brafs
+    private transient BufferedRandomAccessFile[] braf;     // one per worker thread
+    private transient BufferedRandomAccessFile[] brafPool; // a pool of available brafs
     private int poolIndex;
   
     private long[] index;             // index of first fp on each disk page

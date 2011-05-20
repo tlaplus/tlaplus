@@ -8,6 +8,7 @@ package tlc2.tool.fp;
 import java.io.IOException;
 import java.rmi.RemoteException;
 
+import tlc2.tool.distributed.FPSetRMI;
 import tlc2.util.BitVector;
 import tlc2.util.LongVec;
 
@@ -19,8 +20,8 @@ import tlc2.util.LongVec;
  */
 
 public abstract class FPSet
-// SZ Jul 13, 2009: RMI is not used 
-//extends UnicastRemoteObject implements FPSetRMI
+/* SZ Jul 13, 2009: RMI is not used 
+extends UnicastRemoteObject */ implements FPSetRMI
 {
 
     protected FPSet() throws RemoteException

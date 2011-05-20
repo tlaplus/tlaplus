@@ -87,7 +87,7 @@ public class TLCApp extends DistApp {
   private String fromChkpt = null;   // recover from this checkpoint
   private String metadir = null;     // the directory pathname for metadata
   
-  public final String getAppName() { return "tlc2.tool.TLCApp"; }
+  public final String getAppName() { return "tlc2.tool.distributedTLCApp"; }
 
   public final Boolean getCheckDeadlock() {
     return new Boolean(this.checkDeadlock);

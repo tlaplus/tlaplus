@@ -6,6 +6,7 @@
 package tlc2.tool.distributed;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.rmi.Remote;
 
 import tlc2.util.BitVector;
@@ -16,7 +17,7 @@ import tlc2.util.LongVec;
  * @author Simon Zambrovski
  * @version $Id$
  */
-public interface FPSetRMI extends Remote {
+public interface FPSetRMI extends Remote, Serializable {
 
   public boolean put(long fp) throws IOException;
   public boolean contains(long fp) throws IOException;
