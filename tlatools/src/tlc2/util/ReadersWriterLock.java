@@ -4,6 +4,8 @@
 //      modified on Mon Jun 19 14:29:07 PDT 2000 by yuanyu
 package tlc2.util;
 
+import java.io.Serializable;
+
 import tlc2.output.EC;
 import util.Assert;
 
@@ -33,7 +35,7 @@ import util.Assert;
     Written by Allan Heydon and Marc Najork
 */
 
-public class ReadersWriterLock {
+public class ReadersWriterLock implements Serializable {
     /** Acquire a share of the object's read lock. This call will
         block until no writer holds the lock and there are no writers
         waiting to acquire the lock.<p>
