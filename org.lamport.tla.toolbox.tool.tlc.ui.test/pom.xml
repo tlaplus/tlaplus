@@ -53,7 +53,7 @@
            </plugin>
 			<!-- Run JUnit tests -->
       		<plugin>
-				<groupId>org.sonatype.tycho</groupId>
+				<groupId>org.eclipse.tycho</groupId>
 				<artifactId>maven-osgi-test-plugin</artifactId>
 				<version>${tycho-version}</version>
 
