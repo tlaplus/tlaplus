@@ -66,7 +66,7 @@
 
 	<!-- Minimum tycho version build work with -->
 	<properties>
-		<tycho-version>0.11.1</tycho-version>
+		<tycho-version>0.12.0</tycho-version>
 	</properties>
 
 	<!-- configure p2 repository to resolve against -->
@@ -99,14 +99,14 @@
 		<plugins>
 			<!-- enable tycho build extension -->
 			<plugin>
-				<groupId>org.sonatype.tycho</groupId>
+				<groupId>org.eclipse.tycho</groupId>
 				<artifactId>tycho-maven-plugin</artifactId>
 				<version>${tycho-version}</version>
 				<extensions>true</extensions>
 			</plugin>
 
 			<plugin>
-				<groupId>org.sonatype.tycho</groupId>
+				<groupId>org.eclipse.tycho</groupId>
 				<artifactId>target-platform-configuration</artifactId>
 				<version>${tycho-version}</version>
 				<configuration>
