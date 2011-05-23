@@ -12,6 +12,7 @@ import java.rmi.NotBoundException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.Date;
 
 import tlc2.TLCGlobals;
 import tlc2.output.EC;
@@ -342,7 +343,7 @@ implements TLCServerRMI, InternRMI {
     boolean success = (server.errState == null);
     if (success) {
       // We get here because the checking has succeeded.
-      ToolIO.out.println("Model checking completed. No error has been found.");
+      ToolIO.out.println("Model checking completed. No error has been found at: " + new Date());
     }
     else if (server.keepCallStack) {
       // We redo the work on the error state, recording the call stack.
@@ -357,8 +358,14 @@ implements TLCServerRMI, InternRMI {
       }
     }
     ToolIO.out.println(server.stats());
+    
     server.close(success);
-    System.exit(0);
+    
+    ToolIO.out.println("Server has finished computing at: " + new Date());
+    ToolIO.out.flush();
+    
+    // MAK commenting it to let the runtime finish normally
+//    System.exit(0);
   }
 
   public static void main(String argv[]) {

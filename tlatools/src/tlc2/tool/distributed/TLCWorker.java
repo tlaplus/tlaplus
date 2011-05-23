@@ -12,6 +12,7 @@ import java.net.InetAddress;
 import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.Date;
 
 import tlc2.TLCGlobals;
 import tlc2.tool.TLCState;
@@ -201,13 +202,16 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
       TLCWorkerRMI worker = new TLCWorker(work, fpSetManager);
       server.registerWorker(worker, hostname);
 
-      ToolIO.out.println("TLC worker at " + hostname + " is ready.") ;
+      ToolIO.out.println("TLC worker at " + hostname + " is ready at: " + new Date()) ;
     }
     catch (Throwable e) {
       // Assert.printStack(e);
       ToolIO.out.println("Error: Failed to start worker at " + hostname +
 			 " for server " + serverName + ".\n" + e.getMessage());
     }
+    
+    ToolIO.out.println("TLC worker at " + hostname + " is done at: " + new Date());
+    ToolIO.out.flush();
   }
 
   private static void printErrorMsg(String msg) {
