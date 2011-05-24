@@ -239,7 +239,7 @@ public class TLCApp extends DistApp {
 					index++;
 				} else {
 					printErrorMsg("Error: configuration file required.");
-					System.exit(0);
+					return null;
 				}
 			} else if (args[index].equals("-deadlock")) {
 				index++;
@@ -250,7 +250,7 @@ public class TLCApp extends DistApp {
 					fromChkpt = args[index++] + FileUtil.separator;
 				} else {
 					printErrorMsg("Error: need to specify the metadata directory for recovery.");
-					System.exit(0);
+					return null;
 				}
 			} else if (args[index].equals("-coverage")) {
 				index++;
@@ -260,17 +260,17 @@ public class TLCApp extends DistApp {
 								.parseInt(args[index]) * 1000;
 						if (TLCGlobals.coverageInterval < 0) {
 							printErrorMsg("Error: expect a nonnegative integer for -coverage option.");
-							System.exit(0);
+							return null;
 						}
 						index++;
 					} catch (Exception e) {
 						printErrorMsg("Error: An integer for coverage report interval required."
 								+ " But encountered " + args[index]);
-						System.exit(0);
+						return null;
 					}
 				} else {
 					printErrorMsg("Error: coverage report interval required.");
-					System.exit(0);
+					return null;
 				}
 			} else if (args[index].equals("-terse")) {
 				index++;
@@ -286,27 +286,27 @@ public class TLCApp extends DistApp {
 						if (fpIndex < 0 || fpIndex >= FP64.Polys.length) {
 							printErrorMsg("Error: The number for -fp must be between 0 and "
 									+ (FP64.Polys.length - 1) + " (inclusive).");
-							System.exit(0);
+							return null;
 						}
 						index++;
 					} catch (Exception e) {
 						printErrorMsg("Error: A number for -fp is required. But encountered "
 								+ args[index]);
-						System.exit(0);
+						return null;
 					}
 				} else {
 					printErrorMsg("Error: expect an integer for -workers option.");
-					System.exit(0);
+					return null;
 				}
 			} else {
 				if (args[index].charAt(0) == '-') {
 					printErrorMsg("Error: unrecognized option: " + args[index]);
-					System.exit(0);
+					return null;
 				}
 				if (specFile != null) {
 					printErrorMsg("Error: more than one input files: "
 							+ specFile + " and " + args[index]);
-					System.exit(0);
+					return null;
 				}
 				specFile = args[index++];
 				int len = specFile.length();
@@ -318,7 +318,7 @@ public class TLCApp extends DistApp {
 
 		if (specFile == null) {
 			printErrorMsg("Error: Missing input TLA+ module.");
-			System.exit(0);
+			return null;
 		}
 		if (configFile == null)
 			configFile = specFile;

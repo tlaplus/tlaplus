@@ -320,7 +320,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		if (server.done) {
 			// clean up before exit:
 			server.close(false);
-			System.exit(0);
+			return;
 		}
 
 		String hostname = InetAddress.getLocalHost().getHostName();
@@ -358,7 +358,8 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		for (int i = 0; i < server.workerCnt; i++) {
 			try {
 				server.workers[i].exit();
-			} catch (Exception e) { /* SKIP */
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
 		}
 		// Postprocessing:
@@ -386,9 +387,6 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 
 		ToolIO.out.println("Server has finished computing at: " + new Date());
 		ToolIO.out.flush();
-
-		// MAK commenting it to let the runtime finish normally
-		// System.exit(0);
 	}
 
 	public static void main(String argv[]) {
@@ -398,7 +396,9 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 			TLCGlobals.fpServers = TLCConfig.getStringArray("fp_servers");
 			TLCGlobals.setNumWorkers(0);
 			server = new TLCServer(TLCApp.create(argv));
-			modelCheck(server);
+			if(server != null) {
+				modelCheck(server);
+			}
 		} catch (Throwable e) {
 			System.gc();
 			// Assert.printStack(e);
@@ -412,10 +412,10 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 			if (server != null) {
 				try {
 					server.close(false);
-				} catch (Exception e1) { /* SKIP */
+				} catch (Exception e1) {
+					e1.printStackTrace();
 				}
 			}
 		}
-		System.exit(0);
 	}
 }

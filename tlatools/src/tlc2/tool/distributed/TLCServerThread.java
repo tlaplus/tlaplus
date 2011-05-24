@@ -86,7 +86,7 @@ public class TLCServerThread extends IdThread {
 						if (!this.tlcServer.reassignWorker(this)) {
 							ToolIO.out
 									.println("Error: No TLC worker is available. Exit.");
-							System.exit(0);
+							return;
 						}
 					}
 				}

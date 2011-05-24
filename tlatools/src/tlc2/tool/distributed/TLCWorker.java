@@ -130,12 +130,12 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 					index++;
 				} else {
 					printErrorMsg("Error: configuration file required.");
-					System.exit(0);
+					return;
 				}
 			} else {
 				if (args[index].charAt(0) == '-') {
 					printErrorMsg("Error: unrecognized option: " + args[index]);
-					System.exit(0);
+					return;
 				}
 				if (specFile == null) {
 					specFile = args[index++];
@@ -148,7 +148,7 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 				} else {
 					printErrorMsg("Error: more than one input files: "
 							+ specFile + " and " + args[index]);
-					System.exit(0);
+					return;
 				}
 			}
 		}

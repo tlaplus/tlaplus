@@ -95,7 +95,8 @@ public class FPSetManager implements Serializable {
 			if (next != null && next != curr) {
 				try {
 					curr.exit(cleanup);
-				} catch (Exception e) { /* SKIP */
+				} catch (Exception e) {
+					e.printStackTrace();
 				}
 				curr = next;
 			}
@@ -103,7 +104,8 @@ public class FPSetManager implements Serializable {
 		if (curr != null) {
 			try {
 				curr.exit(cleanup);
-			} catch (Exception e) { /* SKIP */
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
 		}
 	}
@@ -112,7 +114,8 @@ public class FPSetManager implements Serializable {
 		String hostname = "Unknown";
 		try {
 			hostname = InetAddress.getLocalHost().getHostName();
-		} catch (Exception e) { /* SKIP */
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 		return hostname;
 	}
