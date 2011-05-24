@@ -28,13 +28,14 @@ import util.ToolIO;
  * @version $Id$
  */
 public class TLCServerThread extends IdThread {
+	private static final String BLOCK_SIZE = "tlc2.tool.distributed.TLCServerThread.BlockSize";
 	/**
 	 * TLC server threads manage the set of existing TLC workers.
 	 */
-	private final static int BlockSize = Integer.getInteger("tlc2.tool.distributed.TLCServerThread.BlockSize", 1024);
+	private final static int BlockSize = Integer.getInteger(BLOCK_SIZE, 1024);
 	private CyclicBarrier barrier;
 	/**
-	 * Identifies the worker (probably hostname:port)
+	 * Identifies the worker
 	 */
 	private String url = "";
 	private int receivedStates, sentStates;
@@ -83,6 +84,7 @@ public class TLCServerThread extends IdThread {
 					stateQueue.finishAll();
 					return;
 				}
+				// count statistics
 				sentStates += states.length;
 
 				boolean workDone = false;
@@ -154,6 +156,23 @@ public class TLCServerThread extends IdThread {
 		}
 	}
 
+	/**
+	 * Calculates the number of states a worker should be assigned. This
+	 * calculation is based on the current number of workers registered with the
+	 * server assigning each worker 1/N of the statequeue with N being the
+	 * current amount of workers.
+	 *  
+	 * If the system property {@link TLCServer}
+	 * .expectedWorkercount is set to -1, a fixed block size will be used. This
+	 * can be configured by setting BLOCK_SIZE to the intended value.
+	 * 
+	 * The block size essentially load balances the workers by deciding how much
+	 * work they get assigned.
+	 * 
+	 * @param size
+	 *            The current size of the state queue.
+	 * @return The intended block size
+	 */
 	private int getBlockSize(int size) {
 		if(TLCServer.expectedWorkerCount == -1) {
 			return BlockSize;
@@ -163,6 +182,11 @@ public class TLCServerThread extends IdThread {
 		}
 	}
 
+	/**
+	 * Causes this thread to wait for all other worker threads before it starts
+	 * computing states. The barrier may be null in which case threads start
+	 * computing next states immediately after creation.
+	 */
 	private void waitOnBarrier() {
 		try {
 			if(barrier != null)
