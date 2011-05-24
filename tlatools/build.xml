@@ -79,7 +79,7 @@
 		</jar>
 	</target>
 
-	<target name="dist-mixed-jar" description="Build a distribution">
+	<target name="dist-mixed-jar" description="Build a distribution" depends="default">
 		<!-- create a JAR file for the users -->
 		<jar destfile="${dist-mixed.file.jar}">
 			<fileset dir="${class.dir}" includes="**/*" />
@@ -103,7 +103,7 @@
 	</target>
 
 
-	<target name="dist-mixed-zip" description="Build a distribution">
+	<target name="dist-mixed-zip" description="Build a distribution" depends="default">
 		<!-- create a zip file for the users and developers-->
 		<zip destfile="${dist-mixed.file}">
 			<zipfileset dir="${src.dir}" includes="**/*.java" prefix="tla" />
