@@ -105,7 +105,7 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
     
   public void exit() throws IOException {
     String hostname = InetAddress.getLocalHost().getHostName();    
-    ToolIO.out.println(hostname + ", work completed. Thank you!");
+    ToolIO.out.println(hostname + ", work completed at: " + new Date() + " Thank you!");
     System.exit(0);
   }
   
