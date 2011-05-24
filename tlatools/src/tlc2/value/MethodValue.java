@@ -53,7 +53,7 @@ public class MethodValue extends OpValue implements Applicable {
       Value res = null;
       try 
       {
-          res = (Value)this.md.invoke(null, args);
+          res = (Value)this.md.invoke(null, (Object[]) args);
       } catch (Exception e) 
       {
           if (e instanceof InvocationTargetException) 
