@@ -19,9 +19,9 @@ import tlc2.tool.WorkerException;
  */
 public interface TLCWorkerRMI extends Remote {
 
-  public Object[] getNextStates(TLCState[] states)
-    throws RemoteException, WorkerException;
+	public Object[] getNextStates(TLCState[] states) throws RemoteException,
+			WorkerException;
 
-  public void exit() throws IOException;
-  
+	public void exit() throws IOException;
+
 }

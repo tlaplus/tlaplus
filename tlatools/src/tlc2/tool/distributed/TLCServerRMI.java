@@ -9,18 +9,21 @@ import java.io.IOException;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
-
 /**
  * @deprecated not used currently
  * @version $Id$
  */
 public interface TLCServerRMI extends Remote {
-  public void registerWorker(TLCWorkerRMI worker, String hostname)
-    throws IOException;
+	public void registerWorker(TLCWorkerRMI worker, String hostname)
+			throws IOException;
 
-  public String getAppName() throws RemoteException;
-  public Boolean getCheckDeadlock() throws RemoteException;
-  public Boolean getPreprocess() throws RemoteException;  
-  public FPSetManager getFPSetManager() throws RemoteException;
-  public long getIrredPolyForFP() throws RemoteException;
+	public String getAppName() throws RemoteException;
+
+	public Boolean getCheckDeadlock() throws RemoteException;
+
+	public Boolean getPreprocess() throws RemoteException;
+
+	public FPSetManager getFPSetManager() throws RemoteException;
+
+	public long getIrredPolyForFP() throws RemoteException;
 }

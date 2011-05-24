@@ -7,21 +7,27 @@ package tlc2.tool.distributed;
 
 import java.io.IOException;
 import java.rmi.Remote;
+
 /**
  * @deprecated
  * @version $Id$
  */
 public interface FPIntSetRMI extends Remote {
 
-  public void setLeveled(long fp) throws IOException;
-  public int setStatus(long fp, int status) throws IOException;
-  public int getStatus(long fp) throws IOException;  
-  public boolean allLeveled() throws IOException;
+	public void setLeveled(long fp) throws IOException;
 
-  public void exit(boolean cleanup) throws IOException;
-  
-  public void beginChkpt(String filename) throws IOException;
-  public void commitChkpt(String filename) throws IOException;
-  public void recover(String filename) throws IOException;
+	public int setStatus(long fp, int status) throws IOException;
+
+	public int getStatus(long fp) throws IOException;
+
+	public boolean allLeveled() throws IOException;
+
+	public void exit(boolean cleanup) throws IOException;
+
+	public void beginChkpt(String filename) throws IOException;
+
+	public void commitChkpt(String filename) throws IOException;
+
+	public void recover(String filename) throws IOException;
 
 }

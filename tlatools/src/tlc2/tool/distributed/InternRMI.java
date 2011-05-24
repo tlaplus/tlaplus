@@ -9,5 +9,5 @@ import java.rmi.RemoteException;
 import util.UniqueString;
 
 public interface InternRMI extends Remote {
-  public UniqueString intern(String str) throws RemoteException;
+	public UniqueString intern(String str) throws RemoteException;
 }

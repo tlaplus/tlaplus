@@ -19,16 +19,22 @@ import tlc2.util.LongVec;
  */
 public interface FPSetRMI extends Remote, Serializable {
 
-  public boolean put(long fp) throws IOException;
-  public boolean contains(long fp) throws IOException;
-  public BitVector putBlock(LongVec fpv) throws IOException;
-  public BitVector containsBlock(LongVec fpv) throws IOException;
-  public long size() throws IOException;
-  
-  public void exit(boolean cleanup) throws IOException;
-  
-  public void beginChkpt(String filename) throws IOException;
-  public void commitChkpt(String filename) throws IOException;
-  public void recover(String filename) throws IOException;
+	public boolean put(long fp) throws IOException;
+
+	public boolean contains(long fp) throws IOException;
+
+	public BitVector putBlock(LongVec fpv) throws IOException;
+
+	public BitVector containsBlock(LongVec fpv) throws IOException;
+
+	public long size() throws IOException;
+
+	public void exit(boolean cleanup) throws IOException;
+
+	public void beginChkpt(String filename) throws IOException;
+
+	public void commitChkpt(String filename) throws IOException;
+
+	public void recover(String filename) throws IOException;
 
 }
