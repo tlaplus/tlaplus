@@ -7,13 +7,18 @@ package tlc2.tool.distributed;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Proxy;
 import java.net.InetAddress;
 import java.rmi.NotBoundException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.rmi.server.RemoteObjectInvocationHandler;
+import java.rmi.server.RemoteRef;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.Date;
+import java.util.concurrent.CyclicBarrier;
 
+import sun.rmi.server.UnicastRef;
 import tlc2.TLCGlobals;
 import tlc2.output.EC;
 import tlc2.output.MP;
@@ -22,7 +27,7 @@ import tlc2.tool.TLCTrace;
 import tlc2.tool.WorkerException;
 import tlc2.tool.fp.DiskFPSet;
 import tlc2.tool.fp.FPSet;
-import tlc2.tool.queue.DiskStateQueue;
+import tlc2.tool.queue.MemStateQueue;
 import tlc2.tool.queue.StateQueue;
 import tlc2.util.FP64;
 import util.FileUtil;
@@ -52,7 +57,10 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 	private TLCWorkerRMI[] workers;
 	private int[] workerRefCnt;
 	private TLCServerThread[] threads;
-
+	
+	private CyclicBarrier barrier;
+	static final int expectedWorkerCount = Integer.getInteger("tlc2.tool.distributed.TLCServer.expectedWorkerCount", 1);
+	
 	public TLCServer(DistApp work) throws IOException, NotBoundException {
 		this.workers = new TLCWorkerRMI[10];
 		this.workerRefCnt = new int[this.workers.length];
@@ -64,7 +72,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		int start = this.metadir.lastIndexOf(FileUtil.separator, end - 1);
 		this.filename = this.metadir.substring(start + 1, end);
 		this.work = work;
-		this.stateQueue = new DiskStateQueue(this.metadir);
+		this.stateQueue = new MemStateQueue(this.metadir);
 		this.trace = new TLCTrace(this.metadir, this.work.getFileName(),
 				this.work);
 		if (TLCGlobals.fpServers == null) {
@@ -74,6 +82,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		} else {
 			this.fpSetManager = new FPSetManager(TLCGlobals.fpServers);
 		}
+		barrier = new CyclicBarrier(expectedWorkerCount);
 	}
 
 	public final String getAppName() {
@@ -132,13 +141,31 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 			tidx = len;
 		}
 		this.threadCnt++;
-		this.threads[tidx] = new TLCServerThread(this.thId++, worker, this);
+		this.threads[tidx] = new TLCServerThread(this.thId++, worker, "rmi://"
+				+ hostname + ":" + getPort(worker), this, barrier);
 		if (TLCGlobals.fpServers == null)
 			this.fpSet.addThread();
 		this.threads[tidx].start();
 
 		ToolIO.out.println("Registration for worker at " + hostname
 				+ " completed.");
+	}
+
+	private int getPort(TLCWorkerRMI worker) {
+		try {
+			RemoteObjectInvocationHandler roih = (RemoteObjectInvocationHandler) Proxy
+					.getInvocationHandler(worker);
+			RemoteRef ref2 = roih.getRef();
+			UnicastRef ref3 = (UnicastRef) ref2;
+			return ref3.getLiveRef().getPort();
+		} catch (SecurityException e) {
+			e.printStackTrace();
+		} catch (IllegalArgumentException e) {
+			e.printStackTrace();
+		} catch (ClassCastException e) {
+			e.printStackTrace();
+		}
+		return 0;
 	}
 
 	/**
@@ -353,6 +380,14 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		// Wait for all the server threads to die.
 		for (int i = 0; i < server.threadCnt; i++) {
 			server.threads[i].join();
+			
+			// print worker stats
+			int sentStates = server.threads[i].getSentStates();
+			int receivedStates = server.threads[i].getReceivedStates();
+			String name = server.threads[i].getUrl();
+			ToolIO.out.println(new Date() + " Worker: " + name + " Sent: " + sentStates 
+					+ " Rcvd: "
+					+ receivedStates);
 		}
 		// Notify all the workers of the completion.
 		for (int i = 0; i < server.workerCnt; i++) {
@@ -367,8 +402,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		if (success) {
 			// We get here because the checking has succeeded.
 			ToolIO.out
-					.println("Model checking completed. No error has been found at: "
-							+ new Date());
+					.println(new Date() + " Model checking completed. No error has been found!");
 		} else if (server.keepCallStack) {
 			// We redo the work on the error state, recording the call stack.
 			server.work.setCallStack();
@@ -381,11 +415,15 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 				server.work.printCallStack();
 			}
 		}
-		ToolIO.out.println(server.stats());
+		ToolIO.out.println(new Date() + " " + server.stats());
 
 		server.close(success);
-
-		ToolIO.out.println("Server has finished computing at: " + new Date());
+		
+		// dispose RMI leftovers
+		rg.unbind("TLCServer");
+		UnicastRemoteObject.unexportObject(server, false);
+		
+		ToolIO.out.println(new Date() + " Server has finished computing");
 		ToolIO.out.flush();
 	}
 
@@ -417,5 +455,12 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 				}
 			}
 		}
+	}
+
+	/**
+	 * @return Number of currently registered workers
+	 */
+	int getWorkerCount() {
+		return workers.length;
 	}
 }

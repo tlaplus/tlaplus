@@ -66,7 +66,7 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 
 			BitVector[] visited = this.fpSetManager.containsBlock(fpvv);
 
-			// Remove the states that has already been seen, check if the
+			// Remove the states that have already been seen, check if the
 			// remaining new states are valid and inModel.
 			TLCStateVec[] newStates = new TLCStateVec[fpServerCnt];
 			LongVec[] newFps = new LongVec[fpServerCnt];
@@ -106,7 +106,17 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 		String hostname = InetAddress.getLocalHost().getHostName();
 		ToolIO.out.println(hostname + ", work completed at: " + new Date()
 				+ " Thank you!");
-		System.exit(0);
+		
+		UnicastRemoteObject.unexportObject(TLCWorker.this, true);
+//		Thread t = new Thread(new Runnable() {
+//			public void run() {
+//				try {
+//				} catch (NoSuchObjectException e) {
+//					e.printStackTrace();
+//				}
+//			}
+//		});
+//		t.start();
 	}
 
 	public static void main(String args[]) {
@@ -210,8 +220,6 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 					+ " for server " + serverName + ".\n" + e.getMessage());
 		}
 
-		ToolIO.out.println("TLC worker at " + hostname + " is done at: "
-				+ new Date());
 		ToolIO.out.flush();
 	}
 

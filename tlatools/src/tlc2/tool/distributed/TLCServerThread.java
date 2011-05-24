@@ -6,6 +6,9 @@
 package tlc2.tool.distributed;
 
 import java.rmi.RemoteException;
+import java.util.Date;
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CyclicBarrier;
 
 import tlc2.TLCGlobals;
 import tlc2.output.EC;
@@ -13,6 +16,7 @@ import tlc2.output.MP;
 import tlc2.tool.TLCState;
 import tlc2.tool.TLCStateVec;
 import tlc2.tool.WorkerException;
+import tlc2.tool.queue.StateQueue;
 import tlc2.util.BitVector;
 import tlc2.util.IdThread;
 import tlc2.util.LongVec;
@@ -27,12 +31,20 @@ public class TLCServerThread extends IdThread {
 	/**
 	 * TLC server threads manage the set of existing TLC workers.
 	 */
-	private final static int BlockSize = 1024;
+	private final static int BlockSize = Integer.getInteger("tlc2.tool.distributed.TLCServerThread.BlockSize", 1024);
+	private CyclicBarrier barrier;
+	/**
+	 * Identifies the worker (probably hostname:port)
+	 */
+	private String url = "";
+	private int receivedStates, sentStates;
 
-	public TLCServerThread(int id, TLCWorkerRMI worker, TLCServer tlc) {
+	public TLCServerThread(int id, TLCWorkerRMI worker, String url, TLCServer tlc, CyclicBarrier aBarrier) {
 		super(id);
 		this.worker = worker;
+		this.url  = url;
 		this.tlcServer = tlc;
+		this.barrier = aBarrier;
 	}
 
 	private TLCWorkerRMI worker;
@@ -52,35 +64,46 @@ public class TLCServerThread extends IdThread {
 	 * state queue.
 	 */
 	public void run() {
+		waitOnBarrier();
+		
 		TLCGlobals.incNumWorkers(1);
 		TLCStateVec[] newStates = null;
 		LongVec[] newFps = null;
 
+		final StateQueue stateQueue = this.tlcServer.stateQueue;
 		try {
 			while (true) {
-				TLCState[] states = this.tlcServer.stateQueue
-						.sDequeue(BlockSize);
+				TLCState[] states = stateQueue
+						.sDequeue(getBlockSize(stateQueue.size()));
 				if (states == null) {
 					synchronized (this.tlcServer) {
 						this.tlcServer.setDone();
 						this.tlcServer.notify();
 					}
-					this.tlcServer.stateQueue.finishAll();
+					stateQueue.finishAll();
 					return;
 				}
+				sentStates += states.length;
 
 				boolean workDone = false;
 				while (!workDone) {
 					try {
+						long start = System.currentTimeMillis();
 						Object[] res = this.worker.getNextStates(states);
+						long end = System.currentTimeMillis();
 						newStates = (TLCStateVec[]) res[0];
+						receivedStates += newStates.length;
 						newFps = (LongVec[]) res[1];
 						workDone = true;
+						ToolIO.out.println(new Date() + " Worker: " + url
+								+ " Sent: " + states.length + " Rcvd: "
+								+ newStates.length + " Time: " + (end - start)
+								+ " ms");
 					} catch (RemoteException e) {
 						if (!this.tlcServer.reassignWorker(this)) {
 							ToolIO.out
 									.println("Error: No TLC worker is available. Exit.");
-							System.exit(0);
+							return;
 						}
 					} catch (NullPointerException e) {
 						if (!this.tlcServer.reassignWorker(this)) {
@@ -101,7 +124,7 @@ public class TLCServerThread extends IdThread {
 						long fp = newFps[i].elementAt(index);
 						state.uid = this.tlcServer.trace.writeState(state.uid,
 								fp);
-						this.tlcServer.stateQueue.sEnqueue(state);
+						stateQueue.sEnqueue(state);
 					}
 				}
 			}
@@ -123,11 +146,52 @@ public class TLCServerThread extends IdThread {
 						System.err.println(e1.getMessage());
 					}
 				}
-				this.tlcServer.stateQueue.finishAll();
+				stateQueue.finishAll();
 				synchronized (this.tlcServer) {
 					this.tlcServer.notify();
 				}
 			}
 		}
+	}
+
+	private int getBlockSize(int size) {
+		if(TLCServer.expectedWorkerCount == -1) {
+			return BlockSize;
+		} else {
+			return (int) Math
+					.ceil(size * (1.0 / tlcServer.getWorkerCount()));
+		}
+	}
+
+	private void waitOnBarrier() {
+		try {
+			if(barrier != null)
+				barrier.await();
+		} catch (InterruptedException e2) {
+			e2.printStackTrace();
+		} catch (BrokenBarrierException e2) {
+			e2.printStackTrace();
+		}
+	}
+
+	/**
+	 * @return the url
+	 */
+	public String getUrl() {
+		return url;
+	}
+
+	/**
+	 * @return the receivedStates
+	 */
+	public int getReceivedStates() {
+		return receivedStates;
+	}
+
+	/**
+	 * @return the sentStates
+	 */
+	public int getSentStates() {
+		return sentStates;
 	}
 }
