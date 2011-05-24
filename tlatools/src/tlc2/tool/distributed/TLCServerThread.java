@@ -84,6 +84,12 @@ public class TLCServerThread extends IdThread {
 					stateQueue.finishAll();
 					return;
 				}
+				
+				// without initial states no need to bother workers
+				if (states.length == 0) {
+					continue;
+				}
+				
 				// count statistics
 				sentStates += states.length;
 
@@ -94,12 +100,12 @@ public class TLCServerThread extends IdThread {
 						Object[] res = this.worker.getNextStates(states);
 						long end = System.currentTimeMillis();
 						newStates = (TLCStateVec[]) res[0];
-						receivedStates += newStates.length;
+						receivedStates += newStates[0].size();
 						newFps = (LongVec[]) res[1];
 						workDone = true;
 						ToolIO.out.println(new Date() + " Worker: " + url
 								+ " Sent: " + states.length + " Rcvd: "
-								+ newStates.length + " Time: " + (end - start)
+								+ newStates[0].size() + " Time: " + (end - start)
 								+ " ms");
 					} catch (RemoteException e) {
 						if (!this.tlcServer.reassignWorker(this)) {
