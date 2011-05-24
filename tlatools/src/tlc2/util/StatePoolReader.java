@@ -19,10 +19,7 @@ import util.Assert;
 public class StatePoolReader extends Thread {
 
   public StatePoolReader(int bufSize) {
-    this.buf = new TLCState[bufSize];
-    this.poolFile = null;
-    this.isFull = false;
-    this.canRead = false;    
+	  this(bufSize, null);
   }
 
   public StatePoolReader(int bufSize, File file) {
@@ -36,6 +33,7 @@ public class StatePoolReader extends Thread {
   private File poolFile;      // the file to be read
   private boolean isFull;     // true iff the buf is filled
   private boolean canRead;    // true iff the file can be read
+  private boolean finished = false;
 
   public final synchronized void wakeup() {
     this.canRead = true;
@@ -166,6 +164,9 @@ public class StatePoolReader extends Thread {
 	while (true) {
 	  while (this.poolFile == null || this.isFull || !this.canRead) {
 	    this.wait();
+	    if(this.finished ) {
+	    	return;
+	    }
 	  }
 	  ValueInputStream vis = new ValueInputStream(this.poolFile);
 	  for (int i = 0; i < this.buf.length; i++) {
@@ -184,6 +185,10 @@ public class StatePoolReader extends Thread {
       MP.printError(EC.SYSTEM_ERROR_READING_POOL, e.getMessage());
       System.exit(1);
     }
+  }
+  
+  public void setFinished() {
+	  finished = true;
   }
   
 }

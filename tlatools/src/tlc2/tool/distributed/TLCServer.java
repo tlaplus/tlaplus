@@ -27,7 +27,7 @@ import tlc2.tool.TLCTrace;
 import tlc2.tool.WorkerException;
 import tlc2.tool.fp.DiskFPSet;
 import tlc2.tool.fp.FPSet;
-import tlc2.tool.queue.MemStateQueue;
+import tlc2.tool.queue.DiskStateQueue;
 import tlc2.tool.queue.StateQueue;
 import tlc2.util.FP64;
 import util.FileUtil;
@@ -72,7 +72,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		int start = this.metadir.lastIndexOf(FileUtil.separator, end - 1);
 		this.filename = this.metadir.substring(start + 1, end);
 		this.work = work;
-		this.stateQueue = new MemStateQueue(this.metadir);
+		this.stateQueue = new DiskStateQueue(this.metadir);
 		this.trace = new TLCTrace(this.metadir, this.work.getFileName(),
 				this.work);
 		if (TLCGlobals.fpServers == null) {

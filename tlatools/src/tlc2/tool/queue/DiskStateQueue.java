@@ -54,9 +54,11 @@ public class DiskStateQueue extends StateQueue {
     this.filePrefix = diskdir + FileUtil.separator;
     File rFile = new File(this.filePrefix + Integer.toString(0));
     this.reader = new StatePoolReader(BufSize, rFile);
-    this.loFile = new File(this.filePrefix + Integer.toString(this.loPool));    
+    this.reader.setDaemon(true);
+    this.loFile = new File(this.filePrefix + Integer.toString(this.loPool));
     this.reader.start();
     this.writer = new StatePoolWriter(BufSize, this.reader);
+    this.writer.setDaemon(true);
     this.writer.start();
   }
   
@@ -188,6 +190,17 @@ public class DiskStateQueue extends StateQueue {
     this.reader.restart(file, canRead);
     String pstr = Integer.toString(this.loPool);
     this.loFile = new File(this.filePrefix + pstr);
+  }
+  
+  public void finishAll() {
+	  super.finishAll();
+	  synchronized(this.writer) {
+		  this.writer.notifyAll();
+	  }
+	  synchronized(this.reader) {
+		  this.reader.setFinished();
+		  this.reader.notifyAll();
+	  }
   }
   
 }

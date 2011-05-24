@@ -24,9 +24,7 @@ public class StatePoolWriter extends Thread {
 
     
   public StatePoolWriter(int bufSize) {
-    this.buf = new TLCState[bufSize];
-    this.poolFile = null;
-    this.reader = null;
+	  this(bufSize, null);
   }
 
   public StatePoolWriter(int bufSize, StatePoolReader reader) {
@@ -107,6 +105,10 @@ public class StatePoolWriter extends Thread {
 	while (true) {
 	  while (this.poolFile == null) {
 	    this.wait();
+	    // we are done without ever receiving a pool file
+	    if(this.poolFile == null) {
+	    	return;
+	    }
 	  }
 	  ValueOutputStream vos = new ValueOutputStream(this.poolFile);
 	  for (int i = 0; i < this.buf.length; i++) {

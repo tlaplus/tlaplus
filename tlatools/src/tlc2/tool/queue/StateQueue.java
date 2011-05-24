@@ -119,7 +119,7 @@ public abstract class StateQueue {
       return true;
   }
   
-  public final synchronized void finishAll() {
+  public synchronized void finishAll() {
     this.finish = true;
     this.notifyAll();
   }
