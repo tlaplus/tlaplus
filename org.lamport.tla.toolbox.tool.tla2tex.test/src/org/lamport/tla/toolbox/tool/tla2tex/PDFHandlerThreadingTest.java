@@ -1,4 +1,4 @@
-package org.lamport.tla.toolbox.tool.tlc.ui.test.threading;
+package org.lamport.tla.toolbox.tool.tla2tex;
 
 import java.io.File;
 
@@ -11,7 +11,8 @@ import org.eclipse.swtbot.swt.finder.widgets.SWTBotMenu;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.lamport.tla.toolbox.tool.tlc.ui.test.RCPTestSetupHelper;
+import org.lamport.tla.toolbox.test.RCPTestSetupHelper;
+import org.lamport.tla.toolbox.test.threading.MonitorAdaptor;
 import org.lamport.tla.toolbox.ui.handler.OpenSpecHandler;
 
 @RunWith(SWTBotJunit4ClassRunner.class)
@@ -24,7 +25,7 @@ public class PDFHandlerThreadingTest {
 	private static final String specB = System
 			.getProperty("org.lamport.tla.toolbox.tool.tlc.ui.test.PathToSpecB");
 	
-	@BeforeClass
+//	@BeforeClass
 	public static void beforeClass() throws Exception {
 		
 		// If this assert fails see http://wiki.eclipse.org/JDT_weaving_features
@@ -46,6 +47,11 @@ public class PDFHandlerThreadingTest {
 	}
 	
 	@Test
+	public void doTest() {
+		System.out.println("foo");
+	}
+	
+//	@Test
 	public void producePDFInNonUIThread() throws InterruptedException {
 		
 		// Open specA 

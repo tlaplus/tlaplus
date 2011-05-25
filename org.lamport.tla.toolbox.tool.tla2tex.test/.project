@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>org.lamport.tla.toolbox.tool.tlc.ui.test</name>
+	<name>org.lamport.tla.toolbox.tool.tla2tex.test</name>
 	<comment></comment>
 	<projects>
 	</projects>
@@ -22,7 +22,7 @@
 		</buildCommand>
 	</buildSpec>
 	<natures>
-		<nature>org.eclipse.jdt.core.javanature</nature>
 		<nature>org.eclipse.pde.PluginNature</nature>
+		<nature>org.eclipse.jdt.core.javanature</nature>
 	</natures>
 </projectDescription>

@@ -1,4 +1,4 @@
-package org.lamport.tla.toolbox.tool.tlc.ui.test.wizards;
+package org.lamport.tla.toolbox.ui.wizard;
 
 import java.io.File;
 
@@ -12,7 +12,7 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.lamport.tla.toolbox.tool.tlc.ui.test.RCPTestSetupHelper;
+import org.lamport.tla.toolbox.test.RCPTestSetupHelper;
 
 @RunWith(SWTBotJunit4ClassRunner.class)
 public class AddSpecWizardTest {

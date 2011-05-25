@@ -1,11 +1,11 @@
-package org.lamport.tla.toolbox.tool.tlc.ui.test.threading;
+package org.lamport.tla.toolbox.test.threading;
 
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
 import org.aspectj.lang.JoinPoint;
-import org.eclipse.swtbot.swt.finder.utils.SWTUtils;
+import org.eclipse.swt.widgets.Display;
 
 public class MonitorAdaptor {
 
@@ -22,7 +22,7 @@ public class MonitorAdaptor {
 	 */
 	public static void enter(JoinPoint joinPoint) {
 		final Thread currentThread = Thread.currentThread();
-		final Thread swtThread = SWTUtils.display().getThread();
+		final Thread swtThread = Display.getDefault().getThread();
 		if (currentThread == swtThread) {
 			joinPoints.add(joinPoint);
 //				System.err.println("Called backend code from UI thread!!! "

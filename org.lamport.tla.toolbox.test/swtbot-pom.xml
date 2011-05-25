@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+  xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <artifactId>parent</artifactId>
+    <groupId>tlatoolbox</groupId>
+    <version>0.0.1-SNAPSHOT</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
+  <groupId>tlatoolbox.test</groupId>
+  <artifactId>tlatoolbox.test</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  <packaging>pom</packaging>
+
+	<build>
+		<plugins>
+			<!-- Compile java sources and exclude aspects -->
+	      <plugin>
+	        <groupId>org.eclipse.tycho</groupId>
+	        <artifactId>tycho-compiler-plugin</artifactId>
+	        <version>${tycho-version}</version>
+	      </plugin> 
+			<!-- Run JUnit tests -->
+      		<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>tycho-surefire-plugin</artifactId>
+				<version>${tycho-version}</version>
+
+				<configuration>
+					<showEclipseLog>true</showEclipseLog>
+					<useUIHarness>true</useUIHarness>
+					<useUIThread>false</useUIThread>
+					<!-- use our product and application to launch the tests -->
+					<product>org.lamport.tla.toolbox.product.standalone.product</product>
+					<application>org.lamport.tla.toolbox.application</application>
+
+					<systemProperties combine.children="append">
+						<!-- References used by tests to access spec files -->
+						<org.lamport.tla.toolbox.tool.tlc.ui.test.PathToSpecA>${project.build.directory}/../org.lamport.tla.toolbox.test/farsite/DistributedSystemModule.tla</org.lamport.tla.toolbox.tool.tlc.ui.test.PathToSpecA>
+						<org.lamport.tla.toolbox.tool.tlc.ui.test.PathToSpecB>${project.build.directory}/../../examples/DieHard/DieHard.tla</org.lamport.tla.toolbox.tool.tlc.ui.test.PathToSpecB>
+						<!-- JDT weaving debug output -->
+						<aj.weaving.verbose>true</aj.weaving.verbose>
+						<org.aspectj.weaver.showWeaveInfo>false</org.aspectj.weaver.showWeaveInfo>
+						<org.aspectj.osgi.verbose>false</org.aspectj.osgi.verbose>
+					</systemProperties>
+
+					<dependencies>
+						<!-- explicit dependency is only needed because SWTbot brings its own 
+							hamcrest bundle which conflicts with the one from junit in the eclipse platform -->
+						<dependency>
+							<type>p2-installable-unit</type>
+							<artifactId>org.hamcrest</artifactId>
+							<version>0.0.0</version>
+						</dependency>
+						<!-- explicit dependency is needed because product/app is provided 
+							by this bundle -->
+						<dependency>
+							<type>p2-installable-unit</type>
+							<artifactId>org.lamport.tla.toolbox.product.standalone</artifactId>
+							<version>0.0.0</version>
+						</dependency>
+						<!-- explicit dependency toward AspectJ -->
+						<dependency>
+							<type>p2-installable-unit</type>
+							<artifactId>org.aspectj.runtime</artifactId>
+							<version>0.0.0</version>
+						</dependency>
+						<dependency>
+							<type>p2-installable-unit</type>
+							<artifactId>org.aspectj.weaver</artifactId>
+							<version>0.0.0</version>
+						</dependency>
+						<dependency>
+							<type>p2-installable-unit</type>
+							<artifactId>org.eclipse.equinox.weaving.aspectj</artifactId>
+							<version>0.0.0</version>
+						</dependency>
+						<dependency>
+							<type>p2-installable-unit</type>
+							<artifactId>org.eclipse.equinox.weaving.hook</artifactId>
+							<version>0.0.0</version>
+						</dependency>
+					</dependencies>
+
+					<!-- Enable JDT weaving -->
+					<!--
+					<frameworkExtensions>
+						<frameworkExtension>
+							<groupId>p2.osgi.bundle</groupId> 
+							<artifactId>org.eclipse.equinox.weaving.hook</artifactId>
+							<version>1.0.0.v20100108</version>
+						</frameworkExtension>
+					</frameworkExtensions>
+					-->
+
+					<bundleStartLevel>
+						<bundle>
+							<id>org.eclipse.equinox.weaving.aspectj</id>
+							<level>3</level>
+							<autoStart>true</autoStart>
+						</bundle>
+						<bundle>
+							<id>org.aspectj.weaver</id>
+							<level>3</level>
+							<autoStart>true</autoStart>
+						</bundle>
+						<bundle>
+							<id>org.aspectj.runtime</id>
+							<level>3</level>
+							<autoStart>true</autoStart>
+						</bundle>
+					</bundleStartLevel>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+</project>

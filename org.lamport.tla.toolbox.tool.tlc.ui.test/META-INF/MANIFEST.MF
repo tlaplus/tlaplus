@@ -5,11 +5,11 @@ Bundle-SymbolicName: org.lamport.tla.toolbox.tool.tlc.ui.test;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Export-Package: org.lamport.tla.toolbox.tool.tlc.ui.test.threading
 Require-Bundle: org.lamport.tla.toolbox;bundle-version="1.0.0",
+ org.lamport.tla.toolbox.test;bundle-version="1.0.0",
  org.lamport.tla.toolbox.tool.tlc.ui;bundle-version="1.0.0",
- org.aspectj.runtime;bundle-version="1.6.0";visibility:=reexport,
- org.eclipse.swtbot.go;bundle-version="2.0.0"
+ org.eclipse.swtbot.go;bundle-version="2.0.0",
+ org.aspectj.runtime;bundle-version="1.6.0"
 Import-Package: org.osgi.framework;version="1.3.0"
-Eclipse-SupplementBundle: org.lamport.tla.toolbox*
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
 Bundle-Vendor: Leslie Lamport, Markus Alexander Kuppe
 Bundle-ActivationPolicy: lazy

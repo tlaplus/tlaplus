@@ -1,4 +1,4 @@
-package org.lamport.tla.toolbox.tool.tlc.ui.test.threading;
+package org.lamport.tla.toolbox.test.threading;
 
 /**
  * The purpose of this advice is to intercept method execution in the backend
@@ -17,7 +17,7 @@ public aspect MonitorAspect {
 			|| execution(* tla2tex..*.*(..))
 			|| execution(* pcal..*.*(..))
 			|| execution(* util..*.*(..)))
-		&& !within(org.lamport.tla.toolbox.tool.tlc.ui.test..*) {
+		&& !within(org.lamport.tla.toolbox.test..*) {
 		MonitorAdaptor.enter(thisJoinPoint);
 	}
 }

@@ -1,4 +1,4 @@
-package org.lamport.tla.toolbox.tool.tlc.ui.test;
+package org.lamport.tla.toolbox.test;
 
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;

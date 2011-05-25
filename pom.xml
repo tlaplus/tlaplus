@@ -40,7 +40,9 @@
 		<module>org.lamport.tla.toolbox.product.standalone</module>
 
 		<!-- SWTBot tests -->
-		<!--<module>org.lamport.tla.toolbox.tool.tlc.ui.test</module> -->
+		<module>org.lamport.tla.toolbox.test</module>
+		<module>org.lamport.tla.toolbox.tool.tla2tex.test</module>
+		<module>org.lamport.tla.toolbox.tool.tlc.ui.test</module>
 
 		<!-- features -->
 		<module>org.lamport.tla.toolbox.feature.base</module>
@@ -121,13 +123,15 @@
 							<ws>gtk</ws>
 							<arch>x86</arch>
 						</environment>
+						<!--
 						<environment>
 							<os>linux</os>
 							<ws>gtk</ws>
 							<arch>x86_64</arch>
 						</environment>
-						
+						-->
 						<!-- Windows -->
+						<!--
 						<environment>
 							<os>win32</os>
 							<ws>win32</ws>
@@ -138,7 +142,7 @@
 							<ws>win32</ws>
 							<arch>x86_64</arch>
 						</environment>
-						
+						   -->
 						<!-- Mac (turned off ATM due to https://issues.sonatype.org/browse/TYCHO-520) -->
 						<!-- 
 						<environment>
