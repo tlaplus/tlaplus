@@ -5,6 +5,7 @@
 
 package tlc2.tool.distributed;
 
+import java.io.File;
 import java.io.IOException;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
@@ -26,4 +27,24 @@ public interface TLCServerRMI extends Remote {
 	public FPSetManager getFPSetManager() throws RemoteException;
 
 	public long getIrredPolyForFP() throws RemoteException;
+	
+	/**
+	 * @return The name and (potentially) path to the specification file 
+	 * @throws RemoteException
+	 */
+	public String getSpecFileName() throws RemoteException;
+
+	/**
+	 * @return The name and (potentially) path to the configuration file
+	 * @throws RemoteException
+	 */
+	public String getConfigFileName() throws RemoteException;
+	
+	/**
+	 * Reads the given file from the server stripping the path the just the file name.
+	 * @param file A full qualified or relative (to server spec dir) file name.
+	 * @return the file requested
+	 * @throws RemoteException
+	 */
+	public File getFile(final String file) throws RemoteException;
 }

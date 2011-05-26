@@ -62,4 +62,13 @@ public abstract class DistApp implements TraceApp, Serializable {
 	// Prints call stack.
 	public abstract String printCallStack();
 
+	/**
+	 * @return The specification root directory
+	 */
+	public abstract String getSpecDir();
+
+	/**
+	 * @return The (qualified) configuration file name
+	 */
+	public abstract String getConfigName();
 }

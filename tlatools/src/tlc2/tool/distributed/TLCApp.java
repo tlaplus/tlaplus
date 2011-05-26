@@ -18,6 +18,7 @@ import tlc2.tool.WorkerException;
 import tlc2.util.FP64;
 import tlc2.value.Value;
 import util.FileUtil;
+import util.FilenameToStream;
 import util.ToolIO;
 import util.UniqueString;
 
@@ -27,40 +28,31 @@ import util.UniqueString;
  */
 public class TLCApp extends DistApp {
 
+	private String config;
+
 	/* Constructors */
 	public TLCApp(String specFile, String configFile, boolean deadlock,
 			String fromChkpt) throws IOException {
-		this(specFile, configFile, deadlock, fromChkpt, true);
+		this(specFile, configFile, deadlock, true, null);
+
+		this.fromChkpt = fromChkpt;
+		this.metadir = FileUtil.makeMetaDir(this.tool.specDir, fromChkpt);
 	}
 
-	public TLCApp(String specFile, String configFile, boolean deadlock,
-			String fromChkpt, boolean preprocess) throws IOException {
+	// TODO too many constructors redefinitions, replace with this(..) calls
+	public TLCApp(String specFile, String configFile,
+			Boolean deadlock, Boolean preprocess, RMIFilenameToStreamResolver fts) throws IOException {
+
+		// get the spec dir from the spec file
 		int lastSep = specFile.lastIndexOf(File.separatorChar);
 		String specDir = (lastSep == -1) ? "" : specFile.substring(0,
 				lastSep + 1);
 		specFile = specFile.substring(lastSep + 1);
+		
+		this.config = configFile;
+		
 		// TODO NameResolver
-		this.tool = new Tool(specDir, specFile, configFile, null);
-		// SZ Feb 24, 2009: setup the user directory
-		ToolIO.setUserDir(specDir);
-
-		// SZ Feb 20, 2009: added null reference for predefined spec
-		this.tool.init(preprocess, null);
-		this.checkDeadlock = deadlock;
-		this.preprocess = preprocess;
-		this.impliedInits = this.tool.getImpliedInits();
-		this.invariants = this.tool.getInvariants();
-		this.impliedActions = this.tool.getImpliedActions();
-		this.actions = this.tool.getActions();
-		this.fromChkpt = fromChkpt;
-		this.metadir = FileUtil.makeMetaDir(specDir, fromChkpt);
-	}
-
-	// TODO too many constructors redefinitions, replace with this(..) calls
-	public TLCApp(String specDir, String specFile, String configFile,
-			Boolean deadlock, Boolean preprocess) throws IOException {
-		// TODO NameResolver
-		this.tool = new Tool(specDir, specFile, configFile, null);
+		this.tool = new Tool(specDir, specFile, configFile, fts);
 		// SZ Feb 24, 2009: setup the user directory
 		ToolIO.setUserDir(specDir);
 
@@ -99,6 +91,14 @@ public class TLCApp extends DistApp {
 
 	public final String getFileName() {
 		return this.tool.rootFile;
+	}
+
+	public String getSpecDir() {
+		return this.tool.specDir;
+	}
+
+	public String getConfigName() {
+		return this.config;
 	}
 
 	public final String getMetadir() {

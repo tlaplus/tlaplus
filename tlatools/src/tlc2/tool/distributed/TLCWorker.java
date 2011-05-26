@@ -189,11 +189,11 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 					lastSep + 1);
 			specFile = specFile.substring(lastSep + 1);
 			Object[] appArgs = new Object[5];
-			appArgs[0] = specDir;
-			appArgs[1] = specFile;
-			appArgs[2] = configFile;
-			appArgs[3] = server.getCheckDeadlock();
-			appArgs[4] = server.getPreprocess();
+			appArgs[0] = server.getSpecFileName();
+			appArgs[1] = server.getConfigFileName();
+			appArgs[2] = server.getCheckDeadlock();
+			appArgs[3] = server.getPreprocess();
+			appArgs[4] = new RMIFilenameToStreamResolver(server);
 
 			String appName = server.getAppName();
 			Class appClass = Class.forName(appName);

@@ -463,4 +463,32 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 	int getWorkerCount() {
 		return workers.length;
 	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.tool.distributed.TLCServerRMI#getSpec()
+	 */
+	@Override
+	public String getSpecFileName() {
+		return this.work.getFileName();
+	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.tool.distributed.TLCServerRMI#getConfig()
+	 */
+	@Override
+	public String getConfigFileName() {
+		return this.work.getConfigName();
+	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.tool.distributed.TLCServerRMI#getFile(java.lang.String)
+	 */
+	@Override
+	public File getFile(final String file) {
+		// sanitize file to only last part of the path
+		// to make sure to not load files outside of spec dir
+		String name = new File(file).getName();
+		
+		return new File(work.getSpecDir() + File.separator + name);
+	}
 }
