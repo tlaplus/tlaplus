@@ -107,15 +107,6 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 				+ " Thank you!");
 		
 		UnicastRemoteObject.unexportObject(TLCWorker.this, true);
-//		Thread t = new Thread(new Runnable() {
-//			public void run() {
-//				try {
-//				} catch (NoSuchObjectException e) {
-//					e.printStackTrace();
-//				}
-//			}
-//		});
-//		t.start();
 	}
 
 	public static void main(String args[]) {
