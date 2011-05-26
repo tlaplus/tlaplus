@@ -1,7 +1,12 @@
 package tlc2.tool.distributed;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.rmi.RemoteException;
+import java.util.HashMap;
+import java.util.Map;
 
 import util.FilenameToStream;
 import util.SimpleFilenameToStream;
@@ -22,10 +27,22 @@ import util.SimpleFilenameToStream;
  */
 public class RMIFilenameToStreamResolver extends SimpleFilenameToStream {
 
-	private TLCServerRMI server;
-
-	public RMIFilenameToStreamResolver(TLCServerRMI server) {
-		this.server = server;
+	private final TLCServerRMI server;
+	private final Map<String, File> fileCache;
+	private final String rndPrefix;
+	
+	public RMIFilenameToStreamResolver(TLCServerRMI aServer) {
+		assert aServer != null;
+		this.server = aServer;
+		this.fileCache = new HashMap<String, File>();
+		
+		// create a temp directory for the current worker in the system tmpdir
+		final String javaTempDir = System.getProperty("java.io.tmpdir");
+		final File file = new File(javaTempDir + File.separator + System.currentTimeMillis());
+		file.deleteOnExit();
+		boolean mkdir = file.mkdir();
+		assert mkdir == true;
+		this.rndPrefix = file.getAbsolutePath();
 	}
 
 	/* (non-Javadoc)
@@ -38,13 +55,54 @@ public class RMIFilenameToStreamResolver extends SimpleFilenameToStream {
 		
 		// read the file from the server if local resolution has failed
 		if(!file.exists()) {
-			try {
-				return server.getFile(filename);
-			} catch (RemoteException e) {
-				e.printStackTrace();
+			// strip off path
+			final String name = new File(filename).getName();
+			
+			File tempFile = fileCache.get(name);
+			
+			// not in cache
+			if (tempFile == null) {
+				
+				// read bytes from server
+				byte[] bs = new byte[0];
+				try {
+					bs = server.getFile(name);
+				} catch (RemoteException e) {
+					e.printStackTrace();
+				}
+
+				// write into temp file
+				file = writeToNewTempFile(name, bs);
+				
+				// add to local file cache
+				fileCache.put(name, file);
 			}
 		}
 		
 		return file;
+	}
+
+	private File writeToNewTempFile(String name, byte[] bs) {
+		final File f = new File(rndPrefix + File.separator + name);
+		f.deleteOnExit();
+		
+		FileOutputStream outputStream = null;
+		try {
+			outputStream = new FileOutputStream(f);
+			outputStream.write(bs);
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			if(outputStream != null) {
+				try {
+					outputStream.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		return f;
 	}
 }

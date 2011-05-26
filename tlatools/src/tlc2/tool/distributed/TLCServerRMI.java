@@ -43,5 +43,5 @@ public interface TLCServerRMI extends Remote {
 	 * @return the file requested
 	 * @throws RemoteException
 	 */
-	public File getFile(final String file) throws RemoteException;
+	public byte[] getFile(final String file) throws RemoteException;
 }

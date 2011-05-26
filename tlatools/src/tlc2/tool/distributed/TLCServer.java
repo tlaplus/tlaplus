@@ -6,6 +6,7 @@
 package tlc2.tool.distributed;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.reflect.Proxy;
 import java.net.InetAddress;
@@ -479,11 +480,48 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 	 * @see tlc2.tool.distributed.TLCServerRMI#getFile(java.lang.String)
 	 */
 	@Override
-	public File getFile(final String file) {
+	public byte[] getFile(final String file) {
 		// sanitize file to only last part of the path
 		// to make sure to not load files outside of spec dir
 		String name = new File(file).getName();
 		
-		return new File(work.getSpecDir() + File.separator + name);
+		File f = new File(work.getSpecDir() + File.separator + name);
+		return read(f);
+	}
+	
+	private byte[] read(final File file) {
+		if (file.isDirectory())
+			throw new RuntimeException("Unsupported operation, file "
+					+ file.getAbsolutePath() + " is a directory");
+		if (file.length() > Integer.MAX_VALUE)
+			throw new RuntimeException("Unsupported operation, file "
+					+ file.getAbsolutePath() + " is too big");
+
+		Throwable pending = null;
+		FileInputStream in = null;
+		final byte buffer[] = new byte[(int) file.length()];
+		try {
+			in = new FileInputStream(file);
+			in.read(buffer);
+		} catch (Exception e) {
+			pending = new RuntimeException("Exception occured on reading file "
+					+ file.getAbsolutePath(), e);
+		} finally {
+			if (in != null) {
+				try {
+					in.close();
+				} catch (Exception e) {
+					if (pending == null) {
+						pending = new RuntimeException(
+								"Exception occured on closing file"
+										+ file.getAbsolutePath(), e);
+					}
+				}
+			}
+			if (pending != null) {
+				throw new RuntimeException(pending);
+			}
+		}
+		return buffer;
 	}
 }

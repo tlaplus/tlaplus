@@ -23,6 +23,10 @@ import util.ToolIO;
  */
 public class FPSetManager implements Serializable {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 4199808120164272026L;
 	private String[] hosts; // The names of fpset servers
 	private FPSetRMI[] fpSets; // the list of fpset servers
 
