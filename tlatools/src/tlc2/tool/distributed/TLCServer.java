@@ -84,10 +84,6 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		barrier = new CyclicBarrier(expectedWorkerCount);
 	}
 
-	public final String getAppName() {
-		return this.work.getAppName();
-	}
-
 	public final Boolean getCheckDeadlock() {
 		return this.work.getCheckDeadlock();
 	}

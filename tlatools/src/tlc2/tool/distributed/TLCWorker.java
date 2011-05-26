@@ -174,26 +174,10 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 			long irredPoly = server.getIrredPolyForFP();
 			FP64.Init(irredPoly);
 
-			int lastSep = specFile.lastIndexOf(File.separatorChar);
-			String specDir = (lastSep == -1) ? "" : specFile.substring(0,
-					lastSep + 1);
-			specFile = specFile.substring(lastSep + 1);
-			Object[] appArgs = new Object[5];
-			appArgs[0] = server.getSpecFileName();
-			appArgs[1] = server.getConfigFileName();
-			appArgs[2] = server.getCheckDeadlock();
-			appArgs[3] = server.getPreprocess();
-			appArgs[4] = new RMIFilenameToStreamResolver(server);
-
-			String appName = server.getAppName();
-			Class appClass = Class.forName(appName);
-			Class[] classOfArgs = new Class[appArgs.length];
-			for (int i = 0; i < classOfArgs.length; i++) {
-				classOfArgs[i] = appArgs[i].getClass();
-			}
-			Constructor appConstructor = appClass
-					.getDeclaredConstructor(classOfArgs);
-			DistApp work = (DistApp) appConstructor.newInstance(appArgs);
+			DistApp work = new TLCApp(server.getSpecFileName(),
+					server.getConfigFileName(), server.getCheckDeadlock(),
+					server.getPreprocess(), new RMIFilenameToStreamResolver(
+							server));
 
 			// SZ Jul 13, 2009: this is disabled since RMI is not used anymore
 			// UniqueString.setSource((InternRMI)server);

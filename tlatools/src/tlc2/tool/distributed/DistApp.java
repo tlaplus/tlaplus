@@ -18,8 +18,6 @@ import tlc2.tool.WorkerException;
  */
 public abstract class DistApp implements TraceApp, Serializable {
 
-	public abstract String getAppName();
-
 	public abstract Boolean getCheckDeadlock();
 
 	public abstract Boolean getPreprocess();

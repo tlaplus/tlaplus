@@ -17,8 +17,6 @@ public interface TLCServerRMI extends Remote {
 	public void registerWorker(TLCWorkerRMI worker, String hostname)
 			throws IOException;
 
-	public String getAppName() throws RemoteException;
-
 	public Boolean getCheckDeadlock() throws RemoteException;
 
 	public Boolean getPreprocess() throws RemoteException;

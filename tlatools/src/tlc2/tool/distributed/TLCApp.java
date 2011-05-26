@@ -40,7 +40,7 @@ public class TLCApp extends DistApp {
 
 	// TODO too many constructors redefinitions, replace with this(..) calls
 	public TLCApp(String specFile, String configFile,
-			Boolean deadlock, Boolean preprocess, RMIFilenameToStreamResolver fts) throws IOException {
+			Boolean deadlock, Boolean preprocess, FilenameToStream fts) throws IOException {
 
 		// get the spec dir from the spec file
 		int lastSep = specFile.lastIndexOf(File.separatorChar);
@@ -75,10 +75,6 @@ public class TLCApp extends DistApp {
 	private boolean preprocess; // preprocess?
 	private String fromChkpt = null; // recover from this checkpoint
 	private String metadir = null; // the directory pathname for metadata
-
-	public final String getAppName() {
-		return "tlc2.tool.distributed.TLCApp";
-	}
 
 	public final Boolean getCheckDeadlock() {
 		return new Boolean(this.checkDeadlock);
