@@ -24,7 +24,6 @@ import util.UniqueString;
 
 /**
  * @version $Id$
- * @deprecated RMI related code
  */
 public class TLCApp extends DistApp {
 

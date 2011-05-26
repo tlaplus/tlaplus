@@ -13,7 +13,6 @@ import tlc2.tool.TLCState;
 import tlc2.tool.WorkerException;
 
 /**
- * @deprecated not used currently
  * @author Simon Zambrovski
  * @version $Id$
  */

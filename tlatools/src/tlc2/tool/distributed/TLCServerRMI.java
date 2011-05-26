@@ -11,7 +11,6 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 
 /**
- * @deprecated not used currently
  * @version $Id$
  */
 public interface TLCServerRMI extends Remote {

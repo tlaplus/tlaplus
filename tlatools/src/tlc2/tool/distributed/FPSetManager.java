@@ -18,7 +18,6 @@ import tlc2.util.LongVec;
 import util.ToolIO;
 
 /**
- * @deprecated not used currently
  * @author Simon Zambrovski
  * @version $Id$
  */

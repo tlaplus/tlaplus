@@ -24,7 +24,6 @@ import tlc2.util.LongVec;
 import util.ToolIO;
 
 /**
- * @deprecated not used currently
  * @version $Id$
  */
 public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {

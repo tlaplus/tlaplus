@@ -37,7 +37,6 @@ import util.UniqueString;
 /**
  * 
  * @version $Id$
- * @deprecated RMI related code, not used
  */
 public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		InternRMI {

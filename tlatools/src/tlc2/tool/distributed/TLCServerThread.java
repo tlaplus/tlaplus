@@ -24,7 +24,6 @@ import util.ToolIO;
 
 /**
  * 
- * @deprecated not used currently
  * @version $Id$
  */
 public class TLCServerThread extends IdThread {

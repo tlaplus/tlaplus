@@ -17,7 +17,6 @@ import util.FileUtil;
 import util.ToolIO;
 
 /**
- * @deprecated
  * @version $Id$
  */
 public class TLCConfig {

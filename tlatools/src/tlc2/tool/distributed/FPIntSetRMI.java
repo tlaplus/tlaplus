@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.rmi.Remote;
 
 /**
- * @deprecated
  * @version $Id$
  */
 public interface FPIntSetRMI extends Remote {

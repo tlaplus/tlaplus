@@ -13,7 +13,6 @@ import tlc2.util.BitVector;
 import tlc2.util.LongVec;
 
 /**
- * @deprecated not used currently
  * @author Simon Zambrovski
  * @version $Id$
  */
