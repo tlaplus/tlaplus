@@ -31,7 +31,7 @@ public class BigInt extends BigInteger implements Cloneable, ExternalSortable {
     * This method is provided so that BigInts can be used as hash keys.
     */
   public final boolean equals(Object x) {
-    return ((x instanceof BigInt) && this.equals(x));
+    return ((x instanceof BigInt) && super.equals(x));
   }
 
   public final void write(OutputStream out) throws IOException {
