@@ -45,11 +45,10 @@
 		<module>org.lamport.tla.toolbox.tool.tlc.ui.test</module>
 
 		<!-- SWTBot tests -->
-<!--
 		<module>org.lamport.tla.toolbox.uitest</module>
 		<module>org.lamport.tla.toolbox.tool.tla2tex.uitest</module>
 		<module>org.lamport.tla.toolbox.tool.tlc.ui.uitest</module>
--->
+
 		<!-- features -->
 		<module>org.lamport.tla.toolbox.feature.base</module>
 		<module>org.lamport.tla.toolbox.feature.editor</module>
