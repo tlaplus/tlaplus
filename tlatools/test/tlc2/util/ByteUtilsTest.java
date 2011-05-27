@@ -109,7 +109,7 @@ public class ByteUtilsTest extends TestCase
 
     private void mainTestWriteIntReadInt() throws IOException, FileNotFoundException
     {
-        FileOutputStream fout = new FileOutputStream("test");
+        FileOutputStream fout = new FileOutputStream("ByteUtilsTest.bin");
 
         int i, j;
         int A[] = new int[10000];
@@ -125,7 +125,7 @@ public class ByteUtilsTest extends TestCase
         fout.flush();
         fout.close();
 
-        FileInputStream fin = new FileInputStream("test");
+        FileInputStream fin = new FileInputStream("ByteUtilsTest.bin");
 
         for (j = 0; j < 10000; j += 1)
         {
@@ -153,7 +153,7 @@ public class ByteUtilsTest extends TestCase
 
     private void mainTestWriteLongReadLong() throws IOException, FileNotFoundException
     {
-        FileOutputStream fout = new FileOutputStream("test");
+        FileOutputStream fout = new FileOutputStream("ByteUtilsTest.bin");
 
         long i;
         int j;
@@ -169,7 +169,7 @@ public class ByteUtilsTest extends TestCase
 
         fout.close();
 
-        FileInputStream fin = new FileInputStream("test");
+        FileInputStream fin = new FileInputStream("ByteUtilsTest.bin");
 
         for (j = 0; j < 10000; j += 1)
         {
@@ -181,7 +181,7 @@ public class ByteUtilsTest extends TestCase
 
     private void mainTestWriteReadSizeByteArray() throws IOException, FileNotFoundException
     {
-        FileOutputStream fout = new FileOutputStream("test");
+        FileOutputStream fout = new FileOutputStream("ByteUtilsTest.bin");
 
         int j;
         BigInt[] A = new BigInt[ARRAYSIZE];
@@ -197,7 +197,7 @@ public class ByteUtilsTest extends TestCase
         fout.flush();
         fout.close();
 
-        FileInputStream fin = new FileInputStream("test");
+        FileInputStream fin = new FileInputStream("ByteUtilsTest.bin");
 
         B = ByteUtils.readSizeArrayOfSizeBigInts(fin);
         ByteUtils.readInt(fin);
@@ -218,7 +218,7 @@ public class ByteUtilsTest extends TestCase
 
     private void mainTestAppend() throws IOException, FileNotFoundException
     {
-        FileOutputStream fout = new FileOutputStream("test");
+        FileOutputStream fout = new FileOutputStream("ByteUtilsTest.bin");
 
         int j;
         BigInt[] A = new BigInt[ARRAYSIZE];
@@ -234,8 +234,8 @@ public class ByteUtilsTest extends TestCase
         fout.flush();
         fout.close();
 
-        FileInputStream fin = new FileInputStream("test");
-        fout = new FileOutputStream("test2");
+        FileInputStream fin = new FileInputStream("ByteUtilsTest.bin");
+        fout = new FileOutputStream("ByteUtilsTest2.bin");
 
         try
         {
@@ -250,7 +250,7 @@ public class ByteUtilsTest extends TestCase
         fout.flush();
         fout.close();
 
-        fin = new FileInputStream("test2");
+        fin = new FileInputStream("ByteUtilsTest2.bin");
 
         B = ByteUtils.readSizeArrayOfSizeBigInts(fin);
         ByteUtils.readInt(fin);
