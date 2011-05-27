@@ -1,0 +1,9 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Test plugin for org.lamport.tla.toolbox.tool.tlc
+Bundle-SymbolicName: org.lamport.tla.toolbox.tool.tlc.test
+Bundle-Version: 1.0.0.qualifier
+Bundle-Vendor: Leslie Lamport, Markus Alexander Kuppe
+Fragment-Host: org.lamport.tla.toolbox.tool.tlc;bundle-version="1.0.0"
+Bundle-RequiredExecutionEnvironment: J2SE-1.5
+Require-Bundle: org.junit;bundle-version="3.8.2"

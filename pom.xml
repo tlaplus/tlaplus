@@ -39,11 +39,17 @@
 		<module>org.lamport.tla.toolbox.tool.tlc.ui</module>
 		<module>org.lamport.tla.toolbox.product.standalone</module>
 
-		<!-- SWTBot tests -->
+		<!-- Junit tests -->
 		<module>org.lamport.tla.toolbox.test</module>
-		<module>org.lamport.tla.toolbox.tool.tla2tex.test</module>
+		<module>org.lamport.tla.toolbox.tool.tlc.test</module>
 		<module>org.lamport.tla.toolbox.tool.tlc.ui.test</module>
 
+		<!-- SWTBot tests -->
+<!--
+		<module>org.lamport.tla.toolbox.uitest</module>
+		<module>org.lamport.tla.toolbox.tool.tla2tex.uitest</module>
+		<module>org.lamport.tla.toolbox.tool.tlc.ui.uitest</module>
+-->
 		<!-- features -->
 		<module>org.lamport.tla.toolbox.feature.base</module>
 		<module>org.lamport.tla.toolbox.feature.editor</module>
@@ -118,18 +124,19 @@
 					<environments>
 					
 						<!-- Linux -->
+						<!--
 						<environment>
 							<os>linux</os>
 							<ws>gtk</ws>
 							<arch>x86</arch>
 						</environment>
-						<!--
+						-->
 						<environment>
 							<os>linux</os>
 							<ws>gtk</ws>
 							<arch>x86_64</arch>
 						</environment>
-						-->
+						
 						<!-- Windows -->
 						<!--
 						<environment>

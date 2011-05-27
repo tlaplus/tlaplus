@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>org.lamport.tla.toolbox.test</name>
+	<name>org.lamport.tla.toolbox.tool.tlc.test</name>
 	<comment></comment>
 	<projects>
 	</projects>

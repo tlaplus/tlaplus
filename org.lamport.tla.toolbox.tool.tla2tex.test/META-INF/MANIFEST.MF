@@ -1,9 +1,0 @@
-Manifest-Version: 1.0
-Bundle-ManifestVersion: 2
-Bundle-Name: TLA2Tex Test bundle
-Bundle-SymbolicName: org.lamport.tla.toolbox.tool.tla2tex.test
-Bundle-Version: 1.0.0.qualifier
-Bundle-Vendor: Leslie Lamport, Markus Alexander Kuppe
-Require-Bundle: org.lamport.tla.toolbox.test;bundle-version="1.0.0",
- org.eclipse.swtbot.go;bundle-version="2.0.4"
-Bundle-RequiredExecutionEnvironment: J2SE-1.5

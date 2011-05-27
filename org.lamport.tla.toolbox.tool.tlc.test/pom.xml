@@ -10,7 +10,7 @@
     <relativePath>../pom.xml</relativePath>
   </parent>
   <groupId>tlatoolbox</groupId>
-  <artifactId>org.lamport.tla.toolbox.test</artifactId>
+  <artifactId>org.lamport.tla.toolbox.tlc.test</artifactId>
   <version>1.0.0-SNAPSHOT</version>
   <packaging>eclipse-test-plugin</packaging>
 </project>
