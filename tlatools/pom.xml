@@ -20,6 +20,11 @@
 	    		<phase>compile</phase>
 	    		<configuration>
 	    			<tasks>
+
+						<taskdef name="junit"
+							classname="org.apache.tools.ant.taskdefs.optional.junit.JUnitTask"
+							classpathref="maven.test.classpath" />
+
 		    			<property name="build.compiler" value="extJavac"/>
 	    				<ant antfile="build.xml" inheritRefs="true">
 	    					<target name="default" />
@@ -34,5 +39,14 @@
 	  	</plugin>
       </plugins>
   </build>
+  
+  <dependencies>
+	<dependency>
+		<groupId>ant</groupId>
+		<artifactId>ant-junit</artifactId>
+		<version>1.6.2</version>
+		<scope>compile</scope>
+	</dependency>
+   </dependencies>
   
 </project>
