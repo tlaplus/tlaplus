@@ -8,3 +8,5 @@ test-bin/
 *.jar
 */farsite/*.pdf
 *.toolbox
+tlatools/TLA+ Tools
+tlatools/test-reports

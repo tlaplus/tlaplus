@@ -29,6 +29,7 @@
 
 	<target name="default" depends="info" description="Default">
 		<antcall target="compile" inheritall="true" inheritrefs="true" />
+		<antcall target="test" inheritall="true" inheritrefs="true" />
 		<antcall target="dist" inheritall="true" inheritrefs="true" />
 		
 		<copy file="${dist.file}" todir="../org.lamport.tla.toolbox/" overwrite="true" />
@@ -77,6 +78,52 @@
 				<attribute name="Implementation-Vendor" value="Microsoft Corp." />
 			</manifest>
 		</jar>
+	</target>
+
+	<target name="test" description="Executes accomining unit tests" depends="compile">
+		<!-- compile unit tests -->
+		<mkdir dir="${test.class.dir}" />
+		<javac srcdir="${test.dir}" destdir="${test.class.dir}" debug="true" verbose="false" source="1.5" target="1.5">
+			<classpath refid="project.classpath" />
+			<classpath>
+				<pathelement location="lib/junit-4.8.2.jar"/>
+				<pathelement path="${class.dir}"/>
+			</classpath>
+		</javac>
+		
+		<!-- copy class.dir to path with whitespace -->
+		<!-- this is required by some tests to make sense -->
+		<!-- even throw a non digit in -->
+		<property name="ws.class.dir" value="TLA+ Tools"/>
+		<copy todir="${ws.class.dir}">
+		    <fileset dir="${class.dir}"/>
+		</copy>
+		
+		<!-- run junit tests -->
+		<mkdir dir="${test.reports}" />
+		<junit printsummary="yes" haltonfailure="no">
+		  <classpath refid="project.classpath" />
+		  <classpath>
+			<pathelement location="lib/junit-4.8.2.jar"/>
+			<pathelement path="${ws.class.dir}"/>
+		    <pathelement path="${test.class.dir}"/>
+		  </classpath>
+
+		  <formatter type="plain"/>
+
+		  <batchtest fork="yes" todir="${test.reports}">
+		    <fileset dir="${test.dir}">
+		      <include name="**/*Test*.java"/>
+			  <exclude name="**/TestDriver.java"/>
+			  <exclude name="**/TestDriver2.java"/>
+		      <exclude name="**/AllTests.java"/>
+		    </fileset>
+		  </batchtest>
+		</junit>
+		
+		<!-- remove copied class.dir -->
+		 <delete dir="${ws.class.dir}" deleteonexit="true"/>
+		
 	</target>
 
 	<target name="dist-mixed-jar" description="Build a distribution" depends="default">
