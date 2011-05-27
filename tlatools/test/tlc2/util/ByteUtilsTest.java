@@ -1,5 +1,6 @@
 package tlc2.util;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -19,6 +20,9 @@ public class ByteUtilsTest extends TestCase
 {
     public static final int ARRAYSIZE = 10000;
     public static final int BITS = 1000;
+    
+    private File testFileB;
+    private File testFileA;
 
     BigInteger Arr[];
     BigInteger Arr2[];
@@ -37,6 +41,13 @@ public class ByteUtilsTest extends TestCase
         Arr4 = new BigInteger[ARRAYSIZE];
         Arr5 = new BigInteger[ARRAYSIZE];
 
+        // create temp files for unit tests
+        testFileA = File.createTempFile("ByteUtilsTestA", null);
+        testFileA.deleteOnExit();
+
+        testFileB = File.createTempFile("ByteUtilsTestB", null);
+        testFileB.deleteOnExit();
+        
         // SZ Feb 20, 2009: no ide what it is for...
         // to load classes ?
         // Class args[] = { Class.forName("java.math.BigInt"), Class.forName("java.math.BigInt") };
@@ -109,7 +120,7 @@ public class ByteUtilsTest extends TestCase
 
     private void mainTestWriteIntReadInt() throws IOException, FileNotFoundException
     {
-        FileOutputStream fout = new FileOutputStream("ByteUtilsTest.bin");
+        FileOutputStream fout = new FileOutputStream(testFileA);
 
         int i, j;
         int A[] = new int[10000];
@@ -125,7 +136,7 @@ public class ByteUtilsTest extends TestCase
         fout.flush();
         fout.close();
 
-        FileInputStream fin = new FileInputStream("ByteUtilsTest.bin");
+        FileInputStream fin = new FileInputStream(testFileA);
 
         for (j = 0; j < 10000; j += 1)
         {
@@ -153,7 +164,7 @@ public class ByteUtilsTest extends TestCase
 
     private void mainTestWriteLongReadLong() throws IOException, FileNotFoundException
     {
-        FileOutputStream fout = new FileOutputStream("ByteUtilsTest.bin");
+        FileOutputStream fout = new FileOutputStream(testFileA);
 
         long i;
         int j;
@@ -169,7 +180,7 @@ public class ByteUtilsTest extends TestCase
 
         fout.close();
 
-        FileInputStream fin = new FileInputStream("ByteUtilsTest.bin");
+        FileInputStream fin = new FileInputStream(testFileA);
 
         for (j = 0; j < 10000; j += 1)
         {
@@ -181,7 +192,7 @@ public class ByteUtilsTest extends TestCase
 
     private void mainTestWriteReadSizeByteArray() throws IOException, FileNotFoundException
     {
-        FileOutputStream fout = new FileOutputStream("ByteUtilsTest.bin");
+        FileOutputStream fout = new FileOutputStream(testFileA);
 
         int j;
         BigInt[] A = new BigInt[ARRAYSIZE];
@@ -197,7 +208,7 @@ public class ByteUtilsTest extends TestCase
         fout.flush();
         fout.close();
 
-        FileInputStream fin = new FileInputStream("ByteUtilsTest.bin");
+        FileInputStream fin = new FileInputStream(testFileA);
 
         B = ByteUtils.readSizeArrayOfSizeBigInts(fin);
         ByteUtils.readInt(fin);
@@ -218,7 +229,7 @@ public class ByteUtilsTest extends TestCase
 
     private void mainTestAppend() throws IOException, FileNotFoundException
     {
-        FileOutputStream fout = new FileOutputStream("ByteUtilsTest.bin");
+        FileOutputStream fout = new FileOutputStream(testFileA);
 
         int j;
         BigInt[] A = new BigInt[ARRAYSIZE];
@@ -234,8 +245,8 @@ public class ByteUtilsTest extends TestCase
         fout.flush();
         fout.close();
 
-        FileInputStream fin = new FileInputStream("ByteUtilsTest.bin");
-        fout = new FileOutputStream("ByteUtilsTest2.bin");
+        FileInputStream fin = new FileInputStream(testFileA);
+        fout = new FileOutputStream(testFileB);
 
         try
         {
@@ -250,7 +261,7 @@ public class ByteUtilsTest extends TestCase
         fout.flush();
         fout.close();
 
-        fin = new FileInputStream("ByteUtilsTest2.bin");
+        fin = new FileInputStream(testFileB);
 
         B = ByteUtils.readSizeArrayOfSizeBigInts(fin);
         ByteUtils.readInt(fin);
