@@ -10,3 +10,4 @@ test-bin/
 *.toolbox
 tlatools/TLA+ Tools
 tlatools/test-reports
+tlatools/ByteUtilsTest*.bin

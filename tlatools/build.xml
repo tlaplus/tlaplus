@@ -80,7 +80,7 @@
 		</jar>
 	</target>
 
-	<target name="test" description="Executes accomining unit tests" depends="compile">
+	<target name="test" description="Executes accomining unit tests">
 		<!-- compile unit tests -->
 		<mkdir dir="${test.class.dir}" />
 		<javac srcdir="${test.dir}" destdir="${test.class.dir}" debug="true" verbose="false" source="1.5" target="1.5">
