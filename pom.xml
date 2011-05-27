@@ -121,23 +121,20 @@
 					<resolver>p2</resolver>
 					<!-- configure the p2 target environments for multi-platform build -->
 					<environments>
-					
+
 						<!-- Linux -->
-						<!--
 						<environment>
 							<os>linux</os>
 							<ws>gtk</ws>
 							<arch>x86</arch>
 						</environment>
-						-->
 						<environment>
 							<os>linux</os>
 							<ws>gtk</ws>
 							<arch>x86_64</arch>
 						</environment>
-						
+
 						<!-- Windows -->
-						<!--
 						<environment>
 							<os>win32</os>
 							<ws>win32</ws>
@@ -148,7 +145,7 @@
 							<ws>win32</ws>
 							<arch>x86_64</arch>
 						</environment>
-						   -->
+
 						<!-- Mac (turned off ATM due to https://issues.sonatype.org/browse/TYCHO-520) -->
 						<!-- 
 						<environment>
@@ -168,5 +165,41 @@
 
 		</plugins>
 	</build>
+	
+	<profiles>
+		<profile>
+			<!-- as a workaround for TYCHO-520, only build mac binaries on macs -->
+			<id>macosx</id>
+			<activation>
+				<property>
+					<name>java.vendor.url</name>
+					<value>http://www.apple.com/</value>
+				</property>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.sonatype.tycho</groupId>
+						<artifactId>target-platform-configuration</artifactId>
+						<version>${tycho-version}</version>
+						<configuration>
+							<environments combine.children="append">
+								<environment>
+									<os>macosx</os>
+									<ws>cocoa</ws>
+									<arch>x86</arch>
+								</environment>
+								<environment>
+									<os>macosx</os>
+									<ws>cocoa</ws>
+									<arch>x86_64</arch>
+								</environment>
+							</environments>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 </project>
 
