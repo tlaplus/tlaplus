@@ -5,6 +5,8 @@
 package util;
 
 import java.io.File;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 
 
@@ -48,23 +50,17 @@ public class SimpleFilenameToStream implements FilenameToStream {
     // get a "file:" URL for the base directory for package tla2sany
     URL         url = cl.getResource("tla2sany");
 
-    // Strip off the initial "file:" from the URL
-    String      path =  url.toString().substring(5);
-
-    // Strip off however many initial "/" characters are present in the URL
-    while ( path.charAt(0) == '/' ) { path = path.substring(1); }
-
-    // Prepend with the culturally-appropriate file separator character ('/' or '\')
-    path = FileUtil.separator + path;
-
-    // Change any '/'-characters to the culturally-appropriate file separator character
-    path = path.replace('/', FileUtil.separatorChar );
-
-    // Debug
-    // System.out.println("Installation base path = " + path);
-
-    return path;
-  }
+    // jar expanded to the fs (make sure to handle whitespaces correctly
+    try {
+    	// convert to URI which handles paths correctly (even OS dependently)
+    	final URI uri = new URI(url.toString());
+		return new File(uri).getAbsolutePath();
+    } catch (URISyntaxException e) {
+    	// may never happen
+    	e.printStackTrace();
+    	return "";
+    }
+   }
 
   private static String[] getLibraryPaths() {
     String[] res;
