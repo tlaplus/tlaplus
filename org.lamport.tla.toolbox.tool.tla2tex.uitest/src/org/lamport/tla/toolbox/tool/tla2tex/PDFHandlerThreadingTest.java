@@ -9,6 +9,7 @@ import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotEditor;
 import org.eclipse.swtbot.swt.finder.junit.SWTBotJunit4ClassRunner;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotMenu;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.lamport.tla.toolbox.test.RCPTestSetupHelper;
@@ -25,7 +26,7 @@ public class PDFHandlerThreadingTest {
 	private static final String specB = System
 			.getProperty("org.lamport.tla.toolbox.tool.tlc.ui.test.PathToSpecB");
 	
-//	@BeforeClass
+	@BeforeClass
 	public static void beforeClass() throws Exception {
 		
 		// If this assert fails see http://wiki.eclipse.org/JDT_weaving_features
@@ -46,12 +47,7 @@ public class PDFHandlerThreadingTest {
 		bot = new SWTWorkbenchBot();
 	}
 	
-	@Test
-	public void dummyTest() {
-		// remove once https://issues.sonatype.org/browse/TYCHO-333 fixed
-	}
-	
-//	@Test
+	@Test @Ignore("not ready yet")
 	public void producePDFInNonUIThread() throws InterruptedException {
 		
 		// Open specA 

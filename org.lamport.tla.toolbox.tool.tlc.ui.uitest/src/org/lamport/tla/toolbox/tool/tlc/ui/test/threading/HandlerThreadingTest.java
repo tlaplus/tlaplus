@@ -8,6 +8,7 @@ import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
 import org.eclipse.swtbot.swt.finder.junit.SWTBotJunit4ClassRunner;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotMenu;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.lamport.tla.toolbox.test.RCPTestSetupHelper;
@@ -23,7 +24,7 @@ public class HandlerThreadingTest {
 	private static final String specB = System
 			.getProperty("org.lamport.tla.toolbox.tool.tlc.ui.test.PathToSpecB");
 	
-//	@BeforeClass
+	@BeforeClass
 	public static void beforeClass() throws Exception {
 		
 		// If this assert fails see http://wiki.eclipse.org/JDT_weaving_features
@@ -44,18 +45,13 @@ public class HandlerThreadingTest {
 		bot = new SWTWorkbenchBot();
 	}
 
-	@Test
-	public void dummyTest() {
-		// remove once https://issues.sonatype.org/browse/TYCHO-333 fixed
-	}
-
 	/**
 	 * Adds a new spec to the toolbox, opens it
 	 * and tests if parsing is done on a non-UI thread
 	 * 
 	 * @see http://bugzilla.tlaplus.net/show_bug.cgi?id=103
 	 */
-//	@Test
+	@Test @Ignore("not ready yet")
 	public void parseSpecInNonUIThread() {
 		
 		// Open specA 

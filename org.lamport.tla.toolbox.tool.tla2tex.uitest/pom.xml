@@ -16,6 +16,31 @@
 
 	<build>
 		<plugins>
+          <!-- Forcefully install Equinox Weaving jar into local repo -->
+          <!-- remove once https://issues.sonatype.org/browse/TYCHO-333 fixed -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-install-plugin</artifactId>
+				<version>2.2</version>
+				<executions>
+					<execution>
+					
+						<id>it-preparation</id>
+						<phase>pre-integration-test</phase>
+						<goals>
+							<goal>install-file</goal>
+						</goals>
+						<configuration>
+							<file>${settings.localRepository}/p2/osgi/bundle/org.eclipse.equinox.weaving.hook/1.0.0.v20100503/org.eclipse.equinox.weaving.hook-1.0.0.v20100503.jar</file>
+							<groupId>tlatoolbox</groupId>
+							<artifactId>org.eclipse.equinox.weaving.hook</artifactId>
+							<version>1.0.0.v20100503</version>
+							<packaging>jar</packaging>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
 			<!-- Run JUnit tests -->
       		<plugin>
 				<groupId>org.eclipse.tycho</groupId>
@@ -33,7 +58,7 @@
 
 					<systemProperties combine.children="append">
 						<!-- References used by tests to access spec files -->
-						<org.lamport.tla.toolbox.tool.tlc.ui.test.PathToSpecA>${project.build.directory}/../org.lamport.tla.toolbox.test/farsite/DistributedSystemModule.tla</org.lamport.tla.toolbox.tool.tlc.ui.test.PathToSpecA>
+						<org.lamport.tla.toolbox.tool.tlc.ui.test.PathToSpecA>${project.build.directory}/../../org.lamport.tla.toolbox.uitest/farsite/DistributedSystemModule.tla</org.lamport.tla.toolbox.tool.tlc.ui.test.PathToSpecA>
 						<org.lamport.tla.toolbox.tool.tlc.ui.test.PathToSpecB>${project.build.directory}/../../examples/DieHard/DieHard.tla</org.lamport.tla.toolbox.tool.tlc.ui.test.PathToSpecB>
 						<!-- JDT weaving debug output -->
 						<aj.weaving.verbose>true</aj.weaving.verbose>
@@ -46,7 +71,7 @@
 						<dependency>
 							<type>p2-installable-unit</type>
 							<artifactId>javax.servlet</artifactId>
-							<version>2.5.0</version>
+							<version>0.0.0</version>
 						</dependency>
 						<!-- explicit dependency is only needed because SWTbot brings its own 
 							hamcrest bundle which conflicts with the one from junit in the eclipse platform -->
@@ -81,20 +106,18 @@
 						<dependency>
 							<type>p2-installable-unit</type>
 							<artifactId>org.eclipse.equinox.weaving.hook</artifactId>
-							<version>0.0.0</version>
+							<version>1.0.0.v20100503</version>
 						</dependency>
 					</dependencies>
 
 					<!-- Enable JDT weaving -->
-					<!--
 					<frameworkExtensions>
 						<frameworkExtension>
-							<groupId>p2.osgi.bundle</groupId> 
+							<groupId>tlatoolbox</groupId> 
 							<artifactId>org.eclipse.equinox.weaving.hook</artifactId>
-							<version>1.0.0.v20100108</version>
+							<version>1.0.0.v20100503</version>
 						</frameworkExtension>
 					</frameworkExtensions>
-					-->
 
 					<bundleStartLevel>
 						<bundle>
