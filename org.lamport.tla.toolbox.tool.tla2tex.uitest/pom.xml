@@ -25,7 +25,8 @@
 				<configuration>
 					<showEclipseLog>true</showEclipseLog>
 					<useUIHarness>true</useUIHarness>
-					<useUIThread>false</useUIThread>
+					<useUIThread>${tycho.test.vm.useUiThread}</useUIThread>
+					<argLine>${tycho.test.vm.argline}</argLine>
 					<!-- use our product and application to launch the tests -->
 					<product>org.lamport.tla.toolbox.product.standalone.product</product>
 					<application>org.lamport.tla.toolbox.application</application>

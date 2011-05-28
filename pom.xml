@@ -74,6 +74,10 @@
 	<!-- Minimum tycho version build work with -->
 	<properties>
 		<tycho-version>0.12.0</tycho-version>
+		
+		<!-- no default here -->
+		<tycho.test.vm.argline></tycho.test.vm.argline>
+		<tycho.test.vm.useUiThread>false</tycho.test.vm.useUiThread>
 	</properties>
 
 	<!-- configure p2 repository to resolve against -->
@@ -176,10 +180,14 @@
 					<value>http://www.apple.com/</value>
 				</property>
 			</activation>
+			<properties>
+				<tycho.test.vm.argline>-Dosgi.ws=cocoa -XstartOnFirstThread</tycho.test.vm.argline>
+				<tycho.test.vm.useUiThread>true</tycho.test.vm.useUiThread>
+			</properties>
 			<build>
 				<plugins>
 					<plugin>
-						<groupId>org.sonatype.tycho</groupId>
+						<groupId>org.eclipse.tycho</groupId>
 						<artifactId>target-platform-configuration</artifactId>
 						<version>${tycho-version}</version>
 						<configuration>
@@ -199,7 +207,7 @@
 					</plugin>
 				</plugins>
 			</build>
-		</profile>
+		</profile>	
 	</profiles>
 </project>
 
