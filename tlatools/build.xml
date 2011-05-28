@@ -109,7 +109,7 @@
 		    <pathelement path="${test.class.dir}"/>
 		  </classpath>
 
-		  <formatter type="plain"/>
+		  <formatter type="xml"/>
 
 		  <batchtest fork="yes" todir="${test.reports}">
 		    <fileset dir="${test.dir}">
