@@ -182,7 +182,7 @@
 			</activation>
 			<properties>
 				<tycho.test.vm.argline>-Dosgi.ws=cocoa -XstartOnFirstThread</tycho.test.vm.argline>
-				<tycho.test.vm.useUiThread>true</tycho.test.vm.useUiThread>
+				<tycho.test.vm.useUiThread>false</tycho.test.vm.useUiThread>
 			</properties>
 			<build>
 				<plugins>
