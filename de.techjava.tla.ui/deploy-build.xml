@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project name="build" default="plugin_export">
-	<target name="plugin_export">
-		<pde.exportPlugins plugins="de.techjava.tla.ui" destination="C:\Projects\research\projects\tla\workspace\de.techjava.tla.updatesite" exportType="update" exportSource="true"/>
-	</target>
-</project>
