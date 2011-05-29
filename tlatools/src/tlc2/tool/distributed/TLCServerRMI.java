@@ -5,7 +5,6 @@
 
 package tlc2.tool.distributed;
 
-import java.io.File;
 import java.io.IOException;
 import java.rmi.Remote;
 import java.rmi.RemoteException;

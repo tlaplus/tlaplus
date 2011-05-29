@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.lang.reflect.Proxy;
 import java.net.InetAddress;
 import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.RemoteObjectInvocationHandler;
@@ -463,24 +464,21 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 	/* (non-Javadoc)
 	 * @see tlc2.tool.distributed.TLCServerRMI#getSpec()
 	 */
-	@Override
-	public String getSpecFileName() {
+	public String getSpecFileName() throws RemoteException {
 		return this.work.getFileName();
 	}
 
 	/* (non-Javadoc)
 	 * @see tlc2.tool.distributed.TLCServerRMI#getConfig()
 	 */
-	@Override
-	public String getConfigFileName() {
+	public String getConfigFileName() throws RemoteException {
 		return this.work.getConfigName();
 	}
 
 	/* (non-Javadoc)
 	 * @see tlc2.tool.distributed.TLCServerRMI#getFile(java.lang.String)
 	 */
-	@Override
-	public byte[] getFile(final String file) {
+	public byte[] getFile(final String file) throws RemoteException {
 		// sanitize file to only last part of the path
 		// to make sure to not load files outside of spec dir
 		String name = new File(file).getName();
