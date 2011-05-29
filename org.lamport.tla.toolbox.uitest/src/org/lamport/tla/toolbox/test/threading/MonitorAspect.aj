@@ -12,12 +12,21 @@ public aspect MonitorAspect {
 		MonitorAdaptor.setAspect(this);
 	}
 	
-	before(): (execution(* tlc2..*.*(..))
-			|| execution(* tla2sany..*.*(..))
-			|| execution(* tla2tex..*.*(..))
-			|| execution(* pcal..*.*(..))
-			|| execution(* util..*.*(..)))
-		&& !within(org.lamport.tla.toolbox.test..*) {
+	// known places where backend call within UI thread are acceptable
+	pointcut inFilter() : 
+		withincode(public boolean org.lamport.tla.toolbox.util.ResourceHelper.isValidSpecName(String));
+
+	// catch all method calls (static and object ones)
+	pointcut callToBackend() : 
+		   execution(* tlc2..*.*(..))
+		|| execution(* tla2sany..*.*(..))
+		|| execution(* tla2tex..*.*(..))
+		|| execution(* pcal..*.*(..))
+		|| execution(* util..*.*(..));
+	
+	// capture calls to backend, but not within ourself or in filter
+	before(): (callToBackend()
+			&& !cflowbelow(callToBackend()) && !cflowbelow(inFilter())) { 
 		MonitorAdaptor.enter(thisJoinPoint);
 	}
 }

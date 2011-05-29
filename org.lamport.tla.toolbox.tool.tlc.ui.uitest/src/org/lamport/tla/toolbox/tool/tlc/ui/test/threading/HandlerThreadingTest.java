@@ -51,7 +51,7 @@ public class HandlerThreadingTest {
 	 * 
 	 * @see http://bugzilla.tlaplus.net/show_bug.cgi?id=103
 	 */
-	@Test @Ignore("not ready yet")
+	@Test
 	public void parseSpecInNonUIThread() {
 		
 		// Open specA 
