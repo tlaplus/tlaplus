@@ -8,7 +8,6 @@ import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
 import org.eclipse.swtbot.swt.finder.junit.SWTBotJunit4ClassRunner;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotMenu;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.lamport.tla.toolbox.test.RCPTestSetupHelper;
@@ -74,7 +73,7 @@ public class HandlerThreadingTest {
 		assertNoBackendCodeInUIThread();
 		
 		// Go back to previous spec
-		openSpecMenu.menu(getSpecName(specA));
+		openSpecMenu.menu(getSpecName(new File(specA)));
 
 		assertNoBackendCodeInUIThread();
 	}
@@ -95,8 +94,12 @@ public class HandlerThreadingTest {
 		MonitorAdaptor.reset();
 	}
 
-	private String getSpecName(final String aSpec) {
-		String specName = aSpec.substring(0, aSpec.lastIndexOf("."));
-		return specName.substring(specName.lastIndexOf(File.separator) + 1);
+	/**
+	 * @param aFile 
+	 * @return The file name without path or suffix/extension
+	 */
+	private String getSpecName(final File aFile) {
+		final String name = aFile.getName();
+		return name.substring(0, name.lastIndexOf("."));
 	}
 }
