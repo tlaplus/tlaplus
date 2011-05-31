@@ -18,7 +18,8 @@ public class SpecLifecycleManager
 
     private static final String POINT = "org.lamport.tla.toolbox.spec";
     private static final String CLASS_ATTR_NAME = "class";
-    private SpecLifecycleParticipant[] extensions = new SpecLifecycleParticipant[0];
+
+    private final SpecLifecycleParticipant[] extensions;
 
     /**
      * Simple strategy calling the method
@@ -34,25 +35,28 @@ public class SpecLifecycleManager
     /**
      * Initializes the spec participants
      */
-    public void initialize()
-    {
+    public SpecLifecycleManager() {
         IExtensionRegistry extensionRegistry = Platform.getExtensionRegistry();
+        SpecLifecycleParticipant[] specExtensions = new SpecLifecycleParticipant[0];
         if (extensionRegistry != null)
         {
             IConfigurationElement[] decls = extensionRegistry.getConfigurationElementsFor(POINT);
-            extensions = new SpecLifecycleParticipant[decls.length];
+            specExtensions = new SpecLifecycleParticipant[decls.length];
             for (int i = 0; i < decls.length; i++)
             {
                 try
                 {
-                    extensions[i] = (SpecLifecycleParticipant) decls[i].createExecutableExtension(CLASS_ATTR_NAME);
-                    extensions[i].initialize();
+                    SpecLifecycleParticipant extension = (SpecLifecycleParticipant) decls[i].createExecutableExtension(CLASS_ATTR_NAME);
+                    assert extension != null;
+                    specExtensions[i] = extension;
+                    specExtensions[i].initialize();
                 } catch (CoreException e)
                 {
                     Activator.logError("Error retrieving the registered participants", e);
                 }
             }
         }
+       	extensions = specExtensions;
     }
 
     /**
@@ -76,8 +80,11 @@ public class SpecLifecycleManager
         boolean response;
         for (int i = 0; i < extensions.length; i++)
         {
+            SpecLifecycleParticipant target = extensions[i];
+            assert target != null;
+            
             // local response
-            response = simpleInvocationStrategy.invoke(extensions[i], event);
+            response = simpleInvocationStrategy.invoke(target, event);
 
             // global response
             responseAll = responseAll && response;

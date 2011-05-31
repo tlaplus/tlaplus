@@ -55,7 +55,6 @@ public class WorkspaceSpecManager extends GenericSelectionProvider implements IS
     {
         // initialize the spec life cycle manager
         lifecycleManager = new SpecLifecycleManager();
-        lifecycleManager.initialize();
 
         IProgressMonitor monitor = null;
 
