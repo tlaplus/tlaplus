@@ -232,7 +232,7 @@ public final class MemFPSet2 extends FPSet {
     }
     catch (EOFException e) 
     {
-        throw new IOException("MemFPSet2.recover: failed.", e);
+        throw new IOException("MemFPSet2.recover: failed.");
     }
     dis.close();
   }

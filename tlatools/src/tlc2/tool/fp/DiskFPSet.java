@@ -144,7 +144,7 @@ public class DiskFPSet extends FPSet {
         {
             // fatal error -- print error message and exit
             String message = MP.getMessage(EC.SYSTEM_UNABLE_TO_OPEN_FILE, new String[]{this.getFPFilename(), e.getMessage()});
-            throw new IOException(message, e);
+            throw new IOException(message);
         }
     }
 
