@@ -8,6 +8,8 @@ package tlc2.tool.distributed;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.net.InetAddress;
 import java.rmi.NotBoundException;
@@ -20,7 +22,6 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.Date;
 import java.util.concurrent.CyclicBarrier;
 
-import sun.rmi.server.UnicastRef;
 import tlc2.TLCGlobals;
 import tlc2.output.EC;
 import tlc2.output.MP;
@@ -152,15 +153,46 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		try {
 			RemoteObjectInvocationHandler roih = (RemoteObjectInvocationHandler) Proxy
 					.getInvocationHandler(worker);
-			RemoteRef ref2 = roih.getRef();
-			UnicastRef ref3 = (UnicastRef) ref2;
-			return ref3.getLiveRef().getPort();
+			RemoteRef ref = roih.getRef();
+			
+			// this only works on >= Sun Java 1.6
+//			LiveRef liveRef = ((UnicastRef) ref).getLiveRef();
+//			return liveRef.getPort();
+			
+			// load the SUN class if available
+			ClassLoader cl = ClassLoader.getSystemClassLoader();
+			Class<?> unicastRefClass = cl.loadClass("sun.rmi.server.UnicastRef");
+
+			// get the LiveRef obj
+			Method method = unicastRefClass.getMethod(
+					"getLiveRef", (Class[]) null);
+			Object liveRef = method.invoke(ref, (Object[]) null);
+
+			// Load liveref class
+			Class<?> liveRefClass = cl.loadClass("sun.rmi.transport.LiveRef");
+
+			// invoke getPort on LiveRef instance
+			method = liveRefClass.getMethod(
+					"getPort", (Class[]) null);
+			return (Integer) method.invoke(liveRef, (Object[]) null);
 		} catch (SecurityException e) {
 			e.printStackTrace();
 		} catch (IllegalArgumentException e) {
 			e.printStackTrace();
 		} catch (ClassCastException e) {
 			e.printStackTrace();
+		} catch (NoSuchMethodException e) {
+			System.err
+					.println("VM does not allow to get the UnicastRef port.\nWorker will be identified with port 0 in output");
+		} catch (IllegalAccessException e) {
+			System.err
+					.println("VM does not allow to get the UnicastRef port.\nWorker will be identified with port 0 in output");
+		} catch (InvocationTargetException e) {
+			System.err
+					.println("VM does not allow to get the UnicastRef port.\nWorker will be identified with port 0 in output");
+		} catch (ClassNotFoundException e) {
+			System.err
+					.println("VM does not allow to get the UnicastRef port.\nWorker will be identified with port 0 in output");
 		}
 		return 0;
 	}
