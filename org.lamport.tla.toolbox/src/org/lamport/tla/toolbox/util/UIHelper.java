@@ -31,7 +31,6 @@ import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.window.IShellProvider;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.SWTException;
 import org.eclipse.swt.custom.BusyIndicator;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Rectangle;
@@ -410,10 +409,23 @@ public class UIHelper
      * @param parameters
      * @return
      */
-    public static Object runCommand(String commandId, HashMap parameters)
+    public static Object runCommand(String commandId, HashMap<String, String> parameters)
     {
-        IHandlerService handlerService = (IHandlerService) UIHelper.getActiveWindow().getService(IHandlerService.class);
-        ICommandService commandService = (ICommandService) UIHelper.getActiveWindow().getService(ICommandService.class);
+    	// Do not rely on the UI to be up and running when trying to execute a command
+		IHandlerService handlerService = (IHandlerService) PlatformUI
+				.getWorkbench().getService(IHandlerService.class);
+		ICommandService commandService = (ICommandService) PlatformUI
+				.getWorkbench().getService(ICommandService.class);
+
+        // Guard against NPEs anyway (e.g. some asynchronous jobs might try to run a
+		// command after shutdown has been called on the workbench in which case
+		// either service might be null
+		if (handlerService == null || commandService == null) {
+			Activator
+					.logInfo("No IHandlerService|ICommandService available while trying to execute a command");
+			return null;
+		}
+
         try
         {
             Command command = commandService.getCommand(commandId);
