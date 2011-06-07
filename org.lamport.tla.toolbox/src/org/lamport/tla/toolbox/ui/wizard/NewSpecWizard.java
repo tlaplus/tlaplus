@@ -1,18 +1,10 @@
 package org.lamport.tla.toolbox.ui.wizard;
 
-import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
-import org.lamport.tla.toolbox.Activator;
-import org.lamport.tla.toolbox.spec.Spec;
-import org.lamport.tla.toolbox.util.ResourceHelper;
 
 /**
  * A wizard for creation of new specifications
@@ -24,46 +16,21 @@ public class NewSpecWizard extends Wizard implements INewWizard
 
     private IStructuredSelection selection;
     private NewSpecWizardPage page;
-    private Spec spec = null;
 
-    public NewSpecWizard()
-    {
-        super();
-    }
+    private String specName;
+	private String rootFilename;
+	private boolean importExisting;
 
-    /*
+	/*
      * (non-Javadoc)
      * @see org.eclipse.jface.wizard.Wizard#performFinish()
      */
     public boolean performFinish()
     {
 
-        String rootFilename = page.getRootFilename();
-        IPath rootNamePath = new Path(page.getRootFilename());
-        String specName = page.getSpecName();
-        
-        // if the root file does not exist
-        if (!rootNamePath.toFile().exists())
-        {
-            // create it
-            try
-            {
-                ResourcesPlugin.getWorkspace().run(ResourceHelper.createTLAModuleCreationOperation(rootNamePath), new NullProgressMonitor());
-            } catch (CoreException e)
-            {
-                Activator.logError("Error creating module " + rootNamePath, e);
-                // exception, no chance to recover
-                return false;
-            }
-        }
-        
-        
-        // create new spec
-        spec = Spec.createNewSpec(specName, rootFilename, page.importExisting());
-        
-        
-        // add spec to the spec manager
-        Activator.getSpecManager().addSpec(spec);
+        rootFilename = page.getRootFilename();
+        specName = page.getSpecName();
+        importExisting = page.importExisting();
 
         return true;
     }
@@ -92,8 +59,24 @@ public class NewSpecWizard extends Wizard implements INewWizard
         return this.selection;
     }
 
-    public Spec getSpec()
-    {
-        return this.spec;
-    }
+	/**
+	 * @return the specName
+	 */
+	public String getSpecName() {
+		return specName;
+	}
+
+	/**
+	 * @return the rootFilename
+	 */
+	public String getRootFilename() {
+		return rootFilename;
+	}
+
+    /**
+	 * @return the importExisting
+	 */
+	public boolean isImportExisting() {
+		return importExisting;
+	}
 }
