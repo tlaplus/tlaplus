@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.eclipse.core.resources.IMarkerDelta;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
@@ -14,7 +13,6 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.spec.manager.WorkspaceSpecManager;
@@ -271,8 +269,16 @@ public class Activator extends AbstractUIPlugin
     {
         // unregister the listeners
         specManager.terminate();
-        specManager = null;
-        plugin = null;
+        
+		// do not null specManager and plugin to let backend jobs finish cleanly
+        //
+        // remember: Nulling specManager might cause the initialization of a new
+        // specManager object during shutdown if this method nulls it and subsequent
+        // calls to getSpecManager() occur. This might potentially leave an inconsistent 
+        // spec manager on which terminate() might never has been called.
+
+//        specManager = null;
+//        plugin = null;
 
         super.stop(context);
     }
