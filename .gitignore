@@ -7,7 +7,7 @@ test-bin/
 */target/
 *.jar
 */farsite/*.pdf
-#**.toolbox
+**.toolbox
 tlatools/TLA+ Tools
 tlatools/test-reports
 tlatools/ByteUtilsTest*.bin
