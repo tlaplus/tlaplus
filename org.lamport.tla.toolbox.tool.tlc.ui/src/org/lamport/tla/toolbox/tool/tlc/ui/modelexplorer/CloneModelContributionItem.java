@@ -49,6 +49,9 @@ public class CloneModelContributionItem extends CompoundContributionItem
             // refresh local to pick up any models that have been added
             // to the file system but not recognized by the toolbox's resource
             // framework.
+			// TODO decouple from UI thread or question why it has to be done
+			// here. Meaning, why doesn't the resource fw handle this case
+			// already?
             specProject.refreshLocal(IResource.DEPTH_ONE, new NullProgressMonitor());
 
             // First, search for all models for the given spec.
