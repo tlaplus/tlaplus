@@ -9,6 +9,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.ui.part.FileEditorInput;
+import org.eclipse.ui.progress.UIJob;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.spec.nature.ParserHelper;
@@ -60,17 +61,25 @@ public class OpenSpecHandler extends AbstractHandler implements IHandler
         // been open for a previously opened spec
         UIHelper.hideView(TLC_ERROR_VIEW_ID);
 
-        // store information about opened spec in the spec manager
-        Activator.getSpecManager().setSpecLoaded(spec);
-
-        // open the editor
-        UIHelper.openEditor(TLA_EDITOR, new FileEditorInput(spec.getRootFile()));
-
         // rebuild current spec
-        Job job = new Job("Parsing spec...") {
+        final Job job = new ToolboxJob("OpenSpecHandler is parsing spec...") {
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
+				// store information about opened spec in the spec manager
+				Activator.getSpecManager().setSpecLoaded(spec);
+
 				ParserHelper.rebuildSpec(monitor);
+				
+				// open the editor
+				final UIJob uiJob = new UIJob("Opening editor for spec...") {
+					@Override
+					public IStatus runInUIThread(IProgressMonitor monitor) {
+						UIHelper.openEditor(TLA_EDITOR, new FileEditorInput(spec.getRootFile()));
+						return Status.OK_STATUS;
+					}
+				};
+				uiJob.schedule();
+				
 				return Status.OK_STATUS;
 			}
         };
