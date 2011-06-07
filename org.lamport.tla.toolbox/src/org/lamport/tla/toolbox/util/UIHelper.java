@@ -31,6 +31,7 @@ import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.window.IShellProvider;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.SWTException;
 import org.eclipse.swt.custom.BusyIndicator;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Rectangle;
@@ -595,7 +596,11 @@ public class UIHelper
         Display display = Display.getCurrent();
         if (display == null)
         {
-            return Display.getDefault();
+        	// TODO fix me:
+			// Creating a new display appears to be
+			// forbidden on Mac OS x if the workbench has already been shutdown/
+			// if not called from within the main (UI) thread
+			return Display.getDefault();
         }
         return display;
     }
