@@ -22,6 +22,7 @@ import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationDefaults;
 import org.lamport.tla.toolbox.tool.tlc.launch.TraceExplorerDelegate;
 import org.lamport.tla.toolbox.tool.tlc.result.IResultPresenter;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
+import org.lamport.tla.toolbox.util.ToolboxJob;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 
 /**
@@ -32,9 +33,10 @@ import org.lamport.tla.toolbox.util.ResourceHelper;
 public abstract class TLCJob extends AbstractJob implements IModelConfigurationConstants, IModelConfigurationDefaults
 {
 
-    public static class AllJobMatcher
-    {
-    }
+    /**
+     * Job family identifier for all org.lamport toolbox jobs
+     */
+    public static final String AllJobsMatcher = ToolboxJob.FAMILY;
 
     protected static final int STEP = 30;
     protected static final long TIMEOUT = 1000 * 1;
@@ -249,7 +251,7 @@ public abstract class TLCJob extends AbstractJob implements IModelConfigurationC
             {
                 Spec spec = (Spec) family;
                 return (spec.getName().equals(this.specName));
-            } else if (family instanceof AllJobMatcher)
+            } else if (AllJobsMatcher.equals(family))
             {
                 return true;
             }
