@@ -16,6 +16,7 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.spec.Spec;
+import org.lamport.tla.toolbox.util.ToolboxJob;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 /**
@@ -66,7 +67,7 @@ public class ParseSpecHandler extends AbstractHandler implements IHandler
 
         if (spec != null)
         {
-            	Job job = new Job("Parsing spec...") {
+            	Job job = new ToolboxJob("Parsing spec handler...") {
 					@Override
 					protected IStatus run(IProgressMonitor monitor) {
 						try

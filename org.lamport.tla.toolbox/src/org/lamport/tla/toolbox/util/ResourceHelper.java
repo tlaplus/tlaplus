@@ -178,6 +178,7 @@ public class ResourceHelper
      * @param name name of the project, should not be null
      * @param rootFilename path to the root filename, should not be null
      * @param createMissing a boolean flag if a missing project should be created 
+     * @param monitor a ProgressMonitor to report progress and cancellation 
      * @return a working IProject instance or null if project not at place and createMissing was false
      * 
      * <br><b>Note:</b> If the project does not exist in workspace it will be created, based
@@ -189,14 +190,13 @@ public class ResourceHelper
      * <tt>"c:/bar/foo.toolbox"</tt>
      * 
      */
-    public static IProject getProject(String name, String rootFilename, boolean createMissing, boolean importExisting)
+    public static IProject getProject(String name, String rootFilename, boolean createMissing, boolean importExisting, IProgressMonitor monitor)
     {
         if (name == null)
         {
             return null;
         }
 
-        IProgressMonitor monitor = new NullProgressMonitor();
         IProject project = getProject(name);
 
         // create a project

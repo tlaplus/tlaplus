@@ -6,7 +6,6 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IHandler;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.ui.part.FileEditorInput;
@@ -15,6 +14,7 @@ import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.spec.nature.ParserHelper;
 import org.lamport.tla.toolbox.ui.perspective.InitialPerspective;
 import org.lamport.tla.toolbox.ui.perspective.SpecLoadedPerspective;
+import org.lamport.tla.toolbox.util.ToolboxJob;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 /**
@@ -70,7 +70,7 @@ public class OpenSpecHandler extends AbstractHandler implements IHandler
         Job job = new Job("Parsing spec...") {
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
-				ParserHelper.rebuildSpec(new NullProgressMonitor());
+				ParserHelper.rebuildSpec(monitor);
 				return Status.OK_STATUS;
 			}
         };
