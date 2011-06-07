@@ -14,6 +14,7 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.OperationCanceledException;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.spec.Module;
 import org.lamport.tla.toolbox.spec.Spec;
@@ -80,7 +81,10 @@ public class ModuleParserLauncher
         }
 
         // call the parsing
-        ParseResult result = parseModule(parseResource, updateStorage);
+        ParseResult result = parseModule(parseResource, monitor, updateStorage);
+        
+        // should cancel?
+        checkCancel(monitor);
 
         if (updateStorage)
         {
@@ -113,9 +117,10 @@ public class ModuleParserLauncher
      *            if true, the semantical phase will be started
      * @param parseResource
      *            filename of the module to parse
+     * @param monitor 
      * @return status of parsing, one of the {@link IParseConstants} constants
      */
-    private ParseResult parseModule(IResource parseResource, boolean updateStorage)
+    private ParseResult parseModule(IResource parseResource, IProgressMonitor monitor, boolean updateStorage)
     {
         String moduleFilename = parseResource.getLocation().toOSString();
 
@@ -145,9 +150,17 @@ public class ModuleParserLauncher
 
         try
         {
+            // should cancel?
+            checkCancel(monitor);
             SANY.frontEndInitialize(moduleSpec, outputStr);
+            // should cancel?
+            checkCancel(monitor);
             SANY.frontEndParse(moduleSpec, outputStr);
+            // should cancel?
+            checkCancel(monitor);
             SANY.frontEndSemanticAnalysis(moduleSpec, outputStr, true);
+            // should cancel?
+            checkCancel(monitor);
         } catch (InitException e)
         {
             // set spec status
@@ -235,6 +248,9 @@ public class ModuleParserLauncher
         Enumeration enumerate = moduleSpec.parseUnitContext.keys();
         while (enumerate.hasMoreElements())
         {
+            // should cancel?
+            checkCancel(monitor);
+        	
             // This enumeration finds all non-inner modules in the spec.
             String moduleName = (String) enumerate.nextElement();
             ParseUnit parseUnit = (ParseUnit) moduleSpec.parseUnitContext.get(moduleName);
@@ -800,4 +816,15 @@ public class ModuleParserLauncher
         return val;
     } // findLineAndColumn
 
+    /**
+     * This is how the workbench signals a click on the cancel button or if
+     * the workbench has been shut down in the meantime.
+     * 
+     * @see http://www.eclipse.org/articles/Article-Builders/builders.html
+     */
+    protected void checkCancel(IProgressMonitor monitor) {
+        if (monitor.isCanceled()) {
+           throw new OperationCanceledException();
+        }
+     }
 }

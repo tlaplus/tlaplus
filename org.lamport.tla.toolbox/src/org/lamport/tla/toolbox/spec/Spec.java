@@ -10,11 +10,11 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IAdapterManager;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.text.ITextSelection;
@@ -123,10 +123,11 @@ public class Spec implements IAdaptable
      * Experiment shows that the rootFilename argument contains the complete path name,
      * from which one could extract the path names of those files and then rewrite them
      * as needed.
+     * @param monitor 
      */
-    public static Spec createNewSpec(String name, String rootFilename, boolean importExisting)
+    public static Spec createNewSpec(String name, String rootFilename, boolean importExisting, IProgressMonitor monitor)
     {
-        IProject project = ResourceHelper.getProject(name, rootFilename, true, importExisting);
+        IProject project = ResourceHelper.getProject(name, rootFilename, true, importExisting, monitor);
         PreferenceStoreHelper.storeRootFilename(project, rootFilename);
 
         Spec spec = new Spec(project);
