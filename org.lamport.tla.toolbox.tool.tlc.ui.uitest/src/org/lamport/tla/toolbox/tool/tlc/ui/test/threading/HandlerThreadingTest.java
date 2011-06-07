@@ -4,8 +4,11 @@ import java.io.File;
 
 import junit.framework.Assert;
 
+import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
 import org.eclipse.swtbot.swt.finder.junit.SWTBotJunit4ClassRunner;
+import org.eclipse.swtbot.swt.finder.matchers.WithText;
+import org.eclipse.swtbot.swt.finder.waits.Conditions;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotMenu;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -72,8 +75,15 @@ public class HandlerThreadingTest {
 		
 		assertNoBackendCodeInUIThread();
 		
+		final String specName = getSpecName(new File(specA));
+		
+		// specs are created in non-UI thread asynchronously which causes a
+		// delay before the menu entry becomes available
+		bot.waitUntil(Conditions.waitForMenu(bot.activeShell(),
+				WithText.<MenuItem> withText(specName)));
+
 		// Go back to previous spec
-		openSpecMenu.menu(getSpecName(new File(specA)));
+		openSpecMenu.menu(specName);
 
 		assertNoBackendCodeInUIThread();
 	}
