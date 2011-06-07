@@ -1,13 +1,12 @@
 package org.lamport.tla.toolbox.ui.handler;
 
 import java.util.HashMap;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IHandler;
+import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
@@ -62,74 +61,24 @@ public class NewSpecHandler extends AbstractHandler implements IHandler
         	final boolean importExisting = wizard.isImportExisting();
         	final String specName = wizard.getSpecName();
         	final String rootFilename = wizard.getRootFilename();
-        	final IPath rootNamePath = new Path(rootFilename);
-            
-			// this lock synchronizes between the TLAModule and the spec
-			// creation job (a scheduling rule could be used instead but it
-            // would require that the TLAModule job always has higher precedence 
-            // than the spec creation job)
-            Lock lock = new ReentrantLock();
-            
-            // if the root file does not exist, a spec has to be created
-            if (!rootNamePath.toFile().exists())
-            {
-            	createTLAModuleInNonUIThread(lock, rootNamePath);
-            }
             
             // the moment the user clicks finish on the wizard page does
             // not correspond with the availability of the spec object
             // it first has to be created/parsed fully before it can be shown in
             // the editor. Thus, delay opening the editor until parsing is done.        	
-            createSpecInNonUIThread(lock, rootFilename, importExisting, specName);
+            createModuleAndSpecInNonUIThread(rootFilename, importExisting, specName);
         }
 
         return null;
     }
 
 	/**
-	 * Create the TLA module in a non-UI thread as this involves I/O.
-	 * @param lock 
-	 */
-	private void createTLAModuleInNonUIThread(final Lock lock, final IPath rootNamePath) {
-		
-		// lock in this thread an unlock upon job completion
-		lock.lock();
-		
-		final Job job = new ToolboxJob("createTLAModuleCreationOperation") {
-			/* (non-Javadoc)
-			 * @see org.eclipse.core.runtime.jobs.Job#run(org.eclipse.core.runtime.IProgressMonitor)
-			 */
-			@Override
-			protected IStatus run(final IProgressMonitor monitor) {
-				// create it
-				try
-				{
-					ResourcesPlugin.getWorkspace().run(ResourceHelper.createTLAModuleCreationOperation(rootNamePath), monitor);
-					return Status.OK_STATUS;
-				} catch (final CoreException e)
-				{
-					final String message = "Error creating module " + rootNamePath;
-					Activator.logError(message, e);
-					// exception, no chance to recover
-					return new Status(Status.ERROR, "", message, e);
-				} finally {
-					lock.unlock();
-				}
-			}
-		};
-		job.schedule();
-	}
-
-	/**
      * This triggers a build which might even be blocked due to the job
      * scheduling rule, hence decouple and let the UI thread continue.
 	 * @param lock 
 	 */
-	private void createSpecInNonUIThread(final Lock lock, final String rootFilename,
+	private void createModuleAndSpecInNonUIThread(final String rootFilename,
 			final boolean importExisting, final String specName) {
-		
-		// lock in this thread an unlock upon job completion
-		lock.lock();
 		
 		final Job job = new ToolboxJob("NewSpecWizard job") {
 			/* (non-Javadoc)
@@ -137,19 +86,31 @@ public class NewSpecHandler extends AbstractHandler implements IHandler
 			 */
 			@Override
 			protected IStatus run(final IProgressMonitor monitor) {
-				try {
-					final Spec spec = Spec.createNewSpec(specName, rootFilename, importExisting, monitor);
-					
-					// add spec to the spec manager
-					Activator.getSpecManager().addSpec(spec);
-					
-					// open editor since the spec has been created now
-					openEditorInUIThread(spec);
-					
-					return Status.OK_STATUS;
-				} finally {
-					lock.unlock();
-				}
+	        	// if the root file does not exist, a module has to be created
+	        	final IPath rootNamePath = new Path(rootFilename);
+	            if (!rootNamePath.toFile().exists())
+	            {
+	            	try
+	            	{
+	            		IWorkspaceRunnable createTLAModuleCreationOperation = ResourceHelper.createTLAModuleCreationOperation(rootNamePath);
+						ResourcesPlugin.getWorkspace().run(createTLAModuleCreationOperation, monitor);
+	            	} catch (final CoreException e)
+	            	{
+	            		final String message = "Error creating module " + rootNamePath;
+	            		Activator.logError(message, e);
+	            		// exception, no chance to recover
+	            		return new Status(Status.ERROR, "", message, e);
+	            	}
+	            }
+				
+				// create and add spec to the spec manager
+	            final Spec spec = Spec.createNewSpec(specName, rootFilename, importExisting, monitor);
+				Activator.getSpecManager().addSpec(spec);
+				
+				// open editor since the spec has been created now
+				openEditorInUIThread(spec);
+				
+				return Status.OK_STATUS;
 			}
 
 			/**
