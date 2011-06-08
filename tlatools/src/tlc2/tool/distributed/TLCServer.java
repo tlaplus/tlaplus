@@ -450,6 +450,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		
 		// dispose RMI leftovers
 		rg.unbind("TLCServer");
+		UnicastRemoteObject.unexportObject(server.fpSet, false);
 		UnicastRemoteObject.unexportObject(server, false);
 		
 		ToolIO.out.println(new Date() + " Server has finished computing");
