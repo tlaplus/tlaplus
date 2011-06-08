@@ -5,9 +5,7 @@
 
 package tlc2.tool.distributed;
 
-import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Constructor;
 import java.net.InetAddress;
 import java.rmi.Naming;
 import java.rmi.RemoteException;
@@ -112,57 +110,13 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 	public static void main(String args[]) {
 		ToolIO.out.println("TLC Worker " + TLCGlobals.versionOfTLC);
 
-		String specFile = null;
-		String configFile = null;
-		String serverName = null;
-
-		// Must have at least two args: a filename and a hostname.
-		int index = 0;
-		while (index < args.length) {
-			if (args[index].equals("-config")) {
-				index++;
-				if (index < args.length) {
-					configFile = args[index];
-					int len = configFile.length();
-					if (configFile.startsWith(".cfg", len - 4)) {
-						configFile = configFile.substring(0, len - 4);
-					}
-					index++;
-				} else {
-					printErrorMsg("Error: configuration file required.");
-					return;
-				}
-			} else {
-				if (args[index].charAt(0) == '-') {
-					printErrorMsg("Error: unrecognized option: " + args[index]);
-					return;
-				}
-				if (specFile == null) {
-					specFile = args[index++];
-					int len = specFile.length();
-					if (specFile.startsWith(".tla", len - 4)) {
-						specFile = specFile.substring(0, len - 4);
-					}
-				} else if (serverName == null) {
-					serverName = args[index++];
-				} else {
-					printErrorMsg("Error: more than one input files: "
-							+ specFile + " and " + args[index]);
-					return;
-				}
-			}
-		}
-
-		if (specFile == null) {
-			printErrorMsg("Error: Missing input TLA+ module.");
-			return;
-		}
-		if (serverName == null) {
+		// Must have exactly one arg: a hostname (spec is read from the server
+		// connecting to).
+		if(args.length != 1) {
 			printErrorMsg("Error: Missing hostname of the TLC server to be contacted.");
 			return;
 		}
-		if (configFile == null)
-			configFile = specFile;
+		final String serverName = args[0];
 
 		String hostname = "Unknown";
 		try {
@@ -180,6 +134,7 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 							server));
 
 			// SZ Jul 13, 2009: this is disabled since RMI is not used anymore
+			//TODO figure out if this can be removed
 			// UniqueString.setSource((InternRMI)server);
 
 			FPSetManager fpSetManager = server.getFPSetManager();
@@ -200,7 +155,7 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 	private static void printErrorMsg(String msg) {
 		ToolIO.out.println(msg);
 		ToolIO.out
-				.println("Usage: java tlc2.tool.TLCWorker [-option] inputfile host");
+				.println("Usage: java tlc2.tool.TLCWorker host");
 	}
 
 }
