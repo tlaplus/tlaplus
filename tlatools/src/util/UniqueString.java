@@ -7,6 +7,7 @@ import java.io.Serializable;
 
 import tlc2.tool.Defns;
 import tlc2.tool.TLCState;
+import tlc2.tool.distributed.InternRMI;
 import tlc2.util.FP64;
 
 /**
@@ -305,15 +306,13 @@ public final class UniqueString implements Serializable
     }
 
 
-// SZ Jul 13, 2009: disabled, since RMI is not used
-//    /**
-//     * Sets the source 
-//     * @param source
-//     * @deprecated used only in RMI
-//     */
-//    public static void setSource(InternRMI source)
-//    {
-//        internTbl.setSource(source);
-//    }
+    /**
+     * Sets the source 
+     * @param source
+     */
+    public static void setSource(InternRMI source)
+    {
+        internTbl.setSource(source);
+    }
 
 }

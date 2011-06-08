@@ -20,6 +20,7 @@ import tlc2.util.BitVector;
 import tlc2.util.FP64;
 import tlc2.util.LongVec;
 import util.ToolIO;
+import util.UniqueString;
 
 /**
  * @version $Id$
@@ -128,14 +129,15 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 			long irredPoly = server.getIrredPolyForFP();
 			FP64.Init(irredPoly);
 
+			// this call has to be made before the first UniqueString gets
+			// created! Otherwise workers and server end up creating different
+			// unique strings for the same String value.
+			UniqueString.setSource((InternRMI)server);
+
 			DistApp work = new TLCApp(server.getSpecFileName(),
 					server.getConfigFileName(), server.getCheckDeadlock(),
 					server.getPreprocess(), new RMIFilenameToStreamResolver(
 							server));
-
-			// SZ Jul 13, 2009: this is disabled since RMI is not used anymore
-			//TODO figure out if this can be removed
-			// UniqueString.setSource((InternRMI)server);
 
 			FPSetManager fpSetManager = server.getFPSetManager();
 			TLCWorkerRMI worker = new TLCWorker(work, fpSetManager);

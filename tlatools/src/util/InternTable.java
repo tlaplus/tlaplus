@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.Serializable;
 
 import tlc2.output.EC;
+import tlc2.tool.distributed.InternRMI;
 
 /**
  * Storage for the UniqueStrings. 
@@ -26,11 +27,7 @@ public final class InternTable implements Serializable
     // made token counter to instance variable, since there is only one instance of the InternTable
     private int tokenCnt = 0; // the token counter
 
-    // SZ Jul 13, 2009: RMI removed
-    // /**
-    // * @deprecated RMI
-    // */
-    // private InternRMI internSource = null;
+     private InternRMI internSource = null;
 
     public InternTable(int size)
     {
@@ -91,27 +88,22 @@ public final class InternTable implements Serializable
     /**
      * Create the unique string based on the token
      */
-    private UniqueString create(String str)
-    {
-        return new UniqueString(str, ++tokenCnt);
-    }
+//    private UniqueString create(String str)
+//    {
+//        return new UniqueString(str, ++tokenCnt);
+//    }
 
-    // SZ Jul 13, 2009: original version, including RMI-related structures
-    // /**
-    // * @deprecated RMI
-    // */
-    // private UniqueString create(String str) {
-    // if (this.internSource == null) {
-    // return new UniqueString(str, ++tokenCnt);
-    // }
-    // try {
-    // return this.internSource.intern(str);
-    // }
-    // catch (Exception e) {
-    // Assert.fail("Failed to intern " + str + ".");
-    // }
-    // return null; // make compiler happy
-    // }
+	private UniqueString create(String str) {
+		if (this.internSource == null) {
+			return new UniqueString(str, ++tokenCnt);
+		}
+		try {
+			return this.internSource.intern(str);
+		} catch (Exception e) {
+			Assert.fail("Failed to intern " + str + ".");
+		}
+		return null; // make compiler happy
+	}
 
     public UniqueString put(String str)
     {
@@ -185,12 +177,8 @@ public final class InternTable implements Serializable
         return filename + FileUtil.separator + "vars." + ext;
     }
 
-    // SZ Jul 13, 2009: RMI is not used
-    // /**
-    // * @deprecated RMI
-    // */
-    // public void setSource(InternRMI source) {
-    // this.internSource = source;
-    // }
+	public void setSource(InternRMI source) {
+		this.internSource = source;
+	}
 
 }
