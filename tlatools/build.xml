@@ -42,7 +42,7 @@
 
 	
 	
-	<target name="clean" description="Cleans the compilation output directory">
+	<target name="clean" description="Cleans the compilation output directory" unless="noclean">
 		<delete includeemptydirs="true" failonerror="false">
 			<fileset dir="${class.dir}" includes="*/**" />
 		</delete>

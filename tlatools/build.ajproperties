@@ -1,0 +1,2 @@
+src.includes = src-aj/tlc2/tool/distributed/RMIMethodMonitorAspect.aj,\
+			   src-aj/tlc2/tool/distributed/TLCServerMonitorAspect.aj
