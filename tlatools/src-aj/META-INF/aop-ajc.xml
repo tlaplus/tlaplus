@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<aspectj>
+
+	<aspects>
+		<aspect name="tlc2.tool.distributed.RMIMethodMonitorAspect"/>
+		<aspect name="tlc2.tool.distributed.TLCServerMonitorAspect"/>
+	</aspects>
+
+</aspectj>
