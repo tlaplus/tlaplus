@@ -80,6 +80,34 @@
 		<tycho.test.vm.useUiThread>false</tycho.test.vm.useUiThread>
 	</properties>
 
+	<!-- explicitly define plugin repositories to make tycho SNAPSHOT builds available -->
+	<pluginRepositories>
+	    <pluginRepository>
+	      <id>central</id>
+	      <name>Maven Plugin Repository</name>
+	      <url>http://repo1.maven.org/maven2</url>
+	      <layout>default</layout>
+	      <snapshots>
+	        <enabled>false</enabled>
+	      </snapshots>
+	      <releases>
+	        <updatePolicy>never</updatePolicy>
+	      </releases>
+	    </pluginRepository>
+	    <pluginRepository>
+	      <id>tycho</id>
+	      <name>Tycho Snapshot Repository</name>
+	      <url>https://repository.sonatype.org/content/groups/public/</url>
+	      <layout>default</layout>
+	      <snapshots>
+	        <enabled>true</enabled>
+	      </snapshots>
+	      <releases>
+	        <updatePolicy>never</updatePolicy>
+	      </releases>
+	    </pluginRepository>
+	  </pluginRepositories>
+
 	<!-- configure p2 repository to resolve against -->
 	<repositories>
 	
