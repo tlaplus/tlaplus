@@ -92,6 +92,13 @@
 				<exclude name="**/*##*" />
 			</fileset>
 		</copy>
+		<!-- These files are requried for load time weaving and during runtime -->
+		<copy todir="${class.dir}/lib">
+			<fileset dir="lib/">
+				<include name="aspectjrt.jar" />
+				<include name="aspectjweaver.jar" />
+			</fileset>
+		</copy>
 	</target>
 
 	<target name="dist" description="Build a distribution">

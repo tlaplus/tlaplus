@@ -16,8 +16,19 @@ public class TLCStatistics {
 	 */
 	public static void writeStats(TLCServer server, Date processStart,
 			Date computationStart, Date processEnd) {
-		final File sFile = new File("server.csv");
-		final File wFile = new File("worker.csv");
+		File sFile;
+		File wFile;
+
+		// has the user given an output path?
+		final String path = System.getProperty(TLCStatistics.class.getName()
+				+ ".path");
+		if (path != null) {
+			sFile = new File(path + File.separator + "server.csv");
+			wFile = new File(path + File.separator + "worker.csv");
+		} else {
+			sFile = new File("server.csv");
+			wFile = new File("worker.csv");
+		}
 
 		try {
 			sFile.createNewFile();
