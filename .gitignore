@@ -12,3 +12,4 @@ tlatools/TLA+ Tools
 tlatools/test-reports
 tlatools/ByteUtilsTest*.bin
 *.csv
+examples/*/states/
