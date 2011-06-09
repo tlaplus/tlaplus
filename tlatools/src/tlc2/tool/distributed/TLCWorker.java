@@ -7,6 +7,7 @@ package tlc2.tool.distributed;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.rmi.ConnectException;
 import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
@@ -124,7 +125,30 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 			hostname = InetAddress.getLocalHost().getHostName();
 			String url = "//" + serverName + ":" + TLCServer.Port
 					+ "/TLCServer";
-			TLCServerRMI server = (TLCServerRMI) Naming.lookup(url);
+			
+			// try to repeatedly connect to the server until it becomes available
+			int sleep = 1000;
+			TLCServerRMI server = null;
+			while(true) {
+				try {
+					server = (TLCServerRMI) Naming.lookup(url);
+					break;
+				} catch (ConnectException e) {
+					// if the cause if a java.NET.ConnectException the server is
+					// simply not ready yet
+					Throwable cause = e.getCause();
+					if(cause instanceof java.net.ConnectException) {
+						ToolIO.out.println("Server " + serverName
+								+ " unreachable, sleeping " + sleep / 1000
+								+ "s for server to come online...");
+						Thread.sleep(sleep);
+						sleep *= 2; // double wait time
+					} else {
+						// some other exception occurred which we cannot handle
+						throw e;
+					}
+				}
+			}
 
 			long irredPoly = server.getIrredPolyForFP();
 			FP64.Init(irredPoly);
@@ -147,6 +171,7 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 					+ new Date());
 		} catch (Throwable e) {
 			// Assert.printStack(e);
+			e.printStackTrace();
 			ToolIO.out.println("Error: Failed to start worker at " + hostname
 					+ " for server " + serverName + ".\n" + e.getMessage());
 		}
