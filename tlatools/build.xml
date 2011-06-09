@@ -17,8 +17,11 @@
 		<format property="TODAY" pattern="yyyy-MM-dd" locale="en,US" />
 	</tstamp>
 
-
-
+	<taskdef resource="org/aspectj/tools/ant/taskdefs/aspectjTaskdefs.properties">
+		<classpath>
+			<pathelement location="lib/aspectjtools.jar" />
+		</classpath>
+	</taskdef>
 
 	<target name="info" description="Prints information">
 		<echo message="ANT_HOME     : ${env.ANT_HOME}" />
@@ -29,9 +32,10 @@
 
 	<target name="default" depends="info" description="Default">
 		<antcall target="compile" inheritall="true" inheritrefs="true" />
+		<antcall target="compile-aj" inheritall="true" inheritrefs="true" />
 		<antcall target="test" inheritall="true" inheritrefs="true" />
 		<antcall target="dist" inheritall="true" inheritrefs="true" />
-		
+
 		<copy file="${dist.file}" todir="../org.lamport.tla.toolbox/" overwrite="true" />
 	</target>
 
@@ -40,8 +44,8 @@
 		<antcall target="dist-mixed-zip" inheritall="true" inheritrefs="true" />
 	</target>
 
-	
-	
+
+
 	<target name="clean" description="Cleans the compilation output directory" unless="noclean">
 		<delete includeemptydirs="true" failonerror="false">
 			<fileset dir="${class.dir}" includes="*/**" />
@@ -62,7 +66,30 @@
 				<include name="**/*.*" />
 				<exclude name="**/*.java" />
 				<exclude name="**/*.~*" />
-				<exclude name="**/*##*" />				
+				<exclude name="**/*##*" />
+			</fileset>
+		</copy>
+
+	</target>
+
+	<target name="compile-aj" depends="compile" if="withaj">
+		<!-- compile aspectj related class files -->
+		<iajc destdir="${class.dir}" sourceRoots="${src-aj.dir}" debug="true" source="1.5" target="1.5">
+			<classpath refid="project.classpath" />
+			<classpath>
+				<pathelement location="lib/aspectjrt.jar" />
+				<pathelement location="lib/aspectjtools.jar" />
+				<pathelement path="${class.dir}" />
+			</classpath>
+		</iajc>
+		<!-- copy the resource files -->
+		<copy todir="${class.dir}">
+			<fileset dir="${src-aj.dir}">
+				<include name="**/*.*" />
+				<exclude name="**/*.aj" />
+				<exclude name="**/*.java" />
+				<exclude name="**/*.~*" />
+				<exclude name="**/*##*" />
 			</fileset>
 		</copy>
 	</target>
@@ -90,40 +117,40 @@
 				<pathelement path="${class.dir}"/>
 			</classpath>
 		</javac>
-		
+
 		<!-- copy class.dir to path with whitespace -->
 		<!-- this is required by some tests to make sense -->
 		<!-- even throw a non digit in -->
 		<property name="ws.class.dir" value="TLA+ Tools"/>
 		<copy todir="${ws.class.dir}">
-		    <fileset dir="${class.dir}"/>
+			<fileset dir="${class.dir}"/>
 		</copy>
-		
+
 		<!-- run junit tests -->
 		<mkdir dir="${test.reports}" />
 		<junit printsummary="yes" haltonfailure="yes">
-		  <classpath refid="project.classpath" />
-		  <classpath>
-			<pathelement location="lib/junit-4.8.2.jar"/>
-			<pathelement path="${ws.class.dir}"/>
-		    <pathelement path="${test.class.dir}"/>
-		  </classpath>
+			<classpath refid="project.classpath" />
+			<classpath>
+				<pathelement location="lib/junit-4.8.2.jar"/>
+				<pathelement path="${ws.class.dir}"/>
+				<pathelement path="${test.class.dir}"/>
+			</classpath>
 
-		  <formatter type="xml"/>
+			<formatter type="xml"/>
 
-		  <batchtest fork="yes" todir="${test.reports}">
-		    <fileset dir="${test.dir}">
-		      <include name="**/*Test*.java"/>
-			  <exclude name="**/TestDriver.java"/>
-			  <exclude name="**/TestDriver2.java"/>
-		      <exclude name="**/AllTests.java"/>
-		    </fileset>
-		  </batchtest>
+			<batchtest fork="yes" todir="${test.reports}">
+				<fileset dir="${test.dir}">
+					<include name="**/*Test*.java"/>
+					<exclude name="**/TestDriver.java"/>
+					<exclude name="**/TestDriver2.java"/>
+					<exclude name="**/AllTests.java"/>
+				</fileset>
+			</batchtest>
 		</junit>
-		
+
 		<!-- remove copied class.dir -->
-		 <delete dir="${ws.class.dir}" deleteonexit="true"/>
-		
+		<delete dir="${ws.class.dir}" deleteonexit="true"/>
+
 	</target>
 
 	<target name="dist-mixed-jar" description="Build a distribution" depends="default">
@@ -139,7 +166,7 @@
 				<include name="**/*"/>
 				<exclude name=".project"/>
 			</zipfileset>
-			
+
 			<manifest>
 				<attribute name="Built-By" value="${user.name}" />
 				<attribute name="Implementation-Title" value="TLA+ Tools" />
@@ -163,12 +190,12 @@
 				<include name="**/*"/>
 				<exclude name=".project"/>
 			</zipfileset>
-			
+
 		</zip>
 	</target>
 
-	
-	
+
+
 	<target name="javacc" description="Generates JavaCC based Parser">
 		<mkdir dir="${srcgen.dir}"/>
 		<!-- generates the parser -->
