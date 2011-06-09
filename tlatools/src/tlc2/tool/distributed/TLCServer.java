@@ -491,7 +491,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 	 * @return Number of currently registered workers
 	 */
 	int getWorkerCount() {
-		return workers.length;
+		return workerCnt;
 	}
 	
 	TLCServerThread[] getThreads() {
