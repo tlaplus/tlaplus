@@ -1,6 +1,7 @@
 package org.lamport.tla.toolbox.tool.tlc.expression;
 
 import org.eclipse.core.expressions.PropertyTester;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
@@ -37,9 +38,18 @@ public class MarkerPropertyTester extends PropertyTester
                 
                 if (receiver != null && receiver instanceof ILaunchConfiguration)
                 {
+                	// safeguard against non-existent files.
+					// This might e.g. happen if another handler's changes
+					// modifies the current selection before this property
+					// tester is executed
+                	final IFile file = ((ILaunchConfiguration) receiver).getFile();
+                	if(!file.exists()) {
+                		return false;
+                	}
+                	
                     try
                     {
-                        IMarker[] foundMarkers = ((ILaunchConfiguration) receiver).getFile().findMarkers(markerId,
+						IMarker[] foundMarkers = file.findMarkers(markerId,
                                 true, IResource.DEPTH_INFINITE);
 
                         

@@ -1815,79 +1815,65 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
         }
 
     }
+    
+    public static void deleteModels(ILaunchConfiguration[] ilcs, IProgressMonitor monitor) throws CoreException {
+    	for (int i = 0; i < ilcs.length; i++) {
+    		deleteModel(ilcs[i], monitor);
+		}
+    }
 
     /**
-     * Delete all contents of the model folder except for the
-     * checkpoints folder. If deleteCheckPointFolder is true, the check point
-     * folder is also deleted.
-     * @param modelFolder the folder whose contents are to be deleted
-     * @param deleteCheckPointFolder whether to delete the checkpoint folder
+     * Deletes the given model plus its model folder
      * @param monitor
-     * @param STEP the unit of work this corresponds to in the progress monitor 
-     * @param config the config file corresponding to the model folder
+     * @param ilc the config file corresponding to the model folder
      * @throws CoreException
      */
-    public static void deleteModelFolderContents(IFolder modelFolder, final boolean deleteCheckPointFolder,
-            IProgressMonitor monitor, int STEP, ILaunchConfiguration config) throws CoreException
-    {
-        final IResource[] members = modelFolder.members();
-        // erase everything inside
-        if (members.length == 0)
-        {
-            monitor.worked(STEP);
-        } else
-        {
-            final IResource[] checkpoints = ModelHelper.getCheckpoints(config, false);
+	public static void deleteModel(final ILaunchConfiguration ilc,
+			IProgressMonitor monitor) throws CoreException {
+		
+		final IResource[] members;
 
-            ISchedulingRule deleteRule = ResourceHelper.getDeleteRule(members);
+		// if the model has never been model checked, no model folder will exist
+		final IFolder modelFolder = ModelHelper.getModelTargetDirectory(ilc);
+		if(modelFolder != null) {
+			members = new IResource[2];
+			members[0] = modelFolder; // model folder
+			members[1] = ilc.getFile(); // modle launch config
+		} else {
+			members = new IResource[]{ilc.getFile()};
+		}
+		
+		// schedule combined deletion of both the model folder as well as the
+		// launch config
+		final ISchedulingRule deleteRule = ResourceHelper.getDeleteRule(members);
 
-            // delete files
-            ResourcesPlugin.getWorkspace().run(new IWorkspaceRunnable() {
+		ResourcesPlugin.getWorkspace().run(
+				new IWorkspaceRunnable() {
 
-                public void run(IProgressMonitor monitor) throws CoreException
-                {
-                    boolean checkFiles = !deleteCheckPointFolder;
+					/* (non-Javadoc)
+					 * @see org.eclipse.core.resources.IWorkspaceRunnable#run(org.eclipse.core.runtime.IProgressMonitor)
+					 */
+					public void run(IProgressMonitor subMonitor)
+							throws CoreException {
+						subMonitor.beginTask("Deleting files", members.length);
 
-                    monitor.beginTask("Deleting files", members.length);
-                    // delete the members of the target
-                    // directory
-                    for (int i = 0; i < members.length; i++)
-                    {
-                        if (checkFiles)
-                        {
-                            if (checkpoints.length > 0 && checkpoints[0].equals(members[i]))
-                            {
-                                // we found the recovery
-                                // directory and didn't delete
-                                // it
-                                checkFiles = false;
-                                continue;
-                            }
-                        } else
-                        {
-                            // delete file
-                            // either non-recovery mode
-                            // or the recovery directory already
-                            // skipped
-                            try
-                            {
-                                members[i].delete(IResource.FORCE, new SubProgressMonitor(monitor, 1));
-                            } catch (CoreException e)
-                            {
-                                // catch the exception if
-                                // deletion failed, and just
-                                // ignore this fact
-                                // FIXME this should be fixed at
-                                // some later point in time
-                                TLCActivator.logError("Error deleting a file " + members[i].getLocation(), e);
-                            }
-                        }
-                    }
-                    monitor.done();
-                }
-            }, deleteRule, IWorkspace.AVOID_UPDATE, new SubProgressMonitor(monitor, STEP));
-        }
-    }
+						// actually deletes all IResource members
+						try {
+							for (int i = 0; i < members.length; i++) {
+								members[i].delete(IResource.FORCE,
+										new SubProgressMonitor(subMonitor, 1));
+							}
+						} catch (CoreException e) {
+							TLCActivator.logError("Error deleting a file "
+									+ e.getMessage(), e);
+							throw e;
+						}
+						
+						subMonitor.done();
+					}
+				}, deleteRule, IWorkspace.AVOID_UPDATE,
+				new SubProgressMonitor(monitor, members.length));
+	}
 
     /**
      * Copies the module files that are extended by specRootFile into the

@@ -108,11 +108,23 @@ public class TLCOutputSourceRegistry
      * Remove a source and the date provider associated with that source, if it
      * exists.
      */
-    public synchronized void removeTLCStatusSource(String name)
+    private synchronized void removeTLCStatusSource(ILaunchConfiguration ilc)
     {
+    	String name = ilc.getFile().getName();
         this.sources.remove(name);
         this.providers.remove(name);
         printStats();
+    }
+
+    /**
+     * Remove a source and the date provider associated with that source, if it
+     * exists.
+     */
+    public synchronized void removeTLCStatusSource(ILaunchConfiguration[] ilcs)
+    {
+    	for (int i = 0; i < ilcs.length; i++) {
+			removeTLCStatusSource(ilcs[i]);
+		}
     }
 
     /**

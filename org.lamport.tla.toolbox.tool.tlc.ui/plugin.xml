@@ -502,10 +502,6 @@ Console Facory
             commandId="toolbox.tool.tlc.commands.model.open">
       </handler>
       <handler
-            class="org.lamport.tla.toolbox.tool.tlc.handlers.DeleteModelHandler"
-            commandId="toolbox.tool.tlc.commands.model.delete">
-      </handler>
-      <handler
             class="org.lamport.tla.toolbox.tool.tlc.handlers.CloneModelHandler"
             commandId="toolbox.tool.tlc.commands.model.clone">
       </handler>
@@ -562,7 +558,7 @@ Console Facory
          </activeWhen>
       </handler>
       <handler
-            class="org.lamport.tla.toolbox.tool.tlc.handlers.DeleteModelHandlerDelegate"
+            class="org.lamport.tla.toolbox.tool.tlc.handlers.DeleteModelHandler"
             commandId="org.eclipse.ui.edit.delete">
          <enabledWhen>
             <not>

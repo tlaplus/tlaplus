@@ -591,7 +591,7 @@ public class UIHelper
      * Retrieves active shell
      * @return a parent shell of the active window
      */
-    private static Shell getShell()
+    public static Shell getShell()
     {
         return getActiveWindow().getShell();
     }
