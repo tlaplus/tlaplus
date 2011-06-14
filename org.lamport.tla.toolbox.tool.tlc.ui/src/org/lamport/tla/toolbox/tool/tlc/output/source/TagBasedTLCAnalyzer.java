@@ -279,7 +279,7 @@ public class TagBasedTLCAnalyzer
                 index = text.indexOf(":");
                 break;
             case END:
-                index = text.lastIndexOf(" ");
+                index = text.lastIndexOf(" @!@!@");
                 break;
             default:
                 // make compiler happy
@@ -295,6 +295,8 @@ public class TagBasedTLCAnalyzer
             return Integer.parseInt(number);
         } catch (BadLocationException e)
         {
+            TLCUIActivator.logError("Error retrieving the TLC message code", e);
+        } catch (NumberFormatException e) {
             TLCUIActivator.logError("Error retrieving the TLC message code", e);
         }
         return -1;
