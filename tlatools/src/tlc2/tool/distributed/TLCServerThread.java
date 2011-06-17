@@ -5,6 +5,7 @@
 
 package tlc2.tool.distributed;
 
+import java.net.URI;
 import java.rmi.RemoteException;
 import java.util.Date;
 import java.util.concurrent.BrokenBarrierException;
@@ -36,10 +37,10 @@ public class TLCServerThread extends IdThread {
 	/**
 	 * Identifies the worker
 	 */
-	private String url = "";
+	private URI url;
 	private int receivedStates, sentStates;
 
-	public TLCServerThread(int id, TLCWorkerRMI worker, String url, TLCServer tlc, CyclicBarrier aBarrier) {
+	public TLCServerThread(int id, TLCWorkerRMI worker, URI url, TLCServer tlc, CyclicBarrier aBarrier) {
 		super(id);
 		this.worker = worker;
 		this.url  = url;
@@ -206,7 +207,7 @@ public class TLCServerThread extends IdThread {
 	/**
 	 * @return the url
 	 */
-	public String getUrl() {
+	public URI getUri() {
 		return url;
 	}
 

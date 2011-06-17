@@ -3,9 +3,12 @@ package tlc2.tool.distributed;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.URI;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 import tlc2.TLCGlobals;
 
@@ -60,9 +63,9 @@ public class TLCStatistics {
 			// print worker stats
 			int sentStates = threads[i].getSentStates();
 			int receivedStates = threads[i].getReceivedStates();
-			String name = threads[i].getUrl();
+			URI name = threads[i].getUri();
 
-			writer.write(name);
+			writer.write(name.toString());
 			writer.write(",");
 			writer.write(Integer.toString(sentStates));
 			writer.write(",");
@@ -88,11 +91,15 @@ public class TLCStatistics {
 		writer.write(",");
 		writer.write("NumberWorkers");
 		writer.write(",");
+		writer.write("NumberCores");
+		writer.write(",");
 		writer.write("ProcessStartupTime");
 		writer.write(",");
 		writer.write("ComputationStartupTime");
 		writer.write(",");
 		writer.write("ComputationEndTime");
+		writer.write(",");
+		writer.write("TimePassedDuringComputationInSeconds");
 		writer.write(",");
 		writer.write("NumberDistinctStates");
 		writer.write(",");
@@ -121,11 +128,25 @@ public class TLCStatistics {
 		writer.write(",");
 		writer.write(Integer.toString(server.getWorkerCount()));
 		writer.write(",");
+		
+		// print core count by checking how many threads ran on the same node
+		Set<String> hosts = new HashSet<String>();
+		final TLCServerThread[] threads = server.getThreads();
+		for (int i = 0; i < threads.length && threads[i] != null; i++) {
+			String host = threads[i].getUri().getHost();
+			hosts.add(host);
+		}
+		writer.write(Integer.toString(server.getWorkerCount() / hosts.size()));
+		writer.write(",");
+		
 		writer.write(processStartTime.toString());
 		writer.write(",");
 		writer.write(computationStart.toString());
 		writer.write(",");
 		writer.write(processEndTime.toString());
+		writer.write(",");
+		writer.write(new Date(processEndTime.getTime()
+				- computationStart.getTime()).toString());
 		writer.write(",");
 		writer.write(Long.toString(server.fpSetManager.size()));
 		writer.write(",");

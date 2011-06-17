@@ -12,6 +12,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.net.InetAddress;
+import java.net.URI;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -139,8 +140,8 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 			tidx = len;
 		}
 		this.threadCnt++;
-		this.threads[tidx] = new TLCServerThread(this.thId++, worker, "rmi://"
-				+ hostname + ":" + getPort(worker), this, barrier);
+		this.threads[tidx] = new TLCServerThread(this.thId++, worker, URI.create("rmi://"
+				+ hostname + ":" + getPort(worker)), this, barrier);
 		if (TLCGlobals.fpServers == null)
 			this.fpSet.addThread();
 		this.threads[tidx].start();
@@ -413,7 +414,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 			// print worker stats
 			int sentStates = server.threads[i].getSentStates();
 			int receivedStates = server.threads[i].getReceivedStates();
-			String name = server.threads[i].getUrl();
+			URI name = server.threads[i].getUri();
 			ToolIO.out.println(new Date() + " Worker: " + name + " Sent: " + sentStates 
 					+ " Rcvd: "
 					+ receivedStates);
