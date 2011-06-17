@@ -18,7 +18,7 @@ public class TLCStatistics {
 	 * writes stats to .csv
 	 */
 	public static void writeStats(TLCServer server, Date processStart,
-			Date computationStart, Date processEnd) {
+			Date computationStart, Date computationEnd, Date processEnd) {
 		File sFile;
 		File wFile;
 
@@ -37,7 +37,7 @@ public class TLCStatistics {
 			sFile.createNewFile();
 			wFile.createNewFile();
 
-			serverStats(server, sFile, processStart, computationStart, processEnd);
+			serverStats(server, sFile, processStart, computationStart, computationEnd, processEnd);
 			workerStats(server, wFile);
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -79,7 +79,7 @@ public class TLCStatistics {
 	// create server stats .csv file
 	private static void serverStats(TLCServer server, File file,
 			Date processStartTime, Date computationStart,
-			Date processEndTime) throws IOException {
+			Date computationEnd, Date processEndTime) throws IOException {
 		final FileWriter writer = new FileWriter(file);
 
 		// headlines
@@ -98,6 +98,8 @@ public class TLCStatistics {
 		writer.write("ComputationStartupTime");
 		writer.write(",");
 		writer.write("ComputationEndTime");
+		writer.write(",");
+		writer.write("ProcessEndTime");
 		writer.write(",");
 		writer.write("TimePassedDuringComputationInSeconds");
 		writer.write(",");
@@ -143,10 +145,13 @@ public class TLCStatistics {
 		writer.write(",");
 		writer.write(computationStart.toString());
 		writer.write(",");
+		writer.write(computationEnd.toString());
+		writer.write(",");
 		writer.write(processEndTime.toString());
 		writer.write(",");
-		writer.write(new Date(processEndTime.getTime()
-				- computationStart.getTime()).toString());
+		long elapsed = (computationEnd.getTime()
+				- computationStart.getTime()) / 1000;
+		writer.write(Long.toString(elapsed));
 		writer.write(",");
 		writer.write(Long.toString(server.fpSetManager.size()));
 		writer.write(",");
