@@ -541,6 +541,11 @@ just search for it if you want to look at examples.
 HOW TO GET A...
   SpecObj
      From IFile: ResourceHelper.getValidParseResult(iFile).getSpecObj()
+  Spec
+     From nothing (the current spec):
+       Activator.getSpecManager().getSpecLoaded()
+          Has not been tested; don't know if it really works.
+     From the name: Activator.getSpecManager().getSpecByName(specName)
   IFile
      From TLAEditor: ((FileEditorInput) tlaEditor.getEditorInput()).getFile()
      From String moduleName (IFile) ResourceHelper.getResourceByModuleName(moduleName)
