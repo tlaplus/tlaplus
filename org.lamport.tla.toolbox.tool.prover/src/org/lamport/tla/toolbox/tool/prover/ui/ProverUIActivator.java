@@ -7,6 +7,7 @@ import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.ColorPredicate;
 import org.lamport.tla.toolbox.tool.prover.ui.preference.ProverPreferencePage;
+import org.lamport.tla.toolbox.util.UIHelper;
 import org.osgi.framework.BundleContext;
 
 /**
@@ -37,29 +38,34 @@ public class ProverUIActivator extends AbstractUIPlugin
         super.start(context);
         plugin = this;
 
-        IPreferenceStore store = EditorsUI.getPreferenceStore();
+        UIHelper.runUIAsync(new Runnable() {
+			
+			public void run() {
+		        IPreferenceStore store = EditorsUI.getPreferenceStore();
 
-        /*
-         * The following sets the default color predicates for the colors. First argument
-         * is the key for each predicate for the logical color, and the second argument is
-         * the predicate string (not the macro name).
-         */
-        store.setDefault(ProverPreferencePage.getColorPredPrefName(1), ColorPredicate.PREDICATE_NONE);
-        store.setDefault(ProverPreferencePage.getColorPredPrefName(2), ColorPredicate.PREDICATE_NONE);
-        store.setDefault(ProverPreferencePage.getColorPredPrefName(3), ColorPredicate.PREDICATE_BEING_PROVED);
-        store.setDefault(ProverPreferencePage.getColorPredPrefName(4), ColorPredicate.PREDICATE_STOPPED);
-        store.setDefault(ProverPreferencePage.getColorPredPrefName(5), ColorPredicate.PREDICATE_FAILED);
-        store.setDefault(ProverPreferencePage.getColorPredPrefName(6), ColorPredicate.PREDICATE_PROVED);
-        store.setDefault(ProverPreferencePage.getColorPredPrefName(7), ColorPredicate.PREDICATE_PROVED_OR_OMITTED);
-        store.setDefault(ProverPreferencePage.getColorPredPrefName(8), ColorPredicate.PREDICATE_PROVED_OR_OMITTED_OR_MISSING);
-        store.setDefault(ProverPreferencePage.getColorPredPrefName(9), ColorPredicate.PREDICATE_NONE);
-        store.setDefault(ProverPreferencePage.getColorPredPrefName(10), ColorPredicate.PREDICATE_NONE);
-        store.setDefault(ProverPreferencePage.getColorPredPrefName(11), ColorPredicate.PREDICATE_NONE);
-        store.setDefault(ProverPreferencePage.getColorPredPrefName(12), ColorPredicate.PREDICATE_NONE);
+		        /*
+		         * The following sets the default color predicates for the colors. First argument
+		         * is the key for each predicate for the logical color, and the second argument is
+		         * the predicate string (not the macro name).
+		         */
+		        store.setDefault(ProverPreferencePage.getColorPredPrefName(1), ColorPredicate.PREDICATE_NONE);
+		        store.setDefault(ProverPreferencePage.getColorPredPrefName(2), ColorPredicate.PREDICATE_NONE);
+		        store.setDefault(ProverPreferencePage.getColorPredPrefName(3), ColorPredicate.PREDICATE_BEING_PROVED);
+		        store.setDefault(ProverPreferencePage.getColorPredPrefName(4), ColorPredicate.PREDICATE_STOPPED);
+		        store.setDefault(ProverPreferencePage.getColorPredPrefName(5), ColorPredicate.PREDICATE_FAILED);
+		        store.setDefault(ProverPreferencePage.getColorPredPrefName(6), ColorPredicate.PREDICATE_PROVED);
+		        store.setDefault(ProverPreferencePage.getColorPredPrefName(7), ColorPredicate.PREDICATE_PROVED_OR_OMITTED);
+		        store.setDefault(ProverPreferencePage.getColorPredPrefName(8), ColorPredicate.PREDICATE_PROVED_OR_OMITTED_OR_MISSING);
+		        store.setDefault(ProverPreferencePage.getColorPredPrefName(9), ColorPredicate.PREDICATE_NONE);
+		        store.setDefault(ProverPreferencePage.getColorPredPrefName(10), ColorPredicate.PREDICATE_NONE);
+		        store.setDefault(ProverPreferencePage.getColorPredPrefName(11), ColorPredicate.PREDICATE_NONE);
+		        store.setDefault(ProverPreferencePage.getColorPredPrefName(12), ColorPredicate.PREDICATE_NONE);
 
-        store.setDefault(ProverPreferencePage.getLeafSideBarPrefName(3), true);
-        store.setDefault(ProverPreferencePage.getLeafSideBarPrefName(4), true);
-        store.setDefault(ProverPreferencePage.getLeafSideBarPrefName(5), true);
+		        store.setDefault(ProverPreferencePage.getLeafSideBarPrefName(3), true);
+		        store.setDefault(ProverPreferencePage.getLeafSideBarPrefName(4), true);
+		        store.setDefault(ProverPreferencePage.getLeafSideBarPrefName(5), true);
+			}
+		});
          /*
          * DR commented out the following because default colors are now set in the plugin.xml file for this
          * plug-in.
