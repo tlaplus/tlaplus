@@ -42,3 +42,11 @@ TwoPhase
    unspecified actions.  There is also a TLA+ proof of 
    correctness that has been checked by the TLAPS proof system.
    
+TransitiveClosure
+   Someone on posted on TLAPlus.net a question asking how the
+   transitive closure of a relation can be defined in TLA+.
+   This answers the question by giving several equivalent 
+   definitions.  Reading them might help you when you have
+   to define some mathematical operation that requires
+   a recursive definition.
+   
