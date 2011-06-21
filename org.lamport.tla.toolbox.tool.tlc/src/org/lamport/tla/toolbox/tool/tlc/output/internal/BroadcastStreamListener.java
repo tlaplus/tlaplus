@@ -76,7 +76,7 @@ public class BroadcastStreamListener implements IStreamListener
      * Retrieves all registered listener managers
      * @return 
      */
-    public static IProcessOutputSink[] getRegisteredStreamManagers(String name, int type)
+    private IProcessOutputSink[] getRegisteredStreamManagers(String name, int type)
     {
         IConfigurationElement[] decls = Platform.getExtensionRegistry().getConfigurationElementsFor(
                 IProcessOutputSink.EXTENSION_ID);
