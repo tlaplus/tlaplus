@@ -16,12 +16,12 @@ import org.lamport.tla.toolbox.tool.tlc.output.ITLCOutputListener;
  */
 public class CachingTLCOutputSource implements ITLCOutputSource
 {
-    private Vector listenerHolders = new Vector();
+    private Vector<ListenerProgressHolder> listenerHolders = new Vector<ListenerProgressHolder>();
     private boolean done = false;
     /**
      * List of {@link TypedRegionAndText}s.
      */
-    private Vector detectedRegions = new Vector();
+    private Vector<TypedRegionAndText> detectedRegions = new Vector<TypedRegionAndText>();
     protected IDocument document;
     private String sourceName;
     private int priority;
@@ -56,7 +56,7 @@ public class CachingTLCOutputSource implements ITLCOutputSource
         this.detectedRegions.add(new TypedRegionAndText(region, regionText));
         for (int i = 0; i < this.listenerHolders.size(); i++)
         {
-            onOutput(((ListenerProgressHolder) this.listenerHolders.get(i)), region, regionText);
+            onOutput((this.listenerHolders.get(i)), region, regionText);
         }
     }
 
@@ -68,7 +68,7 @@ public class CachingTLCOutputSource implements ITLCOutputSource
         this.done = true;
         for (int i = 0; i < this.listenerHolders.size(); i++)
         {
-            ((ListenerProgressHolder) this.listenerHolders.get(i)).listener.onDone();
+            (this.listenerHolders.get(i)).listener.onDone();
         }
     }
 
@@ -106,8 +106,8 @@ public class CachingTLCOutputSource implements ITLCOutputSource
         for (int i = 0; i < this.detectedRegions.size(); i++)
         {
             /* inform the listener about missed changes */
-            onOutput(holder, ((TypedRegionAndText) this.detectedRegions.get(i)).getRegion(),
-                    ((TypedRegionAndText) this.detectedRegions.get(i)).getText());
+            onOutput(holder, (this.detectedRegions.get(i)).getRegion(),
+                    (this.detectedRegions.get(i)).getText());
         }
         if (done)
         {
@@ -147,7 +147,7 @@ public class CachingTLCOutputSource implements ITLCOutputSource
         ITLCOutputListener[] listeners = new ITLCOutputListener[listenerHolders.size()];
         for (int i = 0; i < listeners.length; i++)
         {
-            listeners[i] = ((ListenerProgressHolder) listenerHolders.get(i)).listener;
+            listeners[i] = (listenerHolders.get(i)).listener;
         }
         return listeners;
     }

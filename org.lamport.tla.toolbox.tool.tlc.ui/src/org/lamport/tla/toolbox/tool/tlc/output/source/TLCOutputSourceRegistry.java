@@ -52,9 +52,9 @@ public class TLCOutputSourceRegistry
     // instance for output sources from trace exploration
     private static TLCOutputSourceRegistry traceExploreInstance;
     // container for sources, hashed by the source name
-    private Hashtable sources;
+    private Hashtable<String, ITLCOutputSource> sources;
     // container for data providers, hashed by the process name
-    private Hashtable providers;
+    private Hashtable<String, TLCModelLaunchDataProvider> providers;
     // flag indicating if this is a trace explorer instance
     // true indicates that this is a trace explorer instance
     private boolean isTraceExploreInstance;
@@ -73,7 +73,7 @@ public class TLCOutputSourceRegistry
 
         // TLCUIActivator.logDebug("adding source " + source.getSourceName() + " " + source.getSourcePrio());
 
-        ITLCOutputSource existingSource = (ITLCOutputSource) this.sources.get(source.getTLCOutputName());
+        ITLCOutputSource existingSource = this.sources.get(source.getTLCOutputName());
 
         // a new source for a given name arrives which has a higher priority
         // re-register the listeners
@@ -91,7 +91,7 @@ public class TLCOutputSourceRegistry
             if (existingSource == null)
             {
                 // the source didn't exist, but there is a data provider interested in this source
-                TLCModelLaunchDataProvider provider = (TLCModelLaunchDataProvider) providers.get(source
+                TLCModelLaunchDataProvider provider = providers.get(source
                         .getTLCOutputName());
                 if (provider != null)
                 {
@@ -139,7 +139,7 @@ public class TLCOutputSourceRegistry
         String processName = listener.getTLCOutputName();
 
         // try to obtain a source
-        ITLCOutputSource source = (ITLCOutputSource) this.sources.get(processName);
+        ITLCOutputSource source = this.sources.get(processName);
         if (source == null)
         {
             // no source found, so no live TLC process
@@ -163,7 +163,7 @@ public class TLCOutputSourceRegistry
                 logFileReader.read();
 
                 // from now on we should have a source for this model
-                Assert.isTrue((ITLCOutputSource) this.sources.get(processName) != null);
+                Assert.isTrue(this.sources.get(processName) != null);
             } else
             {
                 // no log file
@@ -190,7 +190,7 @@ public class TLCOutputSourceRegistry
     {
         Assert.isNotNull(listener);
 
-        ITLCOutputSource source = (ITLCOutputSource) this.sources.get(listener.getTLCOutputName());
+        ITLCOutputSource source = this.sources.get(listener.getTLCOutputName());
         if (source != null)
         {
             source.removeTLCOutputListener(listener);
@@ -207,7 +207,7 @@ public class TLCOutputSourceRegistry
     {
         Assert.isNotNull(configuration);
         String processKey = configuration.getFile().getName();
-        TLCModelLaunchDataProvider provider = (TLCModelLaunchDataProvider) providers.get(processKey);
+        TLCModelLaunchDataProvider provider = providers.get(processKey);
         if (provider == null)
         {
             if (isTraceExploreInstance)
@@ -228,8 +228,8 @@ public class TLCOutputSourceRegistry
      */
     private TLCOutputSourceRegistry()
     {
-        this.sources = new Hashtable();
-        this.providers = new Hashtable();
+        this.sources = new Hashtable<String, ITLCOutputSource>();
+        this.providers = new Hashtable<String, TLCModelLaunchDataProvider>();
     }
 
     /**
@@ -273,11 +273,11 @@ public class TLCOutputSourceRegistry
             }
             TLCUIActivator.logDebug("TLCOutputSourceRegistry for " + type + " maintains " + sources.size()
                     + " sources.");
-            Enumeration keys = sources.keys();
+            Enumeration<String> keys = sources.keys();
             while (keys.hasMoreElements())
             {
-                String sourceName = (String) keys.nextElement();
-                ITLCOutputSource source = (ITLCOutputSource) sources.get(sourceName);
+                String sourceName = keys.nextElement();
+                ITLCOutputSource source = sources.get(sourceName);
                 TLCUIActivator.logDebug("The source " + sourceName + " has " + source.getSourcePrio() + " prio and "
                         + source.getListeners().length + " listeners");
 

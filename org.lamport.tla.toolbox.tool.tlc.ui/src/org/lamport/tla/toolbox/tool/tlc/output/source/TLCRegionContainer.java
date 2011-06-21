@@ -12,7 +12,7 @@ import org.eclipse.jface.text.ITypedRegion;
 public class TLCRegionContainer extends TLCRegion
 {
 
-    private Vector subRegions = new Vector();
+    private Vector<ITypedRegion> subRegions = new Vector<ITypedRegion>();
 
     /**
      * Constructs the container type
@@ -29,7 +29,7 @@ public class TLCRegionContainer extends TLCRegion
         return (ITypedRegion[]) subRegions.toArray(new ITypedRegion[subRegions.size()]);
     }
 
-    public void setSubRegions(Vector elements)
+    public void setSubRegions(Vector<ITypedRegion> elements)
     {
         this.subRegions = elements;
     }

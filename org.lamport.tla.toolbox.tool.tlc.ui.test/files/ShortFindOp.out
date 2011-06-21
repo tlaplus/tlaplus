@@ -1,0 +1,73 @@
+TARTMSG 2262:0 @!@!@
+TLC2 Version 2.03 of 10 April 2011
+@!@!@ENDMSG 2262 @!@!@
+@!@!@STARTMSG 2187:0 @!@!@
+Running in Model-Checking mode.
+@!@!@ENDMSG 2187 @!@!@
+@!@!@STARTMSG 2220:0 @!@!@
+Starting SANY...
+@!@!@ENDMSG 2220 @!@!@
+Parsing file MC.tla
+Parsing file FindOp.tla
+Parsing file /usr/local/src/tla/tla/trunk/tla2-inria/org.lamport.tla.toolbox/StandardModules/TLC.tla
+Parsing file /usr/local/src/tla/tla/trunk/tla2-inria/org.lamport.tla.toolbox/StandardModules/Integers.tla
+Parsing file /usr/local/src/tla/tla/trunk/tla2-inria/org.lamport.tla.toolbox/StandardModules/Sequences.tla
+Parsing file /usr/local/src/tla/tla/trunk/tla2-inria/org.lamport.tla.toolbox/StandardModules/Naturals.tla
+Semantic processing of module Naturals
+Semantic processing of module Integers
+Semantic processing of module Sequences
+Semantic processing of module TLC
+Semantic processing of module FindOp
+Semantic processing of module MC
+@!@!@STARTMSG 2219:0 @!@!@
+SANY finished.
+@!@!@ENDMSG 2219 @!@!@
+@!@!@STARTMSG 2185:0 @!@!@
+Starting... (2011-06-20 16:27:43)
+@!@!@ENDMSG 2185 @!@!@
+@!@!@STARTMSG 2189:0 @!@!@
+Computing initial states...
+@!@!@ENDMSG 2189 @!@!@
+@!@!@STARTMSG 2190:0 @!@!@
+Finished computing initial states: 1 distinct state generated.
+@!@!@ENDMSG 2190 @!@!@
+( 0 :> ";" @@
+  1 :> ";" @@
+  2 :> ";" @@
+  3 :> ";" @@
+  4 :> ";" @@
+  5 :> ";" @@
+  6 :> ";" @@
+  7 :> ";" @@
+  8 :> ";" @@
+  9 :> ";" @@
+  10 :> "f" @@
+  11 :> "(" @@
+  12 :> "b" @@
+  13 :> ")" @@
+  14 :> " " @@
+  15 :> ";" @@
+  16 :> ";" @@
+  17 :> ";" @@
+  18 :> ";" @@
+  19 :> ";" @@
+  20 :> ";" @@
+  21 :> ";" @@
+  22 :> ";" @@
+  23 :> ";" @@
+  24 :> ";" )
+<<"curPos: ", 10>>
+(0 :> [token |-> (0 :> "f"), leftPos |-> 0, rightPos |-> 1])
+<<"curPos: ", 11>>
+"same"
+<<"curPos: ", 12>>
+(0 :> [token |-> (0 :> "b"), leftPos |-> 2, rightPos |-> 3])
+<<"curPos: ", 13>>
+"same"
+<<"curPos: ", 14>>
+<<>>
+"goodby world"
+@!@!@STARTMSG 2110:1 @!@!@
+Invariant inv_13085800480943000 is violated.
+@!@!@ENDMSG 2110 @!@!@
+

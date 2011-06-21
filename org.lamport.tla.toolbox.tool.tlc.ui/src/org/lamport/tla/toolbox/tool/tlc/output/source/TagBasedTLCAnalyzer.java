@@ -32,8 +32,8 @@ public class TagBasedTLCAnalyzer
     private TLCRegion taggedRegion = null;
 
     private final IDocument document;
-    private Stack stack;
-    private Vector userOutput;
+    private Stack<ITypedRegion> stack;
+    private Vector<ITypedRegion> userOutput;
 
     /**
      * Constructs the analyzer
@@ -43,7 +43,7 @@ public class TagBasedTLCAnalyzer
     public TagBasedTLCAnalyzer(IDocument document)
     {
         this.document = document;
-        stack = new Stack();
+        stack = new Stack<ITypedRegion>();
         resetUserPartitions();
     }
 
@@ -116,7 +116,7 @@ public class TagBasedTLCAnalyzer
      */
     public void resetUserPartitions()
     {
-        userOutput = new Vector();
+        userOutput = new Vector<ITypedRegion>();
     }
 
     /**
@@ -151,7 +151,7 @@ public class TagBasedTLCAnalyzer
         if (stackContent.length > 1)
         {
             region = new TLCRegionContainer(offset, length - 1);
-            Vector regions = new Vector();
+            Vector<ITypedRegion> regions = new Vector<ITypedRegion>();
             for (int i = 0; i < stackContent.length - 1; i++)
             {
                 regions.add(stackContent[i]);
@@ -213,7 +213,7 @@ public class TagBasedTLCAnalyzer
     {
         Assert.isTrue(!stack.isEmpty(), "Bug. Empty stack, start tag expected");
 
-        Vector elements = new Vector();
+        Vector<ITypedRegion> elements = new Vector<ITypedRegion>();
         while (!stack.isEmpty())
         {
             ITypedRegion region = (ITypedRegion) stack.pop();
