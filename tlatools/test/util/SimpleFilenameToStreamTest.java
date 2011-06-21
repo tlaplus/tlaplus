@@ -15,8 +15,5 @@ public class SimpleFilenameToStreamTest extends TestCase {
 		
 		assertNotNull(file);
 		assertTrue(file.getAbsolutePath() + " does not exist!", file.exists());
-		
-		final String path = file.getAbsolutePath();
-		assertTrue("Test only really makes sense if whitespaces in standardmodules path", path.contains(" "));
 	}
 }

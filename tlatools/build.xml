@@ -35,6 +35,7 @@
 		<antcall target="compile-aj" inheritall="true" inheritrefs="true" />
 		<antcall target="test" inheritall="true" inheritrefs="true" />
 		<antcall target="dist" inheritall="true" inheritrefs="true" />
+		<antcall target="test-dist" inheritall="true" inheritrefs="true" />
 
 		<copy file="${dist.file}" todir="../org.lamport.tla.toolbox/" overwrite="true" />
 	</target>
@@ -114,52 +115,90 @@
 		</jar>
 	</target>
 
-	<target name="test" description="Executes accomining unit tests">
+	<target name="test" description="Executes accompining unit tests">
 		<!-- compile unit tests -->
 		<mkdir dir="${test.class.dir}" />
 		<javac srcdir="${test.dir}" destdir="${test.class.dir}" debug="true" verbose="false" source="1.5" target="1.5">
 			<classpath refid="project.classpath" />
 			<classpath>
-				<pathelement location="lib/junit-4.8.2.jar"/>
-				<pathelement path="${class.dir}"/>
+				<pathelement location="lib/junit-4.8.2.jar" />
+				<pathelement path="${class.dir}" />
 			</classpath>
 		</javac>
-
 		<!-- copy class.dir to path with whitespace -->
 		<!-- this is required by some tests to make sense -->
 		<!-- even throw a non digit in -->
-		<property name="ws.class.dir" value="TLA+ Tools"/>
+		<property name="ws.class.dir" value="TLA+ Tools" />
 		<copy todir="${ws.class.dir}">
-			<fileset dir="${class.dir}"/>
+			<fileset dir="${class.dir}" />
 		</copy>
-
 		<!-- run junit tests -->
 		<mkdir dir="${test.reports}" />
 		<junit printsummary="yes" haltonfailure="yes">
 			<classpath refid="project.classpath" />
 			<classpath>
-				<pathelement location="lib/junit-4.8.2.jar"/>
-				<pathelement path="${ws.class.dir}"/>
-				<pathelement path="${test.class.dir}"/>
+				<pathelement location="lib/junit-4.8.2.jar" />
+				<pathelement path="${ws.class.dir}" />
+				<pathelement path="${test.class.dir}" />
 			</classpath>
-
-			<formatter type="xml"/>
-
+			<formatter type="xml" />
 			<batchtest fork="yes" todir="${test.reports}">
 				<fileset dir="${test.dir}">
-					<include name="**/*Test*.java"/>
-					<exclude name="**/TestDriver.java"/>
-					<exclude name="**/TestDriver2.java"/>
-					<exclude name="**/AllTests.java"/>
+					<include name="**/*Test*.java" />
+					<exclude name="**/TestDriver.java" />
+					<exclude name="**/TestDriver2.java" />
+					<exclude name="**/AllTests.java" />
 				</fileset>
 			</batchtest>
 		</junit>
 
 		<!-- remove copied class.dir -->
 		<delete dir="${ws.class.dir}" deleteonexit="true"/>
-
 	</target>
 
+	<target name="test-dist" description="Executes accompining unit tests on jar file" depends="dist">
+		<!-- compile unit tests -->
+		<mkdir dir="${test.class.dir}" />
+		<javac srcdir="${test.dir}" destdir="${test.class.dir}" debug="true" verbose="false" source="1.5" target="1.5">
+			<classpath refid="project.classpath" />
+			<classpath>
+				<pathelement location="lib/junit-4.8.2.jar" />
+				<pathelement path="${class.dir}" />
+			</classpath>
+		</javac>
+		<!-- copy class.dir to path with whitespace -->
+		<!-- this is required by some tests to make sense -->
+		<!-- even throw a non digit in -->
+		<property name="ws.class.dir" value="TLA+ Tools" />
+		<copy todir="${ws.class.dir}">
+			<fileset dir="${class.dir}" />
+		</copy>
+		<!-- run junit tests on tlatools.jar -->
+		<mkdir dir="${test.reports}/onJar" />
+		<junit printsummary="yes" haltonfailure="yes">
+			<classpath refid="project.classpath" />
+			<classpath>
+				<pathelement location="lib/junit-4.8.2.jar" />
+				<pathelement location="${dist.file}" />
+				<pathelement path="${test.class.dir}" />
+			</classpath>
+
+			<formatter type="xml" />
+
+			<batchtest fork="yes" todir="${test.reports}/onJar">
+				<fileset dir="${test.dir}">
+					<include name="**/*Test*.java" />
+					<exclude name="**/TestDriver.java" />
+					<exclude name="**/TestDriver2.java" />
+					<exclude name="**/AllTests.java" />
+				</fileset>
+			</batchtest>
+		</junit>
+
+		<!-- remove copied class.dir -->
+		<delete dir="${ws.class.dir}" deleteonexit="true"/>
+	</target>
+	
 	<target name="dist-mixed-jar" description="Build a distribution" depends="default">
 		<!-- create a JAR file for the users -->
 		<jar destfile="${dist-mixed.file.jar}">

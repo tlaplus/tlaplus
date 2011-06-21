@@ -5,6 +5,9 @@
 package util;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -27,6 +30,10 @@ import java.net.URL;
 
 public class SimpleFilenameToStream implements FilenameToStream {
 
+	private static final String TMPDIR = System.getProperty("java.io.tmpdir");
+	private static final String STANDARD_MODULES = "tla2sany"
+			+ File.separator + "StandardModules" + File.separator;
+	
   // SZ Feb 23, 2009:
   // used File.separator and File.pathSeparator instead
   // the character separating names of directories in the libraryPath    
@@ -35,7 +42,7 @@ public class SimpleFilenameToStream implements FilenameToStream {
   // private static String filesep     = System.getProperty("file.separator"); 
   
   
-  private static String installationBasePath = getInstallationBasePath();
+private static String installationBasePath = getInstallationBasePath();
                                             // Find the absolute path in the file system where SANY is installed
   private static String[] libraryPaths = getLibraryPaths();
                                             // path of directories to be searched in order for the named file
@@ -48,18 +55,26 @@ public class SimpleFilenameToStream implements FilenameToStream {
     ClassLoader cl  = ClassLoader.getSystemClassLoader();
 
     // get a "file:" URL for the base directory for package tla2sany
-    URL         url = cl.getResource("tla2sany");
+    final URL         url = cl.getResource("tla2sany");
 
     // jar expanded to the fs (make sure to handle whitespaces correctly
-    try {
+    final String path = url.toString();
+	try {
     	// convert to URI which handles paths correctly (even OS dependently)
-    	final URI uri = new URI(url.toString());
-		return new File(uri).getAbsolutePath();
+    	if(!path.startsWith("jar:file:")) {
+    	final URI uri = new URI(path);
+    		return new File(uri).getAbsolutePath();
+    	}
     } catch (URISyntaxException e) {
+    	System.err.println(path);
     	// may never happen
     	e.printStackTrace();
-    	return "";
+    } catch (IllegalArgumentException e) {
+    	System.err.println(path);
+    	// may never happen
+    	e.printStackTrace();
     }
+    return path;
    }
 
   private static String[] getLibraryPaths() {
@@ -130,7 +145,38 @@ public class SimpleFilenameToStream implements FilenameToStream {
         }
         else 
         {
-            sourceFile = new File( prefix + name );
+        	// StandardModules contained in jar
+        	// need to load files into temp location
+        	// from the resource stream
+        	//
+        	// This would be a lot simpler if TLC would not depend on
+        	// File but on InputStream instead
+        	if(prefix.startsWith("jar:file:")) {
+        		ClassLoader cl = ClassLoader.getSystemClassLoader();
+					InputStream is = cl
+							.getResourceAsStream(STANDARD_MODULES
+									+ name);
+        		
+        		try {
+					sourceFile = new File(TMPDIR + File.separator + name);
+					sourceFile.deleteOnExit();
+					
+					FileOutputStream fos = new FileOutputStream(sourceFile);
+					
+					byte buf[] = new byte[1024];
+					int len;
+					while ((len = is.read(buf)) > 0) {
+						fos.write(buf, 0, len);
+					}
+					fos.close();
+					is.close();
+				} catch (IOException e) {
+					// must not happen
+					e.printStackTrace();
+				}
+        	} else {
+        		sourceFile = new File( prefix + name );
+        	}
         }
         // Debug
         // System.out.println("Looking for file " + sourceFile);
