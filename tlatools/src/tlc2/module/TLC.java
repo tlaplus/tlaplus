@@ -44,20 +44,33 @@ public class TLC implements ValueConstants
 
     /**
      * Prints to standard error the string (v1 + "  " + v2), and
-     * returns the value v2.
+     * returns the value v2.  
+     * 
+     * Modified on 22 June 2011 by LL to call deepNormalize() on the values before
+     * printing.  This fixes the same bug that caused PrintT({"a", "a"}) to print
+     * {"a", "a"} instead of {"a"}.  For safety, the values are copied before normalizing,
+     * thought that's probably not necessary.
      */
     public static Value Print(Value v1, Value v2)
     {
-        ToolIO.out.println(Value.ppr(v1.toString()) + "  " + Value.ppr(v2.toString()));
+        Value v1c = v1.deepCopy();
+        Value v2c = v2.deepCopy();
+        v1c.deepNormalize();
+        v2c.deepNormalize();
+        ToolIO.out.println(Value.ppr(v1c.toString()) + "  " + Value.ppr(v2c.toString()));
         return v2;
     }
 
     /**
      * Prints to standard error the string v1. Always returns TRUE.
+     * 
+     * Modified on 22 June 2011 by LL.  See comment on the Print method
      */
     public static Value PrintT(Value v1)
     {
-        ToolIO.out.println(Value.ppr(v1.toString()));
+        Value v1c = v1.deepCopy();
+        v1c.deepNormalize();   
+        ToolIO.out.println(Value.ppr(v1c.toString()));
         return ValTrue;
     }
 
