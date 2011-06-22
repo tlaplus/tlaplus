@@ -3,8 +3,13 @@
 (* Mathematicians define a relation R to be a set of ordered pairs, and    *)
 (* write `s R t' to mean `<<s, t>> \in R'.  The transitive closure TC(R)   *)
 (* of the relation R is the smallest relation containg R such that,        *)
-(*  `s TC(R) t' and `t TC(R) u' imply `s TC(R) u', for any s, t, and u.    *)
+(* `s TC(R) t' and `t TC(R) u' imply `s TC(R) u', for any s, t, and u.     *)
 (* This module shows several ways of defining the operator TC.             *)
+(*                                                                         *)
+(* It is sometimes more convenient to represent a relation as a            *)
+(* Boolean-valued function of two arguments, where `s R t' means R[s, t].  *)
+(* It is a straightforward exercise to translate everything in this module *)
+(* to that representation.                                                 *)
 (*                                                                         *)
 (* Mathematicians say that R is a relation on a set S iff R is a subset of *)
 (* S \X S.  Let the `support' of a relation R be the set of all elements s *)
@@ -16,7 +21,7 @@
 (* Let's begin by importing some modules we'll need and defining the the   *)
 (* support of a relation.                                                  *)
 (***************************************************************************)
-EXTENDS Integers, Sequences, FiniteSets
+EXTENDS Integers, Sequences, FiniteSets, TLC
 
 Support(R) == {r[1] : r \in R} \cup {r[2] : r \in R}
 
@@ -58,53 +63,65 @@ TC1(R) ==
 (***************************************************************************)
 (* This naive method used by TLC to evaluate expressions makes this        *)
 (* definition rather inefficient.  (As an exercise, find an upper bound on *)
-(* its complexity.) A definition of TC(R) that TLC can evaluate more       *)
-(* efficiently is obtained by recursively defining the function C with     *)
-(* domain Nat such that C[n] is the set of all pairs <<s, t>> with s, t    *)
-(* \in Support(R) such that there exists a path of length at most n+1 from *)
-(* s to t in Support(R).  This leads to the following definition, which    *)
-(* essentially implements Warshall's algorithm.                            *)
+(* its complexity.) To obtain a definition that TLC can evaluate more      *)
+(* efficiently, let's look at the closure operation more algebraically.    *)
+(* Let's define the composition of two relations R and T as follows.       *)
+(***************************************************************************)
+R ** T == LET SR == Support(R)
+              ST == Support(T)
+          IN  {<<r, t>> \in SR \X ST : 
+                \E s \in SR \cap ST : (<<r, s>> \in R) /\ (<<s, t>> \in T)}
+                                         
+(***************************************************************************)
+(* We can then define the closure of R to equal                            *)
+(*                                                                         *)
+(*    R \cup (R ** R) \cup (R ** R ** R) \cup ...                          *)
+(*                                                                         *)
+(* For R finite, this union converges to the transitive closure when the   *)
+(* number of terms equals the cardinality of the support of R.  This leads *)
+(* to the following definition.                                            *)
 (***************************************************************************)
 TC2(R) ==
-  LET S == Support(R)
-      C[n \in Nat] == IF n = 0 THEN R
-                               ELSE C[n-1] \cup
-                                     {<<s, t>> \in S \X S :
-                                         \E u \in S : /\ <<s, u>> \in C[n-1]
-                                                      /\ <<u, t>> \in R }
-  IN  IF S = {} THEN {} ELSE C[Cardinality(S) - 1] 
+  LET C[n \in Nat] == IF n = 0 THEN R
+                               ELSE C[n-1] \cup (C[n-1] ** R)
+  IN  IF R = {} THEN {} ELSE C[Cardinality(Support(R)) - 1] 
 
 (***************************************************************************)
-(* We can modify this definition as follows to be somewhat more efficient: *)
+(* These definitions of TC1 and TC2 are somewhat unsatisfactory because of *)
+(* their use of Cardinality(S).  For example, it would be easy to make a   *)
+(* mistake and use Cardinality(S) instead of Cardinality(S)+1 in the       *)
+(* definition of TC1(R).  I find the following definition more elegant     *)
+(* than the preceding two.  It is also more asymptotically more efficient  *)
+(* because it makes O(log Cardinality (S)) rather than O(Cardinality(S))   *)
+(* recursive calls.                                                        *)
 (***************************************************************************)
-TC3(R) ==
-  LET S == Support(R)
-      C[n \in Nat] == IF n = 0 THEN R
-                               ELSE C[n-1] \cup
-                                     {<<s, t>> \in S \X S :
-                                         \E u \in S : /\ <<s, u>> \in C[n-1]
-                                                      /\ <<u, t>> \in C[n-1] }
-  IN  IF S = {} THEN {} ELSE C[(Cardinality(S) \div 2)+ 1] 
+RECURSIVE TC3(_)
+TC3(R) == LET RR == R ** R
+          IN  IF RR \subseteq R THEN R ELSE TC3(R \cup RR)
 
 (***************************************************************************)
-(* These definitions of TC1, TC2, and TC3 are somewhat unsatisfactory      *)
-(* because of their use of Cardinality(S).  For example, it would be easy  *)
-(* to make a mistake and use Cardinality(S) instead of Cardinality(S)+1 in *)
-(* the definition of TC1(R).  The following definition is obtained from    *)
-(* the basic idea of TC3 by removing the recursive LET definition of C and *)
-(* making the entire definition recursive.  I find it more elegant than    *)
-(* the preceding three definitions.                                        *)
+(* The preceding two definitions can be made slightly more efficient to    *)
+(* execute by expanding the definition of ** and making some simple        *)
+(* optimizations.  But, this is unlikely to be worth complicating the      *)
+(* definitions for.                                                        *)
+(*                                                                         *)
+(* The following definition is (asymptotically) the most efficient.  It is *)
+(* essentially the TLA+ representation of Warshall's algorithm.            *)
+(* (Warshall's algorithm is typically written as an iterative procedure    *)
+(* for the case of a relation on a set i..j of integers, when the relation *)
+(* is represented as a Boolean-valued function.)                           *)
 (***************************************************************************)
-RECURSIVE TC4(_)
 TC4(R) ==
-  LET R1 == {r[1] : r \in R}
-      R2 == {r[2] : r \in R}
-      RR == {<<s, t>> \in R1 \X R2 : 
-                \E u \in R1 \cap R2 : (<<s, u>> \in R) /\ (<<u, t>> \in R)}
-  IN  IF RR \subseteq R THEN R
-                        ELSE TC4(R \cup RR)
+  LET S == Support(R)
+      RECURSIVE TCR(_)
+      TCR(T) == IF T = {} 
+                  THEN R
+                  ELSE LET r == CHOOSE s \in T : TRUE
+                           RR == TCR(T \ {r})
+                       IN  RR \cup {<<s, t>> \in S \X S : 
+                                      <<s, r>> \in RR /\ <<r, t>> \in RR}
+  IN  TCR(S)
   
-
 (***************************************************************************)
 (* We now test that these four definitions are equivalent.  Since it's     *)
 (* unlikely that all four are wrong in the same way, their equivalence     *)
@@ -116,17 +133,25 @@ ASSUME \A N \in 0..3 :
                                                /\ TC3(R) = TC4(R)
 
 (***************************************************************************)
-(* Sometimes it's more convenient to represent a relation as a             *)
-(* Boolean-valued operator, so we can write `s R t' as R(s, t).  When      *)
-(* represented this way, we have to know what set R is an operator on,     *)
-(* because we can't define its support in TLA+.  Also, since TLA+ does not *)
-(* permit us to define operator-valued operators, we cannot define TC(R)   *)
-(* to be an operator.  Instead, we define TC5(R, S, s, t) to mean that the *)
-(* transitive closure of R is true on s and t, where the operator R        *)
-(* represents a relation on S.  For any particular R, we can then define   *)
-(* its transitive closure to be the operator TCR defined by                *)
+(* Sometimes we want to represent a relation as a Boolean-valued operator, *)
+(* so we can write `s R t' as R(s, t).  This representation is less        *)
+(* convenient for manipulating relations, since an operator is not an      *)
+(* ordinary value the way a function is.  For example, since TLA+ does not *)
+(* permit us to define operator-valued operators, we cannot define a       *)
+(* transitive closure operator TC so TC(R) is the operator that represents *)
+(* the transitive closure.  Moreover, an operator R by itself cannot       *)
+(* represent a relation; we also have to know what set it is an operator   *)
+(* on.  (If R is a function, its domain tells us that.)                    *)
 (*                                                                         *)
-(*    TCR(s, t) == TC5(R, S, s, t)                                         *)
+(* However, there may be situations in which you want to represent         *)
+(* relations by operators.  In that case, you can define an operator TC so *)
+(* that, if R is an operator representing a relation on S, and TCR is the  *)
+(* operator representing it transitive closure, then                       *)
+(*                                                                         *)
+(*   TCR(s, t) = TC(R, S, s, t)                                            *)
+(*                                                                         *)
+(* for all s, t.  Here is the definition.  (This assumes that for an       *)
+(* operator R on a set S, R(s, t) equals FALSE for all s and t not in S.)  *)
 (***************************************************************************)
 TC5(R(_,_), S, s, t) ==
   LET CR[n \in Nat, v \in S] == 
@@ -137,10 +162,9 @@ TC5(R(_,_), S, s, t) ==
       /\ t \in S
       /\ CR[Cardinality(S)-1, t]
 
-
 (***************************************************************************)
-(* Finally, the following assumption checks that our definition of TC5     *)
-(* agrees with our definition TC1.                                         *)
+(* Finally, the following assumption checks that our definition TC5 agrees *)
+(* with our definition TC1.                                                *)
 (***************************************************************************)
 ASSUME \A N \in 0..3 : \A R \in SUBSET ((1..N) \X (1..N)) :
          LET RR(s, t) == <<s, t>> \in R
