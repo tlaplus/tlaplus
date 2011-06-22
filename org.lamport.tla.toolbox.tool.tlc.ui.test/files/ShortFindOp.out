@@ -1,4 +1,4 @@
-TARTMSG 2262:0 @!@!@
+@!@!@STARTMSG 2262:0 @!@!@
 TLC2 Version 2.03 of 10 April 2011
 @!@!@ENDMSG 2262 @!@!@
 @!@!@STARTMSG 2187:0 @!@!@
@@ -8,7 +8,7 @@ Running in Model-Checking mode.
 Starting SANY...
 @!@!@ENDMSG 2220 @!@!@
 Parsing file MC.tla
-Parsing file FindOp.tla
+Parsing file FindOpWihtoutPrint.tla
 Parsing file /usr/local/src/tla/tla/trunk/tla2-inria/org.lamport.tla.toolbox/StandardModules/TLC.tla
 Parsing file /usr/local/src/tla/tla/trunk/tla2-inria/org.lamport.tla.toolbox/StandardModules/Integers.tla
 Parsing file /usr/local/src/tla/tla/trunk/tla2-inria/org.lamport.tla.toolbox/StandardModules/Sequences.tla
@@ -17,13 +17,13 @@ Semantic processing of module Naturals
 Semantic processing of module Integers
 Semantic processing of module Sequences
 Semantic processing of module TLC
-Semantic processing of module FindOp
+Semantic processing of module FindOpWihtoutPrint
 Semantic processing of module MC
 @!@!@STARTMSG 2219:0 @!@!@
 SANY finished.
 @!@!@ENDMSG 2219 @!@!@
 @!@!@STARTMSG 2185:0 @!@!@
-Starting... (2011-06-20 16:27:43)
+Starting... (2011-06-21 12:14:57)
 @!@!@ENDMSG 2185 @!@!@
 @!@!@STARTMSG 2189:0 @!@!@
 Computing initial states...
@@ -31,7 +31,23 @@ Computing initial states...
 @!@!@STARTMSG 2190:0 @!@!@
 Finished computing initial states: 1 distinct state generated.
 @!@!@ENDMSG 2190 @!@!@
-( 0 :> ";" @@
+"goodby world"
+@!@!@STARTMSG 2110:1 @!@!@
+Invariant inv_13086512840853000 is violated.
+@!@!@ENDMSG 2110 @!@!@
+@!@!@STARTMSG 2121:1 @!@!@
+The behavior up to this point is:
+@!@!@ENDMSG 2121 @!@!@
+@!@!@STARTMSG 2217:4 @!@!@
+1: <Initial predicate>
+/\ pos_f = defaultInitValue
+/\ foundTokenSpecs = <<>>
+/\ delim = defaultInitValue
+/\ leftTok = defaultInitValue
+/\ left_ = defaultInitValue
+/\ returnVal = defaultInitValue
+/\ delimLen_ = defaultInitValue
+/\ line = ( 0 :> ";" @@
   1 :> ";" @@
   2 :> ";" @@
   3 :> ";" @@
@@ -56,18 +72,107 @@ Finished computing initial states: 1 distinct state generated.
   22 :> ";" @@
   23 :> ";" @@
   24 :> ";" )
-<<"curPos: ", 10>>
-(0 :> [token |-> (0 :> "f"), leftPos |-> 0, rightPos |-> 1])
-<<"curPos: ", 11>>
-"same"
-<<"curPos: ", 12>>
-(0 :> [token |-> (0 :> "b"), leftPos |-> 2, rightPos |-> 3])
-<<"curPos: ", 13>>
-"same"
-<<"curPos: ", 14>>
-<<>>
-"goodby world"
-@!@!@STARTMSG 2110:1 @!@!@
-Invariant inv_13085800480943000 is violated.
-@!@!@ENDMSG 2110 @!@!@
+/\ jdelim_ = defaultInitValue
+/\ i = defaultInitValue
+/\ foundBangToken = defaultInitValue
+/\ pos = defaultInitValue
+/\ pc = "Lbl_77"
+/\ ipos_ = defaultInitValue
+/\ pos_fi = defaultInitValue
+/\ pos_fin = defaultInitValue
+/\ notDone = defaultInitValue
+/\ pos_find = defaultInitValue
+/\ temp1 = defaultInitValue
+/\ temp2 = defaultInitValue
+/\ temp3 = defaultInitValue
+/\ delimLen = defaultInitValue
+/\ rt = defaultInitValue
+/\ notLastToken = FALSE
+/\ ipos = defaultInitValue
+/\ left = defaultInitValue
+/\ token = <<>>
+/\ rt_ = defaultInitValue
+/\ rightTok = defaultInitValue
+/\ jdelim = defaultInitValue
+/\ tokIdx = defaultInitValue
+/\ pos_ = defaultInitValue
+/\ curPos = 11
+/\ delim_ = defaultInitValue
+/\ tokArray = defaultInitValue
+/\ lastToken = FALSE
+/\ currentToken = defaultInitValue
+/\ stack = <<>>
+/\ tempVar1 = defaultInitValue
+/\ tempVar2 = defaultInitValue
+/\ tempVar3 = defaultInitValue
 
+@!@!@ENDMSG 2217 @!@!@
+@!@!@STARTMSG 2217:4 @!@!@
+2: <Action line 2389, col 11 to line 2400, col 48 of module FindOpWihtoutPrint>
+/\ pos_f = defaultInitValue
+/\ foundTokenSpecs = <<>>
+/\ delim = defaultInitValue
+/\ leftTok = defaultInitValue
+/\ left_ = defaultInitValue
+/\ returnVal = defaultInitValue
+/\ delimLen_ = defaultInitValue
+/\ line = ( 0 :> ";" @@
+  1 :> ";" @@
+  2 :> ";" @@
+  3 :> ";" @@
+  4 :> ";" @@
+  5 :> ";" @@
+  6 :> ";" @@
+  7 :> ";" @@
+  8 :> ";" @@
+  9 :> ";" @@
+  10 :> "f" @@
+  11 :> "(" @@
+  12 :> "b" @@
+  13 :> ")" @@
+  14 :> " " @@
+  15 :> ";" @@
+  16 :> ";" @@
+  17 :> ";" @@
+  18 :> ";" @@
+  19 :> ";" @@
+  20 :> ";" @@
+  21 :> ";" @@
+  22 :> ";" @@
+  23 :> ";" @@
+  24 :> ";" )
+/\ jdelim_ = defaultInitValue
+/\ i = defaultInitValue
+/\ foundBangToken = defaultInitValue
+/\ pos = defaultInitValue
+/\ pc = "Lbl_78"
+/\ ipos_ = defaultInitValue
+/\ pos_fi = defaultInitValue
+/\ pos_fin = defaultInitValue
+/\ notDone = defaultInitValue
+/\ pos_find = defaultInitValue
+/\ temp1 = defaultInitValue
+/\ temp2 = defaultInitValue
+/\ temp3 = defaultInitValue
+/\ delimLen = defaultInitValue
+/\ rt = defaultInitValue
+/\ notLastToken = FALSE
+/\ ipos = defaultInitValue
+/\ left = defaultInitValue
+/\ token = <<>>
+/\ rt_ = defaultInitValue
+/\ rightTok = defaultInitValue
+/\ jdelim = defaultInitValue
+/\ tokIdx = defaultInitValue
+/\ pos_ = defaultInitValue
+/\ curPos = 10
+/\ delim_ = defaultInitValue
+/\ tokArray = defaultInitValue
+/\ lastToken = FALSE
+/\ currentToken = defaultInitValue
+/\ stack = <<>>
+/\ tempVar1 = (-1 :> "")
+/\ tempVar2 = 10
+/\ tempVar3 = defaultInitValue
+
+@!@!@ENDMSG 2217 @!@!@
