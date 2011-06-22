@@ -118,36 +118,6 @@ public class ToolboxHandle
     }
 
     /**
-     * Returns the classpath entry of the tla2tool.jar (the TLA tools) 
-     */
-    public static IPath getTLAToolsClasspath()
-    {
-        IPath bundleBase = getBundleLocation();
-
-        if (bundleBase != null)
-        {
-            IPath tlaToolsLocation = bundleBase.append("tla2tools.jar"); //$NON-NLS-1$
-            return tlaToolsLocation;
-        }
-        return null;
-    }
-
-    /**
-     * Returns the directory entry of the standard modules
-     */
-    public static IPath getModulesClasspath()
-    {
-        IPath bundleBase = getBundleLocation();
-
-        if (bundleBase != null)
-        {
-            IPath tlaToolsLocation = bundleBase.append("StandardModules/"); //$NON-NLS-1$
-            return tlaToolsLocation;
-        }
-        return null;
-    }
-
-    /**
      * Retrieves the list of modules that are EXTEND-ed by current module
      * <br><b>Note:</b>Only works for current spec
      * @param rootModule, name of the module
@@ -158,9 +128,23 @@ public class ToolboxHandle
         return Activator.getModuleDependencyStorage().getListOfExtendedModules(moduleName);
     }
 
-    public static IPath getBundleLocation()
-    {
-        Bundle bundle = Activator.getDefault().getBundle();
+    /**
+     * Returns the classpath entry of the tla2tool.jar (the TLA tools) 
+     */
+    public static IPath getTLAToolsClasspath() {
+    	Bundle bundle = null;
+    	
+    	// find the tlatools bundle among all installed bundles
+    	// (this code assumes tlatools has a bundle shape "dir")
+		Bundle[] bundles = Activator.getDefault().getBundle()
+				.getBundleContext().getBundles();
+        for (int i = 0; i < bundles.length; i++) {
+			Bundle aBundle = bundles[i];
+			if ("tlatools".equals(aBundle.getSymbolicName())) {
+				bundle = aBundle;
+				break;
+			}
+		}
         if (bundle == null)
             return null;
 

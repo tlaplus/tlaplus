@@ -14,11 +14,11 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.ui.editors,
  org.eclipse.jface.text,
  org.eclipse.ui.navigator;bundle-version="3.3.101",
- org.eclipse.core.expressions;bundle-version="3.4.100"
+ org.eclipse.core.expressions;bundle-version="3.4.100",
+ tlatools;bundle-version="1.0.0";visibility:=reexport
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
 Bundle-ActivationPolicy: lazy
-Bundle-ClassPath: tla2tools.jar,
- .,
+Bundle-ClassPath: .,
  StandardModules/
 Export-Package: org.lamport.tla.toolbox,
  org.lamport.tla.toolbox.spec;
@@ -58,35 +58,6 @@ Export-Package: org.lamport.tla.toolbox,
    org.eclipse.jface.viewers,
    org.eclipse.swt.widgets,
    util",
- org.lamport.tla.toolbox.util.pref,
- pcal;uses:="pcal.exception,tla2tex",
- pcal.exception;uses:="pcal",
- tla2sany,
- tla2sany.configuration;uses:="tla2sany.semantic",
- tla2sany.drivers;uses:="tla2sany.modanalyzer",
- tla2sany.explorer;uses:="tla2sany.semantic",
- tla2sany.modanalyzer;
-  uses:="tla2sany.st,
-   tla2sany.semantic,
-   util,
-   tla2sany.utilities",
- tla2sany.parser;
-  uses:="tla2sany.st,
-   tla2sany.utilities,
-   tla2sany.semantic,
-   util",
- tla2sany.semantic;
-  uses:="tla2sany.explorer,
-   tla2sany.parser,
-   tla2sany.st,
-   util,
-   tla2sany.utilities",
- tla2sany.st;uses:="util",
- tla2sany.utilities,
- tla2tex,
- tlc2;uses:="tlc2.tool,tla2sany.modanalyzer,util",
- tlc2.output;uses:="tlc2.tool",
- tlc2.tool,
- util;uses:="tla2sany.semantic"
+ org.lamport.tla.toolbox.util.pref
 Eclipse-BundleShape: dir
 

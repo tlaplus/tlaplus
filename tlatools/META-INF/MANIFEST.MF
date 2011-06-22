@@ -1,0 +1,36 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: TLA+ Tools
+Bundle-SymbolicName: tlatools
+Bundle-Version: 1.0.0.qualifier
+Export-Package: pcal,
+ pcal.exception,
+ tla2sany,
+ tla2sany.StandardModules,
+ tla2sany.configuration,
+ tla2sany.drivers,
+ tla2sany.explorer,
+ tla2sany.modanalyzer,
+ tla2sany.parser,
+ tla2sany.semantic,
+ tla2sany.st,
+ tla2sany.utilities,
+ tla2tex,
+ tlc2,
+ tlc2.module,
+ tlc2.output,
+ tlc2.pprint,
+ tlc2.tool,
+ tlc2.tool.distributed,
+ tlc2.tool.fp,
+ tlc2.tool.liveness,
+ tlc2.tool.other,
+ tlc2.tool.queue,
+ tlc2.util,
+ tlc2.value,
+ util
+Bundle-Vendor: Leslie Lamport, Markus Alexander Kuppe
+Bundle-RequiredExecutionEnvironment: J2SE-1.5
+Eclipse-BundleShape: dir
+Require-Bundle: org.aspectj.runtime;bundle-version="1.6.0";resolution:=optional,
+ org.junit;bundle-version="3.8.0";resolution:=optional

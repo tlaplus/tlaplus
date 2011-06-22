@@ -94,8 +94,7 @@ public class TLCProcessJob extends TLCJob
             int maxHeapSize = launch.getLaunchConfiguration().getAttribute(LAUNCH_MAX_HEAP_SIZE, 500);
 
             // using -D to pass the System property of the location of standard modules
-            String[] vmArgs = new String[] { "-DTLA-Library=" + ToolboxHandle.getModulesClasspath().toOSString(),
-                    "-Xmx" + maxHeapSize + "m" };
+            String[] vmArgs = new String[] { "-Xmx" + maxHeapSize + "m" };
 
             // assemble the config
             VMRunnerConfiguration tlcConfig = new VMRunnerConfiguration(mainClassFQCN, classPath);
