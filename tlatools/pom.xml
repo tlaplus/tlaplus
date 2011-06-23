@@ -11,7 +11,7 @@
     <relativePath>../pom.xml</relativePath>
   </parent>
   <groupId>tlatoolbox</groupId>
-  <artifactId>tlatools</artifactId>
+  <artifactId>org.lamport.tlatools</artifactId>
   <version>1.0.0-SNAPSHOT</version>
   <packaging>eclipse-plugin</packaging>
   

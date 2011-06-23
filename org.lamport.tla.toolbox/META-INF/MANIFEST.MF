@@ -15,7 +15,7 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.jface.text,
  org.eclipse.ui.navigator;bundle-version="3.3.101",
  org.eclipse.core.expressions;bundle-version="3.4.100",
- tlatools;bundle-version="1.0.0";visibility:=reexport
+ org.lamport.tlatools;bundle-version="1.0.0";visibility:=reexport
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: .,

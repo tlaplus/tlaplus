@@ -70,8 +70,11 @@ public class TLCProcessJob extends TLCJob
             monitor.subTask("Preparing the TLC Launch");
 
             // classpath
-            String osString = ToolboxHandle.getTLAToolsClasspath().toOSString();
-			String[] classPath = new String[] { osString, osString + File.separator + "class" };
+            final String runtimeClasspath = ToolboxHandle.getTLAToolsClasspath().toOSString();
+			// classpath during toolbox development within Eclipse (will simply not
+			// exist in packaged toolbox)
+			final String devClasspath = runtimeClasspath + File.separator + "class";
+			String[] classPath = new String[] { runtimeClasspath, devClasspath };
 
             // full-qualified class name of the main class
             String mainClassFQCN = TLC.class.getName();

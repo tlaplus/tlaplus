@@ -140,7 +140,7 @@ public class ToolboxHandle
 				.getBundleContext().getBundles();
         for (int i = 0; i < bundles.length; i++) {
 			Bundle aBundle = bundles[i];
-			if ("tlatools".equals(aBundle.getSymbolicName())) {
+			if ("org.lamport.tlatools".equals(aBundle.getSymbolicName())) {
 				bundle = aBundle;
 				break;
 			}
