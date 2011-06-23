@@ -73,7 +73,7 @@
 
 	<!-- Minimum tycho version build work with -->
 	<properties>
-		<tycho-version>0.12.0</tycho-version>
+		<tycho-version>0.13.0-SNAPSHOT</tycho-version>
 		
 		<!-- no default here -->
 		<tycho.test.vm.argline></tycho.test.vm.argline>
@@ -178,8 +178,7 @@
 							<arch>x86_64</arch>
 						</environment>
 
-						<!-- Mac (turned off ATM due to https://issues.sonatype.org/browse/TYCHO-520) -->
-						<!-- 
+						<!-- Mac -->
 						<environment>
 							<os>macosx</os>
 							<ws>cocoa</ws>
@@ -190,7 +189,7 @@
 							<ws>cocoa</ws>
 							<arch>x86_64</arch>
 						</environment>
-						 -->
+
 					</environments>
 				</configuration>
 			</plugin>
@@ -198,9 +197,9 @@
 		</plugins>
 	</build>
 	
+	<!-- pass mac specific SWT proeprties on mac (OS check is based on identifying the VM)-->
 	<profiles>
 		<profile>
-			<!-- as a workaround for TYCHO-520, only build mac binaries on macs -->
 			<id>macosx</id>
 			<activation>
 				<property>
@@ -212,29 +211,6 @@
 				<tycho.test.vm.argline>-Dosgi.ws=cocoa -XstartOnFirstThread</tycho.test.vm.argline>
 				<tycho.test.vm.useUiThread>false</tycho.test.vm.useUiThread>
 			</properties>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.eclipse.tycho</groupId>
-						<artifactId>target-platform-configuration</artifactId>
-						<version>${tycho-version}</version>
-						<configuration>
-							<environments combine.children="append">
-								<environment>
-									<os>macosx</os>
-									<ws>cocoa</ws>
-									<arch>x86</arch>
-								</environment>
-								<environment>
-									<os>macosx</os>
-									<ws>cocoa</ws>
-									<arch>x86_64</arch>
-								</environment>
-							</environments>
-						</configuration>
-					</plugin>
-				</plugins>
-			</build>
 		</profile>	
 	</profiles>
 </project>
