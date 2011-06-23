@@ -1,5 +1,7 @@
 package org.lamport.tla.toolbox.tool.tlc.job;
 
+import java.io.File;
+
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -68,7 +70,8 @@ public class TLCProcessJob extends TLCJob
             monitor.subTask("Preparing the TLC Launch");
 
             // classpath
-            String[] classPath = new String[] { ToolboxHandle.getTLAToolsClasspath().toOSString() };
+            String osString = ToolboxHandle.getTLAToolsClasspath().toOSString();
+			String[] classPath = new String[] { osString, osString + File.separator + "class" };
 
             // full-qualified class name of the main class
             String mainClassFQCN = TLC.class.getName();
