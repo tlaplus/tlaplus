@@ -11,9 +11,8 @@ import java.util.List;
 public class TLCError
 {
     private String message = "";
-    private LinkedList states;
+    private List<TLCState> states;
     private TLCError cause;
-    private LinkedList actions;
     private int errorCode;
 
     public TLCError()
@@ -29,7 +28,7 @@ public class TLCError
     {
         if (states == null)
         {
-            states = new LinkedList();
+            states = new LinkedList<TLCState>();
         }
 
         states.add(state);
@@ -54,19 +53,9 @@ public class TLCError
         return message;
     }
 
-    public final List getStates()
+    public final List<TLCState> getStates()
     {
         return states;
-    }
-
-    public final LinkedList getActions()
-    {
-        return actions;
-    }
-
-    public final void setActions(LinkedList actions)
-    {
-        this.actions = actions;
     }
 
     public final int getErrorCode()
@@ -82,11 +71,6 @@ public class TLCError
     public void setMessage(String message)
     {
         this.message = message;
-    }
-
-    public boolean hasActions()
-    {
-        return this.actions != null && !this.actions.isEmpty();
     }
 
     public boolean hasTrace()

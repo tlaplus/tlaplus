@@ -2,6 +2,7 @@ package org.lamport.tla.toolbox.tool.tlc.ui.util;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Set;
 
 /**
  * TLA+ Reserved words
@@ -45,7 +46,7 @@ public interface ITLAReserveredWords
             CONSTANTS, DOMAIN, ELSE, ENABLED, EXCEPT, EXTENDS, IF, IN, INSTANCE, LET, LOCAL, MODULE, OTHER, SF_,
             SUBSET, THEN, THEOREM, UNCHANGED, UNION, VARIABLE, VARIABLES, WF_, WITH };
 
-    public final static HashSet ALL_WORDS_SET = new HashSet(Arrays.asList(ALL_WORDS_ARRAY));
+    public final static Set<String> ALL_WORDS_SET = new HashSet<String>(Arrays.asList(ALL_WORDS_ARRAY));
 }
 
 /*

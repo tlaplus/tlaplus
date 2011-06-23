@@ -1,5 +1,6 @@
 package org.lamport.tla.toolbox.tool.tlc.ui.view;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -41,6 +42,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.ScrollBar;
@@ -109,11 +111,6 @@ public class TLCErrorView extends ViewPart
         return new Document("Select line in Error Trace to show its value here.");
     }
 
-    private static final List EMPTY_LIST()
-    {
-        return new LinkedList();
-    }
-
     private FormToolkit toolkit;
     private Form form;
 
@@ -136,8 +133,8 @@ public class TLCErrorView extends ViewPart
     public void clear()
     {
         errorViewer.setDocument(EMPTY_DOCUMENT());
-        setTraceInput(EMPTY_LIST());
-        traceExplorerComposite.getTableViewer().setInput(new Vector());
+        setTraceInput(Collections.EMPTY_LIST);
+        traceExplorerComposite.getTableViewer().setInput(new Vector<TLCState>());
         traceExplorerComposite.changeExploreEnablement(false);
         valueViewer.setInput(EMPTY_DOCUMENT());
     }
@@ -152,7 +149,7 @@ public class TLCErrorView extends ViewPart
      * @param problems
      *            a list of {@link TLCError} objects representing the errors.
      */
-    protected void fill(String modelName, List problems)
+    protected void fill(String modelName, List<TLCError> problems)
     {
 
         try
@@ -178,12 +175,12 @@ public class TLCErrorView extends ViewPart
         // if there are errors
         if (problems != null && !problems.isEmpty())
         {
-            List states = null;
+            List<TLCState> states = null;
             StringBuffer buffer = new StringBuffer();
             // iterate over the errors
             for (int i = 0; i < problems.size(); i++)
             {
-                TLCError error = (TLCError) problems.get(i);
+                TLCError error = problems.get(i);
 
                 appendError(buffer, error);
 
@@ -196,7 +193,7 @@ public class TLCErrorView extends ViewPart
             }
             if (states == null)
             {
-                states = EMPTY_LIST();
+                states = new LinkedList<TLCState>();
             }
 
             /*
@@ -205,7 +202,7 @@ public class TLCErrorView extends ViewPart
              * seconds in these cases, so it is important to not reset the trace
              * if it is not necessary
              */
-            List oldStates = (List) variableViewer.getInput();
+            List<TLCState> oldStates = (List<TLCState>) variableViewer.getInput();
             boolean isNewTrace = states != null && oldStates != null && !(states == oldStates);
 
             /*
@@ -502,7 +499,7 @@ public class TLCErrorView extends ViewPart
         // add a listener to the preference store to react when the font is
         // changed
 
-        Vector controls = new Vector();
+        Vector<Control> controls = new Vector<Control>();
         controls.add(errorViewer.getControl());
         fontChangeListener = new FontPreferenceChangeListener(controls, ITLCPreferenceConstants.I_TLC_OUTPUT_FONT);
         JFaceResources.getFontRegistry().addListener(fontChangeListener);
@@ -550,7 +547,7 @@ public class TLCErrorView extends ViewPart
             // Replace error messages resulting from evaluating the constant
             // expression field with something more sensible.
             toAppend = CONSTANT_EXPRESSION_ERROR_PATTERN.matcher(toAppend).replaceAll(
-                    "The `Evaluate Constant Expression’ section’s evaluation");
+                    "The `Evaluate Constant Expressionï¿½ sectionï¿½s evaluation");
             buffer.append(toAppend).append("\n");
         }
         TLCError cause = error.getCause();
@@ -1052,9 +1049,9 @@ public class TLCErrorView extends ViewPart
          * a changed or added row--since we can't do multicolored backgrounds to
          * show that it is both.
          */
-        protected HashSet changedRows = new HashSet();
-        protected HashSet addedRows = new HashSet();
-        protected HashSet deletedRows = new HashSet();
+        protected HashSet<Object> changedRows = new HashSet<Object>();
+        protected HashSet<TLCVariableValue> addedRows = new HashSet<TLCVariableValue>();
+        protected HashSet<TLCVariableValue> deletedRows = new HashSet<TLCVariableValue>();
 
         public Color getForeground(Object element, int i)
         {
@@ -1103,7 +1100,7 @@ public class TLCErrorView extends ViewPart
      * sets of objects to be highlighted to show state changes in the states
      * contained in the parameter stateList.
      */
-    private void setDiffInfo(List stateList)
+    private void setDiffInfo(List<TLCState> stateList)
     {
         if (stateList.size() < 2)
         {
@@ -1119,12 +1116,12 @@ public class TLCErrorView extends ViewPart
         TLCState[] states = new TLCState[stateList.size()];
         for (int i = 0; i < states.length; i++)
         {
-            states[i] = (TLCState) stateList.get(i);
+            states[i] = stateList.get(i);
         }
         StateLabelProvider labelProvider = (StateLabelProvider) variableViewer.getLabelProvider();
-        HashSet changedRows = labelProvider.changedRows;
-        HashSet addedRows = labelProvider.addedRows;
-        HashSet deletedRows = labelProvider.deletedRows;
+        HashSet<Object> changedRows = labelProvider.changedRows;
+        HashSet<TLCVariableValue> addedRows = labelProvider.addedRows;
+        HashSet<TLCVariableValue> deletedRows = labelProvider.deletedRows;
         changedRows.clear();
         addedRows.clear();
         deletedRows.clear();
@@ -1171,8 +1168,8 @@ public class TLCErrorView extends ViewPart
      * representations to the appropriate HashSets to indicate that those rows
      * should be appropriately highlighted.
      */
-    private void setInnerDiffInfo(TLCVariableValue first, TLCVariableValue second, HashSet changed, HashSet added,
-            HashSet deleted)
+    private void setInnerDiffInfo(TLCVariableValue first, TLCVariableValue second, HashSet<Object> changed, HashSet<TLCVariableValue> added,
+            HashSet<TLCVariableValue> deleted)
     {
         if (first instanceof TLCSimpleVariableValue)
         {
@@ -1359,7 +1356,7 @@ public class TLCErrorView extends ViewPart
              * !firstShorter : we mark beginning of longer (=first) as deleted.
              */
             int firstEltToMark = (isPrefix) ? shorter.length : 0;
-            HashSet howToMark = (firstShorter) ? added : deleted;
+            HashSet<TLCVariableValue> howToMark = (firstShorter) ? added : deleted;
 
             for (int i = 0; i < longer.length - shorter.length; i++)
             {
@@ -1396,7 +1393,7 @@ public class TLCErrorView extends ViewPart
      * the two records.
      */
     private void setElementArrayDiffInfo(TLCVariableValue[] firstElts, String[] firstLHStrings,
-            TLCVariableValue[] secondElts, String[] secondLHStrings, HashSet changed, HashSet added, HashSet deleted)
+            TLCVariableValue[] secondElts, String[] secondLHStrings, HashSet<Object> changed, HashSet<TLCVariableValue> added, HashSet<TLCVariableValue> deleted)
     {
 
         for (int i = 0; i < firstElts.length; i++)
@@ -1452,7 +1449,7 @@ public class TLCErrorView extends ViewPart
      * setElementArrayDiffInfo to do the work.
      */
     private void setFcnElementArrayDiffInfo(TLCFcnElementVariableValue[] firstElts,
-            TLCFcnElementVariableValue[] secondElts, HashSet changed, HashSet added, HashSet deleted)
+            TLCFcnElementVariableValue[] secondElts, HashSet<Object> changed, HashSet<TLCVariableValue> added, HashSet<TLCVariableValue> deleted)
     {
         String[] firstLHStrings = new String[firstElts.length];
         for (int i = 0; i < firstElts.length; i++)
@@ -1509,7 +1506,7 @@ public class TLCErrorView extends ViewPart
      * 
      * @param states
      */
-    private void setTraceInput(List states)
+    private void setTraceInput(List<TLCState> states)
     {
         variableViewer.setInput(states);
         if (!states.isEmpty())

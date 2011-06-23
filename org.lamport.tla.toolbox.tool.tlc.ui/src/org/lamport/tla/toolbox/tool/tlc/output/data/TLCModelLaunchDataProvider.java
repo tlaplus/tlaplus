@@ -65,7 +65,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
     // presenter for the current process
     private ITLCModelLaunchDataPresenter presenter;
     // list of errors
-    private List errors;
+    private List<TLCError> errors;
     // start time
     private String startTimestamp;
     // end time
@@ -763,12 +763,12 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
         populate();
     }
 
-    public List getErrors()
+    public List<TLCError> getErrors()
     {
         return errors;
     }
 
-    public void setErrors(List errors)
+    public void setErrors(List<TLCError> errors)
     {
         this.errors = errors;
     }

@@ -5,6 +5,7 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.Set;
 
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 
@@ -34,11 +35,11 @@ public class SemanticHelper
      */
     public static final String TLA_BUILTIN = "--TLA+ BUILTINS--";
     
-    private static HashSet CONFIG_KEYWORDS = new HashSet(Arrays.asList(ModelConfig.ALL_KEYWORDS));
+    private static Set CONFIG_KEYWORDS = new HashSet(Arrays.asList(ModelConfig.ALL_KEYWORDS));
 
     private Hashtable pageStorage;
     private Context specContext;
-    private HashSet keywords = ITLAReserveredWords.ALL_WORDS_SET;
+    private Set<String> keywords = ITLAReserveredWords.ALL_WORDS_SET;
 
     /**
      * Constructs a helper instance
