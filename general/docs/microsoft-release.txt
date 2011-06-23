@@ -1,9 +1,13 @@
-TO PREPARE THE ZIP FILES FOR THE RELEASE
+TO PREPARE THE ZIP FILES FOR THE TOOLBOX RELEASE
 
-In org.lamport.tla.toolbox.product.standalone
+Step 1: Get the right version numbers to appear:
+
+In org.lamport.tla.toolbox.product.standalone 
   plugin.xml : line 32 (the "aboutText" property), update date and version 
                and other stuff that appears in the Help/About window.  
   standalone.product: 
+    As of 24 Jun 2011, standalone.product has moved to:
+    org.lamport.tla.toolbox.product.product
      Branding tab: update date and version (I don't know if this is
                    actually used anywhere.)
      Overview: update version.  (I don't know if this is used anywhere.)
@@ -11,8 +15,13 @@ In org.lamport.tla.toolbox.product.standalone
 
 In org.lamport.tla.toolbox/welcome/welcomeView.html
    Update date and version
-     
+
+Step 2: Build the .zip files:
+Method 1: 
 In org.lamport.tla.toolbox.product.standalone.product
+ as of June 2011 this file was renamed to
+   org.lamport.tla.toolbox.product.product.product
+   
   synchronize and use Eclipse Product export wizard
   In the first menu, give
     Product Configuration: 
@@ -37,7 +46,19 @@ In org.lamport.tla.toolbox.product.standalone.product
  Hitting Finish then puts the zip files into:
      c:\users\lamport\tla\toolbox-release
 
-TO PREPARE THE STAND-ALONE TLA RELEASE
+Method 2. Using Maven
+  In a Cygwin shell, 
+   - cd to ~/tla/newtools/tla2-inria
+   - run:  mvn install
+  This runs tests, which could fail.
+  To not run the tests, instead run
+     mvn install -Dmaven.test.skip=true
+  To have it do the tests but continue if it fails, run
+     mvn install -Dmaven.test.failure.ignore=true
+  The .zip files are in
+       C:\lamport\tla\newtools\tla2-inria\org.lamport.tla.toolbox.product.product\target\products
+      
+TO PREPARE THE STAND-ALONE TLA TOOLS RELEASE ZIP FILE
   Run the Ant default-release option.  This will put the release in
      C:\lamport\tla\newtools\tla2-inria\tlatools\dist\tla.zip
 
