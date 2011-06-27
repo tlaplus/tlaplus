@@ -11,7 +11,8 @@
   </parent>
   <groupId>tlatoolbox</groupId>
   <artifactId>org.lamport.tla.toolbox.product.product</artifactId>
-  <version>1.0.0-SNAPSHOT</version>
+  <!-- Release version goes here. -->
+  <version>1.3.3</version>
   <packaging>eclipse-repository</packaging>
   <build>
     <plugins>
