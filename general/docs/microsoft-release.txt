@@ -47,6 +47,9 @@ In org.lamport.tla.toolbox.product.standalone.product
      c:\users\lamport\tla\toolbox-release
 
 Method 2. Using Maven
+  Set the version number in ...product.product/pom.xml.
+  (The target platforms to build for are specified in tla2-inria/pom.xml.  This file also specifies
+   what version of the Eclipse libraries to build with.)
   In a Cygwin shell, 
    - cd to ~/tla/newtools/tla2-inria
    - run:  mvn install
@@ -56,8 +59,11 @@ Method 2. Using Maven
   To have it do the tests but continue if it fails, run
      mvn install -Dmaven.test.failure.ignore=true
   The .zip files are in
-       C:\lamport\tla\newtools\tla2-inria\org.lamport.tla.toolbox.product.product\target\products
-      
+       C:\Users\lamport\.m2\repository\tlatools\org.lamport.tla.toolbox.product.product\version-number
+  This will keep accumulating new versions.  To delete an old version, delete the
+       C:\Users\lamport\.m2\repository\tlatools\
+    directory.
+  
 TO PREPARE THE STAND-ALONE TLA TOOLS RELEASE ZIP FILE
   Run the Ant default-release option.  This will put the release in
      C:\lamport\tla\newtools\tla2-inria\tlatools\dist\tla.zip
