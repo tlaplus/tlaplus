@@ -3,7 +3,7 @@ package org.lamport.tla.toolbox.tool.tlc.output.source;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.aspectj.lang.JoinPoint;
+//import org.aspectj.lang.JoinPoint;
 
 public class MethodInvocationCounter {
 	public static final String TBTOIP_addIncrement = "TagBasedTLCOutputIncrementalParser.addIncrement(..)";
@@ -11,14 +11,14 @@ public class MethodInvocationCounter {
 
 	private static Map<String, Long> invocations = new LinkedHashMap<String, Long>();
 
-	static void enter(JoinPoint joinPoint) {
-		String key = joinPoint.getSignature().toShortString();
-		Long l = invocations.get(key);
-		if(l == null) {
-			l = 0L;
-		}
-		invocations.put(key, ++l);
-	}
+//	static void enter(JoinPoint joinPoint) {
+//		String key = joinPoint.getSignature().toShortString();
+//		Long l = invocations.get(key);
+//		if(l == null) {
+//			l = 0L;
+//		}
+//		invocations.put(key, ++l);
+//	}
 
 	/**
 	 * @return the invocations
