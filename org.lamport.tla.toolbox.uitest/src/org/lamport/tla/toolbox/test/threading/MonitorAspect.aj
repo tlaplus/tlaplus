@@ -27,7 +27,6 @@ public aspect MonitorAspect {
 		|| execution(* util..*.*(..));
 	
 	// capture calls to backend, but not within ourself or in filter
-	@SuppressAjWarnings
 	before(): (callToBackend()
 			&& !cflowbelow(callToBackend()) && !cflowbelow(inFilter())) { 
 		MonitorAdaptor.enter(thisJoinPoint);
