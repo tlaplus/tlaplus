@@ -1,6 +1,5 @@
 package org.lamport.tla.toolbox.tool.tlc.output;
 
-import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.text.BadLocationException;
 import org.lamport.tla.toolbox.tool.tlc.output.source.ITLCOutputSource;
 import org.lamport.tla.toolbox.tool.tlc.output.source.TagBasedTLCOutputIncrementalParser;
@@ -24,31 +23,34 @@ public class ParsingTLCOutputSink implements IProcessOutputSink
     {
     	// parser only handles complete lines, thus we buffer incomplete
     	// lines here (speeds up parsing too)
-        try
-        {
-        	// a) prepend the previous text
-        	text = buffer + text;
-        	buffer = "";
-        	
-        	final int lastLineBreak = text.lastIndexOf(10);
-        	final int length = text.length();
-        	// b) complete lines are directly fed to the parser
-			if (lastLineBreak == length) {
-        		parser.addIncrement(text);
-        	// c) Feed all complete lines of a multi-line input
-        	} else {
-        		final String substring = text.substring(0, lastLineBreak + 1);
-        		parser.addIncrement(substring);
-        		// d) suffix is saved for the next invocation
-        		buffer = text.substring(lastLineBreak + 1);
-        	}
-        } catch (BadLocationException e)
-        {
-            TLCUIActivator.logError("Error parsing the TLC output stream for "
-                    + this.parser.getSource().getTLCOutputName(), e);
-        }
+
+    	// a) prepend the previous text
+    	text = buffer + text;
+    	buffer = "";
+    	
+    	final int lastLineBreak = text.lastIndexOf(10);
+    	final int length = text.length();
+    	// b) complete lines are directly fed to the parser
+		if (lastLineBreak == length) {
+    		addIncrement(text);
+    	// c) Feed all complete lines of a multi-line input
+    	} else {
+    		final String substring = text.substring(0, lastLineBreak + 1);
+    		addIncrement(substring);
+    		// d) suffix is saved for next invocation or done()
+    		buffer = text.substring(lastLineBreak + 1);
+    	}
     }
 
+    private void addIncrement(final String input) {
+		try {
+			parser.addIncrement(input);
+		} catch (BadLocationException e) {
+            TLCUIActivator.logError("Error parsing the TLC output stream for "
+                    + this.parser.getSource().getTLCOutputName(), e);
+		}
+    }
+    
     /* (non-Javadoc)
      * @see org.lamport.tla.toolbox.tool.tlc.output.IProcessOutputSink#initializeSink(java.lang.String, int)
      */
@@ -64,8 +66,10 @@ public class ParsingTLCOutputSink implements IProcessOutputSink
      */
     public void processFinished()
     {
-    	Assert.isTrue("".equals(buffer));
+    	// feed the rest of the buffer to the parser
+    	if(buffer.length() > 0) {
+    		addIncrement(buffer);
+    	}
         this.parser.done();
     }
-
 }
