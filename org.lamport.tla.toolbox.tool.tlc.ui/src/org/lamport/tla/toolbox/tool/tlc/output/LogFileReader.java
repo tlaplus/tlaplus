@@ -39,7 +39,8 @@ public class LogFileReader
             IDocument document = fileDocumentProvider.getDocument(fileEditorInput);
             /*
              * When the output file is somewhat large (several hundred KB)
-             * the toolbox hangs if the entire document representing that file
+             * the toolbox hangs due to the parser inefficiently handling multiple lines at once.
+             * If the entire document representing that file
              * is passed to the parser at once. We can send in pieces of it
              * to solve this problem.
              * 
