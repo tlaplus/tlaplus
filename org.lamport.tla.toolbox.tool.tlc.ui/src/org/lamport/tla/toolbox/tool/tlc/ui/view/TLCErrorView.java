@@ -230,6 +230,10 @@ public class TLCErrorView extends ViewPart
                 this.setTraceInput(states);
                 traceExplorerComposite.changeExploreEnablement(true);
             }
+            if (states != null && !states.isEmpty())
+            {
+                variableViewer.expandToLevel(2);
+            }
 
             this.form.setText(modelName);
 
