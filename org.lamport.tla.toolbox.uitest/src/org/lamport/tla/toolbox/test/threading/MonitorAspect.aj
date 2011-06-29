@@ -1,5 +1,7 @@
 package org.lamport.tla.toolbox.test.threading;
 
+import org.aspectj.lang.annotation.SuppressAjWarnings;
+
 /**
  * The purpose of this advice is to intercept method execution in the backend
  * code - namely all code in the packages tlc2, tla2sany, tla2tex, pcal and util.
@@ -25,6 +27,7 @@ public aspect MonitorAspect {
 		|| execution(* util..*.*(..));
 	
 	// capture calls to backend, but not within ourself or in filter
+	@SuppressAjWarnings
 	before(): (callToBackend()
 			&& !cflowbelow(callToBackend()) && !cflowbelow(inFilter())) { 
 		MonitorAdaptor.enter(thisJoinPoint);
