@@ -315,6 +315,9 @@ public class TagBasedTLCOutputIncrementalParser
 		// don't waste time, skip empty or new lines
 		if (text == null || text.length() == 0 || text.equals("\n")) {
 			return;
+		} else if(text.charAt(text.length() - 1) != 10) { // 10 ascii for '\n'
+			throw new BadLocationException("Input does not end with newline");
+			//text = text + (char) 10;
 		}
 
 		document.replace(document.getLength(), 0, text);
