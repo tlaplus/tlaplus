@@ -596,8 +596,8 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         gd.grabExcessHorizontalSpace = true;
         this.coverageTimestampText.setLayoutData(gd);
 
-        Table stateTable = toolkit.createTable(coverageComposite, SWT.MULTI | SWT.FULL_SELECTION | SWT.V_SCROLL
-                | SWT.BORDER);
+        final Table stateTable = toolkit.createTable(coverageComposite, SWT.MULTI | SWT.FULL_SELECTION | SWT.V_SCROLL
+                | SWT.BORDER | SWT.VIRTUAL);
         gd = new GridData(CoverageLabelProvider.MIN_WIDTH, 100);
         gd.horizontalSpan = 2;
         stateTable.setLayoutData(gd);

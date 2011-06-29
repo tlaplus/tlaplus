@@ -4,7 +4,6 @@ import java.util.Vector;
 
 import org.eclipse.jface.text.rules.IPredicateRule;
 import org.eclipse.jface.text.rules.RuleBasedPartitionScanner;
-import org.eclipse.jface.text.rules.SingleLineRule;
 import org.eclipse.jface.text.rules.Token;
 
 /**
@@ -14,7 +13,7 @@ import org.eclipse.jface.text.rules.Token;
  */
 public class TagBasedTLCOutputTokenScanner extends RuleBasedPartitionScanner
 {
-    private final static String HEAD_DELIM = "@!@!@";
+    public final static String HEAD_DELIM = "@!@!@";
     private final static String TAIL_DELIM = "";
     private final static String RULE_START = HEAD_DELIM + "STARTMSG";
     private final static String RULE_END = HEAD_DELIM + "ENDMSG";
@@ -27,15 +26,13 @@ public class TagBasedTLCOutputTokenScanner extends RuleBasedPartitionScanner
 
     public TagBasedTLCOutputTokenScanner()
     {
-        Vector<SingleLineRule> rules = new Vector<SingleLineRule>();
+        Vector<IPredicateRule> rules = new Vector<IPredicateRule>();
 
-        rules.add(new SingleLineRule(RULE_START, TAIL_DELIM + "\n", new Token(TAG_OPEN)));
-        rules.add(new SingleLineRule(RULE_END, TAIL_DELIM + "\n", new Token(TAG_CLOSED)));
-
+        rules.add(new TLCSingleLineRule(RULE_START, TAIL_DELIM + "\n", new Token(TAG_OPEN)));
+        rules.add(new TLCSingleLineRule(RULE_END, TAIL_DELIM + "\n", new Token(TAG_CLOSED)));
+        rules.add(new TLCMultiLineRule(new Token(DEFAULT_CONTENT_TYPE)));
+        
         // add the rules
         setPredicateRules((IPredicateRule[]) rules.toArray(new IPredicateRule[rules.size()]));
-
-        // output is default
-        setDefaultReturnToken(new Token(DEFAULT_CONTENT_TYPE));
     }
-}
+ }
