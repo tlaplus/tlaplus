@@ -56,8 +56,9 @@ public class TagBasedTLCOutputIncrementalParser
      * the method {@link TLCOutputPartitionChangeListener#documentPartitioningChanged(DocumentPartitioningChangedEvent)}.
      */
     private int lastPartitionEnd;
-    private TagBasedTLCAnalyzer analyzer;
-    private CachingTLCOutputSource source;
+    private final TagBasedTLCAnalyzer analyzer;
+    private final CachingTLCOutputSource source;
+	private final Document document;
 
     /**
      * The listener interested in change of partitioning, which evaluates the partitioning and produces the TLCOutput (added to the source)
@@ -265,7 +266,7 @@ public class TagBasedTLCOutputIncrementalParser
     public TagBasedTLCOutputIncrementalParser(String name, int prio, boolean isTraceExplorer)
     {
         // create the document
-        Document document = new Document();
+        document = new Document();
 
         this.analyzer = new TagBasedTLCAnalyzer(document);
         this.source = new CachingTLCOutputSource(name, prio);
@@ -275,7 +276,7 @@ public class TagBasedTLCOutputIncrementalParser
                 TagBasedTLCOutputTokenScanner.CONTENT_TYPES);
         partitioner.connect(document);
         document.setDocumentPartitioner(partitioner);
-        this.source.setDocument(document);
+        
 
         // now register the listener, responsible for evaluating the partitioning information
         document.addDocumentPartitioningListener(new TLCOutputPartitionChangeListener());
@@ -311,16 +312,20 @@ public class TagBasedTLCOutputIncrementalParser
      */
     public void addIncrement(String text) throws BadLocationException
     {
-        IDocument document = getDocument();
-        document.replace(document.getLength(), 0, text);
+		// don't waste time, skip empty or new lines
+		if (text == null || text.length() == 0 || text.equals("\n")) {
+			return;
+		}
+
+		document.replace(document.getLength(), 0, text);
     }
 
 	IDocument getDocument() {
-		return this.source.getDocument();
+		return document;
 	}
 	
 	TagBasedTLCAnalyzer getTagAnalyzer() {
-		return this.analyzer;
+		return analyzer;
 	}
 
     /**

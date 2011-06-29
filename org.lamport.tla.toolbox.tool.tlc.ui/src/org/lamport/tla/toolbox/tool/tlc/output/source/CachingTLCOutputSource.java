@@ -3,7 +3,6 @@ package org.lamport.tla.toolbox.tool.tlc.output.source;
 import java.util.Vector;
 
 import org.eclipse.core.runtime.Assert;
-import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITypedRegion;
 import org.lamport.tla.toolbox.tool.tlc.output.ITLCOutputListener;
 
@@ -22,7 +21,6 @@ public class CachingTLCOutputSource implements ITLCOutputSource
      * List of {@link TypedRegionAndText}s.
      */
     private Vector<TypedRegionAndText> detectedRegions = new Vector<TypedRegionAndText>();
-    protected IDocument document;
     private String sourceName;
     private int priority;
 
@@ -88,14 +86,12 @@ public class CachingTLCOutputSource implements ITLCOutputSource
      */
     private synchronized void onOutput(ListenerProgressHolder holder, ITypedRegion region, String regionText)
     {
-        Assert.isNotNull(document, "The document must be initialized");
         holder.listener.onOutput(region, regionText);
-        holder.reported++;
     }
 
     public void addTLCOutputListener(ITLCOutputListener listener)
     {
-        ListenerProgressHolder holder = new ListenerProgressHolder(listener, 0);
+        ListenerProgressHolder holder = new ListenerProgressHolder(listener);
         // remove the existing
         if (this.listenerHolders.contains(holder))
         {
@@ -118,17 +114,7 @@ public class CachingTLCOutputSource implements ITLCOutputSource
 
     public void removeTLCOutputListener(ITLCOutputListener listener)
     {
-        this.listenerHolders.remove(new ListenerProgressHolder(listener, 0));
-    }
-
-    public void setDocument(IDocument document)
-    {
-        this.document = document;
-    }
-
-    public IDocument getDocument()
-    {
-        return this.document;
+        this.listenerHolders.remove(new ListenerProgressHolder(listener));
     }
 
     /**
@@ -166,17 +152,15 @@ public class CachingTLCOutputSource implements ITLCOutputSource
     class ListenerProgressHolder
     {
         ITLCOutputListener listener;
-        int reported;
 
         /**
          * Constructor
          * @param listener
          * @param reported
          */
-        public ListenerProgressHolder(ITLCOutputListener listener, int reported)
+        public ListenerProgressHolder(ITLCOutputListener listener)
         {
             this.listener = listener;
-            this.reported = reported;
         }
 
         public boolean equals(Object obj)
