@@ -110,6 +110,10 @@ public class TagBasedTLCAnalyzer
     {
         return !stack.isEmpty();
     }
+    
+    Stack<ITypedRegion> getStack() {
+    	return stack;
+    }
 
     /**
      * 

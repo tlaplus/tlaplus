@@ -311,9 +311,17 @@ public class TagBasedTLCOutputIncrementalParser
      */
     public void addIncrement(String text) throws BadLocationException
     {
-        IDocument document = this.source.getDocument();
+        IDocument document = getDocument();
         document.replace(document.getLength(), 0, text);
     }
+
+	IDocument getDocument() {
+		return this.source.getDocument();
+	}
+	
+	TagBasedTLCAnalyzer getTagAnalyzer() {
+		return this.analyzer;
+	}
 
     /**
      * Finish
