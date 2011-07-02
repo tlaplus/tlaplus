@@ -626,8 +626,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
 
         // TLC job
         // TLCJob tlcjob = new TLCInternalJob(tlaFile, cfgFile, project);
-        TLCJob tlcjob = new TLCProcessJob(specName, modelName, launch);
-        tlcjob.setWorkers(numberOfWorkers);
+        TLCJob tlcjob = new TLCProcessJob(specName, modelName, launch, numberOfWorkers);
         tlcjob.setPriority(Job.LONG);
         tlcjob.setUser(true);
         // The TLC job itself does not do any file IO

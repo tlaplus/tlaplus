@@ -26,7 +26,7 @@ public abstract class AbstractJob extends Job
      * @param job
      * @return
      */
-    public static boolean isModal(Job job)
+    protected static boolean isModal(Job job)
     {
         Boolean isModal = (Boolean) job.getProperty(IProgressConstants.PROPERTY_IN_DIALOG);
         if (isModal == null)
@@ -37,7 +37,7 @@ public abstract class AbstractJob extends Job
     /**
      * Called when the job is finished.
      */
-    public void doFinish()
+    protected void doFinish()
     {
         // setProperty(IProgressConstants.ICON_PROPERTY, image);
         if (AbstractJob.isModal(this))

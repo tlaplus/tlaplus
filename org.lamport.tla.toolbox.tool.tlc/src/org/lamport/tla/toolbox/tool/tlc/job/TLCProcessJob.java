@@ -48,11 +48,12 @@ public class TLCProcessJob extends TLCJob
 
     /**
      * Constructs a process job
+     * @param workers 
      * @param name
      */
-    public TLCProcessJob(String specName, String modelName, ILaunch launch)
+    public TLCProcessJob(String specName, String modelName, ILaunch launch, int workers)
     {
-        super(specName, modelName, launch);
+        super(specName, modelName, launch, workers);
     }
 
     /* (non-Javadoc)
@@ -77,10 +78,6 @@ public class TLCProcessJob extends TLCJob
 			final String devClasspath = runtimeClasspath + File.separator + "class";
 			String[] classPath = new String[] { runtimeClasspath, devClasspath };
 
-            // full-qualified class name of the main class
-            String mainClassFQCN = TLC.class.getName();
-            // String mainClassFQCN = SANY.class.getName();
-
             // arguments
             String[] arguments = constructProgramArguments();
 
@@ -103,7 +100,7 @@ public class TLCProcessJob extends TLCJob
             String[] vmArgs = new String[] { "-Xmx" + maxHeapSize + "m" };
 
             // assemble the config
-            VMRunnerConfiguration tlcConfig = new VMRunnerConfiguration(mainClassFQCN, classPath);
+            VMRunnerConfiguration tlcConfig = new VMRunnerConfiguration(TLC.class.getName(), classPath);
             // tlcConfig.setProgramArguments(new String[] { ResourceHelper.getModuleName(rootModule) });
             tlcConfig.setProgramArguments(arguments);
             tlcConfig.setVMArguments(vmArgs);
@@ -238,31 +235,17 @@ public class TLCProcessJob extends TLCJob
         }
     }
 
-    /**
-     * @see {@link TLCJob#checkAndSleep()}
-     */
-    public boolean checkAndSleep()
-    {
-        try
-        {
-            // go sleep
-            Thread.sleep(TIMEOUT);
-
-        } catch (InterruptedException e)
-        {
-            // nothing to do
-            // e.printStackTrace();
-        }
+    protected boolean checkCondition() {
         // return true if the TLC is still calculating
-        return (!process.isTerminated());
+    	return !process.isTerminated();
     }
-
+    
     /**
      * Retrieves a process to a given ILaunch
      * @param launch
      * @return
      */
-    public static IProcess findProcessForLaunch(ILaunch launch)
+    private static IProcess findProcessForLaunch(ILaunch launch)
     {
         // find the process
         IProcess[] processes = DebugPlugin.getDefault().getLaunchManager().getProcesses();

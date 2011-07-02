@@ -26,9 +26,10 @@ import org.eclipse.swt.widgets.Display;
 public class TraceExplorerJob extends TLCProcessJob
 {
 
-    public TraceExplorerJob(String specName, String modelName, ILaunch launch)
+    public TraceExplorerJob(String specName, String modelName, ILaunch launch, int workers)
     {
-        super(specName, modelName, launch);
+        super(specName, modelName, launch, workers);
+        timeout = 100;
     }
 
     /**
@@ -43,32 +44,6 @@ public class TraceExplorerJob extends TLCProcessJob
                 getJobCompletedAction().run();
             }
         });
-    }
-
-    /**
-     * Checks if TLC is still running with a shorter timeout
-     * than is used in {@link TLCProcessJob}.
-     * 
-     * Trace exploration is much faster, so the timeout can
-     * be shorter. This seems to make the trace explorer
-     * run faster.
-     * 
-     * @see {@link TLCJob#checkAndSleep()}
-     */
-    public boolean checkAndSleep()
-    {
-        try
-        {
-            // go sleep
-            Thread.sleep(100);
-
-        } catch (InterruptedException e)
-        {
-            // nothing to do
-            // e.printStackTrace();
-        }
-        // return true if the TLC is still calculating
-        return (!process.isTerminated());
     }
 
     /**

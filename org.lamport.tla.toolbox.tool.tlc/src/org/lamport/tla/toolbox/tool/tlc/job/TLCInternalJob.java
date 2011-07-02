@@ -132,18 +132,8 @@ public class TLCInternalJob extends TLCJob
     }
 
     // decrement the number and sleep
-    public boolean checkAndSleep()
+    protected boolean checkCondition()
     {
-        try
-        {
-            // go sleep
-            Thread.sleep(TIMEOUT);
-
-        } catch (InterruptedException e)
-        {
-            // nothing to do
-            e.printStackTrace();
-        }
         // return true if the TLC is still calculating
         return (tlcThread.isRunning());
     }

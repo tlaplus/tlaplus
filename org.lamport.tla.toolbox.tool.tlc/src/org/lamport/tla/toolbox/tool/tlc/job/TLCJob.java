@@ -39,9 +39,10 @@ public abstract class TLCJob extends AbstractJob implements IModelConfigurationC
     public static final String AllJobsMatcher = ToolboxJob.FAMILY;
 
     protected static final int STEP = 30;
-    protected static final long TIMEOUT = 1000 * 1;
     private static final int COVERAGE_INTERVAL = 3;
     private static final int CHECKPOINT_INTERVAL = 3;
+    
+    protected long timeout = 1000L;
     protected IFile rootModule;
     protected IFile cfgFile;
     protected IFile outFile;
@@ -53,13 +54,20 @@ public abstract class TLCJob extends AbstractJob implements IModelConfigurationC
 
     protected boolean appendConsole = true;
 
+    public TLCJob(String specName, String modelName, ILaunch launch)
+    {
+    	this(specName, modelName, launch, 1);
+    }
+    
     /**
      * Creates a TLC job for a given spec and model
+     * @param workers2 
      * @param rootModule
      * @param cfgFile
      * @param launchDir
+     * @param workers number of threads to be run in parallel
      */
-    public TLCJob(String specName, String modelName, ILaunch launch)
+    public TLCJob(String specName, String modelName, ILaunch launch, int workers)
     {
         super("TLC run for " + modelName);
         this.specName = specName;
@@ -91,7 +99,7 @@ public abstract class TLCJob extends AbstractJob implements IModelConfigurationC
      * @return string array with arguments
      * @throws CoreException
      */
-    public String[] constructProgramArguments() throws CoreException
+    protected String[] constructProgramArguments() throws CoreException
     {
         Vector arguments = new Vector();
         ILaunchConfiguration config = launch.getLaunchConfiguration();
@@ -199,15 +207,6 @@ public abstract class TLCJob extends AbstractJob implements IModelConfigurationC
     }
 
     /**
-     * Sets the number of workers
-     * @param workers number of threads to be run in parallel
-     */
-    public void setWorkers(int workers)
-    {
-        this.workers = workers;
-    }
-
-    /**
      * Returns the action that tells all registered result
      * presenters to show results. Result presenters are registered
      * using the extension point {@link IResultPresenter#EXTENSION_ID}.
@@ -235,7 +234,22 @@ public abstract class TLCJob extends AbstractJob implements IModelConfigurationC
      * Checks if TLC is still running
      * @return true, if TLC is still running
      */
-    public abstract boolean checkAndSleep();
+    protected boolean checkAndSleep()
+    {
+        try
+        {
+            // go sleep
+            Thread.sleep(timeout);
+
+        } catch (InterruptedException e)
+        {
+            e.printStackTrace();
+        }
+        // return true if the TLC is still calculating
+        return checkCondition();
+    }
+    
+    protected abstract boolean checkCondition();
 
     /**
      * Matches the spec (by name) or generic to the AllJobMatcher
@@ -263,7 +277,7 @@ public abstract class TLCJob extends AbstractJob implements IModelConfigurationC
      * Retrieves all presenter of TLC job results
      * @return 
      */
-    public static IResultPresenter[] getRegisteredResultPresenters()
+    protected static IResultPresenter[] getRegisteredResultPresenters()
     {
         IConfigurationElement[] decls = Platform.getExtensionRegistry().getConfigurationElementsFor(
                 IResultPresenter.EXTENSION_ID);

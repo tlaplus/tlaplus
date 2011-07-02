@@ -654,8 +654,7 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
                     "Error accessing the spec project " + specName));
         }
 
-        TLCJob tlcjob = new TraceExplorerJob(specName, modelName, launch);
-        tlcjob.setWorkers(1);
+        TLCJob tlcjob = new TraceExplorerJob(specName, modelName, launch, 1);
         tlcjob.setPriority(Job.SHORT);
         tlcjob.setUser(true);
         // The TLC job itself does not do any file IO
