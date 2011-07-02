@@ -86,7 +86,7 @@ public class TLCProcessJob extends TLCJob
             		"---------------------------\n" +
             		"TLC ARGUMENTS:\n" +
             		"---------------------------\n" +
-            		Arrays.toString(arguments) + 
+            		Arrays.toString(arguments) + "\n" +
             		"---------------------------\n" +
             		"END TLC ARGUMENTS\n" +
             		"---------------------------\n");
