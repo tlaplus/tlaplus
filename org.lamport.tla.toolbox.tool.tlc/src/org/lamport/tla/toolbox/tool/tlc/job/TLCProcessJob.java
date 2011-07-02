@@ -1,6 +1,7 @@
 package org.lamport.tla.toolbox.tool.tlc.job;
 
 import java.io.File;
+import java.util.Arrays;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -83,16 +84,15 @@ public class TLCProcessJob extends TLCJob
             // arguments
             String[] arguments = constructProgramArguments();
 
-            System.out.println("---------------------------");
-            System.out.println("TLC ARGUMENTS:");
-            System.out.println("---------------------------");
-            for (int i = 0; i < arguments.length; i++)
-            {
-                System.out.println(arguments[i]);
-            }
-            System.out.println("---------------------------");
-            System.out.println("END TLC ARGUMENTS");
-            System.out.println("---------------------------");
+            // log output
+            org.lamport.tla.toolbox.tool.tlc.TLCActivator.logDebug(
+            		"---------------------------\n" +
+            		"TLC ARGUMENTS:\n" +
+            		"---------------------------\n" +
+            		Arrays.toString(arguments) + 
+            		"---------------------------\n" +
+            		"END TLC ARGUMENTS\n" +
+            		"---------------------------\n");
 
             // get max heap size
             // the default value should never be returned if validation
