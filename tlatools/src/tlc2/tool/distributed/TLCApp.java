@@ -236,6 +236,9 @@ public class TLCApp extends DistApp {
 					printErrorMsg("Error: configuration file required.");
 					return null;
 				}
+			} else if (args[index].equals("-tool")) {
+				index++;
+                TLCGlobals.tool = true;
 			} else if (args[index].equals("-deadlock")) {
 				index++;
 				deadlock = false;

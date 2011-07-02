@@ -100,7 +100,7 @@ public class TLCProcessJob extends TLCJob
             String[] vmArgs = new String[] { "-Xmx" + maxHeapSize + "m" };
 
             // assemble the config
-            VMRunnerConfiguration tlcConfig = new VMRunnerConfiguration(TLC.class.getName(), classPath);
+            VMRunnerConfiguration tlcConfig = new VMRunnerConfiguration(getMainClass().getName(), classPath);
             // tlcConfig.setProgramArguments(new String[] { ResourceHelper.getModuleName(rootModule) });
             tlcConfig.setProgramArguments(arguments);
             tlcConfig.setVMArguments(vmArgs);
@@ -234,6 +234,10 @@ public class TLCProcessJob extends TLCJob
             monitor.done();
         }
     }
+
+	protected Class getMainClass() {
+		return TLC.class;
+	}
 
     protected boolean checkCondition() {
         // return true if the TLC is still calculating

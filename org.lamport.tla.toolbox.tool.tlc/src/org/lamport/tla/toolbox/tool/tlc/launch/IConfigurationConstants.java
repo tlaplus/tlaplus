@@ -24,6 +24,10 @@ public interface IConfigurationConstants
      */
     public static final String LAUNCH_NUMBER_OF_WORKERS = "numberOfWorkers";
     /**
+     * Launch distributed version of TLC
+     */
+	public static final String LAUNCH_DISTRIBUTED = "distributedTLC";
+    /**
      * How to run TLC (model-checking = true, simulation = false)
      */
     public static final String LAUNCH_MC_MODE = "mcMode";

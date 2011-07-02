@@ -1,5 +1,6 @@
 package org.lamport.tla.toolbox.tool.tlc.launch;
 
+
 /**
  * Collection of constant default values
  * @author Simon Zambrovski
@@ -20,6 +21,8 @@ public interface IConfigurationDefaults
     public static final int LAUNCH_NUMBER_OF_WORKERS_DEFAULT = (Runtime.getRuntime().availableProcessors() > 1) ? (Runtime
             .getRuntime().availableProcessors() / 2)
             : 1;
+
+	public static final boolean LAUNCH_DISTRIBUTED_DEFAULT = false;
 
     /**
      * Default max heap size

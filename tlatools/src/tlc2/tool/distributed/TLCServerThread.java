@@ -7,7 +7,6 @@ package tlc2.tool.distributed;
 
 import java.net.URI;
 import java.rmi.RemoteException;
-import java.util.Date;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 
@@ -96,17 +95,11 @@ public class TLCServerThread extends IdThread {
 				boolean workDone = false;
 				while (!workDone) {
 					try {
-						long start = System.currentTimeMillis();
 						Object[] res = this.worker.getNextStates(states);
-						long end = System.currentTimeMillis();
 						newStates = (TLCStateVec[]) res[0];
 						receivedStates += newStates[0].size();
 						newFps = (LongVec[]) res[1];
 						workDone = true;
-						ToolIO.out.println(new Date() + " Worker: " + url
-								+ " Sent: " + states.length + " Rcvd: "
-								+ newStates[0].size() + " Time: " + (end - start)
-								+ " ms");
 					} catch (RemoteException e) {
 						if (!this.tlcServer.reassignWorker(this)) {
 							ToolIO.out
@@ -151,7 +144,7 @@ public class TLCServerThread extends IdThread {
 						this.tlcServer.trace.printTrace(state1.uid, state1,
 								state2);
 					} catch (Exception e1) {
-						System.err.println(e1.getMessage());
+						ToolIO.err.println(e1.getMessage());
 					}
 				}
 				stateQueue.finishAll();

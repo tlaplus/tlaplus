@@ -140,6 +140,8 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
     private Button checkpointButton;
     private Text checkpointIdText;
 
+    private Button distributedButton;
+    
     // The widgets to display the checkpoint size and
     // the delete button.
     private FormText chkpointSizeLabel;
@@ -216,6 +218,9 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         // recover from the checkpoint
         boolean recover = getConfig().getAttribute(LAUNCH_RECOVER, LAUNCH_RECOVER_DEFAULT);
         this.checkpointButton.setSelection(recover);
+        
+        boolean distributed = getConfig().getAttribute(LAUNCH_DISTRIBUTED, LAUNCH_DISTRIBUTED_DEFAULT);
+        this.distributedButton.setSelection(distributed);
     }
 
     // TODO remove
@@ -536,7 +541,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
                 expandSection(SEC_HOW_TO_RUN);
             }
         }
-
+        
         // The following code added by LL and DR on 10 Sep 2009.
         // Reset the enabling and selection of spec type depending on the number number
         // of variables in the spec.
@@ -763,6 +768,10 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         boolean checkDeadlock = this.checkDeadlockButton.getSelection();
         getConfig().setAttribute(MODEL_CORRECTNESS_CHECK_DEADLOCK, checkDeadlock);
 
+        // run in distributed mode
+        boolean distributed = this.distributedButton.getSelection();
+        getConfig().setAttribute(LAUNCH_DISTRIBUTED, distributed);
+        
         // invariants
         List serializedList = FormHelper.getSerializedInput(invariantsTable);
         getConfig().setAttribute(MODEL_CORRECTNESS_INVARIANTS, serializedList);
@@ -1120,6 +1129,15 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         workers.setLayoutData(gd);
 
         dm.bindAttribute(LAUNCH_NUMBER_OF_WORKERS, workers, howToRunPart);
+        
+        // distribution?
+        distributedButton = toolkit.createButton(howToRunArea, "Run in distributed mode", SWT.CHECK);
+        gd = new GridData();
+        gd.horizontalSpan = 2;
+        gd.verticalIndent = 20;
+
+        distributedButton.setLayoutData(gd);
+        distributedButton.addSelectionListener(howToRunListener);
 
         // run from the checkpoint
         checkpointButton = toolkit.createButton(howToRunArea, "Recover from checkpoint", SWT.CHECK);

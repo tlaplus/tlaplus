@@ -25,7 +25,7 @@ public class TLCInternalJob extends TLCJob
 {
     private TLCThread tlcThread;
     private BroadcastStreamListener outputListener;
-    int reported;
+    private int reported;
 
     /**
      * @param name

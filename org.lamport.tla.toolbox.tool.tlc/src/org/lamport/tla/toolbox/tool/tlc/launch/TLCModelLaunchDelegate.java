@@ -35,6 +35,7 @@ import org.eclipse.ui.part.FileEditorInput;
 import org.lamport.tla.toolbox.tool.IParseResult;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.tool.tlc.TLCActivator;
+import org.lamport.tla.toolbox.tool.tlc.job.DistributedTLCJob;
 import org.lamport.tla.toolbox.tool.tlc.job.TLCJob;
 import org.lamport.tla.toolbox.tool.tlc.job.TLCProcessJob;
 import org.lamport.tla.toolbox.tool.tlc.model.TypedSet;
@@ -624,9 +625,16 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
         // number of workers
         int numberOfWorkers = config.getAttribute(LAUNCH_NUMBER_OF_WORKERS, LAUNCH_NUMBER_OF_WORKERS_DEFAULT);
 
+        // distributed launch
+        boolean distributed = config.getAttribute(LAUNCH_DISTRIBUTED, LAUNCH_DISTRIBUTED_DEFAULT);
+        
         // TLC job
-        // TLCJob tlcjob = new TLCInternalJob(tlaFile, cfgFile, project);
-        TLCJob tlcjob = new TLCProcessJob(specName, modelName, launch, numberOfWorkers);
+        TLCJob tlcjob = null;
+        if(distributed) {
+        	tlcjob = new DistributedTLCJob(specName, modelName, launch, numberOfWorkers);
+        } else {
+        	tlcjob = new TLCProcessJob(specName, modelName, launch, numberOfWorkers);
+        }
         tlcjob.setPriority(Job.LONG);
         tlcjob.setUser(true);
         // The TLC job itself does not do any file IO

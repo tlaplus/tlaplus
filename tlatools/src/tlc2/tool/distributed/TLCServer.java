@@ -34,6 +34,7 @@ import tlc2.tool.fp.FPSet;
 import tlc2.tool.queue.DiskStateQueue;
 import tlc2.tool.queue.StateQueue;
 import tlc2.util.FP64;
+import tlc2.util.PrintfFormat;
 import util.FileUtil;
 import util.ToolIO;
 import util.UniqueString;
@@ -183,16 +184,16 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		} catch (ClassCastException e) {
 			e.printStackTrace();
 		} catch (NoSuchMethodException e) {
-			System.err
+			ToolIO.err
 					.println("VM does not allow to get the UnicastRef port.\nWorker will be identified with port 0 in output");
 		} catch (IllegalAccessException e) {
-			System.err
+			ToolIO.err
 					.println("VM does not allow to get the UnicastRef port.\nWorker will be identified with port 0 in output");
 		} catch (InvocationTargetException e) {
-			System.err
+			ToolIO.err
 					.println("VM does not allow to get the UnicastRef port.\nWorker will be identified with port 0 in output");
 		} catch (ClassNotFoundException e) {
-			System.err
+			ToolIO.err
 					.println("VM does not allow to get the UnicastRef port.\nWorker will be identified with port 0 in output");
 		}
 		return 0;
@@ -325,7 +326,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		}
 	}
 
-	private final void close(boolean cleanup) throws IOException {
+	public final void close(boolean cleanup) throws IOException {
 		this.trace.close();
 		if (this.fpSet == null) {
 			this.fpSetManager.close(cleanup);
@@ -339,7 +340,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 
 	public static int Port = 10997; // the port # for tlc server
 
-	public static void modelCheck(TLCServer server) throws Exception {
+	public static void modelCheck(TLCServer server) throws IOException, InterruptedException, NotBoundException {
 		boolean recovered = false;
 		if (server.work.canRecover()) {
 			ToolIO.out.println("-- Starting recovery from checkpoint "
@@ -399,8 +400,11 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 			}
 			synchronized (server) {
 				if (!server.done) {
-					ToolIO.out.println("Progress(" + server.trace.getLevel()
-							+ "): " + server.stats());
+			        MP.printMessage(EC.TLC_PROGRESS_STATS, new String[] { String.valueOf(server.trace.getLevel()),
+			                String.valueOf(server.fpSetManager.size()), String.valueOf(server.fpSet.size()),
+			                String.valueOf(server.stateQueue.size()) });
+//					ToolIO.out.println("Progress(" + server.trace.getLevel()
+//							+ "): " + server.stats());
 					server.wait(300000);
 				}
 				if (server.done)
@@ -431,8 +435,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		boolean success = (server.errState == null);
 		if (success) {
 			// We get here because the checking has succeeded.
-			ToolIO.out
-					.println(new Date() + " Model checking completed. No error has been found!");
+			server.reportSuccess();
 		} else if (server.keepCallStack) {
 			// We redo the work on the error state, recording the call stack.
 			server.work.setCallStack();
@@ -445,7 +448,8 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 				server.work.printCallStack();
 			}
 		}
-		ToolIO.out.println(new Date() + " " + server.stats());
+
+		server.printSummary(success);
 
 		server.close(success);
 		
@@ -454,9 +458,46 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		UnicastRemoteObject.unexportObject(server.fpSet, false);
 		UnicastRemoteObject.unexportObject(server, false);
 		
-		ToolIO.out.println(new Date() + " Server has finished computing");
-		ToolIO.out.flush();
+		
+        MP.printMessage(EC.TLC_FINISHED);
+		MP.flush();
 	}
+
+    public final void reportSuccess() throws IOException
+    {
+        long d = this.fpSet.size();
+        double prob1 = (d * (this.fpSetManager.size() - d)) / Math.pow(2, 64);
+        double prob2 = this.fpSet.checkFPs();
+        /* The following code added by LL on 3 Aug 2009 to print probabilities
+         * to only one decimal point.
+         */
+        PrintfFormat fmt = new PrintfFormat("val = %.1G");
+        String prob1Str = fmt.sprintf(prob1);
+        String prob2Str = fmt.sprintf(prob2);
+        MP.printMessage(EC.TLC_SUCCESS, new String[] { prob1Str, prob2Str });
+    }
+
+    public final void printSummary(boolean success) throws IOException
+    {
+        /*
+         * This allows the toolbox to easily display the last set
+         * of state space statistics by putting them in the same
+         * form as all other progress statistics.
+         */
+        if (TLCGlobals.tool)
+        {
+            MP.printMessage(EC.TLC_PROGRESS_STATS, new String[] { String.valueOf(this.trace.getLevel()),
+                    String.valueOf(this.fpSetManager.size()), String.valueOf(this.fpSet.size()),
+                    String.valueOf(this.stateQueue.size()) });
+        }
+
+        MP.printMessage(EC.TLC_STATS, new String[] { String.valueOf(this.fpSetManager.size()),
+                String.valueOf(this.fpSet.size()), String.valueOf(this.stateQueue.size()) });
+        if (success)
+        {
+            MP.printMessage(EC.TLC_SEARCH_DEPTH, String.valueOf(this.trace.getLevel()));
+        }
+    }
 
 	public static void main(String argv[]) {
 		ToolIO.out.println("TLC Server " + TLCGlobals.versionOfTLC);
