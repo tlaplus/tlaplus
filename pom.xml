@@ -76,7 +76,7 @@
 		<tycho-version>0.13.0-SNAPSHOT</tycho-version>
 		
 		<!-- no default here -->
-		<tycho.test.vm.argline></tycho.test.vm.argline>
+		<tycho.test.vm.argline>-Xmx500m</tycho.test.vm.argline>
 		<tycho.test.vm.useUiThread>false</tycho.test.vm.useUiThread>
 	</properties>
 
