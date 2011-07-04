@@ -28,7 +28,7 @@ public class StateTagBasedTLCOutputIncrementalParserTest {
 	private Map<String, String> vars = new HashMap<String,String>();
 	
 	private TagBasedTLCOutputIncrementalParser parser;
-	private TestListener testListener;
+	private DummyListener testListener;
 	private static Map<String, Map<String, Long>> results = new HashMap<String, Map<String, Long>>();;
 
 	@Before
@@ -125,7 +125,7 @@ public class StateTagBasedTLCOutputIncrementalParserTest {
 		
 		// Register test listener with parser output
 		ITLCOutputSource source = parser.getSource();
-		testListener = new TestListener();
+		testListener = new DummyListener();
 		source.addTLCOutputListener(testListener);
 	}
 	

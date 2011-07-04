@@ -9,7 +9,7 @@ import org.lamport.tla.toolbox.tool.tlc.output.data.TLCState;
 
 import tlc2.output.MP;
 
-public class TestListener implements ITLCOutputListener {
+public class DummyListener implements ITLCOutputListener {
 
 	// done has been called on the parser
 	private boolean done = false;
