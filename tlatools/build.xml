@@ -102,6 +102,7 @@
 
 	<target name="dist" description="Build a distribution">
 		<!-- create a JAR file for the users -->
+		<mkdir dir="${dist.dir}" />
 		<jar destfile="${dist.file}">
 			<fileset dir="${class.dir}" includes="**/*" />
 			<manifest>
