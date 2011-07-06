@@ -923,7 +923,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
             }
             if (!shellExists)
             {
-                theShell = new Shell(display, SWT.SHELL_TRIM | SWT.ON_TOP);
+                theShell = new Shell(display, SWT.SHELL_TRIM);
             }
             final Shell shell = theShell;
             shell.setText(title);
@@ -1055,7 +1055,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
      * The title of a graph consists of two parts:  the prefix, which
      * identifies the column, and the suffix, which identifies the model.
      * When we dispose of the ResultPage, we must dispose of all graph
-     * window (shells) forthat model.
+     * window (shells) for that model.
      * 
      * @param resultPage
      * @return
