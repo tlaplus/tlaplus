@@ -7,7 +7,7 @@ Bundle-Activator: org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator
 Bundle-Vendor: Simon Zambrovski, Leslie Lamport
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.ui,
- org.eclipse.ui.forms,
+ org.eclipse.ui.forms;visibility:=reexport,
  org.eclipse.ui.editors,
  org.eclipse.ui.ide,
  org.eclipse.ui.console,
@@ -22,5 +22,6 @@ Bundle-ActivationPolicy: lazy
 Import-Package: org.lamport.tla.toolbox.editor.basic
 Export-Package: org.lamport.tla.toolbox.tool.tlc.output;x-friends:="org.lamport.tla.toolbox.tool.tlc.ui.test",
  org.lamport.tla.toolbox.tool.tlc.output.data;x-friends:="org.lamport.tla.toolbox.tool.tlc.ui.test",
+ org.lamport.tla.toolbox.tool.tlc.ui.editor;x-friends:="org.lamport.tla.toolbox.tool.tlc.ui.uitest",
  org.lamport.tla.toolbox.tool.tlc.ui.util;x-friends:="org.lamport.tla.toolbox.tool.tlc.ui.test"
 Bundle-ClassPath: .

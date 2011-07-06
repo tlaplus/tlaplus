@@ -455,9 +455,9 @@ public class UIHelper
     /**
      * 
      */
-    public static List checkOpenResources(String title, String message)
+    public static List<IEditorReference> checkOpenResources(String title, String message)
     {
-        List dirtyEditors = new LinkedList();
+        List<IEditorReference> dirtyEditors = new LinkedList<IEditorReference>();
         IEditorReference[] references = UIHelper.getActivePage().getEditorReferences();
         if (references != null)
         {
@@ -481,7 +481,7 @@ public class UIHelper
             }
         }
 
-        return new LinkedList();
+        return new LinkedList<IEditorReference>();
     }
 
     /**
@@ -494,7 +494,7 @@ public class UIHelper
      */
     public static boolean promptUserForDirtyModules()
     {
-        final List dirtyEditors = new LinkedList();
+        final List<IEditorReference> dirtyEditors = new LinkedList<IEditorReference>();
         IEditorReference[] references = UIHelper.getActivePage().getEditorReferences();
         if (references != null)
         {
@@ -528,18 +528,14 @@ public class UIHelper
                     public void run()
                     {
                         // save modified resources
-                        Iterator it = dirtyEditors.iterator();
+                        Iterator<IEditorReference> it = dirtyEditors.iterator();
                         while (it.hasNext())
                         {
-                            Object next = it.next();
-                            if (next instanceof IEditorReference)
+                            IEditorReference reference = it.next();
+                            IEditorPart editor = reference.getEditor(false);
+                            if (editor != null)
                             {
-                                IEditorReference reference = (IEditorReference) next;
-                                IEditorPart editor = reference.getEditor(false);
-                                if (editor != null)
-                                {
-                                    editor.doSave(new NullProgressMonitor());
-                                }
+                                 editor.doSave(new NullProgressMonitor());
                             }
                         }
                     }
@@ -717,7 +713,7 @@ public class UIHelper
 
             public ISelection getSelection()
             {
-                IEditorInput input = getActivePage().getActiveEditor().getEditorInput();
+                IEditorInput input = getActiveEditor().getEditorInput();
                 if (input instanceof FileEditorInput)
                 {
                     IFile resource = ((FileEditorInput) input).getFile();
@@ -1138,4 +1134,10 @@ public class UIHelper
 
     }
 
+	/**
+	 * @return The currently active editor
+	 */
+	public static IEditorPart getActiveEditor() {
+		return getActivePage().getActiveEditor();
+	}
 }

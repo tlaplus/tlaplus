@@ -58,8 +58,8 @@
 
 					<systemProperties combine.children="append">
 						<!-- References used by tests to access spec files -->
-						<org.lamport.tla.toolbox.tool.tlc.ui.test.PathToSpecA>${project.build.directory}/../../org.lamport.tla.toolbox.uitest/farsite/DistributedSystemModule.tla</org.lamport.tla.toolbox.tool.tlc.ui.test.PathToSpecA>
-						<org.lamport.tla.toolbox.tool.tlc.ui.test.PathToSpecB>${project.build.directory}/../../examples/DieHard/DieHard.tla</org.lamport.tla.toolbox.tool.tlc.ui.test.PathToSpecB>
+						<org.lamport.tla.toolbox.tool.tlc.ui.test.PathToSpecB>${project.build.directory}/../../org.lamport.tla.toolbox.uitest/farsite/DistributedSystemModule.tla</org.lamport.tla.toolbox.tool.tlc.ui.test.PathToSpecB>
+						<org.lamport.tla.toolbox.tool.tlc.ui.test.PathToSpecA>${project.build.directory}/../../examples/DieHard/DieHard.tla</org.lamport.tla.toolbox.tool.tlc.ui.test.PathToSpecA>
 						<!-- JDT weaving debug output -->
 						<aj.weaving.verbose>true</aj.weaving.verbose>
 						<org.aspectj.weaver.showWeaveInfo>false</org.aspectj.weaver.showWeaveInfo>
