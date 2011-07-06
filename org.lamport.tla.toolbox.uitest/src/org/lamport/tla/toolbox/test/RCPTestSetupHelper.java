@@ -12,6 +12,9 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.WorkbenchException;
+import org.lamport.tla.toolbox.Activator;
+import org.lamport.tla.toolbox.spec.Spec;
+import org.lamport.tla.toolbox.spec.manager.WorkspaceSpecManager;
 
 /**
  * @see http://www.ralfebert.de/articles/swtbot/
@@ -22,6 +25,7 @@ public abstract class RCPTestSetupHelper {
 		UIThreadRunnable.syncExec(new VoidResult() {
 			public void run() {
 				resetWorkbench();
+				resetToolbox();
 				
 				// close browser-based welcome screen (if open)
 				SWTWorkbenchBot bot = new SWTWorkbenchBot();
@@ -69,4 +73,16 @@ public abstract class RCPTestSetupHelper {
             throw new RuntimeException(e);
         }
     }
+
+	/**
+	 * Removes all existing specs and models
+	 */
+	private static void resetToolbox() {
+		final WorkspaceSpecManager specManager = Activator.getSpecManager();
+		// assume recently opened specs means all existing specs :)
+		final Spec[] specs = specManager.getRecentlyOpened();
+		for (int i = 0; i < specs.length; i++) {
+			specManager.removeSpec(specs[i]);
+		}
+	}
 }

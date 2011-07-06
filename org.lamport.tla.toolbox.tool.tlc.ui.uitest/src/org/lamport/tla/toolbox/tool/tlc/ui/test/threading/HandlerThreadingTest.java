@@ -5,46 +5,45 @@ import java.io.File;
 import junit.framework.Assert;
 
 import org.eclipse.swt.widgets.MenuItem;
-import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
 import org.eclipse.swtbot.swt.finder.junit.SWTBotJunit4ClassRunner;
 import org.eclipse.swtbot.swt.finder.matchers.WithText;
+import org.eclipse.swtbot.swt.finder.utils.SWTBotPreferences;
 import org.eclipse.swtbot.swt.finder.waits.Conditions;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotMenu;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.lamport.tla.toolbox.test.RCPTestSetupHelper;
 import org.lamport.tla.toolbox.test.threading.MonitorAdaptor;
+import org.lamport.tla.toolbox.tool.tlc.ui.test.AbstractTest;
 
+/**
+ * Test suite requirements:
+ * - vncserver on localhost:1
+ * -- on Linux you have to start a window manager explicitly like fluxbox (.vnc/xstartup)
+ * - osgi.framework.extensions set to org.eclipse.equinox.weaving.hook
+ * - Bundle org.eclipse.equinox.weaving.aspectj explicitly started on runlevel (default - 1) => e.g. 3 
+ */
 @RunWith(SWTBotJunit4ClassRunner.class)
-public class HandlerThreadingTest {
-	 
-	private static SWTWorkbenchBot bot;
+public class HandlerThreadingTest extends AbstractTest {
 
-	private static final String specA = System
-			.getProperty("org.lamport.tla.toolbox.tool.tlc.ui.test.PathToSpecA");
 	private static final String specB = System
 			.getProperty("org.lamport.tla.toolbox.tool.tlc.ui.test.PathToSpecB");
 	
 	@BeforeClass
-	public static void beforeClass() throws Exception {
-		
+	public static void beforeClass() {
+		// mimic super
+		AbstractTest.beforeClass();
+
 		// If this assert fails see http://wiki.eclipse.org/JDT_weaving_features
 		final String osgiFrameworkExtensions = System.getProperty("osgi.framework.extensions");
 		Assert.assertNotNull(
 				"Test requires Aspectj weaving hook property to be present as an indicator for active weaving support",
 				osgiFrameworkExtensions);
 		
-		// Reset the workbench
-		RCPTestSetupHelper.beforeClass();
-		
 		// check to make sure the given spec files exist
-		Assert.assertTrue("Given spec file does not exist: " + specA, new File(
-				specA).exists());
 		Assert.assertTrue("Given spec file does not exist: " + specA, new File(
 				specB).exists());
 		
-		bot = new SWTWorkbenchBot();
 	}
 
 	/**
@@ -76,11 +75,14 @@ public class HandlerThreadingTest {
 		assertNoBackendCodeInUIThread();
 		
 		final String specName = getSpecName(new File(specA));
+
+		// increase timeout since farsite spec takes a long time to parse
+		final long timeout = SWTBotPreferences.TIMEOUT * 3;
 		
 		// specs are created in non-UI thread asynchronously which causes a
 		// delay before the menu entry becomes available
 		bot.waitUntil(Conditions.waitForMenu(bot.activeShell(),
-				WithText.<MenuItem> withText(specName)));
+				WithText.<MenuItem> withText(specName)), timeout);
 
 		// Go back to previous spec
 		openSpecMenu.menu(specName);
@@ -102,14 +104,5 @@ public class HandlerThreadingTest {
 				MonitorAdaptor.hasTriggeredBackendCode());
 		// Resets the counting adapter for UI thread backend invocations
 		MonitorAdaptor.reset();
-	}
-
-	/**
-	 * @param aFile 
-	 * @return The file name without path or suffix/extension
-	 */
-	private String getSpecName(final File aFile) {
-		final String name = aFile.getName();
-		return name.substring(0, name.lastIndexOf("."));
 	}
 }
