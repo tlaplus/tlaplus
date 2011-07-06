@@ -1,15 +1,18 @@
 package org.lamport.tla.toolbox.tool.tlc.ui.test.threading;
 
 import java.io.File;
+import java.util.Set;
 
 import junit.framework.Assert;
 
+import org.aspectj.lang.JoinPoint;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swtbot.swt.finder.junit.SWTBotJunit4ClassRunner;
 import org.eclipse.swtbot.swt.finder.matchers.WithText;
 import org.eclipse.swtbot.swt.finder.utils.SWTBotPreferences;
 import org.eclipse.swtbot.swt.finder.waits.Conditions;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotMenu;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -43,9 +46,15 @@ public class HandlerThreadingTest extends AbstractTest {
 		// check to make sure the given spec files exist
 		Assert.assertTrue("Given spec file does not exist: " + specA, new File(
 				specB).exists());
-		
+
 	}
 
+	@Before
+	public void setUp() {
+		super.setUp();
+		MonitorAdaptor.reset();
+	}
+	
 	/**
 	 * Adds a new spec to the toolbox, opens it
 	 * and tests if parsing is done on a non-UI thread
@@ -98,6 +107,13 @@ public class HandlerThreadingTest extends AbstractTest {
 		// Check if MonitorAspect has been enabled
 		Assert.assertTrue("Test requires active MonitorAspect aspect!", MonitorAdaptor.aspectIsActive());
 
+		if(MonitorAdaptor.hasTriggeredBackendCode()) {
+			Set<JoinPoint> joinPoints = MonitorAdaptor.getTriggeredJoinPoints();
+			for (JoinPoint joinPoint : joinPoints) {
+				System.err.println(joinPoint);
+			}
+		}
+		
 		Assert.assertFalse(
 				"Backend code (e.g. parsing must not be executed in UI thread) times executed: "
 						+ MonitorAdaptor.getTriggeredJoinPoints().size(),
