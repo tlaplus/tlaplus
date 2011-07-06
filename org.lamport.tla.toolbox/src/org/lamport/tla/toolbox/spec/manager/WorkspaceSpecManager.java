@@ -28,7 +28,6 @@ import org.lamport.tla.toolbox.ui.handler.OpenParseErrorViewHandler;
 import org.lamport.tla.toolbox.ui.handler.OpenSpecHandler;
 import org.lamport.tla.toolbox.ui.property.GenericSelectionProvider;
 import org.lamport.tla.toolbox.util.AdapterFactory;
-import org.lamport.tla.toolbox.util.PopupMessage;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.SpecLifecycleManager;
 import org.lamport.tla.toolbox.util.UIHelper;
@@ -43,7 +42,7 @@ import org.lamport.tla.toolbox.util.pref.PreferenceStoreHelper;
 public class WorkspaceSpecManager extends GenericSelectionProvider implements ISpecManager, IResourceChangeListener,
         IAdaptable
 {
-    private Hashtable specStorage = new Hashtable(47);
+    private Hashtable<String, Spec> specStorage = new Hashtable<String, Spec>(47);
     private Spec loadedSpec = null;
     private SpecLifecycleManager lifecycleManager = null;
     private IHandlerActivation parseErrorsHandlerActivation = null;
@@ -76,7 +75,6 @@ public class WorkspaceSpecManager extends GenericSelectionProvider implements IS
                     if (projects[i].hasNature(TLANature.ID))
                     {
                         spec = new Spec(projects[i]);
-                        IProject foo = null;
                         // Added by LL on 12 Apr 2011
                         // If spec.rootFile = null, then this is a bad spec. So
                         // we should report it and not perform addSpec(spec).  It
@@ -86,8 +84,6 @@ public class WorkspaceSpecManager extends GenericSelectionProvider implements IS
                         if (spec.getRootFile() == null)
                         {
                             Activator.logError("The bad spec is: `" + projects[i].getName() + "'", null);
-                            foo = spec.getProject();
-                            
                         } else
                         {
                             // This to threw a null pointer exception for Tom, probably causing the abortion
@@ -96,7 +92,6 @@ public class WorkspaceSpecManager extends GenericSelectionProvider implements IS
                             addSpec(spec);
                         }
                         
-                        IProject bar = foo;
                         // load the spec if found
                         if (spec.getName().equals(specLoadedName))
                         {
@@ -170,8 +165,8 @@ public class WorkspaceSpecManager extends GenericSelectionProvider implements IS
      */
     public Spec[] getRecentlyOpened()
     {
-        Collection specs = specStorage.values();
-        return (Spec[]) specs.toArray(new Spec[specs.size()]);
+        Collection<Spec> specs = specStorage.values();
+        return specs.toArray(new Spec[specs.size()]);
     }
 
     /*
@@ -191,10 +186,10 @@ public class WorkspaceSpecManager extends GenericSelectionProvider implements IS
     {
         if (rootModulePath != null)
         {
-            Iterator specI = specStorage.values().iterator();
+            Iterator<Spec> specI = specStorage.values().iterator();
             while (specI.hasNext())
             {
-                Spec spec = (Spec) specI.next();
+                Spec spec = specI.next();
                 // try/catch added by LL on 12 April 2011 because
                 // corrupted database can cause the call of getRootFileName() to
                 // throw a null pointer exception.
@@ -275,7 +270,7 @@ public class WorkspaceSpecManager extends GenericSelectionProvider implements IS
         {
             // renaming current spec...
             // close it here
-            UIHelper.runCommand(CloseSpecHandler.COMMAND_ID, new HashMap());
+            UIHelper.runCommand(CloseSpecHandler.COMMAND_ID, new HashMap<String, String>());
             setBack = true;
         }
         specStorage.remove(spec.getName());
@@ -291,7 +286,7 @@ public class WorkspaceSpecManager extends GenericSelectionProvider implements IS
         if (setBack)
         {
             // reopen the spec
-            HashMap parameters = new HashMap();
+            HashMap<String, String> parameters = new HashMap<String, String>();
             parameters.put(OpenSpecHandler.PARAM_SPEC, newName);
             UIHelper.runCommand(OpenSpecHandler.COMMAND_ID, parameters);
         } else
@@ -311,7 +306,7 @@ public class WorkspaceSpecManager extends GenericSelectionProvider implements IS
         {
             // deleting current spec...
             // close it here
-            UIHelper.runCommand(CloseSpecHandler.COMMAND_ID, new HashMap());
+            UIHelper.runCommand(CloseSpecHandler.COMMAND_ID, new HashMap<String, String>());
         }
         ResourceHelper.deleteProject(spec.getProject());
         specStorage.remove(spec.getName());
