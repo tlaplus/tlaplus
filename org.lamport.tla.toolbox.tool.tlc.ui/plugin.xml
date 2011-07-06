@@ -13,6 +13,8 @@
             class="org.lamport.tla.toolbox.tool.tlc.output.ConsoleProcessOutputSink">
       </sink>
    </extension>
+
+	<!-- editors -->
    <extension
          point="org.eclipse.ui.editors">
       <editor
@@ -23,6 +25,8 @@
             name="Model Editor">
       </editor>
    </extension>
+   
+   <!-- commands -->
    <extension
          point="org.eclipse.ui.commands">
       <category
@@ -140,6 +144,9 @@
          </commandParameter>
       </command>
    </extension>
+   
+   
+   <!-- "TLC Model Checker" menu bar contribution -->
    <extension
          point="org.eclipse.ui.menus">
       <menuContribution
@@ -233,6 +240,26 @@
       </menuContribution>
       <menuContribution
             locationURI="menu:toolbox.toolmenus.tlc?after=org.lamport.tla.toolbox.tool.tlc.separator">
+
+
+         <!-- Run model menu bar command in TLC Model Checker menu -->
+         <command
+               commandId="toolbox.tool.tlc.commands.model.run"
+               icon="icons/full/lrun_obj.gif"
+               id="toolbox.menu.runmodel"
+               label="Run model"
+               mnemonic="R"
+               mode="FORCE_TEXT"
+               style="push"
+               tooltip="Runs TLC on the model.">
+            <visibleWhen
+                  checkEnabled="false">
+            </visibleWhen>
+         </command>
+         <separator
+               name="org.lamport.tla.toolbox.tool.tlc.ui.separator1"
+               visible="true">
+         </separator>
          <command
                commandId="toolbox.command.openview"
                icon="icons/full/console_view2.gif"
@@ -302,6 +329,8 @@
          </command -->
       </menuContribution>
    </extension>
+   
+   <!-- Spec explorer context menu -->
    <extension
          point="org.eclipse.ui.menus">
       <menuContribution
@@ -337,7 +366,7 @@
                commandId="toolbox.tool.tlc.commands.model.run"
                icon="icons/full/lrun_obj.gif"
                id="toolbox.popupmenu.model.run"
-               label="Run"
+               label="Run model"
                style="push">
          </command -->
          <command
@@ -640,7 +669,7 @@ Console Facory
       <handler
             class="org.lamport.tla.toolbox.tool.tlc.handlers.StartLaunchHandler"
             commandId="toolbox.tool.tlc.commands.model.run">
-         <enabledWhen>
+<!--         <enabledWhen>
             <count
                   value="1">
             </count>
@@ -670,7 +699,7 @@ Console Facory
                   </iterate>
             </with>
          </activeWhen>
-      </handler>
+-->      </handler>
       <handler
             class="org.lamport.tla.toolbox.tool.tlc.handlers.StopLaunchHandler"
             commandId="toolbox.tool.tlc.commands.model.stop">
@@ -749,7 +778,6 @@ Console Facory
       <handler
             class="org.lamport.tla.toolbox.tool.tlc.handlers.LetsCreateAHandler"
             commandId="org.lamport.tla.toolbox.tool.tlc.ui.command1">
-         <activeWhen></activeWhen>
       </handler>
       <handler
             class="org.lamport.tla.toolbox.tool.tlc.handlers.OpenTLCErrorViewHandler"
@@ -836,4 +864,11 @@ Console Facory
          </fontValue>
       </fontDefinition>
    </extension>
+   <extension point="org.eclipse.ui.bindings">
+     <key
+            sequence="F11"
+            
+            commandId="toolbox.tool.tlc.commands.model.run"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+	</extension>
 </plugin>
