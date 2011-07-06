@@ -79,9 +79,9 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
     // reports the probability of a fingerprint collision
     private String fingerprintCollisionProbability;
     // coverage items
-    private List coverageInfo;
+    private List<CoverageInformationItem> coverageInfo;
     // progress information
-    private List progressInformation;
+    private List<StateSpaceInformationItem> progressInformation;
 
     // last detected error
     private TLCError lastDetectedError;
@@ -137,12 +137,12 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
     {
         isDone = false;
         isTLCStarted = false;
-        errors = new Vector();
+        errors = new Vector<TLCError>();
         lastDetectedError = null;
         ModelHelper.removeModelProblemMarkers(this.config, ModelHelper.TLC_MODEL_ERROR_MARKER_TLC);
 
-        coverageInfo = new Vector();
-        progressInformation = new Vector();
+        coverageInfo = new Vector<CoverageInformationItem>();
+        progressInformation = new Vector<StateSpaceInformationItem>();
         startTime = 0;
         startTimestamp = "";
         finishTimestamp = "";
@@ -374,7 +374,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                 // Coverage information
                 case EC.TLC_COVERAGE_START:
                     this.coverageTimestamp = CoverageInformationItem.parseCoverageTimestamp(outputMessage);
-                    this.coverageInfo = new Vector();
+                    this.coverageInfo = new Vector<CoverageInformationItem>();
                     informPresenter(ITLCModelLaunchDataPresenter.COVERAGE_TIME);
                     informPresenter(ITLCModelLaunchDataPresenter.COVERAGE);
                     break;
@@ -803,22 +803,22 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
         this.coverageTimestamp = coverageTimestamp;
     }
 
-    public List getCoverageInfo()
+    public List<CoverageInformationItem> getCoverageInfo()
     {
         return coverageInfo;
     }
 
-    public void setCoverageInfo(List coverageInfo)
+    public void setCoverageInfo(List<CoverageInformationItem> coverageInfo)
     {
         this.coverageInfo = coverageInfo;
     }
 
-    public List getProgressInformation()
+    public List<StateSpaceInformationItem> getProgressInformation()
     {
         return progressInformation;
     }
 
-    public void setProgressInformation(List progressInformation)
+    public void setProgressInformation(List<StateSpaceInformationItem> progressInformation)
     {
         this.progressInformation = progressInformation;
     }
