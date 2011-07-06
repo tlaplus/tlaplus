@@ -14,16 +14,16 @@ import util.SimpleFilenameToStream;
 /**
  * This class extends the SimpleFilenameToStream class in the way that it first
  * tries to resolve file with the local {@link FilenameToStream} resolver, but
- * falling back to RMI if the local resolver fails.
+ * falls back to RMI if the local resolver fails.
  * 
- * This is used for distributed TLC where a worker does not necessarily has
+ * This is used for distributed TLC where a worker does not necessarily have
  * access to the specification and/or configuration files.
  * 
  * Care must be taken with transferring big files. This implementation is
  * inefficient in the way that it requires the server to read the full file into
  * memory before it gets transferred to the client. The client too, will buffer
  * the full file in memory. This constraint is acceptable for TLA specifications
- * and configurations as they are usually small.
+ * and configurations as they are usually small enough to fit into memory "easily".
  */
 public class RMIFilenameToStreamResolver extends SimpleFilenameToStream {
 
