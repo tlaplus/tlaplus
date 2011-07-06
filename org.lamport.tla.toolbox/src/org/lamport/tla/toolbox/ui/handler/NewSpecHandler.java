@@ -8,6 +8,7 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IHandler;
 import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -55,7 +56,7 @@ public class NewSpecHandler extends AbstractHandler implements IHandler
         dialog.setHelpAvailable(true);
         
         // Open the wizard dialog
-        if (Window.OK == dialog.open())
+        if (Window.OK == dialog.open() && wizard.getRootFilename() != null)
         {
         	// read UI values from the wizard page
         	final boolean importExisting = wizard.isImportExisting();
@@ -79,6 +80,8 @@ public class NewSpecHandler extends AbstractHandler implements IHandler
 	 */
 	private void createModuleAndSpecInNonUIThread(final String rootFilename,
 			final boolean importExisting, final String specName) {
+		Assert.isNotNull(rootFilename);
+		Assert.isNotNull(specName);
 		
 		final Job job = new ToolboxJob("NewSpecWizard job") {
 			/* (non-Javadoc)
