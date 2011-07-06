@@ -46,6 +46,10 @@
          id="org.lamport.tla.toolbox.feature.prover"
          version="0.0.0"/>
 
+   <includes
+         id="org.lamport.tla.toolbox.feature.jnlp"
+         version="0.0.0"/>
+
    <plugin
          id="org.lamport.tla.toolbox.product.standalone"
          download-size="0"

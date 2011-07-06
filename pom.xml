@@ -31,6 +31,7 @@
 
 		<!-- bundles -->
 		<module>org.lamport.tla.toolbox</module>
+		<module>org.lamport.tla.toolbox.jnlp</module>
 		<module>org.lamport.tla.toolbox.doc</module>
 		<module>org.lamport.tla.toolbox.editor.basic</module>
 		<module>org.lamport.tla.toolbox.tool.prover</module>
@@ -52,6 +53,7 @@
 		<!-- features -->
 		<module>org.lamport.tla.toolbox.feature.base</module>
 		<module>org.lamport.tla.toolbox.feature.editor</module>
+		<module>org.lamport.tla.toolbox.feature.jnlp</module>
 		<module>org.lamport.tla.toolbox.feature.help</module>
 		<module>org.lamport.tla.toolbox.feature.prover</module>
 		<module>org.lamport.tla.toolbox.feature.tla2tex</module>

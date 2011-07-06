@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>
+   <extension
+         point="org.eclipse.equinox.http.registry.servlets">
+      <servlet
+            alias="/worker.jnlp"
+            class="org.lamport.tla.toolbox.distributed.JNLPGeneratorServlet"
+            load-on-startup="true">
+      </servlet>
+      <servlet
+            alias="/"
+            class="org.lamport.tla.toolbox.distributed.IndexServlet"
+            load-on-startup="true">
+      </servlet>
+   </extension>
+   <extension
+         point="org.eclipse.equinox.http.registry.resources">
+      <resource
+            alias="/files/tla2tools.jar"
+            base-name="files/tla2tools.jar">
+      </resource>
+      <resource
+            alias="/files/webstart.gif"
+            base-name="files/webstart.gif">
+      </resource>
+   </extension>
+
+
+</plugin>

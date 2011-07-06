@@ -24,7 +24,8 @@ Please send us reports of problems or suggestions; see http://www.tlaplus.net .
    </configIni>
 
    <launcherArgs>
-      <vmArgs>-Xmx1000m</vmArgs>
+      <vmArgs>-Xmx1000m
+-Dorg.eclipse.equinox.http.jetty.http.port=10996</vmArgs>
       <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts</vmArgsMac>
    </launcherArgs>
 
@@ -56,6 +57,8 @@ Please send us reports of problems or suggestions; see http://www.tlaplus.net .
       <plugin id="org.eclipse.core.runtime" autoStart="true" startLevel="4" />
       <plugin id="org.eclipse.equinox.common" autoStart="true" startLevel="2" />
       <plugin id="org.eclipse.equinox.ds" autoStart="true" startLevel="2" />
+      <plugin id="org.eclipse.equinox.http.registry" autoStart="true" startLevel="3" />
+      <plugin id="org.eclipse.equinox.http.jetty" autoStart="true" startLevel="3" />
    </configurations>
 
 </product>
