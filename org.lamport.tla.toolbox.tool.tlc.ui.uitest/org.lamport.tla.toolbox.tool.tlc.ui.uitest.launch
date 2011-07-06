@@ -31,7 +31,7 @@
 <stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="-os ${target.os} -ws ${target.ws} -arch ${target.arch} -nl ${target.nl} -consoleLog -console -clean"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="org.lamport.tla.toolbox.tool.tlc.ui.uitest"/>
 <stringAttribute key="org.eclipse.jdt.launching.SOURCE_PATH_PROVIDER" value="org.eclipse.pde.ui.workbenchClasspathProvider"/>
-<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Xms80m -Xmx512m&#10;&#10;-Dosgi.framework.extensions=org.eclipse.equinox.weaving.hook&#10;-Daj.weaving.verbose=true&#10;-Dorg.aspectj.weaver.showWeaveInfo=true&#10;-Dorg.aspectj.osgi.verbose=true&#10;&#10;-Dorg.lamport.tla.toolbox.tool.tlc.ui.test.PathToSpecA=${project_loc:org.lamport.tla.toolbox.uitest}/farsite/DistributedSystemModule.tla&#10;-Dorg.lamport.tla.toolbox.tool.tlc.ui.test.PathToSpecB=${project_loc:examples}/DieHard/DieHard.tla"/>
+<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Xms80m -Xmx512m&#10;&#10;-Dosgi.framework.extensions=org.eclipse.equinox.weaving.hook&#10;-Daj.weaving.verbose=true&#10;-Dorg.aspectj.weaver.showWeaveInfo=true&#10;-Dorg.aspectj.osgi.verbose=true&#10;&#10;-Dorg.lamport.tla.toolbox.tool.tlc.ui.test.PathToSpecB=${project_loc:org.lamport.tla.toolbox.uitest}/farsite/DistributedSystemModule.tla&#10;-Dorg.lamport.tla.toolbox.tool.tlc.ui.test.PathToSpecA=${project_loc:examples}/DieHard/DieHard.tla"/>
 <stringAttribute key="pde.version" value="3.3"/>
 <stringAttribute key="product" value="org.lamport.tla.toolbox.product.standalone.product"/>
 <booleanAttribute key="run_in_ui_thread" value="false"/>
