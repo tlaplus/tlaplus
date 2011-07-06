@@ -28,6 +28,8 @@ public class NewSpecWizard extends Wizard implements INewWizard
     public boolean performFinish()
     {
 
+		// cache values now (won't be possible later from the page
+		// due to widgets getting disposed of)
         rootFilename = page.getRootFilename();
         specName = page.getSpecName();
         importExisting = page.importExisting();
