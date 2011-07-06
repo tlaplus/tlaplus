@@ -182,7 +182,7 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 	private static void printErrorMsg(String msg) {
 		ToolIO.out.println(msg);
 		ToolIO.out
-				.println("Usage: java tlc2.tool.TLCWorker host");
+				.println("Usage: java " + TLCWorker.class.getName() + " host");
 	}
 
 }
