@@ -156,23 +156,25 @@ private static String installationBasePath = getInstallationBasePath();
 					InputStream is = cl
 							.getResourceAsStream(STANDARD_MODULES
 									+ name);
-        		
-        		try {
-					sourceFile = new File(TMPDIR + File.separator + name);
-					sourceFile.deleteOnExit();
 					
-					FileOutputStream fos = new FileOutputStream(sourceFile);
-					
-					byte buf[] = new byte[1024];
-					int len;
-					while ((len = is.read(buf)) > 0) {
-						fos.write(buf, 0, len);
+				if(is != null) {
+					try {
+						sourceFile = new File(TMPDIR + File.separator + name);
+						sourceFile.deleteOnExit();
+						
+						FileOutputStream fos = new FileOutputStream(sourceFile);
+						
+						byte buf[] = new byte[1024];
+						int len;
+						while ((len = is.read(buf)) > 0) {
+							fos.write(buf, 0, len);
+						}
+						fos.close();
+						is.close();
+					} catch (IOException e) {
+						// must not happen
+						e.printStackTrace();
 					}
-					fos.close();
-					is.close();
-				} catch (IOException e) {
-					// must not happen
-					e.printStackTrace();
 				}
         	} else {
         		sourceFile = new File( prefix + name );
