@@ -114,7 +114,7 @@
 		</jar>
 	</target>
 
-	<target name="test" description="Executes accompining unit tests">
+	<target name="test" description="Executes accompining unit tests" unless="skip.tests">
 		<!-- compile unit tests -->
 		<mkdir dir="${test.class.dir}" />
 		<javac srcdir="${test.dir}" destdir="${test.class.dir}" debug="true" verbose="false" source="1.5" target="1.5">
@@ -155,7 +155,7 @@
 		<delete dir="${ws.class.dir}" deleteonexit="true"/>
 	</target>
 
-	<target name="test-dist" description="Executes accompining unit tests on jar file" depends="dist">
+	<target name="test-dist" description="Executes accompining unit tests on jar file" depends="dist" unless="skip.tests">
 		<!-- compile unit tests -->
 		<mkdir dir="${test.class.dir}" />
 		<javac srcdir="${test.dir}" destdir="${test.class.dir}" debug="true" verbose="false" source="1.5" target="1.5">
