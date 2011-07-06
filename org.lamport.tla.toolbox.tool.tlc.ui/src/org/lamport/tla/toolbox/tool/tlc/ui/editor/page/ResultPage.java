@@ -998,11 +998,18 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
                         // event.gc.drawOval(0, 0, rect.width - 1, rect.height - 1);
                         if (maxTime > 0)
                         {
+                        	// In case maxData equals 0, we use 1 instead for computing
+                        	// the coordinates of the points.
+                        	// (Added by LL on 6 July 2011 to fix division by zero bug.)
+                        	long maxDataVal = maxData ;
+                        	if (maxDataVal == 0) {
+                        		maxDataVal = 1;
+                        	}
                             int[] pointArray = new int[2 * data.length];
                             for (int i = 0; i < data.length; i++)
                             {
                                 pointArray[2 * i] = (int) ((times[i] * rect.width) / maxTime);
-                                pointArray[(2 * i) + 1] = (int) (rect.height - ((data[i] * rect.height) / maxData));
+                                pointArray[(2 * i) + 1] = (int) (rect.height - ((data[i] * rect.height) / maxDataVal));
                             }
                             event.gc.drawPolyline(pointArray);
                         }
