@@ -313,7 +313,7 @@ public class ParseAlgorithm
     		   ParsingError("`" + PcalParams.BeginFairAlg + "' not followed by `" 
     				   + PcalParams.BeginFairAlg2 + "'");
     	   }
-    	   PcalParams.FairnessOption = "wfNext";    	   
+    	   PcalParams.FairAlgorithm = true;    	   
        }
        String name = GetAlgToken() ;
        if (PeekAtAlgToken(1).equals("{"))

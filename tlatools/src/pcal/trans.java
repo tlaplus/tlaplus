@@ -544,7 +544,11 @@ class trans
             {
             	algCol = line.indexOf(PcalParams.BeginFairAlg);
             	if (algCol != -1) {
-            		// found the "--fair", must look for the 
+            		// Found the "--fair".  The more structurally nice thing to
+            		// do here would be to move past the following "algorithm".
+            		// However, it's easier to pass a parameter to the ParseAlgorithm
+            		// class's GetAlgorithm method that tells it to go past the
+            		// "algorithm" token.
             		 algCol = algCol + PcalParams.BeginFairAlg.length();
                      foundBegin = true;
                      foundFairBegin = true;

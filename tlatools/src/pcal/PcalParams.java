@@ -44,6 +44,7 @@ public final class PcalParams
         ReportLabelsFlag = false;
         LabelRoot = "Lbl_";
         FairnessOption = "";
+        FairAlgorithm = false;
         CheckTermination = false;
         Nocfg = false;
         NoDoneDisjunct = false;
@@ -131,6 +132,11 @@ public final class PcalParams
      /*********************************************************************
      * True iff there is a -noDoneDisjunct option.                        *
      *********************************************************************/
+    
+    /**********************************************************************
+     * The following parameter is set true if --fair algorithm is used.   *
+     *********************************************************************/
+    public static boolean FairAlgorithm = false ; 
     
   /*************************************************************************
   * Parameters related to language definition.                             *

@@ -2046,7 +2046,8 @@ public class PcalTLAGen
 
     	// wfNextConj is either null or  " /\ WF_(Next)" 
     	String wfNextConj = null; 
-    	if (   PcalParams.FairnessOption.equals("wfNext") 
+    	if (   PcalParams.FairnessOption.equals("wfNext")
+    	    || PcalParams.FairAlgorithm
         	|| (!mp && (   PcalParams.FairnessOption.equals("wf")
         			    || PcalParams.FairnessOption.equals("sf"))))
         {
