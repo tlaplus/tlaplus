@@ -1,6 +1,8 @@
 package org.lamport.tla.toolbox.tool.tlc.job;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunch;
@@ -31,6 +33,14 @@ public class DistributedTLCJob extends TLCProcessJob {
         return args;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.lamport.tla.toolbox.tool.tlc.job.TLCProcessJob#getAdditionalVMArgs()
+	 */
+	protected List<String> getAdditionalVMArgs() {
+		final List<String> l = new ArrayList<String>();
+		return l;
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.lamport.tla.toolbox.tool.tlc.job.TLCProcessJob#getMainClass()
 	 */

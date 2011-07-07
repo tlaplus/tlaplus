@@ -1,7 +1,9 @@
 package org.lamport.tla.toolbox.tool.tlc.job;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -97,13 +99,15 @@ public class TLCProcessJob extends TLCJob
             int maxHeapSize = launch.getLaunchConfiguration().getAttribute(LAUNCH_MAX_HEAP_SIZE, 500);
 
             // using -D to pass the System property of the location of standard modules
-            String[] vmArgs = new String[] { "-Xmx" + maxHeapSize + "m" };
+            final List<String> vmArgs = new ArrayList<String>();
+            vmArgs.add("-Xmx" + maxHeapSize + "m");
+            vmArgs.addAll(getAdditionalVMArgs());
 
             // assemble the config
             VMRunnerConfiguration tlcConfig = new VMRunnerConfiguration(getMainClass().getName(), classPath);
             // tlcConfig.setProgramArguments(new String[] { ResourceHelper.getModuleName(rootModule) });
             tlcConfig.setProgramArguments(arguments);
-            tlcConfig.setVMArguments(vmArgs);
+            tlcConfig.setVMArguments((String[]) vmArgs.toArray(new String[vmArgs.size()]));
             tlcConfig.setWorkingDirectory(ResourceHelper.getParentDirName(rootModule));
 
             // get default VM (the same the toolbox is started with)
@@ -235,6 +239,14 @@ public class TLCProcessJob extends TLCJob
         }
     }
 
+	/**
+	 * @return A list of additional vm arguments
+	 */
+	protected List<String> getAdditionalVMArgs() {
+		return new ArrayList<String>();
+	}
+
+	@SuppressWarnings("rawtypes")
 	protected Class getMainClass() {
 		return TLC.class;
 	}
