@@ -508,7 +508,7 @@ public class ParseAlgorithm
      }
 
    /**
-    * The argument body is either the body of a uniprocess alorithm or of a process in
+    * The argument body is either the body of a uniprocess algorithm or of a process in
     * a multiprocess algorithm.  This procedure sets omitPC or omitStutteringWhenDone
     * to false if this body implies that the pc or stuttering-when-done disjunct
     * cannot be omitted.  This is the case unless the body consists of a single
