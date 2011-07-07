@@ -30,9 +30,11 @@ import java.net.URL;
 
 public class SimpleFilenameToStream implements FilenameToStream {
 
+	private static final ClassLoader cl = SimpleFilenameToStream.class.getClassLoader();
+	
 	private static final String TMPDIR = System.getProperty("java.io.tmpdir");
 	private static final String STANDARD_MODULES = "tla2sany"
-			+ File.separator + "StandardModules" + File.separator;
+			+ '/' + "StandardModules" + '/';
 	
   // SZ Feb 23, 2009:
   // used File.separator and File.pathSeparator instead
@@ -52,8 +54,6 @@ private static String installationBasePath = getInstallationBasePath();
 
   private static String getInstallationBasePath() {
 
-    ClassLoader cl  = ClassLoader.getSystemClassLoader();
-
     // get a "file:" URL for the base directory for package tla2sany
     final URL         url = cl.getResource("tla2sany");
 
@@ -61,7 +61,7 @@ private static String installationBasePath = getInstallationBasePath();
     final String path = url.toString();
 	try {
     	// convert to URI which handles paths correctly (even OS dependently)
-    	if(!path.startsWith("jar:file:")) {
+    	if(!isInJar(path)) {
     	final URI uri = new URI(path);
     		return new File(uri).getAbsolutePath();
     	}
@@ -76,6 +76,10 @@ private static String installationBasePath = getInstallationBasePath();
     }
     return path;
    }
+
+  private static boolean isInJar(String aString) {
+	return aString.startsWith("jar:");
+  }
 
   private static String[] getLibraryPaths() {
     String[] res;
@@ -151,8 +155,7 @@ private static String installationBasePath = getInstallationBasePath();
         	//
         	// This would be a lot simpler if TLC would not depend on
         	// File but on InputStream instead
-        	if(prefix.startsWith("jar:file:")) {
-        		ClassLoader cl = ClassLoader.getSystemClassLoader();
+        	if(isInJar(prefix)) {
 					InputStream is = cl
 							.getResourceAsStream(STANDARD_MODULES
 									+ name);
