@@ -111,6 +111,7 @@ import pcal.exception.ParseAlgorithmException;
 import pcal.exception.TLAExprException;
 import pcal.exception.TokenizerException;
 import pcal.exception.UnrecoverableException;
+import tla2sany.parser.ParseError;
 
 
 public class ParseAlgorithm
@@ -293,17 +294,27 @@ public class ParseAlgorithm
    }
 
    
-   public static AST getAlgorithm(PcalCharReader charR) throws ParseAlgorithmException
+   public static AST getAlgorithm(PcalCharReader charR, boolean fairAlgorithm) throws ParseAlgorithmException
      /**********************************************************************
      * Assumes that the char reader charR is just past the string          *
-     * PcalParams.BeginAlg that marks the beginning of the algorithm.      *
-     *                                                                     *
+     * PcalParams.BeginAlg that marks the character right after            *
+     * "--algorithm" or "--fair".  The argument fairAlgorithm is true iff  *
+     * the algorithm was begun by "--fair".                                *     
+     *                                                                     *                                                                  
      * The AST that it returns does not have the col and line fields set.  *
      * If those fields might ever be used in an error message, they        *
      * should be set to the position of the PcalParams.BeginAlg string by  *
      * whatever method finds that string and calls GetAlgorithm.           *
      **********************************************************************/
      { Init(charR) ;
+       if (fairAlgorithm) {
+    	   String nextToken = GetAlgToken() ;
+    	   if (!nextToken.equals(PcalParams.BeginFairAlg2)) {
+    		   ParsingError("`" + PcalParams.BeginFairAlg + "' not followed by `" 
+    				   + PcalParams.BeginFairAlg2 + "'");
+    	   }
+    	   PcalParams.FairnessOption = "wfNext";    	   
+       }
        String name = GetAlgToken() ;
        if (PeekAtAlgToken(1).equals("{"))
          { cSyntax = true ;
@@ -429,13 +440,18 @@ public class ParseAlgorithm
            uniproc.defs  = defs ;
            uniproc.macros = macros ;
            uniproc.prcds  = procedures ;
-           if (PeekAtAlgToken(1).equals("fair")) {
-             GobbleThis("fair");
-             if (PeekAtAlgToken(1).equals("+")) {
-                 GobbleThis("+");
-             } 
-             PcalParams.FairnessOption = "wf";
+           // Version 1.5 allowed "fair" to appear here
+           // to specify fairness for a sequential algorithm
+           if (PcalParams.inputVersionNumber == PcalParams.VersionToNumber("1.5")) {
+        	   if (PeekAtAlgToken(1).equals("fair")) {
+                   GobbleThis("fair");
+                   if (PeekAtAlgToken(1).equals("+")) {
+                       GobbleThis("+");
+                   } 
+                   PcalParams.FairnessOption = "wf";
+                 }
            }
+           
            GobbleBeginOrLeftBrace() ;
            uniproc.body = GetStmtSeq() ;
            CheckForDuplicateMacros(uniproc.macros) ;

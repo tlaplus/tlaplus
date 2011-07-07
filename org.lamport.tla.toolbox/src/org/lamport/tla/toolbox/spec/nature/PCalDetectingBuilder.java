@@ -32,6 +32,7 @@ public class PCalDetectingBuilder extends IncrementalProjectBuilder
 
     public static final String BUILDER_ID = "toolbox.builder.PCalAlgorithmSearchingBuilder";
     private static final String PCAL_ALGORITHM_DEFINITION = "--algorithm";
+    private static final String PCAL_FAIR_ALGORITHM_DEFINITION = "--fair";
 
     private PCalDetectingVisitor visitor = new PCalDetectingVisitor();
 
@@ -86,8 +87,14 @@ public class PCalDetectingBuilder extends IncrementalProjectBuilder
                     FindReplaceDocumentAdapter searchAdapter = new FindReplaceDocumentAdapter(document);
                     try
                     {
+                    	// matchRegion is set non-null iff there is a "--algorithm" or "--fair"
+                    	// string in the file.  The "--fair" option added by LL on 6 July 2011.
                         IRegion matchRegion = searchAdapter
                                 .find(0, PCAL_ALGORITHM_DEFINITION, true, true, false, false);
+                        if (matchRegion == null) {
+                        	matchRegion = searchAdapter
+                            .find(0, PCAL_FAIR_ALGORITHM_DEFINITION, true, true, false, false);
+                        }
 
                         // store the session property
                         QualifiedName key = new QualifiedName(Activator.PLUGIN_ID,

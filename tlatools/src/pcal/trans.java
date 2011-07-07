@@ -58,6 +58,13 @@ import util.ToolIO;
 *                    the translation.                                      *
 *                 The changes 3-5 are not implemented when the -version    *
 *                 option specifies an earlier version.                     *
+*                                                                          *
+*   Version 1.6: (July 2011)                                               *
+*                 Added the "--fair algorithm" syntax for specifying       *
+*                 weak fairness of the next-state action. (This changes    *
+*                 the way fairness of a uniprocess algorithm was           *
+*                 specified in Version 1.5.  All legal Version 1.5         *
+*                 algorithms should work with the  "version 1.5" option.)  *
 * -----------------------------------------------------------------        *
 *                                                                          *
 * This is the main method of the +CAL to TLA+ translation program.         *
@@ -519,7 +526,12 @@ class trans
             endTranslationLine = endTranslationLine - 1;
         }
 
+        // Search for "--algorithm" or "--fair".
+        // If found set algLine and algCol right after the last char,
+        // set foundBegin true, and set foundFairBegin true iff it
+        // was "--fair".  Otherwise, set foundBegin false.
         boolean foundBegin = false;
+        boolean foundFairBegin = false;
         while ((algLine < untabInputVec.size()) && !foundBegin)
         {
             String line = (String) untabInputVec.elementAt(algLine);
@@ -530,7 +542,16 @@ class trans
                 foundBegin = true;
             } else
             {
-                algLine = algLine + 1;
+            	algCol = line.indexOf(PcalParams.BeginFairAlg);
+            	if (algCol != -1) {
+            		// found the "--fair", must look for the 
+            		 algCol = algCol + PcalParams.BeginFairAlg.length();
+                     foundBegin = true;
+                     foundFairBegin = true;
+            		
+            	} else {
+            		algLine = algLine + 1;
+            	} 
             }
             ;
         }
@@ -575,7 +596,7 @@ class trans
         AST ast = null;
         try
         {
-            ast = ParseAlgorithm.getAlgorithm(reader);
+            ast = ParseAlgorithm.getAlgorithm(reader, foundFairBegin);
 // System.out.println(ast.toString());
 // For testing, we print out when the new code for eliminating the 
 // suttering-on-done and pc is used.
@@ -1526,7 +1547,7 @@ class trans
             // else if (option.equals("-writable") || (pcal && option.equals("writable"))) {
             // PcalParams.readOnly = false;
             // }
-            else if (option.equals("-version") || (inFile && option.equals("lineWidth")))
+            else if (option.equals("-version") || (inFile && option.equals("version")))
             {
                 nextArg = nextArg + 1;
                 if (nextArg == maxArg)

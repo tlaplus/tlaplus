@@ -18,8 +18,8 @@ public final class PcalParams
     /**
      * Parameters to be updated on each new release.
      */
-    public static final String modDate = "19 March 2011";
-    public static final String version = "1.5";
+    public static final String modDate = "6 July 2011";
+    public static final String version = "1.6";
     /**
      * SZ Mar 9, 2009:
      * Added re-initialization method. Since PcalParams class
@@ -155,11 +155,14 @@ public final class PcalParams
       }
 
     /***********************************************************************
-    * The string identifying the beginning of the algorithm in the .tla    *
+    * The strings identifying the beginning of the algorithm in the .tla   *
     * file.                                                                *
+    * The strings "--fair" and "algorithm" added by LL on 6 July 2011.     *
     ***********************************************************************/
     public static final String BeginAlg = "--algorithm" ;
-    
+    public static final String BeginFairAlg = "--fair" ;
+    public static final String BeginFairAlg2 = "algorithm" ;
+     
     
 
     /***********************************************************************
