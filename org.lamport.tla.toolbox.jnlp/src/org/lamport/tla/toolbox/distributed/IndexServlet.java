@@ -8,7 +8,6 @@ import javax.servlet.http.HttpServletResponse;
 
 public class IndexServlet extends URLHttpServlet {
 
-	private static final String TLA2TOOLS_JAR = "tla2tools.jar";
 	private static final long serialVersionUID = -653938914619406447L;
 
 	/* (non-Javadoc)
@@ -46,12 +45,14 @@ public class IndexServlet extends URLHttpServlet {
 				"</p></li>");
 		
 		// c) headless
+		final String TLA2TOOLS_JAR = "tla2tools.jar";
 		resp.getWriter().println(
 				"<li><p>\n" + 
 					"Or if the slave is headless:</p>\n" + 
 					"<pre>\n" + 
-						"java -jar <a href=\"/" + TLA2TOOLS_JAR + "\">" + TLA2TOOLS_JAR + "</a> -jnlpUrl "
-						+ url + JNLPGeneratorServlet.SERVLET_NAME +
+						"wget " + addr + "/files/" + TLA2TOOLS_JAR + "\n" + 
+						"java -cp <a href=\"/" + TLA2TOOLS_JAR + "\">" + TLA2TOOLS_JAR + "</a> tlc2.tool.distributed.TLCWorker "
+						+ url.getHost() +
 					"</pre>\n" + 
 				"</p></li>");
 		

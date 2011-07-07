@@ -26,8 +26,6 @@ public class JNLPGeneratorServlet extends URLHttpServlet {
 		
 		resp.setContentType("application/x-java-jnlp-file");
 		
-		final String addr = url.getProtocol() + "://" + url.getAuthority();
-		
 		resp.getWriter().println(
 				"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + 
 				"<jnlp codebase=\"" + addr + "\" href=\"" + SERVLET_NAME + "\">\n" +

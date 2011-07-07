@@ -13,6 +13,8 @@ public abstract class URLHttpServlet extends HttpServlet {
 	private static final long serialVersionUID = 1543293859269681164L;
 
 	protected URL url;
+	protected String addr;
+	
 	
 	/* (non-Javadoc)
 	 * @see javax.servlet.http.HttpServlet#doGet(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
@@ -23,5 +25,6 @@ public abstract class URLHttpServlet extends HttpServlet {
 		// the callee can access this host/servlet/resource
 		final StringBuffer requestURL = req.getRequestURL();
 		url = new URL(requestURL.toString());
+		addr = url.getProtocol() + "://" + url.getAuthority();
 	}
 }

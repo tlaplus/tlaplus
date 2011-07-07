@@ -16,35 +16,7 @@
   
     <build>
     <plugins>
-      <!--  sign tla2tools.jar in place with dummy cert (required for JNLP) -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-jarsigner-plugin</artifactId>
-        <version>1.2</version>
-        <configuration>
-        	<archive>${project.build.directory}/../../tlatools/dist/tla2tools.jar</archive>
-        	<alias>msr</alias>
-        	<keystore>keystore</keystore>
-     		<keypass>secret</keypass>
-     		<storepass>secret</storepass>
-     		<verbose>false</verbose>
-        </configuration>
-        <executions>
-          <execution>
-            <id>sign</id>
-            <goals>
-              <goal>sign</goal>
-            </goals>
-          </execution>
-          <execution>
-            <id>verify</id>
-            <goals>
-              <goal>verify</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <!--  copy signed tla2tools.jar into files/ where it will be served from -->
+      <!--  copy tla2tools.jar into files/ where it will be served from -->
       <plugin>
         <artifactId>maven-resources-plugin</artifactId>
         <version>2.5</version>
@@ -65,6 +37,34 @@
                 </resource>
               </resources>              
             </configuration>            
+          </execution>
+        </executions>
+      </plugin>
+      <!--  sign tla2tools.jar in place with dummy cert (required for JNLP) -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jarsigner-plugin</artifactId>
+        <version>1.2</version>
+        <configuration>
+        	<archive>${project.build.directory}/../files/tla2tools.jar</archive>
+        	<alias>msr</alias>
+        	<keystore>keystore</keystore>
+     		<keypass>secret</keypass>
+     		<storepass>secret</storepass>
+     		<verbose>false</verbose>
+        </configuration>
+        <executions>
+          <execution>
+            <id>sign</id>
+            <goals>
+              <goal>sign</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>verify</id>
+            <goals>
+              <goal>verify</goal>
+            </goals>
           </execution>
         </executions>
       </plugin>
