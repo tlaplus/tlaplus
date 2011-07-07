@@ -22,7 +22,17 @@ public class IndexServlet extends URLHttpServlet {
 		resp.getWriter().println(
 				"<html><head>\n" + 
 						"<title>TLCWorker</title>\n" + 
-				"</head>\n" + 
+				"</head>");
+		
+		// boostrap JRE on Windows systems
+		resp.getWriter().println(
+				"<object codebase=\"http://java.sun.com/update/1.6.0/jinstall-6-windows-i586.cab#Version=6,0,0,0\" classid=\"clsid:5852F5ED-8BF4-11D4-A245-0080C6F74284\" height=0 width=0>" +
+						"<param name=\"app\" value=\"" + url + JNLPGeneratorServlet.SERVLET_NAME + "\">" +
+						"<param name=\"back\" value=\"false\">" +
+				"</object>");
+		
+		// header
+		resp.getWriter().println(
 				"<body>\n" + 
 					"<table id=\"header\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\" border=\"0\">\n" + 
 						"<p>Connect to TLCworker one of these ways:</p>\n" + 
