@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunch;
+import org.eclipse.debug.core.ILaunchConfiguration;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 
 import tlc2.tool.distributed.TLCServer;
@@ -36,8 +37,14 @@ public class DistributedTLCJob extends TLCProcessJob {
 	/* (non-Javadoc)
 	 * @see org.lamport.tla.toolbox.tool.tlc.job.TLCProcessJob#getAdditionalVMArgs()
 	 */
-	protected List<String> getAdditionalVMArgs() {
+	protected List<String> getAdditionalVMArgs() throws CoreException {
 		final List<String> l = new ArrayList<String>();
+		
+		final ILaunchConfiguration launchConfig = launch.getLaunchConfiguration();
+		final String vmArgs = launchConfig.getAttribute(LAUNCH_DISTRIBUTED_ARGS,
+				LAUNCH_DISTRIBUTED_ARGS_DEFAULT);
+		l.add(vmArgs);
+
 		return l;
 	}
 	

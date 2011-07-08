@@ -22,8 +22,16 @@ public interface IConfigurationDefaults
             .getRuntime().availableProcessors() / 2)
             : 1;
 
+	/**
+	 * Run in distributed moe?
+	 */
 	public static final boolean LAUNCH_DISTRIBUTED_DEFAULT = false;
 
+	/**
+	 * Additional (e.g. RMI specific) VM args for distributed model checker
+	 */
+	public static final String LAUNCH_DISTRIBUTED_ARGS_DEFAULT = "";
+	
     /**
      * Default max heap size
      * Now set as a preference in TLCPreferencePage

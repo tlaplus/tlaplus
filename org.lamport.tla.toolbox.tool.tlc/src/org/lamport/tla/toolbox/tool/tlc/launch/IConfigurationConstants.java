@@ -28,6 +28,10 @@ public interface IConfigurationConstants
      */
 	public static final String LAUNCH_DISTRIBUTED = "distributedTLC";
     /**
+     * Additional VM args for distributed version of TLC
+     */
+	public static final String LAUNCH_DISTRIBUTED_ARGS = "distributedTLCVMArgs";
+    /**
      * How to run TLC (model-checking = true, simulation = false)
      */
     public static final String LAUNCH_MC_MODE = "mcMode";

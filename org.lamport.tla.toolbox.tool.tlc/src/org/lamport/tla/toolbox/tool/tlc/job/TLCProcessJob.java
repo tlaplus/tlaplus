@@ -85,13 +85,8 @@ public class TLCProcessJob extends TLCJob
 
             // log output
             org.lamport.tla.toolbox.tool.tlc.TLCActivator.logDebug(
-            		"---------------------------\n" +
-            		"TLC ARGUMENTS:\n" +
-            		"---------------------------\n" +
-            		Arrays.toString(arguments) + "\n" +
-            		"---------------------------\n" +
-            		"END TLC ARGUMENTS\n" +
-            		"---------------------------\n");
+            		"TLC ARGUMENTS: " +
+            		Arrays.toString(arguments));
 
             // get max heap size
             // the default value should never be returned if validation
@@ -242,7 +237,7 @@ public class TLCProcessJob extends TLCJob
 	/**
 	 * @return A list of additional vm arguments
 	 */
-	protected List<String> getAdditionalVMArgs() {
+	protected List<String> getAdditionalVMArgs() throws CoreException {
 		return new ArrayList<String>();
 	}
 

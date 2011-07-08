@@ -13,7 +13,6 @@ import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.source.SourceViewer;
-import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -28,8 +27,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.ISelectionListener;
-import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.forms.HyperlinkGroup;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.IMessageManager;
@@ -114,11 +111,6 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         }
     };
 
-    // Test code
-    // remembers if the spec had variables the last time the page was validated.
-    // private boolean hasVariables = false;
-    // private boolean lastSeenHasVariables = false;
-
     private ImageHyperlink runLink;
     private ImageHyperlink generateLink;
 
@@ -140,7 +132,14 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
     private Button checkpointButton;
     private Text checkpointIdText;
 
+    /*
+     * Checkbox and input box for distributed model checking
+     * 
+     * button: activate distribution
+     * text: additional vm arguments (e.g. -Djava.rmi...) 
+     */
     private Button distributedButton;
+    private Text distributedText;
     
     // The widgets to display the checkpoint size and
     // the delete button.
@@ -204,15 +203,15 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         this.checkDeadlockButton.setSelection(checkDeadlock);
 
         // invariants
-        List serializedList = getConfig().getAttribute(MODEL_CORRECTNESS_INVARIANTS, new Vector());
+        List<String> serializedList = getConfig().getAttribute(MODEL_CORRECTNESS_INVARIANTS, new Vector<String>());
         FormHelper.setSerializedInput(invariantsTable, serializedList);
 
         // properties
-        serializedList = getConfig().getAttribute(MODEL_CORRECTNESS_PROPERTIES, new Vector());
+        serializedList = getConfig().getAttribute(MODEL_CORRECTNESS_PROPERTIES, new Vector<String>());
         FormHelper.setSerializedInput(propertiesTable, serializedList);
 
         // constants from the model
-        List savedConstants = getConfig().getAttribute(MODEL_PARAMETER_CONSTANTS, new Vector());
+        List<String> savedConstants = getConfig().getAttribute(MODEL_PARAMETER_CONSTANTS, new Vector<String>());
         FormHelper.setSerializedInput(constantTable, savedConstants);
 
         // recover from the checkpoint
@@ -221,14 +220,10 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         
         boolean distributed = getConfig().getAttribute(LAUNCH_DISTRIBUTED, LAUNCH_DISTRIBUTED_DEFAULT);
         this.distributedButton.setSelection(distributed);
-    }
 
-    // TODO remove
-    // The field countXX and the commented-out code in which it appears in the following method
-    // were a test that Dan and LL did in September 2009 to try out a method for dynamically
-    // modifying the number of pages that are shown in order to provide a more sensible interface
-    // when the spec has no variables.
-    // private int countXX = 0;
+        final String vmArgs = getConfig().getAttribute(LAUNCH_DISTRIBUTED_ARGS, LAUNCH_DISTRIBUTED_ARGS_DEFAULT);
+        this.distributedText.setText(vmArgs);
+    }
 
     public void validatePage(boolean switchToErrorPage)
     {
@@ -236,66 +231,6 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         {
             return;
         }
-        // TODO remove
-        // The following approach has the potential problem that it loses
-        // some of the data in the model. If we want to use this approach
-        // to control the display of the get-constants area, we have to
-        // be careful and check things carefully because weird things
-        // seem to happen.
-        // countXX++;
-        // System.out.println("countXX = " + countXX);
-        // if (countXX == 60000)
-        // {
-        // countXX++;
-        // ModelEditor ourFavoriteEditor = (ModelEditor) this.getEditor();
-        // ourFavoriteEditor.removePage(0);
-        // System.out.println("Page removed");
-        // MainModelPage newPage = new MainModelPage(ourFavoriteEditor);
-        // try
-        // {
-        // ourFavoriteEditor.addPage(0, newPage);
-        // ourFavoriteEditor.setUpPage(newPage, 0);
-        // } catch (PartInitException e)
-        // {
-        // // TODO Auto-generated catch block
-        // TLCUIActivator.logError("Error initializing editor", e);
-        // e.printStackTrace();
-        // }
-        // // newPage.validate(); // Dan: I thought this needed to be added,
-        // // but now I think that it's harmful.
-        //
-        // // both the following statements are needed to give make newPage
-        // // the one that's shown.
-        // ourFavoriteEditor.setActivePage(newPage.getId());
-        // newPage.setFocus();
-        // System.out.println("Page re-added");
-        // // System.out.println("Here goes.  Closing editor.");
-        // // ModelEditor ourFavoriteEditor = (ModelEditor) this.getEditor();
-        // // IFile launchFile =
-        // // ourFavoriteEditor.getResource(IFileProvider.TYPE_MODEL);
-        // // ourFavoriteEditor.close(false);
-        // // System.out.println("launchFile.getName = " +
-        // // launchFile.getName());
-        // // // UIHelper.openEditor(OpenModelHandler.EDITOR_ID, launchFile);
-        // // try {
-        // // UIHelper.getActiveWindow().getActivePage().openEditor(new
-        // // FileEditorInput(launchFile),
-        // // OpenModelHandler.EDITOR_ID, true);
-        // // }
-        // // catch (PartInitException e) {
-        // // // TODO Auto-generated catch block
-        // // e.printStackTrace();
-        // // }
-        // // System.out.println("Relaunched the editor");
-        // }
-        // // SOME RANDOM TEST
-        // // if (hasVariables !=
-        // // (SemanticHelper.getRootModuleNode().getVariableDecls().length != 0))
-        // // {
-        // // hasVariables = !hasVariables;
-        // // createBodyContent(getManagedForm());
-        // // System.out.println("We got here in our random test." + count++);
-        // // }
 
         DataBindingManager dm = getDataBindingManager();
         IMessageManager mm = getManagedForm().getMessageManager();
@@ -314,11 +249,11 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         getLookupHelper().resetModelNames(this);
 
         // constants in the table
-        List constants = (List) constantTable.getInput();
+        List<Assignment> constants = (List<Assignment>) constantTable.getInput();
         // merge constants with currently defined in the specobj, if any
         if (rootModuleNode != null)
         {
-            List toDelete = ModelHelper.mergeConstantLists(constants, ModelHelper.createConstantsList(rootModuleNode));
+            List<Assignment> toDelete = ModelHelper.mergeConstantLists(constants, ModelHelper.createConstantsList(rootModuleNode));
             if (!toDelete.isEmpty())
             {
                 // if constants have been removed, these should be deleted from
@@ -343,7 +278,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         {
             Assignment constant = (Assignment) constants.get(i);
 
-            List values = Arrays.asList(constant.getParams());
+            List<String> values = Arrays.asList(constant.getParams());
             // check parameters
             validateId(MODEL_PARAMETER_CONSTANTS, values, "param1_", "A parameter name");
 
@@ -421,7 +356,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
                          * setComplete(false); }
                          */
 
-                        List mvList = modelValuesSet.getValuesAsList();
+                        List<String> mvList = modelValuesSet.getValuesAsList();
                         // check list of model values
                         validateUsage(MODEL_PARAMETER_CONSTANTS, mvList, "modelValues2_", "A model value",
                                 "Constant Assignment", true);
@@ -466,7 +401,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         for (int i = 0; i < constants.size(); i++)
         {
             Assignment constant = (Assignment) constants.get(i);
-            List values = Arrays.asList(constant.getParams());
+            List<String> values = Arrays.asList(constant.getParams());
             // check list of parameters
             validateUsage(MODEL_PARAMETER_CONSTANTS, values, "param1_", "A parameter name", "Constant Assignment",
                     false);
@@ -772,8 +707,11 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         boolean distributed = this.distributedButton.getSelection();
         getConfig().setAttribute(LAUNCH_DISTRIBUTED, distributed);
         
+        final String vmArgs = this.distributedText.getText();
+        getConfig().setAttribute(LAUNCH_DISTRIBUTED_ARGS, vmArgs);
+        
         // invariants
-        List serializedList = FormHelper.getSerializedInput(invariantsTable);
+        List<String> serializedList = FormHelper.getSerializedInput(invariantsTable);
         getConfig().setAttribute(MODEL_CORRECTNESS_INVARIANTS, serializedList);
 
         // properties
@@ -781,7 +719,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         getConfig().setAttribute(MODEL_CORRECTNESS_PROPERTIES, serializedList);
 
         // constants
-        List constants = FormHelper.getSerializedInput(constantTable);
+        List<String> constants = FormHelper.getSerializedInput(constantTable);
         getConfig().setAttribute(MODEL_PARAMETER_CONSTANTS, constants);
 
         // variables
@@ -828,9 +766,6 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         }
     }
 
-    // TODO remove
-    private int ccount = 0;
-
     /**
      * Creates the UI
      * This method is called to create the widgets and arrange them on the page
@@ -846,8 +781,6 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
     {
         DataBindingManager dm = getDataBindingManager();
         int sectionFlags = Section.TITLE_BAR | Section.DESCRIPTION | Section.TREE_NODE;
-        // TODO remove
-        System.out.println("Call of createBodyContent number " + ccount++ + ", Model editor count = ");
         FormToolkit toolkit = managedForm.getToolkit();
         Composite body = managedForm.getForm().getBody();
 
@@ -960,11 +893,6 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         noSpecRadio.addSelectionListener(whatIsTheSpecListener);
         dm.bindAttribute(MODEL_BEHAVIOR_NO_SPEC, noSpecRadio, behaviorPart);
 
-        // RANDOM TEST CODE THAT DOESN"T SEEM TO DO ANYTHING
-        // left.getChildren()[0].setBounds(0, 0, 0, 0);
-        // left.getChildren()[0].setVisible(hasVariables);
-        // System.out.println("setVisible(...) " + count++);
-
         // ------------------------------------------
         // what to check
         section = FormHelper.createSectionComposite(left, "What to check?", "", toolkit, sectionFlags
@@ -1004,10 +932,11 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
                propFlags = propFlags | Section.EXPANDED;
                getConfig().setAttribute(MODEL_PROPERTIES_EXPAND, "");
             }
-        } catch (CoreException e2)
+        } catch (CoreException e)
         {
             // I don't know why such an exception might occur, but there's no
             // great harm if it does. LL
+        	e.printStackTrace();
         }
         ValidateableTableSectionPart propertiesPart = new ValidateableTableSectionPart(toBeCheckedArea, "Properties",
                 "Temporal formulas true for every possible behavior.", toolkit, propFlags, this,
@@ -1130,7 +1059,10 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
         dm.bindAttribute(LAUNCH_NUMBER_OF_WORKERS, workers, howToRunPart);
         
-        // distribution?
+        /*
+         * Distribution
+         */
+        //TODO MAK Add help linking for distribution mode 
         distributedButton = toolkit.createButton(howToRunArea, "Run in distributed mode", SWT.CHECK);
         gd = new GridData();
         gd.horizontalSpan = 2;
@@ -1138,6 +1070,21 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
         distributedButton.setLayoutData(gd);
         distributedButton.addSelectionListener(howToRunListener);
+		distributedButton.setToolTipText("If checked, state computation will be performed by (remote) workers.");
+
+        FormText distributedLabel = toolkit.createFormText(howToRunArea, true);
+        distributedLabel.setText("Additional VM args:", false, false);
+
+        distributedText = toolkit.createText(howToRunArea, "");
+        distributedText.setEditable(true);
+        distributedText
+        .setToolTipText("Optionally pass additional VM arguments to master TLC process (e.g. -Djava.rmi.server.hostname=ThisHostName)");
+        gd = new GridData();
+        gd.horizontalIndent = 10;
+        gd.widthHint = 100;
+        distributedText.setLayoutData(gd);
+        
+        dm.bindAttribute(LAUNCH_DISTRIBUTED, distributedButton, howToRunPart);
 
         // run from the checkpoint
         checkpointButton = toolkit.createButton(howToRunArea, "Recover from checkpoint", SWT.CHECK);
@@ -1169,6 +1116,9 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         chkptDeleteButton = toolkit.createButton(howToRunArea, "Delete Checkpoint", SWT.PUSH);
         chkptDeleteButton.addSelectionListener(new SelectionListener() {
 
+            /* (non-Javadoc)
+             * @see org.eclipse.swt.events.SelectionListener#widgetSelected(org.eclipse.swt.events.SelectionEvent)
+             */
             public void widgetSelected(SelectionEvent e)
             {
                 final IResource[] checkpoints;
@@ -1191,14 +1141,14 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
                 {
                     return;
                 }
-                // TODO Auto-generated method stub
 
             }
 
+            /* (non-Javadoc)
+             * @see org.eclipse.swt.events.SelectionListener#widgetDefaultSelected(org.eclipse.swt.events.SelectionEvent)
+             */
             public void widgetDefaultSelected(SelectionEvent e)
             {
-                // TODO Auto-generated method stub
-
             }
         });
 
@@ -1234,18 +1184,6 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         generateLink.setLayoutData(gd);
         group.add(generateLink);
 
-        // TODO enable on debug support
-        // debug link
-        /*
-         * ImageHyperlink debugLink = toolkit.createImageHyperlink(howToRunArea,
-         * SWT.NONE);
-         * debugLink.setImage(createRegisteredImage("icons/full/ldebug_obj.gif"
-         * )); debugLink.addHyperlinkListener(new HyperlinkAdapter() { public
-         * void linkActivated(HyperlinkEvent e) { // doDebug(); } });
-         * debugLink.setText("Debug TLC"); debugLink.setEnabled(false); gd = new
-         * GridData(); gd.horizontalSpan = 2; gd.widthHint = 200;
-         * debugLink.setLayoutData(gd); group.add(debugLink);
-         */
         // add listeners propagating the changes of the elements to the changes
         // of the
         // parts to the list to be activated after the values has been loaded
@@ -1262,36 +1200,4 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         super.refresh();
         updateCheckpoints();
     }
-
-    /**
-     * Disables irrelevant sections and enables relevant
-     * ones depending on the state of this page.
-     * 
-     * Currently, this disables properties and invariants when
-     * no spec is selected and enables them when it is not.
-     * 
-     * by the user.
-     * @param noSpec
-     */
-    private void updateRelevantSections()
-    {
-        DataBindingManager dm = getDataBindingManager();
-        Section propertiesSection = dm.getSection(dm.getSectionForAttribute(MODEL_CORRECTNESS_PROPERTIES)).getSection();
-        Section invariantsSection = dm.getSection(dm.getSectionForAttribute(MODEL_CORRECTNESS_INVARIANTS)).getSection();
-
-        if (noSpecRadio.getSelection())
-        {
-            propertiesSection.setExpanded(false);
-            propertiesSection.setEnabled(false);
-
-            invariantsSection.setExpanded(false);
-            invariantsSection.setEnabled(false);
-
-        } else
-        {
-            propertiesSection.setEnabled(true);
-            invariantsSection.setEnabled(true);
-        }
-    }
-
 }
