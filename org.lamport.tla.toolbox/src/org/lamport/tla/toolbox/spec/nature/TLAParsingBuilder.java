@@ -57,7 +57,6 @@ public class TLAParsingBuilder extends IncrementalProjectBuilder
             return null;
         }
 
-        Activator.logDebug("----\n");
         if (IncrementalProjectBuilder.FULL_BUILD == kind)
         {
             monitor.beginTask("Invoking the SANY to re-parse the spec", IProgressMonitor.UNKNOWN);
@@ -155,7 +154,6 @@ public class TLAParsingBuilder extends IncrementalProjectBuilder
             }
         }
 
-        Activator.logDebug("----\n");
         // since every project is one spec and we do not want to touch other
         // specs always return NULL!
         return null;

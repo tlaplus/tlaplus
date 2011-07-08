@@ -457,12 +457,7 @@ public class ResourceHelper
      */
     public static String getParentDirName(String path)
     {
-        File f = new File(path);
-        if (f != null)
-        {
-            return f.getParent();
-        }
-        return null;
+        return new File(path).getParent();
     }
 
     /**
@@ -1328,7 +1323,7 @@ public class ResourceHelper
      */
     public static SemanticNode[] getUsesOfSymbol(SymbolNode symbol, ModuleNode module)
     {
-        Vector found = new Vector(20); // For some reason, Eclipse doesn't let me use a List here.
+        Vector<SemanticNode> found = new Vector<SemanticNode>(20); // For some reason, Eclipse doesn't let me use a List here.
         // If I write
         // List found = new List(20);
         // Eclipse mysteriously complains that it can't find the second "List".
@@ -1381,7 +1376,7 @@ public class ResourceHelper
      * @param found
      * @return
      */
-    private static void innerGetUsesOfSymbol(SymbolNode symbol, SemanticNode node, Vector found)
+    private static void innerGetUsesOfSymbol(SymbolNode symbol, SemanticNode node, Vector<SemanticNode> found)
     {
         SymbolNode[] defs = null;
 
@@ -1538,13 +1533,13 @@ public class ResourceHelper
         {
             return null;
         }
-        List listOfImportedModules = pds.getListOfExtendedModules(rootModuleName + ".tla");
+        List<String> listOfImportedModules = pds.getListOfExtendedModules(rootModuleName + ".tla");
 
         // Then we put them in an array and sort them.
         String[] value = new String[listOfImportedModules.size() + 1];
         for (int i = 0; i < listOfImportedModules.size(); i++)
         {
-            String element = (String) listOfImportedModules.get(i);
+            String element = listOfImportedModules.get(i);
             value[i] = element.substring(0, element.length() - 4);
             System.out.println("next module: " + value[i]);
         }

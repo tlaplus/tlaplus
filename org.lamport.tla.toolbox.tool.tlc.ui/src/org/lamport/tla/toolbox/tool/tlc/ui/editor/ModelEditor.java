@@ -1,7 +1,5 @@
 package org.lamport.tla.toolbox.tool.tlc.ui.editor;
 
-import java.util.List;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
@@ -151,11 +149,10 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
             try
             {
                 delta.accept(visitor);
-                List modules = visitor.getModules();
                 // one of the modules in the specification has changed
                 // this means that identifiers defined in a spec might have changed
                 // re-validate the editor
-                if (!modules.isEmpty() || visitor.isModelChanged() || visitor.getCheckpointChanged())
+                if (!visitor.getModules().isEmpty() || visitor.isModelChanged() || visitor.getCheckpointChanged())
                 {
                     // update the specObject of the helper
                     helper.resetSpecNames();

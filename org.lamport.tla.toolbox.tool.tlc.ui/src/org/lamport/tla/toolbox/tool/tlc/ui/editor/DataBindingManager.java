@@ -16,33 +16,28 @@ import org.eclipse.ui.forms.widgets.Section;
  */
 /**
  * @author Simon Zambrovski
- * @version $Id$
- */
-/**
- * @author Simon Zambrovski
- * @version $Id$
  */
 public class DataBindingManager implements ISectionConstants
 {
     private static final String[] EMPTY = new String[0];
 
     // section parts containing the sections
-    private Hashtable sectionParts = new Hashtable(13);
+    private Hashtable<String, SectionPart> sectionParts = new Hashtable<String, SectionPart>(13);
     // storage to retrieve the page for a section
-    private Hashtable pageForSection = new Hashtable(13);
+    private Hashtable<String, String> pageForSection = new Hashtable<String, String>(13);
     // storage to retrieve sections on a given page
-    private Hashtable sectionsForPage = new Hashtable(13);
+    private Hashtable<String, Vector<String>> sectionsForPage = new Hashtable<String, Vector<String>>(13);
     // storage to retrieve the section for a given attribute
-    private Hashtable sectionForAttribute = new Hashtable(37);
+    private Hashtable<String, String> sectionForAttribute = new Hashtable<String, String>(37);
     // storage to retrieve the viewer for a given attribute
-    private Hashtable viewerForAttribute = new Hashtable(37);
+    private Hashtable<String, Object> viewerForAttribute = new Hashtable<String, Object>(37);
 
     /** 
      * expands a section by given section id
      */
     public void expandSection(String id)
     {
-        SectionPart part = (SectionPart) sectionParts.get(id);
+        SectionPart part = sectionParts.get(id);
         if (part == null)
         {
             throw new IllegalArgumentException("No section for id");
@@ -78,7 +73,7 @@ public class DataBindingManager implements ISectionConstants
      */
     public void enableSection(String id, boolean enabled)
     {
-        SectionPart part = (SectionPart) sectionParts.get(id);
+        SectionPart part = sectionParts.get(id);
         if (part == null)
         {
             throw new IllegalArgumentException("No section for id");
@@ -121,7 +116,7 @@ public class DataBindingManager implements ISectionConstants
     public String getSectionPage(String id)
     {
         String pageId;
-        if ((pageId = (String) pageForSection.get(id)) != null)
+        if ((pageId = pageForSection.get(id)) != null)
         {
             return pageId;
         } else
@@ -144,10 +139,10 @@ public class DataBindingManager implements ISectionConstants
         // store the page id
         pageForSection.put(id, pageId);
 
-        Vector sectionIds = (Vector) sectionsForPage.get(pageId);
+        Vector<String> sectionIds = sectionsForPage.get(pageId);
         if (sectionIds == null)
         {
-            sectionIds = new Vector();
+            sectionIds = new Vector<String>();
             sectionsForPage.put(pageId, sectionIds);
         }
 
@@ -161,7 +156,7 @@ public class DataBindingManager implements ISectionConstants
      */
     public String[] getSectionsForPage(String pageId)
     {
-        Vector sectionIds = (Vector) sectionsForPage.get(pageId);
+        Vector<String> sectionIds = sectionsForPage.get(pageId);
         if (sectionIds == null)
         {
             return EMPTY;
@@ -178,7 +173,7 @@ public class DataBindingManager implements ISectionConstants
      */
     public String getSectionForAttribute(String attributeName)
     {
-        return (String) sectionForAttribute.get(attributeName);
+        return sectionForAttribute.get(attributeName);
     }
 
     /**
@@ -203,11 +198,11 @@ public class DataBindingManager implements ISectionConstants
         // bind the viewer
         viewerForAttribute.put(attributeName, attributeViewer);
         // bind the section id
-        Enumeration enumeration = sectionParts.keys();
+        Enumeration<String> enumeration = sectionParts.keys();
         while (enumeration.hasMoreElements())
         {
-            Object sectionId = enumeration.nextElement();
-            SectionPart registeredPart = (SectionPart) sectionParts.get(sectionId);
+            String sectionId = enumeration.nextElement();
+            SectionPart registeredPart = sectionParts.get(sectionId);
             if (registeredPart.equals(sectionPart))
             {
                 sectionForAttribute.put(attributeName, sectionId);

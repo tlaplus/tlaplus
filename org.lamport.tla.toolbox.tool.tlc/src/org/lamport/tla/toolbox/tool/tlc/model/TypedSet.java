@@ -168,14 +168,14 @@ public class TypedSet
      * This method disconnects the actual typed set from the collection of values
      * @return a list containing the values
      */
-    public List getValuesAsList()
+    public List<String> getValuesAsList()
     {
         if (!hasType())
         {
             return Arrays.asList(values);
         } else
         {
-            List typedList = new ArrayList(values.length);
+            List<String> typedList = new ArrayList<String>(values.length);
             // add type to the list
             for (int i = 0; i < values.length; i++)
             {
