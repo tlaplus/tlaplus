@@ -20,8 +20,8 @@ public class LimitingBlockSelector extends BlockSelector {
 	}
 
 	/**
-	 * Limits the block size to a defined maximum if the dynmically calculated
-	 * block size exeeds it
+	 * Limits the block size to a defined maximum if the dynamically calculated
+	 * block size exceeds it
 	 */
 	protected int getBlockSize(int size) {
 		int blockSize = super.getBlockSize(size);
