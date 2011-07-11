@@ -1135,8 +1135,6 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
      */
     public static void removeModelProblemMarkers(ILaunchConfiguration configuration, String type)
     {
-        System.out.println("entering removeModelProblemMarkers() on " + configuration.getName()
-                + " with markerType set to " + type);
         try
         {
             IMarker[] foundMarkers = configuration.getFile().findMarkers(type, true, IResource.DEPTH_ONE);

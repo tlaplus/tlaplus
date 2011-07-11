@@ -46,7 +46,7 @@ System.out.println("footFileName = " + rootFileName);
                 return ResourceHelper.getLinkedFile(project, rootFileName);
             }
         } else {
-            System.out.println("projectPrefs is null");
+            Activator.logInfo("projectPrefs is null");
         }
         return null;
     }
