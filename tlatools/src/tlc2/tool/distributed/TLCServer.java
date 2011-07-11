@@ -29,6 +29,8 @@ import tlc2.output.MP;
 import tlc2.tool.TLCState;
 import tlc2.tool.TLCTrace;
 import tlc2.tool.WorkerException;
+import tlc2.tool.distributed.selector.BlockSelectorFactory;
+import tlc2.tool.distributed.selector.IBlockSelector;
 import tlc2.tool.fp.DiskFPSet;
 import tlc2.tool.fp.FPSet;
 import tlc2.tool.queue.DiskStateQueue;
@@ -45,24 +47,27 @@ import util.UniqueString;
  */
 public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		InternRMI {
-	public FPSetManager fpSetManager;
+	public final FPSetManager fpSetManager;
+	public final StateQueue stateQueue;
+	public final TLCTrace trace;
+
+	private final DistApp work;
+	private final String metadir;
+	private final String filename;
+
 	public FPSet fpSet;
-	public StateQueue stateQueue;
-	public TLCTrace trace;
 
 	private TLCState errState = null;
 	private boolean done = false;
 	private boolean keepCallStack = false;
 	private int thId = 0;
 	private int workerCnt = 0, threadCnt = 0;
-	private String metadir;
-	private String filename;
-	private DistApp work;
 	private TLCWorkerRMI[] workers;
 	private int[] workerRefCnt;
 	private TLCServerThread[] threads;
 	
-	private CyclicBarrier barrier;
+	private final CyclicBarrier barrier;
+	private final IBlockSelector blockSelector;
 	static final int expectedWorkerCount = Integer.getInteger("tlc2.tool.distributed.TLCServer.expectedWorkerCount", 1);
 	
 	public TLCServer(DistApp work) throws IOException, NotBoundException {
@@ -87,6 +92,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 			this.fpSetManager = new FPSetManager(TLCGlobals.fpServers);
 		}
 		barrier = new CyclicBarrier(expectedWorkerCount);
+		blockSelector = BlockSelectorFactory.getBlockSelector(this);
 	}
 
 	public final Boolean getCheckDeadlock() {
@@ -141,8 +147,8 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 			tidx = len;
 		}
 		this.threadCnt++;
-		this.threads[tidx] = new TLCServerThread(this.thId++, worker, URI.create("rmi://"
-				+ hostname + ":" + getPort(worker)), this, barrier);
+		this.threads[tidx] = new TLCServerThread(this.thId++, worker, URI.create("rmi://" + hostname + ":"
+				+ getPort(worker)), this, barrier, blockSelector);
 		if (TLCGlobals.fpServers == null)
 			this.fpSet.addThread();
 		this.threads[tidx].start();
@@ -532,7 +538,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 	/**
 	 * @return Number of currently registered workers
 	 */
-	int getWorkerCount() {
+	public int getWorkerCount() {
 		return workerCnt;
 	}
 	

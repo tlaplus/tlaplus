@@ -16,6 +16,7 @@ import tlc2.output.MP;
 import tlc2.tool.TLCState;
 import tlc2.tool.TLCStateVec;
 import tlc2.tool.WorkerException;
+import tlc2.tool.distributed.selector.IBlockSelector;
 import tlc2.tool.queue.StateQueue;
 import tlc2.util.BitVector;
 import tlc2.util.IdThread;
@@ -27,24 +28,25 @@ import util.ToolIO;
  * @version $Id$
  */
 public class TLCServerThread extends IdThread {
-	private static final String BLOCK_SIZE = "tlc2.tool.distributed.TLCServerThread.BlockSize";
-	/**
-	 * TLC server threads manage the set of existing TLC workers.
-	 */
-	private final static int BlockSize = Integer.getInteger(BLOCK_SIZE, 1024);
-	private CyclicBarrier barrier;
 	/**
 	 * Identifies the worker
 	 */
-	private URI url;
+	private final URI url;
 	private int receivedStates, sentStates;
+	private final CyclicBarrier barrier;
+	private final IBlockSelector selector;
 
-	public TLCServerThread(int id, TLCWorkerRMI worker, URI url, TLCServer tlc, CyclicBarrier aBarrier) {
+	public TLCServerThread(int id, TLCWorkerRMI worker, URI url, TLCServer tlc) {
+		this(id, worker, url, tlc, null, null);
+	}
+	
+	public TLCServerThread(int id, TLCWorkerRMI worker, URI url, TLCServer tlc, CyclicBarrier aBarrier, IBlockSelector aSelector) {
 		super(id);
 		this.worker = worker;
 		this.url  = url;
 		this.tlcServer = tlc;
 		this.barrier = aBarrier;
+		this.selector = aSelector;
 	}
 
 	private TLCWorkerRMI worker;
@@ -73,8 +75,7 @@ public class TLCServerThread extends IdThread {
 		final StateQueue stateQueue = this.tlcServer.stateQueue;
 		try {
 			while (true) {
-				TLCState[] states = stateQueue
-						.sDequeue(getBlockSize(stateQueue.size()));
+				final TLCState[] states = selector.getBlocks(stateQueue, worker);
 				if (states == null) {
 					synchronized (this.tlcServer) {
 						this.tlcServer.setDone();
@@ -152,32 +153,6 @@ public class TLCServerThread extends IdThread {
 					this.tlcServer.notify();
 				}
 			}
-		}
-	}
-
-	/**
-	 * Calculates the number of states a worker should be assigned. This
-	 * calculation is based on the current number of workers registered with the
-	 * server assigning each worker 1/N of the statequeue with N being the
-	 * current amount of workers.
-	 *  
-	 * If the system property {@link TLCServer}
-	 * .expectedWorkercount is set to -1, a fixed block size will be used. This
-	 * can be configured by setting BLOCK_SIZE to the intended value.
-	 * 
-	 * The block size essentially load balances the workers by deciding how much
-	 * work they get assigned.
-	 * 
-	 * @param size
-	 *            The current size of the state queue.
-	 * @return The intended block size
-	 */
-	private int getBlockSize(int size) {
-		if(TLCServer.expectedWorkerCount == -1) {
-			return BlockSize;
-		} else {
-			return (int) Math
-					.ceil(size * (1.0 / tlcServer.getWorkerCount()));
 		}
 	}
 
