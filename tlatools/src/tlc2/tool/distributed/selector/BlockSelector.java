@@ -1,5 +1,6 @@
 package tlc2.tool.distributed.selector;
 
+import tlc2.output.EC;
 import tlc2.tool.TLCState;
 import tlc2.tool.distributed.TLCServer;
 import tlc2.tool.distributed.TLCWorker;
@@ -9,7 +10,7 @@ import util.Assert;
 
 public class BlockSelector implements IBlockSelector {
 	/**
-	 * A reference to {@link TLCServer}
+	 * A reference to {@link TLCServer} for which this {@link IBlockSelector} selects blocks
 	 */
 	protected final TLCServer tlcServer;
 
@@ -18,8 +19,7 @@ public class BlockSelector implements IBlockSelector {
 	 * @param aTLCServer
 	 */
 	BlockSelector(final TLCServer aTLCServer) {
-		//TODO add real error code
-		Assert.check(aTLCServer != null, -1);
+		Assert.check(aTLCServer != null, EC.GENERAL);
 		tlcServer = aTLCServer;
 	}
 	
