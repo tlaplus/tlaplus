@@ -1062,7 +1062,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         /*
          * Distribution
          */
-        //TODO MAK Add help linking for distribution mode 
+        //TODO Link help page for distribution mode 
         distributedButton = toolkit.createButton(howToRunArea, "Run in distributed mode", SWT.CHECK);
         gd = new GridData();
         gd.horizontalSpan = 2;
@@ -1079,6 +1079,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         distributedText.setEditable(true);
         distributedText
         .setToolTipText("Optionally pass additional VM arguments to master TLC process (e.g. -Djava.rmi.server.hostname=ThisHostName)");
+        distributedText.addModifyListener(howToRunListener);
         gd = new GridData();
         gd.horizontalIndent = 10;
         gd.widthHint = 100;

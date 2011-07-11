@@ -2,6 +2,7 @@ package org.lamport.tla.toolbox.tool.tlc.job;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.core.runtime.CoreException;
@@ -38,16 +39,34 @@ public class DistributedTLCJob extends TLCProcessJob {
 	 * @see org.lamport.tla.toolbox.tool.tlc.job.TLCProcessJob#getAdditionalVMArgs()
 	 */
 	protected List<String> getAdditionalVMArgs() throws CoreException {
-		final List<String> l = new ArrayList<String>();
-		
 		final ILaunchConfiguration launchConfig = launch.getLaunchConfiguration();
-		final String vmArgs = launchConfig.getAttribute(LAUNCH_DISTRIBUTED_ARGS,
-				LAUNCH_DISTRIBUTED_ARGS_DEFAULT);
-		l.add(vmArgs);
+		
+		final String vmArgs = launchConfig.getAttribute(LAUNCH_DISTRIBUTED_ARGS, (String) null);
+		if(vmArgs != null) {
+			return sanitizeString(vmArgs);
+		}
 
-		return l;
+		// no args given
+		return new ArrayList<String>(0);
 	}
 	
+	/**
+	 * @param vmArgs may look like " -Djava.rmi.foo=bar  -Djava.tralla=avalue  "
+	 * @return a {@link List} with ["-Djava.rmi.foo=bar", "-Djava.tralla=avlue"]
+	 */
+	private List<String> sanitizeString(final String vmArgs) {
+		final String[] strings = vmArgs.split(" ");
+		final List<String> results = new ArrayList<String>(strings.length);
+		for (int i = 0; i < strings.length; i++) {
+			final String string = strings[i];
+			if(!"".equals(string) && !" ".equals(string)) {
+				results.add(string.trim());
+			}
+			// additional sanity checks could go here, but the nested process will report errors anyway
+		}
+		return results;
+	}
+
 	/* (non-Javadoc)
 	 * @see org.lamport.tla.toolbox.tool.tlc.job.TLCProcessJob#getMainClass()
 	 */
