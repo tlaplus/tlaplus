@@ -31,19 +31,17 @@ public class TLCServerThread extends IdThread {
 	/**
 	 * Identifies the worker
 	 */
-	private final URI url;
 	private int receivedStates, sentStates;
 	private final CyclicBarrier barrier;
 	private final IBlockSelector selector;
 
-	public TLCServerThread(int id, TLCWorkerRMI worker, URI url, TLCServer tlc) {
-		this(id, worker, url, tlc, null, null);
+	public TLCServerThread(int id, TLCWorkerRMI worker, TLCServer tlc) {
+		this(id, worker, tlc, null, null);
 	}
 	
-	public TLCServerThread(int id, TLCWorkerRMI worker, URI url, TLCServer tlc, CyclicBarrier aBarrier, IBlockSelector aSelector) {
+	public TLCServerThread(int id, TLCWorkerRMI worker, TLCServer tlc, CyclicBarrier aBarrier, IBlockSelector aSelector) {
 		super(id);
 		this.worker = worker;
-		this.url  = url;
 		this.tlcServer = tlc;
 		this.barrier = aBarrier;
 		this.selector = aSelector;
@@ -174,9 +172,10 @@ public class TLCServerThread extends IdThread {
 
 	/**
 	 * @return the url
+	 * @throws RemoteException 
 	 */
-	public URI getUri() {
-		return url;
+	public URI getUri() throws RemoteException {
+		return this.worker.getURI();
 	}
 
 	/**

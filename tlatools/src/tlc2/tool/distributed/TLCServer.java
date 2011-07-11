@@ -112,8 +112,8 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		return UniqueString.uniqueStringOf(str);
 	}
 
-	public synchronized final void registerWorker(TLCWorkerRMI worker,
-			String hostname) throws IOException {
+	public synchronized final void registerWorker(TLCWorkerRMI worker
+			) throws IOException {
 		int widx = this.workerCnt;
 		int len = this.workers.length;
 
@@ -143,13 +143,12 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 			tidx = len;
 		}
 		this.threadCnt++;
-		this.threads[tidx] = new TLCServerThread(this.thId++, worker, URI.create("rmi://" + hostname + ":"
-				+ getPort(worker)), this, barrier, blockSelector);
+		this.threads[tidx] = new TLCServerThread(this.thId++, worker, this, barrier, blockSelector);
 		if (TLCGlobals.fpServers == null)
 			this.fpSet.addThread();
 		this.threads[tidx].start();
 
-		ToolIO.out.println("Registration for worker at " + hostname
+		ToolIO.out.println("Registration for worker at " + worker.getURI()
 				+ " completed.");
 	}
 

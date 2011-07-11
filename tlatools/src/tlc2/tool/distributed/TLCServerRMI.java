@@ -13,7 +13,7 @@ import java.rmi.RemoteException;
  * @version $Id$
  */
 public interface TLCServerRMI extends Remote {
-	public void registerWorker(TLCWorkerRMI worker, String hostname)
+	public void registerWorker(TLCWorkerRMI worker)
 			throws IOException;
 
 	public Boolean getCheckDeadlock() throws RemoteException;

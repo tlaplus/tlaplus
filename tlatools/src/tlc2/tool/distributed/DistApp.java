@@ -5,8 +5,6 @@
 
 package tlc2.tool.distributed;
 
-import java.io.Serializable;
-
 import tlc2.tool.TLCState;
 import tlc2.tool.TLCStateInfo;
 import tlc2.tool.TraceApp;
@@ -16,7 +14,7 @@ import tlc2.tool.WorkerException;
  * @author Simon Zambrovski
  * @version $Id$
  */
-public abstract class DistApp implements TraceApp, Serializable {
+public abstract class DistApp implements TraceApp {
 
 	public abstract Boolean getCheckDeadlock();
 
@@ -68,4 +66,9 @@ public abstract class DistApp implements TraceApp, Serializable {
 	 * @return The (qualified) configuration file name
 	 */
 	public abstract String getConfigName();
+
+	/**
+	 * @return Statistics showing how many states have been computed by this app
+	 */
+	public abstract long getStatesComputed();
 }

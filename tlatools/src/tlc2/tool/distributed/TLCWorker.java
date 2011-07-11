@@ -6,10 +6,15 @@
 package tlc2.tool.distributed;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.InetAddress;
+import java.net.URI;
+import java.net.UnknownHostException;
 import java.rmi.ConnectException;
 import java.rmi.Naming;
 import java.rmi.RemoteException;
+import java.rmi.server.ServerNotActiveException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.Date;
 
@@ -26,6 +31,7 @@ import util.UniqueString;
 /**
  * @version $Id$
  */
+@SuppressWarnings("serial")
 public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 
 	private DistApp work;
@@ -37,6 +43,9 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 		this.fpSetManager = fpSetManager;
 	}
 
+	/* (non-Javadoc)
+	 * @see tlc2.tool.distributed.TLCWorkerRMI#getNextStates(tlc2.tool.TLCState[])
+	 */
 	public synchronized Object[] getNextStates(TLCState[] states)
 			throws WorkerException {
 		TLCState state1 = null, state2 = null;
@@ -101,12 +110,80 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see tlc2.tool.distributed.TLCWorkerRMI#exit()
+	 */
 	public void exit() throws IOException {
 		String hostname = InetAddress.getLocalHost().getHostName();
 		ToolIO.out.println(hostname + ", work completed at: " + new Date()
-				+ " Thank you!");
+				+ " Computed: " + this.work.getStatesComputed() +  " Thank you!");
 		
 		UnicastRemoteObject.unexportObject(TLCWorker.this, true);
+	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.tool.distributed.TLCWorkerRMI#getStatesComputed()
+	 */
+	public long getStatesComputed() throws RemoteException {
+		return this.work.getStatesComputed();
+	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.tool.distributed.TLCWorkerRMI#getURI()
+	 */
+	public URI getURI() throws RemoteException {
+		try {
+			final String clientHost = InetAddress.getByName(getClientHost()).getCanonicalHostName();
+			return URI.create("rmi://" + clientHost + ":" + getPort());
+		} catch (ServerNotActiveException e) {
+			throw new RemoteException(e.getMessage(), e);
+		} catch (UnknownHostException e) {
+			throw new RemoteException(e.getMessage(), e);
+		}
+	}
+	
+	private int getPort() {
+		try {
+			// this only works on >= Sun Java 1.6
+//			sun.rmi.transport.LiveRef liveRef = ((UnicastRef) ref).getLiveRef();
+//			return liveRef.getPort();
+			
+			// load the SUN class if available
+			ClassLoader cl = ClassLoader.getSystemClassLoader();
+			Class<?> unicastRefClass = cl.loadClass("sun.rmi.server.UnicastRef");
+
+			// get the LiveRef obj
+			Method method = unicastRefClass.getMethod(
+					"getLiveRef", (Class[]) null);
+			Object liveRef = method.invoke(getRef(), (Object[]) null);
+
+			// Load liveref class
+			Class<?> liveRefClass = cl.loadClass("sun.rmi.transport.LiveRef");
+
+			// invoke getPort on LiveRef instance
+			method = liveRefClass.getMethod(
+					"getPort", (Class[]) null);
+			return (Integer) method.invoke(liveRef, (Object[]) null);
+		} catch (SecurityException e) {
+			e.printStackTrace();
+		} catch (IllegalArgumentException e) {
+			e.printStackTrace();
+		} catch (ClassCastException e) {
+			e.printStackTrace();
+		} catch (NoSuchMethodException e) {
+			ToolIO.err
+					.println("VM does not allow to get the UnicastRef port.\nWorker will be identified with port 0 in output");
+		} catch (IllegalAccessException e) {
+			ToolIO.err
+					.println("VM does not allow to get the UnicastRef port.\nWorker will be identified with port 0 in output");
+		} catch (InvocationTargetException e) {
+			ToolIO.err
+					.println("VM does not allow to get the UnicastRef port.\nWorker will be identified with port 0 in output");
+		} catch (ClassNotFoundException e) {
+			ToolIO.err
+					.println("VM does not allow to get the UnicastRef port.\nWorker will be identified with port 0 in output");
+		}
+		return 0;
 	}
 
 	public static void main(String args[]) {
@@ -120,9 +197,7 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 		}
 		final String serverName = args[0];
 
-		String hostname = "Unknown";
 		try {
-			hostname = InetAddress.getLocalHost().getHostName();
 			String url = "//" + serverName + ":" + TLCServer.Port
 					+ "/TLCServer";
 			
@@ -165,14 +240,14 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 
 			FPSetManager fpSetManager = server.getFPSetManager();
 			TLCWorkerRMI worker = new TLCWorker(work, fpSetManager);
-			server.registerWorker(worker, hostname);
+			server.registerWorker(worker);
 
-			ToolIO.out.println("TLC worker at " + hostname + " is ready at: "
+			ToolIO.out.println("TLC worker ready at: "
 					+ new Date());
 		} catch (Throwable e) {
 			// Assert.printStack(e);
 			e.printStackTrace();
-			ToolIO.out.println("Error: Failed to start worker at " + hostname
+			ToolIO.out.println("Error: Failed to start worker "
 					+ " for server " + serverName + ".\n" + e.getMessage());
 		}
 
@@ -184,5 +259,4 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 		ToolIO.out
 				.println("Usage: java " + TLCWorker.class.getName() + " host");
 	}
-
 }
