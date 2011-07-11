@@ -13,6 +13,7 @@ import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 
+import tlc2.tool.fp.FPSet;
 import tlc2.util.BitVector;
 import tlc2.util.LongVec;
 import util.ToolIO;
@@ -189,6 +190,29 @@ public class FPSetManager implements Serializable {
 		for (int i = 0; i < len; i++) {
 			try {
 				res += this.fpSets[i].size();
+			} catch (Exception e) {
+				System.out.println("Warning: Failed to connect from "
+						+ this.getHostName() + " to the fp server at "
+						+ this.hosts[i] + ".\n" + e.getMessage());
+				if (this.reassign(i) == -1) {
+					System.out
+							.println("Warning: there is no fp server available.");
+				}
+			}
+		}
+		return res;
+	}
+	
+	/**
+	 * @return The amount of states seen by all {@link FPSet}. This amounts to
+	 *         the states computed by all {@link TLCWorker}
+	 */
+	public final long getStatesSeen() {
+		int len = this.fpSets.length;
+		long res = 0;
+		for (int i = 0; i < len; i++) {
+			try {
+				res += this.fpSets[i].getStatesSeen();
 			} catch (Exception e) {
 				System.out.println("Warning: Failed to connect from "
 						+ this.getHostName() + " to the fp server at "

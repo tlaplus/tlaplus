@@ -20,9 +20,12 @@ import tlc2.util.LongVec;
  * guarantee that their methods are thread-safe.
  */
 
+@SuppressWarnings("serial")
 public abstract class FPSet extends UnicastRemoteObject implements FPSetRMI
 {
-
+	
+	private long statesSeen = 0L;
+	
     protected FPSet() throws RemoteException
     { /*SKIP*/
     }
@@ -97,6 +100,7 @@ public abstract class FPSet extends UnicastRemoteObject implements FPSetRMI
 
     public final BitVector containsBlock(LongVec fpv) throws IOException
     {
+    	statesSeen += fpv.size();
         BitVector bv = new BitVector(fpv.size());
         for (int i = 0; i < fpv.size(); i++)
         {
@@ -106,6 +110,13 @@ public abstract class FPSet extends UnicastRemoteObject implements FPSetRMI
             }
         }
         return bv;
+    }
+
+    /* (non-Javadoc)
+     * @see tlc2.tool.distributed.FPSetRMI#getStatesSeen()
+     */
+    public long getStatesSeen() throws RemoteException {
+    	return statesSeen;
     }
 
     // SZ Jul 10, 2009: this method is not used

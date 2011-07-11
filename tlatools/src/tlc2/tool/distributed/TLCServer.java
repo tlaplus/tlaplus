@@ -8,17 +8,12 @@ package tlc2.tool.distributed;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
 import java.net.InetAddress;
 import java.net.URI;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
-import java.rmi.server.RemoteObjectInvocationHandler;
-import java.rmi.server.RemoteRef;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.Date;
 import java.util.concurrent.CyclicBarrier;
@@ -45,6 +40,7 @@ import util.UniqueString;
  * 
  * @version $Id$
  */
+@SuppressWarnings("serial")
 public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		InternRMI {
 	public final FPSetManager fpSetManager;
@@ -157,54 +153,6 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 				+ " completed.");
 	}
 
-	private int getPort(TLCWorkerRMI worker) {
-		try {
-			RemoteObjectInvocationHandler roih = (RemoteObjectInvocationHandler) Proxy
-					.getInvocationHandler(worker);
-			RemoteRef ref = roih.getRef();
-			
-			// this only works on >= Sun Java 1.6
-//			LiveRef liveRef = ((UnicastRef) ref).getLiveRef();
-//			return liveRef.getPort();
-			
-			// load the SUN class if available
-			ClassLoader cl = ClassLoader.getSystemClassLoader();
-			Class<?> unicastRefClass = cl.loadClass("sun.rmi.server.UnicastRef");
-
-			// get the LiveRef obj
-			Method method = unicastRefClass.getMethod(
-					"getLiveRef", (Class[]) null);
-			Object liveRef = method.invoke(ref, (Object[]) null);
-
-			// Load liveref class
-			Class<?> liveRefClass = cl.loadClass("sun.rmi.transport.LiveRef");
-
-			// invoke getPort on LiveRef instance
-			method = liveRefClass.getMethod(
-					"getPort", (Class[]) null);
-			return (Integer) method.invoke(liveRef, (Object[]) null);
-		} catch (SecurityException e) {
-			e.printStackTrace();
-		} catch (IllegalArgumentException e) {
-			e.printStackTrace();
-		} catch (ClassCastException e) {
-			e.printStackTrace();
-		} catch (NoSuchMethodException e) {
-			ToolIO.err
-					.println("VM does not allow to get the UnicastRef port.\nWorker will be identified with port 0 in output");
-		} catch (IllegalAccessException e) {
-			ToolIO.err
-					.println("VM does not allow to get the UnicastRef port.\nWorker will be identified with port 0 in output");
-		} catch (InvocationTargetException e) {
-			ToolIO.err
-					.println("VM does not allow to get the UnicastRef port.\nWorker will be identified with port 0 in output");
-		} catch (ClassNotFoundException e) {
-			ToolIO.err
-					.println("VM does not allow to get the UnicastRef port.\nWorker will be identified with port 0 in output");
-		}
-		return 0;
-	}
-
 	/**
 	 * Reassign a server thread to a new worker if there is available worker.
 	 * For the current faulting worker, remove it if there is no reference to it
@@ -293,11 +241,6 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 	private final String recoveryStats() throws IOException {
 		return (this.fpSetManager.size() + " distinct states found. "
 				+ this.stateQueue.size() + " states on queue.");
-	}
-
-	public final String stats() throws IOException {
-		return (this.fpSetManager.size() + " distinct states found. "
-				+ this.stateQueue.size() + " states left on queue.");
 	}
 
 	private final void doInit() throws Exception {
@@ -407,7 +350,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 			synchronized (server) {
 				if (!server.done) {
 			        MP.printMessage(EC.TLC_PROGRESS_STATS, new String[] { String.valueOf(server.trace.getLevel()),
-			                String.valueOf(server.fpSetManager.size()), String.valueOf(server.fpSet.size()),
+			                String.valueOf(server.getStatesComputed()), String.valueOf(server.fpSetManager.size()),
 			                String.valueOf(server.stateQueue.size()) });
 //					ToolIO.out.println("Progress(" + server.trace.getLevel()
 //							+ "): " + server.stats());
@@ -469,7 +412,21 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		MP.flush();
 	}
 
-    public final void reportSuccess() throws IOException
+	// use fingerprint server to determine how many states have been calculated
+    private long getStatesComputed() throws RemoteException {
+    	return fpSetManager.getStatesSeen();
+	}
+
+	// query each worker for how many states computed (workers might disconnect)
+//    private long getStatesComputed() throws RemoteException {
+//    	long res = 0L;
+//		for (int i = 0; i < workerCnt; i++) {
+//			res += workers[i].getStatesComputed();
+//		}
+//		return res;
+//	}
+    
+	public final void reportSuccess() throws IOException
     {
         long d = this.fpSet.size();
         double prob1 = (d * (this.fpSetManager.size() - d)) / Math.pow(2, 64);
@@ -483,25 +440,27 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
         MP.printMessage(EC.TLC_SUCCESS, new String[] { prob1Str, prob2Str });
     }
 
+    /**
+     * This allows the toolbox to easily display the last set
+     * of state space statistics by putting them in the same
+     * form as all other progress statistics.
+     */
     public final void printSummary(boolean success) throws IOException
     {
-        /*
-         * This allows the toolbox to easily display the last set
-         * of state space statistics by putting them in the same
-         * form as all other progress statistics.
-         */
-        if (TLCGlobals.tool)
-        {
-            MP.printMessage(EC.TLC_PROGRESS_STATS, new String[] { String.valueOf(this.trace.getLevel()),
-                    String.valueOf(this.fpSetManager.size()), String.valueOf(this.fpSet.size()),
-                    String.valueOf(this.stateQueue.size()) });
+        long statesGenerated = this.getStatesComputed();
+		long distinctStates = this.fpSetManager.size();
+		int statesLeftInQueue = this.stateQueue.size();
+		int level = this.trace.getLevel();
+		if (TLCGlobals.tool) {
+            MP.printMessage(EC.TLC_PROGRESS_STATS, new String[] { String.valueOf(level),
+                    String.valueOf(statesGenerated), String.valueOf(distinctStates),
+                    String.valueOf(statesLeftInQueue) });
         }
 
-        MP.printMessage(EC.TLC_STATS, new String[] { String.valueOf(this.fpSetManager.size()),
-                String.valueOf(this.fpSet.size()), String.valueOf(this.stateQueue.size()) });
-        if (success)
-        {
-            MP.printMessage(EC.TLC_SEARCH_DEPTH, String.valueOf(this.trace.getLevel()));
+        MP.printMessage(EC.TLC_STATS, new String[] { String.valueOf(statesGenerated),
+                String.valueOf(distinctStates), String.valueOf(statesLeftInQueue) });
+        if (success) {
+            MP.printMessage(EC.TLC_SEARCH_DEPTH, String.valueOf(level));
         }
     }
 

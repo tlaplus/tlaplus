@@ -7,6 +7,7 @@ package tlc2.tool.distributed;
 
 import java.io.IOException;
 import java.rmi.Remote;
+import java.rmi.RemoteException;
 
 import tlc2.util.BitVector;
 import tlc2.util.LongVec;
@@ -34,5 +35,10 @@ public interface FPSetRMI extends Remote {
 	public void commitChkpt(String filename) throws IOException;
 
 	public void recover(String filename) throws IOException;
+
+	/**
+	 * @return The amount of states seen by this FPSet (not distinct states!)
+	 */
+	public long getStatesSeen() throws RemoteException;
 
 }

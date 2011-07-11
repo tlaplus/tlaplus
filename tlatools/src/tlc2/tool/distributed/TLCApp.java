@@ -75,6 +75,10 @@ public class TLCApp extends DistApp {
 	private boolean preprocess; // preprocess?
 	private String fromChkpt = null; // recover from this checkpoint
 	private String metadir = null; // the directory pathname for metadata
+	/**
+	 * Statistics how many states this app computed 
+	 */
+	private long statesComputed = 0L;
 
 	public final Boolean getCheckDeadlock() {
 		return new Boolean(this.checkDeadlock);
@@ -116,6 +120,7 @@ public class TLCApp extends DistApp {
 			}
 			res[i] = (TLCState) curState;
 		}
+		statesComputed += res.length;
 		return res;
 	}
 
@@ -143,6 +148,7 @@ public class TLCApp extends DistApp {
 			}
 			res[i] = succState;
 		}
+		statesComputed += res.length;
 		return res;
 	}
 
@@ -202,6 +208,13 @@ public class TLCApp extends DistApp {
 	/* Reconstruct the info for the transition from s to s1. */
 	public TLCStateInfo getState(TLCState s1, TLCState s) {
 		return this.tool.getState(s1, s);
+	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.tool.distributed.DistApp#getStatesComputed()
+	 */
+	public long getStatesComputed() {
+		return statesComputed;
 	}
 
 	public final void setCallStack() {
