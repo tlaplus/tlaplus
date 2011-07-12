@@ -181,9 +181,9 @@ public class TLCUIActivator extends AbstractUIPlugin
     /**
      * @param string
      */
-    public static void logDebug(String string)
+    public static void logDebug(String message)
     {
-        System.out.println(string);
+    	getDefault().getLog().log(new Status(Status.INFO, TLCUIActivator.PLUGIN_ID, message));
     }
 
     /**
