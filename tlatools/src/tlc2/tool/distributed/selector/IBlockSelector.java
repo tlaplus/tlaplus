@@ -21,4 +21,11 @@ public interface IBlockSelector {
 	 */
 	public abstract TLCState[] getBlocks(final StateQueue stateQueue, final TLCWorkerRMI worker);
 
+	/**
+	 * @param aMaximum
+	 *            The maximum possible size that can be transfered over the
+	 *            network. The {@link BlockSelector} must not exceed this value.
+	 */
+	public abstract void setMaxTXSize(int aMaximum);
+
 }

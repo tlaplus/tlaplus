@@ -5,6 +5,7 @@
 
 package tlc2.tool.distributed;
 
+import java.io.EOFException;
 import java.net.URI;
 import java.rmi.RemoteException;
 import java.util.concurrent.BrokenBarrierException;
@@ -72,7 +73,7 @@ public class TLCServerThread extends IdThread {
 
 		final StateQueue stateQueue = this.tlcServer.stateQueue;
 		try {
-			while (true) {
+			START: while (true) {
 				final TLCState[] states = selector.getBlocks(stateQueue, worker);
 				if (states == null) {
 					synchronized (this.tlcServer) {
@@ -91,21 +92,35 @@ public class TLCServerThread extends IdThread {
 				// count statistics
 				sentStates += states.length;
 
+				// real work happens here:
+				// worker computes next states for states
 				boolean workDone = false;
 				while (!workDone) {
 					try {
-						Object[] res = this.worker.getNextStates(states);
+						final Object[] res = this.worker.getNextStates(states);
 						newStates = (TLCStateVec[]) res[0];
 						receivedStates += newStates[0].size();
 						newFps = (LongVec[]) res[1];
 						workDone = true;
 					} catch (RemoteException e) {
-						if (!this.tlcServer.reassignWorker(this)) {
-							ToolIO.out
-									.println("Error: No TLC worker is available. Exit.");
-							return;
+						ToolIO.err.println(e.getMessage());
+						// non recoverable errors
+						final Throwable cause = e.getCause();
+						if (cause instanceof EOFException) {
+							// states[] exceeds maximum transferable size
+							// (add states back to queue and retry)
+							stateQueue.sEnqueue(states);
+							// half the maximum size and use it as a limit from now on
+							selector.setMaxTXSize(states.length / 2);
+							break START;
+						} else {
+							if (!this.tlcServer.reassignWorker(this)) {
+								ToolIO.out.println("Error: No TLC worker is available. Exit.");
+								return;
+							}
 						}
 					} catch (NullPointerException e) {
+						ToolIO.err.println(e.getMessage());
 						if (!this.tlcServer.reassignWorker(this)) {
 							ToolIO.out
 									.println("Error: No TLC worker is available. Exit.");
@@ -114,8 +129,13 @@ public class TLCServerThread extends IdThread {
 					}
 				}
 
+				// add fingerprints to fingerprint manager (delegates to
+				// corresponding fingerprint server)
+				// TODO why isn't this done by workers directly?
 				BitVector[] visited = this.tlcServer.fpSetManager
 						.putBlock(newFps);
+
+				// recreate newly computed states and add them to queue
 				for (int i = 0; i < visited.length; i++) {
 					BitVector.Iter iter = new BitVector.Iter(visited[i]);
 					int index;
