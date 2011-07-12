@@ -24,6 +24,9 @@ import tlc2.util.LongVec;
 public abstract class FPSet extends UnicastRemoteObject implements FPSetRMI
 {
 	
+	/**
+	 * Counts the amount of states passed to the containsBlock method
+	 */
 	private long statesSeen = 0L;
 	
     protected FPSet() throws RemoteException
