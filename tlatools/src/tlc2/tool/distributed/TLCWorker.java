@@ -194,7 +194,7 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 					+ "/TLCServer";
 			
 			// try to repeatedly connect to the server until it becomes available
-			int sleep = 1000;
+			int i = 1;
 			TLCServerRMI server = null;
 			while(true) {
 				try {
@@ -203,15 +203,17 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 				} catch (ConnectException e) {
 					// if the cause if a java.NET.ConnectException the server is
 					// simply not ready yet
-					Throwable cause = e.getCause();
+					final Throwable cause = e.getCause();
 					if(cause instanceof java.net.ConnectException) {
+						long sleep = (long) Math.sqrt(i);
 						ToolIO.out.println("Server " + serverName
-								+ " unreachable, sleeping " + sleep / 1000
+								+ " unreachable, sleeping " + sleep
 								+ "s for server to come online...");
-						Thread.sleep(sleep);
-						sleep *= 2; // double wait time
+						Thread.sleep(sleep * 1000);
+						i *= 2;
 					} else {
-						// some other exception occurred which we cannot handle
+						// some other exception occurred which we do not know
+						// how to handle
 						throw e;
 					}
 				}
