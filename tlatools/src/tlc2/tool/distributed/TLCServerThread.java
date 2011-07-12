@@ -106,14 +106,15 @@ public class TLCServerThread extends IdThread {
 						ToolIO.err.println(e.getMessage());
 						// non recoverable errors
 						final Throwable cause = e.getCause();
-						if (cause instanceof EOFException) {
+						if (cause instanceof EOFException && cause.getMessage() == null) {
 							ToolIO.err.println("Limiting max block size to: " + states.length / 2);
 							// states[] exceeds maximum transferable size
 							// (add states back to queue and retry)
 							stateQueue.sEnqueue(states);
 							// half the maximum size and use it as a limit from now on
 							selector.setMaxTXSize(states.length / 2);
-							break START;
+							// go back to beginning
+							continue START;
 						} else {
 							if (!this.tlcServer.reassignWorker(this)) {
 								ToolIO.out.println("Error: No TLC worker is available. Exit.");

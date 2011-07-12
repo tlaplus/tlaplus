@@ -4,14 +4,14 @@ import tlc2.tool.distributed.TLCServer;
 
 public class LimitingBlockSelector extends BlockSelector {
 
-	private final int maximum;
+	private int maximum;
 
 	/**
-	 * Limits the block size to 1024
+	 * Limits the block size to 8192
 	 * @param aTLCServer
 	 */
 	LimitingBlockSelector(final TLCServer aTLCServer) {
-		this(aTLCServer, 1024);
+		this(aTLCServer, 8192);
 	}
 	
 	LimitingBlockSelector(final TLCServer aTLCServer, final int aMaximum) {
@@ -24,10 +24,17 @@ public class LimitingBlockSelector extends BlockSelector {
 	 * block size exceeds it
 	 */
 	protected int getBlockSize(int size) {
-		int blockSize = super.getBlockSize(size);
+		final int blockSize = super.getBlockSize(size);
 		if(blockSize > maximum) {
 			return maximum;
 		}
 		return blockSize;
+	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.tool.distributed.selector.IBlockSelector#setMaxTXSize(int)
+	 */
+	public void setMaxTXSize(int aMaximum) {
+		maximum = aMaximum;
 	}
 }

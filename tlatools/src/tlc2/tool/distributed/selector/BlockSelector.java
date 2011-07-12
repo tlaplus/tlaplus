@@ -13,10 +13,6 @@ public class BlockSelector implements IBlockSelector {
 	 * A reference to {@link TLCServer} for which this {@link IBlockSelector} selects blocks
 	 */
 	protected final TLCServer tlcServer;
-	/**
-	 * The maximum network transferable size 
-	 */
-	protected int max = Integer.MAX_VALUE;
 
 	/**
 	 * Functor pattern used to make the block size configurable that gets assigned to workers
@@ -56,17 +52,13 @@ public class BlockSelector implements IBlockSelector {
 	 */
 	protected int getBlockSize(int size) {
 		final int workerCount = tlcServer.getWorkerCount();
-		final int res = (int) Math.ceil(size * (1.0 / workerCount));
-		if (res > max) {
-			return max;
-		}
-		return res;
+		return (int) Math.ceil(size * (1.0 / workerCount));
 	}
 
 	/* (non-Javadoc)
-	 * @see tlc2.tool.distributed.selector.IBlockSelector#setMaximumTransferableSize(int)
+	 * @see tlc2.tool.distributed.selector.IBlockSelector#setMaxTXSize(int)
 	 */
 	public void setMaxTXSize(int aMaximum) {
-		this.max = aMaximum;
+		// nop
 	}
 }
