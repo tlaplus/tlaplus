@@ -107,6 +107,7 @@ public class TLCServerThread extends IdThread {
 						// non recoverable errors
 						final Throwable cause = e.getCause();
 						if (cause instanceof EOFException) {
+							ToolIO.err.println("Limiting max block size to: " + states.length / 2);
 							// states[] exceeds maximum transferable size
 							// (add states back to queue and retry)
 							stateQueue.sEnqueue(states);
@@ -141,9 +142,12 @@ public class TLCServerThread extends IdThread {
 					int index;
 					while ((index = iter.next()) != -1) {
 						TLCState state = newStates[i].elementAt(index);
+						// write state id and state fp to .st file for
+						// checkpointing
 						long fp = newFps[i].elementAt(index);
 						state.uid = this.tlcServer.trace.writeState(state.uid,
 								fp);
+						// add state to state queue for further processing
 						stateQueue.sEnqueue(state);
 					}
 				}
