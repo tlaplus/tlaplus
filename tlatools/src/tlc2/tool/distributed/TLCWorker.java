@@ -10,11 +10,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.URI;
-import java.net.UnknownHostException;
 import java.rmi.ConnectException;
 import java.rmi.Naming;
 import java.rmi.RemoteException;
-import java.rmi.server.ServerNotActiveException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.Date;
 
@@ -36,11 +34,13 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 
 	private DistApp work;
 	private FPSetManager fpSetManager;
+	private final URI uri;
 
-	public TLCWorker(DistApp work, FPSetManager fpSetManager)
+	public TLCWorker(DistApp work, FPSetManager fpSetManager, String aHostname)
 			throws RemoteException {
 		this.work = work;
 		this.fpSetManager = fpSetManager;
+		uri = URI.create("rmi://" + aHostname + ":" + getPort());
 	}
 
 	/* (non-Javadoc)
@@ -114,8 +114,7 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 	 * @see tlc2.tool.distributed.TLCWorkerRMI#exit()
 	 */
 	public void exit() throws IOException {
-		String hostname = InetAddress.getLocalHost().getHostName();
-		ToolIO.out.println(hostname + ", work completed at: " + new Date()
+		ToolIO.out.println(uri.getHost() + ", work completed at: " + new Date()
 				+ " Computed: " + this.work.getStatesComputed() +  " Thank you!");
 		
 		UnicastRemoteObject.unexportObject(TLCWorker.this, true);
@@ -132,14 +131,7 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 	 * @see tlc2.tool.distributed.TLCWorkerRMI#getURI()
 	 */
 	public URI getURI() throws RemoteException {
-		try {
-			final String clientHost = InetAddress.getByName(getClientHost()).getCanonicalHostName();
-			return URI.create("rmi://" + clientHost + ":" + getPort());
-		} catch (ServerNotActiveException e) {
-			throw new RemoteException(e.getMessage(), e);
-		} catch (UnknownHostException e) {
-			throw new RemoteException(e.getMessage(), e);
-		}
+		return uri;
 	}
 	
 	private int getPort() {
@@ -239,7 +231,7 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 							server));
 
 			FPSetManager fpSetManager = server.getFPSetManager();
-			TLCWorkerRMI worker = new TLCWorker(work, fpSetManager);
+			TLCWorkerRMI worker = new TLCWorker(work, fpSetManager, InetAddress.getLocalHost().getCanonicalHostName());
 			server.registerWorker(worker);
 
 			ToolIO.out.println("TLC worker ready at: "
