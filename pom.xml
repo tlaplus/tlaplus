@@ -145,8 +145,17 @@
 				<version>${tycho-version}</version>
 				<extensions>true</extensions>
 			</plugin>
-
-			<plugin>
+            <plugin>
+		        <groupId>org.eclipse.tycho</groupId>
+	        	<artifactId>tycho-compiler-plugin</artifactId>
+	        	<version>${tycho-version}</version>
+			    <configuration>
+			    	<source>1.5</source>
+			    	<target>1.5</target>
+					<encoding>UTF-8</encoding>
+			    </configuration>
+			</plugin>
+    			<plugin>
 				<groupId>org.eclipse.tycho</groupId>
 				<artifactId>target-platform-configuration</artifactId>
 				<version>${tycho-version}</version>
