@@ -14,9 +14,13 @@ public class BlockSelectorFactory {
 	 */
 	private static final String STATIC_SELECTOR = System.getProperty("tlc2.tool.distributed.selector.bsf.staticselector");
 	/**
-	 * {@link LimitingBlockSelector} system property
+	 * {@link BlockSelector} system property
 	 */
 	private static final String UNLIMITING_SELECTOR = System.getProperty("tlc2.tool.distributed.selector.bsf.unlimitingselector");
+	/**
+	 * {@link LimitingBlockSelector} system property
+	 */
+	private static final String LIMITING_SELECTOR = System.getProperty("tlc2.tool.distributed.selector.bsf.limitingselector");
 	
 	/**
 	 * Creates an {@link IBlockSelector} for the given {@link TLCServer}.
@@ -66,8 +70,10 @@ public class BlockSelectorFactory {
 			return new StaticBlockSelector(aTLCServer);
 		} else if (Boolean.parseBoolean(UNLIMITING_SELECTOR)) {
 			return new BlockSelector(aTLCServer);
+		} else if (Boolean.parseBoolean(LIMITING_SELECTOR)) {
+			return new LimitingBlockSelector(aTLCServer);
 		}
 		// always return the default BlockSelector by default
-		return new LimitingBlockSelector(aTLCServer);
+		return new StatisticalBlockSelector(aTLCServer);
 	}
 }

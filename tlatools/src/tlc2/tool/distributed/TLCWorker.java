@@ -48,6 +48,10 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 	 */
 	public synchronized Object[] getNextStates(TLCState[] states)
 			throws WorkerException {
+		
+		// statistics
+		final long start = System.currentTimeMillis();
+		
 		TLCState state1 = null, state2 = null;
 		int fpServerCnt = this.fpSetManager.numOfServers();
 		TLCStateVec[] pvv = new TLCStateVec[fpServerCnt];
@@ -98,10 +102,12 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 					}
 				}
 			}
+			
 			// Prepare the return value.
-			Object[] res = new Object[2];
+			Object[] res = new Object[3];
 			res[0] = newStates;
 			res[1] = newFps;
+			res[2] = System.currentTimeMillis() - start;
 			return res;
 		} catch (WorkerException e) {
 			throw e;
@@ -126,7 +132,7 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 	public long getStatesComputed() throws RemoteException {
 		return this.work.getStatesComputed();
 	}
-
+	
 	/* (non-Javadoc)
 	 * @see tlc2.tool.distributed.TLCWorkerRMI#getURI()
 	 */

@@ -1,6 +1,7 @@
 package tlc2.tool.distributed.selector;
 
 import tlc2.tool.distributed.TLCServer;
+import tlc2.tool.distributed.TLCWorkerRMI;
 
 public class LimitingBlockSelector extends BlockSelector {
 
@@ -23,8 +24,8 @@ public class LimitingBlockSelector extends BlockSelector {
 	 * Limits the block size to a defined maximum if the dynamically calculated
 	 * block size exceeds it
 	 */
-	protected int getBlockSize(int size) {
-		final int blockSize = super.getBlockSize(size);
+	protected int getBlockSize(int size, final TLCWorkerRMI aWorker) {
+		final int blockSize = super.getBlockSize(size, aWorker);
 		if(blockSize > maximum) {
 			return maximum;
 		}

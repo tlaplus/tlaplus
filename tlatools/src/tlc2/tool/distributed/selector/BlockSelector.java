@@ -40,7 +40,7 @@ public class BlockSelector implements IBlockSelector {
 		// current size of new states
 		final int amountOfStates = stateQueue.size();
 		// the amount of blocks that will be assigned to the work
-		final int blockSize = getBlockSize(amountOfStates);
+		final int blockSize = getBlockSize(amountOfStates, worker);
 		// synchronized removal from the state queue
 		return stateQueue.sDequeue(blockSize);
 	}
@@ -50,7 +50,7 @@ public class BlockSelector implements IBlockSelector {
 	 *            The current size of the state queue.
 	 * @return The intended block size
 	 */
-	protected int getBlockSize(int size) {
+	protected int getBlockSize(int size, final TLCWorkerRMI aWorker) {
 		final int workerCount = tlcServer.getWorkerCount();
 		return (int) Math.ceil(size * (1.0 / workerCount));
 	}

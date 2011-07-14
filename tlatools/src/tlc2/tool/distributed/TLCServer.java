@@ -43,6 +43,10 @@ import util.UniqueString;
 @SuppressWarnings("serial")
 public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		InternRMI {
+	/**
+	 * show statistics every 5 minutes
+	 */
+	private static final int REPORT_INTERVAL = 5 * 60 * 1000;
 	public final FPSetManager fpSetManager;
 	public final StateQueue stateQueue;
 	public final TLCTrace trace;
@@ -338,7 +342,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		// periodically.
 		long lastChkpt = System.currentTimeMillis();
 		synchronized (server) {
-			server.wait(30000);
+			server.wait(REPORT_INTERVAL);
 		}
 		while (true) {
 			long now = System.currentTimeMillis();
@@ -350,10 +354,8 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 				if (!server.done) {
 			        MP.printMessage(EC.TLC_PROGRESS_STATS, new String[] { String.valueOf(server.trace.getLevel()),
 			                String.valueOf(server.getStatesComputed()), String.valueOf(server.fpSetManager.size()),
-			                String.valueOf(server.stateQueue.size()) });
-//					ToolIO.out.println("Progress(" + server.trace.getLevel()
-//							+ "): " + server.stats());
-					server.wait(300000);
+			                String.valueOf(server.getNewStates()) });
+					server.wait(REPORT_INTERVAL);
 				}
 				if (server.done)
 					break;
@@ -411,6 +413,14 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		MP.flush();
 	}
 
+	private int getNewStates() {
+		int res = stateQueue.size();
+		for (int i = 0; i < threadCnt; i++) {
+			res += threads[i].getCurrentSize();
+		}
+		return res;
+	}
+
 	// use fingerprint server to determine how many states have been calculated
     private long getStatesComputed() throws RemoteException {
     	return fpSetManager.getStatesSeen();
@@ -448,7 +458,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
     {
         long statesGenerated = this.getStatesComputed();
 		long distinctStates = this.fpSetManager.size();
-		int statesLeftInQueue = this.stateQueue.size();
+		int statesLeftInQueue = this.getNewStates();
 		int level = this.trace.getLevel();
 		if (TLCGlobals.tool) {
             MP.printMessage(EC.TLC_PROGRESS_STATS, new String[] { String.valueOf(level),

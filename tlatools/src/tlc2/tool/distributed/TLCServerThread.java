@@ -42,7 +42,7 @@ public class TLCServerThread extends IdThread {
 	
 	public TLCServerThread(int id, TLCWorkerRMI worker, TLCServer tlc, CyclicBarrier aBarrier, IBlockSelector aSelector) {
 		super(id);
-		this.worker = worker;
+		this.setWorker(worker);
 		this.tlcServer = tlc;
 		this.barrier = aBarrier;
 		this.selector = aSelector;
@@ -50,13 +50,18 @@ public class TLCServerThread extends IdThread {
 
 	private TLCWorkerRMI worker;
 	private TLCServer tlcServer;
+	
+	/**
+	 * Current unit of work or null
+	 */
+	private TLCState[] states;
 
 	public final TLCWorkerRMI getWorker() {
 		return this.worker;
 	}
 
 	public final void setWorker(TLCWorkerRMI worker) {
-		this.worker = worker;
+		this.worker = new TLCWorkerSmartProxy(worker);
 	}
 
 	/**
@@ -74,7 +79,7 @@ public class TLCServerThread extends IdThread {
 		final StateQueue stateQueue = this.tlcServer.stateQueue;
 		try {
 			START: while (true) {
-				final TLCState[] states = selector.getBlocks(stateQueue, worker);
+				states = selector.getBlocks(stateQueue, worker);
 				if (states == null) {
 					synchronized (this.tlcServer) {
 						this.tlcServer.setDone();
@@ -203,6 +208,17 @@ public class TLCServerThread extends IdThread {
 		return this.worker.getURI();
 	}
 
+	/**
+	 * @return The current amount of states the corresponding worker is
+	 *         computing on
+	 */
+	public int getCurrentSize() {
+		if(states != null) {
+			return states.length;
+		}
+		return 0;
+	}
+	
 	/**
 	 * @return the receivedStates
 	 */
