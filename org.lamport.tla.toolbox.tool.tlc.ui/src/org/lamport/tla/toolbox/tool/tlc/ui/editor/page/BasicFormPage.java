@@ -110,7 +110,7 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
     protected IExpansionListener formRebuildingListener = null;
 
     // image registry
-    private Hashtable images = new Hashtable();
+    private Hashtable<String, Image> images = new Hashtable<String, Image>();
     // the page completion status (true by default)
     private boolean isComplete = true;
 
@@ -488,10 +488,10 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
      */
     public void dispose()
     {
-        Enumeration elements = images.elements();
+        Enumeration<Image> elements = images.elements();
         while (elements.hasMoreElements())
         {
-            ((Image) elements.nextElement()).dispose();
+            elements.nextElement().dispose();
         }
         super.dispose();
     }
@@ -598,7 +598,7 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
      * @param sectionIndex index of the section to expand
      * @param addToContext iff true, the values will be added to the context of the current model 
      */
-    public void validateUsage(String attributeName, List values, String errorMessagePrefix, String elementType,
+    public void validateUsage(String attributeName, List<String> values, String errorMessagePrefix, String elementType,
             String listSourceDescription, boolean addToContext)
     {
         if (values == null)
@@ -621,7 +621,7 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
         String message;
         for (int i = 0; i < values.size(); i++)
         {
-            String value = (String) values.get(i);
+            String value = values.get(i);
             Object usageHint = helper.getUsedHint(value);
             if (usageHint != null)
             {
@@ -672,7 +672,7 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
      * @param errorMessagePrefix
      * @param elementType
      */
-    public void validateId(String attributeName, List values, String errorMessagePrefix, String elementType)
+    public void validateId(String attributeName, List<String> values, String errorMessagePrefix, String elementType)
     {
         if (values == null)
         {
@@ -693,7 +693,7 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
         IMessageManager mm = getManagedForm().getMessageManager();
         for (int i = 0; i < values.size(); i++)
         {
-            String value = (String) values.get(i);
+            String value = values.get(i);
             if (!FormHelper.isIdentifier(value))
             {
                 if (value.trim().equals(""))
@@ -798,7 +798,7 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
 
         public void run()
         {
-            doRun();
+			doRun();
         }
 
         /**

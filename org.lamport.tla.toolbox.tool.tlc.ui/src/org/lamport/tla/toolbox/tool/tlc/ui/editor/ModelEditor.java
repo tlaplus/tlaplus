@@ -581,7 +581,7 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
 
         /* The pages should be validated one last time before TLC
          * is run. This is currently necessary when auto-parse spec
-         * is disabled. In such cases, if the user removes a contant
+         * is disabled. In such cases, if the user removes a constant
          * or a definition from the spec, saves, and then later parses
          * the spec, the model pages will not be validated on parsing.
          * The removed constant should cause a validation error as should
@@ -602,7 +602,14 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
         // save the editor if not saved
         if (isDirty())
         {
-            doSave(new SubProgressMonitor(monitor, 1));
+			boolean save = MessageDialog.openQuestion(getSite().getShell(), "Save model?",
+						"The current model has not been saved, should the model be saved prior to launching?");
+			if (save) {
+				// TODO decouple from ui thread
+	            doSave(new SubProgressMonitor(monitor, 1));
+			} else {
+				return;
+			}
         }
 
         if (!isComplete())
