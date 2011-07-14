@@ -209,7 +209,7 @@ public class FPSetManager implements Serializable {
 	 */
 	public final long getStatesSeen() {
 		int len = this.fpSets.length;
-		long res = 0;
+		long res = 1; // the initial state
 		for (int i = 0; i < len; i++) {
 			try {
 				res += this.fpSets[i].getStatesSeen();
