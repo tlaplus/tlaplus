@@ -22,13 +22,6 @@ public class ProverUIActivator extends AbstractUIPlugin
     // The shared instance
     private static ProverUIActivator plugin;
 
-    /**
-     * The constructor
-     */
-    public ProverUIActivator()
-    {
-    }
-
     /*
      * (non-Javadoc)
      * @see org.eclipse.ui.plugin.AbstractUIPlugin#start(org.osgi.framework.BundleContext)
@@ -180,15 +173,17 @@ public class ProverUIActivator extends AbstractUIPlugin
         return plugin;
     }
 
-    public static void logError(String string, Throwable e)
+    public static void logError(String message, Throwable e)
     {
-        getDefault().getLog().log(new Status(IStatus.ERROR, PLUGIN_ID, string, e));
+        getDefault().getLog().log(new Status(IStatus.ERROR, PLUGIN_ID, message, e));
     }
 
     public static void logDebug(String message)
     {
+    	//getDefault().getLog().log(new Status(IStatus.INFO, PLUGIN_ID, message));
+
+    	// why oh why use the log FW when you can dump everything to the console
+    	// and let the user figure out what is important and what not
         System.out.println(message);
-
     }
-
 }

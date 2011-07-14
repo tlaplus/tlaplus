@@ -2,6 +2,7 @@ package org.lamport.tla.toolbox.tool.prover.job;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -44,6 +45,7 @@ import org.lamport.tla.toolbox.tool.prover.ui.ProverUIActivator;
 import org.lamport.tla.toolbox.tool.prover.ui.output.TagBasedTLAPMOutputIncrementalParser;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.ColorPredicate;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.ObligationStatus;
+import org.lamport.tla.toolbox.tool.prover.ui.output.data.ObligationStatusMessage;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.StepStatusMessage;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.StepTuple;
 import org.lamport.tla.toolbox.tool.prover.ui.preference.ProverPreferencePage;
@@ -73,14 +75,14 @@ public class ProverJob extends Job
      * This is the time in milliseconds returned
      * by {@link System#currentTimeMillis()}.
      */
-    public long startTime;
+    private long startTime;
     /**
      * A flag used strictly for debugging
      * that is true iff no obligation status
      * messages with status "to be proved" have been
      * processed yet.
      */
-    public boolean noToBeProved = true;
+    private boolean noToBeProved = true;
     /**
      * A flag that is true iff the only
      * obligation status messages to be
@@ -170,7 +172,7 @@ public class ProverJob extends Job
      * the last {@link StepStatusMessage} reported by the prover
      * for that step.
      */
-    private HashMap stepMessageMap = new HashMap();
+    private Map<Integer, StepStatusMessage> stepMessageMap = new HashMap<Integer, StepStatusMessage>();
     /**
      * Map from {@link Integer}s to {@link StepTuple}s.
      * The integer keys give the begin line of the step
@@ -179,18 +181,18 @@ public class ProverJob extends Job
      * This is only for step tuples that represent leaf
      * steps.
      */
-    private Map leafStepMap = new TreeMap();
+    private Map<Integer, StepTuple> leafStepMap = new TreeMap<Integer, StepTuple>();
     /**
      * Map from {@link Integer} ids of obligations
      * to {@link ObligationStatus}
      */
-    private Map obsMap = new HashMap();
+    private Map<Integer, ObligationStatus> obsMap = new HashMap<Integer, ObligationStatus>();
     /**
      * A list of all obligation message with
      * status {@link ProverHelper#TO_BE_PROVED} that
      * have been sent so far.
      */
-    private List obMessageList = new LinkedList();
+    private List<ObligationStatusMessage> obMessageList = new LinkedList<ObligationStatusMessage>();
     /**
      * The color predicates that were set in preferences at the
      * time of the launch of the prover by this job.
@@ -308,7 +310,7 @@ public class ProverJob extends Job
     protected IStatus run(IProgressMonitor monitor)
     {
         this.startTime = System.currentTimeMillis();
-        System.out.println("Run method called " + getCurRelTime());
+        ProverUIActivator.logDebug("Run method called " + getCurRelTime());
 
         /*
          * Create the ColorPredicate objects.
@@ -426,12 +428,10 @@ public class ProverJob extends Job
             command = constructCommand();
             ProcessBuilder pb = new ProcessBuilder(command);
 
-            System.out.println("---------------Start Prover Command-----------");
-            for (int i = 0; i < command.length; i++)
-            {
-                System.out.println(command[i]);
-            }
-            System.out.println("---------------End Prover Command-----------");
+            // log command line
+            ProverUIActivator.logDebug(
+            		"Prover ARGUMENTS: " +
+            		Arrays.toString(command));
 
             /*
              * Set the working directory to be the directory
@@ -482,7 +482,7 @@ public class ProverJob extends Job
             /*
              * Start the prover process.
              */
-            System.out.println("TLAPM launched " + getCurRelTime());
+            ProverUIActivator.logDebug("TLAPM launched " + getCurRelTime());
             Process process = pb.start();
             setUpStreamListening(process, monitor);
 
@@ -507,7 +507,7 @@ public class ProverJob extends Job
                          * steps to shut down.
                          */
                         proverProcess.getStreamsProxy().write("kill\n");
-                        System.out.println("Sent kill to tlapm.");
+                        ProverUIActivator.logDebug("Sent kill to tlapm.");
 
                         /*
                          * Wait for the process to actually
@@ -517,7 +517,7 @@ public class ProverJob extends Job
                          */
                         while (checkAndSleep())
                         {
-                            // System.out.println("Cancel requested. The toolbox still thinks the prover is running.");
+                            // ProverUIActivator.logDebug("Cancel requested. The toolbox still thinks the prover is running.");
                         }
 
                         // cancellation termination
@@ -600,7 +600,7 @@ public class ProverJob extends Job
                 proverProcess.getStreamsProxy().getErrorStreamMonitor().removeListener(listener);
                 proverProcess.getStreamsProxy().getOutputStreamMonitor().removeListener(listener);
             }
-            System.out.println("Done with proving " + getCurRelTime());
+            ProverUIActivator.logDebug("Done with proving " + getCurRelTime());
 
             EditorUtil.setReadOnly(module, false);
 
@@ -680,7 +680,7 @@ public class ProverJob extends Job
     private String[] constructCommand()
     {
 
-        ArrayList command = new ArrayList();
+        List<String> command = new ArrayList<String>();
         /*
          * Launch from the command line:
          * 
@@ -757,7 +757,8 @@ public class ProverJob extends Job
             }
         }
 
-        command.add(module.getLocation().lastSegment());
+        // why just the last segment?
+        command.add(module.getLocation().toOSString());
 
         return (String[]) command.toArray(new String[command.size()]);
     }
@@ -814,7 +815,7 @@ public class ProverJob extends Job
      * the last {@link StepStatusMessage} reported by the prover
      * for that step.
      */
-    public HashMap getStepMessageMap()
+    public Map<Integer, StepStatusMessage> getStepMessageMap()
     {
         return stepMessageMap;
     }
@@ -827,7 +828,7 @@ public class ProverJob extends Job
      * This is only for step tuples that represent leaf
      * steps.
      */
-    public Map getLeafStepMap()
+    public Map<Integer, StepTuple> getLeafStepMap()
     {
         return leafStepMap;
     }
@@ -842,7 +843,7 @@ public class ProverJob extends Job
      * stuff will probably break anyway, so don't worry about it.
      * @return
      */
-    public Collection getLeafSteps()
+    public Collection<StepTuple> getLeafSteps()
     {
         return leafStepMap.values();
     }
@@ -851,7 +852,7 @@ public class ProverJob extends Job
      * Returns the map from {@link Integer} ids of obligations
      * to {@link ObligationStatus}
      */
-    public Map getObsMap()
+    public Map<Integer, ObligationStatus> getObsMap()
     {
         return obsMap;
     }
@@ -862,7 +863,7 @@ public class ProverJob extends Job
      * 
      * @return
      */
-    public Collection getObs()
+    public Collection<ObligationStatus> getObs()
     {
         return obsMap.values();
     }
@@ -1105,10 +1106,14 @@ public class ProverJob extends Job
      * have been sent so far.
      * @return the obMessageList
      */
-    public List getObMessageList()
+    public List<ObligationStatusMessage> getObMessageList()
     {
         return obMessageList;
     }
+
+	public boolean addObMessageList(ObligationStatusMessage message) {
+		return obMessageList.add(message);
+	}
 
     /**
      * Sets the flag indicating that should be true
@@ -1184,4 +1189,11 @@ public class ProverJob extends Job
         return System.currentTimeMillis() - startTime;
     }
 
+	public boolean getNoToBeProved() {
+		return noToBeProved;
+	}
+
+	public void setNoToBeProved(boolean b) {
+		noToBeProved = b;
+	}
 }

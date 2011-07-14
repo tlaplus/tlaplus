@@ -1,9 +1,9 @@
 package org.lamport.tla.toolbox.tool.prover.ui.util;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.resources.IFile;
@@ -433,7 +433,7 @@ public class ProverHelper
             // most recent prover job not from the current spec
             return null;
         }
-        Collection statuses = lastJob.getObsMap().values();
+        Collection<ObligationStatus> statuses = lastJob.getObsMap().values();
         return (ObligationStatus[]) statuses.toArray(new ObligationStatus[statuses.size()]);
     }
 
@@ -550,10 +550,6 @@ public class ProverHelper
 
                     ModuleNode moduleNode = parseResult.getSpecObj().getExternalModuleTable().getModuleNode(
                             UniqueString.uniqueStringOf(moduleName));
-                    if (module == null)
-                    {
-                        return;
-                    }
                     LevelNode[] topLevelNodes = moduleNode.getTopLevel();
 
                     for (int i = 0; i < topLevelNodes.length; i++)
@@ -971,10 +967,10 @@ public class ProverHelper
     {
         if (message.getStatus().equals(TO_BE_PROVED))
         {
-            if (proverJob.noToBeProved)
+            if (proverJob.getNoToBeProved())
             {
-                System.out.println("First to be proved " + proverJob.getCurRelTime());
-                proverJob.noToBeProved = false;
+                ProverUIActivator.logDebug("First to be proved " + proverJob.getCurRelTime());
+                proverJob.setNoToBeProved(false);
             }
 
             /*
@@ -982,7 +978,7 @@ public class ProverHelper
              * They will be processed later. This is done once
              * the first non "to be proved" message is sent. See below.
              */
-            proverJob.getObMessageList().add(message);
+            proverJob.addObMessageList(message);
 
             /*
              * Create a new ObligationStatus with null as the initial status and
@@ -1011,14 +1007,14 @@ public class ProverHelper
              */
             if (proverJob.isToBeProvedOnly())
             {
-                System.out.println("Before obligation marker creation " + proverJob.getCurRelTime());
+            	ProverUIActivator.logDebug("Before obligation marker creation " + proverJob.getCurRelTime());
                 IWorkspaceRunnable runnable = new IWorkspaceRunnable() {
 
                     public void run(IProgressMonitor monitor) throws CoreException
                     {
-                        for (Iterator it = proverJob.getObMessageList().iterator(); it.hasNext();)
+                        for (Iterator<ObligationStatusMessage> it = proverJob.getObMessageList().iterator(); it.hasNext();)
                         {
-                            ObligationStatusMessage message = (ObligationStatusMessage) it.next();
+                            ObligationStatusMessage message = it.next();
                             IMarker obMarker = createObligationMarker(message.getID(), message.getLocation());
                             ObligationStatus obStatus = new ObligationStatus(null, obMarker,
                                     ColorPredicate.TO_BE_PROVED_STATE, message.getLocation(), message.getID());
@@ -1035,7 +1031,7 @@ public class ProverHelper
                     ProverUIActivator.logError("Error creating marker obligations", e);
                 }
                 proverJob.setToBeProvedOnly(false);
-                System.out.println("After obligation marker creation " + proverJob.getCurRelTime());
+                ProverUIActivator.logDebug("After obligation marker creation " + proverJob.getCurRelTime());
             }
             /*
              * Update the state of the obligation. The obligation will
@@ -1051,7 +1047,7 @@ public class ProverHelper
              */
             if (obStatus.getParent() == null)
             {
-                System.out.println("Before ob parenting creation " + proverJob.getCurRelTime());
+            	ProverUIActivator.logDebug("Before ob parenting creation " + proverJob.getCurRelTime());
                 /*
                  * The following iterates through all non-dummy
                  * obligations. For each obligation, we search through
@@ -1063,13 +1059,13 @@ public class ProverHelper
                  * because obligations should be only a few lines below their parent
                  * step.
                  */
-                for (Iterator it = proverJob.getObs().iterator(); it.hasNext();)
+                for (Iterator<ObligationStatus> it = proverJob.getObs().iterator(); it.hasNext();)
                 {
-                    ObligationStatus obligation = (ObligationStatus) it.next();
+                    ObligationStatus obligation = it.next();
                     int searchLine = obligation.getTLAPMLocation().beginLine();
                     while (true)
                     {
-                        StepTuple stepTuple = (StepTuple) proverJob.getLeafStepMap().get(new Integer(searchLine));
+                        StepTuple stepTuple = proverJob.getLeafStepMap().get(new Integer(searchLine));
                         if (stepTuple != null)
                         {
                             obligation.setParent(stepTuple);
@@ -1080,7 +1076,7 @@ public class ProverHelper
                     }
                 }
 
-                System.out.println("After ob parenting creation " + proverJob.getCurRelTime());
+                ProverUIActivator.logDebug("After ob parenting creation " + proverJob.getCurRelTime());
 
             }
 
@@ -1126,7 +1122,7 @@ public class ProverHelper
             {
 
                 // the marker created
-                Map markerAttributes = new HashMap();
+                Map<String, Integer> markerAttributes = new HashMap<String, Integer>();
                 markerAttributes.put(OBLIGATION_ID, new Integer(id));
                 // markerAttributes.put(OBLIGATION_STATE, new Integer(initialState));
                 // markerAttributes.put(OBLIGATION_LOCATION, locToString(location));
@@ -1145,7 +1141,7 @@ public class ProverHelper
                 marker.setAttributes(markerAttributes);
 
                 // DEBUG
-                // System.out.println("Marker created for obligation from message \n" + message);
+                // ProverUIActivator.logDebug("Marker created for obligation from message \n" + message);
                 return marker;
             } catch (CoreException e)
             {
@@ -1314,7 +1310,7 @@ public class ProverHelper
      */
     public static void compareStepStatusComputations(ProverJob proverJob)
     {
-        // System.out.println("------------------Comparing TLAPM and Toolbox Step Status------------");
+        // ProverUIActivator.logDebug("------------------Comparing TLAPM and Toolbox Step Status------------");
         // Collection stepTuples = proverJob.getStepMap().values();
         // for (Iterator it = stepTuples.iterator(); it.hasNext();)
         // {
@@ -1324,12 +1320,12 @@ public class ProverHelper
         // new Integer(stepLoc.beginLine()));
         // if (stepMessage == null)
         // {
-        // System.out.println("NO STATUS BUG :\n No TLAPM step status message found for the step at " + stepLoc
+        // ProverUIActivator.logDebug("NO STATUS BUG :\n No TLAPM step status message found for the step at " + stepLoc
         // + " . The Toolbox thinks the status is "
         // + statusIntToStatusString(stepTuple.getColorPredicateValues()));
         // } else if (!stepMessage.getStatus().equals(statusIntToStatusString(stepTuple.getColorPredicateValues())))
         // {
-        // System.out.println("DIFFERENT STATUS BUG : \n Loc : " + stepLoc + "\n TLAPM : "
+        // ProverUIActivator.logDebug("DIFFERENT STATUS BUG : \n Loc : " + stepLoc + "\n TLAPM : "
         // + stepMessage.getStatus() + "\n Toolbox : "
         // + statusIntToStatusString(stepTuple.getColorPredicateValues()));
         // }
@@ -1339,11 +1335,11 @@ public class ProverHelper
         // for (Iterator it = remainingMessages.iterator(); it.hasNext();)
         // {
         // StepStatusMessage message = (StepStatusMessage) it.next();
-        // System.out.println("NO STATUS BUG :\n No Toolbox step status message found for the step at "
+        // ProverUIActivator.logDebug("NO STATUS BUG :\n No Toolbox step status message found for the step at "
         // + message.getLocation() + " . The TLAPM reports the status " + message.getStatus());
         // }
         //
-        // System.out.println("------------------Done Comparing TLAPM and Toolbox Step Status------------");
+        // ProverUIActivator.logDebug("------------------Done Comparing TLAPM and Toolbox Step Status------------");
     }
 
     /**
@@ -1454,7 +1450,7 @@ public class ProverHelper
                     if (markerType != null)
                     {
                         // the attributes for the new marker to be created
-                        Map markerAttributes = new HashMap(2);
+                        Map<String, Integer> markerAttributes = new HashMap<String, Integer>(2);
                         markerAttributes.put(IMarker.CHAR_START, new Integer(newCharStart));
                         markerAttributes.put(IMarker.CHAR_END, new Integer(newCharEnd));
                         markerAttributes.put(IMarker.LINE_NUMBER, new Integer(stringToLoc(
@@ -1838,7 +1834,7 @@ public class ProverHelper
     public static void stopObligation(IMarker marker)
     {
 
-        System.out.println("Stop obligation " + marker.getAttribute(OBLIGATION_ID, -1));
+    	ProverUIActivator.logDebug("Stop obligation " + marker.getAttribute(OBLIGATION_ID, -1));
 
         // a count of running prover jobs for debugging
         // check to see that there is at most 1
@@ -1867,7 +1863,7 @@ public class ProverHelper
      * then adds the appropriate entries to the list command of arguments.
      * @return
      */
-    public static void setThreadsOption(ArrayList command)
+    public static void setThreadsOption(List<String> command)
     {
         String numThreadsText = ProverUIActivator.getDefault().getPreferenceStore().getString(
                 ProverSecondPreferencePage.NUM_THREADS_KEY);
@@ -1884,7 +1880,7 @@ public class ProverHelper
      * then adds the appropriate entries to the list command of arguments.
      * @return
      */
-    public static void setSolverOption(ArrayList command)
+    public static void setSolverOption(List<String> command)
     {
         String solverText = ProverUIActivator.getDefault().getPreferenceStore().getString(
                 ProverSecondPreferencePage.SOLVER_KEY);
@@ -1901,7 +1897,7 @@ public class ProverHelper
      * then adds the appropriate entries to the list command of arguments.
      * @return
      */
-    public static void setSafeFPOption(ArrayList command)
+    public static void setSafeFPOption(List<String> command)
     {
         boolean safefp = ProverUIActivator.getDefault().getPreferenceStore().getBoolean(
                 ProverSecondPreferencePage.SAFEFP_KEY);
@@ -1918,8 +1914,6 @@ public class ProverHelper
      */
     public static boolean isMac()
     {
-        // Uncomment the following for testing.
-        // if (1+1==2) {return true;}
         return Platform.getOS().equals(Platform.OS_MACOSX);
     }
 }
