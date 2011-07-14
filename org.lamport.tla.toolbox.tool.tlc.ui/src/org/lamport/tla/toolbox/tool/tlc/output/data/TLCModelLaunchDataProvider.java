@@ -67,11 +67,11 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
     // list of errors
     private List<TLCError> errors;
     // start time
-    private String startTimestamp;
+    private long startTimestamp;
     // end time
-    private String finishTimestamp;
+    private long finishTimestamp;
     // last checkpoint time
-    private String lastCheckpointTimeStamp;
+    private long lastCheckpointTimeStamp;
     // coverage at
     private String coverageTimestamp;
     // reports current status of model checking
@@ -144,9 +144,9 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
         coverageInfo = new Vector<CoverageInformationItem>();
         progressInformation = new Vector<StateSpaceInformationItem>();
         startTime = 0;
-        startTimestamp = "";
-        finishTimestamp = "";
-        lastCheckpointTimeStamp = "";
+        startTimestamp = Long.MIN_VALUE;
+        finishTimestamp = Long.MIN_VALUE;
+        lastCheckpointTimeStamp = Long.MIN_VALUE;
         coverageTimestamp = "";
         setCurrentStatus(NOT_RUNNING);
         setFingerprintCollisionProbability("");
@@ -773,24 +773,14 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
         this.errors = errors;
     }
 
-    public String getStartTimestamp()
+    public long getStartTimestamp()
     {
         return startTimestamp;
     }
 
-    public void setStartTimestamp(String startTimestamp)
-    {
-        this.startTimestamp = startTimestamp;
-    }
-
-    public String getFinishTimestamp()
+    public long getFinishTimestamp()
     {
         return finishTimestamp;
-    }
-
-    public void setFinishTimestamp(String finishTimestamp)
-    {
-        this.finishTimestamp = finishTimestamp;
     }
 
     public String getCoverageTimestamp()
@@ -843,12 +833,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
         this.progressOutput = progressOutput;
     }
 
-    public void setLastCheckpointTimeStamp(String lastCheckpointTimeStamp)
-    {
-        this.lastCheckpointTimeStamp = lastCheckpointTimeStamp;
-    }
-
-    public String getLastCheckpointTimeStamp()
+    public long getLastCheckpointTimeStamp()
     {
         return lastCheckpointTimeStamp;
     }

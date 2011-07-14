@@ -1,7 +1,9 @@
 package org.lamport.tla.toolbox.tool.tlc.ui.editor.page;
 
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 import java.util.Vector;
 
 import org.eclipse.core.runtime.CoreException;
@@ -130,7 +132,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         UIHelper.runUIAsync(new Runnable() {
             public void run()
             {
-                switch (fieldId) {
+				switch (fieldId) {
                 case USER_OUTPUT:
                     ResultPage.this.userOutput.setDocument(dataProvider.getUserOutput());
                     break;
@@ -141,15 +143,32 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
                     ResultPage.this.expressionEvalResult.getTextWidget().setText(dataProvider.getCalcOutput());
                     break;
                 case START_TIME:
-                    ResultPage.this.startTimestampText.setText(dataProvider.getStartTimestamp());
+                    ResultPage.this.startTimestampText.setText(new Date(dataProvider.getStartTimestamp()).toString());
                     ResultPage.this.startTime = dataProvider.getStartTime();
                     break;
                 case END_TIME:
-                    ResultPage.this.finishTimestampText.setText(dataProvider.getFinishTimestamp());
+                    long finishTimestamp = dataProvider.getFinishTimestamp();
+                    if(finishTimestamp < 0) {
+                    	ResultPage.this.finishTimestampText.setText("");
+                    	break;
+                    }
+                    ResultPage.this.finishTimestampText.setText(new Date(finishTimestamp).toString());
+                    
+                    // calc elapsed time and set as Tooltip
+                    final SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
+                    sdf.setTimeZone(TimeZone.getTimeZone("GMT")); // explicitly set TZ to handle local offset
+                    long elapsedTime = finishTimestamp - dataProvider.getStartTimestamp();
+                    ResultPage.this.finishTimestampText.setToolTipText(sdf.format(new Date(elapsedTime)));
+                    ResultPage.this.startTimestampText.setToolTipText(sdf.format(new Date(elapsedTime)));
                     break;
                 case LAST_CHECKPOINT_TIME:
-                    ResultPage.this.lastCheckpointTimeText.setText(dataProvider.getLastCheckpointTimeStamp());
-                    break;
+                    long lastCheckpointTimeStamp = dataProvider.getLastCheckpointTimeStamp();
+                    if(lastCheckpointTimeStamp > 0) {
+                    	ResultPage.this.lastCheckpointTimeText.setText(new Date(lastCheckpointTimeStamp).toString());
+                    	break;
+                    }
+                   	ResultPage.this.lastCheckpointTimeText.setText("");
+                   	break;
                 case CURRENT_STATUS:
                     ResultPage.this.currentStatusText.setText(dataProvider.getCurrentStatus());
                     break;
