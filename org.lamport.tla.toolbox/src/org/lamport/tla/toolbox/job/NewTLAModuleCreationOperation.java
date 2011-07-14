@@ -42,6 +42,13 @@ public class NewTLAModuleCreationOperation implements IWorkspaceRunnable
         
         try
         {
+        	// create parent folder unless pointing to root directory
+        	if(modulePath.segmentCount() > 1) {
+        		final IPath removeLastSegments = modulePath.removeLastSegments(1);
+        		final File dir = new File(removeLastSegments.toOSString());
+        		dir.mkdirs();
+        	}
+        	
             // create file
             File file = new File(modulePath.toOSString());
             if (file.createNewFile())
