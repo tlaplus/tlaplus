@@ -74,6 +74,7 @@ public abstract class StateQueue {
   /* Return (up to) the first cnt elements in the queue. Wait if empty. */  
   public final synchronized TLCState[] sDequeue(int cnt) {
     if (this.isAvail()) {
+    	if(cnt > size()) {cnt = size();}
       TLCState states[] = new TLCState[cnt];
       int idx;
       for (idx = 0; idx < cnt && this.len > 0; idx++) {
