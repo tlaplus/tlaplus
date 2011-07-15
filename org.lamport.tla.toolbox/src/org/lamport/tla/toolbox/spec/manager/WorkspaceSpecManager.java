@@ -1,7 +1,6 @@
 package org.lamport.tla.toolbox.spec.manager;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 
@@ -23,14 +22,13 @@ import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.spec.nature.TLANature;
 import org.lamport.tla.toolbox.tool.SpecEvent;
+import org.lamport.tla.toolbox.tool.SpecRenameEvent;
 import org.lamport.tla.toolbox.ui.handler.CloseSpecHandler;
 import org.lamport.tla.toolbox.ui.handler.OpenParseErrorViewHandler;
-import org.lamport.tla.toolbox.ui.handler.OpenSpecHandler;
 import org.lamport.tla.toolbox.ui.property.GenericSelectionProvider;
 import org.lamport.tla.toolbox.util.AdapterFactory;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.SpecLifecycleManager;
-import org.lamport.tla.toolbox.util.UIHelper;
 import org.lamport.tla.toolbox.util.pref.IPreferenceConstants;
 import org.lamport.tla.toolbox.util.pref.PreferenceStoreHelper;
 
@@ -258,57 +256,36 @@ public class WorkspaceSpecManager extends GenericSelectionProvider implements IS
     }
 
     /**
-     * Renames a spec 
+     * Renames the given spec to the given name 
      * @param spec
      * @param newName
      */
-    public void renameSpec(Spec spec, String newName)
+    public void renameSpec(Spec spec, final String newName, final IProgressMonitor aMonitor)
     {
-        this.lifecycleManager.sendEvent(new SpecEvent(spec, SpecEvent.TYPE_RENAME));
-        boolean setBack = false;
-        if (this.loadedSpec == spec)
-        {
-            // renaming current spec...
-            // close it here
-            UIHelper.runCommand(CloseSpecHandler.COMMAND_ID, new HashMap<String, String>());
-            setBack = true;
-        }
+        this.lifecycleManager.sendEvent(new SpecRenameEvent(spec, newName));
+
+        // remove from storage
         specStorage.remove(spec.getName());
 
-        IProject project = ResourceHelper.projectRename(spec.getProject(), newName);
-        if (project != null)
-        {
-            spec = new Spec(project);
-            addSpec(spec);
-        }
+        // rename the underlying resource
+        IProject project = ResourceHelper.projectRename(spec.getProject(), newName, aMonitor);
+        
+        // create new project with updated name
+        spec = new Spec(project);
+        spec.setLastModified();
 
-        // set the spec
-        if (setBack)
-        {
-            // reopen the spec
-            HashMap<String, String> parameters = new HashMap<String, String>();
-            parameters.put(OpenSpecHandler.PARAM_SPEC, newName);
-            UIHelper.runCommand(OpenSpecHandler.COMMAND_ID, parameters);
-        } else
-        {
-            spec.setLastModified();
-        }
+        // add it to storage
+        addSpec(spec);
     }
-
+    
     /**
      * Removes the specification
      * @param spec specification to remove
      */
-    public void removeSpec(Spec spec)
+    public void removeSpec(final Spec spec, final IProgressMonitor aMonitor)
     {
         this.lifecycleManager.sendEvent(new SpecEvent(spec, SpecEvent.TYPE_DELETE));
-        if (this.loadedSpec == spec)
-        {
-            // deleting current spec...
-            // close it here
-            UIHelper.runCommand(CloseSpecHandler.COMMAND_ID, new HashMap<String, String>());
-        }
-        ResourceHelper.deleteProject(spec.getProject());
+        ResourceHelper.deleteProject(spec.getProject(), aMonitor);
         specStorage.remove(spec.getName());
     }
 
@@ -476,4 +453,11 @@ public class WorkspaceSpecManager extends GenericSelectionProvider implements IS
 
         return mostRecentlyOpened;
     }
+
+	/**
+	 * @return Whether the given spec is the currently loaded spec
+	 */
+	public boolean isSpecLoaded(final Spec aSpec) {
+		return getSpecLoaded() == aSpec;
+	}
 }

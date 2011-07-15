@@ -1,5 +1,6 @@
 package org.lamport.tla.toolbox.test;
 
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
@@ -82,7 +83,7 @@ public abstract class RCPTestSetupHelper {
 		// assume recently opened specs means all existing specs :)
 		final Spec[] specs = specManager.getRecentlyOpened();
 		for (int i = 0; i < specs.length; i++) {
-			specManager.removeSpec(specs[i]);
+			specManager.removeSpec(specs[i], new NullProgressMonitor());
 		}
 	}
 }

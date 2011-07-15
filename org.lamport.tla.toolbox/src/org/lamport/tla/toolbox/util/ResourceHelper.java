@@ -798,26 +798,26 @@ public class ResourceHelper
     /**
      * Renames and moves the project
      * @param project
-     * @param specName
+     * @param aNewName
      */
-    public static IProject projectRename(IProject project, String specName)
+    public static IProject projectRename(final IProject project, final String aNewName, final IProgressMonitor aMonitor)
     {
-        IProgressMonitor monitor = new NullProgressMonitor();
         try
         {
-            IProjectDescription description = project.getDescription();
+        	// move the project location to the new location and name
+            final IProjectDescription description = project.getDescription();
+            final IPath basePath = description.getLocation().removeLastSegments(1).removeTrailingSeparator();
+			final IPath newPath = basePath.append(aNewName.concat(TOOLBOX_DIRECTORY_SUFFIX)).addTrailingSeparator();
+            description.setLocation(newPath);
+            description.setName(aNewName);
 
-            // move the project location
-            IPath path = description.getLocation().removeLastSegments(1).removeTrailingSeparator().append(
-                    specName.concat(TOOLBOX_DIRECTORY_SUFFIX)).addTrailingSeparator();
-            description.setLocation(path);
-            description.setName(specName);
-
-            project.refreshLocal(IResource.DEPTH_INFINITE, monitor);
-            project.copy(description, IResource.NONE | IResource.SHALLOW, monitor);
-            project.delete(IResource.NONE, monitor);
-
-            return ResourcesPlugin.getWorkspace().getRoot().getProject(specName);
+            // refresh the project prior to moving to make sure the fs and resource fw are in sync
+        	project.refreshLocal(IResource.DEPTH_INFINITE, aMonitor);
+            
+        	project.copy(description, IResource.NONE | IResource.SHALLOW, aMonitor);
+            project.delete(IResource.NONE, aMonitor);
+            
+            return ResourcesPlugin.getWorkspace().getRoot().getProject(aNewName);
         } catch (CoreException e)
         {
             Activator.logError("Error renaming a specification", e);
@@ -829,12 +829,11 @@ public class ResourceHelper
      * Deletes the project
      * @param project
      */
-    public static void deleteProject(IProject project)
+    public static void deleteProject(final IProject project, final IProgressMonitor aMonitor)
     {
-        IProgressMonitor monitor = new NullProgressMonitor();
         try
         {
-            project.delete(true, monitor);
+            project.delete(true, aMonitor);
         } catch (CoreException e)
         {
             Activator.logError("Error deleting a specification", e);

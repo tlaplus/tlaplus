@@ -37,7 +37,7 @@ public abstract class AbstractTest {
 	 * Pre flight initialization (run once for each test _case_)
 	 */
 	@Before
-	public void setUp() {
+	public void setUp() throws Exception {
 		bot = new SWTWorkbenchBot();
 	}
 

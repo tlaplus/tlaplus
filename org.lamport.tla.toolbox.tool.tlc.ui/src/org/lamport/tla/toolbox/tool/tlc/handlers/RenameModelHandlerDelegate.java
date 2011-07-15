@@ -1,6 +1,7 @@
 package org.lamport.tla.toolbox.tool.tlc.handlers;
 
 import java.util.HashMap;
+import java.util.Map;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -8,8 +9,11 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IHandler;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.debug.core.ILaunchConfiguration;
-import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.jface.dialogs.IInputValidator;
 import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -22,118 +26,87 @@ import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelNameValidator;
+import org.lamport.tla.toolbox.util.ToolboxJob;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 /**
  * Renames a model
- * @author Simon Zambrovski
- * @version $Id$
  */
 public class RenameModelHandlerDelegate extends AbstractHandler implements IHandler, IModelConfigurationConstants
 {
-    private final Object RETURN = null;
-    private String modelName;
+	/**
+	 * Instructs the logic to reopen the model editor 
+	 */
+	private boolean reopenModelEditorAfterRename = false;
 
-    /**
-     * @see org.eclipse.core.commands.IHandler#execute(org.eclipse.core.commands.ExecutionEvent)
+    /* (non-Javadoc)
+     * @see org.eclipse.core.commands.AbstractHandler#execute(org.eclipse.core.commands.ExecutionEvent)
      */
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
-        /*
-         * No parameter try to get it from active navigator if any
-         */
-        ISelection selection = HandlerUtil.getCurrentSelectionChecked(event);
+        final ISelection selection = HandlerUtil.getCurrentSelectionChecked(event);
         if (selection != null && selection instanceof IStructuredSelection)
         {
             // model file
-            ILaunchConfiguration model = (ILaunchConfiguration) ((IStructuredSelection) selection).getFirstElement();
+            final ILaunchConfiguration model = (ILaunchConfiguration) ((IStructuredSelection) selection).getFirstElement();
 
             // root file
-            IResource specRootModule = ToolboxHandle.getRootModule(model.getFile().getProject());
+            final IResource specRootModule = ToolboxHandle.getRootModule(model.getFile().getProject());
 
-            modelName = ModelHelper.getModelName(model.getFile()) + "_Copy";
+            // a) fail if model is in use or locked
+            final String modelName = ModelHelper.getModelName(model.getFile()) + "_Copy";
+			try {
+				if (ModelHelper.isModelRunning(model) || ModelHelper.isModelLocked(model)) {
+					MessageDialog.openError(UIHelper.getShellProvider().getShell(), "Could not rename models",
+							"Could not rename the model " + modelName
+									+ ", because it is being model checked or is locked.");
+					return null;
+				}
+			} catch (CoreException e1) {
+				throw new ExecutionException(e1.getMessage(), e1);
+			}
 
-            try
-            {
-                if (ModelHelper.isModelRunning(model) || ModelHelper.isModelLocked(model))
-                {
-                    MessageDialog.openError(UIHelper.getShellProvider().getShell(), "Could not rename models",
-                            "Could not rename the model " + modelName
-                                    + ", because it is being model checked or is locked.");
-                    return RETURN;
-                }
-            } catch (CoreException e1)
-            {
-                e1.printStackTrace();
-            }
-
-            IInputValidator modelNameInputValidator = new ModelNameValidator(specRootModule.getProject());
-            final InputDialog dialog = new InputDialog(UIHelper.getShellProvider().getShell(), "Rename model...",
+            // b) open dialog prompting for new model name
+            final IInputValidator modelNameInputValidator = new ModelNameValidator(specRootModule.getProject());
+            final InputDialog dialog = new InputDialog(UIHelper.getShell(), "Rename model...",
                     "Please input the new name of the model", modelName, modelNameInputValidator);
             dialog.setBlockOnOpen(true);
-            UIHelper.runUISync(new Runnable() {
-
-                public void run()
-                {
-                    int open = dialog.open();
-                    switch (open) {
-                    case Window.OK:
-                        modelName = dialog.getValue();
-                        break;
-                    case Window.CANCEL:
-                        // cancel model creation
-                        modelName = null;
-                    }
+            if(dialog.open() == Window.OK) {
+            	// c) close model editor if open
+                final IEditorPart editor = ModelHelper.getEditorWithModelOpened(model);
+                if(editor != null) {
+                	reopenModelEditorAfterRename = true;
+                	UIHelper.getActivePage().closeEditor(editor, true);
                 }
-            });
-            if (modelName == null)
-            {
-                // exit processing if no specName at place
-                return RETURN;
-            }
+                
+                final Job j = new ToolboxJob("Renaming model...") {
+					/* (non-Javadoc)
+					 * @see org.eclipse.core.runtime.jobs.Job#run(org.eclipse.core.runtime.IProgressMonitor)
+					 */
+					protected IStatus run(IProgressMonitor monitor) {
+						// d) rename
+						final String newModelName = dialog.getValue();
+						ModelHelper.renameModel(model, ModelHelper.getSpecPrefix(model), newModelName);
 
-            final IEditorPart editor = ModelHelper.getEditorWithModelOpened(model);
-            boolean wasOpened = (editor != null);
-            if (wasOpened)
-            {
-                UIHelper.runUISync(new Runnable() {
-
-                    public void run()
-                    {
-                        // close editor
-                        UIHelper.getActivePage().closeEditor(editor, true);
-                    }
-                });
-            }
-
-            // construct real name
-            String newModelName = specRootModule.getProject().getName() + "___" + modelName;
-            System.out.println("Rename '" + model.getName() + "' to '" + newModelName + "'");
-            try
-            {
-                // create the model with the new name
-                ILaunchConfigurationWorkingCopy copy = model.copy(newModelName);
-                copy.setAttribute(MODEL_NAME, modelName);
-                copy.doSave();
-
-                // delete the old model
-                model.delete();
-            } catch (CoreException e)
-            {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-
-            // reopen
-            if (wasOpened)
-            {
-                HashMap parameters = new HashMap();
-                parameters.put(OpenModelHandler.PARAM_MODEL_NAME, modelName);
-                UIHelper.runCommand(OpenModelHandler.COMMAND_ID, parameters);
+						// e) reopen (in UI thread)
+			            if (reopenModelEditorAfterRename) {
+				            UIHelper.runUIAsync(new Runnable(){
+								/* (non-Javadoc)
+								 * @see java.lang.Runnable#run()
+								 */
+								public void run() {
+									Map<String, String> parameters = new HashMap<String, String>();
+									parameters.put(OpenModelHandler.PARAM_MODEL_NAME, newModelName);
+									UIHelper.runCommand(OpenModelHandler.COMMAND_ID, parameters);
+								}
+				            });
+			            }
+						return Status.OK_STATUS;
+					}
+				};
+				j.schedule();
             }
         }
-
-        return RETURN;
+        return null;
     }
-
 }

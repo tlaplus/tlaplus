@@ -50,7 +50,7 @@ public class HandlerThreadingTest extends AbstractTest {
 	}
 
 	@Before
-	public void setUp() {
+	public void setUp() throws Exception {
 		super.setUp();
 		MonitorAdaptor.reset();
 	}

@@ -1,18 +1,25 @@
 package org.lamport.tla.toolbox.ui.handler;
 
+import java.util.HashMap;
 import java.util.Iterator;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IHandler;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbenchPage;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.spec.Spec;
+import org.lamport.tla.toolbox.spec.manager.WorkspaceSpecManager;
 import org.lamport.tla.toolbox.ui.navigator.ToolboxExplorer;
+import org.lamport.tla.toolbox.util.ToolboxJob;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 /**
@@ -41,16 +48,28 @@ public class DeleteSpecHandler extends AbstractHandler implements IHandler
                     && !((IStructuredSelection) selection).isEmpty())
             {
                 
-                Iterator selectionIterator = ((IStructuredSelection) selection).iterator();
+                Iterator<Spec> selectionIterator = ((IStructuredSelection) selection).iterator();
                 while (selectionIterator.hasNext()) 
                 {
-                    Spec spec = (Spec) selectionIterator.next();
+                    final Spec spec = selectionIterator.next();
                     boolean answer = MessageDialog.openQuestion(UIHelper.getShellProvider().getShell(), "Delete specification?",
                             "Do you really want to delete the specification " + spec.getName() + " ?");
                     if (answer)
                     {
-                        Activator.logDebug("Delete " + spec.getName());
-                        Activator.getSpecManager().removeSpec(spec);
+                    	// close the spec handler (in the ui thread)
+                    	final WorkspaceSpecManager specManager = Activator.getSpecManager();
+                        if (specManager.isSpecLoaded(spec)) {
+                            UIHelper.runCommand(CloseSpecHandler.COMMAND_ID, new HashMap<String, String>());
+                        }
+                    	
+    					// use confirmed rename -> rename
+    					final Job j = new ToolboxJob("Deleting spec...") {
+    						protected IStatus run(final IProgressMonitor monitor) {
+    							Activator.getSpecManager().removeSpec(spec, monitor);
+    							return Status.OK_STATUS;
+    						}
+    					};
+    					j.schedule();
                     }
                 }
             }

@@ -1,6 +1,7 @@
 package org.lamport.tla.toolbox.tool.tlc.util;
 
 import java.io.ByteArrayInputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Hashtable;
@@ -45,6 +46,7 @@ import org.eclipse.jface.text.Region;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.editors.text.FileDocumentProvider;
 import org.eclipse.ui.part.FileEditorInput;
+import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.tool.tlc.TLCActivator;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
@@ -67,13 +69,13 @@ import tlc2.output.MP;
 
 /**
  * Provides utility methods for model manipulation
- * @author Simon Zambrovski
- * @version $Id$
  */
 public class ModelHelper implements IModelConfigurationConstants, IModelConfigurationDefaults
 {
 
-    /**
+    private static final String SPEC_MODEL_DELIM = "___";
+
+	/**
      * Empty location
      */
     public static final int[] EMPTY_LOCATION = new int[] { 0, 0, 0, 0 };
@@ -192,10 +194,10 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
     public static String getModelName(IFile modelFile)
     {
         String name = modelFile.getLocation().removeFileExtension().lastSegment();
-        int i = name.indexOf(modelFile.getProject().getName() + "___");
+        int i = name.indexOf(modelFile.getProject().getName() + SPEC_MODEL_DELIM);
         if (i != -1)
         {
-            name = name.substring(i + (modelFile.getProject().getName() + "___").length());
+            name = name.substring(i + (modelFile.getProject().getName() + SPEC_MODEL_DELIM).length());
         }
         return name;
     }
@@ -219,9 +221,9 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
     public static ILaunchConfiguration getModelByName(IProject specProject, String modelName)
     {
         // a model name can be "spec__modelname" or just "modelname"
-        if (modelName.indexOf(specProject.getName() + "___") != 0)
+        if (modelName.indexOf(specProject.getName() + SPEC_MODEL_DELIM) != 0)
         {
-            modelName = specProject.getName() + "___" + modelName;
+            modelName = specProject.getName() + SPEC_MODEL_DELIM + modelName;
         }
 
         if (modelName.endsWith(".launch"))
@@ -229,14 +231,9 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
             modelName = modelName.substring(0, modelName.length() - ".launch".length());
         }
 
-        ILaunchManager launchManager = DebugPlugin.getDefault().getLaunchManager();
-        ILaunchConfigurationType launchConfigurationType = launchManager
-                .getLaunchConfigurationType(TLCModelLaunchDelegate.LAUNCH_CONFIGURATION_TYPE);
-
         try
         {
-            ILaunchConfiguration[] launchConfigurations = launchManager
-                    .getLaunchConfigurations(launchConfigurationType);
+        	ILaunchConfiguration[] launchConfigurations = getAllLaunchConfigurations();
             for (int i = 0; i < launchConfigurations.length; i++)
             {
 
@@ -253,6 +250,32 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
 
         return null;
     }
+    
+    /**
+     * @return All models associated with the given spec
+     * @throws CoreException 
+     */
+    public static List<ILaunchConfiguration> getModelsBySpec(final Spec aSpec) throws CoreException {
+    	final List<ILaunchConfiguration> res = new ArrayList<ILaunchConfiguration>();
+    	
+    	final ILaunchConfiguration[] launchConfigurations = getAllLaunchConfigurations();
+		for (int i = 0; i < launchConfigurations.length; i++) {
+			final ILaunchConfiguration iLaunchConfiguration = launchConfigurations[i];
+			if (iLaunchConfiguration.getName().startsWith(aSpec.getName())) {
+				res.add(iLaunchConfiguration);
+			}
+		}
+    	
+    	return res;
+    }
+    
+    private static ILaunchConfiguration[] getAllLaunchConfigurations() throws CoreException {
+		final ILaunchManager launchManager = DebugPlugin.getDefault().getLaunchManager();
+		final ILaunchConfigurationType launchConfigurationType = launchManager
+				.getLaunchConfigurationType(TLCModelLaunchDelegate.LAUNCH_CONFIGURATION_TYPE);
+
+		return launchManager.getLaunchConfigurations(launchConfigurationType);
+    }
 
     /**
      * Convenience method
@@ -264,6 +287,55 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
         ILaunchManager launchManager = DebugPlugin.getDefault().getLaunchManager();
         return launchManager.getLaunchConfiguration(modelFile);
     }
+    
+    
+    /**
+     * Rename all models of the given spec to be aligned with the spec name
+     * @param aSpec
+     * @param aNewSpecName 
+     */
+    public static void realignModelNames(final Spec aSpec, final String aNewSpecName) {
+    	try {
+    		final List<ILaunchConfiguration> models = ModelHelper.getModelsBySpec(aSpec);
+    		for (ILaunchConfiguration model : models) {
+ 				renameModel(model, aNewSpecName, getModelSuffix(model));
+			}
+    	} catch(CoreException e) {
+            TLCActivator.logError("Error realigning models.", e);
+    	}
+    }
+
+	/**
+	 * Renames the given model to the new model name passed
+	 * @param model
+	 * @param specPrefix
+	 * @param newModelSuffix
+	 */
+	public static void renameModel(final ILaunchConfiguration model, final String specPrefix, final String newModelSuffix) {
+		try {
+			// create the model with the new name
+			final ILaunchConfigurationWorkingCopy copy = model.copy(specPrefix + SPEC_MODEL_DELIM + newModelSuffix);
+			copy.setAttribute(MODEL_NAME, newModelSuffix);
+			copy.doSave();
+
+			// delete the old model
+			model.delete();
+		} catch (CoreException e) {
+            TLCActivator.logError("Error renaming model.", e);
+		}
+	}
+	
+	public static String getSpecPrefix(final ILaunchConfiguration aModel) {
+        final String oldModelName = aModel.getName(); // old full qualified name
+        int indexOf = oldModelName.indexOf(SPEC_MODEL_DELIM); // position model delimiter
+    	return oldModelName.substring(0, indexOf);
+	}
+	
+	public static String getModelSuffix(final ILaunchConfiguration aModel) {
+        final String oldModelName = aModel.getName(); // old full qualified name
+        int indexOf = oldModelName.indexOf(SPEC_MODEL_DELIM); // position model delimiter
+    	return oldModelName.substring(indexOf + SPEC_MODEL_DELIM.length());
+	}
 
     /**
      * Saves the config working copy
@@ -292,10 +364,10 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
      * 
      *   
      */
-    public static List serializeAssignmentList(List assignments)
+    public static List<String> serializeAssignmentList(List<Assignment> assignments)
     {
-        Iterator iter = assignments.iterator();
-        Vector result = new Vector(assignments.size());
+        Iterator<Assignment> iter = assignments.iterator();
+        Vector<String> result = new Vector<String>(assignments.size());
 
         StringBuffer buffer;
         while (iter.hasNext())
@@ -342,14 +414,14 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
      * De-serialize assignment list. 
      * @see ModelHelper#serializeAssignmentList(List)
      */
-    public static List deserializeAssignmentList(List serializedList)
+    public static List<Assignment> deserializeAssignmentList(List<String> serializedList)
     {
-        Vector result = new Vector(serializedList.size());
-        Iterator iter = serializedList.iterator();
+        Vector<Assignment> result = new Vector<Assignment>(serializedList.size());
+        Iterator<String> iter = serializedList.iterator();
         String[] fields = new String[] { null, "", "", "0", "0" };
         while (iter.hasNext())
         {
-            String[] serFields = ((String) iter.next()).split(LIST_DELIMITER);
+            String[] serFields = (iter.next()).split(LIST_DELIMITER);
             System.arraycopy(serFields, 0, fields, 0, serFields.length);
 
             String[] params;
@@ -386,13 +458,13 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
      * The first character of the formula is used to determine if the formula is enabled in the model 
      * editor or not. This allows the user to persist formulas, which are not used in the current model 
      */
-    public static List deserializeFormulaList(List serializedList)
+    public static List<Formula> deserializeFormulaList(List<String> serializedList)
     {
-        Vector result = new Vector(serializedList.size());
-        Iterator serializedIterator = serializedList.iterator();
+        Vector<Formula> result = new Vector<Formula>(serializedList.size());
+        Iterator<String> serializedIterator = serializedList.iterator();
         while (serializedIterator.hasNext())
         {
-            String entry = (String) serializedIterator.next();
+            String entry = serializedIterator.next();
             Formula formula = new Formula(entry.substring(1));
             if ("1".equals(entry.substring(0, 1)))
             {
@@ -407,10 +479,10 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
      * @param moduleNode
      * @return a list of assignments
      */
-    public static List createConstantsList(ModuleNode moduleNode)
+    public static List<Assignment> createConstantsList(ModuleNode moduleNode)
     {
         OpDeclNode[] constantDecls = moduleNode.getConstantDecls();
-        Vector constants = new Vector(constantDecls.length);
+        Vector<Assignment> constants = new Vector<Assignment>(constantDecls.length);
         for (int i = 0; i < constantDecls.length; i++)
         {
             String[] params = new String[constantDecls[i].getNumberOfArgs()];
@@ -506,11 +578,11 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
      * @param moduleNode
      * @return a list of assignments
      */
-    public static List createDefinitionList(ModuleNode moduleNode)
+    public static List<Assignment> createDefinitionList(ModuleNode moduleNode)
     {
         OpDefNode[] operatorDefinitions = moduleNode.getOpDefs();
 
-        Vector operations = new Vector(operatorDefinitions.length);
+        Vector<Assignment> operations = new Vector<Assignment>(operatorDefinitions.length);
         for (int i = 0; i < operatorDefinitions.length; i++)
         {
             String[] params = new String[operatorDefinitions[i].getNumberOfArgs()];
@@ -1037,65 +1109,6 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
     }
 
     /**
-     * Signals the end of model execution
-     * 
-     * This method is no longer used.
-     * TODO remove
-     * 
-     * User unlock will unlock any model. An automatic unlock caused by the end of 
-     * a run of TLC will only unlock the model if there is no user lock on that model.
-     * @param config
-     * @param userLock true if this is caused by the user explicitly unlocking the model
-     * by clicking the lock button, false if this is caused automatically by the end
-     * of TLC
-     * @deprecated
-     */
-    public static void unlockModel(ILaunchConfiguration config, boolean userUnlock) throws CoreException
-    {
-        IFile resource = config.getFile();
-        if (config.exists())
-        {
-            IMarker marker;
-            IMarker[] foundMarkers = resource.findMarkers(TLC_MODEL_IN_USE_MARKER, false, IResource.DEPTH_ZERO);
-            if (foundMarkers.length > 0)
-            {
-                marker = foundMarkers[0];
-                // remove trash if any
-                for (int i = 1; i < foundMarkers.length; i++)
-                {
-                    foundMarkers[i].delete();
-                }
-            } else
-            {
-                marker = resource.createMarker(TLC_MODEL_IN_USE_MARKER);
-            }
-
-            if (userUnlock)
-            {
-                // user unlock always unlocks the model
-                marker.setAttribute(MODEL_IS_RUNNING, false);
-                marker.setAttribute(MODEL_IS_LOCKED, false);
-            } else if (!marker.getAttribute(MODEL_IS_LOCKED, false))
-            {
-                // automatic unlock only unlocks the model
-                // if there is not a user lock on that model
-                marker.setAttribute(MODEL_IS_RUNNING, false);
-                marker.setAttribute(MODEL_IS_LOCKED, false);
-            }
-
-        }
-        /*
-        // persistence property
-        config.getFile().setPersistentProperty(new QualifiedName(TLCActivator.PLUGIN_ID, MODEL_IS_RUNNING), Boolean.toString(false));
-        */
-
-        /*
-        // file modification 
-        ModelHelper.writeAttributeValue(config, IModelConfigurationConstants.MODEL_IS_RUNNING, false);
-        */
-    }
-
-    /**
      * Write a boolean value into the launch config and saves it
      * @param config
      * @param attributeName
@@ -1160,9 +1173,11 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
     /**
      * Installs a marker on the model
      * @param resource the model file to install markers on
-     * @param map a map with attributes
+	 * @param properties a map of attribute names to attribute values 
+	 *		(key type : <code>String</code> value type : <code>String</code>, 
+	 *		<code>Integer</code>, or <code>Boolean</code>) or <code>null</code>
      */
-    public static IMarker installModelProblemMarker(IResource resource, Map properties, String markerType)
+    public static IMarker installModelProblemMarker(IResource resource, @SuppressWarnings("rawtypes") Map properties, String markerType)
     {
         Assert.isNotNull(resource);
         Assert.isTrue(resource.exists());
@@ -1212,7 +1227,6 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
 
     /**
      * Converts four-int-location to a region
-     * TODO: unit test!
      * @param document
      * @param location
      * @return
@@ -1266,9 +1280,9 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
      * @param severityError
      * @return
      */
-    public static Hashtable createMarkerDescription(String errorMessage, int severity)
+    public static Hashtable<String, Object> createMarkerDescription(String errorMessage, int severity)
     {
-        Hashtable prop = new Hashtable();
+        Hashtable<String, Object> prop = new Hashtable<String, Object>();
 
         prop.put(IMarker.SEVERITY, new Integer(severity));
         prop.put(IMarker.MESSAGE, errorMessage);
@@ -1303,7 +1317,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
      * </ul> 
      * @throws CoreException if something goes wrong
      */
-    public static Hashtable createMarkerDescription(ILaunchConfiguration configuration, IDocument document,
+    public static Hashtable<String, Object> createMarkerDescription(ILaunchConfiguration configuration, IDocument document,
             FindReplaceDocumentAdapter searchAdapter, String message, int severity, int[] coordinates)
             throws CoreException
     {
@@ -1460,7 +1474,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
         message = getMessageWithoutMC(message, attributeName, attributeIndex);
 
         // create the return object
-        Hashtable props = new Hashtable();
+        Hashtable<String, Object> props = new Hashtable<String, Object>();
         props.put(IMarker.SEVERITY, new Integer(severity));
         props.put(IMarker.MESSAGE, message);
         props.put(TLC_MODEL_ERROR_MARKER_ATTRIBUTE_NAME, attributeName);
@@ -1622,7 +1636,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
         // yy-MM-dd-HH-mm-ss
         Pattern pattern = Pattern.compile("[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}");
 
-        Vector checkpoints = new Vector();
+        Vector<IResource> checkpoints = new Vector<IResource>();
         IFolder directory = getModelTargetDirectory(config);
 
         if (directory != null && directory.exists())
@@ -1663,10 +1677,10 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
         }
         IResource[] result = (IResource[]) checkpoints.toArray(new IResource[checkpoints.size()]);
         // sort the result
-        Arrays.sort(result, new Comparator() {
-            public int compare(Object arg0, Object arg1)
+        Arrays.sort(result, new Comparator<IResource>() {
+            public int compare(IResource arg0, IResource arg1)
             {
-                return ((IResource) arg0).getName().compareTo(((IResource) arg1).getName());
+                return arg0.getName().compareTo(arg1.getName());
             }
         });
 
@@ -1700,7 +1714,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
         }
 
         Matcher matcher = Location.LOCATION_MATCHER.matcher(text);
-        Vector regions = new Vector();
+        Vector<IRegion> regions = new Vector<IRegion>();
         while (matcher.find())
         {
             regions.add(new Region(matcher.start(), matcher.end() - matcher.start()));
@@ -1713,7 +1727,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
         {
             regions.add(new Region(matcher.start(), matcher.end() - matcher.start()));
         }
-        return (IRegion[]) regions.toArray(new IRegion[regions.size()]);
+        return regions.toArray(new IRegion[regions.size()]);
     }
 
     /**
@@ -1887,13 +1901,13 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
             int STEP, IProject project) throws CoreException
     {
         // get the list of dependent modules
-        List extendedModules = ToolboxHandle.getExtendedModules(specRootFile.getName());
+        List<String> extendedModules = ToolboxHandle.getExtendedModules(specRootFile.getName());
 
         // iterate and copy modules that are needed for the spec
         IFile moduleFile = null;
         for (int i = 0; i < extendedModules.size(); i++)
         {
-            String module = (String) extendedModules.get(i);
+            String module = extendedModules.get(i);
             // only take care of user modules
             if (ToolboxHandle.isUserModule(module))
             {
@@ -1917,7 +1931,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
      * @param config
      * @return
      */
-    public static List getErrorTrace(ILaunchConfiguration config)
+    public static List<SimpleTLCState> getErrorTrace(ILaunchConfiguration config)
     {
         // try
         // {
@@ -1931,7 +1945,6 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
         // }
         // } catch (FileNotFoundException e)
         // {
-        // // TODO Auto-generated catch block
         // e.printStackTrace();
         // }
 
@@ -1956,7 +1969,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
             IRegion startTagRegion = logFileSearcher.find(0, regExStartTag, true, true, false, true);
 
             // vector of SimpleTLCStates
-            Vector trace = new Vector();
+            Vector<SimpleTLCState> trace = new Vector<SimpleTLCState>();
 
             while (startTagRegion != null)
             {
@@ -2002,7 +2015,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
             logFileDocumentProvider.disconnect(logFileEditorInput);
         }
 
-        return new Vector();
+        return new Vector<SimpleTLCState>();
     }
 
     /**
@@ -2019,11 +2032,11 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
         {
             rootModuleFileName = ResourceHelper.getModuleFileName(rootModuleName);
         }
-        List extendedModuleNames = ToolboxHandle.getExtendedModules(rootModuleFileName);
-        Iterator it = extendedModuleNames.iterator();
+        List<String> extendedModuleNames = ToolboxHandle.getExtendedModules(rootModuleFileName);
+        Iterator<String> it = extendedModuleNames.iterator();
         while (it.hasNext())
         {
-            String moduleName = (String) it.next();
+            String moduleName = it.next();
             if (moduleName.equals(FILE_TLA))
             {
                 return true;
@@ -2047,11 +2060,11 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
         {
             rootModuleFileName = ResourceHelper.getModuleFileName(rootModuleName);
         }
-        List extendedModuleNames = ToolboxHandle.getExtendedModules(rootModuleFileName);
-        Iterator it = extendedModuleNames.iterator();
+        List<String> extendedModuleNames = ToolboxHandle.getExtendedModules(rootModuleFileName);
+        Iterator<String> it = extendedModuleNames.iterator();
         while (it.hasNext())
         {
-            String moduleName = (String) it.next();
+            String moduleName = it.next();
             if (moduleName.equals(TE_FILE_TLA))
             {
                 return true;

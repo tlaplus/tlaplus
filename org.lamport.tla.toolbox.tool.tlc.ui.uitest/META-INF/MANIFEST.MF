@@ -7,7 +7,10 @@ Export-Package: org.lamport.tla.toolbox.tool.tlc.ui.test.threading
 Require-Bundle: org.lamport.tla.toolbox;bundle-version="1.0.0",
  org.lamport.tla.toolbox.uitest;bundle-version="1.0.0",
  org.lamport.tla.toolbox.tool.tlc;bundle-version="1.0.0",
- org.lamport.tla.toolbox.tool.tlc.ui;bundle-version="1.0.0"
+ org.lamport.tla.toolbox.tool.tlc.ui;bundle-version="1.0.0",
+ org.lamport.tla.toolbox.editor.basic;bundle-version="1.0.0",
+ org.eclipse.core.resources;bundle-version="3.5.0",
+ org.eclipse.debug.core;bundle-version="3.5.0"
 Import-Package: org.osgi.framework;version="1.3.0"
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
 Bundle-Vendor: Leslie Lamport, Markus Alexander Kuppe

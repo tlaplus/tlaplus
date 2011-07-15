@@ -14,20 +14,20 @@
 <booleanAttribute key="includeOptional" value="false"/>
 <stringAttribute key="location" value="${workspace_loc}/../junit-workspace"/>
 <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
-<listEntry value="/org.lamport.tla.toolbox.tool.tlc.ui.uitest"/>
+<listEntry value="/org.lamport.tla.toolbox.tool.tlc.ui.uitest/src/org/lamport/tla/toolbox/ui/handler/RenameSpecHandlerTest.java"/>
 </listAttribute>
 <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
-<listEntry value="4"/>
+<listEntry value="1"/>
 </listAttribute>
 <mapAttribute key="org.eclipse.debug.core.environmentVariables">
 <mapEntry key="DISPLAY" value="localhost:1"/>
 </mapAttribute>
-<stringAttribute key="org.eclipse.jdt.junit.CONTAINER" value="=org.lamport.tla.toolbox.tool.tlc.ui.uitest"/>
+<stringAttribute key="org.eclipse.jdt.junit.CONTAINER" value=""/>
 <booleanAttribute key="org.eclipse.jdt.junit.KEEPRUNNING_ATTR" value="false"/>
 <stringAttribute key="org.eclipse.jdt.junit.TESTNAME" value=""/>
 <stringAttribute key="org.eclipse.jdt.junit.TEST_KIND" value="org.eclipse.jdt.junit.loader.junit4"/>
 <stringAttribute key="org.eclipse.jdt.launching.JRE_CONTAINER" value="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
-<stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value=""/>
+<stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="org.lamport.tla.toolbox.ui.handler.RenameSpecHandlerTest"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="-os ${target.os} -ws ${target.ws} -arch ${target.arch} -nl ${target.nl} -consoleLog -console -clean"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="org.lamport.tla.toolbox.tool.tlc.ui.uitest"/>
 <stringAttribute key="org.eclipse.jdt.launching.SOURCE_PATH_PROVIDER" value="org.eclipse.pde.ui.workbenchClasspathProvider"/>
