@@ -60,11 +60,13 @@ import util.ToolIO;
 *                 option specifies an earlier version.                     *
 *                                                                          *
 *   Version 1.6: (July 2011)                                               *
-*                 Added the "--fair algorithm" syntax for specifying       *
-*                 weak fairness of the next-state action. (This changes    *
-*                 the way fairness of a uniprocess algorithm was           *
-*                 specified in Version 1.5.  All legal Version 1.5         *
-*                 algorithms should work with the  "version 1.5" option.)  *
+*                 - Added the "--fair algorithm" syntax for specifying     *
+*                   weak fairness of the next-state action. (This          *
+*                   changes the way fairness of a uniprocess algorithm was *
+*                   specified in Version 1.5.  All legal Version 1.5       *
+*                   algorithms should work with the "version 1.5" option.) *
+*                 - Permitted previously defined macros to be called       *
+*                   inside a macro definition.                             *
 * -----------------------------------------------------------------        *
 *                                                                          *
 * This is the main method of the +CAL to TLA+ translation program.         *

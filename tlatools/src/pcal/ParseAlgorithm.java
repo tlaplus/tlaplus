@@ -338,7 +338,7 @@ public class ParseAlgorithm
          }
        Vector macros = new Vector() ;
        while (PeekAtAlgToken(1).equals("macro"))
-         { macros.addElement(GetMacro()) ; } ;
+         { macros.addElement(GetMacro(macros)) ; } ;
        while (PeekAtAlgToken(1).equals("procedure"))
          { procedures.addElement(GetProcedure()) ;
            // if there's a procedure, we assume that it's
@@ -1411,44 +1411,87 @@ public class ParseAlgorithm
        return result ;
      }
 
-   public static AST.Macro GetMacro() throws ParseAlgorithmException 
-     /**********************************************************************
-     * This method was largely copied from GetProcedure.                   *
-     **********************************************************************/
-     { AST.Macro result = new AST.Macro() ;
-       inGetMacro = true ;
-       MustGobbleThis("macro") ;
-       result.col  = lastTokCol ;
-       result.line = lastTokLine ;
-       result.name = GetAlgToken() ;
-       GobbleThis("(") ;
-       result.params = new Vector() ;
-       boolean lookForComma = false ;
-       while (! PeekAtAlgToken(1).equals(")"))
-         { if (lookForComma)
-             { GobbleThis(",") ; } ;
-           result.params.addElement(GetAlgToken()) ;
-           lookForComma = true ;
-         }
-       MustGobbleThis(")") ;
-       GobbleBeginOrLeftBrace() ; ;
-       result.body = GetStmtSeq() ;
-       GobbleEndOrRightBrace("macro") ;
-       if (PeekAtAlgToken(1).equals(";"))
-         { String tok = GetAlgToken() ; } ;
+//   public static AST.Macro ObsoleteGetMacro() throws ParseAlgorithmException 
+//     /**********************************************************************
+//     * This method was largely copied from GetProcedure.                   *
+//     **********************************************************************/
+//     { AST.Macro result = new AST.Macro() ;
+//       inGetMacro = true ;
+//       MustGobbleThis("macro") ;
+//       result.col  = lastTokCol ;
+//       result.line = lastTokLine ;
+//       result.name = GetAlgToken() ;
+//       GobbleThis("(") ;
+//       result.params = new Vector() ;
+//       boolean lookForComma = false ;
+//       while (! PeekAtAlgToken(1).equals(")"))
+//         { if (lookForComma)
+//             { GobbleThis(",") ; } ;
+//           result.params.addElement(GetAlgToken()) ;
+//           lookForComma = true ;
+//         }
+//       MustGobbleThis(")") ;
+//       GobbleBeginOrLeftBrace() ; ;
+//       result.body = GetStmtSeq() ;
+//       GobbleEndOrRightBrace("macro") ;
+//       if (PeekAtAlgToken(1).equals(";"))
+//         { String tok = GetAlgToken() ; } ;
+//
+//       ExpandMacrosInStmtSeq(result.body, new Vector()) ;
+//         /******************************************************************
+//         * This is a quick and dirty way to produce an error if the macro  *
+//         * body contains a macro call.  It's a trifle inelegant to         *
+//         * produce the same error message for a call of a nonexistent      *
+//         * macro as for a macro call within a macro, but the user will     *
+//         * have no problem figuring out which it is.                       *
+//         ******************************************************************/
+//       inGetMacro = false ;
+//       return result ;
+//     }
 
-       ExpandMacrosInStmtSeq(result.body, new Vector()) ;
-         /******************************************************************
-         * This is a quick and dirty way to produce an error if the macro  *
-         * body contains a macro call.  It's a trifle inelegant to         *
-         * produce the same error message for a call of a nonexistent      *
-         * macro as for a macro call within a macro, but the user will     *
-         * have no problem figuring out which it is.                       *
-         ******************************************************************/
-       inGetMacro = false ;
-       return result ;
-     }
+   /**
+    *  GetMacro changed by LL on 14 July 2011 to take the vector of macros
+    *  as an argument that it passes to ExpandMacrosInStmtSeq.  (Previously,
+    *  it had passed an empty vector.)  This allows macros to be called inside
+    *  previously declared macros.  I don't remember why this wasn't done
+    *  originally, instead of not allowing macros to be called inside macros.
+    *  I'm afraid that there was a reason that will appear later.  For that reason,
+    *  the original GetMacro procedure is contained in the comments above.  To
+    *  back out of this change, just remove the argument from the one call
+    *  of GetMacro, and change the error message generated in
+    *  ExpandMacroCall.
+    */
+   public static AST.Macro GetMacro(Vector macros) throws ParseAlgorithmException 
+   /**********************************************************************
+   * This method was largely copied from GetProcedure.                   *
+   **********************************************************************/
+   { AST.Macro result = new AST.Macro() ;
+     inGetMacro = true ;
+     MustGobbleThis("macro") ;
+     result.col  = lastTokCol ;
+     result.line = lastTokLine ;
+     result.name = GetAlgToken() ;
+     GobbleThis("(") ;
+     result.params = new Vector() ;
+     boolean lookForComma = false ;
+     while (! PeekAtAlgToken(1).equals(")"))
+       { if (lookForComma)
+           { GobbleThis(",") ; } ;
+         result.params.addElement(GetAlgToken()) ;
+         lookForComma = true ;
+       }
+     MustGobbleThis(")") ;
+     GobbleBeginOrLeftBrace() ; ;
+     result.body = GetStmtSeq() ;
+     GobbleEndOrRightBrace("macro") ;
+     if (PeekAtAlgToken(1).equals(";"))
+       { String tok = GetAlgToken() ; } ;
 
+     ExpandMacrosInStmtSeq(result.body, macros) ;
+     
+     inGetMacro = false ;
+     return result ;
+   }
    public static AST.MacroCall GetMacroCall() throws ParseAlgorithmException 
      { AST.MacroCall result = new AST.MacroCall() ;
        result.name = GetAlgToken() ;
@@ -2418,8 +2461,12 @@ public class ParseAlgorithm
 
        if (macroDef == null)
          { throw new ParseAlgorithmException("Macro " + call.name + 
-            " undefined or called inside a macro definition,\n    at "
-                                   + call.location() ) ; 
+           // This error message changed by LL on 14 July 2011 when GetMacro was 
+           // changed to allow macros to call other macros.  Change back the message
+           // to back out of that other change.
+           //
+           //  " undefined or called inside a macro definition,\n    at "
+            " undefined,\n    at " + call.location() ) ; 
          } ;
 
        int numOfArgs = call.args.size() ;
