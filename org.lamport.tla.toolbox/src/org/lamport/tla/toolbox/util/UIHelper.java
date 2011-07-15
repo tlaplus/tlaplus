@@ -1,9 +1,9 @@
 package org.lamport.tla.toolbox.util;
 
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.core.commands.Command;
 import org.eclipse.core.commands.ExecutionException;
@@ -409,7 +409,7 @@ public class UIHelper
      * @param parameters
      * @return
      */
-    public static Object runCommand(String commandId, HashMap<String, String> parameters)
+    public static Object runCommand(String commandId, Map<String, String> parameters)
     {
     	// Do not rely on the UI to be up and running when trying to execute a command
 		IHandlerService handlerService = (IHandlerService) PlatformUI

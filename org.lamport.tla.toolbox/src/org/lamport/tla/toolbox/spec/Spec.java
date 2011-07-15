@@ -287,9 +287,9 @@ public class Spec implements IAdaptable
         {
             modules = getProject().members(IResource.NONE);
             // sort the markers
-            List moduleList = new ArrayList(Arrays.asList(modules));
+            List<IResource> moduleList = new ArrayList<IResource>(Arrays.asList(modules));
             Collections.sort(moduleList, new ResourceNameComparator());
-            return (IResource[]) moduleList.toArray(new IResource[moduleList.size()]);
+            return moduleList.toArray(new IResource[moduleList.size()]);
 
         } catch (CoreException e)
         {
