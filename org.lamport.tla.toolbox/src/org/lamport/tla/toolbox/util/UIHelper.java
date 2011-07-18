@@ -344,19 +344,24 @@ public class UIHelper
      */
     public static IWorkbenchPage getActivePage()
     {
-        IWorkbenchWindow window = getActiveWindow();
+        final IWorkbenchWindow window = getActiveWindow();
         if (window == null)
         {
-            // try to get an not null window
-            IWorkbenchWindow[] workbenchWindows = PlatformUI.getWorkbench().getWorkbenchWindows();
-            for (int i = 0; i < workbenchWindows.length; i++)
-            {
-                if (workbenchWindows[i] != null)
-                {
-                    return workbenchWindows[i].getActivePage();
-                }
+            // try to get a not null window
+            final IWorkbench workbench = PlatformUI.getWorkbench();
+            if(workbench != null) {
+            	IWorkbenchWindow[] workbenchWindows = workbench.getWorkbenchWindows();
+            	for (int i = 0; i < workbenchWindows.length; i++)
+            	{
+            		if (workbenchWindows[i] != null)
+            		{
+            			return workbenchWindows[i].getActivePage();
+            		}
+            	}
+            	return null;
+            } else {
+            	return null;
             }
-            return null;
         }
         return window.getActivePage();
     }
