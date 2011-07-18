@@ -3,6 +3,11 @@
 <plugin>
    <extension
          point="org.eclipse.ui.commands">
+      <category
+            description="Commands contributed by the TLC prover"
+            id="org.eclipse.debug.ui.category.run"
+            name="TLC Prover Commands">
+      </category>
       <command
             categoryId="org.eclipse.debug.ui.category.run"
             defaultHandler="org.lamport.tla.toolbox.tool.prover.ui.handler.CheckProofHandler"
