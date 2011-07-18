@@ -18,11 +18,15 @@ import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
  */
 public class StartLaunchHandler extends AbstractHandler {
 
-	public Object execute(ExecutionEvent event) throws ExecutionException {
-		final String activeEditorId = HandlerUtil.getActiveEditorId(event);
-		if (activeEditorId != null && activeEditorId.startsWith(ModelEditor.ID)) {
+	/**
+	 * The last launched model editor or null if no previous launch has happened
+	 */
+	private ModelEditor lastModelEditor;
 
-			final ModelEditor modelEditor = (ModelEditor) HandlerUtil.getActiveEditor(event);
+	public Object execute(ExecutionEvent event) throws ExecutionException {
+		final ModelEditor modelEditor = getModelEditor(event);
+		if (modelEditor != null) {
+
 			final ILaunchConfiguration config = modelEditor.getConfig().getOriginal();
 
 			// 0) model check already running for the given model
@@ -84,5 +88,14 @@ public class StartLaunchHandler extends AbstractHandler {
 			modelEditor.launchModel(TLCModelLaunchDelegate.MODE_MODELCHECK, true);
 		}
 		return null;
+	}
+
+	private ModelEditor getModelEditor(final ExecutionEvent event) {
+		// is current editor a model editor?
+		final String activeEditorId = HandlerUtil.getActiveEditorId(event);
+		if (activeEditorId != null && activeEditorId.startsWith(ModelEditor.ID)) {
+			lastModelEditor = (ModelEditor) HandlerUtil.getActiveEditor(event);
+		}
+		return lastModelEditor;
 	}
 }
