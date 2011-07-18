@@ -28,7 +28,7 @@ public class StatisticalBlockSelector extends LimitingBlockSelector {
 		// has to be correct type and statistics have to be available
 		if(aWorker instanceof TLCWorkerSmartProxy) {
 			final TLCWorkerSmartProxy proxy = (TLCWorkerSmartProxy) aWorker;
-			int blockSize = (int) Math.floor(size * (proxy.getNetworkOverhead() / networkOverheadLimit));
+			int blockSize = (int) Math.ceil(size * (proxy.getNetworkOverhead() / networkOverheadLimit));
 			return blockSize;
 		}
 		
