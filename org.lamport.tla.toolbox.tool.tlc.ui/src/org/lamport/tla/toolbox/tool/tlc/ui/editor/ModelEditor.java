@@ -205,67 +205,70 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
         super.init(site, input);
 
         // grab the input
-        FileEditorInput finput = getFileEditorInput();
-        if (finput != null)
+		final FileEditorInput finput = getFileEditorInput();
+
+		// the file might not exist anymore (e.g. manually removed by the user) 
+		if (finput == null || !finput.exists()) {
+			throw new PartInitException("Editor input does not exist: " + finput.getName());
+		}
+
+        final ILaunchConfiguration configuration = ModelHelper.getModelByFile(finput.getFile());
+
+        try
         {
-            ILaunchConfiguration configuration = ModelHelper.getModelByFile(finput.getFile());
-
-            try
-            {
-                configurationCopy = configuration.getWorkingCopy();
-            } catch (CoreException e)
-            {
-                TLCUIActivator.logError("Could not load model content for " + finput.getName(), e);
-            }
-
-            /*
-             * Install a resource change listener on the file opened which react
-             * on marker changes
-             */
-            modelFileChangeListener = ModelHelper.installModelModificationResourceChangeListener(this,
-            /*
-             * If the model file is changed, refresh the changes in the
-             * editor if the model is in use, activate the third page
-             */
-            new Runnable() {
-                public void run()
-                {
-                    // update the pages
-                    for (int i = 0; i < getPageCount(); i++)
-                    {
-                        /*
-                         * Note that all pages are not necessarily
-                         * instances of BasicFormPage. Some are read
-                         * only editors showing saved versions of
-                         * modules.
-                         */
-                        if (pages.get(i) instanceof BasicFormPage)
-                        {
-                            BasicFormPage page = (BasicFormPage) pages.get(i);
-                            ((BasicFormPage) page).refresh();
-                        }
-                    }
-
-                    if (isModelRunning())
-                    {
-                        showResultPage();
-                    }
-                    // evtl. add more graphical sugar here,
-                    // like changing the model icon,
-                    // changing the editor title (part name)
-                }
-            });
-
-            // setContentDescription(path.toString());
-            this.setPartName(ModelHelper.getModelName(finput.getFile()));
-            this.setTitleToolTip(finput.getFile().getProjectRelativePath().toString());
-
-            // add a listener that will update the tlc error view when a model editor
-            // is made visible
-            IPartService service = (IPartService) getSite().getService(IPartService.class);
-            service.addPartListener(ModelEditorPartListener.getDefault());
-
+            configurationCopy = configuration.getWorkingCopy();
+        } catch (CoreException e)
+        {
+            TLCUIActivator.logError("Could not load model content for " + finput.getName(), e);
+            throw new PartInitException(e.getMessage(), e);
         }
+
+        /*
+         * Install a resource change listener on the file opened which react
+         * on marker changes
+         */
+        modelFileChangeListener = ModelHelper.installModelModificationResourceChangeListener(this,
+        /*
+         * If the model file is changed, refresh the changes in the
+         * editor if the model is in use, activate the third page
+         */
+        new Runnable() {
+            public void run()
+            {
+                // update the pages
+                for (int i = 0; i < getPageCount(); i++)
+                {
+                    /*
+                     * Note that all pages are not necessarily
+                     * instances of BasicFormPage. Some are read
+                     * only editors showing saved versions of
+                     * modules.
+                     */
+                    if (pages.get(i) instanceof BasicFormPage)
+                    {
+                        BasicFormPage page = (BasicFormPage) pages.get(i);
+                        ((BasicFormPage) page).refresh();
+                    }
+                }
+
+                if (isModelRunning())
+                {
+                    showResultPage();
+                }
+                // evtl. add more graphical sugar here,
+                // like changing the model icon,
+                // changing the editor title (part name)
+            }
+        });
+
+        // setContentDescription(path.toString());
+        this.setPartName(ModelHelper.getModelName(finput.getFile()));
+        this.setTitleToolTip(finput.getFile().getProjectRelativePath().toString());
+
+        // add a listener that will update the tlc error view when a model editor
+        // is made visible
+        IPartService service = (IPartService) getSite().getService(IPartService.class);
+        service.addPartListener(ModelEditorPartListener.getDefault());
 
         /*
          * Install resource change listener on the workspace root to react on any changes in th current spec
