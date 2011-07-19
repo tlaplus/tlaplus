@@ -16,6 +16,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.IHandlerActivation;
 import org.eclipse.ui.handlers.IHandlerService;
 import org.lamport.tla.toolbox.Activator;
@@ -309,10 +310,10 @@ public class WorkspaceSpecManager extends GenericSelectionProvider implements IS
          * and will become inactive as soon as there is no parse
          * error.
          */
-        IHandlerService handlerService = (IHandlerService) Activator.getDefault().getWorkbench().getService(
-                IHandlerService.class);
         if (parseErrorsHandlerActivation != null)
         {
+        	IHandlerService handlerService = (IHandlerService) PlatformUI.getWorkbench().getService(
+        			IHandlerService.class);
             /*
              *  It is necessary to deactivate the currently active handler if there
              *  was one because a command can have at most one
@@ -329,6 +330,8 @@ public class WorkspaceSpecManager extends GenericSelectionProvider implements IS
         }
         if (AdapterFactory.isProblemStatus(spec.getStatus()))
         {
+            IHandlerService handlerService = (IHandlerService) PlatformUI.getWorkbench().getService(
+                    IHandlerService.class);
             parseErrorsHandlerActivation = handlerService.activateHandler("toolbox.command.openParseErrorView",
                     new OpenParseErrorViewHandler());
         }
