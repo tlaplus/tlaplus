@@ -845,14 +845,12 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
             this.resultPage = resultPage;
         }
 
-        {
-            // TODO Auto-generated constructor stub
-        }
-
+        /* (non-Javadoc)
+         * @see org.eclipse.swt.events.SelectionListener#widgetDefaultSelected(org.eclipse.swt.events.SelectionEvent)
+         */
         public void widgetDefaultSelected(SelectionEvent e)
         {
-            // TODO Auto-generated method stub
-
+        	// nop
         }
 
         /**
