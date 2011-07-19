@@ -140,6 +140,13 @@ public interface EC
     public static final int TLC_STARTING = 2185;
     public static final int TLC_FINISHED = 2186;
     
+    // distributed TLC
+    
+    public static final int TLC_DISTRIBUTED_SERVER_RUNNING = 7000;
+    public static final int TLC_DISTRIBUTED_WORKER_REGISTERED = TLC_DISTRIBUTED_SERVER_RUNNING + 1;
+    public static final int TLC_DISTRIBUTED_WORKER_DEREGISTERED = TLC_DISTRIBUTED_WORKER_REGISTERED + 1;
+    public static final int TLC_DISTRIBUTED_WORKER_STATS = TLC_DISTRIBUTED_WORKER_DEREGISTERED + 1;
+    
     // errors during parsing of the model configuration
     
     public static final int CFG_ERROR_READING_FILE = 5001;
@@ -228,12 +235,4 @@ public interface EC
     public static final int TLC_VERSION = 2262;
     public static final int TLC_USAGE = 2263;
     public static final int TLC_COUNTER_EXAMPLE = 2264;
-
-    
-    
-    
-    
-    
-    
-
 }

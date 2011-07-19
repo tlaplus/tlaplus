@@ -661,6 +661,23 @@ public class MP
             b.append("Found a Java class for module %1%, but unable to read\n" + "it as a Java class object. %2%");
             break;
 
+        /*------------------------------------------- */
+        // TLC distributed 
+        case EC.TLC_DISTRIBUTED_SERVER_RUNNING:
+            b.append("TLC server at %1% is ready (").append(SDF.format(new Date())).append(")");
+            break;
+        case EC.TLC_DISTRIBUTED_WORKER_REGISTERED:
+            b.append("Registration for worker at %1% completed (").append(SDF.format(new Date())).append(")");
+            break;
+        case EC.TLC_DISTRIBUTED_WORKER_DEREGISTERED:
+            b.append("TLC worker %1% disconnected (").append(SDF.format(new Date())).append(")");
+            break;
+        case EC.TLC_DISTRIBUTED_WORKER_STATS:
+        	//new Date() + " Worker: " + name + " Sent: " + sentStates + " Rcvd: " + receivedStates
+            b.append("Worker: %1% Sent: %2% Rcvd: %3% (").append(SDF.format(new Date())).append(")");
+            break;
+
+        /*------------------------------------------- */
         case EC.TLC_STARTING:
             b.append("Starting... (").append(SDF.format(new Date())).append(")");
             break;

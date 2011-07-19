@@ -50,6 +50,7 @@ public class TLCServerThread extends IdThread {
 
 	private TLCWorkerRMI worker;
 	private TLCServer tlcServer;
+	private URI uri;
 	
 	/**
 	 * Current unit of work or null
@@ -62,6 +63,12 @@ public class TLCServerThread extends IdThread {
 
 	public final void setWorker(TLCWorkerRMI worker) {
 		this.worker = new TLCWorkerSmartProxy(worker);
+		try {
+			this.uri = worker.getURI();
+		} catch (RemoteException e) {
+			//TODO handle more gracefully
+			e.printStackTrace();
+		}
 	}
 
 	/**
@@ -122,15 +129,14 @@ public class TLCServerThread extends IdThread {
 							continue START;
 						} else {
 							if (!this.tlcServer.reassignWorker(this)) {
-								ToolIO.out.println("Error: No TLC worker is available. Exit.");
+								MP.printMessage(EC.TLC_DISTRIBUTED_WORKER_DEREGISTERED, getUri().toString());
 								return;
 							}
 						}
 					} catch (NullPointerException e) {
 						ToolIO.err.println(e.getMessage());
 						if (!this.tlcServer.reassignWorker(this)) {
-							ToolIO.out
-									.println("Error: No TLC worker is available. Exit.");
+							MP.printMessage(EC.TLC_DISTRIBUTED_WORKER_DEREGISTERED, getUri().toString());
 							return;
 						}
 					}
@@ -202,10 +208,9 @@ public class TLCServerThread extends IdThread {
 
 	/**
 	 * @return the url
-	 * @throws RemoteException 
 	 */
-	public URI getUri() throws RemoteException {
-		return this.worker.getURI();
+	public URI getUri() {
+		return this.uri;
 	}
 
 	/**

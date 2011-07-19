@@ -55,6 +55,8 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
     public static final String COMPUTING_REACHABLE = "Computing reachable states";
     public static final String CHECKPOINTING = "Checkpointing";
     public static final String CHECKING_LIVENESS = "Checking liveness";
+    public static final String SERVER_RUNNING = "Server waiting for worker(s)";
+    public static final String WORKER_REGISTERED = " worker(s) registered";
 
     // pattern for the output of evaluating constant expressions
     public static final Pattern CONSTANT_EXPRESSION_OUTPUT_PATTERN = Pattern.compile("(?s)" + ModelWriter.BEGIN_TUPLE
@@ -109,6 +111,8 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
      *  that this time bears any relation to startTimeStamp.
      */
     private long startTime = 0;
+
+	private int numWorkers = 0;
 
     /**
      * @return the startTime
@@ -391,6 +395,19 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                     break;
                 case EC.TLC_COVERAGE_END:
                     break;
+                case EC.TLC_DISTRIBUTED_SERVER_RUNNING:
+                	numWorkers = 0;
+                	this.setCurrentStatus(SERVER_RUNNING);
+                    informPresenter(ITLCModelLaunchDataPresenter.CURRENT_STATUS);
+                    break;
+                case EC.TLC_DISTRIBUTED_WORKER_REGISTERED:
+                	this.setCurrentStatus(++numWorkers + WORKER_REGISTERED);
+                    informPresenter(ITLCModelLaunchDataPresenter.CURRENT_STATUS);
+                    break;
+                case EC.TLC_DISTRIBUTED_WORKER_DEREGISTERED:
+                	this.setCurrentStatus(--numWorkers + WORKER_REGISTERED);
+                    informPresenter(ITLCModelLaunchDataPresenter.CURRENT_STATUS);
+                    break;
                 default:
                     setDocumentText(this.userOutput, outputMessage, true);
                     informPresenter(ITLCModelLaunchDataPresenter.USER_OUTPUT);
@@ -535,7 +552,8 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
 
                         // generate property object for every id
                         // initialize the variable here, which will hold the properties
-                        Hashtable[] props = new Hashtable[ids.length];
+                        @SuppressWarnings("unchecked")
+						Hashtable<String, Object>[] props = new Hashtable[ids.length];
 
                         // search in the MC file for the ids
                         for (int j = 0; j < ids.length; j++)
@@ -570,7 +588,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                                 // some attributes are lists
                                 if (ModelHelper.isListAttribute(attributeName))
                                 {
-                                    List attributeValue = (List) config.getAttribute(attributeName, new ArrayList());
+                                    List<String> attributeValue = (List<String>) config.getAttribute(attributeName, new ArrayList<Object>());
                                     int attributeNumber = (attributeIndex != null) ? attributeIndex.intValue() : 0;
 
                                     if (IModelConfigurationConstants.MODEL_PARAMETER_CONSTANTS.equals(attributeName)
@@ -582,7 +600,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                                     } else
                                     {
                                         // invariants and properties
-                                        List valueList = ModelHelper.deserializeFormulaList(attributeValue);
+                                        List<Formula> valueList = ModelHelper.deserializeFormulaList(attributeValue);
                                         Formula value = (Formula) valueList.get(attributeNumber);
                                         idReplacement = value.getFormula();
                                     }
@@ -652,7 +670,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                         // the error is just a generic error in the model
                         if (!markerInstalled)
                         {
-                            Hashtable prop = ModelHelper.createMarkerDescription(errorMessage, IMarker.SEVERITY_ERROR);
+                            Hashtable<String, Object> prop = ModelHelper.createMarkerDescription(errorMessage, IMarker.SEVERITY_ERROR);
                             ModelHelper.installModelProblemMarker(config.getFile(), prop,
                                     ModelHelper.TLC_MODEL_ERROR_MARKER_TLC);
                         }

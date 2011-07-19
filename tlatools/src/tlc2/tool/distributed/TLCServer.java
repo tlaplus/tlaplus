@@ -15,7 +15,6 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.Date;
 import java.util.concurrent.CyclicBarrier;
 
 import tlc2.TLCGlobals;
@@ -33,7 +32,6 @@ import tlc2.tool.queue.StateQueue;
 import tlc2.util.FP64;
 import tlc2.util.PrintfFormat;
 import util.FileUtil;
-import util.ToolIO;
 import util.UniqueString;
 
 /**
@@ -43,10 +41,17 @@ import util.UniqueString;
 @SuppressWarnings("serial")
 public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		InternRMI {
+
 	/**
-	 * show statistics every 5 minutes
+	 * the port # for tlc server
 	 */
-	private static final int REPORT_INTERVAL = 5 * 60 * 1000;
+	public static int Port = Integer.getInteger(TLCServer.class.getName() + ".port", 10997);
+
+	/**
+	 * show statistics every 1 minutes
+	 */
+	private static final int REPORT_INTERVAL = Integer.getInteger(TLCServer.class.getName() + ".report", 1 * 60 * 1000);
+	
 	public final FPSetManager fpSetManager;
 	public final StateQueue stateQueue;
 	public final TLCTrace trace;
@@ -70,6 +75,11 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 	private final IBlockSelector blockSelector;
 	static final int expectedWorkerCount = Integer.getInteger("tlc2.tool.distributed.TLCServer.expectedWorkerCount", 1);
 	
+	/**
+	 * @param work
+	 * @throws IOException
+	 * @throws NotBoundException
+	 */
 	public TLCServer(DistApp work) throws IOException, NotBoundException {
 		this.workers = new TLCWorkerRMI[10];
 		this.workerRefCnt = new int[this.workers.length];
@@ -95,27 +105,45 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		blockSelector = BlockSelectorFactory.getBlockSelector(this);
 	}
 
+	/* (non-Javadoc)
+	 * @see tlc2.tool.distributed.TLCServerRMI#getCheckDeadlock()
+	 */
 	public final Boolean getCheckDeadlock() {
 		return this.work.getCheckDeadlock();
 	}
 
+	/* (non-Javadoc)
+	 * @see tlc2.tool.distributed.TLCServerRMI#getPreprocess()
+	 */
 	public final Boolean getPreprocess() {
 		return this.work.getPreprocess();
 	}
 
+	/* (non-Javadoc)
+	 * @see tlc2.tool.distributed.TLCServerRMI#getFPSetManager()
+	 */
 	public final FPSetManager getFPSetManager() {
 		return this.fpSetManager;
 	}
 
+	/* (non-Javadoc)
+	 * @see tlc2.tool.distributed.TLCServerRMI#getIrredPolyForFP()
+	 */
 	public final long getIrredPolyForFP() {
 		return FP64.getIrredPoly();
 	}
 
+	/* (non-Javadoc)
+	 * @see tlc2.tool.distributed.InternRMI#intern(java.lang.String)
+	 */
 	public final UniqueString intern(String str) {
 		// SZ 11.04.2009: changed access method
 		return UniqueString.uniqueStringOf(str);
 	}
 
+	/* (non-Javadoc)
+	 * @see tlc2.tool.distributed.TLCServerRMI#registerWorker(tlc2.tool.distributed.TLCWorkerRMI)
+	 */
 	public synchronized final void registerWorker(TLCWorkerRMI worker
 			) throws IOException {
 		int widx = this.workerCnt;
@@ -152,8 +180,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 			this.fpSet.addThread();
 		this.threads[tidx].start();
 
-		ToolIO.out.println("Registration for worker at " + worker.getURI()
-				+ " completed.");
+		MP.printMessage(EC.TLC_DISTRIBUTED_WORKER_REGISTERED, worker.getURI().toString());
 	}
 
 	/**
@@ -161,7 +188,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 	 * For the current faulting worker, remove it if there is no reference to it
 	 * any more.
 	 */
-	public synchronized final boolean reassignWorker(TLCServerThread th) {
+	synchronized final boolean reassignWorker(TLCServerThread th) {
 		TLCWorkerRMI worker = th.getWorker();
 		int widx;
 		for (widx = 0; widx < this.workerCnt; widx++) {
@@ -191,6 +218,11 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		return success;
 	}
 
+	/**
+	 * @param s
+	 * @param keep
+	 * @return
+	 */
 	public synchronized final boolean setErrState(TLCState s, boolean keep) {
 		if (this.done)
 			return false;
@@ -200,14 +232,22 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		return true;
 	}
 
+	/**
+	 * 
+	 */
 	public final void setDone() {
 		this.done = true;
 	}
 
+	/**
+	 * Creates a checkpoint for the currently running model run
+	 * @throws IOException
+	 * @throws InterruptedException
+	 */
 	public void checkpoint() throws IOException, InterruptedException {
 		if (this.stateQueue.suspendAll()) {
 			// Checkpoint:
-			ToolIO.out.print("-- Checkpointing of run " + this.metadir
+			MP.printMessage(EC.TLC_CHECKPOINT_START, "-- Checkpointing of run " + this.metadir
 					+ " compl");
 
 			// start checkpointing:
@@ -227,10 +267,15 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 			if (this.fpSet != null) {
 				this.fpSet.commitChkpt();
 			}
-			ToolIO.out.println("eted.");
+			MP.printMessage(EC.TLC_CHECKPOINT_END, "eted.");
 		}
 	}
 
+	/**
+	 * Recovers a model run
+	 * @throws IOException
+	 * @throws InterruptedException
+	 */
 	public final void recover() throws IOException, InterruptedException {
 		this.trace.recover();
 		this.stateQueue.recover();
@@ -241,11 +286,18 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		}
 	}
 
+	/**
+	 * @return
+	 * @throws IOException
+	 */
 	private final String recoveryStats() throws IOException {
 		return (this.fpSetManager.size() + " distinct states found. "
 				+ this.stateQueue.size() + " states on queue.");
 	}
 
+	/**
+	 * @throws Exception
+	 */
 	private final void doInit() throws Exception {
 		TLCState curState = null;
 		try {
@@ -278,6 +330,10 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		}
 	}
 
+	/**
+	 * @param cleanup
+	 * @throws IOException
+	 */
 	public final void close(boolean cleanup) throws IOException {
 		this.trace.close();
 		if (this.fpSet == null) {
@@ -290,29 +346,35 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		}
 	}
 
-	public static int Port = 10997; // the port # for tlc server
-
+	/**
+	 * @param server
+	 * @throws IOException
+	 * @throws InterruptedException
+	 * @throws NotBoundException
+	 */
 	public static void modelCheck(TLCServer server) throws IOException, InterruptedException, NotBoundException {
 		boolean recovered = false;
 		if (server.work.canRecover()) {
-			ToolIO.out.println("-- Starting recovery from checkpoint "
+			MP.printMessage(EC.TLC_CHECKPOINT_RECOVER_START, "-- Starting recovery from checkpoint "
 					+ server.metadir);
 			server.recover();
-			ToolIO.out.println("-- Recovery completed. "
+			MP.printMessage(EC.TLC_CHECKPOINT_RECOVER_END, "-- Recovery completed. "
 					+ server.recoveryStats());
 			recovered = true;
 		}
 		if (!recovered) {
 			// Initialize with the initial states:
 			try {
+                MP.printMessage(EC.TLC_COMPUTING_INIT);
 				server.doInit();
+				MP.printMessage(EC.TLC_INIT_GENERATED1,
+						new String[] { String.valueOf(server.stateQueue.size()), "(s)" });
 			} catch (Throwable e) {
 				// Assert.printStack(e);
 				server.done = true;
-				ToolIO.out.println(e.getMessage());
+				MP.printMessage(EC.GENERAL, e.getMessage());
 				if (server.errState != null) {
-					ToolIO.out.println("While working on the initial state:");
-					ToolIO.out.println(server.errState);
+					MP.printMessage(EC.TLC_INITIAL_STATE, "While working on the initial state: " + server.errState);
 				}
 				// We redo the work on the error state, recording the call
 				// stack.
@@ -320,8 +382,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 				try {
 					server.doInit();
 				} catch (Throwable e1) {
-					ToolIO.out
-							.println("The error occurred when TLC was evaluating the nested"
+					MP.printMessage(EC.GENERAL, "The error occurred when TLC was evaluating the nested"
 									+ "\nexpressions at the following positions:\n"
 									+ server.work.printCallStack());
 				}
@@ -336,7 +397,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		String hostname = InetAddress.getLocalHost().getHostName();
 		Registry rg = LocateRegistry.createRegistry(Port);
 		rg.rebind("TLCServer", server);
-		ToolIO.out.println("TLC server at " + hostname + " is ready.");
+		MP.printMessage(EC.TLC_DISTRIBUTED_SERVER_RUNNING, hostname);
 
 		// Wait for completion, but print out progress report and checkpoint
 		// periodically.
@@ -369,9 +430,8 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 			int sentStates = server.threads[i].getSentStates();
 			int receivedStates = server.threads[i].getReceivedStates();
 			URI name = server.threads[i].getUri();
-			ToolIO.out.println(new Date() + " Worker: " + name + " Sent: " + sentStates 
-					+ " Rcvd: "
-					+ receivedStates);
+			MP.printMessage(EC.TLC_DISTRIBUTED_WORKER_STATS,
+					new String[] { name.toString(), Integer.toString(sentStates), Integer.toString(receivedStates) });
 		}
 		// Notify all the workers of the completion.
 		for (int i = 0; i < server.workerCnt; i++) {
@@ -392,8 +452,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 			try {
 				// server.doNext();
 			} catch (Exception e) {
-				ToolIO.out
-						.println("The error occurred when TLC was evaluating the nested"
+				MP.printMessage(EC.TLC_NESTED_EXPRESSION, "The error occurred when TLC was evaluating the nested"
 								+ "\nexpressions at the following positions:");
 				server.work.printCallStack();
 			}
@@ -408,11 +467,13 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		UnicastRemoteObject.unexportObject(server.fpSet, false);
 		UnicastRemoteObject.unexportObject(server, false);
 		
-		
         MP.printMessage(EC.TLC_FINISHED);
 		MP.flush();
 	}
 
+	/**
+	 * @return
+	 */
 	private int getNewStates() {
 		int res = stateQueue.size();
 		for (int i = 0; i < threadCnt; i++) {
@@ -435,6 +496,9 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 //		return res;
 //	}
     
+	/**
+	 * @throws IOException
+	 */
 	public final void reportSuccess() throws IOException
     {
         long d = this.fpSet.size();
@@ -474,7 +538,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
     }
 
 	public static void main(String argv[]) {
-		ToolIO.out.println("TLC Server " + TLCGlobals.versionOfTLC);
+		MP.printMessage(EC.GENERAL, "TLC Server " + TLCGlobals.versionOfTLC);
 		TLCServer server = null;
 		try {
 			TLCGlobals.fpServers = TLCConfig.getStringArray("fp_servers");
@@ -510,6 +574,9 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		return workerCnt;
 	}
 	
+	/**
+	 * @return
+	 */
 	TLCServerThread[] getThreads() {
 		return this.threads;
 	}
