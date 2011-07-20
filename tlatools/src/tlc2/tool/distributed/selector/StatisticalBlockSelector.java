@@ -1,8 +1,8 @@
 package tlc2.tool.distributed.selector;
 
 import tlc2.tool.distributed.TLCServer;
-import tlc2.tool.distributed.TLCWorkerSmartProxy;
 import tlc2.tool.distributed.TLCWorkerRMI;
+import tlc2.tool.distributed.TLCWorkerSmartProxy;
 
 public class StatisticalBlockSelector extends LimitingBlockSelector {
 
@@ -28,7 +28,8 @@ public class StatisticalBlockSelector extends LimitingBlockSelector {
 		// has to be correct type and statistics have to be available
 		if(aWorker instanceof TLCWorkerSmartProxy) {
 			final TLCWorkerSmartProxy proxy = (TLCWorkerSmartProxy) aWorker;
-			int blockSize = (int) Math.ceil(size * (proxy.getNetworkOverhead() / networkOverheadLimit));
+			int blockSize = (int) Math.max(
+					Math.abs(Math.ceil(size * (proxy.getNetworkOverhead() / networkOverheadLimit))), 1);
 			return blockSize;
 		}
 		

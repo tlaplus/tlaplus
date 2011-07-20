@@ -21,7 +21,7 @@ public class TLCWorkerSmartProxy implements TLCWorkerRMI {
 	 */
 	private double networkOverhead = Double.MAX_VALUE;
 
-	TLCWorkerSmartProxy(final TLCWorkerRMI aWorker) {
+	public TLCWorkerSmartProxy(final TLCWorkerRMI aWorker) {
 		worker = aWorker;
 	}
 
@@ -34,13 +34,25 @@ public class TLCWorkerSmartProxy implements TLCWorkerRMI {
 		// do actual remote call
 		final Object[] nextStates = worker.getNextStates(states);
 
-		final long roundTripTime = System.currentTimeMillis() - start;
-		final long computationTime = (Long) nextStates[2];
-		networkOverhead = ((double) (roundTripTime - computationTime) / roundTripTime) / states.length;
+		final long roundTripTime = (System.currentTimeMillis() - start) + 1; // at least one millisecond if get next below resolution
+		final long computationTime = sanitizeComputationTime((Long) nextStates[2]);
+
+		// RTT has to be bigger than computation alone
+		double networkTime = Math.max(roundTripTime - computationTime, 0.00001d);
+
+		double percentageNetworkOverhead = networkTime / roundTripTime;
+		
+		// network overhead per state
+		networkOverhead = percentageNetworkOverhead / states.length;
 		
 		return nextStates;
 	}
 	
+	// handle illegal values from worker
+	private long sanitizeComputationTime(Long computationTime) {
+		return Math.max(Math.abs(computationTime), 1);
+	}
+
 	/**
 	 * @return The network overhead for a remote call in %
 	 */
