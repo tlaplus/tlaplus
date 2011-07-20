@@ -24,13 +24,36 @@ public class NumeralNode extends ExprNode {
   private BigInteger bigValue = null;
   private String image;
 
-  public NumeralNode( String s, TreeNode stn ) {
+  /**
+   * The following method was modified by LL on 20 Jul 2011 to handle
+   * \b, \o, and \h numbers.
+   * 
+   * @param s
+   * @param stn
+   * @throws AbortException
+   */
+  public NumeralNode( String s, TreeNode stn ) throws AbortException {
     super(NumeralKind, stn);
     this.image = s;
+    String num = s.toLowerCase();
+    int radix = 10; 
+    if (num.charAt(0)=='\\') {
+     if (num.charAt(1)=='b') {
+    	 radix = 2;
+     } else if (num.charAt(1)=='o') {
+    	 radix = 8;
+     } else if (num.charAt(1)=='h') {
+    	 radix = 16;
+     } else { 
+    	 throw new AbortException();  // This shouldn't happen.
+     }
+     num = num.substring(2);
+    }
     try {
-      this.value = Integer.parseInt( s );
+      
+      this.value = Integer.parseInt( num, radix );
     } catch ( NumberFormatException e ) {
-      this.bigValue = new BigInteger( s );
+      this.bigValue = new BigInteger( s, radix );
     }
   }
 

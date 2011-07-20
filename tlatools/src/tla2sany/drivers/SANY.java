@@ -37,21 +37,25 @@ public class SANY {
   * Version information.                                                   *
   *************************************************************************/
 
-  private static String lastModified = 
-    /***********************************************************************
-    * The following string is inserted by an Emacs macro when a new        *
-    * version is saved.                                                    *
-    ***********************************************************************/
-    "last modified on Tue  10 February 2011 at 11:49:54 PST by lamport";
+//  The following method for automatically inserting the version date was
+//  removed on 20 Jul 2011 by LL because Emacs is no longer being used to
+//  edit the source files.
+//
+//  private static String lastModified = 
+//    /***********************************************************************
+//    * The following string is inserted by an Emacs macro when a new        *
+//    * version is saved.                                                    *
+//    ***********************************************************************/
+//    "last modified on Tue  10 February 2011 at 11:49:54 PST by lamport";
 
-  private static String modDate = 
-                lastModified.substring(21, lastModified.indexOf(" at"));
+  private static String modDate = "20 July 2011";
+//                lastModified.substring(21, lastModified.indexOf(" at"));
     /***********************************************************************
     * The modification date.                                               *
     ***********************************************************************/
 
   public static String version = 
-    "Version 2.1 created " + modDate ; 
+    "Version 2.2 created " + modDate ; 
 
   private static boolean doParsing          = true;  
     // true <=> parsing should be done
