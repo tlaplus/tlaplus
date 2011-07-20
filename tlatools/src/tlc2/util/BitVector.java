@@ -20,6 +20,7 @@ import java.io.Serializable;
 
 public class BitVector implements Serializable {
 
+  private static final long serialVersionUID = 901734230891583097L;
   private long[] word;                   // words of this bit vector
 
   public BitVector() { this.word = null; }

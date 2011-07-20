@@ -16,6 +16,7 @@ import util.FileUtil;
  * @version $Id$
  */
 public class LongVec implements Cloneable, Serializable {
+  private static final long serialVersionUID = 2406899362740899071L;
   private long[] elementData;
   private int elementCount;
          
