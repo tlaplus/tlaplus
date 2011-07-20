@@ -602,17 +602,11 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
 
         IProgressMonitor monitor = new NullProgressMonitor();
 
-        // save the editor if not saved
+        // save the model editor if not saved
         if (isDirty())
         {
-			boolean save = MessageDialog.openQuestion(getSite().getShell(), "Save model?",
-						"The current model has not been saved, should the model be saved prior to launching?");
-			if (save) {
-				// TODO decouple from ui thread
-	            doSave(new SubProgressMonitor(monitor, 1));
-			} else {
-				return;
-			}
+			// TODO decouple from ui thread
+            doSave(new SubProgressMonitor(monitor, 1));
         }
 
         if (!isComplete())

@@ -39,17 +39,11 @@ public class StartLaunchHandler extends AbstractHandler {
 				return null;
 			}
 
-			// 1) if editor is dirty, ask if we should save
+			// 1) if model editor is dirty, save it
 			final Shell shell = HandlerUtil.getActiveShell(event);
 			if (modelEditor.isDirty()) {
-				boolean save = MessageDialog.openQuestion(shell, "Save model?",
-						"The current model has not been saved, should the model be saved prior to launching?");
-				if (save) {
-					// TODO decouple from ui thread
-					modelEditor.doSaveWithoutValidating(new NullProgressMonitor());
-				} else {
-					return null;
-				}
+				// TODO decouple from ui thread
+				modelEditor.doSaveWithoutValidating(new NullProgressMonitor());
 			}
 
 			// 2) model might be locked
