@@ -859,6 +859,9 @@ public class MP
         case EC.TLC_CANT_HANDLE_REAL_NUMBERS:
             b.append("TLC can't handle real numbers.\n%1%");
             break;
+        case EC.TLC_INTEGER_TOO_BIG:
+            b.append("TLC can't handle a number this big.\n%1%");
+            break;
         case EC.TLC_NO_MODULES:
             b.append("In the configuration file, the module name %1% is not a module in the specification.");
             break;

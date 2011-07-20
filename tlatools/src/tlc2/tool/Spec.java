@@ -602,6 +602,13 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
         case NumeralKind: {
             NumeralNode expr1 = (NumeralNode) expr;
             IntValue val = IntValue.gen(expr1.val());
+            // LL added this test on 20 Jul 2011; otherwise
+            // TLC treats a number bigger than MAX_VALUE 
+            // (2^31-1 or 2,147,483,647) as if it equals 0.
+            if (expr1.bigVal() != null) {
+            	Assert.fail(EC.TLC_INTEGER_TOO_BIG, expr1.toString());
+                return;
+            }
             expr1.setToolObject(TLCGlobals.ToolId, val);
             return;
         }
