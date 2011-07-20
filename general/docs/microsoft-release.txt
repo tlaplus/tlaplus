@@ -1,5 +1,10 @@
 TO PREPARE THE ZIP FILES FOR THE TOOLBOX RELEASE
 
+Note: To get tlatools.jar file copied to the right place for the distributed version of TLC, 
+      after running Ant, run "mvn install" in the directory
+      
+         C:\lamport\tla\newtools\tla2-inria\org.lamport.tla.toolbox.jnlp
+
 Step 1: Get the right version numbers to appear:
 
 In org.lamport.tla.toolbox.product.standalone 

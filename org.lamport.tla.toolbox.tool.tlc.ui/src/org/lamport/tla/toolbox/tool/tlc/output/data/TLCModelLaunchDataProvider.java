@@ -856,9 +856,42 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
         return lastCheckpointTimeStamp;
     }
 
+    /**
+     * The following method added by LL on 19 July 2011.
+     * This method is a kludge I added because I find it very inelegant to
+     * see a message saying "1 worker(s) registered"; it tells me that
+     * the programmer doesn't care enough about his program to take the
+     * 30 seconds it should require to produce "1 worker registered" or
+     * "2 workers registered" as appropriate.  However, so many levels of
+     * method calls are used to generate a simple message that adding this
+     * after the fact is not easy.  Hence, this method. 
+     * 
+     * The method assumes that msg is a string such as "24 wild frob(s) are loose"
+     * and changes the "(s)" to either "s" or "" depending on whether or
+     * not frob should be plural.  It returns the original string if it
+     * doesn't contain "(s)".  It assumes it should be plural unless the
+     * string begins with "1 ".
+     *  
+     * @param msg
+     * @return
+     */
+    public static String makeSingularOrPlural(String msg) {
+     String val = msg;
+     if (msg.indexOf("(s)") != -1) {
+    	 if (val.subSequence(0, 2).equals("1 ")) {
+ 			val = val.replaceAll("\\(s\\)", "");
+ 		} else {
+ 			val = val.replaceAll("\\(s\\)", "s");
+ 		}
+     }
+     return val;
+    }
+    
     public void setCurrentStatus(String currentStatus)
     {
-        this.currentStatus = currentStatus;
+    	// Call to makeSingularOrPlural added by LL on 19 Jul 2011
+        this.currentStatus = makeSingularOrPlural(currentStatus);
+        
     }
 
     public String getCurrentStatus()
