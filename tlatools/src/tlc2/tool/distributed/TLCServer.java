@@ -16,6 +16,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import tlc2.TLCGlobals;
 import tlc2.output.EC;
@@ -31,6 +32,7 @@ import tlc2.tool.queue.DiskStateQueue;
 import tlc2.tool.queue.StateQueue;
 import tlc2.util.FP64;
 import tlc2.util.PrintfFormat;
+import util.Assert;
 import util.FileUtil;
 import util.UniqueString;
 
@@ -73,6 +75,8 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 	
 	private final CyclicBarrier barrier;
 	private final IBlockSelector blockSelector;
+
+	private AtomicInteger outstandingBlocks = new AtomicInteger(0);
 	static final int expectedWorkerCount = Integer.getInteger("tlc2.tool.distributed.TLCServer.expectedWorkerCount", 1);
 	
 	/**
@@ -475,11 +479,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 	 * @return
 	 */
 	private int getNewStates() {
-		int res = stateQueue.size();
-		for (int i = 0; i < threadCnt; i++) {
-			res += threads[i].getCurrentSize();
-		}
-		return res;
+		return stateQueue.size() + outstandingBlocks.get();
 	}
 
 	// use fingerprint server to determine how many states have been calculated
@@ -581,6 +581,29 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		return this.threads;
 	}
 
+
+	/**
+	 * @return True if no blocks are assigned to any workers
+	 */
+	boolean isAllWorkDone() {
+		return outstandingBlocks.get() == 0;
+	}
+
+	/**
+	 * @param states The states that are currently in progress
+	 */
+	void setWorkInProgress(final TLCState[] states) {
+		this.outstandingBlocks.getAndAdd(states.length);
+	}
+
+	/**
+	 * @param states Work has been completed for the given states
+	 */
+	void setWorkDone(final TLCState[] states) {
+		Assert.check((this.outstandingBlocks.get() - states.length) >= 0, EC.GENERAL);
+		this.outstandingBlocks.getAndAdd(states.length * -1);
+	}
+	
 	/* (non-Javadoc)
 	 * @see tlc2.tool.distributed.TLCServerRMI#getSpec()
 	 */

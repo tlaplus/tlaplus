@@ -24,10 +24,6 @@ import tlc2.util.IdThread;
 import tlc2.util.LongVec;
 import util.ToolIO;
 
-/**
- * 
- * @version $Id$
- */
 public class TLCServerThread extends IdThread {
 	/**
 	 * Identifies the worker
@@ -51,11 +47,6 @@ public class TLCServerThread extends IdThread {
 	private TLCWorkerRMI worker;
 	private TLCServer tlcServer;
 	private URI uri;
-	
-	/**
-	 * Current unit of work or null
-	 */
-	private TLCState[] states;
 
 	public final TLCWorkerRMI getWorker() {
 		return this.worker;
@@ -86,8 +77,8 @@ public class TLCServerThread extends IdThread {
 		final StateQueue stateQueue = this.tlcServer.stateQueue;
 		try {
 			START: while (true) {
-				states = selector.getBlocks(stateQueue, worker);
-				if (states == null) {
+				final TLCState[] states = selector.getBlocks(stateQueue, worker);
+				if (states == null && tlcServer.isAllWorkDone()) {
 					synchronized (this.tlcServer) {
 						this.tlcServer.setDone();
 						this.tlcServer.notify();
@@ -97,9 +88,11 @@ public class TLCServerThread extends IdThread {
 				}
 				
 				// without initial states no need to bother workers
-				if (states.length == 0) {
+				if (states == null || states.length == 0) {
 					continue;
 				}
+				
+				this.tlcServer.setWorkInProgress(states);
 				
 				// count statistics
 				sentStates += states.length;
@@ -130,6 +123,7 @@ public class TLCServerThread extends IdThread {
 						} else {
 							if (!this.tlcServer.reassignWorker(this)) {
 								MP.printMessage(EC.TLC_DISTRIBUTED_WORKER_DEREGISTERED, getUri().toString());
+								this.tlcServer.setWorkDone(states);
 								return;
 							}
 						}
@@ -137,6 +131,7 @@ public class TLCServerThread extends IdThread {
 						ToolIO.err.println(e.getMessage());
 						if (!this.tlcServer.reassignWorker(this)) {
 							MP.printMessage(EC.TLC_DISTRIBUTED_WORKER_DEREGISTERED, getUri().toString());
+							this.tlcServer.setWorkDone(states);
 							return;
 						}
 					}
@@ -163,6 +158,7 @@ public class TLCServerThread extends IdThread {
 						stateQueue.sEnqueue(state);
 					}
 				}
+				this.tlcServer.setWorkDone(states);
 			}
 		} catch (Throwable e) {
 			TLCState state1 = null, state2 = null;
@@ -211,17 +207,6 @@ public class TLCServerThread extends IdThread {
 	 */
 	public URI getUri() {
 		return this.uri;
-	}
-
-	/**
-	 * @return The current amount of states the corresponding worker is
-	 *         computing on
-	 */
-	public int getCurrentSize() {
-		if(states != null) {
-			return states.length;
-		}
-		return 0;
 	}
 	
 	/**
