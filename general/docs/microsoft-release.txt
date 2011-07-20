@@ -85,7 +85,10 @@ TO GENERATE THE RELEASE:
 
 Queries to msrcpx or Chuck Needham (chuckne)
 -------------------------------------------------------------
-Version 1.3.2 of 10 April 2011
+Version 1.3.2 of ???
+    Includes a first release of the distributed version of TLC.
+    Includes Sany2.2, which supports binary, octal, and hex numbers.
+    Includes PlusCal Version 1.6.
     Added default overriding of definitions like Foo == CHOOSE v : v \notin S.
     Made advanced model page open with definition overriding section opened  
       if there are overrides.
