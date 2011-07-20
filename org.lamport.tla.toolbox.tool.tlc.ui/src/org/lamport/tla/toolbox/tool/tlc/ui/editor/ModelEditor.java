@@ -26,6 +26,7 @@ import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IPartService;
 import org.eclipse.ui.PartInitException;
@@ -54,6 +55,7 @@ import org.lamport.tla.toolbox.tool.tlc.ui.view.TLCErrorView;
 import org.lamport.tla.toolbox.tool.tlc.util.ChangedSpecModulesGatheringDeltaVisitor;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper.IFileProvider;
+import org.lamport.tla.toolbox.ui.handler.OpenSpecHandler;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
@@ -509,6 +511,8 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
      */
     public void launchModel(String mode, boolean userPased)
     {
+        final IProgressMonitor monitor = new NullProgressMonitor();
+
         /*
          * The user should not be able to run the model checker
          * or generate MC files if the spec is unparsed.
@@ -581,6 +585,26 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
             Activator.logDebug("The spec manager has not been instantiated. This is a bug.");
             return;
         }
+        
+        /*
+         * Ask and save _spec_ editor if it's dirty
+         */
+        final IEditorReference[] editors = getSite().getPage().getEditorReferences();
+        for (IEditorReference ref : editors) {
+			if (OpenSpecHandler.TLA_EDITOR_CURRENT.equals(ref.getId())) {
+				if (ref.isDirty()) {
+					final String title = ref.getName();
+					boolean save = MessageDialog.openQuestion(getSite().getShell(), "Save " + title + " spec?",
+							"The spec " + title + " has not been saved, should the spec be saved prior to launching?");
+					if (save) {
+						// TODO decouple from ui thread
+						ref.getEditor(true).doSave(monitor);
+					} else {
+						return;
+					}
+				}
+			}
+		}
 
         /* The pages should be validated one last time before TLC
          * is run. This is currently necessary when auto-parse spec
@@ -599,8 +623,6 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
          * this method checks if the pages are complete.
          */
         UIHelper.runUISync(validateRunable);
-
-        IProgressMonitor monitor = new NullProgressMonitor();
 
         // save the model editor if not saved
         if (isDirty())

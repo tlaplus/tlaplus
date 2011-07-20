@@ -8,10 +8,13 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.IEditorReference;
+import org.eclipse.ui.IWorkbenchSite;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.lamport.tla.toolbox.tool.tlc.launch.TLCModelLaunchDelegate;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
+import org.lamport.tla.toolbox.ui.handler.OpenSpecHandler;
 
 /**
  * Initiates a model checker run
@@ -39,8 +42,27 @@ public class StartLaunchHandler extends AbstractHandler {
 				return null;
 			}
 
-			// 1) if model editor is dirty, save it
+	        // 0.5) Ask and save _spec_ editor if it's dirty
 			final Shell shell = HandlerUtil.getActiveShell(event);
+			final IWorkbenchSite site = HandlerUtil.getActiveSite(event);
+	        final IEditorReference[] editors = site.getPage().getEditorReferences();
+	        for (IEditorReference ref : editors) {
+				if (OpenSpecHandler.TLA_EDITOR_CURRENT.equals(ref.getId())) {
+					if (ref.isDirty()) {
+						final String title = ref.getName();
+						boolean save = MessageDialog.openQuestion(shell, "Save " + title + " spec?",
+								"The spec " + title + " has not been saved, should the spec be saved prior to launching?");
+						if (save) {
+							// TODO decouple from ui thread
+							ref.getEditor(true).doSave(new NullProgressMonitor());
+						} else {
+							return null;
+						}
+					}
+				}
+			}
+	        
+			// 1) if model editor is dirty, save it
 			if (modelEditor.isDirty()) {
 				// TODO decouple from ui thread
 				modelEditor.doSaveWithoutValidating(new NullProgressMonitor());
