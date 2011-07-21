@@ -11,6 +11,7 @@ import tlc2.TLCGlobals;
 import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.tool.TLCState;
+import util.Assert;
 
 public abstract class StateQueue {
   /**
@@ -71,9 +72,18 @@ public abstract class StateQueue {
     return null;
   }
 
-  /* Return (up to) the first cnt elements in the queue. Wait if empty. */  
+  	/**
+	 * Return (up to) the first count elements in the queue. Wait if empty.
+	 * 
+	 * @param cnt
+	 *            Amount of states requested
+	 * @return null iff no states are available && all work is done @see
+	 *         {@link #isAvail()}, states otherwise
+	 * @throws RuntimeException if cnt <= 0
+	 */
   public final synchronized TLCState[] sDequeue(int cnt) {
-    if (cnt > 0 && this.isAvail()) {
+	  Assert.check(cnt > 0, EC.GENERAL);
+    if (this.isAvail()) {
     	if(cnt > size()) {cnt = size();}
       TLCState states[] = new TLCState[cnt];
       int idx;
@@ -92,10 +102,20 @@ public abstract class StateQueue {
     return null;
   }
 
+  	/**
+	 * Checks if states are available. If no states are available, the callee
+	 * will be put to sleep until new states are available or another callee
+	 * signals work done. This is determined by the fact, that all other workers
+	 * are waiting for states.
+	 * 
+	 * @return true if states are available in the queue.
+	 */
   private final boolean isAvail() {
       if (this.finish) return false;
       while (this.len < 1 || this.stop) {
           this.numWaiting++;
+			// the last worker accessing notices that all other workers are
+			// waiting. This indicates that all work is done
           if (this.numWaiting >= TLCGlobals.getNumWorkers()) {
               if (this.len < 1) {
                   this.numWaiting--;

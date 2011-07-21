@@ -34,13 +34,15 @@ public class BlockSelector implements IBlockSelector {
 	 * 
 	 * @param stateQueue Current queue of new states
 	 * @param worker {@link TLCWorker} requesting work units ({@link TLCState})
-	 * @return The states that will be assigned to the given remote {@link TLCWorker}
+	 * @return The states that will be assigned to the given remote {@link TLCWorker} or null if no work is available
 	 */
 	public TLCState[] getBlocks(final StateQueue stateQueue, final TLCWorkerRMI worker) {
 		// current size of new states
 		final int amountOfStates = stateQueue.size();
 		// the amount of blocks that will be assigned to the work
-		final int blockSize = getBlockSize(amountOfStates, worker);
+		int blockSize = getBlockSize(amountOfStates, worker);
+		// At least request a single state to guarantee StateQueue#isAvail() will be triggered
+		blockSize = Math.max(blockSize, 1);
 		// synchronized removal from the state queue
 		return stateQueue.sDequeue(blockSize);
 	}
@@ -48,7 +50,7 @@ public class BlockSelector implements IBlockSelector {
 	/**
 	 * @param size
 	 *            The current size of the state queue.
-	 * @return The intended block size
+	 * @return The intended block size.
 	 */
 	protected int getBlockSize(int size, final TLCWorkerRMI aWorker) {
 		final int workerCount = tlcServer.getWorkerCount();

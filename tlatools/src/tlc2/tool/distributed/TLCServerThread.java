@@ -47,6 +47,11 @@ public class TLCServerThread extends IdThread {
 	private TLCWorkerRMI worker;
 	private TLCServer tlcServer;
 	private URI uri;
+	
+	/**
+	 * Current unit of work or null
+	 */
+	private TLCState[] states;
 
 	public final TLCWorkerRMI getWorker() {
 		return this.worker;
@@ -77,8 +82,9 @@ public class TLCServerThread extends IdThread {
 		final StateQueue stateQueue = this.tlcServer.stateQueue;
 		try {
 			START: while (true) {
-				final TLCState[] states = selector.getBlocks(stateQueue, worker);
-				if (states == null && tlcServer.isAllWorkDone()) {
+				// blocks until more states available or all work is done
+				states = selector.getBlocks(stateQueue, worker);
+				if (states == null) {
 					synchronized (this.tlcServer) {
 						this.tlcServer.setDone();
 						this.tlcServer.notify();
@@ -88,11 +94,9 @@ public class TLCServerThread extends IdThread {
 				}
 				
 				// without initial states no need to bother workers
-				if (states == null || states.length == 0) {
+				if (states.length == 0) {
 					continue;
 				}
-				
-				this.tlcServer.setWorkInProgress(states);
 				
 				// count statistics
 				sentStates += states.length;
@@ -123,7 +127,6 @@ public class TLCServerThread extends IdThread {
 						} else {
 							if (!this.tlcServer.reassignWorker(this)) {
 								MP.printMessage(EC.TLC_DISTRIBUTED_WORKER_DEREGISTERED, getUri().toString());
-								this.tlcServer.setWorkDone(states);
 								return;
 							}
 						}
@@ -131,7 +134,6 @@ public class TLCServerThread extends IdThread {
 						ToolIO.err.println(e.getMessage());
 						if (!this.tlcServer.reassignWorker(this)) {
 							MP.printMessage(EC.TLC_DISTRIBUTED_WORKER_DEREGISTERED, getUri().toString());
-							this.tlcServer.setWorkDone(states);
 							return;
 						}
 					}
@@ -158,7 +160,6 @@ public class TLCServerThread extends IdThread {
 						stateQueue.sEnqueue(state);
 					}
 				}
-				this.tlcServer.setWorkDone(states);
 			}
 		} catch (Throwable e) {
 			TLCState state1 = null, state2 = null;
@@ -200,6 +201,17 @@ public class TLCServerThread extends IdThread {
 		} catch (BrokenBarrierException e2) {
 			e2.printStackTrace();
 		}
+	}
+
+	/**
+	 * @return The current amount of states the corresponding worker is
+	 *         computing on
+	 */
+	public int getCurrentSize() {
+		if(states != null) {
+			return states.length;
+		}
+		return 0;
 	}
 
 	/**

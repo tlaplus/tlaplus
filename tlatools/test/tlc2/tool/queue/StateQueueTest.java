@@ -76,21 +76,30 @@ public class StateQueueTest extends TestCase {
 
 	// uncommon input with empty queue sDequeue
 	public void testsDequeueAbuseEmpty() {
-		assertNull(sQueue.sDequeue(0));
-		assertNull(sQueue.sDequeue(-1));
-		assertNull(sQueue.sDequeue(Integer.MIN_VALUE));
+		expectRuntimeException(sQueue, 0);
+		expectRuntimeException(sQueue, -1);
+		expectRuntimeException(sQueue, Integer.MIN_VALUE);
 		assertNull(sQueue.sDequeue(Integer.MAX_VALUE));
 	}
-
+	
 	// uncommon input with non-empty queue
 	// unfortunately sDequeue behaves differently depending what's its internal state
 	public void testsDequeueAbuseNonEmpty() {
 		sQueue.sEnqueue(new DummyTLCState()); // make sure isAvail = true
 
-		assertNull(sQueue.sDequeue(0));
-		assertNull(sQueue.sDequeue(-1));
-		assertNull(sQueue.sDequeue(Integer.MIN_VALUE));
+		expectRuntimeException(sQueue, 0);
+		expectRuntimeException(sQueue, -1);
+		expectRuntimeException(sQueue, Integer.MIN_VALUE);
 
 		assertTrue(sQueue.sDequeue(Integer.MAX_VALUE).length == 1);
+	}
+	
+	private void expectRuntimeException(StateQueue aQueue, int size)  {
+		try {
+			aQueue.sDequeue(size);
+		} catch(RuntimeException e) {
+			return;
+		}
+		fail("expected to throw RuntimeException with <= input");
 	}
 }
