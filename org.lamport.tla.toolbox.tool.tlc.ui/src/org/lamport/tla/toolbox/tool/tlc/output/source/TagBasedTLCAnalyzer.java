@@ -97,7 +97,7 @@ public class TagBasedTLCAnalyzer
      */
     public boolean hasUserPartitions()
     {
-        return (userOutput.size() > 1);
+        return !userOutput.isEmpty();
     }
 
     /**
