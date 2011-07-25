@@ -337,7 +337,7 @@ public class TagBasedTLCOutputIncrementalParserTest {
 		// all regions detected?
 		final List<ITypedRegion> regions = testListener.getRegions();
 		Assert.assertNotNull(regions);
-		Assert.assertEquals("Not all regions detected", 4, regions.size());
+		Assert.assertEquals("Not all or too many regions detected", 3, regions.size());
 	}
 
 	@Test
@@ -388,6 +388,6 @@ public class TagBasedTLCOutputIncrementalParserTest {
 		// all regions detected?
 		final List<ITypedRegion> regions = testListener.getRegions();
 		Assert.assertNotNull(regions);
-		Assert.assertEquals("Not all regions detected", 5, regions.size());
+		Assert.assertEquals("Not all or too many regions detected", 3, regions.size());
 	}
 }
