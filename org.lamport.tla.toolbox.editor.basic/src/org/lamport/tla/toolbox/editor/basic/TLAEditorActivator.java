@@ -36,8 +36,8 @@ public class TLAEditorActivator extends AbstractUIPlugin
      */
     public void start(BundleContext context) throws Exception
     {
+    	plugin = this;
         super.start(context);
-        plugin = this;
     }
 
     /*
