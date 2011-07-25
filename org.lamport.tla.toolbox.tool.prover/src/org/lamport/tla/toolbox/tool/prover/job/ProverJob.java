@@ -52,7 +52,6 @@ import org.lamport.tla.toolbox.tool.prover.ui.preference.ProverPreferencePage;
 import org.lamport.tla.toolbox.tool.prover.ui.util.ProverHelper;
 import org.lamport.tla.toolbox.tool.prover.ui.view.ObligationsView;
 import org.lamport.tla.toolbox.util.ResourceHelper;
-import org.lamport.tla.toolbox.util.UIHelper;
 
 import tla2sany.semantic.DefStepNode;
 import tla2sany.semantic.InstanceNode;
@@ -377,23 +376,19 @@ public class ProverJob extends Job
             lastJob = this;
 
             /**************************************************************
-             * The following performs some cleanup and preparation work   *                                                *
+             * The following performs some cleanup and preparation work   *                                                
              **************************************************************/
             try
             {
                 /*
                  * Clear obligation markers on the project containing the module.
-                 * 
-                 * Refresh the obligations view to reflect the deletion of markers.
                  */
                 ProverHelper.clearObligationMarkers(module.getProject());
-                UIHelper.runUIAsync(new Runnable() {
 
-                    public void run()
-                    {
-                        ObligationsView.refreshObligationView();
-                    }
-                });
+                /*
+                 * Refresh the obligations view to reflect the deletion of markers.
+                 */
+                ObligationsView.refreshObligationView();
 
                 /*
                  * Perform the necessary work to prepare for the launch of the prover.

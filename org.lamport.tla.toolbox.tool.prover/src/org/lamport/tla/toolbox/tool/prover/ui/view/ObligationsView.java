@@ -177,8 +177,6 @@ public class ObligationsView extends ViewPart
     }
 
     /**
-     * This method must be run from a UI thread.
-     * 
      * Used to refresh the obligation view if it is currently open. If the view
      * is not currently open, this method does nothing. If the view is currently open,
      * this takes the following two steps:
@@ -193,41 +191,47 @@ public class ObligationsView extends ViewPart
      */
     public static void refreshObligationView()
     {
+    	UIHelper.runUIAsync(new Runnable() {
+			/* (non-Javadoc)
+			 * @see java.lang.Runnable#run()
+			 */
+			public void run() {
 
-        ObligationsView oblView = (ObligationsView) UIHelper.findView(VIEW_ID);
-        if (oblView != null)
-        {
+		        final ObligationsView oblView = (ObligationsView) UIHelper.findView(VIEW_ID);
+		        if (oblView != null)
+		        {
 
-            /*
-             * Remove all items in the bar.
-             * 
-             * For each item:
-             * 1.) Dispose the item's control.
-             * 2.) Dispose the item.
-             * 
-             * After disposing of all items, clear
-             * the map of ids to items.
-             */
-            ExpandItem[] expandItems = oblView.bar.getItems();
-            for (int i = 0; i < expandItems.length; i++)
-            {
-                oblView.removeItem(expandItems[i]);
-            }
+		            /*
+		             * Remove all items in the bar.
+		             * 
+		             * For each item:
+		             * 1.) Dispose the item's control.
+		             * 2.) Dispose the item.
+		             * 
+		             * After disposing of all items, clear
+		             * the map of ids to items.
+		             */
+		            ExpandItem[] expandItems = oblView.bar.getItems();
+		            for (int i = 0; i < expandItems.length; i++)
+		            {
+		                oblView.removeItem(expandItems[i]);
+		            }
 
-            /*
-             * Fill the obligation view with markers from the current spec.
-             * If the obligations view is empty after doing this (there are
-             * no interesting obligations) then hide the view.
-             */
-            oblView.fillFromCurrentSpec();
+		            /*
+		             * Fill the obligation view with markers from the current spec.
+		             * If the obligations view is empty after doing this (there are
+		             * no interesting obligations) then hide the view.
+		             */
+		            oblView.fillFromCurrentSpec();
 
-            if (oblView.isEmpty())
-            {
-                UIHelper.getActivePage().hideView(oblView);
-            }
+		            if (oblView.isEmpty())
+		            {
+		                UIHelper.getActivePage().hideView(oblView);
+		            }
 
-        }
-
+		        }
+			}
+    	});
     }
 
     /**
