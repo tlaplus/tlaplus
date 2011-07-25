@@ -294,4 +294,100 @@ public class TagBasedTLCOutputIncrementalParserTest {
 		Assert.assertEquals("Not all TLCRegions detected", 12, none);
 		Assert.assertEquals("Not all non-TLCRegions detected", 2, out);
 	}
+
+	@Test
+	public void testAddOneLevelNesting() throws IOException {
+		TagBasedTLCOutputIncrementalParser parser = new TagBasedTLCOutputIncrementalParser("", 0, false);
+		// Register test listener with parser output
+
+		ITLCOutputSource source = parser.getSource();
+		DummyListener testListener = new DummyListener();
+		source.addTLCOutputListener(testListener);
+
+		// read in test input and feed it to the parser
+		try {
+			parser.addIncrement("@!@!@STARTMSG 2185:0 @!@!@\n");
+			parser.addIncrement("someText\n");
+			parser.addIncrement("@!@!@ENDMSG 2185 @!@!@\n");
+			
+			// <nested content>
+			parser.addIncrement("@!@!@STARTMSG 2105:1 @!@!@\n");
+			parser.addIncrement("0 level\n");
+
+			// 1st level
+			parser.addIncrement("@!@!@STARTMSG 2154:0 @!@!@\n");
+			parser.addIncrement("1st level\n");
+			parser.addIncrement("@!@!@ENDMSG 2154 @!@!@\n");
+			
+			parser.addIncrement("@!@!@ENDMSG 2105 @!@!@\n");
+			// </nested content>
+			
+			parser.addIncrement("@!@!@STARTMSG 2186:0 @!@!@\n");
+			parser.addIncrement("someText\n");
+			parser.addIncrement("@!@!@ENDMSG 2186 @!@!@\n");
+		} catch (BadLocationException e) {
+			Assert.fail(e.getMessage());
+		}
+
+		parser.done();
+
+		// expected, since tests call done()
+		Assert.assertTrue(testListener.isDone());
+
+		// all regions detected?
+		final List<ITypedRegion> regions = testListener.getRegions();
+		Assert.assertNotNull(regions);
+		Assert.assertEquals("Not all regions detected", 4, regions.size());
+	}
+
+	@Test
+	public void testAddTwoLevelNesting() throws IOException {
+		TagBasedTLCOutputIncrementalParser parser = new TagBasedTLCOutputIncrementalParser("", 0, false);
+		// Register test listener with parser output
+
+		ITLCOutputSource source = parser.getSource();
+		DummyListener testListener = new DummyListener();
+		source.addTLCOutputListener(testListener);
+
+		// read in test input and feed it to the parser
+		try {
+			parser.addIncrement("@!@!@STARTMSG 2185:0 @!@!@\n");
+			parser.addIncrement("someText\n");
+			parser.addIncrement("@!@!@ENDMSG 2185 @!@!@\n");
+			
+			// <nested content>
+			parser.addIncrement("@!@!@STARTMSG 2105:1 @!@!@\n");
+			parser.addIncrement("0 level\n");
+
+			// 1st level
+			parser.addIncrement("@!@!@STARTMSG 2154:0 @!@!@\n");
+			parser.addIncrement("1st level\n");
+			
+			// 2nd level
+			parser.addIncrement("@!@!@STARTMSG 2178:0 @!@!@\n");
+			parser.addIncrement("2nd level\n");
+			parser.addIncrement("@!@!@ENDMSG 2178 @!@!@\n");
+
+			parser.addIncrement("@!@!@ENDMSG 2154 @!@!@\n");
+			
+			parser.addIncrement("@!@!@ENDMSG 2105 @!@!@\n");
+			// </nested content>
+			
+			parser.addIncrement("@!@!@STARTMSG 2186:0 @!@!@\n");
+			parser.addIncrement("someText\n");
+			parser.addIncrement("@!@!@ENDMSG 2186 @!@!@\n");
+		} catch (BadLocationException e) {
+			Assert.fail(e.getMessage());
+		}
+
+		parser.done();
+
+		// expected, since tests call done()
+		Assert.assertTrue(testListener.isDone());
+
+		// all regions detected?
+		final List<ITypedRegion> regions = testListener.getRegions();
+		Assert.assertNotNull(regions);
+		Assert.assertEquals("Not all regions detected", 5, regions.size());
+	}
 }
