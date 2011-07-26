@@ -25,6 +25,11 @@ public interface TLCServerRMI extends Remote {
 	public long getIrredPolyForFP() throws RemoteException;
 	
 	/**
+	 * @return true iff server is done computing states
+	 */
+	public boolean isDone() throws RemoteException;
+	
+	/**
 	 * @return The name and (potentially) path to the specification file 
 	 * @throws RemoteException
 	 */

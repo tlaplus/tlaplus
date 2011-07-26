@@ -8,6 +8,7 @@ package tlc2.tool.distributed;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.URI;
 import java.rmi.NotBoundException;
@@ -437,6 +438,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		for (int i = 0; i < server.workerCnt; i++) {
 			try {
 				server.workers[i].exit();
+				server.workers[i] = null;
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -545,6 +547,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 			TLCGlobals.setNumWorkers(0);
 			server = new TLCServer(TLCApp.create(argv));
 			if(server != null) {
+				Runtime.getRuntime().addShutdownHook(new Thread(new WorkerShutdownHook(server)));
 				modelCheck(server);
 			}
 		} catch (Throwable e) {
@@ -579,6 +582,13 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 	 */
 	TLCServerThread[] getThreads() {
 		return this.threads;
+	}
+	
+	/* (non-Javadoc)
+	 * @see tlc2.tool.distributed.TLCServerRMI#isDone()
+	 */
+	public boolean isDone() throws RemoteException {
+		return done;
 	}
 	
 	/* (non-Javadoc)
@@ -641,5 +651,35 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 			}
 		}
 		return buffer;
+	}
+	
+
+	/**
+	 * Tries to exit all connected workers
+	 */
+	private static class WorkerShutdownHook implements Runnable {
+		
+		private final TLCServer server;
+		
+		public WorkerShutdownHook(final TLCServer aServer) {
+			server = aServer;
+		}
+
+		/* (non-Javadoc)
+		 * @see java.lang.Runnable#run()
+		 */
+		public void run() {
+			for (TLCWorkerRMI worker : server.workers) {
+				try {
+					if(worker != null) {
+						worker.exit();
+					}
+				} catch (ConnectException e) {
+					// happens if workers have exited already
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
 	}
 }
