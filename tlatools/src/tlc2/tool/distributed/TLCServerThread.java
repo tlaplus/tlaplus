@@ -65,6 +65,8 @@ public class TLCServerThread extends IdThread {
 			//TODO handle more gracefully
 			e.printStackTrace();
 		}
+		// update thread name
+		setName("TLCServerThread-[" + uri.toASCIIString() + "]");
 	}
 
 	/**
