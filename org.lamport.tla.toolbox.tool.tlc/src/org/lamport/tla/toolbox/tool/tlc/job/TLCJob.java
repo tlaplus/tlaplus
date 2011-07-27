@@ -72,6 +72,7 @@ public abstract class TLCJob extends AbstractJob implements IModelConfigurationC
         super("TLC run for " + modelName);
         this.specName = specName;
         this.modelName = modelName;
+        this.workers = workers;
 
         IProject project = ResourceHelper.getProject(specName);
         Assert.isNotNull(project, "Error accessing the spec project " + specName);
@@ -101,7 +102,7 @@ public abstract class TLCJob extends AbstractJob implements IModelConfigurationC
      */
     protected String[] constructProgramArguments() throws CoreException
     {
-        Vector arguments = new Vector();
+        Vector<String> arguments = new Vector<String>();
         ILaunchConfiguration config = launch.getLaunchConfiguration();
 
         // deadlock
@@ -282,7 +283,7 @@ public abstract class TLCJob extends AbstractJob implements IModelConfigurationC
         IConfigurationElement[] decls = Platform.getExtensionRegistry().getConfigurationElementsFor(
                 IResultPresenter.EXTENSION_ID);
 
-        Vector validExtensions = new Vector();
+        Vector<IResultPresenter> validExtensions = new Vector<IResultPresenter>();
         for (int i = 0; i < decls.length; i++)
         {
             try
@@ -294,7 +295,7 @@ public abstract class TLCJob extends AbstractJob implements IModelConfigurationC
                 TLCActivator.logError("Error instatiating the IResultPresenter extension", e);
             }
         }
-        return (IResultPresenter[]) validExtensions.toArray(new IResultPresenter[validExtensions.size()]);
+        return validExtensions.toArray(new IResultPresenter[validExtensions.size()]);
     }
 
 }
