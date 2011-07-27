@@ -49,17 +49,21 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 	/* (non-Javadoc)
 	 * @see tlc2.tool.distributed.TLCWorkerRMI#getNextStates(tlc2.tool.TLCState[])
 	 */
-	public synchronized Object[] getNextStates(TLCState[] states)
+	public synchronized Object[] getNextStates(final TLCState[] states)
 			throws WorkerException {
 		
 		// statistics
 		lastInvocation = System.currentTimeMillis();
 		
+		// create containers for each fingerprint _server_
 		TLCState state1 = null, state2 = null;
 		int fpServerCnt = this.fpSetManager.numOfServers();
+		// previous state
 		TLCStateVec[] pvv = new TLCStateVec[fpServerCnt];
+		// container for all succ states
 		TLCStateVec[] nvv = new TLCStateVec[fpServerCnt];
-		LongVec[] fpvv = new LongVec[fpServerCnt];
+		// container for all succ state fingerprints
+		final LongVec[] fpvv = new LongVec[fpServerCnt];
 		for (int i = 0; i < fpServerCnt; i++) {
 			pvv[i] = new TLCStateVec();
 			nvv[i] = new TLCStateVec();
@@ -70,6 +74,7 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 			for (int i = 0; i < states.length; i++) {
 				state1 = states[i];
 				TLCState[] nstates = this.work.getNextStates(state1);
+				// add all succ states/fps to the array designated for the corresponding fp server
 				for (int j = 0; j < nstates.length; j++) {
 					long fp = nstates[j].fingerPrint();
 					int fpIndex = (int) ((fp & 0x7FFFFFFFFFFFFFFFL) % fpServerCnt);
