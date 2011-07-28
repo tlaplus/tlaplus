@@ -33,10 +33,16 @@ public class TLCTrace {
     this.tool = tool;
   }
 
-  public final synchronized long writeState(long ploc, long fp)
+  /**
+   * @param predecessorLoc The location of the state predecessor
+   * @param fp A finger print
+   * @return The new location (pointer) for the given finger print (state)
+   * @throws IOException
+   */
+  public final synchronized long writeState(long predecessorLoc, long fp)
   throws IOException {
     this.lastPtr = this.raf.getFilePointer();
-    this.raf.writeLongNat(ploc);
+    this.raf.writeLongNat(predecessorLoc);
     this.raf.writeLong(fp);
     return this.lastPtr;
   }
@@ -56,17 +62,20 @@ public class TLCTrace {
     return this.raf.readLong();
   }
 
+  /**
+   * @see TLCTrace#getLevel(long)
+   */
   public final int getLevel() throws IOException {
-	// this assumption only holds for the TLC in non-parallel mode.
-	// Generally the last line (logically a state) is not necessarily on the
-  	// on the highest level of the state graph. This is only the case if  
+	// This assumption (lastPtr) only holds for the TLC in non-parallel mode.
+	// Generally the last line (logically a state) is not necessarily 
+  	// on the highest level of the state tree. This is only the case if  
 	// states are explored strictly by breadth-first search.
 	return getLevel(this.lastPtr);
   }
 
   /**
-   * @param startLoc
-   * @return
+   * @param startLoc The start location (pointer) from where the level (height) of the state tree should be calculated
+   * @return The level (height) of the state tree. 
    * @throws IOException
    */
   public synchronized final int getLevel(long startLoc) throws IOException {
@@ -85,6 +94,12 @@ public class TLCTrace {
     return level;
   }
   
+  /**
+   * @param loc The start location (pointer) from where the trace should be computed
+   * @param included true if the start location state should be included
+   * @return An array of predecessor states
+   * @throws IOException
+   */
   public final TLCStateInfo[] getTrace(long loc, boolean included)
   throws IOException {
     LongVec fps = new LongVec();
