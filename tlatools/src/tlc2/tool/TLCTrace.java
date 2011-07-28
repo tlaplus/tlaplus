@@ -29,7 +29,7 @@ public class TLCTrace {
   throws IOException {
     filename = metadir + FileUtil.separator + specFile + ".st";
     this.raf = new BufferedRandomAccessFile(filename, "rw");
-    this.lastPtr = 1;
+    this.lastPtr = 1L;
     this.tool = tool;
   }
 
@@ -45,25 +45,19 @@ public class TLCTrace {
     this.raf.close();
   }
 
-  public synchronized long getPrev(long loc) throws IOException {
+  private synchronized long getPrev(long loc) throws IOException {
     this.raf.seek(loc);
     return this.raf.readLongNat();
   }
 
-  public synchronized long getFP(long loc) throws IOException {
+  private synchronized long getFP(long loc) throws IOException {
     this.raf.seek(loc);
     this.raf.readLongNat();    /*drop*/
     return this.raf.readLong();
   }
 
-  public synchronized final int getLevel() throws IOException {
-    long curLoc = this.raf.getFilePointer();
-    int level = 0;
-    for (long ploc = this.lastPtr; ploc != 1; ploc = this.getPrev(ploc)) {
-      level++;
-    }
-    this.raf.seek(curLoc);
-    return level;
+  public final int getLevel() throws IOException {
+	  return getLevel(this.lastPtr);
   }
 
   public synchronized final int getLevel(long loc) throws IOException {
