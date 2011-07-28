@@ -263,6 +263,23 @@ public class TLCApp extends DistApp {
 					printErrorMsg("Error: need to specify the metadata directory for recovery.");
 					return null;
 				}
+			} else if (args[index].equals("-checkpoint")) {
+				index++;
+                if (index < args.length) {
+					try {
+						TLCGlobals.chkptDuration = Integer.parseInt(args[index]) * 1000 * 60;
+						if (TLCGlobals.chkptDuration < 0) {
+							printErrorMsg("Error: expect a nonnegative integer for -checkpoint option.");
+						}
+
+						index++;
+					} catch (Exception e) {
+						printErrorMsg("Error: An integer for checkpoint interval is required. But encountered "
+								+ args[index]);
+					}
+				} else {
+					printErrorMsg("Error: checkpoint interval required.");
+				}
 			} else if (args[index].equals("-coverage")) {
 				index++;
 				if (index < args.length) {
