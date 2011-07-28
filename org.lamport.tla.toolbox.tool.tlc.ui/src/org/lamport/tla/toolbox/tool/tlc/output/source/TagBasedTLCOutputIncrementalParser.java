@@ -316,6 +316,7 @@ public class TagBasedTLCOutputIncrementalParser
 		if (text == null || text.length() == 0 || text.equals("\n")) {
 			return;
 		} else if(text.charAt(text.length() - 1) != 10) { // 10 ascii for '\n'
+			// e.g. when a model check gets interrupted
 			throw new BadLocationException("Input does not end with newline");
 			//text = text + (char) 10;
 		}

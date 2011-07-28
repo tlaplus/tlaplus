@@ -273,6 +273,7 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
         try
         {
             // load data from the model
+        	//TODO decouple from UI thread (causes I/O)
             loadData();
         } catch (CoreException e)
         {
