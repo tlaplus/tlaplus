@@ -238,7 +238,8 @@ public class TLCTrace {
     return res;
   }
 
-  public long[] addBlock(long fp[], long prev[]) throws IOException {
+  @SuppressWarnings("unused")
+  private long[] addBlock(long fp[], long prev[]) throws IOException {
     // Reuse prev.
     for (int i = 0; i < fp.length; i++) {
       prev[i] = this.writeState(prev[i], fp[i]);
