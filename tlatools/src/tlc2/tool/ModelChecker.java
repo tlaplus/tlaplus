@@ -310,7 +310,7 @@ public class ModelChecker extends AbstractChecker
                         {
                             this.allStateWriter.writeState(curState);
                         }
-                        curState.uid = this.trace.writeState(1, fp);
+                        curState.uid = this.trace.writeState(fp);
                         this.theStateQueue.enqueue(curState);
 
                         // build behavior graph for liveness checking
@@ -443,7 +443,7 @@ public class ModelChecker extends AbstractChecker
                                 this.allStateWriter.writeState(succState);
                             }
                             // Enqueue succState only if it satisfies the model constraints:
-                            long loc = this.trace.writeState(curState.uid, fp);
+                            long loc = this.trace.writeState(curState, fp);
                             succState.uid = loc;
                             this.theStateQueue.sEnqueue(succState);
                         }

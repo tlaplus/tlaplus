@@ -34,12 +34,33 @@ public class TLCTrace {
   }
 
   /**
+   * @param fp A finger print of a state without a predecessor (init state)
+   * @return The new location (pointer) for the given finger print (state)
+   * @throws IOException
+   */
+  public final synchronized long writeState(final long aFingerprint)
+  throws IOException {
+	  return writeState(1, aFingerprint);
+  }
+
+  /**
+   * @param predecessor The predecessor state
+   * @param fp A finger print
+   * @return The new location (pointer) for the given finger print (state)
+   * @throws IOException
+   */
+  public final synchronized long writeState(final TLCState predecessor, final long aFingerprint)
+  throws IOException {
+	  return writeState(predecessor.uid, aFingerprint);
+  }
+  
+  /**
    * @param predecessorLoc The location of the state predecessor
    * @param fp A finger print
    * @return The new location (pointer) for the given finger print (state)
    * @throws IOException
    */
-  public final synchronized long writeState(long predecessorLoc, long fp)
+  private final synchronized long writeState(long predecessorLoc, long fp)
   throws IOException {
     this.lastPtr = this.raf.getFilePointer();
     this.raf.writeLongNat(predecessorLoc);

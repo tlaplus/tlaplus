@@ -137,7 +137,7 @@ public abstract class CheckImpl extends ModelChecker {
     boolean seen = this.coverSet.put(fp);
     if (!seen) {
       if (!this.theFPSet.contains(fp)) {
-	long loc = this.trace.writeState(this.curState.uid, fp);
+	long loc = this.trace.writeState(this.curState, fp);
 	state.uid = loc;
 	// Check invariant properties of the state:
 	int cnt = this.invariants.length;

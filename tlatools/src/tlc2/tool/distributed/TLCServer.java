@@ -311,7 +311,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 					long fp = curState.fingerPrint();
 					seen = this.fpSetManager.put(fp);
 					if (!seen) {
-						initStates[i].uid = trace.writeState(1, fp);
+						initStates[i].uid = trace.writeState(fp);
 						stateQueue.enqueue(initStates[i]);
 					}
 				}
