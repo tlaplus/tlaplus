@@ -175,7 +175,7 @@ public class TLCServerThread extends IdThread {
 					try {
 						ToolIO.out
 								.println("\nThe behavior up to this point is:");
-						this.tlcServer.trace.printTrace(state1.uid, state1,
+						this.tlcServer.trace.printTrace(state1,
 								state2);
 					} catch (Exception e1) {
 						ToolIO.err.println(e1.getMessage());

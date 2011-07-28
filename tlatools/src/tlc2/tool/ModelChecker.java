@@ -414,7 +414,7 @@ public class ModelChecker extends AbstractChecker
                         if (this.setErrState(curState, succState, false))
                         {
                             MP.printError(EC.TLC_STATE_NOT_COMPLETELY_SPECIFIED_NEXT);
-                            this.trace.printTrace(curState.uid, curState, succState);
+                            this.trace.printTrace(curState, succState);
                             this.theStateQueue.finishAll();
 
                             synchronized (this)
@@ -477,7 +477,7 @@ public class ModelChecker extends AbstractChecker
                                         {
                                             MP.printError(EC.TLC_INVARIANT_VIOLATED_BEHAVIOR,
                                                     this.tool.getInvNames()[k]);
-                                            this.trace.printTrace(curState.uid, curState, succState);
+                                            this.trace.printTrace(curState, succState);
                                             break;
                                         } else
                                         {
@@ -485,7 +485,7 @@ public class ModelChecker extends AbstractChecker
                                             {
                                                 MP.printError(EC.TLC_INVARIANT_VIOLATED_BEHAVIOR, this.tool
                                                         .getInvNames()[k]);
-                                                this.trace.printTrace(curState.uid, curState, succState);
+                                                this.trace.printTrace(curState, succState);
                                                 this.theStateQueue.finishAll();
                                                 this.notify();
                                             }
@@ -503,7 +503,7 @@ public class ModelChecker extends AbstractChecker
                                 MP.printError(EC.TLC_INVARIANT_EVALUATION_FAILED, new String[] {
                                         this.tool.getInvNames()[k], 
                                         (e.getMessage()==null)?e.toString():e.getMessage() });
-                                this.trace.printTrace(curState.uid, curState, succState);
+                                this.trace.printTrace(curState, succState);
                                 this.theStateQueue.finishAll();
                                 this.notify();
                             }
@@ -532,7 +532,7 @@ public class ModelChecker extends AbstractChecker
                                     {
                                         MP.printError(EC.TLC_ACTION_PROPERTY_VIOLATED_BEHAVIOR, this.tool
                                                 .getImpliedActNames()[k]);
-                                        this.trace.printTrace(curState.uid, curState, succState);
+                                        this.trace.printTrace(curState, succState);
                                         break;
                                     } else
                                     {
@@ -540,7 +540,7 @@ public class ModelChecker extends AbstractChecker
                                         {
                                             MP.printError(EC.TLC_ACTION_PROPERTY_VIOLATED_BEHAVIOR, this.tool
                                                     .getImpliedActNames()[k]);
-                                            this.trace.printTrace(curState.uid, curState, succState);
+                                            this.trace.printTrace(curState, succState);
                                             this.theStateQueue.finishAll();
                                             this.notify();
                                         }
@@ -558,7 +558,7 @@ public class ModelChecker extends AbstractChecker
                             MP.printError(EC.TLC_ACTION_PROPERTY_EVALUATION_FAILED, new String[] {
                                     this.tool.getImpliedActNames()[k], 
                                     (e.getMessage()==null)?e.toString():e.getMessage() });
-                            this.trace.printTrace(curState.uid, curState, succState);
+                            this.trace.printTrace(curState, succState);
                             this.theStateQueue.finishAll();
                             this.notify();
                         }
@@ -576,7 +576,7 @@ public class ModelChecker extends AbstractChecker
                     if (this.setErrState(curState, null, false))
                     {
                         MP.printError(EC.TLC_DEADLOCK_REACHED);
-                        this.trace.printTrace(curState.uid, curState, null);
+                        this.trace.printTrace(curState, null);
                         this.theStateQueue.finishAll();
                         this.notify();
                     }
@@ -618,7 +618,7 @@ public class ModelChecker extends AbstractChecker
                      */
                         MP.printError(EC.GENERAL, e.toString());
                     }
-                    this.trace.printTrace(curState.uid, curState, succState);
+                    this.trace.printTrace(curState, succState);
                     this.theStateQueue.finishAll();
                     this.notify();
                 }

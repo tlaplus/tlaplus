@@ -57,16 +57,31 @@ public class TLCTrace {
   }
 
   public final int getLevel() throws IOException {
-	  return getLevel(this.lastPtr);
+	// this assumption only holds for the TLC in non-parallel mode.
+	// Generally the last line (logically a state) is not necessarily on the
+  	// on the highest level of the state graph. This is only the case if  
+	// states are explored strictly by breadth-first search.
+	return getLevel(this.lastPtr);
   }
 
-  public synchronized final int getLevel(long loc) throws IOException {
-    long curLoc = this.raf.getFilePointer();
+  /**
+   * @param startLoc
+   * @return
+   * @throws IOException
+   */
+  public synchronized final int getLevel(long startLoc) throws IOException {
+	// keep current location
+    long currentFilePointer = this.raf.getFilePointer();
+
+    // calculate level/depth based on start location
     int level = 0;
-    for (long ploc = loc; ploc != 1; ploc = this.getPrev(ploc)) {
+	for (long predecessorLoc = startLoc; predecessorLoc != 1; predecessorLoc = this
+				.getPrev(predecessorLoc)) {
       level++;
     }
-    this.raf.seek(curLoc);
+		
+	// rewind to current location
+    this.raf.seek(currentFilePointer);
     return level;
   }
   
@@ -113,12 +128,18 @@ public class TLCTrace {
   /**
    * Write out a sequence of states that reaches s2 from an initial
    * state, according to the spec. s2 is a next state of s1.
+   * 
+   * @param s1 may not be null.
+   * @param s2 may be null.
+   * @throws IOException
+   * @throws WorkerException
    */
-  public synchronized final void printTrace(long loc1, TLCState s1, TLCState s2)
+  public synchronized final void printTrace(final TLCState s1, final TLCState s2)
   throws IOException, WorkerException 
   {
       MP.printError(EC.TLC_BEHAVIOR_UP_TO_THIS_POINT);
       // Print the prefix leading to s1:
+      long loc1 = s1.uid; 
       TLCState lastState = null;
       TLCStateInfo[] prefix = this.getTrace(loc1, false);
       int idx = 0;
@@ -175,11 +196,11 @@ public class TLCTrace {
 
 
   /**
-   * SZ Jul 10, 2009: method not used 
    * Returns a sequence of states that reaches, but excludes the
    * state with fingerprint fp.
    */
-  protected final TLCStateInfo[] printPrefix(long fp) throws IOException {
+  @SuppressWarnings("unused")
+  private final TLCStateInfo[] printPrefix(long fp) throws IOException {
     // First, find the location for fp:
     this.raf.seek(0);
     this.raf.readLongNat();    /*drop*/
