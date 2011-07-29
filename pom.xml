@@ -75,6 +75,9 @@
 
 	<!-- Minimum tycho version build work with -->
 	<properties>
+		<!-- http://maven.apache.org/general.html#encoding-warning  -->
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
 		<tycho-version>0.13.0-SNAPSHOT</tycho-version>
 		
 		<!-- no default here -->

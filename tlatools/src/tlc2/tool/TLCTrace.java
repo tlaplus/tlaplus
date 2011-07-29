@@ -10,6 +10,8 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import tlc2.output.EC;
 import tlc2.output.MP;
@@ -113,6 +115,47 @@ public class TLCTrace {
 	// rewind to current location
     this.raf.seek(currentFilePointer);
     return level;
+  }
+  
+  public final TLCStateInfo[] getTrace() throws IOException {
+		final Map<Long, TLCStateInfo> locToState = new HashMap<Long, TLCStateInfo>();
+
+		synchronized (this) {
+			final long curLoc = this.raf.getFilePointer();
+			try {
+				long length = this.raf.length();
+				// go to first byte
+				this.raf.seek(0);
+				
+				// read init state
+				this.raf.readLongNat(); /* drop */
+				TLCStateInfo state = this.tool.getState(this.raf.readLong());
+				locToState.put(0L, state);
+				
+				for (long location = 12; location < length; location+=12) {
+					final long predecessorLocation = this.raf.readLongNat();
+					final long fp = this.raf.readLong();
+					
+					// read predecessor from map
+					final TLCStateInfo predecessor = locToState.get(predecessorLocation);
+
+					// reconstruct current state
+					state = this.tool.getState(fp, predecessor.state);
+
+					// chain to predecessor
+					state.setPredecessor(predecessor);
+					
+					// store in map
+					locToState.put(location, state);
+				}
+
+			} finally {
+				// rewind
+				this.raf.seek(curLoc);
+			}
+		}
+		
+		return locToState.values().toArray(new TLCStateInfo[locToState.size()]);
   }
   
   /**

@@ -52,6 +52,11 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 	 * show statistics every 1 minutes
 	 */
 	private static final int REPORT_INTERVAL = Integer.getInteger(TLCServer.class.getName() + ".report", 1 * 60 * 1000);
+
+	/**
+	 * If the state/ dir should be cleaned up after a successful model run
+	 */
+	private static final boolean VETO_CLEANUP = Boolean.getBoolean(TLCServer.class.getName() + ".vetoCleanup");
 	
 	public final FPSetManager fpSetManager;
 	public final StateQueue stateQueue;
@@ -342,7 +347,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		} else {
 			this.fpSet.close();
 		}
-		if (cleanup) {
+		if (cleanup && !VETO_CLEANUP) {
 			FileUtil.deleteDir(new File(this.metadir), true);
 		}
 	}

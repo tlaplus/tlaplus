@@ -6,6 +6,7 @@
 package tlc2.tool;
 
 public class TLCStateInfo {
+  public TLCStateInfo predecessorState;
   public TLCState state;
   public Object info;
 
@@ -21,5 +22,8 @@ public class TLCStateInfo {
   public final String toString() {
     return this.state.toString();
   }
-  
+
+  public void setPredecessor(TLCStateInfo predecessor) {
+	  this.predecessorState = predecessor;
+  }
 }
