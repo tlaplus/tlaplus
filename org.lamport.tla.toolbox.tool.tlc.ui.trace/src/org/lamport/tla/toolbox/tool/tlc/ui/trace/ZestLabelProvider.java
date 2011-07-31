@@ -13,7 +13,8 @@ public class ZestLabelProvider extends LabelProvider implements IBaseLabelProvid
 	 */
 	public String getText(Object element) {
 		if (element instanceof TLCStateInfo) {
-			return element.toString();
+			final TLCStateInfo stateInfo = (TLCStateInfo) element;
+			return stateInfo.stateNumber + ": " + stateInfo.toString();
 		} else if (element instanceof EntityConnectionData) {
 			return "";
 		}

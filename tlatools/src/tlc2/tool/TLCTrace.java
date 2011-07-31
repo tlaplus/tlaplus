@@ -117,6 +117,10 @@ public class TLCTrace {
     return level;
   }
   
+  /**
+   * @return All states in the trace file
+   * @throws IOException
+   */
   public final TLCStateInfo[] getTrace() throws IOException {
 		final Map<Long, TLCStateInfo> locToState = new HashMap<Long, TLCStateInfo>();
 
@@ -128,7 +132,7 @@ public class TLCTrace {
 				this.raf.seek(0);
 				
 				// read init state
-				this.raf.readLongNat(); /* drop */
+				this.raf.readLongNat(); /* drop predecessor of init state*/
 				TLCStateInfo state = this.tool.getState(this.raf.readLong());
 				locToState.put(0L, state);
 				
@@ -143,7 +147,8 @@ public class TLCTrace {
 					state = this.tool.getState(fp, predecessor.state);
 
 					// chain to predecessor
-					state.setPredecessor(predecessor);
+					state.predecessorState = predecessor;
+					state.stateNumber = location / 12;
 					
 					// store in map
 					locToState.put(location, state);
