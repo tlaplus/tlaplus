@@ -326,7 +326,16 @@ public class TLCApp extends DistApp {
 					printErrorMsg("Error: expect an integer for -workers option.");
 					return null;
 				}
-			} else {
+			} else if (args[index].equals("-metadir")) {
+				index++;
+                if (index < args.length)
+                {
+                    TLCGlobals.metaDir = args[index++] + FileUtil.separator;
+                } else {
+                    printErrorMsg("Error: need to specify the metadata directory.");
+                    return null;
+                }
+            } else {
 				if (args[index].charAt(0) == '-') {
 					printErrorMsg("Error: unrecognized option: " + args[index]);
 					return null;

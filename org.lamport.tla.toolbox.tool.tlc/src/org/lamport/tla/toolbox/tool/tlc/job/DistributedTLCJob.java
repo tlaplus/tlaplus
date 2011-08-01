@@ -29,6 +29,7 @@ public class DistributedTLCJob extends TLCProcessJob {
 		WHITELIST_WITH_ARG.add("-coverage");
 		WHITELIST_WITH_ARG.add("-fp");
 		WHITELIST_WITH_ARG.add("-recover");
+		WHITELIST_WITH_ARG.add("-metadir");
 	}
 	
 	public DistributedTLCJob(String specName, String modelName, ILaunch launch, int numberOfWorkers) {

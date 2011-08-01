@@ -32,6 +32,7 @@ import tlc2.tool.queue.DiskStateQueue;
 import tlc2.tool.queue.StateQueue;
 import tlc2.util.FP64;
 import tlc2.util.PrintfFormat;
+import util.Assert;
 import util.FileUtil;
 import util.UniqueString;
 
@@ -87,6 +88,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 	 * @throws NotBoundException
 	 */
 	public TLCServer(DistApp work) throws IOException, NotBoundException {
+		Assert.check(work != null, EC.GENERAL);
 		this.workers = new TLCWorkerRMI[10];
 		this.workerRefCnt = new int[this.workers.length];
 		this.threads = new TLCServerThread[10];
