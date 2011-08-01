@@ -295,15 +295,6 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 	}
 
 	/**
-	 * @return
-	 * @throws IOException
-	 */
-	private final String recoveryStats() throws IOException {
-		return (this.fpSetManager.size() + " distinct states found. "
-				+ this.stateQueue.size() + " states on queue.");
-	}
-
-	/**
 	 * @throws Exception
 	 */
 	private final void doInit() throws Exception {
@@ -363,11 +354,10 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 	public static void modelCheck(TLCServer server) throws IOException, InterruptedException, NotBoundException {
 		boolean recovered = false;
 		if (server.work.canRecover()) {
-			MP.printMessage(EC.TLC_CHECKPOINT_RECOVER_START, "-- Starting recovery from checkpoint "
-					+ server.metadir);
+            MP.printMessage(EC.TLC_CHECKPOINT_RECOVER_START, server.metadir);
 			server.recover();
-			MP.printMessage(EC.TLC_CHECKPOINT_RECOVER_END, "-- Recovery completed. "
-					+ server.recoveryStats());
+			MP.printMessage(EC.TLC_CHECKPOINT_RECOVER_END, new String[] { String.valueOf(server.fpSet.size()),
+                    String.valueOf(server.stateQueue.size())});
 			recovered = true;
 		}
 		if (!recovered) {
