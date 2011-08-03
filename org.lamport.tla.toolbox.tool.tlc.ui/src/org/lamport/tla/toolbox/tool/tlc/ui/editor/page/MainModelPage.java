@@ -1,5 +1,6 @@
 package org.lamport.tla.toolbox.tool.tlc.ui.editor.page;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
@@ -25,6 +26,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.forms.HyperlinkGroup;
@@ -137,9 +139,12 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
      * 
      * button: activate distribution
      * text: additional vm arguments (e.g. -Djava.rmi...) 
+     * text: pre-flight script
      */
     private Button distributedButton;
     private Text distributedText;
+    private Text distributedScriptText;
+    private Button browseDistributedScriptButton;
     
     // The widgets to display the checkpoint size and
     // the delete button.
@@ -218,11 +223,18 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         boolean recover = getConfig().getAttribute(LAUNCH_RECOVER, LAUNCH_RECOVER_DEFAULT);
         this.checkpointButton.setSelection(recover);
         
-        boolean distributed = getConfig().getAttribute(LAUNCH_DISTRIBUTED, LAUNCH_DISTRIBUTED_DEFAULT);
+        /*
+         * Distributed mode
+         */
+        final boolean distributed = getConfig().getAttribute(LAUNCH_DISTRIBUTED, LAUNCH_DISTRIBUTED_DEFAULT);
         this.distributedButton.setSelection(distributed);
 
         final String vmArgs = getConfig().getAttribute(LAUNCH_DISTRIBUTED_ARGS, LAUNCH_DISTRIBUTED_ARGS_DEFAULT);
         this.distributedText.setText(vmArgs);
+        
+        final String distributedScript = getConfig().getAttribute(LAUNCH_DISTRIBUTED_SCRIPT, LAUNCH_DISTRIBUTED_SCRIPT_DEFAULT);
+        this.distributedScriptText.setText(distributedScript);
+        
     }
 
     public void validatePage(boolean switchToErrorPage)
@@ -579,6 +591,26 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
                 expandSection(dm.getSectionForAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT));
             }
         }
+        
+        // enablement for distributed input text boxes depends on button
+        boolean distributed = this.distributedButton.getSelection();
+        this.distributedText.setEnabled(distributed);
+        this.distributedScriptText.setEnabled(distributed);
+        
+        // verify existence of pre-flight script
+       	if(distributed) {
+       		final String scriptPath = distributedScriptText.getText();
+       		if(scriptPath != null && !"".equals(scriptPath)) {
+       			final File f = new File(scriptPath);
+       			if(!f.exists()) {
+                    modelEditor.addErrorMessage("noScript", "No script file found", this.getId(),
+                            IMessageProvider.ERROR, UIHelper.getWidget(dm.getAttributeControl(LAUNCH_DISTRIBUTED_SCRIPT)));
+                    setComplete(false);
+                    expandSection(SEC_HOW_TO_RUN);
+       			}
+       		}
+       	}
+       	
 
         mm.setAutoUpdate(true);
 
@@ -599,7 +631,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         this.closedFormulaRadio.setEnabled(hasVariables);
         this.initNextFairnessRadio.setEnabled(hasVariables);
 
-        // the input fields are eneabled only if there are variables
+        // the input fields are enabled only if there are variables
         this.initFormulaSource.getControl().setEnabled(hasVariables);
         this.nextFormulaSource.getControl().setEnabled(hasVariables);
         this.specSource.getControl().setEnabled(hasVariables);
@@ -710,6 +742,9 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         final String vmArgs = this.distributedText.getText();
         getConfig().setAttribute(LAUNCH_DISTRIBUTED_ARGS, vmArgs);
         
+        final String distributedScript = this.distributedScriptText.getText();
+        getConfig().setAttribute(LAUNCH_DISTRIBUTED_SCRIPT, distributedScript);
+
         // invariants
         List<String> serializedList = FormHelper.getSerializedInput(invariantsTable);
         getConfig().setAttribute(MODEL_CORRECTNESS_INVARIANTS, serializedList);
@@ -1021,7 +1056,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
         final Composite howToRunArea = (Composite) section.getClient();
         group = new HyperlinkGroup(howToRunArea.getDisplay());
-        layout = new GridLayout(2, false);
+        layout = new GridLayout(2, true);
         howToRunArea.setLayout(layout);
 
         ValidateableSectionPart howToRunPart = new ValidateableSectionPart(section, this, SEC_HOW_TO_RUN);
@@ -1060,34 +1095,8 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         dm.bindAttribute(LAUNCH_NUMBER_OF_WORKERS, workers, howToRunPart);
         
         /*
-         * Distribution
+         * run from the checkpoint
          */
-        //TODO Link help page for distribution mode 
-        distributedButton = toolkit.createButton(howToRunArea, "Run in distributed mode", SWT.CHECK);
-        gd = new GridData();
-        gd.horizontalSpan = 2;
-        gd.verticalIndent = 20;
-
-        distributedButton.setLayoutData(gd);
-        distributedButton.addSelectionListener(howToRunListener);
-		distributedButton.setToolTipText("If checked, state computation will be performed by (remote) workers.");
-
-        FormText distributedLabel = toolkit.createFormText(howToRunArea, true);
-        distributedLabel.setText("Additional VM args:", false, false);
-
-        distributedText = toolkit.createText(howToRunArea, "");
-        distributedText.setEditable(true);
-        distributedText
-        .setToolTipText("Optionally pass additional VM arguments to master TLC process (e.g. -Djava.rmi.server.hostname=ThisHostName)");
-        distributedText.addModifyListener(howToRunListener);
-        gd = new GridData();
-        gd.horizontalIndent = 10;
-        gd.widthHint = 100;
-        distributedText.setLayoutData(gd);
-        
-        dm.bindAttribute(LAUNCH_DISTRIBUTED, distributedButton, howToRunPart);
-
-        // run from the checkpoint
         checkpointButton = toolkit.createButton(howToRunArea, "Recover from checkpoint", SWT.CHECK);
         gd = new GridData();
         gd.horizontalSpan = 2;
@@ -1152,8 +1161,85 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
             {
             }
         });
+        
+        /*
+         * Distribution
+         */
+        //TODO Link help page for distribution mode 
+        distributedButton = toolkit.createButton(howToRunArea, "Run in distributed mode", SWT.CHECK);
+        gd = new GridData();
+        gd.horizontalSpan = 2;
 
-        // run link
+        distributedButton.setLayoutData(gd);
+        distributedButton.addSelectionListener(howToRunListener);
+		distributedButton.setToolTipText("If checked, state computation will be performed by (remote) workers.");
+		
+		// Additional VM arguments for distributed mode
+        FormText distributedLabel = toolkit.createFormText(howToRunArea, true);
+        distributedLabel.setText("Additional VM args:", false, false);
+
+        distributedText = toolkit.createText(howToRunArea, "");
+        distributedText.setEditable(true);
+        distributedText
+        .setToolTipText("Optionally pass additional VM arguments to master TLC process (e.g. -Djava.rmi.server.hostname=ThisHostName)");
+        distributedText.addModifyListener(howToRunListener);
+        gd = new GridData();
+        gd.horizontalIndent = 10;
+        gd.widthHint = 300;
+        distributedText.setLayoutData(gd);
+
+        /*
+         * pre-fligh script executed prior to distributed TLC (e.g. to start remote workers)
+         */
+        distributedLabel = toolkit.createFormText(howToRunArea, true);
+        distributedLabel.setText("Pre Flight Script:", false, false);
+
+        // non-editable text input
+        distributedScriptText = toolkit.createText(howToRunArea, "");
+        distributedScriptText.setEditable(true);
+        distributedScriptText
+        .setToolTipText("Optionally pass a pre-flight script to be run prior to the TLC process (e.g. to start remote workers)");
+        distributedScriptText.addModifyListener(howToRunListener);
+        gd = new GridData();
+        gd.horizontalIndent = 10;
+        gd.widthHint = 300;
+        distributedScriptText.setLayoutData(gd);
+        dm.bindAttribute(LAUNCH_DISTRIBUTED_SCRIPT, distributedScriptText, howToRunPart);
+
+        // skip the left cell in the grid layout
+        final Text invisibleText = toolkit.createText(howToRunArea, "");
+        invisibleText.setEditable(false);
+        invisibleText.setVisible(false);
+        invisibleText.setEnabled(false);
+        
+        // browse button right-aligned
+        browseDistributedScriptButton = toolkit.createButton(howToRunArea, "Browse", SWT.PUSH);
+        gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
+		browseDistributedScriptButton.setLayoutData(gd);
+        browseDistributedScriptButton.addSelectionListener(new SelectionListener() {
+			/* (non-Javadoc)
+			 * @see org.eclipse.swt.events.SelectionListener#widgetSelected(org.eclipse.swt.events.SelectionEvent)
+			 */
+			public void widgetSelected(SelectionEvent e) {
+				// prompt user for a file
+				final FileDialog fd = new FileDialog(getSite().getShell(), SWT.OPEN);
+				fd.setFileName(distributedScriptText.getText());
+				
+				// use user-provided path as input for script input text box
+				final String path = fd.open();
+				distributedScriptText.setText((path != null) ? path : "");
+			}
+			/* (non-Javadoc)
+			 * @see org.eclipse.swt.events.SelectionListener#widgetDefaultSelected(org.eclipse.swt.events.SelectionEvent)
+			 */
+			public void widgetDefaultSelected(SelectionEvent e) {
+				//nop
+			}
+		});
+
+        /*
+         * run link
+         */
         runLink = toolkit.createImageHyperlink(howToRunArea, SWT.NONE);
         runLink.setImage(createRegisteredImage("icons/full/lrun_obj.gif"));
         runLink.addHyperlinkListener(new HyperlinkAdapter() {

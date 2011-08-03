@@ -32,6 +32,10 @@ public interface IConfigurationConstants
      */
 	public static final String LAUNCH_DISTRIBUTED_ARGS = "distributedTLCVMArgs";
     /**
+     * Pre-flight script (primarily for distributed version of TLC)
+     */
+	public static final String LAUNCH_DISTRIBUTED_SCRIPT = "distributedTLCScript";
+    /**
      * How to run TLC (model-checking = true, simulation = false)
      */
     public static final String LAUNCH_MC_MODE = "mcMode";

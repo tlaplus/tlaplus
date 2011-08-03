@@ -32,6 +32,11 @@ public interface IConfigurationDefaults
 	 */
 	public static final String LAUNCH_DISTRIBUTED_ARGS_DEFAULT = "";
 	
+	/**
+	 * Additional script for distributed model checker
+	 */
+	public static final String LAUNCH_DISTRIBUTED_SCRIPT_DEFAULT = "";
+	
     /**
      * Default max heap size
      * Now set as a preference in TLCPreferencePage
