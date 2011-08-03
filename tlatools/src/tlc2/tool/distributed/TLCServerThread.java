@@ -128,16 +128,14 @@ public class TLCServerThread extends IdThread {
 							continue START;
 						} else {
 							if (!this.tlcServer.reassignWorker(this)) {
-								stateQueue.sEnqueue(states);
-								MP.printMessage(EC.TLC_DISTRIBUTED_WORKER_DEREGISTERED, getUri().toString());
+								handleRemoteWorkerLost(stateQueue);
 								return;
 							}
 						}
 					} catch (NullPointerException e) {
 						ToolIO.err.println(e.getMessage());
 						if (!this.tlcServer.reassignWorker(this)) {
-							stateQueue.sEnqueue(states);
-							MP.printMessage(EC.TLC_DISTRIBUTED_WORKER_DEREGISTERED, getUri().toString());
+							handleRemoteWorkerLost(stateQueue);
 							return;
 						}
 					}
@@ -189,6 +187,16 @@ public class TLCServerThread extends IdThread {
 				}
 			}
 		}
+	}
+
+	/**
+	 * Handles the case of a disconnected remote worker
+	 * @param stateQueue
+	 */
+	private void handleRemoteWorkerLost(final StateQueue stateQueue) {
+		stateQueue.sEnqueue(states);
+		TLCGlobals.incNumWorkers(-1);
+		MP.printMessage(EC.TLC_DISTRIBUTED_WORKER_DEREGISTERED, getUri().toString());
 	}
 
 	/**
