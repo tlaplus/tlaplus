@@ -3,6 +3,8 @@
  */
 package org.lamport.tla.toolbox.editor.basic.tla;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
@@ -10,6 +12,7 @@ import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.lamport.tla.toolbox.editor.basic.TLAEditor;
+import org.lamport.tla.toolbox.editor.basic.TLAEditorActivator;
 import org.lamport.tla.toolbox.editor.basic.util.EditorUtil;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 
@@ -281,7 +284,17 @@ public class TokenSpec
             } else
             {
                 currentToken = findMaximalIdCharSeq(line, curPos);
-
+                
+                // silently prevent NPEs (hyperlinks will just not work)
+                if (currentToken == null)
+                {
+					TLAEditorActivator
+							.getDefault()
+							.getLog()
+							.log(new Status(IStatus.WARNING, TLAEditorActivator.PLUGIN_ID,
+									"Hyperlinking failed for " + inputLine));
+					return new TokenSpec[0];
+                }
                 // Check if token is part of step name. If it is, we set
                 // First, see if currentToken could be the token after the "<...>".
                 if (line.charAt(currentToken.leftPos - 1) == '>')
