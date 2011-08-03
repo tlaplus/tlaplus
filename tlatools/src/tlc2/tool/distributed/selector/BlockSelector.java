@@ -42,6 +42,9 @@ public class BlockSelector implements IBlockSelector {
 		// the amount of blocks that will be assigned to the work
 		int blockSize = getBlockSize(amountOfStates, worker);
 		// At least request a single state to guarantee StateQueue#isAvail() will be triggered
+		// do not request more than what is available 
+		blockSize = Math.min(blockSize, amountOfStates);
+		// make sure it is positive > 0
 		blockSize = Math.max(blockSize, 1);
 		// synchronized removal from the state queue
 		return stateQueue.sDequeue(blockSize);
