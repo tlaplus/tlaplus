@@ -36,7 +36,7 @@ You can create a new spec with the  <samp>File/Open Spec/Add New
 Spec... </samp> menu item.&nbsp;
 
 It raises a dialog asking you to choose the root file (which must have
-the extension <code>.tla</code>) and the specification name.
+the extension <code>.tla</code>) and the specification name.  
 
 
 <h3>Open</h3>
@@ -65,17 +65,34 @@ This returns you to the Welcome View.&nbsp;  
 However, remember that the Toolbox will close the current spec if you
 open another one.
 
-<h3>Delete and Rename</h3>
+<h3>Rename, Forget, and Delete</h3>
 
-You can delete or rename an existing spec by opening the Spec Explorer
+Forgetting a spec means that the Toolbox removes it from the 
+Spec Explorer and the list of specs presented by the
+<samp>File/Open Spec</samp> menu.&nbsp; 
+
+If you later re-open a spec with the same name in the same folder, then 
+you will be able to import to previous spec's models.&nbsp;
+
+Deleting a spec means forgetting it and deleting its models, but not
+any of its modules.&nbsp;
+
+Renaming a spec changes the spec's name, but not the name of its root 
+module.&nbsp;  
+
+
+You can rename, forget, or delete or rename an existing spec by opening the Spec Explorer
 (described above), right-clicking on the desired spec, and making the
 appropriate choice.&nbsp;
 
-Deleting a spec does not delete any of the specification's
-files.&nbsp;
+<p>
 
-However, it will delete all its <a
-href="../model/about-models.html">TLC models</a>.
+Note: here's how to change the name of both a spec and its root module from
+<code>Foo</code> to <code>Bar</code>: Rename spec 
+<code>Foo</code> to <code>Bar</code>, save module <code>Foo</code>
+as module <code>Bar</code> (using the <samp>File/Save As</samp> 
+command), Forget module <code>Bar</code>, and Open a new spec named
+<code>Bar</code> with module <code>Bar</code> as its root module.&nbsp;
 
 <h3>Finding Your Spec</h3>
 
@@ -104,7 +121,7 @@ imported module files) and the folder (directory) named 
 
 If there is already a spec named  <samp>SName </samp> (which will be
 the case if you're moving the spec to a different place on the same
-computer), delete it from the Toolbox.&nbsp;  
+computer), have the Toolbox forget or delete it.&nbsp;  
 
 Open a new specification named   <samp>SName </samp> using the new
 copy of the root-module file.
@@ -128,7 +145,7 @@ machine.&nbsp;
 Strange things might happen if you do that while the spec is open in
 the Toolbox on that other machine.&nbsp;
 
-It's a good idea to close spec on that machine before copying the
+It's a good idea to close the spec on that machine before copying the
 files.&nbsp;
 
 If you forget to do that, you will probably need to close and re-open

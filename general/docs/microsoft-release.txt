@@ -1,9 +1,17 @@
 TO PREPARE THE ZIP FILES FOR THE TOOLBOX RELEASE
 
-Note: To get tlatools.jar file copied to the right place for the distributed version of TLC, 
-      after running Ant, run "mvn install" in the directory
+Notes: 1. To get tlatools.jar file copied to the right place for the distributed version of TLC, 
+          after running Ant, run "mvn install" in the directory
       
-         C:\lamport\tla\newtools\tla2-inria\org.lamport.tla.toolbox.jnlp
+            C:\lamport\tla\newtools\tla2-inria\org.lamport.tla.toolbox.jnlp
+            
+       2. If maven doesn't produce a good build, try running `maven clean' before
+          running `maven install'
+          
+       3. The file .../newtools/tla2-inria/pom.xml is not automatically updated
+          by SVN inside Eclipse, and must be updated by running 'svn up pom.xml'
+          in a Cygwin shell.  Running `svn up' in a Cygwin shell might not be a bad
+          idea, because it seems to update some things that Eclipse doesn't.
 
 Step 1: Get the right version numbers to appear:
 
@@ -13,13 +21,15 @@ In org.lamport.tla.toolbox.product.standalone
   standalone.product: 
     As of 24 Jun 2011, standalone.product has moved to:
     org.lamport.tla.toolbox.product.product
-     Branding tab: update date and version (I don't know if this is
-                   actually used anywhere.)
+     Branding tab: update date and version (This may be used in Help > About.)
      Overview: update version.  (I don't know if this is used anywhere.)
 
 
 In org.lamport.tla.toolbox/welcome/welcomeView.html
    Update date and version
+
+In toolbox.product.standalone/intro/root.xhtml: 
+  update version information.
 
 Step 2: Build the .zip files:
 Method 1: 
@@ -86,6 +96,7 @@ TO GENERATE THE RELEASE:
 Queries to msrcpx or Chuck Needham (chuckne)
 -------------------------------------------------------------
 Version 1.3.2 of ???
+    Added the Forget Specification command.
     Includes a first release of the distributed version of TLC.
     Includes fix to SANY to support binary, octal, and hex numbers.
     Includes PlusCal Version 1.6.

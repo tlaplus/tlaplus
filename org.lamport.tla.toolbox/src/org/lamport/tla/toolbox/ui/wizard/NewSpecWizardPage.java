@@ -118,7 +118,7 @@ public class NewSpecWizardPage extends WizardPage
         new Label(container, SWT.NULL);
 
         importExisting = new Button(container, SWT.CHECK);
-        importExisting.setText("Import existing");
+        importExisting.setText("Import existing models");
         importExisting.setSelection(true);
         importExisting.setEnabled(false);
 

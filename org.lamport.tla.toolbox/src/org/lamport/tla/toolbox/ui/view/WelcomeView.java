@@ -12,6 +12,11 @@ import org.lamport.tla.toolbox.util.UIHelper;
  * Th welcome view
  * @author Simon Zambrovski
  * @version $Id$
+ * 
+ * Note by LL added on 1 Aug 2011.  Does this method do anything?  The text that
+ * is being set by the showInfo method does not seem to appear anywhere.  The Welcome
+ * page that appears only the first time the user runs the Toolbox seems to be 
+ * ...toolbox.product.standalone/intro/root.xhtml.
  */
 public class WelcomeView extends ViewPart
 {

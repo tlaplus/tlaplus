@@ -827,13 +827,25 @@ public class ResourceHelper
 
     /**
      * Deletes the project
+     * 
+     * The boolean argument isForget was added by LL on 3 August 2011.  It is
+     * true iff the Toolbox should only remove the spec from its list of specs
+     * but should not delete its .toolbox directory.
+     * 
      * @param project
      */
-    public static void deleteProject(final IProject project, final IProgressMonitor aMonitor)
+    public static void deleteProject(final IProject project, final IProgressMonitor aMonitor, boolean isForget)
     {
         try
         {
+        	if (isForget) {
+        		// This statement deletes the spec but not the .toolbox directory
+            	project.delete(IResource.NEVER_DELETE_PROJECT_CONTENT, aMonitor);
+        	} else {
+        	// This statement deletes the spec and the .toolbox directory
             project.delete(true, aMonitor);
+        	}
+            
         } catch (CoreException e)
         {
             Activator.logError("Error deleting a specification", e);

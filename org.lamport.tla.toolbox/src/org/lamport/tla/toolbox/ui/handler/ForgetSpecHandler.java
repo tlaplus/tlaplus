@@ -23,16 +23,19 @@ import org.lamport.tla.toolbox.util.ToolboxJob;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 /**
- * Delete specifications.
+ * Forget specification.
  * 
- * This command removes the spec from the Toolbox's list of specs and
- * deletes the .toolbox directory.  Class modified slightly by LL
- * on 3 August 2011 because of the addition of the Forget command.
+ * This class is a clone of the DeleteSpecHandler method, except that the
+ * ToolboxJob calls Activator.getSpecManager().removeSpec with the different
+ * third argument that causes the .toolbox directory not to be deleted.
+ * Strings were also appropriately changed.  I was unable to figure out how
+ * to use a single handler for both the Forget and the Delete commands.
+ *
  * 
- * @author Simon Zambrovski
+ * @author Leslie Lamport
  * @version $Id$
  */
-public class DeleteSpecHandler extends AbstractHandler implements IHandler
+public class ForgetSpecHandler extends AbstractHandler implements IHandler
 {
 
     /* (non-Javadoc)
@@ -55,9 +58,8 @@ public class DeleteSpecHandler extends AbstractHandler implements IHandler
                 while (selectionIterator.hasNext()) 
                 {
                     final Spec spec = selectionIterator.next();
-                    // 3 Aug 2011: LL changed the dialog's message to make it clearer what the Delete command does.
-                    boolean answer = MessageDialog.openQuestion(UIHelper.getShellProvider().getShell(), "Delete specification?",
-                            "Do you really want the Toolbox to forget the specification " + spec.getName() + " and delete its models?");
+                    boolean answer = MessageDialog.openQuestion(UIHelper.getShellProvider().getShell(), "Forget specification?",
+                            "Do you really want to remove specification " + spec.getName() + " from the Toolbox's list of specs?");
                     if (answer)
                     {
                     	// close the spec handler (in the ui thread)
@@ -69,7 +71,7 @@ public class DeleteSpecHandler extends AbstractHandler implements IHandler
     					// use confirmed rename -> rename
     					final Job j = new ToolboxJob("Deleting spec...") {
     						protected IStatus run(final IProgressMonitor monitor) {
-    							Activator.getSpecManager().removeSpec(spec, monitor, false);
+    							Activator.getSpecManager().removeSpec(spec, monitor, true);
     							return Status.OK_STATUS;
     						}
     					};

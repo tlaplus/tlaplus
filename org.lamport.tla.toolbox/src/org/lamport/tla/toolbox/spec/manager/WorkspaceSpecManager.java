@@ -280,13 +280,18 @@ public class WorkspaceSpecManager extends GenericSelectionProvider implements IS
     }
     
     /**
-     * Removes the specification
+     * Removes the specification.  
+     * Modified 3 August 2011 by LL to add the boolean argument to say if this
+     * is a Forget command, which doesn't delete the spec's .toolbox directory,
+     * or a Delete command, which does.
+     * 
      * @param spec specification to remove
+     * @param isForget do not delete .toolbox directory
      */
-    public void removeSpec(final Spec spec, final IProgressMonitor aMonitor)
+    public void removeSpec(final Spec spec, final IProgressMonitor aMonitor, boolean isForget)
     {
         this.lifecycleManager.sendEvent(new SpecEvent(spec, SpecEvent.TYPE_DELETE));
-        ResourceHelper.deleteProject(spec.getProject(), aMonitor);
+        ResourceHelper.deleteProject(spec.getProject(), aMonitor, isForget);
         specStorage.remove(spec.getName());
     }
 

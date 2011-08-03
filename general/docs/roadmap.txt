@@ -36,7 +36,8 @@ set by  ParseStatusContributionItem . update().
 
 
 ----------
-How to create a distribution.
+How to create a distribution -- This is obsolete.  See the file 
+general/docs/microsoft-release.txt
 
 Go to org....product.standalone
    This contains no functionality, but "builds application stuff".
@@ -195,6 +196,19 @@ is called.  There's a default method in a superclass, but one can override it to
 do whatever else you want to do on a save.  There's also a performSaveAs() method.
 
 ------------------------------------------------------------
+ADDING A BUTTON TO A MENU
+
+In the Extensions tab of the appropriate plugin.xml file:
+
+- Under org.eclipse.ui.menus, add a command to the appropriate 
+  menuContribution item for the menu item's group.  The commandId 
+  ties the menu item to its handler.
+  
+- Under org.eclipse.ui.handlers, add a handler that extends 
+  AbstractHandler and implements IHandler, where the execute method
+  specifies what selecting the item should do. 
+------------------------------------------------------------
+
 ASSIGNMENT OBJECTS AND WIZARDS
 
 An assignment object:

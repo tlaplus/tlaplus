@@ -58,7 +58,7 @@ too has problems, try backing out of the spec.
 <p>
 
 If the Toolbox gets into a bad state when you're editing a module, or
-when you have problem with a TLC model that can't be solved by backing
+when you have a problem with a TLC model that can't be solved by backing
 out of the model, you should try backing out of the spec.&nbsp; 
 
 The first thing to try is closing and re-opening the spec.&nbsp; 
@@ -78,7 +78,7 @@ module.&nbsp;
 
 If you have saved a copy of the old <code>.toolbox</code> directory,
 you can first restore that directory and see if you can open it with
-the <code>Import existing</code> option.&nbsp;  
+the <code>Import existing models</code> option.&nbsp;  
 
 If not, you will have to try creating a new spec with the same modules
 but without your saved models.&nbsp;
@@ -101,8 +101,8 @@ and deleting all its state information from the disk.&nbsp;  However, before doi
 part of the Toolbox's&nbsp; <code>.log</code>&nbsp; file as described in <a href="#reporting">Reporting Problems</a> below.
 </p>
 <p>
-The Toolbox keeps its state in a folder named&nbsp; <code>workspace</code>&nbsp; that it creates in the
-same folder containing the executable file from which you run it.&nbsp;  Deleting (or renaming) that folder (when the Toolbox
+The Toolbox keeps its state in a folder named &nbsp;<code>workspace</code>&nbsp; that it creates in the
+folder from which you run the Toolbox.&nbsp;  Deleting (or renaming) the &nbsp;<code>workspace</code>&nbsp; folder (when the Toolbox
 is not running) causes the Toolbox
 to start in its initial state the next time you execute it.&nbsp;  It will then show no existing specs.&nbsp;
 However, the information about the individual specs that existed when you deleted 
