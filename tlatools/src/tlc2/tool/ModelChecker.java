@@ -719,7 +719,7 @@ public class ModelChecker extends AbstractChecker
          */
         if (TLCGlobals.tool)
         {
-            MP.printMessage(EC.TLC_PROGRESS_STATS, new String[] { String.valueOf(this.trace.getLevel()),
+            MP.printMessage(EC.TLC_PROGRESS_STATS, new String[] { String.valueOf(this.trace.getLevelForReporting()),
                     String.valueOf(this.numOfGenStates), String.valueOf(this.theFPSet.size()),
                     String.valueOf(this.theStateQueue.size()) });
         }
@@ -728,7 +728,7 @@ public class ModelChecker extends AbstractChecker
                 String.valueOf(this.theFPSet.size()), String.valueOf(this.theStateQueue.size()) });
         if (success)
         {
-            MP.printMessage(EC.TLC_SEARCH_DEPTH, String.valueOf(this.trace.getLevel()));
+            MP.printMessage(EC.TLC_SEARCH_DEPTH, String.valueOf(this.trace.getLevelForReporting()));
         }
     }
 
@@ -785,10 +785,10 @@ public class ModelChecker extends AbstractChecker
      * @param depth
      * @throws Exception
      */
-    protected void runTLCContinueDoing(int count, int depth) throws Exception
+    protected void runTLCContinueDoing(final int count, final int depth) throws Exception
     {
         int level = this.trace.getLevel();
-        MP.printMessage(EC.TLC_PROGRESS_STATS, new String[] { String.valueOf(level),
+        MP.printMessage(EC.TLC_PROGRESS_STATS, new String[] { String.valueOf(this.trace.getLevelForReporting()),
                 String.valueOf(this.numOfGenStates), String.valueOf(this.theFPSet.size()),
                 String.valueOf(this.theStateQueue.size()) });
         if (level > depth)

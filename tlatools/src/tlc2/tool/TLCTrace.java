@@ -86,6 +86,39 @@ public class TLCTrace {
   }
 
   /**
+   * Returns the level (monotonically increasing)!
+   * 
+   * LL: The user has no real need of an accurate tree height. Breadth-first
+   * search is good because it provides the shortest possible error trace.
+   * Usually approximately breadth-first search is just as good because it
+   * makes little difference if the error trace isn't quite as short as
+   * possible. I believe that in most applications, after a short initial
+   * period, the height of the tree grows slowly. All workers are usually
+   * working on states of the same height except for brief periods when the
+   * height changes, and then the heights will differ by at most one.
+   * Reporting the height to the user gives him some information about how
+   * fast model checking is going. He will have no problem getting used to the
+   * idea that it's only an approximation. (I expect that few users even know
+   * what it means.) I'd like to make the reported value be monotonic because,
+   * if it's not, users may worry and people already have enough things in
+   * life to worry about.
+   * 
+   * @see TLCTrace#getLevel()
+   */
+  public final int getLevelForReporting() throws IOException {
+    final int calculatedLevel = getLevel(this.lastPtr);
+	if(calculatedLevel > previousLevel) {
+		previousLevel = calculatedLevel;
+	}
+	return previousLevel;
+  }
+  
+  /**
+   * Stores the previous level reported to guarantee that it is monotonic
+   */
+  private int previousLevel;
+  
+  /**
    * @see TLCTrace#getLevel(long)
    */
   public final int getLevel() throws IOException {
