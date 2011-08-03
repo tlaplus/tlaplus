@@ -65,7 +65,8 @@ public abstract class StateQueue {
   /* Return the first element in the queue.  Wait if empty. */
   public final synchronized TLCState sDequeue() {
     if (this.isAvail()) {
-      TLCState state = this.dequeueInner();
+      final TLCState state = this.dequeueInner();
+      Assert.check(state != null, EC.GENERAL);
       this.len--;
       return state;
     }
@@ -174,6 +175,21 @@ public abstract class StateQueue {
   public final synchronized void resumeAll() {
     this.stop = false;
     this.notifyAll();
+  }
+  
+  /**
+   * This is a no-op in regular. The only case is, when a TLCServerThread is
+   * stuck in {@link #isAvail()}, {@link #len} > 0, {@link #stop} is false and
+   * {@link #numWaiting} > 0. Bottom-line, it is assumed to be side-effect free
+   * when consumers behave correctly except for the single case when a remote 
+   * worker dies unexpectedly.
+   * 
+   * @see http://bugzilla.tlaplus.net/show_bug.cgi?id=175
+   */
+  public void resumeAllStuck() {
+	 if(!stop && this.len > 0 && this.numWaiting > 0) {
+		 this.notifyAll();
+	 }
   }
   
   /* This method returns the size of the state queue. */

@@ -8,7 +8,6 @@ package tlc2.tool.distributed;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.URI;
 import java.rmi.NotBoundException;
@@ -183,6 +182,13 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 			tidx = len;
 		}
 		this.threadCnt++;
+		
+		// Wake up potentially stuck TLCServerThreads (in
+		// tlc2.tool.queue.StateQueue.isAvail()) to avoid a deadlock.
+		// Obviously stuck TLCServerThreads will never be reported to 
+		// users if resumeAllStuck() is not call by a new worker.
+		stateQueue.resumeAllStuck();
+		
 		this.threads[tidx] = new TLCServerThread(this.thId++, worker, this, barrier, blockSelector);
 		if (TLCGlobals.fpServers == null)
 			this.fpSet.addThread();
@@ -671,7 +677,9 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 					if(worker != null) {
 						worker.exit();
 					}
-				} catch (ConnectException e) {
+				} catch (java.net.ConnectException e) {
+					// happens if workers have exited already
+				} catch (java.rmi.ConnectException e)  {
 					// happens if workers have exited already
 				} catch (IOException e) {
 					e.printStackTrace();
