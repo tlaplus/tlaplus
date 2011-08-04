@@ -5,7 +5,6 @@
 
 package tlc2.tool.distributed;
 
-import java.io.IOException;
 import java.net.URI;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
@@ -30,9 +29,9 @@ public interface TLCWorkerRMI extends Remote {
 
 	/**
 	 * Kills/exits this worker
-	 * @throws IOException
+	 * @throws RemoteException
 	 */
-	public void exit() throws IOException;
+	public void exit() throws RemoteException;
 
 	/**
 	 * @return The amounts of states computed by this worker

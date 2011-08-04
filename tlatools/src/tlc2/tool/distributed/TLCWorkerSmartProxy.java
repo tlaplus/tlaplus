@@ -1,6 +1,5 @@
 package tlc2.tool.distributed;
 
-import java.io.IOException;
 import java.net.URI;
 import java.rmi.RemoteException;
 
@@ -65,7 +64,7 @@ public class TLCWorkerSmartProxy implements TLCWorkerRMI {
 	/* (non-Javadoc)
 	 * @see tlc2.tool.distributed.TLCWorkerRMI#exit()
 	 */
-	public void exit() throws IOException {
+	public void exit() throws RemoteException {
 		worker.exit();
 	}
 
