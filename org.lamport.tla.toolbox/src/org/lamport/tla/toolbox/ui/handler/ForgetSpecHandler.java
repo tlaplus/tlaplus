@@ -68,6 +68,10 @@ import org.lamport.tla.toolbox.util.pref.PreferenceStoreHelper;
  *     user closes it.  See GeneralLaunchProverHandler class's execute method to see how 
  *     that's done.
  *     
+ * I didn't add this feature because the TLA+ Preference page has so little on it
+ * that it seems a shame to complicate it for such a trivial feature.  This decision
+ * should be re-examined if additional features are added to that page.
+ * 
   * @author Leslie Lamport
  * @version $Id$
  */
