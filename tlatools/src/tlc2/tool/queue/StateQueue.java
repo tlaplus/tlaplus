@@ -11,6 +11,7 @@ import tlc2.TLCGlobals;
 import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.tool.TLCState;
+import tlc2.tool.Worker;
 import util.Assert;
 
 public abstract class StateQueue {
@@ -85,7 +86,7 @@ public abstract class StateQueue {
   public final synchronized TLCState[] sDequeue(int cnt) {
 	  Assert.check(cnt > 0, EC.GENERAL);
     if (this.isAvail()) {
-    	if(cnt > size()) {cnt = size();}
+    	if(cnt > len) {cnt = len;}
       TLCState states[] = new TLCState[cnt];
       int idx;
       for (idx = 0; idx < cnt && this.len > 0; idx++) {
@@ -94,6 +95,8 @@ public abstract class StateQueue {
       }
       if (idx == cnt) return states;
       
+      // cnt >= index, shrink resulting array
+      // outdated due to resetting cnt == len if cnt > len
       TLCState res[] = new TLCState[idx];
       for (int i = 0; i < idx; i++) {
 	res[i] = states[i];
@@ -146,16 +149,26 @@ public abstract class StateQueue {
     this.notifyAll();
   }
   
+  	/**
+	 * Suspends all access to the {@link StateQueue} for {@link Worker},
+	 * potentially waiting for current accessing {@link Worker} to finish first.
+	 * 
+	 * @return False iff {@link #finish} true, true otherwise
+	 */
   public final boolean suspendAll() {
       boolean needWait = false;
       synchronized (this) {
           if (this.finish) return false;
           this.stop = true;
+		  // if all workers wait at once, it's an indicate that all work is done
+          // and suspending all workers can happen right away without waiting
           needWait = this.numWaiting < TLCGlobals.getNumWorkers();
       }
       while (needWait) {
           synchronized (this.mu) {
               try {
+				  // waiting here assumes that subsequently a worker
+				  // is going to wake us up by calling isAvail()
                   this.mu.wait();
               }
               catch (Exception e) {
@@ -178,10 +191,10 @@ public abstract class StateQueue {
   }
   
   /**
-   * This is a no-op in regular. The only case is, when a TLCServerThread is
+   * This is a no-op in regular. The only case is, when a worker is
    * stuck in {@link #isAvail()}, {@link #len} > 0, {@link #stop} is false and
    * {@link #numWaiting} > 0. Bottom-line, it is assumed to be side-effect free
-   * when consumers behave correctly except for the single case when a remote 
+   * when workers behave correctly except for the single case when a remote 
    * worker dies unexpectedly.
    * 
    * @see http://bugzilla.tlaplus.net/show_bug.cgi?id=175
