@@ -592,4 +592,11 @@ Attaching a Listener to Something
   ResultPage.
 
 Popping up a dialog.
-  See ShowDefinitionsHandler.
+  - For a simple yes/no choice dialog, see DeleteSpecHandler.
+    (No comments, but the code is obvious.)
+    
+  - For a yes/no choice dialog with an extra input that sets
+    a preference, see ForgetSpecHandler.
+    
+  - For a pop-up that handles typed input (and modifies what
+    it shows based on the input), see ShowDeclarationsHandler.

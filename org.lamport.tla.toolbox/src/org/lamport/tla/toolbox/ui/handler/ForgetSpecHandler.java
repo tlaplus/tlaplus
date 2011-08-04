@@ -12,6 +12,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbenchPage;
@@ -21,6 +22,7 @@ import org.lamport.tla.toolbox.spec.manager.WorkspaceSpecManager;
 import org.lamport.tla.toolbox.ui.navigator.ToolboxExplorer;
 import org.lamport.tla.toolbox.util.ToolboxJob;
 import org.lamport.tla.toolbox.util.UIHelper;
+import org.lamport.tla.toolbox.util.pref.PreferenceStoreHelper;
 
 /**
  * Forget specification.
@@ -31,8 +33,42 @@ import org.lamport.tla.toolbox.util.UIHelper;
  * Strings were also appropriately changed.  I was unable to figure out how
  * to use a single handler for both the Forget and the Delete commands.
  *
+ * It would be nice if the confirmation dialog that the command popped up
+ * contained a checkbox that allows the user to suppress the confirmation
+ * dialog on future executions.  To allow the user to change his mind
+ * and require confirmation, this requires that whether or not a confirmation
+ * is raised be a user-settable preference.  (The main TLA+ preference pages is
+ * currently the only preference page where it makes sense to put this preference.)
+ * This can all be implemented as follows:
  * 
- * @author Leslie Lamport
+ *   - Add to the IPreferenceConstants class a definition like
+ *   
+ *        public static final String NO_CONFIRM_ON_FORGET = "doNotConfirmOnForget";
+ *   
+ *   - Add the appropriate command to set the preference's default value
+ *     in the initializeDefaultPreferences method of the PreferenceInitializer
+ *     class.
+ * 
+ *   - Add the preference selector to the TLA+ Preferences page by adding the 
+ *     appropriate checkbox with the createFieldEditors method of the 
+ *     GeneralPreferencePage class.  (Use the "Continue Previous Session on Restart"
+ *     checkbox as a model.)
+ *     
+ *   - Create a ConfirmForgetDialog class that creates the dialog.  That class's
+ *     okPressed method should set the preference if necessary.  See
+ *     LaunchProverDialog for a model.
+ *     
+ *   - Modify the ForgetSpecHandler class's execution method so it first tests the 
+ *     preference to see if it should launch the dialog.  I believe it does this with
+ *     
+ *         IPreferenceStore store = PreferenceStoreHelper.getInstancePreferenceStore();
+ *         boolean shouldIgnore = store.getBoolean(IPreferenceConstants.NO_CONFIRM_ON_FORGET)
+ *     
+ *     If it should, the execution method then launches the dialog  and waits until the 
+ *     user closes it.  See GeneralLaunchProverHandler class's execute method to see how 
+ *     that's done.
+ *     
+  * @author Leslie Lamport
  * @version $Id$
  */
 public class ForgetSpecHandler extends AbstractHandler implements IHandler
