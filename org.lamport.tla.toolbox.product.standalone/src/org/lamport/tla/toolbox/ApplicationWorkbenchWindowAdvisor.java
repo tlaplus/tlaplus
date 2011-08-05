@@ -1,7 +1,14 @@
 package org.lamport.tla.toolbox;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
+import org.eclipse.jface.preference.IPreferenceNode;
+import org.eclipse.jface.preference.PreferenceManager;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.application.ActionBarAdvisor;
 import org.eclipse.ui.application.IActionBarConfigurer;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
@@ -55,4 +62,28 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor
         }
     }
 
+	/* (non-Javadoc)
+	 * @see org.eclipse.ui.application.WorkbenchWindowAdvisor#postWindowOpen()
+	 */
+	public void postWindowOpen() {
+		final PreferenceManager preferenceManager = PlatformUI.getWorkbench().getPreferenceManager();
+		
+		// @see http://bugzilla.tlaplus.net/show_bug.cgi?id=191
+		final List filters = new ArrayList();
+		filters.add("org.eclipse.compare.internal.ComparePreferencePage");
+		
+		// Clean the preferences
+		final List elements = preferenceManager.getElements(PreferenceManager.POST_ORDER);
+		for (Iterator iterator = elements.iterator(); iterator.hasNext();) {
+			final Object elem = (Object) iterator.next();
+			if (elem instanceof IPreferenceNode) {
+				if (filters.contains(((IPreferenceNode) elem).getId())) {
+					preferenceManager.remove((IPreferenceNode) elem);
+				}
+			}
+		}
+
+		super.postWindowOpen();
+	}
+	
 }
