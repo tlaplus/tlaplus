@@ -826,14 +826,20 @@ public class ResourceHelper
     }
 
     /**
-     * Deletes the project
-     * 
-     * The boolean argument isForget was added by LL on 3 August 2011.  It is
-     * true iff the Toolbox should only remove the spec from its list of specs
-     * but should not delete its .toolbox directory.
-     * 
-     * @param project
-     */
+	 * Deletes the project
+	 * 
+	 * The boolean argument isForget was added by LL on 3 August 2011. It is
+	 * true iff the Toolbox should only remove the spec from its list of specs
+	 * but should not delete its .toolbox directory.
+	 * 
+	 * @param project
+	 *            the project to be deleted
+	 * @param aMonitor
+	 *            a monitor to track deletion progress
+	 * @param isForget
+	 *            indicates if the underlying project files should be deleted
+	 *            from the file system. false to delete fs files, true otherwise
+	 */
     public static void deleteProject(final IProject project, final IProgressMonitor aMonitor, boolean isForget)
     {
         try
