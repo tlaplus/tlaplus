@@ -7,6 +7,7 @@ import java.util.List;
 import org.eclipse.jface.preference.IPreferenceNode;
 import org.eclipse.jface.preference.PreferenceManager;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.ui.IPluginContribution;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.application.ActionBarAdvisor;
@@ -67,18 +68,29 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor
 	 */
 	public void postWindowOpen() {
 		final PreferenceManager preferenceManager = PlatformUI.getWorkbench().getPreferenceManager();
-		
+		final IPreferenceNode[] rootSubNodes = preferenceManager.getRootSubNodes();
+
 		// @see http://bugzilla.tlaplus.net/show_bug.cgi?id=191
 		final List filters = new ArrayList();
-		filters.add("org.eclipse.compare.internal.ComparePreferencePage");
-		
+		filters.add("org.eclipse.compare");
+
 		// Clean the preferences
 		final List elements = preferenceManager.getElements(PreferenceManager.POST_ORDER);
 		for (Iterator iterator = elements.iterator(); iterator.hasNext();) {
 			final Object elem = (Object) iterator.next();
-			if (elem instanceof IPreferenceNode) {
-				if (filters.contains(((IPreferenceNode) elem).getId())) {
-					preferenceManager.remove((IPreferenceNode) elem);
+			if (elem instanceof IPluginContribution) {
+				final IPluginContribution aPluginContribution = (IPluginContribution) elem;
+				if (filters.contains(aPluginContribution.getPluginId())) {
+					final IPreferenceNode node = (IPreferenceNode) elem;
+
+					// remove from root node
+					preferenceManager.remove(node);
+
+					// remove from all subnodes
+					for (int i = 0; i < rootSubNodes.length; i++) {
+						final IPreferenceNode subNode = rootSubNodes[i];
+						subNode.remove(node);
+					}
 				}
 			}
 		}
