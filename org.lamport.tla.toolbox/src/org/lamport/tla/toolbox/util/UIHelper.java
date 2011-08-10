@@ -314,14 +314,15 @@ public class UIHelper
      */
     public static IEditorPart openEditor(String editorId, IEditorInput input)
     {
-        try
-        {
-            return getActivePage().openEditor(input, editorId);
-        } catch (PartInitException e)
-        {
-            e.printStackTrace();
-            return null;
-        }
+		final IWorkbenchPage activePage = getActivePage();
+		if (activePage != null) {
+			try {
+				return activePage.openEditor(input, editorId);
+			} catch (PartInitException e) {
+				e.printStackTrace();
+			}
+		}
+		return null;
     }
 
     /**

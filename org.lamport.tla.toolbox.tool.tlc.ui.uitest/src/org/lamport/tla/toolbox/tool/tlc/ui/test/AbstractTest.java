@@ -4,7 +4,12 @@ import java.io.File;
 
 import junit.framework.Assert;
 
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
+import org.eclipse.swtbot.swt.finder.matchers.WithText;
+import org.eclipse.swtbot.swt.finder.waits.Conditions;
+import org.eclipse.swtbot.swt.finder.waits.WaitForObjectCondition;
+import org.eclipse.swtbot.swt.finder.widgets.SWTBotShell;
 import org.junit.Before;
 import org.lamport.tla.toolbox.test.RCPTestSetupHelper;
 
@@ -48,5 +53,15 @@ public abstract class AbstractTest {
 	protected String getSpecName(final File aFile) {
 		final String name = aFile.getName();
 		return name.substring(0, name.lastIndexOf("."));
+	}
+	
+	/**
+	 * @return waits for the TLA+ Toolbox shell to come available
+	 */
+	protected SWTBotShell waitForToolboxShell() {
+		final WaitForObjectCondition<Shell> waitForShell = Conditions.waitForShell(WithText
+				.<Shell> withText("TLA+ Toolbox"));
+		bot.waitUntil(waitForShell);
+		return new SWTBotShell(waitForShell.get(0));
 	}
 }
