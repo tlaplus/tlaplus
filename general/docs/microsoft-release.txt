@@ -5,8 +5,8 @@ Notes: 1. To get tlatools.jar file copied to the right place for the distributed
       
             C:\lamport\tla\newtools\tla2-inria\org.lamport.tla.toolbox.jnlp
             
-       2. If maven doesn't produce a good build, try running `maven clean' before
-          running `maven install'
+       2. If maven doesn't produce a good build, try running `mvn clean' before
+          running `mvn install'
           
        3. The file .../newtools/tla2-inria/pom.xml is not automatically updated
           by SVN inside Eclipse, and must be updated by running 'svn up pom.xml'
