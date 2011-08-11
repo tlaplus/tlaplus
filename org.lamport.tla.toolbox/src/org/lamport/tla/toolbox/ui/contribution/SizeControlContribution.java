@@ -3,8 +3,10 @@
  */
 package org.lamport.tla.toolbox.ui.contribution;
 
-import java.awt.Color;
-
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FillLayout;
@@ -14,7 +16,8 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.menus.WorkbenchWindowControlContribution;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.spec.Spec;
-import org.lamport.tla.toolbox.util.AdapterFactory;
+import org.lamport.tla.toolbox.util.ToolboxJob;
+import org.lamport.tla.toolbox.util.UIHelper;
 import org.lamport.tla.toolbox.util.pref.IPreferenceConstants;
 import org.lamport.tla.toolbox.util.pref.PreferenceStoreHelper;
 
@@ -71,6 +74,7 @@ public class SizeControlContribution extends WorkbenchWindowControlContribution
 
         // Create label inside composite.
         sizeLabel = new Label(composite, SWT.BORDER | SWT.CENTER);
+        sizeLabel.setText("n/a");
         sizeLabel.setToolTipText("Size of .toolbox directory");
         sizeLabel.setSize(100, 20);
         sizeLabel.setBackground(description.getDisplay().getSystemColor(SWT.COLOR_YELLOW));
@@ -80,35 +84,49 @@ public class SizeControlContribution extends WorkbenchWindowControlContribution
     }
 
     // Updates status from the specification currently loaded in the SpecManager
-    public void updateSize()
-    {
-        if (sizeLabel == null || sizeLabel.isDisposed())
-        {
-            return;
-        }
+	public void updateSize() {
+		if (sizeLabel == null || sizeLabel.isDisposed()) {
+			return;
+		}
 
-        Spec spec = Activator.getSpecManager().getSpecLoaded();
-        if (spec == null)
-        {
-            composite.setVisible(false);
-            return;
-        }
+		final Job j = new ToolboxJob("Calculating specification size...") {
+			/* (non-Javadoc)
+			 * @see org.eclipse.core.runtime.jobs.Job#run(org.eclipse.core.runtime.IProgressMonitor)
+			 */
+			protected IStatus run(IProgressMonitor monitor) {
+				final Spec spec = Activator.getSpecManager().getSpecLoaded();
 
-        IPreferenceStore preferenceStore = PreferenceStoreHelper.getProjectPreferenceStore(spec.getProject());
-        String size = preferenceStore.getString(IPreferenceConstants.P_PROJECT_TOOLBOX_DIR_SIZE);
-        sizeLabel.setText(size);
+				UIHelper.runUIAsync(new Runnable() {
+					/* (non-Javadoc)
+					 * @see java.lang.Runnable#run()
+					 */
+					public void run() {
+						if (spec == null && !composite.isDisposed()) {
+							composite.setVisible(false);
+						} else if (!sizeLabel.isDisposed() && !composite.isDisposed()) {
+							final IPreferenceStore preferenceStore = PreferenceStoreHelper.getProjectPreferenceStore(spec
+									.getProject());
+							final String size = preferenceStore.getString(IPreferenceConstants.P_PROJECT_TOOLBOX_DIR_SIZE);
+							sizeLabel.setText(size);
 
-        // Make invisible if less than the I_MIN_DISPLAYED_SIZE preference.
-        if (Long.parseLong(size) < Activator.getDefault().getPreferenceStore().getInt(
-                IPreferenceConstants.I_MIN_DISPLAYED_SIZE))
-        {
-            composite.setVisible(false);
-            return;
-        }
-        // sizeLabel.setBackground(sizeLabel.getDisplay().getSystemColor(AdapterFactory.getStatusAsSWTBGColor(spec)));
-        // sizeLabel.setForeground(sizeLabel.getDisplay().getSystemColor(AdapterFactory.getStatusAsSWTFGColor(spec)));
-        sizeLabel.redraw();
-        composite.setVisible(true);
-    }
-
+							// Make invisible if less than the
+							// I_MIN_DISPLAYED_SIZE
+							// preference.
+							if (Long.parseLong(size) < Activator.getDefault().getPreferenceStore()
+									.getInt(IPreferenceConstants.I_MIN_DISPLAYED_SIZE)) {
+								composite.setVisible(false);
+								return;
+							}
+							// sizeLabel.setBackground(sizeLabel.getDisplay().getSystemColor(AdapterFactory.getStatusAsSWTBGColor(spec)));
+							// sizeLabel.setForeground(sizeLabel.getDisplay().getSystemColor(AdapterFactory.getStatusAsSWTFGColor(spec)));
+							sizeLabel.redraw();
+							composite.setVisible(true);
+						}
+					}
+				});
+				return Status.OK_STATUS;
+			}
+		};
+		j.schedule();
+	}
 }

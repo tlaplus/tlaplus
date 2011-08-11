@@ -231,7 +231,7 @@ public class WorkspaceSpecManager extends GenericSelectionProvider implements IS
         this.loadedSpec = spec;
         if (this.loadedSpec != null)
         {
-            // touch the spec
+            // touch the spec, but why? This is essentially going to cause a spec rebuild
             this.loadedSpec.setLastModified();
         }
     }

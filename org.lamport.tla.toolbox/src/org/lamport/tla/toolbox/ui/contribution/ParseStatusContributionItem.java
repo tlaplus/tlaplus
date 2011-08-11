@@ -1,5 +1,9 @@
 package org.lamport.tla.toolbox.ui.contribution;
 
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -9,6 +13,8 @@ import org.eclipse.ui.menus.WorkbenchWindowControlContribution;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.util.AdapterFactory;
+import org.lamport.tla.toolbox.util.ToolboxJob;
+import org.lamport.tla.toolbox.util.UIHelper;
 
 /**
  * A widget placed to the status line that shows the parse status of the root
@@ -66,26 +72,40 @@ public class ParseStatusContributionItem extends WorkbenchWindowControlContribut
     }
 
     // Updates status from the specification currently loaded in the SpecManager
-    public void updateStatus()
-    {
-        if (statusLabel == null || statusLabel.isDisposed())
-        {
-            return;
-        }
+	public void updateStatus() {
+		if (statusLabel == null || statusLabel.isDisposed()) {
+			return;
+		}
 
-        Spec spec = Activator.getSpecManager().getSpecLoaded();
-        if (spec == null)
-        {
-            composite.setVisible(false);
-            return;
-        }
-        statusLabel.setText(AdapterFactory.getStatusAsString(spec));
-        statusLabel.setBackground(statusLabel.getDisplay().getSystemColor(AdapterFactory.getStatusAsSWTBGColor(spec)));
-        statusLabel.setForeground(statusLabel.getDisplay().getSystemColor(AdapterFactory.getStatusAsSWTFGColor(spec)));
-        statusLabel.redraw();
-        composite.setVisible(true);
-    }
+		final Job j = new ToolboxJob("Calculating specification size...") {
+			/* (non-Javadoc)
+			 * @see org.eclipse.core.runtime.jobs.Job#run(org.eclipse.core.runtime.IProgressMonitor)
+			 */
+			protected IStatus run(IProgressMonitor monitor) {
+				final Spec spec = Activator.getSpecManager().getSpecLoaded();
 
+				UIHelper.runUIAsync(new Runnable() {
+					/* (non-Javadoc)
+					 * @see java.lang.Runnable#run()
+					 */
+					public void run() {
+						if (spec == null && !composite.isDisposed()) {
+							composite.setVisible(false);
+						} else if(!statusLabel.isDisposed() && !composite.isDisposed()) {
+							statusLabel.setText(AdapterFactory.getStatusAsString(spec));
+							statusLabel.setBackground(statusLabel.getDisplay().getSystemColor(AdapterFactory.getStatusAsSWTBGColor(spec)));
+							statusLabel.setForeground(statusLabel.getDisplay().getSystemColor(AdapterFactory.getStatusAsSWTFGColor(spec)));
+							statusLabel.redraw();
+							composite.setVisible(true);
+						}
+					}
+				});
+				return Status.OK_STATUS;
+			}
+		};
+		j.schedule();
+	}
+	
     public void update()
     {
         updateStatus();
