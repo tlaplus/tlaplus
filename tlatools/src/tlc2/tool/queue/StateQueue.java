@@ -143,7 +143,7 @@ public abstract class StateQueue {
 				}
 				// TODO what happens if control flow exits without ever
 				// notifying the checkpoint (mu.wait()) thread? In case
-				// distributed TLC this is the main thread of
+				// of distributed TLC, this is the main thread of
 				// TLCServer.
 				synchronized (this.mu) {
 					this.mu.notify();

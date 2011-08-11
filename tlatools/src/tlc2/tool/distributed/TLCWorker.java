@@ -142,6 +142,13 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 	}
 	
 	/* (non-Javadoc)
+	 * @see tlc2.tool.distributed.TLCWorkerRMI#isAlive()
+	 */
+	public boolean isAlive() {
+		return true;
+	}
+	
+	/* (non-Javadoc)
 	 * @see tlc2.tool.distributed.TLCWorkerRMI#getURI()
 	 */
 	public URI getURI() throws RemoteException {

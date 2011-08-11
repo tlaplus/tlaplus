@@ -26,7 +26,12 @@ public interface TLCWorkerRMI extends Remote {
 	 */
 	public Object[] getNextStates(TLCState[] states) throws RemoteException,
 			WorkerException;
-
+	
+	/**
+	 * @return true iff worker is still alive
+	 */
+	public boolean isAlive() throws RemoteException;
+	
 	/**
 	 * Kills/exits this worker
 	 * @throws RemoteException

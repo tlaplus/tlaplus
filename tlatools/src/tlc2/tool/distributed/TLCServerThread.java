@@ -8,6 +8,9 @@ package tlc2.tool.distributed;
 import java.io.EOFException;
 import java.net.URI;
 import java.rmi.RemoteException;
+import java.util.Date;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 
@@ -31,6 +34,7 @@ public class TLCServerThread extends IdThread {
 	private int receivedStates, sentStates;
 	private final CyclicBarrier barrier;
 	private final IBlockSelector selector;
+	private final Timer keepAliveTimer;
 
 	public TLCServerThread(int id, TLCWorkerRMI worker, TLCServer tlc) {
 		this(id, worker, tlc, null, null);
@@ -42,11 +46,16 @@ public class TLCServerThread extends IdThread {
 		this.tlcServer = tlc;
 		this.barrier = aBarrier;
 		this.selector = aSelector;
+		
+		// schedule a timer to periodically (60s) check server aliveness 
+		keepAliveTimer = new Timer("TLCWorker KeepAlive Timer", true);
+		keepAliveTimer.schedule(new TLCTimerTask(), 10000, 60000);
 	}
 
 	private TLCWorkerRMI worker;
 	private TLCServer tlcServer;
 	private URI uri;
+	private long lastInvocation;
 	
 	/**
 	 * Current unit of work or null
@@ -113,6 +122,7 @@ public class TLCServerThread extends IdThread {
 						receivedStates += newStates[0].size();
 						newFps = (LongVec[]) res[1];
 						workDone = true;
+						lastInvocation = System.currentTimeMillis();
 					} catch (RemoteException e) {
 						ToolIO.err.println(e.getMessage());
 						// non recoverable errors
@@ -194,6 +204,7 @@ public class TLCServerThread extends IdThread {
 	 * @param stateQueue
 	 */
 	private void handleRemoteWorkerLost(final StateQueue stateQueue) {
+		keepAliveTimer.cancel();
 		stateQueue.sEnqueue(states);
 		TLCGlobals.incNumWorkers(-1);
 		MP.printMessage(EC.TLC_DISTRIBUTED_WORKER_DEREGISTERED, getUri().toString());
@@ -245,5 +256,26 @@ public class TLCServerThread extends IdThread {
 	 */
 	public int getSentStates() {
 		return sentStates;
+	}
+	
+	//************************************//
+	
+	private class TLCTimerTask extends TimerTask {
+
+		/* (non-Javadoc)
+		 * @see java.util.TimerTask#run()
+		 */
+		public void run() {
+			long now = new Date().getTime();
+			if(lastInvocation == 0 || (now - lastInvocation) > 60000) {
+				try {
+					if(!worker.isAlive()) {
+						handleRemoteWorkerLost(tlcServer.stateQueue);
+					}
+				} catch (RemoteException e) {
+					handleRemoteWorkerLost(tlcServer.stateQueue);
+				}
+			}
+		}
 	}
 }

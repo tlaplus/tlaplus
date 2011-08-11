@@ -81,4 +81,11 @@ public class TLCWorkerSmartProxy implements TLCWorkerRMI {
 	public URI getURI() throws RemoteException {
 		return worker.getURI();
 	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.tool.distributed.TLCWorkerRMI#isAlive()
+	 */
+	public boolean isAlive() throws RemoteException {
+		return worker.isAlive();
+	}
 }
