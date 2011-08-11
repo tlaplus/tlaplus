@@ -1,0 +1,582 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?pde version="3.6"?>
+
+<target name="TLA+ Toolbox 3.6" sequenceNumber="53">
+<locations>
+<location includeAllPlatforms="false" includeMode="planner" includeSource="true" type="InstallableUnit">
+<unit id="org.eclipse.platform.sdk" version="3.6.2.M20110210-1200"/>
+<unit id="org.eclipse.rcp.sdk.id" version="3.6.0.M20110210-1200"/>
+<unit id="org.eclipse.equinox.p2.sdk.feature.group" version="3.6.2.R36x_v20110120-9I7VGEAG438GhnfSLuLz0FXP9NYJ"/>
+<unit id="org.eclipse.equinox.server.jetty.feature.group" version="1.0.0.v20100510-7I777iBgJ9DIARGH8IIQ"/>
+<repository location="http://download.eclipse.org/eclipse/updates/3.6/R-3.6.2-201102101200/"/>
+</location>
+<location includeAllPlatforms="false" includeMode="planner" includeSource="true" type="InstallableUnit">
+<unit id="org.eclipse.swtbot.forms.feature.group" version="2.0.4.20110304_0338-e5aff47-dev-e36"/>
+<unit id="org.eclipse.swtbot.eclipse.feature.group" version="2.0.4.20110304_0338-e5aff47-dev-e36"/>
+<unit id="org.eclipse.swtbot.ide.feature.group" version="2.0.4.20110304_0338-e5aff47-dev-e36"/>
+<unit id="org.eclipse.swtbot.eclipse.test.junit3.feature.group" version="2.0.4.20110304_0338-e5aff47-dev-e36"/>
+<unit id="org.eclipse.swtbot.eclipse.test.junit4.feature.group" version="2.0.4.20110304_0338-e5aff47-dev-e36"/>
+<repository location="http://download.eclipse.org/technology/swtbot/helios/dev-build/update-site/"/>
+</location>
+<location includeAllPlatforms="false" includeMode="planner" includeSource="true" type="InstallableUnit">
+<unit id="org.eclipse.ajdt.feature.group" version="2.1.3.e36x-20110622-1300"/>
+<unit id="org.eclipse.contribution.weaving.feature.group" version="2.1.3.e36x-20110622-1300"/>
+<unit id="org.eclipse.equinox.weaving.sdk.feature.group" version="1.0.0.v20090817"/>
+<repository location="http://download.eclipse.org/tools/ajdt/36/update"/>
+</location>
+</locations>
+<includeBundles>
+<plugin id="org.eclipse.equinox.p2.publisher" version="1.1.2.v20100824-2220"/>
+<plugin id="org.eclipse.ltk.core.refactoring" version="3.5.101.r362_v20101117-0800"/>
+<plugin id="org.eclipse.equinox.p2.reconciler.dropins.source"/>
+<plugin id="org.eclipse.equinox.p2.ui.source" version="2.0.0.v20100518"/>
+<plugin id="org.apache.ant" version="1.7.1.v20100518-1145"/>
+<plugin id="org.eclipse.swt" version="3.6.2.v3659c"/>
+<plugin id="org.eclipse.ui.workbench.texteditor.source" version="3.6.1.r361_v20100714-0800"/>
+<plugin id="org.eclipse.ui.browser.source" version="3.3.1.r36_20101216"/>
+<plugin id="org.eclipse.equinox.p2.repository.tools" version="2.0.1.R36x_v20100823"/>
+<plugin id="org.eclipse.update.core.source" version="3.2.402.R36x_v20100629"/>
+<plugin id="org.eclipse.ltk.ui.refactoring.source" version="3.5.0.v20100526-0800"/>
+<plugin id="org.eclipse.team.core.source" version="3.5.101.R36x_v20110203-1036"/>
+<plugin id="org.eclipse.jdt.launching.source" version="3.5.200.v20110105_r362"/>
+<plugin id="org.eclipse.jface.databinding.source" version="1.4.0.I20100601-0800"/>
+<plugin id="org.eclipse.ui.navigator.resources.source" version="3.4.202.M20101124-0800"/>
+<plugin id="org.eclipse.equinox.p2.touchpoint.eclipse.source" version="2.0.3.R36x_v20101202"/>
+<plugin id="org.eclipse.equinox.registry.source" version="3.5.0.v20100503"/>
+<plugin id="org.eclipse.equinox.p2.metadata.generator"/>
+<plugin id="org.eclipse.equinox.p2.ui.source" version="2.0.0.v20100518"/>
+<plugin id="org.eclipse.core.variables.source" version="3.2.400.v20100505"/>
+<plugin id="org.eclipse.equinox.util"/>
+<plugin id="org.eclipse.ui.externaltools" version="3.2.0.v20100427"/>
+<plugin id="org.eclipse.jdt.core.manipulation.source" version="1.3.0.v20100520-0800"/>
+<plugin id="org.eclipse.core.filesystem.source" version="1.3.1.R36x_v20100727-0745"/>
+<plugin id="org.eclipse.jface.text.source" version="3.6.1.r361_v20100825-0800"/>
+<plugin id="org.eclipse.core.filesystem.linux.x86_64"/>
+<plugin id="org.eclipse.compare.core.source" version="3.5.101.R36x_v20100929-0800"/>
+<plugin id="org.apache.lucene.analysis" version="1.9.1.v20100518-1140"/>
+<plugin id="org.eclipse.jdt.debug.ui" version="3.5.2.v20100928a_r362"/>
+<plugin id="org.eclipse.core.jobs.source" version="3.5.1.R36x_v20100824"/>
+<plugin id="org.eclipse.search.source" version="3.6.0.v20100520-0800"/>
+<plugin id="org.eclipse.core.net.linux.x86_64"/>
+<plugin id="org.eclipse.text.source" version="3.5.0.v20100601-1300"/>
+<plugin id="org.eclipse.equinox.p2.artifact.repository" version="1.1.1.R36x_v20100901"/>
+<plugin id="org.eclipse.equinox.app.source" version="1.3.1.R36x_v20100803"/>
+<plugin id="org.eclipse.team.ui.source" version="3.5.102.R36x_v20110203-1036"/>
+<plugin id="org.eclipse.equinox.jsp.jasper.source"/>
+<plugin id="org.eclipse.equinox.p2.metadata.source" version="2.0.1.R36x_v20101202"/>
+<plugin id="org.eclipse.help.ui.source" version="3.5.3.r36_20101116"/>
+<plugin id="org.apache.ant.source" version="1.7.1.v20100518-1145"/>
+<plugin id="org.eclipse.swtbot.swt.finder"/>
+<plugin id="org.eclipse.ui.cheatsheets.source" version="3.4.0.v20100427"/>
+<plugin id="org.eclipse.equinox.p2.engine" version="2.0.1.R36x_v20110201"/>
+<plugin id="org.eclipse.equinox.p2.director.source" version="2.0.3.R36x_v20101117-1018"/>
+<plugin id="org.eclipse.ltk.core.refactoring.source" version="3.5.101.r362_v20101117-0800"/>
+<plugin id="org.eclipse.ecf.filetransfer.source" version="4.0.0.v20100906-1425"/>
+<plugin id="org.eclipse.equinox.p2.director.app.source" version="1.0.201.R36x_v20100823"/>
+<plugin id="org.eclipse.osgi.util"/>
+<plugin id="org.eclipse.text.source" version="3.5.0.v20100601-1300"/>
+<plugin id="org.eclipse.ui.ide.source" version="3.6.2.M20101201-0800"/>
+<plugin id="org.eclipse.core.variables.source" version="3.2.400.v20100505"/>
+<plugin id="org.eclipse.ui.views.log.source" version="1.0.100.v20110210_r362"/>
+<plugin id="org.eclipse.core.databinding.beans"/>
+<plugin id="org.apache.commons.httpclient"/>
+<plugin id="org.eclipse.equinox.p2.console.source"/>
+<plugin id="org.eclipse.equinox.p2.touchpoint.eclipse" version="2.0.3.R36x_v20101202"/>
+<plugin id="org.eclipse.equinox.p2.operations.source" version="2.0.0.v20100510"/>
+<plugin id="org.eclipse.core.databinding.source" version="1.3.100.I20100601-0800"/>
+<plugin id="org.eclipse.ajdt.core"/>
+<plugin id="org.eclipse.equinox.p2.repository.tools.source" version="2.0.1.R36x_v20100823"/>
+<plugin id="org.eclipse.team.ui.source" version="3.5.102.R36x_v20110203-1036"/>
+<plugin id="org.eclipse.ui.workbench.compatibility.source"/>
+<plugin id="org.apache.commons.codec.source"/>
+<plugin id="org.eclipse.team.ui.source" version="3.5.102.R36x_v20110203-1036"/>
+<plugin id="org.eclipse.ecf.identity.source" version="3.1.0.v20100906-1425"/>
+<plugin id="org.eclipse.pde.runtime"/>
+<plugin id="org.eclipse.core.expressions" version="3.4.200.v20100505"/>
+<plugin id="org.eclipse.equinox.p2.metadata.repository" version="1.1.0.v20100513"/>
+<plugin id="org.apache.commons.logging"/>
+<plugin id="org.eclipse.equinox.p2.jarprocessor.source" version="1.0.200.v20100503a"/>
+<plugin id="org.eclipse.core.externaltools.source" version="1.0.1.v20100831_r361"/>
+<plugin id="org.eclipse.jface.source" version="3.6.2.M20110210-1200"/>
+<plugin id="org.eclipse.aspectj"/>
+<plugin id="org.eclipse.jdt.core.manipulation" version="1.3.0.v20100520-0800"/>
+<plugin id="com.jcraft.jsch"/>
+<plugin id="org.eclipse.jdt.debug.source" version="3.6.1.v20100715_r361"/>
+<plugin id="javax.servlet.source" version="2.5.0.v200910301333"/>
+<plugin id="org.eclipse.equinox.p2.artifact.repository.source" version="1.1.1.R36x_v20100901"/>
+<plugin id="com.ibm.icu.source" version="4.2.1.v20100412"/>
+<plugin id="org.eclipse.core.runtime.compatibility.auth.source" version="3.2.200.v20100517"/>
+<plugin id="org.eclipse.ui.navigator.source" version="3.5.0.I20100601-0800"/>
+<plugin id="org.apache.lucene.analysis.source" version="1.9.1.v20100518-1140"/>
+<plugin id="org.eclipse.equinox.p2.ui.source" version="2.0.0.v20100518"/>
+<plugin id="org.apache.jasper"/>
+<plugin id="org.eclipse.core.filebuffers.source" version="3.5.100.v20100520-0800"/>
+<plugin id="org.eclipse.jdt.core" version="3.6.2.v_A76_R36x"/>
+<plugin id="org.apache.lucene" version="1.9.1.v20100518-1140"/>
+<plugin id="org.eclipse.core.databinding.observable.source" version="1.3.0.I20100601-0800"/>
+<plugin id="org.eclipse.ui.intro.source" version="3.4.0.v20100427"/>
+<plugin id="org.eclipse.ui.source" version="3.6.2.M20110203-1100"/>
+<plugin id="org.eclipse.swtbot.ant.optional.junit3"/>
+<plugin id="org.eclipse.ecf" version="3.1.0.v20100906-1425"/>
+<plugin id="org.eclipse.ui.views.properties.tabbed.source" version="3.5.100.I20100509-0800"/>
+<plugin id="org.eclipse.osgi.services.source" version="3.2.100.v20100503"/>
+<plugin id="org.eclipse.update.configurator" version="3.3.100.v20100512"/>
+<plugin id="org.eclipse.equinox.event"/>
+<plugin id="org.eclipse.ant.core.source" version="3.2.201.v20110203_r362"/>
+<plugin id="org.eclipse.ant.core.source" version="3.2.201.v20110203_r362"/>
+<plugin id="org.eclipse.core.runtime.compatibility.source" version="3.2.100.v20100505"/>
+<plugin id="org.eclipse.ui.externaltools.source" version="3.2.0.v20100427"/>
+<plugin id="org.eclipse.pde.build" version="3.6.2.R36x_20110203"/>
+<plugin id="com.ibm.icu" version="4.2.1.v20100412"/>
+<plugin id="org.eclipse.equinox.p2.garbagecollector.source" version="1.0.100.v20100503"/>
+<plugin id="org.eclipse.core.contenttype.source" version="3.4.100.v20100505-1235"/>
+<plugin id="org.eclipse.core.variables.source" version="3.2.400.v20100505"/>
+<plugin id="org.eclipse.update.core.source" version="3.2.402.R36x_v20100629"/>
+<plugin id="com.jcraft.jsch.source"/>
+<plugin id="org.eclipse.update.configurator.source" version="3.3.100.v20100512"/>
+<plugin id="org.eclipse.core.filesystem.source" version="1.3.1.R36x_v20100727-0745"/>
+<plugin id="org.hamcrest.library.source"/>
+<plugin id="org.eclipse.pde.launching" version="3.6.0.v20100601"/>
+<plugin id="org.eclipse.equinox.http.jetty.source" version="2.0.0.v20100503"/>
+<plugin id="org.eclipse.equinox.p2.ui.sdk.scheduler.source"/>
+<plugin id="org.eclipse.jdt.junit.runtime.source" version="3.4.200.v20100526-0800"/>
+<plugin id="org.junit" version="3.8.2.v3_8_2_v20100427-1100"/>
+<plugin id="org.mortbay.jetty.util.source" version="6.1.23.v201004211559"/>
+<plugin id="org.eclipse.ajdt.core.source"/>
+<plugin id="org.eclipse.pde.launching.source" version="3.6.0.v20100601"/>
+<plugin id="org.eclipse.equinox.app.source" version="1.3.1.R36x_v20100803"/>
+<plugin id="org.eclipse.ecf.filetransfer" version="4.0.0.v20100906-1425"/>
+<plugin id="org.eclipse.compare.core" version="3.5.101.R36x_v20100929-0800"/>
+<plugin id="org.eclipse.core.contenttype.source" version="3.4.100.v20100505-1235"/>
+<plugin id="org.eclipse.equinox.launcher.source"/>
+<plugin id="org.eclipse.equinox.p2.updatesite" version="1.0.201.R36x_v20100823"/>
+<plugin id="org.eclipse.equinox.p2.metadata.repository.source" version="1.1.0.v20100513"/>
+<plugin id="org.apache.commons.codec"/>
+<plugin id="org.eclipse.equinox.p2.repository.source" version="2.0.2.R36x_v20110111-1500"/>
+<plugin id="org.eclipse.equinox.ds.source"/>
+<plugin id="org.eclipse.core.jobs.source" version="3.5.1.R36x_v20100824"/>
+<plugin id="com.ibm.icu.source" version="4.2.1.v20100412"/>
+<plugin id="org.eclipse.osgi" version="3.6.2.R36x_v20110210"/>
+<plugin id="org.eclipse.ui.externaltools.source" version="3.2.0.v20100427"/>
+<plugin id="org.eclipse.ltk.ui.refactoring.source" version="3.5.0.v20100526-0800"/>
+<plugin id="org.eclipse.equinox.preferences.source" version="3.3.0.v20100503"/>
+<plugin id="org.eclipse.ui.source" version="3.6.2.M20110203-1100"/>
+<plugin id="org.eclipse.swt.gtk.linux.x86_64"/>
+<plugin id="org.eclipse.pde.ui.source" version="3.6.1.v20110210_r362"/>
+<plugin id="org.eclipse.ui.console.source" version="3.5.0.v20100526"/>
+<plugin id="org.eclipse.equinox.simpleconfigurator.source" version="1.0.200.v20100503"/>
+<plugin id="org.eclipse.ui.workbench.source" version="3.6.2.M20110210-1200"/>
+<plugin id="org.eclipse.core.net.source" version="1.2.100.I20100511-0800"/>
+<plugin id="org.eclipse.equinox.p2.metadata" version="2.0.1.R36x_v20101202"/>
+<plugin id="org.eclipse.equinox.app" version="1.3.1.R36x_v20100803"/>
+<plugin id="org.eclipse.equinox.jsp.jasper.registry"/>
+<plugin id="org.eclipse.jdt.ui" version="3.6.2.r362_v20110203"/>
+<plugin id="org.eclipse.ecf.provider.filetransfer.httpclient.ssl.source"/>
+<plugin id="org.eclipse.equinox.simpleconfigurator.source" version="1.0.200.v20100503"/>
+<plugin id="org.eclipse.swtbot.eclipse.ui"/>
+<plugin id="org.eclipse.equinox.util.source"/>
+<plugin id="org.eclipse.ui.views.source" version="3.5.1.M20110202-0800"/>
+<plugin id="org.eclipse.help" version="3.5.0.v20100524"/>
+<plugin id="org.eclipse.core.runtime.compatibility.auth" version="3.2.200.v20100517"/>
+<plugin id="org.eclipse.core.variables" version="3.2.400.v20100505"/>
+<plugin id="org.eclipse.equinox.preferences.source" version="3.3.0.v20100503"/>
+<plugin id="org.eclipse.ecf.identity" version="3.1.0.v20100906-1425"/>
+<plugin id="org.hamcrest.core" version="1.1.0.v20090501071000"/>
+<plugin id="org.eclipse.jdt.ui.source" version="3.6.2.r362_v20110203"/>
+<plugin id="org.eclipse.ui.forms.source" version="3.5.2.r36_v20100702"/>
+<plugin id="org.eclipse.jdt.core.source" version="3.6.2.v_A76_R36x"/>
+<plugin id="org.eclipse.ui.workbench" version="3.6.2.M20110210-1200"/>
+<plugin id="org.junit.source" version="4.8.1.v4_8_1_v20100427-1100"/>
+<plugin id="org.eclipse.pde.build.source" version="3.6.2.R36x_20110203"/>
+<plugin id="org.eclipse.ui.views.source" version="3.5.1.M20110202-0800"/>
+<plugin id="org.eclipse.equinox.http.registry"/>
+<plugin id="org.eclipse.equinox.p2.updatesite.source" version="1.0.201.R36x_v20100823"/>
+<plugin id="org.eclipse.equinox.http.servlet.source" version="1.1.0.v20100503"/>
+<plugin id="org.eclipse.equinox.p2.repository.tools.source" version="2.0.1.R36x_v20100823"/>
+<plugin id="org.eclipse.equinox.registry.source" version="3.5.0.v20100503"/>
+<plugin id="org.eclipse.debug.ui" version="3.6.3.v20101201_r362"/>
+<plugin id="org.eclipse.compare.core.source" version="3.5.101.R36x_v20100929-0800"/>
+<plugin id="org.eclipse.ecf.source" version="3.1.0.v20100906-1425"/>
+<plugin id="org.eclipse.core.jobs.source" version="3.5.1.R36x_v20100824"/>
+<plugin id="org.eclipse.equinox.frameworkadmin.equinox.source" version="1.0.200.v20100505"/>
+<plugin id="org.eclipse.equinox.p2.director.app.source" version="1.0.201.R36x_v20100823"/>
+<plugin id="org.eclipse.equinox.frameworkadmin.equinox" version="1.0.200.v20100505"/>
+<plugin id="org.eclipse.ui.presentations.r21.source"/>
+<plugin id="org.eclipse.core.databinding.observable.source" version="1.3.0.I20100601-0800"/>
+<plugin id="org.eclipse.equinox.p2.metadata" version="2.0.1.R36x_v20101202"/>
+<plugin id="org.eclipse.update.core" version="3.2.402.R36x_v20100629"/>
+<plugin id="org.eclipse.ecf.ssl.source"/>
+<plugin id="org.eclipse.help.ui.source" version="3.5.3.r36_20101116"/>
+<plugin id="org.eclipse.equinox.p2.engine.source" version="2.0.1.R36x_v20110201"/>
+<plugin id="org.mortbay.jetty.server" version="6.1.23.v201004211559"/>
+<plugin id="org.eclipse.ui" version="3.6.2.M20110203-1100"/>
+<plugin id="org.mortbay.jetty.util" version="6.1.23.v201004211559"/>
+<plugin id="org.eclipse.equinox.p2.metadata.repository.source" version="1.1.0.v20100513"/>
+<plugin id="org.eclipse.pde.ui.source" version="3.6.1.v20110210_r362"/>
+<plugin id="org.eclipse.osgi.services" version="3.2.100.v20100503"/>
+<plugin id="org.eclipse.equinox.p2.director.app.source" version="1.0.201.R36x_v20100823"/>
+<plugin id="org.eclipse.ant.core" version="3.2.201.v20110203_r362"/>
+<plugin id="org.sat4j.core" version="2.2.0.v20100429"/>
+<plugin id="org.eclipse.equinox.security.source" version="1.0.200.v20100503"/>
+<plugin id="org.eclipse.ecf.filetransfer.source" version="4.0.0.v20100906-1425"/>
+<plugin id="org.eclipse.equinox.jsp.jasper"/>
+<plugin id="org.apache.ant.source" version="1.7.1.v20100518-1145"/>
+<plugin id="org.hamcrest.text"/>
+<plugin id="org.eclipse.equinox.p2.touchpoint.eclipse.source" version="2.0.3.R36x_v20101202"/>
+<plugin id="org.eclipse.pde.launching.source" version="3.6.0.v20100601"/>
+<plugin id="org.eclipse.jdt.junit.runtime" version="3.4.200.v20100526-0800"/>
+<plugin id="org.eclipse.jface.databinding.source" version="1.4.0.I20100601-0800"/>
+<plugin id="org.eclipse.ui.console.source" version="3.5.0.v20100526"/>
+<plugin id="org.eclipse.ecf.identity.source" version="3.1.0.v20100906-1425"/>
+<plugin id="org.eclipse.equinox.p2.operations" version="2.0.0.v20100510"/>
+<plugin id="org.eclipse.search.source" version="3.6.0.v20100520-0800"/>
+<plugin id="org.eclipse.contribution.weaving.jdt.source"/>
+<plugin id="org.eclipse.equinox.security.source" version="1.0.200.v20100503"/>
+<plugin id="org.eclipse.equinox.concurrent" version="1.0.100.v20100503"/>
+<plugin id="org.eclipse.equinox.http.servlet" version="1.1.0.v20100503"/>
+<plugin id="org.eclipse.equinox.p2.updatesite.source" version="1.0.201.R36x_v20100823"/>
+<plugin id="org.eclipse.team.ui" version="3.5.102.R36x_v20110203-1036"/>
+<plugin id="org.eclipse.help.webapp"/>
+<plugin id="org.eclipse.core.net.source" version="1.2.100.I20100511-0800"/>
+<plugin id="org.eclipse.equinox.frameworkadmin.equinox.source" version="1.0.200.v20100505"/>
+<plugin id="javax.servlet" version="2.5.0.v200910301333"/>
+<plugin id="org.eclipse.equinox.p2.director.source" version="2.0.3.R36x_v20101117-1018"/>
+<plugin id="org.eclipse.jdt.junit.core.source" version="3.6.1.r361_v20100825-0800"/>
+<plugin id="javax.servlet.jsp.source"/>
+<plugin id="org.eclipse.equinox.p2.directorywatcher.source"/>
+<plugin id="org.eclipse.core.runtime.compatibility.source" version="3.2.100.v20100505"/>
+<plugin id="org.eclipse.core.commands.source" version="3.6.0.I20100512-1500"/>
+<plugin id="org.junit.source" version="4.8.1.v4_8_1_v20100427-1100"/>
+<plugin id="org.eclipse.ui.net"/>
+<plugin id="javax.servlet.jsp"/>
+<plugin id="org.eclipse.ui.workbench.compatibility"/>
+<plugin id="org.eclipse.core.filebuffers.source" version="3.5.100.v20100520-0800"/>
+<plugin id="org.eclipse.ecf.provider.filetransfer.source" version="3.1.0.v20100906-1425"/>
+<plugin id="org.eclipse.debug.core.source" version="3.6.0.v20100519"/>
+<plugin id="org.eclipse.platform"/>
+<plugin id="org.eclipse.equinox.preferences.source" version="3.3.0.v20100503"/>
+<plugin id="org.eclipse.core.databinding.source" version="1.3.100.I20100601-0800"/>
+<plugin id="org.eclipse.equinox.simpleconfigurator.manipulator" version="2.0.0.v20100503"/>
+<plugin id="org.eclipse.equinox.event.source"/>
+<plugin id="org.mortbay.jetty.util.source" version="6.1.23.v201004211559"/>
+<plugin id="org.eclipse.core.commands" version="3.6.0.I20100512-1500"/>
+<plugin id="org.eclipse.core.runtime.source" version="3.6.0.v20100505"/>
+<plugin id="org.eclipse.jdt.launching.source" version="3.5.200.v20110105_r362"/>
+<plugin id="org.eclipse.equinox.p2.metadata.repository.source" version="1.1.0.v20100513"/>
+<plugin id="org.sat4j.pb" version="2.2.0.v20100429"/>
+<plugin id="org.eclipse.core.filebuffers" version="3.5.100.v20100520-0800"/>
+<plugin id="org.eclipse.equinox.p2.touchpoint.natives"/>
+<plugin id="org.eclipse.swtbot.junit4_x"/>
+<plugin id="org.eclipse.osgi.source" version="3.6.2.R36x_v20110210"/>
+<plugin id="org.eclipse.ant.ui" version="3.5.0.v20100427"/>
+<plugin id="org.eclipse.jsch.core"/>
+<plugin id="org.eclipse.core.databinding.beans.source"/>
+<plugin id="org.eclipse.pde.runtime.source"/>
+<plugin id="org.eclipse.core.net" version="1.2.100.I20100511-0800"/>
+<plugin id="org.eclipse.ecf.provider.filetransfer.ssl.source"/>
+<plugin id="org.eclipse.equinox.frameworkadmin.source" version="2.0.0.v20100503"/>
+<plugin id="org.eclipse.ui.editors.source" version="3.6.1.r361_v20100825-0800"/>
+<plugin id="org.eclipse.equinox.p2.garbagecollector" version="1.0.100.v20100503"/>
+<plugin id="org.eclipse.jdt.core.manipulation.source" version="1.3.0.v20100520-0800"/>
+<plugin id="org.eclipse.equinox.security" version="1.0.200.v20100503"/>
+<plugin id="org.eclipse.swtbot.eclipse.core"/>
+<plugin id="org.eclipse.core.externaltools.source" version="1.0.1.v20100831_r361"/>
+<plugin id="org.eclipse.equinox.p2.publisher.source" version="1.1.2.v20100824-2220"/>
+<plugin id="org.eclipse.ui.intro" version="3.4.0.v20100427"/>
+<plugin id="org.eclipse.compare.core.source" version="3.5.101.R36x_v20100929-0800"/>
+<plugin id="org.eclipse.equinox.p2.ui" version="2.0.0.v20100518"/>
+<plugin id="org.eclipse.text.source" version="3.5.0.v20100601-1300"/>
+<plugin id="org.eclipse.equinox.p2.repository.tools.source" version="2.0.1.R36x_v20100823"/>
+<plugin id="org.eclipse.swtbot.go"/>
+<plugin id="org.eclipse.equinox.p2.core.source" version="2.0.3.R36x_v20110111"/>
+<plugin id="org.aspectj.ajde"/>
+<plugin id="org.eclipse.equinox.p2.reconciler.dropins"/>
+<plugin id="org.apache.commons.el"/>
+<plugin id="org.eclipse.swt.gtk.linux.x86_64.source"/>
+<plugin id="org.eclipse.ui.workbench.texteditor.source" version="3.6.1.r361_v20100714-0800"/>
+<plugin id="org.eclipse.compare.source" version="3.5.101.R36x_v20100929-0800"/>
+<plugin id="org.eclipse.core.resources.source" version="3.6.1.R36x_v20110131-1630"/>
+<plugin id="org.eclipse.jface.text" version="3.6.1.r361_v20100825-0800"/>
+<plugin id="org.eclipse.equinox.p2.repository" version="2.0.2.R36x_v20110111-1500"/>
+<plugin id="org.eclipse.equinox.p2.ui.sdk.source"/>
+<plugin id="org.eclipse.pde.core.source" version="3.6.2.v20110210_r362"/>
+<plugin id="org.eclipse.ui.net.source"/>
+<plugin id="org.mortbay.jetty.server.source" version="6.1.23.v201004211559"/>
+<plugin id="org.eclipse.debug.ui.source" version="3.6.3.v20101201_r362"/>
+<plugin id="org.junit" version="4.8.1.v4_8_1_v20100427-1100"/>
+<plugin id="org.eclipse.debug.core.source" version="3.6.0.v20100519"/>
+<plugin id="org.eclipse.equinox.p2.metadata.source" version="2.0.1.R36x_v20101202"/>
+<plugin id="org.eclipse.pde.core" version="3.6.2.v20110210_r362"/>
+<plugin id="org.eclipse.ui.views.properties.tabbed.source" version="3.5.100.I20100509-0800"/>
+<plugin id="org.eclipse.help.base.source" version="3.5.3.v201102101200"/>
+<plugin id="org.eclipse.pde.core.source" version="3.6.2.v20110210_r362"/>
+<plugin id="org.eclipse.search.source" version="3.6.0.v20100520-0800"/>
+<plugin id="org.eclipse.equinox.p2.director.app" version="1.0.201.R36x_v20100823"/>
+<plugin id="org.eclipse.jface.text.source" version="3.6.1.r361_v20100825-0800"/>
+<plugin id="org.eclipse.equinox.simpleconfigurator" version="1.0.200.v20100503"/>
+<plugin id="org.apache.lucene.analysis.source" version="1.9.1.v20100518-1140"/>
+<plugin id="org.eclipse.equinox.frameworkadmin" version="2.0.0.v20100503"/>
+<plugin id="org.eclipse.ui.navigator.resources.source" version="3.4.202.M20101124-0800"/>
+<plugin id="org.eclipse.ui.forms.source" version="3.5.2.r36_v20100702"/>
+<plugin id="org.eclipse.osgi.source" version="3.6.2.R36x_v20110210"/>
+<plugin id="org.eclipse.equinox.p2.repository.source" version="2.0.2.R36x_v20110111-1500"/>
+<plugin id="org.eclipse.ui.navigator" version="3.5.0.I20100601-0800"/>
+<plugin id="org.eclipse.ui.views.source" version="3.5.1.M20110202-0800"/>
+<plugin id="com.ibm.icu.source" version="4.2.1.v20100412"/>
+<plugin id="org.eclipse.core.runtime" version="3.6.0.v20100505"/>
+<plugin id="org.eclipse.core.filesystem" version="1.3.1.R36x_v20100727-0745"/>
+<plugin id="org.eclipse.equinox.common.source" version="3.6.0.v20100503"/>
+<plugin id="org.eclipse.help.base.source" version="3.5.3.v201102101200"/>
+<plugin id="org.eclipse.compare.source" version="3.5.101.R36x_v20100929-0800"/>
+<plugin id="org.eclipse.core.externaltools.source" version="1.0.1.v20100831_r361"/>
+<plugin id="org.eclipse.compare.source" version="3.5.101.R36x_v20100929-0800"/>
+<plugin id="org.eclipse.equinox.jsp.jasper.registry.source"/>
+<plugin id="org.apache.commons.el.source"/>
+<plugin id="org.eclipse.ltk.core.refactoring.source" version="3.5.101.r362_v20101117-0800"/>
+<plugin id="org.eclipse.ui.views.properties.tabbed.source" version="3.5.100.I20100509-0800"/>
+<plugin id="org.eclipse.core.expressions.source" version="3.4.200.v20100505"/>
+<plugin id="org.eclipse.ui.presentations.r21"/>
+<plugin id="org.eclipse.ui.ide.source" version="3.6.2.M20101201-0800"/>
+<plugin id="org.eclipse.equinox.security.source" version="1.0.200.v20100503"/>
+<plugin id="org.eclipse.core.resources.source" version="3.6.1.R36x_v20110131-1630"/>
+<plugin id="org.eclipse.core.runtime.compatibility.source" version="3.2.100.v20100505"/>
+<plugin id="org.eclipse.core.expressions.source" version="3.4.200.v20100505"/>
+<plugin id="org.eclipse.ecf.provider.filetransfer.source" version="3.1.0.v20100906-1425"/>
+<plugin id="org.eclipse.ecf.provider.filetransfer.httpclient"/>
+<plugin id="org.eclipse.equinox.launcher.gtk.linux.x86_64"/>
+<plugin id="org.eclipse.help.ui" version="3.5.3.r36_20101116"/>
+<plugin id="org.eclipse.help.base.source" version="3.5.3.v201102101200"/>
+<plugin id="org.eclipse.equinox.p2.touchpoint.natives.source"/>
+<plugin id="org.eclipse.ecf.provider.filetransfer" version="3.1.0.v20100906-1425"/>
+<plugin id="javax.servlet.source" version="2.5.0.v200910301333"/>
+<plugin id="org.eclipse.core.contenttype.source" version="3.4.100.v20100505-1235"/>
+<plugin id="org.eclipse.jdt.junit.runtime.source" version="3.4.200.v20100526-0800"/>
+<plugin id="org.eclipse.text" version="3.5.0.v20100601-1300"/>
+<plugin id="org.eclipse.ecf.ssl"/>
+<plugin id="org.eclipse.core.databinding.property.source" version="1.3.0.I20100601-0800"/>
+<plugin id="org.eclipse.ui.editors.source" version="3.6.1.r361_v20100825-0800"/>
+<plugin id="org.eclipse.equinox.concurrent.source" version="1.0.100.v20100503"/>
+<plugin id="org.eclipse.jdt.core.source" version="3.6.2.v_A76_R36x"/>
+<plugin id="org.eclipse.search" version="3.6.0.v20100520-0800"/>
+<plugin id="org.eclipse.equinox.http.jetty" version="2.0.0.v20100503"/>
+<plugin id="org.eclipse.ant.launching.source" version="1.0.1.v20101020_r362"/>
+<plugin id="org.eclipse.equinox.p2.ui.sdk"/>
+<plugin id="org.eclipse.ui.forms.source" version="3.5.2.r36_v20100702"/>
+<plugin id="org.eclipse.equinox.p2.director.source" version="2.0.3.R36x_v20101117-1018"/>
+<plugin id="org.eclipse.core.commands.source" version="3.6.0.I20100512-1500"/>
+<plugin id="org.eclipse.equinox.weaving.hook.source"/>
+<plugin id="org.eclipse.ui.ide.application.source" version="1.0.201.M20100707-0800"/>
+<plugin id="org.eclipse.equinox.p2.core.source" version="2.0.3.R36x_v20110111"/>
+<plugin id="org.eclipse.ltk.ui.refactoring.source" version="3.5.0.v20100526-0800"/>
+<plugin id="org.eclipse.pde.ui" version="3.6.1.v20110210_r362"/>
+<plugin id="org.eclipse.jface.databinding" version="1.4.0.I20100601-0800"/>
+<plugin id="org.eclipse.ant.ui.source" version="3.5.0.v20100427"/>
+<plugin id="org.eclipse.core.filesystem.source" version="1.3.1.R36x_v20100727-0745"/>
+<plugin id="org.eclipse.jsch.ui.source"/>
+<plugin id="org.eclipse.core.runtime.compatibility.registry.source"/>
+<plugin id="org.hamcrest.integration"/>
+<plugin id="org.eclipse.equinox.simpleconfigurator.manipulator.source" version="2.0.0.v20100503"/>
+<plugin id="org.eclipse.ui.ide.application" version="1.0.201.M20100707-0800"/>
+<plugin id="org.eclipse.equinox.p2.jarprocessor" version="1.0.200.v20100503a"/>
+<plugin id="org.eclipse.ui.views.log.source" version="1.0.100.v20110210_r362"/>
+<plugin id="org.eclipse.equinox.simpleconfigurator.manipulator.source" version="2.0.0.v20100503"/>
+<plugin id="org.eclipse.equinox.http.servlet.source" version="1.1.0.v20100503"/>
+<plugin id="org.eclipse.ant.ui.source" version="3.5.0.v20100427"/>
+<plugin id="org.eclipse.ui.workbench.source" version="3.6.2.M20110210-1200"/>
+<plugin id="org.aspectj.runtime"/>
+<plugin id="org.eclipse.jdt.junit.core" version="3.6.1.r361_v20100825-0800"/>
+<plugin id="org.junit4"/>
+<plugin id="org.eclipse.core.boot"/>
+<plugin id="org.eclipse.equinox.p2.engine.source" version="2.0.1.R36x_v20110201"/>
+<plugin id="org.eclipse.equinox.p2.directorywatcher"/>
+<plugin id="org.eclipse.equinox.common.source" version="3.6.0.v20100503"/>
+<plugin id="org.eclipse.equinox.p2.touchpoint.eclipse.source" version="2.0.3.R36x_v20101202"/>
+<plugin id="org.eclipse.equinox.launcher"/>
+<plugin id="org.eclipse.equinox.p2.artifact.repository.source" version="1.1.1.R36x_v20100901"/>
+<plugin id="org.eclipse.jface" version="3.6.2.M20110210-1200"/>
+<plugin id="org.eclipse.swtbot.eclipse.spy"/>
+<plugin id="org.eclipse.equinox.common.source" version="3.6.0.v20100503"/>
+<plugin id="org.eclipse.ant.launching" version="1.0.1.v20101020_r362"/>
+<plugin id="org.eclipse.update.ui.source"/>
+<plugin id="org.eclipse.ui.cheatsheets" version="3.4.0.v20100427"/>
+<plugin id="org.eclipse.ui.intro.source" version="3.4.0.v20100427"/>
+<plugin id="org.eclipse.ui.ide.application.source" version="1.0.201.M20100707-0800"/>
+<plugin id="org.eclipse.core.databinding.observable.source" version="1.3.0.I20100601-0800"/>
+<plugin id="org.eclipse.ui.cheatsheets.source" version="3.4.0.v20100427"/>
+<plugin id="org.eclipse.equinox.p2.repository.source" version="2.0.2.R36x_v20110111-1500"/>
+<plugin id="org.eclipse.equinox.p2.updatesite.source" version="1.0.201.R36x_v20100823"/>
+<plugin id="org.eclipse.ui.navigator.source" version="3.5.0.I20100601-0800"/>
+<plugin id="org.eclipse.ecf.provider.filetransfer.httpclient.ssl"/>
+<plugin id="org.eclipse.equinox.p2.operations.source" version="2.0.0.v20100510"/>
+<plugin id="org.eclipse.core.contenttype" version="3.4.100.v20100505-1235"/>
+<plugin id="org.eclipse.debug.ui.source" version="3.6.3.v20101201_r362"/>
+<plugin id="org.eclipse.core.runtime.source" version="3.6.0.v20100505"/>
+<plugin id="org.eclipse.equinox.registry.source" version="3.5.0.v20100503"/>
+<plugin id="org.eclipse.help.source" version="3.5.0.v20100524"/>
+<plugin id="org.eclipse.ui.intro.universal.source"/>
+<plugin id="org.eclipse.jdt.debug.source" version="3.6.1.v20100715_r361"/>
+<plugin id="org.apache.ant.source" version="1.7.1.v20100518-1145"/>
+<plugin id="org.eclipse.equinox.ds"/>
+<plugin id="org.eclipse.equinox.simpleconfigurator.source" version="1.0.200.v20100503"/>
+<plugin id="org.eclipse.jface.source" version="3.6.2.M20110210-1200"/>
+<plugin id="org.eclipse.ecf.filetransfer.source" version="4.0.0.v20100906-1425"/>
+<plugin id="org.eclipse.ui.console" version="3.5.0.v20100526"/>
+<plugin id="org.eclipse.equinox.p2.extensionlocation"/>
+<plugin id="org.eclipse.jface.text.source" version="3.6.1.r361_v20100825-0800"/>
+<plugin id="org.eclipse.ui.navigator.source" version="3.5.0.I20100601-0800"/>
+<plugin id="org.eclipse.ui.source" version="3.6.2.M20110203-1100"/>
+<plugin id="org.eclipse.help.ui.source" version="3.5.3.r36_20101116"/>
+<plugin id="org.eclipse.equinox.security.ui.source" version="1.0.200.v20100503"/>
+<plugin id="org.eclipse.equinox.p2.operations.source" version="2.0.0.v20100510"/>
+<plugin id="org.eclipse.ecf.provider.filetransfer.ssl"/>
+<plugin id="org.eclipse.ltk.core.refactoring.source" version="3.5.101.r362_v20101117-0800"/>
+<plugin id="org.eclipse.equinox.preferences" version="3.3.0.v20100503"/>
+<plugin id="org.eclipse.ecf.provider.filetransfer.source" version="3.1.0.v20100906-1425"/>
+<plugin id="org.eclipse.equinox.security.ui" version="1.0.200.v20100503"/>
+<plugin id="org.mortbay.jetty.server.source" version="6.1.23.v201004211559"/>
+<plugin id="org.mortbay.jetty.server.source" version="6.1.23.v201004211559"/>
+<plugin id="org.eclipse.jdt.ui.source" version="3.6.2.r362_v20110203"/>
+<plugin id="org.eclipse.equinox.security.ui.source" version="1.0.200.v20100503"/>
+<plugin id="org.eclipse.equinox.simpleconfigurator.manipulator.source" version="2.0.0.v20100503"/>
+<plugin id="org.mortbay.jetty.util.source" version="6.1.23.v201004211559"/>
+<plugin id="org.eclipse.ui.intro.source" version="3.4.0.v20100427"/>
+<plugin id="org.eclipse.equinox.p2.jarprocessor.source" version="1.0.200.v20100503a"/>
+<plugin id="org.eclipse.help.appserver.source"/>
+<plugin id="org.eclipse.swtbot.eclipse.junit4.headless"/>
+<plugin id="org.eclipse.team.core.source" version="3.5.101.R36x_v20110203-1036"/>
+<plugin id="org.eclipse.ecf.provider.filetransfer.httpclient.source"/>
+<plugin id="org.apache.jasper.source"/>
+<plugin id="org.aspectj.runtime.source"/>
+<plugin id="org.eclipse.core.databinding" version="1.3.100.I20100601-0800"/>
+<plugin id="org.eclipse.debug.core" version="3.6.0.v20100519"/>
+<plugin id="org.eclipse.ui.forms" version="3.5.2.r36_v20100702"/>
+<plugin id="org.aspectj.weaver"/>
+<plugin id="org.junit.source" version="3.8.2.v3_8_2_v20100427-1100"/>
+<plugin id="org.eclipse.jsch.core.source"/>
+<plugin id="org.eclipse.equinox.concurrent.source" version="1.0.100.v20100503"/>
+<plugin id="org.eclipse.core.runtime.compatibility" version="3.2.100.v20100505"/>
+<plugin id="org.eclipse.ecf.source" version="3.1.0.v20100906-1425"/>
+<plugin id="org.eclipse.equinox.p2.console"/>
+<plugin id="javax.servlet.source" version="2.5.0.v200910301333"/>
+<plugin id="org.eclipse.equinox.frameworkadmin.source" version="2.0.0.v20100503"/>
+<plugin id="org.eclipse.equinox.registry" version="3.5.0.v20100503"/>
+<plugin id="org.eclipse.rcp.source"/>
+<plugin id="org.eclipse.ui.editors" version="3.6.1.r361_v20100825-0800"/>
+<plugin id="org.eclipse.jface.source" version="3.6.2.M20110210-1200"/>
+<plugin id="org.hamcrest.core.source" version="1.1.0.v20090501071000"/>
+<plugin id="org.eclipse.core.jobs" version="3.5.1.R36x_v20100824"/>
+<plugin id="org.eclipse.core.databinding.property" version="1.3.0.I20100601-0800"/>
+<plugin id="org.eclipse.jdt.junit.core.source" version="3.6.1.r361_v20100825-0800"/>
+<plugin id="org.eclipse.core.resources.source" version="3.6.1.R36x_v20110131-1630"/>
+<plugin id="org.eclipse.equinox.weaving.hook"/>
+<plugin id="org.eclipse.equinox.app.source" version="1.3.1.R36x_v20100803"/>
+<plugin id="org.apache.commons.logging.source"/>
+<plugin id="org.eclipse.swtbot.eclipse.junit3.headless"/>
+<plugin id="org.eclipse.equinox.http.jetty.source" version="2.0.0.v20100503"/>
+<plugin id="org.eclipse.equinox.p2.engine.source" version="2.0.1.R36x_v20110201"/>
+<plugin id="org.eclipse.ui.intro.universal"/>
+<plugin id="org.eclipse.ui.views.properties.tabbed" version="3.5.100.I20100509-0800"/>
+<plugin id="org.eclipse.ecf.source" version="3.1.0.v20100906-1425"/>
+<plugin id="org.eclipse.equinox.p2.publisher.source" version="1.1.2.v20100824-2220"/>
+<plugin id="org.eclipse.jdt.launching" version="3.5.200.v20110105_r362"/>
+<plugin id="org.eclipse.equinox.p2.garbagecollector.source" version="1.0.100.v20100503"/>
+<plugin id="org.eclipse.jdt.junit.source" version="3.6.1.r361_v20100825-0800"/>
+<plugin id="org.eclipse.update.scheduler.source"/>
+<plugin id="org.eclipse.core.net.source" version="1.2.100.I20100511-0800"/>
+<plugin id="org.eclipse.help.appserver"/>
+<plugin id="org.junit.source" version="3.8.2.v3_8_2_v20100427-1100"/>
+<plugin id="org.eclipse.jdt.debug" version="3.6.1.v20100715_r361"/>
+<plugin id="org.eclipse.update.configurator.source" version="3.3.100.v20100512"/>
+<plugin id="org.eclipse.equinox.p2.core" version="2.0.3.R36x_v20110111"/>
+<plugin id="org.eclipse.equinox.http.registry.source"/>
+<plugin id="org.eclipse.equinox.p2.director" version="2.0.3.R36x_v20101117-1018"/>
+<plugin id="org.hamcrest.text.source"/>
+<plugin id="org.eclipse.core.runtime.compatibility.registry"/>
+<plugin id="org.hamcrest.library"/>
+<plugin id="org.eclipse.jface.databinding.source" version="1.4.0.I20100601-0800"/>
+<plugin id="org.apache.commons.httpclient.source"/>
+<plugin id="org.hamcrest.integration.source"/>
+<plugin id="org.eclipse.ui.navigator.resources.source" version="3.4.202.M20101124-0800"/>
+<plugin id="org.eclipse.jdt.junit.source" version="3.6.1.r361_v20100825-0800"/>
+<plugin id="org.eclipse.update.configurator.source" version="3.3.100.v20100512"/>
+<plugin id="org.eclipse.help.source" version="3.5.0.v20100524"/>
+<plugin id="org.eclipse.core.commands.source" version="3.6.0.I20100512-1500"/>
+<plugin id="org.eclipse.osgi.source" version="3.6.2.R36x_v20110210"/>
+<plugin id="org.eclipse.ui.views" version="3.5.1.M20110202-0800"/>
+<plugin id="org.eclipse.equinox.p2.updatechecker.source"/>
+<plugin id="org.eclipse.ui.console.source" version="3.5.0.v20100526"/>
+<plugin id="org.eclipse.help.webapp.source"/>
+<plugin id="org.eclipse.contribution.weaving.jdt"/>
+<plugin id="org.hamcrest.core.source" version="1.1.0.v20090501071000"/>
+<plugin id="org.eclipse.core.databinding.source" version="1.3.100.I20100601-0800"/>
+<plugin id="org.apache.lucene.analysis.source" version="1.9.1.v20100518-1140"/>
+<plugin id="org.eclipse.osgi.util.source"/>
+<plugin id="org.eclipse.ui.workbench.texteditor.source" version="3.6.1.r361_v20100714-0800"/>
+<plugin id="org.hamcrest"/>
+<plugin id="org.eclipse.ui.ide.source" version="3.6.2.M20101201-0800"/>
+<plugin id="org.eclipse.equinox.concurrent.source" version="1.0.100.v20100503"/>
+<plugin id="org.eclipse.equinox.p2.updatechecker"/>
+<plugin id="org.eclipse.equinox.p2.ui.sdk.scheduler"/>
+<plugin id="org.eclipse.equinox.p2.garbagecollector.source" version="1.0.100.v20100503"/>
+<plugin id="org.eclipse.ui.browser" version="3.3.1.r36_20101216"/>
+<plugin id="org.eclipse.equinox.p2.core.source" version="2.0.3.R36x_v20110111"/>
+<plugin id="org.eclipse.rcp"/>
+<plugin id="org.eclipse.equinox.frameworkadmin.equinox.source" version="1.0.200.v20100505"/>
+<plugin id="org.eclipse.team.core.source" version="3.5.101.R36x_v20110203-1036"/>
+<plugin id="org.eclipse.update.ui"/>
+<plugin id="org.eclipse.equinox.http.servlet.source" version="1.1.0.v20100503"/>
+<plugin id="org.eclipse.team.core" version="3.5.101.R36x_v20110203-1036"/>
+<plugin id="org.eclipse.equinox.common" version="3.6.0.v20100503"/>
+<plugin id="org.eclipse.ltk.ui.refactoring" version="3.5.0.v20100526-0800"/>
+<plugin id="org.eclipse.equinox.p2.artifact.repository.source" version="1.1.1.R36x_v20100901"/>
+<plugin id="org.eclipse.equinox.p2.extensionlocation.source"/>
+<plugin id="org.eclipse.ui.externaltools.source" version="3.2.0.v20100427"/>
+<plugin id="org.eclipse.ui.views.log" version="1.0.100.v20110210_r362"/>
+<plugin id="org.eclipse.core.databinding.observable" version="1.3.0.I20100601-0800"/>
+<plugin id="org.eclipse.core.runtime.compatibility.auth.source" version="3.2.200.v20100517"/>
+<plugin id="org.eclipse.ui.cheatsheets.source" version="3.4.0.v20100427"/>
+<plugin id="org.eclipse.equinox.security.ui.source" version="1.0.200.v20100503"/>
+<plugin id="org.eclipse.core.runtime.source" version="3.6.0.v20100505"/>
+<plugin id="org.eclipse.core.expressions.source" version="3.4.200.v20100505"/>
+<plugin id="org.eclipse.core.databinding.property.source" version="1.3.0.I20100601-0800"/>
+<plugin id="org.eclipse.compare" version="3.5.101.R36x_v20100929-0800"/>
+<plugin id="org.eclipse.ui.workbench.texteditor" version="3.6.1.r361_v20100714-0800"/>
+<plugin id="org.eclipse.ui.browser.source" version="3.3.1.r36_20101216"/>
+<plugin id="org.eclipse.swtbot.eclipse.finder"/>
+<plugin id="org.eclipse.equinox.p2.metadata.generator.source"/>
+<plugin id="org.eclipse.core.databinding.property.source" version="1.3.0.I20100601-0800"/>
+<plugin id="org.eclipse.core.resources" version="3.6.1.R36x_v20110131-1630"/>
+<plugin id="org.eclipse.pde.build.source" version="3.6.2.R36x_20110203"/>
+<plugin id="org.eclipse.osgi.services.source" version="3.2.100.v20100503"/>
+<plugin id="org.eclipse.core.externaltools" version="1.0.1.v20100831_r361"/>
+<plugin id="org.eclipse.update.scheduler"/>
+<plugin id="org.eclipse.debug.core.source" version="3.6.0.v20100519"/>
+<plugin id="org.eclipse.ui.workbench.source" version="3.6.2.M20110210-1200"/>
+<plugin id="org.eclipse.equinox.p2.metadata.source" version="2.0.1.R36x_v20101202"/>
+<plugin id="org.eclipse.equinox.p2.jarprocessor.source" version="1.0.200.v20100503a"/>
+<plugin id="org.eclipse.help.base" version="3.5.3.v201102101200"/>
+<plugin id="org.eclipse.jdt.junit" version="3.6.1.r361_v20100825-0800"/>
+<plugin id="org.eclipse.ant.core.source" version="3.2.201.v20110203_r362"/>
+<plugin id="org.eclipse.core.filebuffers.source" version="3.5.100.v20100520-0800"/>
+<plugin id="org.eclipse.equinox.p2.publisher.source" version="1.1.2.v20100824-2220"/>
+<plugin id="org.eclipse.ecf.identity.source" version="3.1.0.v20100906-1425"/>
+<plugin id="org.eclipse.equinox.p2.ql"/>
+<plugin id="org.eclipse.core.runtime.compatibility.auth.source" version="3.2.200.v20100517"/>
+<plugin id="org.eclipse.swtbot.ant.optional.junit4"/>
+<plugin id="org.apache.log4j"/>
+<plugin id="org.eclipse.equinox.http.jetty.source" version="2.0.0.v20100503"/>
+<plugin id="org.eclipse.ui.editors.source" version="3.6.1.r361_v20100825-0800"/>
+<plugin id="org.eclipse.ant.launching.source" version="1.0.1.v20101020_r362"/>
+<plugin id="org.eclipse.help.source" version="3.5.0.v20100524"/>
+<plugin id="org.eclipse.jdt.debug.ui.source" version="3.5.2.v20100928a_r362"/>
+<plugin id="org.eclipse.equinox.p2.ql.source"/>
+<plugin id="org.eclipse.platform.source"/>
+<plugin id="org.eclipse.ui.ide" version="3.6.2.M20101201-0800"/>
+<plugin id="org.eclipse.equinox.frameworkadmin.source" version="2.0.0.v20100503"/>
+<plugin id="org.eclipse.jdt.debug.ui.source" version="3.5.2.v20100928a_r362"/>
+<plugin id="org.eclipse.osgi.services.source" version="3.2.100.v20100503"/>
+<plugin id="org.eclipse.debug.ui.source" version="3.6.3.v20101201_r362"/>
+<plugin id="org.eclipse.ui.navigator.resources" version="3.4.202.M20101124-0800"/>
+</includeBundles>
+<targetJRE path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/J2SE-1.5"/>
+</target>
