@@ -5,6 +5,5 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry excluding="tlc2/tool/distributed/TLCServerMonitorAspect.aj|tlc2/tool/distributed/RMIMethodMonitorAspect.aj|tlc2/tool/distributed/RMIMethodMonitorAspect.aj|tlc2/tool/distributed/TLCServerMonitorAspect.aj" kind="src" path="src-aj"/>
 	<classpathentry kind="src" path="test"/>
-	<classpathentry kind="lib" path="lib/MultithreadedTC-1.01.jar"/>
 	<classpathentry kind="output" path="class"/>
 </classpath>
