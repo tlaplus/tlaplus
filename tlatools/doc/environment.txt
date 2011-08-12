@@ -78,7 +78,7 @@ Eclipse-based build process
   2 Ant
     To initialize:
       Open "Ant" View
-      Add the build file "tlatools/build.xml"
+      Add the build file "tlatools/customBuild.xml"
     To build default:
       Double-click on the TLA+ Tools in Ant View
       (or select the default target in expanded view and hit the green 

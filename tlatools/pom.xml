@@ -32,7 +32,7 @@
 							classpathref="maven.test.classpath" />
 
 		    			<property name="build.compiler" value="extJavac"/>
-	    				<ant antfile="build.xml" inheritRefs="true">
+	    				<ant antfile="customBuild.xml" inheritRefs="true">
 	    					<target name="default" />
 	    				</ant>
 	    			</tasks>
