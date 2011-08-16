@@ -1,6 +1,7 @@
 package org.lamport.tla.toolbox.spec.manager;
 
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Hashtable;
 import java.util.Iterator;
 
@@ -24,12 +25,12 @@ import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.spec.nature.TLANature;
 import org.lamport.tla.toolbox.tool.SpecEvent;
 import org.lamport.tla.toolbox.tool.SpecRenameEvent;
-import org.lamport.tla.toolbox.ui.handler.CloseSpecHandler;
 import org.lamport.tla.toolbox.ui.handler.OpenParseErrorViewHandler;
 import org.lamport.tla.toolbox.ui.property.GenericSelectionProvider;
 import org.lamport.tla.toolbox.util.AdapterFactory;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.SpecLifecycleManager;
+import org.lamport.tla.toolbox.util.compare.SpecComparator;
 import org.lamport.tla.toolbox.util.pref.IPreferenceConstants;
 import org.lamport.tla.toolbox.util.pref.PreferenceStoreHelper;
 
@@ -448,6 +449,9 @@ public class WorkspaceSpecManager extends GenericSelectionProvider implements IS
         return null;
     }
 
+    /**
+     * @return The {@link Spec} most recently opened or null if no specs are known
+     */
     public Spec getMostRecentlyOpenedSpec()
     {
         if (loadedSpec != null)
@@ -455,25 +459,18 @@ public class WorkspaceSpecManager extends GenericSelectionProvider implements IS
             return loadedSpec;
         }
 
+        final Comparator<Spec> comparator = new SpecComparator();
+        
         // no spec currently open
         // search for the last spec to be closed
         Spec[] specs = getRecentlyOpened();
         Spec mostRecentlyOpened = null;
-        try
+        for (int i = 0; i < specs.length; i++)
         {
-            for (int i = 0; i < specs.length; i++)
-            {
-                if (mostRecentlyOpened == null
-                        || Long.parseLong(mostRecentlyOpened.getProject().getPersistentProperty(
-                                CloseSpecHandler.LAST_CLOSED_DATE)) < Long.parseLong(specs[i].getProject()
-                                .getPersistentProperty(CloseSpecHandler.LAST_CLOSED_DATE)))
-                {
-                    mostRecentlyOpened = specs[i];
-                }
-            }
-        } catch (CoreException e)
-        {
-            Activator.logError("Error finding most recently opened spec.", e);
+        	int compare = comparator.compare(mostRecentlyOpened, specs[i]);
+        	if(compare > 0) {
+        		mostRecentlyOpened = specs[i];
+        	}
         }
 
         return mostRecentlyOpened;

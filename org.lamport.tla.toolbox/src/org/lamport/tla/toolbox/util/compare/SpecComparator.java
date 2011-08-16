@@ -11,7 +11,7 @@ import org.lamport.tla.toolbox.ui.handler.CloseSpecHandler;
  *
  * @author zambrovski
  */
-public class SpecComparator implements Comparator
+public class SpecComparator implements Comparator<Spec>
 {
 
     /**
@@ -23,18 +23,16 @@ public class SpecComparator implements Comparator
      * 
      * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
      */
-    public int compare(Object arg0, Object arg1)
+    public int compare(Spec s1, Spec s2)
     {
-        if (arg0 == null || !(arg0 instanceof Spec))
+        if (s1 == null)
         {
             return 1;
-        } else if (arg1 == null || !(arg1 instanceof Spec))
+        } else if (s2 == null)
         {
             return -1;
         } else
         {
-            Spec s1 = (Spec) arg0;
-            Spec s2 = (Spec) arg1;
             long s1Time = getLastClosedTime(s1);
             long s2Time = getLastClosedTime(s2);
             if (s1Time == s2Time)
