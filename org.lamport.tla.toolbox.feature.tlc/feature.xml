@@ -11,10 +11,6 @@
       This feature contains all parts needed the TLC model checker.
    </description>
 
-   <requires>
-      <import feature="org.lamport.tla.toolbox.feature.base" version="1.0.0"/>
-   </requires>
-
    <plugin
          id="org.lamport.tla.toolbox.tool.tlc"
          download-size="0"
