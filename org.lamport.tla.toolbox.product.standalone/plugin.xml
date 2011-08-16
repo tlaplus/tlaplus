@@ -86,6 +86,27 @@
             configId="org.lamport.tla.toolbox.product.standalone.intro.configId">
       </configExtension>
    </extension>
+   <extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            locationURI="menu:org.eclipse.ui.main.menu?after=additions">
+         <menu
+               id="toolbox.menu.help"
+               label="Help"
+               mnemonic="H"
+               tooltip="Opens the help menu">
+            <command
+                  commandId="org.eclipse.equinox.p2.ui.sdk.update"
+                  id="toolbox.menuItem.checkForUpdates"
+                  label="Check for Updates"
+                  mnemonic="c"
+                  mode="FORCE_TEXT"
+                  style="push"
+                  tooltip="Checks the web for a newer Toolbox version">
+            </command>
+         </menu>
+      </menuContribution>
+   </extension>
    
    
    <!-- Navogator -->
