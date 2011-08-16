@@ -1,0 +1,3 @@
+instructions.configure=\
+	addRepository(type:0,location:http${#58}//lamport.org/tlatoolbox/);\
+	addRepository(type:1,location:http${#58}//lamport.org/tlatoolbox/);
