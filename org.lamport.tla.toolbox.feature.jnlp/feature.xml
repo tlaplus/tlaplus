@@ -4,19 +4,13 @@
       label="TLA+ Toolbox JNLP Feature"
       version="1.0.0.qualifier"
       provider-name="Leslie Lamport, Markus Alexander Kuppe"
-      plugin="org.lamport.tla.toolbox.jnlp">
+      plugin="org.lamport.tla.toolbox.jnlp"
+      license-feature="org.lamport.tla.toolbox.feature.standalone"
+      license-feature-version="1.0.0.qualifier">
 
    <description>
       This feature defines the set of plug-ins that are required to run the base of the TLA+ Toolbox.
    </description>
-
-   <copyright url="http://www.example.com/copyright">
-      [Enter Copyright Description here.]
-   </copyright>
-
-   <license url="http://www.example.com/license">
-      [Enter License Description here.]
-   </license>
 
    <plugin
          id="org.lamport.tla.toolbox.jnlp"

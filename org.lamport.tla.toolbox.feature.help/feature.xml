@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
       id="org.lamport.tla.toolbox.feature.help"
-      label="TLA+ Toolobox Help Feature"
+      label="TLA+ Toolbox Help Feature"
       version="1.0.0.qualifier"
-      provider-name="Simon Zambrovski, Leslie Lamport">
+      provider-name="Simon Zambrovski, Leslie Lamport"
+      license-feature="org.lamport.tla.toolbox.feature.standalone"
+      license-feature-version="1.0.0.qualifier">
 
    <description>
       This feature combines all parts needed for the help system and

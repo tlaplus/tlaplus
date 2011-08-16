@@ -4,20 +4,14 @@
       label="TLA+ Toolbox Editor Feature"
       version="1.0.0.qualifier"
       provider-name="Simon Zambrovski, Leslie Lamport"
-      plugin="org.lamport.tla.toolbox.editor.basic">
+      plugin="org.lamport.tla.toolbox.editor.basic"
+      license-feature="org.lamport.tla.toolbox.feature.standalone"
+      license-feature-version="1.0.0.qualifier">
 
    <description>
       This feature defines the set of plug-ins that are required to
 run the TLA+ Editor.
    </description>
-
-   <copyright url="http://www.example.com/copyright">
-      [Enter Copyright Description here.]
-   </copyright>
-
-   <license url="http://www.example.com/license">
-      [Enter License Description here.]
-   </license>
 
    <plugin
          id="org.eclipse.core.filebuffers"

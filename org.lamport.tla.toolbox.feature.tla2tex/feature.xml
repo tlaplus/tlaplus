@@ -3,19 +3,13 @@
       id="org.lamport.tla.toolbox.feature.tla2tex"
       label="TLA+ Toolbox TLA2TeX Feature"
       version="1.0.0.qualifier"
-      provider-name="Daniel Ricketts">
+      provider-name="Daniel Ricketts"
+      license-feature="org.lamport.tla.toolbox.feature.standalone"
+      license-feature-version="1.0.0.qualifier">
 
-   <description url="http://www.example.com/description">
-      [Enter Feature Description here.]
+   <description>
+      This feature combines all parts needed by the TLA2Tex generator.
    </description>
-
-   <copyright url="http://www.example.com/copyright">
-      [Enter Copyright Description here.]
-   </copyright>
-
-   <license url="http://www.example.com/license">
-      [Enter License Description here.]
-   </license>
 
    <plugin
          id="org.lamport.tla.toolbox.tool.tla2tex"

@@ -1,21 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
       id="org.lamport.tla.toolbox.feature.tlc"
-      label="TLC Tool Feature"
+      label="TLA+ Toolbox TLC Tool Feature"
       version="1.0.0.qualifier"
-      provider-name="Yuan Yu, Leslie Lamport, Simon Zambrovski">
+      provider-name="Yuan Yu, Leslie Lamport, Simon Zambrovski"
+      license-feature="org.lamport.tla.toolbox.feature.standalone"
+      license-feature-version="1.0.0.qualifier">
 
-   <description url="http://www.example.com/description">
-      [Enter Feature Description here.]
+   <description>
+      This feature contains all parts needed the TLC model checker.
    </description>
-
-   <copyright url="http://www.example.com/copyright">
-      [Enter Copyright Description here.]
-   </copyright>
-
-   <license url="http://www.example.com/license">
-      [Enter License Description here.]
-   </license>
 
    <requires>
       <import feature="org.lamport.tla.toolbox.feature.base" version="1.0.0"/>
