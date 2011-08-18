@@ -87,6 +87,8 @@
 
 	<!-- explicitly define plugin repositories to make tycho SNAPSHOT builds available -->
 	<pluginRepositories>
+	
+		<!-- main Maven repository (do not remove) -->
 	    <pluginRepository>
 	      <id>central</id>
 	      <name>Maven Plugin Repository</name>
@@ -99,6 +101,8 @@
 	        <updatePolicy>never</updatePolicy>
 	      </releases>
 	    </pluginRepository>
+	    
+		<!-- Tycho snapshot repo (remove once 0.13 is stable) -->
 	    <pluginRepository>
 	      <id>tycho</id>
 	      <name>Tycho Snapshot Repository</name>
@@ -111,6 +115,23 @@
 	        <updatePolicy>never</updatePolicy>
 	      </releases>
 	    </pluginRepository>
+	    
+		<!-- Eclispe ini patcher repo (remove when bug TYCHO-595 fixed) -->
+		<!-- here and in org.lamport.tla.toolbox.product.product/pom.xml -->
+		<!-- see https://ec2.lemmster.de/job/eclipse-ini-patcher/ -->
+	    <pluginRepository>
+	      <id>xored</id>
+	      <name>Eclipse-ini-patcher Snapshot Repository</name>
+	      <url>http://ec2.lemmster.de/maven</url>
+	      <layout>default</layout>
+	      <snapshots>
+	        <enabled>true</enabled>
+	      </snapshots>
+	      <releases>
+	        <updatePolicy>never</updatePolicy>
+	      </releases>
+	    </pluginRepository>
+	    
 	  </pluginRepositories>
 
 	<!-- configure p2 repository to resolve against -->
