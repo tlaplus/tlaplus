@@ -1,8 +1,8 @@
 #
 # Defines the location of the update site
 #
-# !!! Changes here must be repeated in p2.inf !!!
-# (Otherwise Eclipse based product export will fail)
+# !!! Changes here must be repeated in org.lamport.tla.toolbox.p2.inf !!!
+# (Otherwise Maven/Tycho based build will fail)
 #
 instructions.configure=\
 	addRepository(type:0,location:http${#58}//lamport.org/tlatoolbox/toolboxUpdate/);\
