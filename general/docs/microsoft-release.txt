@@ -33,15 +33,16 @@ In toolbox.product.standalone/intro/root.xhtml:
 
 Step 2: Build the .zip files:
 Method 1: 
-In org.lamport.tla.toolbox.product.standalone.product
- as of June 2011 this file was renamed to
-   org.lamport.tla.toolbox.product.product.product
+Note: org.lamport.tla.toolbox.product.product.product
+       before June 2011 was named
+   org.lamport.tla.toolbox.product.standalone.product
+   
    
   synchronize and use Eclipse Product export wizard
   In the first menu, give
     Product Configuration: 
       Configuration:
-        /org.lamport.tla.toolbox.product.standalone/standalone.product
+        /org.lamport.tla.toolbox.product.product/org.lamport.tla.toolbox.product.product.product
       Root directory: toolbox
     Synchronization:
       Synchronize before exporting
@@ -76,7 +77,7 @@ Method 2. Using Maven
   The .zip files are in
        C:\Users\lamport\.m2\repository\tlatools\org.lamport.tla.toolbox.product.product\version-number
   This will keep accumulating new versions.  To delete an old version, delete the
-       C:\Users\lamport\.m2\repository\tlatools\
+       C:\Users\lamport\.m2\repository\tlatoolbox\
     directory.
   
 TO PREPARE THE STAND-ALONE TLA TOOLS RELEASE ZIP FILE
