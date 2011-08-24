@@ -52,6 +52,7 @@ Note: org.lamport.tla.toolbox.product.product.product
         c:\users\lamport\tla\toolbox-release\toolbox-i.j.k on svc-lamport-4
         
     Export Options
+      Generate metadata repository
       Export for muliple platforms
       Allow for binary cycles in target platform
   In Cross-platform export menu, select
@@ -61,6 +62,7 @@ Note: org.lamport.tla.toolbox.product.product.product
 
  Hitting Finish then puts the zip files into:
      c:\users\lamport\tla\toolbox-release
+ The repository/ directory in c:\users\lamport\tla\ contains the content for the update site (p2)
 
 Method 2. Using Maven
   Set the version number in ...product.product/pom.xml.
@@ -75,7 +77,7 @@ Method 2. Using Maven
   To have it do the tests but continue if it fails, run
      mvn install -Dmaven.test.failure.ignore=true
   The .zip files are in
-       C:\Users\lamport\.m2\repository\tlatools\org.lamport.tla.toolbox.product.product\version-number
+       C:\Users\lamport\.m2\repository\tlatools\org.lamport.tla.toolbox.product.product\version-number-SNAPSHOT
   This will keep accumulating new versions.  To delete an old version, delete the
        C:\Users\lamport\.m2\repository\tlatoolbox\
     directory.
@@ -93,6 +95,19 @@ TO GENERATE THE RELEASE:
   Note: when uploading the file, wait for progress bar at bottom
     of screen to indicate it's done (and for new file name to
     appear in Installation field)
+    
+TO DEPLOY THE UPDATE SITE (p2) TO http://lamport.org/tlatoolbox/ (redirected to http://msr-inria.inria.fr/~doligez/tlatoolbox):
+  Clean the current update site from nation.msr-inria.inria.fr:/home/tla/doligez/public_html/toolboxUpdate/
+    (Authenticate with msr-inria credentials. "tla" group members have write permissions)
+  Copy the zip file org.lamport.tla.toolbox.product.product-version-number-SNAPSHOT.zip in 
+  C:\Users\lamport\.m2\repository\tlatools\org.lamport.tla.toolbox.product.product\version-number-SNAPSHOT to nation.msr-inria.inria.fr:/home/tla/doligez/public_html/toolboxUpdate/
+  Unzip the zip to toolboxUpdate/ on nation
+  toolboxUpdate/ will look like (no index.html file or alike!):
+  	binary/
+  	features/
+  	plugins/
+  	artifacts.jar
+  	content.jar 
 
 Queries to msrcpx or Chuck Needham (chuckne)
 -------------------------------------------------------------
