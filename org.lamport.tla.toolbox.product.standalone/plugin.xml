@@ -107,7 +107,26 @@
          </menu>
       </menuContribution>
    </extension>
-   
+
+   <!-- Add the update scheduler as a root preference page to the product defining bundle -->  
+   <extension 
+   		id="preferences" point="org.eclipse.core.runtime.preferences" name="%automaticUpdatesPrefPage">
+		<initializer class="org.lamport.tla.toolbox.TLAPreferenceInitializer"/>
+   </extension>
+   <extension
+         point="org.eclipse.ui.startup">
+      <startup class="org.eclipse.equinox.internal.p2.ui.sdk.scheduler.AutomaticUpdateScheduler">
+      </startup>
+   </extension>
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            class="org.eclipse.equinox.internal.p2.ui.sdk.scheduler.AutomaticUpdatesPreferencePage"
+            id="org.eclipse.equinox.internal.p2.ui.sdk.scheduler.AutomaticUpdatesPreferencePage"
+            name="Automatic Update">
+            <keywordReference id="org.eclipse.equinox.p2.ui.sdk.updates.general"/>
+      </page>
+   </extension>
    
    <!-- Navogator -->
    <!--
