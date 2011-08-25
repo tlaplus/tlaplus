@@ -27,7 +27,6 @@
 		<echo message="ANT_HOME     : ${env.ANT_HOME}" />
 		<echo message="Ant Version  : ${ant.version}" />
 		<echo message="Java Version : ${ant.java.version}" />
-		<echo message="JavaCC_HOME  : ${env.JAVACC_HOME}" />
 	</target>
 
 	<target name="default" depends="info" description="Default">
@@ -238,13 +237,4 @@
 
 		</zip>
 	</target>
-
-
-
-	<target name="javacc" description="Generates JavaCC based Parser">
-		<mkdir dir="${srcgen.dir}"/>
-		<!-- generates the parser -->
-		<javacc target="javacc/tla+.jj" outputdirectory="${srcgen.dir}" javacchome="${env.JAVACC_HOME}" />
-	</target>
-
 </project>
