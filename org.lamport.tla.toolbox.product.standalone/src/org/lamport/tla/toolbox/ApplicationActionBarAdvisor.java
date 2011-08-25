@@ -87,57 +87,37 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
     /* (non-Javadoc)
      * @see org.eclipse.ui.application.ActionBarAdvisor#fillMenuBar(org.eclipse.jface.action.IMenuManager)
      */
-    protected void fillMenuBar(IMenuManager menuBar)
-    {
-        MenuManager fileMenu = new MenuManager("&File", "toolbox.file.menu");
-        // place holder for spec actions
-        fileMenu.add(new Separator("toolbox.file.spec.separator"));
-        // place holder for module actions
-        fileMenu.add(new Separator("toolbox.file.module.separator"));
-        // place holder for translation items
-        fileMenu.add(new Separator("toolbox.file.translation.separator"));
+    protected void fillMenuBar(final IMenuManager menuBar) {
 
+    	// File menu
+        final MenuManager fileMenu = new MenuManager("&File", "toolbox.file.menu");
+        fileMenu.add(new Separator("toolbox.file.spec.separator"));
+        fileMenu.add(new Separator("toolbox.file.module.separator"));
+        fileMenu.add(new Separator("toolbox.file.translation.separator"));
         fileMenu.add(new Separator("toolbox.file.save.separator"));
         fileMenu.add(saveAction);
         fileMenu.add(saveAsAction);
-        // place all save actions here
-
-        // place holder for other actions
         fileMenu.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
         fileMenu.add(preferencesAction);
         fileMenu.add(new Separator());
         fileMenu.add(quitAction);
 
-        MenuManager windowMenu = new MenuManager("&Window", "toolbox.window.menu");
-
+        // Window Menu
+        final MenuManager windowMenu = new MenuManager("&Window", "toolbox.window.menu");
         windowMenu.add(new Separator("toolbox.window.open.separator"));
-
-        // don't need to add
-        // windowMenu.add(resetPerspectiveAction);
-
         windowMenu.add(new Separator());
         windowMenu.add(new Separator("toolbox.window.tools.separator"));
         windowMenu.add(new Separator());
         windowMenu.add(new Separator("toolbox.window.view.separator"));
         windowMenu.add(new Separator());
 
-        /*
-        MenuManager helpMenu = new MenuManager("&Help", IWorkbenchActionConstants.M_HELP);
-        // Help Contents
-        helpMenu.add(helpContentsAction);
-        // Help Search
-        helpMenu.add(helpSearchAction);
-        // Additions
-        helpMenu.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
-        // About action
-        helpMenu.add(aboutAction);
-        */
+        // Menu bar contributions via plugin.xmls
+        final Separator separator = new Separator("toolbox.tools.separator");
+        separator.setVisible(false); // @see http://bugzilla.tlaplus.net/show_bug.cgi?id=27
 
+        // finally add to menu bar
         menuBar.add(fileMenu);
         menuBar.add(windowMenu);
-        menuBar.add(new Separator("toolbox.tools.separator"));
-        // menuBar.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
-        // menuBar.add(helpMenu);
+		menuBar.add(separator);
     }
-
 }
