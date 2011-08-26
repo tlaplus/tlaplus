@@ -10,7 +10,7 @@
     <relativePath>../pom.xml</relativePath>
   </parent>
   <groupId>tlatoolbox</groupId>
-  <artifactId>org.lamport.tla.toolbox.feature.tlc2tex</artifactId>
+  <artifactId>org.lamport.tla.toolbox.feature.tla2tex</artifactId>
   <version>1.0.0-SNAPSHOT</version>
   <packaging>eclipse-feature</packaging>
 </project>
