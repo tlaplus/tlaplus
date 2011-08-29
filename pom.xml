@@ -79,7 +79,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
 		<tycho-version>0.13.0-SNAPSHOT</tycho-version>
-		
+
 		<!-- no default here -->
 		<tycho.test.vm.argline>-Xmx500m -Xdebug -Xrunjdwp:transport=dt_socket,address=1044,server=y,suspend=n</tycho.test.vm.argline>
 		<tycho.test.vm.useUiThread>false</tycho.test.vm.useUiThread>
@@ -87,7 +87,7 @@
 
 	<!-- explicitly define plugin repositories to make tycho SNAPSHOT builds available -->
 	<pluginRepositories>
-	
+
 		<!-- main Maven repository (do not remove) -->
 	    <pluginRepository>
 	      <id>central</id>
@@ -101,7 +101,7 @@
 	        <updatePolicy>never</updatePolicy>
 	      </releases>
 	    </pluginRepository>
-	    
+
 		<!-- Tycho snapshot repo (remove once 0.13 is stable) -->
 	    <pluginRepository>
 	      <id>tycho</id>
@@ -115,14 +115,14 @@
 	        <updatePolicy>never</updatePolicy>
 	      </releases>
 	    </pluginRepository>
-	    
+
 		<!-- Eclispe ini patcher repo (remove when bug TYCHO-595 fixed) -->
 		<!-- here and in org.lamport.tla.toolbox.product.product/pom.xml -->
-		<!-- see https://ec2.lemmster.de/job/eclipse-ini-patcher/ -->
+		<!-- see https://tla.msr-inria.inria.fr/job/eclipse-ini-patcher/ -->
 	    <pluginRepository>
 	      <id>xored</id>
 	      <name>Eclipse-ini-patcher Snapshot Repository</name>
-	      <url>http://ec2.lemmster.de/maven</url>
+	      <url>http://tla.msr-inria.inria.fr/maven</url>
 	      <layout>default</layout>
 	      <snapshots>
 	        <enabled>true</enabled>
@@ -131,12 +131,12 @@
 	        <updatePolicy>never</updatePolicy>
 	      </releases>
 	    </pluginRepository>
-	    
+
 	  </pluginRepositories>
 
 	<!-- configure p2 repository to resolve against -->
 	<repositories>
-	
+
 		<!-- Main eclipse repository (SR2 directly referenced to speed up build) -->
 		<repository>
 			<id>helios</id>
@@ -150,16 +150,16 @@
 			<layout>p2</layout>
 			<url>http://download.eclipse.org/technology/swtbot/helios/dev-build/update-site/</url>
 		</repository>
-		
+
 		<!-- AJDT is not part of the helios update site (Used to check thread invocations) -->
 		<repository>
 			<id>ajdt</id>
 			<layout>p2</layout>
 			<url>http://download.eclipse.org/tools/ajdt/36/update</url>
 		</repository>
-		
+
 	</repositories>
-	
+
 	<build>
 		<plugins>
 			<!-- enable tycho build extension -->
@@ -241,7 +241,7 @@
 
 		</plugins>
 	</build>
-	
+
 	<!-- pass mac specific SWT proeprties on mac (OS check is based on identifying the VM)-->
 	<profiles>
 		<profile>
@@ -256,7 +256,7 @@
 				<tycho.test.vm.argline>-Dosgi.ws=cocoa -XstartOnFirstThread</tycho.test.vm.argline>
 				<tycho.test.vm.useUiThread>false</tycho.test.vm.useUiThread>
 			</properties>
-		</profile>	
+		</profile>
 	</profiles>
 </project>
 
