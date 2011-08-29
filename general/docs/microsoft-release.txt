@@ -81,7 +81,19 @@ Method 2. Using Maven
   This will keep accumulating new versions.  To delete an old version, delete the
        C:\Users\lamport\.m2\repository\tlatoolbox\
     directory.
-  
+
+Method 3. Using tla.msr-inria.inria.fr
+  - In browser, goto https://tla.msr-inria.inria.fr/
+  - login
+  - goto  https://tla.msr-inria.inria.fr/job/M-HEAD-Toolbox.product.standalone/os=master/lastSuccessfulBuild/artifact/org.lamport.tla.toolbox.product.product/target/
+  - click on products
+  - copy 6 zip files
+   Alternate way to get to the https://...target/ page:
+    - click on M-HEAD-Toolbox.product.standalone
+    - click on Master
+    - click on Last Successful Build
+    - click on .../target
+
 TO PREPARE THE STAND-ALONE TLA TOOLS RELEASE ZIP FILE
   Run the Ant default-release option.  This will put the release in
      C:\lamport\tla\newtools\tla2-inria\tlatools\dist\tla.zip
