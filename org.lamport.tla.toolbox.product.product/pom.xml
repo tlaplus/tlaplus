@@ -43,7 +43,9 @@
         <configuration>
           <products>
             <product>
-              <id>TLAToolbox-1.3.2</id>
+              <id>org.lamport.tla.toolbox.product.product</id>
+              <zipFileName>TLAToolbox</zipFileName>
+              <includeVersion>true</includeVersion>
               <rootFolder>toolbox</rootFolder>
             </product>
           </products>
