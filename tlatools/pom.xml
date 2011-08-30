@@ -34,6 +34,7 @@
 		    			<property name="build.compiler" value="extJavac"/>
 	    				<ant antfile="customBuild.xml" inheritRefs="true">
 	    					<target name="default" />
+	    					<target name="dist-mixed-zip" />
 	    				</ant>
 	    			</tasks>
 	    		</configuration>
