@@ -102,26 +102,11 @@
 	      </releases>
 	    </pluginRepository>
 
-		<!-- Tycho snapshot repo (remove once 0.13 is stable) -->
+	    <!-- Private Tycho snapshot repo (remove once 0.13 is stable) -->
+	    <!-- Eclispe ini patcher repo (remove when bug TYCHO-595 fixed) -->
 	    <pluginRepository>
-	      <id>tycho</id>
-	      <name>Tycho Snapshot Repository</name>
-	      <url>https://repository.sonatype.org/content/groups/public/</url>
-	      <layout>default</layout>
-	      <snapshots>
-	        <enabled>true</enabled>
-	      </snapshots>
-	      <releases>
-	        <updatePolicy>never</updatePolicy>
-	      </releases>
-	    </pluginRepository>
-
-		<!-- Eclispe ini patcher repo (remove when bug TYCHO-595 fixed) -->
-		<!-- here and in org.lamport.tla.toolbox.product.product/pom.xml -->
-		<!-- see https://tla.msr-inria.inria.fr/job/eclipse-ini-patcher/ -->
-	    <pluginRepository>
-	      <id>xored</id>
-	      <name>Eclipse-ini-patcher Snapshot Repository</name>
+	      <id>tla</id>
+	      <name>Eclipse-ini-patcher and Tycho Snapshot Repository</name>
 	      <url>http://tla.msr-inria.inria.fr/maven</url>
 	      <layout>default</layout>
 	      <snapshots>
