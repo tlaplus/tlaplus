@@ -824,7 +824,25 @@ public class ResourceHelper
         }
         return null;
     }
+    
+    public static IProject refreshProject(final IProject aProject, final IProgressMonitor aMonitor) { 
+    	try {
+			aProject.refreshLocal(IResource.DEPTH_INFINITE, aMonitor);
+		} catch (CoreException e) {
+            Activator.logError("Error refreshing a specification", e);
+		}
+    	return aProject;
+    }
 
+    /**
+     * @param aSpec a {@link Spec} that should be refreshed.
+     * @param aMonitor
+     * @return The underlying project refreshed
+     */
+    public static IProject refreshSpec(final Spec aSpec, final IProgressMonitor aMonitor) {
+    	return refreshProject(getProject(aSpec.getName()), aMonitor);
+    }
+    
     /**
 	 * Deletes the project
 	 * 

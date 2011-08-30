@@ -340,6 +340,12 @@
             id="org.lamport.tla.toolbox.forget"
             name="Forget Specification">
       </command>
+      <command
+            defaultHandler="org.lamport.tla.toolbox.ui.handler.RefreshSpecHandler"
+            description="Refresh selected specification."
+            id="org.lamport.tla.toolbox.refresh"
+            name="Refresh Specification">
+      </command>
    </extension>
 <!-- 
  Key bindings
@@ -730,6 +736,13 @@
                mnemonic="D"
                style="push">
          </command>
+         <command
+               commandId="org.lamport.tla.toolbox.refresh"
+               id="toolbox.popupmenu.refresh"
+               icon="icons/full/refresh.gif"
+               label="Refresh"
+               style="push">
+         </command>
       </menuContribution>
 
       <menuContribution
@@ -947,6 +960,7 @@
             </with>
          </activeWhen>
       </handler>
+
       <!-- This handler is now created programmatically in WorkspaceSpecManager-->
       <!-- handler
             class="org.lamport.tla.toolbox.ui.handler.OpenParseErrorViewHandler"
