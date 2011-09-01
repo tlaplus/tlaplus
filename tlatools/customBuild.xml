@@ -113,7 +113,7 @@
 		</jar>
 	</target>
 
-	<target name="test" description="Executes accompining unit tests" unless="skip.tests">
+	<target name="test" description="Executes accompining unit tests" unless="test.skip">
 		<!-- compile unit tests -->
 		<mkdir dir="${test.class.dir}" />
 		<javac srcdir="${test.dir}" destdir="${test.class.dir}" debug="true" verbose="false" source="1.5" target="1.5">

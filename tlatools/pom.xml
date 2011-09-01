@@ -32,6 +32,7 @@
 							classpathref="maven.test.classpath" />
 
 		    			<property name="build.compiler" value="extJavac"/>
+		    			<property name="test.skip" value="${maven.test.skip}"/>
 	    				<ant antfile="customBuild.xml" inheritRefs="true">
 	    					<target name="default" />
 	    					<target name="dist-mixed-zip" />
