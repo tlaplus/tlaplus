@@ -1223,11 +1223,12 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 			public void widgetSelected(SelectionEvent e) {
 				// prompt user for a file
 				final FileDialog fd = new FileDialog(getSite().getShell(), SWT.OPEN);
-				fd.setFileName(distributedScriptText.getText());
+				final String oldPath = distributedScriptText.getText();
+				fd.setFileName(oldPath);
 				
 				// use user-provided path as input for script input text box
 				final String path = fd.open();
-				distributedScriptText.setText((path != null) ? path : "");
+				distributedScriptText.setText((path != null) ? path : oldPath);
 			}
 			/* (non-Javadoc)
 			 * @see org.eclipse.swt.events.SelectionListener#widgetDefaultSelected(org.eclipse.swt.events.SelectionEvent)
@@ -1237,11 +1238,6 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 			}
 		});
         
-        // deactivate because domain logic is not done yet
-        distributedLabel.setVisible(false);
-        distributedScriptText.setVisible(false);
-        browseDistributedScriptButton.setVisible(false);
-
         /*
          * run link
          */
