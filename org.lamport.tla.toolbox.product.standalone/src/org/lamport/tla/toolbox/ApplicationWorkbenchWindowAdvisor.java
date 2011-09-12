@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.eclipse.jface.preference.IPreferenceNode;
 import org.eclipse.jface.preference.PreferenceManager;
+import org.eclipse.swt.dnd.DropTargetListener;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.ui.IPluginContribution;
 import org.eclipse.ui.IWorkbench;
@@ -14,6 +15,7 @@ import org.eclipse.ui.application.ActionBarAdvisor;
 import org.eclipse.ui.application.IActionBarConfigurer;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
+import org.eclipse.ui.internal.ide.EditorAreaDropAdapter;
 
 /**
  * Configuration of the main window
@@ -41,6 +43,11 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor
         configurer.setShowStatusLine(true);
         configurer.setShowProgressIndicator(true);
         configurer.setShowCoolBar(false);
+        
+        // A DropTargetAdapter is need for editor DND support
+        final DropTargetListener dtl = new EditorAreaDropAdapter(
+                configurer.getWindow());
+        configurer.configureEditorAreaDropListener(dtl);
     }
 
     /* (non-Javadoc)
