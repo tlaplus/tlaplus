@@ -15,7 +15,6 @@ import util.FileUtil;
 
 public final class MemStateQueue extends StateQueue {
   private final static int InitialSize = 4096;
-  private final static int GrowthFactor = 2;
 
   /* Fields  */
   private TLCState[] states;
@@ -31,8 +30,7 @@ public final class MemStateQueue extends StateQueue {
   final void enqueueInner(TLCState state) {
     if (this.len == this.states.length) {
       // grow the array
-      int newLen = Math.max(1, this.len * GrowthFactor);
-      TLCState[] newStates = new TLCState[newLen];
+      TLCState[] newStates = new TLCState[getNewLength(this.len)];
       int copyLen = this.states.length - this.start;
       System.arraycopy(this.states, this.start, newStates, 0, copyLen);
       System.arraycopy(this.states, 0, newStates, copyLen, this.start);
@@ -43,6 +41,14 @@ public final class MemStateQueue extends StateQueue {
     this.states[last] = state;
   }
     
+  /**
+   * @param oldLength
+   * @return The new capacity softly increased
+   */
+  private int getNewLength(final int oldLength) {
+      return Math.max(1, ((oldLength * 4) / 3 + 1));
+  }
+
   final TLCState dequeueInner() {
     TLCState res = this.states[this.start];
     this.states[this.start] = null;
