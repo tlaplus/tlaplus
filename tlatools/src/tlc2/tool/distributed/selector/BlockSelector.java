@@ -38,16 +38,18 @@ public class BlockSelector implements IBlockSelector {
 	 */
 	public TLCState[] getBlocks(final StateQueue stateQueue, final TLCWorkerRMI worker) {
 		// current size of new states
-		final int amountOfStates = stateQueue.size();
+		final long amountOfStates = stateQueue.size();
 		// the amount of blocks that will be assigned to the work
-		int blockSize = getBlockSize(amountOfStates, worker);
+		long blockSize = getBlockSize(amountOfStates, worker);
 		// At least request a single state to guarantee StateQueue#isAvail() will be triggered
 		// do not request more than what is available 
 		blockSize = Math.min(blockSize, amountOfStates);
 		// make sure it is positive > 0
 		blockSize = Math.max(blockSize, 1);
+		// can only read Integer.MAX_VALUE at max
+		blockSize = Math.min(Integer.MAX_VALUE, blockSize);
 		// synchronized removal from the state queue
-		return stateQueue.sDequeue(blockSize);
+		return stateQueue.sDequeue((int)blockSize);
 	}
 
 	/**
@@ -55,9 +57,9 @@ public class BlockSelector implements IBlockSelector {
 	 *            The current size of the state queue.
 	 * @return The intended block size.
 	 */
-	protected int getBlockSize(int size, final TLCWorkerRMI aWorker) {
+	protected long getBlockSize(long size, final TLCWorkerRMI aWorker) {
 		final int workerCount = tlcServer.getWorkerCount();
-		return (int) Math.ceil(size * (1.0 / workerCount));
+		return (long) Math.ceil(size * (1.0 / workerCount));
 	}
 
 	/* (non-Javadoc)

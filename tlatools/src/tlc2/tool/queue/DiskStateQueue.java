@@ -17,7 +17,11 @@ import tlc2.value.ValueOutputStream;
 import util.Assert;
 import util.FileUtil;
 
+/**
+ * A {@link DiskStateQueue} uses the local hard disc as a backing store for states. An in-memory buffer of size {@link DiskStateQueue}{@link #BufSize}
+ */
 public class DiskStateQueue extends StateQueue {
+	//TODO dynamic bufsize based on current VM parameters?
   private final static int BufSize = 8192;  // 4096;
 
   /* Invariants:
@@ -132,7 +136,7 @@ public class DiskStateQueue extends StateQueue {
   public final void beginChkpt() throws IOException {
     String filename = this.filePrefix + "queue.tmp";
     ValueOutputStream vos = new ValueOutputStream(filename);
-    vos.writeInt(this.len);
+    vos.writeLongNat(this.len);
     vos.writeInt(this.loPool);
     vos.writeInt(this.hiPool);
     vos.writeInt(this.enqIndex);

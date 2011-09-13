@@ -19,7 +19,7 @@ public abstract class StateQueue {
 	 * In model checking, this is the sequence of states waiting to be explored
 	 * further. When the queue is empty, the checking is completed.
 	 */
-	protected int len = 0; // the queue length
+	protected long len = 0; // the queue length
 	private int numWaiting = 0; // the number of waiting threads
 	private boolean finish = false; // terminate
 	/**
@@ -97,7 +97,8 @@ public abstract class StateQueue {
 		Assert.check(cnt > 0, EC.GENERAL);
 		if (this.isAvail()) {
 			if (cnt > len) {
-				cnt = len;
+				// in this case, casting len to int is safe 
+				cnt = (int) len;
 			}
 			final TLCState states[] = new TLCState[cnt];
 			int idx;
@@ -215,7 +216,7 @@ public abstract class StateQueue {
 		if (this.numWaiting < 1) {
 			return false;
 		}
-		// if all workers wait at once, it's an indicate that all work is
+		// if all workers wait at once, it indicates that all work is
 		// done and suspending all workers can happen right away without
 		// waiting.
 		return this.numWaiting < TLCGlobals.getNumWorkers();
@@ -254,7 +255,7 @@ public abstract class StateQueue {
 	}
 
 	/* This method returns the size of the state queue. */
-	public final int size() {
+	public final long size() {
 		return this.len;
 	}
 

@@ -5,7 +5,7 @@ import junit.framework.TestCase;
 
 public class StateQueueTest extends TestCase {
 
-	private StateQueue sQueue;
+	protected StateQueue sQueue;
 
 	/* (non-Javadoc)
 	 * @see junit.framework.TestCase#setUp()

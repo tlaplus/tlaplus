@@ -8,9 +8,11 @@ package tlc2.tool.queue;
 import java.io.File;
 import java.io.IOException;
 
+import tlc2.output.EC;
 import tlc2.tool.TLCState;
 import tlc2.value.ValueInputStream;
 import tlc2.value.ValueOutputStream;
+import util.Assert;
 import util.FileUtil;
 
 public final class MemStateQueue extends StateQueue {
@@ -28,6 +30,9 @@ public final class MemStateQueue extends StateQueue {
   }
     
   final void enqueueInner(TLCState state) {
+	if (this.len > Integer.MAX_VALUE) {
+        Assert.fail(EC.SYSTEM_ERROR_WRITING_STATES, "Amount of states exceeds internal storage");
+	}
     if (this.len == this.states.length) {
       // grow the array
       TLCState[] newStates = new TLCState[getNewLength(this.len)];
@@ -37,7 +42,7 @@ public final class MemStateQueue extends StateQueue {
       this.states = newStates;
       this.start = 0;
     }
-    int last = (this.start + this.len) % this.states.length;
+    int last = (this.start + (int) this.len) % this.states.length;
     this.states[last] = state;
   }
     
@@ -45,8 +50,8 @@ public final class MemStateQueue extends StateQueue {
    * @param oldLength
    * @return The new capacity softly increased
    */
-  private int getNewLength(final int oldLength) {
-      return Math.max(1, ((oldLength * 4) / 3 + 1));
+  private int getNewLength(final long oldLength) {
+      return (int) Math.max(1, ((oldLength * 4) / 3 + 1));
   }
 
   final TLCState dequeueInner() {
@@ -60,7 +65,7 @@ public final class MemStateQueue extends StateQueue {
   public final void beginChkpt() throws IOException {
     String filename = this.diskdir + FileUtil.separator + "queue.tmp";
     ValueOutputStream vos = new ValueOutputStream(filename);
-    vos.writeInt(this.len);
+    vos.writeInt((int)this.len);
     int index = this.start;
     for (int i = 0; i < this.len; i++) {
       this.states[index++].write(vos);

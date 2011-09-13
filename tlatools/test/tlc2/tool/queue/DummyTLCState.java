@@ -10,6 +10,11 @@ import util.UniqueString;
 @SuppressWarnings("serial")
 public class DummyTLCState extends TLCState {
 
+	public DummyTLCState() {
+		uid = 0;
+		TLCState.Empty = this;
+	}
+	
 	/* (non-Javadoc)
 	 * @see tlc2.tool.TLCState#bind(util.UniqueString, tlc2.value.Value, tla2sany.semantic.SemanticNode)
 	 */
@@ -91,14 +96,14 @@ public class DummyTLCState extends TLCState {
 	 * @see tlc2.tool.TLCState#createEmpty()
 	 */
 	public TLCState createEmpty() {
-		return null;
+		return this;
 	}
 
 	/* (non-Javadoc)
 	 * @see tlc2.tool.TLCState#toString()
 	 */
 	public String toString() {
-		return null;
+		return "Dummy#" + uid;
 	}
 
 	/* (non-Javadoc)

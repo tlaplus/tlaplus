@@ -479,8 +479,8 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 	/**
 	 * @return
 	 */
-	private int getNewStates() {
-		int res = stateQueue.size();
+	private long getNewStates() {
+		long res = stateQueue.size();
 		for (int i = 0; i < threadCnt; i++) {
 			res += threads[i].getCurrentSize();
 		}
@@ -527,7 +527,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
     {
         long statesGenerated = this.getStatesComputed();
 		long distinctStates = this.fpSetManager.size();
-		int statesLeftInQueue = this.getNewStates();
+		long statesLeftInQueue = this.getNewStates();
 		int level = this.trace.getLevelForReporting();
 		if (TLCGlobals.tool) {
             MP.printMessage(EC.TLC_PROGRESS_STATS, new String[] { String.valueOf(level),
