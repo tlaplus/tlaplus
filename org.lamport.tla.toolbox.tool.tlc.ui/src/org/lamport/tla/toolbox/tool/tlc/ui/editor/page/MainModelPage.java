@@ -1237,7 +1237,12 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 				//nop
 			}
 		});
-        
+
+        // deactivate because domain logic is not done yet
+        distributedLabel.setVisible(false);
+        distributedScriptText.setVisible(false);
+        browseDistributedScriptButton.setVisible(false);
+
         /*
          * run link
          */
