@@ -152,15 +152,26 @@ public class BoxedCommentHandler extends AbstractHandler implements IHandler {
 	 * Replaces the selected region with (or puts at the cursor if no region is
 	 * selected): - A "(****..." - two new-line characters, - a series of spaces
 	 * followed by spaces and a "...******)", with spaces so they line up.
+	 * 
+	 * Modified by LL on 15 Sep 2011 so it adds a blank line after
+	 * the ****) iff there is a non-space character between the cursor and
+	 * the end of the line.
 	 */
 	private void startBoxedComment()
 			throws org.eclipse.jface.text.BadLocationException {
 		int indent = offset - lineInfo.getOffset() + 1;
+
+		// set dontAddNewLine to true iff the rest of the line, starting from offset
+		// consists entirely of // space characters.
+		int restOfLineLength = lineInfo.getOffset() -  offset + lineInfo.getLength();
+		String restOfLine = doc.get(offset, restOfLineLength);
+		boolean dontAddNewLine = StringHelper.onlySpaces(restOfLine);
+
 		String asterisks = StringHelper.copyString("*", Math.max(3, RightMargin
 				- indent - 1));
 		String newText = "(" + asterisks + StringHelper.newline
 				+ StringHelper.newline + StringHelper.copyString(" ", indent)
-				+ asterisks + ")" + StringHelper.newline;
+				+ asterisks + ")" + (dontAddNewLine ? "" : StringHelper.newline);
 		doc.replace(selection.getOffset(), selection.getLength(), newText);
 		selectionProvider.setSelection(new TextSelection(offset + 1
 				+ asterisks.length() + StringHelper.newline.length(), 0));
