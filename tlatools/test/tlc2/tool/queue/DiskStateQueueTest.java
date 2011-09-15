@@ -24,6 +24,19 @@ public class DiskStateQueueTest extends StateQueueTest {
 		sQueue = new DiskStateQueue(diskdir);
 	}
 	
+	/* (non-Javadoc)
+	 * @see junit.framework.TestCase#tearDown()
+	 */
+	public void tearDown() {
+		// delete all nested files
+		final File[] listFiles = file.listFiles();
+		for (int i = 0; i < listFiles.length; i++) {
+			final File aFile = listFiles[i];
+			aFile.delete();
+		}
+		file.delete();
+	}
+	
 	// add Integer.MAX_VALUE states and check growth of MultiStateQueue. 
 	// Reuse the same state to speed up instantiation and space requirements
 	public void testGrowBeyondIntMaxValue() {
@@ -34,7 +47,5 @@ public class DiskStateQueueTest extends StateQueueTest {
 			sQueue.sEnqueue(state);
 		}
 		assertTrue(sQueue.size() == j);
-		
-		file.delete();
 	}
 }
