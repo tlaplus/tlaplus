@@ -1,3 +1,13 @@
+TO START SVC-LAMPORT-7 AS A TESTBED
+  https://tla.msr-inria.inria.fr/build/computer/svc/
+  log in as lamport/lamportpassword
+  Start the slave.
+  
+  Note: To set up a new machine to replace SVC-LAMPORT-7,
+        must install Java jdk and add the environment variable JAVA_HOME 
+        and set it to something like C:\Program Files\Java\jdk1.6.0_26
+
+
 TO PREPARE THE ZIP FILES FOR THE TOOLBOX RELEASE
 
 Notes: 1. To get tlatools.jar file copied to the right place for the distributed version of TLC, 
@@ -83,11 +93,15 @@ Method 2. Using Maven
     directory.
 
 Method 3. Using tla.msr-inria.inria.fr
-  - In browser, goto https://tla.msr-inria.inria.fr/
+  - In browser, goto https://tla.msr-inria.inria.fr/build
   - login
-  - goto  https://tla.msr-inria.inria.fr/job/M-HEAD-Toolbox.product.standalone/os=master/lastSuccessfulBuild/artifact/org.lamport.tla.toolbox.product.product/target/
-  - click on products
-  - copy 6 zip files
+  - to make a new release: click on
+       Release-HEAD-Toolbox.product.standalone  or the button on its right
+  - to get the release zip files, 
+       * go to 
+          https://tla.msr-inria.inria.fr/build/job/M-HEAD-Toolbox.product.standalone/os=master/lastSuccessfulBuild/artifact/org.lamport.tla.toolbox.product.product/target/
+       * click on products
+       * copy 6 zip files
    Alternate way to get to the https://...target/ page:
     - click on M-HEAD-Toolbox.product.standalone
     - click on Master
