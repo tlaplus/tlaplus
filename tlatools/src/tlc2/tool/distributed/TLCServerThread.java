@@ -153,7 +153,9 @@ public class TLCServerThread extends IdThread {
 
 				// add fingerprints to fingerprint manager (delegates to
 				// corresponding fingerprint server)
-				// TODO why isn't this done by workers directly?
+				// (Why isn't this done by workers directly?
+				// -> because if the worker crashes while computing states, the
+				// fp set would be inconsistent => making it an "atomic" operation)
 				BitVector[] visited = this.tlcServer.fpSetManager
 						.putBlock(newFps);
 
