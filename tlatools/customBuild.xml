@@ -23,10 +23,15 @@
 		</classpath>
 	</taskdef>
 
+	<condition property="test.skip">
+		<istrue value="${maven.test.skip}"/>
+	</condition>
+
 	<target name="info" description="Prints information">
 		<echo message="ANT_HOME     : ${env.ANT_HOME}" />
 		<echo message="Ant Version  : ${ant.version}" />
 		<echo message="Java Version : ${ant.java.version}" />
+		<echo message="Skipping Tests : ${test.skip}" />
 	</target>
 
 	<target name="default" depends="info" description="Default">
@@ -154,7 +159,7 @@
 		<delete dir="${ws.class.dir}" deleteonexit="true"/>
 	</target>
 
-	<target name="test-dist" description="Executes accompining unit tests on jar file" depends="dist" unless="skip.tests">
+	<target name="test-dist" description="Executes accompining unit tests on jar file" depends="dist" unless="test.skip">
 		<!-- compile unit tests -->
 		<mkdir dir="${test.class.dir}" />
 		<javac srcdir="${test.dir}" destdir="${test.class.dir}" debug="true" verbose="false" source="1.5" target="1.5">
