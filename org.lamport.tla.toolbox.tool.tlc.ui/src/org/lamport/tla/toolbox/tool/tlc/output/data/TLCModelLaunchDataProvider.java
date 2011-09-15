@@ -55,7 +55,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
     public static final String COMPUTING_REACHABLE = "Computing reachable states";
     public static final String CHECKPOINTING = "Checkpointing";
     public static final String CHECKING_LIVENESS = "Checking liveness";
-    public static final String SERVER_RUNNING = "Server waiting for worker(s)";
+    public static final String SERVER_RUNNING = "Master waiting for worker(s)";
     public static final String WORKER_REGISTERED = " worker(s) registered";
 
     // pattern for the output of evaluating constant expressions

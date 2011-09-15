@@ -1176,12 +1176,12 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 		
 		// Additional VM arguments for distributed mode
         FormText distributedLabel = toolkit.createFormText(howToRunArea, true);
-        distributedLabel.setText("Additional VM args:", false, false);
+        distributedLabel.setText("Additional JVM arguments:", false, false);
 
         distributedText = toolkit.createText(howToRunArea, "");
         distributedText.setEditable(true);
         distributedText
-        .setToolTipText("Optionally pass additional VM arguments to master TLC process (e.g. -Djava.rmi.server.hostname=ThisHostName)");
+        .setToolTipText("Optionally pass additional JVM arguments to master TLC process (e.g. -Djava.rmi.server.hostname=ThisHostName)");
         distributedText.addModifyListener(howToRunListener);
         gd = new GridData();
         gd.horizontalIndent = 10;
