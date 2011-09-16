@@ -6,21 +6,19 @@
 
 <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=ISO-8859-1">
 <META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
-<LINK REL="STYLESHEET" HREF="../style.css" CHARSET="ISO-8859-1" TYPE="text/css">
+<LINK REL="STYLESHEET" HREF="../style.css" rel="stylesheet" CHARSET="ISO-8859-1" TYPE="text/css">
 <title>Scheduling automatic updates</title>
-<script language="JavaScript" src="PLUGINS_ROOT/org.eclipse.help/livehelp.js"> </script>
 </HEAD>
 
 <BODY BGCOLOR="#ffffff">
 <h1>Scheduling automatic updates</h1>
-<p>You can configure the Toolbox update to automatically search for updates to the installed software 
+<p>You can configure the Toolbox update installer to automatically search for updates 
 on a periodic basis. You can configure how these updates
-are scheduled and performed from the <b>Install/Update &gt; Automatic Updates</b> preference page.
+are scheduled and performed from the <b>Automatic Updates</b> <a href="../gettingstarted/preferences.html">preferences page</a>.
 </p>
 <h3>Scheduling options</h3>
-<p>Each time the Toolbox starts, the update scheduler will
-activate based on the chosen scheduling. You can choose between the following
-update policies:</p>
+<p>You can choose among the following
+schedules for checking for updates:</p>
 <ul>
   <li>No automatic search</li>
   <li>On each startup (default)</li>
@@ -31,63 +29,13 @@ update policies:</p>
 scheduled time and the search is past due, it will immediately start on the next 
 startup</p>
 <h3>Download options</h3>
-<p>Scheduling options define when searches are performed but do not 
-define what actually happens when updates are found. Download options 
-control this behavior (this set of options is disabled if automatic search is 
-turned off). You can choose between:</p>
+<p>If you schedules for updates to be checked, you can choose between the following two options:</p>
 <ul>
   <li>Search for updates and notify me when they are available (default)</li>
   <li>Download new updates automatically and notify me when ready to install them</li>
 </ul>
-<p>In both cases, the update scheduler will execute in the background 
-when necessary based on the scheduling options. There will be no messages if no 
-updates are found. If there are updates, the behavior will depend on the 
-chosen download option.</p>
-<h4>Search and notify</h4>
-<p>If search only is selected, a popup will appear notifying you that updates
-have been found, and an updates icon will appear in the status bar.  
-You may click on the popup to review the list of updates. The 
-same <a href="run-update.html">Available Updates wizard</a>
- is used when you search for updates manually using
-<a class="command-link" href='javascript:executeCommand("org.eclipse.equinox.p2.ui.sdk.update")'>
-  <img src="PLUGINS_ROOT/org.eclipse.help/command_link.png">
-  <b>Help &gt; Check for Updates</b></a>.</p>
-  <p>If you do not wish to update the Toolbox right away, you may dismiss the notification
-  popup by clicking on the <font color="#0000FF">[X]</font> in the corner of the popup.  When you are ready to review
-  the updates, you may then click on the update icon in the status bar.
-  </p>
-<h4>Download new updates</h4>
-<p>If the second option has been selected (download updates automatically), the 
-search will be scheduled as before, but when new updates are found, the 
-download will commence immediately. When all the features have been successfully 
-downloaded, a popup will appear notifying you that updates have been found
-and downloaded, and an updates icon will appear in the status bar.
-You may click on the popup to review the list of updates. The 
-same <a href="run-update.html">Available Updates wizard</a>
- is used when you search for updates manually using
-<a class="command-link" href='javascript:executeCommand("org.eclipse.equinox.p2.ui.sdk.update")'>
-  <img src="PLUGINS_ROOT/org.eclipse.help/command_link.png">
-  <b>Help &gt; Check for Updates</b></a>.</p>
-  <p>If you do not wish to update the Toolbox right away, you may dismiss the notification
-  popup by clicking on the <font color="#0000FF">[X]</font> in the corner of the popup.  When you are ready to review
-  the updates, you may then click on the update icon in the status bar.  The software that was downloaded
-  will be used the next time you update the system.
-  </p>
-  <h3>Reminder options</h3>
-<p>Reminder options define what happens when updates are found.
-You can choose between:</p>
-<ul>
-  <li>Notify me once about updates (default)</li>
-  <li>Remind me about updates.  This option lets you choose the time
-  interval for being reminded about updates.</li>
-</ul>
-<p>In either case, a popup will appear when updates are available.  Clicking
-the popup will open the <a href="run-update.html">Available Updates wizard</a>
-so that you can review the updates.  If you do not wish to update your system right away, 
-you may dismiss the notification popup by clicking on the <font color="#0000FF">[X]</font> in the corner of the popup.  
-If you have selected a time interval for reminders, the popup will appear when the
-specified interval has passed.
-</p>
+
+<p>When a notification popup appears, you can update or defer. If you choose to defer the update, you can either be notified again or not.
 
 <hr>
 <a href="run-update.html">&uarr; Updating the Toolbox using the Available Updates wizard</a>
