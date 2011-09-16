@@ -25,12 +25,14 @@ Notes: 1. To get tlatools.jar file copied to the right place for the distributed
 
 Step 1: Get the right version numbers to appear:
 
+
 In org.lamport.tla.toolbox.product.standalone 
   plugin.xml : line 32 (the "aboutText" property), update date and version 
                and other stuff that appears in the Help/About window.  
+
   standalone.product: 
     As of 24 Jun 2011, standalone.product has moved to:
-    org.lamport.tla.toolbox.product.product
+    org.lamport.tla.toolbox.product.product.product
      Branding tab: update date and version (This may be used in Help > About.)
      Overview: update version.  (I don't know if this is used anywhere.)
 
@@ -38,6 +40,7 @@ In org.lamport.tla.toolbox.product.standalone
 In org.lamport.tla.toolbox/welcome/welcomeView.html
    Update date and version
 
+OBSOLETE:
 In toolbox.product.standalone/intro/root.xhtml: 
   update version information.
 
