@@ -111,4 +111,6 @@
    <topic label="Please Help Us"
            href = "html/help-us/help-us.html">
    </topic>
+   <topic href="html/update/run-update.html" label="Getting new versions">
+   </topic>
 </toc>
