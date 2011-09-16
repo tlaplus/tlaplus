@@ -67,6 +67,8 @@
               <topic label = "Model Values and Symmetry"
                   href  = "html/model/model-values.html">
               </topic>
+              <topic href="html/model/distributed-mode.html" label="Running TLC in Distributed Mode">
+              </topic>
 
            </topic>
 
