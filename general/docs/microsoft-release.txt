@@ -106,12 +106,14 @@ Method 3. Using tla.msr-inria.inria.fr
        * click on products
        * copy 6 zip files
    Alternate way to get to the https://...target/ page:
-    - click on M-HEAD-Toolbox.product.standalone
-    - click on Master
-    - click on Last Successful Build
-    - click on .../target
+    On https://tla.msr-inria.inria.fr/build
+    1. click on Release-HEAD-Toolbox.product.standalone 
+    2. click on Latest product zips
+    to get to the stand-alone TLA tools release zip file, in step 2
+    click on "TLA+ distribution zip".  The release is in tla.zip.
 
-TO PREPARE THE STAND-ALONE TLA TOOLS RELEASE ZIP FILE
+TO PREPARE THE STAND-ALONE TLA TOOLS RELEASE ZIP FILE (IN 
+Methods 1 and 2)
   Run the Ant default-release option.  This will put the release in
      C:\lamport\tla\newtools\tla2-inria\tlatools\dist\tla.zip
 
