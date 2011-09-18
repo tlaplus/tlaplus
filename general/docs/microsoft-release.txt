@@ -124,7 +124,8 @@ TO GENERATE THE RELEASE:
   Note: when uploading the file, wait for progress bar at bottom
     of screen to indicate it's done (and for new file name to
     appear in Installation field)
-    
+Queries to msrcpx or Chuck Needham (chuckne)
+
 TO DEPLOY THE UPDATE SITE (p2) TO http://lamport.org/tlatoolbox/ (redirected to http://msr-inria.inria.fr/~doligez/tlatoolbox):
   Clean the current update site from nation.msr-inria.inria.fr:/home/tla/doligez/public_html/toolboxUpdate/
     (Authenticate with msr-inria credentials. "tla" group members have write permissions)
@@ -138,7 +139,7 @@ TO DEPLOY THE UPDATE SITE (p2) TO http://lamport.org/tlatoolbox/ (redirected to 
   	artifacts.jar
   	content.jar 
 
-Queries to msrcpx or Chuck Needham (chuckne)
+
 -------------------------------------------------------------
 Version 1.3.2 of ???
     Added the Forget Specification command.
