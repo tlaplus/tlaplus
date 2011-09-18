@@ -20,14 +20,6 @@
 (**************************************************************************)
 THEOREM SimpleArithmetic == TRUE (*{ by (cooper) }*)
 
-(**************************************************************************)
-(* Backend pragma: SMT solver                                             *)
-(*                                                                        *)
-(* This method translates the proof obligation to SMTLIB2. The supported  *)
-(* fragment includes first-order logic, set theory, functions and         *)
-(* records.                                                               *)
-(**************************************************************************)
-THEOREM SMT == TRUE (*{ by (smt) }*)
 
 (***************************************************************************)
 (* The following theorem tells the prover to use the law of set            *)
@@ -63,25 +55,21 @@ AXIOM NoSetContainsEverything == \A S : \E x : x \notin S
 (***********************************************************************)
 (* Backend pragmas: Zenon with much longer timeouts                    *)
 (*                                                                     *)
-(* These pragmas increase the timeout for Zenon (which is 10 seconds by *)
+(* These pragmas increase the timeout for Zenon (which is 5 seconds by *)
 (* default) by factors of 2.                                           *)
 (***********************************************************************)
-THEOREM SlowZenon     == TRUE (*{ by (zenon 20) }*)
-THEOREM SlowerZenon   == TRUE (*{ by (zenon 40) }*)
-THEOREM VerySlowZenon == TRUE (*{ by (zenon 80) }*)
-THEOREM SlowestZenon  == TRUE (*{ by (zenon 160) }*)
+THEOREM SlowZenon     == TRUE (*{ by (zenon 10) }*)
+THEOREM SlowerZenon   == TRUE (*{ by (zenon 20) }*)
+THEOREM VerySlowZenon == TRUE (*{ by (zenon 40) }*)
+THEOREM SlowestZenon  == TRUE (*{ by (zenon 80) }*)
 
 (********************************************************************)
 (* Backend pragma: Isabelle's automatic search ("auto")             *)
 (*                                                                  *)
 (* This pragma bypasses Zenon. It is useful in situations involving *)
 (* essentially simplification and equational reasoning.             *)
-(* Default imeout for all isabelle tactics is 30 seconds.           *)
 (********************************************************************)
 THEOREM Auto == TRUE (*{ by (isabelle "auto") }*)
-THEOREM SlowAuto == TRUE (*{ by (isabelle "auto" 120) }*)
-THEOREM SlowerAuto == TRUE (*{ by (isabelle "auto" 480) }*)
-THEOREM SlowestAuto == TRUE (*{ by (isabelle "auto" 960) }*)
 
 (********************************************************************)
 (* Backend pragma: Isabelle's "force" tactic                        *)
@@ -89,10 +77,7 @@ THEOREM SlowestAuto == TRUE (*{ by (isabelle "auto" 960) }*)
 (* This pragma bypasses Zenon. It is useful in situations involving *)
 (* quantifier reasoning.                                            *)
 (********************************************************************)
-THEOREM Force        == TRUE (*{ by (isabelle "force") }*)
-THEOREM SlowForce    == TRUE (*{ by (isabelle "force" 120) }*)
-THEOREM SlowerForce  == TRUE (*{ by (isabelle "force" 480) }*)
-THEOREM SlowestForce == TRUE (*{ by (isabelle "force" 960) }*)
+THEOREM Force == TRUE (*{ by (isabelle "force") }*)
 
 (***********************************************************************)
 (* Backend pragma: Isabelle's "simplification" tactics                 *)
@@ -102,19 +87,8 @@ THEOREM SlowestForce == TRUE (*{ by (isabelle "force" 960) }*)
 (* or tuple projections. Use the SimplfyAndSolve tactic unless you're  *)
 (* sure you can get away with just Simplification                      *)
 (***********************************************************************)
-THEOREM SimplifyAndSolve        == TRUE
-                                   (*{ by (isabelle "clarsimp auto?") }*)
-THEOREM SlowSimplifyAndSolve    == TRUE
-                               (*{ by (isabelle "clarsimp auto?" 120) }*)
-THEOREM SlowerSimplifyAndSolve  == TRUE
-                               (*{ by (isabelle "clarsimp auto?" 480) }*)
-THEOREM SlowestSimplifyAndSolve == TRUE
-                               (*{ by (isabelle "clarsimp auto?" 960) }*)
-
-THEOREM Simplification        == TRUE (*{ by (isabelle "clarsimp") }*)
-THEOREM SlowSimplification    == TRUE (*{ by (isabelle "clarsimp" 120) }*)
-THEOREM SlowerSimplification  == TRUE (*{ by (isabelle "clarsimp" 480) }*)
-THEOREM SlowestSimplification == TRUE (*{ by (isabelle "clarsimp" 960) }*)
+THEOREM SimplifyAndSolve == TRUE (*{ by (isabelle "clarsimp auto?") }*)
+THEOREM Simplification == TRUE (*{ by (isabelle "clarsimp") }*)
 
 (**************************************************************************)
 (* Backend pragma: Isabelle's tableau prover ("blast")                    *)
@@ -126,14 +100,8 @@ THEOREM SlowestSimplification == TRUE (*{ by (isabelle "clarsimp" 960) }*)
 (* Auto could not prove. (There is currently no way to use Zenon on the   *)
 (* results left over from Auto.)                                          *)
 (**************************************************************************)
-THEOREM Blast            == TRUE (*{ by (isabelle "blast") }*)
-THEOREM SlowBlast        == TRUE (*{ by (isabelle "blast" 120) }*)
-THEOREM SlowerBlast      == TRUE (*{ by (isabelle "blast" 480) }*)
-THEOREM SlowestBlast     == TRUE (*{ by (isabelle "blast" 960) }*)
-
-
-THEOREM AutoBlast        == TRUE (*{ by (isabelle "auto, blast") }*)
-
+THEOREM Blast     == TRUE (*{ by (isabelle "blast") }*)
+THEOREM AutoBlast == TRUE (*{ by (isabelle "auto, blast") }*)
 ----------------------------------------------------------------------------
 (***************************************************************************)
 (*                           TEMPORAL LOGIC                                *)
@@ -165,7 +133,7 @@ THEOREM RuleINV1 == ASSUME STATE I, STATE F,  ACTION N,
                     PROVE  I /\ [][N]_F => []I
 
 THEOREM RuleINV2 == ASSUME STATE I, STATE f, ACTION N
-                    PROVE  []I => ([][N]_f <=> [][N /\ I /\ I']_f)
+                   PROVE  []I => ([][N]_f <=> [][N /\ I /\ I']_f)
 
 THEOREM RuleWF1 == ASSUME STATE P, STATE Q, STATE f, ACTION N, ACTION A,
                           P /\ [N]_f => (P' \/ Q'),
@@ -194,7 +162,7 @@ THEOREM RuleWF2 == ASSUME STATE P, STATE f, STATE g, STATE EM,
                           P /\ P' /\ <<N /\ A>>_f /\ EM => B,
                           P /\ EM => ENABLED A,
                           [][N /\ ~B]_f /\ WF_f(A) /\ []F /\ <>[]EM => <>[]P
-                   PROVE  [][N]_f /\ WF_f(A) /\ []F => []<><<M>>_g \/ []<>(~EM)
+                   PROVE  [][N]_f /\ WF_f(A) /\ []F => []<><<B>>_g \/ []<>(~EM)
 
 THEOREM RuleSF2 == ASSUME STATE P, STATE f, STATE g, STATE EM,
                           ACTION A, ACTION B, ACTION N, ACTION M,
@@ -203,7 +171,7 @@ THEOREM RuleSF2 == ASSUME STATE P, STATE f, STATE g, STATE EM,
                           P /\ P' /\ <<N /\ A>>_f /\ EM => B,
                           P /\ EM => ENABLED A,
                           [][N /\ ~B]_f /\ SF_f(A) /\ []F /\ []<>EM => <>[]P
-                   PROVE  [][N]_f /\ SF_f(A) /\ []F => []<><<M>>_g \/ <>[](~EM)
+                   PROVE  [][N]_f /\ SF_f(A) /\ []F => []<><<B>>_g \/ <>[](~EM)
 
 
 (***************************************************************************)

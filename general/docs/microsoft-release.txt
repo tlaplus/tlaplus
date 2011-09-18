@@ -98,8 +98,8 @@ Method 2. Using Maven
 Method 3. Using tla.msr-inria.inria.fr
   - In browser, goto https://tla.msr-inria.inria.fr/build
   - login
-  - to make a new release: click on
-       Release-HEAD-Toolbox.product.standalone  or the button on its right
+  - to make a new release: click on the button to the right of
+       Release-HEAD-Toolbox.product.standalone  
   - to get the release zip files, 
        * go to 
           https://tla.msr-inria.inria.fr/build/job/M-HEAD-Toolbox.product.standalone/os=master/lastSuccessfulBuild/artifact/org.lamport.tla.toolbox.product.product/target/
