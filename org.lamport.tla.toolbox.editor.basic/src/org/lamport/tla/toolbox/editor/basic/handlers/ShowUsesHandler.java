@@ -656,7 +656,7 @@ public class ShowUsesHandler extends AbstractHandler implements IHandler, Syntax
                 IRegion iregion = AdapterFactory.locationToRegion(locations[i]);
                 IMarker marker;
                 marker = resource.createMarker(SHOW_USE_MARKER_TYPE);
-                Map markerAttributes = new HashMap(2);
+                Map<String, Integer> markerAttributes = new HashMap<String, Integer>(2);
                 markerAttributes.put(IMarker.CHAR_START, new Integer(iregion.getOffset()));
                 markerAttributes.put(IMarker.CHAR_END, new Integer(iregion.getOffset() + iregion.getLength()));
                 marker.setAttributes(markerAttributes);
@@ -697,13 +697,11 @@ public class ShowUsesHandler extends AbstractHandler implements IHandler, Syntax
      * @author lamport
      *
      */
-    private static class LocationComparator implements Comparator
+    private static class LocationComparator implements Comparator<Location>
     {
-        public int compare(Object arg0, Object arg1)
+        public int compare(Location loc1, Location loc2)
         {
             // Most of this code is a clone from SemanticNode.compareTo
-            Location loc1 = (Location) arg0;
-            Location loc2 = (Location) arg1;
             if (loc1.beginLine() < loc2.beginLine())
             {
                 return -1;
