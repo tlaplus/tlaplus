@@ -151,6 +151,7 @@
 					<exclude name="**/TestDriver.java" />
 					<exclude name="**/TestDriver2.java" />
 					<exclude name="**/AllTests.java" />
+					<exclude name="**/DiskStateQueueTest.java" />
 				</fileset>
 			</batchtest>
 		</junit>
@@ -194,6 +195,47 @@
 					<exclude name="**/TestDriver.java" />
 					<exclude name="**/TestDriver2.java" />
 					<exclude name="**/AllTests.java" />
+					<exclude name="**/DiskStateQueueTest.java" />
+				</fileset>
+			</batchtest>
+		</junit>
+
+		<!-- remove copied class.dir -->
+		<delete dir="${ws.class.dir}" deleteonexit="true"/>
+	</target>
+	
+	<target name="test-dist-long" description="Executes accompining long-running unit tests on jar file" depends="dist" unless="test.skip">
+		<!-- compile unit tests -->
+		<mkdir dir="${test.class.dir}" />
+		<javac srcdir="${test.dir}" destdir="${test.class.dir}" debug="true" verbose="false" source="1.5" target="1.5">
+			<classpath refid="project.classpath" />
+			<classpath>
+				<pathelement location="lib/junit-4.8.2.jar" />
+				<pathelement path="${class.dir}" />
+			</classpath>
+		</javac>
+		<!-- copy class.dir to path with whitespace -->
+		<!-- this is required by some tests to make sense -->
+		<!-- even throw a non digit in -->
+		<property name="ws.class.dir" value="TLA+ Tools" />
+		<copy todir="${ws.class.dir}">
+			<fileset dir="${class.dir}" />
+		</copy>
+		<!-- run junit tests on tlatools.jar -->
+		<mkdir dir="${test.reports}/onJarLong" />
+		<junit printsummary="yes" haltonfailure="no" haltonerror="no">
+			<classpath refid="project.classpath" />
+			<classpath>
+				<pathelement location="lib/junit-4.8.2.jar" />
+				<pathelement location="${dist.file}" />
+				<pathelement path="${test.class.dir}" />
+			</classpath>
+
+			<formatter type="xml" />
+
+			<batchtest fork="yes" todir="${test.reports}/onJarLong">
+				<fileset dir="${test.dir}">
+					<include name="**/DiskStateQueueTest.java" />
 				</fileset>
 			</batchtest>
 		</junit>
