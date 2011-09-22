@@ -152,6 +152,7 @@
 					<exclude name="**/TestDriver2.java" />
 					<exclude name="**/AllTests.java" />
 					<exclude name="**/DiskStateQueueTest.java" />
+					<exclude name="**/DiskFPSetTest.java" />
 				</fileset>
 			</batchtest>
 		</junit>
@@ -196,6 +197,7 @@
 					<exclude name="**/TestDriver2.java" />
 					<exclude name="**/AllTests.java" />
 					<exclude name="**/DiskStateQueueTest.java" />
+					<exclude name="**/DiskFPSetTest.java" />
 				</fileset>
 			</batchtest>
 		</junit>
@@ -236,6 +238,7 @@
 			<batchtest fork="yes" todir="${test.reports}/onJarLong">
 				<fileset dir="${test.dir}">
 					<include name="**/DiskStateQueueTest.java" />
+					<include name="**/DiskFPSetTest.java" />
 				</fileset>
 			</batchtest>
 		</junit>
