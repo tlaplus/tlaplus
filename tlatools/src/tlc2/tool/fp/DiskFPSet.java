@@ -57,8 +57,8 @@ public class DiskFPSet extends FPSet {
     private boolean flusherChosen;    // has a flusher thread been selected?
     private long[][] tbl;             // in-memory buffer of new entries
     private int tblCnt;               // number of entries in "tbl"
-    private BufferedRandomAccessFile[] braf;     // one per worker thread
-    private BufferedRandomAccessFile[] brafPool; // a pool of available brafs
+    private RandomAccessFile[] braf;     // one per worker thread
+    private RandomAccessFile[] brafPool; // a pool of available brafs
     private int poolIndex;
   
     private long[] index;             // index of first fp on each disk page
@@ -188,7 +188,7 @@ public class DiskFPSet extends FPSet {
 	this.rwLock.BeginWrite();
 
 	int len = this.braf.length;
-	BufferedRandomAccessFile[] nraf = new BufferedRandomAccessFile[len+1];
+	RandomAccessFile[] nraf = new BufferedRandomAccessFile[len+1];
 	for (int i = 0; i < len; i++) {
 	  nraf[i] = this.braf[i];
 	}
@@ -374,7 +374,7 @@ public class DiskFPSet extends FPSet {
 	boolean diskHit = false;
         try {
             // open file for reading
-	    BufferedRandomAccessFile raf;
+	    RandomAccessFile raf;
 	    int id = IdThread.GetId(this.braf.length);
 	    if (id < this.braf.length) {
 	      raf = this.braf[id];
@@ -404,6 +404,7 @@ public class DiskFPSet extends FPSet {
                 if (midEntry == hiEntry) midEntry--;
                 
                 Assert.check(loEntry <= midEntry && midEntry < hiEntry, EC.SYSTEM_INDEX_ERROR);
+                Assert.check(midEntry * LongSize >= 0, EC.SYSTEM_INDEX_ERROR);
                 raf.seek(midEntry * LongSize);
                 long v = raf.readLong();
 
@@ -658,7 +659,7 @@ public class DiskFPSet extends FPSet {
 
     public final double checkFPs() throws IOException {
       this.flushTable();    // No need for any lock here
-      BufferedRandomAccessFile braf = new BufferedRandomAccessFile(this.getFPFilename(), "r");
+      RandomAccessFile braf = new BufferedRandomAccessFile(this.getFPFilename(), "r");
       long fileLen = braf.length();
       long dis = Long.MAX_VALUE;
       if (fileLen > 0) {
@@ -696,9 +697,9 @@ public class DiskFPSet extends FPSet {
     }
 
     public final void recover(String fname) throws IOException {
-        BufferedRandomAccessFile chkptRAF = 
+        RandomAccessFile chkptRAF = 
             new BufferedRandomAccessFile(this.getChkptName(fname, "chkpt"), "r");
-        BufferedRandomAccessFile currRAF = 
+        RandomAccessFile currRAF = 
             new BufferedRandomAccessFile(this.getFPFilename(), "rw");
 
         this.fileCnt = chkptRAF.length() / LongSize;
@@ -787,9 +788,12 @@ public class DiskFPSet extends FPSet {
       this.prepareRecovery();
       
       long recoverPtr = TLCTrace.getRecoverPtr();
-      BufferedRandomAccessFile braf = new BufferedRandomAccessFile(TLCTrace.getFilename(), "r");
+      RandomAccessFile braf = new BufferedRandomAccessFile(TLCTrace.getFilename(), "r");
       while (braf.getFilePointer() < recoverPtr) {
-	braf.readLongNat();      /*drop*/
+    	  //drop readLongNat
+    	    if (braf.readInt() < 0) 
+    	    	braf.readInt();
+    	    
 	long fp = braf.readLong();
 	this.recoverFP(fp);
       }

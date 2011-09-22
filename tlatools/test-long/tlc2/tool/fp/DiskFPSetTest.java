@@ -51,9 +51,14 @@ public class DiskFPSetTest extends TestCase {
 
 		// fill with max int + 1
 		final long l = Integer.MAX_VALUE + 2L;
-		for (long i = 0; i < l; i++) {
-			diskFPSet.put(i);
-			assertEquals((i + 1), diskFPSet.size());
+		for (long i = 1; i < l; i++) {
+			if (i % 2 != 0) {
+				assertFalse(diskFPSet.put(l - i));
+			} else {
+				assertFalse(diskFPSet.put(i));
+			}
+			
+			assertEquals(i, diskFPSet.size());
 		}
 
 		// try creating a check point
