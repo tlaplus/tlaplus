@@ -3,6 +3,8 @@ package tlc2.tool.fp;
 import java.io.File;
 import java.io.IOException;
 
+import tlc2.TLC;
+
 import junit.framework.TestCase;
 
 public class DiskFPSetTest extends TestCase {
@@ -13,9 +15,7 @@ public class DiskFPSetTest extends TestCase {
 	
 	private File dir;
 
-	/*
-	 * (non-Javadoc)
-	 * 
+	/* (non-Javadoc)
 	 * @see junit.framework.TestCase#setUp()
 	 */
 	protected void setUp() throws Exception {
@@ -39,10 +39,14 @@ public class DiskFPSetTest extends TestCase {
 		dir.delete();
 	}
 
+	/**
+	 * Test filling a DiskFPSet with max int + 1 
+	 * @throws IOException
+	 */
 	public void testMaxDiskFPSetSize() throws IOException {
 
 		//
-		final DiskFPSet diskFPSet = new DiskFPSet(10000000);
+		final DiskFPSet diskFPSet = new DiskFPSet(getFreeMemory());
 		diskFPSet.init(1, tmpdir, filename);
 
 		// fill with max int + 1
@@ -58,5 +62,28 @@ public class DiskFPSetTest extends TestCase {
 		
 		//
 		assertEquals(l, diskFPSet.size());
+	}
+	
+	/**
+	 * Implementation based on {@link TLC#handleParameters(String[])}
+	 * @return
+	 */
+	private int getFreeMemory() {
+		final Runtime runtime = Runtime.getRuntime();
+		final long MinFpMemSize = 20 * (1 << 19);
+		
+		long fpMemSize = 0;
+
+		if (fpMemSize == -1) {
+			fpMemSize = runtime.maxMemory() >> 2;
+		}
+		if (fpMemSize < MinFpMemSize) {
+			fpMemSize = MinFpMemSize;
+		}
+		if (fpMemSize >= runtime.maxMemory()) {
+			fpMemSize = runtime.maxMemory() - (runtime.maxMemory() >> 2);
+		}
+
+		return (int) fpMemSize / 20;
 	}
 }
