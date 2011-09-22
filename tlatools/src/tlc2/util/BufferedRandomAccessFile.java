@@ -17,7 +17,7 @@ import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
 
-public final class BufferedRandomAccessFile extends RandomAccessFile {
+public final class BufferedRandomAccessFile extends java.io.RandomAccessFile {
     static final int LogBuffSz = 13; // 8K buffer
     public static final int BuffSz = (1 << LogBuffSz);
     static final int BuffMask = ~(BuffSz - 1);
