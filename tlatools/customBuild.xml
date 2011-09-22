@@ -151,8 +151,6 @@
 					<exclude name="**/TestDriver.java" />
 					<exclude name="**/TestDriver2.java" />
 					<exclude name="**/AllTests.java" />
-					<exclude name="**/DiskStateQueueTest.java" />
-					<exclude name="**/DiskFPSetTest.java" />
 				</fileset>
 			</batchtest>
 		</junit>
@@ -196,8 +194,6 @@
 					<exclude name="**/TestDriver.java" />
 					<exclude name="**/TestDriver2.java" />
 					<exclude name="**/AllTests.java" />
-					<exclude name="**/DiskStateQueueTest.java" />
-					<exclude name="**/DiskFPSetTest.java" />
 				</fileset>
 			</batchtest>
 		</junit>
@@ -209,7 +205,7 @@
 	<target name="test-dist-long" description="Executes accompining long-running unit tests on jar file" depends="dist" unless="test.skip">
 		<!-- compile unit tests -->
 		<mkdir dir="${test.class.dir}" />
-		<javac srcdir="${test.dir}" destdir="${test.class.dir}" debug="true" verbose="false" source="1.5" target="1.5">
+		<javac srcdir="${test.dir}-long" destdir="${test.class.dir}" debug="true" verbose="false" source="1.5" target="1.5">
 			<classpath refid="project.classpath" />
 			<classpath>
 				<pathelement location="lib/junit-4.8.2.jar" />
@@ -225,7 +221,7 @@
 		</copy>
 		<!-- run junit tests on tlatools.jar -->
 		<mkdir dir="${test.reports}/onJarLong" />
-		<junit printsummary="yes" haltonfailure="no" haltonerror="no">
+		<junit printsummary="yes" haltonfailure="no" haltonerror="no" maxmemory="1024m">
 			<classpath refid="project.classpath" />
 			<classpath>
 				<pathelement location="lib/junit-4.8.2.jar" />
@@ -236,9 +232,8 @@
 			<formatter type="xml" />
 
 			<batchtest fork="yes" todir="${test.reports}/onJarLong">
-				<fileset dir="${test.dir}">
-					<include name="**/DiskStateQueueTest.java" />
-					<include name="**/DiskFPSetTest.java" />
+				<fileset dir="${test.dir}-long">
+					<include name="**/*Test*.java" />
 				</fileset>
 			</batchtest>
 		</junit>
