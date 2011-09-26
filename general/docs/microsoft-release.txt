@@ -129,7 +129,7 @@ TO GENERATE THE RELEASE:
 Queries to msrcpx or Chuck Needham (chuckne)
 
 -------------------------------------------------------------
-Version 1.4.0 of 26 September 2011
+Version 1.4.0 of 16 September 2011
     Includes a method for obtaining new releases from
       inside the Toolbox.
     Added the Forget Specification command.
