@@ -128,22 +128,10 @@ TO GENERATE THE RELEASE:
     appear in Installation field)
 Queries to msrcpx or Chuck Needham (chuckne)
 
-TO DEPLOY THE UPDATE SITE (p2) TO http://lamport.org/tlatoolbox/ (redirected to http://msr-inria.inria.fr/~doligez/tlatoolbox):
-  Clean the current update site from nation.msr-inria.inria.fr:/home/tla/doligez/public_html/toolboxUpdate/
-    (Authenticate with msr-inria credentials. "tla" group members have write permissions)
-  Copy the zip file org.lamport.tla.toolbox.product.product-version-number-SNAPSHOT.zip in 
-  C:\Users\lamport\.m2\repository\tlatools\org.lamport.tla.toolbox.product.product\version-number-SNAPSHOT to nation.msr-inria.inria.fr:/home/tla/doligez/public_html/toolboxUpdate/
-  Unzip the zip to toolboxUpdate/ on nation
-  toolboxUpdate/ will look like (no index.html file or alike!):
-  	binary/
-  	features/
-  	plugins/
-  	artifacts.jar
-  	content.jar 
-
-
 -------------------------------------------------------------
-Version 1.3.2 of ???
+Version 1.4.0 of 26 September 2011
+    Includes a method for obtaining new releases from
+      inside the Toolbox.
     Added the Forget Specification command.
     Includes a first release of the distributed version of TLC.
     Includes fix to SANY to support binary, octal, and hex numbers.
