@@ -404,7 +404,6 @@ public class DiskFPSet extends FPSet {
                 if (midEntry == hiEntry) midEntry--;
                 
                 Assert.check(loEntry <= midEntry && midEntry < hiEntry, EC.SYSTEM_INDEX_ERROR);
-                Assert.check(midEntry * LongSize >= 0, EC.SYSTEM_INDEX_ERROR);
                 raf.seek(midEntry * LongSize);
                 long v = raf.readLong();
 
