@@ -398,6 +398,7 @@ public class DiskFPSet extends FPSet {
 		Assert.check(hiPage == loPage + 1, EC.SYSTEM_INDEX_ERROR);
 
 		boolean diskHit = false;
+		long midEntry = -1L;
 		try {
 			// open file for reading
 			RandomAccessFile raf;
@@ -426,7 +427,7 @@ public class DiskFPSet extends FPSet {
 				 */
 				double dhi = (double) hiEntry, dlo = (double) loEntry;
 				double dhiVal = (double) hiVal, dloVal = (double) loVal;
-				long midEntry = loEntry
+				midEntry = loEntry
 						+ (long) ((dhi - dlo) * (dfp - dloVal) / (dhiVal - dloVal));
 				if (midEntry == hiEntry)
 					midEntry--;
@@ -457,9 +458,11 @@ public class DiskFPSet extends FPSet {
 				}
 			}
 		} catch (IOException e) {
-			String msg = "Error: accessing file " + this.getFPFilename() + "  "
-					+ e;
-			throw new IOException(msg);
+			if(midEntry * LongSize < 0) {
+				MP.printWarning(EC.GENERAL, new String[]{"MidEntry turned negative: ", Long.toString(midEntry)});
+			}
+			MP.printError(EC.SYSTEM_DISKGRAPH_ACCESS, e);
+			throw e;
 		}
 		return diskHit;
 	}
