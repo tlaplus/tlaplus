@@ -43,7 +43,7 @@ import util.FileUtil;
  * By doing so, we lose one bit of the fingerprint. However, we will get this
  * bit back if using MultiFPSet.
  */
-
+@SuppressWarnings("serial")
 public class DiskFPSet extends FPSet {
 	// fields
 	private final int maxTblCnt; // upper bound on "tblCnt"
@@ -60,12 +60,12 @@ public class DiskFPSet extends FPSet {
 	private RandomAccessFile[] brafPool; // a pool of available brafs
 	private int poolIndex;
 
-	private long[] index; // index of first fp on each disk page
-							// special case: last entry is last fp in file
-
-	// private long diskLookupCnt = 0L;
-	// private long hitCnt2 = 0L; // hits on this.tbl
-	// private long hitCnt3 = 0L; // hits on disk
+	/**
+	 * index of first fp on each disk page
+	 * special case: last entry is last fp in file
+	 * if <code>null</code>, no disk file exists yet
+	 */
+	private long[] index;
 
 	/*
 	 * Log (base 2) of default number of new entries allowed to accumulate in
@@ -314,15 +314,19 @@ public class DiskFPSet extends FPSet {
 			bucket[0] = fp;
 			this.tbl[index] = bucket;
 		} else {
-			// search for entry
+			// search for entry in existing bucket
 			int bucketLen = bucket.length;
 			int i = -1;
 			int j = 0;
 			for (; j < bucketLen && bucket[j] != 0L; j++) {
 				long fp1 = bucket[j];
-				if (fp == (fp1 & 0x7FFFFFFFFFFFFFFFL)) {
+				// zero the long msb
+				long l = fp1 & 0x7FFFFFFFFFFFFFFFL;
+				if (fp == l) {
+					// found in existing bucket
 					return true;
 				}
+				// fp1 < 0 iff fp1 is on disk
 				if (i == -1 && fp1 < 0) {
 					i = j;
 				}
@@ -335,6 +339,7 @@ public class DiskFPSet extends FPSet {
 					System.arraycopy(oldBucket, 0, bucket, 0, bucketLen);
 					this.tbl[index] = bucket;
 				}
+				// add to end of bucket
 				bucket[j] = fp;
 			} else {
 				if (j != bucketLen) {
@@ -367,6 +372,8 @@ public class DiskFPSet extends FPSet {
 			return true;
 		double dfp = (double) fp;
 
+		// a) find disk page that would potentially contain the fp. this.index contains 
+		// the first fp of each disk page
 		while (loPage < hiPage - 1) {
 			/*
 			 * Invariant: If "fp" exists in the file, the (zero-based) page
@@ -375,8 +382,11 @@ public class DiskFPSet extends FPSet {
 			 * 
 			 * loVal <= fp < hiVal exists x: loPage < x < hiPage
 			 */
-			double dhi = (double) hiPage, dlo = (double) loPage;
-			double dhiVal = (double) hiVal, dloVal = (double) loVal;
+			double dhi = (double) hiPage;
+			double dlo = (double) loPage;
+			double dhiVal = (double) hiVal;
+			double dloVal = (double) loVal;
+			
 			int midPage = (loPage + 1)
 					+ (int) ((dhi - dlo - 1.0) * (dfp - dloVal) / (dhiVal - dloVal));
 			if (midPage == hiPage)
@@ -392,6 +402,7 @@ public class DiskFPSet extends FPSet {
 				loPage = midPage;
 				loVal = v;
 			} else {
+				// given fp happens to be in index file
 				return true;
 			}
 		}
@@ -400,7 +411,7 @@ public class DiskFPSet extends FPSet {
 		boolean diskHit = false;
 		long midEntry = -1L;
 		try {
-			// open file for reading
+			// b0) open file for reading that is associated with current thread
 			RandomAccessFile raf;
 			int id = IdThread.GetId(this.braf.length);
 			if (id < this.braf.length) {
@@ -415,7 +426,8 @@ public class DiskFPSet extends FPSet {
 					}
 				}
 			}
-			// do interpolated binary search
+			
+			// b1) do interpolated binary search on disk page determined by a)
 			long loEntry = loPage * NumEntriesPerPage;
 			long hiEntry = ((loPage == this.index.length - 2) ? this.fileCnt - 1
 					: hiPage * NumEntriesPerPage);
@@ -425,8 +437,11 @@ public class DiskFPSet extends FPSet {
 				 * position within the file is in the half-open interval
 				 * "[loEntry, hiEntry)".
 				 */
-				double dhi = (double) hiEntry, dlo = (double) loEntry;
-				double dhiVal = (double) hiVal, dloVal = (double) loVal;
+				double dhi = (double) hiEntry;
+				double dlo = (double) loEntry;
+				double dhiVal = (double) hiVal;
+				double dloVal = (double) loVal;
+				
 				midEntry = loEntry
 						+ (long) ((dhi - dlo) * (dfp - dloVal) / (dhiVal - dloVal));
 				if (midEntry == hiEntry)
@@ -434,6 +449,8 @@ public class DiskFPSet extends FPSet {
 
 				Assert.check(loEntry <= midEntry && midEntry < hiEntry,
 						EC.SYSTEM_INDEX_ERROR);
+				// midEntry calculation done on logical indices,
+				// addressing done on bytes, thus convert to long-addressing (* LongSize)
 				raf.seek(midEntry * LongSize);
 				long v = raf.readLong();
 
@@ -448,6 +465,7 @@ public class DiskFPSet extends FPSet {
 					break;
 				}
 			}
+			// b2) done doing disk search -> close file (finally candidate, not really because if we exit with error, TLC exits)
 			if (id >= this.braf.length) {
 				synchronized (this.brafPool) {
 					if (this.poolIndex > 0) {
@@ -468,7 +486,7 @@ public class DiskFPSet extends FPSet {
 	}
 
 	/**
-	 * Flush the contents of "this.tbl" to the backing disk file, and update
+	 * Flush the contents of in-memory "this.tbl" to the backing disk file, and update
 	 * "this.index". This method requires that "this.rwLock" has been acquired
 	 * for writing by the caller, and that the mutex "this.rwLock" is also held.
 	 */
@@ -483,8 +501,10 @@ public class DiskFPSet extends FPSet {
 			long[] bucket = this.tbl[j];
 			if (bucket != null) {
 				int blen = bucket.length;
+				// for all bucket positions and non-null values
 				for (int k = 0; k < blen && bucket[k] > 0; k++) {
 					buff[idx++] = bucket[k];
+					// indicate fp has been flushed to disk
 					bucket[k] |= 0x8000000000000000L;
 				}
 			}

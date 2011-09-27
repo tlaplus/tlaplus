@@ -15,17 +15,24 @@ import util.Assert;
 /**
  * An <code>MultiFPSet</code> is a set of 64-bit fingerprints.
  */
+@SuppressWarnings("serial")
 public class MultiFPSet extends FPSet {
 
+	/**
+	 * Contains all nested {@link FPSet}s 
+	 */
 	private FPSet[] sets;
+	
+	/**
+	 * Amount of leftmost bits used to determine nested {@link FPSet}
+	 */
 	private int fpbits;
 
 	/* Create a MultiFPSet with 2^bits FPSets. */
 	public MultiFPSet(int bits, long fpMemSize) throws RemoteException {
-		int len = 1 << bits;
+		int len = 1 << bits; // len = 2^bits
 		this.sets = new FPSet[len];
 		for (int i = 0; i < len; i++) {
-			// this.sets[i] = new MemFPSet();
 			this.sets[i] = new DiskFPSet((int) (fpMemSize / len));
 		}
 		this.fpbits = 64 - bits;
@@ -51,6 +58,18 @@ public class MultiFPSet extends FPSet {
 		}
 		return sum;
 	}
+	
+	/**
+	 * @param fp
+	 * @return Partition given fp into the {@link FPSet} space 
+	 */
+	private FPSet getFPSet(long fp) {
+		// determine corresponding fpset (using unsigned right shift)
+		// shifts a zero into the leftmost (msb) position of the first operand for right operand times
+		// and cast it to int loosing the leftmost 32 bit
+		final int idx = (int) (fp >>> this.fpbits);
+		return this.sets[idx];
+	}
 
 	/**
 	 * Returns <code>true</code> iff the fingerprint <code>fp</code> is in this
@@ -60,8 +79,7 @@ public class MultiFPSet extends FPSet {
 	 * @see tlc2.tool.fp.FPSet#put(long)
 	 */
 	public final boolean put(long fp) throws IOException {
-		int idx = (int) (fp >>> this.fpbits);
-		return this.sets[idx].put(fp);
+		return getFPSet(fp).put(fp);
 	}
 
 	/**
@@ -71,8 +89,7 @@ public class MultiFPSet extends FPSet {
 	 * @see tlc2.tool.fp.FPSet#contains(long)
 	 */
 	public final boolean contains(long fp) throws IOException {
-		int idx = (int) (fp >>> this.fpbits);
-		return this.sets[idx].contains(fp);
+		return getFPSet(fp).contains(fp);
 	}
 
 	/* (non-Javadoc)
@@ -136,8 +153,7 @@ public class MultiFPSet extends FPSet {
 		while (braf.getFilePointer() < recoverPtr) {
 			braf.readLongNat(); /* drop */
 			long fp = braf.readLong();
-			int setIdx = (int) (fp >>> this.fpbits);
-			this.sets[setIdx].recoverFP(fp);
+			getFPSet(fp).recoverFP(fp);
 		}
 
 		for (int i = 0; i < this.sets.length; i++) {
