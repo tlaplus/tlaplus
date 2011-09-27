@@ -33,7 +33,7 @@ public abstract class CheckImpl extends ModelChecker {
 		   int depth, String fromChkpt, long fpMemSize)
   throws IOException {
     // SZ Feb 20, 2009: patched due to changes to ModelCheker
-    super(specFile, configFile, null, deadlock, fromChkpt, null, null, fpMemSize); // no name resolver and no specobj
+    super(specFile, configFile, null, deadlock, fromChkpt, null, null, fpMemSize, 1); // no name resolver and no specobj
     this.depth = depth;
     this.curState = null;
     this.coverSet = new DiskFPSet(-1);

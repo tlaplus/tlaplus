@@ -70,6 +70,7 @@ public class TLC
      */
     private long fpMemSize;
     private static long MinFpMemSize = 20 * (1 << 19);
+    private int fpBits;
     
     /**
      * Initialization
@@ -99,6 +100,7 @@ public class TLC
         instance = null;
 
         fpMemSize = -1;
+        fpBits = 1;
     }
 
     /*
@@ -151,6 +153,8 @@ public class TLC
      *  o -fpmem num: the number of megabytes of memory used to store
      *                the fingerprints of found states.
      *  Defaults to 1/4 physical memory.  (Added 6 Apr 2010 by Yuan Yu.)
+     *  o -fpbits num: the number of msb used by MultiFPSet to create nested FPSets.
+     *  Defaults to 1
      */
     public static void main(String[] args)
     {
@@ -492,6 +496,25 @@ public class TLC
                     printErrorMsg("Error: fpset memory size required.");
                     return false;
                 }
+            } else if (args[index].equals("-fpbits"))
+            {
+                index++;
+                if (index < args.length)
+                {
+                    try
+                    {
+                        fpBits = Integer.parseInt(args[index]);
+                        index++;
+                    } catch (Exception e)
+                    {
+                        printErrorMsg("Error: An integer for fpbits required. But encountered " + args[index]);
+                        return false;
+                    }
+                } else
+                {
+                    printErrorMsg("Error: fpbits required.");
+                    return false;
+                }
             } else
             {
                 if (args[index].charAt(0) == '-')
@@ -609,7 +632,7 @@ public class TLC
                 AbstractChecker mc = null;
                 if (TLCGlobals.DFIDMax == -1)
                 {
-                    mc = new ModelChecker(mainFile, configFile, dumpFile, deadlock, fromChkpt, resolver, specObj, fpMemSize);
+                    mc = new ModelChecker(mainFile, configFile, dumpFile, deadlock, fromChkpt, resolver, specObj, fpMemSize, fpBits);
                     TLCGlobals.mainChecker = (ModelChecker) mc;
                 } else
                 {
