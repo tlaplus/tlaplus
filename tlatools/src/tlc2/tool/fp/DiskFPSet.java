@@ -210,8 +210,11 @@ public class DiskFPSet extends FPSet {
 
 	/* (non-Javadoc)
 	 * @see tlc2.tool.fp.FPSet#put(long)
+	 * 
+     * 0 and {@link Long#MIN_VALUE} always return false
 	 */
 	public final boolean put(long fp) throws IOException {
+		// zeros the msb
 		long fp0 = fp & 0x7FFFFFFFFFFFFFFFL;
 		synchronized (this.rwLock) {
 			// First, look in in-memory buffer
@@ -263,8 +266,11 @@ public class DiskFPSet extends FPSet {
 
 	/* (non-Javadoc)
 	 * @see tlc2.tool.fp.FPSet#contains(long)
+	 * 
+     * 0 and {@link Long#MIN_VALUE} always return false
 	 */
 	public final boolean contains(long fp) throws IOException {
+		// zeros the msb
 		long fp0 = fp & 0x7FFFFFFFFFFFFFFFL;
 		synchronized (this.rwLock) {
 			// First, look in in-memory buffer
@@ -288,13 +294,14 @@ public class DiskFPSet extends FPSet {
 	}
 
 	/* Return true iff "fp" is in the hash table. */
-	private final boolean memLookup(long fp) {
+	final boolean memLookup(long fp) {
 		int index = (int) (fp & this.mask);
 		long[] bucket = this.tbl[index];
 		if (bucket == null)
 			return false;
 
 		int bucketLen = bucket.length;
+		// 0L as an invalid fp
 		for (int i = 0; i < bucketLen && bucket[i] != 0L; i++) {
 			if (fp == (bucket[i] & 0x7FFFFFFFFFFFFFFFL))
 				return true;
@@ -306,7 +313,7 @@ public class DiskFPSet extends FPSet {
 	 * Return "true" if "fp" is contained in the hash table; otherwise, insert
 	 * it and return "false". Precondition: msb(fp) = 0
 	 */
-	private final boolean memInsert(long fp) {
+	final boolean memInsert(long fp) {
 		int index = (int) (fp & this.mask);
 		long[] bucket = this.tbl[index];
 		if (bucket == null) {
@@ -356,7 +363,7 @@ public class DiskFPSet extends FPSet {
 	 * Look on disk for the fingerprint "fp". This method requires that
 	 * "this.rwLock" has been acquired for reading by the caller.
 	 */
-	private final boolean diskLookup(long fp) throws IOException {
+	final boolean diskLookup(long fp) throws IOException {
 		if (this.index == null)
 			return false;
 		// search in index for position to seek to
@@ -365,10 +372,10 @@ public class DiskFPSet extends FPSet {
 		long loVal = this.index[loPage];
 		long hiVal = this.index[hiPage];
 
-		// Test boundary cases
+		// Test boundary cases (if not inside interval)
 		if (fp < loVal || fp > hiVal)
 			return false;
-		if (fp == hiVal)
+		if (fp == hiVal) // why not check loVal?
 			return true;
 		double dfp = (double) fp;
 
@@ -406,6 +413,7 @@ public class DiskFPSet extends FPSet {
 				return true;
 			}
 		}
+		// no page is in between loPage and hiPage at this point
 		Assert.check(hiPage == loPage + 1, EC.SYSTEM_INDEX_ERROR);
 
 		boolean diskHit = false;
@@ -428,7 +436,10 @@ public class DiskFPSet extends FPSet {
 			}
 			
 			// b1) do interpolated binary search on disk page determined by a)
+
+			// lower bound for the interval search in 
 			long loEntry = loPage * NumEntriesPerPage;
+			// upper bound for the interval search in 
 			long hiEntry = ((loPage == this.index.length - 2) ? this.fileCnt - 1
 					: hiPage * NumEntriesPerPage);
 			while (loEntry < hiEntry) {
@@ -437,15 +448,7 @@ public class DiskFPSet extends FPSet {
 				 * position within the file is in the half-open interval
 				 * "[loEntry, hiEntry)".
 				 */
-				double dhi = (double) hiEntry;
-				double dlo = (double) loEntry;
-				double dhiVal = (double) hiVal;
-				double dloVal = (double) loVal;
-				
-				midEntry = loEntry
-						+ (long) ((dhi - dlo) * (dfp - dloVal) / (dhiVal - dloVal));
-				if (midEntry == hiEntry)
-					midEntry--;
+				midEntry = calculateMidEntry(loVal, hiVal, dfp, loEntry, hiEntry);
 
 				Assert.check(loEntry <= midEntry && midEntry < hiEntry,
 						EC.SYSTEM_INDEX_ERROR);
@@ -486,11 +489,39 @@ public class DiskFPSet extends FPSet {
 	}
 
 	/**
+	 * Calculates a mid entry where to divide the interval
+	 * 
+	 * @param loVal Smallest fingerprint in this interval {@link Long#MIN_VALUE} to {@link Long#MAX_VALUE}
+	 * @param hiVal Biggest fingerprint in this interval {@link Long#MIN_VALUE} to {@link Long#MAX_VALUE}
+	 * @param fp The fingerprint we are searching for {@link Long#MIN_VALUE} to {@link Long#MAX_VALUE}
+	 * @param loEntry low position/bound index  0 to {@link Long#MAX_VALUE}
+	 * @param hiEntry high position/bound index loEntry to {@link Long#MAX_VALUE}
+	 * 
+	 * @return A mid entry where to divide the interval
+	 */
+	long calculateMidEntry(long loVal, long hiVal, final double dfp, long loEntry, long hiEntry) {
+
+		final double dhi = (double) hiEntry;
+		final double dlo = (double) loEntry;
+		final double dhiVal = (double) hiVal;
+		final double dloVal = (double) loVal;
+		
+		long midEntry = loEntry
+				+ (long) ((dhi - dlo) * (dfp - dloVal) / (dhiVal - dloVal));
+		
+		if (midEntry == hiEntry) {
+			midEntry--;
+		}
+
+		return midEntry;
+	}
+
+	/**
 	 * Flush the contents of in-memory "this.tbl" to the backing disk file, and update
 	 * "this.index". This method requires that "this.rwLock" has been acquired
 	 * for writing by the caller, and that the mutex "this.rwLock" is also held.
 	 */
-	private final void flushTable() throws IOException {
+	final void flushTable() throws IOException {
 		if (this.tblCnt == 0)
 			return;
 

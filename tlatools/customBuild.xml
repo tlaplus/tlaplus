@@ -148,6 +148,7 @@
 			<batchtest fork="yes" todir="${test.reports}">
 				<fileset dir="${test.dir}">
 					<include name="**/*Test*.java" />
+					<exclude name="**/Abstract*Test.java" />
 					<exclude name="**/TestDriver.java" />
 					<exclude name="**/TestDriver2.java" />
 					<exclude name="**/AllTests.java" />
@@ -191,6 +192,7 @@
 			<batchtest fork="yes" todir="${test.reports}/onJar">
 				<fileset dir="${test.dir}">
 					<include name="**/*Test*.java" />
+					<exclude name="**/Abstract*Test.java" />
 					<exclude name="**/TestDriver.java" />
 					<exclude name="**/TestDriver2.java" />
 					<exclude name="**/AllTests.java" />
