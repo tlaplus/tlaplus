@@ -452,6 +452,18 @@ public class ParseAlgorithm
                  }
            }
            
+           // Following if statement added by LL on 5 Oct 2011
+           // to fix bug in which --fair uniprocess algorithm
+           // wasn't producing fairness condition.
+           if (fairAlgorithm) {
+        	   if (!PcalParams.FairnessOption.equals("") 
+        		      && !PcalParams.FairnessOption.equals("wf")
+        		      && !PcalParams.FairnessOption.equals("wfNext")) {
+        		  PcalDebug.reportWarning("Option `" + PcalParams.FairnessOption + "' specified for --fair algorithm.");
+        	   }
+        	   PcalParams.FairnessOption = "wf";
+           } ;
+           
            GobbleBeginOrLeftBrace() ;
            uniproc.body = GetStmtSeq() ;
            CheckForDuplicateMacros(uniproc.macros) ;
