@@ -5,22 +5,28 @@
 
 package tlc2.tool;
 
-
+@SuppressWarnings("serial")
 public class WorkerException extends Exception {
-  public TLCState state1;
-  public TLCState state2;
-  public boolean keepCallStack;
 
-  public WorkerException(String msg) {
-    this(msg, null, null, false);
-  }
-  
-  public WorkerException(String msg, TLCState s1, TLCState s2,
-			 boolean keep) {
-    super(msg);
-    this.state1 = s1;
-    this.state2 = s2;
-    this.keepCallStack = keep;
-  }
+	public TLCState state1;
+	public TLCState state2;
+	public boolean keepCallStack;
 
+	public WorkerException(String msg) {
+		this(msg, null, null, false);
+	}
+
+	public WorkerException(String msg, TLCState s1, TLCState s2, boolean keep) {
+		super(msg);
+		this.state1 = s1;
+		this.state2 = s2;
+		this.keepCallStack = keep;
+	}
+
+	public WorkerException(String msg, Throwable cause, TLCState s1, TLCState s2, boolean keep) {
+		super(msg, cause);
+		this.state1 = s1;
+		this.state2 = s2;
+		this.keepCallStack = keep;
+	}
 }

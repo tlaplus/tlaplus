@@ -120,7 +120,7 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 		} catch (WorkerException e) {
 			throw e;
 		} catch (Throwable e) {
-			throw new WorkerException(e.getMessage(), state1, state2, true);
+			throw new WorkerException(e.getMessage(), e, state1, state2, true);
 		}
 	}
 
