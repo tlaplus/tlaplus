@@ -368,14 +368,15 @@ public class DiskFPSet extends FPSet {
 			return false;
 		// search in index for position to seek to
 		// do interpolated binary search
-		int loPage = 0, hiPage = this.index.length - 1;
+		final int indexLength = this.index.length;
+		int loPage = 0, hiPage = indexLength - 1;
 		long loVal = this.index[loPage];
 		long hiVal = this.index[hiPage];
 
 		// Test boundary cases (if not inside interval)
 		if (fp < loVal || fp > hiVal)
 			return false;
-		if (fp == hiVal) // why not check loVal?
+		if (fp == hiVal) // why not check loVal? memLookup would have found it already!	
 			return true;
 		double dfp = (double) fp;
 
@@ -418,6 +419,11 @@ public class DiskFPSet extends FPSet {
 
 		boolean diskHit = false;
 		long midEntry = -1L;
+		// lower bound for the interval search in 
+		long loEntry = loPage * NumEntriesPerPage;
+		// upper bound for the interval search in 
+		long hiEntry = ((loPage == indexLength - 2) ? this.fileCnt - 1
+				: hiPage * NumEntriesPerPage);
 		try {
 			// b0) open file for reading that is associated with current thread
 			RandomAccessFile raf;
@@ -437,11 +443,6 @@ public class DiskFPSet extends FPSet {
 			
 			// b1) do interpolated binary search on disk page determined by a)
 
-			// lower bound for the interval search in 
-			long loEntry = loPage * NumEntriesPerPage;
-			// upper bound for the interval search in 
-			long hiEntry = ((loPage == this.index.length - 2) ? this.fileCnt - 1
-					: hiPage * NumEntriesPerPage);
 			while (loEntry < hiEntry) {
 				/*
 				 * Invariant: If "fp" exists in the file, its (zero-based)
@@ -480,7 +481,8 @@ public class DiskFPSet extends FPSet {
 			}
 		} catch (IOException e) {
 			if(midEntry * LongSize < 0) {
-				MP.printWarning(EC.GENERAL, new String[]{"MidEntry turned negative: ", Long.toString(midEntry)});
+				MP.printWarning(EC.GENERAL, new String[]{"MidEntry turned negative (loEntry, midEntry, hiEntry, loVal, hiVal): ",
+						Long.toString(loEntry), Long.toString(midEntry), Long.toString(hiEntry), Long.toString(loVal), Long.toString(hiVal)});
 			}
 			MP.printError(EC.SYSTEM_DISKGRAPH_ACCESS, e);
 			throw e;
