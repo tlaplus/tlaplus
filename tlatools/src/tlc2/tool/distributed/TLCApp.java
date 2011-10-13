@@ -340,7 +340,7 @@ public class TLCApp extends DistApp {
 						fpBits = Integer.parseInt(args[index]);
 						index++;
 					} catch (Exception e) {
-						printErrorMsg("Error: A number for -fp is required. But encountered "
+						printErrorMsg("Error: A number for -fpbits is required. But encountered "
 								+ args[index]);
 						return null;
 					}
