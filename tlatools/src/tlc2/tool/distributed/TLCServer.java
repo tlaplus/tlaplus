@@ -25,8 +25,8 @@ import tlc2.tool.TLCTrace;
 import tlc2.tool.WorkerException;
 import tlc2.tool.distributed.selector.BlockSelectorFactory;
 import tlc2.tool.distributed.selector.IBlockSelector;
-import tlc2.tool.fp.DiskFPSet;
 import tlc2.tool.fp.FPSet;
+import tlc2.tool.fp.MultiFPSet;
 import tlc2.tool.queue.DiskStateQueue;
 import tlc2.tool.queue.StateQueue;
 import tlc2.util.FP64;
@@ -86,7 +86,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 	 * @throws IOException
 	 * @throws NotBoundException
 	 */
-	public TLCServer(DistApp work) throws IOException, NotBoundException {
+	public TLCServer(TLCApp work) throws IOException, NotBoundException {
 		Assert.check(work != null, EC.GENERAL);
 		this.workers = new TLCWorkerRMI[10];
 		this.workerRefCnt = new int[this.workers.length];
@@ -102,7 +102,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		this.trace = new TLCTrace(this.metadir, this.work.getFileName(),
 				this.work);
 		if (TLCGlobals.fpServers == null) {
-			this.fpSet = new DiskFPSet(-1);
+			this.fpSet = new MultiFPSet(work.getFPBits(), -1);
 			this.fpSet.init(0, this.metadir, this.work.getFileName());
 			this.fpSetManager = new FPSetManager((FPSetRMI) this.fpSet);
 		} else {

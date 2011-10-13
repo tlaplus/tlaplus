@@ -75,6 +75,11 @@ public interface IConfigurationConstants
     public static final String LAUNCH_MAX_HEAP_SIZE = "maxHeapSize";
 
     /**
+     * Amount of fp bits used for disk storage addressing
+     */
+    public static final String LAUNCH_FPBITS = "fpBits";
+
+    /**
      * Length of time in minutes the TLC must run
      * before the model is automatically locked at the termination
      * of the run.

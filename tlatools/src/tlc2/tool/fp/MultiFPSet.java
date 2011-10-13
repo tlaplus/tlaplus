@@ -32,6 +32,11 @@ public class MultiFPSet extends FPSet {
 	public MultiFPSet(int bits, long fpMemSize) throws RemoteException {
 		int len = 1 << bits; // len = 2^bits
 		this.sets = new FPSet[len];
+		
+		if (fpMemSize == -1) {
+			fpMemSize = 524288;
+		}
+
 		for (int i = 0; i < len; i++) {
 			this.sets[i] = new DiskFPSet((int) (fpMemSize / len));
 		}

@@ -91,6 +91,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
     private Button checkDeadlockButton;
     private Text workers;
     private Text maxHeapSize;
+    private Text fpBits;
     private TableViewer invariantsTable;
     private TableViewer propertiesTable;
     private TableViewer constantTable;
@@ -201,6 +202,11 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         int defaultMaxHeapSize = TLCUIActivator.getDefault().getPreferenceStore().getInt(
                 ITLCPreferenceConstants.I_TLC_MAXIMUM_HEAP_SIZE_DEFAULT);
         maxHeapSize.setText("" + getConfig().getAttribute(LAUNCH_MAX_HEAP_SIZE, defaultMaxHeapSize));
+        
+        // fpBits
+        int defaultFPBits = TLCUIActivator.getDefault().getPreferenceStore().getInt(
+                ITLCPreferenceConstants.I_TLC_FPBITS_DEFAULT);
+        fpBits.setText("" + getConfig().getAttribute(LAUNCH_FPBITS, defaultFPBits));
 
         // check deadlock
         boolean checkDeadlock = getConfig().getAttribute(MODEL_CORRECTNESS_CHECK_DEADLOCK,
@@ -473,6 +479,25 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
             setComplete(false);
             expandSection(SEC_HOW_TO_RUN);
         }
+        
+        // fpBits
+        String fpBitsString = fpBits.getText();
+        try {
+            int fpBitsNum = Integer.parseInt(fpBitsString);
+            if (fpBitsNum < 0 || fpBitsNum >= 64)
+            {
+                modelEditor.addErrorMessage("wrongNumber3", "fpbits must be a positive integer number smaller than 64", this
+                        .getId(), IMessageProvider.ERROR, UIHelper.getWidget(dm
+                        .getAttributeControl(LAUNCH_FPBITS)));
+                setComplete(false);
+                expandSection(SEC_HOW_TO_RUN);
+            }
+        } catch (NumberFormatException e) {
+            modelEditor.addErrorMessage("wrongNumber4", "fpbits must be a positive integer number smaller than 64", this
+                    .getId(), IMessageProvider.ERROR, UIHelper.getWidget(dm.getAttributeControl(LAUNCH_FPBITS)));
+            setComplete(false);
+            expandSection(SEC_HOW_TO_RUN);
+		}
 
         // fill the checkpoints
         updateCheckpoints();
@@ -727,6 +752,17 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         }
         getConfig().setAttribute(LAUNCH_MAX_HEAP_SIZE, maxHeapSizeInt);
 
+        // fpBits
+        int fpBitsInt = TLCUIActivator.getDefault().getPreferenceStore().getInt(
+                ITLCPreferenceConstants.I_TLC_MAXIMUM_HEAP_SIZE_DEFAULT);
+        try
+        {
+        	fpBitsInt = Integer.parseInt(fpBits.getText());
+        } catch (NumberFormatException e)
+        { /* does not matter */
+        }
+        getConfig().setAttribute(LAUNCH_FPBITS, fpBitsInt);
+        
         // recover from deadlock
         boolean recover = this.checkpointButton.getSelection();
         getConfig().setAttribute(LAUNCH_RECOVER, recover);
@@ -1080,6 +1116,21 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
         dm.bindAttribute(LAUNCH_MAX_HEAP_SIZE, maxHeapSize, howToRunPart);
 
+        // fpbits
+        FormText fpBitsLabel = toolkit.createFormText(howToRunArea, true);
+        fpBitsLabel.setText("2^n amount of disc storage files:", false, false);
+
+        int defaultFPBits = TLCUIActivator.getDefault().getPreferenceStore().getInt(
+                ITLCPreferenceConstants.I_TLC_FPBITS_DEFAULT);
+        fpBits = toolkit.createText(howToRunArea, "" + defaultFPBits);
+        fpBits.addModifyListener(howToRunListener);
+        gd = new GridData();
+        gd.horizontalIndent = 10;
+        gd.widthHint = 60;
+        fpBits.setLayoutData(gd);
+
+        dm.bindAttribute(LAUNCH_FPBITS, fpBits, howToRunPart);
+        
         // label workers
         FormText workersLabel = toolkit.createFormText(howToRunArea, true);
         workersLabel.setText("Number of worker threads:", false, false);

@@ -181,7 +181,14 @@ public abstract class TLCJob extends AbstractJob implements IModelConfigurationC
                 }
             }
         }
-
+        
+        // fpBits
+        int fpBits = launch.getLaunchConfiguration().getAttribute(LAUNCH_FPBITS, -1);
+        if(fpBits >= 0) {
+        	arguments.add("-fpbits");
+        	arguments.add(String.valueOf(fpBits));
+        }
+        
         arguments.add("-config");
         arguments.add(cfgFile.getName()); // configuration file
 

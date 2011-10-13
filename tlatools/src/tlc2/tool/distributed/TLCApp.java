@@ -31,8 +31,8 @@ public class TLCApp extends DistApp {
 
 	/* Constructors */
 	public TLCApp(String specFile, String configFile, boolean deadlock,
-			String fromChkpt) throws IOException {
-		this(specFile, configFile, deadlock, true, null);
+			String fromChkpt, int fpBits) throws IOException {
+		this(specFile, configFile, deadlock, true, null, fpBits);
 
 		this.fromChkpt = fromChkpt;
 		this.metadir = FileUtil.makeMetaDir(this.tool.specDir, fromChkpt);
@@ -40,7 +40,7 @@ public class TLCApp extends DistApp {
 
 	// TODO too many constructors redefinitions, replace with this(..) calls
 	public TLCApp(String specFile, String configFile,
-			Boolean deadlock, Boolean preprocess, FilenameToStream fts) throws IOException {
+			Boolean deadlock, Boolean preprocess, FilenameToStream fts, int fpBits) throws IOException {
 
 		// get the spec dir from the spec file
 		int lastSep = specFile.lastIndexOf(File.separatorChar);
@@ -63,6 +63,7 @@ public class TLCApp extends DistApp {
 		this.invariants = this.tool.getInvariants();
 		this.impliedActions = this.tool.getImpliedActions();
 		this.actions = this.tool.getActions();
+		this.fpBits = fpBits;
 	}
 
 	/* Fields */
@@ -75,6 +76,7 @@ public class TLCApp extends DistApp {
 	private boolean preprocess; // preprocess?
 	private String fromChkpt = null; // recover from this checkpoint
 	private String metadir = null; // the directory pathname for metadata
+	private int fpBits = -1;
 	/**
 	 * Statistics how many states this app computed 
 	 */
@@ -102,6 +104,10 @@ public class TLCApp extends DistApp {
 
 	public final String getMetadir() {
 		return this.metadir;
+	}
+	
+	public final int getFPBits() {
+		return fpBits;
 	}
 
 	public final boolean canRecover() {
@@ -232,6 +238,7 @@ public class TLCApp extends DistApp {
 		String configFile = null;
 		boolean deadlock = true;
 		int fpIndex = 0;
+		int fpBits = 0;
 		String fromChkpt = null;
 
 		int index = 0;
@@ -326,6 +333,21 @@ public class TLCApp extends DistApp {
 					printErrorMsg("Error: expect an integer for -workers option.");
 					return null;
 				}
+			} else if (args[index].equals("-fpbits")) {
+				index++;
+				if (index < args.length) {
+					try {
+						fpBits = Integer.parseInt(args[index]);
+						index++;
+					} catch (Exception e) {
+						printErrorMsg("Error: A number for -fp is required. But encountered "
+								+ args[index]);
+						return null;
+					}
+				} else {
+					printErrorMsg("Error: expect an integer for -workers option.");
+					return null;
+				}
 			} else if (args[index].equals("-metadir")) {
 				index++;
                 if (index < args.length)
@@ -366,7 +388,7 @@ public class TLCApp extends DistApp {
 		}
 		FP64.Init(fpIndex);
 
-		return new TLCApp(specFile, configFile, deadlock, fromChkpt);
+		return new TLCApp(specFile, configFile, deadlock, fromChkpt, fpBits);
 	}
 
 	private static void printErrorMsg(String msg) {

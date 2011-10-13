@@ -20,6 +20,8 @@ public interface ITLCPreferenceConstants
     // */
     // public static final String I_TLC_DELETE_PREVIOUS_FILES = "deleteUnusedMCData";
     public static final String I_TLC_MAXIMUM_HEAP_SIZE_DEFAULT = "maxHeapSizeDefault";
+
+    public static final String I_TLC_FPBITS_DEFAULT = "fpBitsDefault";
     /**
      * Automatically lock model after TLC exceeds given length of time.
      */
