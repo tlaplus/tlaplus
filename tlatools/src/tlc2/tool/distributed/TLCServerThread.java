@@ -48,7 +48,7 @@ public class TLCServerThread extends IdThread {
 		this.selector = aSelector;
 		
 		// schedule a timer to periodically (60s) check server aliveness 
-		keepAliveTimer = new Timer("TLCWorker KeepAlive Timer", true);
+		keepAliveTimer = new Timer("TLCWorker KeepAlive Timer [" + uri.toASCIIString() + "]", true);
 		keepAliveTimer.schedule(new TLCTimerTask(), 10000, 60000);
 	}
 
@@ -60,7 +60,7 @@ public class TLCServerThread extends IdThread {
 	/**
 	 * Current unit of work or null
 	 */
-	private TLCState[] states;
+	private TLCState[] states = new TLCState[0];
 
 	public final TLCWorkerRMI getWorker() {
 		return this.worker;
@@ -233,10 +233,7 @@ public class TLCServerThread extends IdThread {
 	 *         computing on
 	 */
 	public int getCurrentSize() {
-		if(states != null) {
-			return states.length;
-		}
-		return 0;
+		return states.length;
 	}
 
 	/**
