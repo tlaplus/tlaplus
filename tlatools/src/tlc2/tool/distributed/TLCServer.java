@@ -15,6 +15,9 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.CyclicBarrier;
 
 import tlc2.TLCGlobals;
@@ -72,10 +75,8 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 	private boolean done = false;
 	private boolean keepCallStack = false;
 	private int thId = 0;
-	private int workerCnt = 0, threadCnt = 0;
-	private TLCWorkerRMI[] workers;
-	private int[] workerRefCnt;
-	private TLCServerThread[] threads;
+	
+	private final Map<TLCServerThread, TLCWorkerRMI> threadsToWorkers = new HashMap<TLCServerThread, TLCWorkerRMI>();
 	
 	private final CyclicBarrier barrier;
 	private final IBlockSelector blockSelector;
@@ -88,9 +89,6 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 	 */
 	public TLCServer(TLCApp work) throws IOException, NotBoundException {
 		Assert.check(work != null, EC.GENERAL);
-		this.workers = new TLCWorkerRMI[10];
-		this.workerRefCnt = new int[this.workers.length];
-		this.threads = new TLCServerThread[10];
 		this.metadir = work.getMetadir();
 		int end = this.metadir.length();
 		if (this.metadir.endsWith(FileUtil.separator))
@@ -153,35 +151,6 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 	 */
 	public synchronized final void registerWorker(TLCWorkerRMI worker
 			) throws IOException {
-		int widx = this.workerCnt;
-		int len = this.workers.length;
-
-		if (widx >= len) {
-			TLCWorkerRMI[] newWorkers = new TLCWorkerRMI[len * 2];
-			int[] newWorkerRefCnt = new int[len * 2];
-			for (int i = 0; i < len; i++) {
-				newWorkers[i] = this.workers[i];
-				newWorkerRefCnt[i] = this.workerRefCnt[i];
-			}
-			this.workers = newWorkers;
-			this.workerRefCnt = newWorkerRefCnt;
-			widx = len;
-		}
-		this.workerCnt++;
-		this.workers[widx] = worker;
-		this.workerRefCnt[widx] = 1;
-
-		int tidx = this.threadCnt;
-		len = this.threads.length;
-		if (this.threadCnt >= len) {
-			TLCServerThread[] newThreads = new TLCServerThread[len * 2];
-			for (int i = 0; i < len; i++) {
-				newThreads[i] = this.threads[i];
-			}
-			this.threads = newThreads;
-			tidx = len;
-		}
-		this.threadCnt++;
 		
 		// Wake up potentially stuck TLCServerThreads (in
 		// tlc2.tool.queue.StateQueue.isAvail()) to avoid a deadlock.
@@ -189,47 +158,24 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		// users if resumeAllStuck() is not call by a new worker.
 		stateQueue.resumeAllStuck();
 		
-		this.threads[tidx] = new TLCServerThread(this.thId++, worker, this, barrier, blockSelector);
-		if (TLCGlobals.fpServers == null)
+		// create new server thread for given worker
+		final TLCServerThread thread = new TLCServerThread(this.thId++, worker, this, barrier, blockSelector);
+		threadsToWorkers.put(thread, worker);
+		if (TLCGlobals.fpServers == null) {
 			this.fpSet.addThread();
-		this.threads[tidx].start();
+		}
+		thread.start();
 
 		MP.printMessage(EC.TLC_DISTRIBUTED_WORKER_REGISTERED, worker.getURI().toString());
 	}
 
 	/**
-	 * Reassign a server thread to a new worker if there is available worker.
-	 * For the current faulting worker, remove it if there is no reference to it
-	 * any more.
+	 * @see Map#remove(Object)
+	 * @param thread
+	 * @return 
 	 */
-	synchronized final boolean reassignWorker(TLCServerThread th) {
-		TLCWorkerRMI worker = th.getWorker();
-		int widx;
-		for (widx = 0; widx < this.workerCnt; widx++) {
-			if (this.workers[widx] == worker)
-				break;
-		}
-		if (widx >= this.workerCnt)
-			return false;
-		// reassign to a new worker:
-		boolean success = false;
-		if (this.workerCnt > 1) {
-			int offset = (int) Math.floor(Math.random() * (this.workerCnt - 1));
-			int widx1 = (widx + 1 + offset) % this.workerCnt;
-			th.setWorker(this.workers[widx1]);
-			this.workerRefCnt[widx1]++;
-			success = true;
-		}
-		// remove the current faulting worker if possible:
-		this.workerRefCnt[widx]--;
-		if (this.workerRefCnt[widx] == 0) {
-			for (int i = widx + 1; i < this.workerCnt; i++) {
-				this.workers[i - 1] = this.workers[i];
-				this.workerRefCnt[i - 1] = this.workerRefCnt[i];
-			}
-			this.workerCnt--;
-		}
-		return success;
+	public synchronized TLCWorkerRMI removeTLCServerThread(TLCServerThread thread) {
+		return threadsToWorkers.remove(thread);
 	}
 
 	/**
@@ -427,21 +373,21 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 			}
 		}
 		// Wait for all the server threads to die.
-		for (int i = 0; i < server.threadCnt; i++) {
-			server.threads[i].join();
+		for (final Entry<TLCServerThread, TLCWorkerRMI> entry : server.threadsToWorkers.entrySet()) {
+			final TLCServerThread thread = entry.getKey();
+			
+			thread.join();
 			
 			// print worker stats
-			int sentStates = server.threads[i].getSentStates();
-			int receivedStates = server.threads[i].getReceivedStates();
-			URI name = server.threads[i].getUri();
+			int sentStates = thread.getSentStates();
+			int receivedStates = thread.getReceivedStates();
+			URI name = thread.getUri();
 			MP.printMessage(EC.TLC_DISTRIBUTED_WORKER_STATS,
 					new String[] { name.toString(), Integer.toString(sentStates), Integer.toString(receivedStates) });
-		}
-		// Notify all the workers of the completion.
-		for (int i = 0; i < server.workerCnt; i++) {
+
+			final TLCWorkerRMI worker = entry.getValue();
 			try {
-				server.workers[i].exit();
-				server.workers[i] = null;
+				worker.exit();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -479,10 +425,10 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 	/**
 	 * @return
 	 */
-	private long getNewStates() {
+	private synchronized long getNewStates() {
 		long res = stateQueue.size();
-		for (int i = 0; i < threadCnt; i++) {
-			res += threads[i].getCurrentSize();
+		for (TLCServerThread thread : threadsToWorkers.keySet()) {
+			res += thread.getCurrentSize();
 		}
 		return res;
 	}
@@ -577,14 +523,14 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 	 * @return Number of currently registered workers
 	 */
 	public int getWorkerCount() {
-		return workerCnt;
+		return threadsToWorkers.size();
 	}
 	
 	/**
 	 * @return
 	 */
-	TLCServerThread[] getThreads() {
-		return this.threads;
+	synchronized TLCServerThread[] getThreads() {
+		return threadsToWorkers.keySet().toArray(new TLCServerThread[threadsToWorkers.size()]);
 	}
 	
 	/* (non-Javadoc)
@@ -672,7 +618,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		 * @see java.lang.Runnable#run()
 		 */
 		public void run() {
-			for (TLCWorkerRMI worker : server.workers) {
+			for (TLCWorkerRMI worker : server.threadsToWorkers.values()) {
 				try {
 					if(worker != null) {
 						worker.exit();

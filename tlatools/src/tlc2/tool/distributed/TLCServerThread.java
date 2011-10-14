@@ -124,11 +124,10 @@ public class TLCServerThread extends IdThread {
 						workDone = true;
 						lastInvocation = System.currentTimeMillis();
 					} catch (RemoteException e) {
-						ToolIO.err.println(e.getMessage());
 						// non recoverable errors
 						final Throwable cause = e.getCause();
 						if (cause instanceof EOFException && cause.getMessage() == null) {
-							ToolIO.err.println("Limiting max block size to: " + states.length / 2);
+							ToolIO.out.println("Trying to limit max block size (to recover from transport failure): " + states.length / 2);
 							// states[] exceeds maximum transferable size
 							// (add states back to queue and retry)
 							stateQueue.sEnqueue(states);
@@ -137,17 +136,14 @@ public class TLCServerThread extends IdThread {
 							// go back to beginning
 							continue START;
 						} else {
-							if (!this.tlcServer.reassignWorker(this)) {
-								handleRemoteWorkerLost(stateQueue);
-								return;
-							}
-						}
-					} catch (NullPointerException e) {
-						ToolIO.err.println(e.getMessage());
-						if (!this.tlcServer.reassignWorker(this)) {
+							ToolIO.err.println(e.getMessage());
 							handleRemoteWorkerLost(stateQueue);
 							return;
 						}
+					} catch (NullPointerException e) {
+						ToolIO.err.println(e.getMessage());
+						handleRemoteWorkerLost(stateQueue);
+						return;
 					}
 				}
 
@@ -207,6 +203,7 @@ public class TLCServerThread extends IdThread {
 	 */
 	private void handleRemoteWorkerLost(final StateQueue stateQueue) {
 		keepAliveTimer.cancel();
+		tlcServer.removeTLCServerThread(this);
 		stateQueue.sEnqueue(states);
 		TLCGlobals.incNumWorkers(-1);
 		MP.printMessage(EC.TLC_DISTRIBUTED_WORKER_DEREGISTERED, getUri().toString());
