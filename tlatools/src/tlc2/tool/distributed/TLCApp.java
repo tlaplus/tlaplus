@@ -82,26 +82,47 @@ public class TLCApp extends DistApp {
 	 */
 	private long statesComputed = 0L;
 
+	/* (non-Javadoc)
+	 * @see tlc2.tool.distributed.DistApp#getCheckDeadlock()
+	 */
+	/* (non-Javadoc)
+	 * @see tlc2.tool.distributed.DistApp#getCheckDeadlock()
+	 */
 	public final Boolean getCheckDeadlock() {
 		return new Boolean(this.checkDeadlock);
 	}
 
+	/* (non-Javadoc)
+	 * @see tlc2.tool.distributed.DistApp#getPreprocess()
+	 */
 	public final Boolean getPreprocess() {
 		return new Boolean(this.preprocess);
 	}
 
+	/* (non-Javadoc)
+	 * @see tlc2.tool.distributed.DistApp#getFileName()
+	 */
 	public final String getFileName() {
 		return this.tool.rootFile;
 	}
 
+	/* (non-Javadoc)
+	 * @see tlc2.tool.distributed.DistApp#getSpecDir()
+	 */
 	public String getSpecDir() {
 		return this.tool.specDir;
 	}
 
+	/* (non-Javadoc)
+	 * @see tlc2.tool.distributed.DistApp#getConfigName()
+	 */
 	public String getConfigName() {
 		return this.config;
 	}
 
+	/* (non-Javadoc)
+	 * @see tlc2.tool.distributed.DistApp#getMetadir()
+	 */
 	public final String getMetadir() {
 		return this.metadir;
 	}
@@ -110,10 +131,16 @@ public class TLCApp extends DistApp {
 		return fpBits;
 	}
 
+	/* (non-Javadoc)
+	 * @see tlc2.tool.distributed.DistApp#canRecover()
+	 */
 	public final boolean canRecover() {
 		return this.fromChkpt != null;
 	}
 
+	/* (non-Javadoc)
+	 * @see tlc2.tool.distributed.DistApp#getInitStates()
+	 */
 	public final TLCState[] getInitStates() throws WorkerException {
 		StateVec theInitStates = this.tool.getInitStates();
 		TLCState[] res = new TLCState[theInitStates.size()];
@@ -130,6 +157,9 @@ public class TLCApp extends DistApp {
 		return res;
 	}
 
+	/* (non-Javadoc)
+	 * @see tlc2.tool.distributed.DistApp#getNextStates(tlc2.tool.TLCState)
+	 */
 	public final TLCState[] getNextStates(TLCState curState)
 			throws WorkerException {
 		StateVec nextStates = new StateVec(10);
@@ -158,6 +188,9 @@ public class TLCApp extends DistApp {
 		return res;
 	}
 
+	/* (non-Javadoc)
+	 * @see tlc2.tool.distributed.DistApp#checkState(tlc2.tool.TLCState, tlc2.tool.TLCState)
+	 */
 	public final void checkState(TLCState s1, TLCState s2)
 			throws WorkerException {
 		TLCState ts2 = (TLCState) s2;
@@ -193,25 +226,40 @@ public class TLCApp extends DistApp {
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see tlc2.tool.distributed.DistApp#isInModel(tlc2.tool.TLCState)
+	 */
 	public final boolean isInModel(TLCState s) {
 		return this.tool.isInModel((TLCState) s);
 	}
 
+	/* (non-Javadoc)
+	 * @see tlc2.tool.distributed.DistApp#isInActions(tlc2.tool.TLCState, tlc2.tool.TLCState)
+	 */
 	public final boolean isInActions(TLCState s1, TLCState s2) {
 		return this.tool.isInActions((TLCState) s1, (TLCState) s2);
 	}
 
 	/* Reconstruct the initial state whose fingerprint is fp. */
+	/* (non-Javadoc)
+	 * @see tlc2.tool.distributed.DistApp#getState(long)
+	 */
 	public final TLCStateInfo getState(long fp) {
 		return this.tool.getState(fp);
 	}
 
 	/* Reconstruct the next state of state s whose fingerprint is fp. */
+	/* (non-Javadoc)
+	 * @see tlc2.tool.distributed.DistApp#getState(long, tlc2.tool.TLCState)
+	 */
 	public final TLCStateInfo getState(long fp, TLCState s) {
 		return this.tool.getState(fp, s);
 	}
 
 	/* Reconstruct the info for the transition from s to s1. */
+	/* (non-Javadoc)
+	 * @see tlc2.tool.distributed.DistApp#getState(tlc2.tool.TLCState, tlc2.tool.TLCState)
+	 */
 	public TLCStateInfo getState(TLCState s1, TLCState s) {
 		return this.tool.getState(s1, s);
 	}
@@ -219,14 +267,23 @@ public class TLCApp extends DistApp {
 	/* (non-Javadoc)
 	 * @see tlc2.tool.distributed.DistApp#getStatesComputed()
 	 */
+	/* (non-Javadoc)
+	 * @see tlc2.tool.distributed.DistApp#getStatesComputed()
+	 */
 	public long getStatesComputed() {
 		return statesComputed;
 	}
 
+	/* (non-Javadoc)
+	 * @see tlc2.tool.distributed.DistApp#setCallStack()
+	 */
 	public final void setCallStack() {
 		this.tool.setCallStack();
 	}
 
+	/* (non-Javadoc)
+	 * @see tlc2.tool.distributed.DistApp#printCallStack()
+	 */
 	public final String printCallStack() {
 		// SZ Jul 10, 2009: check if this is ok
 		// changed the method signature
