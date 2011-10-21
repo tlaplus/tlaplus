@@ -1889,7 +1889,7 @@ public class ProverHelper
             return;
         }
         command.add(ITLAPMOptions.SOLVER);
-        command.add("\"" + solverText + "\"");
+        command.add(solverText);  /* Changed by DD: do not add quotes. */
     }
 
     /**

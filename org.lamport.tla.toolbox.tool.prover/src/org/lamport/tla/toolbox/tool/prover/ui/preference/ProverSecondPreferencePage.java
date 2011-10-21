@@ -126,8 +126,11 @@ public class ProverSecondPreferencePage extends FieldEditorPreferencePage implem
 
         public boolean doCheckState()
         {
+        	/* Changed by DD: accept any string.
             String value = this.getStringValue();
             return value.indexOf('"') == -1;
+            */
+        	return true;
         }
     }
 
