@@ -30,29 +30,32 @@ import java.net.URL;
 
 public class SimpleFilenameToStream implements FilenameToStream {
 
+	public static final String STANDARD_MODULES_FOLDER = "StandardModules";
+
 	private static final ClassLoader cl = SimpleFilenameToStream.class.getClassLoader();
 	
 	private static final String TMPDIR = System.getProperty("java.io.tmpdir");
 	private static final String STANDARD_MODULES = "tla2sany"
-			+ '/' + "StandardModules" + '/';
-	
-  // SZ Feb 23, 2009:
-  // used File.separator and File.pathSeparator instead
-  // the character separating names of directories in the libraryPath    
-  // private static String pathsep     = System.getProperty("path.separator"); 
-  // the character separating names of directories in the libraryPath
-  // private static String filesep     = System.getProperty("file.separator"); 
+			+ '/' + STANDARD_MODULES_FOLDER + '/';
   
+  /**
+   * path of directories to be searched in order for the named file 
+   */
+  private String[] libraryPaths;
+
+  public SimpleFilenameToStream() {
+	  libraryPaths = getLibraryPaths(getInstallationBasePath());
+  }
   
-private static String installationBasePath = getInstallationBasePath();
-                                            // Find the absolute path in the file system where SANY is installed
-  private static String[] libraryPaths = getLibraryPaths();
-                                            // path of directories to be searched in order for the named file
+  public SimpleFilenameToStream(String[] anLibraryPaths) {
+	  libraryPaths = anLibraryPaths;
+  }
+  
   // Find the absolute path in the file system to the directory 
   // that is the base of the entire installation of tlaSANY; this path
   // must have separators appropriate to the Unix ('/') or Windows ('\') world.
 
-  private static String getInstallationBasePath() {
+  private String getInstallationBasePath() {
 
     // get a "file:" URL for the base directory for package tla2sany
     final URL         url = cl.getResource("tla2sany");
@@ -81,12 +84,12 @@ private static String installationBasePath = getInstallationBasePath();
 	return aString.startsWith("jar:");
   }
 
-  private static String[] getLibraryPaths() {
+  private String[] getLibraryPaths(final String installationBasePath) {
     String[] res;
     String path = System.getProperty("TLA-Library");
     if (path == null) {
       res = new String[1];
-      res[0] = installationBasePath + FileUtil.separator + "StandardModules" + FileUtil.separator;
+      res[0] = installationBasePath + FileUtil.separator + STANDARD_MODULES_FOLDER + FileUtil.separator;
     }
     else {
       String[] paths = path.split(FileUtil.pathSeparator);
@@ -97,7 +100,7 @@ private static String installationBasePath = getInstallationBasePath();
 	  res[i] = res[i] + FileUtil.separator;
 	}
       }
-      res[paths.length] = installationBasePath + FileUtil.separator + "StandardModules" + FileUtil.separator;
+      res[paths.length] = installationBasePath + FileUtil.separator + STANDARD_MODULES_FOLDER + FileUtil.separator;
     }
     return res;
   }

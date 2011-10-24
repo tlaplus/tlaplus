@@ -27,24 +27,27 @@ import util.SimpleFilenameToStream;
  */
 public class RMIFilenameToStreamResolver extends SimpleFilenameToStream {
 
-	private final TLCServerRMI server;
-	private final Map<String, File> fileCache;
+	private static final String javaTempDir = System.getProperty("java.io.tmpdir") + File.separator;
+
+	private TLCServerRMI server;
+	
+	private final Map<String, File> fileCache = new HashMap<String, File>();
 	private final String rndPrefix;
 	
-	public RMIFilenameToStreamResolver(TLCServerRMI aServer) {
-		assert aServer != null;
-		this.server = aServer;
-		this.fileCache = new HashMap<String, File>();
-		
-		// create a temp directory for the current worker in the system tmpdir
-		final String javaTempDir = System.getProperty("java.io.tmpdir");
-		final File file = new File(javaTempDir + File.separator + System.currentTimeMillis());
-		file.deleteOnExit();
-		boolean mkdir = file.mkdir();
-		assert mkdir == true;
-		this.rndPrefix = file.getAbsolutePath();
+	public RMIFilenameToStreamResolver() {
+		super();
+		rndPrefix = getRandomStoragePrefix();
 	}
 
+	public RMIFilenameToStreamResolver(final String[] libraryPaths) {
+		super(libraryPaths);
+		rndPrefix = getRandomStoragePrefix();
+	}
+
+	public void setTLCServer(final TLCServerRMI aServer) {
+		this.server = aServer;
+	}
+	
 	/* (non-Javadoc)
 	 * @see util.FilenameToStream#resolve(java.lang.String, boolean)
 	 */
@@ -82,6 +85,13 @@ public class RMIFilenameToStreamResolver extends SimpleFilenameToStream {
 		return file;
 	}
 
+	private String getRandomStoragePrefix() {
+		final File file = new File(javaTempDir + System.currentTimeMillis());
+		file.deleteOnExit();
+		file.mkdir();
+		return file.getAbsolutePath();
+	}
+	
 	private File writeToNewTempFile(String name, byte[] bs) {
 		final File f = new File(rndPrefix + File.separator + name);
 		f.deleteOnExit();
