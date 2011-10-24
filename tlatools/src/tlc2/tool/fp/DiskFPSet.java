@@ -78,7 +78,7 @@ public class DiskFPSet extends FPSet {
 	private static final int BucketSizeIncrement = 4;
 
 	// computed constants
-	private static final int DefaultMaxTblCnt = (1 << LogDefaultMaxTblCnt);
+	static final int DefaultMaxTblCnt = (1 << LogDefaultMaxTblCnt);
 	private static final int LongSize = 8; // sizeof(long)
 
 	/* Number of fingerprints per braf buffer. */
