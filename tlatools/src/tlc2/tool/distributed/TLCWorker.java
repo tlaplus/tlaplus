@@ -34,6 +34,9 @@ import util.UniqueString;
 public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 
 	private static Timer keepAliveTimer;
+	private static TLCWorker worker;
+	private static RMIFilenameToStreamResolver fts;
+	
 	private DistApp work;
 	private FPSetManager fpSetManager;
 	private final URI uri;
@@ -252,7 +255,9 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 			// unique strings for the same String value.
 			UniqueString.setSource((InternRMI)server);
 
-			final RMIFilenameToStreamResolver fts = new RMIFilenameToStreamResolver();
+			if (fts == null) {
+				fts = new RMIFilenameToStreamResolver();
+			}
 			fts.setTLCServer(server);
 			
 			DistApp work = new TLCApp(server.getSpecFileName(),
@@ -260,7 +265,7 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 					server.getPreprocess(), fts, 0);
 
 			FPSetManager fpSetManager = server.getFPSetManager();
-			TLCWorker worker = new TLCWorker(work, fpSetManager, InetAddress.getLocalHost().getCanonicalHostName());
+			worker = new TLCWorker(work, fpSetManager, InetAddress.getLocalHost().getCanonicalHostName());
 			server.registerWorker(worker);
 
 			// schedule a timer to periodically (60s) check server aliveness 
@@ -285,5 +290,11 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 				.println("Usage: java " + TLCWorker.class.getName() + " host");
 	}
 
+	public static void setFilenameToStreamResolver(RMIFilenameToStreamResolver aFTS) {
+		fts  = aFTS;
+	}
 
+	public static TLCWorker getTLCWorker() {
+		return worker;
+	}
 }
