@@ -85,9 +85,6 @@ public class TLCApp extends DistApp {
 	/* (non-Javadoc)
 	 * @see tlc2.tool.distributed.DistApp#getCheckDeadlock()
 	 */
-	/* (non-Javadoc)
-	 * @see tlc2.tool.distributed.DistApp#getCheckDeadlock()
-	 */
 	public final Boolean getCheckDeadlock() {
 		return new Boolean(this.checkDeadlock);
 	}
@@ -295,7 +292,7 @@ public class TLCApp extends DistApp {
 		String configFile = null;
 		boolean deadlock = true;
 		int fpIndex = 0;
-		int fpBits = 0;
+		int fpBits = 1;
 		String fromChkpt = null;
 
 		int index = 0;
