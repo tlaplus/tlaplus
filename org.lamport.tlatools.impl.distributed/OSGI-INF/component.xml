@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" immediate="false" name="org.lamport.tlatools.impl.distributed">
+   <implementation class="org.lamport.tlatools.impl.distributed.TLCWorkerWrapper"/>
+   <service>
+      <provide interface="tlc2.ITLCWorker"/>
+   </service>
+</scr:component>
