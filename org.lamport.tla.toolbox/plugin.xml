@@ -334,7 +334,7 @@
             name="Open Parsing Errors view">
       </command>
       <command
-            defaultHandler="org.lamport.tla.toolbox.ui.handler.DeleteSpecHandler"
+            defaultHandler="org.lamport.tla.toolbox.ui.handler.ForgetSpecHandler"
             description="Removes spec from list of specs known to Toolbox."
             helpContextId="Remove from list of specs known to the Toolbox."
             id="org.lamport.tla.toolbox.forget"
@@ -952,6 +952,7 @@
             <with
                   variable="selection">
                <iterate
+                     ifEmpty="false"
                      operator="or">
                   <instanceof
                         value="org.lamport.tla.toolbox.spec.Spec">

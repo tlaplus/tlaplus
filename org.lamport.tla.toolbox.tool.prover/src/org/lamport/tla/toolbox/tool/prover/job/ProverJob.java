@@ -403,14 +403,17 @@ public class ProverJob extends Job
              * Finished with preparation work.                            *
              **************************************************************/
 
+            //  On 7 Nov 2011, LL commented out the following code so that the file can be edited while
+            //  the prover is being run.  It's useful to be able to do this on a long run.  If the user
+            //  is doing this, he presumably knows the risks.
             /*
              * Set the module to be read-only only if this is
              * not a status check launch.
              */
-            if (!checkStatus)
-            {
-                EditorUtil.setReadOnly(module, true);
-            }
+            //if (!checkStatus)
+            //{
+            //    EditorUtil.setReadOnly(module, true);
+            //}
 
             /*
              * Launch the prover. The path to the tlapm is set in the
