@@ -42,6 +42,7 @@ public class ValidateableConstantSectionPart extends ValidateableTableSectionPar
                 AssignmentWizardPage.CONSTANT_TYPING_WIZARD_ID);
         // Create the wizard dialog
         WizardDialog dialog = new WizardDialog(getTableViewer().getTable().getShell(), wizard);
+        wizard.setWizardDialog(dialog);
         dialog.setHelpAvailable(true);
 
         // Open the wizard dialog

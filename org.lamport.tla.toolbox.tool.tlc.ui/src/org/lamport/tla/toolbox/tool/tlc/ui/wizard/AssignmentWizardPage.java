@@ -250,10 +250,16 @@ public class AssignmentWizardPage extends WizardPage
     }
 
     // this method sets up the Assignment object when the user
-    // clicks Finish
+    // clicks Finish or Cancel
     public void dispose()
     {
-
+    	// cancel should not update any model values
+    	final AssignmentWizard wizard = (AssignmentWizard) getWizard();
+    	if(wizard.getWizardDialogReturnCode() == org.eclipse.jface.window.Window.CANCEL) {
+    		super.dispose();
+    		return;
+    	}
+    	
         String rightSide = FormHelper.trimTrailingSpaces(source.getDocument().get());
 
         // if the model value(s) option exist

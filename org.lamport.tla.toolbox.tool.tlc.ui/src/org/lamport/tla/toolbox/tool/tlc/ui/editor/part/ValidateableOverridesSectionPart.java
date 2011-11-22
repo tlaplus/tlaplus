@@ -117,6 +117,7 @@ public class ValidateableOverridesSectionPart extends ValidateableConstantSectio
                 AssignmentWizardPage.DEF_OVERRIDE_WIZARD_ID, "");
         // Create the wizard dialog
         WizardDialog dialog = new WizardDialog(getTableViewer().getTable().getShell(), wizard);
+        wizard.setWizardDialog(dialog);
         dialog.setHelpAvailable(true);
 
         // Open the wizard dialog that asks for the overriding definition

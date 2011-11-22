@@ -1,6 +1,7 @@
 package org.lamport.tla.toolbox.tool.tlc.ui.wizard;
 
 import org.eclipse.jface.wizard.Wizard;
+import org.eclipse.jface.wizard.WizardDialog;
 import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
 
 /**
@@ -31,6 +32,7 @@ public class AssignmentWizard extends Wizard
     private Assignment assignment;
     private AssignmentWizardPage assignmentPage;
     private TypingWizardPage typePage;
+	private WizardDialog WizardDialog;
 
     /**
      * Constructs the wizard that assigns values to constants, 
@@ -99,4 +101,12 @@ public class AssignmentWizard extends Wizard
     {
         return true;
     }
+
+	public void setWizardDialog(WizardDialog dialog) {
+		WizardDialog = dialog;
+	}
+	
+	public int getWizardDialogReturnCode() {
+		return WizardDialog.getReturnCode();
+	}
 }
