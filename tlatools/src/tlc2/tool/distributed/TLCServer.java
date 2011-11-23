@@ -29,7 +29,6 @@ import tlc2.tool.WorkerException;
 import tlc2.tool.distributed.selector.BlockSelectorFactory;
 import tlc2.tool.distributed.selector.IBlockSelector;
 import tlc2.tool.fp.FPSet;
-import tlc2.tool.fp.MultiFPSet;
 import tlc2.tool.queue.DiskStateQueue;
 import tlc2.tool.queue.StateQueue;
 import tlc2.util.FP64;
@@ -100,7 +99,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		this.trace = new TLCTrace(this.metadir, this.work.getFileName(),
 				this.work);
 		if (TLCGlobals.fpServers == null) {
-			this.fpSet = new MultiFPSet(work.getFPBits(), -1);
+			this.fpSet = FPSet.getFPSet(work.getFPBits(), -1);
 			this.fpSet.init(0, this.metadir, this.work.getFileName());
 			this.fpSetManager = new FPSetManager((FPSetRMI) this.fpSet);
 		} else {

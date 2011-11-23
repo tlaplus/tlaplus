@@ -25,6 +25,21 @@ public abstract class FPSet extends UnicastRemoteObject implements FPSetRMI
 {
 	
 	/**
+	 * Creates a new {@link FPSet} depending on what the caller wants.
+	 * @param fpBits if 0, a {@link DiskFPSet} will be returned, a {@link MultiFPSet} otherwise.
+	 * @param fpMemSize
+	 * @return
+	 * @throws RemoteException
+	 */
+	public static FPSet getFPSet(int fpBits, long fpMemSize) throws RemoteException {
+		if (fpBits == 0) {
+			return new DiskFPSet((int) fpMemSize);
+		} else {
+			return new MultiFPSet(fpBits, fpMemSize);
+		}
+	}
+	
+	/**
 	 * Counts the amount of states passed to the containsBlock method
 	 */
 	private long statesSeen = 0L;

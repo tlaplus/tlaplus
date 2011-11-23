@@ -13,7 +13,6 @@ import tlc2.TLCGlobals;
 import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.tool.fp.FPSet;
-import tlc2.tool.fp.MultiFPSet;
 import tlc2.tool.liveness.LiveCheck;
 import tlc2.tool.queue.DiskStateQueue;
 import tlc2.tool.queue.StateQueue;
@@ -60,12 +59,7 @@ public class ModelChecker extends AbstractChecker
         this.theStateQueue = new DiskStateQueue(this.metadir);
         // this.theStateQueue = new MemStateQueue(this.metadir);
 
-        // SZ Feb 20, 2009: this is a selected alternative
-        this.theFPSet = new MultiFPSet(fpBits, fpMemSize/20);
-        // this.theFPSet = new DiskFPSet(-1);
-        // this.theFPSet = new MemFPSet();
-        // this.theFPSet = new MemFPSet1();
-        // this.theFPSet = new MemFPSet2();
+		this.theFPSet = FPSet.getFPSet(fpBits, fpMemSize / 20);
 
         // initialize the set
         this.theFPSet.init(TLCGlobals.getNumWorkers(), this.metadir, specFile);

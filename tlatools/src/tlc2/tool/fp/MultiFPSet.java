@@ -19,6 +19,11 @@ import util.Assert;
 public class MultiFPSet extends FPSet {
 
 	/**
+	 * Indicates that child {@link FPSet} should allocate the built-in amount of memory
+	 */
+	private static final int MEM_DEFAULT = -1;
+
+	/**
 	 * Contains all nested {@link FPSet}s 
 	 */
 	private FPSet[] sets;
@@ -29,11 +34,21 @@ public class MultiFPSet extends FPSet {
 	private int fpbits;
 
 	/* Create a MultiFPSet with 2^bits FPSets. */
+	public MultiFPSet(int bits) throws RemoteException {
+		this(bits, MEM_DEFAULT);
+	}
+	
+	/**
+	 * Create a MultiFPSet with 2^bits FPSets.
+	 * @param bits [1,30]
+	 */
 	public MultiFPSet(int bits, long fpMemSize) throws RemoteException {
+		Assert.check(bits > 0 && bits < 31, EC.GENERAL);
+		
 		int len = 1 << bits; // len = 2^bits
 		this.sets = new FPSet[len];
 		
-		if (fpMemSize == -1) {
+		if (fpMemSize == MEM_DEFAULT) {
 			fpMemSize = DiskFPSet.DefaultMaxTblCnt / 20;
 		}
 
