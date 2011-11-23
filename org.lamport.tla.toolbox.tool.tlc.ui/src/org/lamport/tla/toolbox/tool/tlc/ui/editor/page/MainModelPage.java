@@ -624,19 +624,19 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         this.distributedScriptText.setEnabled(distributed);
         
         // verify existence of pre-flight script
-       	if(distributed) {
-       		final String scriptPath = distributedScriptText.getText();
-       		if(scriptPath != null && !"".equals(scriptPath)) {
-       			final File f = new File(scriptPath);
-       			if(!f.exists()) {
-                    modelEditor.addErrorMessage("noScript", "No script file found", this.getId(),
-                            IMessageProvider.ERROR, UIHelper.getWidget(dm.getAttributeControl(LAUNCH_DISTRIBUTED_SCRIPT)));
-                    setComplete(false);
-                    expandSection(SEC_HOW_TO_RUN);
-       			}
-       		}
-       	}
-       	
+//       	if(distributed) {
+//       		final String scriptPath = distributedScriptText.getText();
+//       		if(scriptPath != null && !"".equals(scriptPath)) {
+//       			final File f = new File(scriptPath);
+//       			if(!f.exists()) {
+//                    modelEditor.addErrorMessage("noScript", "No script file found", this.getId(),
+//                            IMessageProvider.ERROR, UIHelper.getWidget(dm.getAttributeControl(LAUNCH_DISTRIBUTED_SCRIPT)));
+//                    setComplete(false);
+//                    expandSection(SEC_HOW_TO_RUN);
+//       			}
+//       		}
+//       	}
+//       	
 
         mm.setAutoUpdate(true);
 
