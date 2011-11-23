@@ -13,6 +13,7 @@ import tlc2.tool.Cancelable;
 import tlc2.tool.DFIDModelChecker;
 import tlc2.tool.ModelChecker;
 import tlc2.tool.Simulator;
+import tlc2.tool.fp.FPSet;
 import tlc2.util.FP64;
 import tlc2.util.RandomGenerator;
 import tlc2.value.Value;
@@ -503,7 +504,14 @@ public class TLC
                 {
                     try
                     {
-                        fpBits = Integer.parseInt(args[index]);
+                    	fpBits = Integer.parseInt(args[index]);
+
+                    	// make sure it's in valid range
+                    	if (!FPSet.isValid(fpBits)) {
+                    		printErrorMsg("Error: Value in interval [0, 30] for fpbits required. But encountered " + args[index]);
+                    		return false;
+                    	}
+                    	
                         index++;
                     } catch (Exception e)
                     {

@@ -137,6 +137,14 @@ public abstract class FPSet extends UnicastRemoteObject implements FPSetRMI
     	return statesSeen;
     }
 
+	/**
+	 * @param fpBits
+	 * @return
+	 */
+	public static boolean isValid(int fpBits) {
+		return fpBits >= 0 && fpBits <= MultiFPSet.MAX_FPBITS;
+	}
+
     // SZ Jul 10, 2009: this method is not used
 //    public static void main(String args[])
 //    {

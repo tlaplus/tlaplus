@@ -15,6 +15,7 @@ import tlc2.tool.TLCState;
 import tlc2.tool.TLCStateInfo;
 import tlc2.tool.Tool;
 import tlc2.tool.WorkerException;
+import tlc2.tool.fp.FPSet;
 import tlc2.util.FP64;
 import tlc2.value.Value;
 import util.FileUtil;
@@ -392,6 +393,13 @@ public class TLCApp extends DistApp {
 				if (index < args.length) {
 					try {
 						fpBits = Integer.parseInt(args[index]);
+						
+                    	// make sure it's in valid range
+                    	if (!FPSet.isValid(fpBits)) {
+                    		printErrorMsg("Error: Value in interval [0, 30] for fpbits required. But encountered " + args[index]);
+                    		return null;
+                    	}
+                    	
 						index++;
 					} catch (Exception e) {
 						printErrorMsg("Error: A number for -fpbits is required. But encountered "

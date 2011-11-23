@@ -23,6 +23,8 @@ public class MultiFPSet extends FPSet {
 	 */
 	private static final int MEM_DEFAULT = -1;
 
+	public static final int MAX_FPBITS = 30;
+
 	/**
 	 * Contains all nested {@link FPSet}s 
 	 */
@@ -43,7 +45,7 @@ public class MultiFPSet extends FPSet {
 	 * @param bits [1,30]
 	 */
 	public MultiFPSet(int bits, long fpMemSize) throws RemoteException {
-		Assert.check(bits > 0 && bits < 31, EC.GENERAL);
+		Assert.check(bits > 0 && bits <= MAX_FPBITS, EC.GENERAL);
 		
 		int len = 1 << bits; // len = 2^bits
 		this.sets = new FPSet[len];
