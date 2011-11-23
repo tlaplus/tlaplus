@@ -63,6 +63,7 @@ import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 import tla2sany.semantic.ModuleNode;
+import tlc2.tool.fp.FPSet;
 
 /**
  * Main model page represents information for most users
@@ -484,9 +485,9 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         String fpBitsString = fpBits.getText();
         try {
             int fpBitsNum = Integer.parseInt(fpBitsString);
-            if (fpBitsNum < 0 || fpBitsNum >= 64)
+            if (!FPSet.isValid(fpBitsNum))
             {
-                modelEditor.addErrorMessage("wrongNumber3", "fpbits must be a positive integer number smaller than 64", this
+                modelEditor.addErrorMessage("wrongNumber3", "fpbits must be a positive integer number smaller than 31", this
                         .getId(), IMessageProvider.ERROR, UIHelper.getWidget(dm
                         .getAttributeControl(LAUNCH_FPBITS)));
                 setComplete(false);
