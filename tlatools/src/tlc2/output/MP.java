@@ -676,7 +676,22 @@ public class MP
         	//new Date() + " Worker: " + name + " Sent: " + sentStates + " Rcvd: " + receivedStates
             b.append("Worker: %1% Sent: %2% Rcvd: %3% (").append(SDF.format(new Date())).append(")");
             break;
+        case EC.TLC_DISTRIBUTED_SERVER_NOT_RUNNING:
+            b.append("TLCServer is gone, exiting worker... (").append(SDF.format(new Date())).append(")");
+            break;
+		case EC.TLC_DISTRIBUTED_VM_VERSION:
+			b.append(
+					"VM does not allow to get the UnicastRef port.\nWorker will be identified with port 0 in output (")
+					.append(SDF.format(new Date())).append(")");
+			break;
+		case EC.TLC_DISTRIBUTED_WORKER_LOST:
+			b.append("TLC worker connection lost (").append(SDF.format(new Date())).append(")");
+			break;
+		case EC.TLC_DISTRIBUTED_EXCEED_BLOCKSIZE:
+			b.append("Trying to limit max block size (to recover from transport failure): %1% (").append(SDF.format(new Date())).append(")");
+			break;
 
+            
         /*------------------------------------------- */
         case EC.TLC_STARTING:
             b.append("Starting... (").append(SDF.format(new Date())).append(")");

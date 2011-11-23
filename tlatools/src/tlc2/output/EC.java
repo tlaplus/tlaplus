@@ -146,7 +146,11 @@ public interface EC
     public static final int TLC_DISTRIBUTED_WORKER_REGISTERED = TLC_DISTRIBUTED_SERVER_RUNNING + 1;
     public static final int TLC_DISTRIBUTED_WORKER_DEREGISTERED = TLC_DISTRIBUTED_WORKER_REGISTERED + 1;
     public static final int TLC_DISTRIBUTED_WORKER_STATS = TLC_DISTRIBUTED_WORKER_DEREGISTERED + 1;
-    
+    public static final int TLC_DISTRIBUTED_SERVER_NOT_RUNNING = TLC_DISTRIBUTED_WORKER_STATS + 1;
+    public static final int TLC_DISTRIBUTED_VM_VERSION = TLC_DISTRIBUTED_SERVER_NOT_RUNNING + 1;
+    public static final int TLC_DISTRIBUTED_WORKER_LOST = TLC_DISTRIBUTED_VM_VERSION + 1;
+    public static final int TLC_DISTRIBUTED_EXCEED_BLOCKSIZE = TLC_DISTRIBUTED_WORKER_LOST + 1;
+   
     // errors during parsing of the model configuration
     
     public static final int CFG_ERROR_READING_FILE = 5001;

@@ -18,6 +18,8 @@ import java.util.Date;
 import java.util.Timer;
 
 import tlc2.TLCGlobals;
+import tlc2.output.EC;
+import tlc2.output.MP;
 import tlc2.tool.TLCState;
 import tlc2.tool.TLCStateVec;
 import tlc2.tool.WorkerException;
@@ -187,17 +189,13 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 		} catch (ClassCastException e) {
 			e.printStackTrace();
 		} catch (NoSuchMethodException e) {
-			ToolIO.err
-					.println("VM does not allow to get the UnicastRef port.\nWorker will be identified with port 0 in output");
+			MP.printError(EC.TLC_DISTRIBUTED_VM_VERSION);
 		} catch (IllegalAccessException e) {
-			ToolIO.err
-					.println("VM does not allow to get the UnicastRef port.\nWorker will be identified with port 0 in output");
+			MP.printError(EC.TLC_DISTRIBUTED_VM_VERSION);
 		} catch (InvocationTargetException e) {
-			ToolIO.err
-					.println("VM does not allow to get the UnicastRef port.\nWorker will be identified with port 0 in output");
+			MP.printError(EC.TLC_DISTRIBUTED_VM_VERSION);
 		} catch (ClassNotFoundException e) {
-			ToolIO.err
-					.println("VM does not allow to get the UnicastRef port.\nWorker will be identified with port 0 in output");
+			MP.printError(EC.TLC_DISTRIBUTED_VM_VERSION);
 		}
 		return 0;
 	}

@@ -8,7 +8,8 @@ import java.rmi.RemoteException;
 import java.util.Date;
 import java.util.TimerTask;
 
-import util.ToolIO;
+import tlc2.output.EC;
+import tlc2.output.MP;
 
 /**
  * Periodically checks if the server is still alive and exists the worker otherwise
@@ -47,7 +48,7 @@ public class TLCTimerTask extends TimerTask {
 	}
 
 	private void exitWorker() {
-		ToolIO.err.println("TLCServer is gone, exiting worker...");
+		MP.printError(EC.TLC_DISTRIBUTED_SERVER_NOT_RUNNING);
 		try {
 			worker.exit();
 		} catch (NoSuchObjectException e) {

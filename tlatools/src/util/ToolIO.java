@@ -72,6 +72,12 @@ public class ToolIO
     private static String userDir = null;
 
     public static PrintStream out = System.out;
+	/**
+	 * Care must be taken with out and err not being synchronized. Concurrent
+	 * writes will cause interleaved output.
+	 * 
+	 * @see https://bugzilla.tlaplus.net/show_bug.cgi?id=221
+	 */
     public static PrintStream err = System.err;
 
     // = 1 for testing. Should be set to reasonable value like 1000.
