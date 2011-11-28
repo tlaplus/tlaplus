@@ -399,14 +399,22 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                 	numWorkers = 0;
                 	this.setCurrentStatus(SERVER_RUNNING);
                     informPresenter(ITLCModelLaunchDataPresenter.CURRENT_STATUS);
+                    setDocumentText(this.progressOutput, outputMessage, true);
                     break;
                 case EC.TLC_DISTRIBUTED_WORKER_REGISTERED:
                 	this.setCurrentStatus(++numWorkers + WORKER_REGISTERED);
                     informPresenter(ITLCModelLaunchDataPresenter.CURRENT_STATUS);
+                    setDocumentText(this.progressOutput, outputMessage, true);
                     break;
                 case EC.TLC_DISTRIBUTED_WORKER_DEREGISTERED:
                 	this.setCurrentStatus(--numWorkers + WORKER_REGISTERED);
                     informPresenter(ITLCModelLaunchDataPresenter.CURRENT_STATUS);
+                    setDocumentText(this.progressOutput, outputMessage, true);
+                    break;
+                // send the following errors to the process output log    
+                case EC.TLC_DISTRIBUTED_EXCEED_BLOCKSIZE:
+                case EC.TLC_DISTRIBUTED_WORKER_LOST:
+                    setDocumentText(this.progressOutput, outputMessage, true);
                     break;
                 default:
                     setDocumentText(this.userOutput, outputMessage, true);
