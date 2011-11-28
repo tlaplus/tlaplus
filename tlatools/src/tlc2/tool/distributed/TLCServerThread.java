@@ -6,6 +6,9 @@
 package tlc2.tool.distributed;
 
 import java.io.EOFException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.net.URI;
 import java.rmi.RemoteException;
 import java.util.Date;
@@ -135,12 +138,12 @@ public class TLCServerThread extends IdThread {
 							// go back to beginning
 							continue START;
 						} else {
-							MP.printError(EC.TLC_DISTRIBUTED_WORKER_LOST, e);
+							MP.printMessage(EC.TLC_DISTRIBUTED_WORKER_LOST, throwableToString(e));
 							handleRemoteWorkerLost(stateQueue);
 							return;
 						}
 					} catch (NullPointerException e) {
-						MP.printError(EC.TLC_DISTRIBUTED_WORKER_LOST, e);
+						MP.printMessage(EC.TLC_DISTRIBUTED_WORKER_LOST, throwableToString(e));
 						handleRemoteWorkerLost(stateQueue);
 						return;
 					}
@@ -192,6 +195,13 @@ public class TLCServerThread extends IdThread {
 				}
 			}
 		}
+	}
+
+	private String throwableToString(final Exception e) {
+		final Writer result = new StringWriter();
+	    final PrintWriter printWriter = new PrintWriter(result);
+	    e.printStackTrace(printWriter);
+	    return result.toString();
 	}
 
 	/**
