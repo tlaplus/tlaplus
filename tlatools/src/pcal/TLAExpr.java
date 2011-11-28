@@ -568,7 +568,7 @@ public class TLAExpr
       * string in strs.  (The vectors must have the same lengths.)         *
       * If parenthesize = true, then parentheses are put around the        *
       * substituted string unless it or the current expression consists    *
-      * of just on token.                                                  *
+      * of just one token.                                                 *
       *********************************************************************/
       { int i = 0 ;
         while (i < exprs.size())

@@ -99,8 +99,14 @@ public class PcalSymTab {
     /* NESTED CLASS: Symbol table entries */
     public class SymTabEntry {
         public int type;       // variable type
+                               // can be GLOBAL, LABEL, PROCEDURE, PROCESS, PROCESSVAR,
+                               // PROCEDUREVAR, or PARAMETER, declared above.
         public String id;      // original name
         public String context; // where defined
+                               // experimentation shows that context is:
+                               //    "" if cType = ""
+                               //    the name of a process if cType = "process"
+                               //    the name of a procedure if cType = "procedure"
         public String cType;   // procedure, process or empty
         public int line;       // line where defined
         public int col;        // column where defined

@@ -4,7 +4,7 @@
 *      modified on Tue 24 Jan 2006 at 13:21:20 PST by lamport              *
 *      modified on Tue 30 Aug 2005 at 19:30:45 UT by keith                 *
 *                                                                          *
-* Given an AST (not necessarily exploded), change the ids to ther          *
+* Given an AST (not necessarily exploded), change the ids to their         *
 *   disambiguated values. There is one public method in this class:        *
 *                                                                          *
 *   void Fix (AST ast, PcalSymTab stab)                                    *
