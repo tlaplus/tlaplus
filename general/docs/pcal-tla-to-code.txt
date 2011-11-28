@@ -10,10 +10,10 @@ TLA+ Error Reports That Can Be Mapped to PCal Code
    * expression in statement: can be
       + the expression
       + conjunct of action containing the expression
-      + a previous conjunct of action
-      + the last character of a previous conjunct
-        (only on the first conjunct). This seems
-        to be a minor TLC bug
+      + a previous conjunct of that action
+      + the last character (and perhaps more) of 
+        the first conjunct of that action.
+        This seems to be a minor TLC bug
 
 - Error-Trace action location.
   (Double-click needed to go to TLA+ location.)
@@ -75,4 +75,7 @@ The Structure of the Translation
 
 Note: If the translator is modified to use a single TLA+ variable for
 two different local PCal variables of the same name, then a variable
-name in the TLA+ spec does not map to a unique piece of PCal code.
+name in the TLA+ spec does not map to a unique piece of PCal code
+in the <Variables Declaration> and <Init Definition>.  And additional
+information will need to be kept to map variable names to the correct
+PCal declaration for cases where there is a unique mapping.
