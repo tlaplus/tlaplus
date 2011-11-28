@@ -1,0 +1,55 @@
+The following solution programmed in the Orc language was provided by
+Jayadev Misra (email address lastname@cs.utexas.edu) 
+on Wednesday, November 02, 2011 8:04 AM
+
+It produces [1, 2, 5, 5, 27] as one of the solutions for (P,N) = (5,40)
+
+==============================================================
+val nw = 5           -- number of weights
+val n  = 40          -- number of values to be measured
+
+{- Enumerate all distinct nw-tuples that sum to n.
+   - Each tuple is represented as a list
+   - the list elements are in ascending order from head onward
+Below, for(i,j) publishes all k, i <= k < j.
+
+  enum(last, remsum, k) enumerates all lists in ascending order
+   - starting at last 
+   - adding up to remsum
+   - having k elements
+-}
+
+def enum(last, remsum, 1) = [remsum]
+def enum(last, remsum, k) =
+  for(last, remsum/k+1) >x> enum(x,remsum-x,k-1) >xs> (x:xs)
+
+{- psum(zs), where zs is a list, publishes all values j where j can
+   be obtained by multiplying each element of zs independently by -1,0
+   or 1, and adding the result.
+-}
+
+def psum([]) = 0
+def psum(x:xs) = psum(xs) >y> (-x+y | y | x+y)
+
+{- check(zs) checks if list zs is a solution; it outputs zs if
+   it is and halts silently otherwise.
+   An array b of write-once cells are used. Counter c holds the number
+   of distinct values in b that have been written to; once n different
+   values have been written, it outputs zs. 
+-}
+
+def check(zs) =
+ val b = Table(n+1, lambda (_) = Cell())
+ val c = Counter(n)
+
+    psum(zs) >j>
+    Ift(j :> 0) >> 
+    b(j) := signal >> 
+    c.dec() >> stop
+  | c.onZero() >>  zs
+
+{- Enumerate all tuples and for each check if it is a
+   solution. Stop after finding the first one.
+-}
+
+Let(enum(1,n,nw) >zs> check(zs)) 
