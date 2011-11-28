@@ -1,0 +1,78 @@
+TLA+ Error Reports That Can Be Mapped to PCal Code
+---------------------------------------------------
+- Parser Errors
+
+- TLC errors. Expression evaluation in:
+   * Initial predicate   
+       This seems to just report a single location,
+       exactly where the error occurs.
+   * process set. (no location reported)
+   * expression in statement: can be
+      + the expression
+      + conjunct of action containing the expression
+      + a previous conjunct of action
+      + the last character of a previous conjunct
+        (only on the first conjunct). This seems
+        to be a minor TLC bug
+
+- Error-Trace action location.
+  (Double-click needed to go to TLA+ location.)
+
+- Coverage.  Can go to
+   * conjunction of action definition
+   * variable in UNCHANGED expression
+   * variable in vars location
+
+Note: assertion failure error already maps to PCal code location.
+(But not if file has been edited since last translator run.)
+    
+The Structure of the Translation
+--------------------------------
+
+<translation> ::=
+   <Variables Declaration> 
+   <vars Definition>
+   [<ProcSet Definition>]0,1
+   <Init Definition>
+   <Action Def>+
+   [<Process Def>]0,1
+   <Next Def>
+   <Spec Def>
+   <Termination Def>
+
+<Action Def> ::=
+   <label> ["(self)"]0,1 == 
+   "/\" <PC enabling Predicate>
+   <Action Body>
+
+<Action Body> ::=
+   [   "/\" <Expr> 
+     | "/\" <Assignment> 
+     | "/\" <If-Then-Else>
+   ]*
+   ["/\" <pc-assignment>]0,1  \* An outer-most action body must have a pc-assignment
+   ["/\" <Unchanged>]0,1      
+
+<Assignment> ::= 
+   <Variable>
+    "' ="
+   [   <Expr>
+     | "[" <Variable> "EXCEPT" "!" [ "[self]" ]0,1 
+                                   [    "." <String>  
+                                     |  "[" <Expr> "]" 
+                                   ]*
+       "]"
+   ]
+    
+<If-Then-Else> ::=
+   "IF" <Expr>
+   "THEN" <Action Body>
+   "ELSE" <Action Body>
+           
+<Unchanged> ::=
+    "UNCHANGED <<" <Variable> ["," <Variable>]* ">>" 
+  | <Variable> "' =" <Variable>
+
+Note: If the translator is modified to use a single TLA+ variable for
+two different local PCal variables of the same name, then a variable
+name in the TLA+ spec does not map to a unique piece of PCal code.
