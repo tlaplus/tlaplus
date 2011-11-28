@@ -201,7 +201,7 @@ public class TLCServerThread extends IdThread {
 	private void handleRemoteWorkerLost(final StateQueue stateQueue) {
 		keepAliveTimer.cancel();
 		tlcServer.removeTLCServerThread(this);
-		stateQueue.sEnqueue(states);
+		stateQueue.sEnqueue(states != null ? states : new TLCState[0]);
 		TLCGlobals.incNumWorkers(-1);
 		MP.printMessage(EC.TLC_DISTRIBUTED_WORKER_DEREGISTERED, getUri().toString());
 	}
