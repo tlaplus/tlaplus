@@ -16,7 +16,8 @@
 *    anchorTokens : An array of TLAToken's of the same length as           *
 *                   expr.tokens, where expr.anchorTokens[i] is the anchor  *
 *                   of line i.  (The definition of an anchor token is in   *
-*                   Section 9.1 of the +Cal language document.)            *
+*                   the rule for preserving formatting in the comments at  *
+*                   the end of this file.)                                 *
 *                                                                          *
 *    anchorTokCol : An array of int's, of the same length as expr.tokens,  *
 *                   where if expr.anchorTokens[i] is non-null, then        *
@@ -137,7 +138,7 @@ public class TLAExpr
      }
 
     public void addToken(TLAToken tok)
-      {  ((Vector) tokens.elementAt(tokens.size()-1)).addElement(tok) ;
+      { ((Vector) tokens.elementAt(tokens.size()-1)).addElement(tok) ;
       } ;
 
 
@@ -962,6 +963,79 @@ public class TLAExpr
 ***************************************************************************/
 
   }
+/***************************************************************************
+* RULE FOR PRESERVING THE FORMATTING WHEN REWRITING AN EXPRESSION.         *
+*                                                                          *
+* I first define some terminology for describing an expression.  A TOKEN   *
+* t consists of a symbol t.symbol and a column t.column that is a          *
+* positive integer.  For example, in                                       *
+*                                                                          *
+*    (a = 0) => /\ B                                                       *
+*               /\ C                                                       *
+*                                                                          *
+* the => is represented by a token t with t.symbol = => and t.column =     *
+* 9, since the = of => occurs in the 9th column of the expression.  (I     *
+* assume that column numbers are normalized so the left-most token of an   *
+* expression occurs in column 1.)  A LINE is a sequence <<t_{1}, \ldots,   *
+* t_{n}>> of tokens, where t_{i}.column < t_{i+1}.column for               *
+* i=1,\ldots,n-1.  An EXPRESSION is a sequence of one or more lines        *
+* beginning and ending with a nonempty line.                               *
+*                                                                          *
+* If line number n is nonempty, define column(n) to be the column of       *
+* its first (left-most) token.  I say that line m COVERS line              *
+* n iff lines m and n are nonempty, m < n, and column(m) \leq column(n).   *
+* The covering line of line number n is the largest line number m such     *
+* that m covers n, if such an m exists.                                    *
+*                                                                          *
+* If line n has a covering line m, then the ANCHOR of line                 *
+* n is defined as follows.  Let T be the set of all tokens t in            *
+* line m such that t.column \leq column(n) and t.symbol equals             *
+* /\ or \/.  If T is nonempty, then the anchor of n is                     *
+* the token t in T with the largest value of t.column.  Otherwise,         *
+* the anchor of n is the first token of line m.  If n has no               *
+* covering line, then it is defined to have no anchor.  The first line     *
+* of any expression has no anchor.  In the example above, the anchor of    *
+* line 2 is the /\ token in line 1.                                        *
+*                                                                          *
+* The rule for preserving indentation is: (1) if a line has an anchor,     *
+* then its indentation from its anchor must be preserved in the            *
+* rewriting, and (2) if a line has no anchor, then its indentation from    *
+* the left margin is preserved.  I now state this rule more precisely.     *
+*                                                                          *
+* The rewriting of an expression exp by the compiler consists of           *
+* inserting additional tokens into lines and modifying the column          *
+* numbers of some existing tokens to form a new expression newExp.         *
+* For any token t of exp, let f(t) be the same token in                    *
+* newExp---in other words, the token in newExp that corresponds to         *
+* token t in exp.  The mapping f satisfies:                                *
+*                                                                          *
+* - If token t occurs in line n of exp, then f(t) occurs in                *
+*   line n of newExp.                                                      *
+*                                                                          *
+* - If token t is the first token on its line in exp, then                 *
+*   f(t) is the first token on its line in newExp.                         *
+*   The following is the rule for formatting the expression newExp         *
+*   obtained by rewriting expression exp.                                  *
+*                                                                          *
+* For any nonempty line n of exp with first token s:                       *
+*                                                                          *
+*     If n has an anchor t, then                                           *
+*        f(s).column - f(t).column = s.column - t.column                   *
+*                                                                          *
+*     If n has no anchor, then s.column = f(s).column                      *
+*                                                                          *
+* This rule is actually stronger than necessary.  In case (1), it is       *
+* only necessary that                                                      *
+*                                                                          *
+*    (i) s.column = t.column implies f(s).column = f(t).column and         *
+*   (ii) s.column > t.column implies f(s).column > f(t).column.            *
+*                                                                          *
+* In other words, only the relations "in the same column" and "to the      *
+* right of" between a column and its anchor must be preserved.  However,   *
+* the stronger rule seems better because it should produce a rewritten     *
+* expression that looks as much as possible like the original.             *
+*                                                                          *
+***************************************************************************/
 
 
 /* last modified on Fri 31 Aug 2007 at 14:03:38 PST by lamport */
