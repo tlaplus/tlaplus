@@ -8,9 +8,9 @@ import java.rmi.RemoteException;
  * {@link DiskFPSet}#index for uni tests
  */
 @SuppressWarnings("serial")
-public class TestDiskFPSet extends DiskFPSet {
+public class DummyDiskFPSet extends DiskFPSet {
 
-	public TestDiskFPSet(int maxMemCnt) throws RemoteException {
+	public DummyDiskFPSet(int maxMemCnt) throws RemoteException {
 		super(maxMemCnt);
 	}
 
