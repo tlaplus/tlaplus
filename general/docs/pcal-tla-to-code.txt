@@ -90,3 +90,7 @@ the <Variable> of and <Assignment> does not correspond to a unique
 occurrence of the variable in the PCal code.
 
 - Among the stuff added in the translation are parentheses around expressions.
+
+- The definition section should be handled by a 1-1 mapping between an area 
+  of the spec and an area of the code.  That must be fit into any framework.
+
