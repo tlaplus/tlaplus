@@ -8,6 +8,19 @@ package pcal;
 import java.util.Vector;
 
 public class Changed {
+	/*
+	 * A Changed object is used when generating the actions to keep track
+	 * of how many times a variable has been set in the conjuncts produced
+	 * so far.  It's an error if the variable has been set more than once.
+	 * If it has been set once, then uses of it in expressions must be
+	 * replaced by their primed versions.
+	 * 
+	 * The object has two fields: 
+	 *   vars: a vector of variable names.  It is set to the vector
+	 *         of all variables.
+	 *   count: an array whose i-th element is the number of times the
+	 *          i-th variable in vars has been changed.
+	 */
     public int[] count; /* number times variable set */
     public Vector vars; /* list of variables */
 
