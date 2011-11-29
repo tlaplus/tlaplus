@@ -40,9 +40,9 @@ public class PcalTLAGen
     private Vector tlacode = new Vector(); /* of lines */
     private boolean selfIsSelf = false; 
     private TLAExpr self = null; // changed by LL on 22 jan 2011 from: private String self = null; /* for current process */
-    private Vector vars = new Vector(); /* list of disamb. vars */
-    private Vector pcV = new Vector(); /* list of proc vars, params */
-    private Vector psV = new Vector(); /* list of process set vars */
+    private Vector vars = new Vector(); /* list of all disambiguated vars */
+    private Vector pcV = new Vector(); /* sublist of vars of variables representing procedure parameters */
+    private Vector psV = new Vector(); /* sublist of vars local to a process set */
     private PcalSymTab st = null; /* symbol table */
     private boolean mp = false; /* true if multiprocess, else unip */
     private Vector nextStep = new Vector(); /* unparam actions */ // For multiprocess alg, these are the individual (=) processes
