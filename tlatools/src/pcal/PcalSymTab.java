@@ -126,6 +126,15 @@ public class PcalSymTab {
             this.col = col;
             this.useThis = id;
         }
+        
+        /**
+         * For debugging:
+         */
+        public String toString() {
+        	return "[id: " + this.id + ", usethis: " + this.useThis + 
+        			", line: " + this.line + ", col:" + this.col +
+        			", type: " + this.type + ", context: " + this.context + "]";
+        }
     } /* End of SymTabEntry */
 
     /* NESTED CLASS: Procedure table entries */
