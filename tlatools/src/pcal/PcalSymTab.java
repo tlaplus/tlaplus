@@ -525,7 +525,7 @@ public class PcalSymTab {
         
         if (! InsertProc(ast))
             errorReport = errorReport + "\nProcedure " + ast.name +
-                " redefined at col " + ast.col + " line " + ast.line;
+            		" redefined at line " + ast.line + ", column " + ast.col;
         boolean b = InsertSym(PROCEDURE,
                       ast.name,
                       context,
@@ -546,7 +546,7 @@ public class PcalSymTab {
         boolean b;
         if (! InsertProcess(ast))
             errorReport = errorReport + "\nProcess " + ast.name +
-                " redefined at col " + ast.col + " line " + ast.line;
+            		" redefined at line " + ast.line + ", column " + ast.col;
         b = InsertSym(PROCESS, ast.name, context, "process", ast.line, ast.col);
         for (int i = 0; i < ast.decls.size(); i++)
             ExtractVarDecl((AST.VarDecl) ast.decls.elementAt(i), ast.name);
@@ -560,7 +560,7 @@ public class PcalSymTab {
         int vtype = (context == "") ? GLOBAL : PROCESSVAR;
         if (! InsertSym(vtype, ast.var, context, "process", ast.line, ast.col))
             errorReport = errorReport + "\n" + vtypeName[vtype] + " " + ast.var +
-                " redefined at line " + ast.line + " col " + ast.col;
+            " redefined at line " + ast.line + ", column " + ast.col;
     }
 
     private void ExtractPVarDecl(AST.PVarDecl ast, String context) {
@@ -571,7 +571,7 @@ public class PcalSymTab {
                         ast.line,
                         ast.col))
             errorReport = errorReport + "\nProcedure variable " + ast.var +
-                " redefined at line " + ast.line + " col " + ast.col;
+            " redefined at line " + ast.line + ", column " + ast.col;
     }
 
     private void ExtractParamDecl(AST.PVarDecl ast, String context) {
@@ -582,7 +582,7 @@ public class PcalSymTab {
                         ast.line,
                         ast.col))
             errorReport = errorReport + "\nParameter " + ast.var +
-                " redefined at line " + ast.line + " col " + ast.col;
+            " redefined at line " + ast.line + ", column " + ast.col;
     }
 
     private void ExtractLabeledStmt(AST.LabeledStmt ast,
@@ -590,7 +590,7 @@ public class PcalSymTab {
                                     String cType) {
         if (! InsertSym(LABEL, ast.label, context, cType, ast.line, ast.col))
             errorReport = errorReport + "\nLabel " + ast.label +
-                " redefined at line " + ast.line + " col " + ast.col;
+                " redefined at line " + ast.line + ", column " + ast.col;
         for (int i = 0; i < ast.stmts.size(); i++)
             ExtractStmt((AST) ast.stmts.elementAt(i), context, cType);
     }

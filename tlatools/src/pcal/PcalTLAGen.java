@@ -41,7 +41,8 @@ public class PcalTLAGen
     private boolean selfIsSelf = false; 
     private TLAExpr self = null; // changed by LL on 22 jan 2011 from: private String self = null; /* for current process */
     private Vector vars = new Vector(); /* list of all disambiguated vars */
-    private Vector pcV = new Vector(); /* sublist of vars of variables representing procedure parameters */
+    private Vector pcV = new Vector(); /* sublist of vars of variables representing 
+                                          procedure parameters and procedure variables */
     private Vector psV = new Vector(); /* sublist of vars local to a process set */
     private PcalSymTab st = null; /* symbol table */
     private boolean mp = false; /* true if multiprocess, else unip */
