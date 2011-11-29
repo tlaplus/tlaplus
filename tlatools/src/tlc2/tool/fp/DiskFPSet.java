@@ -65,7 +65,7 @@ public class DiskFPSet extends FPSet {
 	 * special case: last entry is last fp in file
 	 * if <code>null</code>, no disk file exists yet
 	 */
-	private long[] index;
+	protected long[] index;
 
 	/*
 	 * Log (base 2) of default number of new entries allowed to accumulate in
@@ -82,7 +82,7 @@ public class DiskFPSet extends FPSet {
 	private static final int LongSize = 8; // sizeof(long)
 
 	/* Number of fingerprints per braf buffer. */
-	private static final int NumEntriesPerPage = 8192 / LongSize;
+	public static final int NumEntriesPerPage = 8192 / LongSize;
 
 	/**
 	 * Construct a new <code>DiskFPSet2</code> object whose internal memory
@@ -420,10 +420,10 @@ public class DiskFPSet extends FPSet {
 		boolean diskHit = false;
 		long midEntry = -1L;
 		// lower bound for the interval search in 
-		long loEntry = loPage * NumEntriesPerPage;
+		long loEntry = ((long) loPage) * NumEntriesPerPage;
 		// upper bound for the interval search in 
 		long hiEntry = ((loPage == indexLength - 2) ? this.fileCnt - 1
-				: hiPage * NumEntriesPerPage);
+				: ((long) hiPage) * NumEntriesPerPage);
 		try {
 			// b0) open file for reading that is associated with current thread
 			RandomAccessFile raf;
