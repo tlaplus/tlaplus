@@ -73,9 +73,20 @@ The Structure of the Translation
     "UNCHANGED <<" <Variable> ["," <Variable>]* ">>" 
   | <Variable> "' =" <Variable>
 
-Note: If the translator is modified to use a single TLA+ variable for
+NOTES
+-----
+- If the translator is modified to use a single TLA+ variable for
 two different local PCal variables of the same name, then a variable
 name in the TLA+ spec does not map to a unique piece of PCal code
 in the <Variables Declaration> and <Init Definition>.  And additional
 information will need to be kept to map variable names to the correct
 PCal declaration for cases where there is a unique mapping.
+
+- For a multi-assignment such as 
+
+   x[i] := ... || x[j] := ...
+   
+the <Variable> of and <Assignment> does not correspond to a unique
+occurrence of the variable in the PCal code.
+
+- Among the stuff added in the translation are parentheses around expressions.
