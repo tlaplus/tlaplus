@@ -28,7 +28,6 @@ Note: assertion failure error already maps to PCal code location.
     
 The Structure of the Translation
 --------------------------------
-
 <translation> ::=
    <Variables Declaration> 
    <vars Definition>
@@ -73,6 +72,46 @@ The Structure of the Translation
     "UNCHANGED <<" <Variable> ["," <Variable>]* ">>" 
   | <Variable> "' =" <Variable>
 
+THE GRAMMAR OF ASTs.
+-------------------
+See PlusCal.tla
+
+DATA STRUCTURE FOR MAPPING
+--------------------------
+
+Location == [line : LineNumber, col : ColumnNumber]
+RegionLoc == [begin : Location, end : Location]
+
+A mapping specifier is a sequence of the following objects:
+
+Paren == [type       : {"begin", "end"} ,
+          subType    : {"expression", 
+                        "1-1"      used for the def region
+                        }
+          tlaRegion  : RegionLoc,
+          pcalRegion : Seq(RegionLoc)]
+  \* Matching parens contain the same tlaRegion and pcalRegion
+  \* values
+
+Token == [type : {"token"},
+          subType : {"expression"},
+          tlaRegion  : RegionLoc,
+          pcalRegion : RegionLoc]
+
+Filler == [type : {"filler"},
+           tlaRegion : RegionLoc]
+  \* This is like "EXCEPT", saying that if this is selected, then
+  \* the tlaRegion is determined by the Parens enclosing this object.
+
+Break == [type      : {"break"},
+          tlaRegion : RegionLoc]
+  \* This indicates the existence of text in the PlusCal code
+  \* that is not part of the region mapped to by the objects
+  \* at the current paren depth.  Hence, a TLA+ region at the 
+  \* break's paren depth that contains the break maps to a
+  \* disconnected regions of the PlusCal code.
+  
+
 NOTES
 -----
 - If the translator is modified to use a single TLA+ variable for
@@ -86,7 +125,7 @@ PCal declaration for cases where there is a unique mapping.
 
    x[i] := ... || x[j] := ...
    
-the <Variable> of and <Assignment> does not correspond to a unique
+the <Variable> of an <Assignment> does not correspond to a unique
 occurrence of the variable in the PCal code.
 
 - Among the stuff added in the translation are parentheses around expressions.

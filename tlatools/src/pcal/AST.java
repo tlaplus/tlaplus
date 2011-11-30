@@ -588,6 +588,13 @@ public class AST
       }
 
 
+    /**
+     * A LabelIf represents an if statement whose then and/or
+     * else clause has a label.
+     * 
+     * @author lamport
+     *
+     */
     public static class LabelIf extends AST
       { public TLAExpr   test      = null ;
         public Vector    unlabThen = null ; // a LabelSeq
@@ -669,6 +676,13 @@ public class AST
           }
       }
 
+    /**
+     * A CallReturn object represents a call immediately followed
+     * by a return.
+     * 
+     * @author lamport
+     *
+     */
     public static class CallReturn extends AST
       { public String    from = "" ;
         public String    to       = "" ;
