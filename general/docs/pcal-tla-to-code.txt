@@ -6,7 +6,8 @@ TLA+ Error Reports That Can Be Mapped to PCal Code
    * Initial predicate   
        This seems to just report a single location,
        exactly where the error occurs.
-   * process set. (no location reported)
+   * process set. (sometimes reports the ProcSet token,
+       sometimes it reports no location)
    * expression in statement: can be
       + the expression
       + conjunct of action containing the expression
