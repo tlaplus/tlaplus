@@ -89,10 +89,11 @@ Paren == [type       : {"begin", "end"} ,
           subType    : {"expression", 
                         "1-1"      used for the def region
                         }
-          tlaRegion  : RegionLoc,
+          tlaLoc     : Location,
           pcalRegion : Seq(RegionLoc)]
-  \* Matching parens contain the same tlaRegion and pcalRegion
-  \* values
+  \* Matching parens logically contain the same pcalRegion
+  \* values.  However, it might be most convenient to 
+  \* put them only in the end paren.
 
 Token == [type : {"token"},
           subType : {"expression"},
