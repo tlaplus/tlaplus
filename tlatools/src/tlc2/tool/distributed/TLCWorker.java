@@ -55,7 +55,7 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 	 * @see tlc2.tool.distributed.TLCWorkerRMI#getNextStates(tlc2.tool.TLCState[])
 	 */
 	public synchronized Object[] getNextStates(final TLCState[] states)
-			throws WorkerException {
+			throws WorkerException, RemoteException {
 		
 		// statistics
 		lastInvocation = System.currentTimeMillis();
@@ -124,6 +124,8 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 			return res;
 		} catch (WorkerException e) {
 			throw e;
+		} catch (OutOfMemoryError e) {
+			throw new RemoteException("OutOfMemoryError occurred at worker: " + uri.toASCIIString(), e);
 		} catch (Throwable e) {
 			throw new WorkerException(e.getMessage(), e, state1, state2, true);
 		}

@@ -5,6 +5,8 @@
 
 package tlc2.tool.distributed;
 
+import java.rmi.RemoteException;
+
 import tlc2.tool.TLCState;
 import tlc2.tool.TLCStateInfo;
 import tlc2.tool.TraceApp;
@@ -37,7 +39,7 @@ public abstract class DistApp implements TraceApp {
 
 	// Returns a list of successor states of the state s. /
 	// TLCServer
-	public abstract TLCState[] getNextStates(TLCState s) throws WorkerException;
+	public abstract TLCState[] getNextStates(TLCState s) throws WorkerException, RemoteException;
 
 	// Checks if the state is a valid state.
 	// TLCServer, TLCWorker
