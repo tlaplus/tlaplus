@@ -196,6 +196,7 @@ public class TLCServerThread extends IdThread {
 				}
 			}
 		} finally {
+			keepAliveTimer.cancel();
 			states = new TLCState[0];
 		}
 	}
