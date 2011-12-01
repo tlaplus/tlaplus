@@ -126,9 +126,10 @@ public class TLCServerThread extends IdThread {
 						workDone = true;
 						lastInvocation = System.currentTimeMillis();
 					} catch (RemoteException e) {
-						// non recoverable errors
-						final Throwable cause = e.getCause();
-						if (cause instanceof EOFException && cause.getMessage() == null) {
+						// If a (remote) {@link TLCWorkerRMI} fails due to the
+						// amount of new states we have sent it, try to lower the amount of states
+						// and re-send (until we just send a single state)
+						if (isRecoverable(e) && states.length > 1) {
 							MP.printMessage(EC.TLC_DISTRIBUTED_EXCEED_BLOCKSIZE, Integer.toString(states.length / 2));
 							// states[] exceeds maximum transferable size
 							// (add states back to queue and retry)
@@ -137,7 +138,7 @@ public class TLCServerThread extends IdThread {
 							selector.setMaxTXSize(states.length / 2);
 							// go back to beginning
 							continue START;
-						} else {
+						} else { // non recoverable errors
 							MP.printMessage(EC.TLC_DISTRIBUTED_WORKER_LOST, throwableToString(e));
 							handleRemoteWorkerLost(stateQueue);
 							return;
@@ -194,7 +195,23 @@ public class TLCServerThread extends IdThread {
 					this.tlcServer.notify();
 				}
 			}
+		} finally {
+			states = new TLCState[0];
 		}
+	}
+
+	/**
+	 * A recoverable error/exception is defined to be a case where the
+	 * {@link TLCWorkerRMI} can continue to work if {@link TLCServer} sends less
+	 * new states to process.
+	 * 
+	 * @param e
+	 * @return
+	 */
+	private boolean isRecoverable(final Exception e) {
+		final Throwable cause = e.getCause();
+		return ((cause instanceof EOFException && cause.getMessage() == null)
+				|| (cause instanceof RemoteException && cause.getCause() instanceof OutOfMemoryError));
 	}
 
 	private String throwableToString(final Exception e) {
