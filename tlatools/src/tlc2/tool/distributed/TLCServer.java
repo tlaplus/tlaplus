@@ -414,7 +414,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		
 		// dispose RMI leftovers
 		rg.unbind("TLCServer");
-		UnicastRemoteObject.unexportObject(server.fpSet, false);
+		server.fpSet.unexportObject(false);
 		UnicastRemoteObject.unexportObject(server, false);
 		
         MP.printMessage(EC.TLC_FINISHED);

@@ -6,6 +6,7 @@
 package tlc2.tool.fp;
 
 import java.io.IOException;
+import java.rmi.NoSuchObjectException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 
@@ -143,6 +144,15 @@ public abstract class FPSet extends UnicastRemoteObject implements FPSetRMI
 	 */
 	public static boolean isValid(int fpBits) {
 		return fpBits >= 0 && fpBits <= MultiFPSet.MAX_FPBITS;
+	}
+
+	/**
+	 * @see UnicastRemoteObject#unexportObject(java.rmi.Remote, boolean)
+	 * @param force
+	 * @throws NoSuchObjectException
+	 */
+	public void unexportObject(boolean force) throws NoSuchObjectException {
+		UnicastRemoteObject.unexportObject(this, force);
 	}
 
     // SZ Jul 10, 2009: this method is not used
