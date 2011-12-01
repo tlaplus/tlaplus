@@ -617,7 +617,9 @@ class trans
             return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
         }
         PcalDebug.reportInfo("Parsing completed.");
-
+// tla-pcal debugging
+//System.out.println("Translation Output:");
+//System.out.println(ast.toString());
         /*********************************************************************
         * For -writeAST option, just write the file AST.tla and halt.        *
         *********************************************************************/
@@ -688,7 +690,8 @@ class trans
         ;
 
         PcalDebug.reportInfo("Translation completed.");
-
+// tla-pcal Debugging
+//System.exit(0);
         /*********************************************************************
         * For .tla input:                                                    *
         * Rename the old file by changing its extension from "tla" to "old". *

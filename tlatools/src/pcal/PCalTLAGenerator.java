@@ -67,7 +67,7 @@ public class PCalTLAGenerator
     public Vector translate() throws RemoveNameConflictsException
     {
         Vector result = new Vector();
-        AST xast = null;
+        AST xast = null;  // Set to the exploded AST
 
         for (int i = 0; i < st.disambiguateReport.size(); i++)
             result.addElement(st.disambiguateReport.elementAt(i));
@@ -89,6 +89,10 @@ public class PCalTLAGenerator
         {
             throw new RemoveNameConflictsException(e);
         }
+
+// tla-pcal debugging
+//System.out.println("After Translation:");
+//System.out.println(xast.toString());
         /*******************************************************************
         * Following test added by LL on 31 Aug 2007.                       *
         *******************************************************************/
