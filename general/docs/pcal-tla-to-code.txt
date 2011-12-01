@@ -81,7 +81,12 @@ DATA STRUCTURE FOR MAPPING
 --------------------------
 
 Location == [line : LineNumber, col : ColumnNumber]
+  \* location.col = i represents the position to the right of
+  \* the i-th character in the line, so i = 0 represents the position
+  \* at the beginning of the line.
+
 RegionLoc == [begin : Location, end : Location]
+
 
 A mapping specifier is a sequence of the following objects:
 
@@ -89,7 +94,8 @@ Paren == [type       : {"begin", "end"} ,
           subType    : {"expression", 
                         "1-1"      used for the def region
                         }
-          tlaLoc     : Location,
+          tlaLoc     : Location,  
+            \* I don't think this is needed.
           pcalRegion : Seq(RegionLoc)]
   \* Matching parens logically contain the same pcalRegion
   \* values.  However, it might be most convenient to 
@@ -99,11 +105,24 @@ Token == [type : {"token"},
           subType : {"expression"},
           tlaRegion  : RegionLoc,
           pcalRegion : RegionLoc]
+  \* This represents real text in the TLA+ spec
+
 
 Filler == [type : {"filler"},
            tlaRegion : RegionLoc]
-  \* This is like "EXCEPT", saying that if this is selected, then
-  \* the tlaRegion is determined by the Parens enclosing this object.
+  \* - This is like "EXCEPT", saying that if this is selected, then
+  \*   the tlaRegion is determined by the Parens enclosing this object.
+  \* - This represents real text in the TLA+ spec, although the tlaRegion
+  \*   can represent a segment of text of length 0, which means it
+  \*   represents a position in the TLA+ spec.
+
+Ignore == [type : {"ignore"},
+           tlaRegion : RegionLoc]
+  \* This is text that is logically at the current paren depth
+  \* but corresponds to nothing in the PlusCal code--for example,
+  \* parentheses put around an expression when it is substituted
+  \* for a macro parameter.
+  \* - This represents real text in the TLA+ spec
 
 Break == [type      : {"break"},
           tlaRegion : RegionLoc]
@@ -113,6 +132,177 @@ Break == [type      : {"break"},
   \* break's paren depth that contains the break maps to a
   \* disconnected regions of the PlusCal code.
   
+HOW PlusCal AST CONSTRUCTS ARE MAPPED
+---------------------------------
+  (e(  ==  left paren mapping to beginning of [e] in PCal code
+  )e)  ==  right paren mapping to end of [e] in PCal code
+  ^^   ==  Break
+  [[   ==  beginning of filler
+  ]]   ==  end of filler
+  {{   ==  beginning of ignored
+  }}   ==  end of ignored
+  e    ==  text in TLA+ spec that maps to same string in PCal code
+  (e/f) == Text e in TLA+ spec that maps to text f in PCal code
+
+
+TLAExpr
+-------
+  PCal Source
+    x + param + y   with: parameter param replaced by a + b
+                          y replaced by y'
+ 
+  Translation
+       x   +              (    a + b    )             +   y'
+
+   (x( x   +   (param( {{ ( }} a + b {{ ) }} )param)  +  (y'/y) )y)
+
+
+Assign with multiple SingleAssign children
+------------------------------------------
+  PCal Source
+    x[a] := e || x[b] := f || y := g || x[c] := h
+
+  Translation
+          /\  /\ x' = [ x EXCEPT 
+                            ![a] = e, 
+                            ![b] = f, 
+                            ![c] = h ]
+              /\ y' = g   
+
+    (x[a]( [[ /\ /\ x' = [ x EXCEPT ]]
+                       (x[a]( {{ ![ }} a {{ ] }} [[ = ]] e )e)
+                       (x[b]( {{ ![ }} b {{ ] }} [[ = ]] f )f)
+                     ^^
+                       (x[c]( {{ ![ }} c {{ ] }} [[ = ]] h )h)
+            [[ ] ]]
+            (y( [[ /\ y' = ]] g )y)
+    )h)                
+
+Assign with one SingleAssign
+----------------------------
+  PCal Source
+       x := 1
+
+  Translation
+      (x( [[/\]] (x'/x) [[ = ]] 1  )1)
+   
+    or
+      (x( [[/\]] (x'/x) [[ = [x EXCEPT ![self] = ]] 1 [[ ] ]] )1)
+
+  PCal Source
+
+       x[a] := e
+
+   Translation
+
+      (x( (x'/x) [[ = {{ ![ }} a [[ = ]] e )e)
+
+
+LabeledStmt
+----------
+  PCal 
+    lbl: Stmt1; Stmt2; Stmt3
+
+  Produces
+
+   lbl == /\ pc = "lbl"
+          Translation(Stmt1)
+          Translation(Stmt2)
+          Translation(Stmt3)
+          /\ pc' = "..."       \* Not present if Stmt3 is a goto
+
+   (lbl( [[ lbl == /\ pc = "lbl" ]]
+         Translation(Stmt1)
+         Translation(Stmt2)
+         Translation(Stmt3)
+         [[ /\ pc' = "..." ]]  \* 
+
+
+LABELED STMT
+      l1: x := 1 ; y := 2
+      l4: ...
+
+   produces
+      l1 == /\ pc = "l1"
+            /\ x' = 1
+            /\ y' = 2
+            /\ pc' = "l4"
+            /\ UNCHANGED <<z, w>>
+
+      (l1:( (l1( [[ l1 == /\ pc = "l1" ]] ):)   \****  ):) or )l1) ?
+            (x( [[/\]] (x'/x) [[ = ]] 1  )1)
+            (y( [[/\]] (y'/y) [[ = ]] 2  )2)
+            [[ /\ pc' = "l4"
+               /\ UNCHANGED <<z, w>> ]]
+      )2)
+
+   Note: In the Exploded AST, the pc = "l1" is obtained from an AST.When
+         and the pc' = ... from an AST.Assign.
+
+
+Call
+----
+  PCal Code
+      procedure P(param1, param2)
+      variable pvar1 = e, pvar2 = f
+        { plabel: ... }
+      ...
+          call P(arg1, arg2) ;
+   rlbl : ...
+
+   Exploded AST for the Call:
+     Assign object with:
+       ass |-> << [lhs |-> [var |-> param1, sub |-> null or <<self>>],
+                   rhs |-> arg1],
+                  [var |-> param2, sub |-> null or <<self>>],
+                   rhs |-> arg2],
+                  [lhs |-> [var |-> stack, sub |-> null or <<self>>],
+                   rhs |-> ...],  \* don't try to deal with this rhs.
+                >>
+
+     Assign object with:
+       ass |-> << [lhs -> [var |-> pvar1, sub |-> null or <<self>>],
+                   rhs |-> e] >>
+
+     Assign object with:
+       ass |-> << [lhs -> [var |-> pvar2, sub |-> null or <<self>>],
+                   rhs |-> f] >>
+
+     Assign object with:
+       ass |-> << [lhs -> [var |-> pc, sub |-> null or <<self>>],
+                   rhs |-> "rlbl"] >>
+
+  Produces
+     /\  /\ param1' = arg1
+         /\ param2' = arg2
+         /\ stack' = ...
+     /\ pvar1' = e  or [pvar1 EXCEPT ![self] = e]
+     /\ pvar2' = f  or  ...
+     /\ pc' = ...   or [pc EXCEPT ![self] = ...]
+
+Return
+------
+   PCal Code
+      procedure P(param1, param2)
+      variable pvar1 = e, pvar2 = f
+        { ... 
+          return }
+      ...
+          call P(arg1, arg2) ;
+   rlbl : ...
+
+   Translation
+      This produces a lot of stuff that, if selected, should
+      map to the return.
+
+CallReturn
+----------
+   PCal Code:
+        call P(param1, param2);
+        return
+
+   Translation
+      Essentially the same as for Call.
 
 NOTES
 -----
@@ -135,3 +325,9 @@ occurrence of the variable in the PCal code.
 - The definition section should be handled by a 1-1 mapping between an area 
   of the spec and an area of the code.  That must be fit into any framework.
 
+- Portions of the AST that result from macro expansion can be 
+  indicated by a new AST subclass AST.MacroMarker whose objects
+  mark the beginning and end of macro expansion, containing the
+  location in the PlusCal code of the beginning and end of the
+  macro statement. I don't think it needs to indicate the location
+  of the the arguments.
