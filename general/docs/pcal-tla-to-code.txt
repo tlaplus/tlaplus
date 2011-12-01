@@ -80,87 +80,131 @@ See PlusCal.tla
 DATA STRUCTURE FOR MAPPING
 --------------------------
 
-Location == [line : LineNumber, col : ColumnNumber]
-  \* location.col = i represents the position to the right of
-  \* the i-th character in the line, so i = 0 represents the position
-  \* at the beginning of the line.
+CONSTANT Location ,  _<:_
+  \* A set of locations in the file, where a location is a
+  \* position in the module.  More precisely, it represents
+  \* a position between two characters.  That position can
+  \* lie either within the PCal source code or of its TLA+ 
+  \* translation.
+  \*
+  \* A location will be represented by a record
+  \*
+  \*      [line : LineNumber, col : ColumnNumber]
+  \* 
+  \* where a location loc represents the position to the right of character
+  \* number loc.col on line loc.line, with loc.col = 0 being the position
+  \* to the left of the first character on the line.
+  \*
+  \* The relation <: is the "equals or is to the left of" relation on 
+  \* locations.
 
-RegionLoc == [begin : Location, end : Location]
-
+Region == [begin : Location, end : Location]
+  \* A region represents a region of text within the TLA+ translation
 
 A mapping specifier is a sequence of the following objects:
 
+TLAToken == [type : {"token"},
+             region  : Region]
+  \* This represents a section of text in the TLA+ spec
+
 Paren == [type       : {"begin", "end"} ,
-          subType    : {"expression", 
-                        "1-1"      used for the def region
-                        }
-          tlaLoc     : Location,  
+          loc : : Location]
+  \* Matching parens delimit the region of PlusCal code between
+  \* the two locations.  (I might be a 
+
             \* I don't think this is needed.
           pcalRegion : Seq(RegionLoc)]
   \* Matching parens logically contain the same pcalRegion
   \* values.  However, it might be most convenient to 
   \* put them only in the end paren.
 
-Token == [type : {"token"},
-          subType : {"expression"},
-          tlaRegion  : RegionLoc,
-          pcalRegion : RegionLoc]
-  \* This represents real text in the TLA+ spec
+Break == [type  |-> "break"]
+  \* Indicates the existence of a region of PlusCal code that
+  \* that is NOT part of the translation of a region of spec
+  \* that contains the translation of parts of the spec on either
+  \* side of the break.
 
 
-Filler == [type : {"filler"},
-           tlaRegion : RegionLoc]
-  \* - This is like "EXCEPT", saying that if this is selected, then
-  \*   the tlaRegion is determined by the Parens enclosing this object.
-  \* - This represents real text in the TLA+ spec, although the tlaRegion
-  \*   can represent a segment of text of length 0, which means it
-  \*   represents a position in the TLA+ spec.
 
-Ignore == [type : {"ignore"},
-           tlaRegion : RegionLoc]
-  \* This is text that is logically at the current paren depth
-  \* but corresponds to nothing in the PlusCal code--for example,
-  \* parentheses put around an expression when it is substituted
-  \* for a macro parameter.
-  \* - This represents real text in the TLA+ spec
+TransSpec 
 
-Break == [type      : {"break"},
-          tlaRegion : RegionLoc]
-  \* This indicates the existence of text in the PlusCal code
-  \* that is not part of the region mapped to by the objects
-  \* at the current paren depth.  Hence, a TLA+ region at the 
-  \* break's paren depth that contains the break maps to a
-  \* disconnected regions of the PlusCal code.
+A TransSpec specifier is an element of
+Seq(TLAToken \cup Paren \cup {Break}) satisfying the following
+conditions:
+
+- For two successive TLATokens T1 and T2 (even if they have
+  Parens or non-TLAToken objects between them), 
+     T1.region.end :< T2.region.begin
+- well formed (meaning all parentheses are in properly matched pairs)
+- it begins/ends with begin/end Parens that delimit the
+  PCal code of the entire algorithm.
+- A break comes between a right and a left parenthesis
+  (Not necessary, but breaks coming at other places are
+  not meaningful.)
+
+The Translation Algorithm
+ - An output subsequence of a TransSpec is 
+   a subsequence that is well formed and for which every TLAToken
+   is inside parentheses.
+ - The region of PCal code corresponding to an output region 
+   is defined as follows:
+     - if the output region contains no breaks at parenthesis 
+       depth 0, then it begins at the location of the left paren 
+       that begins the region and ends at the location of the right 
+       paren that ends the region.
+     - if the output region contains breaks at paren depth 0,
+       then it is the union of the regions of PCal code obtained
+       by the collection of output regions obtained by splitting
+       the given output region at its paren-depth 0 breaks.
+
   
 HOW PlusCal AST CONSTRUCTS ARE MAPPED
 ---------------------------------
-  (e(  ==  left paren mapping to beginning of [e] in PCal code
-  )e)  ==  right paren mapping to end of [e] in PCal code
-  ^^   ==  Break
-  [[   ==  beginning of filler
-  ]]   ==  end of filler
-  {{   ==  beginning of ignored
-  }}   ==  end of ignored
-  e    ==  text in TLA+ spec that maps to same string in PCal code
-  (e/f) == Text e in TLA+ spec that maps to text f in PCal code
+
+In the following, parentheses represent Paren objects in the 
+TransSpec.  Parentheses in the PCal source represent the locations
+pointed to by the corresponding Parens in the TransSpec.
+
+[abc] represents a TLAToken object for text "abc".  In this
+representation, we put literal parentheses and square brackets in
+quotes.
+
+The Objects of the TransSpec are placed underneath the corresponding
+parts of the TLA+ spec so that [abc] is underneath the text "abc".
+
+Note that some text in the TLA+ spec does not have a corresponding
+[...] object in the TransSpec.  As far as the mapping is concerned,
+such text is equivalent to white space.
+
 
 
 TLAExpr
 -------
   PCal Source
-    x + param + y   with: parameter param replaced by a + b
-                          y replaced by y'
- 
-  Translation
-       x   +              (    a + b    )             +   y'
 
-   (x( x   +   (param( {{ ( }} a + b {{ ) }} )param)  +  (y'/y) )y)
+  macro mac(param) {
+    ...
+   
+    x   +   param   +   y   with: parameter param replaced by a + b
+   ( ) ( ) (     ) ( ) ( )
+    ... }
+   ...
+   mac( a   +   b )
+       ( ) ( ) ( )
+
+  Translation
+     x     +    (   a     +     b   )    +     y'
+  (([ ]) ([ ])  ( ([ ]) ([ ]) ([ ]) )  ([ ]) ([  ])
+
+
 
 
 Assign with multiple SingleAssign children
 ------------------------------------------
   PCal Source
-    x[a] := e || x[b] := f || y := g || x[c] := h
+
+      x [ a ] := e    ||  x[b] := f ||    y := g    || x[c] := h
+  ( (    ( )    ( ) )      ...         ( ( )  ( ) )
 
   Translation
           /\  /\ x' = [ x EXCEPT 
@@ -169,74 +213,85 @@ Assign with multiple SingleAssign children
                             ![c] = h ]
               /\ y' = g   
 
-    (x[a]( [[ /\ /\ x' = [ x EXCEPT ]]
-                       (x[a]( {{ ![ }} a {{ ] }} [[ = ]] e )e)
-                       (x[b]( {{ ![ }} b {{ ] }} [[ = ]] f )f)
-                     ^^
-                       (x[c]( {{ ![ }} c {{ ] }} [[ = ]] h )h)
-            [[ ] ]]
-            (y( [[ /\ y' = ]] g )y)
-    )h)                
+      /\  /\  x' =  [  x EXCEPT 
+   ( [                          ]
+
+                       !     [   a   ]  =    e     , 
+                     ([ ]      ([ ])   [ ] ([ ]) )
+
+                       !     [   b   ]  =    f     , 
+                     ([ ]      ([ ])   [ ] ([ ]) )   
+                      
+                      ^^
+                  
+                       !     [   c   ]  =    h        ]
+                     ([ ]      ([ ])   [ ] ([ ]) )  [   ]
+                      
+           /\    y'    =   g   
+        ( [  ] ([  ]) [ ] ( ) )
+    )
+
+        
 
 Assign with one SingleAssign
 ----------------------------
   PCal Source
-       x := 1
+        x := 1
+     ( ( )  ( ) )
 
   Translation
-      (x( [[/\]] (x'/x) [[ = ]] 1  )1)
+       /\    x'    =    1
+     ([  ] ([  ]) [ ] ([ ])     
    
     or
-      (x( [[/\]] (x'/x) [[ = [x EXCEPT ![self] = ]] 1 [[ ] ]] )1)
+       /\    x'    =   [     x    EXCEPT ! [ self ]  =    1     ]
+     ([  ] ([  ]) [=     ] ([ ]) [                    ] ([ ]) [   ] )
 
   PCal Source
-
-       x[a] := e
+         x   [  a   ,    b  ]  :=  e
+      ( ( )    ( )      ( )       ( ) )
 
    Translation
+          x'    = [x EXCEPT ![     a    ,    b    ] =     e    ]  
+      ( ([  ]) [               ] ([ ]) [ ] ([ ]) [    ] ([ ]) [ ] )
 
-      (x( (x'/x) [[ = {{ ![ }} a [[ = ]] e )e)
+   or
+          x'    = [x EXCEPT ![self][     a    ,    b    ] =     e    ]  
+      ( ([  ]) [                     ] ([ ]) [ ] ([ ]) [    ] ([ ]) [ ] )
+
 
 
 LabeledStmt
 ----------
   PCal 
-    lbl: Stmt1; Stmt2; Stmt3
+     lbl :  Stmt1 ; ... ; Stmt42
+   (       (     )  ...  (     ) )
 
   Produces
 
-   lbl == /\ pc = "lbl"
-          Translation(Stmt1)
-          Translation(Stmt2)
-          Translation(Stmt3)
-          /\ pc' = "..."       \* Not present if Stmt3 is a goto
+     lbl ==  /\ pc = "lbl"
+  ( [                      ]
 
-   (lbl( [[ lbl == /\ pc = "lbl" ]]
-         Translation(Stmt1)
-         Translation(Stmt2)
-         Translation(Stmt3)
-         [[ /\ pc' = "..." ]]  \* 
+             Translation(Stmt1)
+            (     ...          )
+             
+                  ...
+
+             Translation(Stmt42)
+            (     ...          )
+
+             Translation(Stmt1)
+            (     ...          )
+
+            /\ pc' = "..."       \* Not present if Stmt3 is a goto
+          [                 ]
+
+            /\ UNCHANGED ...     \* May not be present
+          [                 ]
+   )
 
 
-LABELED STMT
-      l1: x := 1 ; y := 2
-      l4: ...
-
-   produces
-      l1 == /\ pc = "l1"
-            /\ x' = 1
-            /\ y' = 2
-            /\ pc' = "l4"
-            /\ UNCHANGED <<z, w>>
-
-      (l1:( (l1( [[ l1 == /\ pc = "l1" ]] ):)   \****  ):) or )l1) ?
-            (x( [[/\]] (x'/x) [[ = ]] 1  )1)
-            (y( [[/\]] (y'/y) [[ = ]] 2  )2)
-            [[ /\ pc' = "l4"
-               /\ UNCHANGED <<z, w>> ]]
-      )2)
-
-   Note: In the Exploded AST, the pc = "l1" is obtained from an AST.When
+   Note: In the Exploded AST, the pc = "lbl" is obtained from an AST.When
          and the pc' = ... from an AST.Assign.
 
 
@@ -244,10 +299,12 @@ Call
 ----
   PCal Code
       procedure P(param1, param2)
-      variable pvar1 = e, pvar2 = f
+      variable   pvar1 = e  ,  pvar2 = f
+     (          (       ( ))  (       ( ) ) )
         { plabel: ... }
       ...
-          call P(arg1, arg2) ;
+          call P( arg1 , arg2 ) ;
+         (       (    ) (    ) )
    rlbl : ...
 
    Exploded AST for the Call:
@@ -273,12 +330,25 @@ Call
                    rhs |-> "rlbl"] >>
 
   Produces
-     /\  /\ param1' = arg1
-         /\ param2' = arg2
-         /\ stack' = ...
-     /\ pvar1' = e  or [pvar1 EXCEPT ![self] = e]
-     /\ pvar2' = f  or  ...
-     /\ pc' = ...   or [pc EXCEPT ![self] = ...]
+         /\  /\ param1' =    arg1
+   ( [                   ] ([    ])
+   
+             /\ param2' =    arg2
+     [            ] ([    ])
+   
+             /\ stack' = ...
+     [                       ]
+
+         /\ pvar1' =   e     or    /\ [pvar1 EXCEPT ![self] =    e    ]
+     ( ([           ] ( ) )      ([                          ] ([ ]) [ ])
+
+         /\ pvar2' =   f     or  ...
+       ([           ] ( ) )      ...
+     )
+        /\ pc' = ...   or [pc EXCEPT ![self] = ...]
+     [                                              ]
+   )
+
 
 Return
 ------
