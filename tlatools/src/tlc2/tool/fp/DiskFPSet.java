@@ -482,7 +482,7 @@ public class DiskFPSet extends FPSet {
 		} catch (IOException e) {
 			if(midEntry * LongSize < 0) {
 				MP.printWarning(EC.GENERAL, new String[]{"MidEntry turned negative (loEntry, midEntry, hiEntry, loVal, hiVal): ",
-						Long.toString(loEntry), Long.toString(midEntry), Long.toString(hiEntry), Long.toString(loVal), Long.toString(hiVal)});
+						Long.toString(loEntry) +" ", Long.toString(midEntry) +" ", Long.toString(hiEntry) +" ", Long.toString(loVal) +" ", Long.toString(hiVal)});
 			}
 			MP.printError(EC.SYSTEM_DISKGRAPH_ACCESS, e);
 			throw e;
