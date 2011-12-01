@@ -10,7 +10,7 @@ import tlc2.output.MP;
 /**
  * A toolkit for checking conditions and throwing unchecked exceptions if they are not met.
  * 
- * @author Yuan Yu, Simon Zambrovski
+ * @author Yuan Yu, Simon Zambrovski 
  * @version $Id$
  */
 public class Assert
