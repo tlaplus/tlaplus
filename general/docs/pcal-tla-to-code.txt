@@ -129,8 +129,6 @@ Break == [type  |-> "break",
   \* then it applies to all regions specified by parentheses of
   \* depth in d-N .. d
 
-
-
 TransSpec 
 
 A TransSpec specifier is an element of
@@ -146,6 +144,11 @@ conditions:
 - A break comes between a right and a left parenthesis
   (Not necessary, but breaks coming at other places are
   not meaningful.)
+- The location of a left paren is <: that of its matching
+  right paren.
+- Within any matching pair of parentheses at depth d, the
+  parentheses at depth d+1 have locations in non-decreasing
+  order.
 
 The Translation Algorithm
  - An output subsequence of a TransSpec is 
