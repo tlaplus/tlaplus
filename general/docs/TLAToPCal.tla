@@ -123,6 +123,10 @@ MatchingParen(seq, pos) ==
 (* The following predicate asserts that seq is a proper TPSpec.            *)
 (***************************************************************************)
 IsTPSpec(seq) ==
+   (************************************************************************)
+   (* There is at least one TLAToken in seq.                               *)
+   (************************************************************************)
+   /\ \E i \in 1..Len(seq) : seq[i].type = "token"
    /\ IsWellFormed(seq)
    /\ TokensInOrder(seq)
    (************************************************************************)
@@ -168,14 +172,16 @@ Min(S) == IF S = {} THEN -1 ELSE CHOOSE i \in S : \A j \in S : i =< j
 Max(S) == IF S = {} THEN -1 ELSE CHOOSE i \in S : \A j \in S : i >= j
 
 RegionToTokPair(spec, reg) ==
-  (*************************************************************************
-A pair of integers that are the positions of the pair of TLATokens in
-spec such that they and the TLATokens between them are the ones that
-the user has chosen if she has highlighted the region specified by
-ref.  (Both tokens could be the same.)
-
-
-   *************************************************************************)
+  (*************************************************************************)
+  (* A pair of integers that are the positions of the pair of TLATokens in *)
+  (* spec such that they and the TLATokens between them are the ones that  *)
+  (* the user has chosen if she has highlighted the region specified by    *)
+  (* ref.  (Both tokens could be the same.)                                *)
+  (*                                                                       *)
+  (* If the region reg does not intersect with the region of any TLAToken  *)
+  (* (so it lies entirely inside "white space"), then the value is <<t,    *)
+  (* t>> for the token t that lies either to the left or the right of reg. *)
+  (*************************************************************************)
   LET Dom == 1..Len(spec)
   
       TokToLeft(loc) == 
@@ -200,14 +206,28 @@ ref.  (Both tokens could be the same.)
   IN  IF (lt # -1) /\ (spec[lt].region.begin <: reg.end)
         THEN (**************************************************************)
              (* In this case, rt # -1 and lt.region is equal to or to the  *)
-             (* left of rt.region.                                         *)
+             (* left of rt.region.  In this case, we return <<lt, rt>>     *)
+             (* except in the special case when the two regions touch      *)
+             (* (spec[lt].region.end equal to spec[rt].region.begin) and   *)
+             (* one of the endpoints of reg equals the location at which   *)
+             (* they touch.  In that case, we just return one of the       *)
+             (* regions.  If reg consists just of that point, then we      *)
+             (* return both tokens.                                        *)
              (**************************************************************)
-              << lt, rt >>
+             IF spec[lt].region.end = spec[rt].region.begin
+               THEN IF spec[lt].region.end = reg.begin
+                      THEN IF spec[rt].region.begin # reg.end
+                             THEN <<rt, rt>>
+                             ELSE <<lt, rt>>
+                      ELSE IF spec[rt].region.begin = reg.end
+                             THEN <<lt, lt>>
+                             ELSE <<lt, rt>>
+               ELSE << lt, rt >>
         ELSE IF lt = -1 
                THEN (*******************************************************)
                     (* In this case, rt # -1 and region reg is to the      *)
                     (* right of all TLAToken regions of spec and rt is the *)
-                    (* lleft-most token of spec.                           *)
+                    (* left-most token of spec.                            *)
                     (*******************************************************)
                     <<rt, rt>>
                ELSE IF rt = -1
@@ -219,13 +239,16 @@ ref.  (Both tokens could be the same.)
                            (************************************************)
                            <<lt, lt>>
                       ELSE (************************************************)
-                           (* In this case region reg lies between two     *)
-                           (* TLAToken regions, and we use the token       *)
-                           (* that's closest.  (This seems to work out     *)
-                           (* better than to take both the tokens.)        *)
+                           (* In this case region, rt.region is to the     *)
+                           (* left of reg and reg is to the left of        *)
+                           (* lt.region, and we use the token that's       *)
+                           (* closest.  (This seems to work out better     *)
+                           (* than to take both the tokens.)               *)
                            (************************************************)
-                           IF Dist(spec[TRUE], TRUE) THEN TRUE ELSE TRUE
-        \* XXXXXXXXXXXXXXXXXXXXXX
+                           IF Dist(spec[rt].region.end, reg.begin) < 
+                                 Dist(reg.end, spec[lt].region.begin)
+                             THEN <<rt, rt>>
+                             ELSE <<lt, lt>>                          
 -----------------------------------------------------------------------------
 (***************************************************************************)
 (* For Debugging                                                           *)
@@ -240,10 +263,112 @@ L(pos) == [type |-> "begin", loc |-> Loc(pos)]
 R(pos) == [type |-> "end", loc |-> Loc(pos)]
 B(dep) == [type |-> "break", depth |-> dep]
 
-ObjSeq1 == << L(40), T(2,4), L(11),R(11), B(2), L(12), R(13), T(4, 9), R(42) >>
+tpSpec1 == << L(-5), T(2,3), L(11), T(3, 4), R(11), B(2), L(12), R(13), T(5, 6), R(42) >>
+tpRegion1 == Reg(5,20)
+-----------------------------------------------------------------------------
 
-\*ObjSeq2 == << L(0), T(
+(***************************************************************************)
+(* Declare tpSpec to be the TPSpec and tpLoc the Location that are the     *)
+(* inputs to the algorithm.                                                *)
+(***************************************************************************)
+CONSTANT tpSpec, tpRegion
+  
+(***************************************************************************
+                          The Mapping Algorithm
+                          
+--algorithm Map {
+    variables  ltok, rtok,  \* The positions of the left and right TLATokens 
+                            \* selected by tpRegion
+               rtokDepth, minDepth, i,
+               tpregion  = tpRegion , \* use the variable instead of tpRegion 
+                                      \* to allow debugging 
+\*                        \in { Reg(r[1], r[2]) : 
+\*                               r \in {rr \in (1..7)\X(1..7) : rr[1] =< rr[2]} } 
+               bParen, eParen    \* set to the position of the Paren objects
+                                 \* that 
+    ;  
+    { with (tp = RegionToTokPair(tpSpec, tpregion)) {
+         ltok := tp[1];
+         rtok := tp[2]
+       } ;
+       
+      \* If d is the depth of ltok, then set rtokDepth and minDepth
+      \* such that d + rtokDepth is the depth of rtok and
+      \* d + minDepth is the minimum depth of tokens
+      rtokDepth := 0;
+      minDepth := 0 ;
+      i := ltok+1;
+      while (i =< rtok) {
+         rtokDepth := rtokDepth + CASE tpSpec[i].type = "begin" -> 1  []
+                                       tpSpec[i].type = "end"  -> -1 []
+                                       OTHER                    -> 0 ;
+         if (rtokDepth < minDepth) {minDepth := rtokDepth} ;
+         i := i+1
+       };
+      assert /\ ParenDepth(tpSpec, rtok) = ParenDepth(tpSpec, ltok) + rtokDepth
+             /\ minDepth + ParenDepth(tpSpec, ltok) =
+                  Min({ParenDepth(tpSpec, k) : k \in ltok..rtok})
+      
+      
+    }
+}
+ ***************************************************************************)
+\* BEGIN TRANSLATION
+CONSTANT defaultInitValue
+VARIABLES ltok, rtok, rtokDepth, minDepth, i, tpregion, pc
+
+vars == << ltok, rtok, rtokDepth, minDepth, i, tpregion, pc >>
+
+Init == (* Global variables *)
+        /\ ltok = defaultInitValue
+        /\ rtok = defaultInitValue
+        /\ rtokDepth = defaultInitValue
+        /\ minDepth = defaultInitValue
+        /\ i = defaultInitValue
+        /\ tpregion \in { Reg(r[1], r[2]) :
+                           r \in {rr \in (1..7)\X(1..7) : rr[1] =< rr[2]} }
+        /\ pc = "Lbl_1"
+
+Lbl_1 == /\ pc = "Lbl_1"
+         /\ LET tp == RegionToTokPair(tpSpec, tpregion) IN
+              /\ ltok' = tp[1]
+              /\ rtok' = tp[2]
+         /\ rtokDepth' = 0
+         /\ minDepth' = 0
+         /\ i' = ltok'+1
+         /\ pc' = "Lbl_2"
+         /\ UNCHANGED tpregion
+
+Lbl_2 == /\ pc = "Lbl_2"
+         /\ IF i =< rtok
+               THEN /\ rtokDepth' = (rtokDepth + CASE tpSpec[i].type = "begin" -> 1  []
+                                                      tpSpec[i].type = "end"  -> -1 []
+                                                      OTHER                    -> 0)
+                    /\ IF rtokDepth' < minDepth
+                          THEN /\ minDepth' = rtokDepth'
+                          ELSE /\ TRUE
+                               /\ UNCHANGED minDepth
+                    /\ i' = i+1
+                    /\ pc' = "Lbl_2"
+               ELSE /\ Assert(/\ ParenDepth(tpSpec, rtok) = ParenDepth(tpSpec, ltok) + rtokDepth
+                              /\ minDepth + ParenDepth(tpSpec, ltok) =
+                                   Min({ParenDepth(tpSpec, k) : k \in ltok..rtok}), 
+                              "Failure of assertion at line 310, column 7.")
+                    /\ pc' = "Done"
+                    /\ UNCHANGED << rtokDepth, minDepth, i >>
+         /\ UNCHANGED << ltok, rtok, tpregion >>
+
+Next == Lbl_1 \/ Lbl_2
+           \/ (* Disjunct to prevent deadlock on termination *)
+              (pc = "Done" /\ UNCHANGED vars)
+
+Spec == Init /\ [][Next]_vars
+
+Termination == <>(pc = "Done")
+
+\* END TRANSLATION
+
 =============================================================================
 \* Modification History
-\* Last modified Thu Dec 01 20:20:58 PST 2011 by lamport
+\* Last modified Fri Dec 02 11:20:55 PST 2011 by lamport
 \* Created Thu Dec 01 16:51:23 PST 2011 by lamport
