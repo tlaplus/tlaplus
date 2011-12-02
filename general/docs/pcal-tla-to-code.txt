@@ -118,11 +118,16 @@ Paren == [type       : {"begin", "end"} ,
   \* values.  However, it might be most convenient to 
   \* put them only in the end paren.
 
-Break == [type  |-> "break"]
+Break == [type  |-> "break",
+          depth |-> Nat]
   \* Indicates the existence of a region of PlusCal code that
   \* that is NOT part of the translation of a region of spec
   \* that contains the translation of parts of the spec on either
   \* side of the break.
+  \*
+  \* A depth of N indicates that if this break is at depth d,
+  \* then it applies to all regions specified by parentheses of
+  \* depth in d-N .. d
 
 
 
@@ -176,6 +181,7 @@ Note that some text in the TLA+ spec does not have a corresponding
 [...] object in the TransSpec.  As far as the mapping is concerned,
 such text is equivalent to white space.
 
+^^{n} represents a break with depth n
 
 
 TLAExpr
@@ -203,8 +209,8 @@ Assign with multiple SingleAssign children
 ------------------------------------------
   PCal Source
 
-      x [ a ] := e    ||  x[b] := f ||    y := g    || x[c] := h
-  ( (    ( )    ( ) )      ...         ( ( )  ( ) )
+      x [ a ] := e    ||  x[b] := f ||    y := g    ||  x[c] := h
+  ( (    ( )    ( ) )    (  ...    )   ( ( )  ( ) )    (  ...    )
 
   Translation
           /\  /\ x' = [ x EXCEPT 
@@ -222,7 +228,7 @@ Assign with multiple SingleAssign children
                        !     [   b   ]  =    f     , 
                      ([ ]      ([ ])   [ ] ([ ]) )   
                       
-                      ^^
+                      ^^{0}
                   
                        !     [   c   ]  =    h        ]
                      ([ ]      ([ ])   [ ] ([ ]) )  [   ]
@@ -374,6 +380,59 @@ CallReturn
    Translation
       Essentially the same as for Call.
 
+
+While
+-----
+  PCal Code
+    lbl:   while ( e ) {  Stmt1 ;  Stmt 2 ;
+   (   (          ( )    (     )  (      )  ) ^^{1}
+
+                          lbl2 : ...
+                     };
+
+           Stmt3 ;
+       (  (      )
+
+           Stmt4:
+          (      )
+       )
+   )
+
+    lbl3: ...
+  
+  Translation
+     lbl ==     /\ pc = "lbl"
+  ( [      ] ( [              ]              
+
+                /\ IF    e
+               [     ] ([ ]) 
+
+                     THEN   Trans(Stmt1)
+                    [    ] (   ...      )
+
+                            Trans(Stmt2)
+                           (            )
+
+                          /\ pc' = "lbl2"
+                        [                 ]
+
+                          /\ UNCHANGED ...
+                        [                  ]
+              ) ^^^{1}
+
+                     ELSE    Trans(Stmt3)
+                    [    ]  (   ...      )
+
+                             Trans(Stmt4)
+                            (    ...     )
+
+                          /\ pc' = "lbl3"
+                        [                 ]
+
+                          /\ UNCHANGED ..
+                        [                 ]
+
+
 NOTES
 -----
 - If the translator is modified to use a single TLA+ variable for
@@ -400,4 +459,4 @@ occurrence of the variable in the PCal code.
   mark the beginning and end of macro expansion, containing the
   location in the PlusCal code of the beginning and end of the
   macro statement. I don't think it needs to indicate the location
-  of the the arguments.
+  of the arguments.
