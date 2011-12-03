@@ -121,8 +121,8 @@ Paren == [type       : {"begin", "end"} ,
 Break == [type  |-> "break",
           depth |-> Nat]
   \* Indicates the existence of a region of PlusCal code that
-  \* that is NOT part of the translation of a region of spec
-  \* that contains the translation of parts of the spec on either
+  \* is NOT part of the translation of a region of spec
+  \* which contains the translation of parts of the spec on either
   \* side of the break.
   \*
   \* A depth of N indicates that if this break is at depth d,
@@ -141,9 +141,6 @@ conditions:
 - well formed (meaning all parentheses are in properly matched pairs)
 - it begins/ends with begin/end Parens that delimit the
   PCal code of the entire algorithm.
-- A break comes between a right and a left parenthesis
-  (Not necessary, but breaks coming at other places are
-  not meaningful.)
 - The location of a left paren is <: that of its matching
   right paren.
 - Within any matching pair of parentheses at depth d, the
@@ -388,13 +385,13 @@ While
 -----
   PCal Code
     lbl:   while ( e ) {  Stmt1 ;  Stmt 2 ;
-   (   (          ( )    (     )  (      )  ) ^^{1}
+   (   (          ( )    (     )  (      )   ^^{1}
 
                           lbl2 : ...
                      };
 
            Stmt3 ;
-       (  (      )
+          (      )
 
            Stmt4:
           (      )
@@ -421,7 +418,7 @@ While
 
                           /\ UNCHANGED ...
                         [                  ]
-              ) ^^^{1}
+               ^^^{1}
 
                      ELSE    Trans(Stmt3)
                     [    ]  (   ...      )
@@ -434,7 +431,8 @@ While
 
                           /\ UNCHANGED ..
                         [                 ]
-
+              )
+      )
 
 NOTES
 -----

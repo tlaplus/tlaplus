@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <launchConfiguration type="org.lamport.tla.toolbox.tool.tlc.modelCheck">
 <intAttribute key="autoLockTime" value="15"/>
-<stringAttribute key="configurationName" value="Model_1"/>
+<stringAttribute key="configurationName" value="Model_2"/>
 <intAttribute key="dfidDepth" value="100"/>
 <booleanAttribute key="dfidMode" value="false"/>
 <booleanAttribute key="distributedTLC" value="false"/>
@@ -13,24 +13,21 @@
 <stringAttribute key="modelBehaviorInit" value=""/>
 <stringAttribute key="modelBehaviorNext" value=""/>
 <stringAttribute key="modelBehaviorSpec" value="Spec"/>
-<intAttribute key="modelBehaviorSpecType" value="1"/>
-<stringAttribute key="modelBehaviorVars" value="eParen, tpregion, minDepth, i, pc, curDepth, rtok, bParen, rtokDepth, ltok"/>
+<intAttribute key="modelBehaviorSpecType" value="0"/>
+<stringAttribute key="modelBehaviorVars" value=""/>
 <booleanAttribute key="modelCorrectnessCheckDeadlock" value="true"/>
 <listAttribute key="modelCorrectnessInvariants"/>
 <listAttribute key="modelCorrectnessProperties">
-<listEntry value="1Termination"/>
+<listEntry value="0Termination"/>
 </listAttribute>
 <stringAttribute key="modelExpressionEval" value=""/>
 <stringAttribute key="modelParameterActionConstraint" value=""/>
-<listAttribute key="modelParameterConstants">
-<listEntry value="defaultInitValue;;defaultInitValue;1;0"/>
-<listEntry value="tpSpec;;tpSpec1;0;0"/>
-<listEntry value="tpRegion;;tpRegion1;0;0"/>
-</listAttribute>
+<listAttribute key="modelParameterConstants"/>
 <stringAttribute key="modelParameterContraint" value=""/>
 <listAttribute key="modelParameterDefinitions"/>
 <stringAttribute key="modelParameterModelValues" value="{}"/>
 <stringAttribute key="modelParameterNewDefinitions" value=""/>
+<stringAttribute key="modelPropertiesExpand" value=""/>
 <intAttribute key="numberOfWorkers" value="1"/>
 <booleanAttribute key="recover" value="false"/>
 <intAttribute key="simuAril" value="-1"/>
