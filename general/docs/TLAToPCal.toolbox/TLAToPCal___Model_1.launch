@@ -20,12 +20,12 @@
 <listAttribute key="modelCorrectnessProperties">
 <listEntry value="1Termination"/>
 </listAttribute>
-<stringAttribute key="modelExpressionEval" value="IsTPSpec(tpSpec1)"/>
+<stringAttribute key="modelExpressionEval" value="IsTPMap(tpMap1)"/>
 <stringAttribute key="modelParameterActionConstraint" value=""/>
 <listAttribute key="modelParameterConstants">
 <listEntry value="defaultInitValue;;defaultInitValue;1;0"/>
-<listEntry value="tpSpec;;tpSpec1;0;0"/>
 <listEntry value="tpRegion;;tpRegion1;0;0"/>
+<listEntry value="tpMap;;tpMap1;0;0"/>
 </listAttribute>
 <stringAttribute key="modelParameterContraint" value=""/>
 <listAttribute key="modelParameterDefinitions"/>

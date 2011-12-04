@@ -10,7 +10,7 @@ Max(S) == CHOOSE i \in S : \A j \in S : i >= j
 Abs(x) == Max({x, -x})
 
 (***************************************************************************)
-(* TP Mapping Specifiers                                                   *)
+(* TP Mapping Specifiers               .                                   *)
 (***************************************************************************)
 Location == [line : Nat, column : Nat]
   (*************************************************************************)
@@ -110,7 +110,7 @@ MatchingParen(seq, pos) ==
      /\ \A j \in (pos)..(i-1) : ParenDepth(seq, j) > ParenDepth(seq, pos-1)
 
 (***************************************************************************)
-(* A TPSpec is a sequence of TPObject elements that has the following      *)
+(* A TPMap is a sequence of TPObject elements that has the following       *)
 (* interpretation.  The regions of the TLA+ spec contained within its      *)
 (* TLAToken elements contain the "important" text of the spec.  Text not   *)
 (* in those regions can be treated as if it were white space when          *)
@@ -126,14 +126,14 @@ MatchingParen(seq, pos) ==
 (* successive regions are adjacent if, to higlight both of them, one       *)
 (* highlights those regions and the text between them.  If two successive  *)
 (* regions represented by two pairs of matching parentheses are not        *)
-(* adjacent, then the TPSpec contains a Break between them.  The depth of  *)
-(* a break indicates the number of parenthesis levels containing the break *)
+(* adjacent, then the TPMap contains a Break between them.  The depth of a *)
+(* break indicates the number of parenthesis levels containing the break   *)
 (* that represent PCal code in which the region between the parenthesized  *)
 (* regions on either side of the break should not be highlighted.          *)
 (*                                                                         *)
-(* The following predicate asserts that seq is a proper TPSpec.            *)
+(* The following predicate asserts that seq is a proper TPMap.             *)
 (***************************************************************************)
-IsTPSpec(seq) ==
+IsTPMap(seq) ==
    (************************************************************************)
    (* There is at least one TLAToken between every matching pair of        *)
    (* parentheses.                                                         *)
@@ -175,7 +175,7 @@ IsTPSpec(seq) ==
                           /\ ParenDepth(seq, m-1) = dp
                           => seq[k].loc <: seq[m].loc
 
-TPSpec == {s \in Seq(TPObject) : IsTPSpec(s)}           
+TPMap == {s \in Seq(TPObject) : IsTPMap(s)}           
 -----------------------------------------------------------------------------
 (***************************************************************************)
 (* The Region in the PCal code specified by a Region in the TLA+ spec.     *)
@@ -243,7 +243,7 @@ RegionToTokPair(spec, reg) ==
 TokPairToParens(spec, ltok, rtok) ==
   (*************************************************************************)
   (* Assumes ltok and rtok are the positions of TLAToken elements of the   *)
-  (* TPSpec spec with ltok equal to or to the left of rtok.  It equals the *)
+  (* TPMap spec with ltok equal to or to the left of rtok.  It equals the  *)
   (* pair <<lparen, rparen>> where lparen is the position of the           *)
   (* right-most left paren to the left of ltok that leaves level dp and    *)
   (* rparen is the position of the left-most right paren to the right of   *)
@@ -271,68 +271,87 @@ L(pos) == [type |-> "begin", loc |-> Loc(pos)]
 R(pos) == [type |-> "end", loc |-> Loc(pos)]
 B(dep) == [type |-> "break", depth |-> dep]
 
-tpSpec_1 == << L(-5), T(2,3), L(11), T(3, 4), L(12), T(4,5), R(13), 
+tpMap_1 == << L(-5), T(2,3), L(11), T(3, 4), L(12), T(4,5), R(13), 
               T(6,7), R(14), T(8, 9), R(42) >>
 tpRegion_1 == Reg(5,20)      
               
-tpSpec1 == <<L(10), T(1,2), L(11), T(3,4), L(12), T(5,6), L(13), T(7,8), R(14),
-             (* 10 *)T(9,10),  R(15), B(0), L(16), T(11,12), L(17), T(13,14), R(18), 
+tpMap1 == <<L(10), T(1,2), L(11), T(3,4), L(12), T(5,6), L(13), T(7,8), R(14),
+             (* 10 *)T(9,10),  R(15), B(1), L(16), T(11,12), L(17), T(13,14), R(18), 
              (* 18 *) R(19), T(15,16), R(20), R(21)>>
 \*        ( lbl : ( (  x[1] := ( 2 + 2 ) ) || y := 3  || ( x[2] := ( 3 ) )  )  )
 \*        10     11 12         13     14 15              16        17 18 19 20 21
 \*        ( lbl == ( x' = [x EXCEPT ( ![1] = ( 2 + 2 ) , ) ^^ ( ![2] = ( 3 ) ) ] ) )
 \*          1-2      3 -----------4   5 ----6  7----8  9-10     11---12  13-14 15-16
 tpRegion1 == Reg(0,16)
+
+SpecToRegions(spec) ==
+  (*************************************************************************)
+  (* The set of all regions whose endpoints are in the smallest region     *)
+  (* containing all the tokens of spec.                                    *)
+  (*************************************************************************)
+  LET TT == TokensOf(spec)
+      left == Min(TT)
+      right == Max(TT)
+  IN  { Reg(r[1], r[2]) : 
+          r \in {rr \in (left..right) \X (left..right) : rr[1] =< rr[2]} }
 -----------------------------------------------------------------------------
 (***************************************************************************)
-(* Declare tpSpec to be the TPSpec and tpLoc the Location that are the     *)
+(* Declare tpMap to be the TPMap and tpLoc the Location that are the       *)
 (* inputs to the algorithm.                                                *)
 (***************************************************************************)
-CONSTANT tpSpec, tpRegion
+CONSTANT tpMap, tpRegion
   
 (***************************************************************************
                           The Mapping Algorithm
+
+This algorithm sets the variable `result' to the sequence of regions in
+the PCal code that, according to the mapping specification tpMap,
+should be highlighted when the user selects the region that is the
+value of variable tpregion.  (Variable tpregion is initialized to
+tpRegion to test a single region, and to SpecToRegions(tpMap) to test
+all subregions.) In the initial Java implementation, I expect that
+result will be set to a sequence containing only a single region.
                           
 --fair algorithm Map {
     variables  
-        tpregion \* = tpRegion , \* use the variable instead of tpRegion 
-                               \* to allow debugging 
-                   \in { Reg(r[1], r[2]) : 
-                             r \in {rr \in (1..16)\X(1..16) : 
-                                       rr[1] =< rr[2]} } ,
+        tpregion \* = tpRegion ,             
+                 \in SpecToRegions(tpMap),  
         ltok,      \* <<ltok, rtok>> is set to 
-        rtok,      \* RegionToTokPair(tpSpec, tpregion)
+        rtok,      \*   RegionToTokPair(tpMap, tpregion)
         rtokDepth, \* The paren depth of rtok relative to ltok
         minDepth,  \* The depth of the minimum paren depth TLAToken               
         bParen,    \* <<bParen, eParen>> is set to 
-        eParen,    \* TokPairToParens(tpSpec, ltok, rtok)
-        result,    \* The sequence of Regions representing that
-                   \* is the translation.
+        eParen,    \*   TokPairToParens(tpMap, ltok, rtok)
+        result,    \* Set to the sequence of Regions that is the translation.
         curBegin,  \* Used to construct the result
         lastRparen,\*  "    
         i,         \* For loop variable
-        curDepth   \* Temporary variable for holding the paren depth
-    ;  
+        curDepth ; \* Temporary variable for holding the paren depth
+
+    (***********************************************************************)
+    (* If var is the parenthesis depth of the token at position pos, then  *)
+    (* the following macro sets var to the parenthesis depth of the token  *)
+    (* at position pos + 1 if movingForward = TRUE, else the depth at pos  *)
+    (* - 1 if movingForward = FALSE.                                       *)
+    (***********************************************************************)
     macro ModifyDepth(var, pos, movingForward) {
-      \* If var is the parenthesis depth of the token at position pos
-      \* then this sets var to the parenthesis depth of the token at
-      \* position pos + 1 if movingForward = TRUE, else the depth
-      \* at pos - 1 if movingForward = FALSE.
-       with (amt = CASE tpSpec[pos].type = "begin" ->  1  []
-                        tpSpec[pos].type = "end"   -> -1 []
+      with (amt = CASE tpMap[pos].type = "begin" ->  1  []
+                        tpMap[pos].type = "end"   -> -1 []
                         OTHER                    -> 0     ) {
            var := var + IF movingForward THEN amt ELSE -amt
         }
       }
       
-    { with (tp = RegionToTokPair(tpSpec, tpregion)) {
+    { with (tp = RegionToTokPair(tpMap, tpregion)) {
          ltok := tp[1];
          rtok := tp[2]
        } ;
 
-      \* If d is the depth of ltok, then set rtokDepth and minDepth
-      \* such that d + rtokDepth is the depth of rtok and
-      \* d + minDepth is the minimum depth of tokens
+      (*********************************************************************)
+      (* If d is the depth of ltok, then set rtokDepth and minDepth such   *)
+      (* that d + rtokDepth is the depth of rtok and d + minDepth is the   *)
+      (* minimum depth of tokens                                           *)
+      (*********************************************************************)
       rtokDepth := 0;
       minDepth := 0 ;
       i := ltok+1;
@@ -341,61 +360,76 @@ CONSTANT tpSpec, tpRegion
          if (rtokDepth < minDepth) {minDepth := rtokDepth} ;
          i := i+1
        };
-      assert /\ ParenDepth(tpSpec, rtok) = ParenDepth(tpSpec, ltok) + rtokDepth
-             /\ minDepth + ParenDepth(tpSpec, ltok) =
-                  Min({ParenDepth(tpSpec, k) : k \in ltok..rtok}) ;
+       
+      assert /\ ParenDepth(tpMap, rtok) = ParenDepth(tpMap, ltok) + rtokDepth
+             /\ minDepth + ParenDepth(tpMap, ltok) =
+                  Min({ParenDepth(tpMap, k) : k \in ltok..rtok}) ;
       
-      \* set bParen to first left paren to left of ltok that
-      \* descends to relative paren depth minDepth
+      (*********************************************************************)
+      (* Set bParen to first left paren to left of ltok that descends to   *)
+      (* relative paren depth minDepth.                                    *)
+      (*********************************************************************)
       curDepth := 0;
       i := ltok - 1;
-      while (~ /\ tpSpec[i].type = "begin"
+      while (~ /\ tpMap[i].type = "begin"
                /\ curDepth = minDepth ) {
         ModifyDepth(curDepth, i, FALSE) ;
         i := i-1
        } ;
       bParen := i ;
       
-      \* set eParen to first right paren to the right of rtok that
-      \* rises from relative paren depth minDepth
+      (*********************************************************************)
+      (* Set eParen to first right paren to the right of rtok that rises   *)
+      (* from relative paren depth minDepth.                               *)
+      (*********************************************************************)
       curDepth := rtokDepth;
       i := rtok + 1;
-      while (~ /\ tpSpec[i].type = "end"
+      while (~ /\ tpMap[i].type = "end"
                /\ curDepth = minDepth ) {
         ModifyDepth(curDepth, i, TRUE) ;
         i := i+1
        } ;
       eParen := i ;
-      assert <<bParen, eParen>> = TokPairToParens(tpSpec, ltok, rtok);
       
-      \* Construct the final result
+      assert <<bParen, eParen>> = TokPairToParens(tpMap, ltok, rtok);
+      
+      (*********************************************************************)
+      (* Construct the final result.                                       *)
+      (*********************************************************************)
       result := << >> ; 
-      curBegin := tpSpec[bParen].loc ;
+      curBegin := tpMap[bParen].loc ;
       curDepth := 0 ;
       lastRparen := -1 ;
       i := bParen + 1 ;
       while (i < eParen) {
-        if (tpSpec[i].type = "end") {
+        if (tpMap[i].type = "end") {
           lastRparen := i
           } ;
-        if ( /\ tpSpec[i].type = "break"
-             /\ tpSpec[i].depth - curDepth >= 0 ) {
+        if ( /\ tpMap[i].type = "break"
+             /\ tpMap[i].depth - curDepth >= 0 ) {
              assert lastRparen # -1 ;
+      
+             (**************************************************************)
+             (* The following statement will be eliminated in the initial  *)
+             (* implementation.                                            *)
+             (**************************************************************)
              result := Append(result, 
-                              [begin |-> curBegin, end |-> tpSpec[lastRparen].loc]);
+                              [begin |-> curBegin, end |-> tpMap[lastRparen].loc]);
+
              lastRparen := -1 ;
-             while (tpSpec[i].type # "begin") {
+             while (tpMap[i].type # "begin") {
                ModifyDepth(curDepth, i, TRUE) ;
                i := i+1;
               } ;
-             curBegin := tpSpec[i].loc ;         
+             curBegin := tpMap[i].loc ;         
            } ;
         ModifyDepth(curDepth, i, TRUE) ;
         i := i+1;
        } ;
       result := Append(result, 
-                       [begin |-> curBegin, end |-> tpSpec[eParen].loc]);
-       
+                       [begin |-> curBegin, end |-> tpMap[eParen].loc]);
+      
+      \* debugging output
       print <<tpregion.begin.column, tpregion.end.column>> ;
       print [j \in 1..Len(result) |-> <<result[j].begin.column,
                                         result[j].end.column>>];
@@ -412,9 +446,7 @@ vars == << tpregion, ltok, rtok, rtokDepth, minDepth, bParen, eParen, result,
            curBegin, lastRparen, i, curDepth, pc >>
 
 Init == (* Global variables *)
-        /\ tpregion \in { Reg(r[1], r[2]) :
-                              r \in {rr \in (1..16)\X(1..16) :
-                                        rr[1] =< rr[2]} }
+        /\ tpregion \in SpecToRegions(tpMap)
         /\ ltok = defaultInitValue
         /\ rtok = defaultInitValue
         /\ rtokDepth = defaultInitValue
@@ -429,7 +461,7 @@ Init == (* Global variables *)
         /\ pc = "Lbl_1"
 
 Lbl_1 == /\ pc = "Lbl_1"
-         /\ LET tp == RegionToTokPair(tpSpec, tpregion) IN
+         /\ LET tp == RegionToTokPair(tpMap, tpregion) IN
               /\ ltok' = tp[1]
               /\ rtok' = tp[2]
          /\ rtokDepth' = 0
@@ -441,9 +473,9 @@ Lbl_1 == /\ pc = "Lbl_1"
 
 Lbl_2 == /\ pc = "Lbl_2"
          /\ IF i =< rtok
-               THEN /\ LET amt == CASE tpSpec[i].type = "begin" ->  1  []
-                                       tpSpec[i].type = "end"   -> -1 []
-                                       OTHER                    -> 0 IN
+               THEN /\ LET amt == CASE tpMap[i].type = "begin" ->  1  []
+                                        tpMap[i].type = "end"   -> -1 []
+                                        OTHER                    -> 0 IN
                          rtokDepth' = rtokDepth + IF TRUE THEN amt ELSE -amt
                     /\ IF rtokDepth' < minDepth
                           THEN /\ minDepth' = rtokDepth'
@@ -452,10 +484,10 @@ Lbl_2 == /\ pc = "Lbl_2"
                     /\ i' = i+1
                     /\ pc' = "Lbl_2"
                     /\ UNCHANGED curDepth
-               ELSE /\ Assert(/\ ParenDepth(tpSpec, rtok) = ParenDepth(tpSpec, ltok) + rtokDepth
-                              /\ minDepth + ParenDepth(tpSpec, ltok) =
-                                   Min({ParenDepth(tpSpec, k) : k \in ltok..rtok}), 
-                              "Failure of assertion at line 344, column 7.")
+               ELSE /\ Assert(/\ ParenDepth(tpMap, rtok) = ParenDepth(tpMap, ltok) + rtokDepth
+                              /\ minDepth + ParenDepth(tpMap, ltok) =
+                                   Min({ParenDepth(tpMap, k) : k \in ltok..rtok}), 
+                              "Failure of assertion at line 364, column 7.")
                     /\ curDepth' = 0
                     /\ i' = ltok - 1
                     /\ pc' = "Lbl_3"
@@ -464,11 +496,11 @@ Lbl_2 == /\ pc = "Lbl_2"
                          curBegin, lastRparen >>
 
 Lbl_3 == /\ pc = "Lbl_3"
-         /\ IF ~ /\ tpSpec[i].type = "begin"
+         /\ IF ~ /\ tpMap[i].type = "begin"
                  /\ curDepth = minDepth
-               THEN /\ LET amt == CASE tpSpec[i].type = "begin" ->  1  []
-                                       tpSpec[i].type = "end"   -> -1 []
-                                       OTHER                    -> 0 IN
+               THEN /\ LET amt == CASE tpMap[i].type = "begin" ->  1  []
+                                        tpMap[i].type = "end"   -> -1 []
+                                        OTHER                    -> 0 IN
                          curDepth' = curDepth + IF FALSE THEN amt ELSE -amt
                     /\ i' = i-1
                     /\ pc' = "Lbl_3"
@@ -481,20 +513,20 @@ Lbl_3 == /\ pc = "Lbl_3"
                          result, curBegin, lastRparen >>
 
 Lbl_4 == /\ pc = "Lbl_4"
-         /\ IF ~ /\ tpSpec[i].type = "end"
+         /\ IF ~ /\ tpMap[i].type = "end"
                  /\ curDepth = minDepth
-               THEN /\ LET amt == CASE tpSpec[i].type = "begin" ->  1  []
-                                       tpSpec[i].type = "end"   -> -1 []
-                                       OTHER                    -> 0 IN
+               THEN /\ LET amt == CASE tpMap[i].type = "begin" ->  1  []
+                                        tpMap[i].type = "end"   -> -1 []
+                                        OTHER                    -> 0 IN
                          curDepth' = curDepth + IF TRUE THEN amt ELSE -amt
                     /\ i' = i+1
                     /\ pc' = "Lbl_4"
                     /\ UNCHANGED << eParen, result, curBegin, lastRparen >>
                ELSE /\ eParen' = i
-                    /\ Assert(<<bParen, eParen'>> = TokPairToParens(tpSpec, ltok, rtok), 
-                              "Failure of assertion at line 369, column 7.")
+                    /\ Assert(<<bParen, eParen'>> = TokPairToParens(tpMap, ltok, rtok), 
+                              "Failure of assertion at line 394, column 7.")
                     /\ result' = << >>
-                    /\ curBegin' = tpSpec[bParen].loc
+                    /\ curBegin' = tpMap[bParen].loc
                     /\ curDepth' = 0
                     /\ lastRparen' = -1
                     /\ i' = bParen + 1
@@ -503,21 +535,21 @@ Lbl_4 == /\ pc = "Lbl_4"
 
 Lbl_5 == /\ pc = "Lbl_5"
          /\ IF i < eParen
-               THEN /\ IF tpSpec[i].type = "end"
+               THEN /\ IF tpMap[i].type = "end"
                           THEN /\ lastRparen' = i
                           ELSE /\ TRUE
                                /\ UNCHANGED lastRparen
-                    /\ IF /\ tpSpec[i].type = "break"
-                          /\ tpSpec[i].depth - curDepth >= 0
+                    /\ IF /\ tpMap[i].type = "break"
+                          /\ tpMap[i].depth - curDepth >= 0
                           THEN /\ Assert(lastRparen' # -1, 
-                                         "Failure of assertion at line 383, column 14.")
+                                         "Failure of assertion at line 410, column 14.")
                                /\ result' = Append(result,
-                                                   [begin |-> curBegin, end |-> tpSpec[lastRparen'].loc])
+                                                   [begin |-> curBegin, end |-> tpMap[lastRparen'].loc])
                                /\ pc' = "Lbl_6"
                           ELSE /\ pc' = "Lbl_8"
                                /\ UNCHANGED result
                ELSE /\ result' = Append(result,
-                                        [begin |-> curBegin, end |-> tpSpec[eParen].loc])
+                                        [begin |-> curBegin, end |-> tpMap[eParen].loc])
                     /\ PrintT(<<tpregion.begin.column, tpregion.end.column>>)
                     /\ PrintT([j \in 1..Len(result') |-> <<result'[j].begin.column,
                                                            result'[j].end.column>>])
@@ -528,9 +560,9 @@ Lbl_5 == /\ pc = "Lbl_5"
                          eParen, curBegin, i, curDepth >>
 
 Lbl_8 == /\ pc = "Lbl_8"
-         /\ LET amt == CASE tpSpec[i].type = "begin" ->  1  []
-                            tpSpec[i].type = "end"   -> -1 []
-                            OTHER                    -> 0 IN
+         /\ LET amt == CASE tpMap[i].type = "begin" ->  1  []
+                             tpMap[i].type = "end"   -> -1 []
+                             OTHER                    -> 0 IN
               curDepth' = curDepth + IF TRUE THEN amt ELSE -amt
          /\ i' = i+1
          /\ pc' = "Lbl_5"
@@ -544,15 +576,15 @@ Lbl_6 == /\ pc = "Lbl_6"
                          eParen, result, curBegin, i, curDepth >>
 
 Lbl_7 == /\ pc = "Lbl_7"
-         /\ IF tpSpec[i].type # "begin"
-               THEN /\ LET amt == CASE tpSpec[i].type = "begin" ->  1  []
-                                       tpSpec[i].type = "end"   -> -1 []
-                                       OTHER                    -> 0 IN
+         /\ IF tpMap[i].type # "begin"
+               THEN /\ LET amt == CASE tpMap[i].type = "begin" ->  1  []
+                                        tpMap[i].type = "end"   -> -1 []
+                                        OTHER                    -> 0 IN
                          curDepth' = curDepth + IF TRUE THEN amt ELSE -amt
                     /\ i' = i+1
                     /\ pc' = "Lbl_7"
                     /\ UNCHANGED curBegin
-               ELSE /\ curBegin' = tpSpec[i].loc
+               ELSE /\ curBegin' = tpMap[i].loc
                     /\ pc' = "Lbl_8"
                     /\ UNCHANGED << i, curDepth >>
          /\ UNCHANGED << tpregion, ltok, rtok, rtokDepth, minDepth, bParen, 
@@ -572,5 +604,5 @@ Termination == <>(pc = "Done")
 
 =============================================================================
 \* Modification History
-\* Last modified Sat Dec 03 15:51:20 PST 2011 by lamport
+\* Last modified Sun Dec 04 10:40:51 PST 2011 by lamport
 \* Created Thu Dec 01 16:51:23 PST 2011 by lamport

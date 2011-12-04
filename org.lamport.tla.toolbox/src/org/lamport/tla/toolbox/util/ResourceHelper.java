@@ -1523,10 +1523,17 @@ public class ResourceHelper
         }
         for (int i = 0; i < children.length; i++)
         {
-            if (node.getLocation().source().equals(children[i].getLocation().source()))
-            {
-                innerGetUsesOfSymbol(symbol, children[i], found);
-            }
+        	// The following null pointer test added by LL on 4 Dec 2011 to fix
+        	// bug 233, which occurs because the OTHER clause in a CASE statement
+        	// is indicated by the presence of a null instead of a test expression.
+        	final SemanticNode sn = children[i];
+        	if (sn != null) 
+        	{
+               if (node.getLocation().source().equals(sn.getLocation().source()))
+               {
+                innerGetUsesOfSymbol(symbol, sn, found);
+               }
+        	}
         }
         return;
     }
