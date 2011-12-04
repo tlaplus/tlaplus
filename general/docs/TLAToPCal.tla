@@ -1,6 +1,13 @@
 ----------------------------- MODULE TLAToPCal -----------------------------
 EXTENDS Integers, Sequences, TLC
 
+(***************************************************************************)
+(* We define the minimum and maximum of a nonempty set of numbers, and the *)
+(* absolute value of a number.                                             *)
+(***************************************************************************)
+Min(S) == CHOOSE i \in S : \A j \in S : i =< j
+Max(S) == CHOOSE i \in S : \A j \in S : i >= j
+Abs(x) == Max({x, -x})
 
 (***************************************************************************)
 (* TP Mapping Specifiers                                                   *)
@@ -21,14 +28,13 @@ loc1 <: loc2 ==
 
 (***************************************************************************)
 (* We define Dist(loc1, loc2) to be a natural number representing a        *)
-(* distance between locations loc1 and loc2, assuming loc1 <: loc2.  This  *)
-(* distance is used only in the case loc1 <: loc2 <: loc3 to determine if  *)
-(* loc2 is closer to loc1 or loc3.  Thus, its magnitude doesn't matter.  I *)
-(* should make Dist a parameter of the spec, but it's less effort to give  *)
-(* it some reasonable definition.                                          *)
+(* distance between locations loc1 and loc2.  This distance is used only   *)
+(* to determine which of two other locations a location is closer to.      *)
+(* Thus, its magnitude doesn't matter.  I should make Dist a parameter of  *)
+(* the spec, but it's less effort to give it some reasonable definition.   *)
 (***************************************************************************)
 Dist(loc1, loc2) == 
-   1000 * (loc2.line - loc1.line) + (loc2.column - loc1.column)
+   10000 * Abs(loc2.line - loc1.line) + Abs(loc2.column - loc1.column)
    
 Region == {r \in [begin : Location, end : Location] : r.begin <: r.end}
   (*************************************************************************)
@@ -86,12 +92,12 @@ IsWellFormed(seq) ==  /\ seq # << >>
 (* TLAToken T1 precedes TLAToken T2 in seq, then T1.region is to the left  *)
 (* of T2.region.                                                           *)
 (***************************************************************************)                      
+TokensOf(seq) == {i \in 1..Len(seq) : seq[i].type = "token"}
+
 TokensInOrder(seq) ==
-  \A i \in 1..Len(seq) : 
-     (seq[i].type = "token") => 
-        \A j \in (i+1)..Len(seq) : 
-           (seq[j].type = "token") =>
-              (seq[i].region.end <: seq[j].region.begin)
+  \A i \in TokensOf(seq) : 
+     \A j \in { jj \in TokensOf(seq) : jj > i} : 
+        (seq[i].region.end <: seq[j].region.begin)
 
 MatchingParen(seq, pos) ==
   (*************************************************************************)
@@ -175,9 +181,6 @@ TPSpec == {s \in Seq(TPObject) : IsTPSpec(s)}
 (* The Region in the PCal code specified by a Region in the TLA+ spec.     *)
 (***************************************************************************)
 
-Min(S) == IF S = {} THEN -1 ELSE CHOOSE i \in S : \A j \in S : i =< j
-Max(S) == IF S = {} THEN -1 ELSE CHOOSE i \in S : \A j \in S : i >= j
-
 RegionToTokPair(spec, reg) ==
   (*************************************************************************)
   (* A pair of integers that are the positions of the pair of TLATokens in *)
@@ -189,90 +192,54 @@ RegionToTokPair(spec, reg) ==
   (* (so it lies entirely inside "white space"), then the value is <<t,    *)
   (* t>> for the token t that lies either to the left or the right of reg. *)
   (*************************************************************************)
-  LET Dom == 1..Len(spec)
-  
-      InTokens(loc) == {i \in Dom : /\ spec[i].region.begin <: loc
-                                    /\ loc <: spec[i].region.end}
-      TokToLeft(loc) == 
+  LET TokensContaining(loc) == 
+         (******************************************************************)
+         (* The set of positions of tokens in spec containing loc.  (It    *)
+         (* contains 0 or 1 element.)                                      *)
+         (******************************************************************)
+         {i \in TokensOf(spec) : /\ spec[i].region.begin <: loc
+                                 /\ spec[i].region.begin # loc
+                                 /\ loc <: spec[i].region.end
+                                 /\ loc # spec[i].region.end  }
+                          
+      TokensToLeft(loc) == 
         (*******************************************************************)
-        (* The position of the right-most token whose beginning is at or   *)
-        (* to the left of loc, or -1 if there is none.                     *)
+        (* The set of positions of tokens in spec at or to the left of     *)
+        (* loc.                                                            *)
         (*******************************************************************)
-        Max({i \in Dom : /\ spec[i].type = "token"
-                         /\ spec[i].region.begin <: loc})
+        {i \in TokensOf(spec) : spec[i].region.end <: loc}
 
-      TokToRight(loc) ==
+      TokensToRight(loc) ==
         (*******************************************************************)
-        (* The position of the left-most token whose end is at or to the   *)
-        (* right of loc, or -1 if there is none.                           *)
+        (* The set of positions of tokens in spec at or to the right of    *)
+        (* loc.                                                            *)
         (*******************************************************************)
-        Min({i \in Dom : /\ spec[i].type = "token"
-                         /\ loc <: spec[i].region.end})
-      
-      lt == IF InTokens(reg.begin) # {}
-              THEN Max(InTokens(reg.begin))
-              ELSE TokToRight(reg.begin)
-      
-      rt == IF InTokens(reg.end) # {}
-              THEN Min(InTokens(reg.end))
-              ELSE TokToLeft(reg.begin)
-      
-  IN  TRUE
- 
-              
-   (****** 
-   This def is screwed up.
-   
-        (***************************************************************
-In this case, rt # -1 and lt.region is equal to or to the
-left of rt.region.  In this case, we return <<lt, rt>>
-except in the special case when the two regions touch
-(spec[lt].region.end equal to spec[rt].region.begin) and
-one of the endpoints of reg equals the location at which
-they touch.  In that case, we just return one of the
-regions.  If reg consists just of that point, then we
-return both tokens.
+        {i \in TokensOf(spec) : loc <: spec[i].region.begin}
 
-This fails if one but not both ends of reg are at the boundary
-where two tokens touch.  
-             ***************************************************************)
-             IF spec[lt].region.end = spec[rt].region.begin
-               THEN IF spec[lt].region.end = reg.begin
-                      THEN IF spec[rt].region.begin # reg.end
-                             THEN <<rt, rt>>
-                             ELSE <<lt, rt>>
-                      ELSE IF spec[rt].region.begin = reg.end
-                             THEN <<lt, lt>>
-                             ELSE <<lt, rt>>
-               ELSE << lt, rt >>
-        ELSE IF lt = -1 
-               THEN (*******************************************************)
-                    (* In this case, rt # -1 and region reg is to the      *)
-                    (* right of all TLAToken regions of spec and rt is the *)
-                    (* left-most token of spec.                            *)
-                    (*******************************************************)
-                    <<rt, rt>>
-               ELSE IF rt = -1
-                      THEN (************************************************)
-                           (* In this case, lt # 1 and region reg is to    *)
-                           (* the left of all TLAToken regions of spec and *)
-                           (* lt is the position of the right-most token   *)
-                           (* of spec.                                     *)
-                           (************************************************)
-                           <<lt, lt>>
-                      ELSE (************************************************)
-                           (* In this case region, rt.region is to the     *)
-                           (* left of reg and reg is to the left of        *)
-                           (* lt.region, and we use the token that's       *)
-                           (* closest.  (This seems to work out better     *)
-                           (* than to take both the tokens.)               *)
-                           (************************************************)
-                           IF Dist(spec[rt].region.end, reg.begin) < 
-                                 Dist(reg.end, spec[lt].region.begin)
-                             THEN <<rt, rt>>
-                             ELSE <<lt, lt>>                          
-**********)
+      TokensInRegion == 
+        (*******************************************************************)
+        (* The set of tokens whose regions lie within reg.                 *)
+        (*******************************************************************)
+        TokensToRight(reg.begin) \cap TokensToLeft(reg.end)
 
+      S == TokensInRegion \cup TokensContaining(reg.begin) 
+            \cup TokensContaining(reg.end)
+      
+  IN  IF S # {}
+        THEN <<Min(S), Max(S)>>
+        ELSE LET LeftOfReg  == TokensToLeft(reg.begin)
+                 LeftTok == Max(LeftOfReg)
+                 RightOfReg == TokensToRight(reg.end)
+                 RightTok == Min(RightOfReg)
+             IN  CASE LeftOfReg = {}  -> <<RightTok, RightTok>> []
+                      RightOfReg = {} -> <<LeftTok, LeftTok>>   []
+                      OTHER ->
+                        LET dl == Dist(spec[LeftTok].region.end, reg.begin)
+                            dr == Dist(spec[RightTok].region.begin, reg.end)
+                        IN  CASE dl < dr -> <<LeftTok, LeftTok>>   []
+                                 dl > dr -> <<RightTok, RightTok>> []
+                                 dl = dr -> <<LeftTok, RightTok>>
+               
 TokPairToParens(spec, ltok, rtok) ==
   (*************************************************************************)
   (* Assumes ltok and rtok are the positions of TLAToken elements of the   *)
@@ -283,8 +250,8 @@ TokPairToParens(spec, ltok, rtok) ==
   (* rtok that enters level dp, where dp is the lowest paren depth of any  *)
   (* token from ltok and rtok.                                             *)
   (*************************************************************************)
-  LET dp == Min ( {ParenDepth(spec, i) : 
-                     i \in {j \in ltok..rtok : spec[j].type = "token"}} )
+  LET dp == Min ( {ParenDepth(spec, i) : i \in ltok..rtok} )
+\*                     i \in {j \in ltok..rtok : spec[j].type = "token"}} )
       lp == Max ( {i \in 1..ltok : /\ spec[i].type = "begin"
                                    /\ ParenDepth(spec,i) = dp} )
       rp == Min ( {i \in rtok..Len(spec) : /\ spec[i].type = "end"
@@ -304,9 +271,18 @@ L(pos) == [type |-> "begin", loc |-> Loc(pos)]
 R(pos) == [type |-> "end", loc |-> Loc(pos)]
 B(dep) == [type |-> "break", depth |-> dep]
 
-tpSpec1 == << L(-5), T(2,3), L(11), T(3, 4), L(12), T(4,5), R(13), 
+tpSpec_1 == << L(-5), T(2,3), L(11), T(3, 4), L(12), T(4,5), R(13), 
               T(6,7), R(14), T(8, 9), R(42) >>
-tpRegion1 == Reg(5,20)
+tpRegion_1 == Reg(5,20)      
+              
+tpSpec1 == <<L(10), T(1,2), L(11), T(3,4), L(12), T(5,6), L(13), T(7,8), R(14),
+             (* 10 *)T(9,10),  R(15), B(0), L(16), T(11,12), L(17), T(13,14), R(18), 
+             (* 18 *) R(19), T(15,16), R(20), R(21)>>
+\*        ( lbl : ( (  x[1] := ( 2 + 2 ) ) || y := 3  || ( x[2] := ( 3 ) )  )  )
+\*        10     11 12         13     14 15              16        17 18 19 20 21
+\*        ( lbl == ( x' = [x EXCEPT ( ![1] = ( 2 + 2 ) , ) ^^ ( ![2] = ( 3 ) ) ] ) )
+\*          1-2      3 -----------4   5 ----6  7----8  9-10     11---12  13-14 15-16
+tpRegion1 == Reg(0,16)
 -----------------------------------------------------------------------------
 (***************************************************************************)
 (* Declare tpSpec to be the TPSpec and tpLoc the Location that are the     *)
@@ -322,7 +298,7 @@ CONSTANT tpSpec, tpRegion
         tpregion \* = tpRegion , \* use the variable instead of tpRegion 
                                \* to allow debugging 
                    \in { Reg(r[1], r[2]) : 
-                             r \in {rr \in (1..10)\X(1..10) : 
+                             r \in {rr \in (1..16)\X(1..16) : 
                                        rr[1] =< rr[2]} } ,
         ltok,      \* <<ltok, rtok>> is set to 
         rtok,      \* RegionToTokPair(tpSpec, tpregion)
@@ -353,7 +329,7 @@ CONSTANT tpSpec, tpRegion
          ltok := tp[1];
          rtok := tp[2]
        } ;
-       
+
       \* If d is the depth of ltok, then set rtokDepth and minDepth
       \* such that d + rtokDepth is the depth of rtok and
       \* d + minDepth is the minimum depth of tokens
@@ -405,9 +381,9 @@ CONSTANT tpSpec, tpRegion
         if ( /\ tpSpec[i].type = "break"
              /\ tpSpec[i].depth - curDepth >= 0 ) {
              assert lastRparen # -1 ;
-             lastRparen := -1 ;
              result := Append(result, 
                               [begin |-> curBegin, end |-> tpSpec[lastRparen].loc]);
+             lastRparen := -1 ;
              while (tpSpec[i].type # "begin") {
                ModifyDepth(curDepth, i, TRUE) ;
                i := i+1;
@@ -437,7 +413,7 @@ vars == << tpregion, ltok, rtok, rtokDepth, minDepth, bParen, eParen, result,
 
 Init == (* Global variables *)
         /\ tpregion \in { Reg(r[1], r[2]) :
-                              r \in {rr \in (1..10)\X(1..10) :
+                              r \in {rr \in (1..16)\X(1..16) :
                                         rr[1] =< rr[2]} }
         /\ ltok = defaultInitValue
         /\ rtok = defaultInitValue
@@ -479,7 +455,7 @@ Lbl_2 == /\ pc = "Lbl_2"
                ELSE /\ Assert(/\ ParenDepth(tpSpec, rtok) = ParenDepth(tpSpec, ltok) + rtokDepth
                               /\ minDepth + ParenDepth(tpSpec, ltok) =
                                    Min({ParenDepth(tpSpec, k) : k \in ltok..rtok}), 
-                              "Failure of assertion at line 352, column 7.")
+                              "Failure of assertion at line 344, column 7.")
                     /\ curDepth' = 0
                     /\ i' = ltok - 1
                     /\ pc' = "Lbl_3"
@@ -516,7 +492,7 @@ Lbl_4 == /\ pc = "Lbl_4"
                     /\ UNCHANGED << eParen, result, curBegin, lastRparen >>
                ELSE /\ eParen' = i
                     /\ Assert(<<bParen, eParen'>> = TokPairToParens(tpSpec, ltok, rtok), 
-                              "Failure of assertion at line 377, column 7.")
+                              "Failure of assertion at line 369, column 7.")
                     /\ result' = << >>
                     /\ curBegin' = tpSpec[bParen].loc
                     /\ curDepth' = 0
@@ -534,10 +510,12 @@ Lbl_5 == /\ pc = "Lbl_5"
                     /\ IF /\ tpSpec[i].type = "break"
                           /\ tpSpec[i].depth - curDepth >= 0
                           THEN /\ Assert(lastRparen' # -1, 
-                                         "Failure of assertion at line 391, column 14.")
+                                         "Failure of assertion at line 383, column 14.")
+                               /\ result' = Append(result,
+                                                   [begin |-> curBegin, end |-> tpSpec[lastRparen'].loc])
                                /\ pc' = "Lbl_6"
                           ELSE /\ pc' = "Lbl_8"
-                    /\ UNCHANGED result
+                               /\ UNCHANGED result
                ELSE /\ result' = Append(result,
                                         [begin |-> curBegin, end |-> tpSpec[eParen].loc])
                     /\ PrintT(<<tpregion.begin.column, tpregion.end.column>>)
@@ -561,11 +539,9 @@ Lbl_8 == /\ pc = "Lbl_8"
 
 Lbl_6 == /\ pc = "Lbl_6"
          /\ lastRparen' = -1
-         /\ result' = Append(result,
-                             [begin |-> curBegin, end |-> tpSpec[lastRparen'].loc])
          /\ pc' = "Lbl_7"
          /\ UNCHANGED << tpregion, ltok, rtok, rtokDepth, minDepth, bParen, 
-                         eParen, curBegin, i, curDepth >>
+                         eParen, result, curBegin, i, curDepth >>
 
 Lbl_7 == /\ pc = "Lbl_7"
          /\ IF tpSpec[i].type # "begin"
@@ -596,5 +572,5 @@ Termination == <>(pc = "Done")
 
 =============================================================================
 \* Modification History
-\* Last modified Fri Dec 02 19:27:10 PST 2011 by lamport
+\* Last modified Sat Dec 03 15:51:20 PST 2011 by lamport
 \* Created Thu Dec 01 16:51:23 PST 2011 by lamport
