@@ -14,13 +14,13 @@
 <stringAttribute key="modelBehaviorNext" value=""/>
 <stringAttribute key="modelBehaviorSpec" value="Spec"/>
 <intAttribute key="modelBehaviorSpecType" value="1"/>
-<stringAttribute key="modelBehaviorVars" value="eParen, tpregion, minDepth, i, pc, curDepth, rtok, bParen, rtokDepth, ltok"/>
+<stringAttribute key="modelBehaviorVars" value="eParen, tpregion, minDepth, i, pc, curBegin, curDepth, lastRparen, rtok, result, bParen, rtokDepth, ltok"/>
 <booleanAttribute key="modelCorrectnessCheckDeadlock" value="true"/>
 <listAttribute key="modelCorrectnessInvariants"/>
 <listAttribute key="modelCorrectnessProperties">
 <listEntry value="1Termination"/>
 </listAttribute>
-<stringAttribute key="modelExpressionEval" value=""/>
+<stringAttribute key="modelExpressionEval" value="IsTPSpec(tpSpec1)"/>
 <stringAttribute key="modelParameterActionConstraint" value=""/>
 <listAttribute key="modelParameterConstants">
 <listEntry value="defaultInitValue;;defaultInitValue;1;0"/>
@@ -37,5 +37,9 @@
 <intAttribute key="simuDepth" value="100"/>
 <intAttribute key="simuSeed" value="-1"/>
 <stringAttribute key="specName" value="TLAToPCal"/>
+<listAttribute key="traceExploreExpressions">
+<listEntry value="1pc = &quot;Lbl_2&quot; =&gt; &#13;&#10;ParenDepth(tpSpec, rtok) = ParenDepth(tpSpec, ltok) + rtokDepth"/>
+<listEntry value="1pc = &quot;Lbl_2&quot; =&gt;&#13;&#10;minDepth + ParenDepth(tpSpec, ltok) =&#13;&#10;                  Min({ParenDepth(tpSpec, k) : k \in ltok..rtok})"/>
+</listAttribute>
 <stringAttribute key="view" value=""/>
 </launchConfiguration>
