@@ -14,7 +14,7 @@
 <stringAttribute key="modelBehaviorNext" value=""/>
 <stringAttribute key="modelBehaviorSpec" value="Spec"/>
 <intAttribute key="modelBehaviorSpecType" value="1"/>
-<stringAttribute key="modelBehaviorVars" value="eParen, tpregion, minDepth, i, pc, curBegin, curDepth, lastRparen, rtok, result, bParen, rtokDepth, ltok"/>
+<stringAttribute key="modelBehaviorVars" value="eParen, tpregion, minDepth, i, allExpr, pc, curBegin, curDepth, lastRparen, rtok, result, bParen, rtokDepth, ltok"/>
 <booleanAttribute key="modelCorrectnessCheckDeadlock" value="true"/>
 <listAttribute key="modelCorrectnessInvariants"/>
 <listAttribute key="modelCorrectnessProperties">
