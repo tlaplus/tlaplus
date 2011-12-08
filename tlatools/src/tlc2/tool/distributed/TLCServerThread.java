@@ -201,6 +201,13 @@ public class TLCServerThread extends IdThread {
 		}
 	}
 
+	private String throwableToString(final Exception e) {
+		final Writer result = new StringWriter();
+	    final PrintWriter printWriter = new PrintWriter(result);
+	    e.printStackTrace(printWriter);
+	    return result.toString();
+	}
+
 	/**
 	 * A recoverable error/exception is defined to be a case where the
 	 * {@link TLCWorkerRMI} can continue to work if {@link TLCServer} sends less
