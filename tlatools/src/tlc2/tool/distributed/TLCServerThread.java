@@ -16,6 +16,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import tlc2.TLCGlobals;
 import tlc2.output.EC;
@@ -37,20 +38,35 @@ public class TLCServerThread extends IdThread {
 	private final CyclicBarrier barrier;
 	private final IBlockSelector selector;
 	private final Timer keepAliveTimer;
+	/**
+	 * Synchronized flag used to indicate the correct amount of workers to
+	 * TCLGlobals.
+	 * 
+	 * Either {@link TLCServerThread#run()} or
+	 * {@link TLCServerThread#keepAliveTimer} will flip to false causing
+	 * subsequent calls to
+	 * {@link TLCServerThread#handleRemoteWorkerLost(StateQueue)} to be a noop.
+	 * 
+	 * Synchronization is required because {@link TLCServerThread#run()} and
+	 * {@link TLCTimerTask#run()} are executed as two separate threads.
+	 */
+	private final AtomicBoolean cleanupGlobals = new AtomicBoolean(true);
 
 	public TLCServerThread(int id, TLCWorkerRMI worker, TLCServer tlc) {
 		this(id, worker, tlc, null, null);
 	}
-	
-	public TLCServerThread(int id, TLCWorkerRMI worker, TLCServer tlc, CyclicBarrier aBarrier, IBlockSelector aSelector) {
+
+	public TLCServerThread(int id, TLCWorkerRMI worker, TLCServer tlc,
+			CyclicBarrier aBarrier, IBlockSelector aSelector) {
 		super(id);
 		this.setWorker(worker);
 		this.tlcServer = tlc;
 		this.barrier = aBarrier;
 		this.selector = aSelector;
-		
-		// schedule a timer to periodically (60s) check server aliveness 
-		keepAliveTimer = new Timer("TLCWorker KeepAlive Timer [" + uri.toASCIIString() + "]", true);
+
+		// schedule a timer to periodically (60s) check server aliveness
+		keepAliveTimer = new Timer("TLCWorker KeepAlive Timer ["
+				+ uri.toASCIIString() + "]", true);
 		keepAliveTimer.schedule(new TLCTimerTask(), 10000, 60000);
 	}
 
@@ -58,7 +74,7 @@ public class TLCServerThread extends IdThread {
 	private TLCServer tlcServer;
 	private URI uri;
 	private long lastInvocation;
-	
+
 	/**
 	 * Current unit of work or null
 	 */
@@ -73,7 +89,7 @@ public class TLCServerThread extends IdThread {
 		try {
 			this.uri = worker.getURI();
 		} catch (RemoteException e) {
-			//TODO handle more gracefully
+			// TODO handle more gracefully
 			e.printStackTrace();
 		}
 		// update thread name
@@ -87,8 +103,8 @@ public class TLCServerThread extends IdThread {
 	 */
 	public void run() {
 		waitOnBarrier();
-		
-		TLCGlobals.incNumWorkers(1);
+
+		TLCGlobals.incNumWorkers();
 		TLCStateVec[] newStates = null;
 		LongVec[] newFps = null;
 
@@ -105,12 +121,12 @@ public class TLCServerThread extends IdThread {
 					stateQueue.finishAll();
 					return;
 				}
-				
+
 				// without initial states no need to bother workers
 				if (states.length == 0) {
 					continue;
 				}
-				
+
 				// count statistics
 				sentStates += states.length;
 
@@ -127,24 +143,30 @@ public class TLCServerThread extends IdThread {
 						lastInvocation = System.currentTimeMillis();
 					} catch (RemoteException e) {
 						// If a (remote) {@link TLCWorkerRMI} fails due to the
-						// amount of new states we have sent it, try to lower the amount of states
+						// amount of new states we have sent it, try to lower
+						// the amount of states
 						// and re-send (until we just send a single state)
 						if (isRecoverable(e) && states.length > 1) {
-							MP.printMessage(EC.TLC_DISTRIBUTED_EXCEED_BLOCKSIZE, Integer.toString(states.length / 2));
+							MP.printMessage(
+									EC.TLC_DISTRIBUTED_EXCEED_BLOCKSIZE,
+									Integer.toString(states.length / 2));
 							// states[] exceeds maximum transferable size
 							// (add states back to queue and retry)
 							stateQueue.sEnqueue(states);
-							// half the maximum size and use it as a limit from now on
+							// half the maximum size and use it as a limit from
+							// now on
 							selector.setMaxTXSize(states.length / 2);
 							// go back to beginning
 							continue START;
 						} else { // non recoverable errors
-							MP.printMessage(EC.TLC_DISTRIBUTED_WORKER_LOST, throwableToString(e));
+							MP.printMessage(EC.TLC_DISTRIBUTED_WORKER_LOST,
+									throwableToString(e));
 							handleRemoteWorkerLost(stateQueue);
 							return;
 						}
 					} catch (NullPointerException e) {
-						MP.printMessage(EC.TLC_DISTRIBUTED_WORKER_LOST, throwableToString(e));
+						MP.printMessage(EC.TLC_DISTRIBUTED_WORKER_LOST,
+								throwableToString(e));
 						handleRemoteWorkerLost(stateQueue);
 						return;
 					}
@@ -154,7 +176,8 @@ public class TLCServerThread extends IdThread {
 				// corresponding fingerprint server)
 				// (Why isn't this done by workers directly?
 				// -> because if the worker crashes while computing states, the
-				// fp set would be inconsistent => making it an "atomic" operation)
+				// fp set would be inconsistent => making it an "atomic"
+				// operation)
 				BitVector[] visited = this.tlcServer.fpSetManager
 						.putBlock(newFps);
 
@@ -167,8 +190,7 @@ public class TLCServerThread extends IdThread {
 						// write state id and state fp to .st file for
 						// checkpointing
 						long fp = newFps[i].elementAt(index);
-						state.uid = this.tlcServer.trace.writeState(state,
-								fp);
+						state.uid = this.tlcServer.trace.writeState(state, fp);
 						// add state to state queue for further processing
 						stateQueue.sEnqueue(state);
 					}
@@ -184,8 +206,7 @@ public class TLCServerThread extends IdThread {
 				MP.printError(EC.GENERAL, e);
 				if (state1 != null) {
 					try {
-						this.tlcServer.trace.printTrace(state1,
-								state2);
+						this.tlcServer.trace.printTrace(state1, state2);
 					} catch (Exception e1) {
 						MP.printError(EC.GENERAL, e1);
 					}
@@ -198,6 +219,8 @@ public class TLCServerThread extends IdThread {
 		} finally {
 			keepAliveTimer.cancel();
 			states = new TLCState[0];
+			// not calling TLCGlobals#decNumWorkers here because at this point
+			// TLCServer is shutting down anyway
 		}
 	}
 
@@ -211,27 +234,32 @@ public class TLCServerThread extends IdThread {
 	 */
 	private boolean isRecoverable(final Exception e) {
 		final Throwable cause = e.getCause();
-		return ((cause instanceof EOFException && cause.getMessage() == null)
-				|| (cause instanceof RemoteException && cause.getCause() instanceof OutOfMemoryError));
+		return ((cause instanceof EOFException && cause.getMessage() == null) || (cause instanceof RemoteException && cause
+				.getCause() instanceof OutOfMemoryError));
 	}
 
 	private String throwableToString(final Exception e) {
 		final Writer result = new StringWriter();
-	    final PrintWriter printWriter = new PrintWriter(result);
-	    e.printStackTrace(printWriter);
-	    return result.toString();
+		final PrintWriter printWriter = new PrintWriter(result);
+		e.printStackTrace(printWriter);
+		return result.toString();
 	}
 
 	/**
 	 * Handles the case of a disconnected remote worker
+	 * 
 	 * @param stateQueue
 	 */
 	private void handleRemoteWorkerLost(final StateQueue stateQueue) {
 		keepAliveTimer.cancel();
 		tlcServer.removeTLCServerThread(this);
 		stateQueue.sEnqueue(states != null ? states : new TLCState[0]);
-		TLCGlobals.incNumWorkers(-1);
-		MP.printMessage(EC.TLC_DISTRIBUTED_WORKER_DEREGISTERED, getUri().toString());
+
+		// This call has to be idempotent, otherwise we see bugs as in 
+		// https://bugzilla.tlaplus.net/show_bug.cgi?id=234
+		if (cleanupGlobals.compareAndSet(true, false)) {
+			TLCGlobals.decNumWorkers();
+		}
 	}
 
 	/**
@@ -241,7 +269,7 @@ public class TLCServerThread extends IdThread {
 	 */
 	private void waitOnBarrier() {
 		try {
-			if(barrier != null)
+			if (barrier != null)
 				barrier.await();
 		} catch (InterruptedException e2) {
 			e2.printStackTrace();
@@ -264,7 +292,7 @@ public class TLCServerThread extends IdThread {
 	public URI getUri() {
 		return this.uri;
 	}
-	
+
 	/**
 	 * @return the receivedStates
 	 */
@@ -278,19 +306,21 @@ public class TLCServerThread extends IdThread {
 	public int getSentStates() {
 		return sentStates;
 	}
-	
-	//************************************//
-	
+
+	// ************************************//
+
 	private class TLCTimerTask extends TimerTask {
 
-		/* (non-Javadoc)
+		/*
+		 * (non-Javadoc)
+		 * 
 		 * @see java.util.TimerTask#run()
 		 */
 		public void run() {
 			long now = new Date().getTime();
-			if(lastInvocation == 0 || (now - lastInvocation) > 60000) {
+			if (lastInvocation == 0 || (now - lastInvocation) > 60000) {
 				try {
-					if(!worker.isAlive()) {
+					if (!worker.isAlive()) {
 						handleRemoteWorkerLost(tlcServer.stateQueue);
 					}
 				} catch (RemoteException e) {

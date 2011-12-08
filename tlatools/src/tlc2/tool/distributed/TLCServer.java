@@ -169,12 +169,32 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 	}
 
 	/**
+	 * An (idempotent) method to remove a (dead) TLCServerThread from the TLCServer.
+	 * 
 	 * @see Map#remove(Object)
 	 * @param thread
 	 * @return 
 	 */
-	public synchronized TLCWorkerRMI removeTLCServerThread(TLCServerThread thread) {
-		return threadsToWorkers.remove(thread);
+	public synchronized TLCWorkerRMI removeTLCServerThread(final TLCServerThread thread) {
+		final TLCWorkerRMI worker = threadsToWorkers.remove(thread);
+		/*
+		 * Only ever report a disconnected worker once!
+		 * 
+		 * Calling this method twice happens when the exception handling in
+		 * TLCServerThread#run detects a disconnect server and the
+		 * TLCServerThread#TimerTask (who periodically checks worker aliveness)
+		 * again.
+		 * 
+		 * (TimerTask cancellation in TLCServerThread#run has a small chance of
+		 * leaving the TimerTask running. This occurs by design if the TimerTask
+		 * has already been marked for execution)
+		 * 
+		 * @see https://bugzilla.tlaplus.net/show_bug.cgi?id=216
+		 */
+		if (worker != null) {
+			MP.printMessage(EC.TLC_DISTRIBUTED_WORKER_DEREGISTERED, thread.getUri().toString());
+		}
+		return worker;
 	}
 
 	/**

@@ -41,6 +41,20 @@ public class TLCGlobals
     {
         numWorkers += n;
     }
+    
+    /**
+     * Increments the number of workers by 1
+     */
+    public static void incNumWorkers() {
+    	incNumWorkers(1);
+    }
+    
+    /**
+     * Decrements the number of workers by 1
+     */
+    public static void decNumWorkers() {
+    	incNumWorkers(-1);
+    }
 
     // The main model checker object
     public static ModelChecker mainChecker = null;
