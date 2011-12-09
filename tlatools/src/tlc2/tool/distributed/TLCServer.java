@@ -643,8 +643,11 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 						worker.exit();
 					}
 				} catch (java.rmi.ConnectException e)  {
-					// happens if workers have exited already
+					// happens if worker has exited already
+				} catch (java.rmi.NoSuchObjectException e) {
+					// happens if worker has exited already
 				} catch (IOException e) {
+					//TODO handle more gracefully
 					e.printStackTrace();
 				}
 			}
