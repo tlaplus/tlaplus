@@ -761,7 +761,7 @@ public class MP
             break;
         case EC.TLC_PROGRESS_STATS:
             b.append("Progress(%1%) at " + SDF.format(new Date())
-                    + ": %2% states generated, %3% distinct states found, %4% states left on queue.");
+                    + ": %2% states generated (%5% s/min), %3% distinct states found (%6% ds/min), %4% states left on queue.");
             break;
         case EC.TLC_PROGRESS_START_STATS_DFID:
             b.append("Starting level %1%: %2% states generated, %3% distinct states found.");

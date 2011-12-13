@@ -43,21 +43,57 @@ import util.FileUtil;
  * By doing so, we lose one bit of the fingerprint. However, we will get this
  * bit back if using MultiFPSet.
  */
+/**
+ * @author Markus Alexander Kuppe
+ */
 @SuppressWarnings("serial")
 public class DiskFPSet extends FPSet {
 	// fields
-	private final int maxTblCnt; // upper bound on "tblCnt"
-	private final int mask; // mask for computing hash function
-	private String metadir; // directory name for metadata
-	private String filename; // name of backing file
+	/**
+	 * upper bound on "tblCnt"
+	 */
+	private final int maxTblCnt;
+	/**
+	 * mask for computing hash function
+	 */
+	private final int mask;
+	/**
+	 * directory name for metadata
+	 */
+	private String metadir;
+	/**
+	 * name of backing file
+	 */
+	private String filename;
 
-	private final ReadersWriterLock rwLock; // protects following fields
-	private long fileCnt; // number of entries on disk
-	private boolean flusherChosen; // has a flusher thread been selected?
-	private long[][] tbl; // in-memory buffer of new entries
-	private int tblCnt; // number of entries in "tbl"
-	private RandomAccessFile[] braf; // one per worker thread
-	private RandomAccessFile[] brafPool; // a pool of available brafs
+	/**
+	 * protects following fields
+	 */
+	private final ReadersWriterLock rwLock;
+	/**
+	 * number of entries on disk
+	 */
+	private long fileCnt;
+	/**
+	 * has a flusher thread been selected?
+	 */
+	private boolean flusherChosen;
+	/**
+	 * in-memory buffer of new entries
+	 */
+	private long[][] tbl;
+	/**
+	 * number of entries in "tbl"
+	 */
+	private int tblCnt; 
+	/**
+	 * one per worker thread
+	 */
+	private RandomAccessFile[] braf;
+	/**
+	 * a pool of available brafs
+	 */
+	private RandomAccessFile[] brafPool;
 	private int poolIndex;
 
 	/**
@@ -67,13 +103,15 @@ public class DiskFPSet extends FPSet {
 	 */
 	protected long[] index;
 
-	/*
+	/**
 	 * Log (base 2) of default number of new entries allowed to accumulate in
 	 * memory before those entries are flushed to disk.
 	 */
 	private static final int LogDefaultMaxTblCnt = 19;
 
-	/* The load factor and initial capacity for the hashtable. */
+	/**
+	 * The load factor and initial capacity for the hashtable.
+	 */
 	private static final int LogMaxLoad = 4;
 	private static final int BucketSizeIncrement = 4;
 

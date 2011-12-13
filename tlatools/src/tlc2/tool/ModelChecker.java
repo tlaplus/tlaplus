@@ -40,6 +40,8 @@ public class ModelChecker extends AbstractChecker
     public StateQueue theStateQueue; // the state queue
     public TLCTrace trace; // the trace file
     protected Worker[] workers; // the workers
+    // used to calculate the spm metric
+    protected long oldNumOfGenStates, oldFPSetSize = 0L;
 
     /* Constructors  */
     /**
@@ -781,10 +783,19 @@ public class ModelChecker extends AbstractChecker
      */
     protected void runTLCContinueDoing(final int count, final int depth) throws Exception
     {
-        int level = this.trace.getLevel();
-        MP.printMessage(EC.TLC_PROGRESS_STATS, new String[] { String.valueOf(this.trace.getLevelForReporting()),
-                String.valueOf(this.numOfGenStates), String.valueOf(this.theFPSet.size()),
-                String.valueOf(this.theStateQueue.size()) });
+        final int level = this.trace.getLevel();
+        final long fpSetSize = this.theFPSet.size();
+        // print progress showing states per minute metric (spm)
+        final double factor = TLCGlobals.progressInterval / 60000d;
+		final long spm = (long) ((numOfGenStates - oldNumOfGenStates) / factor);
+        oldNumOfGenStates = numOfGenStates;
+        final long distinctSpm = (long) ((fpSetSize - oldFPSetSize) / factor);
+        oldFPSetSize = fpSetSize;
+        
+		MP.printMessage(EC.TLC_PROGRESS_STATS, new String[] { String.valueOf(this.trace.getLevelForReporting()),
+                String.valueOf(this.numOfGenStates), String.valueOf(fpSetSize),
+                String.valueOf(this.theStateQueue.size()), String.valueOf(spm), String.valueOf(distinctSpm) });
+        
         if (level > depth)
         {
             this.theStateQueue.finishAll();
