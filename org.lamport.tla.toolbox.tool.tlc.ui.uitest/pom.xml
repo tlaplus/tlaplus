@@ -31,10 +31,10 @@
 							<goal>install-file</goal>
 						</goals>
 						<configuration>
-							<file>${settings.localRepository}/p2/osgi/bundle/org.eclipse.equinox.weaving.hook/1.0.0.v20100503/org.eclipse.equinox.weaving.hook-1.0.0.v20100503.jar</file>
+							<file>${settings.localRepository}/p2/osgi/bundle/org.eclipse.equinox.weaving.hook/1.0.0.v20100108/org.eclipse.equinox.weaving.hook-1.0.0.v20100108.jar</file>
 							<groupId>tlatoolbox</groupId>
 							<artifactId>org.eclipse.equinox.weaving.hook</artifactId>
-							<version>1.0.0.v20100503</version>
+							<version>1.0.0.v20100108</version>
 							<packaging>jar</packaging>
 						</configuration>
 					</execution>
@@ -106,7 +106,7 @@
 						<dependency>
 							<type>p2-installable-unit</type>
 							<artifactId>org.eclipse.equinox.weaving.hook</artifactId>
-							<version>1.0.0.v20100503</version>
+							<version>1.0.0.v20100108</version>
 						</dependency>
 					</dependencies>
 
@@ -115,7 +115,7 @@
 						<frameworkExtension>
 							<groupId>tlatoolbox</groupId> 
 							<artifactId>org.eclipse.equinox.weaving.hook</artifactId>
-							<version>1.0.0.v20100503</version>
+							<version>1.0.0.v20100108</version>
 						</frameworkExtension>
 					</frameworkExtensions>
 
