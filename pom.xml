@@ -25,7 +25,6 @@
 	</scm>
 
 	<modules>
-
 		<!-- non-OSGi jars -->
 		<module>tlatools</module>
 
@@ -119,32 +118,6 @@
 
 	  </pluginRepositories>
 
-	<!-- configure p2 repository to resolve against -->
-	<repositories>
-
-		<!-- Main eclipse repository (SR2 directly referenced to speed up build) -->
-		<repository>
-			<id>helios</id>
-			<layout>p2</layout>
-			<url>http://download.eclipse.org/eclipse/updates/3.6/R-3.6.2-201102101200/</url>
-		</repository>
-
-		<!-- SWTbot is not part of the helios update site (Used for UI testing) -->
-		<repository>
-			<id>swtbot</id>
-			<layout>p2</layout>
-			<url>http://download.eclipse.org/technology/swtbot/helios/dev-build/update-site/</url>
-		</repository>
-
-		<!-- AJDT is not part of the helios update site (Used to check thread invocations) -->
-		<repository>
-			<id>ajdt</id>
-			<layout>p2</layout>
-			<url>http://download.eclipse.org/tools/ajdt/36/update</url>
-		</repository>
-
-	</repositories>
-
 	<build>
 		<plugins>
 			<!-- enable tycho build extension -->
@@ -181,6 +154,17 @@
 				<configuration>
 					<!-- recommended: use p2-based target platform resolver -->
 					<resolver>p2</resolver>
+					<ignoreTychoRepositories>true</ignoreTychoRepositories>
+					<!-- use existing target platform definition -->
+					<target>
+					 <artifact>
+					    <groupId>tlatoolbox</groupId>
+					    <artifactId>org.lamport.tla.toolbox.product.product</artifactId>
+					    <version>1.4.0-SNAPSHOT</version>
+					    <classifier>TLAToolbox</classifier>
+					 </artifact>
+					</target> 
+
 					<!-- configure the p2 target environments for multi-platform build -->
 					<environments>
 
