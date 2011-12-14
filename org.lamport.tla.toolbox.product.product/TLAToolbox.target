@@ -1,8 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <?pde version="3.6"?>
 
-<target name="TLA+ Toolbox 3.6" sequenceNumber="32">
+<target name="TLA+ Toolbox 3.6" sequenceNumber="35">
 <locations>
+<location includeAllPlatforms="true" includeMode="slicer" includeSource="true" type="InstallableUnit">
+<unit id="org.eclipse.draw2d.feature.group" version="3.7.1.v20110830-1143-4607w3122194102254"/>
+<unit id="org.eclipse.zest.feature.group" version="1.3.0.v20110425-2050-67A08yF5F18CBD4I9G53365"/>
+<repository location="http://download.eclipse.org/tools/gef/updates/releases/"/>
+</location>
 <location includeAllPlatforms="true" includeMode="slicer" includeSource="true" type="InstallableUnit">
 <unit id="org.eclipse.swtbot.forms.feature.group" version="2.0.5.20111003_1754-3676ac8-dev-e36"/>
 <unit id="org.eclipse.swtbot.eclipse.feature.group" version="2.0.5.20111003_1754-3676ac8-dev-e36"/>
@@ -13,29 +18,20 @@
 <repository location="http://download.eclipse.org/technology/swtbot/helios/dev-build/update-site/"/>
 </location>
 <location includeAllPlatforms="true" includeMode="slicer" includeSource="true" type="InstallableUnit">
-<unit id="org.eclipse.draw2d.feature.group" version="3.7.1.v20110830-1143-4607w3122194102254"/>
-<unit id="org.eclipse.zest.feature.group" version="1.3.0.v20110425-2050-67A08yF5F18CBD4I9G53365"/>
-<repository location="http://download.eclipse.org/tools/gef/updates/releases/"/>
-</location>
-<location includeAllPlatforms="true" includeMode="slicer" includeSource="true" type="InstallableUnit">
 <unit id="org.eclipse.ajdt.feature.group" version="2.1.3.e36x-20110622-1300"/>
 <unit id="org.eclipse.contribution.weaving.feature.group" version="2.1.3.e36x-20110622-1300"/>
 <unit id="org.eclipse.equinox.weaving.sdk.feature.group" version="1.0.0.v20090817"/>
 <repository location="http://download.eclipse.org/tools/ajdt/36/update"/>
 </location>
 <location includeAllPlatforms="true" includeMode="slicer" includeSource="true" type="InstallableUnit">
-<unit id="org.eclipse.help.feature.group" version="1.2.1.r362_v20101111-7e7jEVFDr6xg-LSlC_z0w1D"/>
-<unit id="org.eclipse.jdt.feature.group" version="3.6.2.r362_v20101117-0800-7z8XFW6FLFlmjJcvz03jyeFBLS_F"/>
-<unit id="org.eclipse.platform.feature.group" version="3.6.2.r362_v20110210-9gF78Gs1FrIGnHDHWkEcopoN8AmxeZflGDGKQi"/>
-<unit id="org.eclipse.equinox.executable.feature.group" version="3.4.2.R36x_v20110125-7N7K7bF8zk1BAKMh0iz0t94miBLY"/>
-<unit id="org.eclipse.pde.feature.group" version="3.6.2.r362_v20110203-7b7mFL2FET3dhHalh1iNZtL"/>
-<unit id="org.eclipse.equinox.p2.user.ui.feature.group" version="2.0.1.r361_v20100903-897HFa-FX0z-z-ntoaavz0JPX628"/>
-<unit id="org.eclipse.equinox.p2.sdk.feature.group" version="3.6.2.R36x_v20110120-9I7VGEAG438GhnfSLuLz0FXP9NYJ"/>
-<repository location="http://download.eclipse.org/eclipse/updates/3.6/R-3.6.2-201102101200/"/>
-</location>
-<location includeAllPlatforms="true" includeMode="slicer" includeSource="true" type="InstallableUnit">
-<unit id="org.eclipse.rcp.feature.group" version="3.7.1.r37x_v20110729-9DB5FmNFnFLSFCtLxnRfMqt15A4A"/>
-<repository location="http://ftp.osuosl.org/pub/eclipse/eclipse/updates/3.7/R-3.7.1-201109091335/"/>
+<unit id="org.eclipse.help.feature.group" version="1.3.0.v20110327-7i7uFFkFFp7gNobOpNgKo0"/>
+<unit id="org.eclipse.jdt.feature.group" version="3.7.1.r371_v20110810-0800-7z8gFcoFMLfTabvKsR5Qm9rBGEBK"/>
+<unit id="org.eclipse.platform.feature.group" version="3.7.1.r37x_v20110729-9gF7UHOxFtniV7mI3T556iZN9AU8bEZ1lHMcVK"/>
+<unit id="org.eclipse.equinox.executable.feature.group" version="3.5.0.v20110530-7P7NFUFFLWUl76mart"/>
+<unit id="org.eclipse.pde.feature.group" version="3.7.1.r37x_v20110810-0800-7b7qFVtFEx2XnmZ4jlM5mjM"/>
+<unit id="org.eclipse.equinox.p2.user.ui.feature.group" version="2.1.2.R37x_v20110815-1155-6-Bj9JXOeQxOURYC-l9BL7rDEQO7"/>
+<unit id="org.eclipse.equinox.p2.sdk.feature.group" version="3.7.1.R37x_v20110907-9N7sHDOGKQr_bhQlOXRnwJn5DsVZ"/>
+<repository location="http://download.eclipse.org/eclipse/updates/3.7/R-3.7.1-201109091335/"/>
 </location>
 </locations>
 <includeBundles>
