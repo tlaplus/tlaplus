@@ -374,6 +374,8 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		synchronized (server) {
 			server.wait(REPORT_INTERVAL);
 		}
+		long oldNumOfGenStates = 0;
+        long oldFPSetSize = 0;
 		while (true) {
 			long now = System.currentTimeMillis();
 			if (now - lastChkpt >= TLCGlobals.chkptDuration) {
@@ -382,9 +384,19 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 			}
 			synchronized (server) {
 				if (!server.done) {
-			        MP.printMessage(EC.TLC_PROGRESS_STATS, new String[] { String.valueOf(server.trace.getLevelForReporting()),
-			                String.valueOf(server.getStatesComputed()), String.valueOf(server.fpSetManager.size()),
-			                String.valueOf(server.getNewStates()) });
+					final long numOfGenStates = server.getStatesComputed();
+					final long fpSetSize = server.fpSetManager.size();
+					
+			        // print progress showing states per minute metric (spm)
+			        final double factor = REPORT_INTERVAL / 60000d;
+					final long spm = (long) ((numOfGenStates - oldNumOfGenStates) / factor);
+			        oldNumOfGenStates = numOfGenStates;
+					final long distinctSpm = (long) ((fpSetSize - oldFPSetSize) / factor);
+			        oldFPSetSize = fpSetSize;
+			        
+					MP.printMessage(EC.TLC_PROGRESS_STATS, new String[] { String.valueOf(server.trace.getLevelForReporting()),
+			                String.valueOf(numOfGenStates), String.valueOf(fpSetSize),
+			                String.valueOf(server.getNewStates()), String.valueOf(spm), String.valueOf(distinctSpm) });
 					server.wait(REPORT_INTERVAL);
 				}
 				if (server.done)
