@@ -756,7 +756,7 @@ public class ModelChecker extends AbstractChecker
     {
         final long d = anFpSet.size();
         // shown as 'calculated' in Toolbox
-        final double optimisticProb = (d * (numOfGenStates - d)) / Math.pow(2, 64);
+        final double optimisticProb = d * ((numOfGenStates - d) / Math.pow(2, 64));
         // shown as 'observed' in Toolbox
         final double actualProb = anFpSet.checkFPs();
         /* The following code added by LL on 3 Aug 2009 to print probabilities
