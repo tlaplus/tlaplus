@@ -86,6 +86,9 @@ public class ModelChecker extends AbstractChecker
     public void modelCheck() throws Exception
     {
         report("entering modelCheck()");
+        
+        // needed to calculate state/minute in final progress report
+        final long startTime = System.currentTimeMillis();
 
         // Initialization for liveness checking:
         if (this.checkLiveness)
@@ -153,7 +156,7 @@ public class ModelChecker extends AbstractChecker
                     // Assert.printStack(e);
                     MP.printError(EC.TLC_NESTED_EXPRESSION, this.tool.getCallStack().toString());
                 }
-                this.printSummary(false);
+                this.printSummary(false, startTime);
                 this.cleanup(false);
                 report("exiting, because init failed with exception");
                 return;
@@ -174,8 +177,8 @@ public class ModelChecker extends AbstractChecker
         // Finished if there is no next state predicate:
         if (this.actions.length == 0)
         {
-            this.reportSuccess();
-            this.printSummary(true);
+            reportSuccess(this.theFPSet, this.numOfGenStates);
+            this.printSummary(true, startTime);
             this.cleanup(true);
             report("exiting with actions.length == 0");
             return;
@@ -209,7 +212,7 @@ public class ModelChecker extends AbstractChecker
 
                 // We get here because the checking has been completed.
                 success = true;
-                this.reportSuccess();
+                reportSuccess(this.theFPSet, this.numOfGenStates);
             } else if (this.keepCallStack)
             {
                 // Replay the error with the error stack recorded:
@@ -231,7 +234,7 @@ public class ModelChecker extends AbstractChecker
             MP.printError(EC.GENERAL, (e.getMessage()==null)?e.toString():e.getMessage());
         } finally
         {
-            this.printSummary(success);
+            this.printSummary(success, startTime);
             this.cleanup(success);
         }
 
@@ -704,7 +707,7 @@ public class ModelChecker extends AbstractChecker
         FileUtil.deleteDir(this.metadir, success);
     }
 
-    public final void printSummary(boolean success) throws IOException
+    public final void printSummary(boolean success, final long startTime) throws IOException
     {
         super.reportCoverage(this.workers);
         
@@ -714,10 +717,8 @@ public class ModelChecker extends AbstractChecker
          * form as all other progress statistics.
          */
         if (TLCGlobals.tool)
-        {
-            MP.printMessage(EC.TLC_PROGRESS_STATS, new String[] { String.valueOf(this.trace.getLevelForReporting()),
-                    String.valueOf(this.numOfGenStates), String.valueOf(this.theFPSet.size()),
-                    String.valueOf(this.theStateQueue.size()) });
+        {	
+        	printProgresStats(startTime);
         }
 
         MP.printMessage(EC.TLC_STATS, new String[] { String.valueOf(this.numOfGenStates),
@@ -727,19 +728,44 @@ public class ModelChecker extends AbstractChecker
             MP.printMessage(EC.TLC_SEARCH_DEPTH, String.valueOf(this.trace.getLevelForReporting()));
         }
     }
+    
+    private final void printProgresStats(final long startTime) throws IOException {
+        final long fpSetSize = this.theFPSet.size();
+        
+        // print progress showing states per minute metric (spm)
+        final double factor;
+        if (startTime < 0) {
+        	factor = TLCGlobals.progressInterval / 60000d;
+        } else {
+        	// This is final statistics
+        	oldNumOfGenStates = 0;
+        	oldFPSetSize = 0;
+        	factor = (System.currentTimeMillis() - startTime) / 60000d;
+        }
+		final long spm = (long) ((numOfGenStates - oldNumOfGenStates) / factor);
+        oldNumOfGenStates = numOfGenStates;
+        final long distinctSpm = (long) ((fpSetSize - oldFPSetSize) / factor);
+        oldFPSetSize = fpSetSize;
+        
+		MP.printMessage(EC.TLC_PROGRESS_STATS, new String[] { String.valueOf(this.trace.getLevelForReporting()),
+                String.valueOf(this.numOfGenStates), String.valueOf(fpSetSize),
+                String.valueOf(this.theStateQueue.size()), String.valueOf(spm), String.valueOf(distinctSpm) });
+    }
 
-    public final void reportSuccess() throws IOException
+    public static final void reportSuccess(final FPSet anFpSet, final long numOfGenStates) throws IOException
     {
-        long d = this.theFPSet.size();
-        double prob1 = (d * (this.numOfGenStates - d)) / Math.pow(2, 64);
-        double prob2 = this.theFPSet.checkFPs();
+        final long d = anFpSet.size();
+        // shown as 'calculated' in Toolbox
+        final double optimisticProb = (d * (numOfGenStates - d)) / Math.pow(2, 64);
+        // shown as 'observed' in Toolbox
+        final double actualProb = anFpSet.checkFPs();
         /* The following code added by LL on 3 Aug 2009 to print probabilities
          * to only one decimal point.
          */
-        PrintfFormat fmt = new PrintfFormat("val = %.1G");
-        String prob1Str = fmt.sprintf(prob1);
-        String prob2Str = fmt.sprintf(prob2);
-        MP.printMessage(EC.TLC_SUCCESS, new String[] { prob1Str, prob2Str });
+        final PrintfFormat fmt = new PrintfFormat("val = %.1G");
+        final String optimisticProbStr = fmt.sprintf(optimisticProb);
+        final String actualProbStr = fmt.sprintf(actualProb);
+        MP.printMessage(EC.TLC_SUCCESS, new String[] { optimisticProbStr, actualProbStr });
     }
 
     public final void setAllValues(int idx, Value val)
@@ -784,17 +810,8 @@ public class ModelChecker extends AbstractChecker
     protected void runTLCContinueDoing(final int count, final int depth) throws Exception
     {
         final int level = this.trace.getLevel();
-        final long fpSetSize = this.theFPSet.size();
-        // print progress showing states per minute metric (spm)
-        final double factor = TLCGlobals.progressInterval / 60000d;
-		final long spm = (long) ((numOfGenStates - oldNumOfGenStates) / factor);
-        oldNumOfGenStates = numOfGenStates;
-        final long distinctSpm = (long) ((fpSetSize - oldFPSetSize) / factor);
-        oldFPSetSize = fpSetSize;
         
-		MP.printMessage(EC.TLC_PROGRESS_STATS, new String[] { String.valueOf(this.trace.getLevelForReporting()),
-                String.valueOf(this.numOfGenStates), String.valueOf(fpSetSize),
-                String.valueOf(this.theStateQueue.size()), String.valueOf(spm), String.valueOf(distinctSpm) });
+    	printProgresStats(-1);
         
         if (level > depth)
         {

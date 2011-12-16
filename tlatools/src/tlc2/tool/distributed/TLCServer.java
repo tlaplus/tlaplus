@@ -23,6 +23,7 @@ import java.util.concurrent.CyclicBarrier;
 import tlc2.TLCGlobals;
 import tlc2.output.EC;
 import tlc2.output.MP;
+import tlc2.tool.ModelChecker;
 import tlc2.tool.TLCState;
 import tlc2.tool.TLCTrace;
 import tlc2.tool.WorkerException;
@@ -32,7 +33,6 @@ import tlc2.tool.fp.FPSet;
 import tlc2.tool.queue.DiskStateQueue;
 import tlc2.tool.queue.StateQueue;
 import tlc2.util.FP64;
-import tlc2.util.PrintfFormat;
 import util.Assert;
 import util.FileUtil;
 import util.UniqueString;
@@ -427,7 +427,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		boolean success = (server.errState == null);
 		if (success) {
 			// We get here because the checking has succeeded.
-			server.reportSuccess();
+			ModelChecker.reportSuccess(server.fpSet, server.fpSetManager.size());
 		} else if (server.keepCallStack) {
 			// We redo the work on the error state, recording the call stack.
 			server.work.setCallStack();
@@ -478,23 +478,6 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 //		return res;
 //	}
     
-	/**
-	 * @throws IOException
-	 */
-	public final void reportSuccess() throws IOException
-    {
-        long d = this.fpSet.size();
-        double prob1 = (d * (this.fpSetManager.size() - d)) / Math.pow(2, 64);
-        double prob2 = this.fpSet.checkFPs();
-        /* The following code added by LL on 3 Aug 2009 to print probabilities
-         * to only one decimal point.
-         */
-        PrintfFormat fmt = new PrintfFormat("val = %.1G");
-        String prob1Str = fmt.sprintf(prob1);
-        String prob2Str = fmt.sprintf(prob2);
-        MP.printMessage(EC.TLC_SUCCESS, new String[] { prob1Str, prob2Str });
-    }
-
     /**
      * This allows the toolbox to easily display the last set
      * of state space statistics by putting them in the same
