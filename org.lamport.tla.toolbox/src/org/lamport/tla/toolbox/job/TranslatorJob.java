@@ -17,11 +17,13 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.lamport.tla.toolbox.Activator;
+import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.TLAMarkerHelper;
 import org.lamport.tla.toolbox.util.pref.IPreferenceConstants;
 import org.lamport.tla.toolbox.util.pref.PreferenceStoreHelper;
 
+import pcal.TLAtoPCalMapping;
 import pcal.Translator;
 
 /**
@@ -119,8 +121,14 @@ public class TranslatorJob extends WorkspaceJob
         }
         Activator.logDebug("Translator invoked with params: '" + buffer.toString() + "'");
 
-        translator.runTranslation((String[]) callParams.toArray(new String[callParams.size()]));
-
+        TLAtoPCalMapping mapping = translator.runTranslation((String[]) callParams.toArray(new String[callParams.size()]));
+        /*
+         * At this point, fileToBuild.getName() returns the simple name of the file--e.g., "Test.tla".
+         * Eventually, 
+         */
+        Spec currentSpec = Activator.getSpecManager().getSpecLoaded();
+        currentSpec.setTpMapping(mapping, fileToBuild.getName());
+         
         monitor.worked(1);
         monitor.setTaskName("Analyzing results");
 

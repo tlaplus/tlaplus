@@ -26,6 +26,8 @@ import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.compare.ResourceNameComparator;
 import org.lamport.tla.toolbox.util.pref.PreferenceStoreHelper;
 
+import pcal.TLAtoPCalMapping;
+
 import tla2sany.modanalyzer.SpecObj;
 
 /**
@@ -46,6 +48,66 @@ import tla2sany.modanalyzer.SpecObj;
 public class Spec implements IAdaptable
 {
 
+    /**
+     * tpMapping[i] is the TLAtoPCalMapping object produced by the
+     * PlusCal translator for the file named tpMappingNames[i], where the
+     * file name is the module name + ".tla".  (Sometimes it's easier to 
+     * get the file name, and sometimes the module name, and it's easier to
+     * add a ".tla" than to remove it.)  
+     * <p>
+     * We use this simple-minded pair of arrays instead of a Hashtable because
+     * there will seldom be more than one and never more than 4 or 5 modules in
+     * a spec that have a PlusCal algorithm.  (We could add a maximum length
+     * of these arrays and throw away the least recently changed one if
+     * necessary, but it hardly seems worth it.)
+     * <p>
+     * There are two public procedures for manipulating these fields:
+     * 
+     *   setTpMapping(map, filename) adds/sets the mapping map with name filename
+     *   getTpMapping(filename) returns the mapping with name filename if it
+     *     exists, else returns null.
+     */
+    private TLAtoPCalMapping[] tpMappings = new TLAtoPCalMapping[0] ;
+    private String[] tpMappingNames = new String[0];
+    
+    public TLAtoPCalMapping getTpMapping(String filename) {
+        int i = 0 ;
+        boolean notdone = true;
+        TLAtoPCalMapping result = null ;
+        while (notdone && i < tpMappings.length) {
+            if (filename.equals(tpMappingNames[i])) {
+                result = tpMappings[i];
+                notdone = false;
+            }
+        }
+        return result;
+      }
+    
+    public void setTpMapping(TLAtoPCalMapping map, String filename) {
+        int i = 0 ;
+        boolean notfound = true;
+        TLAtoPCalMapping result = null ;
+        while (notfound && i < tpMappings.length) {
+            if (filename.equals(tpMappingNames[i])) {
+                result = tpMappings[i];
+                notfound = false;
+            }
+        }
+        if (notfound) {
+            TLAtoPCalMapping[] newMaps = new TLAtoPCalMapping[tpMappings.length+1];
+            String[] newMapNames = new String[tpMappings.length+1];
+            System.arraycopy(tpMappings, 0, newMaps, 1, tpMappings.length);
+            newMaps[0] = map;
+            System.arraycopy(tpMappingNames, 0, newMapNames, 1, tpMappings.length);
+            newMapNames[0] = filename;
+            tpMappings = newMaps;
+            tpMappingNames = newMapNames;
+        } 
+        else {
+            tpMappings[i] = map;
+        }
+    }
+    
     /**
      *  The following fields are used for remembering the jumping-off
      *  point for a Goto Declaration or ShowDefinitions command, so we can return to it
@@ -89,6 +151,7 @@ public class Spec implements IAdaptable
 
     /* the semantic tree produced by the parser */
     private SpecObj specObj;
+
 
     /**
      * Creates a Spec handle for existing project. Use the factory method

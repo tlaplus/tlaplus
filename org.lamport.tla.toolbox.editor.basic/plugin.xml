@@ -279,6 +279,13 @@
             id="org.lamport.tla.toolbox.editor.basic.gotoPrevUse"
             name="Goto Prev Use">
       </command>
+      <command
+            categoryId="org.eclipse.ui.category.textEditor"
+            defaultHandler="org.lamport.tla.toolbox.editor.basic.handlers.GotoPCalSourceHandler"
+            description="Goes to the PCal source for the selected region of the translation."
+            id="org.lamport.tla.toolbox.editor.basic.gotoPCalSource"
+            name="Goto PCal Source">
+      </command>
 
    </extension>
    <extension
@@ -468,6 +475,12 @@
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="F7">
       </key>
+      <key
+            commandId="org.lamport.tla.toolbox.editor.basic.gotoPCalSource"
+            contextId="org.eclipse.ui.textEditorScope"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="F10">
+      </key>
       
    </extension>
    <extension
@@ -493,6 +506,10 @@
    </command>
    <command
          commandId="org.lamport.tla.toolbox.editor.basic.gotoPrevUse"
+         style="push">
+   </command>
+   <command
+         commandId="org.lamport.tla.toolbox.editor.basic.gotoPCalSource"
          style="push">
    </command>
 		</menuContribution>
