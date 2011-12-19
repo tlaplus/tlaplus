@@ -259,11 +259,10 @@ TokPairToParens(spec, ltok, rtok) ==
   (*************************************************************************)
   (* Assumes ltok and rtok are the positions of TLAToken elements of the   *)
   (* TPMap spec with ltok equal to or to the left of rtok.  It equals the  *)
-  (* pair <<lparen, rparen>> where lparen and is the position of the       *)
-  (* right-most left paren left paren to the left of ltok that enters      *)
-  (* level dp and rparen is the position of the left-most right paren to   *)
-  (* the right of rtok that leaves level dp, where dp is defined as        *)
-  (* follows:                                                              *)
+  (* pair <<lparen, rparen>> where lparen is the position of the           *)
+  (* right-most left paren to the left of ltok that enters level dp and    *)
+  (* rparen is the position of the left-most right paren to the right of   *)
+  (* rtok that leaves level dp, where dp is defined as follows:            *)
   (*                                                                       *)
   (* Let d be the minimum paren depth any token from ltok and rtok.  If    *)
   (* ltok # rtok and every TLAToken element from positions ltok through    *)
@@ -657,5 +656,5 @@ Termination == <>(pc = "Done")
 \* END TRANSLATION
 =============================================================================
 \* Modification History
-\* Last modified Mon Dec 05 11:28:22 PST 2011 by lamport
+\* Last modified Tue Dec 13 10:12:16 PST 2011 by lamport
 \* Created Thu Dec 01 16:51:23 PST 2011 by lamport
