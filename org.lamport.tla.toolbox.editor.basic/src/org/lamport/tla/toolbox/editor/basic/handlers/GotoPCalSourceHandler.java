@@ -76,12 +76,13 @@ public class GotoPCalSourceHandler extends AbstractHandler implements IHandler {
         // current region, and sets currentPos to the position of the beginning of the
         // current region in that line. The Document.getLineLength method seems to include
         // the length of the line's delimeter, which should not be included in currentLine.
-        String currentLine;
+//        String currentLine;
+        int lineNumber;
         int currentPos;
         int offsetOfLine;
         try
         {
-            int lineNumber = document.getLineOfOffset(region.getOffset());
+            lineNumber = document.getLineOfOffset(region.getOffset());
             int lineDelimLength = 0;
             String delim = document.getLineDelimiter(lineNumber);
             if (delim != null)
@@ -90,7 +91,7 @@ public class GotoPCalSourceHandler extends AbstractHandler implements IHandler {
             }
             ;
             offsetOfLine = document.getLineOffset(lineNumber);
-            currentLine = document.get(offsetOfLine, document.getLineLength(lineNumber) - lineDelimLength);
+//            currentLine = document.get(offsetOfLine, document.getLineLength(lineNumber) - lineDelimLength);
             currentPos = region.getOffset() - offsetOfLine;
         } catch (BadLocationException e)
         {
@@ -98,7 +99,7 @@ public class GotoPCalSourceHandler extends AbstractHandler implements IHandler {
             return null;
         }
         // end copy
-XXXXXXXX editing here
+//XXXXXXXX editing here
         tlaEditor.selectAndReveal(0, 22);
 // For testing
 MappingObject.printMapping(map);
