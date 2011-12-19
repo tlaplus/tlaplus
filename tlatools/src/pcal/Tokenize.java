@@ -449,6 +449,15 @@ public class Tokenize
           * nextChar is the next input character to be processed.          *
           *****************************************************************/
 
+    /**
+     * This is set to -1 when the last call to getNextChar returned a `\n',
+     * and to 0 otherwise.  This is used by the TokenOut method, since if
+     * a token is immediately followed by a `\n' character, then 
+     * reader.getLineNumber will have been incremented before TokenOut
+     * is called.
+     */
+    private static int getLineCorrection = 0 ;
+    
     private static String token  = "" ;
     private static String token1 = "" ;
     private static String token2 = "" ;
@@ -570,6 +579,13 @@ public class Tokenize
       *********************************************************************/
       { ncol = reader.getColumnNumber();
         nextChar = reader.getNextChar();
+        // See declaration of getLineCorrection for an explanation of:
+        if (nextChar == '\n') {
+            getLineCorrection = -1 ;
+        } 
+        else {
+            getLineCorrection = 0 ;
+        }
       } ;
 
     private static void addNextChar()
@@ -730,8 +746,14 @@ public class Tokenize
                      * non-comment tokens with empty strings, so the test  *
                      * seems harmless.                                     *
                      ******************************************************/
-                     { linev.addElement(new TLAToken(token, col, type )); } ;  
-    
+                	   /**
+                	    * Line number argument added by LL for TLA-PCal mapping.
+                	    * Experiment shows that it seems to do the right thing.
+                	    * See the declaration of getLineCorrection for an explanation
+                	    * of its use.
+                	    */
+                     { linev.addElement(new TLAToken(token, col, type, 
+                             reader.getLineNumber() + getLineCorrection )); } ;   
                    /********************************************************
                    * Reset token.                                          *
                    ********************************************************/
@@ -853,7 +875,9 @@ public class Tokenize
         col  = ncol ;
         parseExpression = isExpr ;
         prevToken = " ";
-        vspec = new Vector(1000, 1000) ;
+        vspec = new Vector(4) ;
+          // Changed by LL on 13 Dec 2011 from new Vector(1000, 1000) ;
+          // I don't know why such a large vector was being used
         reader = charReader ;
            /****************************************************************
            * This "exports" the charReader for use by the class's other    *
@@ -871,6 +895,13 @@ public class Tokenize
           /*****************************************************************
           * Initialize nextChar.                                           *
           *****************************************************************/
+        // See declaration of getLineCorrection for an explanation of:
+        if (nextChar == '\n') {
+            getLineCorrection = -1 ;
+        } 
+        else {
+            getLineCorrection = 0 ;
+        }
 
         parenDepth = 0 ;
         inQuantifier = false ;

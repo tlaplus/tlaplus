@@ -108,6 +108,7 @@ import java.util.Vector;
 
 import pcal.exception.TLAExprException;
 import pcal.exception.UnrecoverableException;
+import tla2tex.Debug;
 
 public class TLAExpr
   { 
@@ -117,11 +118,29 @@ public class TLAExpr
      * a vector of vectors of TLAToken objects.  Each 
      * subvector contains the tokens in one line of the expression.
      */
-    public Vector tokens       = new Vector();
+    public Vector tokens       = new Vector(4);
     public TLAToken[] anchorTokens = null;
     public int[]      anchorTokCol = null;
+    
+    /**
+     * If this object represents an expression in the PCal code, then
+     * origin is the region from the beginning of the first token to the
+     * end of the last token.
+     * 
+     * If this object is an expression substituted for a token, then
+     * origin is the region is the source region of that token.
+     */
+    private Region origin = null;
 
-    TLAExpr()
+    public Region getOrigin() {
+		return origin;
+	}
+
+	public void setOrigin(Region origin) {
+		this.origin = origin;
+	}
+
+	TLAExpr()
       /*********************************************************************
       * A constructor for an empty object of class TLAExpr.                *
       *********************************************************************/
@@ -358,6 +377,58 @@ public class TLAExpr
         return result;
       }
 
+    /**
+     * Returns a Vector of Vectors of {@link MappingObject} objects, which 
+     * represents the TLA+ to PlusCal mapping for the expression as if that
+     * expression were the complete spec.  That is, the returned value contains
+     * the same number of lines as the expression has, and the columns of
+     * Begin/EndTlaToken and SourceToken objects are obtained directly from
+     * the columns of the tokens.  The returned value does NOT contain LeftParen
+     * and RightParen MappingObjects enclosing the entire expression.
+     *  
+     * @return
+     */
+    public Vector toMappingVector () {
+        Vector result = new Vector(4) ;
+        for (int i = 0; i < this.tokens.size(); i++) {
+            Vector mapLine = new Vector() ;
+            Vector expLine = (Vector) this.tokens.elementAt(i);
+            MappingObject.SourceToken sourceTok = null ;
+            for (int j = 0; j < expLine.size(); j ++) {
+              TLAToken tok = (TLAToken) expLine.elementAt(j) ;
+              int tokEndCol = tok.column + tok.string.length() ;
+              for (int k = 0 ; k < tok.getBeginSubst().size(); k++) {
+                  mapLine.addElement(new MappingObject.LeftParen(
+                                       (PCalLocation) tok.getBeginSubst().elementAt(k)));
+              }
+              if (tok.source == null) {
+                  if(sourceTok == null || ! tok.isAppended()) {                
+                    mapLine.addElement(new MappingObject.BeginTLAToken(tok.column)) ;
+                    mapLine.addElement(
+                       new MappingObject.EndTLAToken(tokEndCol)) ;
+                    sourceTok = null ;
+                  } else {
+                      /* {
+                       * 
+                       * Make this TLA token part of sourceTok
+                       */
+                      sourceTok.setEndColumn(tokEndCol) ;
+                  }
+              } else {
+
+                      sourceTok = new MappingObject.SourceToken(
+                                     tok.column, tokEndCol, tok.source) ;
+                      mapLine.addElement(sourceTok) ;
+              }
+              for (int k = tok.getEndSubst().size()-1 ; k >= 0; k--) {
+                  mapLine.addElement(new MappingObject.RightParen(
+                         (PCalLocation) tok.getEndSubst().elementAt(k)));
+              }
+            }
+            result.addElement(mapLine) ;
+        }
+        return result ;
+    }
     public String toString()
       { String result = "<< " ;
         int i = 0;
@@ -372,10 +443,17 @@ public class TLAExpr
                  { result = result + ", " ; } ;
                nonempty = true ;
                TLAToken tok = (TLAToken) curLine.elementAt(j) ;
+               
                if (tok.type == TLAToken.STRING)
                  { result = result + "\"\\\"\", \"" + tok.string 
                                 + "\", \"\\\"\"" ;
                  }
+//               else if (tok.type == TLAToken.BEGIN_REPLACEMENT) {
+//            	   result = result + "(map" ;
+//               }
+//               else if (tok.type == TLAToken.END_REPLACEMENT) {
+//            	   result = result + "map)" ;
+//               }
                else if (tok.string.charAt(0) == '\\')
                  { result = result + "\"\\" + tok.string + "\""; }
                else if (tok.string.equals("/\\"))
@@ -411,7 +489,8 @@ public class TLAExpr
       /*********************************************************************
       * Creates a clone of the current TLAExpr by cloning all the tokens   *
       * and then calling normalize to compute anchorTokens and             *
-      * anchorTokCol.                                                      *
+      * anchorTokCol.   Sets the origin region of the clone to that of the *
+      * original.                                                          *
       *********************************************************************/
       { TLAExpr result = new TLAExpr() ;
         result.tokens = new Vector() ;
@@ -427,6 +506,7 @@ public class TLAExpr
             result.tokens.add(newline) ;
             i = i + 1 ;
           } ;
+        result.setOrigin(this.getOrigin()) ;
         result.normalize() ;
         return result ;
       }
@@ -498,49 +578,53 @@ public class TLAExpr
         this.renormalize() ;
         return ;
       }
-        
-    public void insertNewToken(String str, IntPair coord) throws TLAExprException
-      /*********************************************************************
-      * Inserts a new token into expr right after the token with Java      *
-      * coordinates coord.  The token has string str and some type other   *
-      * than STRING.                                                       *
-      *********************************************************************/
-      { int lineNum = coord.one ;
-        int tokNum  = coord.two ;
-        if (lineNum >= tokens.size())
-          { PcalDebug.ReportBug("insertNewToken called with lineNum too big");}
-        Vector curLine = (Vector) tokens.elementAt(lineNum) ;
-
-        if (tokNum >= curLine.size())
-          { PcalDebug.ReportBug("insertNewToken called with tokNum too big"); }
     
-        TLAToken curTok = ((TLAToken) curLine.elementAt(tokNum)) ;
-
-        curLine.insertElementAt(new 
-                                  TLAToken(str, 
-                                           curTok.column + curTok.getWidth(), 
-                                           TLAToken.BUILTIN),
-                                tokNum + 1);
-
-        /*******************************************************************
-        * Increment the columns of later tokens in the line by the length  *
-        * of str.                                                          *
-        *******************************************************************/
-        int i = tokNum + 2;
-        while (i < curLine.size())
-          { ((TLAToken) curLine.elementAt(i)).column =
-              ((TLAToken) curLine.elementAt(i)).column + str.length() ;
-            i = i + 1;
-          };
-        this.renormalize() ;
-      }  
+      /*
+       * The following method does not seem to be called from anywhere, so LL
+       * deleted it on 6 Dec 2011.
+       */
+//    public void insertNewToken(String str, IntPair coord) throws TLAExprException
+//      /*********************************************************************
+//      * Inserts a new token into expr right after the token with Java      *
+//      * coordinates coord.  The token has string str and some type other   *
+//      * than STRING.                                                       *
+//      *********************************************************************/
+//      { int lineNum = coord.one ;
+//        int tokNum  = coord.two ;
+//        if (lineNum >= tokens.size())
+//          { PcalDebug.ReportBug("insertNewToken called with lineNum too big");}
+//        Vector curLine = (Vector) tokens.elementAt(lineNum) ;
+//
+//        if (tokNum >= curLine.size())
+//          { PcalDebug.ReportBug("insertNewToken called with tokNum too big"); }
+//    
+//        TLAToken curTok = ((TLAToken) curLine.elementAt(tokNum)) ;
+//
+//        curLine.insertElementAt(new 
+//                                  TLAToken(str, 
+//                                           curTok.column + curTok.getWidth(), 
+//                                           TLAToken.BUILTIN),
+//                                tokNum + 1);
+//
+//        /*******************************************************************
+//        * Increment the columns of later tokens in the line by the length  *
+//        * of str.                                                          *
+//        *******************************************************************/
+//        int i = tokNum + 2;
+//        while (i < curLine.size())
+//          { ((TLAToken) curLine.elementAt(i)).column =
+//              ((TLAToken) curLine.elementAt(i)).column + str.length() ;
+//            i = i + 1;
+//          };
+//        this.renormalize() ;
+//      }  
 
     public static Vector SeqSubstituteForAll(Vector expVec, // of TLAExpr
                                              Vector exprs,  // of TLAExpr
                                              Vector strs) throws TLAExprException   // of String
       /*********************************************************************
       * Produces a vector of new expressions obtained by cloning each      *
-      * expression in expVec and then applying substituteForAll(expres,    *
+      * expression in expVec and then applying substituteForAll(exprs,     *
       * strs) to the clone.                                                *
       *********************************************************************/
       { Vector result = new Vector() ;
@@ -554,11 +638,27 @@ public class TLAExpr
         return result ;
       }      
 
-   public void substituteForAll( Vector exprs , // of TLAExpr
+    public void substituteForAll( Vector exprs , // of TLAExpr
                                   Vector strs    // of String
                                 ) throws TLAExprException
       { substituteForAll(exprs, strs, true); }
 
+    /**
+     * This is called with parenthesize = true only during the initial parsing 
+     * phase (the execution of ParseAlgorithm.getAlgorithm).  It is called with 
+     * parenthesize = false by:
+     * 
+     *   PcalFixIDs.FixExpr : replaces the string of an IDENT token with a
+     *     new one to perform renaming in case of name conflicts.
+     *     
+     *   PcalTLAGen.AddSubscriptsToExpr: adds the primes and "[self]" subscripts
+     *     to variables when needed.
+     *  
+     * @param exprs
+     * @param strs
+     * @param parenthesize
+     * @throws TLAExprException
+     */
     public void substituteForAll( Vector exprs , // of TLAExpr
                                   Vector strs ,  // of String
                                   boolean parenthesize
@@ -587,7 +687,7 @@ public class TLAExpr
       * in which id does not represent the name of a record field.         *
       * If parenthesize = true, then parentheses are put around the        *
       * substituted string unless it or the current expression consists    *
-      * of just on token.                                                  *
+      * of just one token.                                                 *
       *********************************************************************/
       { IntPair next =  new IntPair(0, 0) ;
         while (next != null)
@@ -616,7 +716,7 @@ public class TLAExpr
       *    In this case, the `string' and `type' fields of tok are         *
       *    set to the corresponding fields of etok, and the                *
       *    remainder tokens on the current line are shifted                *
-      *    to the new string has more characters than the                  *
+      *    to the right if the new string has more characters than the     *
       *    original.                                                       *
       *                                                                    *
       * Case 2: expr consists of multiple tokens.                          *
@@ -629,16 +729,54 @@ public class TLAExpr
       *    last line of the newly inserted tokens are incremented by the   *
       *    appropriate amount to shift them to the right of the inserted   *
       *    tokens.                                                         *
+      *                                                                    *
+      *    Note: if you want to change this method so it doesn't always    *
+      *    put parentheses around multi-token expressions, then see the    *
+      *    comments preceding TLAToken.beginSubst before doing anything.   *
       *********************************************************************/
       { /*******************************************************************
         * First handle of the case when current expression has a single    *
         * token.                                                           *
         *******************************************************************/
+    	  /*
+    	   * Note that in this case, the origin field of this TLAExpr object
+    	   * should be unchanged.
+    	   */
+        TLAToken tok = this.tokenAt(coord) ;
+        Region tokSource= tok.source;
         if (this.isOneToken())
           { TLAExpr cloned = expr.cloneAndNormalize() ;
+            if (tokSource != null) {
+               cloned.firstToken().getBeginSubst().addAll(tok.getBeginSubst());
+               cloned.firstToken().getBeginSubst().addElement(tokSource.getBegin());
+               cloned.lastToken().getEndSubst().addAll(tok.getEndSubst());
+               cloned.lastToken().getEndSubst().addElement(tokSource.getEnd());
+            }
             this.tokens = cloned.tokens ;
             this.anchorTokens = cloned.anchorTokens ;
             this.anchorTokCol = cloned.anchorTokCol ;
+
+// The approach of adding dummy tokens to an expression to indicate 
+// substitution produced an error when normalizing the expression.  Rather
+// than risking any further bugs appearing because of it, I'm backing out
+// of that and doing something else that cannot make any changes to the
+// existing translation.
+//
+//            /**
+//             * Insert BEGIN/END_REPLACEMENT tokens
+//             */
+//            Region tokSource = tok.source ;
+//            if (tokSource != null) {
+//                Vector line = (Vector) this.tokens.elementAt(0) ;
+//                line.insertElementAt(new TLAToken("", tok.column, TLAToken.BEGIN_REPLACEMENT, 
+//                          new Region (tokSource.getBegin(), 
+//                                      tokSource.getBegin())), 0) ;
+//                line.add(new TLAToken("", tok.column, TLAToken.END_REPLACEMENT, 
+//                          new Region (tokSource.getEnd(), 
+//                                      tokSource.getEnd()))) ;
+//                
+//            }
+
             return null ;
           } ;
 
@@ -652,7 +790,6 @@ public class TLAExpr
         *                                                                  *
         * and delete tokens to right of tok from expr.                     *
         *******************************************************************/
-        TLAToken tok = this.tokenAt(coord) ;
         Vector tokLine = (Vector) this.tokens.elementAt(coord.one) ;
         int spaces = 0 ;
         if (coord.two + 1 < tokLine.size())
@@ -660,6 +797,7 @@ public class TLAExpr
             spaces = nextTok.column - (tok.column + tok.getWidth()) ;
           } ;
         Vector restOfLine = new Vector() ;
+        
         while (coord.two + 1 < tokLine.size())
           { restOfLine.add(tokLine.elementAt(coord.two + 1)) ;
             tokLine.remove(coord.two + 1) ;
@@ -684,11 +822,22 @@ public class TLAExpr
                 (TLAToken) ((Vector) expr.tokens.elementAt(0)).elementAt(0) ;
             tok.string = etok.string ;
             tok.type   = etok.type ;
+            tok.source = etok.source;
+            /*
+             * Set tok.begin/endSubst to the sequence 
+             * 
+             *   tok.begin/EndSubst \o << tok.source.begin/end >>
+             *      \o etok.begin/EndSubst
+             */
+            if (tokSource != null) {
+                tok.getBeginSubst().addElement(tokSource.getBegin());
+                tok.getEndSubst().addElement(tokSource.getEnd());
+            }
+            tok.getBeginSubst().addAll(etok.getBeginSubst());
+            tok.getEndSubst().addAll(etok.getEndSubst());
           } 
         else
           { /***************************************************************
-            * There are multiple tokens.                                   *
-            *                                                              *
             * Replace tok by "(" token if par = true, and set indent to    *
             * the amount to indent the first line of inserted tokens.      *
             ***************************************************************/
@@ -701,12 +850,37 @@ public class TLAExpr
             ***************************************************************/
             boolean doInsert = true;
             if (par) {
+                /*
+                 * Turn tok into a new "(" token.  Must reset its
+                 * source, beginSubst, and endSubst fields, and add its
+                 * original source begin/end to the begin/endSubst vectors
+                 * if it's not null.
+                 */
                 tok.string = "(" ;
                 tok.type   = TLAToken.BUILTIN ;
                 doInsert = false ;
+                tok.source = null ;
+                /*
+                 * Append tokSource to tok.beginSubst.
+                 * We need to set tok.endSubst to << >>, but we
+                 * do that when we add the ")" token, because we
+                 * need to set its endSubst to tok.endSubst \o tokSource.
+                 */
+                if (tokSource != null) {
+                    tok.getBeginSubst().addElement(tokSource.getBegin());
+                }       
             }
             int i = 0 ;
             TLAExpr newExpr = expr.cloneAndNormalize() ;
+            /**
+             * If we're not going to insert a parenthesis and tok has a source,
+             * then add its beginning to the first token's beginSubst vector and
+             * its end to the last token's endSubst vector.
+             */
+            if ((! par) && (tokSource != null)) {
+                newExpr.firstToken().getBeginSubst().addElement(tokSource.getBegin());
+                newExpr.lastToken().getEndSubst().addElement(tokSource.getEnd());
+            }
             while (i < newExpr.tokens.size())
               { Vector eline = (Vector) newExpr.tokens.elementAt(i) ;
                 int j = 0 ;
@@ -717,6 +891,9 @@ public class TLAExpr
                     if (doInsert) {
                         tok.string = nextTok.string ;
                         tok.type = nextTok.type ;
+                        if (tokSource != null) {
+                            nextTok.getBeginSubst().addElement(tokSource.getBegin());
+                        }
                         doInsert = false ; 
                     }
                     else line.add(nextTok) ;
@@ -758,13 +935,52 @@ public class TLAExpr
                   } ;
               } ;
             TLAToken lastTok = (TLAToken) line.elementAt(line.size() - 1) ;
+            int nextTokColumn = lastTok.column + lastTok.getWidth();
             if (par) {
+                /**
+                 * Create the new ")" token, and add if the replaced token's
+                 * source is not null, then add its right endpoint location to 
+                 * the ")" token's endSubst vector.
+                 */
                 TLAToken rParen =
                     new TLAToken(")",
                                  lastTok.column + lastTok.getWidth(),
                                  TLAToken.BUILTIN );
+                rParen.setEndSubst(tok.getEndSubst());
+                if (tokSource != null) {
+                    rParen.getEndSubst().addElement(tokSource.getEnd());
+                }
+                /*
+                 * Can now reset tok.endSubst.
+                 */
+                tok.setEndSubst(new Vector(2)); 
                 line.add(rParen) ;
+                nextTokColumn++;
             }
+            
+// Removing the replacement tokens because putting them in was apparently
+// not a safe thing to do.
+            /*
+             * Add the BEGIN_ and END_REPLACEMENT tokens to the expression,
+             * first adding the END_REPLACEMENT. 
+             *  
+             * Note: the REPLACEMENT tokens are simply stuck into the
+             * expression rather than inserted by calling insertNewToken.
+             * I think this is safe to do for a zero-width token.
+             */
+//            if (tok.source != null) {
+//              line.add(new TLAToken("", tok.column, TLAToken.END_REPLACEMENT, 
+//        		      new Region (tok.source.getEnd(), tok.source.getEnd()))) ;
+//            }
+//            /*
+//             * Add a BEGIN_REPLACEMENT token.
+//             */
+//            if (tok.source != null) {
+//               ((Vector) this.tokens.elementAt(coord.one)).insertElementAt(
+//            		new TLAToken("", tok.column, TLAToken.BEGIN_REPLACEMENT, 
+//              		      new Region (tok.source.getBegin(), 
+//              		    		      tok.source.getBegin())), coord.two) ;
+//            }
           } 
 
         IntPair result = new IntPair(curLine, line.size()-1);
@@ -795,6 +1011,14 @@ public class TLAExpr
               }
           } ;
         this.renormalize() ;
+//System.out.println("Begin to Return") ;
+//System.out.println(this.toString());
+//for (int i = 0; i < this.tokens.size(); i++) {
+//	System.out.println("line " + i + ":") ;
+//	Debug.printVector((Vector) this.tokens.elementAt(i), "theline") ;
+//}
+//Debug.printVector(this.tokens, "foo");
+//System.out.println("Return");
         return this.stepCoord(result, 1);
       }     
 
@@ -925,6 +1149,16 @@ public class TLAExpr
              && (tokens.size() == 1)
              && ( ((Vector) tokens.elementAt(0)).size() == 1 ) ;
      }
+   
+   public TLAToken firstToken() {
+       Vector line = (Vector) this.tokens.elementAt(0);
+       return (TLAToken) line.elementAt(0);
+   }
+   
+   public TLAToken lastToken() {
+       Vector line = (Vector) this.tokens.elementAt(this.tokens.size()-1);
+       return (TLAToken) line.elementAt(line.size()-1);
+   }
   /***************** private and debugging methods *********************/
 
    private static String SpacesString(int n)

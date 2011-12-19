@@ -70,7 +70,7 @@ class Test
     public static TLAExpr TokVectorToExpr(Vector vec, int spaces)
       /*********************************************************************
       * If vec is a vector of TLAToken objects, then this method returns   *
-      * a TLAExpr dexribing a one-line expression composed of clones of    *
+      * a TLAExpr describing a one-line expression composed of clones of   *
       * the tokens in vec separated by `spaces' spaces.                    *
       *********************************************************************/
       { Vector firstLine = new Vector() ;

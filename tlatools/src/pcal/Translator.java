@@ -25,10 +25,12 @@ public class Translator
      * delegates the call to the {@link trans#main()}
      * @param args
      */
-    public int runTranslation(String[] args)
+//    public int runTranslation(String[] args)
+    public TLAtoPCalMapping runTranslation(String[] args) 
     {
         init();
-        int status = trans.runMe(args);
+//        int status = trans.runMe(args);
+        TLAtoPCalMapping status = trans.runMe(args);  
         return status;
     }
 

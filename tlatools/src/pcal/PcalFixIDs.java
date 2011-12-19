@@ -396,8 +396,15 @@ public class PcalFixIDs {
     }
 
     private static void FixExpr(TLAExpr expr, String context) throws PcalFixIDException {
+        /**
+         * Set stringVec to the vector of identifiers (strings) that come from IDENT tokens
+         * in expr, and set exprVect to the vector of expressions, each of which
+         * contains a single token whose string is the identifier substituted for the
+         * corresponding identifier of stringVec.
+        */
         Vector exprVec = new Vector();   // the substituting exprs
         Vector stringVec = new Vector(); // the substituted  ids
+        Vector tokenVec = new Vector();  // the 
 
         for (int i = 0; i < expr.tokens.size(); i++) {
             Vector tv = (Vector) expr.tokens.elementAt(i);

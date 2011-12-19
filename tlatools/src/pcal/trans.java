@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Vector;
 
+import pcal.MappingObject.Break;
 import pcal.exception.FileToStringVectorException;
 import pcal.exception.ParseAlgorithmException;
 import pcal.exception.PcalResourceFileReaderException;
@@ -67,6 +68,9 @@ import util.ToolIO;
 *                   algorithms should work with the "version 1.5" option.) *
 *                 - Permitted previously defined macros to be called       *
 *                   inside a macro definition.                             *
+*                                                                          *
+*   Version 1.7: (December 2011?)                                          *
+*                 - Translator adds "BEGIN/END TRANSLATION" if needed.     *
 * -----------------------------------------------------------------        *
 *                                                                          *
 * This is the main method of the +CAL to TLA+ translation program.         *
@@ -245,8 +249,22 @@ class trans
      * @return one of {@link trans#STATUS_OK}, {@link trans#STATUS_EXIT_WITH_ERRORS}, 
      * {@link trans#STATUS_EXIT_WITH_ERRORS}
      * indicating the status
+     * 
+     * Modified by LL on 16 Dec 2011.  Changed the return value to the
+     * TLAtoPCalMapping object for the translation.  (The status return
+     * value was not being used.)  If the translation fails, it returns
+     * null.
      */
-    public static int runMe(String[] args)
+    /**
+     * @param args
+     * @return
+     */
+    /**
+     * @param args
+     * @return
+     */
+//    public static int runMe(String[] args)  
+    public static TLAtoPCalMapping runMe(String[] args)   // added for testing
     {
         /*********************************************************************
         * Get and print version number.                                      *
@@ -266,7 +284,7 @@ class trans
 
         // SZ Mar 9, 2009:
         /*
-         * This method is called in order to make sure, that the
+         * This method is called in order to make sure, that  the
          * parameters are not sticky because these are could have been initialized
          * by the previous run  
          */
@@ -274,11 +292,20 @@ class trans
         /*********************************************************************
         * Get and process arguments.                                         
         *********************************************************************/
+        
+        /**
+         * Create the new TLAtoPCalMapping object, call it mapping
+         * here and set PcalParams.tlaPcalMapping to point to it.
+         */
+        TLAtoPCalMapping mapping = new TLAtoPCalMapping() ;
+        PcalParams.tlaPcalMapping = mapping;
+        
         int status = parseAndProcessArguments(args);
 
         if (status != STATUS_OK)
         {
-            return exitWithStatus(status);
+//            return exitWithStatus(status);
+            return new TLAtoPCalMapping() ; // added for testing
         }
 
         /*********************************************************************
@@ -293,7 +320,8 @@ class trans
         } catch (FileToStringVectorException e)
         {
             PcalDebug.reportError(e);
-            return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
+//            return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
+            return null ; // added for testing
         }
 
         /*********************************************************************
@@ -388,144 +416,41 @@ class trans
          *********************************************************************/
         int algLine = 0;
         int algCol = -1;
-        // Aborted version 1.31 code:
-        //
-        // if (PcalParams.fromPcalFile)
-        // {
-        // /******************************************************************
-        // * Input is .pcal file. *
-        // * *
-        // * Copy everything before the "--algorithm" line to outputVec, *
-        // * processing any version and option statement. *
-        // ******************************************************************/
-        //
-        // // We use curLoc to keep track of the current position
-        // // If we find an error in parsing the beginning of the
-        // // file, we set curLoc.one to the next line after the end
-        // // of the input.
-        // IntPair curLoc = new IntPair(0, 0);
-        //
-        // String curLine;
-        //
-        // // Process any version statement.
-        // if (!ParseAlgorithm.ProcessVersion(untabInputVec, outputVec, curLoc))
-        // {
-        // return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
-        // }
-        //
-        // status = ParseAlgorithm.ProcessOptions(untabInputVec, outputVec, curLoc);
-        // if (status != STATUS_OK)
-        // {
-        // return exitWithStatus(status);
-        // }
-        //
-        // /*****************************************************************
-        // * We are now past any version and options statement. We set *
-        // * curLoc to the point immediately after the "algorithm" *
-        // * statement, copying everything up to that point into outputVec *
-        // *****************************************************************/
-        // try
-        // {
-        // /***********************************************************
-        // * We first find the beginning of the algorithm and set *
-        // * PcalParams.endOfPreamble, algLine, and algCol Find the *
-        // * "algorithm" token. *
-        // ***********************************************************/
-        // ParseAlgorithm.FindToken(PcalParams.PcalBeginAlg, untabInputVec, outputVec, curLoc, false,
-        // "Beginning of algorithm not found.");
-        // PcalParams.endOfPreamble = new IntPair(curLoc.one, curLoc.two - PcalParams.PcalBeginAlg.length());
-        //
-        // // We can set algLine and algCol to the coordinates of curLoc
-        // algLine = curLoc.one;
-        // algCol = curLoc.two;
-        //
-        // // Skip to the algorithm's name, replacing comments with spaces.
-        // String line = ParseAlgorithm.GotoNextNonSpaceOrComment(untabInputVec, null, curLoc, true);
-        //
-        // // Skip to end of the name.
-        // curLoc.two = ParseAlgorithm.NextNonIdChar(line, curLoc.two);
-        //
-        // // Skip to the next non-comment token, replacing comments with spaces.
-        // line = ParseAlgorithm.GotoNextNonSpaceOrComment(untabInputVec, null, curLoc, true);
-        //
-        // // Now skip to the end of the algorithm. The algorithm uses
-        // // the C-syntax iff the next char is a "{".
-        // if (line.charAt(curLoc.two) == '{')
-        // {
-        // // This is a C-syntax algorithm. We find the end of the
-        // // algorithm by searching for the matching right brace.
-        // ParseAlgorithm.FindMatchingBrace(untabInputVec, null, curLoc, true,
-        // "Right brace ending algorithm not found.");
-        // } else
-        // {
-        // // This is a P-syntax algorithm. We find the end of the
-        // // algorithm by searching for "end algorithm".
-        // boolean found = false;
-        // while (!found)
-        // {
-        // // find the next "end"
-        // ParseAlgorithm.FindToken("end", untabInputVec, null, curLoc, true,
-        // "End of algorithm not found.");
-        //
-        // // Go to next algorithm token. This is the end of the
-        // // algorithm iff the next part of the line is "algorithm".
-        // line = ParseAlgorithm.GotoNextNonSpaceOrComment(untabInputVec, null, curLoc, true);
-        // if (line.substring(curLoc.two).startsWith("algorithm"))
-        // {
-        // found = true;
-        // curLoc.two = curLoc.two + "algorithm".length();
-        // }
-        // }
-        // }
-        // PcalParams.inputSuffixLoc = new IntPair(curLoc.one, curLoc.two);
-        // } catch (ParseAlgorithmException e)
-        // {
-        // PcalDebug.reportError(e);
-        // return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
-        // }
-        //
-        // // We now put \* BEGIN/END TRANSLATION lines in the output file
-        // // and set translationLine.
-        // translationLine = outputVec.size();
-        // outputVec.addElement("\\******** BEGIN TRANSLATION ********");
-        // outputVec.addElement("\\******** END TRANSLATION ********");
-        //
-        // } // end if (PcalParams.fromPcalFile)
-        // else
-        // {
-        /*********************************************************************
-        * Input is .tla file.                                                *
-        * Delete the previous version of the translation (if it exists) from *
-        * inputVec.  Set translationLine to the number of the line after     *
-        * which the translation is to be inserted.  (Line numbering is by    *
-        * Java ordinals.)                                                    *
-        *                                                                    *
-        * Note: we remove the previous version from inputVec, because that's *
-        * where the translated output is going to go, and also from          *
-        * untabInputVec, because we will then detect if the begin and end    *
-        * translation lines contain part of the algorithm within them.       *
-        **********************************************************************/
+        /*******************************************************************
+        * If the BEGIN/END TRANSLATION region exists, then set             *
+        * translationLine to the number of the line after which the        *
+        * translation is to be inserted and delete the previous version    *
+        * of the translation (if it exists) from inputVec.  (Line          *
+        * numbering is by Java ordinals.)  If the region doesn't exist,    *
+        * set translationLine to -1.                                       *
+        *                                                                  *
+        * Note: we remove the previous version from inputVec, because      *
+        * that's where the translated output is going to go, and also      *
+        * from untabInputVec, because we will then detect if the begin     *
+        * and end translation lines contain part of the algorithm within   *
+        * them.                                                            *
+        *******************************************************************/
         translationLine = findTokenPair(untabInputVec, 0, PcalParams.BeginXlation1, PcalParams.BeginXlation2);
-        if (translationLine == -1)
+        if (translationLine != -1)
         {
-            PcalDebug.reportError("No line containing `" + PcalParams.BeginXlation1 + " " + PcalParams.BeginXlation2);
-            return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
-        }
+            
 
-        int endTranslationLine = findTokenPair(untabInputVec, translationLine + 1, PcalParams.EndXlation1,
+            int endTranslationLine = findTokenPair(untabInputVec, translationLine + 1, PcalParams.EndXlation1,
                 PcalParams.EndXlation2);
-        if (endTranslationLine == -1)
-        {
-            PcalDebug.reportError("No line containing `" + PcalParams.EndXlation1 + " " + PcalParams.EndXlation2);
-            return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
-        }
+            if (endTranslationLine == -1)
+            {
+                PcalDebug.reportError("No line containing `" + PcalParams.EndXlation1 + " " + PcalParams.EndXlation2);
+//                return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
+                return null;
+            }
 
-        endTranslationLine = endTranslationLine - 1;
-        while (translationLine < endTranslationLine)
-        {
-            inputVec.remove(endTranslationLine);
-            untabInputVec.remove(endTranslationLine);
             endTranslationLine = endTranslationLine - 1;
+            while (translationLine < endTranslationLine)
+            {
+                inputVec.remove(endTranslationLine);
+                untabInputVec.remove(endTranslationLine);
+                endTranslationLine = endTranslationLine - 1;
+            }
         }
 
         // Search for "--algorithm" or "--fair".
@@ -562,13 +487,127 @@ class trans
             ;
         }
         ;
-
         if (!foundBegin)
         {
             PcalDebug.reportError("Beginning of algorithm string " + PcalParams.BeginAlg + " not found.");
-            return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
+//            return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
+            return null ; // added for testing
         }
         ;
+        
+        /*
+         * Set the algColumn and algLine fields of the mapping object.
+         */
+        mapping.algColumn = algCol;
+        mapping.algLine = algLine;
+        
+        if (translationLine == -1) 
+        {
+           /****************************************************************
+           * Insert BEGIN/END TRANSLATION comments immediately after the   *
+           * end of the comment that contains the beginning of the         *
+           * algorithm.  Set translationLine to the (Java) line number of  *
+           * the BEGIN TRANSLATION.                                        *
+           ****************************************************************/
+        	
+            // Set ecLine, ecCol to the position immediately after the
+            // *) that closes the current comment.
+        	int depth = 1 ;
+            int ecLine = algLine ;
+            int ecCol  = algCol ;
+            boolean notFound = true ;
+            while (notFound && ecLine < untabInputVec.size()) {
+            	char[] line = ((String) untabInputVec.elementAt(ecLine)).toCharArray();
+            	
+                // check current line 
+                while (notFound && ecCol < line.length-1)	 {
+                	char ch = line[ecCol] ;
+                	char ch2 = line[ecCol+1] ;
+                	
+// The following code isn't needed because the algorithm is inside a comment, and 
+// quotes and \* have no effect in determining where the comment ends.
+//
+//                	if (ch == '"') {
+//                		// gobble string
+//                		ch = ch2 ;
+//                		ecCol++ ;
+//                		while (ch != '"') {
+//                			if (ch == '\\') {
+//                				ecCol = ecCol + 2;
+//                			} 
+//                			else {
+//                				ecCol++ ;
+//                			} ;
+//                			if (ecCol < line.length - 1) {
+//                			   ch = line[ecCol] ;
+//                			}
+//                			else {
+//                				ch = '"' ;
+//                			}
+//                		} ;
+//                		ecCol++ ;
+//                	} 
+//                        	
+//                	if (ch == '\\' && ch2 == '*' ) {
+//                		// end of line comment, skip to end of line
+//                		ecCol = 214748364;  // a very large int
+//                	}
+                	if (ch == '(' && ch2 == '*') {
+                		// left comment delimiter
+                    	depth++;
+                    	ecCol = ecCol + 2;
+                	}
+                	else if (ch == '*' && ch2 == ')') {
+                		// right comment delimiter
+                		depth--;
+                		ecCol = ecCol + 2;
+                		if (depth == 0) {
+                			notFound = false ;
+                		}
+                	}
+                	else {
+                		// not an interesting character
+                		ecCol++ ;
+                	}
+                }
+            	
+            	// if not found, go to next line
+            	if (notFound) {
+            		ecLine++ ;
+            		ecCol = 0;
+            	}
+            }
+            
+            if (notFound) {
+            	PcalDebug.reportError("Algorithm not in properly terminated comment");
+//                return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
+                return null ; // added for testing
+            }
+            
+            // Report an error  if there's something else on the line that doesn't begin with "\*".  This is probably
+            
+            String endStuff = ((String) untabInputVec.elementAt(ecLine)).substring(ecCol).trim() ;
+            
+            if (!endStuff.equals("") && !endStuff.startsWith("\\*")) {
+            	PcalDebug.reportError("Text on same line following `*)' that ends the \n   comment containing the algorithm.");
+//                return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
+                return null ; // added for testing
+            } ;
+            
+            inputVec.insertElementAt("\\* BEGIN TRANSLATION", ecLine+1) ;
+            untabInputVec.insertElementAt("\\* BEGIN TRANSLATION", ecLine+1) ;
+            inputVec.insertElementAt("\\* END TRANSLATION", ecLine+2) ;
+            untabInputVec.insertElementAt("\\* END TRANSLATION", ecLine+2) ;
+
+            translationLine = ecLine + 1;
+//System.out.println(ecLine + ", " + ecCol);
+//Debug.printVector(inputVec, "foo");
+        }
+        
+        /*
+         * Set the mappings start line.
+         */
+        mapping.tlaStartLine = translationLine + 1; 
 
         /*********************************************************************
         * Added by LL on 18 Feb 2006 to fix bugs related to handling of      *
@@ -584,7 +623,8 @@ class trans
         } catch (ParseAlgorithmException e)
         {
             PcalDebug.reportError(e);
-            return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
+//            return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
+            return null ; // added for testing
         }
         // } // end else of if (PcalParams.fromPcalFile) -- i.e., end processing
         // of .tla input file.
@@ -614,7 +654,8 @@ class trans
         } catch (ParseAlgorithmException e)
         {
             PcalDebug.reportError(e);
-            return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
+//            return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
+            return null ; // added for testing
         }
         PcalDebug.reportInfo("Parsing completed.");
 // tla-pcal debugging
@@ -626,7 +667,8 @@ class trans
         if (PcalParams.WriteASTFlag)
         {
             WriteAST(ast);
-            return exitWithStatus(STATUS_EXIT_WITHOUT_ERROR);
+//            return exitWithStatus(STATUS_EXIT_WITHOUT_ERROR);
+            return null ; // added for testing
         }
         ;
 
@@ -653,7 +695,8 @@ class trans
         } catch (RemoveNameConflictsException e1)
         {
             PcalDebug.reportError(e1);
-            return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
+//            return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
+            return null ; // added for testing
         }
 
         /*********************************************************************
@@ -674,7 +717,8 @@ class trans
             } catch (TLCTranslationException e)
             {
                 PcalDebug.reportError(e);
-                return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
+//                return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
+                return null ; // added for testing
             }
         } else
         {
@@ -684,7 +728,8 @@ class trans
             } catch (RemoveNameConflictsException e)
             {
                 PcalDebug.reportError(e);
-                return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
+//                return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
+                return null ; // added for testing
             }
         }
         ;
@@ -713,7 +758,8 @@ class trans
         {
             PcalDebug.reportError("Could not rename input file " + PcalParams.TLAInputFile + ".tla" + " to "
                     + PcalParams.TLAInputFile + ".old");
-            return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
+//            return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
+            return null ; // added for testing
         }
         ;
         // }
@@ -763,7 +809,8 @@ class trans
         } catch (StringVectorToFileException e)
         {
             PcalDebug.reportError(e);
-            return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
+//            return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
+            return null ; // added for testing
         }
 
         PcalDebug.reportInfo("New file " + PcalParams.TLAInputFile + ".tla" + " written.");
@@ -784,7 +831,8 @@ class trans
                 } catch (FileToStringVectorException e)
                 {
                     PcalDebug.reportError(e);
-                    return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
+//                    return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
+                    return null ; // added for testing
                 }
             } else
             {
@@ -892,13 +940,15 @@ class trans
             } catch (StringVectorToFileException e)
             {
                 PcalDebug.reportError(e);
-                return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
+//                return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
+                return null ; // added for testing
             }
             PcalDebug.reportInfo("New file " + PcalParams.TLAInputFile + ".cfg" + " written.");
         }
         ;
 
-        return exitWithStatus(STATUS_EXIT_WITHOUT_ERROR);
+//        return exitWithStatus(STATUS_EXIT_WITHOUT_ERROR);
+        return PcalParams.tlaPcalMapping ; // added for testing
     } // END main
 
     /**

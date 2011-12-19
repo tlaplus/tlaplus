@@ -3,6 +3,7 @@ package pcal;
 import java.util.Vector;
 import pcal.exception.PcalTLAGenException;
 import pcal.exception.TLAExprException;
+import tla2tex.Debug;
 
 /****************************************************************************
  * Given an exploded and disambiguated AST, generate the equivalent TLA+.
@@ -33,13 +34,47 @@ public class PcalTLAGen
        // to do something cleverer or else make it a user option.
 
     // Private class variables
-    /* The tlacode field accumulates the translation as it is constructed.  It is
-     * a vector of separate lines.  (I hope, but am not sure, that there
-     * is no "\n" character inside a line.)
+    /** The tlacode field accumulates the translation as it is constructed.  It 
+     * should be a vector of separate lines.  Keiths original implementation put
+     * multiple lines in a single element of tlacode in:
+     *   
+     *   GenVarsAndDefs
+     *   GenVarDecl
      */
     private Vector tlacode = new Vector(); /* of lines */
-    private boolean selfIsSelf = false; 
+    
+    /**
+     * The tlacodeNextLine field accumulates characters for the next
+     * line of tlacode.  It is always a string.  It is assumed that
+     * when it equals "", then a new line can be started without
+     * adding the current string in tlacodeNextLine as a new line.
+     */
+    private String tlacodeNextLine = "" ;
+    
+    /**
+     * mappingVector is a local pointer to {@link TLAtoPCalMapping#mappingVector},
+     * which is used to accumulate the TLA+ to PlusCal mapping.  It approximately
+     * reflects the TLA+ that has been inserted in the {@link PcalTLAGen#tlacode}  
+     * vector.  It is set in the {@link TLAtoPCalMapping#generate} method.
+     */
+    private Vector mappingVector;
+    
+    /**
+     * mappingVectorNextLine contains the sequence of MappingObject objects
+     * that correspond to the strings added to tlacodeNextLine.
+     */
+    private Vector mappingVectorNextLine = new Vector() ;
+    
+    /**
+     * The self field is set to "self" by GenProcess when called for a single process
+     * (rather than a process set) and by GenProcedure for a multiprocess algorithm. 
+     * It is set to the process id by GenProcess when called for a single process.
+     * selfIsSelf is set to true when self is set to "self", and to false when self is
+     * set to a process id.  The self field never seems to be reset to null.
+     */
     private TLAExpr self = null; // changed by LL on 22 jan 2011 from: private String self = null; /* for current process */
+    private boolean selfIsSelf = false; 
+    
     private Vector vars = new Vector(); /* list of all disambiguated vars */
     private Vector pcV = new Vector(); /* sublist of vars of variables representing 
                                           procedure parameters and procedure variables */
@@ -77,8 +112,22 @@ public class PcalTLAGen
     
     public Vector generate(AST ast, PcalSymTab symtab) throws PcalTLAGenException
     {
+        TLAtoPCalMapping map = PcalParams.tlaPcalMapping;
+        mappingVector = new Vector(50);
+        
         st = symtab;
         GenSym(ast, "");
+        
+        map.makeMapping(mappingVector);
+        
+        
+// Debugging
+//for (int i = 0; i < tlacode.size(); i++) {
+//System.out.println("\nline " + i);
+//System.out.println((String) tlacode.elementAt(i)) ;
+//}
+//MappingObject.printMappingVector(mappingVector);
+
         return tlacode;
     }
 
@@ -669,7 +718,12 @@ public class PcalTLAGen
                         lines.addElement(sb.toString());
                         sb = new StringBuffer(NSpaces(here));
                     }
-                    sb = new StringBuffer();
+// Debugging
+//Vector exprVec = rhs.toMappingVector();
+//MappingObject.shiftMappingVector(exprVec, here);
+//MappingObject.printMappingVector(exprVec);
+//System.out.println("origin: " + rhs.getOrigin().toString() );
+//                    sb = new StringBuffer();
                 }
             } else
             {
@@ -1163,6 +1217,14 @@ public class PcalTLAGen
         *******************************************************************/
         Vector lVars = new Vector();
         Vector gVars = new Vector();
+        
+        /**
+         * lVarsSource and gVarsSource are vectors of AST.VarDecl objects that 
+         * generated the elements of lVars and gVars, where PVarDecl objects
+         * are converted to VarDecl objects.
+         */
+        Vector lVarsSource = new Vector();
+        Vector gVarsSource = new Vector();
 
         /*******************************************************************
         * Set gVars to the global variables, including pc and `stack' if   *
@@ -1173,15 +1235,28 @@ public class PcalTLAGen
             {
                 AST.VarDecl decl = (AST.VarDecl) globals.elementAt(i);
                 gVars.addElement(decl.var);
+                gVarsSource.addElement(decl);
                 vars.addElement(decl.var);
             }
         if (! ParseAlgorithm.omitPC) {
           gVars.addElement("pc");
+          /**
+           * For added variables, create a VarDecl with null origin.
+           */
+          AST.VarDecl pcVarDecl = new AST.VarDecl();
+          pcVarDecl.var = "pc";
+          gVarsSource.addElement(pcVarDecl);
           vars.addElement("pc");
         }
         if (procs != null && procs.size() > 0)
         {
             gVars.addElement("stack");
+            /**
+             * For added variables, create a VarDecl with null origin.
+             */
+            AST.VarDecl pcVarDecl = new AST.VarDecl();
+            pcVarDecl.var = "stack";
+            gVarsSource.addElement(pcVarDecl);
             vars.addElement("stack");
         }
         /*******************************************************************
@@ -1196,6 +1271,7 @@ public class PcalTLAGen
                     {
                         AST.PVarDecl decl = (AST.PVarDecl) proc.params.elementAt(p);
                         lVars.addElement(decl.var);
+                        lVarsSource.addElement(decl.toVarDecl()) ;
                         vars.addElement(decl.var);
                         pcV.addElement(decl.var);
                     }
@@ -1204,6 +1280,7 @@ public class PcalTLAGen
                     {
                         AST.PVarDecl decl = (AST.PVarDecl) proc.decls.elementAt(p);
                         lVars.addElement(decl.var);
+                        lVarsSource.addElement(decl.toVarDecl()) ;
                         vars.addElement(decl.var);
                         pcV.addElement(decl.var);
                     }
@@ -1222,6 +1299,7 @@ public class PcalTLAGen
                     {
                         AST.VarDecl decl = (AST.VarDecl) proc.decls.elementAt(p);
                         lVars.addElement(decl.var);
+                        lVarsSource.addElement(decl);
                         vars.addElement(decl.var);
                         if (!proc.isEq)
                             psV.addElement(decl.var);
@@ -1234,7 +1312,7 @@ public class PcalTLAGen
         ********************************************************************/
         if (ParseAlgorithm.hasDefaultInitialization)
         {
-            tlacode.addElement("CONSTANT defaultInitValue");
+            addOneLineOfTLA("CONSTANT defaultInitValue");
         }
         ;
 
@@ -1246,7 +1324,8 @@ public class PcalTLAGen
             * variables.                                                      *
             ******************************************************************/
             gVars.addAll(lVars);
-            GenVarDecl(gVars);
+            gVarsSource.addAll(lVarsSource) ;
+            GenVarDecl(gVars, gVarsSource); // needs to be done
         } else
         {
             /******************************************************************
@@ -1254,67 +1333,90 @@ public class PcalTLAGen
             * global and local variables separately.  Also, set gVars to      *
             * vector of all variables.                                        *
             ******************************************************************/
-            GenVarDecl(gVars);
-            tlacode.addElement("");
-            tlacode.addElement("(* define statement *)");
-            Vector sv = defs.toStringVector();
-            for (int i = 0; i < sv.size(); i++)
-            {
-                tlacode.addElement((String) sv.elementAt(i));
-            }
+            GenVarDecl(gVars, gVarsSource);
+            addOneLineOfTLA("");
+            addOneLineOfTLA("(* define statement *)");
+            addExprToTLA(defs);
+//            Vector sv = defs.toStringVector();
+//            for (int i = 0; i < sv.size(); i++)
+//            {
+//                tlacode.addElement((String) sv.elementAt(i));
+//            }
             ;
-            tlacode.addElement("");
-            GenVarDecl(lVars);
+            addOneLineOfTLA("");
+            GenVarDecl(lVars, lVarsSource); // to be fixed
             gVars.addAll(lVars);
+            gVarsSource.addAll(lVarsSource);
         }
         ;
-        tlacode.addElement("");
+        addOneLineOfTLA("");
 
         /*******************************************************************
-        * Generate definition of vars.                                     *
+        * Generate definition of var.                                     *
         *******************************************************************/
-        StringBuffer var = new StringBuffer("vars == << ");
-        StringBuffer curLine = new StringBuffer("vars == << ");
+//        StringBuffer var = new StringBuffer("vars == << ");
+//        StringBuffer curLine = new StringBuffer("vars == << ");
+        addOneTokenToTLA("vars == << ") ;
+        int indent = tlacodeNextLine.length();
         for (int i = 0; i < gVars.size(); i++)
         {
             if (i > 0)
             {
-                var.append(", ");
-                curLine.append(", ");
+//                var.append(", ");
+//                curLine.append(", ");
+//                tlacodeNextLine = tlacodeNextLine + ", ";
+                addOneTokenToTLA(", ");
             }
             ;
             String vbl = (String) gVars.elementAt(i);
-            if (curLine.length() + vbl.length() + 1 > wrapColumn)
+            AST.VarDecl vblDecl = (AST.VarDecl) gVarsSource.elementAt(i);
+            Region vblOrigin = vblDecl.getOrigin();
+//            if (curLine.length() + vbl.length() + 1 > wrapColumn)
+            if (tlacodeNextLine.length() + vbl.length() + 1 > wrapColumn)
             {
-                curLine = new StringBuffer("vars == << ");
-                var.append("\n" + NSpaces("vars == << ".length()));
+//                curLine = new StringBuffer("vars == << ");
+//                var.append("\n" + NSpaces("vars == << ".length()));
+                endCurrentLineOfTLA();
+                tlacodeNextLine = NSpaces(indent);
             }
-            ;
-            var.append(vbl);
-            curLine.append(vbl);
+//            var.append(vbl);
+//            curLine.append(vbl);
+            addOneSourceTokenToTLA(vbl, vblOrigin);
         }
-        ;
-        if (curLine.length() + " >>".length() + 1 > wrapColumn)
+//        if (curLine.length() + " >>".length() + 1 > wrapColumn)
+        if (tlacodeNextLine.length() + " >>".length() + 1 > wrapColumn)
         {
-            var.append("\n" + NSpaces("vars ==".length()));
+//            var.append("\n" + NSpaces("vars ==".length()));
+            endCurrentLineOfTLA() ;
+            tlacodeNextLine = NSpaces("vars ==".length());
         }
         ;
-        var.append(" >>");
-        tlacode.addElement(var.toString());
-        tlacode.addElement("");
+//        var.append(" >>");
+//        tlacodeNextLine = tlacodeNextLine + " >>";
+        addOneTokenToTLA(" >>");
+//        tlacode.addElement(var.toString());
+        addOneLineOfTLA("");
     }
 
-    /***********************************************************************
-    * Generate a VARIABLE(S) declarations.  The argument is a vector of    *
-    * strings that are the variables to be declared.  It does nothing if   *
-    * the vector has length 0.                                             *
-    *                                                                      *
-    * Method added by LL on 25 Jan 2006.                                   *
-    ***********************************************************************/
-    public void GenVarDecl(Vector varVec)
+    /**
+     * Generate a VARIABLE(S) declarations.  The varVec argument is a vector of
+     * strings that are the variables to be declared.  It does nothing if
+     * the vector has length 0.  The varVecSource argument is a vector
+     * of the same size as varVec that contains the AST.VarDecl objects.
+     * <p>
+     * Method added by LL on 25 Jan 2006.  
+     * 
+     * Modified 16 Dec 2011 to add varVecSource argument and generate TLA to 
+     * PCal mapping.
+     * 
+     * @param varVec A vector of strings.
+     * 
+     * @param varVecSource A vector of AST.VarDecl objects.
+     */
+    public void GenVarDecl(Vector varVec, Vector varVecSource)
     {
-        StringBuffer res = new StringBuffer();
-        StringBuffer curLine = new StringBuffer("VARIABLES ");
+//        StringBuffer res = new StringBuffer();
+//        StringBuffer curLine = new StringBuffer("VARIABLES ");
         // for measuring length
         if (varVec.size() == 0)
         {
@@ -1323,40 +1425,49 @@ public class PcalTLAGen
         ;
         if (varVec.size() > 1)
         {
-            res.append("VARIABLES ");
+//            res.append("VARIABLES ");
+            addOneTokenToTLA("VARIABLES ");
         } else
         {
-            res.append("VARIABLE ");
+//            res.append("VARIABLE ");
+            addOneTokenToTLA("VARIABLE ");
         }
         ;
         for (int i = 0; i < varVec.size(); i++)
         {
             if (i > 0)
             {
-                res.append(", ");
-                curLine.append(", ");
+//                res.append(", ");
+//                curLine.append(", ");
+                addOneTokenToTLA(", ");
             }
             ;
             String vbl = (String) varVec.elementAt(i);
-            if (curLine.length() + vbl.length() + 1 > wrapColumn)
+            AST vblsource = (AST) varVecSource.elementAt(i);
+//            if (curLine.length() + vbl.length() + 1 > wrapColumn)
+            if (tlacodeNextLine.length() + vbl.length() + 1 > wrapColumn)
             {
-                curLine = new StringBuffer("VARIABLES ");
-                res.append("\n");
+//                curLine = new String
+                endCurrentLineOfTLA();
                 if (varVec.size() > 1)
                 {
-                    res.append(NSpaces("VARIABLES ".length()));
+//                    res.append(NSpaces("VARIABLES ".length()));
+                    tlacodeNextLine = tlacodeNextLine + NSpaces("VARIABLES ".length());
                 } else
                 {
-                    res.append(NSpaces("VARIABLE ".length()));
+//                    res.append(NSpaces("VARIABLE ".length()));
+                    tlacodeNextLine = tlacodeNextLine + NSpaces("VARIABLE ".length());
                 }
                 ;
             }
             ;
-            res.append(vbl);
-            curLine.append(vbl);
+//            res.append(vbl);
+//            curLine.append(vbl);
+            addOneSourceTokenToTLA(vbl, vblsource.getOrigin());
         }
         ;
-        tlacode.addElement(res.toString());
+//        tlacode.addElement(res.toString());
+        endCurrentLineOfTLA();
     }
 
     /**************************************/
@@ -1598,6 +1709,17 @@ public class PcalTLAGen
                             /***********************************************
                             * For declaration "v \in ...", add subscript   *
                             * "[CHOOSE self \in Process Id Set : TRUE]".   *
+                            *                                              *
+                            * This weird subscript is needed in the        *
+                            * following weird case:                        *
+                            *                                              *
+                            *    process (P \in S)                         *
+                            *    variable v \in T, w \in R(v)              *
+                            *                                              *
+                            * This produces the following conjunct in      *
+                            * the initial predicate for w:                 *
+                            *                                              *
+                            *   w \in [S -> R(v[CHOOSE self \in S : TRUE]) *
                             ***********************************************/
                             TLAExpr subexpr = proc.id.cloneAndNormalize();
 
@@ -2275,16 +2397,19 @@ public class PcalTLAGen
     /* For variables that need subscripts, add the subscript. */
     /* These are pc, stack, procedure variables, procedure    */
     /* parameters, and variables defined in process sets.     */
-    /* Then, aded primes to variables that have been changed  */
+    /* Then, add primes to variables that have been changed   */
     /* according to c.                                        */
-    /**
-     *********************************************************/
+    /*   exprn : the original expression.                     */
+    /*   sub : the subscript to be added (null if none)       */
+    /*   c : the variables that have been changed (so need to */
+    /*       be primed.                                       */
+    /**********************************************************/
     private TLAExpr AddSubscriptsToExpr(TLAExpr exprn, TLAExpr sub, Changed c) throws PcalTLAGenException
     {
 
         Vector exprVec = new Vector(); // the substituting exprs
         Vector stringVec = new Vector(); // the substituted ids
-        TLAExpr expr = exprn.cloneAndNormalize();
+        TLAExpr expr = exprn.cloneAndNormalize();  // the expression to be returned
 
         for (int i = 0; i < expr.tokens.size(); i++)
         {
@@ -2299,7 +2424,17 @@ public class PcalTLAGen
                     stringVec.addElement(tok.string);
                     TLAExpr exp = new TLAExpr();
                     exp.addLine();
-                    exp.addToken(new TLAToken(tok.string, 0, TLAToken.IDENT));
+                    /*
+                     * 15 Dec 2011:  The following code added to replace the
+                     *    
+                     *    exp.addToken(new TLAToken(tok.string, 0, TLAToken.IDENT));
+                     *    
+                     * that is commented out.
+                     */
+                    TLAToken newTok = tok.Clone() ;
+                    newTok.column = 0;
+                    exp.addToken(newTok) ;
+                    // exp.addToken(new TLAToken(tok.string, 0, TLAToken.IDENT));
                     if (prime)
                         /*****************************************************
                         * Modified by LL on 30 Aug 2007.  The following      *
@@ -2307,7 +2442,7 @@ public class PcalTLAGen
                         * addToken.  See the comments for                    *
                         * TLAExpr.addTokenOffset().                          *
                         *****************************************************/
-                        exp.addTokenOffset(new TLAToken("'", 0, TLAToken.BUILTIN), 0);
+                        exp.addTokenOffset(new TLAToken("'", 0, TLAToken.BUILTIN, true), 0);
                     if (subr)
                     {
                         TLAExpr subexp = sub.cloneAndNormalize();
@@ -2349,12 +2484,19 @@ public class PcalTLAGen
      * only for a single subscript.                                         *
      *                                                                      *
      * If string is null, then returns null.                                *
+     *                                                                      *
+     * Since this is used only to add "[self]", there is no need to add     *
+     * any REPLACEMENT tokens to the expression.  Moreover, the added       *
+     * subscript's tokens have a null source field because they don't come  *
+     * from any PCal code.  The new expression is given the same origin as  *
+     * the original one.                                                    *
      ***********************************************************************/
     private static TLAExpr SubExpr(TLAExpr sub)
     {
         if (sub != null)
         { 
             TLAExpr expr = sub.cloneAndNormalize();
+              // This preserves the origin of the expression
             for (int i = 0; i < expr.tokens.size(); i++) {
                 Vector tokenVec = (Vector) expr.tokens.elementAt(i);
                 for (int j = 0; j < tokenVec.size(); j++) {
@@ -2362,10 +2504,18 @@ public class PcalTLAGen
                    tok.column = tok.column + 1;
                 }
                 if (i == 0) {
-                    tokenVec.insertElementAt(new TLAToken("[", 0, TLAToken.BUILTIN), 0);
+                    /*
+                     * Set isAppended field of the "[" and "]" to true iff the first
+                     * token of sub has isAppended field true, which should be the
+                     * case iff it is the "self" token.
+                     */
+                    tokenVec.insertElementAt(
+                          new TLAToken("[", 0, TLAToken.BUILTIN, sub.firstToken().isAppended()),
+                          0);
                 }
             }
-            expr.addTokenOffset(new TLAToken("]", 0, TLAToken.BUILTIN), 0);
+            expr.addTokenOffset(
+                    new TLAToken("]", 0, TLAToken.BUILTIN, sub.firstToken().isAppended()), 0);
             return expr;
         } else {
             return null;
@@ -2375,9 +2525,9 @@ public class PcalTLAGen
     /*********************************************************/
     /* Gives the string to use when subscripting a variable. */
     /*********************************************************/
-    // LL comment: This makes no sense to me, since why should one use
-    // a null subscript for a variable in the context of a process?
-    // What the ... is going on here?
+    // LL comment: it appears that PcalTLAGen.self is the 
+    // current process id if this is being called in the context
+    // of a process declared with `process (P = id)'.
     private TLAExpr Self(String context)
     {
         TLAExpr s = null;
@@ -2392,7 +2542,13 @@ public class PcalTLAGen
     }
 
     private static TLAExpr  selfAsExpr() {
-        TLAToken selfToken = new TLAToken("self", 0, TLAToken.IDENT);
+        /*
+         * This is a token that does not correspond to anything in the
+         * PCal code, so it should have a null source field.
+         * It has a true isAppended field because it is always appended
+         * as a subscript to a variable.
+         */
+        TLAToken selfToken = new TLAToken("self", 0, TLAToken.IDENT, true);
         Vector tokenVec = new Vector();
         tokenVec.addElement(selfToken);
         Vector tokens = new Vector();
@@ -2410,8 +2566,9 @@ public class PcalTLAGen
     * expression any part of which was an expression in the input.         *
     * Fortunately, it is now called only for the expression "[self]", so   *
     * it is effectively a no-op.                                           *
+    * Comment added 15 Dec 2011: In fact, it's not called at all.          *
     ***********************************************************************/
-    public static void MakeExprPretty(TLAExpr expr)
+    public static void ObsoleteMakeExprPretty(TLAExpr expr)
     {
         /*********************************************************************
          * Sets columns so this expr looks nice and tight.                   *
@@ -2465,7 +2622,7 @@ public class PcalTLAGen
     * if it may need parenthesizing.  This is used only to prevent         *
     * parsing errors when the expression appears immediately to the right  *
     * of an "=" in the spec.  This is a rare situation, so it would be     *
-    * nice to add the parentheses are really needed.  For now, the         *
+    * nice to add the parentheses only if really necessary.  For now, the  *
     * parentheses are added if one of the following tokens occur outside   *
     * parentheses and not inside a string:                                 *
     *                                                                      *
@@ -2672,6 +2829,137 @@ public class PcalTLAGen
         return vec;
     }
     
+    /*
+     * The following methods are used to add code to tlacode and add the
+     * appropriate objects to mappingVector
+     */
+    
+    /**
+     * Adds one token to tlacodeNextLine, and adds the appropriate
+     * Begin/EndTLAToken objects to mappingVectorNextLine.  The
+     * ...TLAToken objects mark a region that excludes beginning and
+     * ending space characters of token--unlessthe token has
+     * only space characters.
+     * 
+     * @param token
+     */
+    private void addOneTokenToTLA(String token) {
+        String trimmedToken = token.trim() ;
+        
+        int numberOfLeftTrimmedTokens = 
+           (trimmedToken.length() == 0) ? -1 :                   
+             token.indexOf(trimmedToken.charAt(0));
+        
+        /**
+         * Handle a token of only space characters. 
+         */
+        if (numberOfLeftTrimmedTokens == -1) {
+            numberOfLeftTrimmedTokens = 0 ;
+            trimmedToken = token ;
+        }
+        
+        int objBegin = tlacodeNextLine.length() + numberOfLeftTrimmedTokens;
+        mappingVectorNextLine.addElement(new MappingObject.BeginTLAToken(objBegin));
+        mappingVectorNextLine.addElement(new MappingObject.EndTLAToken(objBegin + trimmedToken.length()));
+        tlacodeNextLine = tlacodeNextLine + token;
+    }
+    
+    /**
+     * If region is non-null, then adds string str to the TLA output
+     * as a SourceToken object with that region.  Otherwise, it adds
+     * it as a TLAToken, with Begin/EndTLAToken objects.
+     * 
+     * @param str
+     * @param region
+     */
+    private void addOneSourceTokenToTLA(String str, Region region) {
+        if (region == null) {
+            addOneTokenToTLA(str);
+            return;
+        }
+        
+        int beginCol = tlacodeNextLine.length();
+        int endCol = beginCol + str.length();
+        mappingVectorNextLine.addElement(
+                new MappingObject.SourceToken(beginCol, endCol, region));
+             tlacodeNextLine = tlacodeNextLine + str;
+    }
+    /**
+     * Adds a complete line of TLA "code" that does not correspond to
+     * any PlusCal code.  Adds Begin/EndTLAToken objects to the mapping
+     * iff the line does not equal "".
+     * 
+     * @param line
+     */
+    private void addOneLineOfTLA(String line) {
+// temporarily commented out.
+//        if(tlacode.size() != mappingVector.size()) {
+//            PcalDebug.ReportBug("tlacode and mappingVector have different lengths") ;
+//        }
+// The following added during testing.
+if(tlacode.size() != mappingVector.size()) {
+   System.out.println("tlacode and mappingVector have different lengths");
+}
+        endCurrentLineOfTLA();
+        if (line.length() == 0) {
+            mappingVector.addElement(new Vector(2));
+            tlacode.addElement("");
+            return;
+        }
+        addOneTokenToTLA(line);
+        endCurrentLineOfTLA();
+    }
+    
+    /**
+     * If tlacodeNextLine does not equal "", then add it to tlacode
+     * and add mappingVectorNextLine to mappingVector.
+     */
+    private void endCurrentLineOfTLA() {
+        if (tlacodeNextLine.length() != 0) {
+            tlacode.addElement(tlacodeNextLine) ;
+            mappingVector.addElement(mappingVectorNextLine) ;
+            tlacodeNextLine = "";
+            mappingVectorNextLine = new Vector() ;
+        }
+    }
+    
+    /**
+     * Adds the expression to tlacode / tlacodeNextLine and its
+     * mapping to mappingVector / mappingVectorNextLine.  It adds
+     * no space before the expression and leaves the last line of the
+     * expression (which could be its first line) at the end of 
+     * tlacodeNextLine.
+     * @param expr
+     */
+    private void addExprToTLA(TLAExpr expr) {
+        Vector sv = expr.toStringVector() ;
+        Vector exprMapping = expr.toMappingVector() ;
+        int indent = tlacodeNextLine.length() ; 
+        int nextLine = 0 ; 
+        if (indent != 0) {
+            /*
+             * Need to combine first line of expr with 
+             * tlacodeNextLine.
+             */
+            MappingObject.shiftMappingVector(exprMapping, indent);
+            tlacodeNextLine = tlacodeNextLine + ((String) sv.elementAt(0));
+            mappingVectorNextLine.addAll((Vector) exprMapping.elementAt(0));
+            nextLine = 1;
+            if (sv.size() > 1) {
+               endCurrentLineOfTLA();
+            }
+        }
+        if (sv.size() > 1) {
+            while (nextLine < sv.size()-1) {
+                tlacode.addElement((String) sv.elementAt(nextLine));
+                mappingVector.addElement((Vector) exprMapping.elementAt(nextLine));
+                nextLine++ ;
+            }
+            tlacodeNextLine = (String) sv.elementAt(nextLine) ;
+            mappingVectorNextLine = (Vector) exprMapping.elementAt(nextLine);
+        }
+    }
+/* -------------------------------------------------------------------------- */
     /*
      * The following methods and classes of objects are used in GenSpec().
      * See the comments preceding that method above.

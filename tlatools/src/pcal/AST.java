@@ -130,7 +130,28 @@ public class AST
       * during the parsing process, but irrelevant once the final AST has  *
       * been constructed.                                                  *
       *********************************************************************/
-      
+    
+    /**
+     * If the lbl field is not the empty string "", then lblLocation is
+     * the location of the beginning of the label that provided the string
+     * if it came from a label written by the user.  It will be null if the
+     * label was added by the translator.
+     */
+    public PCalLocation lblLocation = null ;
+    
+    /**
+     * The region of the PlusCal code from which the object was created.
+     */
+    private Region origin = null ;
+    
+    public Region getOrigin() {
+        return origin;
+    }
+
+    public void setOrigin(Region origin) {
+        this.origin = origin;
+    }
+
     public String location()
       /*********************************************************************
       * The string that describes the location in the algorithm of the     *
@@ -186,6 +207,7 @@ public class AST
         public Vector  macros = null ; // of Macro
         public Vector  prcds  = null ; // of Procedure
         public Vector  body   = null ; // of LabeledStmt
+        public Uniprocess() {};
         public String toString() 
           { return
              Indent(lineCol()) +  
@@ -223,6 +245,7 @@ public class AST
         public Vector  macros = null ; // of Macro
         public Vector  prcds  = null ; // of Procedure
         public Vector  procs  = null ; // of Process
+        public Multiprocess() {} ;
         public String  toString() 
           { return
              Indent(lineCol()) +
@@ -279,6 +302,7 @@ public class AST
         public Vector params = null ; // of PVarDecl
         public Vector decls  = null ; // of PVarDecl 
         public Vector body   = null ; // of LabeledStmt
+        public Procedure() {} ;
         public String toString() 
           { 
             // For versions earlier than 1.5 need to return those versions'
@@ -342,6 +366,7 @@ public class AST
         public TLAExpr   id    = null ;
         public Vector    decls = null ; // of VarDecl
         public Vector    body  = null ; // of LabeledStmt
+        public Process() { };
         public String toString() 
           { 
             // For versions earlier than 1.5 need to return those versions'
@@ -388,6 +413,7 @@ public class AST
       { public String    var  = null ;
         public boolean   isEq = true ; // true means "=", false means "\\in"
         public TLAExpr   val  = PcalParams.DefaultVarInit();
+        public VarDecl() {};
         public String toString() 
           { return 
              Indent(lineCol()) + 
@@ -402,6 +428,22 @@ public class AST
       { public final boolean isEq = true    ;  // true means "="
         public String        var  = null ;
         public TLAExpr       val  = PcalParams.DefaultVarInit();
+        public PVarDecl() {};
+        
+        /**
+         * Converts the PVarDecl object to an equivalent VarDecl
+         * object.  (I don't know why I bothered introducing a separate
+         * PVarDecl object in the first place.)
+         * @return
+         */
+        public VarDecl toVarDecl() {
+            VarDecl result = new VarDecl() ;
+            result.var = this.var ;
+            result.val = this.val ;
+            result.isEq = true ;
+            return result ;
+        }
+        
         public String toString() 
           { return 
              Indent(lineCol()) + 
@@ -419,6 +461,7 @@ public class AST
           * An optional While prepended to a LabelSeq.                     *
           *****************************************************************/
 
+        public LabeledStmt() { } ;
         public String toString() 
           {return 
              Indent(lineCol()) + 
@@ -435,6 +478,7 @@ public class AST
       { public TLAExpr   test    = null ;
         public Vector    unlabDo = null ; // a LabelSeq
         public Vector    labDo   = null ; // of LabeledStmt 
+        public While() { };
         public String toString() 
           { return 
              Indent(lineCol()) + 
@@ -454,6 +498,7 @@ public class AST
 
     public static class Assign extends AST
       { public Vector    ass  = null ; // of SingleAssign
+        public Assign() { } ;
         public String toString()
           { return 
               Indent(lineCol()) +
@@ -468,6 +513,7 @@ public class AST
     public static class SingleAssign extends AST
       { public Lhs       lhs  = new Lhs() ; 
         public TLAExpr   rhs  = null ; 
+        public SingleAssign() { };
         public String toString()
           { return 
             Indent(lineCol()) + 
@@ -483,13 +529,24 @@ public class AST
       * constant.                                                          *
       *********************************************************************/
       { public String    var  = "" ;
-        public TLAExpr   sub  = null ;  
+        public TLAExpr   sub  = null ; 
+        public Lhs() { };
         public String toString()
           { return lineCol() + 
                    "[var |-> \"" + var + "\", sub |-> " 
                     + sub.toString() + "]"; }
       }
 
+    /**
+     * An AST.If object is created from an AST.LabelIf or AST.While object.
+     * For a LabelIf containing no labeled statements, it is created inside
+     * the CheckLabeledStmtSeq method when executing ParseAlgorithm.runMe(String[]).
+     * Otherwise, it is created by exploding the original AST inside the
+     * call of  PcalFixIDs.Fix.  Its origin is set to that of the original AST.
+     * 
+     * @author lamport
+     *
+     */
     public static class If extends AST
       { public TLAExpr   test = null ;
         public Vector    Then = null ; // of SimpleStmt
@@ -501,6 +558,34 @@ public class AST
           /*****************************************************************
           * Can't use "else" because that's a Java keyword.                *
           *****************************************************************/
+        
+        public static final int UNBROKEN     = 0 ;
+        public static final int BROKEN_WHILE = 1;
+        public static final int BROKEN_THEN  = 2;
+        public static final int BROKEN_ELSE  = 4;
+        /**
+         * The source field records the information about where the If came
+         * from that is useful for the TLA+ to PlusCal translation.  The values
+         * are:
+         * 
+         *   UNBROKEN : Contains the entire contents of the original AST.
+         *   BROKEN_WHILE : Came from a While containing a labeled statement.
+         *   BROKEN_THEN : Came from an IfThen that contained a labeled statement
+         *      in the Then clause, but not the Else clausew.
+         *   BROKEN_ELSE : Came from an IfThen that contained a labeled statement
+         *      in the Else clause but not the Then clause.
+         *   BROKEN_THEN + BROKEN_ELSE : Came from an IfThen with labeled statements
+         *      in both clauses.     
+         */
+        private int source = UNBROKEN ;
+        public int getSource() {
+            return source;
+        }
+        public void setSource(int source) {
+            this.source = source;
+        }
+
+        public If() { };
         public String toString()
           { return 
              Indent(lineCol()) + 
@@ -517,6 +602,7 @@ public class AST
 
     public static class Either extends AST
       { public Vector ors = null ; // of Seq(SimpleStmt)
+        public Either() { };
         public String toString()
           { return 
              Indent(lineCol()) + 
@@ -535,6 +621,7 @@ public class AST
           /*****************************************************************
           * Can't use "do" because that's a Java keyword.                  *
           *****************************************************************/
+        public With() { };
         public String toString()
           { return
              Indent(lineCol()) + 
@@ -550,6 +637,7 @@ public class AST
 
     public static class When extends AST
       { public TLAExpr   exp  = null ;
+        public When() {};
         public String toString()
           { return 
              Indent(lineCol()) + 
@@ -561,6 +649,7 @@ public class AST
 
     public static class PrintS extends AST
       { public TLAExpr   exp  = null ;
+        public PrintS() { };
         public String toString()
           { return 
              Indent(lineCol()) + 
@@ -572,6 +661,7 @@ public class AST
 
     public static class Assert extends AST
       { public TLAExpr   exp  = null ;
+        public Assert() {};
         public String toString()
           { return 
              Indent(lineCol()) + 
@@ -582,7 +672,9 @@ public class AST
       }
 
     public static class Skip extends AST
-      { public String toString()
+      { 
+        public Skip() {};
+        public String toString()
           { return lineCol() + "[type |-> \"skip\"]";
           }
       }
@@ -601,6 +693,7 @@ public class AST
         public Vector    labThen   = null ; // of LabeledStmt 
         public Vector    unlabElse = null ; // a LabelSeq
         public Vector    labElse   = null ; // of LabeledStmt 
+        public LabelIf() { };
         public String toString()
           { return 
              Indent(lineCol()) + 
@@ -624,6 +717,7 @@ public class AST
 
     public static class LabelEither extends AST
       { public Vector    clauses = null ; // of Clause
+        public LabelEither() { };
         public String toString()
           { return 
              Indent(lineCol()) + 
@@ -638,6 +732,24 @@ public class AST
     public static class Clause extends AST
       { public Vector    unlabOr = null ; // a LabelSeq
         public Vector    labOr   = null ; // LabeledStmt
+
+        public Clause() {   
+        }
+        
+        /**
+         * The broken field is true iff the Clause object came from
+         * a LabelEither object for which the corresponding clause
+         * contained a labeled statement. 
+         */
+        private boolean broken = false ;
+        public boolean isBroken() {
+            return broken;
+        }
+
+        public void setBroken(boolean broken) {
+            this.broken = broken;
+        }
+
         public String toString()
           { return 
              Indent(lineCol()) +
@@ -655,6 +767,7 @@ public class AST
       { public String    returnTo = "" ;
         public String    to       = "" ;
         public Vector    args     = null ; // of TLAExpr
+        public Call() {};
         public String toString()
           { return 
              Indent(lineCol()) + 
@@ -669,6 +782,7 @@ public class AST
 
     public static class Return extends AST
       { public String    from = "" ;
+        public Return() {};
         public String toString()
           { return 
               lineCol() + 
@@ -687,6 +801,7 @@ public class AST
       { public String    from = "" ;
         public String    to       = "" ;
         public Vector    args     = null ; // of TLAExpr
+        public CallReturn() { };
         public String toString()
           { return 
              Indent(lineCol()) + 
@@ -702,6 +817,7 @@ public class AST
 
     public static class Goto extends AST
       { public String    to       = "" ;
+        public Goto() {};
         public String toString()
           { return 
              lineCol() + 
@@ -714,6 +830,7 @@ public class AST
       { public String name   = "" ;
         public Vector params = null ; // of Strings
         public Vector body   = null ; // of Stmt
+        public Macro() {};
         public String toString()
           { return 
              Indent(lineCol()) +
@@ -729,6 +846,7 @@ public class AST
     public static class MacroCall extends AST
       { public String name   = "" ;
         public Vector args     = null ; // of TLAExpr
+        public MacroCall() {};
         public String toString()
           { return 
              Indent(lineCol()) + 

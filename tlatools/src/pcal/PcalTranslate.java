@@ -171,8 +171,9 @@ public class PcalTranslate {
     public static TLAExpr TokVectorToExpr(Vector vec, int spaces)
       /*********************************************************************
       * If vec is a vector of TLAToken objects, then this method returns   *
-      * a TLAExpr desribing a one-line expression composed of clones of    *
+      * a TLAExpr describing a one-line expression composed of clones of   *
       * the tokens in vec separated by `spaces' spaces.                    *
+      * Called only by PcalTranslate.CheckPC.                              *
       *********************************************************************/
       { Vector firstLine = new Vector() ;
         int nextCol = 0 ;
@@ -237,6 +238,8 @@ public class PcalTranslate {
     public static AST.Assign MakeAssign(String id, TLAExpr exp) {
         /*********************************************************************
          * Makes the assignment statement id := exp.                         *
+         *                                                                   *
+         * It is called only by UpdatePC, with id = "pc".                    *
          *********************************************************************/
         AST.SingleAssign sAss = new AST.SingleAssign() ;
         sAss.lhs.var = id ;
@@ -345,6 +348,7 @@ public class PcalTranslate {
         newast.decls = ast.decls;
         newast.prcds = new Vector(ast.prcds.size(), 10);
         newast.defs = ast.defs ;  // added 25 Jan 2006 by LL
+        newast.setOrigin(ast.getOrigin()) ;
         i = 0;
         while (i < ast.prcds.size()) {
             newast.prcds.addElement(
@@ -387,6 +391,7 @@ public class PcalTranslate {
         newast.decls = ast.decls;
         newast.prcds = new Vector(ast.prcds.size(), 10);
         newast.defs = ast.defs ;  // added 25 Jan 2006 by LL
+        newast.setOrigin(ast.getOrigin()) ;
         while (i < ast.prcds.size()) {
             newast.prcds.addElement(ExplodeProcedure((AST.Procedure)
                                                      ast.prcds.elementAt(i)));
@@ -408,6 +413,7 @@ public class PcalTranslate {
         *********************************************************************/
         int i = 0;
         AST.Procedure newast = new AST.Procedure();
+        newast.setOrigin(ast.getOrigin()) ;
         newast.col = ast.col;
         newast.line = ast.line;
         newast.name = ast.name;
@@ -439,6 +445,7 @@ public class PcalTranslate {
         *********************************************************************/
         int i = 0;
         AST.Process newast = new AST.Process();
+        newast.setOrigin(ast.getOrigin()) ;
         newast.col = ast.col;
         newast.line = ast.line;
         newast.name = ast.name;
@@ -667,6 +674,7 @@ public class PcalTranslate {
                 CopyAndExplodeLastStmtWithGoto((Vector) ast.stmts.clone(), 
                                                next);
         Vector result = new Vector();
+        newast.setOrigin(ast.getOrigin()) ;
         newast.col = ast.col;
         newast.line = ast.line;
         newast.label = ast.label;
@@ -729,6 +737,28 @@ public class PcalTranslate {
         AST.While w = (AST.While) ast.stmts.elementAt(0);
 
         AST.LabeledStmt newast = new AST.LabeledStmt();
+        /**
+         * We set the origin of the new LabeledStatement to that of
+         * ast, if there is a statement that follows the While.  Otherwise,
+         * it goes from the label to the end of the If constructed from the while.
+         * 
+         * We set the origin of the If constructed from the while to the end 
+         * its unLabDo if there is a non-empty labDo, otherwise to the end
+         * of the While. 
+         */
+        PCalLocation newastBeginLoc = ast.getOrigin().getBegin() ;
+        PCalLocation whileBeginLoc = w.getOrigin().getBegin() ;
+        PCalLocation whileBeginUnlabDoLoc = 
+          (w.unlabDo.size() != 0) ? 
+           ((AST) w.unlabDo.elementAt(0)).getOrigin().getBegin() :
+            w.test.getOrigin().getEnd();
+        PCalLocation whileEndUnlabDoLoc =
+          (w.unlabDo.size() != 0) ? 
+            ((AST) w.unlabDo.elementAt(w.unlabDo.size()-1)).getOrigin().getEnd() :
+            w.test.getOrigin().getEnd();
+        PCalLocation whileEndLoc = 
+          (w.labDo.size() != 0) ? w.getOrigin().getEnd() : whileEndUnlabDoLoc ;    
+        newast.setOrigin(new Region(newastBeginLoc, whileEndLoc)) ;
         newast.col = ast.col;
         newast.line = ast.line;
         newast.label = ast.label;
@@ -748,6 +778,8 @@ public class PcalTranslate {
                                                 unlabDoNext);
         /* explode the rest of the statements */
         Vector rest = (Vector) ast.stmts.clone();
+           // Note: experimentation shows that clone() does a shallow copy, so
+           // the elements of rest are == to the elements of ast.stmts.
         rest.remove(0);
         Vector pair2 = CopyAndExplodeLastStmtWithGoto(rest, next);
 
@@ -758,6 +790,7 @@ public class PcalTranslate {
             ifS.test = w.test;
             ifS.Then = (Vector) pair1.elementAt(0);
             ifS.Else = (Vector) pair2.elementAt(0);
+            ifS.setOrigin(new Region(whileBeginLoc, whileEndLoc)) ;
             newast.stmts.addElement(ifS);
         }
         result.addElement(newast);
@@ -772,6 +805,10 @@ public class PcalTranslate {
         }
 
         result.addAll((Vector) pair1.elementAt(1));
+        
+        // If IsTRUE(w.test) is true and pair2.elementAt(1) is not an empty
+        // list, then there are unreachable statements after the While and
+        // we should probably report an error.
         if (! IsTRUE(w.test)) 
             result.addAll((Vector) pair2.elementAt(1));
 
@@ -820,6 +857,22 @@ public class PcalTranslate {
         newif.line = ast.line;
         newif.Then = (Vector) explodedThen.elementAt(0);
         newif.Else =  (Vector) explodedElse.elementAt(0);
+        newif.setOrigin(ast.getOrigin()) ;
+        /**
+         * The LabelIf object ast has a labeled statement in its then clause iff
+         * ast.labThen or explodedThen.elementAt(1) has non-zero length.
+         * It has a labeled statement in its else clause iff
+         * ast.labElse or explodedElse.elementAt(1) has non-zero length.
+         */
+        newif.setSource(
+            ((ast.labThen.size() != 0 || 
+            ((Vector) explodedThen.elementAt(1)).size() != 0 ) 
+               ? AST.IfObj.BROKEN_THEN : 0)      
+            +
+            ((ast.labElse.size() != 0 || 
+            ((Vector) explodedElse.elementAt(1)).size() != 0 ) 
+               ? AST.IfObj.BROKEN_ELSE : 0)
+          ) ;
         result1.addElement(newif);
 
         /* Explode the labeled then statements */
@@ -846,6 +899,8 @@ public class PcalTranslate {
             nextElse = (ast.labElse.size() > i + 1)
                 ? (AST.LabeledStmt) ast.labElse.elementAt(i + 1) : null;
         }
+        
+        
         /* Add labeled statements from exploding unlabThen and unlabElse */
         result2.addAll((Vector) explodedThen.elementAt(1));
         result2.addAll((Vector) explodedElse.elementAt(1));
@@ -869,6 +924,7 @@ public class PcalTranslate {
         /* Construct Either object */
         newEither.col = ast.col;
         newEither.line = ast.line;
+        newEither.setOrigin(ast.getOrigin()) ;
         newEither.ors = new Vector() ;
         for (int i = 0; i < ast.clauses.size(); i++) {
           AST.Clause clause = (AST.Clause) ast.clauses.elementAt(i) ;
@@ -878,6 +934,13 @@ public class PcalTranslate {
                (clause.labOr.size() > 0) ?
                   ((AST.LabeledStmt) clause.labOr.elementAt(0)).label : next
                ) ;
+          /**
+           * Set clause.broken, which should be true iff clause.labOr or
+           * res.elementAt(1) is non-empty.
+           */
+         if (clause.labOr.size() != 0 || ((Vector) res.elementAt(1)).size() != 0) {
+             clause.setBroken(true) ;
+         }         
          newEither.ors.addElement((Vector) res.elementAt(0)) ;
          result2.addAll((Vector) res.elementAt(1)) ;
          result2.addAll(ExplodeLabeledStmtSeq(clause.labOr, next)) ;
@@ -979,16 +1042,39 @@ public class PcalTranslate {
                   "Procedure " + ast.to +
                        " called with wrong number of arguments",
                   ast) ;
+        /**
+         * Set the origin of the AST.Assign object ass.origin to the region occupied
+         * by the parameter declarations, and set the origin of each of its SingleAssign 
+         * subobjects that set the parameters to that parameter's declaration as a parameter
+         * of the procedure.  (This code assumes that  the declarations appear in the params
+         * list of an AST.Procedure in the order in which they appear in the PCal code.)
+         * Since we're setting the origin to the entire declaration, if the declaration
+         * specifies an initial value, then this will set the origin to the entire
+         * declaration, rather than just the variable name.  This could be fixed easily,
+         * but it's not worth the effort.
+         */
+        PCalLocation beginLoc = null ;
+        PCalLocation endLoc = null ;
         for (int i = 0; i < pe.params.size(); i++) {
             AST.PVarDecl decl =
                 (AST.PVarDecl) pe.params.elementAt(i);
+            if (i == 0) {
+                beginLoc = decl.getOrigin().getBegin();
+            }
+            if (i == pe.params.size() - 1) {
+                endLoc = decl.getOrigin().getEnd();
+            }
             sass = new AST.SingleAssign();
             sass.line = ast.line ;
             sass.col  = ast.col ;
+            sass.setOrigin(decl.getOrigin()) ;
             sass.lhs.var = decl.var;
             sass.lhs.sub = MakeExpr(new Vector());
             sass.rhs = (TLAExpr) ast.args.elementAt(i);
             ass.ass.addElement(sass);
+        }
+        if (beginLoc != null) {
+            ass.setOrigin(new Region(beginLoc, endLoc)) ;
         }
         result.addElement(ass);
         /*******************************************************************
@@ -1006,9 +1092,11 @@ public class PcalTranslate {
             sass = new AST.SingleAssign();
             sass.line = ast.line ;
             sass.col  = ast.col ;
+            sass.setOrigin(decl.getOrigin()) ;
             sass.lhs.var = decl.var;
             sass.lhs.sub = MakeExpr(new Vector());
             sass.rhs = (TLAExpr) decl.val;
+            ass.setOrigin(decl.getOrigin()) ;
             ass.ass.addElement(sass);
             result.addElement(ass) ;
         }
@@ -1033,7 +1121,7 @@ public class PcalTranslate {
         /*******************************************************************
         * On 30 Mar 2006, added code to throw a PcalTranslateException     *
         * when ast.from equals null to raise an error if a return          *
-        * statement appears outside a procedue.  That error was not        *
+        * statement appears outside a procedure.  That error was not       *
         * caught by the parsing phase for reasons explained in the         *
         * comments for ParseAlgorithm.GetReturn.                           *
         *                                                                  *
@@ -1108,6 +1196,12 @@ public class PcalTranslate {
             expr.addToken(IdentToken(decl.var));
             expr.normalize();
             sass.rhs = expr;
+            /**
+             * For assignments that restore procedure variables, there's no
+             * good origin.  I decided to set them to the origin of the return statement.
+             */
+            sass.setOrigin(ast.getOrigin()) ;
+            ass.setOrigin(ast.getOrigin()) ;
             ass.ass = Singleton(sass);
             result.addElement(ass);
         }
@@ -1120,6 +1214,11 @@ public class PcalTranslate {
             sass = new AST.SingleAssign();
             sass.line = ast.line ;
             sass.col  = ast.col ;
+            /** For assignments that restore procedure parameter values, there's no
+             * good origin.  I decided to set them to the origin of the return statement.
+             */
+            sass.setOrigin(ast.getOrigin()) ;
+            ass.setOrigin(ast.getOrigin()) ;
             expr = new TLAExpr();
             sass.lhs.var = decl.var;
             sass.lhs.sub = new TLAExpr();
@@ -1143,6 +1242,8 @@ public class PcalTranslate {
         ass.line = ast.line ;
         ass.col  = ast.col ;
         sass = new AST.SingleAssign();
+        sass.setOrigin(ast.getOrigin()) ;
+        ass.setOrigin(ast.getOrigin()) ;
         sass.line = ast.line ;
         sass.col  = ast.col ;
         expr = new TLAExpr();
@@ -1311,10 +1412,21 @@ public class PcalTranslate {
                   "Procedure " + ast.to +
                        " called with wrong number of arguments",
                   ast) ;
-
+        /**
+         * Setting of origins of created AST.Assign and AST.SingleAssign objects
+         * essentialy the same as in ExplodeCall.
+         */
+        PCalLocation beginLoc = null ;
+        PCalLocation endLoc = null ;
         for (int i = 0; i < peTo.params.size(); i++) {
             AST.PVarDecl decl =
                 (AST.PVarDecl) peTo.params.elementAt(i);
+            if (i == 0) {
+                beginLoc = decl.getOrigin().getBegin();
+            }
+            if (i == peTo.params.size() - 1) {
+                endLoc = decl.getOrigin().getEnd();
+            }
             sass = new AST.SingleAssign();
             sass.line = ast.line ;
             sass.col  = ast.col ;
@@ -1322,6 +1434,9 @@ public class PcalTranslate {
             sass.lhs.sub = MakeExpr(new Vector());
             sass.rhs = (TLAExpr) ast.args.elementAt(i);
             ass.ass.addElement(sass);
+        }
+        if (beginLoc != null) {
+            ass.setOrigin(new Region(beginLoc, endLoc)) ;
         }
         result.addElement(ass);
         /*******************************************************************
@@ -1339,9 +1454,11 @@ public class PcalTranslate {
             sass = new AST.SingleAssign();
             sass.line = ast.line ;
             sass.col  = ast.col ;
+            sass.setOrigin(decl.getOrigin()) ;
             sass.lhs.var = decl.var;
             sass.lhs.sub = MakeExpr(new Vector());
             sass.rhs = (TLAExpr) decl.val;
+            ass.setOrigin(decl.getOrigin()) ;
             ass.ass.addElement(sass);
             result.addElement(ass) ;
         }

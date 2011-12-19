@@ -58,6 +58,9 @@
 *          Reports an error if "defaultInitValue" appears in the symbol    *
 *          table.  Added by LL on 31 Aug 2007.                             *
 *                                                                          *
+* This method does not save the complete AST of the algorithm, which gives *
+* some clue to what the methods do.                                        *
+*                                                                          *
 * TO REVISE: The mapping of id to symbol, via UseThis, is sloppy.          *
 ****************************************************************************/
 
@@ -183,6 +186,15 @@ public class PcalSymTab {
         }
     } /* End of ProcessEntry */
 
+    /**
+     * As should be perfectly obvious from the name, this method constructs
+     * the symbol table for the AST ast, which I presume contains all things
+     * whose name must be looked up, which includes labels, variables, and
+     * probably process and procedure names.
+     * 
+     * @param ast
+     * @throws PcalSymTabException
+     */
     public PcalSymTab (AST ast) throws PcalSymTabException {
 
         symtab = new Vector();

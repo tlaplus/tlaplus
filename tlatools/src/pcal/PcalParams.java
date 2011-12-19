@@ -18,8 +18,8 @@ public final class PcalParams
     /**
      * Parameters to be updated on each new release.
      */
-    public static final String modDate = "5 October 2011";
-    public static final String version = "1.6";
+    public static final String modDate = "4 December 2011";
+    public static final String version = "1.7";
     /**
      * SZ Mar 9, 2009:
      * Added re-initialization method. Since PcalParams class
@@ -53,6 +53,8 @@ public final class PcalParams
         inputVersionNumber = VersionToNumber(PcalParams.version);
         PcalTLAGen.wrapColumn = 78;
         PcalTLAGen.ssWrapColumn = 45;
+        tlaPcalMapping = null ;
+        
     }
     
     
@@ -197,26 +199,26 @@ public final class PcalParams
 
 /************ Stuff for .pcal file ***************************************/  
   
-  /***********************************************************************
-  * The string identifying the beginning of the algorithm in the .pcal   *
-  * file.                                                                *
-  ***********************************************************************/
-  public static final String PcalBeginAlg = "algorithm";
-   
-  /**
-   * The <row, col> (in Java coordinates) of the beginning of the
-   * "algorithm" token in the .pcal file.
-   */
-  public static IntPair endOfPreamble = null;
-
-  /**
-   * The <row, col> (in Java coordinates) of the beginning of the TLA+ 
-   * "code" that follows the algorithm in the input (.pcal) and output 
-   * (.tla) files.  For outputSuffixLoc, the column always equals 0.
-   */
-  public static IntPair inputSuffixLoc = null;
-  public static IntPair outputSuffixLoc = null;
-  
+//  /***********************************************************************
+//  * The string identifying the beginning of the algorithm in the .pcal   *
+//  * file.                                                                *
+//  ***********************************************************************/
+//  public static final String PcalBeginAlg = "algorithm";
+//   
+//  /**
+//   * The <row, col> (in Java coordinates) of the beginning of the
+//   * "algorithm" token in the .pcal file.
+//   */
+//  public static IntPair endOfPreamble = null;
+//
+//  /**
+//   * The <row, col> (in Java coordinates) of the beginning of the TLA+ 
+//   * "code" that follows the algorithm in the input (.pcal) and output 
+//   * (.tla) files.  For outputSuffixLoc, the column always equals 0.
+//   */
+//  public static IntPair inputSuffixLoc = null;
+//  public static IntPair outputSuffixLoc = null;
+//  
   /*************************************************************************
   * File parameters.                                                       *
   *************************************************************************/
@@ -230,7 +232,7 @@ public final class PcalParams
   /**
    * Pcal-File Parameters
    *    The following parameters were introduced when .pcal files were 
-   *    added.
+   *    (briefly) added.  However, most of them still seem to be used.
    */
 
   public static boolean optionsInFile = false ;
@@ -242,10 +244,20 @@ public final class PcalParams
   public static String versionOption = null;
   public static int inputVersionNumber = VersionToNumber(PcalParams.version);
      // The input file's version number * 1000
-  public static boolean readOnly = false; 
+//  public static boolean readOnly = false; 
      // True iff this is a .pcal input file and the .tla file should 
      // not be writable.  This is obsolete and is not used.
 
+  /**
+   * The following parameter is used to hold the TLAtoPCalMapping object
+   * that is computed by the translation.  Some of that object's fields are
+   * used in creating the actual mapping.  It's easier to have the methods
+   * that need to use those fields access them via this parameter than to do
+   * the more politically correct thing and pass the fields or the object
+   * as a parameter in the method calls.
+   */
+  public static TLAtoPCalMapping  tlaPcalMapping ;
+  
   /**
    * If str is a version number like 3.17, then this returns 1000 times
    * its numeric value--e.g., 3170.  Otherwise, it returns -1.
