@@ -70,6 +70,10 @@ public interface IConfigurationDefaults
      * Default seed is -1 
      */
     public static final int LAUNCH_SIMU_SEED_DEFAULT = -1;
+    /** 
+     * Default fp seed is 1 meaning the first elem in the list 
+     */
+    public static final int LAUNCH_FP_INDEX_DEFAULT = 1;
 
     /**
      * Do not recover from checkpoints by defualt

@@ -63,6 +63,10 @@ public interface IConfigurationConstants
      * the seed of simulation run 
      */
     public static final String LAUNCH_SIMU_SEED = "simuSeed";
+    /**
+     * the fp seed index "-fp" 
+     */
+    public static final String LAUNCH_FP_INDEX = "fpIndex";
 
     /**
      * Run from the checkpoint

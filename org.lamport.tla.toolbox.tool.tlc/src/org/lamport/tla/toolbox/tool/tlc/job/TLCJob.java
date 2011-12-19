@@ -189,6 +189,11 @@ public abstract class TLCJob extends AbstractJob implements IModelConfigurationC
         	arguments.add(String.valueOf(fpBits));
         }
         
+        // fp seed offset (decrease by one to map from [1, 64] interval to [0, 63] array address
+        final int fpSeedOffset = launch.getLaunchConfiguration().getAttribute(LAUNCH_FP_INDEX, LAUNCH_FP_INDEX_DEFAULT);
+        arguments.add("-fp");
+        arguments.add(String.valueOf(fpSeedOffset - 1));
+        
         arguments.add("-config");
         arguments.add(cfgFile.getName()); // configuration file
 

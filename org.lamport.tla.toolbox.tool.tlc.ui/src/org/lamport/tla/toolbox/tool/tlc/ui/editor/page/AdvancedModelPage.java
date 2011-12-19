@@ -16,6 +16,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.IMessageManager;
@@ -65,6 +66,10 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
     private Text simuDepthText;
     private Text simuSeedText;
     private Text simuArilText;
+    /**
+     * Offset for the -fp parameter passed to TLC process to select the hash seed 
+     */
+    private Spinner fpIndexSpinner;
     private TableViewer definitionsTable;
 
     /**
@@ -144,6 +149,10 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         {
             simuSeedText.setText("");
         }
+        
+        // fp index
+        final int fpIndex = getConfig().getAttribute(LAUNCH_FP_INDEX, LAUNCH_FP_INDEX_DEFAULT);
+       	fpIndexSpinner.setSelection(fpIndex);
     }
 
     /**
@@ -182,6 +191,9 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         getConfig().setAttribute(LAUNCH_SIMU_SEED, simuSeed);
         // simulation seed
         getConfig().setAttribute(LAUNCH_SIMU_ARIL, simuAril);
+
+        // FP Seed index
+        getConfig().setAttribute(LAUNCH_FP_INDEX, fpIndexSpinner.getSelection());
 
         // definitions
         List definitions = FormHelper.getSerializedInput(definitionsTable);
@@ -304,7 +316,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
                 setComplete(false);
             }
         }
-
+        
         // get data binding manager
         DataBindingManager dm = getDataBindingManager();
 
@@ -621,6 +633,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         simuArilText.addModifyListener(launchListener);
         simuSeedText.addModifyListener(launchListener);
         simuDepthText.addModifyListener(launchListener);
+        fpIndexSpinner.addModifyListener(launchListener);
         dfidDepthText.addModifyListener(launchListener);
         simulationOption.addSelectionListener(launchListener);
         dfidOption.addSelectionListener(launchListener);
@@ -654,7 +667,27 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
 
         Composite area = (Composite) advancedSection.getClient();
         area.setLayout(new GridLayout(2, false));
+        
+        // label fp
+        FormText fpLabel = toolkit.createFormText(area, true);
+        fpLabel.setText("Fingerprint seed index:", false, false);
+        gd = new GridData();
+        gd.horizontalIndent = 10;
+        fpLabel.setLayoutData(gd);
 
+        // field fpIndex
+        fpIndexSpinner = new Spinner(area, SWT.NONE);
+        fpIndexSpinner.setData( FormToolkit.KEY_DRAW_BORDER, FormToolkit.TEXT_BORDER );
+        fpIndexSpinner.setToolTipText("Index of irreducible polynominal used as a seed for fingerprint hashing (corresponds to \"-fp value-1\")");
+        gd = new GridData();
+        gd.widthHint = 200;
+        fpIndexSpinner.setLayoutData(gd);
+        
+        // validation for fpIndex spinner
+        fpIndexSpinner.setMinimum(1);
+        fpIndexSpinner.setMaximum(64);
+        
+        // Model checking mode
         mcOption = toolkit.createButton(area, "Model-checking mode", SWT.RADIO);
         gd = new GridData();
         gd.horizontalSpan = 2;
