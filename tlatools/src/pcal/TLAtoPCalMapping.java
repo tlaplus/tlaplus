@@ -239,8 +239,17 @@ public class TLAtoPCalMapping {
 //      ((Vector) mappingVector.elementAt(line)).addElement(moj) ;
 //  }
   
-  public static Region applyMapping(TLAtoPCalMapping mapping, Region selection) {
-      return null ;
+  /**
+   * Returns the PCal code location to which `mapping' maps the `selection' Region in the
+   * TLA+ translation, where line numbers in `selection' are relative to tlaStartLine.
+   * It returns null if the mapping does not map the selection to any PCal code. 
+   * 
+   * @param mapping
+   * @param selection
+   * @return
+   */
+  public static Region ApplyMapping(TLAtoPCalMapping mapping, Region selection) {
+      return new Region (new PCalLocation(1, 3), new PCalLocation(3, 7)) ;
   }
   
   /**
@@ -260,6 +269,8 @@ public class TLAtoPCalMapping {
    * Should be the column of the beginning --algorithm or --fair that
    * begins the algorithm, but it's actually the column after that
    * token--which should make any difference.
+   * 
+   * I don't think this is needed.
    */
   public int algColumn ;
 }

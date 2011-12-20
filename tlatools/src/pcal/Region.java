@@ -15,7 +15,7 @@ public class Region {
      * @param begin
      * @param end
      */
-	Region(PCalLocation begin, PCalLocation end) {
+	public Region(PCalLocation begin, PCalLocation end) {
 		this.begin = begin;
 		this.end = end;
 	}
@@ -27,7 +27,7 @@ public class Region {
 	 * @param bcol
 	 * @param width
 	 */
-	Region(int line, int bcol, int width)  {
+	public Region(int line, int bcol, int width)  {
 		this.begin = new PCalLocation(line, bcol) ;
 		this.end = new PCalLocation(line, bcol+width);
 	}
