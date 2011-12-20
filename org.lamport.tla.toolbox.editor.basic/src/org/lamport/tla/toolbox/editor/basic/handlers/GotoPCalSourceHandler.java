@@ -10,6 +10,7 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IHandler;
 import org.eclipse.core.commands.IHandlerListener;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
@@ -17,11 +18,14 @@ import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.lamport.tla.toolbox.editor.basic.TLAEditor;
+import org.lamport.tla.toolbox.editor.basic.util.DocumentHelper;
 import org.lamport.tla.toolbox.editor.basic.util.EditorUtil;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
+import org.lamport.tla.toolbox.util.UIHelper;
 
 import pcal.MappingObject;
+import pcal.PCalLocation;
 import pcal.TLAtoPCalMapping;
 
 /**
@@ -57,56 +61,106 @@ public class GotoPCalSourceHandler extends AbstractHandler implements IHandler {
         
         /*
          * If mapping is null, then the last translation failed so 
-         * we do nothing.
+         * we do nothing. This should be impossible, since the command should
+         * not be enabled.
          */
         if (mapping == null) {
             return null;
         }
         MappingObject[][] map = mapping.mapping;
         
-        // The following code copied with modifications from GotoNextUseHandler
-        // begin copy
+        
+        /*
+         * The following code finds the line and column numbers of the beginning and
+         * end of the selected region.  The code for getting that information was
+         * copied from GotoNextUseHandler.
+         */
         ISourceViewer internalSourceViewer = tlaEditor.publicGetSourceViewer();
         IDocument document = internalSourceViewer.getDocument();
         ITextSelection selection = (ITextSelection) tlaEditor.getSelectionProvider().getSelection();
-        IRegion region = new Region(selection.getOffset(), selection.getLength());
+        int selectionOffset = selection.getOffset();
+        int selectionLength = selection.getLength();
 
-
-        // Sets currentLine to the line of text of the module containing the beginning of the
-        // current region, and sets currentPos to the position of the beginning of the
-        // current region in that line. The Document.getLineLength method seems to include
-        // the length of the line's delimeter, which should not be included in currentLine.
-//        String currentLine;
-        int lineNumber;
-        int currentPos;
-        int offsetOfLine;
+        int selectionBeginLine;
+        int selectionBeginCol;
+        int selectionEndLine;
+        int selectionEndCol;
         try
         {
-            lineNumber = document.getLineOfOffset(region.getOffset());
-            int lineDelimLength = 0;
-            String delim = document.getLineDelimiter(lineNumber);
-            if (delim != null)
-            {
-                lineDelimLength = delim.length();
-            }
-            ;
-            offsetOfLine = document.getLineOffset(lineNumber);
-//            currentLine = document.get(offsetOfLine, document.getLineLength(lineNumber) - lineDelimLength);
-            currentPos = region.getOffset() - offsetOfLine;
+            selectionBeginLine = document.getLineOfOffset(selectionOffset);
+            int offsetOfLine = document.getLineOffset(selectionBeginLine);
+            selectionBeginCol = selectionOffset - offsetOfLine;
+            selectionEndLine = document.getLineOfOffset(selectionOffset + selectionLength);
+            offsetOfLine = document.getLineOffset(selectionEndLine);
+            selectionEndCol = selectionOffset + selectionLength - offsetOfLine;
         } catch (BadLocationException e)
         {
-            System.out.println("Exception thrown");
+            System.out.println("Exception thrown in GotoPCalSourceHandler");
             return null;
         }
-        // end copy
-//XXXXXXXX editing here
-        tlaEditor.selectAndReveal(0, 22);
-// For testing
-MappingObject.printMapping(map);
+        
+        /*
+         * Set newStartOfTranslation to be the best guess of the line number in the
+         * current contents of the editor that corresponds to what was line
+         * mapping.tlaStartLine when the algorithm was translated. 
+         * It is computed by assuming that neither the algorithm nor the translation
+         * have changed, but they both may have been moved down by the same 
+         * number delta of lines (possibly negative).  A more sophisticated approach 
+         * using fingerprints of lines could be used, requiring that the necessary 
+         * fingerprint information be put in TLAtoPCalMapping.
+         */
+        int beginAlgorithmLine = DocumentHelper.GetLineOfPCalAlgorithm(document);
+        if (beginAlgorithmLine == -1) {
+            MessageDialog.openWarning(UIHelper.getShellProvider().getShell(), "Cannot find algorithm",
+                    "The algorithm is no longer in the module.");
+            return null ;
+        }       
+        int delta = beginAlgorithmLine - mapping.algLine ;
+        int newStartOfTranslation = mapping.tlaStartLine + delta;
+
+        /*
+         * Call TLAtoPCalMapping.ApplyMapping to find the PCal source, using
+         * the region tlaRegion obtained by adjusting the line numberss of the selected 
+         * region to be relative to newStartOfTranslation.
+         */
+        pcal.Region tlaRegion = 
+             new pcal.Region(new PCalLocation(selectionBeginLine - newStartOfTranslation,
+                                              selectionBeginCol),
+                             new PCalLocation(selectionEndLine - newStartOfTranslation,
+                                              selectionEndCol));
+
+        pcal.Region sourceRegion = 
+               TLAtoPCalMapping.ApplyMapping(mapping, tlaRegion);
+        if (sourceRegion == null) {
+            return null;
+        }
+        
+        try {
+            int sourceStartLoc = 
+                    document.getLineOffset(sourceRegion.getBegin().getLine() + delta) 
+                      + sourceRegion.getBegin().getColumn();
+            int sourceEndLoc = 
+                    document.getLineOffset(sourceRegion.getEnd().getLine() + delta) 
+                    + sourceRegion.getEnd().getColumn();
+            
+            /*
+             * The following command makes executing ReturnFromOpenDecl (F4) return
+             *  to the selected location.
+             */
+            EditorUtil.setReturnFromOpenDecl();
+            
+            tlaEditor.selectAndReveal(sourceStartLoc, sourceEndLoc - sourceStartLoc);
+                    
+        } catch (BadLocationException e) {
+            System.out.println("Bad Location for source region.");
+            e.printStackTrace();
+            return null;
+        }
         return null;
     }
 
-    /* (non-Javadoc)
+    /** 
+     * We disable the command if there is no translation mapping.
      * @see org.eclipse.core.commands.IHandler#isEnabled()
      */
     public boolean isEnabled() {
