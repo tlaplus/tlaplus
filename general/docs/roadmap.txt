@@ -194,7 +194,10 @@ GETTING NOTIFIED WHEN A MODULE IS SAVED
 When a module is saved, the performSave() of the org.tla.toolbox.editor.basic.TLAEditor object
 is called.  There's a default method in a superclass, but one can override it to
 do whatever else you want to do on a save.  There's also a performSaveAs() method.
+--------------------------------------------------------------
+RAISING AN ERROR OR WARNING WINDOW
 
+ MessageDialog.openWarning(UIHelper.getShellProvider().getShell(), window-title, message)
 ------------------------------------------------------------
 ADDING A BUTTON TO A MENU
 
@@ -559,7 +562,6 @@ HOW TO GET A...
      From nothing (the current spec):
        Activator.getSpecManager().getSpecLoaded()
           Has not been tested; don't know if it really works.
-          Was tested on 16 Dec 2011 and it seems to work.
      From the name: Activator.getSpecManager().getSpecByName(specName)
   IFile
      From TLAEditor: ((FileEditorInput) tlaEditor.getEditorInput()).getFile()
