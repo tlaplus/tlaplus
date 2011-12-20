@@ -9,7 +9,10 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.text.IRegion;
+import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.graphics.Image;
@@ -17,10 +20,13 @@ import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
+import org.eclipse.ui.INavigationLocation;
+import org.eclipse.ui.INavigationLocationProvider;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.IDocumentProvider;
+import org.eclipse.ui.texteditor.ITextEditor;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
@@ -35,7 +41,7 @@ import org.lamport.tla.toolbox.util.UIHelper;
  * @author Daniel Ricketts
  * @version $Id$
  */
-public class TLAEditorAndPDFViewer extends FormEditor
+public class TLAEditorAndPDFViewer extends FormEditor implements INavigationLocationProvider, ITextEditor
 {
 
     /**
@@ -53,6 +59,9 @@ public class TLAEditorAndPDFViewer extends FormEditor
     IEditorInput tlaEditorInput;
     TLAEditor tlaEditor;
 
+    /* (non-Javadoc)
+     * @see org.eclipse.ui.forms.editor.FormEditor#addPages()
+     */
     protected void addPages()
     {
         try
@@ -78,6 +87,9 @@ public class TLAEditorAndPDFViewer extends FormEditor
         }
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.ui.forms.editor.FormEditor#init(org.eclipse.ui.IEditorSite, org.eclipse.ui.IEditorInput)
+     */
     public void init(IEditorSite site, IEditorInput input) throws PartInitException
     {
 
@@ -101,11 +113,17 @@ public class TLAEditorAndPDFViewer extends FormEditor
         super.init(site, input);
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.ui.part.EditorPart#doSave(org.eclipse.core.runtime.IProgressMonitor)
+     */
     public void doSave(IProgressMonitor monitor)
     {
         tlaEditor.doSave(monitor);
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.ui.part.EditorPart#doSaveAs()
+     */
     public void doSaveAs()
     {
 
@@ -227,12 +245,31 @@ public class TLAEditorAndPDFViewer extends FormEditor
         }
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.ui.part.EditorPart#isSaveAsAllowed()
+     */
     public boolean isSaveAsAllowed()
     {
         return tlaEditor.isSaveAsAllowed();
     }
 
-    /**
+
+    
+	/* (non-Javadoc)
+	 * @see org.eclipse.ui.INavigationLocationProvider#createEmptyNavigationLocation()
+	 */
+	public INavigationLocation createEmptyNavigationLocation() {
+		return tlaEditor.createEmptyNavigationLocation();
+	}
+
+	/* (non-Javadoc)
+	 * @see org.eclipse.ui.INavigationLocationProvider#createNavigationLocation()
+	 */
+	public INavigationLocation createNavigationLocation() {
+		return tlaEditor.createNavigationLocation();
+	}
+
+	/**
      * Creates the pdfViewinPage and adds it to the editor if it does not exist.
      * Returns the pdfViewing page whether it previously existed or not.
      * @return
@@ -289,5 +326,106 @@ public class TLAEditorAndPDFViewer extends FormEditor
     {
         setActivePage(tlaEditorIndex);
     }
+
+
+    /* (non-Javadoc)
+     * @see org.eclipse.ui.texteditor.ITextEditor#getDocumentProvider()
+     */
+    public IDocumentProvider getDocumentProvider() {
+		return tlaEditor.getDocumentProvider();
+	}
+
+	/* (non-Javadoc)
+	 * @see org.eclipse.ui.texteditor.ITextEditor#isEditable()
+	 */
+	public boolean isEditable() {
+		return tlaEditor.isEditable();
+	}
+
+	/* (non-Javadoc)
+	 * @see org.eclipse.ui.texteditor.ITextEditor#doRevertToSaved()
+	 */
+	public void doRevertToSaved() {
+		tlaEditor.doRevertToSaved();
+	}
+
+	/* (non-Javadoc)
+	 * @see org.eclipse.ui.texteditor.ITextEditor#setAction(java.lang.String, org.eclipse.jface.action.IAction)
+	 */
+	public void setAction(String actionID, IAction action) {
+		tlaEditor.setAction(actionID, action);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.eclipse.ui.texteditor.ITextEditor#getAction(java.lang.String)
+	 */
+	public IAction getAction(String actionId) {
+		return tlaEditor.getAction(actionId);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.eclipse.ui.texteditor.ITextEditor#setActionActivationCode(java.lang.String, char, int, int)
+	 */
+	public void setActionActivationCode(String actionId,
+			char activationCharacter, int activationKeyCode,
+			int activationStateMask) {
+		tlaEditor.setActionActivationCode(actionId, activationCharacter, activationKeyCode, activationStateMask);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.eclipse.ui.texteditor.ITextEditor#removeActionActivationCode(java.lang.String)
+	 */
+	public void removeActionActivationCode(String actionId) {
+		tlaEditor.removeActionActivationCode(actionId);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.eclipse.ui.texteditor.ITextEditor#showsHighlightRangeOnly()
+	 */
+	public boolean showsHighlightRangeOnly() {
+		return tlaEditor.showsHighlightRangeOnly();
+	}
+
+	/* (non-Javadoc)
+	 * @see org.eclipse.ui.texteditor.ITextEditor#showHighlightRangeOnly(boolean)
+	 */
+	public void showHighlightRangeOnly(boolean showHighlightRangeOnly) {
+		tlaEditor.showHighlightRangeOnly(showHighlightRangeOnly);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.eclipse.ui.texteditor.ITextEditor#setHighlightRange(int, int, boolean)
+	 */
+	public void setHighlightRange(int offset, int length, boolean moveCursor) {
+		tlaEditor.setHighlightRange(offset, length, moveCursor);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.eclipse.ui.texteditor.ITextEditor#getHighlightRange()
+	 */
+	public IRegion getHighlightRange() {
+		return tlaEditor.getHighlightRange();
+	}
+
+	/* (non-Javadoc)
+	 * @see org.eclipse.ui.texteditor.ITextEditor#resetHighlightRange()
+	 */
+	public void resetHighlightRange() {
+		tlaEditor.resetHighlightRange();
+	}
+
+	/* (non-Javadoc)
+	 * @see org.eclipse.ui.texteditor.ITextEditor#getSelectionProvider()
+	 */
+	public ISelectionProvider getSelectionProvider() {
+		return tlaEditor.getSelectionProvider();
+	}
+
+	/* (non-Javadoc)
+	 * @see org.eclipse.ui.texteditor.ITextEditor#selectAndReveal(int, int)
+	 */
+	public void selectAndReveal(int offset, int length) {
+		tlaEditor.selectAndReveal(offset, length);
+	}
 
 }

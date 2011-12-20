@@ -31,6 +31,8 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
     // private IWorkbenchAction newEditorAction;
     // private IWorkbenchAction newWindowAction;
     private IWorkbenchAction resetPerspectiveAction;
+	private IWorkbenchAction backwardHistoryAction;
+	private IWorkbenchAction forwardHistoryAction;
 
     /**
      * @param configurer
@@ -81,6 +83,14 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
 
         resetPerspectiveAction = ActionFactory.RESET_PERSPECTIVE.create(window);
         register(resetPerspectiveAction);
+        
+        backwardHistoryAction = ActionFactory.BACKWARD_HISTORY
+                .create(window);
+        register(backwardHistoryAction);
+        
+        forwardHistoryAction= ActionFactory.FORWARD_HISTORY
+                .create(window);
+        register(forwardHistoryAction);
 
     }
 
@@ -110,6 +120,9 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         windowMenu.add(new Separator());
         windowMenu.add(new Separator("toolbox.window.view.separator"));
         windowMenu.add(new Separator());
+
+        windowMenu.add(backwardHistoryAction);
+        windowMenu.add(forwardHistoryAction);
 
         // Menu bar contributions via plugin.xmls
         final Separator separator = new Separator("toolbox.tools.separator");
