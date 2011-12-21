@@ -12,16 +12,16 @@
 <booleanAttribute key="mcMode" value="true"/>
 <stringAttribute key="modelBehaviorInit" value=""/>
 <stringAttribute key="modelBehaviorNext" value=""/>
-<stringAttribute key="modelBehaviorSpec" value=""/>
-<intAttribute key="modelBehaviorSpecType" value="0"/>
-<stringAttribute key="modelBehaviorVars" value=""/>
+<stringAttribute key="modelBehaviorSpec" value="Spec"/>
+<intAttribute key="modelBehaviorSpecType" value="1"/>
+<stringAttribute key="modelBehaviorVars" value="out, unmatchedLeft, lastMatchedLeft, i, in, lastAddedRight, pc"/>
 <booleanAttribute key="modelCorrectnessCheckDeadlock" value="true"/>
 <listAttribute key="modelCorrectnessInvariants"/>
 <listAttribute key="modelCorrectnessProperties"/>
-<stringAttribute key="modelExpressionEval" value="ExprOfMaxLen(3)"/>
+<stringAttribute key="modelExpressionEval" value="LET seq == &lt;&lt;L(1), L(2), L(3), R(3), R(2), O(1), R(1)&gt;&gt;&#13;&#10;IN  &lt;&lt; AreMatching(seq, 3, 4), AreMatching(seq,2, 5)&gt;&gt;"/>
 <stringAttribute key="modelParameterActionConstraint" value=""/>
 <listAttribute key="modelParameterConstants">
-<listEntry value="TokId;;{1,2};0;0"/>
+<listEntry value="TokId;;{v1, v2};1;1"/>
 </listAttribute>
 <stringAttribute key="modelParameterContraint" value=""/>
 <listAttribute key="modelParameterDefinitions"/>
