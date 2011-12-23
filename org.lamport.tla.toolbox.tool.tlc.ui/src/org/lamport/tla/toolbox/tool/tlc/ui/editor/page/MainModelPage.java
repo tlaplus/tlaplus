@@ -19,14 +19,18 @@ import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Scale;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.forms.HyperlinkGroup;
 import org.eclipse.ui.forms.IManagedForm;
@@ -76,6 +80,7 @@ import tlc2.tool.fp.FPSet;
  * This is the FormPage class for the Model Overview tabbed page of
  * the model editor.
  */
+@SuppressWarnings("unchecked")
 public class MainModelPage extends BasicFormPage implements IConfigurationConstants, IConfigurationDefaults
 {
     public static final String ID = "MainModelPage";
@@ -90,7 +95,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
     private SourceViewer specSource;
     private Button checkDeadlockButton;
     private Text workers;
-    private Text maxHeapSize;
+    private Scale maxHeapSize;
     private Text fpBits;
     private TableViewer invariantsTable;
     private TableViewer propertiesTable;
@@ -199,9 +204,10 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         workers.setText("" + getConfig().getAttribute(LAUNCH_NUMBER_OF_WORKERS, LAUNCH_NUMBER_OF_WORKERS_DEFAULT));
 
         // max JVM heap size
-        int defaultMaxHeapSize = TLCUIActivator.getDefault().getPreferenceStore().getInt(
+        final int defaultMaxHeapSize = TLCUIActivator.getDefault().getPreferenceStore().getInt(
                 ITLCPreferenceConstants.I_TLC_MAXIMUM_HEAP_SIZE_DEFAULT);
-        maxHeapSize.setText("" + getConfig().getAttribute(LAUNCH_MAX_HEAP_SIZE, defaultMaxHeapSize));
+        final int maxHeapSizeValue = getConfig().getAttribute(LAUNCH_MAX_HEAP_SIZE, defaultMaxHeapSize);
+        maxHeapSize.setSelection(maxHeapSizeValue);
         
         // fpBits
         int defaultFPBits = TLCUIActivator.getDefault().getPreferenceStore().getInt(
@@ -460,25 +466,23 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         }
 
         // max heap size
-        String maxHeapSizeString = maxHeapSize.getText();
-        try
-        {
-            int maxHeapSizeNum = Integer.parseInt(maxHeapSizeString);
-            if (maxHeapSizeNum <= 0)
-            {
-                modelEditor.addErrorMessage("wrongNumber1", "Maximum heap size must be a positive integer number", this
-                        .getId(), IMessageProvider.ERROR, UIHelper.getWidget(dm
-                        .getAttributeControl(LAUNCH_MAX_HEAP_SIZE)));
-                setComplete(false);
-                expandSection(SEC_HOW_TO_RUN);
-            }
-        } catch (NumberFormatException e)
-        {
-            modelEditor.addErrorMessage("wrongNumber2", "Maximum heap size must be a positive integer number", this
-                    .getId(), IMessageProvider.ERROR, UIHelper.getWidget(dm.getAttributeControl(LAUNCH_MAX_HEAP_SIZE)));
-            setComplete(false);
-            expandSection(SEC_HOW_TO_RUN);
-        }
+		int maxHeapSizeValue = maxHeapSize.getSelection();
+		//TODO take physical memory into account or just mark [0,10] and [90,100] as to low/high?
+		if (maxHeapSizeValue >= 90 || maxHeapSizeValue <= 10) {
+			// raise a form error
+			modelEditor
+					.addErrorMessage(
+							"toLowOrHighJVMHeapSize",
+							"Dedicating too high or low amounts of physical memory to TLC might cause heavy swapping",
+							this.getId(), IMessageProvider.WARNING,
+							UIHelper.getWidget(dm
+									.getAttributeControl(LAUNCH_MAX_HEAP_SIZE)));
+			expandSection(SEC_HOW_TO_RUN);
+		}
+		// color the scale if value becomes to extreme
+		float factor = (float) Math.sin((maxHeapSizeValue / 100d) * Math.PI);
+		maxHeapSize.setBackground(new Color(Display.getDefault(), new RGB(
+				120 * factor, 1 - factor, 1f)));
         
         // fpBits
         String fpBitsString = fpBits.getText();
@@ -693,7 +697,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
     /**
      * Save data back to model
      */
-    public void commit(boolean onSave)
+	public void commit(boolean onSave)
     {
         // TLCUIActivator.logDebug("Main page commit");
         // closed formula
@@ -742,15 +746,10 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         }
         getConfig().setAttribute(LAUNCH_NUMBER_OF_WORKERS, numberOfWorkers);
 
-        int maxHeapSizeInt = TLCUIActivator.getDefault().getPreferenceStore().getInt(
+        int maxHeapSizeValue = TLCUIActivator.getDefault().getPreferenceStore().getInt(
                 ITLCPreferenceConstants.I_TLC_MAXIMUM_HEAP_SIZE_DEFAULT);
-        try
-        {
-            maxHeapSizeInt = Integer.parseInt(maxHeapSize.getText());
-        } catch (NumberFormatException e)
-        { /* does not matter */
-        }
-        getConfig().setAttribute(LAUNCH_MAX_HEAP_SIZE, maxHeapSizeInt);
+        maxHeapSizeValue = maxHeapSize.getSelection();
+        getConfig().setAttribute(LAUNCH_MAX_HEAP_SIZE, maxHeapSizeValue);
 
         // fpBits
         int fpBitsInt = TLCUIActivator.getDefault().getPreferenceStore().getInt(
@@ -1106,20 +1105,49 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
         // max heap size label
         FormText maxHeapLabel = toolkit.createFormText(howToRunArea, true);
-        maxHeapLabel.setText("Maximum JVM heap size in MB:", false, false);
+        maxHeapLabel.setText("Fraction of physical memory allocated to model checker:", false, false);
+
+		// Create a composite inside the right "cell" of the "how to run"
+		// section grid layout to fit the scale and the maxHeapSizeFraction
+		// label into a single row.
+        final Composite maxHeapScale = new Composite(howToRunArea, SWT.NONE);
+        layout = new GridLayout(2, false);
+        maxHeapScale.setLayout(layout);
 
         // field max heap size
         int defaultMaxHeapSize = TLCUIActivator.getDefault().getPreferenceStore().getInt(
                 ITLCPreferenceConstants.I_TLC_MAXIMUM_HEAP_SIZE_DEFAULT);
-        maxHeapSize = toolkit.createText(howToRunArea, "" + defaultMaxHeapSize);
-        maxHeapSize.addModifyListener(howToRunListener);
+        maxHeapSize = new Scale(maxHeapScale, SWT.NONE);
+        maxHeapSize.addSelectionListener(howToRunListener);
         maxHeapSize.addFocusListener(focusListener);
         gd = new GridData();
         gd.horizontalIndent = 10;
-        gd.widthHint = 60;
+        gd.widthHint = 300;
         maxHeapSize.setLayoutData(gd);
+        maxHeapSize.setMaximum(99);
+        maxHeapSize.setMinimum(1);
+        maxHeapSize.setPageIncrement(5);
+        maxHeapSize.setSelection(defaultMaxHeapSize);
+        maxHeapSize.setToolTipText("This translates to the heap size of the nested TLC Java VM");
 
         dm.bindAttribute(LAUNCH_MAX_HEAP_SIZE, maxHeapSize, howToRunPart);
+        
+        // label next to the scale showing the current fraction selected
+        final FormText maxHeapSizeFraction = toolkit.createFormText(maxHeapScale, false);
+        maxHeapSizeFraction.setText(defaultMaxHeapSize + "%", false, false);
+        maxHeapSize.addSelectionListener(new SelectionListener() {
+			/* (non-Javadoc)
+			 * @see org.eclipse.swt.events.SelectionListener#widgetSelected(org.eclipse.swt.events.SelectionEvent)
+			 */
+			public void widgetSelected(SelectionEvent e) {
+				// update the label
+				int value = ((Scale) e.getSource()).getSelection();
+				maxHeapSizeFraction.setText(value + "%" , false, false);
+			}
+			public void widgetDefaultSelected(SelectionEvent e) {
+				// not used
+			}
+		});
 
         // fpbits
         FormText fpBitsLabel = toolkit.createFormText(howToRunArea, true);

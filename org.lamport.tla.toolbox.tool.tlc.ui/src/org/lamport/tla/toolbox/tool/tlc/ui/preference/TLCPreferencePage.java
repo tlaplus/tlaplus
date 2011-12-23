@@ -49,7 +49,7 @@ public class TLCPreferencePage extends FieldEditorPreferencePage implements IWor
         // addField(new BooleanFieldEditor(ITLCPreferenceConstants.I_TLC_DELETE_PREVIOUS_FILES,
         // "&Automatically delete unused data from previous model run", getFieldEditorParent()));
         addField(new IntegerFieldEditor(ITLCPreferenceConstants.I_TLC_MAXIMUM_HEAP_SIZE_DEFAULT,
-                "Maximum JVM Heap Size default", getFieldEditorParent()));
+                "Maximum JVM Heap Size default in % of physical system memory", getFieldEditorParent()));
         addField(new IntegerFieldEditor(ITLCPreferenceConstants.I_TLC_AUTO_LOCK_MODEL_TIME, "TLC run auto-lock time",
                 getFieldEditorParent()));
 
