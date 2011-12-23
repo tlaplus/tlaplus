@@ -331,6 +331,14 @@ public class ShortDiskFPSetTest extends AbstractFPSetTest {
 	 * @throws IOException 
 	 */
 	public void testDiskLookupWithZeros() throws IOException {
+		// skip known failures which aren't likely to be fixed anytime soon
+		// @see https://bugzilla.tlaplus.net/show_bug.cgi?id=213
+		if(!runKnownFailures) {
+			System.out
+					.println("Skipping test failing due to https://bugzilla.tlaplus.net/show_bug.cgi?id=213");
+			return;
+		}
+		
 		final DiskFPSet fpSet = (DiskFPSet) getFPSet(getFreeMemory());
 		assertFalse(fpSet.memInsert(0l));
 		assertFalse(fpSet.diskLookup(0l));
