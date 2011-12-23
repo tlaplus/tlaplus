@@ -518,6 +518,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         twd.grabHorizontal = true;
         newDefinitionsSource.getTextWidget().setLayoutData(twd);
         newDefinitionsSource.addTextListener(newDefinitionsListener);
+        newDefinitionsSource.getTextWidget().addFocusListener(focusListener);
 
         dm.bindAttribute(MODEL_PARAMETER_NEW_DEFINITIONS, newDefinitionsSource, newDefinitionsPart);
 
@@ -575,6 +576,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         twd.grabHorizontal = true;
         constraintSource.getTextWidget().setLayoutData(twd);
         constraintSource.addTextListener(constraintListener);
+        constraintSource.getTextWidget().addFocusListener(focusListener);
         dm.bindAttribute(MODEL_PARAMETER_CONSTRAINT, constraintSource, constraintPart);
 
         // ---------------------------------------------------------------
@@ -598,6 +600,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         twd.grabHorizontal = true;
         actionConstraintSource.getTextWidget().setLayoutData(twd);
         actionConstraintSource.addTextListener(actionConstraintListener);
+        actionConstraintSource.getTextWidget().addFocusListener(focusListener);
         dm.bindAttribute(MODEL_PARAMETER_ACTION_CONSTRAINT, actionConstraintSource, actionConstraintPart);
 
         // ---------------------------------------------------------------
@@ -619,6 +622,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         twd.grabHorizontal = true;
         modelValuesSource.getTextWidget().setLayoutData(twd);
         modelValuesSource.addTextListener(modelValuesListener);
+        modelValuesSource.getTextWidget().addFocusListener(focusListener);
         dm.bindAttribute(MODEL_PARAMETER_MODEL_VALUES, modelValuesSource, modelValuesPart);
 
         // ---------------------------------------------------------------
@@ -687,6 +691,8 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         fpIndexSpinner.setMinimum(1);
         fpIndexSpinner.setMaximum(64);
         
+        fpIndexSpinner.addFocusListener(focusListener);
+        
         // Model checking mode
         mcOption = toolkit.createButton(area, "Model-checking mode", SWT.RADIO);
         gd = new GridData();
@@ -725,11 +731,13 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         gd = new GridData();
         gd.widthHint = 100;
         dfidDepthText.setLayoutData(gd);
+        dfidDepthText.addFocusListener(focusListener);
 
         simulationOption = toolkit.createButton(area, "Simulation mode", SWT.RADIO);
         gd = new GridData();
         gd.horizontalSpan = 2;
         simulationOption.setLayoutData(gd);
+        simulationOption.addFocusListener(focusListener);
 
         // label depth
         FormText depthLabel = toolkit.createFormText(area, true);
@@ -742,6 +750,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         gd = new GridData();
         gd.widthHint = 100;
         simuDepthText.setLayoutData(gd);
+        simuDepthText.addFocusListener(focusListener);
 
         // label seed
         FormText seedLabel = toolkit.createFormText(area, true);
@@ -755,6 +764,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         gd = new GridData();
         gd.widthHint = 200;
         simuSeedText.setLayoutData(gd);
+        simuSeedText.addFocusListener(focusListener);
 
         // label seed
         FormText arilLabel = toolkit.createFormText(area, true);
@@ -768,6 +778,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         gd = new GridData();
         gd.widthHint = 200;
         simuArilText.setLayoutData(gd);
+        simuArilText.addFocusListener(focusListener);
 
         return advancedSection;
     }

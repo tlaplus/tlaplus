@@ -1,6 +1,5 @@
 package org.lamport.tla.toolbox.tool.tlc.ui.editor.page;
 
-import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
@@ -899,11 +898,13 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         // split formula option
         initNextFairnessRadio = toolkit.createButton(behaviorArea, "Initial predicate and next-state relation",
                 SWT.RADIO);
+        initNextFairnessRadio.addFocusListener(focusListener);
 
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalSpan = 2;
         initNextFairnessRadio.setLayoutData(gd);
         initNextFairnessRadio.addSelectionListener(whatIsTheSpecListener);
+        initNextFairnessRadio.addFocusListener(focusListener);
 
         // init
         toolkit.createLabel(behaviorArea, "Init:");
@@ -913,6 +914,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         initFormulaSource.getTextWidget().setLayoutData(gd);
         initFormulaSource.getTextWidget().addModifyListener(whatIsTheSpecListener);
         initFormulaSource.getTextWidget().addModifyListener(widgetActivatingListener);
+        initFormulaSource.getTextWidget().addFocusListener(focusListener);
         dm.bindAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT, initFormulaSource, behaviorPart);
 
         // next
@@ -923,6 +925,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         nextFormulaSource.getTextWidget().setLayoutData(gd);
         nextFormulaSource.getTextWidget().addModifyListener(whatIsTheSpecListener);
         nextFormulaSource.getTextWidget().addModifyListener(widgetActivatingListener);
+        nextFormulaSource.getTextWidget().addFocusListener(focusListener);
         dm.bindAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT, nextFormulaSource, behaviorPart);
 
         // fairness
@@ -1110,6 +1113,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
                 ITLCPreferenceConstants.I_TLC_MAXIMUM_HEAP_SIZE_DEFAULT);
         maxHeapSize = toolkit.createText(howToRunArea, "" + defaultMaxHeapSize);
         maxHeapSize.addModifyListener(howToRunListener);
+        maxHeapSize.addFocusListener(focusListener);
         gd = new GridData();
         gd.horizontalIndent = 10;
         gd.widthHint = 60;
@@ -1125,6 +1129,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
                 ITLCPreferenceConstants.I_TLC_FPBITS_DEFAULT);
         fpBits = toolkit.createText(howToRunArea, "" + defaultFPBits);
         fpBits.addModifyListener(howToRunListener);
+        fpBits.addFocusListener(focusListener);
         gd = new GridData();
         gd.horizontalIndent = 10;
         gd.widthHint = 60;
@@ -1139,6 +1144,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         // field workers
         workers = toolkit.createText(howToRunArea, "1");
         workers.addModifyListener(howToRunListener);
+        workers.addFocusListener(focusListener);
         gd = new GridData();
         gd.horizontalIndent = 10;
         gd.widthHint = 40;
@@ -1156,6 +1162,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
         checkpointButton.setLayoutData(gd);
         checkpointButton.addSelectionListener(howToRunListener);
+        checkpointButton.addFocusListener(focusListener);
 
         FormText chkpointIdLabel = toolkit.createFormText(howToRunArea, true);
         chkpointIdLabel.setText("Checkpoint ID:", false, false);
@@ -1213,6 +1220,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
             {
             }
         });
+        chkptDeleteButton.addFocusListener(focusListener);
         
         /*
          * Distribution
@@ -1225,6 +1233,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         distributedButton.setLayoutData(gd);
         distributedButton.addSelectionListener(howToRunListener);
 		distributedButton.setToolTipText("If checked, state computation will be performed by (remote) workers.");
+		distributedButton.addFocusListener(focusListener);
 		
 		// Additional VM arguments for distributed mode
         FormText distributedLabel = toolkit.createFormText(howToRunArea, true);
@@ -1235,6 +1244,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         distributedText
         .setToolTipText("Optionally pass additional JVM arguments to master TLC process (e.g. -Djava.rmi.server.hostname=ThisHostName)");
         distributedText.addModifyListener(howToRunListener);
+        distributedText.addFocusListener(focusListener);
         gd = new GridData();
         gd.horizontalIndent = 10;
         gd.widthHint = 300;

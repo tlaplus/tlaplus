@@ -1,6 +1,5 @@
 package org.lamport.tla.toolbox.tool.tlc.ui.editor.page;
 
-import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.List;
@@ -15,25 +14,22 @@ import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.jface.viewers.ISelectionChangedListener;
-import org.eclipse.jface.viewers.ISelectionProvider;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.FocusEvent;
+import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Layout;
 import org.eclipse.swt.widgets.ToolBar;
-import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.INavigationHistory;
 import org.eclipse.ui.INavigationLocation;
 import org.eclipse.ui.INavigationLocationProvider;
-import org.eclipse.ui.forms.IFormPart;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.IMessage;
 import org.eclipse.ui.forms.IMessageManager;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.editor.FormPage;
-import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.forms.events.ExpansionAdapter;
 import org.eclipse.ui.forms.events.ExpansionEvent;
 import org.eclipse.ui.forms.events.HyperlinkAdapter;
@@ -125,6 +121,29 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
 
     private ToolBarManager headClientTBM = null;
 
+    /**
+	 * A {@link FocusListener} responsible for marking a location in the
+	 * navigation history whenever the current focus changes. It's the
+	 * responsibility of subclasses to add this listener to their
+	 * {@link Control}s in the
+	 * {@link BasicFormPage#createBodyContent(IManagedForm)} method.
+	 */
+    protected final FocusListener focusListener = new FocusListener() {
+    	/* (non-Javadoc)
+    	 * @see org.eclipse.swt.events.FocusListener#focusGained(org.eclipse.swt.events.FocusEvent)
+    	 */
+    	public void focusGained(final FocusEvent event) {
+    		final INavigationHistory navigationHistory = getSite().getPage().getNavigationHistory();
+    		navigationHistory.markLocation(BasicFormPage.this);
+    	}
+		/* (non-Javadoc)
+		 * @see org.eclipse.swt.events.FocusListener#focusLost(org.eclipse.swt.events.FocusEvent)
+		 */
+		public void focusLost(FocusEvent e) {
+			// keeping a history does not need the focusLost event 
+		}
+	};
+	
     // hyper link listener activated in case of errors
     protected IHyperlinkListener errorMessageHyperLinkListener = new HyperlinkAdapter() {
 
@@ -298,21 +317,22 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
         TLCUIHelper.setHelp(getPartControl(), helpId);
 
         getManagedForm().getForm().getForm().addMessageHyperlinkListener(errorMessageHyperLinkListener);
-        
-        getSite().getSelectionProvider().addSelectionChangedListener(new ISelectionChangedListener() {
-			
-			public void selectionChanged(SelectionChangedEvent event) {
-				// TODO Auto-generated method stub
-				
-			}
-		});
     }
 
     /* (non-Javadoc)
 	 * @see org.eclipse.ui.INavigationLocationProvider#createEmptyNavigationLocation()
 	 */
 	public INavigationLocation createEmptyNavigationLocation() {
-		return new TabNavigationLocation(this);
+		final NavigationLocationComposite combinedFormNav = new NavigationLocationComposite();
+		
+		// save the current FormPage as a navigation control
+		combinedFormNav.add(new TabNavigationLocation(this));
+	
+		// the control selected on the current page
+		final Control focusControl = getSite().getShell().getDisplay().getFocusControl();
+		combinedFormNav.add(new ControlNavigationLocation(focusControl));
+		
+		return combinedFormNav;
 	}
 
 	/* (non-Javadoc)
@@ -356,10 +376,7 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
      * 
      * @param managedForm 
      */
-    protected void createBodyContent(IManagedForm managedForm)
-    {
-
-    }
+    protected abstract void createBodyContent(IManagedForm managedForm);
 
     /**
      * Commit the page
