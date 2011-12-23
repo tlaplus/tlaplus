@@ -43,9 +43,6 @@ import util.FileUtil;
  * By doing so, we lose one bit of the fingerprint. However, we will get this
  * bit back if using MultiFPSet.
  */
-/**
- * @author Markus Alexander Kuppe
- */
 @SuppressWarnings("serial")
 public class DiskFPSet extends FPSet {
 	// fields
@@ -139,7 +136,8 @@ public class DiskFPSet extends FPSet {
 		int logMaxMemCnt = 1;
 		maxMemCnt--;
 		while (maxMemCnt > 1) {
-			maxMemCnt >>>= 1;
+			// half maxMemCnt until it hits 1
+			maxMemCnt = maxMemCnt / 2;
 			logMaxMemCnt++;
 		}
 
