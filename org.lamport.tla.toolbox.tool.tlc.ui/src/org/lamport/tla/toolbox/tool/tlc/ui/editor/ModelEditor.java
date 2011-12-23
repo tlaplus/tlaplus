@@ -290,26 +290,37 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
 
         
         // Asynchronously register a PageChangedListener to now cause cyclic part init warnings
-        UIHelper.runUIAsync(new Runnable() {
+		UIHelper.runUIAsync(new Runnable() {
 			public void run() {
-				addPageChangedListener(new IPageChangedListener() {
-					/* (non-Javadoc)
-					 * @see org.eclipse.jface.dialogs.IPageChangedListener#pageChanged(org.eclipse.jface.dialogs.PageChangedEvent)
-					 */
-					public void pageChanged(PageChangedEvent event) {
-						INavigationHistory navigationHistory = getSite().getPage().getNavigationHistory();
-						navigationHistory.markLocation((IEditorPart) event.getSelectedPage());
-					}
-				});
+				addPageChangedListener(pageChangedListener);
 			}
-        });
-    }
+		});
+	}
 
-    /**
-     * @see org.eclipse.ui.forms.editor.FormEditor#dispose()
-     */
-    public void dispose()
-    {
+	/**
+	 * This IPageChangedListener is responsible to mark the current page in the
+	 * navigation location history (stack). It is here in addition to a
+	 * FocusListener in BasicFormPage which additionally track the in-page
+	 * selection. However, if the user does not click into the page effectively
+	 * changing the selection, the FocusListener isn't triggered.
+	 */
+	private final IPageChangedListener pageChangedListener = new IPageChangedListener() {
+		/* (non-Javadoc)
+		 * @see org.eclipse.jface.dialogs.IPageChangedListener#pageChanged(org.eclipse.jface.dialogs.PageChangedEvent)
+		 */
+		public void pageChanged(final PageChangedEvent event) {
+			final INavigationHistory navigationHistory = getSite().getPage()
+					.getNavigationHistory();
+			navigationHistory.markLocation((IEditorPart) event
+					.getSelectedPage());
+		}
+	};;
+
+	/**
+	 * @see org.eclipse.ui.forms.editor.FormEditor#dispose()
+	 */
+	public void dispose() {
+		removePageChangedListener(pageChangedListener);
         // TLCUIActivator.logDebug("entering ModelEditor#dispose()");
         // remove the listeners
         ResourcesPlugin.getWorkspace().removeResourceChangeListener(workspaceResourceChangeListener);
