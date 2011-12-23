@@ -16,7 +16,9 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.jface.dialogs.IMessageProvider;
+import org.eclipse.jface.dialogs.IPageChangedListener;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.dialogs.PageChangedEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabFolder2Adapter;
@@ -28,6 +30,7 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IEditorSite;
+import org.eclipse.ui.INavigationHistory;
 import org.eclipse.ui.IPartService;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.forms.IMessageManager;
@@ -285,6 +288,21 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
         UIHelper.runUIAsync(validateRunable);
         // TLCUIActivator.logDebug("leaving ModelEditor#init(IEditorSite site, IEditorInput input)");
 
+        
+        // Asynchronously register a PageChangedListener to now cause cyclic part init warnings
+        UIHelper.runUIAsync(new Runnable() {
+			public void run() {
+				addPageChangedListener(new IPageChangedListener() {
+					/* (non-Javadoc)
+					 * @see org.eclipse.jface.dialogs.IPageChangedListener#pageChanged(org.eclipse.jface.dialogs.PageChangedEvent)
+					 */
+					public void pageChanged(PageChangedEvent event) {
+						INavigationHistory navigationHistory = getSite().getPage().getNavigationHistory();
+						navigationHistory.markLocation((IEditorPart) event.getSelectedPage());
+					}
+				});
+			}
+        });
     }
 
     /**
@@ -885,6 +903,10 @@ public class ModelEditor extends FormEditor implements ModelHelper.IFileProvider
             TLCUIActivator.logError("Error retrieving model error markers", e);
         }
         // System.out.println("leaving ModelEditor.handleProblemMarkers()");
+    }
+    
+    public void setActivePage(int index) {
+    	super.setActivePage(index);
     }
 
     /**

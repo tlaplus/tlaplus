@@ -1,5 +1,6 @@
 package org.lamport.tla.toolbox.tool.tlc.ui.editor.page;
 
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.List;
@@ -14,17 +15,25 @@ import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.ISelectionProvider;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Layout;
 import org.eclipse.swt.widgets.ToolBar;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.INavigationLocation;
+import org.eclipse.ui.INavigationLocationProvider;
+import org.eclipse.ui.forms.IFormPart;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.IMessage;
 import org.eclipse.ui.forms.IMessageManager;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.editor.FormPage;
+import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.forms.events.ExpansionAdapter;
 import org.eclipse.ui.forms.events.ExpansionEvent;
 import org.eclipse.ui.forms.events.HyperlinkAdapter;
@@ -81,7 +90,7 @@ import tla2sany.st.Location;
  * @version $Id$
  */
 public abstract class BasicFormPage extends FormPage implements IModelConfigurationConstants,
-        IModelConfigurationDefaults, ISectionConstants, IModelOperationContainer
+        IModelConfigurationDefaults, ISectionConstants, IModelOperationContainer, INavigationLocationProvider
 {
     public static final String CRASHED_TITLE = " ( model checking has crashed )";
     public static final String RUNNING_TITLE = " ( model checking is in progress )";
@@ -289,9 +298,31 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
         TLCUIHelper.setHelp(getPartControl(), helpId);
 
         getManagedForm().getForm().getForm().addMessageHyperlinkListener(errorMessageHyperLinkListener);
+        
+        getSite().getSelectionProvider().addSelectionChangedListener(new ISelectionChangedListener() {
+			
+			public void selectionChanged(SelectionChangedEvent event) {
+				// TODO Auto-generated method stub
+				
+			}
+		});
     }
 
-    /**
+    /* (non-Javadoc)
+	 * @see org.eclipse.ui.INavigationLocationProvider#createEmptyNavigationLocation()
+	 */
+	public INavigationLocation createEmptyNavigationLocation() {
+		return new TabNavigationLocation(this);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.eclipse.ui.INavigationLocationProvider#createNavigationLocation()
+	 */
+	public INavigationLocation createNavigationLocation() {
+        return createEmptyNavigationLocation();
+    }
+
+	/**
      * Method to fill data in to the page from the model. This method is called as a part 
      * of the page life cycle. It is called after all the UI elements have been constructed but
      * before the completion of the page initialization.
