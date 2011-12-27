@@ -17,6 +17,8 @@ import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.PaintEvent;
+import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
@@ -61,6 +63,7 @@ import org.lamport.tla.toolbox.tool.tlc.ui.util.DirtyMarkingListener;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.SemanticHelper;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
+import org.lamport.tla.toolbox.tool.tlc.util.TLCRuntime;
 import org.lamport.tla.toolbox.util.IHelpConstants;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
@@ -1122,7 +1125,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         maxHeapSize.addFocusListener(focusListener);
         gd = new GridData();
         gd.horizontalIndent = 10;
-        gd.widthHint = 300;
+        gd.widthHint = 250;
         maxHeapSize.setLayoutData(gd);
         maxHeapSize.setMaximum(99);
         maxHeapSize.setMinimum(1);
@@ -1134,18 +1137,19 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         
         // label next to the scale showing the current fraction selected
         final FormText maxHeapSizeFraction = toolkit.createFormText(maxHeapScale, false);
-        maxHeapSizeFraction.setText(defaultMaxHeapSize + "%", false, false);
-        maxHeapSize.addSelectionListener(new SelectionListener() {
+		final TLCRuntime instance = TLCRuntime.getInstance();
+		long memory = instance.getAbsolutePhysicalSystemMemory(defaultMaxHeapSize / 100d);
+        maxHeapSizeFraction.setText(defaultMaxHeapSize + "%" + " (" + memory + " mb)", false, false);
+        maxHeapSize.addPaintListener(new PaintListener() {
 			/* (non-Javadoc)
-			 * @see org.eclipse.swt.events.SelectionListener#widgetSelected(org.eclipse.swt.events.SelectionEvent)
+			 * @see org.eclipse.swt.events.PaintListener#paintControl(org.eclipse.swt.events.PaintEvent)
 			 */
-			public void widgetSelected(SelectionEvent e) {
+			public void paintControl(PaintEvent e) {
 				// update the label
 				int value = ((Scale) e.getSource()).getSelection();
-				maxHeapSizeFraction.setText(value + "%" , false, false);
-			}
-			public void widgetDefaultSelected(SelectionEvent e) {
-				// not used
+				final TLCRuntime instance = TLCRuntime.getInstance();
+				long memory = instance.getAbsolutePhysicalSystemMemory(value / 100d);
+				maxHeapSizeFraction.setText(value + "%" + " (" + memory + " mb)" , false, false);
 			}
 		});
 

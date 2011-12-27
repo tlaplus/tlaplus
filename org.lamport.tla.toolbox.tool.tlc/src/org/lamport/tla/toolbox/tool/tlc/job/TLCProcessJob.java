@@ -23,6 +23,7 @@ import org.lamport.tla.toolbox.tool.tlc.TLCActivator;
 import org.lamport.tla.toolbox.tool.tlc.launch.TraceExplorerDelegate;
 import org.lamport.tla.toolbox.tool.tlc.output.IProcessOutputSink;
 import org.lamport.tla.toolbox.tool.tlc.output.internal.BroadcastStreamListener;
+import org.lamport.tla.toolbox.tool.tlc.util.TLCRuntime;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 
 import tlc2.TLC;
@@ -88,14 +89,15 @@ public class TLCProcessJob extends TLCJob
             		"TLC ARGUMENTS: " +
             		Arrays.toString(arguments));
 
-            // get max heap size
-            // the default value should never be returned if validation
-            // of the main model page is correct
-            int maxHeapSize = launch.getLaunchConfiguration().getAttribute(LAUNCH_MAX_HEAP_SIZE, 500);
-
-            // using -D to pass the System property of the location of standard modules
             final List<String> vmArgs = new ArrayList<String>();
-            vmArgs.add("-Xmx" + maxHeapSize + "m");
+
+            // get max heap size as fraction from model editor
+            final double maxHeapSize = launch.getLaunchConfiguration().getAttribute(LAUNCH_MAX_HEAP_SIZE, 50) / 100d;
+			final TLCRuntime instance = TLCRuntime.getInstance();
+			final long absolutePhysicalSystemMemory = instance.getAbsolutePhysicalSystemMemory(maxHeapSize);
+			vmArgs.add("-Xmx" + absolutePhysicalSystemMemory + "m");
+
+            // add remaining VM args
             vmArgs.addAll(getAdditionalVMArgs());
 
             // assemble the config
