@@ -5,14 +5,21 @@
 
 package tlc2.tool.fp;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.rmi.NoSuchObjectException;
 import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
+import tlc2.TLCGlobals;
+import tlc2.tool.distributed.FPSetManager;
 import tlc2.tool.distributed.FPSetRMI;
 import tlc2.util.BitVector;
 import tlc2.util.LongVec;
+import util.FileUtil;
 
 /**
  * An <code>FPSet</code> is a set of 64-bit fingerprints.
@@ -156,74 +163,74 @@ public abstract class FPSet extends UnicastRemoteObject implements FPSetRMI
 	}
 
     // SZ Jul 10, 2009: this method is not used
-//    public static void main(String args[])
-//    {
-//        System.out.println("TLC FP Server " + TLCGlobals.versionOfTLC);
-//
-//        String metadir = null;
-//        String fromChkpt = null;
-//        int index = 0;
-//        while (index < args.length)
-//        {
-//            if (args[index].charAt(0) == '-')
-//            {
-//                printErrorMsg("Error: unrecognized option: " + args[index]);
-//                System.exit(0);
-//            }
-//            if (metadir != null)
-//            {
-//                printErrorMsg("Error: more than one directory for metadata: " + metadir + " and " + args[index]);
-//                System.exit(0);
-//            }
-//            metadir = args[index++] + FileUtil.separator;
-//        }
-//
-//        String hostname = "Unknown";
-//        try
-//        {
-//            hostname = InetAddress.getLocalHost().getHostName();
-//            metadir = (metadir == null) ? hostname : (metadir + hostname);
-//            File filedir = new File(metadir);
-//            if (!filedir.exists())
-//            {
-//                boolean created = filedir.mkdirs();
-//                if (!created)
-//                {
-//                    System.err
-//                            .println("Error: fingerprint server could not make a directory for the disk files it needs to write.\n");
-//                    System.exit(0);
-//                }
-//            }
-//            // Start memory-based fingerprint set server.
-//            // Note: It would be wrong to use the disk-based implementation.
-//            FPSet fpSet = new MemFPSet2();
-//            fpSet.init(1, metadir, "fpset");
-//            if (fromChkpt != null)
-//            {
-//                fpSet.recover(); // recover when instructed
-//            }
-//            Registry rg = LocateRegistry.createRegistry(Port);
-//            rg.rebind("FPSetServer", fpSet);
-//            System.out.println("Fingerprint set server at " + hostname + " is ready.");
-//
-//            synchronized (fpSet)
-//            {
-//                while (true)
-//                {
-//                    System.out.println("Progress: The number of fingerprints stored at " + hostname + " is "
-//                            + fpSet.size() + ".");
-//                    fpSet.wait(300000);
-//                }
-//            }
-//        } catch (Exception e)
-//        {
-//            System.out.println(hostname + ": Error: " + e.getMessage());
-//        }
-//    }
-//    private static void printErrorMsg(String msg)
-//    {
-//        System.out.println(msg);
-//        System.out.println("Usage: java tlc2.tool.FPSet [-option] metadir");
-//    }
+    public static void main(String args[])
+    {
+        System.out.println("TLC FP Server " + TLCGlobals.versionOfTLC);
+
+        String metadir = null;
+        String fromChkpt = null;
+        int index = 0;
+        while (index < args.length)
+        {
+            if (args[index].charAt(0) == '-')
+            {
+                printErrorMsg("Error: unrecognized option: " + args[index]);
+                System.exit(0);
+            }
+            if (metadir != null)
+            {
+                printErrorMsg("Error: more than one directory for metadata: " + metadir + " and " + args[index]);
+                System.exit(0);
+            }
+            metadir = args[index++] + FileUtil.separator;
+        }
+
+        String hostname = "Unknown";
+        try
+        {
+            hostname = InetAddress.getLocalHost().getHostName();
+            metadir = (metadir == null) ? hostname : (metadir + hostname);
+            File filedir = new File(metadir);
+            if (!filedir.exists())
+            {
+                boolean created = filedir.mkdirs();
+                if (!created)
+                {
+                    System.err
+                            .println("Error: fingerprint server could not make a directory for the disk files it needs to write.\n");
+                    System.exit(0);
+                }
+            }
+            // Start memory-based fingerprint set server.
+            // Note: It would be wrong to use the disk-based implementation.
+            FPSet fpSet = new MemFPSet2();
+            fpSet.init(1, metadir, "fpset");
+            if (fromChkpt != null)
+            {
+                fpSet.recover(); // recover when instructed
+            }
+            Registry rg = LocateRegistry.createRegistry(FPSetManager.Port);
+            rg.rebind("FPSetServer", fpSet);
+            System.out.println("Fingerprint set server at " + hostname + " is ready.");
+
+            synchronized (fpSet)
+            {
+                while (true)
+                {
+                    System.out.println("Progress: The number of fingerprints stored at " + hostname + " is "
+                            + fpSet.size() + ".");
+                    fpSet.wait(300000);
+                }
+            }
+        } catch (Exception e)
+        {
+            System.out.println(hostname + ": Error: " + e.getMessage());
+        }
+    }
+    private static void printErrorMsg(String msg)
+    {
+        System.out.println(msg);
+        System.out.println("Usage: java tlc2.tool.FPSet [-option] metadir");
+    }
 
 }

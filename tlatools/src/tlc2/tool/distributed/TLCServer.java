@@ -506,7 +506,11 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		MP.printMessage(EC.GENERAL, "TLC Server " + TLCGlobals.versionOfTLC);
 		TLCServer server = null;
 		try {
-			TLCGlobals.fpServers = TLCConfig.getStringArray("fp_servers");
+			final String fpServerProperty = System.getProperty("fp_servers");
+			if(fpServerProperty != null) {
+				String[] fpServers = fpServerProperty.split(",");
+				TLCGlobals.fpServers = fpServers;
+			}
 			TLCGlobals.setNumWorkers(0);
 			server = new TLCServer(TLCApp.create(argv));
 			if(server != null) {
