@@ -402,6 +402,15 @@ result will be set to a sequence containing only a single region.
                              
       (*********************************************************************)
       (* Increment minDepth if ltok # rtok and allExpr is true.            *)
+      (*                                                                   *)
+      (* This appears to be an error, because the implementation works     *)
+      (* properly without the ltok # rtok conjunct in the `if' test.  I    *)
+      (* probably didn't test the spec adequately.  However, it's also     *)
+      (* possible that the spec is correct and for some subtle reason, the *)
+      (* obvious implementation of the `if' test doesn't actually          *)
+      (* implement the spec.  As long as the implementation seems to be    *)
+      (* working, I don't want to spend the time figuring out what's going *)
+      (* on.                                                               *)
       (*********************************************************************)
       if (ltok # rtok /\ allExpr) {minDepth := minDepth + 1} ;
       
@@ -656,5 +665,5 @@ Termination == <>(pc = "Done")
 \* END TRANSLATION
 =============================================================================
 \* Modification History
-\* Last modified Tue Dec 13 10:12:16 PST 2011 by lamport
+\* Last modified Wed Dec 28 18:40:35 PST 2011 by lamport
 \* Created Thu Dec 01 16:51:23 PST 2011 by lamport
