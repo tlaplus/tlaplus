@@ -125,36 +125,43 @@ public class DiskFPSet extends FPSet {
 	 * <code>DefaultMaxTblCnt</code> entries. When the buffer fills up, its
 	 * entries are atomically flushed to the FPSet's backing disk file.
 	 */
-	public DiskFPSet(int maxMemCnt) throws RemoteException {
+	public DiskFPSet(final int maxMemoryInBytes) throws RemoteException {
 		this.rwLock = new ReadersWriterLock();
 		this.fileCnt = 0;
 		this.flusherChosen = false;
 
-		if (maxMemCnt <= 0) {
+		// default if not specific value given
+		int maxMemCnt = maxMemoryInBytes;
+		if ((maxMemCnt - LogMaxLoad) <= 0) {
 			maxMemCnt = DefaultMaxTblCnt;
 		}
+		
+		// half maxMemCnt until it hits 1
+		// to approximate 2^n ~= maxMemCnt
 		int logMaxMemCnt = 1;
 		maxMemCnt--;
 		while (maxMemCnt > 1) {
-			// half maxMemCnt until it hits 1
 			maxMemCnt = maxMemCnt / 2;
 			logMaxMemCnt++;
 		}
 
+		// guard against underflow
+		Assert.check(logMaxMemCnt - LogMaxLoad >= 0, EC.GENERAL);
 		int capacity = 1 << (logMaxMemCnt - LogMaxLoad);
-
-		this.tblCnt = 0;
+		
 		// instead of changing maxTblCnd to long and pay an extra price when 
-		// comparing int and long every time put is called, we set it to 
-		// Integer.MAX_VALUE instead. Capacity can never grow bigger 
-		// (unless java supports long as an array size)
+		// comparing int and long every time put(long) is called, we set it to 
+		// Integer.MAX_VALUE instead. capacity can never grow bigger 
+		// (unless java supports 64bit array sizes)
 		this.maxTblCnt = (logMaxMemCnt >= 31) ? Integer.MAX_VALUE : (1 << logMaxMemCnt);
-		this.mask = capacity - 1;
-		this.index = null;
 
 		// guard against negative maxTblCnt
 		Assert.check(maxTblCnt > capacity && capacity > tblCnt,
-				EC.SYSTEM_INDEX_ERROR);
+				EC.GENERAL);
+
+		this.tblCnt = 0;
+		this.mask = capacity - 1;
+		this.index = null;
 		
 		this.tbl = new long[capacity][];
 	}

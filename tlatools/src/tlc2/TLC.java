@@ -543,18 +543,21 @@ public class TLC
                 }
             }
         }
-        Runtime runtime = Runtime.getRuntime();
-        if (fpMemSize == -1)
+        final Runtime runtime = Runtime.getRuntime();
+        final long maxMemory = runtime.maxMemory();
+		if (fpMemSize == -1)
         {
-            fpMemSize = runtime.maxMemory() >> 2;
+			// .25 * maxMemory
+            fpMemSize = maxMemory >> 2;
          }
         if (fpMemSize < MinFpMemSize) 
         {
             fpMemSize = MinFpMemSize;
         }
-        if (fpMemSize >= runtime.maxMemory()) 
+        if (fpMemSize >= maxMemory) 
         { 
-            fpMemSize = runtime.maxMemory() - (runtime.maxMemory() >> 2);
+			// .75*maxMemory
+            fpMemSize = maxMemory - (maxMemory >> 2);
         }  
         if (mainFile == null)
         {

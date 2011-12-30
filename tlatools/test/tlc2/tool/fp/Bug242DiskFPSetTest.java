@@ -55,5 +55,11 @@ public class Bug242DiskFPSetTest extends AbstractFPSetTest {
 			fail(e.getMessage());
 		}
 	}
-
+	public void testDiskFPSetOne() throws RemoteException {
+		try {
+			getFPSet(1);
+		} catch (Exception e) {
+			fail(e.getMessage());
+		}
+	}
 }
