@@ -130,7 +130,7 @@ public class DiskFPSet extends FPSet {
 		this.fileCnt = 0;
 		this.flusherChosen = false;
 
-		if (maxMemCnt == -1) {
+		if (maxMemCnt <= 0) {
 			maxMemCnt = DefaultMaxTblCnt;
 		}
 		int logMaxMemCnt = 1;
@@ -142,11 +142,21 @@ public class DiskFPSet extends FPSet {
 		}
 
 		int capacity = 1 << (logMaxMemCnt - LogMaxLoad);
-		this.tbl = new long[capacity][];
+
 		this.tblCnt = 0;
-		this.maxTblCnt = (1 << logMaxMemCnt);
+		// instead of changing maxTblCnd to long and pay an extra price when 
+		// comparing int and long every time put is called, we set it to 
+		// Integer.MAX_VALUE instead. Capacity can never grow bigger 
+		// (unless java supports long as an array size)
+		this.maxTblCnt = (logMaxMemCnt >= 31) ? Integer.MAX_VALUE : (1 << logMaxMemCnt);
 		this.mask = capacity - 1;
 		this.index = null;
+
+		// guard against negative maxTblCnt
+		Assert.check(maxTblCnt > capacity && capacity > tblCnt,
+				EC.SYSTEM_INDEX_ERROR);
+		
+		this.tbl = new long[capacity][];
 	}
 
 	/* (non-Javadoc)
