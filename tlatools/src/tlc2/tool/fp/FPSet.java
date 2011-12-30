@@ -17,6 +17,7 @@ import java.rmi.server.UnicastRemoteObject;
 import tlc2.TLCGlobals;
 import tlc2.tool.distributed.FPSetManager;
 import tlc2.tool.distributed.FPSetRMI;
+import tlc2.tool.fp.management.DiskFPSetMXWrapper;
 import tlc2.util.BitVector;
 import tlc2.util.LongVec;
 import util.FileUtil;
@@ -41,7 +42,9 @@ public abstract class FPSet extends UnicastRemoteObject implements FPSetRMI
 	 */
 	public static FPSet getFPSet(int fpBits, long fpMemSize) throws RemoteException {
 		if (fpBits == 0) {
-			return new DiskFPSet((int) fpMemSize);
+			final DiskFPSet diskFPSet = new DiskFPSet((int) fpMemSize);
+			new DiskFPSetMXWrapper(diskFPSet);
+			return diskFPSet;
 		} else {
 			return new MultiFPSet(fpBits, fpMemSize);
 		}

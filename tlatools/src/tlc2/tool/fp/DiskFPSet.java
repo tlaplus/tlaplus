@@ -99,6 +99,18 @@ public class DiskFPSet extends FPSet {
 	 * if <code>null</code>, no disk file exists yet
 	 */
 	protected long[] index;
+	
+	// statistics
+	private long memHitCnt;
+	private long diskLookupCnt;
+	private long diskHitCnt;
+	private long diskWriteCnt;
+	private long diskSeekCnt;
+	
+	// indicate how many cp or disk grow in put(long) has occurred
+	private int checkPointMark;
+	private int growDiskMark;
+
 
 	/**
 	 * Log (base 2) of default number of new entries allowed to accumulate in
@@ -179,6 +191,7 @@ public class DiskFPSet extends FPSet {
 		this.brafPool = new BufferedRandomAccessFile[5];
 		this.poolIndex = 0;
 
+		
 		try {
 			// create/truncate backing file:
 			FileOutputStream f = new FileOutputStream(this.getFPFilename());
@@ -272,13 +285,13 @@ public class DiskFPSet extends FPSet {
 		synchronized (this.rwLock) {
 			// First, look in in-memory buffer
 			if (this.memLookup(fp0)) {
-				// this.hitCnt2++;
+				this.memHitCnt++;
 				return true;
 			}
 
 			// block if disk is being re-written
 			this.rwLock.BeginRead();
-			// this.diskLookupCnt++;
+			this.diskLookupCnt++;
 		}
 
 		// next, look on disk
@@ -290,13 +303,13 @@ public class DiskFPSet extends FPSet {
 
 			// In event of disk hit, return
 			if (diskHit) {
-				// this.hitCnt3++;
+				this.diskHitCnt++;
 				return true;
 			}
 
 			// if disk lookup failed, add to memory buffer
 			if (this.memInsert(fp0)) {
-				// this.hitCnt2++;
+				this.memHitCnt++;
 				return true;
 			}
 
@@ -306,6 +319,9 @@ public class DiskFPSet extends FPSet {
 				this.flusherChosen = true;
 				this.rwLock.BeginWrite();
 
+				// statistics
+				growDiskMark++;
+				
 				// flush memory entries to disk
 				this.flushTable();
 
@@ -328,16 +344,21 @@ public class DiskFPSet extends FPSet {
 		synchronized (this.rwLock) {
 			// First, look in in-memory buffer
 			if (this.memLookup(fp0)) {
+				this.memHitCnt++;
 				return true;
 			}
 
 			// block if disk is being re-written
 			this.rwLock.BeginRead();
-			// this.diskLookupCnt++;
+			this.diskLookupCnt++;
 		}
 
 		// next, look on disk
 		boolean diskHit = this.diskLookup(fp0);
+		// increment while still locked
+		if(diskHit) {
+			diskHitCnt++;
+		}
 
 		// end read; add to memory buffer if necessary
 		synchronized (this.rwLock) {
@@ -509,6 +530,7 @@ public class DiskFPSet extends FPSet {
 				// midEntry calculation done on logical indices,
 				// addressing done on bytes, thus convert to long-addressing (* LongSize)
 				raf.seek(midEntry * LongSize);
+				diskSeekCnt++;
 				long v = raf.readLong();
 
 				if (fp < v) {
@@ -522,7 +544,7 @@ public class DiskFPSet extends FPSet {
 					break;
 				}
 			}
-			// b2) done doing disk search -> close file (finally candidate, not really because if we exit with error, TLC exits)
+			// b2) done doing disk search -> close file (finally candidate? => not really because if we exit with error, TLC exits)
 			if (id >= this.braf.length) {
 				synchronized (this.brafPool) {
 					if (this.poolIndex > 0) {
@@ -580,7 +602,7 @@ public class DiskFPSet extends FPSet {
 		if (this.tblCnt == 0)
 			return;
 
-		// copy table contents into an array; erase table
+		// copy table contents into a buffer array buff; erase table
 		long[] buff = new long[this.tblCnt];
 		int idx = 0;
 		for (int j = 0; j < this.tbl.length; j++) {
@@ -596,7 +618,14 @@ public class DiskFPSet extends FPSet {
 			}
 		}
 		this.tblCnt = 0;
+		// reset statistic counters
+		this.memHitCnt = 0;
 
+		this.diskHitCnt = 0;
+		this.diskWriteCnt = 0;
+		this.diskSeekCnt = 0;
+		this.diskLookupCnt = 0;
+		
 		// sort in-memory entries
 		Sort.LongArray(buff, buff.length);
 
@@ -688,6 +717,8 @@ public class DiskFPSet extends FPSet {
 	private final void writeFP(RandomAccessFile outRAF, long fp)
 			throws IOException {
 		outRAF.writeLong(fp);
+		diskWriteCnt++;
+		// update in-memory index file
 		if (this.counter == 0) {
 			this.index[this.currIndex++] = fp;
 			this.counter = NumEntriesPerPage;
@@ -827,6 +858,7 @@ public class DiskFPSet extends FPSet {
 			this.flushTable();
 			FileUtil.copyFile(this.getFPFilename(),
 					this.getChkptName(fname, "tmp"));
+			checkPointMark++;
 			this.rwLock.EndWrite();
 			this.flusherChosen = false;
 		}
@@ -983,6 +1015,80 @@ public class DiskFPSet extends FPSet {
 	private String getFPFilename() {
 		return this.filename + ".fp";
 	}
+
+	/**
+	 * @return the tblCnt
+	 */
+	public int getTblCnt() {
+		return tblCnt;
+	}
+
+	/**
+	 * @return the fileCnt
+	 */
+	public long getFileCnt() {
+		return fileCnt;
+	}
+
+	/**
+	 * @return the index.length
+	 */
+	public int getIndexCnt() {
+		if(index == null) {
+			return 0;
+		}
+		return index.length;
+	}
+	
+	/**
+	 * @return the diskLookupCnt
+	 */
+	public long getDiskLookupCnt() {
+		return diskLookupCnt;
+	}
+
+	/**
+	 * @return the diskHitCnt
+	 */
+	public long getMemHitCnt() {
+		return memHitCnt;
+	}
+
+	/**
+	 * @return the diskHitCnt
+	 */
+	public long getDiskHitCnt() {
+		return diskHitCnt;
+	}
+
+	/**
+	 * @return the diskWriteCnt
+	 */
+	public long getDiskWriteCnt() {
+		return diskWriteCnt;
+	}
+
+	/**
+	 * @return the diskSeekCnt
+	 */
+	public long getDiskSeekCnt() {
+		return diskSeekCnt;
+	}
+	
+	/**
+	 * @return the growDiskMark
+	 */
+	public int getGrowDiskMark() {
+		return growDiskMark;
+	}
+	
+	/**
+	 * @return the checkPointMark
+	 */
+	public int getCheckPointMark() {
+		return checkPointMark;
+	}
+	
 
 	// /**
 	// *
