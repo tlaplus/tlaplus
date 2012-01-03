@@ -69,10 +69,9 @@ public class TLC
      * that's bigger than Runtime.getRuntime()).maxMemory(), in
      * which case it is .75 * (Runtime.getRuntime()).maxMemory().
      */
-    private long fpMemSize;
+    private double fpMemSize;
     public static final long MinFpMemSize = 20 * (1 << 19);
     private int fpBits;
-    private double fpMemRatio;
     
     /**
      * Initialization
@@ -102,7 +101,6 @@ public class TLC
         instance = null;
 
         fpMemSize = -1;
-        fpMemRatio = -1;
         fpBits = 1;
     }
 
@@ -482,51 +480,22 @@ public class TLC
                 }
             } else if (args[index].equals("-fpmem"))
             {
-            	// throw error if both parameters given
-            	if(fpMemRatio != -1) {
-                    printErrorMsg("Error: fpmem and fpmemratio cannot be used in combination!");
-                    return false;
-            	}
                 index++;
                 if (index < args.length)
                 {
                     try
                     {
-                        fpMemSize = Long.parseLong(args[index]) << 20;
+                        fpMemSize = Double.parseDouble(args[index]);
+                        if (fpMemSize < 0) {
+                            printErrorMsg("Error: An positive integer or a fraction for fpset memory size/percentage required. But encountered " + args[index]);
+                            return false;
+                        } else if (fpMemSize > 1) {
+                        	fpMemSize = (long) fpMemSize;
+                        }
                         index++;
                     } catch (Exception e)
                     {
-                        printErrorMsg("Error: An integer for fpset memory size required. But encountered " + args[index]);
-                        return false;
-                    }
-                } else
-                {
-                    printErrorMsg("Error: fpset memory size required.");
-                    return false;
-                }
-            } else if (args[index].equals("-fpmemratio"))
-            {
-            	// throw error if both parameters given
-            	if(fpMemSize != -1) {
-                    printErrorMsg("Error: fpmem and fpmemratio cannot be used in combination!");
-                    return false;
-            	}
-                index++;
-                if (index < args.length)
-                {
-                    try
-                    {
-                    	fpMemRatio = Integer.parseInt(args[index]);
-                    	if(-1 < fpMemRatio && fpMemRatio < 101) {
-                    		fpMemRatio = fpMemRatio / 100d;
-                    	} else {
-                    		printErrorMsg("Error: An integer for fpset memory ratio required with [0, 100]. But encountered " + args[index]);
-                    		return false;
-                    	}
-                        index++;
-                    } catch (Exception e)
-                    {
-                        printErrorMsg("Error: An integer for fpset memory ratio required with [0, 100]. But encountered " + args[index]);
+                        printErrorMsg("Error: An positive integer or a fraction for fpset memory size/percentage required. But encountered " + args[index]);
                         return false;
                     }
                 } else
@@ -584,15 +553,15 @@ public class TLC
         // determine amount of memory to be used for fingerprints
         final long maxMemory = Runtime.getRuntime().maxMemory();
         // -fpmem is given
-		if (fpMemSize == -1 && fpMemRatio == -1)
+		if (fpMemSize == -1)
         {
 			// .25 * maxMemory
             fpMemSize = maxMemory >> 2;
         }
 		// -fpmemratio is given
-		if (fpMemRatio != -1)
+		if (0 <= fpMemSize && fpMemSize <= 1)
 		{
-			fpMemSize = (long) (maxMemory * fpMemRatio);
+			fpMemSize = maxMemory * fpMemSize;
 		}
         if (fpMemSize < MinFpMemSize) 
         {
@@ -688,7 +657,7 @@ public class TLC
                 AbstractChecker mc = null;
                 if (TLCGlobals.DFIDMax == -1)
                 {
-                    mc = new ModelChecker(mainFile, configFile, dumpFile, deadlock, fromChkpt, resolver, specObj, fpMemSize, fpBits);
+                    mc = new ModelChecker(mainFile, configFile, dumpFile, deadlock, fromChkpt, resolver, specObj, (long) fpMemSize, fpBits);
                     TLCGlobals.mainChecker = (ModelChecker) mc;
                 } else
                 {
@@ -796,6 +765,6 @@ public class TLC
 	 * @return the fpMemSize
 	 */
 	long getFpMemSize() {
-		return fpMemSize;
+		return (long) fpMemSize;
 	}
 }
