@@ -69,8 +69,8 @@ public class TLC
      * that's bigger than Runtime.getRuntime()).maxMemory(), in
      * which case it is .75 * (Runtime.getRuntime()).maxMemory().
      */
-    private long fpMemSize;
-    private static long MinFpMemSize = 20 * (1 << 19);
+    private double fpMemSize;
+    public static final long MinFpMemSize = 20 * (1 << 19);
     private int fpBits;
     
     /**
@@ -485,11 +485,17 @@ public class TLC
                 {
                     try
                     {
-                        fpMemSize = Long.parseLong(args[index]) << 20;
+                        fpMemSize = Double.parseDouble(args[index]);
+                        if (fpMemSize < 0) {
+                            printErrorMsg("Error: An positive integer or a fraction for fpset memory size/percentage required. But encountered " + args[index]);
+                            return false;
+                        } else if (fpMemSize > 1) {
+                        	fpMemSize = (long) fpMemSize;
+                        }
                         index++;
                     } catch (Exception e)
                     {
-                        printErrorMsg("Error: An integer for fpset memory size required. But encountered " + args[index]);
+                        printErrorMsg("Error: An positive integer or a fraction for fpset memory size/percentage required. But encountered " + args[index]);
                         return false;
                     }
                 } else
@@ -543,19 +549,30 @@ public class TLC
                 }
             }
         }
-        Runtime runtime = Runtime.getRuntime();
-        if (fpMemSize == -1)
+        
+        // determine amount of memory to be used for fingerprints
+        final long maxMemory = Runtime.getRuntime().maxMemory();
+        // -fpmem is given
+		if (fpMemSize == -1)
         {
-            fpMemSize = runtime.maxMemory() >> 2;
-         }
+			// .25 * maxMemory
+            fpMemSize = maxMemory >> 2;
+        }
+		// -fpmemratio is given
+		if (0 <= fpMemSize && fpMemSize <= 1)
+		{
+			fpMemSize = maxMemory * fpMemSize;
+		}
         if (fpMemSize < MinFpMemSize) 
         {
             fpMemSize = MinFpMemSize;
         }
-        if (fpMemSize >= runtime.maxMemory()) 
+        if (fpMemSize >= maxMemory) 
         { 
-            fpMemSize = runtime.maxMemory() - (runtime.maxMemory() >> 2);
-        }  
+			// .75*maxMemory
+            fpMemSize = maxMemory - (maxMemory >> 2);
+        }
+        
         if (mainFile == null)
         {
             printErrorMsg("Error: Missing input TLA+ module.");
@@ -640,7 +657,7 @@ public class TLC
                 AbstractChecker mc = null;
                 if (TLCGlobals.DFIDMax == -1)
                 {
-                    mc = new ModelChecker(mainFile, configFile, dumpFile, deadlock, fromChkpt, resolver, specObj, fpMemSize, fpBits);
+                    mc = new ModelChecker(mainFile, configFile, dumpFile, deadlock, fromChkpt, resolver, specObj, (long) fpMemSize, fpBits);
                     TLCGlobals.mainChecker = (ModelChecker) mc;
                 } else
                 {
@@ -744,4 +761,10 @@ public class TLC
         MP.printMessage(EC.TLC_USAGE);
     }
 
+	/**
+	 * @return the fpMemSize
+	 */
+	long getFpMemSize() {
+		return (long) fpMemSize;
+	}
 }
