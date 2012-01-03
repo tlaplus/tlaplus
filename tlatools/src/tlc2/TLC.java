@@ -70,8 +70,9 @@ public class TLC
      * which case it is .75 * (Runtime.getRuntime()).maxMemory().
      */
     private long fpMemSize;
-    private static long MinFpMemSize = 20 * (1 << 19);
+    public static final long MinFpMemSize = 20 * (1 << 19);
     private int fpBits;
+    private double fpMemRatio;
     
     /**
      * Initialization
@@ -101,6 +102,7 @@ public class TLC
         instance = null;
 
         fpMemSize = -1;
+        fpMemRatio = -1;
         fpBits = 1;
     }
 
@@ -480,6 +482,11 @@ public class TLC
                 }
             } else if (args[index].equals("-fpmem"))
             {
+            	// throw error if both parameters given
+            	if(fpMemRatio != -1) {
+                    printErrorMsg("Error: fpmem and fpmemratio cannot be used in combination!");
+                    return false;
+            	}
                 index++;
                 if (index < args.length)
                 {
@@ -490,6 +497,36 @@ public class TLC
                     } catch (Exception e)
                     {
                         printErrorMsg("Error: An integer for fpset memory size required. But encountered " + args[index]);
+                        return false;
+                    }
+                } else
+                {
+                    printErrorMsg("Error: fpset memory size required.");
+                    return false;
+                }
+            } else if (args[index].equals("-fpmemratio"))
+            {
+            	// throw error if both parameters given
+            	if(fpMemSize != -1) {
+                    printErrorMsg("Error: fpmem and fpmemratio cannot be used in combination!");
+                    return false;
+            	}
+                index++;
+                if (index < args.length)
+                {
+                    try
+                    {
+                    	fpMemRatio = Integer.parseInt(args[index]);
+                    	if(-1 < fpMemRatio && fpMemRatio < 101) {
+                    		fpMemRatio = fpMemRatio / 100d;
+                    	} else {
+                    		printErrorMsg("Error: An integer for fpset memory ratio required with [0, 100]. But encountered " + args[index]);
+                    		return false;
+                    	}
+                        index++;
+                    } catch (Exception e)
+                    {
+                        printErrorMsg("Error: An integer for fpset memory ratio required with [0, 100]. But encountered " + args[index]);
                         return false;
                     }
                 } else
@@ -543,13 +580,20 @@ public class TLC
                 }
             }
         }
-        final Runtime runtime = Runtime.getRuntime();
-        final long maxMemory = runtime.maxMemory();
-		if (fpMemSize == -1)
+        
+        // determine amount of memory to be used for fingerprints
+        final long maxMemory = Runtime.getRuntime().maxMemory();
+        // -fpmem is given
+		if (fpMemSize == -1 && fpMemRatio == -1)
         {
 			// .25 * maxMemory
             fpMemSize = maxMemory >> 2;
-         }
+        }
+		// -fpmemratio is given
+		if (fpMemRatio != -1)
+		{
+			fpMemSize = (long) (maxMemory * fpMemRatio);
+		}
         if (fpMemSize < MinFpMemSize) 
         {
             fpMemSize = MinFpMemSize;
@@ -558,7 +602,8 @@ public class TLC
         { 
 			// .75*maxMemory
             fpMemSize = maxMemory - (maxMemory >> 2);
-        }  
+        }
+        
         if (mainFile == null)
         {
             printErrorMsg("Error: Missing input TLA+ module.");
@@ -747,4 +792,10 @@ public class TLC
         MP.printMessage(EC.TLC_USAGE);
     }
 
+	/**
+	 * @return the fpMemSize
+	 */
+	long getFpMemSize() {
+		return fpMemSize;
+	}
 }
