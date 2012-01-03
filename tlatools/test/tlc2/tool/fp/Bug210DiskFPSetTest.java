@@ -2,7 +2,6 @@
 package tlc2.tool.fp;
 
 import java.io.IOException;
-import java.rmi.RemoteException;
 
 public class Bug210DiskFPSetTest extends AbstractFPSetTest {
 
@@ -40,44 +39,6 @@ public class Bug210DiskFPSetTest extends AbstractFPSetTest {
 		try {
 			assertFalse(fpSet.diskLookup(Long.MAX_VALUE - 2));
 		} catch (IOException e) {
-			fail(e.getMessage());
-		}
-	}
-	
-	/**
-	 * @see http://bugzilla.tlaplus.net/show_bug.cgi?id=242
-	 */
-	public void testDiskFPSetWithHighMem() throws RemoteException {
-		try {
-			new DummyDiskFPSet(2097153638);
-		} catch (OutOfMemoryError e) {
-			// valid case
-			return;
-		} catch (Exception e) {
-			fail(e.getMessage());
-		}
-	}
-	public void testDiskFPSetIntMaxValue() throws RemoteException {
-		try {
-			new DummyDiskFPSet(Integer.MAX_VALUE);
-		} catch (OutOfMemoryError e) {
-			// valid case
-			return;
-		} catch (Exception e) {
-			fail(e.getMessage());
-		}
-	}
-	public void testDiskFPSetIntMinValue() throws RemoteException {
-		try {
-			new DummyDiskFPSet(Integer.MIN_VALUE);
-		} catch (Exception e) {
-			fail(e.getMessage());
-		}
-	}
-	public void testDiskFPSetZero() throws RemoteException {
-		try {
-			new DummyDiskFPSet(0);
-		} catch (Exception e) {
 			fail(e.getMessage());
 		}
 	}
