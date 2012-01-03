@@ -14,6 +14,8 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
+import javax.management.NotCompliantMBeanException;
+
 import tlc2.TLCGlobals;
 import tlc2.tool.distributed.FPSetManager;
 import tlc2.tool.distributed.FPSetRMI;
@@ -43,7 +45,13 @@ public abstract class FPSet extends UnicastRemoteObject implements FPSetRMI
 	public static FPSet getFPSet(int fpBits, long fpMemSize) throws RemoteException {
 		if (fpBits == 0) {
 			final DiskFPSet diskFPSet = new DiskFPSet((int) fpMemSize);
-			new DiskFPSetMXWrapper(diskFPSet);
+			try {
+				new DiskFPSetMXWrapper(diskFPSet);
+			} catch (NotCompliantMBeanException e) {
+				// not expected to happen
+				// would cause JMX to be broken, hence just log and continue
+				e.printStackTrace();
+			}
 			return diskFPSet;
 		} else {
 			return new MultiFPSet(fpBits, fpMemSize);

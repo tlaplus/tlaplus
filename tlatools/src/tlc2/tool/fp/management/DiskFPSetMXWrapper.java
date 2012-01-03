@@ -9,16 +9,18 @@ import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 import javax.management.NotCompliantMBeanException;
 import javax.management.ObjectName;
+import javax.management.StandardMBean;
 
 import tlc2.tool.fp.DiskFPSet;
 
-public class DiskFPSetMXWrapper implements DiskFPSetMXBean {
+public class DiskFPSetMXWrapper extends StandardMBean implements DiskFPSetMXBean {
 
 	private static int COUNT = 0;
 	
 	private final DiskFPSet fpset;
 	
-	public DiskFPSetMXWrapper(final DiskFPSet diskFPSet) {
+	public DiskFPSetMXWrapper(final DiskFPSet diskFPSet) throws NotCompliantMBeanException {
+		super(DiskFPSetMXBean.class);
 		fpset = diskFPSet;
 		
 		// register monitoring mx bean
