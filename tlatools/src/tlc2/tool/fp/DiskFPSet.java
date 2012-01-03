@@ -618,13 +618,13 @@ public class DiskFPSet extends FPSet {
 			}
 		}
 		this.tblCnt = 0;
-		// reset statistic counters
-		this.memHitCnt = 0;
-
-		this.diskHitCnt = 0;
-		this.diskWriteCnt = 0;
-		this.diskSeekCnt = 0;
-		this.diskLookupCnt = 0;
+//		// reset statistic counters
+//		this.memHitCnt = 0;
+//
+//		this.diskHitCnt = 0;
+//		this.diskWriteCnt = 0;
+//		this.diskSeekCnt = 0;
+//		this.diskLookupCnt = 0;
 		
 		// sort in-memory entries
 		Sort.LongArray(buff, buff.length);
