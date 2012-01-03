@@ -440,6 +440,7 @@ public class AST
             VarDecl result = new VarDecl() ;
             result.var = this.var ;
             result.val = this.val ;
+            result.setOrigin(this.getOrigin());
             result.isEq = true ;
             return result ;
         }

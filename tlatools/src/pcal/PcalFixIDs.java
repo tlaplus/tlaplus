@@ -366,7 +366,16 @@ public class PcalFixIDs {
             FixExpr((TLAExpr) ast.args.elementAt(i), context);
     }
 
-    private static void FixGoto(AST.Goto ast, String context) {
+    private static void FixGoto(AST.Goto ast, String context) throws PcalFixIDException {
+        /*
+         * Report an error if the goto destination is not a label.  This check
+         * added by LL on 29 Dec 2011.
+         */
+        if (st.FindSym(PcalSymTab.LABEL, ast.to, context) == st.symtab.size()
+              && ! ast.to.equals("Done")) {
+            throw new PcalFixIDException("goto to non-existent label `" + ast.to + 
+                    "' at line " + ast.line + ", column " + ast.col);
+        }
         ast.to = st.UseThis(PcalSymTab.LABEL, ast.to, context);
     }
 

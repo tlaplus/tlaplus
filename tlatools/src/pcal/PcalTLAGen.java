@@ -1,6 +1,8 @@
 package pcal;
 
 import java.util.Vector;
+
+import pcal.AST.VarDecl;
 import pcal.exception.PcalTLAGenException;
 import pcal.exception.TLAExprException;
 import tla2tex.Debug;
@@ -109,18 +111,79 @@ public class PcalTLAGen
      */
     private String currentProcName ;
     
-    
-    public Vector generate(AST ast, PcalSymTab symtab) throws PcalTLAGenException
+    /**
+     * Generates the translation.
+     * 
+     * @param ast  The AST produced by parsing and exploding.
+     * @param symtab The symbol table.
+     * @param report  A vector of strings, containing the reports of renaming.
+     * @return A vector of strings.
+     * @throws PcalTLAGenException
+     */
+    public Vector generate(AST ast, PcalSymTab symtab, Vector report) throws PcalTLAGenException
     {
         TLAtoPCalMapping map = PcalParams.tlaPcalMapping;
         mappingVector = new Vector(50);
+        /*
+         * Add the reports of renaming to the output.
+         */
+        for (int i = 0; i < report.size(); i++) {
+            addOneLineOfTLA((String) report.elementAt(i));
+        }
         
         st = symtab;
         GenSym(ast, "");
         
-        map.makeMapping(mappingVector);
+        /*
+         * We put at the beginning and end of mappingVector a LeftParen 
+         * and RightParen with location (0, 0), so that location will
+         * be found by the TLA+ to PCal translation algorithm if the
+         * user selects the entire algorithm, in which case it will
+         * return the null region to GotoPCalSourceHandler.execute.
+         */
+        PCalLocation ZeroLocation = new PCalLocation(0, 0);
+        ((Vector) mappingVector.elementAt(0)).
+             add(0, new MappingObject.LeftParen(ZeroLocation));
+        Vector lastLine = (Vector) mappingVector.elementAt(mappingVector.size()-1);
+        lastLine.add(lastLine.size(), new MappingObject.RightParen(ZeroLocation));
+
+        /*
+         * For testing, throw a null pointer exception if the parentheses are not
+         * properly matching in mappingVector.
+         */
+        //int[] depths = new int[10000];
         
+        int parenDepth = 0;
+        for (int i = 0; i < mappingVector.size(); i++) {
+            Vector line = (Vector) mappingVector.elementAt(i);
+            for (int j = 0; j < line.size(); j++) {
+                MappingObject obj = (MappingObject) line.elementAt(j);
+                if (obj.getType() == MappingObject.LEFT_PAREN) {
+                    parenDepth++;
+                }
+                else if (obj.getType() == MappingObject.RIGHT_PAREN) {
+                    parenDepth--;
+                    if (parenDepth < 0) {
+                        throw new NullPointerException("paren depth < 0");
+                    }
+                }
+            }
+        // depths[i] = parenDepth;
+        }
+        if (parenDepth != 0) {
+            throw new NullPointerException("Unmatched Left Paren");
+        }
+        /*   ------------------ end testing --------------------------*/
+        Vector nonredundantMappingVector = 
+            TLAtoPCalMapping.RemoveRedundantParens(mappingVector);
+        map.makeMapping(nonredundantMappingVector);
         
+//System.out.println("Original mappingvector:");
+//MappingObject.printMappingVector(mappingVector);    
+//System.out.println("RemoveRedundantParens(mappingVector)");
+//MappingObject.printMappingVector(TLAtoPCalMapping.RemoveRedundantParens(mappingVector));
+//System.out.println("Should be original mappingvector:");
+//MappingObject.printMappingVector(mappingVector); 
 // Debugging
 //for (int i = 0; i < tlacode.size(); i++) {
 //System.out.println("\nline " + i);
@@ -242,64 +305,125 @@ public class PcalTLAGen
         GenTermination();
     }
 
-    private void GenProcedure(AST.Procedure ast, String context) throws PcalTLAGenException
-    {
-        /* ns accumulates the disjunt of the steps of the procedure */
-        StringBuffer ns = new StringBuffer();
-        Vector nsV = new Vector();
-        int nsC = ast.name.length() + ((mp) ? "(self)".length() : 0) + " == ".length();
-        if (mp)
-        {
+    private void GenProcedure(AST.Procedure ast, String context) throws PcalTLAGenException {
+        /*
+         * First, generate the body's actions.  Must set self and selfIsSelf (?) for
+         * use by GenLabeledStmt.
+         */
+        if (mp) {
+      
             self = selfAsExpr(); // subscript for variables is "self"
             selfIsSelf = true;
-            /* Add this step to the disjunct of steps with (self) */
+//            /* Add this step to the disjunct of steps with (self) */
             nextStepSelf.addElement(ast.name + "(self)");
         } else
         {
             /* Add this step to the disjunct of steps */
             nextStep.addElement(ast.name);
         }
-        for (int i = 0; i < ast.body.size(); i++)
-        {
+        for (int i = 0; i < ast.body.size(); i++) {
             AST.LabeledStmt stmt = (AST.LabeledStmt) ast.body.elementAt(i);
-            if ((ns.length() + stmt.label.length() + " \\/ ".length() + ((mp) ? "(self)".length() : 0)) > wrapColumn
-                    - nsC - " \\/ ".length())
-            {
-                nsV.addElement(ns.toString());
-                ns = new StringBuffer();
-            }
-            if (ns.length() > 0)
-                ns.append(" \\/ ");
-            ns.append(stmt.label);
-            if (mp)
-                ns.append("(self)");
             GenLabeledStmt(stmt, "procedure");
         }
-        nsV.addElement(ns.toString());
-        // Generate definition of procedure steps
-        ns = new StringBuffer();
-        ns.append(ast.name);
-        if (mp)
-            ns.append("(self)");
-        ns.append(" == ");
-        ns.append((String) nsV.elementAt(0));
-        tlacode.addElement(ns.toString());
-        for (int i = 1; i < nsV.size(); i++)
-        {
-            ns = new StringBuffer(NSpaces(nsC + 2));
-            ns.append(" \\/ ");
-            ns.append((String) nsV.elementAt(i));
-            tlacode.addElement(ns.toString());
+        
+        /*
+         * Next add the definition of the procedure--e.g.,
+         * 
+         *    procedureName(self) == label_1(self) \/ ... \/ label_k(self)
+         *    
+         * We put Left/RightParens for the entire procedure around the entire 
+         * definition, and Left/RightParens around each disjunction for
+         * the labeled statement.
+         */
+        addLeftParen(ast.getOrigin());
+        String argument = (mp) ? "(self)" : "";
+        StringBuffer buf = new StringBuffer(ast.name + argument + " == ");
+        addOneTokenToTLA(buf.toString());
+        String indentSpaces = NSpaces(buf.length() + 2);        
+        for (int i = 0; i < ast.body.size(); i++) {
+            AST.LabeledStmt stmt = (AST.LabeledStmt) ast.body.elementAt(i);
+            String disjunct = stmt.label + argument;
+            if (   i != 0 
+                && tlacodeNextLine.length() +  7 /* the 7 was obtained empirically */
+                    + disjunct.length() > wrapColumn) {
+                endCurrentLineOfTLA();
+            }
+            if (i != 0) {
+               addOneTokenToTLA(((tlacodeNextLine.length() == 0)? indentSpaces : "") + " \\/ "); 
+            }
+            addLeftParen(stmt.getOrigin());
+            addOneTokenToTLA(disjunct);
+            addRightParen(stmt.getOrigin());
         }
-        tlacode.addElement("");
+        addRightParen(ast.getOrigin());
+        addOneLineOfTLA("");
+        
+// The previous version was very convoluted just to avoid having to go through the
+// list of labeled statements twice.  It seemed easier to just reimplement from
+// scratch.
+//        /* ns and nsV accumulate the disjunct of the steps of the procedure, where
+//         * ns contains the contents of the current line and nsV is the vector of
+//         * already accumulated lines.
+//         * 
+//         */
+//        StringBuffer ns = new StringBuffer();
+//        Vector nsV = new Vector();
+//        
+//       int nsC = ast.name.length() + ((mp) ? "(self)".length() : 0) + " == ".length();
+//        if (mp)
+//        {
+//            self = selfAsExpr(); // subscript for variables is "self"
+//            selfIsSelf = true;
+//            /* Add this step to the disjunct of steps with (self) */
+//            nextStepSelf.addElement(ast.name + "(self)");
+//        } else
+//        {
+//            /* Add this step to the disjunct of steps */
+//            nextStep.addElement(ast.name);
+//        }
+//        for (int i = 0; i < ast.body.size(); i++)
+//        {
+//            AST.LabeledStmt stmt = (AST.LabeledStmt) ast.body.elementAt(i);
+//            if ((ns.length() + stmt.label.length() + " \\/ ".length() + ((mp) ? "(self)".length() : 0)) > wrapColumn
+//                    - nsC - " \\/ ".length())
+//            {
+//                nsV.addElement(ns.toString());
+//                ns = new StringBuffer();
+//            }
+//            if (ns.length() > 0)
+//                ns.append(" \\/ ");
+//            ns.append(stmt.label);
+//            if (mp)
+//                ns.append("(self)");
+//            GenLabeledStmt(stmt, "procedure");
+//        }
+//        nsV.addElement(ns.toString());
+//        // Generate definition of procedure steps
+//        ns = new StringBuffer();
+//        ns.append(ast.name);
+//        if (mp)
+//            ns.append("(self)");
+//        ns.append(" == ");
+//        ns.append((String) nsV.elementAt(0));
+//        tlacode.addElement(ns.toString());
+//        for (int i = 1; i < nsV.size(); i++)
+//        {
+//            ns = new StringBuffer(NSpaces(nsC + 2));
+//            ns.append(" \\/ ");
+//            ns.append((String) nsV.elementAt(i));
+//            tlacode.addElement(ns.toString());
+//        }
+//        tlacode.addElement("");
     }
 
     private void GenProcess(AST.Process ast, String context) throws PcalTLAGenException
     {
         currentProcName = ast.name; 
-        /* ns accumulates the disjunt of the steps of the process */
-        StringBuffer ns = new StringBuffer();
-        Vector nsV = new Vector();
+        
+        /*
+         * Generate the body's actions.   Must set self and selfIsSelf (?) for
+         * use by GenLabeledStmt.
+         */
         boolean isSet = true;
         /************************************************************/
         /* Decide if it is a process set or not. If so, set self to */
@@ -314,54 +438,126 @@ public class PcalTLAGen
             self = selfAsExpr();
             selfIsSelf = true;
         }
-        
-        int nsC = ast.name.length() + ((isSet) ? "(self)".length() : 0) + " == ".length();
+
         if (isSet)
         {
             nextStepSelf.addElement(ast.name + "(self)");
         } else
             nextStep.addElement(ast.name);
-        for (int i = 0; i < ast.body.size(); i++)
-        {
+        
+        for (int i = 0; i < ast.body.size(); i++) {
             AST.LabeledStmt stmt = (AST.LabeledStmt) ast.body.elementAt(i);
-            if ((ns.length() + stmt.label.length() + " \\/ ".length() + ((isSet) ? "(self)".length() : 0)) > wrapColumn
-                    - nsC - " \\/ ".length())
-            {
-                nsV.addElement(ns.toString());
-                ns = new StringBuffer();
-            }
-            if (ns.length() > 0)
-                ns.append(" \\/ ");
-            ns.append(stmt.label);
-            if (isSet)
-                ns.append("(self)");
             GenLabeledStmt(stmt, "process");
         }
-        nsV.addElement(ns.toString());
-        // Generate definition of process steps
-        // This apparently defines the process name
-        // to equal the disjunction of all the individual
-        // label-named actions.  If we are omitting
-        // the pc, we have already defined the process name
-        // to equal the only label action, so we skip
-        // this.
-        if (! ParseAlgorithm.omitPC) {
-          ns = new StringBuffer();
-          ns.append(ast.name);
-          if (isSet)
-              ns.append("(self)");
-          ns.append(" == ");
-          ns.append((String) nsV.elementAt(0));
-          tlacode.addElement(ns.toString());
-          for (int i = 1; i < nsV.size(); i++)
-          {
-              ns = new StringBuffer(NSpaces(nsC + 2));
-              ns.append(" \\/ ");
-              ns.append((String) nsV.elementAt(i));
-              tlacode.addElement(ns.toString());
-          }
+        
+        /*
+         * Next add the definition of the process--e.g.,
+         * 
+         *    processName(self) == label_1(self) \/ ... \/ label_k(self)
+         *    
+         * We put Left/RightParens for the entire procedure around the entire 
+         * definition, and Left/RightParens around each disjunction for
+         * the labeled statement.  
+         * 
+         * However, we don't add this definition if we are omitting the pc,
+         * because we have already defined the process name to equal the 
+         * only label action.
+         */
+
+      if (! ParseAlgorithm.omitPC) {
+        addLeftParen(ast.getOrigin());
+        String argument = (isSet) ? "(self)" : "";
+        StringBuffer buf = new StringBuffer(ast.name + argument + " == ");
+        addOneTokenToTLA(buf.toString());
+        String indentSpaces = NSpaces(buf.length() + 2);        
+        for (int i = 0; i < ast.body.size(); i++) {
+            AST.LabeledStmt stmt = (AST.LabeledStmt) ast.body.elementAt(i);
+            String disjunct = stmt.label + argument;
+            if (   i != 0 
+                && tlacodeNextLine.length() + 7 /* the 7 was obtained empirically */
+                  + disjunct.length() > wrapColumn) {
+                endCurrentLineOfTLA();
+            }
+            if (i != 0) {
+               addOneTokenToTLA(((tlacodeNextLine.length() == 0)? indentSpaces : "") + " \\/ "); 
+            }
+            addLeftParen(stmt.getOrigin());
+            addOneTokenToTLA(disjunct);
+            addRightParen(stmt.getOrigin());
         }
-        tlacode.addElement("");
+        addRightParen(ast.getOrigin());
+        addOneLineOfTLA("");
+      }
+
+        
+// As with GenProcedure, the original implementation was quite convoluted, so
+// it was rewritten.  The code above was copied with modifications from
+// the rewritten GenProcedure code.
+//        /* ns accumulates the disjunt of the steps of the process */
+//        StringBuffer ns = new StringBuffer();
+//        Vector nsV = new Vector();
+//        boolean isSet = true;
+//        /************************************************************/
+//        /* Decide if it is a process set or not. If so, set self to */
+//        /* the string "self"; otherwise set self to the process id. */
+//        /************************************************************/
+//        if (ast.isEq)
+//        {
+//            self = ast.id ;
+//            selfIsSelf = false;
+//            isSet = false;
+//        } else {
+//            self = selfAsExpr();
+//            selfIsSelf = true;
+//        }
+//        
+//        int nsC = ast.name.length() + ((isSet) ? "(self)".length() : 0) + " == ".length();
+//        if (isSet)
+//        {
+//            nextStepSelf.addElement(ast.name + "(self)");
+//        } else
+//            nextStep.addElement(ast.name);
+//        for (int i = 0; i < ast.body.size(); i++)
+//        {
+//            AST.LabeledStmt stmt = (AST.LabeledStmt) ast.body.elementAt(i);
+//            if ((ns.length() + stmt.label.length() + " \\/ ".length() + ((isSet) ? "(self)".length() : 0)) > wrapColumn
+//                    - nsC - " \\/ ".length())
+//            {
+//                nsV.addElement(ns.toString());
+//                ns = new StringBuffer();
+//            }
+//            if (ns.length() > 0)
+//                ns.append(" \\/ ");
+//            ns.append(stmt.label);
+//            if (isSet)
+//                ns.append("(self)");
+//            GenLabeledStmt(stmt, "process");
+//        }
+//        nsV.addElement(ns.toString());
+//        // Generate definition of process steps
+//        // This apparently defines the process name
+//        // to equal the disjunction of all the individual
+//        // label-named actions.  If we are omitting
+//        // the pc, we have already defined the process name
+//        // to equal the only label action, so we skip
+//        // this.
+//        if (! ParseAlgorithm.omitPC) {
+//          ns = new StringBuffer();
+//          ns.append(ast.name);
+//          if (isSet)
+//              ns.append("(self)");
+//          ns.append(" == ");
+//          ns.append((String) nsV.elementAt(0));
+//          tlacode.addElement(ns.toString());
+//          for (int i = 1; i < nsV.size(); i++)
+//          {
+//              ns = new StringBuffer(NSpaces(nsC + 2));
+//              ns.append(" \\/ ");
+//              ns.append((String) nsV.elementAt(i));
+//              tlacode.addElement(ns.toString());
+//          }
+//        }
+//        tlacode.addElement("");
     }
 
     /*****************************************************/
@@ -415,12 +611,26 @@ public class PcalTLAGen
         int defStartLine = tlacode.size();
         int colAfterAnd = sb.length();
         
+        /*
+         * Note: it would make sense for this method to insert sb into the tlacode
+         * output, but it seems safer to maintain the current structure in which
+         * each GenX for each statement type X does that.
+         */
+        addLeftParen(ast.getOrigin());
         for (int i = 0; i < ast.stmts.size(); i++)
         {
             GenStmt((AST) ast.stmts.elementAt(i), c, context, sb.toString(), sb.length());
             sb = new StringBuffer(NSpaces(col));
             sb.append("/\\ ");
         }
+        
+        /*
+         * Since the UNCHANGED conjunct just consists of TLATokens, with no
+         * SourceTokens, we can just use the old code, simply replacing each
+         * tlacode.addElement call with a call of addOneLineOfTLA--except that
+         * the last one is replaced with a call of addOneTokenToTLA so we can
+         * put the RightParen object in mappingVector.
+         */
         Vector unc = c.Unchanged(wrapColumn - col - "/\\ UNCHANGED << ".length());
         if (c.NumUnchanged() > 1)
         {
@@ -430,26 +640,33 @@ public class PcalTLAGen
             sb.append((String) unc.elementAt(0));
             for (int i = 1; i < unc.size(); i++)
             {
-                tlacode.addElement(sb.toString());
+//                tlacode.addElement(sb.toString());
+                addOneLineOfTLA(sb.toString());
                 sb = new StringBuffer(NSpaces(here));
                 sb.append((String) unc.elementAt(i));
             }
             sb.append(" >>");
-            tlacode.addElement(sb.toString());
+//            tlacode.addElement(sb.toString());
+            addOneTokenToTLA(sb.toString());
         } else if (c.NumUnchanged() == 1) {
         	// Change made by LL on 16 Mar 2011 so that, if there is a single
         	// unchanged variable v, it produces v' = v if v is a short variable,
         	// otherwise it produces UNCHANGED v
         	if (c.Unchanged().length() > 5) {
-              tlacode.addElement(NSpaces(col) + "/\\ UNCHANGED " + c.Unchanged());
+//              tlacode.addElement(NSpaces(col) + "/\\ UNCHANGED " + c.Unchanged());
+        	    addOneTokenToTLA(NSpaces(col) + "/\\ UNCHANGED " + c.Unchanged());
         	} else {
-        		tlacode.addElement(NSpaces(col) + "/\\ " + c.Unchanged() + "' = "
-        				+ c.Unchanged());
+//        		tlacode.addElement(NSpaces(col) + "/\\ " + c.Unchanged() + "' = "
+//        				+ c.Unchanged());
+        		 addOneTokenToTLA(NSpaces(col) + "/\\ " + c.Unchanged() + "' = "
+                         + c.Unchanged());
         	}
         } else {
            // No unchanged.  If there was only one conjunction, remove it.
            // To do that, we must remove the "/\ " and then remove three spaces
-           // from all other lines that were added.
+           // from all other lines that were added.  We must also modify the
+           // TLAToken objects appropriately in the corresponding lines of
+           // mappingVector
            if (ast.stmts.size() == 1) {
                for (int i = defStartLine; i < tlacode.size(); i++) {
                   String line = (String) tlacode.elementAt(i);
@@ -457,20 +674,85 @@ public class PcalTLAGen
                      // remove the "/\ " added                      
                      tlacode.setElementAt(line.substring(0, colAfterAnd-3) +
                                           line.substring(colAfterAnd, line.length()) , i);
+                     shiftMappingVectorTokensLeft(i, colAfterAnd, 3);
+                    
                   } else {
                      // Remove three blanks from any following lines.  We test the length 
                      // of the line just in case one or more short (hopefully blank) lines 
                      // have been added.
                       if (line.length() > 3) {
                           tlacode.setElementAt(line.substring(3, line.length()) , i);
+                          shiftMappingVectorTokensLeft(i, colAfterAnd, 3);
                       }
                   }
                }
            }
         }
-            
-            ;
-        tlacode.addElement("");
+        addRightParen(ast.getOrigin());
+        addOneLineOfTLA("");
+//        tlacode.addElement("");
+    }
+    
+    /**
+     * Adjusts the objects in line lineNum of mappingVector so all column
+     * numbers starting with startCol are decreased by `shift'.  If any Begin/EndTLAToken
+     * pairs are changed to have a non-positive width, a bug is reported.
+     * 
+     * Note: It is assumed that there is no aliasing of MappingTokens in mappingVector.
+     * That is, other than in transient local variables, the only pointer to a
+     * MappingToken in mappingVector is the single one in its line of mappingVector.
+     * I can't see how any aliasing of MappingTokens could arise.
+     * 
+     * This method is called only by GenLabeledStmts.
+     * 
+     * @param lineNum
+     * @param startCol
+     * @param shift
+     */
+    private void shiftMappingVectorTokensLeft(int lineNum, int startCol, int shift) {
+        boolean lastWasBeginTLAToken = false;
+        int lastBeginTLATokCol = -777; // to keep the compiler happy.
+        Vector line = (Vector) mappingVector.elementAt(lineNum);
+        for (int i = 0; i < line.size(); i++) {
+            MappingObject obj = (MappingObject) line.elementAt(i);
+            if (obj.getType() == MappingObject.BEGIN_TLATOKEN) {
+               MappingObject.BeginTLAToken tobj = (MappingObject.BeginTLAToken) obj;
+               int col = tobj.getColumn();
+               if (col >= startCol) {
+                   tobj.setColumn(col - shift);
+               }
+               lastWasBeginTLAToken = true;
+               lastBeginTLATokCol = tobj.getColumn();
+            }
+            else {
+                if (obj.getType() == MappingObject.END_TLATOKEN) {
+                    MappingObject.EndTLAToken tobj = (MappingObject.EndTLAToken) obj;
+                    int col = tobj.getColumn();
+                    if (col >= startCol) {
+                        tobj.setColumn(col - shift);
+                    }
+                    if (lastWasBeginTLAToken && tobj.getColumn() <= lastBeginTLATokCol) {
+                        PcalDebug.ReportBug(
+                         "PcalTLAGen.shiftMappingVectorTokensLeft created a null TLA Token");
+                    }
+                }
+                else if (obj.getType() == MappingObject.SOURCE_TOKEN) {
+                    MappingObject.SourceToken tobj = (MappingObject.SourceToken) obj;
+                    int col = tobj.getBeginColumn();
+                    if (col >= startCol) {
+                        tobj.setBeginColumn(col - shift);
+                    }
+                    col = tobj.getEndColumn();
+                    if (col >= startCol) {
+                        tobj.setEndColumn(col - shift);
+                    }
+                    
+                lastWasBeginTLAToken = false;
+            }
+            }
+        }
+        
+        
     }
 
     /***************************************************************************
@@ -538,22 +820,7 @@ public class PcalTLAGen
     /* the right hand side are primed.                               */
     /**
      * ***************************************************************/
-    /**
-     * @param ast
-     * @param c
-     * @param context
-     * @param prefix
-     * @param col
-     * @throws PcalTLAGenException
-     */
-    /**
-     * @param ast
-     * @param c
-     * @param context
-     * @param prefix
-     * @param col
-     * @throws PcalTLAGenException
-     */
+    
     /**
      * @param ast
      * @param c
@@ -567,36 +834,85 @@ public class PcalTLAGen
     {
         Changed cThis = new Changed(c);
         StringBuffer sb = new StringBuffer();
-        Vector vlines = new Vector();
+//        Vector vlines = new Vector();
+        /*
+         * Sort the vector ast.ass so that assignments to the same variable
+         * follow one another.
+         */
         ast.ass = SortSass(ast.ass);
+        
+        addOneTokenToTLA(prefix);
+        addLeftParen(ast.getOrigin());
+        
         int i = 0;
         int numAssigns = 0;
+        /*
+         * hasMultipleVars set true iff the assignment assigns values to
+         * more than one variable, and hence the statement's translation
+         * has multiple conjuncts.
+         */
+        boolean hasMultipleVars = false;
         while (i < ast.ass.size())
         {
             int iFirst = i;
             AST.SingleAssign sF = (AST.SingleAssign) ast.ass.elementAt(i);
             int iLast = i;
+            boolean hasAssignmentWithNoSubscript = false;
+            boolean lastAssignmentHasNoSubscript = EmptyExpr(sF.lhs.sub);
             AST.SingleAssign sL = (AST.SingleAssign) ast.ass.elementAt(i);
             while (iLast < ast.ass.size() && sF.lhs.var.equals(sL.lhs.var))
             {
+                if (lastAssignmentHasNoSubscript) {
+                    hasAssignmentWithNoSubscript = true;
+                }
                 iLast = iLast + 1;
-                if (iLast < ast.ass.size())
+                if (iLast < ast.ass.size()) {
                     sL = (AST.SingleAssign) ast.ass.elementAt(iLast);
+                    if (EmptyExpr(sL.lhs.sub)) {
+                        lastAssignmentHasNoSubscript = true;
+                    }
+                }
             }
+            
+            /*
+             * If there are assignments to multiple variables, then this sets
+             * hasMultiplevars true on the first execution of the outer while loop. 
+             */
+            if (iLast != ast.ass.size()) {
+                hasMultipleVars = true;
+            }
+            
             iLast = iLast - 1;
             // All statements from iFirst to iLast are to the same variable
-            if (cThis.Set(sF.lhs.var) > 1 || (iLast - iFirst > 0 && EmptyExpr(sF.lhs.sub)))
+            
+            /*
+             * Throws an error if there are multiple assignments to the variable
+             * in different statements, or if there are multiple assignments to
+             * the variable in this statement and at least one of them has no 
+             * subscript.
+             */
+            if (cThis.Set(sF.lhs.var) > 1 || 
+                 (iLast - iFirst > 0 && hasAssignmentWithNoSubscript)) {
                 /***********************************************************
                 * The following was changed by LL on 3 Mar 06 to use       *
                 * AST.location to properly report the location of an       *
                 * error in a line created by expanding a macro.            *
+                * However, it doesn't work very well otherwise.  This      *
+                * should be fixed.                                         *
                 ***********************************************************/
                 throw new PcalTLAGenException("Multiple assignment to " + sF.lhs.var, ast /* sF */);
+            }
             numAssigns = numAssigns + 1;
             Vector lines = new Vector(); // For collecting generated lines
 
+            if (hasMultipleVars) {
+                sb.append("/\\ ");
+            }
             if (iFirst == iLast)
             {
+                /*
+                 * This is a single assignment to the variable.
+                 */
                 AST.SingleAssign sass = sF;
 
                 TLAExpr sub = AddSubscriptsToExpr(sass.lhs.sub, SubExpr(Self(context)), c);
@@ -605,7 +921,7 @@ public class PcalTLAGen
                         && (sass.lhs.var.equals("pc") || IsProcedureVar(sass.lhs.var) || IsProcessSetVar(sass.lhs.var) || sass.lhs.var
                                 .equals("stack")))
                 {
-                    /* Generate assignment to variable with self subscript */
+                    /* Generate single assignment to variable with self subscript */
                     sb.append(sass.lhs.var);
                     sb.append("' = [");
                     int wrapCol = sb.length() + 2;
@@ -620,26 +936,33 @@ public class PcalTLAGen
                     if ( (sb.length() + prefix.length() > ssWrapColumn)
                          && (selfAsSV.size() == 0))
                     {
-                        lines.addElement(sb.toString());
+//                        lines.addElement(sb.toString());
+                        addOneLineOfTLA(sb.toString());
                         sb = new StringBuffer(NSpaces(wrapCol));
                     }
                     sb.append("![");
+                    addOneTokenToTLA(sb.toString());
+                    addLeftParen(self.getOrigin());
+                    addExprToTLA(self);
+                    addRightParen(self.getOrigin());
                     
-                    // following code was modified by LL on 22 Jan 2011 as part of
-                    // fixing bug 11_01_13, which required modifications to handle
-                    // the case where self is a multi-line formula, which can happen
-                    // for a "process (P = exp)" when exp is multi-line.
-                    int here = sb.length();
-                    for (int idx = 0; idx < selfAsSV.size(); idx++) {
-                        if (idx > 0) {
-                            sb.append("\n");
-                            sb.append(NSpaces(here + kludgeToFixPCHandlingBug));
-                        }
-                        sb.append((String) selfAsSV.elementAt(idx)) ;
-                    }
-//                    sb.append(self);
-                    sb.append("]");
-                    here = here + ((String) selfAsSV.elementAt(selfAsSV.size()-1)).length() + 1;
+//                    
+//                    // following code was modified by LL on 22 Jan 2011 as part of
+//                    // fixing bug 11_01_13, which required modifications to handle
+//                    // the case where self is a multi-line formula, which can happen
+//                    // for a "process (P = exp)" when exp is multi-line.
+//                    int here = sb.length();
+//                    for (int idx = 0; idx < selfAsSV.size(); idx++) {
+//                        if (idx > 0) {
+//                            sb.append("\n");
+//                            sb.append(NSpaces(here + kludgeToFixPCHandlingBug));
+//                        }
+//                        sb.append((String) selfAsSV.elementAt(idx)) ;
+//                    }
+////                    sb.append(self);
+//                    sb.append("]");
+//                    here = here + ((String) selfAsSV.elementAt(selfAsSV.size()-1)).length() + 1;
+                      addOneTokenToTLA("]");
                     Vector sv = sub.toStringVector();
                     /*****************************************************
                     * Was                                                *
@@ -651,89 +974,137 @@ public class PcalTLAGen
                     *****************************************************/
                     if (sv.size() > 0)
                     {
-                        sb.append((String) sv.elementAt(0));
-                        for (int v = 1; v < sv.size(); v++)
-                        {
-                            lines.addElement(sb.toString());
-                            sb = new StringBuffer(NSpaces(here));
-                            sb.append((String) sv.elementAt(v));
-                        }
+                        addLeftParen(sub.getOrigin());
+                        addExprToTLA(sub);
+                        addRightParen(sub.getOrigin());
+                        
+//                        sb.append((String) sv.elementAt(0));
+//                        for (int v = 1; v < sv.size(); v++)
+//                        {
+//                            lines.addElement(sb.toString());
+//                            sb = new StringBuffer(NSpaces(here));
+//                            sb.append((String) sv.elementAt(v));
+//                        }
                     }
-                    sb.append(" = ");
-                    here = sb.length();
-                    sv = rhs.toStringVector();
-                    sb.append((String) sv.elementAt(0));
-                    for (int v = 1; v < sv.size(); v++)
-                    {
-                        lines.addElement(sb.toString());
-                        sb = new StringBuffer(NSpaces(here));
-                        sb.append((String) sv.elementAt(v));
-                    }
-                    sb.append("]");
-                    lines.addElement(sb.toString());
+                    addOneTokenToTLA(" = ");;
+                    addLeftParen(rhs.getOrigin());
+                    addExprToTLA(rhs);
+                    addRightParen(rhs.getOrigin());
+                    addOneTokenToTLA("]");
+//                    sb.append(" = ");
+//                    here = sb.length();
+//                    sv = rhs.toStringVector();
+//                    sb.append((String) sv.elementAt(0));
+//                    for (int v = 1; v < sv.size(); v++)
+//                    {
+//                        lines.addElement(sb.toString());
+//                        sb = new StringBuffer(NSpaces(here));
+//                        sb.append((String) sv.elementAt(v));
+//                    }
+//                    sb.append("]");
+//                    lines.addElement(sb.toString());
                     sb = new StringBuffer();
                 } else if (!EmptyExpr(sass.lhs.sub))
                 {
-                    /* Generate assignment to subscripted variable */
+                    /* 
+                     * Generate single assignment to variable with no [self] subscript
+                     * but with an explicit subscript. 
+                     */
                     sb.append(sass.lhs.var);
                     sb.append("' = [");
                     sb.append(sass.lhs.var);
                     sb.append(" EXCEPT !");
-                    int here = sb.length();
-                    Vector sv = sub.toStringVector();
-                    sb.append((String) sv.elementAt(0));
-                    for (int v = 1; v < sv.size(); v++)
-                    {
-                        lines.addElement(sb.toString());
-                        sb = new StringBuffer(NSpaces(here));
-                        sb.append((String) sv.elementAt(v));
-                    }
-                    sb.append(" = ");
-                    here = sb.length();
-                    sv = rhs.toStringVector();
-                    sb.append((String) sv.elementAt(0));
-                    for (int v = 1; v < sv.size(); v++)
-                    {
-                        lines.addElement(sb.toString());
-                        sb = new StringBuffer(NSpaces(here));
-                        sb.append((String) sv.elementAt(v));
-                    }
-                    sb.append("]");
-                    lines.addElement(sb.toString());
+                    addOneTokenToTLA(sb.toString());
+                    addLeftParen(sub.getOrigin());
+                    addExprToTLA(sub);
+                    addRightParen(sub.getOrigin());
+                    addOneTokenToTLA(" = ");
+                    addLeftParen(rhs.getOrigin());
+                    addExprToTLA(rhs);
+                    addRightParen(rhs.getOrigin());
+                    addOneTokenToTLA("]");
+//                    
+//                    int here = sb.length();
+//                    Vector sv = sub.toStringVector();
+//                    sb.append((String) sv.elementAt(0));
+//                    for (int v = 1; v < sv.size(); v++)
+//                    {
+//                        lines.addElement(sb.toString());
+//                        sb = new StringBuffer(NSpaces(here));
+//                        sb.append((String) sv.elementAt(v));
+//                    }
+//                    sb.append(" = ");
+//                    here = sb.length();
+//                    sv = rhs.toStringVector();
+//                    sb.append((String) sv.elementAt(0));
+//                    for (int v = 1; v < sv.size(); v++)
+//                    {
+//                        lines.addElement(sb.toString());
+//                        sb = new StringBuffer(NSpaces(here));
+//                        sb.append((String) sv.elementAt(v));
+//                    }
+//                    sb.append("]");
+//                    lines.addElement(sb.toString());
                     sb = new StringBuffer();
                 } else
                 {
-                    /* Generate assignment to unsubscripted variable */
+                    /* 
+                     * Generate assignment to a variable with no subscript at all.
+                     */
                     sb.append(sass.lhs.var);
                     sb.append("' = ");
-                    int here = sb.length();
-                    Vector sv = Parenthesize(rhs.toStringVector());
-                    /*******************************************************
-                    * Call of Parenthesize added by LL on 27 Feb 2008.     *
-                    * See bug_08-02-18.                                    *
-                    *******************************************************/
-                    for (int v = 0; v < sv.size(); v++)
-                    {
-                        sb.append((String) sv.elementAt(v));
-                        lines.addElement(sb.toString());
-                        sb = new StringBuffer(NSpaces(here));
+//                    int here = sb.length();
+                    boolean needsParens = NeedsParentheses(rhs.toStringVector());
+                    if (needsParens) {
+                        sb.append("(");
                     }
+                    addOneTokenToTLA(sb.toString());
+                    addLeftParen(rhs.getOrigin());
+                    addExprToTLA(rhs);
+                    addRightParen(rhs.getOrigin());
+                    if (needsParens) {
+                        addOneTokenToTLA(")");
+                    }
+                    
+//                    Vector sv = Parenthesize(rhs.toStringVector());
+//                    /*******************************************************
+//                    * Call of Parenthesize added by LL on 27 Feb 2008.     *
+//                    * See bug_08-02-18.                                    *
+//                    *******************************************************/
+//                    for (int v = 0; v < sv.size(); v++)
+//                    {
+//                        sb.append((String) sv.elementAt(v));
+//                        lines.addElement(sb.toString());
+//                        sb = new StringBuffer(NSpaces(here));
+//                    }
 // Debugging
 //Vector exprVec = rhs.toMappingVector();
 //MappingObject.shiftMappingVector(exprVec, here);
 //MappingObject.printMappingVector(exprVec);
 //System.out.println("origin: " + rhs.getOrigin().toString() );
-//                    sb = new StringBuffer();
+                    
+                    sb = new StringBuffer();
                 }
             } else
             {
-                // Multiple assignments to the same subscripted variable.
+                /*
+                 * Multiple assignments to the same variable, which must therefore
+                 * each have a user-specified subscript.
+                 */
                 AST.SingleAssign sass = sF;
                 sb.append(sass.lhs.var);
                 sb.append("' = [");
                 sb.append(sass.lhs.var);
                 sb.append(" EXCEPT ");
                 int cc = sb.length();
+                /*
+                 * If this  the first variable, so i = 0, then sb does not contain
+                 * any spaces to compensate for the missing prefix; otherwise it
+                 * does.
+                 */
+                if (i == 0) {
+                    cc = cc + prefix.length();
+                }
                 boolean subscript = (mp && (IsProcedureVar(sass.lhs.var) || IsProcessSetVar(sass.lhs.var)));
                 while (iFirst <= iLast)
                 {
@@ -745,88 +1116,122 @@ public class PcalTLAGen
                     // On 21 Jan 2011, LL moved the following statement to below the if
                     // to correct part 3 of bug_11_01_13.
                     //
-                    int here = sb.length();
+//                    int here = sb.length();
                     if (subscript) {
-                        Vector selfAsSV = Self(context).toStringVector();
-                        for (int idx = 0; idx < selfAsSV.size(); idx++) {
-                          String start = " ";
-                          if (idx == 0) {
-                              sb.append("[");
-                          } else {
-                              sb.append("\n");
-                              sb.append(NSpaces(here + 1));
-                          }
-                          sb.append((String) selfAsSV.elementAt(idx));
-                        }
-                        sb.append("]");
-                        here = here + ((String) selfAsSV.elementAt(selfAsSV.size()-1)).length() + 2;
+                        /*
+                         * This variable has a "self" subscript in addition to its user-specified
+                         * subscript.
+                         */
+                        sb.append("[");
+                        addOneTokenToTLA(sb.toString());
+                        TLAExpr self = Self(context);
+                        addLeftParen(self.getOrigin());
+                        addExprToTLA(self);
+                        addOneTokenToTLA("]");
+                        
+//                        Vector selfAsSV = Self(context).toStringVector();
+//                        for (int idx = 0; idx < selfAsSV.size(); idx++) {
+//                          String start = " ";
+//                          if (idx == 0) {
+//                              sb.append("[");
+//                          } else {
+//                              sb.append("\n");
+//                              sb.append(NSpaces(here + 1));
+//                          }
+//                          sb.append((String) selfAsSV.elementAt(idx));
+//                        }
+//                        sb.append("]");
+//                        here = here + ((String) selfAsSV.elementAt(selfAsSV.size()-1)).length() + 2;
                     }
-                    Vector sv = sub.toStringVector();
-                    if (sv.size() > 0)
-                    {
-                        sb.append((String) sv.elementAt(0));
-                        for (int v = 1; v < sv.size(); v++)
-                        {
-                            lines.addElement(sb.toString());
-                            sb = new StringBuffer(NSpaces(here));
-                            sb.append((String) sv.elementAt(v));
-                        }
+                    else {
+                        addOneTokenToTLA(sb.toString());
                     }
-                    sb.append(" = ");
-                    here = sb.length();
-                    sv = rhs.toStringVector();
-                    sb.append((String) sv.elementAt(0));
-                    for (int v = 1; v < sv.size(); v++)
-                    {
-                        lines.addElement(sb.toString());
-                        sb = new StringBuffer(NSpaces(here));
-                        sb.append((String) sv.elementAt(v));
-                    }
-                    sb.append(((iFirst == iLast) ? "]" : ","));
-                    lines.addElement(sb.toString());
+                    
+                    addLeftParen(sub.getOrigin());
+                    addExprToTLA(sub);
+                    addRightParen(sub.getOrigin());
+                    addOneTokenToTLA(" = ");
+                    addLeftParen(rhs.getOrigin());
+                    addExprToTLA(rhs);
+                    addRightParen(rhs.getOrigin());
+                    addOneTokenToTLA((iFirst == iLast) ? "]" : ",");
+//                    Vector sv = sub.toStringVector();
+//                    if (sv.size() > 0)
+//                    {
+//                        sb.append((String) sv.elementAt(0));
+//                        for (int v = 1; v < sv.size(); v++)
+//                        {
+//                            lines.addElement(sb.toString());
+//                            sb = new StringBuffer(NSpaces(here));
+//                            sb.append((String) sv.elementAt(v));
+//                        }
+//                    }
+//                    sb.append(" = ");
+//                    here = sb.length();
+//                    sv = rhs.toStringVector();
+//                    sb.append((String) sv.elementAt(0));
+//                    for (int v = 1; v < sv.size(); v++)
+//                    {
+//                        lines.addElement(sb.toString());
+//                        sb = new StringBuffer(NSpaces(here));
+//                        sb.append((String) sv.elementAt(v));
+//                    }
+//                    sb.append(((iFirst == iLast) ? "]" : ","));
+//                    lines.addElement(sb.toString());
                     sb = new StringBuffer();
-                    if (iFirst < iLast)
+                    if (iFirst < iLast) {
+                        endCurrentLineOfTLA();
                         AddSpaces(sb, cc);
+                    }
                     iFirst = iFirst + 1;
                 }
             }
 
-            vlines.addElement(lines);
+//            vlines.addElement(lines);
             i = iLast + 1;
-        }
-        c.Merge(cThis);
-        // Append generated code to tlacode
-        sb = new StringBuffer(prefix);
-        col = sb.length();
-        if (numAssigns > 1)
-            sb.append("/\\ ");
-        if (vlines.size() > 0)
-        {
-            for (int v1 = 0; v1 < vlines.size(); v1++)
-            {
-                Vector vl = (Vector) vlines.elementAt(v1);
-                for (int v2 = 0; v2 < vl.size(); v2++)
-                {
-                    sb.append((String) vl.elementAt(v2));
-                    tlacode.addElement(sb.toString());
-                    sb = new StringBuffer(NSpaces(col));
-                    if ((v1 > 0 || numAssigns > 1) && (v2 != vl.size() - 1))
-                        sb.append("   ");
-                }
-                sb.append("/\\ ");
+            if (i <  ast.ass.size()) {
+                endCurrentLineOfTLA();
+                AddSpaces(sb, prefix.length());
             }
         }
+        addRightParen(ast.getOrigin());
+        endCurrentLineOfTLA();
+        
+        c.Merge(cThis);
+        // Append generated code to tlacode
+//        sb = new StringBuffer(prefix);
+//        col = sb.length();
+//        if (numAssigns > 1)
+//            sb.append("/\\ ");
+//        if (vlines.size() > 0)
+//        {
+//            for (int v1 = 0; v1 < vlines.size(); v1++)
+//            {
+//                Vector vl = (Vector) vlines.elementAt(v1);
+//                for (int v2 = 0; v2 < vl.size(); v2++)
+//                {
+//                    sb.append((String) vl.elementAt(v2));
+//                    tlacode.addElement(sb.toString());
+//                    sb = new StringBuffer(NSpaces(col));
+//                    if ((v1 > 0 || numAssigns > 1) && (v2 != vl.size() - 1))
+//                        sb.append("   ");
+//                }
+//                sb.append("/\\ ");
+//            }
+//        }
     }
 
-    /***********************************************************/
-    /* Generate TLA+ for if statement. Each branch has its own */
-    /* UNCHANGED that lists variables that were changed in the */
-    /* other branch. This is a little difficult since we don't */
-    /* know the UNCHANGED for the Then branch until the code   */
-    /* for the Else branch is generated. So, we fix the        */
-    /* line in the Then branch after the Else branch is done.  */
     /**
-     **********************************************************/
+     * Generate TLA+ for if statement. Each branch has its own 
+     * UNCHANGED that lists variables that were changed in the 
+     * other branch. This is a little difficult since we don't 
+     * know the UNCHANGED for the Then branch until the code   
+     * for the Else branch is generated. So, we fix the        
+     * line in the Then branch after the Else branch is done.  
+     * The corresponding mappingVector line also has to be changed,
+     * but that's not a problem because the UNCHANGED is a TLA+
+     * token with no corresponding source.
+     */
     private void GenIf(AST.If ast, Changed c, String context, String prefix, int col) throws PcalTLAGenException
     {
         Changed cThen = new Changed(c);
@@ -835,20 +1240,26 @@ public class PcalTLAGen
         StringBuffer sb = new StringBuffer(prefix);
         TLAExpr test = null;
         test = AddSubscriptsToExpr(ast.test, SubExpr(Self(context)), c);
-        Vector sv = test.toStringVector();
+//        Vector sv = test.toStringVector();
         sb.append("IF ");
         int here = sb.length();
         /*************************************************************
         * LL removed a bogus "- 1" here on 31 Jan 2006.              *
         *************************************************************/
-        sb.append((String) sv.elementAt(0));
-        for (int v = 1; v < sv.size(); v++)
-        {
-            tlacode.addElement(sb.toString());
-            sb = new StringBuffer(NSpaces(here));
-            sb.append((String) sv.elementAt(v));
-        }
-        tlacode.addElement(sb.toString());
+        addLeftParen(ast.getOrigin());
+        addOneTokenToTLA(sb.toString());
+        addExprToTLA(test);
+        endCurrentLineOfTLA();
+        
+//        sb.append((String) sv.elementAt(0));
+//        for (int v = 1; v < sv.size(); v++)
+//        {
+//            tlacode.addElement(sb.toString());
+//            sb = new StringBuffer(NSpaces(here));
+//            sb.append((String) sv.elementAt(v));
+//        }
+//        tlacode.addElement(sb.toString());
+        
         sb = new StringBuffer(NSpaces(here));
         sb.append("THEN ");
         here = sb.length();
@@ -865,13 +1276,16 @@ public class PcalTLAGen
             sb = new StringBuffer(NSpaces(here) + "/\\ ");
         }
         lineUncThen = tlacode.size();
-        tlacode.addElement(sb.toString());
+//        tlacode.addElement(sb.toString());
+        addOneLineOfTLA(sb.toString());
         sb = new StringBuffer(NSpaces(here - "THEN ".length()) + "ELSE ");
         here = sb.length();
         if (ast.Else.size() == 0)
         {
             sb.append("/\\ TRUE");
-            tlacode.addElement(sb.toString());
+//            tlacode.addElement(sb.toString());
+            addOneLineOfTLA(sb.toString());
+            
             sb = new StringBuffer(NSpaces(here) + "/\\ ");
         } else
         {
@@ -896,12 +1310,16 @@ public class PcalTLAGen
             sb.append((String) uncElse.elementAt(0));
             for (int i = 1; i < uncElse.size(); i++)
             {
-                tlacode.addElement(sb.toString());
+//                tlacode.addElement(sb.toString());
+                addOneLineOfTLA(sb.toString());
                 sb = new StringBuffer(NSpaces(cc));
                 sb.append((String) uncElse.elementAt(i));
             }
             sb.append(" >>");
-            tlacode.addElement(sb.toString());
+//            tlacode.addElement(sb.toString());
+            addOneTokenToTLA(sb.toString());
+            addRightParen(ast.getOrigin());
+            endCurrentLineOfTLA();
         } else if (cElse.NumUnchanged(cThen) == 1)
         {   // Change made by LL on 16 Mar 2011 so that, if there is a single
         	// unchanged variable v, it produces v' = v if v is a short variable,
@@ -914,12 +1332,25 @@ public class PcalTLAGen
         	} else {
         		sb.append(uc + "' = " + uc);
         	}
-            tlacode.addElement(sb.toString());
+//            tlacode.addElement(sb.toString());
+            addOneTokenToTLA(sb.toString());
+            addRightParen(ast.getOrigin());
+            endCurrentLineOfTLA();
+        } else 
+        {
+            /*
+             * There is no UNCHANGED after the ELSE, so we have to put
+             * the RightParen for the whole if statement at the end of
+             * the last line already generated
+             */
+            ((Vector) mappingVector.elementAt(mappingVector.size()-1))
+               .add(new MappingObject.RightParen(ast.getOrigin().getEnd()));
         }
 
         // Patch up the UNCHANGED for the THEN branch
         sb = new StringBuffer((String) tlacode.elementAt(lineUncThen));
         tlacode.removeElementAt(lineUncThen);
+        mappingVector.removeElementAt(lineUncThen);
         if (cThen.NumUnchanged(cElse) > 1)
         {
             Vector uncThen = cThen.Unchanged(cElse, wrapColumn - sb.length() - "UNCHANGED << ".length());
@@ -929,12 +1360,25 @@ public class PcalTLAGen
             for (int i = 1; i < uncThen.size(); i++)
             {
                 tlacode.insertElementAt(sb.toString(), lineUncThen);
+
+                 //set the mappingVector entry
+                mappingVector.insertElementAt(stringToTLATokens(sb.toString()), lineUncThen);
+
                 lineUncThen = lineUncThen + 1;
                 sb = new StringBuffer(NSpaces(cc));
                 sb.append((String) uncThen.elementAt(i));
             }
             sb.append(" >>");
             tlacode.insertElementAt(sb.toString(), lineUncThen);
+            Vector vec =  stringToTLATokens(sb.toString());
+            
+            // The following is bogus because the RightParen for the
+            // entire procedure is inserted after (or instead of) the
+            // ELSE's UNCHANGED
+            // vec.add(new MappingObject.RightParen(ast.getOrigin().getEnd()));
+            
+            mappingVector.insertElementAt(vec, lineUncThen);
+                    
         } else if (cThen.NumUnchanged(cElse) == 1)
         {   // Change made by LL on 16 Mar 2011 so that, if there is a single
         	// unchanged variable v, it produces v' = v if v is a short variable,
@@ -949,11 +1393,48 @@ public class PcalTLAGen
         		sb.append(uc + "' = " + uc);
         	}
             tlacode.insertElementAt(sb.toString(), lineUncThen);
+            Vector vec =  stringToTLATokens(sb.toString());
+            // The following is bogus because the RightParen for the
+            // entire procedure is inserted after (or instead of) the
+            // ELSE's UNCHANGED
+            // vec.add(new MappingObject.RightParen(ast.getOrigin().getEnd()));
+            mappingVector.insertElementAt(vec, lineUncThen);
         }
 
         // Merge the change lists together
         c.Merge(cThen);
         c.Merge(cElse);
+    }
+    
+    /**
+     * Returns the vector of MappingObjects containing the BeginTLAToken and
+     * EndTLAToken that are put in the mappingVector by a call of addOneLineOfTLA.
+     * The code was essentially copied from addOneTokenToTLA.
+     * 
+     * @param token
+     * @return
+     */
+    private Vector stringToTLATokens(String token) {
+        Vector result = new Vector(3);
+        
+        String trimmedToken = token.trim() ;
+
+        int numberOfLeftTrimmedTokens = 
+                (trimmedToken.length() == 0) ? -1 :                   
+                  token.indexOf(trimmedToken.charAt(0));
+             
+             /**
+              * Handle a token of only space characters. 
+              */
+             if (numberOfLeftTrimmedTokens == -1) {
+                 numberOfLeftTrimmedTokens = 0 ;
+                 trimmedToken = token ;
+             }
+             
+             int objBegin = numberOfLeftTrimmedTokens;
+             result.addElement(new MappingObject.BeginTLAToken(objBegin));
+             result.addElement(new MappingObject.EndTLAToken(objBegin + trimmedToken.length()));
+             return result;
     }
 
     /***********************************************************************
@@ -989,6 +1470,10 @@ public class PcalTLAGen
         * each `or' clause.                                                *
         *******************************************************************/
 
+        /*
+         * Add the left paren for the statement.
+         */
+        addLeftParen(ast.getOrigin());
         /*********************************************************************
         * Produce the output for the clauses, but with a dummy line in       *
         * place of the UNCHANGED clause, and compute allC, cOrs, and         *
@@ -1026,7 +1511,8 @@ public class PcalTLAGen
             cOrs[i] = cC;
             allC.Merge(cC);
             ucLocs[i] = tlacode.size();
-            tlacode.addElement("Replace by UNCHANGED"); // 
+//            tlacode.addElement("Replace by UNCHANGED"); // 
+            addOneLineOfTLA("Replace by UNCHANGED");
         }
         ; // End of for i
 
@@ -1040,11 +1526,17 @@ public class PcalTLAGen
         {
             i = i - 1;
             tlacode.removeElementAt(ucLocs[i]);
+            mappingVector.removeElementAt(ucLocs[i]);
             int numUnchanged = cOrs[i].NumUnchanged(allC);
             String NotChanged = cOrs[i].Unchanged(allC);
             if (numUnchanged > 1)
             {
-                tlacode.insertElementAt(NSpaces(here) + "/\\ UNCHANGED <<" + NotChanged + ">>", ucLocs[i]);
+                /*
+                 * The line should be wrapped if it's too long.
+                 */
+                String line = NSpaces(here) + "/\\ UNCHANGED <<" + NotChanged + ">>";
+                tlacode.insertElementAt(line, ucLocs[i]);
+                mappingVector.insertElementAt(stringToTLATokens(line), ucLocs[i]);
             } else if (numUnchanged == 1)
             {   // Change made by LL on 16 Mar 2011 so that, if there is a single
             	// unchanged variable v, it produces v' = v if v is a short variable,
@@ -1052,14 +1544,25 @@ public class PcalTLAGen
             	//
                 // tlacode.insertElementAt(NSpaces(here) + "/\\ UNCHANGED " + NotChanged, ucLocs[i]);
             	if (NotChanged.length() > 5) {
-                  tlacode.insertElementAt(NSpaces(here) + "/\\ UNCHANGED " + NotChanged, ucLocs[i]);
+            	    String line = NSpaces(here) + "/\\ UNCHANGED " + NotChanged;
+                    tlacode.insertElementAt(line, ucLocs[i]);
+                    mappingVector.insertElementAt(stringToTLATokens(line), ucLocs[i]);
+//                    tlacode.insertElementAt(NSpaces(here) + "/\\ UNCHANGED " + NotChanged, ucLocs[i]);
             	} else {
-            		tlacode.insertElementAt(NSpaces(here) + "/\\ " + NotChanged + "' = "
-            				+ NotChanged, ucLocs[i]);
+            	    String line = NSpaces(here) + "/\\ " + NotChanged + "' = " + NotChanged;
+            	    tlacode.insertElementAt(line, ucLocs[i]);
+                    mappingVector.insertElementAt(stringToTLATokens(line), ucLocs[i]);
+//            		tlacode.insertElementAt(NSpaces(here) + "/\\ " + NotChanged + "' = "
+//            				+ NotChanged, ucLocs[i]);
             	}
-            }
+            } 
         }
         ;
+        /*
+         * Add the right paren for the entire statement.
+         */
+        ((Vector) mappingVector.elementAt(mappingVector.size()-1))
+        .add(new MappingObject.RightParen(ast.getOrigin().getEnd()));
         /**********************************************************************
         * Add the statement's unchangeds to c.                                *
         **********************************************************************/
@@ -1068,25 +1571,32 @@ public class PcalTLAGen
 
     private void GenWith(AST.With ast, Changed c, String context, String prefix, int col) throws PcalTLAGenException
     {
+        addLeftParen(ast.getOrigin());
         StringBuffer sb = new StringBuffer(prefix);
         TLAExpr exp = AddSubscriptsToExpr(ast.exp, SubExpr(Self(context)), c);
-        Vector sv = exp.toStringVector();
+//        Vector sv = exp.toStringVector();
         if (ast.isEq)
         {
             /* generate LET statement */
             sb.append("LET ");
             sb.append(ast.var);
             sb.append(" == ");
-            int here = sb.length();
-            sb.append((String) sv.elementAt(0));
-            for (int v = 1; v < sv.size(); v++)
-            {
-                tlacode.addElement(sb.toString());
-                sb = new StringBuffer(NSpaces(here));
-                sb.append((String) sv.elementAt(v));
-            }
-            sb.append(" IN");
-            tlacode.addElement(sb.toString());
+            addOneTokenToTLA(sb.toString());
+            addLeftParen(exp.getOrigin());
+            addExprToTLA(exp);
+            addRightParen(exp.getOrigin());
+//            int here = sb.length();
+//            sb.append((String) sv.elementAt(0));
+//            for (int v = 1; v < sv.size(); v++)
+//            {
+//                tlacode.addElement(sb.toString());
+//                sb = new StringBuffer(NSpaces(here));
+//                sb.append((String) sv.elementAt(v));
+//            }
+            addOneTokenToTLA(" IN");
+            endCurrentLineOfTLA();
+//            sb.append(" IN");
+//            tlacode.addElement(sb.toString());
             sb = new StringBuffer(NSpaces(col + 2));
             /*************************************************************
             * LL changed "col + 4" to "col + 2" here to correct an       *
@@ -1100,16 +1610,15 @@ public class PcalTLAGen
             sb.append("\\E ");
             sb.append(ast.var);
             sb.append(" \\in ");
-            int here = sb.length();
-            sb.append((String) sv.elementAt(0));
-            for (int v = 1; v < sv.size(); v++)
-            {
-                tlacode.addElement(sb.toString());
-                sb = new StringBuffer(NSpaces(here));
-                sb.append((String) sv.elementAt(v));
-            }
-            sb.append(":");
-            tlacode.addElement(sb.toString());
+            addOneTokenToTLA(sb.toString());
+            addLeftParen(exp.getOrigin());
+            addExprToTLA(exp);
+            addRightParen(exp.getOrigin());
+//            int here = sb.le
+            addOneTokenToTLA(":");
+            endCurrentLineOfTLA();
+//            sb.append(":");
+//            tlacode.addElement(sb.toString());
             sb = new StringBuffer(NSpaces(col + 2));
             if (ast.Do.size() > 1)
                 sb.append("/\\ ");
@@ -1120,21 +1629,43 @@ public class PcalTLAGen
             sb = new StringBuffer(NSpaces(col + 2) + "/\\ ");
         }
         // tlacode.addElement(NSpaces(col) + ")");
+        
+        /*
+         * Add the right paren for the entire statement.
+         */
+        ((Vector) mappingVector.elementAt(mappingVector.size()-1))
+        .add(new MappingObject.RightParen(ast.getOrigin().getEnd()));
     }
 
     private void GenWhen(AST.When ast, Changed c, String context, String prefix, int col) throws PcalTLAGenException
     {
-        StringBuffer sb = new StringBuffer(prefix);
+        addOneTokenToTLA(prefix);
+        
+//        StringBuffer sb = new StringBuffer(prefix);
         TLAExpr exp = AddSubscriptsToExpr(ast.exp, SubExpr(Self(context)), c);
-        Vector sv = exp.toStringVector();
-        sb.append((String) sv.elementAt(0));
-        for (int v = 1; v < sv.size(); v++)
-        {
-            tlacode.addElement(sb.toString());
-            sb = new StringBuffer(NSpaces(col));
-            sb.append((String) sv.elementAt(v));
-        }
-        tlacode.addElement(sb.toString());
+        addLeftParen(exp.getOrigin());
+        addExprToTLA(exp);
+        addRightParen(exp.getOrigin());
+        endCurrentLineOfTLA();
+//        Vector sv = exp.toStringVector();
+//        
+//// Debugging
+////Vector vec = exp.toMappingVector();
+////System.out.println("Original vec:");
+////MappingObject.printMappingVector(vec);    
+////System.out.println("RemoveRedundantParens(vec)");
+////MappingObject.printMappingVector(TLAtoPCalMapping.RemoveRedundantParens(vec));
+////System.out.println("Should be original mappingvector:");
+////MappingObject.printMappingVector(vec); 
+//
+//        sb.append((String) sv.elementAt(0));
+//        for (int v = 1; v < sv.size(); v++)
+//        {
+//            tlacode.addElement(sb.toString());
+//            sb = new StringBuffer(NSpaces(col));
+//            sb.append((String) sv.elementAt(v));
+//        }
+//        tlacode.addElement(sb.toString());
     }
 
     private void GenPrintS(AST.PrintS ast, Changed c, String context, String prefix, int col)
@@ -1142,18 +1673,25 @@ public class PcalTLAGen
     {
         StringBuffer sb = new StringBuffer(prefix);
         TLAExpr exp = AddSubscriptsToExpr(ast.exp, SubExpr(Self(context)), c);
-        Vector sv = exp.toStringVector();
-        // The following modified 19 Nov 05 by LL to use PrintT instead of Print
-        sb.append("PrintT(");
-        sb.append((String) sv.elementAt(0));
-        for (int v = 1; v < sv.size(); v++)
-        {
-            tlacode.addElement(sb.toString());
-            sb = new StringBuffer(NSpaces(col + "PrintT(".length()));
-            sb.append((String) sv.elementAt(v));
-        }
-        sb.append(")");
-        tlacode.addElement(sb.toString());
+        addLeftParen(ast.getOrigin());
+        addOneTokenToTLA(prefix + "PrintT(");
+        addExprToTLA(exp);
+        addOneTokenToTLA(")");
+        addRightParen(ast.getOrigin());
+        endCurrentLineOfTLA();
+        
+//        Vector sv = exp.toStringVector();
+//        // The following modified 19 Nov 05 by LL to use PrintT instead of Print
+//        sb.append("PrintT(");
+//        sb.append((String) sv.elementAt(0));
+//        for (int v = 1; v < sv.size(); v++)
+//        {
+//            tlacode.addElement(sb.toString());
+//            sb = new StringBuffer(NSpaces(col + "PrintT(".length()));
+//            sb.append((String) sv.elementAt(v));
+//        }
+//        sb.append(")");
+//        tlacode.addElement(sb.toString());
     }
 
     /********************************************************/
@@ -1163,32 +1701,46 @@ public class PcalTLAGen
     private void GenAssert(AST.Assert ast, Changed c, String context, String prefix, int col)
             throws PcalTLAGenException
     {
+        addLeftParen(ast.getOrigin());
         StringBuffer sb = new StringBuffer(prefix);
         StringBuffer sc = new StringBuffer();
         TLAExpr exp = AddSubscriptsToExpr(ast.exp, SubExpr(Self(context)), c);
-        Vector sv = exp.toStringVector();
+//        Vector sv = exp.toStringVector();
         sb.append("Assert(");
+        addOneTokenToTLA(sb.toString());
+        addLeftParen(exp.getOrigin());
+        addExprToTLA(exp);
+        addRightParen(exp.getOrigin());
         int here = sb.length();
-        sb.append((String) sv.elementAt(0));
-        for (int v = 1; v < sv.size(); v++)
-        {
-            tlacode.addElement(sb.toString());
-            sb = new StringBuffer(NSpaces(col + "Assert(".length()));
-            sb.append((String) sv.elementAt(v));
-        }
-        sb.append(", ");
+//        sb.append((String) sv.elementAt(0));
+//        for (int v = 1; v < sv.size(); v++)
+//        {
+//            tlacode.addElement(sb.toString());
+//            sb = new StringBuffer(NSpaces(col + "Assert(".length()));
+//            sb.append((String) sv.elementAt(v));
+//        }
+//        sb.append(", ");
+        sb = new StringBuffer(", ");
         sc.append("\"Failure of assertion at ");
         sc.append(ast.location());
         // modified on 23 Mar 2006 by LL to use location() instead of
         // ast.line and ast.col
         sc.append(".\")");
-        if (sb.length() + sc.length() < wrapColumn)
-            tlacode.addElement(sb.toString() + sc.toString());
+        if (tlacodeNextLine.length() + sb.length() + sc.length() < wrapColumn) {
+            addOneTokenToTLA(sb.toString() + sc.toString());
+        }
+//        if (sb.length() + sc.length() < wrapColumn)
+//            tlacode.addElement(sb.toString() + sc.toString());
         else
         {
-            tlacode.addElement(sb.toString());
-            tlacode.addElement(NSpaces(here) + sc.toString());
+            addOneTokenToTLA(sb.toString());
+            endCurrentLineOfTLA();
+            addOneTokenToTLA(NSpaces(here) + sc.toString());
+//            tlacode.addElement(sb.toString());
+//            tlacode.addElement(NSpaces(here) + sc.toString());
         }
+        addRightParen(ast.getOrigin());
+        endCurrentLineOfTLA();
     }
 
     /********************************************************/
@@ -1197,7 +1749,12 @@ public class PcalTLAGen
     /********************************************************/
     private void GenSkip(AST.Skip ast, Changed c, String context, String prefix, int col)
     {
-        tlacode.addElement(prefix + "TRUE");
+//        tlacode.addElement(prefix + "TRUE");
+        addOneTokenToTLA(prefix);
+        addLeftParen(ast.getOrigin());
+        addOneTokenToTLA("TRUE");
+        addRightParen(ast.getOrigin());
+        endCurrentLineOfTLA();
     }
 
     /***********************************************************************
@@ -1209,6 +1766,7 @@ public class PcalTLAGen
     * 25 Jan 2006 to handle the `define' statement.                        *
     ***********************************************************************/
     private void GenVarsAndDefs(Vector globals, Vector procs, Vector processes, TLAExpr defs)
+      throws PcalTLAGenException
     {
         /*******************************************************************
         * lVars and gVars are vectors of strings, each element being a     *
@@ -1325,7 +1883,7 @@ public class PcalTLAGen
             ******************************************************************/
             gVars.addAll(lVars);
             gVarsSource.addAll(lVarsSource) ;
-            GenVarDecl(gVars, gVarsSource); // needs to be done
+            GenVarDecl(gVars, gVarsSource); 
         } else
         {
             /******************************************************************
@@ -1351,6 +1909,14 @@ public class PcalTLAGen
         ;
         addOneLineOfTLA("");
 
+        /*
+         * We check for the unlikely case in which there are no variables.  
+         * Without this check, the Init is not generated but appears in
+         * the definition of Spec.
+         */
+        if (gVars.size() == 0) {
+            throw new PcalTLAGenException("The algorithm has no variables.");
+        }
         /*******************************************************************
         * Generate definition of var.                                     *
         *******************************************************************/
@@ -1470,40 +2036,60 @@ public class PcalTLAGen
         endCurrentLineOfTLA();
     }
 
-    /**************************************/
-    /* Generate the ProcSet == statement. */
-    /**************************************/
+     /**
+     * Generates the "ProcSet == ..." output.  It is just a union of all the
+     * process sets, all on one line (except if a process set is a multi-line
+     * expression).  It wouldn't be too hard to break long lines, but that
+     * should be done later, if desired, after the TLA to PCal translation
+     * is finished.  
+     */
     public void GenProcSet()
     {
         StringBuffer ps = new StringBuffer();
         if (st.processes == null || st.processes.size() == 0)
             return;
-        ps.append("ProcSet == ");
+//        ps.append("ProcSet == ");
+        addOneTokenToTLA("ProcSet == ");
         for (int i = 0; i < st.processes.size(); i++)
         {
             PcalSymTab.ProcessEntry proc = (PcalSymTab.ProcessEntry) st.processes.elementAt(i);
-            Vector sv = proc.id.toStringVector();
-            if (i > 0)
-                ps.append(" \\cup ");
-            if (proc.isEq)
-                ps.append("{");
-            else
-                ps.append("(");
-            int col = ps.length();
-            ps.append((String) sv.elementAt(0));
-            for (int v = 1; v < sv.size(); v++)
-            {
-                tlacode.addElement(ps.toString());
-                ps = new StringBuffer(NSpaces(col));
-                ps.append((String) sv.elementAt(v));
+//            Vector sv = proc.id.toStringVector();
+            if (i > 0) {
+//                ps.append(" \\cup ");
+                addOneTokenToTLA(" \\cup ");
             }
-            if (proc.isEq)
-                ps.append("}");
-            else
-                ps.append(")");
+            addLeftParen(proc.id.getOrigin());
+            if (proc.isEq) {
+//                ps.append("{");
+                addOneTokenToTLA("{");
+            }
+            else {
+//                ps.append("(");
+                addOneTokenToTLA("(");
+            }
+            int col = ps.length();
+//            ps.append((String) sv.elementAt(0));
+//            for (int v = 1; v < sv.size(); v++)
+//            {
+//                tlacode.addElement(ps.toString());
+//                ps = new StringBuffer(NSpaces(col));
+//                ps.append((String) sv.elementAt(v));
+//            }
+            addExprToTLA(proc.id);
+            if (proc.isEq) {
+//                ps.append("}");
+                addOneTokenToTLA("}");
+            }
+            else {
+//                ps.append(")");
+                addOneTokenToTLA(")");
+            }
+            addRightParen(proc.id.getOrigin());
         }
-        tlacode.addElement(ps.toString());
-        tlacode.addElement("");
+//        tlacode.addElement(ps.toString());
+//        tlacode.addElement("");
+        endCurrentLineOfTLA();
+        addOneLineOfTLA("");
     }
 
     /***********************************/
@@ -1515,35 +2101,18 @@ public class PcalTLAGen
         int col = "Init == ".length();
         StringBuffer is = new StringBuffer();
         is.append("Init == ");
+
         /* Global variables */
         if (globals != null && globals.size() > 0)
         {
             is.append("(* Global variables *)");
-            tlacode.addElement(is.toString());
+//            tlacode.addElement(is.toString());
+            addOneLineOfTLA(is.toString()) ;
             is = new StringBuffer(NSpaces(col));
             for (int i = 0; i < globals.size(); i++)
             {
                 AST.VarDecl decl = (AST.VarDecl) globals.elementAt(i);
-                is.append("/\\ ");
-                is.append(decl.var);
-                if (decl.isEq)
-                    is.append(" = ");
-                else
-                    is.append(" \\in ");
-                int col2 = is.length();
-                Vector sv = Parenthesize(decl.val.toStringVector());
-                /*********************************************************
-                * Call to Parenthesize added by LL on 27 Feb 2008.       *
-                * See bug_08-02-18.                                      *
-                *********************************************************/
-                is.append((String) sv.elementAt(0));
-                for (int v = 1; v < sv.size(); v++)
-                {
-                    tlacode.addElement(is.toString());
-                    is = new StringBuffer(NSpaces(col2));
-                    is.append((String) sv.elementAt(v));
-                }
-                tlacode.addElement(is.toString());
+                addVarDeclToTLA(decl, is);
                 is = new StringBuffer(NSpaces(col));
             }
         }
@@ -1559,58 +2128,93 @@ public class PcalTLAGen
                 is.append("(* Procedure ");
                 is.append(proc.name);
                 is.append(" *)");
-                tlacode.addElement(is.toString());
+//                tlacode.addElement(is.toString());
+                addOneLineOfTLA(is.toString());
                 is = new StringBuffer(NSpaces(col));
                 for (int p = 0; p < proc.params.size(); p++)
                 {
                     AST.PVarDecl decl = (AST.PVarDecl) proc.params.elementAt(p);
-                    is.append("/\\ ");
-                    is.append(decl.var);
-
+                    if (!mp) {
+                        addVarDeclToTLA(decl.toVarDecl(), is);
+                    }
+                    else {
+                        is.append("/\\ ");
+                        addOneTokenToTLA(is.toString());
+                        addLeftParen(decl.getOrigin());
+//                    is.append(decl.var);
+                        is = new StringBuffer(decl.var);
                     /*******************************************************
                     * Modified on 31 Jan 2006 by LL to add subscripts to   *
                     * initialization expression if needed.  Also replaced  *
                     * test for "\\in" with assertion that it can't occur,  *
                     * since it's forbidden by the grammar.                 *
                     *******************************************************/
-                    PcalDebug.Assert(decl.isEq);
-                    is.append(" = ");
-                    Vector sv;
-                    if (mp)
-                    {
-                        sv = AddSubscriptsToExpr(decl.val, SubExpr(Self("procedure")), new Changed(new Vector()))
-                                .toStringVector();
-                    } else
-                    {
-                        sv = Parenthesize(decl.val.toStringVector());
-                        /*************************************************
-                        * Call to Parenthesize added by LL on 27 Feb 2008. *
-                        * See bug_08-02-18.                              *
-                        *************************************************/
-                    }
-                    ;
-                    if (mp)
-                    {
+                        PcalDebug.Assert(decl.isEq);
+                        is.append(" = ");
+                        
+//                    Vector sv;
+//                    if (mp)
+//                    {
+//                        sv = AddSubscriptsToExpr(decl.val, 
+//                              SubExpr(Self("procedure")), new Changed(new Vector()))
+//                                .toStringVector();
+//                    } else
+//                    {
+//                        sv = Parenthesize(decl.val.toStringVector());
+//                        /*************************************************
+//                        * Call to Parenthesize added by LL on 27 Feb 2008. *
+//                        * See bug_08-02-18.                              *
+//                        *************************************************/
+//                    }
+//                    ;
+//                    if (mp)
+//                    {
                         is.append("[ self \\in ProcSet |-> ");
+//                    }
+                        addOneTokenToTLA(is.toString());
+                        addLeftParen(decl.val.getOrigin());
+                        addExprToTLA(
+                          AddSubscriptsToExpr(decl.val, 
+                                              SubExpr(Self("procedure")), 
+                                              new Changed(new Vector())));
+                        addRightParen(decl.val.getOrigin());
+                        addOneTokenToTLA("]");
+                        addRightParen(decl.getOrigin());
+                        endCurrentLineOfTLA();
+                        
+//                    int col2 = is.length();
+//                    is.append((String) sv.elementAt(0));
+//                    for (int v = 1; v < sv.size(); v++)
+//                    {
+//                        tlacode.addElement(is.toString());
+//                        is = new StringBuffer(NSpaces(col2));
+//                        is.append((String) sv.elementAt(v));
+//                    }
+//                    if (mp)
+//                        is.append("]");
+//                    tlacode.addElement(is.toString());
                     }
-                    int col2 = is.length();
-                    is.append((String) sv.elementAt(0));
-                    for (int v = 1; v < sv.size(); v++)
-                    {
-                        tlacode.addElement(is.toString());
-                        is = new StringBuffer(NSpaces(col2));
-                        is.append((String) sv.elementAt(v));
-                    }
-                    if (mp)
-                        is.append("]");
-                    tlacode.addElement(is.toString());
                     is = new StringBuffer(NSpaces(col));
                 }
                 for (int p = 0; p < proc.decls.size(); p++)
                 {
+                    /*
+                     * Note: the following code is identical to the for loop
+                     * code above for procedure variables.  (Well done, Keith!)
+                     * I realized this too late to feel like procedurizing it.
+                     */
                     AST.PVarDecl decl = (AST.PVarDecl) proc.decls.elementAt(p);
-                    is.append("/\\ ");
-                    is.append(decl.var);
+                    if (!mp) {
+                        addVarDeclToTLA(decl.toVarDecl(), is);
+                    }
+                    else {
+                        is.append("/\\ ");
+                        addOneTokenToTLA(is.toString());
+                        addLeftParen(decl.getOrigin());
+//                    is.append(decl.var);
+                        is = new StringBuffer(decl.var);
+//                    is.append("/\\ ");
+//                    is.append(decl.var);
 
                     /*******************************************************
                     * Modified on 31 Jan 2006 by LL to add subscripts to   *
@@ -1618,37 +2222,49 @@ public class PcalTLAGen
                     * test for "\\in" with assertion that it can't occur,  *
                     * since it's forbidden by the grammar.                 *
                     *******************************************************/
-                    PcalDebug.Assert(decl.isEq);
-                    is.append(" = ");
-                    Vector sv;
-                    if (mp)
-                    {
-                        sv = AddSubscriptsToExpr(decl.val, SubExpr(Self("procedure")), new Changed(new Vector()))
-                                .toStringVector();
-                    } else
-                    {
-                        sv = Parenthesize(decl.val.toStringVector());
-                        /*************************************************
-                        * Call to Parenthesize added by LL on            *
-                        * 27 Feb 2008.  See bug_08-02-18.                *
-                        *************************************************/
-                    }
-                    ;
-                    if (mp)
-                    {
+                        PcalDebug.Assert(decl.isEq);
+                        is.append(" = ");
+//                    Vector sv;
+//                    if (mp)
+//                    {
+//                        sv = AddSubscriptsToExpr(decl.val, SubExpr(Self("procedure")), new Changed(new Vector()))
+//                                .toStringVector();
+//                    } else
+//                    {
+//                        sv = Parenthesize(decl.val.toStringVector());
+//                        /*************************************************
+//                        * Call to Parenthesize added by LL on            *
+//                        * 27 Feb 2008.  See bug_08-02-18.                *
+//                        *************************************************/
+//                    }
+//                    ;
+//                    if (mp)
+//                    {
                         is.append("[ self \\in ProcSet |-> ");
+//                    }
+                        addOneTokenToTLA(is.toString());
+                        addLeftParen(decl.val.getOrigin());
+                        addExprToTLA(AddSubscriptsToExpr(
+                                        decl.val, 
+                                        SubExpr(Self("procedure")), 
+                                        new Changed(new Vector())));
+                        addRightParen(decl.val.getOrigin());
+                        addOneTokenToTLA("]");
+                        addRightParen(decl.getOrigin());
+                        endCurrentLineOfTLA();
+
+//                    int col2 = is.length();
+//                    is.append((String) sv.elementAt(0));
+//                    for (int v = 1; v < sv.size(); v++)
+//                    {
+//                        tlacode.addElement(is.toString());
+//                        is = new StringBuffer(NSpaces(col2));
+//                        is.append((String) sv.elementAt(v));
+//                    }
+//                    if (mp)
+//                        is.append("]");
+//                    tlacode.addElement(is.toString());
                     }
-                    int col2 = is.length();
-                    is.append((String) sv.elementAt(0));
-                    for (int v = 1; v < sv.size(); v++)
-                    {
-                        tlacode.addElement(is.toString());
-                        is = new StringBuffer(NSpaces(col2));
-                        is.append((String) sv.elementAt(v));
-                    }
-                    if (mp)
-                        is.append("]");
-                    tlacode.addElement(is.toString());
                     is = new StringBuffer(NSpaces(col));
                 }
             }
@@ -1664,65 +2280,96 @@ public class PcalTLAGen
                 is.append("(* Process ");
                 is.append(proc.name);
                 is.append(" *)");
-                tlacode.addElement(is.toString());
+//                tlacode.addElement(is.toString());
+                addOneLineOfTLA(is.toString());
                 is = new StringBuffer(NSpaces(col));
                 for (int p = 0; p < proc.decls.size(); p++)
                 {
+                    /*
+                     * In the comments below, (( and )) represent
+                     * MappingObject.LeftParen and MappingObject.RightParen
+                     * objects.
+                     */
                     AST.VarDecl decl = (AST.VarDecl) proc.decls.elementAt(p);
                     is.append("/\\ ");
-                    is.append(decl.var);
-                    if (decl.isEq)
-                        is.append(" = ");
-                    else
-                        is.append(" \\in ");
-                    /*******************************************************
-                    * Modified on 31 Jan 2006 by LL to add subscripts to   *
-                    * initialization expression for process set.  Note     *
-                    * tricky subscript that is added in expr for           *
-                    * declaration of form "v \in expr".                    *
-                    *                                                      *
-                    * Also modified the whole method of producing the      *
-                    * variable declaration because the original destroyed  *
-                    * the formatting of the expression proc.id, leading    *
-                    * to bad or incorrect formatting if the process id     *
-                    * set expression was not trivial.                      *
-                    *******************************************************/
-                    Vector sv;
-                    TLAExpr sve;
-                    if (proc.isEq)
-                    {
-                        /***************************************************
-                        * No substitution unless it's a process set.       *
-                        ***************************************************/
-                        sve = decl.val; // .toStringVector();
-                    } else
-                    {
-                        if (decl.isEq)
-                        {
-                            /***********************************************
-                            * For declaration "v = ...", add subscript     *
-                            * "[self]".                                    *
-                            ***********************************************/
-                            sve = AddSubscriptsToExpr(decl.val, SubExpr(Self("procedure")), new Changed(new Vector()));
-                        } else
-                        {
-                            /***********************************************
-                            * For declaration "v \in ...", add subscript   *
-                            * "[CHOOSE self \in Process Id Set : TRUE]".   *
-                            *                                              *
-                            * This weird subscript is needed in the        *
-                            * following weird case:                        *
-                            *                                              *
-                            *    process (P \in S)                         *
-                            *    variable v \in T, w \in R(v)              *
-                            *                                              *
-                            * This produces the following conjunct in      *
-                            * the initial predicate for w:                 *
-                            *                                              *
-                            *   w \in [S -> R(v[CHOOSE self \in S : TRUE]) *
-                            ***********************************************/
+                    /*
+                     * The following adds  /\ ((  to the TLA+ output.
+                     */
+                    addOneTokenToTLA(is.toString());
+                    addLeftParen(decl.getOrigin());
+                    
+                    
+                    if (proc.isEq) {
+                        /*
+                         * The source is
+                         * 
+                         *     process (P = S) variables ... v  @@  Val
+                         *     
+                         * where @@ is either "=" or "\in".  The TLA+ output is
+                         * 
+                         *    /\ (( v @@ (( Val )) ))
+                         */
+                        is = new StringBuffer(decl.var);
+                        if (decl.isEq) {
+                            is.append(" = ");
+                        }
+                        else {
+                            is.append(" \\in ");
+                        }
+                        addOneTokenToTLA(is.toString()); 
+                        addLeftParen(decl.val.getOrigin());
+                        addExprToTLA(decl.val);
+                        addRightParen(decl.val.getOrigin());
+                    }
+                    else {
+                        if (decl.isEq) {
+                            /*
+                             * The source is
+                             *    
+                             *     process (P \in S) variables ... v = Val
+                             *     
+                             * The TLA+ output is
+                             * 
+                             *    /\ (( v = [self \in (( S )) |-> (( ValBar )) ] ))
+                             *    
+                             * where ValBar obtained from Val by replacing each 
+                             * variable w of the process with w[self].   
+                             */
+                            is = new StringBuffer(decl.var);
+                            is.append(" = [self \\in ");
+                            addOneTokenToTLA(is.toString());
+                            addLeftParen(proc.id.getOrigin());
+                            addExprToTLA(proc.id);
+                            addRightParen(proc.id.getOrigin());
+                            addOneTokenToTLA(" |-> " );
+                            addLeftParen(decl.val.getOrigin());
+                            addExprToTLA(AddSubscriptsToExpr(
+                                           decl.val,
+                                           SubExpr(Self("procedure")), 
+                                           new Changed(new Vector())));
+                            addRightParen(decl.val.getOrigin());
+                            addOneTokenToTLA("]");
+                            
+                        }
+                        else {
+                            /*
+                             * The source is
+                             * 
+                             *    process (P \in S) variables ... v \in Val
+                             *    
+                             * The TLA+ output is
+                             * 
+                             *    /\ (( v \in [ (( S )) -> (( ValBar )) ] ))
+                             *    
+                             * where ValBar is obtained from Val by replacing each 
+                             * variable w of the process with
+                             * 
+                             *    w[CHOOSE self \in S : TRUE]
+                             *    
+                             * We first set expr to the TLAExpr "CHOOSE self \in S : TRUE".
+                             * (This is Keith's original code.) 
+                             */                            
                             TLAExpr subexpr = proc.id.cloneAndNormalize();
-
                             TLAExpr expr = new TLAExpr();
                             expr.addLine();
                             expr.addToken(new TLAToken("[", 0, TLAToken.BUILTIN));
@@ -1730,7 +2377,7 @@ public class PcalTLAGen
                             expr.addToken(new TLAToken("self", 8, TLAToken.IDENT));
                             expr.addToken(new TLAToken("\\in ", 13, TLAToken.BUILTIN));
                             expr.normalize();
-
+                            expr.setOrigin(subexpr.getOrigin()); // see what this does.
                             try
                             {
                                 subexpr.prepend(expr, 1);
@@ -1745,70 +2392,173 @@ public class PcalTLAGen
                                 throw new PcalTLAGenException(e.getMessage());
                             }
 
-                            sve = AddSubscriptsToExpr(decl.val, expr, new Changed(new Vector()));
-                        }
-                        ;
-                    }
-                    ;
-                    TLAExpr expr = new TLAExpr();
-                    expr.addLine();
-                    if (!proc.isEq)
-                    {
-                        expr.addToken(new TLAToken("[", 0, TLAToken.BUILTIN));
-                        if (decl.isEq)
-                        {
-                            expr.addToken(new TLAToken("self", 1, TLAToken.IDENT));
-                            expr.addToken(new TLAToken("\\in ", 6, TLAToken.BUILTIN));
-                        }
-                        ;
-                        expr.normalize();
-                        TLAExpr expr2 = proc.id.cloneAndNormalize();
-                        try
-                        {
-                            expr2.prepend(expr, 0);
-                            expr = new TLAExpr();
-                            expr.addLine();
-                            if (decl.isEq)
-                            {
-                                expr.addToken(new TLAToken("|->", 0, TLAToken.BUILTIN));
-                            } else
-                            {
-                                expr.addToken(new TLAToken("->", 0, TLAToken.BUILTIN));
-                            }
-                            ;
-                            expr.prepend(expr2, 1);
-                            sve.prepend(expr, 1);
-                        } catch (TLAExprException e)
-                        {
-                            throw new PcalTLAGenException(e.getMessage());
+                            /*
+                             * Now we output the TLA+ code.
+                             */
+                            is = new StringBuffer(decl.var);
+                            is.append(" \\in [");
+                            addOneTokenToTLA(is.toString());
+                            addLeftParen(proc.id.getOrigin());
+                            addExprToTLA(proc.id);
+                            addRightParen(proc.id.getOrigin());
+                            addOneTokenToTLA(" -> " );
+                            addLeftParen(decl.val.getOrigin());
+                            addExprToTLA(AddSubscriptsToExpr(
+                                          decl.val, expr, new Changed(new Vector())) );
+                            addRightParen(decl.val.getOrigin());
+                            addOneTokenToTLA("]");
                         }
                     }
-                    ;
-                    sv = sve.toStringVector();
-                    if (proc.isEq)
-                    {
-                        sv = Parenthesize(sv);
-                    }
-                    ;
-                    /*****************************************************
-                    * Call to Parenthesize added by LL on 27 Feb 2008.   *
-                    * See bug_08-02-18.                                  *
-                    *****************************************************/
-                    int col2 = is.length();
-                    is.append((String) sv.elementAt(0));
-                    for (int v = 1; v < sv.size(); v++)
-                    {
-                        tlacode.addElement(is.toString());
-                        is = new StringBuffer(NSpaces(col2));
-                        is.append((String) sv.elementAt(v));
-                    }
-                    if (!proc.isEq)
-                        is.append("]");
-                    tlacode.addElement(is.toString());
+                    /*
+                     * This adds the final )) .
+                     */
+                    addRightParen(decl.getOrigin());
+                    endCurrentLineOfTLA();
                     is = new StringBuffer(NSpaces(col));
+                    
+// everything from here down to the end of the for p loop should be commented out                                       
+//                    is.append(decl.var);
+//                    is = new StringBuffer(decl.var);
+//                    if (decl.isEq)
+//                        is.append(" = ");
+//                    else
+//                        is.append(" \\in ");
+//                    /*******************************************************
+//                    * Modified on 31 Jan 2006 by LL to add subscripts to   *
+//                    * initialization expression for process set.  Note     *
+//                    * tricky subscript that is added in expr for           *
+//                    * declaration of form "v \in expr".                    *
+//                    *                                                      *
+//                    * Also modified the whole method of producing the      *
+//                    * variable declaration because the original destroyed  *
+//                    * the formatting of the expression proc.id, leading    *
+//                    * to bad or incorrect formatting if the process id     *
+//                    * set expression was not trivial.                      *
+//                    *******************************************************/
+//                    Vector sv;
+//                    TLAExpr sve;
+//                    if (proc.isEq)
+//                    {
+//                        /***************************************************
+//                        * No substitution unless it's a process set.       *
+//                        ***************************************************/
+//                        sve = decl.val; // .toStringVector();
+//                    } else
+//                    {
+//                        if (decl.isEq)
+//                        {
+//                            /***********************************************
+//                            * For declaration "v = ...", add subscript     *
+//                            * "[self]".                                    *
+//                            ***********************************************/
+//                            sve = AddSubscriptsToExpr(decl.val, SubExpr(Self("procedure")), new Changed(new Vector()));
+//                        } else
+//                        {
+//                            /************************************************
+//                            * For declaration "v \in ...", add subscript    *
+//                            * "[CHOOSE self \in Process Id Set : TRUE]".    *
+//                            *                                               *
+//                            * This weird subscript is needed in the         *
+//                            * following weird case:                         *
+//                            *                                               *
+//                            *    process (P \in S)                          *
+//                            *    variable v \in T, w \in R(v)               *
+//                            *                                               *
+//                            * This produces the following conjunct in       *
+//                            * the initial predicate for w:                  *
+//                            *                                               *
+//                            *   w \in [S -> R(v[CHOOSE self \in S : TRUE])] *
+//                            ************************************************/
+//                            TLAExpr subexpr = proc.id.cloneAndNormalize();
+//
+//                            TLAExpr expr = new TLAExpr();
+//                            expr.addLine();
+//                            expr.addToken(new TLAToken("[", 0, TLAToken.BUILTIN));
+//                            expr.addToken(new TLAToken("CHOOSE", 1, TLAToken.BUILTIN));
+//                            expr.addToken(new TLAToken("self", 8, TLAToken.IDENT));
+//                            expr.addToken(new TLAToken("\\in ", 13, TLAToken.BUILTIN));
+//                            expr.normalize();
+//
+//                            try
+//                            {
+//                                subexpr.prepend(expr, 1);
+//                                expr = new TLAExpr();
+//                                expr.addLine();
+//                                expr.addToken(new TLAToken(":", 0, TLAToken.BUILTIN));
+//                                expr.addToken(new TLAToken("TRUE", 2, TLAToken.BUILTIN));
+//                                expr.addToken(new TLAToken("]", 6, TLAToken.BUILTIN));
+//                                expr.prepend(subexpr, 1);
+//                            } catch (TLAExprException e)
+//                            {
+//                                throw new PcalTLAGenException(e.getMessage());
+//                            }
+//
+//                            sve = AddSubscriptsToExpr(decl.val, expr, new Changed(new Vector()));
+//                        }
+//                        ;
+//                    }
+//                    ;
+//                    TLAExpr expr = new TLAExpr();
+//                    expr.addLine();
+//                    if (!proc.isEq)
+//                    {
+//                        expr.addToken(new TLAToken("[", 0, TLAToken.BUILTIN));
+//                        if (decl.isEq)
+//                        {
+//                            expr.addToken(new TLAToken("self", 1, TLAToken.IDENT));
+//                            expr.addToken(new TLAToken("\\in ", 6, TLAToken.BUILTIN));
+//                        }
+//                        ;
+//                        expr.normalize();
+//                        TLAExpr expr2 = proc.id.cloneAndNormalize();
+//                        try
+//                        {
+//                            expr2.prepend(expr, 0);
+//                            expr = new TLAExpr();
+//                            expr.addLine();
+//                            if (decl.isEq)
+//                            {
+//                                expr.addToken(new TLAToken("|->", 0, TLAToken.BUILTIN));
+//                            } else
+//                            {
+//                                expr.addToken(new TLAToken("->", 0, TLAToken.BUILTIN));
+//                            }
+//                            ;
+//                            expr.prepend(expr2, 1);
+//                            sve.prepend(expr, 1);
+//                        } catch (TLAExprException e)
+//                        {
+//                            throw new PcalTLAGenException(e.getMessage());
+//                        }
+//                    }
+//                    ;
+//                    sv = sve.toStringVector();
+//                    if (proc.isEq)
+//                    {
+//                        sv = Parenthesize(sv);
+//                    }
+//                    ;
+//                    /*****************************************************
+//                    * Call to Parenthesize added by LL on 27 Feb 2008.   *
+//                    * See bug_08-02-18.                                  *
+//                    *****************************************************/
+//                    int col2 = is.length();
+//                    is.append((String) sv.elementAt(0));
+//                    for (int v = 1; v < sv.size(); v++)
+//                    {
+//                        tlacode.addElement(is.toString());
+//                        is = new StringBuffer(NSpaces(col2));
+//                        is.append((String) sv.elementAt(v));
+//                    }
+//                    if (!proc.isEq)
+//                        is.append("]");
+//                    tlacode.addElement(is.toString()); 
+//                    is = new StringBuffer(NSpaces(col));
+// end of section to be commented out 
                 } // end of for p loop.
             }
         }
+
         /* stack initial value */
         if (procs != null && procs.size() > 0)
         {
@@ -1816,7 +2566,8 @@ public class PcalTLAGen
                 is.append("/\\ stack = [self \\in ProcSet |-> << >>]");
             else
                 is.append("/\\ stack = << >>");
-            tlacode.addElement(is.toString());
+//            tlacode.addElement(is.toString());
+            addOneLineOfTLA(is.toString());
             is = new StringBuffer(NSpaces(col));
         }
         /* pc initial value */
@@ -1834,29 +2585,42 @@ public class PcalTLAGen
                   if (pe.isEq)
                   {
                       is.append("= ");
-                      int colExpr = is.length();
-                      Vector sv = pe.id.toStringVector();
-                      is.append((String) sv.elementAt(0));
-                      for (int v = 1; v < sv.size(); v++)
-                      {
-                          tlacode.addElement(is.toString());
-                          is = new StringBuffer(NSpaces(colExpr));
-                          is.append((String) sv.elementAt(v));
-                      }
+//                      int colExpr = is.length();
+                      addOneTokenToTLA(is.toString());
+                      addLeftParen(pe.id.getOrigin());
+                      addExprToTLA(pe.id);
+                      addRightParen(pe.id.getOrigin());
+                      
+//                      Vector sv = pe.id.toStringVector();
+//                      is.append((String) sv.elementAt(0));
+//                      for (int v = 1; v < sv.size(); v++)
+//                      {
+//                          addOneLineOfTLA(is.toString());
+////                          tlacode.addElement(is.toString());
+//                          is = new StringBuffer(NSpaces(colExpr));
+//                          is.append((String) sv.elementAt(v));
+//                      }
                   } else
                   {
                       is.append("\\in ");
-                      int colExpr = is.length();
-                      Vector sv = pe.id.toStringVector();
-                      is.append((String) sv.elementAt(0));
-                      for (int v = 1; v < sv.size(); v++)
-                      {
-                          tlacode.addElement(is.toString());
-                          is = new StringBuffer(NSpaces(colExpr));
-                          is.append((String) sv.elementAt(v));
-                      } 
+//                      int colExpr = is.length();
+//                      Vector sv = pe.id.toStringVector();
+//                      is.append((String) sv.elementAt(0));
+//                      for (int v = 1; v < sv.size(); v++)
+//                      {
+//                          tlacode.addElement(is.toString());
+//                          is = new StringBuffer(NSpaces(colExpr));
+//                          is.append((String) sv.elementAt(v));
+//                      } 
+                      addOneTokenToTLA(is.toString());
+                      addLeftParen(pe.id.getOrigin());
+                      addExprToTLA(pe.id);
+                      addRightParen(pe.id.getOrigin());
+                      
+                      
                   }
-                  is.append(" -> \"");
+//                  is.append(" -> \"");
+                  is = new StringBuffer(" -> \"");
                   is.append(pe.iPC);
                   if (p == st.processes.size() - 1)
                       is.append("\"]");
@@ -1864,7 +2628,9 @@ public class PcalTLAGen
                       is.append("\" []");
                   else
                       is.append("\"");
-                  tlacode.addElement(is.toString());
+//                  tlacode.addElement(is.toString());
+                  addOneTokenToTLA(is.toString());
+                  endCurrentLineOfTLA();
                   is = new StringBuffer(NSpaces(colPC));
                   if (boxUnderCASE && p < st.processes.size() - 1)
                       is.append("[] ");
@@ -1872,10 +2638,12 @@ public class PcalTLAGen
           } else
           {
               is.append("/\\ pc = \"" + st.iPC + "\"");
-              tlacode.addElement(is.toString());
+//              tlacode.addElement(is.toString());
+              addOneLineOfTLA(is.toString());
           }
         }
-        tlacode.addElement("");
+//        tlacode.addElement("");
+        addOneLineOfTLA("");
     }
 
     /************************************/
@@ -1969,7 +2737,8 @@ public class PcalTLAGen
         for (int i = 0; i < nextS.size(); i++)
         {
             sb.append((String) nextS.elementAt(i));
-            tlacode.addElement(sb.toString());
+            addOneLineOfTLA(sb.toString());
+//            tlacode.addElement(sb.toString());
             sb = new StringBuffer(NSpaces(col) + " \\/ ");
         }
         if (nextSS.size() > 0)
@@ -1981,7 +2750,8 @@ public class PcalTLAGen
             for (int i = 0; i < nextSS.size(); i++)
             {
                 sb.append((String) nextSS.elementAt(i));
-                tlacode.addElement(sb.toString());
+                addOneLineOfTLA(sb.toString());
+//                tlacode.addElement(sb.toString());
                 sb = new StringBuffer(NSpaces(col2) + " \\/ ");
             }
             sb = new StringBuffer(NSpaces(col) + " \\/ ");
@@ -1994,7 +2764,8 @@ public class PcalTLAGen
                 {
                     String line = (String) v.elementAt(j);
                     sb.append(line);
-                    tlacode.addElement(sb.toString());
+                    addOneLineOfTLA(sb.toString());
+//                    tlacode.addElement(sb.toString());
                     
                     // The following if case was added by LL on 22 Jan 2011
                     // to correct part 1 of bug bug_11_01_13.  This  bug occurs
@@ -2013,7 +2784,8 @@ public class PcalTLAGen
             }
         if (! (PcalParams.NoDoneDisjunct || ParseAlgorithm.omitStutteringWhenDone))
          { sb.append("(* Disjunct to prevent deadlock on termination *)");
-           tlacode.addElement(sb.toString());
+           addOneLineOfTLA(sb.toString());
+//           tlacode.addElement(sb.toString());
            sb = new StringBuffer(NSpaces(col + 4));
            if (mp)
                /************************************************************
@@ -2035,9 +2807,11 @@ public class PcalTLAGen
                sb.append("((\\A self \\in ProcSet: pc[self] = \"Done\") /\\ " + "UNCHANGED vars)");
            else
                sb.append("(pc = \"Done\" /\\ UNCHANGED vars)");
-               tlacode.addElement(sb.toString());
+               addOneLineOfTLA(sb.toString());
+//               tlacode.addElement(sb.toString());
          } ;
-        tlacode.addElement("");
+         addOneLineOfTLA("");
+//        tlacode.addElement("");
     }
 
     /****************************************/
@@ -2154,8 +2928,10 @@ public class PcalTLAGen
     	
         if (    PcalParams.FairnessOption.equals("nof")
              || (!mp && PcalParams.FairnessOption.equals(""))) {
-        	tlacode.addElement("Spec == " + safetyFormula );
-        	tlacode.addElement("");
+            addOneLineOfTLA("Spec == " + safetyFormula);
+            addOneLineOfTLA("");
+//        	tlacode.addElement("Spec == " + safetyFormula );
+//        	tlacode.addElement("");
         	return;
         }
 //System.out.println("foo |-> " + st.UseThis(PcalSymTab.PROCEDURE, "foo", ""));
@@ -2351,24 +3127,45 @@ public class PcalTLAGen
         } // ends construction of procFairnessFormulas
            
         if (wfNextConj == null && procFairnessFormulas.size() == 0) {
-            tlacode.addElement("Spec == " + safetyFormula);
-            tlacode.addElement("");
+            addOneLineOfTLA("Spec == " + safetyFormula);
+            addOneLineOfTLA("");
+//            tlacode.addElement("Spec == " + safetyFormula);
+//            tlacode.addElement("");
             return;
         }
-        
-        tlacode.addElement("Spec == /\\ " + safetyFormula) ;
+        addOneLineOfTLA("Spec == /\\ " + safetyFormula);
+//        tlacode.addElement("Spec == /\\ " + safetyFormula) ;
         int indent = "Spec == /\\ ".length();
         
         if (wfNextConj != null) {
-            tlacode.addElement("        /\\ WF_vars(Next)");
+            addOneLineOfTLA("        /\\ WF_vars(Next)");
+//            tlacode.addElement("        /\\ WF_vars(Next)");
         }
         for (int i = 0; i < procFairnessFormulas.size(); i++) {
-                tlacode.addElement(
-                        "        /\\ " +
-                      ((ProcessFairness) procFairnessFormulas.elementAt(i)).format(indent)
-                         );
+            /*
+             * The original code called format on the fairness formula, which can
+             * create a string with \n characters embedded.  I've just split the
+             * string into its individual lines and added them to tlacode one at a time.
+             * However, the current and original code can both produce very long lines 
+             * that could be wrapped.  So if this change does make a difference, then 
+             * it would be better to completely rewrite the format method (which is only 
+             * called here).
+             */
+             String str = 
+                  "        /\\ " + 
+                  ((ProcessFairness) procFairnessFormulas.elementAt(i)).format(indent).toString();
+             String [] splitStr = str.split("\n");
+             for (int j = 0; j < splitStr.length; j++) {
+                 addOneLineOfTLA(splitStr[j]);
+             }
+
+//            tlacode.addElement(
+//                        "        /\\ " +
+//                      ((ProcessFairness) procFairnessFormulas.elementAt(i)).format(indent)
+//                         );
         }
-        tlacode.addElement("");
+        addOneLineOfTLA("");
+//        tlacode.addElement("");
         return;
     }
 
@@ -2389,8 +3186,10 @@ public class PcalTLAGen
         else
             sb.append("pc");
         sb.append(" = \"Done\")");
-        tlacode.addElement(sb.toString());
-        tlacode.addElement("");
+        addOneLineOfTLA(sb.toString());
+        addOneLineOfTLA("");
+//        tlacode.addElement(sb.toString());
+//        tlacode.addElement("");
     }
 
     /**********************************************************/
@@ -2406,12 +3205,38 @@ public class PcalTLAGen
     /**********************************************************/
     private TLAExpr AddSubscriptsToExpr(TLAExpr exprn, TLAExpr sub, Changed c) throws PcalTLAGenException
     {
+        /*
+         * For testing, throw a null pointer exception if the begin/end substitution
+         * mapping vectors are not properly matching in the returned expression
+         */
+//        int[] depths = new int[1000];
+        
+        int parenDepth = 0;
+        for (int i = 0; i < exprn.tokens.size(); i++) {
+            Vector line = (Vector) exprn.tokens.elementAt(i);
+            for (int j = 0; j < line.size(); j++) {
+                TLAToken tok = (TLAToken) line.elementAt(j);
+                parenDepth = parenDepth + tok.getBeginSubst().size() - tok.getEndSubst().size();
+                if (parenDepth < 0) {
+                        throw new NullPointerException("argument: begin/end Subst depth negative");
+                }
+            }
+//            depths[i] = parenDepth;
+        }
+        if (parenDepth != 0) {
+            throw new NullPointerException("argument: Unmatched begin Subst");
+        }
+        /*   ------------------ end testing --------------------------*/
 
+        /*
+         * We now set stringVec to the sequence of identifiers that occur in exprn
+         * for which we need to add a subscript or a prime.
+         */
         Vector exprVec = new Vector(); // the substituting exprs
         Vector stringVec = new Vector(); // the substituted ids
         TLAExpr expr = exprn.cloneAndNormalize();  // the expression to be returned
 
-        for (int i = 0; i < expr.tokens.size(); i++)
+       for (int i = 0; i < expr.tokens.size(); i++)
         {
             Vector tv = (Vector) expr.tokens.elementAt(i);
             for (int j = 0; j < tv.size(); j++)
@@ -2429,23 +3254,80 @@ public class PcalTLAGen
                      *    
                      *    exp.addToken(new TLAToken(tok.string, 0, TLAToken.IDENT));
                      *    
-                     * that is commented out.
+                     * that is commented out.  Note that this change can add a token with
+                     * type ADDED rather than IDENT.  I don't think this matters.
                      */
                     TLAToken newTok = tok.Clone() ;
+                    /*
+                     * The new token should inherit nothing from the baggage of tok, whose
+                     * only function is to provide the name
+                     */
+                    newTok.setBeginSubst(new Vector(2));
+                    newTok.setEndSubst(new Vector(2));
+                    newTok.source = null;
                     newTok.column = 0;
                     exp.addToken(newTok) ;
                     // exp.addToken(new TLAToken(tok.string, 0, TLAToken.IDENT));
-                    if (prime)
+                    if (prime) {
                         /*****************************************************
                         * Modified by LL on 30 Aug 2007.  The following      *
                         * call to addTokenOffset was originally a call to    *
                         * addToken.  See the comments for                    *
                         * TLAExpr.addTokenOffset().                          *
                         *****************************************************/
-                        exp.addTokenOffset(new TLAToken("'", 0, TLAToken.BUILTIN, true), 0);
+                        TLAToken primeTok = new TLAToken("'", 0, TLAToken.BUILTIN, true);
+                        // The following stuff added by LL in Dec 2011 is bogus.  The
+                        // token tok is just the first one of many in the exprn with
+                        // the same name for which we want to substitute.  The only
+                        // useful data in the token tok is its string.
+                        //
+                        // if (tok.source != null) {
+                        //   primeTok.source = 
+                        //           new Region(tok.source.getEnd(), tok.source.getEnd());
+                        // }
+                        // if (!subr) {
+                        //    primeTok.setEndSubst(tok.getEndSubst());
+                        //   newTok.setEndSubst(new Vector(2));
+                        // }
+                        exp.addTokenOffset(primeTok, 0);
+                    }
                     if (subr)
                     {
                         TLAExpr subexp = sub.cloneAndNormalize();
+                        
+                        /*
+                         * We now add the end of the origin of tok to beginSubst
+                         * of the first token of subexp and to endSubst of the
+                         * last token of subexp.  This indicates that PCal code
+                         * corresponding to a region of the TLA+ translation that
+                         * includes part of the added subscript and part of the
+                         * original expression is a portion of the source of
+                         * exprn.
+                         */
+                        // This is bogus, because we are adding the location of where
+                        // the identifier first occurs in exprn to the substitution
+                        // vectors of the expression that's going to be substituted in
+                        // all instances.
+                        //
+                        // if (tok.source != null) {
+                        //   PCalLocation endOfTok = tok.source.getEnd();
+                        //  subexp.firstToken().getBeginSubst().add(endOfTok);
+                        //  subexp.lastToken().getEndSubst().add(endOfTok);
+                        // }
+                        /*
+                         * However, we do have to move the token's beginSubst and endSubst vectors
+                         * to the first and lasts token of the subscript.  Since the
+                         * resulting Parens that they generate should be outside
+                         * the ones generated by the endSubst vectors of the expression,
+                         * we have to add them before that expression's Subst vectors.
+                         * 
+                         * No, no!  This tok is just giving us the name of the tok that
+                         * we're going to be substituting for in the expression.  It is not
+                         * necessarily the one that we're going to substitute for.
+                         */
+                        // newTok.getEndSubst().addAll(subexp.lastToken().getEndSubst());
+                        // subexp.lastToken().setEndSubst(newTok.getEndSubst());
+                        // newTok.setEndSubst(new Vector(2));
                         exp.normalize();
                         try
                         {
@@ -2475,6 +3357,28 @@ public class PcalTLAGen
             {
                 throw new PcalTLAGenException(e.getMessage());
             }
+        /*
+         * For testing, throw a null pointer exception if the begin/end substitution
+         * mapping vectors are not properly matching in the returned expression
+         */
+//        depths = new int[1000];
+        
+        parenDepth = 0;
+        for (int i = 0; i < expr.tokens.size(); i++) {
+            Vector line = (Vector) expr.tokens.elementAt(i);
+            for (int j = 0; j < line.size(); j++) {
+                TLAToken tok = (TLAToken) line.elementAt(j);
+                parenDepth = parenDepth + tok.getBeginSubst().size() - tok.getEndSubst().size();
+                if (parenDepth < 0) {
+                        throw new NullPointerException("result: begin/end Subst depth negative");
+                }
+            }
+//            depths[i] = parenDepth;
+        }
+        if (parenDepth != 0) {
+            throw new NullPointerException("result: Unmatched begin/subst");
+        }
+        /*   ------------------ end testing --------------------------*/
         return expr;
     }
 
@@ -2661,10 +3565,34 @@ public class PcalTLAGen
     ***********************************************************************/
     private static Vector Parenthesize(Vector vec)
     {
-
+        /*********************************************************************
+        * Add the parentheses if necessary.                                  *
+        *********************************************************************/
+        if (NeedsParentheses(vec))
+        {
+            vec.setElementAt("(" + ((String) vec.elementAt(0)), 0);
+            for (int i = 1; i < vec.size(); i++)
+            {
+                vec.setElementAt(" " + ((String) vec.elementAt(i)), i);
+            }
+            ;
+            int curLineNum = vec.size() - 1;
+            vec.setElementAt(((String) vec.elementAt(curLineNum)) + ")", curLineNum);
+        }
+        ;
+        return vec;
+    }
+    
+    /**
+     * As part of adding the TLA to PCal translation code, LL removedseparated 
+     * the code that decides if parentheses are needed from the Parenthesize 
+     * method and put it into this method.  The Parenthesize method itself
+     * will not be needed.
+     */
+    public static boolean  NeedsParentheses(Vector vec) {
         if (vec.size() == 0)
         {
-            return vec;
+            return false;
         }
         ;
         /*******************************************************************
@@ -2810,23 +3738,8 @@ public class PcalTLAGen
             curLineNum++;
             curCharNum = 0;
         } // end while (curLineNum < vec.size())
-
-        /*********************************************************************
-        * Add the parentheses if necessary.                                  *
-        *********************************************************************/
-        if (needParen)
-        {
-            vec.setElementAt("(" + ((String) vec.elementAt(0)), 0);
-            for (int i = 1; i < vec.size(); i++)
-            {
-                vec.setElementAt(" " + ((String) vec.elementAt(i)), i);
-            }
-            ;
-            curLineNum = vec.size() - 1;
-            vec.setElementAt(((String) vec.elementAt(curLineNum)) + ")", curLineNum);
-        }
-        ;
-        return vec;
+        
+        return needParen;
     }
     
     /*
@@ -2838,7 +3751,7 @@ public class PcalTLAGen
      * Adds one token to tlacodeNextLine, and adds the appropriate
      * Begin/EndTLAToken objects to mappingVectorNextLine.  The
      * ...TLAToken objects mark a region that excludes beginning and
-     * ending space characters of token--unlessthe token has
+     * ending space characters of token--unless the token has
      * only space characters.
      * 
      * @param token
@@ -2893,13 +3806,13 @@ public class PcalTLAGen
      */
     private void addOneLineOfTLA(String line) {
 // temporarily commented out.
-//        if(tlacode.size() != mappingVector.size()) {
-//            PcalDebug.ReportBug("tlacode and mappingVector have different lengths") ;
-//        }
+        if(tlacode.size() != mappingVector.size()) {
+            PcalDebug.ReportBug("tlacode and mappingVector have different lengths") ;
+        }
 // The following added during testing.
-if(tlacode.size() != mappingVector.size()) {
-   System.out.println("tlacode and mappingVector have different lengths");
-}
+//if(tlacode.size() != mappingVector.size()) {
+//   System.out.println("tlacode and mappingVector have different lengths");
+//}
         endCurrentLineOfTLA();
         if (line.length() == 0) {
             mappingVector.addElement(new Vector(2));
@@ -2912,7 +3825,9 @@ if(tlacode.size() != mappingVector.size()) {
     
     /**
      * If tlacodeNextLine does not equal "", then add it to tlacode
-     * and add mappingVectorNextLine to mappingVector.
+     * and add mappingVectorNextLine to mappingVector.  If it does equal "",
+     * don't add any lines, but add any potentially legal leftovers in 
+     * mappingVectorNextLine to the previous line.
      */
     private void endCurrentLineOfTLA() {
         if (tlacodeNextLine.length() != 0) {
@@ -2920,6 +3835,30 @@ if(tlacode.size() != mappingVector.size()) {
             mappingVector.addElement(mappingVectorNextLine) ;
             tlacodeNextLine = "";
             mappingVectorNextLine = new Vector() ;
+        } 
+        else {
+            if (mappingVectorNextLine.size() != 0) {
+                /*
+                 * There's something to go in the mappingVector that doesn't
+                 * accompany any text.  It should be one or more RightParen or
+                 * LeftParen objects, (or perhaps, eventually a Break), in which 
+                 * case they should be put at the end of the previous mappingVector 
+                 * line.  Anything else is a mistake.
+                 */
+                Vector lastLine = (Vector) mappingVector.elementAt(mappingVector.size()-1);
+                for (int i = 0; i < mappingVectorNextLine.size(); i++) {
+                    MappingObject obj = (MappingObject) mappingVectorNextLine.elementAt(i);
+                    if (obj.getType() == MappingObject.RIGHT_PAREN ||
+                        obj.getType() == MappingObject.LEFT_PAREN||
+                        obj.getType() == MappingObject.BREAK) {
+                       lastLine.add(obj); 
+                    }
+                    else {
+                        PcalDebug.ReportBug("PcalTLAGen.endCurrentLineOfTLA found problem.");
+                    }
+                    mappingVectorNextLine = new Vector() ;
+                }
+            }
         }
     }
     
@@ -2950,15 +3889,99 @@ if(tlacode.size() != mappingVector.size()) {
             }
         }
         if (sv.size() > 1) {
+            String spaces = NSpaces(indent);
             while (nextLine < sv.size()-1) {
-                tlacode.addElement((String) sv.elementAt(nextLine));
+                tlacode.addElement(spaces + ((String) sv.elementAt(nextLine)));
                 mappingVector.addElement((Vector) exprMapping.elementAt(nextLine));
                 nextLine++ ;
             }
-            tlacodeNextLine = (String) sv.elementAt(nextLine) ;
+            tlacodeNextLine = spaces + ((String) sv.elementAt(nextLine)) ;
             mappingVectorNextLine = (Vector) exprMapping.elementAt(nextLine);
         }
+        else if (indent == 0){
+            /*
+             * If indent != 0, then we've already added the one-line expression.
+             */
+            tlacodeNextLine = tlacodeNextLine + ((String) sv.elementAt(0));
+            mappingVectorNextLine.addAll((Vector) exprMapping.elementAt(0));
+        }
     }
+    
+    /**
+     * Subroutine of GenInit that adds to the TLA translation the Init conjunct 
+     * corresponding to the VarDecl decl for a global variable and, in a uniprocess
+     * algorithm for a procedure or process variable It is called with the 
+     * StringBuffer `is' containing the text that precedes the "/\" of the 
+     * conjunct, which will be "Init == " or just spaces.
+     * 
+     * @param decl
+     * @param is
+     */
+    private void addVarDeclToTLA(VarDecl decl, StringBuffer is) {
+        Region origin = decl.getOrigin();
+        is.append("/\\ ");
+        addOneTokenToTLA(is.toString());
+        addLeftParen(decl.getOrigin());
+//        is.append(decl.var);
+        is = new StringBuffer(decl.var);
+        if (decl.isEq)
+            is.append(" = ");
+        else
+            is.append(" \\in ");
+//        int col2 = is.length();
+//        Vector sv = Parenthesize(decl.val.toStringVector());
+//        /*********************************************************
+//        * Call to Parenthesize added by LL on 27 Feb 2008.       *
+//        * See bug_08-02-18.                                      *
+//        *********************************************************/
+//        is.append((String) sv.elementAt(0));
+//        for (int v = 1; v < sv.size(); v++)
+//        {
+//            tlacode.addElement(is.toString());
+//            is = new StringBuffer(NSpaces(col2));
+//            is.append((String) sv.elementAt(v));
+//        }
+//        tlacode.addElement(is.toString());
+        addOneTokenToTLA(is.toString());
+        addLeftParen(decl.val.getOrigin());
+        boolean needsParens = NeedsParentheses(decl.val.toStringVector());
+        if (needsParens) {
+            addOneTokenToTLA("(");
+        }
+        addExprToTLA(decl.val);
+        if (needsParens) {
+            addOneTokenToTLA(")");
+        }
+        addRightParen(decl.val.getOrigin());
+        addRightParen(decl.getOrigin());
+        endCurrentLineOfTLA();
+    }
+    
+    /**
+     * Adds a MappingObject.LeftParen object to the mapping vector
+     * for the beginning of the Region region, if it's not null.
+     * @param region
+     */
+    private void addLeftParen(Region region) {
+        if (region != null) {
+          mappingVectorNextLine.addElement(
+              new MappingObject.LeftParen(region.getBegin()));
+        }
+    }
+    
+    /**
+     * Adds a MappingObject.LeftParen object to the mapping vector
+     * for the beginning of the Region region, if it's not null.
+     * @param region
+     */
+    private void addRightParen(Region region) {
+        if (region != null) {
+          mappingVectorNextLine.addElement(
+              new MappingObject.RightParen(region.getEnd()));
+        }
+    }
+    
+
 /* -------------------------------------------------------------------------- */
     /*
      * The following methods and classes of objects are used in GenSpec().
@@ -3183,7 +4206,7 @@ if(tlacode.size() != mappingVector.size()) {
     		for (int i = 0; i < this.prcdFormulas.size(); i++) {
     		    FormulaPair form = (FormulaPair) this.prcdFormulas.elementAt(i) ;
     		    line = form.singleLine();
-    		    val.append("\n");
+    		    val.append("\nTHIS_EXTRA_SPACE_INSERTED");
     		    val.append(NSpaces(curCol));
     		    if (curCol + line.length() + 3 <= PcalTLAGen.wrapColumn) {
     	    		   val.append("/\\ " + line + "\n");
