@@ -84,7 +84,8 @@ public class PCalTLAGenerator
         try
         {
             PcalTLAGen tlaGenerator = new PcalTLAGen();
-            result.addAll(tlaGenerator.generate(xast, st));
+//            result.addAll(tlaGenerator.generate(xast, st));
+            result = tlaGenerator.generate(xast, st, result);
         } catch (PcalTLAGenException e)
         {
             throw new RemoveNameConflictsException(e);

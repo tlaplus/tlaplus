@@ -99,6 +99,8 @@ public class Changed {
     /* Vector of strings of vars whose change count is 0 */
     /* Each string is no longer than ch characters       */
     /* (except for vars whose length is over ch-1)       */
+    /* This method is called only once, from             */
+    /* GenLabeledStmt.                                   */
     public Vector Unchanged (int ch) {
 	Vector sv = new Vector();
 	String s = "";

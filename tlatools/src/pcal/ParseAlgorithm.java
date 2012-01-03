@@ -1704,7 +1704,7 @@ public class ParseAlgorithm
 
 /***************************************************************************
 *                          NEW METHODS ADDED Mar 2006                      
- * @throws ParseAlgorithmException *
+* @throws ParseAlgorithmException *
 ***************************************************************************/
 
    public static void AddLabelsToStmtSeq(Vector stmtseq) throws ParseAlgorithmException 
@@ -1721,8 +1721,8 @@ public class ParseAlgorithm
 * AddLabelsToStmtSeq.  It returns the value false if the new value of      *
 * stmtseq has no call or return statements and no labels; otherwise it     *
 * returns true.  The return value generally indicates if the calling       *
-* procedure needs to add a label to some following statement.              
- * 
+* procedure needs to add a label to some following statement.              * 
+*                                                                          *
 ***************************************************************************/
    public static boolean InnerAddLabels(
      Vector stmtseq, 

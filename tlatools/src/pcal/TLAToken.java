@@ -9,7 +9,7 @@
 *   int column    : The column in the input line of its first              *
 *                   character (counting from 0).                           *
 *   int type      : The type of the token.  Possibilities are:             *
-*                      BUILTIN, NUMBER, STRING, IDENT                      *
+*                      BUILTIN, NUMBER, STRING, IDENT, ADDED               *
 *                                                                          *
 * The constructors are TLAToken() and TLAToken(string, column, type).      *
 *                                                                          *
@@ -242,7 +242,7 @@ public class TLAToken
      * A constructor used only in {@link PcalTLAGen#AddSubscriptsToExpr}
      * or in Gen... methods that use it to construct tokens for the
      * TLAExpr argument of a call AddSubscriptsToExpr  
-     * to create a token with inAppended = true.
+     * to create a token with isAppended = true.
      * 
      * @param str
      * @param col
@@ -325,8 +325,8 @@ public class TLAToken
      { 
 	   TLAToken result = new TLAToken(this.string, this.column, this.type) ;
 	   result.source = this.source ;
-	   result.beginSubst = this.beginSubst;
-	   result.endSubst = this.endSubst;
+	   result.beginSubst = (Vector) this.beginSubst.clone();
+	   result.endSubst = (Vector) this.endSubst.clone();
 	   result.isAppended = this.isAppended;
 	   return result ;
      }

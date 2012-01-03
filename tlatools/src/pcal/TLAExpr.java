@@ -891,9 +891,26 @@ public class TLAExpr
                     if (doInsert) {
                         tok.string = nextTok.string ;
                         tok.type = nextTok.type ;
-                        if (tokSource != null) {
-                            nextTok.getBeginSubst().addElement(tokSource.getBegin());
-                        }
+                        
+                        /*
+                         * We need to merge the begin/end subst information of tok
+                         * with that of the substituted expression newExpr.  The 
+                         * parens represented by the substitution information of newExpr
+                         * should go inside those represented by the substitution
+                         * information of tok.  The left parens represented by
+                         * the beginSubst entries of a token go in the same order as
+                         * in the beginSubst vector, and the inverse is true of right parens.
+                         * Hence, the beginSubst entries of the first token of newExpr
+                         * should go after those of tok, and the endSubst entries 
+                         * of tok should go after those of the last token of newExpr.
+                         * 
+                         * We also have to set tok.endSubst to nextTok.endSubst
+                         * so we don't lose those substitutions.
+                         */
+                        tok.getBeginSubst().addAll(nextTok.getBeginSubst());
+                        newExpr.lastToken().getEndSubst().addAll(tok.getEndSubst());
+                        tok.setEndSubst(nextTok.getEndSubst());
+
                         doInsert = false ; 
                     }
                     else line.add(nextTok) ;
