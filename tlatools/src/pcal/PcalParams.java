@@ -18,7 +18,7 @@ public final class PcalParams
     /**
      * Parameters to be updated on each new release.
      */
-    public static final String modDate = "4 December 2011";
+    public static final String modDate = "4 January 2012";
     public static final String version = "1.7";
     /**
      * SZ Mar 9, 2009:
@@ -28,7 +28,7 @@ public final class PcalParams
      * by explicit method. This is required in order to make PCal
      * instance reentrant. 
      * 
-     * Maybe in some point of time this should be converted to an ordinary
+     * Maybe at some point in time this should be converted to an ordinary
      * configuration object, from the collection of public static variables.
      */
     public static void resetParams()
