@@ -27,6 +27,7 @@ import tlc2.tool.ModelChecker;
 import tlc2.tool.TLCState;
 import tlc2.tool.TLCTrace;
 import tlc2.tool.WorkerException;
+import tlc2.tool.distributed.management.TLCServerMXWrapper;
 import tlc2.tool.distributed.selector.BlockSelectorFactory;
 import tlc2.tool.distributed.selector.IBlockSelector;
 import tlc2.tool.fp.FPSet;
@@ -37,10 +38,6 @@ import util.Assert;
 import util.FileUtil;
 import util.UniqueString;
 
-/**
- * 
- * @version $Id$
- */
 @SuppressWarnings("serial")
 public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		InternRMI {
@@ -49,6 +46,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 	 * the port # for tlc server
 	 */
 	public static int Port = Integer.getInteger(TLCServer.class.getName() + ".port", 10997);
+
 
 	/**
 	 * show statistics every 1 minutes
@@ -60,6 +58,15 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 	 */
 	private static final boolean VETO_CLEANUP = Boolean.getBoolean(TLCServer.class.getName() + ".vetoCleanup");
 	
+	/**
+	 * Performance metric: distinct states per minute
+	 */
+	private long distinctStatesPerMinute;
+	/**
+	 * Performance metric: states per minute
+	 */
+	private long statesPerMinute;
+
 	public final FPSetManager fpSetManager;
 	public final StateQueue stateQueue;
 	public final TLCTrace trace;
@@ -389,15 +396,18 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 					
 			        // print progress showing states per minute metric (spm)
 			        final double factor = REPORT_INTERVAL / 60000d;
-					final long spm = (long) ((numOfGenStates - oldNumOfGenStates) / factor);
-			        oldNumOfGenStates = numOfGenStates;
-					final long distinctSpm = (long) ((fpSetSize - oldFPSetSize) / factor);
-			        oldFPSetSize = fpSetSize;
+					server.statesPerMinute = (long) ((numOfGenStates - oldNumOfGenStates) / factor);
+					server.distinctStatesPerMinute = (long) ((fpSetSize - oldFPSetSize) / factor);
 			        
+					// print to system.out
 					MP.printMessage(EC.TLC_PROGRESS_STATS, new String[] { String.valueOf(server.trace.getLevelForReporting()),
 			                String.valueOf(numOfGenStates), String.valueOf(fpSetSize),
-			                String.valueOf(server.getNewStates()), String.valueOf(spm), String.valueOf(distinctSpm) });
+			                String.valueOf(server.getNewStates()), String.valueOf(server.statesPerMinute), String.valueOf(server.distinctStatesPerMinute) });
 					server.wait(REPORT_INTERVAL);
+					
+					// keep current values as old values
+					oldFPSetSize = fpSetSize;
+					oldNumOfGenStates = numOfGenStates;
 				}
 				if (server.done)
 					break;
@@ -423,6 +433,10 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 				e.printStackTrace();
 			}
 		}
+		
+		server.statesPerMinute = 0;
+		server.distinctStatesPerMinute = 0;
+		
 		// Postprocessing:
 		boolean success = (server.errState == null);
 		if (success) {
@@ -452,11 +466,20 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
         MP.printMessage(EC.TLC_FINISHED);
 		MP.flush();
 	}
+	
+	public long getStatesGeneratedPerMinute() {
+		return statesPerMinute;
+	}
+	
+	public long getDistinctStatesGeneratedPerMinute() {
+		return distinctStatesPerMinute;
+	}
+
 
 	/**
 	 * @return
 	 */
-	private synchronized long getNewStates() {
+	public synchronized long getNewStates() {
 		long res = stateQueue.size();
 		for (TLCServerThread thread : threadsToWorkers.keySet()) {
 			res += thread.getCurrentSize();
@@ -465,7 +488,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 	}
 
 	// use fingerprint server to determine how many states have been calculated
-    private long getStatesComputed() throws RemoteException {
+    public long getStatesComputed() throws RemoteException {
     	return fpSetManager.getStatesSeen();
 	}
 
@@ -513,6 +536,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 			}
 			TLCGlobals.setNumWorkers(0);
 			server = new TLCServer(TLCApp.create(argv));
+			new TLCServerMXWrapper(server);
 			if(server != null) {
 				Runtime.getRuntime().addShutdownHook(new Thread(new WorkerShutdownHook(server)));
 				modelCheck(server);

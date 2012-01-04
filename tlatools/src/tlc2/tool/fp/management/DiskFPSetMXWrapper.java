@@ -1,19 +1,12 @@
 // Copyright (c) 2011 Microsoft Corporation.  All rights reserved.
 package tlc2.tool.fp.management;
 
-import java.lang.management.ManagementFactory;
-
-import javax.management.InstanceAlreadyExistsException;
-import javax.management.MBeanRegistrationException;
-import javax.management.MBeanServer;
-import javax.management.MalformedObjectNameException;
 import javax.management.NotCompliantMBeanException;
-import javax.management.ObjectName;
-import javax.management.StandardMBean;
 
 import tlc2.tool.fp.DiskFPSet;
+import tlc2.tool.management.TLCStandardMBean;
 
-public class DiskFPSetMXWrapper extends StandardMBean implements DiskFPSetMXBean {
+public class DiskFPSetMXWrapper extends TLCStandardMBean implements DiskFPSetMXBean {
 
 	private static int COUNT = 0;
 	
@@ -23,23 +16,7 @@ public class DiskFPSetMXWrapper extends StandardMBean implements DiskFPSetMXBean
 		super(DiskFPSetMXBean.class);
 		fpset = diskFPSet;
 		
-		// register monitoring mx bean
-		MBeanServer mbs = ManagementFactory.getPlatformMBeanServer(); 
-        ObjectName mxbeanName;
-		try {
-			mxbeanName = new ObjectName("tlc2.tool.fp:type=DiskFPSet" + COUNT++);
-			mbs.registerMBean(this, mxbeanName);
-		} catch (MalformedObjectNameException e1) {
-			e1.printStackTrace();
-		} catch (NullPointerException e1) {
-			e1.printStackTrace();
-		} catch (InstanceAlreadyExistsException e) {
-			e.printStackTrace();
-		} catch (MBeanRegistrationException e) {
-			e.printStackTrace();
-		} catch (NotCompliantMBeanException e) {
-			e.printStackTrace();
-		}
+		registerMBean("tlc2.tool.fp:type=DiskFPSet" + COUNT++);
 	}
 
 	/* (non-Javadoc)

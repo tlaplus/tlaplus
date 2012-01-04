@@ -14,6 +14,7 @@ import tlc2.tool.DFIDModelChecker;
 import tlc2.tool.ModelChecker;
 import tlc2.tool.Simulator;
 import tlc2.tool.fp.FPSet;
+import tlc2.tool.management.ModelCheckerMXWrapper;
 import tlc2.util.FP64;
 import tlc2.util.RandomGenerator;
 import tlc2.value.Value;
@@ -669,6 +670,7 @@ public class TLC
                 {
                     mc = new ModelChecker(mainFile, configFile, dumpFile, deadlock, fromChkpt, resolver, specObj, (long) fpMemSize, fpBits);
                     TLCGlobals.mainChecker = (ModelChecker) mc;
+                    new ModelCheckerMXWrapper((ModelChecker) mc);
                 } else
                 {
                     mc = new DFIDModelChecker(mainFile, configFile, dumpFile, deadlock, fromChkpt, true, resolver, specObj);

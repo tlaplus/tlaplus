@@ -41,6 +41,7 @@ public class ModelChecker extends AbstractChecker
     public TLCTrace trace; // the trace file
     protected Worker[] workers; // the workers
     // used to calculate the spm metric
+    public long distinctStatesPerMinute, statesPerMinute = 0L;
     protected long oldNumOfGenStates, oldFPSetSize = 0L;
 
     /* Constructors  */
@@ -742,14 +743,14 @@ public class ModelChecker extends AbstractChecker
         	oldFPSetSize = 0;
         	factor = (System.currentTimeMillis() - startTime) / 60000d;
         }
-		final long spm = (long) ((numOfGenStates - oldNumOfGenStates) / factor);
+		statesPerMinute = (long) ((numOfGenStates - oldNumOfGenStates) / factor);
         oldNumOfGenStates = numOfGenStates;
-        final long distinctSpm = (long) ((fpSetSize - oldFPSetSize) / factor);
+        distinctStatesPerMinute = (long) ((fpSetSize - oldFPSetSize) / factor);
         oldFPSetSize = fpSetSize;
         
 		MP.printMessage(EC.TLC_PROGRESS_STATS, new String[] { String.valueOf(this.trace.getLevelForReporting()),
                 String.valueOf(this.numOfGenStates), String.valueOf(fpSetSize),
-                String.valueOf(this.theStateQueue.size()), String.valueOf(spm), String.valueOf(distinctSpm) });
+                String.valueOf(this.theStateQueue.size()), String.valueOf(statesPerMinute), String.valueOf(distinctStatesPerMinute) });
     }
 
     public static final void reportSuccess(final FPSet anFpSet, final long numOfGenStates) throws IOException
@@ -855,4 +856,7 @@ public class ModelChecker extends AbstractChecker
         DebugPrinter.print(e);
     }
 
+    public long getStatesGenerated() {
+    	return numOfGenStates;
+    }
 }
