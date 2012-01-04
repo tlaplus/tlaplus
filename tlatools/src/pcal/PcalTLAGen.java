@@ -915,6 +915,7 @@ public class PcalTLAGen
                  */
                 AST.SingleAssign sass = sF;
 
+                addLeftParen(sass.getOrigin());
                 TLAExpr sub = AddSubscriptsToExpr(sass.lhs.sub, SubExpr(Self(context)), c);
                 TLAExpr rhs = AddSubscriptsToExpr(sass.rhs, SubExpr(Self(context)), c);
                 if (mp
@@ -1085,6 +1086,7 @@ public class PcalTLAGen
                     
                     sb = new StringBuffer();
                 }
+                addRightParen(sass.getOrigin());
             } else
             {
                 /*
@@ -1111,6 +1113,7 @@ public class PcalTLAGen
                     sass = (AST.SingleAssign) ast.ass.elementAt(iFirst);
                     TLAExpr sub = AddSubscriptsToExpr(sass.lhs.sub, SubExpr(Self(context)), c);
                     TLAExpr rhs = AddSubscriptsToExpr(sass.rhs, SubExpr(Self(context)), c);
+                    addLeftParen(sass.getOrigin());
                     sb.append("!");
                     
                     // On 21 Jan 2011, LL moved the following statement to below the if
@@ -1154,6 +1157,7 @@ public class PcalTLAGen
                     addLeftParen(rhs.getOrigin());
                     addExprToTLA(rhs);
                     addRightParen(rhs.getOrigin());
+                    addRightParen(sass.getOrigin());
                     addOneTokenToTLA((iFirst == iLast) ? "]" : ",");
 //                    Vector sv = sub.toStringVector();
 //                    if (sv.size() > 0)
