@@ -1,6 +1,7 @@
 package org.lamport.tla.toolbox.tool.tlc.ui.editor.page;
 
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Vector;
 
@@ -69,6 +70,7 @@ import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 import tla2sany.semantic.ModuleNode;
+import tlc2.TLC;
 import tlc2.tool.fp.FPSet;
 
 /**
@@ -160,6 +162,12 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
     private FormText chkpointSizeLabel;
     private Text checkpointSizeText;
     private Button chkptDeleteButton;
+    
+	/**
+	 * Used to interpolate y-values for memory scale
+	 */
+	private final Interpolator newton;
+	
     /**
      * constructs the main model page 
      * @param editor
@@ -169,7 +177,48 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         super(editor, MainModelPage.ID, MainModelPage.TITLE);
         this.helpId = IHelpConstants.MAIN_MODEL_PAGE;
         this.imagePath = "icons/full/choice_sc_obj.gif";
-    }
+
+		// available system memory
+		final long phySysMem = TLCRuntime.getInstance().getAbsolutePhysicalSystemMemory(1.0d);
+		
+		// 0.) Create Newton with two additional points 0,0 and 1,0 which
+		int s = 0;
+		double[] x = new double[5];
+		double[] y = new double[5];
+		
+		// base point
+		y[s] = 0d;
+		x[s++] = 0d;
+
+		// 1.) Minumum TLC requirements 
+		// Use hard-coded minfpmemsize value * 4 * 10 regardless of how big the
+		// model is. *4 because .25 mem is used for FPs
+		double lowerLimit = ( (TLC.MinFpMemSize / 1024 / 1024 * 4d) / phySysMem) / 2;
+		x[s] = lowerLimit;
+		y[s++] = 0d;
+
+		// 2a.) Calculate OS reserve
+		// Current bloat in software is assumed to grow according to Moore's law => 
+		// 2^((Year-1993)/ 2)+2)
+		// (1993 as base results from a statistic of windows OS memory requirements)
+		final int currentYear = Calendar.getInstance().get(Calendar.YEAR);
+		double estimateSoftwareBloatInMBytes = Math.pow(2, ((currentYear - 1993) / 2) + 2);
+		double upperLimit = 1.0d - (estimateSoftwareBloatInMBytes / phySysMem) / 2;
+
+		// 3.) Optimal value is simply arithmetic mean 
+		double mean = (upperLimit - lowerLimit) / 2;
+		x[s] = mean;
+		y[s++] = 1d;
+
+		// 2b.)
+		x[s] = upperLimit;
+		y[s++] = 0d;
+		
+		// base point
+		x[s] = 1d;
+		y[s] = 0d;
+		newton = new Interpolator(x, y);
+}
 
     /**
      * @see BasicFormPage#loadData()
@@ -468,24 +517,14 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
             expandSection(SEC_HOW_TO_RUN);
         }
 
+        
         // max heap size
-		int maxHeapSizeValue = maxHeapSize.getSelection();
-		//TODO take physical memory into account or just mark [0,10] and [90,100] as to low/high?
-		if (maxHeapSizeValue >= 90 || maxHeapSizeValue <= 10) {
-			// raise a form error
-			modelEditor
-					.addErrorMessage(
-							"toLowOrHighJVMHeapSize",
-							"Dedicating too high or low amounts of physical memory to TLC might cause heavy swapping",
-							this.getId(), IMessageProvider.WARNING,
-							UIHelper.getWidget(dm
-									.getAttributeControl(LAUNCH_MAX_HEAP_SIZE)));
-			expandSection(SEC_HOW_TO_RUN);
-		}
-		// color the scale if value becomes to extreme
-		float factor = (float) Math.sin((maxHeapSizeValue / 100d) * Math.PI);
+		// color the scale according to OS and TLC requirements
+        int maxHeapSizeValue = maxHeapSize.getSelection();
+		double x = maxHeapSizeValue / 100d;
+		float y = (float) Math.min(1.0d, Math.max(newton.interpolate(x), 0.0d));
 		maxHeapSize.setBackground(new Color(Display.getDefault(), new RGB(
-				120 * factor, 1 - factor, 1f)));
+				120 * y, 1 - y, 1f)));
         
         // fpBits
         String fpBitsString = fpBits.getText();
@@ -1386,5 +1425,39 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
     {
         super.refresh();
         updateCheckpoints();
+    }
+    
+    /**
+     * Interpolates based on linear Newton
+     */
+    private class Interpolator {
+
+    	private final double[] coeff, xCoords;
+
+    	public Interpolator(double[] x, double[] fx) {
+    		this.xCoords = x;
+    		this.coeff = new double[x.length];
+
+    		double[] t = new double[x.length];
+    		for (int i = 0; i < x.length; i++) {
+    			t[i] = fx[i];
+    			for (int j = i - 1; j >= 0; j--) {
+    				t[j] = (t[j + 1] - t[j]) / (x[i] - x[j]);
+    			}
+    			coeff[i] = t[0];
+    		}
+    	}
+
+    	public double interpolate(double x) {
+    		double y = 0.0d;
+    		for (int i = 0; i < xCoords.length; i++) {
+    			double d2 = 1d;
+    			for (int j = 0; j < i; j++) {
+    				d2 = d2 * (x - xCoords[j]);
+    			}
+    			y = y + (coeff[i] * d2);
+    		}
+    		return y;
+    	}
     }
 }
