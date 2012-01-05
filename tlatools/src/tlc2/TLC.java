@@ -485,6 +485,16 @@ public class TLC
                 {
                     try
                     {
+                    	// -fpmem can be used in two ways:
+                    	// a) to set the relative memory to be used for fingerprints (being machine independent)
+                    	// b) to set the absolute memory to be used for fingerprints
+                    	//
+                    	// In order to set memory relatively, a value in the domain [0.0, 1.0] is interpreted as a fraction.
+                    	// A value in the [2, Double.MaxValue] domain allocates memory absolutely.
+                    	//
+						// Independently of relative or absolute mem allocation,
+						// a user cannot allocate more than JVM heap space
+						// available. Conversely there is the lower hard limit TLC#MinFpMemSize.
                         fpMemSize = Double.parseDouble(args[index]);
                         if (fpMemSize < 0) {
                             printErrorMsg("Error: An positive integer or a fraction for fpset memory size/percentage required. But encountered " + args[index]);
