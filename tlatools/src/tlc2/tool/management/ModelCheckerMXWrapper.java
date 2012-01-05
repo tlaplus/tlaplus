@@ -3,12 +3,12 @@
 package tlc2.tool.management;
 
 import java.io.IOException;
-import java.rmi.RemoteException;
 
 import javax.management.NotCompliantMBeanException;
 
 import tlc2.tool.ModelChecker;
 import tlc2.tool.distributed.management.TLCStatisticsMXBean;
+import tlc2.tool.fp.DiskFPSet;
 
 /**
  * @author Markus Alexander Kuppe
@@ -36,6 +36,13 @@ public class ModelCheckerMXWrapper extends TLCStandardMBean implements TLCStatis
 	 * @see tlc2.tool.distributed.management.TLCStatisticsMXBean#getDistinctStatesGenerated()
 	 */
 	public long getDistinctStatesGenerated() {
+		// if impl is DiskFPSet we don't want to add to the lock contention on
+		// the RWLock in DiskFPSet and thus compromise on reading dirty values
+		// (acceptable for statistics/metrics)
+		if(modelChecker.theFPSet instanceof DiskFPSet) {
+			DiskFPSet diskFPSet = (DiskFPSet) modelChecker.theFPSet;
+			return diskFPSet.getFileCnt() + diskFPSet.getTblCnt();
+		}
 		return modelChecker.theFPSet.size();
 	}
 
