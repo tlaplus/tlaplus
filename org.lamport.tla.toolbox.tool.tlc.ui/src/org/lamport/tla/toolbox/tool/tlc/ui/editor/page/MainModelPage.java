@@ -204,7 +204,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 		final int currentYear = Calendar.getInstance().get(Calendar.YEAR);
 		double estimateSoftwareBloatInMBytes = Math.pow(2, ((currentYear - 1993) / 2) + 2);
 		
-		// 2.) Optimal value is simply arithmetic mean 
+		// 2.) save range
 		x[s] = lowerLimit * 2d;
 		y[s++] = 1.0d;
 		x[s] = 1.0d - (estimateSoftwareBloatInMBytes / phySysMem);
