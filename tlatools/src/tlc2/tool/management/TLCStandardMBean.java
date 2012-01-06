@@ -17,7 +17,7 @@ import javax.management.StandardMBean;
  */
 public abstract class TLCStandardMBean extends StandardMBean {
 
-	protected TLCStandardMBean(final Class mbeanInterface)
+	protected TLCStandardMBean(@SuppressWarnings("rawtypes") final Class mbeanInterface)
 			throws NotCompliantMBeanException {
 		super(mbeanInterface);
 	}
